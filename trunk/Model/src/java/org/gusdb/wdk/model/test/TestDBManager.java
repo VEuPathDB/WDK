@@ -17,7 +17,9 @@ import javax.sql.DataSource;
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
@@ -212,11 +214,38 @@ public class TestDBManager {
 	    System.err.println("");
 	    System.err.println( "Parsing failed.  Reason: " + exp.getMessage() ); 
 	    System.err.println("");
-	    System.err.println("put usage back in!");
-	    //usage(cmdName, options);
+
+	    usage(cmdName, options);
 	}
 
 	return cmdLine;
     }
+
+    /**
+     * As it currently stands, TestDBManager is called from the command line with wdkTestDb.  That file has its
+     * own command line arguments (different from these) so this usage() method will not be called.
+     */
+
+    static void usage(String cmdName, Options options) {
+        
+        String newline = System.getProperty( "line.separator" );
+        String cmdlineSyntax = 
+            cmdName + 
+            " -configFile config_file" +
+            " tables table_list " +
+            " [-dropDatabase! || -createDatabase! " +
+	    " -params param_list";
+        
+        String header = 
+            newline + "Parse flat files representing database tables and insert into database." + newline + newline + "Options:" ;
+        
+        String footer = "";
+        
+        //	PrintWriter stderr = new PrintWriter(System.err);
+        HelpFormatter formatter = new HelpFormatter();
+        formatter.printHelp(75, cmdlineSyntax, header, options, footer);
+        System.exit(1);
+    }
+
 
 }
