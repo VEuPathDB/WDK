@@ -96,9 +96,9 @@ public class ResultFactory {
 	
 	sqlb.append("result_table varchar2(30), start_time date not null, end_time date, dataset_name varchar2(100), session_id varchar2(50), ");
 	for (int i=0;i < numParams -1; i++) {
-	    sqlb.append("param" + i + " varchar2(25), ");
+	    sqlb.append("param" + i + " varchar2(500), ");
 	}
-	sqlb.append("param" + numParams + " varchar2(25))");
+	sqlb.append("param" + numParams + " varchar2(500))");
 	
 	// Execute it
 	System.out.println(newline + "Making cache table " + nameToUse + newline);
