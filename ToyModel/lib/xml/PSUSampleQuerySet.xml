@@ -2,7 +2,7 @@
  
 <wdkModel name="RNAQueries">
 
-<simpleQuerySet name="RNASimpleQueries">
+<querySet name="RNASimpleQueries">
 
 <!--
    <sqlQuery name="DTGeneCardName"
