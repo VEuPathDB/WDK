@@ -248,11 +248,14 @@ public class ModelXmlParser {
         
         /**/ digester.addSetProperties( "wdkModel/querySet");
         
+        /**/ digester.addBeanPropertySetter( "wdkModel/querySet/description");
+
         /*  */ digester.addObjectCreate( "wdkModel/querySet/sqlQuery", SqlQuery.class );
         
         /*  */ digester.addSetProperties( "wdkModel/querySet/sqlQuery");
         
         /*  */ digester.addBeanPropertySetter( "wdkModel/querySet/sqlQuery/sql");
+	/*  */ digester.addBeanPropertySetter( "wdkModel/querySet/sqlQuery/description");
         
         /*    */ digester.addObjectCreate( "wdkModel/querySet/sqlQuery/paramRef", Reference.class );
         
