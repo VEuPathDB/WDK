@@ -34,7 +34,7 @@ import java.util.Hashtable;
  * Created: Fri 22 October 12:00:00 2004 EST
  * 
  * @author David Barkan
- * @version $Revision$ $Date$Author:  $ 
+ * @version $Revision$ $Date$Author: dbarkan $ 
  */
 
 public class TestBooleanTree {
@@ -62,25 +62,19 @@ public class TestBooleanTree {
 	Question q6 = makeNumSeqsQuestion(model);
 	Hashtable q6values = makeNumSeqsValues("25", "Eimeria tenella");
 
-	//	Question q7 = makeNumSeqsQuestion(model);
-	//Hashtable q7values = makeNumSeqsValues("25", "Neospora caninum");
-	
-	Reference numSeqsRef = new Reference("RnaQuestions.ByDbESTLib");
-	Question q7 = model.getQuestionSet(numSeqsRef.getSetName()).getQuestion(numSeqsRef.getElementName());
-	Hashtable q7values = new Hashtable();
-	q7values.put("NumEstLibs", "5");
-	q7values.put("ApiTaxon", "Neospora caninum");
+	Question q7 = makeNumSeqsQuestion(model);
+	Hashtable q7values = makeNumSeqsValues("25", "Neospora caninum");
 	
 
 	//boolean nodes
-	Question q2 = makeBooleanQuestion(model, q7.getRecordClass());
+	Question q2 = model.makeBooleanQuestion(q7.getRecordClass());
 	Hashtable q2values = makeBooleanValues("Union");
 
-	Question q3 = makeBooleanQuestion(model, q7.getRecordClass());
+	Question q3 = model.makeBooleanQuestion(q7.getRecordClass());
 	Hashtable q3values = makeBooleanValues("Union");
 
 	//root boolean node
-	Question q1 = makeBooleanQuestion(model, q7.getRecordClass());
+	Question q1 = model.makeBooleanQuestion(q7.getRecordClass());
 	Hashtable q1values = makeBooleanValues("Minus");
 
 	BooleanQuestionNode bqn4 = new BooleanQuestionNode(q4);
@@ -101,6 +95,16 @@ public class TestBooleanTree {
 	bqn7.setValues(q7values);
 	
 	return bqn1;
+    }
+
+    public static BooleanQuestionNode makeNewLeafNode(WdkModel model) throws WdkUserException, WdkModelException{
+
+	Question q4 = makeNumSeqsQuestion(model);
+	Hashtable q4values = makeNumSeqsValues("7", "Eimeria tenella");
+	BooleanQuestionNode bqn = new BooleanQuestionNode(q4);
+	bqn.setValues(q4values);
+	return bqn;
+
     }
 
     // ------------------------------------------------------------------
