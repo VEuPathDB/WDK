@@ -3,17 +3,16 @@ package org.gusdb.gus.wdk.view.taglibs.query;
 import java.io.IOException;
 
 import javax.servlet.jsp.JspException;
+import javax.servlet.jsp.JspTagException;
 import javax.servlet.jsp.JspWriter;
 import javax.servlet.jsp.PageContext;
 import javax.servlet.jsp.tagext.SimpleTagSupport;
 
 import org.gusdb.gus.wdk.model.Query;
-import org.gusdb.gus.wdk.model.QueryInstance;
 import org.gusdb.gus.wdk.model.Summary;
 import org.gusdb.gus.wdk.model.SummarySet;
 import org.gusdb.gus.wdk.model.WdkModel;
 import org.gusdb.gus.wdk.model.WdkUserException;
-import org.gusdb.gus.wdk.model.implementation.NullQueryInstance;
 
 /**
  * Custom tag which displays a Query to the user
@@ -21,11 +20,10 @@ import org.gusdb.gus.wdk.model.implementation.NullQueryInstance;
 public class DisplayQuery extends SimpleTagSupport {
     
     private static final String DEFAULT_OPTION = "Choose...";
-    private QueryInstance queryInstance;
-    private String querySet = "RNARecordLists"; // FIXME - Should get from QueryHolder
+    private Summary summary;
     
-    public void setQueryInstance(QueryInstance queryInstance) {
-        this.queryInstance = queryInstance;
+    public void setSummary(Summary summary) {
+        this.summary = summary;
     }
 
 // TODO Should it pick up other names through NullQuery???
@@ -34,11 +32,21 @@ public class DisplayQuery extends SimpleTagSupport {
     public void doTag() throws IOException, JspException {
     	JspWriter out = getJspContext().getOut();
 
-    	if ( queryInstance instanceof NullQueryInstance) {
+        
+        QueryHolder parent = (QueryHolder) findAncestorWithClass(this, QueryHolder.class);
+        if (parent == null) {
+            throw new JspTagException("The DisplayQuery tag is not enclosed by a QueryHolder tag");
+        }
+        String summarySetName = parent.getSummarySetName();
+            
+
+
+        
+    	if ( summary == null) {
             WdkModel wm = (WdkModel) getJspContext().getAttribute("wdk.wdkModel", PageContext.APPLICATION_SCOPE);
             SummarySet rls = null;
             try {
-                rls = wm.getSummarySet(querySet);
+                rls = wm.getSummarySet(summarySetName);
             } catch (WdkUserException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -47,7 +55,7 @@ public class DisplayQuery extends SimpleTagSupport {
             
             
 //    		Query[] sq = sqs.getQueries();
-    		out.println("<b>Queries:</b> <select name=\"queryRecordName\">");
+    		out.println("<b>Queries:</b> <select name=\"summaryName\">");
     		out.println("<option value=\""+DEFAULT_OPTION+"\">"+DEFAULT_OPTION);
     		for ( int i=0 ; i < rla.length ;i++) {
                 Query sq = rla[i].getQuery();
@@ -60,13 +68,13 @@ public class DisplayQuery extends SimpleTagSupport {
     		return;
     	}
         
-    	out.println("<h4>"+queryInstance.getQuery().getDisplayName()+"</h4>");
-    	out.println("<input type=\"hidden\" name =\"queryRecordName\" value=\""+querySet+"."+queryInstance.getQuery().getName()+"\">");
+    	out.println("<h4>"+summary.getQuery().getDisplayName()+"</h4>");
+    	out.println("<input type=\"hidden\" name =\"summaryName\" value=\""+summarySetName+"."+summary.getQuery().getName()+"\">");
     	out.println("<input type=\"hidden\" name=\"defaultChoice\" value=\""+DEFAULT_OPTION+"\">");
 
         if (getJspBody() != null) {
             //out.println("<br>I'm trying to set wdk.queryName to fred<br>");
-            getJspContext().setAttribute("wdk.queryName", querySet +"."+queryInstance.getQuery().getName(), PageContext.PAGE_SCOPE);
+            getJspContext().setAttribute("wdk.queryName", summarySetName +"."+summary.getQuery().getName(), PageContext.PAGE_SCOPE);
             getJspBody().invoke(null);
             getJspContext().removeAttribute("wdk.queryName", PageContext.PAGE_SCOPE);
     	}

@@ -50,8 +50,8 @@ public class InteractiveRecordListServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
         
 		String fromPage = req.getParameter("fromPage");
-		String queryRecordGroup = req.getParameter("queryRecordGroup");
-		String queryRecordName = req.getParameter("queryRecordName");
+		String summarySetName = req.getParameter("summarySetName");
+		String summaryName = req.getParameter("summaryName");
 		String formName = req.getParameter("formName");
 		String defaultChoice = req.getParameter("defaultChoice");
         String initialExpansion = req.getParameter("initialExpansion");
@@ -60,12 +60,12 @@ public class InteractiveRecordListServlet extends HttpServlet {
 			msg("fromPage shouldn't be null. Internal error", res);
 			return;
 		}
-		if (queryRecordGroup == null) {
-			msg("queryRecordGroup shouldn't be null. Internal error", res);
+		if (summarySetName == null) {
+			msg("summarySetName shouldn't be null. Internal error", res);
 			return;
 		}
-		if (queryRecordName == null) {
-			msg("Qualified queryRecordName shouldn't be null. Internal error", res);
+		if (summaryName == null) {
+			msg("Qualified summaryName shouldn't be null. Internal error", res);
 			return;
 		}
 		if (formName == null) {
@@ -77,32 +77,32 @@ public class InteractiveRecordListServlet extends HttpServlet {
 			return;
 		}
 		
-        if (queryRecordName.equals(defaultChoice)) {
+        if (summaryName.equals(defaultChoice)) {
             req.setAttribute(formName+".error.query.noQuery", "Please choose a query");
             redirect(req, res, fromPage);
             return;
         }
         
-        if (queryRecordName.indexOf('.')==-1) {
-            msg("queryRecord name isn't qualified: "+queryRecordName, res);
+        if (summaryName.indexOf('.')==-1) {
+            msg("queryRecord name isn't qualified: "+summaryName, res);
             return;
 		}
 		
 		// We have a queryRecord name
         WdkModel wm = (WdkModel) getServletContext().getAttribute("wdk.wdkModel");
         
-        Summary summary = WdkModelExtra.getSummary(wm, queryRecordName);
+        Summary summary = WdkModelExtra.getSummary(wm, summaryName);
         Query sq = summary.getQuery();
 
         if (sq == null) {
-            msg("sq is null for "+queryRecordName, res);
+            msg("sq is null for "+summaryName, res);
             return;
         }
 		QueryInstance sqii = sq.makeInstance();
 		Map paramValues = new HashMap();
         SummaryInstance si = null;
-		req.setAttribute(formName+".sqii", sqii);
-        String formQueryPrefix = formName+"."+queryRecordName+".";
+		req.setAttribute(formName+".summary", summary);
+        String formQueryPrefix = formName+"."+summaryName+".";
         System.err.println("formQueryPrefix is called: "+formQueryPrefix);
         boolean problem = false;
         if ("true".equals(initialExpansion)) {
@@ -136,7 +136,7 @@ public class InteractiveRecordListServlet extends HttpServlet {
                     String name = param.getName();
                     // FIXME Magic number - struct?
                     String errorMsg = ((String[]) errors.get(param))[1];
-                    req.setAttribute(formName+".error."+queryRecordName+"."+name, errorMsg);
+                    req.setAttribute(formName+".error."+summaryName+"."+name, errorMsg);
                     // TODO Cope with correct values
                 }
             }           
