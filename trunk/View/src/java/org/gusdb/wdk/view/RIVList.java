@@ -78,7 +78,7 @@ public class RIVList implements Iterator {
     }
     
     
-    public List getColumnNames(SummaryInstance si) {
+    public List getColumnNames() {
         return columnNames;
     }
     
