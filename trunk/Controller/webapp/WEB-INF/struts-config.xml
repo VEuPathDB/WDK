@@ -11,6 +11,13 @@
     <form-bean name="questionForm" type="org.gusdb.wdk.controller.action.QuestionForm"/>
   </form-beans>
 
+  <global-exceptions>
+    <exception key="global.error.user" path="/error.user.jsp" scope="request"
+               type="org.gusdb.wdk.model.WdkUserException"/>
+    <exception key="global.error.model" path="/error.jsp" scope="request"
+               type="org.gusdb.wdk.model.WdkModelException"/>
+  </global-exceptions>
+
   <global-forwards type="org.apache.struts.action.ActionForward">
     <forward   name="home" path="/index.jsp"/>
   </global-forwards>
