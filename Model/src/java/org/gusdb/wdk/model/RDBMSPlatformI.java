@@ -14,7 +14,7 @@ public interface RDBMSPlatformI {
 
     public void init(String url, String user, String password, Integer minIdle,
 		     Integer maxIdle, Integer maxWait, Integer maxActive, 
-		     Integer initialSize) throws SQLException;
+		     Integer initialSize) throws WdkModelException;
 
     public DataSource getDataSource();
 
