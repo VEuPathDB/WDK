@@ -6,16 +6,18 @@ import org.gusdb.gus.wdk.model.WdkModelException;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 
 
 /**
- * A view on a RecordInstance as a Map. Currently only handles the text and non-text attributes 
+ * A view on a RecordInstance as a Map. Currently only handles the text and non-text fields 
  * ie not nested tables. If this works it should probably be refactored into the model 
  * to avoid the extra wrapper instance.
  * 
@@ -26,19 +28,21 @@ import java.util.Set;
  */
 public class RecordInstanceView implements Map {
 
+    private static final Logger logger = Logger.getLogger("org.gusdb.gus.wdk.view.RecordInstanceView");
+    
     private RecordInstance ri;
     private HashMap map;
+    private List attributeNames;
+    private boolean summary;
 
-
-
-    public RecordInstanceView(RecordInstance ri) {
+    public RecordInstanceView(RecordInstance ri, boolean summary) {
         // TODO Fix exception handling once exceptions and logging are pinned down
         // TODO Special case handling for "overview" - Is there a better way
         this.ri = ri;
-        List attributeNames = new ArrayList();
-        Record record = ri.getRecord();
-        addArrayContentsToList(attributeNames, record.getNonTextAttributeNames());
-        addArrayContentsToList(attributeNames, record.getTextAttributeNames());
+        this.summary = summary;
+        
+        generateAttributeNames(summary);
+ 
         map = new HashMap();
         for (Iterator it = attributeNames.iterator(); it.hasNext(); ) {
             String key = (String) it.next();
@@ -53,12 +57,46 @@ public class RecordInstanceView implements Map {
                 map.put(key, value);
             }
         }
-    } 
+    }
     
-    private void addArrayContentsToList(List l, String[] a) {
-        for (int i = 0; i < a.length; i++) {
-            l.add(a[i]);
-        } 
+    
+    public List getColumnNames() {
+        return ri.getRecord().getSummaryColumnNames();
+    }
+    
+    private void generateAttributeNames(boolean summary) {
+//        if (summary) {
+//            //attributeNames = ri.getSummaryAttributes();
+//        } else {
+            List tempNames = new ArrayList();
+            Record record = ri.getRecord();
+            logger.severe("Going off to fetch record names");
+            tempNames.addAll(record.getNonTextAttributeNames());
+            // FIXME Disabling text attributes for now
+            //tempNames.addAll(record.getTextAttributeNames());
+            tempNames.addAll(record.getTableNames());
+            attributeNames = tempNames;
+//        }
+//        
+//        // FIXME Just waiting for method on model
+//        if (summary) {
+//            List tempNames = new ArrayList();
+//            Record record = ri.getRecord();
+//            addArrayContentsToList(tempNames, record.getNonTextAttributeNames());
+//            addArrayContentsToList(tempNames, record.getTextAttributeNames());
+//            attributeNames = tempNames;
+//        }
+        
+        attributeNames = Collections.unmodifiableList(attributeNames);  
+    }
+    
+    public List getAttributeNames() {
+        return attributeNames;
+    }
+    
+    
+    private void addListContentsToList(List l, List a) {
+        l.addAll(a);
     }
 
     /**
