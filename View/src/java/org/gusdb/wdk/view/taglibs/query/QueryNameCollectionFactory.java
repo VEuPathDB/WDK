@@ -3,6 +3,7 @@ package org.gusdb.gus.wdk.view.taglibs.query;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import org.gusdb.gus.wdk.model.Query;
 import org.gusdb.gus.wdk.model.QueryName;
 import org.gusdb.gus.wdk.model.QueryNameList;
 import org.gusdb.gus.wdk.model.QuerySet;
@@ -66,15 +67,24 @@ public class QueryNameCollectionFactory {
     
     private class QuerySetFacade implements QueryNameCollection {
 
+        private QueryName[] queryNames;
+        
         public QueryName[] getQueryNames() {
-            // TODO Auto-generated method stub
-            return null;
+            return queryNames;
         }
         
     
         QuerySetFacade(QuerySet qs) {
-        
-        
+            Query[] queries = qs.getQueries();
+            queryNames = new QueryName[queries.length];
+            for (int i = 0; i < queries.length; i++) {
+                try {
+                    queryNames[i] = new QueryName(qs.getName() + "." + queries[i].getName());
+                } catch (Exception exp) {
+                    // Ignore - shouldn't happen
+                    // FIXME Exception handling
+                }
+            }
         }
     }
 
