@@ -1,6 +1,7 @@
 package org.gusdb.gus.wdk.controller;
 
-import oracle.jdbc.pool.OracleConnectionCacheImpl;
+
+//import oracle.jdbc.pool.OracleDataSource;
 
 import org.gusdb.gus.wdk.model.ModelConfig;
 import org.gusdb.gus.wdk.model.ModelConfigParser;
@@ -8,12 +9,15 @@ import org.gusdb.gus.wdk.model.RDBMSPlatformI;
 import org.gusdb.gus.wdk.model.ResultFactory;
 import org.gusdb.gus.wdk.model.WdkModel;
 import org.gusdb.gus.wdk.model.WdkModelException;
-import org.gusdb.gus.wdk.model.implementation.ModelXmlParser;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Properties;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -26,6 +30,12 @@ import javax.servlet.ServletContextListener;
 import javax.servlet.jsp.jstl.core.Config;
 import javax.sql.DataSource;
 
+import org.apache.commons.dbcp.ConnectionFactory;
+import org.apache.commons.dbcp.DriverManagerConnectionFactory;
+import org.apache.commons.dbcp.PoolableConnectionFactory;
+import org.apache.commons.dbcp.PoolingDataSource;
+import org.apache.commons.pool.ObjectPool;
+import org.apache.commons.pool.impl.GenericObjectPool;
 import org.xml.sax.SAXException;
 
   
@@ -38,11 +48,14 @@ public class ApplicationInitListener implements ServletContextListener {
   
     private static final Logger logger = Logger.getLogger("org.gusdb.gus.wdk.controller.ApplicationInitListener");
     
+    private static final String DEFAULT_MODEL_PARSER = "org.gusdb.gus.wdk.model.implementation.ModelXmlParser";
+    
     private static final String DEFAULT_LOGIN_CONFIGURATION = "/WEB-INF/wdk-config/login.xml";
     private static final String DEFAULT_MODEL_CONFIGURATION = "/WEB-INF/wdk-config/model.xml";
     private static final String DEFAULT_PROPS_LOCATION = "/WEB-INF/wdk-config/macro.props";
 
     private DataSource dataSource;
+    private RDBMSPlatformI platform;
     
     public void contextInitialized(ServletContextEvent sce) {
   
@@ -54,8 +67,10 @@ public class ApplicationInitListener implements ServletContextListener {
         String schemaName = application.getInitParameter("schemaName");
         String propsFileLocation = application.getInitParameter("propsFileLocation");
         String loggingFileLocation = application.getInitParameter("loggingFileLocation");
+        String parserClass = application.getInitParameter("parserClass");
+
         
-        initMemberVars(loginXML, querySetLocation, schemaName, schemaLocation, propsFileLocation, application);
+        initMemberVars(loginXML, parserClass, querySetLocation, schemaName, schemaLocation, propsFileLocation, application);
         
         Config.set(application, Config.SQL_DATA_SOURCE, dataSource);
 
@@ -80,11 +95,11 @@ public class ApplicationInitListener implements ServletContextListener {
     }
   
     public void contextDestroyed(ServletContextEvent sce) {
-        // Nothing to do here for now
+        //platform.close();
     }
 
     
-    private void initMemberVars(String loginConfigLocation, String queryConfigLocation, 
+    private void initMemberVars(String loginConfigLocation, String parserClass, String queryConfigLocation, 
             String schemaName, String schemaLocation, String propsLocation, ServletContext application) {
         
         if (schemaName != null && schemaLocation != null) {
@@ -93,10 +108,14 @@ public class ApplicationInitListener implements ServletContextListener {
         
         URL schemaURL = null;   
         if (schemaName != null) {
-            schemaURL = WdkModel.INSTANCE.getClass().getResource(schemaName);   
+            schemaURL = WdkModel.class.getResource(schemaName);   
         }
         if (schemaLocation != null) {
             schemaURL = createURL(schemaLocation, null, application);
+        }
+        
+        if (parserClass == null) {
+            parserClass = DEFAULT_MODEL_PARSER;
         }
         
         URL querySetURL = createURL(queryConfigLocation, DEFAULT_MODEL_CONFIGURATION, application);
@@ -119,8 +138,10 @@ public class ApplicationInitListener implements ServletContextListener {
                 (RDBMSPlatformI)Class.forName(platformClass).newInstance();
             platform.setDataSource(dataSource);
             
-
-            WdkModel wdkModel = ModelXmlParser.parseXmlFile(querySetURL, propsURL, schemaURL);
+            Class parser = Class.forName(parserClass);
+            Method build = parser.getDeclaredMethod("parseXmlFile", new Class[] {URL.class, URL.class, URL.class});
+            WdkModel wdkModel = (WdkModel) build.invoke(null, new Object[] {querySetURL, propsURL, schemaURL});
+            
             
             ResultFactory resultFactory = new ResultFactory(dataSource, platform, 
                     dbConfig.getLogin(), instanceTable);
@@ -141,6 +162,16 @@ public class ApplicationInitListener implements ServletContextListener {
             throw new RuntimeException(e);
         } catch (WdkModelException e) {
             throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } catch (SecurityException exp) {
+           throw new RuntimeException(exp);
+        } catch (NoSuchMethodException exp) {
+           throw new RuntimeException(exp);
+        } catch (IllegalArgumentException exp) {
+            throw new RuntimeException(exp);
+        } catch (InvocationTargetException exp) {
+            throw new RuntimeException(exp);
         }
 
     }
@@ -167,24 +198,59 @@ public class ApplicationInitListener implements ServletContextListener {
         }
         return ret;
     }
+ 
     
     private DataSource setupDataSource(String connectURI, String login, 
-              String password)  {
+            String password)  throws SQLException {
+        
+    	DriverManager.registerDriver(new oracle.jdbc.OracleDriver());
+        
+        ObjectPool connectionPool = new GenericObjectPool(null);
 
-        try {
-            OracleConnectionCacheImpl ds = new oracle.jdbc.pool.OracleConnectionCacheImpl();
-            ds.setURL(connectURI);
+        ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(connectURI, login, password);
 
-            ds.setPassword(password);
-            ds.setUser(login);
-            return ds;
-        }
-        catch (SQLException exp) {
-            exp.printStackTrace();
-        }
+        PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(connectionFactory,connectionPool,null,null,false,true);
 
-        return null;
-    }
+        PoolingDataSource dataSource = new PoolingDataSource(connectionPool);
+
+        return dataSource;
+  }
+
+
+
+    
+    
+//    private DataSource setupDataSource(String connectURI, String login, 
+//              String password)  {
+//
+////        Properties props = new Properties();
+////        props.setProperty("InitialLimit", "10");
+////        props.setProperty("MaxLimit", "60");
+////        props.setProperty("MinLimit", "10");
+//        
+//        
+//        try {
+//            OracleDataSource ods = new OracleDataSource();
+//            ods.setURL(connectURI);
+//
+//            ods.setPassword(password);
+//            ods.setUser(login);
+//
+//            ods.setConnectionCachingEnabled(false);
+//            
+////            ods.setConnectionCacheName("wdk");          
+//  //          ods.setConnectionCacheProperties(props);
+//
+//            
+//            
+//            return ods;
+//        }
+//        catch (SQLException exp) {
+//            exp.printStackTrace();
+//        }
+//
+//        return null;
+//    }
 
     protected DataSource getDataSource() {
         return dataSource;
