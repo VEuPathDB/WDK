@@ -1,8 +1,0 @@
-#!/bin/csh
-
-setenv CLASSPATH "$GUS_HOME/lib/java/commons-digester-1.5.jar:$GUS_HOME/lib/java/GUS-WebDevKit.jar:$GUS_HOME/lib/java/commons-beanutils.jar:$GUS_HOME/lib/java/commons-collections.jar:$GUS_HOME/lib/java/commons-logging-api.jar:$GUS_HOME/lib/java/oracle-classes12.jar:$GUS_HOME/lib/java/commons-dbcp-1.1.jar:$GUS_HOME/lib/java/commons-pool-1.1.jar:$GUS_HOME/lib/java/commons-cli-1.0.jar" 
-
-java -Djdbc.drivers=oracle.jdbc.driver.OracleDriver -DcmdName=wdkCache -classpath $CLASSPATH org.gusdb.gus.wdk.model.ResultFactory $argv
-
-
-

@@ -1,8 +1,0 @@
-<?xml version="1.0"?>
- 
-<modelConfig login="dbarkan"
-	     password="99tow83a"
-	     connectionUrl="jdbc:oracle:thin:@cbilbld.pcbi.upenn.edu:1521:cbilbld"
-	     queryInstanceTable="QueryInstance"
-	     maxQueryParams="50"
-	     platformClass="org.gusdb.gus.wdk.model.implementation.Oracle"/>
