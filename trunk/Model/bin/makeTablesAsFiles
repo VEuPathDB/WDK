@@ -27,15 +27,15 @@ my $dbh = $db->getQueryHandle();
 
 &makeAssemblyFile();
 
-&makeTaxonNameFile();
+#&makeTaxonNameFile();
 
-&makeAssemblySequenceFile();
+#&makeAssemblySequenceFile();
 
-&makeExternalNaSeqFile();
+#&makeExternalNaSeqFile();
 
-&makeEstFile();
+#&makeEstFile();
 
-&makeLibraryFile();
+#&makeLibraryFile();
 
 print STDERR "all done!";
 
@@ -44,15 +44,15 @@ sub makeAssemblyFile{
 
     open (ASSEMBLY, ">>" . $filePath . "/WDKTestAssembly") || die "could not open Assembly file";
     
-    print ASSEMBLY "na_sequence_id number(10) not null,\ttaxon_id number(12),\tfull_length_cds number(3),\tassembly_consistency number(10),\tcontains_mrna number(1),\tnumber_of_contained_sequences number(12)\n";
+    print ASSEMBLY "na_sequence_id number(10) not null,\ttaxon_id number(12),\tfull_length_cds number(3),\tassembly_consistency number(10),\tcontains_mrna number(1),\tnumber_of_contained_sequences number(12),\tsequence clob\n";
     
-    my $assemSql = "select na_sequence_id, taxon_id, full_length_cds, assembly_consistency, contains_mrna, number_of_contained_sequences
+    my $assemSql = "select na_sequence_id, taxon_id, full_length_cds, assembly_consistency, contains_mrna, number_of_contained_sequences, sequence
                 from dots.assembly
                 where taxon_id in ($taxonIds)";
     
     my $sth = $dbh->prepareAndExecute($assemSql);
-    while (my ($assemId, $taxonId, $fullLength, $assemConsistency, $containsMrna, $numberOfSeqs) = $sth->fetchrow_array()){
-	print ASSEMBLY "$assemId\t$taxonId\t$fullLength\t$assemConsistency\t$containsMrna\t$numberOfSeqs\n";
+    while (my ($assemId, $taxonId, $fullLength, $assemConsistency, $containsMrna, $numberOfSeqs, $sequence) = $sth->fetchrow_array()){
+	print ASSEMBLY "$assemId\t$taxonId\t$fullLength\t$assemConsistency\t$containsMrna\t$numberOfSeqs\t$sequence\n";
     }
 }
 

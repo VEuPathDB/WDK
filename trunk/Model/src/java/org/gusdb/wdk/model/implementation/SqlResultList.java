@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Types;
+import java.sql.Clob;
 
 public class SqlResultList extends ResultList {
 
@@ -26,7 +28,18 @@ public class SqlResultList extends ResultList {
     public Object getValueFromResult(String attributeName) throws WdkModelException {
         Object o = null;
         try {
-            o = resultSet.getObject(attributeName);
+	    ResultSetMetaData rsmd = resultSet.getMetaData();
+	    int columnIndex = resultSet.findColumn(attributeName);
+	    int columnType = rsmd.getColumnType(columnIndex);
+	    if (columnType == Types.CLOB){
+		Clob clob = resultSet.getClob(attributeName);
+		Long length = new Long(clob.length());
+		int lengthValue = length.intValue() - 1;
+		o = clob.getSubString(1, length.intValue() - 1);
+	    }
+	    else{
+		o = resultSet.getObject(attributeName);
+	    }
         } catch (SQLException e) {
             throw new WdkModelException(e);
         }

@@ -28,6 +28,8 @@ public class RecordClass {
     private String type;
     private String idPrefix;
     private String fullName;
+    private String summaryAttributeList;
+    private String attributeOrdering;
     private HashMap questions = new HashMap();
 
     public RecordClass() {
@@ -57,7 +59,19 @@ public class RecordClass {
 	attributeFieldsMap.put(PRIMARY_KEY_NAME, pkField);	    
 	fieldsMap.put(PRIMARY_KEY_NAME, pkField);	    
     }
-    
+
+    /** 
+     * @param attList comma separated list of attributes in a summary containing
+     * this recordClass.
+     */
+    /*public void setSummaryAttributeList (String attList){
+	this.summaryAttributeList = attList;
+	}*/
+
+    public void setAttributeOrdering (String attOrder) {
+	this.attributeOrdering = attOrder;
+    }
+
     /**
      * @param attributesQueryRef two part query name (set.name)
      */
@@ -283,6 +297,37 @@ public class RecordClass {
             addTableQuery(query);
         }
         tableQueryRefs = null;
+	if (attributeOrdering != null){
+	    LinkedHashMap orderedAttributes = sortAllAttributes();
+	    attributeFieldsMap = orderedAttributes;
+	}
+    }
+
+    private LinkedHashMap sortAllAttributes() throws WdkModelException{
+	String orderedAtts[] = attributeOrdering.split(",");
+	LinkedHashMap orderedAttsMap = new LinkedHashMap();
+	for (int i = 0; i < orderedAtts.length; i++){
+	    String nextAtt = orderedAtts[i];
+	    FieldI nextAttField = (FieldI)attributeFieldsMap.get(nextAtt);
+	    
+	    if (nextAttField == null){
+		throw new WdkModelException("RecordClass " + getName() + " defined attribute " +
+					    nextAtt + " in its attribute ordering, but that is not a " + 
+					    "valid attribute for this RecordClass");
+	    }
+	    orderedAttsMap.put(nextAtt, nextAttField);
+    	}
+	//add all attributes not in the ordering
+	Iterator allAttNames = attributeFieldsMap.keySet().iterator();
+	while (allAttNames.hasNext()){
+	    String nextAtt = (String)allAttNames.next();
+	    if (!orderedAttsMap.containsKey(nextAtt)){
+		
+		FieldI nextField = (FieldI)attributeFieldsMap.get(nextAtt);
+		orderedAttsMap.put(nextAtt, nextField);
+	    }
+	}
+	return orderedAttsMap;
     }
     
 

@@ -100,6 +100,7 @@ public class RecordInstance {
     }
 
     public String print() throws WdkModelException {
+
 	String newline = System.getProperty( "line.separator" );
 	StringBuffer buf = new StringBuffer();
 	
@@ -113,9 +114,12 @@ public class RecordInstance {
 		       field.getValue()).append( newline );
 	}
 
+
 	Map tableFields = getTables();
 	fieldNames = tableFields.keySet().iterator();
+	
 	while (fieldNames.hasNext()) {
+	    
 	    String fieldName = (String)fieldNames.next();
 	    TableFieldValue field = 
 		(TableFieldValue)tableFields.get(fieldName);
