@@ -11,7 +11,7 @@ import javax.sql.DataSource;
  */
 public interface RDBMSPlatformI {
     
-    public void setDataSource(DataSource dataSource);
+    public DataSource createDataSource(String url, String user, String password) throws SQLException;
 
     public DataSource getDataSource();
 

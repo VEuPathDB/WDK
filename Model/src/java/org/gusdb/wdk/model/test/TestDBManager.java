@@ -50,14 +50,14 @@ public class TestDBManager {
 	    String password = modelConfig.getPassword();
 	    String instanceTable = modelConfig.getQueryInstanceTable();
 	    String platformClass = modelConfig.getPlatformClass();
-	    
-	    DataSource dataSource = 
-		setupDataSource(connectionUrl,login, password);
-	    
+
 	    RDBMSPlatformI platform = 
 		(RDBMSPlatformI)Class.forName(platformClass).newInstance();
-	    platform.setDataSource(dataSource);
-	    
+        
+        DataSource dataSource = 
+        platform.createDataSource(connectionUrl,login, password);
+        
+        
 	    boolean drop = cmdLine.hasOption("dropDatabase");
 	    boolean create = cmdLine.hasOption("createDatabase");
 	    
@@ -69,6 +69,9 @@ public class TestDBManager {
 	    }
 	    for (int t = 0; t < tables.length; t++){
 		File nextTable = new File(tables[t]);
+        if ("CVS".equals(nextTable.getName())) {
+            continue;
+        }
 		
 		BufferedReader reader = new BufferedReader(new FileReader(nextTable));
 		String firstLine = reader.readLine();

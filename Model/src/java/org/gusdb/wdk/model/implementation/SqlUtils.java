@@ -14,6 +14,13 @@ import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.dbcp.ConnectionFactory;
+import org.apache.commons.dbcp.DriverManagerConnectionFactory;
+import org.apache.commons.dbcp.PoolableConnectionFactory;
+import org.apache.commons.dbcp.PoolingDataSource;
+import org.apache.commons.pool.ObjectPool;
+import org.apache.commons.pool.impl.GenericObjectPool;
+
 public class SqlUtils {
     
 
@@ -246,6 +253,25 @@ public class SqlUtils {
         } finally {
             SqlUtils.closeResultSet(rs);
         }
+    }
+
+    /**
+     * @param url
+     * @param user
+     * @param password
+     * @return
+     */
+    public static DataSource createDataSource(String connectURI, String login, String password) {
+        
+        ObjectPool connectionPool = new GenericObjectPool(null);
+        
+        ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(connectURI, login, password);
+        
+        PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(connectionFactory,connectionPool,null,null,false,true);
+        
+        PoolingDataSource dataSource = new PoolingDataSource(connectionPool);
+        
+        return dataSource;
     }
     
 }
