@@ -132,21 +132,29 @@ public class PostgreSQL implements RDBMSPlatformI {
      */
     public void init(String url, String user, String password, Integer minIdle,
 		     Integer maxIdle, Integer maxWait, Integer maxActive, 
-		     Integer initialSize) throws SQLException {
-        DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
-	this.connectionPool = new GenericObjectPool(null);
+		     Integer initialSize) throws WdkModelException {
+
+	try{
+	    DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
+	    this.connectionPool = new GenericObjectPool(null);
+	    
+	    ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(url, user, password);
+	    
+	    PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(connectionFactory,connectionPool,null,null,false,true);
+	    
+	    PoolingDataSource dataSource = new PoolingDataSource(connectionPool);
+	    
+	    this.dataSource = dataSource;
+	}
+	catch (SQLException sqle){
+	    throw new WdkModelException("error message goes here", sqle);
+	}
+
 	connectionPool.setMaxWait(maxWait.intValue());
 	connectionPool.setMaxIdle(maxIdle.intValue());
 	connectionPool.setMinIdle(minIdle.intValue());
 	connectionPool.setMaxActive(maxActive.intValue());
-       
-        ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(url, user, password);
-        
-        PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(connectionFactory,connectionPool,null,null,false,true);
-        
-        PoolingDataSource dataSource = new PoolingDataSource(connectionPool);
-        
-	this.dataSource = dataSource;
+	 
     }   
     
     /* (non-Javadoc)

@@ -8,6 +8,7 @@ import org.gusdb.wdk.model.WdkLogManager;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.logging.Logger;
+import java.sql.Connection;
 
 import org.apache.commons.dbcp.ConnectionFactory;
 import org.apache.commons.dbcp.DriverManagerConnectionFactory;
@@ -129,24 +130,32 @@ public class Oracle implements RDBMSPlatformI {
      */
     public void init(String url, String user, String password, Integer minIdle,
 		     Integer maxIdle, Integer maxWait, Integer maxActive, 
-		     Integer initialSize) throws SQLException {
+		     Integer initialSize) throws WdkModelException {
         
-	DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
-	this.connectionPool = new GenericObjectPool(null);
-                
-        ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(url, user, password);
-        
-        PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(connectionFactory,connectionPool,null,null,false,true);
-        
-        PoolingDataSource dataSource = new PoolingDataSource(connectionPool);
+	try{
+	    DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
+	    this.connectionPool = new GenericObjectPool(null);
 
+	    ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(url, user, password);
+	    
+	    PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(connectionFactory,connectionPool,null,null,false,true);
+	    
+	    PoolingDataSource dataSource = new PoolingDataSource(connectionPool);
+	    this.dataSource = dataSource;
+	    Connection connection = dataSource.getConnection();
+	    connection.close();
+	}
+	catch (SQLException sqle){
+	    throw new WdkModelException("\n\n*************ERROR***********\nCould not connect to database.\nIt is possible that you are using an incorrect url for connecting to the database or that your login or password is incorrect.\nPlease check $GUS_HOME/lib/xml/sampleModelConfig.xml and make sure all information provided there is valid.\n(This is the most likely cause of the error; note it could be something else)\n\n", sqle);
+	    
+	}
 	connectionPool.setMaxWait(maxWait.intValue());
 	connectionPool.setMaxIdle(maxIdle.intValue());
 	connectionPool.setMinIdle(minIdle.intValue());
 	connectionPool.setMaxActive(maxActive.intValue());
 	//no initial size yet
-        
-	this.dataSource = dataSource;
+	
+
     }
 
     /* (non-Javadoc)
