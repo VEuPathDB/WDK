@@ -145,7 +145,7 @@ public class Answer {
         return false;
     }
 
-    public void print() throws WdkModelException{  
+    public void print() throws WdkModelException, WdkUserException{  
 	
 	if (recordInstances == null){
 	    initRecordInstances();
