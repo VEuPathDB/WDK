@@ -5,6 +5,8 @@ import org.gusdb.gus.wdk.view.GlobalRepository;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import javax.servlet.jsp.jstl.core.Config;
+import javax.sql.DataSource;
 
   
 public class ApplicationInitListener implements ServletContextListener {
@@ -19,6 +21,10 @@ public class ApplicationInitListener implements ServletContextListener {
         String recordSetLocation = application.getInitParameter("recordSetConfig");
         
         GlobalRepository.createInstance(loginXML, querySetLocation, recordSetLocation);
+        
+        DataSource ds = GlobalRepository.getInstance().getDataSource();
+        
+        Config.set(application, Config.SQL_DATA_SOURCE, ds);
         
         
 //        EmployeeRegistryBean empReg = new EmployeeRegistryBean(  );
