@@ -109,9 +109,9 @@ public class SummaryTester {
 	addOption(options, "modelPropFile", "A .prop file that specifies key=value pairs to substitute into the model file.");
 
 	//summarySetName
-	addOption(options, "summarySetName", "The name of the summarySet in which to find the summary");
+	addOption(options, "questionSetName", "The name of the questionSet in which to find the question");
 	//summaryName
-	addOption(options, "summaryName", "the name of the summary to run");
+	addOption(options, "questionName", "the name of the question to run");
 	//rows to return
 	Option rows = new Option("rows", "the start and end pairs of the Record Instance rows to return");
 	rows.setArgs(Option.UNLIMITED_VALUES);
@@ -174,8 +174,8 @@ public class SummaryTester {
 	    cmdName + 
 	    " -configFile config_file" +
 	    " -modelXmlFile model_xml_file" +
-	    " -summarySetName summary_set_name" +
-	    " -summaryName summary_name";
+	    " -questionSetName summary_set_name" +
+	    " -questionName summary_name";
 
 	String header = 
 	    newline + "Print a summary found in a WDK Model xml file. Options:" ;
