@@ -1,7 +1,6 @@
 package org.gusdb.gus.wdk.model;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Iterator;
 
 public class RecordSet implements ModelSetI {
