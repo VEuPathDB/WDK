@@ -28,7 +28,7 @@ public class DisplayQuery extends SimpleTagSupport {
 	JspWriter out = getJspContext().getOut();
 
 	if ( queryInstance instanceof NullQueryInstance) {
-	    SimpleQuerySet sqs = GlobalRepository.getInstance().getSimpleQuerySet();
+	    SimpleQuerySet sqs = GlobalRepository.getInstance().getSimpleQuerySet(querySet);
 	    SimpleQueryI[] sq = sqs.getQueries();
 	    out.println("<b>Queries:</b> <select>");
 	    for ( int i=0 ; i < sq.length ;i++) {
