@@ -25,7 +25,7 @@ and dataset_name.  These will both be filled in if the row contains a pointer to
 or if the table points to a result table, and the result table belongs to a query with a dataset:
 
 QUERY_ID   QUERY NAME                                              PARAM0   RESULT_TABLE  SESSION_ID  DATASET_NAME
-1          "user_dataset"                                                   cache1        77          "my_locus_links" 
+1          "user_dataset"                                                   cache1        null        null
 2          "RNAs w/ LL matching 1+ members of 'my_locus_links'"    cache1   cache2        77          "my_locus_links"
 3          "RNAs w/ LL matching 3434"                              cache3   cache4        null        null
 
@@ -63,6 +63,8 @@ Implementation Details
          - sets the param's HTML value to be:
               - the singleton value, eg, "3434"
               - a set membership, eg, "1+ members of 'my_locus_links'
+         - introduces "hidden" param in the values hash:
+              - DataSetName: value is the user's name for the dataset
 
  - servlet config file
     - mapping queries must:
@@ -72,21 +74,20 @@ Implementation Details
          - include a join against the mapped_id column of that table
 
  - cbil.gus.servlet.pages.QueryPage
-    - a big HACK: scans the parameter values returned by the csp dialogue for a value of the form "/^cache\d+$/
-    - if it finds it, that means that there is a DataSetParam in there.
-    - it calls sqlQuery.setDatasetTable(cacheTable)
+    - it calls sqlQuery.setDatasetName(paramHash.key('DataSetName'))
 
  - cbil.gus.servlet.db.SqlQuery
-    - gains a getDatasetName() method.  
-        - returns null unless this.getDatasetTable()
-        - otherwise, another big HACK: queries the Queries table to find row with the RESULT_TABLE=datasetTable
-        - extracts from that row the dataset name (placed there by the validation method)
+    - gains set/getDatasetName() methods.  
+
+ - cbil.gus.servlet.db.QueryCacheI and cbil.gus.servlet.db.oracle.WebDb
+    - gains method recordQueryStartTime(String queryName, String params[], String sessionId, String datasetName)
+      which sets the session_id and dataset_name columns
 
  - cbil.gus.servlet.pages.SQLIdResultTable 
     - inserts row into Queries table for the result table:
         - calls sqlQuery.getDatasetName() method.
         - if null, calls old version queryCache.recordQueryStartTime()
-        - else calls new version to set new session_id and dataset_name columns
+        - else calls new version (using HttpSession to get session id)
 
  - cbil.gus.servlet.pages.QueryHistoryPage
     - adds session id to the list of params it instantiates into the downloadURL
@@ -102,7 +103,6 @@ Implementation Details
     - queries Queries table for rows with:
         - that session id
         - non-null dataset_name
-        - query_name not equal to 'user_dataset' (or is this too inefficient - do we need a bit to that effect?)
     - for any it finds, it:
         - offers the dataset name as a column
         - these checkboxes actually go to a separate variable, where the values are datasetname:tablename
