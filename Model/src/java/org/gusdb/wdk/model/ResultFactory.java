@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 
@@ -53,6 +54,8 @@ import org.apache.commons.pool.impl.GenericObjectPool;
 
 public class ResultFactory {
 
+    private static final Logger logger = Logger.getLogger("org.gusdb.gus.wdk.model.ResultFactory");
+    
     DataSource dataSource;
     RDBMSPlatformI platform;
     String schemaName;
@@ -98,24 +101,25 @@ public class ResultFactory {
 	sqlb.append("create table " + tblName + 
 		    " (query_instance_id number(12) not null, query_name varchar2(100) not null, cached number(1) not null,");
 	
-	for (int i=0;i < numParams; i++) {
+    sqlb.append("result_table varchar2(30), start_time date not null, end_time date, dataset_name varchar2(100), session_id varchar2(50), ");
+    for (int i=0;i < numParams -1; i++) {
 	    sqlb.append("param" + i + " varchar2(25), ");
 	}
-	sqlb.append("result_table varchar2(30), start_time date not null, end_time date, dataset_name varchar2(100), session_id varchar2(50))");
+    sqlb.append("param" + numParams + " varchar2(25))");
 
 	// Execute it
-	System.err.println(newline + "Making cache table " + tblName 
+	logger.fine(newline + "Making cache table " + tblName 
 			   + " with sql:" + newline + sqlb.toString()
 			   + newline);
 	try {
 	    SqlUtils.execute(dataSource, sqlb.toString());
-	    System.err.println("Done" + newline);
+	    logger.fine("Done" + newline);
 
 	    // Create sequence 
 	    platform.createSequence(tblName + "_pkseq", 1, 1);
-	    System.err.println("Creating sequence " + tblName + "_pkseq"
+	    logger.fine("Creating sequence " + tblName + "_pkseq"
 			       + newline);
-	    System.err.println("Done" + newline);
+	    logger.fine("Done" + newline);
 	} catch (SQLException e) {
 	    throw new WdkModelException(e);
 	}
@@ -290,10 +294,15 @@ public class ResultFactory {
 	try {
 	    nextID = platform.getNextId(schemaName, instanceTableName);
 	} catch (SQLException e) {
+        logger.finest("Got an SQLException");
 	    throw new WdkModelException(e);
 	}
-	if (nextID == null) nextID = "1"; 
-
+	if (nextID == null) {
+	    logger.finest("nextId is null so being set to 1");
+        nextID = "1"; 
+    }
+	logger.finest("nextId is "+nextID);
+    
 	// format values
 	String queryName = "'" + instance.getQuery().getName() + "'";
 	sessionId = (sessionId != null)? ("'" + sessionId + "'") : "null";
@@ -304,16 +313,15 @@ public class ResultFactory {
 	// format insert statement
 	StringBuffer sqlb = new StringBuffer();
 	sqlb.append("insert into " + instanceTableFullName +
-		    " (query_instance_id, query_name, cached, session_id, dataset_name");
+		    " (query_instance_id, query_name, cached, session_id, dataset_name, start_time");
 	Collection instanceValues = instance.getValues();
 	for (int i = 0;i < instanceValues.size();++i) {
 	    sqlb.append(", param" + i);
 	}
-	sqlb.append(", start_time) values (");
+	sqlb.append(") values (");
 	sqlb.append(nextID + ", " + queryName + ", " + cached + ", " 
 		    + sessionId + ", " + 
-		    datasetName + ", " + pVals +  
-		    "sysdate)"); 
+		    datasetName + ", sysdate" + pVals+ ")"); 
 	
 	int numRows = 0;
 	try {
@@ -336,13 +344,18 @@ public class ResultFactory {
     protected String formatInstanceParamVals(QueryInstance instance) {
 	StringBuffer sb = new StringBuffer();
 
+    int count = 0;
 	Iterator paramValues = instance.getValues().iterator();
 	while (paramValues.hasNext()) {
 	    String val = (String)paramValues.next();
 
 	    String cleaned = platform.cleanStringValue(val);
 
-	    sb.append("'" + cleaned + "', ");
+        //if (count != 0) {
+            sb.append(", ");
+        //}
+	    sb.append("'" + cleaned + "'");
+        count++;
 	}
 	return sb.toString();
     }
@@ -432,20 +445,25 @@ public class ResultFactory {
 	Integer queryInstanceId = instance.getQueryInstanceId();
 	if (queryInstanceId == null){
 	    
+        logger.finest("queryInstanceId is currently null. Trying to find.");
 	    StringBuffer sqlb = new StringBuffer();
 	    sqlb.append("select query_instance_id from " + instanceTableFullName + " where "); 
 	    sqlb.append(instanceWhereClause(instance));
 		    
 	    try {
-		queryInstanceId = SqlUtils.runIntegerQuery(dataSource, sqlb.toString());
+            logger.finest("About to try and execute:" +sqlb.toString());
+	        queryInstanceId = SqlUtils.runIntegerQuery(dataSource, sqlb.toString());
 	    } catch (SQLException e) {
-		throw new WdkModelException(e);
+            logger.severe("Got an SQL exception");
+	        throw new WdkModelException(e);
 	    }
 
 	    if (queryInstanceId == null){
-		queryInstanceId = insertQueryInstance(instance);
+            logger.finest("queryInstanceId is still currently null. Trying to find.");
+	        queryInstanceId = insertQueryInstance(instance);
 	    }	    
 	}
+    logger.finest("Returning a queryInstanceId of "+queryInstanceId);
 	return queryInstanceId;
 
     }
