@@ -34,13 +34,13 @@ public class Summary {
     public Summary(){
     }
     
-    public SummaryInstance makeSummaryInstance(){
+    public SummaryInstance makeSummaryInstance(Map paramValues, int i, int j) throws WdkUserException, WdkModelException{
 
 	if (listIdQueryInstance == null){
 	    listIdQueryInstance = query.makeInstance();
 	}
 	//return new SummaryInstance(this, listIdQueryInstance);
-    return new SummaryInstance(this, query.makeInstance());
+    return new SummaryInstance(this, query.makeInstance(), paramValues, i, j);
     }
 
     public Query getQuery(){
@@ -76,9 +76,8 @@ public class Summary {
     }
 
     public int getTotalLength(Map values) throws WdkModelException, WdkUserException{
-	SummaryInstance rli = makeSummaryInstance();
-	rli.setValues(values, 0, 0); 
-	return rli.getTotalLength();
+        SummaryInstance si = makeSummaryInstance(values, 0, 0);
+        return si.getTotalLength();
     }
     //set dummy values for start and end because they will not be used.
     //(might have to change this depending on resolution of efficiency issue)
