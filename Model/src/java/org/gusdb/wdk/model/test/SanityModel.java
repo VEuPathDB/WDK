@@ -88,6 +88,7 @@ public class SanityModel {
 
     //SanityQuery Sets
     public void addSanityQuery(SanityQuery sanityQuery) throws WdkModelException {
+
 	sanityQueries.add(sanityQuery);
     }
 

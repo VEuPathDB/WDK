@@ -30,7 +30,7 @@ my $commandFh = FileHandle->new("<" . $commandListFile);
 
 die "could not open $commandListFile" unless $commandFh;
 
-my ($name, $testCmd, $critical);
+my ($name, $testCmd, $criticalString, $critical);
 my $failed = 0;
 
 while (<$commandFh>){
@@ -51,8 +51,14 @@ while (<$commandFh>){
     }
     my $criticalLine = <$commandFh>;
     if ($criticalLine =~ /^critical=(\S+)/){
-	$critical = $1;
-	if ($critical ne "true" && $critical ne "false"){
+	$criticalString = $1;
+	if ($criticalString eq "true"){
+	    $critical = 1;
+	}
+	if ($criticalString eq "false"){
+	    $critical = 0;
+	}
+	if ($criticalString ne "true" && $criticalString ne "false"){
 	    &commandFileUsage($commandListFile, $criticalLine);
 	}
     }
@@ -79,6 +85,7 @@ sub runTest{
 
     print STDERR "running regression test $name\n\n";
     print STDERR "running command $fullCmd\n\n" if $verbose;
+
     system($fullCmd);
     
      if ($createNewExpected){
