@@ -2,7 +2,8 @@
 
   <property name="build.home"    value="${basedir}/ant-build"/>
   <property name="src.home"      value="${basedir}/src/java"/>
-
+  <property name="jar_resources.home"      value="${basedir}/webinf"/>
+	
   <property name="compile.debug"       value="true"/>
   <property name="compile.deprecation" value="false"/>
   <property name="compile.optimize"    value="true"/>
@@ -45,7 +46,7 @@
 
     <!-- Copy application resources -->
     <copy  todir="${build.home}/classes">
-      <fileset dir="${src.home}" excludes="**/*.java"/>
+      <fileset dir="${jar_resources.home}" />
     </copy>
 
   </target>
