@@ -88,12 +88,11 @@
         <!-- a query that returns summary attributes of a RNA record -->
         <sqlQuery displayName="RNA summary" name="RnaSummary">
             <paramRef twoPartName="params.primaryKey"/>
-            <column name="primary_key"/>
             <column name="rna_id"/>
             <column name="taxon_name"/>
             <column name="gene_symbol"/>
             <sql>
-                select a.na_sequence_id as primary_key, 'DT.' || a.na_sequence_id as rna_id,
+                select 'DT.' || a.na_sequence_id as rna_id,
                        tn.name as taxon_name,
                        'MyFavoriteGene' as gene_symbol 
                 from WDKTestAssembly a, WDKTestTaxonName tn
