@@ -6,8 +6,12 @@
  */
 package org.gusdb.gus.wdk.controller;
 
+import org.gusdb.gus.wdk.model.Reference;
 import org.gusdb.gus.wdk.model.Summary;
+import org.gusdb.gus.wdk.model.SummarySet;
 import org.gusdb.gus.wdk.model.WdkModel;
+import org.gusdb.gus.wdk.model.WdkModelException;
+import org.gusdb.gus.wdk.model.WdkUserException;
 
 
 /**
@@ -21,10 +25,21 @@ public class WdkModelExtra {
     /**
      * @param initRecordList
      * @return
+     * @throws WdkUserException
+     * @throws WdkModelException
      */
     public static Summary getSummary(WdkModel wm, String initRecordList) {
-        // TODO Auto-generated method stub
-        throw new RuntimeException("Not implemented");
+        try {
+            Reference r = new Reference(initRecordList);
+            SummarySet ss = wm.getSummarySet(r.getSetName());
+            return ss.getSummary(r.getElementName());
+        }
+        catch (WdkModelException exp) {
+            throw new RuntimeException(exp);
+        }
+        catch (WdkUserException exp) {
+            throw new RuntimeException(exp);
+        }
     }
 
     
