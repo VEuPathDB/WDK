@@ -11,12 +11,12 @@ import org.gusdb.gus.wdk.model.PageableQuerySet;
 import org.gusdb.gus.wdk.model.StringParam;
 import org.gusdb.gus.wdk.model.SqlEnumParam;
 
-public class QuerySetParser {
+public class ModelXmlParser {
 
-    public static WdkModel parseXmlFile(File querySetXmlFile) throws java.io.IOException, org.xml.sax.SAXException, Exception {
+    public static WdkModel parseXmlFile(File modelXmlFile) throws java.io.IOException, org.xml.sax.SAXException, Exception {
 	Digester digester = configureDigester();
 	WdkModel model = 
-	    (WdkModel)digester.parse(querySetXmlFile);
+	    (WdkModel)digester.parse(modelXmlFile);
 	model.resolveReferences();
 	return model;
     }
