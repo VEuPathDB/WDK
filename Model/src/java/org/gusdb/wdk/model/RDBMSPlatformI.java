@@ -5,7 +5,6 @@ import java.sql.SQLException;
 import javax.sql.DataSource;
 
 /**
- * An implementation of RDBMSPlatformI for Oracle 8i.  
  *
  * @author Steve Fischer
  * @version $Revision$ $Date$ $Author$

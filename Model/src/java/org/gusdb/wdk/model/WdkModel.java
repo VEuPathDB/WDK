@@ -8,6 +8,7 @@ public class WdkModel {
     HashMap simpleQuerySets = new HashMap();
     HashMap pageableQuerySets = new HashMap();
     HashMap recordSets = new HashMap();
+    HashMap queryNameLists = new HashMap();
     String name;
     ResultFactory resultFactory;
 
@@ -81,6 +82,38 @@ public class WdkModel {
 	return pageableQuerySets.containsKey(setName);
     }
 
+    public void addQueryNameList(QueryNameList queryNameList){
+	
+	String err = checkName(queryNameList.getName());
+	if (err != null) throw new IllegalArgumentException(err);
+	queryNameLists.put(queryNameList.getName(), queryNameList);
+    }
+    
+    public QueryNameList getQueryNameList(String queryNameListName){
+	
+	if (!queryNameLists.containsKey(queryNameListName)){
+	    String err = "WDK Model " + name +
+		" does not contain a pageable query set with name " + queryNameListName;
+	    throw new IllegalArgumentException(err);
+	}
+	return (QueryNameList)queryNameLists.get(queryNameListName);
+    }
+
+    public QueryNameList[] getAllQueryNameLists(){
+
+	QueryNameList lists[] = new QueryNameList[queryNameLists.size()];
+	Iterator keys = queryNameLists.keySet().iterator();
+	int counter = 0;
+	while (keys.hasNext()){
+	    String name = (String)keys.next();
+	    QueryNameList nextQueryNameList = (QueryNameList)queryNameLists.get(name);
+	    lists[counter] = nextQueryNameList;
+	    counter++;
+	}
+	return lists;
+    }
+
+
     /**
      * Some elements within the set may refer to others by name.  Resolve those
      * references into real object references.
@@ -96,6 +129,12 @@ public class WdkModel {
        while (recordSetIterator.hasNext()) {
 	   RecordSet recordSet = (RecordSet)recordSetIterator.next();
 	   recordSet.resolveReferences(simpleQuerySets);
+       }
+       
+       Iterator queryNameListIterator = queryNameLists.values().iterator();
+       while (queryNameListIterator.hasNext()){
+	   QueryNameList nextList = (QueryNameList)queryNameListIterator.next();
+	   nextList.checkReferences(simpleQuerySets, pageableQuerySets);
        }
     }
     
