@@ -9,80 +9,71 @@
   <description>
     This is a simple webapp to demonstrate the new GUS WebDevKit (WDK).
   </description>
- 
-  <!-- ************************************************************* -->
-  <!-- **************  Edit the following section  ***************** -->
-  <!-- ***************  to E-Z configure your site ***************** -->
-  <!-- ************************************************************* -->
+
+<!--
+  <context-param>
+    <param-name>wdkLogFile_param</param-name>
+    <param-value>/www/wdktoysite-strutsdev/webapp/WEB-INF/logs/webapp.log</param-value>
+    <param-value>/usr/local/tomcat/5.0.24/logs/wdktoysite-strutsdev.log</param-value>
+  </context-param>
+-->
 
   <context-param>
-    <param-name>loggingFileLocation</param-name>
-    <param-value>/usr/local/tomcat/5.0.24/logs/wdk.log</param-value>
-  </context-param>
-  <context-param>
-    <param-name>loginConfig</param-name>
+    <param-name>wdkModelConfigXml_param</param-name>
     <param-value>/WEB-INF/wdk-model/config/toyModelConfig.xml</param-value>
   </context-param>
   <context-param>
-    <param-name>propsFileLocation</param-name>
+    <param-name>wdkModelProps_param</param-name>
     <param-value>/WEB-INF/wdk-model/config/toyModel.prop</param-value>
   </context-param>
   <context-param>
-    <param-name>querySetConfig</param-name>
+    <param-name>wdkModelXml_param</param-name>
     <param-value>/WEB-INF/wdk-model/config/toyModel.xml</param-value>
   </context-param>
-
-
-
-  <!-- ************************************************************* -->
-  <!-- **************  Editing the rest of this file *************** -->
-  <!-- *************** may interfere with the WDK    *************** -->
-  <!-- ************************************************************* -->
-
   <context-param>
-    <param-name>schemaLocation</param-name>
+    <param-name>wdkModelSchema_param</param-name>
     <param-value>/WEB-INF/wdk-model/lib/rng/wdkModel.rng</param-value>
   </context-param>
-
   <context-param>
-    <param-name>parserClass</param-name>
+    <param-name>wdkModelParser_param</param-name>
     <param-value>org.gusdb.wdk.model.implementation.ModelXmlParser</param-value>
   </context-param>
-
   <listener>
     <listener-class>org.gusdb.wdk.controller.ApplicationInitListener</listener-class>
   </listener>
-  
-  
-  <servlet>
-    <servlet-name>ViewFullRecord</servlet-name>
-    <display-name>ViewFullRecord</display-name>
-    <description>A servlet that tests the Records part of the model</description>
-    <servlet-class>org.gusdb.wdk.controller.servlets.ViewFullRecordServlet</servlet-class>
-  </servlet>
 
   <servlet>
-    <servlet-name>InteractiveRecordList</servlet-name>
-    <display-name>InteractiveRecordList</display-name>
-    <description>A servlet that cooperates with the query tags to fill them out.</description>
-    <servlet-class>org.gusdb.wdk.controller.servlets.InteractiveRecordListServlet</servlet-class>
+    <servlet-name>wdkToySiteStruts</servlet-name>
+    <servlet-class>org.apache.struts.action.ActionServlet</servlet-class>
+    <init-param>
+      <param-name>config</param-name>
+      <param-value>/WEB-INF/struts-config.xml</param-value>
+    </init-param>
+    <load-on-startup>1</load-on-startup>
   </servlet>
-      
   <servlet-mapping>
-    <servlet-name>ViewFullRecord</servlet-name>
-    <url-pattern>/ViewFullRecord</url-pattern>
+    <servlet-name>wdkToySiteStruts</servlet-name>
+    <url-pattern>*.do</url-pattern>
   </servlet-mapping>
 
-  <servlet-mapping>
-    <servlet-name>InteractiveRecordList</servlet-name>
-    <url-pattern>/InteractiveRecordList</url-pattern>
-  </servlet-mapping> 
+  <!-- The Welcome File List -->
+  <welcome-file-list>
+     <welcome-file>index.jsp</welcome-file>
+  </welcome-file-list>
 
-  <jsp-config>
-    <jsp-property-group>
-      <url-pattern>*.jsp</url-pattern>
-      <scripting-invalid>true</scripting-invalid>
-    </jsp-property-group>
-  </jsp-config>
+  <!-- Error Page Mappings -->
+  <error-page>
+    <exception-type>java.lang.Exception</exception-type>
+    <location>/error.jsp</location>
+  </error-page>
 
-</web-app> 
+  <taglib>
+    <taglib-uri>/WEB-INF/tld-third-party/struts-html.tld</taglib-uri>
+    <taglib-location>/WEB-INF/tld-third-party/struts-html.tld</taglib-location>
+  </taglib>
+
+  <taglib>
+    <taglib-uri>/WEB-INF/tld-third-party/pager-taglib.tld</taglib-uri>
+    <taglib-location>/WEB-INF/tld-third-party/pager-taglib.tld</taglib-location>
+  </taglib>
+</web-app>

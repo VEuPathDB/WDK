@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE struts-config PUBLIC
+       "-//Apache Software Foundation//DTD Struts Configuration 1.1//EN"
+       "http://jakarta.apache.org/struts/dtds/strutc-config_1_1.dtd">
+
+<struts-config>
+
+  <form-beans>
+    <form-bean name="questionSetForm" type="org.gusdb.wdk.controller.action.QuestionSetForm"/>
+    <form-bean name="questionForm" type="org.gusdb.wdk.controller.action.QuestionForm"/>
+  </form-beans>
+
+  <global-forwards type="org.apache.struts.action.ActionForward">
+    <forward   name="home" path="/index.jsp"/>
+  </global-forwards>
+
+  <action-mappings>
+    <action
+      path="/showQuestion"
+      type="org.gusdb.wdk.controller.action.ShowQuestionAction"
+      scope="session"
+      name="questionSetForm"
+      input="/questionSets.jsp">
+      <forward name="show_question" path="/question.jsp"/>
+    </action>
+    <action
+      path="/showSummary"
+      type="org.gusdb.wdk.controller.action.ShowSummaryAction"
+      scope="session"
+      name="questionForm"
+      input="/question.jsp">
+      <forward name="show_summary" path="/summary.jsp"/>
+    </action>
+    <action
+      path="/showRecord"
+      type="org.gusdb.wdk.controller.action.ShowRecordAction"
+      scope="request">
+      <forward name="show_record" path="/record.jsp"/>
+    </action>
+  </action-mappings>
+
+</struts-config>
