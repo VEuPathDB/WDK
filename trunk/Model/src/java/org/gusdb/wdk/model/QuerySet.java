@@ -98,6 +98,7 @@ public class QuerySet {
 	}
 	Query sq = sqs.getQuery(queryName);
 	if (sq == null) {
+
 	    String s4 = s + " which contains an unrecognized query '" 
 		+ queryName + "'";
 	    throw new Exception(s4);

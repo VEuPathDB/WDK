@@ -59,10 +59,21 @@ public class SqlQuery extends Query {
 					     int startId, int endId, String initSql){
 
 	int whereBegins = initSql.indexOf(" where");
-	String firstPartSql = initSql.substring(0, whereBegins);
-	String lastPartSql = initSql.substring(whereBegins);
+	String firstPartSql = "";
+	String lastPartSql = "";
+	String rowStartSql = null;
+
+	if (whereBegins != -1){   
+	    firstPartSql = initSql.substring(0, whereBegins);	    
+	    lastPartSql = initSql.substring(whereBegins);
+	    rowStartSql = " and " + resultTableName + ".i >= " + startId;
+	}
+	else{  //no where clause
+	    firstPartSql = initSql;
+	    rowStartSql = " where " + resultTableName + ".i >= " + startId;
+	}
+
 	String extraFromString = ", " + resultTableName;
-	String rowStartSql = " and " + resultTableName + ".i >= " + startId;
 	String rowEndSql = " and " + resultTableName + ".i <= " + endId;
 	String orderBySql = " order by " + resultTableName + "." + "i";
 	String finalSql = firstPartSql + extraFromString + lastPartSql + rowStartSql + rowEndSql + orderBySql;
