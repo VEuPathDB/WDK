@@ -7,6 +7,7 @@ public class FlatCVParam extends Param {
     
     boolean multiPick = false;
     Query query;
+    String queryTwoPartName;
     HashMap vocabMap;
     boolean quoteInternalValue;
 
@@ -26,9 +27,9 @@ public class FlatCVParam extends Param {
 	return new Boolean(multiPick);
     }
 
-    public void setQuery(Query query) {
-	this.query = query;
-	// here must check columns
+    public void setQueryRef(String queryTwoPartName){
+
+	this.queryTwoPartName = queryTwoPartName;
     }
 
     public Query getQuery() {
@@ -91,7 +92,9 @@ public class FlatCVParam extends Param {
     /////////////////////////////////////////////////////////////////////
 
     protected void resolveReferences(WdkModel model) throws WdkModelException {
+	query = (Query)model.resolveReference(queryTwoPartName, name, "flatCVParam", "queryRef");
 	query.resolveReferences(model);
+	// here check query's columns
     }
 
     public void setResources(WdkModel model)throws WdkModelException {

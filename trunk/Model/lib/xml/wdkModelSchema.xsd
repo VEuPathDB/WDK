@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
 
-   <xsd:complexType name="fullQueryName">
-     <xsd:attribute name="fullQueryName" type="xsd:string" use="required"/>
+   <xsd:complexType name="reference">
+     <xsd:attribute name="twoPartName" type="xsd:string" use="required"/>
    </xsd:complexType>
     
-   <xsd:complexType name="queryNameList">
+   <xsd:complexType name="referenceList">
      <xsd:sequence>
-       <xsd:element name="fullQueryName" type="fullQueryName" minOccurs="1" maxOccurs="unbounded"/>
+       <xsd:element name="reference" type="reference" minOccurs="1" maxOccurs="unbounded"/>
      </xsd:sequence>
      <xsd:attribute name="name" type="xsd:string" use="required"/>
    </xsd:complexType>
@@ -36,13 +36,12 @@
      </xsd:complexContent>
    </xsd:complexType>
     
-   <xsd:complexType name="org.gusdb.gus.wdk.model.SqlEnumParam">
+   <xsd:complexType name="org.gusdb.gus.wdk.model.FlatCVParam">
      <xsd:complexContent>
        <xsd:extension base="param">
-         <xsd:sequence>
-           <xsd:element name="query" type="query" minOccurs="1" maxOccurs="1"/>
-         </xsd:sequence>
+         <xsd:attribute name="queryRef" type="xsd:string" use="required"/>
          <xsd:attribute name="multipick" type="xsd:string"/>
+         <xsd:attribute name="quoteInternalValue" type="xsd:string"/>
        </xsd:extension>
      </xsd:complexContent>
    </xsd:complexType>
@@ -130,9 +129,9 @@
    <xsd:element name="wdkModel">
      <xsd:complexType>
        <xsd:sequence>
-         <xsd:element name="summarySet" type="summarySet" minOccurs="0" maxOccurs="unbounded"/>
+         <xsd:element name="referenceList" type="referenceList" minOccurs="0" maxOccurs="unbounded"/>
          <xsd:element name="recordSet" type="recordSet" minOccurs="0" maxOccurs="unbounded"/>
-         <xsd:element name="queryNameList" type="queryNameList" minOccurs="0" maxOccurs="unbounded"/>
+         <xsd:element name="summarySet" type="summarySet" minOccurs="0" maxOccurs="unbounded"/>
          <xsd:element name="querySet" type="querySet" minOccurs="1" maxOccurs="unbounded"/>
        </xsd:sequence>
        <xsd:attribute name="name" type="xsd:string"/>
