@@ -1,6 +1,6 @@
 package org.gusdb.wdk.model;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Iterator;
 
 /**
@@ -15,13 +15,13 @@ import java.util.Iterator;
 
 public class SummarySet implements ModelSetI {
 
-    HashMap summarySet;
+    LinkedHashMap summarySet;
     String name;
     String displayName;
     String description;
 
     public SummarySet() {
-	summarySet = new HashMap();
+	summarySet = new LinkedHashMap();
     }
 
     public void setName(String name) {

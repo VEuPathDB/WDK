@@ -20,7 +20,7 @@ public abstract class Query {
     protected String description;
     protected String help;
     protected Boolean isCacheable = new Boolean(true);
-    protected HashSet paramRefs;
+    protected LinkedHashSet paramRefs;
     protected HashMap paramsH;
     protected Vector paramsV;
     protected HashMap columnsH;
@@ -28,7 +28,7 @@ public abstract class Query {
     protected ResultFactory resultFactory;
    
     public Query () {
-	paramRefs = new HashSet();
+	paramRefs = new LinkedHashSet();
 	paramsH = new HashMap();
 	paramsV = new Vector();
 	columnsH = new HashMap();
