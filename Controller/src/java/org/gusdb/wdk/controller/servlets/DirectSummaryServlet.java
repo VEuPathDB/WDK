@@ -293,7 +293,7 @@ public class DirectSummaryServlet extends HttpServlet {
                 rivl.close();
             }
             if (ri != null) {
-                ri.close();
+                //ri.close();
             }
         }
         catch (WdkModelException exp) {
