@@ -19,6 +19,8 @@ public class WdkModel {
     ResultFactory resultFactory;
     private Document document;
 
+    public static final WdkModel INSTANCE = new WdkModel();
+
     public WdkModel() {
     }
 
