@@ -4,28 +4,30 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
 
+<!-- get wdkAnswer from requestScope -->
 <c:set value="${requestScope.wdkAnswer}" var="wdkAnswer"/>
 
+<!-- display page header with wdkAnswer's wdkQuestion's displayName as banner -->
 <c:set value="${wdkAnswer.question.displayName}" var="wdkQuestionName"/>
 <site:header banner="${wdkQuestionName}" />
 
+<!-- display question and param values and result size for wdkAnswer -->
 <c:set value="${wdkAnswer.params}" var="params"/>
-
 <p><b>
 Summary result for query "${wdkQuestionName}" with parameters:
 <c:forEach items="${params}" var="p">
    ${p.key} = "${p.value}"; 
 </c:forEach>
 <br>Number of results returned:
-${wdkAnswer.totalSize}<c:if test="${wdkAnswer.totalSize > 0}">,
+${wdkAnswer.resultSize}<c:if test="${wdkAnswer.resultSize > 0}">,
 showing ${wdk_paging_start} to ${wdk_paging_end} </c:if>
 </b></p>
 
 <hr>
 
-
+<!-- handle empty result set situation -->
 <c:choose>
-  <c:when test='${wdkAnswer.totalSize == 0}'>
+  <c:when test='${wdkAnswer.resultSize == 0}'>
     No results for your query
   </c:when>
   <c:otherwise>
@@ -47,7 +49,7 @@ showing ${wdk_paging_start} to ${wdk_paging_end} </c:if>
 <!-- content of current page -->
 <table border="0" cellpadding="2" cellspacing="0">
 <tr class="headerRow">
-<c:forEach items="${wdkAnswer.attributes}" var="attr">
+<c:forEach items="${wdkAnswer.recordClass.attributeFields}" var="attr">
 <th>${attr.value.displayName}</th>
 </c:forEach>
 
@@ -62,14 +64,26 @@ showing ${wdk_paging_start} to ${wdk_paging_end} </c:if>
   <c:set var="j" value="0"/>
   <c:forEach items="${record.attributes}" var="recAttr">
     <td>
+    <c:set var="recNam" value="${record.recordClass.fullName}"/>
+    <c:set var="fieldVal" value="${recAttr.value.value}"/>
     <c:choose>
       <c:when test="${j == 0}">
 
-        <a href="showRecord.do?name=${record.recordClass.fullName}&id=${record.primaryKey}">${recAttr.value.value}</a>
+        <a href="showRecord.do?name=${recNam}&id=${record.primaryKey}">${fieldVal}</a>
 
       </c:when>
       <c:otherwise>
-        ${recAttr.value.value}
+
+        <!-- need to know if fieldVal should be hot linked -->
+        <c:choose>
+          <c:when test="${fieldVal.class.name eq 'org.gusdb.wdk.model.LinkValue'}">
+            <a href="${fieldVal.url}">${fieldVal.visible}</a>
+          </c:when>
+          <c:otherwise>
+            ${fieldVal}
+          </c:otherwise>
+        </c:choose>
+
       </c:otherwise>
     </c:choose>
     </td>
