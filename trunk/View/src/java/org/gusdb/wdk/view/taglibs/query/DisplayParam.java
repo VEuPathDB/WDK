@@ -8,7 +8,6 @@ import org.gusdb.gus.wdk.model.StringParam;
 import org.gusdb.gus.wdk.view.GlobalRepository;
 
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -80,7 +79,7 @@ public class DisplayParam extends SimpleTagSupport {
     	try {
     		m = p.getKeysAndValues(rf);
     	}
-    	catch (SQLException exp) {
+    	catch (Exception exp) {
     		// TODO How are we logging?
     	}
     	if (m != null) {

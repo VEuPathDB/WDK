@@ -1,6 +1,8 @@
 package org.gusdb.gus.wdk.view.taglibs.query;
 
-import org.gusdb.gus.wdk.model.SimpleQueryInstanceI;
+import org.gusdb.gus.wdk.model.Query;
+import org.gusdb.gus.wdk.model.QueryInstance;
+import org.gusdb.gus.wdk.model.QuerySet;
 import org.gusdb.gus.wdk.model.implementation.NullQueryInstance;
 import org.gusdb.gus.wdk.view.GlobalRepository;
 
@@ -83,14 +85,14 @@ public class QueryHolder extends SimpleTagSupport {
             } 
         }
         
-        SimpleQueryInstanceI sqii = (SimpleQueryInstanceI) getJspContext().getAttribute(name+".sqii", PageContext.REQUEST_SCOPE);
+        QueryInstance sqii = (QueryInstance) getJspContext().getAttribute(name+".sqii", PageContext.REQUEST_SCOPE);
             
         if (sqii == null) {    
             sqii = NullQueryInstance.INSTANCE;
 
             if ( initQuery != null) {
-            	SimpleQuerySet sqs = GlobalRepository.getInstance().getSimpleQuerySet(querySet);
-            	SimpleQueryI sq = sqs.getQuery(initQuery);
+            	QuerySet sqs = GlobalRepository.getInstance().getQuerySet(querySet);
+            	Query sq = sqs.getQuery(initQuery);
             	sqii = sq.makeInstance();
             }
         }

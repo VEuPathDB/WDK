@@ -39,7 +39,7 @@ public class Column {
 
     public String getDisplayName() {
         if (displayName != null) return displayName;
-        else return name;
+        return name;
     }
 }
 

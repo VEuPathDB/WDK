@@ -26,7 +26,7 @@ import javax.sql.DataSource;
 public class GlobalRepository {
 
     private static GlobalRepository INSTANCE;
-    private SimpleQuerySet simpleQuerySet;
+    private QuerySet querySet;
     private WdkModel wdkRecordModel;
     private WdkModel wdkQueryModel;
     private ResultFactory recordResultFactory;

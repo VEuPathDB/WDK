@@ -5,13 +5,13 @@ import org.gusdb.gus.wdk.model.Query;
 import org.gusdb.gus.wdk.model.QueryInstance;
 import org.gusdb.gus.wdk.model.QueryParamsException;
 import org.gusdb.gus.wdk.model.QuerySet;
-import org.gusdb.gus.wdk.model.SimpleQueryInstanceI;
+import org.gusdb.gus.wdk.model.ResultList;
+import org.gusdb.gus.wdk.model.implementation.SqlQueryInstance;
 
 import org.gusdb.gus.wdk.view.GlobalRepository;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -124,22 +124,18 @@ public class QueryTagsTesterServlet extends HttpServlet {
 		    sqii.setIsCacheable(true);
 		    sqii.setValues(paramValues);
 		    
-		    SimpleSqlQueryInstance ssqi = (SimpleSqlQueryInstance) sqii;
+		    SqlQueryInstance ssqi = (SqlQueryInstance) sqii;
 		    
 		    String initialResultTable = ssqi.getResultAsTable();
 		    Map values = new HashMap(3);
-		    values.put(PageableSqlQuery.RESULT_TABLE_SYMBOL, initialResultTable);
-		    // values.put(PageableSqlQuery.START_ROW_SYMBOL, 
-		    //                       Integer.toString(startRow));
-		    // values.put(PageableSqlQuery.END_ROW_SYMBOL, 
-		    //                       Integer.toString(endRow));
-		    values.put(PageableSqlQuery.START_ROW_SYMBOL, "1");
-		    values.put(PageableSqlQuery.END_ROW_SYMBOL, "200");
-		    SimpleSqlQueryInstance pageInstance = 
-		        (SimpleSqlQueryInstance)pageQuery.makeInstance();
+//		    values.put(PageableSqlQuery.RESULT_TABLE_SYMBOL, initialResultTable);
+//		    values.put(PageableSqlQuery.START_ROW_SYMBOL, "1");
+//		    values.put(PageableSqlQuery.END_ROW_SYMBOL, "200");
+		    SqlQueryInstance pageInstance = 
+		        (SqlQueryInstance)pageQuery.makeInstance();
 		    // pageInstance.setIsCacheable(getIsCacheable());
 		    pageInstance.setValues(values);
-		    ResultSet rs =  pageInstance.getResult();
+		    ResultList rs = pageInstance.getResult();
             
 		    //				ResultSet rs = sqii.getResult();
 		    

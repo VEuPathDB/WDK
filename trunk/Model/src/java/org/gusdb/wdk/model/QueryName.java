@@ -101,12 +101,10 @@ public class QueryName{
 
 	    Query query = querySet.getQuery(queryName);
 	    if (query != null){
-		return true;  //passed check
-	    }
-	    else {  
+	        return true;  //passed check
+	    } 
 		String error = "QueryNameList error: '" + queryName + "' did not pass check; querySet '" + querySet.getName() + "' does not contain '" + queryName + "'";
 		throw new Exception(error);
-	    }
 	}
 
 	throw new Exception("QueryNameList error: '" + queryName + "' did not pass check;  there is no querySet with name '" + queryName + "' in this model");

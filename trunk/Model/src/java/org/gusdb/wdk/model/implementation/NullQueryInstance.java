@@ -1,5 +1,8 @@
 package org.gusdb.gus.wdk.model.implementation;
 
+import org.gusdb.gus.wdk.model.NotBooleanOperandException;
+import org.gusdb.gus.wdk.model.Query;
+import org.gusdb.gus.wdk.model.QueryInstance;
 import org.gusdb.gus.wdk.model.QueryParamsException;
 import org.gusdb.gus.wdk.model.ResultList;
 
@@ -7,12 +10,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
-public class NullQueryInstance {
+public class NullQueryInstance extends QueryInstance {
 
 	public static final NullQueryInstance INSTANCE = new NullQueryInstance();
 	
 	private NullQueryInstance() {
-		// Deliberately empty
+		super(NullQuery.INSTANCE);
 	}
 	
     public Collection getValues() {
@@ -27,7 +30,7 @@ public class NullQueryInstance {
     	// Deliberately empty
     }
 
-    public QueryI getQuery() {
+    public Query getQuery() {
     	return NullQuery.INSTANCE;
     }
 
@@ -37,6 +40,11 @@ public class NullQueryInstance {
 
     public void setValues(Map values) throws QueryParamsException {
     	// Deliberately empty
+    }
+
+    public String getBooleanOperandSql() throws NotBooleanOperandException {
+        // TODO Auto-generated method stub
+        return new String("method needs to be written!");
     }
 
 }
