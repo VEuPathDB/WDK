@@ -87,6 +87,8 @@ public class BooleanQuestionTester {
 	    //init recursive method
 	    BooleanQuestionNode.setAllValues(topNode);
 	    
+	    runGrowTest(topNode, "01", wdkModel);
+	   
 	    Question topQuestion = topNode.getQuestion();
 	    int pageCount = 1;
 	    for (int i = 0; i < rows.length; i+=2){
@@ -112,6 +114,17 @@ public class BooleanQuestionTester {
     // ------------------------------------------------------------------
     // Private Methods
     // ------------------------------------------------------------------
+
+    private static void runGrowTest(BooleanQuestionNode topNode, String nodeId, WdkModel model) throws WdkModelException, WdkUserException{
+	
+	BooleanQuestionNode found = topNode.find(nodeId);
+
+	System.out.println("BooleanQuestionTester.runGrowTest:  Found node " + found.toString());
+	found.grow(TestBooleanTree.makeNewLeafNode(model), "Union", model);
+	System.out.println("BooleanQuestionTester.runGrowTest:  New tree after growing\n " + topNode.toString());
+    }
+
+
 
     private static void addOption(Options options, String argName, String desc) {
 	

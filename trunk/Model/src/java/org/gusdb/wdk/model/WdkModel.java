@@ -190,6 +190,16 @@ public class WdkModel {
         return lists;
     }
        
+    public Question makeBooleanQuestion(RecordClass rc){
+	
+	Question q = new Question();
+	q.setName("BooleanQuestion");
+	q.setRecordClass(rc);
+	BooleanQuery bq = makeBooleanQuery();
+	q.setQuery(bq);
+	return q;
+    }
+
     public BooleanQuery makeBooleanQuery(){
 	BooleanQuery booleanQuery = new BooleanQuery();
 	booleanQuery.setResultFactory(resultFactory);

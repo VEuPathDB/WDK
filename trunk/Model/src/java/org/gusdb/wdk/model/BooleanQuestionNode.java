@@ -24,7 +24,7 @@ import java.util.Hashtable;
  * Created: Fri 22 October 12:00:00 2004 EST
  * 
  * @author David Barkan
- * @version $Revision$ $Date$Author:  $ 
+ * @version $Revision$ $Date$Author: dbarkan $ 
  */
 
 public class BooleanQuestionNode{
@@ -99,6 +99,77 @@ public class BooleanQuestionNode{
 	return secondChild;
     }
 
+    public void grow(BooleanQuestionNode bqn, String operation, WdkModel model ) throws WdkModelException{
+	
+	if (!isLeaf()){
+	    throw new WdkModelException("Cannot grow an internal node; can only grow a leaf");
+	}
+
+	//make value copy of myself to be new left child
+	BooleanQuestionNode newFirstChild = new BooleanQuestionNode(this.question);
+	Hashtable valuesCopy = (Hashtable)values.clone();
+	newFirstChild.setValues(valuesCopy);
+	
+	//set new left child
+	this.firstChild = newFirstChild;
+
+	//set bqn to be new right child
+	this.secondChild = bqn;
+	
+	//transform myself into an internal BooleanQuestionNode
+	this.values = null;
+	this.values = new Hashtable();
+	values.put(BooleanQuery.OPERATION_PARAM_NAME, operation);
+	RecordClass rc = question.getRecordClass();
+	this.question = model.makeBooleanQuestion(rc);
+	
+
+	//make new BooleanQuestionNode which is a copy of me and save it
+	//make me into a real booleanQuestionNode--new BooleanQuery, etc.
+	//assume that no Answers have been retrieved yet
+	//My left child is what I used to be
+	//right child is bqn
+	//operation is op
+	//acts on tree so no need to return anything
+
+    }
+
+    /**
+     * Recursive method to find a node in the tree.
+     *
+     * @param nodeId Binary number representing path to take to find node.
+     * The number is read left to right.  A 1 in the number will traverse to the left
+     * child and a 0 in the number will traverse to the right.  When the end of the number
+     * is reached, the current node is returned.
+     *
+     * @return the BooleanQuestionNode which is being sought.
+     */
+    public BooleanQuestionNode find(String nodeId) throws WdkModelException{
+	String trimmedNodeId = null;
+	BooleanQuestionNode nextChild = null;
+	int nodeIdLength = nodeId.length();
+	if (nodeId.equals("")){ //base case
+	    return this;
+	}
+	else {
+	    trimmedNodeId = nodeId.substring(1, nodeIdLength);
+	    char nextChildPath = nodeId.charAt(0);
+	    if (nextChildPath == '0'){
+	        nextChild = firstChild; 
+	    }
+	    if (nextChildPath == '1'){
+		nextChild = secondChild;
+	    }
+	    if (nextChildPath != '0' && nextChildPath != '1'){
+		throw new WdkModelException("Path to find child in BooleanQuestionNode tree is not binary: " + nodeId);
+	    }
+	}
+	
+	return nextChild.find(trimmedNodeId);
+    }
+	
+  
+    
     /**
      * Recursive method that traverses <code>bqn</code> and sets its values,
      * which may be either normal query values if the node is a leaf or the 
@@ -167,4 +238,18 @@ public class BooleanQuestionNode{
 	return values;
     }
 
+    public String toString(){
+	if (isLeaf()){
+	    return ("Leaf node with parameter values: " + values.toString());
+	}
+	else {
+	    StringBuffer sb = new StringBuffer("Internal Boolean node; operation: " + values.get(BooleanQuery.OPERATION_PARAM_NAME));
+	    sb.append("\n\tFirst Child: " + firstChild.toString());
+	    sb.append("\n\tSecond Child: " + secondChild.toString());
+	    return sb.toString();
+	}
+    }
+    
 }
+
+
