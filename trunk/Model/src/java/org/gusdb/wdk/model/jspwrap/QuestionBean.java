@@ -24,19 +24,19 @@ public class QuestionBean {
 	return paramBeans;
     }
 
-    String getName() {
+    public String getName() {
 	return question.getFullName();
     }
 
-    String getDisplayName() {
+    public String getDisplayName() {
 	return question.getDisplayName();
     }
 
-    String getHelp() {
+    public String getHelp() {
 	return question.getHelp();
     }
 
-    String getDescription(){
+    public String getDescription(){
 	return question.getDescription();
     }
 }

@@ -29,7 +29,7 @@ public class TableFieldValue {
     }
 
     /**
-     * @returns A list of fields, one describing each column.
+     * @return A list of fields, one describing each column.
      */
     public FieldI[] getFields() {
 	if (columnFields == null) {
@@ -43,12 +43,16 @@ public class TableFieldValue {
     }
 
     /**
-     * @returns Iterator of Map: columnName --> AttributeFieldValue
+     * @return A list of rows where each row is a Map of columnName --> {@link AttributeFieldValue}
      */
     public Iterator getRows() {
 	return resultList.getRows();
     }
 
+    /**
+     * Must be called to close the table.
+     * @return null
+     */
     public Object getClose() {
 	try {
 	    resultList.close(); 

@@ -24,14 +24,14 @@ public class RecordBean {
     }
 
     /**
-     * @return Map of attributeName --> AttributeFieldValue
+     * @return Map of attributeName --> {@link org.gusdb.wdk.model.AttributeFieldValue}
      */
     public Map getAttributes() {
 	return recordInstance.getAttributes();
     }
 
     /**
-     * @return Map of tableName --> TableFieldValue
+     * @return Map of tableName --> {@link org.gusdb.wdk.model.TableFieldValue}
      */
     public Map getTables() {
 	return recordInstance.getTables();

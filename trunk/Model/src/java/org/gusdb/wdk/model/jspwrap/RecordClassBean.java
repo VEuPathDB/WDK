@@ -20,14 +20,14 @@ public class RecordClassBean {
     }
 
     /**
-     * @returns Map of fieldName --> FieldI
+     * @return Map of fieldName --> {@link org.gusdb.wdk.model.FieldI}
      */
     public Map getAttributeFields() {
 	return recordClass.getAttributeFields();
     }
 
     /**
-     * @returns Map of fieldName --> FieldI
+     * @return Map of fieldName --> {@link org.gusdb.wdk.model.FieldI}
      */
     public Map getTableFields() {
 	return recordClass.getTableFields();

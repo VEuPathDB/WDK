@@ -20,6 +20,9 @@ public class SummaryBean {
 	this.summary = summary;
     }
 
+    /**
+     * @return A Map of paramName --> {@link ParamBean}.
+     */
     public Map getParams() {
 	return summary.getDisplayParams();
     }
@@ -41,7 +44,7 @@ public class SummaryBean {
     }
 
     /**
-     * @returns An iterator of RecordBeans.
+     * @return A list of {@link RecordBean}s.
      */
     public Iterator getRecords() {
 	return new RecordBeanList();

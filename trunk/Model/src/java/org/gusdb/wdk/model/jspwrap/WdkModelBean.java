@@ -21,7 +21,10 @@ public class WdkModelBean {
     public String getIntroduction() {
 	return model.getIntroduction();
     }
-
+    
+    /**
+     * @return Map of questionSetName --> {@link QuestionBean}
+     */
     public Map getQuestionSets() {
 	return model.getQuestionSets();
     }
