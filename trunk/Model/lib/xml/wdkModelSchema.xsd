@@ -100,7 +100,7 @@
      <xsd:attribute name="idPrefix" type="xsd:string"/>
    </xsd:complexType>
 
-   <xsd:complexType name="recordList">
+   <xsd:complexType name="summary">
      <xsd:attribute name="name" type="xsd:string" use="required"/>
      <xsd:attribute name="recordRef" type="xsd:string" use="required"/>
      <xsd:attribute name="queryRef" type="xsd:string" use="required"/>
@@ -120,9 +120,9 @@
      <xsd:attribute name="name" type="xsd:string"/>
    </xsd:complexType>
 
-   <xsd:complexType name="recordListSet">
+   <xsd:complexType name="summarySet">
      <xsd:sequence>
-       <xsd:element name="recordList" type="recordList" minOccurs="1" maxOccurs="unbounded"/>
+       <xsd:element name="summary" type="summary" minOccurs="1" maxOccurs="unbounded"/>
      </xsd:sequence>
      <xsd:attribute name="name" type="xsd:string"/>
    </xsd:complexType>
@@ -130,7 +130,7 @@
    <xsd:element name="wdkModel">
      <xsd:complexType>
        <xsd:sequence>
-         <xsd:element name="recordListSet" type="recordListSet" minOccurs="0" maxOccurs="unbounded"/>
+         <xsd:element name="summarySet" type="summarySet" minOccurs="0" maxOccurs="unbounded"/>
          <xsd:element name="recordSet" type="recordSet" minOccurs="0" maxOccurs="unbounded"/>
          <xsd:element name="queryNameList" type="queryNameList" minOccurs="0" maxOccurs="unbounded"/>
          <xsd:element name="querySet" type="querySet" minOccurs="1" maxOccurs="unbounded"/>

@@ -3,21 +3,21 @@
 <wdkModel name="RNARecords"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
-  <recordListSet name="RNARecordLists">
+  <summarySet name="RNASummaries">
 
-     <recordList name="RNARecordList"
+     <summary name="RNASummary"
                recordRef="RNARecords.RNARecord"
                queryRef="RNARecordQueries.RNAIdsByGoId" />
-  </recordListSet>
+  </summarySet>
 
   <recordSet name="RNARecords">
      <record name="RNARecord" type="DoTS Transcript" idPrefix="DT.">
 
-       <fieldsQuery referent="RNASimpleQueries.RNAListInDetail"/>  
+       <fieldsQuery twoPartName="RNASimpleQueries.RNAListInDetail"/>  
    
-       <fieldsQuery referent="RNARecordQueries.RNAFields"/>
+       <fieldsQuery twoPartName="RNARecordQueries.RNAFields"/>
              
-       <tableQuery referent="RNARecordQueries.ExternalLinks"/>
+       <tableQuery twoPartName="RNARecordQueries.ExternalLinks"/>
        
        <textField name="overview">
          <text>
