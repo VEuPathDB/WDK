@@ -4,7 +4,7 @@ import java.io.*;
 import javax.servlet.jsp.*;
 import javax.servlet.jsp.tagext.*;
 
-public class QueryHolder extends SimpleTagSupport {
+public class DisplayParam extends SimpleTagSupport {
     
     private boolean bool;
     private String name;
