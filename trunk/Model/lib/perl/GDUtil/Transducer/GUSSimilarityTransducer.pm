@@ -16,7 +16,7 @@
 #  add ALT tag to IMG
 #  use only as much vertical space as is needed
 
-package GUS::WebDevKit::GDUtil::GUSSimilarityTransducer;
+package GUS::WebDevKit::GDUtil::Transducer::GUSSimilarityTransducer;
 
 use strict;
 
