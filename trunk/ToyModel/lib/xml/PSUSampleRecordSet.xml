@@ -15,6 +15,19 @@
      </textField>
    </record>
 
+
+  <record name="PSUCDSRecord" type="CDS" idPrefix="CDS.">
+     <fieldsQuery referent="RNARecordQueries.PSUCDSFields"/>
+
+     <!-- <tableQuery referent="RNARecordQueries.ExternalLinks"/> -->
+
+     <textField name="overview">
+       <text>
+       This is the CDS $$primaryKey$$.  It has $$number_of_exons$$ exon(s).
+       </text>
+     </textField>
+   </record>
+
 </recordSet>
 
 
@@ -76,6 +89,38 @@
          and dbr.external_database_release_id = edr.external_database_release_id 
          and edr.external_database_id = ed.external_database_id
     </sql>
+  </simpleSqlQuery>
+
+   <simpleSqlQuery name="PSUCDSFields">
+
+     <stringParam name="primaryKey"/>
+
+     <column name="name" displayName="Name" />
+     <column name="gene_type" displayName="Gene Type" />
+     <column name="number_of_exons" displayName="No. of exons" />
+     <column name="is_pseudo" displayName="Pseudo" />
+     <column name="is_partial" displayName="Partial" />
+     <column name="product" displayName="Product/Description" />
+     <column name="taxon_name" displayName="Taxon Name" />
+     <column name="modification_date" displayName="Last modified" />
+
+     <sql>
+select gf.name,
+       gf.gene_type,
+       gf.number_of_exons,
+       gf.is_pseudo,
+       gf.is_partial,
+       gf.product,
+       tn.name as taxon_name, 
+       TO_CHAR(gf.modification_date, 'Mon DD, YYYY HH:MI:SSAM') as modification_date
+from sres.TaxonName tn,
+     dots.NASequence nas,
+     dots.GeneFeature gf
+where tn.name_class = 'scientific name'
+      and gf.name = '$$primaryKey$$'
+      and gf.na_sequence_id = nas.na_sequence_id
+      and nas.taxon_id = tn.taxon_id
+     </sql>
   </simpleSqlQuery>
 
 </simpleQuerySet>
