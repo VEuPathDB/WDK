@@ -7,7 +7,7 @@ import oracle.jdbc.pool.OracleConnectionCacheImpl;
 
 import org.gusdb.gus.wdk.model.ModelConfig;
 import org.gusdb.gus.wdk.model.ModelConfigParser;
-import org.gusdb.gus.wdk.model.QueryParamsException;
+import org.gusdb.gus.wdk.model.WdkUserException;
 import org.gusdb.gus.wdk.model.RDBMSPlatformI;
 import org.gusdb.gus.wdk.model.ResultFactory;
 import org.gusdb.gus.wdk.model.WdkModel;
@@ -82,7 +82,7 @@ public class ApplicationInitListener implements ServletContextListener {
             application.setAttribute("wdk.resultfactory", resultFactory);
             application.setAttribute("wdk.wdkModel", wdkModel);
             
-        } catch (QueryParamsException e) {
+        } catch (WdkUserException e) {
             System.err.println(e.formatErrors());
         } catch (Exception e) {
             e.printStackTrace();

@@ -5,7 +5,8 @@ import org.gusdb.gus.wdk.model.ModelConfigParser;
 import org.gusdb.gus.wdk.model.Query;
 import org.gusdb.gus.wdk.model.QueryInstance;
 import org.gusdb.gus.wdk.model.Param;
-import org.gusdb.gus.wdk.model.QueryParamsException;
+import org.gusdb.gus.wdk.model.WdkUserException;
+import org.gusdb.gus.wdk.model.WdkModelException;
 import org.gusdb.gus.wdk.model.RDBMSPlatformI;
 import org.gusdb.gus.wdk.model.ResultFactory;
 import org.gusdb.gus.wdk.model.ResultList;
@@ -60,7 +61,7 @@ public class QueryTester {
 
     public ResultList getResult(String querySetName, String queryName, 
 			       Hashtable paramHash, 
-			       boolean useCache) throws Exception, QueryParamsException {
+			       boolean useCache) throws WdkModelException, WdkUserException {
 	QuerySet querySet 
 	    = wdkModel.getQuerySet(querySetName);
 	Query query = querySet.getQuery(queryName);
@@ -73,7 +74,7 @@ public class QueryTester {
     /*public ResultSet getResultPage(String querySetName, String queryName, 
 				   int startRow, int endRow,
 				   Hashtable paramHash, 
-				   boolean useCache) throws Exception, QueryParamsException {
+				   boolean useCache) throws WdkModelException, WdkUserException {
 	PageableQuerySet pageableQuerySet 
 	    = wdkModel.getPageableQuerySet(querySetName);
 	PageableQueryI query = pageableQuerySet.getQuery(queryName);
@@ -83,7 +84,7 @@ public class QueryTester {
 	return instance.getResult(startRow, endRow);
 	}*/
 
-    public String getResultAsTable(String querySetName, String queryName, Hashtable paramHash, boolean useCache) throws Exception, QueryParamsException {
+    public String getResultAsTable(String querySetName, String queryName, Hashtable paramHash, boolean useCache) throws WdkModelException, WdkUserException {
 	QuerySet querySet 
 	    = wdkModel.getQuerySet(querySetName);
 	Query  query = querySet.getQuery(queryName);
@@ -97,7 +98,7 @@ public class QueryTester {
     /////////////   protected methods   //////////////////////////////////
     //////////////////////////////////////////////////////////////////////
 
-    void displayQuery(Query query) throws Exception {
+    void displayQuery(Query query) throws WdkModelException {
         String newline = System.getProperty( "line.separator" );
         System.out.println(newline + "Query: " + 
                 query.getDisplayName() + newline);
@@ -126,7 +127,7 @@ public class QueryTester {
 
     }
     
-    String formatParamPrompt(Param param) throws Exception {
+    String formatParamPrompt(Param param) throws WdkModelException {
         
         String newline = System.getProperty( "line.separator" );
         
@@ -255,7 +256,7 @@ public class QueryTester {
                 }
             }
 	    runQueryNameListTest(tester, wdkModel, querySetName);
-        } catch (QueryParamsException e) {
+        } catch (WdkUserException e) {
             System.err.println(e.formatErrors());
             System.exit(1);
         } catch (Exception e) {

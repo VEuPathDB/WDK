@@ -1,13 +1,13 @@
 package org.gusdb.gus.wdk.model.implementation;
 
 import org.gusdb.gus.wdk.model.NotBooleanOperandException;
+import org.gusdb.gus.wdk.model.WdkModelException;
 import org.gusdb.gus.wdk.model.QueryInstance;
 import org.gusdb.gus.wdk.model.ResultList;
 import org.gusdb.gus.wdk.model.ResultFactory;
-import java.sql.SQLException;
+
 import java.sql.ResultSet;
-
-
+import java.sql.SQLException;
 
 public class SqlQueryInstance extends QueryInstance  {
 
@@ -54,7 +54,7 @@ public class SqlQueryInstance extends QueryInstance  {
     /**
      * @return Full name of table containing result
      */
-    public String getResultAsTable() throws Exception {
+    public String getResultAsTable() throws WdkModelException {
 	SqlQuery q = (SqlQuery)query;
 	if (resultTable == null) 
 	    resultTable = q.getResultFactory().getResultAsTable(this);
@@ -62,7 +62,7 @@ public class SqlQueryInstance extends QueryInstance  {
     }
     
 
-    public ResultList getResult() throws Exception {
+    public ResultList getResult() throws WdkModelException {
 	SqlQuery q = (SqlQuery)query;
 	ResultList rl = q.getResultFactory().getResult(this);
 	rl.checkQueryColumns(q, true);
@@ -73,7 +73,7 @@ public class SqlQueryInstance extends QueryInstance  {
 	return new String("method needs to be written!");
     }
 
-    protected ResultList getNonpersistentResult() throws Exception {
+    protected ResultList getNonpersistentResult() throws WdkModelException {
 
 	ResultSet resultSet = null;
 
@@ -81,23 +81,24 @@ public class SqlQueryInstance extends QueryInstance  {
 	    resultSet = SqlUtils.getResultSet(query.getPlatform().getDataSource(), getSql());
 
 	} catch (SQLException e) { 
-	    System.err.println("");
-	    System.err.println("Failed running query:");
-	    System.err.println("\"" + getSql() + "\"");
-	    System.err.println("");
-	    SqlUtils.closeResultSet(resultSet);
-	    throw e;
+	    String newline = System.getProperty( "line.separator" );
+	    String msg = newline + "Failed running query:" + newline +
+		"\"" + getSql() + "\"" + newline;
+	    throw new WdkModelException(msg, e);
 	}
 	return new SqlResultList(this, null, resultSet);
     }
 
     protected void writeResultToTable(String resultTableName, 
-				      ResultFactory rf) throws SQLException {
+				      ResultFactory rf) throws WdkModelException {
 
-	query.getPlatform().createTableFromQuerySql(query.getPlatform().getDataSource(),
-						    resultTableName, 
-						    getSql());
+	try {
+	    query.getPlatform().createTableFromQuerySql(query.getPlatform().getDataSource(),
+							resultTableName, 
+							getSql());
+	} catch (SQLException e) {
+	    throw new WdkModelException(e);
+	}
     }
-
 
 }

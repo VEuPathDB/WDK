@@ -86,7 +86,7 @@ public class QueryNameList{
     /**
      * Wrapper method; checks to make sure each Query Name is of the correct format and exists in a QuerySet.
      */
-    public void checkReferences(HashMap querySets)throws Exception{
+    public void checkReferences(HashMap querySets)throws WdkModelException{
 	
 	Enumeration queryNames = queryNameList.keys();
 	while (queryNames.hasMoreElements()){

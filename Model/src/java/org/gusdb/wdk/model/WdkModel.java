@@ -38,13 +38,8 @@ public class WdkModel {
     }
 
     //Record Sets
-    public void addRecordSet(RecordSet recordSet) {
-	if (recordSets.containsKey(recordSet.getName())) {
-	    String err = "WDK Model " + name +
-		" already contains a query set with name " + 
-		recordSet.getName();
-	    throw new IllegalArgumentException(err);	
-	}
+    public void addRecordSet(RecordSet recordSet) throws WdkModelException {
+	checkName(recordSet.getName());
 	recordSets.put(recordSet.getName(), recordSet);
     }
 
@@ -61,10 +56,8 @@ public class WdkModel {
 
 
     //Query Sets
-    public void addQuerySet(QuerySet querySet) {
-	String err = checkName(querySet.getName());
-	if (err != null) throw new IllegalArgumentException(err);
-
+    public void addQuerySet(QuerySet querySet) throws WdkModelException {
+	checkName(querySet.getName());
 	querySets.put(querySet.getName(), querySet);
     }
 
@@ -159,7 +152,7 @@ public class WdkModel {
      * Some elements within the set may refer to others by name.  Resolve those
      * references into real object references.
      */ 
-    public void resolveReferences() throws Exception {
+    public void resolveReferences() throws WdkModelException {
        
        Iterator recordSetIterator = recordSets.values().iterator();
        while (recordSetIterator.hasNext()) {
@@ -214,17 +207,14 @@ public class WdkModel {
     ///////////////////////////////////////////////////////////////////
     ///////   Protected methods
     ///////////////////////////////////////////////////////////////////
-    /*
-     * @return error message or null if ok
-     */
-    String checkName(String setName) {
-	String err = null;
-	if (querySets.containsKey(setName)) {
-	    err = "WDK Model " + name +
-		" already contains a query set with name " + setName;
-	}
 
-	return err;
+    void checkName(String setName) throws WdkModelException {
+	if (querySets.containsKey(setName) || recordSets.containsKey(setName)){ 
+	   String err = "WDK Model " + name +
+		" already contains a set with name " + setName;
+	
+	    throw new WdkModelException(err);	
+	}
     }
 }
 

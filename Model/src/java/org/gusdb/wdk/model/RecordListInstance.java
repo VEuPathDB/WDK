@@ -1,5 +1,5 @@
 package org.gusdb.gus.wdk.model;
-import java.util.Hashtable;
+import java.util.Map;
 import java.util.Vector;
 
 /**
@@ -18,8 +18,6 @@ public class RecordListInstance {
     // ------------------------------------------------------------------
 
     int currentRecordInstanceCounter;
-
-    private Hashtable values;
 
     private QueryInstance listIdQueryInstance;
 
@@ -48,11 +46,11 @@ public class RecordListInstance {
     // Public Methods
     // ------------------------------------------------------------------
 
-    public void setValues(Hashtable values, int startRow, int endRow){
+    public void setValues(Map values, int startRow, int endRow) throws WdkUserException, WdkModelException {
 
 	this.startRow = startRow;
 	this.endRow = endRow;	
-	this.values = values;
+	listIdQueryInstance.setValues(values);
     }
 
     public RecordList getRecordList(){
@@ -67,7 +65,7 @@ public class RecordListInstance {
     }
     
     //Returns null if we have already returned the last instance
-    public RecordInstance getNextRecordInstance() throws Exception{
+    public RecordInstance getNextRecordInstance() throws WdkModelException{
 	
 	if (recordInstances == null){
 	    initRecordInstances();
@@ -80,7 +78,7 @@ public class RecordListInstance {
 	return nextInstance;
     }
     
-    public void setQueryResult(ResultList resultList) throws Exception{
+    public void setQueryResult(ResultList resultList) throws WdkModelException{
 	
 	int tempCounter = 0;
 	while (resultList.next()){
@@ -98,7 +96,7 @@ public class RecordListInstance {
 
     }
     
-    public void setMultiMode(QueryInstance instance) throws Exception{
+    public void setMultiMode(QueryInstance instance) throws WdkModelException{
 	
 	String resultTableName = listIdQueryInstance.getResultAsTable();
 
@@ -117,7 +115,7 @@ public class RecordListInstance {
 	this.currentRecordInstanceCounter = 0;
     }
 
-    public void print() throws Exception{  
+    public void print() throws WdkModelException{  
 	
 	if (recordInstances == null){
 	    initRecordInstances();
@@ -134,7 +132,7 @@ public class RecordListInstance {
     // ------------------------------------------------------------------
     
     
-    private void initRecordInstances() throws Exception{
+    private void initRecordInstances() throws WdkModelException {
 	ResultList rl = getRecordInstanceIds();
 	Query query = listIdQueryInstance.getQuery();
 	Vector tempRecordInstances = new Vector();
@@ -160,9 +158,8 @@ public class RecordListInstance {
 	
     }
 
-    private ResultList getRecordInstanceIds() throws Exception{
+    private ResultList getRecordInstanceIds() throws WdkModelException{
 	
-	listIdQueryInstance.setValues(values);
 	ResultList rl = listIdQueryInstance.getResult();
 	return rl;
     }

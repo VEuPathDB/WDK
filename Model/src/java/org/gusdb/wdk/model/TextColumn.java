@@ -15,7 +15,7 @@ public class TextColumn extends Column implements DerivedColumnI {
 	this.text = text;
     }
 
-    public Object getDerivedValue(ResultList resultList) throws Exception {
+    public Object getDerivedValue(ResultList resultList) throws WdkModelException {
 	Column[] columns = query.getColumns();
 	String instantiatedText = text;
 	for (int i =0; i<columns.length; i++) {

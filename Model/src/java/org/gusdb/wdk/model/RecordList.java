@@ -2,8 +2,6 @@ package org.gusdb.gus.wdk.model;
 
 import java.util.Map;
 
-import org.gusdb.gus.wdk.model.implementation.SqlQuery;
-
 /**
  * RecordList.java
  *
@@ -62,9 +60,9 @@ public class RecordList {
 	this.queryTwoPartName = queryTwoPartName;
     }
 
-    public void resolveReferences(Map querySetMap, Map recordSetMap)throws Exception{
+    public void resolveReferences(Map querySetMap, Map recordSetMap)throws WdkModelException{
 	
-	this.query = (SqlQuery)QuerySet.resolveReference(querySetMap, queryTwoPartName, "null", "null", "null");
+	this.query = QuerySet.resolveReference(querySetMap, queryTwoPartName, "recordList", name, "queryRef");
 	this.record = RecordSet.resolveRecordReference(recordSetMap, recordTwoPartName);
     }
 

@@ -73,7 +73,7 @@ public class ResultFactory {
     ///////////////   public  /////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////
 
-    public ResultList getResult(QueryInstance instance) throws SQLException, Exception {
+    public ResultList getResult(QueryInstance instance) throws WdkModelException{
 	ResultList resultList = instance.getIsPersistent()?
 	    getPersistentResult(instance) : instance.getNonpersistentResult();
 	return resultList;
@@ -82,14 +82,14 @@ public class ResultFactory {
     /**
      * @return Full name of table containing result
      */
-    public String getResultAsTable(QueryInstance instance) throws SQLException {
+    public String getResultAsTable(QueryInstance instance) throws WdkModelException {
 	return getResultTable(instance);
     }
 
     /**
      * @param numParams Number of parameters allowed in a cached query
      */
-    public void createCache(int numParams) throws SQLException {
+    public void createCache(int numParams) throws WdkModelException {
 	String newline = System.getProperty( "line.separator" );
 
 	// Format sql to create table
@@ -107,15 +107,18 @@ public class ResultFactory {
 	System.err.println(newline + "Making cache table " + tblName 
 			   + " with sql:" + newline + sqlb.toString()
 			   + newline);
+	try {
+	    SqlUtils.execute(dataSource, sqlb.toString());
+	    System.err.println("Done" + newline);
 
-	SqlUtils.execute(dataSource, sqlb.toString());
-	System.err.println("Done" + newline);
-
-	// Create sequence 
-	platform.createSequence(tblName + "_pkseq", 1, 1);
-	System.err.println("Creating sequence " + tblName + "_pkseq"
-			   + newline);
-	System.err.println("Done" + newline);
+	    // Create sequence 
+	    platform.createSequence(tblName + "_pkseq", 1, 1);
+	    System.err.println("Creating sequence " + tblName + "_pkseq"
+			       + newline);
+	    System.err.println("Done" + newline);
+	} catch (SQLException e) {
+	    throw new WdkModelException(e);
+	}
     }
 
     /**
@@ -129,14 +132,18 @@ public class ResultFactory {
      * separately, as a post-process, drop the tables in the dropThese table.
      * 
      */    
-    public void resetCache() throws SQLException {
+    public void resetCache() throws WdkModelException {
 
 	// Query for the names of all cached result tables
 	//
 	StringBuffer s = new StringBuffer();
 	s.append("select result_table from " + instanceTableFullName);
-	String tables[] = 
-	    SqlUtils.runStringArrayQuery(dataSource, s.toString());
+	String tables[] = null; 
+	try {
+	    tables = SqlUtils.runStringArrayQuery(dataSource, s.toString());
+	} catch (SQLException e) {
+	    throw new WdkModelException(e);
+	}
 	int nTables = tables.length;
 	int nDropped = 0;
 
@@ -151,18 +158,26 @@ public class ResultFactory {
 	System.err.println("Succeeded in dropping " + nDropped);
 	System.err.println("Deleting all rows from " + instanceTableFullName);
 
-	SqlUtils.execute(dataSource, "delete from " + instanceTableFullName);
+	try {
+	    SqlUtils.execute(dataSource, "delete from " + instanceTableFullName);
+	} catch (SQLException e) {
+	    throw new WdkModelException(e);
+	}
     }
 
     /**
      * Drop all tables and sequences associated with the cache
      */    
-    public void dropCache() throws SQLException {
-	resetCache();
-	System.err.println("Dropping table " + instanceTableFullName);
-	platform.dropTable(schemaName, instanceTableName);
-	System.err.println("Dropping sequence " + instanceTableFullName + "_pkseq");
-	platform.dropSequence(instanceTableFullName + "_pkseq");
+    public void dropCache() throws WdkModelException {
+	try {
+	    resetCache();
+	    System.err.println("Dropping table " + instanceTableFullName);
+	    platform.dropTable(schemaName, instanceTableName);
+	    System.err.println("Dropping sequence " + instanceTableFullName + "_pkseq");
+	    platform.dropSequence(instanceTableFullName + "_pkseq");
+	} catch (SQLException e) {
+	    throw new WdkModelException(e);
+	}
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -172,7 +187,7 @@ public class ResultFactory {
     /**
      * @return Full table name of the result table
      */
-    protected String getNewResultTable(QueryInstance instance) throws SQLException {
+    protected String getNewResultTable(QueryInstance instance) throws WdkModelException {
 	
 	//populates cache if not already in there
 
@@ -182,7 +197,12 @@ public class ResultFactory {
 	StringBuffer sql = new StringBuffer();
 	sql.append("update " + instanceTableFullName + " set result_table = '" + resultTableName + "'");
 	sql.append(" where query_instance_id = " + queryInstanceId.toString());
-	int numRows = SqlUtils.executeUpdate(dataSource, sql.toString());
+	int numRows = 0;
+	try {
+	    numRows = SqlUtils.executeUpdate(dataSource, sql.toString());
+	} catch (SQLException e) {
+	    throw new WdkModelException(e);
+	}
 
 	// write result into result table
 	instance.writeResultToTable(resultTableName, this);
@@ -193,7 +213,7 @@ public class ResultFactory {
 	return resultTableName;
     }
 
-    protected ResultList getPersistentResult(QueryInstance instance) throws SQLException {
+    protected ResultList getPersistentResult(QueryInstance instance) throws WdkModelException {
 	String resultTable = getResultTable(instance);
 	ResultSet rs = fetchCachedResult(resultTable);
 	return new SqlResultList(instance, resultTable, rs);
@@ -207,7 +227,7 @@ public class ResultFactory {
      *
      * @param instance  The instance of the query
      */
-    protected String getResultTable(QueryInstance instance)  throws SQLException {
+    protected String getResultTable(QueryInstance instance)  throws WdkModelException {
 	String resultTableFullName;
 
 	// Construct SQL query to retrieve the requested table's name
@@ -219,7 +239,13 @@ public class ResultFactory {
 	    sqlb.append("cached = 1 and end_time IS NOT NULL and "); 
 	}
 	sqlb.append(instanceWhereClause(instance));
-	String resultTableName = SqlUtils.runStringQuery(dataSource, sqlb.toString());
+	String resultTableName = null;
+	try {
+	    resultTableName = SqlUtils.runStringQuery(dataSource, sqlb.toString());
+	} catch (SQLException e) {
+	    throw new WdkModelException(e);
+	}
+
 	if (resultTableName == null) {
 	    resultTableFullName = getNewResultTable(instance);
 	} else {
@@ -239,7 +265,7 @@ public class ResultFactory {
      *
      * @return Full table name of result table
      */
-    protected Integer insertQueryInstance(QueryInstance instance) throws SQLException {
+    protected Integer insertQueryInstance(QueryInstance instance) throws WdkModelException {
 	return insertQueryInstance(instance, null, null);
     }
 
@@ -257,10 +283,15 @@ public class ResultFactory {
      * @return Full table name of result table
      */
     protected Integer insertQueryInstance(QueryInstance instance, 
-					 String sessionId, String datasetName) throws SQLException {
+					 String sessionId, String datasetName) throws WdkModelException {
 
 
-	String nextID = platform.getNextId(schemaName, instanceTableName);
+	String nextID = null;
+	try {
+	    nextID = platform.getNextId(schemaName, instanceTableName);
+	} catch (SQLException e) {
+	    throw new WdkModelException(e);
+	}
 	if (nextID == null) nextID = "1"; 
 
 	// format values
@@ -284,7 +315,12 @@ public class ResultFactory {
 		    datasetName + ", " + pVals +  
 		    "sysdate)"); 
 	
-	int numRows = SqlUtils.executeUpdate(dataSource,sqlb.toString());
+	int numRows = 0;
+	try {
+	    numRows = SqlUtils.executeUpdate(dataSource,sqlb.toString());
+	} catch (SQLException e) {
+	    throw new WdkModelException(e);
+	}
 
 	// This may happen because a parameter value is too large
 	// to fit in the corresponding column of the Queries table.
@@ -319,13 +355,19 @@ public class ResultFactory {
      * 
      * @return Whether the operation succeeded.
      */
-    protected boolean finishQueryInstance(QueryInstance instance) throws SQLException {
+    protected boolean finishQueryInstance(QueryInstance instance) throws WdkModelException {
 	StringBuffer sqlb = new StringBuffer();
 	sqlb.append("update " + instanceTableFullName 
 		    + " set end_time = " + platform.getCurrentDateFunction());
 	sqlb.append(" where ");
 	sqlb.append(instanceWhereClause(instance));
-	return (SqlUtils.executeUpdate(dataSource, sqlb.toString()) == 1);
+	boolean ok = false;
+	try {
+	    ok = SqlUtils.executeUpdate(dataSource, sqlb.toString()) == 1;
+	} catch (SQLException e) {
+	    throw new WdkModelException(e);
+	}
+	return ok;
     }
 
     /**
@@ -354,26 +396,38 @@ public class ResultFactory {
      * @return true if dataset name is in use for this session id
      */
     protected boolean checkIfDatasetNameInUse(String sessionId, 
-					   String datasetName) throws SQLException {
+					   String datasetName) throws WdkModelException {
 	StringBuffer s = new StringBuffer();
 	s.append("select result_table from " + instanceTableFullName + " where " +
 		 "dataset_name = '" + datasetName + "' and " +
 		 "session_id = '" + sessionId + "'");
 
-	String tables[] = SqlUtils.runStringArrayQuery(dataSource, s.toString());
+	String tables[] = null;
+	try {
+	    tables = SqlUtils.runStringArrayQuery(dataSource, s.toString());
+	} catch (SQLException e) {
+	    throw new WdkModelException(e);
+	}
 	return tables.length != 0;
     }
 
-    protected ResultSet fetchCachedResult(String resultTable) throws SQLException {
+    protected ResultSet fetchCachedResult(String resultTable) throws WdkModelException {
 	String sql = "select * from " + resultTable;
-	return SqlUtils.getResultSet(dataSource, sql);
+
+	ResultSet rs = null;
+	try {
+	    rs = SqlUtils.getResultSet(dataSource, sql);
+	} catch (SQLException e) {
+	    throw new WdkModelException(e);
+	}
+	return rs;
     }
 
     //does not restrict on whether instance is cacheable or not
     // suspicious things here:
     //   - why is it inserting 
 
-    protected Integer getQueryInstanceId(QueryInstance instance) throws SQLException{
+    protected Integer getQueryInstanceId(QueryInstance instance) throws WdkModelException{
 
 	Integer queryInstanceId = instance.getQueryInstanceId();
 	if (queryInstanceId == null){
@@ -382,7 +436,11 @@ public class ResultFactory {
 	    sqlb.append("select query_instance_id from " + instanceTableFullName + " where "); 
 	    sqlb.append(instanceWhereClause(instance));
 		    
-	    queryInstanceId = SqlUtils.runIntegerQuery(dataSource, sqlb.toString());
+	    try {
+		queryInstanceId = SqlUtils.runIntegerQuery(dataSource, sqlb.toString());
+	    } catch (SQLException e) {
+		throw new WdkModelException(e);
+	    }
 
 	    if (queryInstanceId == null){
 		queryInstanceId = insertQueryInstance(instance);

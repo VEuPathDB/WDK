@@ -6,7 +6,7 @@ import java.util.Vector;
 import java.util.Iterator;
 
 import org.gusdb.gus.wdk.model.ResultFactory;
-import org.gusdb.gus.wdk.model.QueryParamsException;
+import org.gusdb.gus.wdk.model.WdkUserException;
 import org.gusdb.gus.wdk.model.Param;
 import org.gusdb.gus.wdk.model.Column;
 import org.gusdb.gus.wdk.model.QueryInstance;
@@ -100,9 +100,9 @@ public abstract class Query {
 	return columnA;
     }
 
-    public Column getColumn(String columnName) throws Exception {
+    public Column getColumn(String columnName) throws WdkModelException {
 	if (columnsH.get(columnName) == null)
-	    throw new Exception("Query " + name 
+	    throw new WdkModelException("Query " + name 
 				+ " does not have a column '" 
 				+ columnName + "'");
 	return (Column)columnsH.get(columnName);
@@ -125,7 +125,7 @@ public abstract class Query {
     /////////////  Protected ////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////
 
-    protected void validateParamValues(Map values) throws QueryParamsException {
+    protected void validateParamValues(Map values) throws WdkUserException, WdkModelException {
 	HashMap errors = null;
 	
 	// first confirm that all supplied values have legal names
@@ -150,7 +150,7 @@ public abstract class Query {
 	    }
 	}
 	if (errors != null) {
-	    throw new QueryParamsException(errors);
+	    throw new WdkUserException(errors);
 	}
     }
 
