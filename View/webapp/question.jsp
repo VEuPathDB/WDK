@@ -38,15 +38,28 @@
   <c:choose>
     <c:when test="${qP.class.name eq 'org.gusdb.wdk.model.jspwrap.FlatVocabParamBean'}">
       <td>
-        <c:set var="mp" value="0"/>
-        <c:if test="${qP.multiPick}"><c:set var="mp" value="1"/></c:if>
         <c:set var="opt" value="0"/>
-        <html:select  property="myMultiProp(${pNam})" multiple="${mp}">
-          <c:set var="opt" value="${opt+1}"/>
-          <c:set var="sel" value=""/>
-          <c:if test="${opt == 1}"><c:set var="sel" value="selected"/></c:if>      
-          <html:options property="values(${pNam})" labelProperty="labels(${pNam})"/>
-        </html:select>
+
+        <c:choose>
+          <c:when test="${qP.multiPick}">
+            <!-- multiPick is true, use scroll pane -->
+            <html:select  property="myMultiProp(${pNam})" multiple="1">
+              <c:set var="opt" value="${opt+1}"/>
+              <c:set var="sel" value=""/>
+              <c:if test="${opt == 1}"><c:set var="sel" value="selected"/></c:if>      
+              <html:options property="values(${pNam})" labelProperty="labels(${pNam})"/>
+            </html:select>
+          </c:when>
+          <c:otherwise>
+            <!-- multiPick is false, use pull down menu -->
+            <html:select  property="myMultiProp(${pNam})">
+              <c:set var="opt" value="${opt+1}"/>
+              <c:set var="sel" value=""/>
+              <c:if test="${opt == 1}"><c:set var="sel" value="selected"/></c:if>      
+              <html:options property="values(${pNam})" labelProperty="labels(${pNam})"/>
+            </html:select>
+          </c:otherwise>
+        </c:choose>
       </td>
     </c:when>
     <c:otherwise>
