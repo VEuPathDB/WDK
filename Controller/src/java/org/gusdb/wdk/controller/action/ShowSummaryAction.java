@@ -58,7 +58,7 @@ public class ShowSummaryAction extends Action {
 
 	SummaryInstance wdkSummary = wdkQuestion.makeSummaryInstance(params, start, end);
 
-	int totalSize = wdkSummary.getTotalSize();
+	int totalSize = wdkSummary.getResultSize();
 	if (end > totalSize) { end = totalSize; }
 
 	String uriString = request.getRequestURI();

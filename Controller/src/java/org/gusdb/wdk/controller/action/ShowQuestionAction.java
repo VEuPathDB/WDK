@@ -53,7 +53,7 @@ public class ShowQuestionAction extends Action {
 	qForm.setServlet(servlet);
 	
 	ServletContext context = servlet.getServletContext();
-	Param[] params = wdkQuestion.getQuery().getParams();
+	Param[] params = wdkQuestion.getParams();
 
 	qForm.setMyProps(new HashMap());
 	qForm.setMyLabels(new HashMap());
