@@ -16,6 +16,10 @@ public class ParamBean {
     }
 
     public String getName() {
+	return param.getName();
+    }
+
+    public String getFullName() {
 	return param.getFullName();
     }
 
@@ -25,5 +29,9 @@ public class ParamBean {
 
     public String getHelp() {
 	return param.getHelp();
+    }
+
+    public String getDefault() {
+	return param.getDefault();
     }
 }

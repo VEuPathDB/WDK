@@ -16,6 +16,10 @@ public class RecordClassBean {
 	this.recordClass = recordClass;
     }
 
+    public String getFullName() {
+	return recordClass.getFullName();
+    }
+
     /**
      * @return Map of fieldName --> {@link org.gusdb.wdk.model.FieldI}
      */
@@ -28,5 +32,12 @@ public class RecordClassBean {
      */
     public Map getTableFields() {
 	return recordClass.getTableFields();
+    }
+
+    /**
+     * used by the controller
+     */
+    public RecordBean makeRecord () {
+	return new RecordBean(recordClass.makeRecordInstance());
     }
 }
