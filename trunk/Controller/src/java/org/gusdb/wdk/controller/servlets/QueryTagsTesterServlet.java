@@ -1,5 +1,6 @@
 package org.gusdb.gus.wdk.controller.servlets;
 
+import org.gusdb.gus.wdk.model.Param;
 import org.gusdb.gus.wdk.model.Query;
 import org.gusdb.gus.wdk.model.QueryInstance;
 import org.gusdb.gus.wdk.model.RecordList;
@@ -13,6 +14,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import javax.servlet.RequestDispatcher;
@@ -36,8 +38,10 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class QueryTagsTesterServlet extends HttpServlet {
 
+    private final static boolean autoRedirect = true;
+    
 	protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
-		
+        
 		String fromPage = req.getParameter("fromPage");
 		String queryRecordGroup = req.getParameter("recordGroup");
 		String queryRecordName = req.getParameter("queryRecordName");
@@ -110,24 +114,32 @@ public class QueryTagsTesterServlet extends HttpServlet {
                 rli.setValues(paramValues, 1, 20);
             }
             catch (WdkUserException exp) {
-            }       
-//                           problem = true;
-         //                   req.setAttribute(formName+".error."+queryRecordName+"."+paramName, error);     
+                Map errors = exp.getBooBoos();
+                problem = true;
+                for (Iterator it = errors.keySet().iterator(); it.hasNext();) {
+                    Param param = (Param) it.next();
+                    String name = param.getName();
+                    // FIXME Magic number - struct?
+                    String errorMsg = ((String[]) errors.get(param))[1];
+                    req.setAttribute(formName+".error."+queryRecordName+"."+name, errorMsg);
+                    // TODO Cope with correct values
+                }
+            }           
             catch (WdkModelException e) {
-                // TODO Auto-generated catch block
+                // TODO What does this mean?
                 //e.printStackTrace();
             }
                 
                 
-                try {
-                    //            System.err.println("Printing Record Instances on page " + pageCount);
-//            try {
-                    rli.print();
-                } catch (WdkModelException e1) {
-                    // TODO Auto-generated catch block
-                    e1.printStackTrace();
-                }
-            }
+//                try {
+//                    //            System.err.println("Printing Record Instances on page " + pageCount);
+////            try {
+//                    rli.print();
+//                } catch (WdkModelException e1) {
+//                    // TODO Auto-generated catch block
+//                    e1.printStackTrace();
+//                }
+        }
 
 		
 		if (problem) {
@@ -139,8 +151,15 @@ public class QueryTagsTesterServlet extends HttpServlet {
           
         String toPage = "";
         
-        req.setAttribute("rli", rli);
-        req.setAttribute("recordListName", queryRecordGroup + "." + queryRecordName);
+        // TODO Work out size
+        int size = 3;
+        
+        if (size==1 && autoRedirect) {
+        
+        } else {           
+            req.setAttribute("rli", rli);
+            req.setAttribute("recordListName", queryRecordGroup + "." + queryRecordName);
+        }
         
         redirect(req, res, toPage);
 		return;
