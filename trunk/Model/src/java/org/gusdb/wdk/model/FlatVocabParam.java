@@ -3,7 +3,7 @@ package org.gusdb.gus.wdk.model;
 import java.util.HashMap;
 
 
-public class FlatCVParam extends Param {
+public class FlatVocabParam extends Param {
     
     boolean multiPick = false;
     Query query;
@@ -11,7 +11,7 @@ public class FlatCVParam extends Param {
     HashMap vocabMap;
     boolean quoteInternalValue;
 
-    public FlatCVParam () {
+    public FlatVocabParam () {
 	super();
     }
 
@@ -92,7 +92,7 @@ public class FlatCVParam extends Param {
     /////////////////////////////////////////////////////////////////////
 
     protected void resolveReferences(WdkModel model) throws WdkModelException {
-	query = (Query)model.resolveReference(queryTwoPartName, name, "flatCVParam", "queryRef");
+	query = (Query)model.resolveReference(queryTwoPartName, name, "flatVocabParam", "queryRef");
 	query.resolveReferences(model);
 	// here check query's columns
     }
