@@ -1,6 +1,6 @@
 package org.gusdb.wdk.model.implementation;
 
-import org.gusdb.wdk.controller.WdkLogManager;
+
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -11,6 +11,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Vector;
 import java.util.logging.Logger;
+import org.gusdb.wdk.model.WdkLogManager;
 
 import javax.sql.DataSource;
 

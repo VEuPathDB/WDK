@@ -1,6 +1,6 @@
 package org.gusdb.wdk.model;
 
-import org.gusdb.wdk.controller.WdkLogManager;
+
 
 import java.util.logging.Logger;
 
