@@ -12,6 +12,7 @@ import java.util.HashMap;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
+import org.gusdb.wdk.controller.CConstants;
 
 /**
  *  form bean for showing a wdk question from a question set
@@ -39,7 +40,13 @@ public class QuestionForm extends ActionForm {
      * and return an ActionErrors object that encapsulates any validation errors
      */
     public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
+
 	ActionErrors errors = new ActionErrors();
+
+	String clicked = request.getParameter(CConstants.PQ_SUBMIT_KEY);
+	if (clicked != null && clicked.equals(CConstants.PQ_SUBMIT_BOOLEANATE)) {
+	    return errors;
+	}
 
 	QuestionBean wdkQuestion = getQuestion();
 	ParamBean[] params = wdkQuestion.getParams();

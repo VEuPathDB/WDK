@@ -111,6 +111,10 @@ public abstract class Query {
 	return columnA;
     }
 
+    public Map getColumnMap() {
+	return columnsH;
+    }
+
     public Column getColumn(String columnName) throws WdkModelException {
 	if (columnsH.get(columnName) == null)
 	    throw new WdkModelException("Query " + name 

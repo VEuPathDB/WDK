@@ -36,12 +36,12 @@ public class ProcessQuestionAction extends Action {
 				 HttpServletResponse response) throws Exception {
 
 	ActionForward forward = null;
-	String  submitAction = request.getParameter("questionSubmit");
-	if (submitAction.equals("Get Answer")){
+	String  submitAction = request.getParameter(CConstants.PQ_SUBMIT_KEY);
+	if (submitAction.equals(CConstants.PQ_SUBMIT_GET_ANSWER)){
 	    forward = mapping.findForward(CConstants.PQ_SHOW_SUMMARY_MAPKEY);
 	}
 	else {
-	    if (submitAction.equals("Booleanate")){
+	    if (submitAction.equals(CConstants.PQ_SUBMIT_BOOLEANATE)){
 		
 		forward = mapping.findForward(CConstants.PQ_START_BOOLEAN_MAPKEY);
 	    }

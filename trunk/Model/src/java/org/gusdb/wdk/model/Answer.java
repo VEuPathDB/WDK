@@ -155,7 +155,7 @@ public class Answer {
 	if (recordInstances == null){
 	    initRecordInstances();
 	}
-	if (recordInstances != null){
+	if (recordInstances != null && recordInstances.length > 0){
 	    RecordClass recordClass = recordInstances[0].getRecordClass();
 	    Iterator attributeNames = 
 		recordClass.getAttributeFields().keySet().iterator();
