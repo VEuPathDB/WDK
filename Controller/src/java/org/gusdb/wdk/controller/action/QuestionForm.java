@@ -12,6 +12,7 @@ import java.util.HashMap;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
+import org.gusdb.wdk.model.jspwrap.FlatVocabParamBean;
 import org.gusdb.wdk.controller.CConstants;
 
 /**
@@ -27,12 +28,17 @@ public class QuestionForm extends ActionForm {
     private QuestionBean question = null;
 
     public void reset() {
+	/*
 	QuestionBean wdkQuestion = getQuestion();
 	ParamBean[] params = wdkQuestion.getParams();
 	for (int i=0; i<params.length; i++) {
 	    ParamBean p = params[i];
 	    setMyProp(p.getName(), null);
 	}
+	*/
+	myProps = null;
+	myLabels = null;
+	myValues = null;
     }
 
     /**
@@ -53,8 +59,18 @@ public class QuestionForm extends ActionForm {
 	for (int i=0; i<params.length; i++) {
 	    ParamBean p = params[i];
 	    try {
-		Object pVal = getMyProp(p.getName());
-		String errMsg = p.validateValue(pVal);
+	        String[] pVals = null;
+		if (p instanceof FlatVocabParamBean) {
+		    pVals = getMyMultiProp(p.getName()); 
+		} else {
+		    pVals = new String[] { getMyProp(p.getName()) }; 
+		}
+		
+		String errMsg = null;
+		for (int j=0; j<pVals.length; j++) {
+		    String oneMsg = p.validateValue(pVals[j]);
+		    if (oneMsg != null) { errMsg += oneMsg; } 
+		}
 		if (errMsg != null) {
 		    errors.add(ActionErrors.GLOBAL_ERROR,
 			       new ActionError("mapped.properties", p.getPrompt(), errMsg));
@@ -66,14 +82,27 @@ public class QuestionForm extends ActionForm {
 	return errors;
     }
 
-    public void setMyProp(String key, Object val)
+    public void setMyProp(String key, String val)
     {
+	System.err.println("*** QuestionForm.setMyProp: " + key + " = " + val + "\n");
 	myProps.put(key, val);
     }
 
-    public Object getMyProp(String key)  throws WdkModelException
+    public void setMyMultiProp(String key, String[] vals)
     {
-	Object res = myProps.get(key);
+	System.err.println("*** QuestionForm.setMyMultiProp: " + key + " with " + vals.length + " values\n");
+	myProps.put(key, vals);
+    }
+
+    public String getMyProp(String key)  throws WdkModelException
+    {
+	String res = (String)myProps.get(key);
+	return res;
+    }
+
+    public String[] getMyMultiProp(String key)  throws WdkModelException
+    {
+	String[] res = (String[])myProps.get(key);
 	return res;
     }
 
