@@ -7,7 +7,7 @@ import java.util.Set;
 import java.util.Collection;
 import java.util.Iterator;
 
-public class RecordInstance implements Map {
+public class RecordInstance {
     
     String primaryKey;
     Record record;
