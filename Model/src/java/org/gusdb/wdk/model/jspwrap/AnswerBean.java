@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.jspwrap;
 
 import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.BooleanQuery;
 
 import java.util.Map;
 import java.util.Iterator;
@@ -26,6 +27,38 @@ public class AnswerBean {
 	return answer.getDisplayParams();
     }
 
+    /**
+     * @return opertation for boolean answer
+     */
+    public String getBooleanOperation() {
+	System.err.println("the param map is: " + answer.getParams());
+	if (!getIsBoolean()) {
+	    throw new RuntimeException("getBooleanOperation can not be called on simple AnswerBean");
+	}
+	return (String)answer.getParams().get(BooleanQuery.OPERATION_PARAM_NAME);
+    }
+
+    /**
+     * @return first child answer for boolean answer, null if it is an answer for a simple question.
+     */
+    public AnswerBean getFirstChildAnswer() {
+	if (!getIsBoolean()) {
+	    throw new RuntimeException("getFirstChildAnswer can not be called on simple AnswerBean");
+	}
+	Object childAnswer = answer.getParams().get(BooleanQuery.FIRST_ANSWER_PARAM_NAME);
+	return new AnswerBean((Answer)childAnswer);
+    }
+
+    /**
+     * @return second child answer for boolean answer, null if it is an answer for a simple question.
+     */
+    public AnswerBean getSecondChildAnswer() {
+	if (!getIsBoolean()) {
+	    throw new RuntimeException("getSecondChildAnswer can not be called on simple AnswerBean");
+	}
+	Object childAnswer = answer.getParams().get(BooleanQuery.SECOND_ANSWER_PARAM_NAME);
+	return new AnswerBean((Answer)childAnswer);
+    }
 
     public int getPageSize() {
 	return answer.getPageSize();
