@@ -4,13 +4,13 @@ use strict;
 use lib "$ENV{GUS_HOME}/lib/perl";
 use Getopt::Long;
 
-my ($dataDirectory, $dropDb, $createDb, $modelConfigFile);
+my ($dropDb, $createDb, $modelConfigFile);
 
 &GetOptions ('modelConfigFile=s' => \$modelConfigFile,
 	     'dropDatabase!' => \$dropDb,
-	     'createDatabase!' => \$createDb,
-	     'dataDirectory=s' => \$dataDirectory) or &usage;
-&usage unless $modelConfigFile && $dataDirectory && ($dropDb || $createDb);
+	     'createDatabase!' => \$createDb);
+
+&usage unless $modelConfigFile && ($dropDb || $createDb);
 
 my $classpath = "$ENV{GUS_HOME}/lib/java/commons-digester-1.5.jar:$ENV{GUS_HOME}/lib/java/WDK-Model.jar:$ENV{GUS_HOME}/lib/java/commons-beanutils.jar:$ENV{GUS_HOME}/lib/java/commons-collections.jar:$ENV{GUS_HOME}/lib/java/commons-logging-api.jar:$ENV{GUS_HOME}/lib/java/oracle-classes12.jar:$ENV{GUS_HOME}/lib/java/commons-dbcp-1.1.jar:$ENV{GUS_HOME}/lib/java/commons-pool-1.1.jar:$ENV{GUS_HOME}/lib/java/commons-cli-1.0.jar";
 
@@ -22,6 +22,8 @@ if ($dropDb){
 if ($createDb){
     $args .= "-createDatabase ";
 }
+
+my $dataDirectory = "$ENV{GUS_HOME}/data/WDK/ToyModel/testTables/";
 
 opendir(DATADIR, "$dataDirectory") || die ("opendir failed when trying to open $dataDirectory");
 my $nextTableName;
@@ -51,6 +53,6 @@ system($cmd);
 ############
 
 sub usage {
-    print "usage:\n  wdkTestDb\n \t-modelConfigFile (database configuration file to use with wdk model) \n\t-dataDirectory (directory in with WDKTest tables are located) \n\t<-dropDatabase|-createDatabase> (action to take with database; dropping when non-existent\n\t\or creating when already existing will do nothing; include both to reset datbase)";
+    print "\nusage:  parses flat files representing database tables and inserts them into the database. \n\nwdkTestDb\n \t-modelConfigFile (database configuration file to use with wdk model)\n\t<-dropDatabase|-createDatabase> (action to take with database; dropping when non-existent or creating when already existing will do nothing; include both to reset database)\n\n";
     exit(1);
 }
