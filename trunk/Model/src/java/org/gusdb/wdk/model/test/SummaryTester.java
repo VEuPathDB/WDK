@@ -52,10 +52,7 @@ public class SummaryTester {
         
 	    File schemaFile = new File(System.getProperty("schemaFile"));
 	    WdkModel wdkModel = 
-		ModelXmlParser.parseXmlFile(modelXmlFile.toURL(), modelPropFile.toURL(), schemaFile.toURL());
-
-	    wdkModel.configure(modelConfigXmlFile);
-	    wdkModel.setResources();
+		ModelXmlParser.parseXmlFile(modelXmlFile.toURL(), modelPropFile.toURL(), schemaFile.toURL(), modelConfigXmlFile.toURL());
 
 	    SummarySet summarySet = wdkModel.getSummarySet(summarySetName);
 	    Summary summary = summarySet.getSummary(summaryName);

@@ -163,11 +163,8 @@ public class QueryTester {
 
 	    File schemaFile = new File(System.getProperty("schemaFile"));
             WdkModel wdkModel = 
-                ModelXmlParser.parseXmlFile(modelXmlFile.toURL(), modelPropFile.toURL(), schemaFile.toURL());
+                ModelXmlParser.parseXmlFile(modelXmlFile.toURL(), modelPropFile.toURL(), schemaFile.toURL(), modelConfigXmlFile.toURL());
 
-            wdkModel.configure(modelConfigXmlFile);
-
-            wdkModel.setResources();
 	    QueryTester tester = new QueryTester(wdkModel);
             
             // if no params supplied, show the query prompts

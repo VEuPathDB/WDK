@@ -32,7 +32,7 @@ import org.apache.commons.cli.ParseException;
  * Created: Mon August 23 12:00:00 2004 EDT
  *
  * @author David Barkan
- * @version $Revision$ $Date$Author: art $
+ * @version $Revision$ $Date$Author: sfischer $
  */
 public class SanityTester {
 
@@ -100,10 +100,7 @@ public class SanityTester {
 
             File schemaFile = new File(System.getProperty("schemaFile"));
 
-	    WdkModel wdkModel = ModelXmlParser.parseXmlFile(modelXmlFile.toURL(), modelPropFile.toURL(), schemaFile.toURL());
-	    wdkModel.configure(modelConfigXmlFile);
-	    wdkModel.setResources();
-
+	    WdkModel wdkModel = ModelXmlParser.parseXmlFile(modelXmlFile.toURL(), modelPropFile.toURL(), schemaFile.toURL(), modelConfigXmlFile.toURL());
 	    QueryTester queryTester = new QueryTester(wdkModel);
 	    
 	    //make Sanity Model

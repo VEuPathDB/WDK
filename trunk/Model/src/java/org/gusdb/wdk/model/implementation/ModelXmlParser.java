@@ -48,11 +48,7 @@ public class ModelXmlParser {
     
     private static final String DEFAULT_SCHEMA_NAME = "wdkModel.rng";
     
-//    public static WdkModel parseXmlFile(File modelXmlFile, File schemaFile) throws org.xml.sax.SAXException, WdkModelException {
-//        return parseXmlFile(modelXmlFile, null, schemaFile);
-//    }
-    
-    public static WdkModel parseXmlFile(URL modelXmlURL, URL modelPropURL, URL schemaURL)
+    public static WdkModel parseXmlFile(URL modelXmlURL, URL modelPropURL, URL schemaURL, URL modelConfigXmlFileURL)
     throws WdkModelException {
         
         if (schemaURL == null) {
@@ -80,9 +76,15 @@ public class ModelXmlParser {
         }
         
         setModelDocument(model, modelXmlURL, modelPropURL);
-        
-        model.resolveReferences();
-        
+	model.resolveReferences();
+        try {
+	    
+	    model.configure(modelConfigXmlFileURL);
+	    model.setResources();
+	}
+	catch (Exception e){
+	    throw new WdkModelException(e);
+	}
         return model;
     }
     
@@ -359,12 +361,14 @@ public class ModelXmlParser {
         try {
             File modelXmlFile = new File(args[0]);
             File modelPropFile = null;
+	    File modelConfigFile = null;
             if (args.length > 1) { 
                 modelPropFile = new File(args[1]);
-            } 
-            
+		modelConfigFile = new File(args[2]);
+	    } 
+	                
             File schemaFile = new File(System.getProperty("schemaFile"));
-            WdkModel wdkModel = parseXmlFile(modelXmlFile.toURL(), modelPropFile.toURL(), schemaFile.toURL());
+            WdkModel wdkModel = parseXmlFile(modelXmlFile.toURL(), modelPropFile.toURL(), schemaFile.toURL(), modelConfigFile.toURL());
             
             System.out.println( wdkModel.toString() );
             

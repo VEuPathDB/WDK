@@ -44,11 +44,7 @@ public class RecordTester {
 	try {
 
 	    WdkModel wdkModel = 
-		ModelXmlParser.parseXmlFile(modelXmlFile.toURL(), modelPropFile.toURL(), schemaFile.toURL()) ;
-
-	    wdkModel.configure(modelConfigXmlFile);
-	    
-	    wdkModel.setResources();
+		ModelXmlParser.parseXmlFile(modelXmlFile.toURL(), modelPropFile.toURL(), schemaFile.toURL(), modelConfigXmlFile.toURL()) ;
 
 	    RecordSet recordSet = wdkModel.getRecordSet(recordSetName);
 	    Record record = recordSet.getRecord(recordName);

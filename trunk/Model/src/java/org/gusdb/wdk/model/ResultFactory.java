@@ -141,7 +141,7 @@ public class ResultFactory {
 	int nTables = tables.length;
 	int nDropped = 0;
 
-	System.err.println("Attempting to drop " + nTables + " results tables");
+	System.out.println("Attempting to drop " + nTables + " results tables");
 	for (int i =0;i < nTables;++i) {
 	    try {
 		platform.dropTable(schemaName, tables[i]);
@@ -149,8 +149,8 @@ public class ResultFactory {
 	    } catch (SQLException e) {}
 	}
 
-	System.err.println("Succeeded in dropping " + nDropped);
-	System.err.println("Deleting all rows from " + instanceTableFullName);
+	System.out.println("Succeeded in dropping " + nDropped);
+	System.out.println("Deleting all rows from " + instanceTableFullName);
 
 	try {
 	    SqlUtils.execute(platform.getDataSource(), "delete from " + instanceTableFullName);
@@ -165,9 +165,9 @@ public class ResultFactory {
     public void dropCache() throws WdkModelException {
 	try {
 	    resetCache();
-	    System.err.println("Dropping table " + instanceTableFullName);
+	    System.out.println("Dropping table " + instanceTableFullName);
 	    platform.dropTable(schemaName, instanceTableName);
-	    System.err.println("Dropping sequence " + instanceTableFullName + "_pkseq");
+	    System.out.println("Dropping sequence " + instanceTableFullName + "_pkseq");
 	    platform.dropSequence(instanceTableFullName + "_pkseq");
 	} catch (SQLException e) {
 	    throw new WdkModelException(e);

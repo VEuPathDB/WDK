@@ -145,12 +145,9 @@ public class ApplicationInitListener implements ServletContextListener {
         try {
             
             Class parser = Class.forName(parserClass);
-            Method build = parser.getDeclaredMethod("parseXmlFile", new Class[] {URL.class, URL.class, URL.class});
-            WdkModel wdkModel = (WdkModel) build.invoke(null, new Object[] {querySetURL, propsURL, schemaURL});
+            Method build = parser.getDeclaredMethod("parseXmlFile", new Class[] {URL.class, URL.class, URL.class, URL.class});
+            WdkModel wdkModel = (WdkModel) build.invoke(null, new Object[] {querySetURL, propsURL, schemaURL, modelConfigXmlURL});
 
-            wdkModel.configure(modelConfigXmlURL);
-            wdkModel.setResources();
-            
             this.dataSource = wdkModel.getRDBMSPlatform().getDataSource();
             
             application.setAttribute("wdk.resultFactory", wdkModel.getResultFactory());

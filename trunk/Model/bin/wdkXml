@@ -4,11 +4,12 @@ if ($#argv == 0) then
   echo ""
   echo "Parse a wdk model xml file"
   echo ""
-  echo "Usage: wdkXml xmlFile propFile"
+  echo "Usage: wdkXml xmlFile propFile configFile"
   echo	""
   echo "Where:"
   echo "  xmlFile: the model xml file"
   echo "  propFile: a properties file containing key-value pairs to substitute into macros in the model xml file.  The macros are of the form @key@."
+  echo "  configFile: configuration information for the model."
   exit 1 
 endif
 
@@ -20,4 +21,4 @@ setenv CLASSPATH "$GUS_HOME/lib/java/commons-digester-1.5.jar:$GUS_HOME/lib/java
 
 setenv LOGGING_PROPS
 
-java -classpath $CLASSPATH $LOGGING_PROPS -DerrorHandler=org.xml.sax.helpers.DefaultHandler -DschemaFile=$GUS_HOME/lib/rng/wdkModel.rng org.gusdb.wdk.model.implementation.ModelXmlParser $1 $2
+java -classpath $CLASSPATH $LOGGING_PROPS -DerrorHandler=org.xml.sax.helpers.DefaultHandler -DschemaFile=$GUS_HOME/lib/rng/wdkModel.rng org.gusdb.wdk.model.implementation.ModelXmlParser $1 $2 $3
