@@ -29,6 +29,14 @@ public class CConstants {
     public static final String GROW_BOOLEAN_MAPKEY = "grow_boolean";
     public static final String GET_BOOLEAN_ANSWER_MAPKEY = "get_boolean_answer";
 
+    //button click detectors, used in action, action forms, and jsp pages
+    public static final String PQ_SUBMIT_KEY = "questionSubmit"; //match question.jsp
+    public static final String PQ_SUBMIT_GET_ANSWER = "Get Answer"; //match question.jsp
+    public static final String PQ_SUBMIT_BOOLEANATE = "Booleanate"; //match question.jsp
+    public static final String PBQ_SUBMIT_KEY = "process_boolean_question"; //match booleanQuestion.jsp
+    public static final String PBQ_SUBMIT_GET_BOOLEAN_ANSWER = "Get Boolean Answer"; //match booleanQuestion.jsp
+    public static final String PBQ_SUBMIT_GROW_BOOLEAN = "Grow Boolean"; //match question.jsp
+
     //name of webapp init params, from web.xml, used in ApplicationInitListener.java
     protected static final String WDK_MODELCONFIGXML_PARAM = "wdkModelConfigXml_param";
     protected static final String WDK_MODELXML_PARAM = "wdkModelXml_param";

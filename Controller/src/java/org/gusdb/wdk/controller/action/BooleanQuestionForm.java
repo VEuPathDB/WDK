@@ -13,8 +13,8 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
 import org.gusdb.wdk.model.jspwrap.BooleanQuestionLeafBean;
-
 import org.gusdb.wdk.model.jspwrap.ParamBean;
+import org.gusdb.wdk.controller.CConstants;
 
 /**
  *  form bean for setting up a boolean question
@@ -50,6 +50,11 @@ public class BooleanQuestionForm extends QuestionForm {
     public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 	ActionErrors errors = new ActionErrors();
 
+	String clicked = request.getParameter(CConstants.PBQ_SUBMIT_KEY);
+	if (clicked != null && clicked.equals(CConstants.PBQ_SUBMIT_GROW_BOOLEAN)) {
+	    return errors;
+	}
+
 	//DTB -- need to figure out what to validate
 	
 	//BooleanQuestionNodeBean booleanQuestionNode = getBooleanQuestionNode();
@@ -67,8 +72,7 @@ public class BooleanQuestionForm extends QuestionForm {
 		throw new RuntimeException(exp);
 	    }
 	    }*/
-	//return errors;
-	return null;
+	return errors;
     }
 
     public int getNextId(){
