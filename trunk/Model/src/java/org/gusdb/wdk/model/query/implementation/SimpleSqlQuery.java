@@ -1,15 +1,20 @@
-package org.gusdb.gus.wdk.model.query;
+package org.gusdb.gus.wdk.model.query.implementation;
 
 import java.util.Map;
 import java.util.Iterator;
 import javax.sql.DataSource;
 import java.sql.SQLException;
 
-public class SqlQuery extends Query {
+import org.gusdb.gus.wdk.model.query.SimpleQueryI;
+import org.gusdb.gus.wdk.model.query.SimpleQueryInstanceI;
+import org.gusdb.gus.wdk.model.query.ResultFactory;
+
+public class SimpleSqlQuery extends Query implements SimpleQueryI {
     
     String sql;
+    ResultFactory resultFactory;
 
-    public SqlQuery () {
+    public SimpleSqlQuery () {
 	super();
     }
 
@@ -25,17 +30,13 @@ public class SqlQuery extends Query {
 	return sql;
     }
 
-    public String[] getColumnNames(DataSource dataSource, String sql) throws SQLException {
-	return SqlUtils.getColumnNames(dataSource, sql);
+    public SimpleQueryInstanceI makeInstance() {
+	return new SimpleSqlQueryInstance(this);
     }
 
     /////////////////////////////////////////////////////////////////////
     /////////////  Protected ////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////
-
-    protected QueryInstance makeInstance(boolean useCache) {
-	return new SqlQueryInstance(this);
-    }
 
     /**
      * @param values These values are assumed to be pre-validated
@@ -56,5 +57,13 @@ public class SqlQuery extends Query {
        StringBuffer buf = super.formatHeader();
        buf.append("  sql='" + sql + "'" + newline);
        return buf;
+    }
+
+    public void setResultFactory(ResultFactory resultFactory) {
+	this.resultFactory = resultFactory;
+    }
+    
+    protected SqlResultFactory getSqlResultFactory() {
+	return resultFactory.getSqlResultFactory();
     }
 }
