@@ -82,17 +82,23 @@ public class QueryHolder extends SimpleTagSupport {
             } 
         }
         
-        SimpleQueryInstanceI sqii = NullQueryInstance.INSTANCE;
-        
-        if ( initQuery != null) {
-            SimpleQuerySet sqs = GlobalRepository.getInstance().getSimpleQuerySet(querySet);
-            SimpleQueryI sq = sqs.getQuery(initQuery);
-            sqii = sq.makeInstance();
+        SimpleQueryInstanceI sqii = (SimpleQueryInstanceI) getJspContext().getAttribute(name+".sqii", PageContext.REQUEST_SCOPE);
+            
+        if (sqii == null) {    
+            sqii = NullQueryInstance.INSTANCE;
+
+            if ( initQuery != null) {
+            	SimpleQuerySet sqs = GlobalRepository.getInstance().getSimpleQuerySet(querySet);
+            	SimpleQueryI sq = sqs.getQuery(initQuery);
+            	sqii = sq.makeInstance();
+            }
         }
         
         if (getJspBody() != null) {
+            getJspContext().setAttribute("wdk.formName", name, PageContext.PAGE_SCOPE);
             getJspContext().setAttribute(var, sqii, PageContext.PAGE_SCOPE);
             getJspBody().invoke(null);
+            getJspContext().removeAttribute("wdk.formName", PageContext.PAGE_SCOPE);
         }
         out.println("</form>");
     }

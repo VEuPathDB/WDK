@@ -29,17 +29,19 @@ public class DisplayParam extends SimpleTagSupport {
     
     public void doTag() throws IOException, JspException {
     	if (param != null) {
-	JspWriter out = getJspContext().getOut();
+    		JspWriter out = getJspContext().getOut();
+    		String formQuery = getJspContext().getAttribute("wdk.formName", PageContext.PAGE_SCOPE)+".";
+            formQuery += getJspContext().getAttribute("wdk.queryName", PageContext.PAGE_SCOPE);
+            
+    			if (param instanceof StringParam) {
+    				handleStringParam((StringParam) param, formQuery, out);
+    				return;
+    			}
 
-	if (param instanceof StringParam) {
-		handleStringParam((StringParam) param, out);
-		return;
-	}
-
-	if (param instanceof SqlEnumParam) {
-		handlePairParam((SqlEnumParam) param, out);
-		return;
-	}
+    		if (param instanceof SqlEnumParam) {
+    			handlePairParam((SqlEnumParam) param, formQuery, out);
+    			return;
+    		}
 	
 	//	out.println("<b>Got a param "+param.toString()+"</b>");
 
@@ -47,18 +49,18 @@ public class DisplayParam extends SimpleTagSupport {
 //	    getJspBody().invoke(null);
 //	}
 //	out.println("</form>");
-    }
+    	}
     }
 
-    private void handleStringParam(StringParam p, JspWriter out) throws IOException {
+    private void handleStringParam(StringParam p, String formQuery, JspWriter out) throws IOException {
     	String def = p.getDefault();
     	if ( def == null) {
     		def = "";
     	}
-    	out.println("<input name=\""+p.getName()+"\" type=\"text\" length=\"8\" value=\""+def+"\">");
+    	out.println("<input name=\""+formQuery+"."+p.getName()+"\" type=\"text\" length=\"8\" value=\""+def+"\">");
     }
   
-    private void handlePairParam(SqlEnumParam p, JspWriter out) throws IOException {
+    private void handlePairParam(SqlEnumParam p, String formQuery, JspWriter out) throws IOException {
     	
     	ResultFactory rf = GlobalRepository.getInstance().getQueryResultFactory();
     	Map m = null;
@@ -69,7 +71,7 @@ public class DisplayParam extends SimpleTagSupport {
     		// TODO How are we logging?
     	}
     	if (m != null) {
-    		out.println("<select name=\""+p.getName()+"\">");
+    		out.println("<select name=\""+formQuery+"."+p.getName()+"\">");
     		
     		for (Iterator it = m.entrySet().iterator(); it.hasNext(); ) {
     			Map.Entry entry = (Map.Entry) it.next();
