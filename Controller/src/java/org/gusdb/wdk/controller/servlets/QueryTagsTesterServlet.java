@@ -29,7 +29,8 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * QueryTagsTesterServlet
  *
- * TODO Class description
+ * This servlet interacts with the query custom tags to present and validate a form
+ * for the user
  *
  * Created: May 9, 2004
  *

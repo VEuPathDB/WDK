@@ -12,6 +12,9 @@ import java.util.Map;
 
 import javax.servlet.jsp.JspWriter;
 
+/**
+ * Simple HTML form view on a SqlEnumParam
+ */
 public class SqlEnumParamView implements ParamViewI {
   
     public void showParam(Param param, String formQuery, JspWriter out) throws IOException {

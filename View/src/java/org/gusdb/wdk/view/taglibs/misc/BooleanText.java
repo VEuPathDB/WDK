@@ -8,6 +8,10 @@ import javax.servlet.jsp.JspWriter;
 import javax.servlet.jsp.tagext.JspFragment;
 import javax.servlet.jsp.tagext.SimpleTagSupport;
 
+/**
+ * Custom tag to convert between boolean eg 0/1 into more user-friendly text
+ * 
+ */
 public class BooleanText extends SimpleTagSupport {
     
     private final static String[] pairs = {"Yes", "No", "True", "False", "1", "0"};

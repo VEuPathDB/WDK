@@ -7,6 +7,9 @@ import java.io.IOException;
 
 import javax.servlet.jsp.JspWriter;
 
+/**
+ * Simple HTML form view of s StringParam
+ */
 public class StringParamView implements ParamViewI {
 
     public void showParam(Param param, String formQuery, JspWriter out) throws IOException {

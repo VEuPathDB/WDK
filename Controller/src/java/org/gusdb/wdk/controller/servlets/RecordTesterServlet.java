@@ -19,6 +19,9 @@ import javax.servlet.http.HttpServletResponse;
 
 
 
+/**
+ * Servlet to generate a RecordInstance for forwarding to a view
+ */
 public class RecordTesterServlet extends HttpServlet {
 
     private static final int DESTINATION_PLAIN=0;
