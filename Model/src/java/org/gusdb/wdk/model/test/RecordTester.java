@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model.test;
 
 import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.RecordInstance;
 import org.gusdb.wdk.model.RecordClassSet;
@@ -27,22 +28,29 @@ public class RecordTester {
     public static void main(String[] args) {
 	
 	String cmdName = System.getProperties().getProperty("cmdName");
+        File configDir = 
+	    new File(System.getProperties().getProperty("configDir"));
 
 	// process args
 	Options options = declareOptions();
 	CommandLine cmdLine = parseOptions(cmdName, options, args);
 	
-	File modelXmlFile = new File(cmdLine.getOptionValue("modelXmlFile"));
-        File modelPropFile = new File(cmdLine.getOptionValue("modelPropFile"));
-	File modelConfigXmlFile = new File(cmdLine.getOptionValue("configFile"));
+	String modelName = cmdLine.getOptionValue("model");
+
+        File modelConfigXmlFile = new File(configDir, modelName+"-config.xml");
+        File modelXmlFile = new File(configDir, modelName + ".xml");
+        File modelPropFile = new File(configDir, modelName + ".prop");
+
 	File schemaFile = new File(System.getProperty("schemaFile"));
 
-	String recordClassSetName = cmdLine.getOptionValue("recordSetName");
-	String recordClassName = cmdLine.getOptionValue("recordName");
+	String recordClassFullName = cmdLine.getOptionValue("record");
 	String primaryKey = cmdLine.getOptionValue("primaryKey");
 
 	try {
-
+	    
+	    Reference ref = new Reference(recordClassFullName);
+	    String recordClassSetName = ref.getSetName();
+	    String recordClassName = ref.getElementName();
 	    WdkModel wdkModel = 
 		ModelXmlParser.parseXmlFile(modelXmlFile.toURL(), modelPropFile.toURL(), schemaFile.toURL(), modelConfigXmlFile.toURL()) ;
 
@@ -74,17 +82,12 @@ public class RecordTester {
     static Options declareOptions() {
 	Options options = new Options();
 
-	// config file
-	addOption(options, "configFile", "An .xml file that specifies a ModelConfig object.");
-	// model file
-	addOption(options, "modelXmlFile", "An .xml file that specifies WDK Model.");
-	// model prop file
-	addOption(options, "modelPropFile", "A .prop file that specifies key=value pairs to substitute into the model file.");
-	
-	// record set name
-	addOption(options, "recordSetName", "The name of the record set in which to find the record");
+	// model name
+	addOption(options, "model", "the name of the model.  This is used to find the Model XML file ($GUS_HOME/config/model_name.xml) the Model property file ($GUS_HOME/config/model_name.prop) and the Model config file ($GUS_HOME/config/model_name-config.xml)");
+
 	// record name
-	addOption(options, "recordName", "The name of the record to print.");
+	addOption(options, "record", "The full name (set.element) of the record to print.");
+
 	// primary key
 	addOption(options, "primaryKey", "The primary key of the record to find.");
 	
@@ -116,11 +119,8 @@ public class RecordTester {
 	String newline = System.getProperty( "line.separator" );
 	String cmdlineSyntax = 
 	    cmdName + 
-	    " -configFile config_file" +
-	    " -modelXmlFile model_xml_file" +
-            " -modelPropFile model_prop_file" +
-	    " -recordSetName record_set_name" +
-	    " -recordName record_name" +
+	    " -model model_name" +
+	    " -record full_record_name" +
 	    " -primaryKey primary_key";
 
 	String header = 

@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.test;
 import org.gusdb.wdk.model.FlatVocabParam;
+import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.Param;
 import org.gusdb.wdk.model.Query;
 import org.gusdb.wdk.model.QueryInstance;
@@ -136,18 +137,20 @@ public class QueryTester {
     public static void main(String[] args) {
 	
         String cmdName = System.getProperties().getProperty("cmdName");
+        File configDir = 
+	    new File(System.getProperties().getProperty("configDir"));
         
         // process args
         Options options = declareOptions();
         CommandLine cmdLine = parseOptions(cmdName, options, args);
         
-        File modelConfigXmlFile = 
-            new File(cmdLine.getOptionValue("configFile"));
-        File modelXmlFile = new File(cmdLine.getOptionValue("modelXmlFile"));
-        File modelPropFile = new File(cmdLine.getOptionValue("modelPropFile"));
+	String modelName = cmdLine.getOptionValue("model");
+
+        File modelConfigXmlFile = new File(configDir, modelName+"-config.xml");
+        File modelXmlFile = new File(configDir, modelName + ".xml");
+        File modelPropFile = new File(configDir, modelName + ".prop");
         
-        String querySetName = cmdLine.getOptionValue("querySetName");
-        String queryName = cmdLine.getOptionValue("queryName");
+	String fullQueryName = cmdLine.getOptionValue("query");
         boolean useCache = !cmdLine.hasOption("dontCache");
         boolean returnResultAsTable = cmdLine.hasOption("returnTable");
         boolean haveParams = cmdLine.hasOption("params");
@@ -158,8 +161,11 @@ public class QueryTester {
         if (paging) rows = cmdLine.getOptionValues("rows");
         
         try {
-            // read config info
+	    Reference ref = new Reference(fullQueryName);
+	    String querySetName = ref.getSetName();
+	    String queryName = ref.getElementName();
 
+            // read config info
 	    File schemaFile = new File(System.getProperty("schemaFile"));
             WdkModel wdkModel = 
                 ModelXmlParser.parseXmlFile(modelXmlFile.toURL(), modelPropFile.toURL(), schemaFile.toURL(), modelConfigXmlFile.toURL());
@@ -224,18 +230,11 @@ public class QueryTester {
     static Options declareOptions() {
 	Options options = new Options();
 
-	// config file
-	addOption(options, "configFile", "the model config .xml file");
+	// model name
+	addOption(options, "model", "the name of the model.  This is used to find the Model XML file ($GUS_HOME/config/model_name.xml) the Model property file ($GUS_HOME/config/model_name.prop) and the Model config file ($GUS_HOME/config/model_name-config.xml)");
 
-	// model file
-	addOption(options, "modelXmlFile", "An .xml file that specifies WDK Model.");
-	// model prop file
-	addOption(options, "modelPropFile", "A .prop file that specifies key=value pairs to substitute into the model file.");
-	
-	// record set name
-	addOption(options, "querySetName", "The name of the query set in which to find the query");
-	// record name
-	addOption(options, "queryName", "The name of the query to run.");
+	// query name
+	addOption(options, "query", "The full name (set.element) of the query to run.");
 	
 	// use cache
 	Option useCache = new Option("dontCache","Do not use the cache for this query (even if it is cache enabled).");
@@ -293,10 +292,8 @@ public class QueryTester {
         String newline = System.getProperty( "line.separator" );
         String cmdlineSyntax = 
             cmdName + 
-            " -configFile config_file" +
-            " -modelXmlFile model_xml_file" +
-            " -querySetName query_set_name" +
-            " -queryName query_name" +
+            " -model model" +
+            " -query full_query_name" +
             " [-dontCache]" +
             " [-returnTable | -returnSize | -rows start end]" +
             " [-params param_1_name,param_1_value,...]";

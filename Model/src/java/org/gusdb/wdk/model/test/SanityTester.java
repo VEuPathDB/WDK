@@ -84,16 +84,20 @@ public class SanityTester {
     public static void main(String[] args) {
 	
         String cmdName = System.getProperties().getProperty("cmdName");
+        File configDir = 
+	    new File(System.getProperties().getProperty("configDir"));
         
         // process args
         Options options = declareOptions();
         CommandLine cmdLine = parseOptions(cmdName, options, args);
         
-        File modelConfigXmlFile = 
-            new File(cmdLine.getOptionValue("configFile"));
-        File sanityXmlFile = new File(cmdLine.getOptionValue("sanityXmlFile"));
-        File modelPropFile = new File(cmdLine.getOptionValue("modelPropFile"));
-	File modelXmlFile = new File(cmdLine.getOptionValue("modelXmlFile"));
+	String modelName = cmdLine.getOptionValue("model");
+
+        File modelConfigXmlFile = new File(configDir, modelName+"-config.xml");
+        File modelXmlFile = new File(configDir, modelName + ".xml");
+        File modelPropFile = new File(configDir, modelName + ".prop");
+	File sanityXmlFile = new File(configDir, modelName + "-sanity.xml");
+       
         boolean verbose = cmdLine.hasOption("verbose");
         	    
 	try {
@@ -377,14 +381,9 @@ public class SanityTester {
     static Options declareOptions() {
 	Options options = new Options();
 
-	// config file
-	addOption(options, "configFile", "the model config .xml file");
-	// sanity file
-	addOption(options, "sanityXmlFile", "An .xml file that specifies queries and records in the sanity test.");
-	// model xml file
-	addOption(options, "modelXmlFile", "An .xml file that specifies WDK Model.");
-	// model prop file
-	addOption(options, "modelPropFile", "A .prop file that specifies key=value pairs to substitute into the model file.");
+	// model name
+	addOption(options, "model", "the name of the model.  This is used to find the Model XML file ($GUS_HOME/config/model_name.xml), the Model property file ($GUS_HOME/config/model_name.prop), the Sanity Test file ($GUS_HOME/config/model_name-sanity.xml) and the Model config file ($GUS_HOME/config/model_name-config.xml)");
+
 	//verbose
 	Option verbose = new Option("verbose","Print out more information while running test.");
 	options.addOption(verbose);
@@ -417,10 +416,7 @@ public class SanityTester {
         String newline = System.getProperty( "line.separator" );
         String cmdlineSyntax = 
             cmdName + 
-            " -configFile config_file" +
-	    " -modelPropFile model_prop_file" + 
-            " -sanityXmlFile sanity_xml_file" +
-	    " -modelXmlFile model_xml_file" +
+            " -model model_name" +
 	    " -verbose";
         
         String header = 
