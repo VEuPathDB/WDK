@@ -5,13 +5,13 @@ use lib "$ENV{GUS_HOME}/lib/perl";
 use Getopt::Long;
 use Carp;
 
-my ($dropDb, $createDb, $modelConfigFile);
+my ($dropDb, $createDb, $modelName);
 
-&GetOptions ('configFile=s' => \$modelConfigFile,
-	     'dropDatabase!' => \$dropDb,
-	     'createDatabase!' => \$createDb);
+&GetOptions ('model=s' => \$modelName,
+	     'drop!' => \$dropDb,
+	     'create!' => \$createDb);
 
-&usage unless $modelConfigFile && ($dropDb || $createDb);
+&usage unless $modelName && ($dropDb || $createDb);
 
 my $GUS_HOME=$ENV{GUS_HOME};
 
@@ -27,16 +27,16 @@ while (my $nextFileName = readdir(DATADIR)){
     }
 }
 
-my $args = "-configFile $modelConfigFile ";
+my $args = "-model $modelName ";
 
 if ($dropDb){
-    $args .= "-dropDatabase ";
+    $args .= "-drop ";
 }
 if ($createDb){
-    $args .= "-createDatabase ";
+    $args .= "-create ";
 }
 
-my $dataDirectory = "$ENV{GUS_HOME}/data/WDK/ToyModel/testTables/";
+my $dataDirectory = "$ENV{GUS_HOME}/data/WDKToySite/Model/testTables/";
 
 opendir(DATADIR, "$dataDirectory") || die ("opendir failed when trying to open $dataDirectory");
 my $nextTableName;
@@ -57,7 +57,7 @@ foreach my $tableName (@tables){
 
 $args .= "-tables $tableArg";
 
-my $cmd = "java -Djdbc.drivers=oracle.jdbc.driver.OracleDriver -DcmdName=wdkTestDb -classpath $CLASSPATH org.gusdb.wdk.model.test.TestDBManager $args";
+my $cmd = "java -Djdbc.drivers=oracle.jdbc.driver.OracleDriver -DconfigDir=$GUS_HOME/config -DcmdName=wdkTestDb -classpath $CLASSPATH org.gusdb.wdk.model.test.TestDBManager $args";
 
 #print STDERR "wdkTestDb: running command $cmd\n";
 
@@ -69,10 +69,10 @@ sub usage {
     print "
 Create a toy database to use in testing the WDK.  (The database is created from files included in the WDK distribution.) 
 
-usage: wdkTestDb -configFile config_file [-createDatabase | -dropDatabase]
+usage: wdkTestDb -model model_name [-create | -drop]
 
 Options:
--configFile <config_file>         The model config .xml file
+-model <model>         The name of the model.  This is used to find the Model config file (\$GUS_HOME/config/model_name-config.xml)
 ";
     exit(1);
 }

@@ -29,13 +29,16 @@ public class TestDBManager {
     public static void main(String[] args){
 
 	String cmdName = System.getProperties().getProperty("cmdName");
+        File configDir = 
+	    new File(System.getProperties().getProperty("configDir"));
 	
 	// process args
 	Options options = declareOptions();
 	CommandLine cmdLine = parseOptions(cmdName, options, args);
 	
-	File modelConfigXmlFile = 
-	    new File(cmdLine.getOptionValue("configFile"));
+	String modelName = cmdLine.getOptionValue("model");
+
+        File modelConfigXmlFile = new File(configDir, modelName+"-config.xml");
 
 	try {
 	    
@@ -177,18 +180,19 @@ public class TestDBManager {
     static Options declareOptions() {
 	Options options = new Options();
 
-	// config file
-	addOption(options, "configFile", "An .xml file that specifies a ModelConfig object.");
+	// model name
+	addOption(options, "model", "the name of the model.  This is used to find the config file ($GUS_HOME/config/model_name-config.xml)");
+
 	// tables
 	Option tables = new Option("tables", "a list of files to be parsed and created as tables in the database");
 	tables.setArgs(Option.UNLIMITED_VALUES);
 	tables.setRequired(true);
 	options.addOption(tables);
 	
-	Option dropDb = new Option("dropDatabase", false, "Drop existing test database");
+	Option dropDb = new Option("drop", false, "Drop existing test database");
 	options.addOption(dropDb);
 
-	Option createDb = new Option("createDatabase", false, "Create new test database");
+	Option createDb = new Option("create", false, "Create new test database");
 	options.addOption(createDb);
 
 	return options;
@@ -226,9 +230,9 @@ public class TestDBManager {
         String newline = System.getProperty( "line.separator" );
         String cmdlineSyntax = 
             cmdName + 
-            " -configFile config_file" +
+            " -model model_name" +
             " tables table_list " +
-            " [-dropDatabase! || -createDatabase! ";
+            " [-create | -drop] ";
         
         String header = 
             newline + "Parse flat files representing database tables and insert into database." + newline + newline + "Options:" ;
