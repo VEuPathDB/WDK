@@ -2,8 +2,10 @@ package org.gusdb.gus.wdk.model.implementation;
 
 import org.gusdb.gus.wdk.model.Column;
 import org.gusdb.gus.wdk.model.Param;
+import org.gusdb.gus.wdk.model.Query;
+import org.gusdb.gus.wdk.model.QueryInstance;
 
-public class NullQuery implements QueryI {
+public class NullQuery extends Query {
     
 	public static final NullQuery INSTANCE = new NullQuery();
 	
@@ -62,5 +64,13 @@ public class NullQuery implements QueryI {
 	public Column getColumn(String columnName) {
 		return null;
 	}
+
+    /* (non-Javadoc)
+     * @see org.gusdb.gus.wdk.model.Query#makeInstance()
+     */
+    public QueryInstance makeInstance() {
+        // TODO Auto-generated method stub
+        return NullQueryInstance.INSTANCE;
+    }
 
 }
