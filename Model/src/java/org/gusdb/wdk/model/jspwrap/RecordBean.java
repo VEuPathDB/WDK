@@ -1,14 +1,11 @@
 package org.gusdb.wdk.model.jspwrap;
 
-import org.gusdb.wdk.model.FieldValueMap;
 import org.gusdb.wdk.model.RecordInstance;
-import org.gusdb.wdk.model.WdkModelException;
 
 import java.util.Map;
-import java.util.Iterator;
 
 /**
- * A wrapper on a Summary that provides simplified access for 
+ * A wrapper on a {@link RecordInstance} that provides simplified access for 
  * consumption by a view
  */ 
 public class RecordBean {
