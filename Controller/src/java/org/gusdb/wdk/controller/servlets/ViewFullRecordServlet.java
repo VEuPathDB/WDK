@@ -1,5 +1,6 @@
 package org.gusdb.gus.wdk.controller.servlets;
 
+import org.gusdb.gus.wdk.controller.WdkLogManager;
 import org.gusdb.gus.wdk.controller.WdkModelExtra;
 import org.gusdb.gus.wdk.model.Record;
 import org.gusdb.gus.wdk.model.RecordInstance;
@@ -26,7 +27,7 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class ViewFullRecordServlet extends HttpServlet {
 
-    private static final Logger logger = Logger.getLogger("org.gusdb.gus.wdk.controller.servlets.ViewFullRecordServlet");
+    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.gus.wdk.controller.servlets.ViewFullRecordServlet");
     
     private static final int DESTINATION_PLAIN=0;
     private static final int DESTINATION_JSP=1;

@@ -1,5 +1,6 @@
 package org.gusdb.gus.wdk.controller.servlets;
 
+import org.gusdb.gus.wdk.controller.WdkLogManager;
 import org.gusdb.gus.wdk.controller.WdkModelExtra;
 import org.gusdb.gus.wdk.model.Param;
 import org.gusdb.gus.wdk.model.Query;
@@ -47,7 +48,7 @@ public class InteractiveRecordListServlet extends HttpServlet {
     
     private static final String RESULT_SUMMARY_PAGE = "/WEB-INF/indirectPages/top/resultSummary.jsp";
     
-    private static final Logger logger = Logger.getLogger("org.gusdb.gus.wdk.controller.servlets.InteractiveRecordListServlet");
+    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.gus.wdk.controller.servlets.InteractiveRecordListServlet");
     
     private final static boolean autoRedirect = true;
     

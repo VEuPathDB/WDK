@@ -1,5 +1,6 @@
 package org.gusdb.gus.wdk.model.implementation;
 
+import org.gusdb.gus.wdk.controller.WdkLogManager;
 import org.gusdb.gus.wdk.model.RDBMSPlatformI;
 
 import java.sql.SQLException;
@@ -15,7 +16,7 @@ import javax.sql.DataSource;
  */
 public class Oracle implements RDBMSPlatformI {
     
-    private static final Logger logger = Logger.getLogger("org.gusdb.gus.wdk.model.implementation.Oracle");
+    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.gus.wdk.model.implementation.Oracle");
     
     private DataSource dataSource;
 
