@@ -9,7 +9,6 @@ import org.gusdb.gus.wdk.model.RecordListSet;
 import org.gusdb.gus.wdk.model.ResultFactory;
 import org.gusdb.gus.wdk.model.WdkModel;
 import org.gusdb.gus.wdk.model.implementation.ModelXmlParser;
-import org.gusdb.gus.wdk.model.implementation.SqlResultFactory;
 import org.gusdb.gus.wdk.model.Query;
 
 

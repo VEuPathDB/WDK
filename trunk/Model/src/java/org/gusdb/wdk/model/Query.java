@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.Vector;
 import java.util.Iterator;
 
-import javax.sql.DataSource;
-
 import org.gusdb.gus.wdk.model.ResultFactory;
 import org.gusdb.gus.wdk.model.QueryParamsException;
 import org.gusdb.gus.wdk.model.Param;
