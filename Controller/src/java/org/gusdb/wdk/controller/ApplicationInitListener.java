@@ -177,7 +177,7 @@ public class ApplicationInitListener implements ServletContextListener {
 
             ds.setPassword(password);
             ds.setUser(login);
-            return (DataSource) ds;
+            return ds;
         }
         catch (SQLException exp) {
             exp.printStackTrace();
