@@ -24,23 +24,23 @@ public class SqlResultList extends ResultList {
     }
 
     public Object getValueFromResult(String attributeName) throws WdkModelException {
-	Object o = null;
-	try {
-	    o = resultSet.getObject(attributeName);
-	} catch (SQLException e) {
-	    throw new WdkModelException(e);
-	}
-	return o;
+        Object o = null;
+        try {
+            o = resultSet.getObject(attributeName);
+        } catch (SQLException e) {
+            throw new WdkModelException(e);
+        }
+        return o;
     }
 
     public boolean next() throws WdkModelException {
-	boolean b = false;
-	try {
-	    b = resultSet.next();
-	} catch (SQLException e) {
-	    throw new WdkModelException(e);
-	}
-	return b;
+        boolean b = false;
+        try {
+            b = resultSet.next();
+        } catch (SQLException e) {
+            throw new WdkModelException(e);
+        }
+        return b;
     }
 
     public void write(StringBuffer buf) throws WdkModelException {

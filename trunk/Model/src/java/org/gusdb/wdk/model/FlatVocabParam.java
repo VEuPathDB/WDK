@@ -102,24 +102,24 @@ public class FlatVocabParam extends Param {
     }
     
     protected void initVocabMap() throws WdkModelException {
-	if (vocabMap == null) {
-	    vocabMap = new HashMap();
-	    QueryInstance instance = query.makeInstance();
-	    ResultList result = instance.getResult();
-	    while (result.next()) {
-		vocabMap.put(result.getValue("term"),
-			     result.getValue("internal"));
-	    }
-	}
+        if (vocabMap == null) {
+            vocabMap = new HashMap();
+            QueryInstance instance = query.makeInstance();
+            ResultList result = instance.getResult();	
+            while (result.next()) {
+	        vocabMap.put(result.getValue("term"),
+	                result.getValue("internal"));
+            }
+        }
     }
 
     protected String validateSingleValue(Object value) throws WdkModelException {
-	initVocabMap();
+        initVocabMap();
 
-	if (vocabMap.containsKey(value)) 
-	    return null;
-	else 
-	    return "Invalid value '" + value + "' for parameter '" + name +"'";
+        if (vocabMap.containsKey(value)) {
+            return null;
+        }
+        return "Invalid value '" + value + "' for parameter '" + name +"'";
     }
 
 
