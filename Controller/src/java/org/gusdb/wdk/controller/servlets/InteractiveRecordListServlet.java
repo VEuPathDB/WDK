@@ -26,7 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 
 
 /**
- * QueryTagsTesterServlet
+ * InteractiveRecordListServlet
  *
  * This servlet interacts with the query custom tags to present and validate a form
  * for the user
@@ -36,7 +36,7 @@ import javax.servlet.http.HttpServletResponse;
  * @author Adrian Tivey
  * @version $Revision$ $Date$ $Author$
  */
-public class QueryTagsTesterServlet extends HttpServlet {
+public class InteractiveRecordListServlet extends HttpServlet {
 
     private final static boolean autoRedirect = true;
     

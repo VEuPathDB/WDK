@@ -40,10 +40,10 @@
     <servlet-class>org.gusdb.gus.wdk.controller.servlets.RecordTesterServlet</servlet-class>
   </servlet>
   <servlet>
-    <servlet-name>QueryTagsTester</servlet-name>
-    <display-name>QueryTagsTester</display-name>
+    <servlet-name>InteractiveRecordList</servlet-name>
+    <display-name>InteractiveRecordList</display-name>
     <description>A servlet that cooperates with the query tags to fill them out.</description>
-    <servlet-class>org.gusdb.gus.wdk.controller.servlets.QueryTagsTesterServlet</servlet-class>
+    <servlet-class>org.gusdb.gus.wdk.controller.servlets.InteractiveRecordListServlet</servlet-class>
   </servlet>
   
   <servlet-mapping>
@@ -51,8 +51,8 @@
     <url-pattern>/RecordTester</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
-    <servlet-name>QueryTagsTester</servlet-name>
-    <url-pattern>/QueryTagsTester</url-pattern>
+    <servlet-name>InteractiveRecordList</servlet-name>
+    <url-pattern>/InteractiveRecordList</url-pattern>
   </servlet-mapping> 
   
 </web-app> 
