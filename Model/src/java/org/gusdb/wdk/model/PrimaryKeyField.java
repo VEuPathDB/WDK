@@ -17,6 +17,10 @@ public class PrimaryKeyField implements FieldI {
 	return name;
     }
 	
+    public Boolean getIsInternal() {
+	return new Boolean(false);
+    }
+   
     public String getDisplayName() {
 	return displayName;
     }

@@ -106,8 +106,8 @@ public class FlatVocabParam extends Param {
             QueryInstance instance = query.makeInstance();
             ResultList result = instance.getResult();	
             while (result.next()) {
-	        vocabMap.put(result.getValue("term"),
-	                result.getValue("internal"));
+	        vocabMap.put(result.getAttributeFieldValue("term").getValue(),
+			     result.getAttributeFieldValue("internal").getValue());
             }
         }
     }

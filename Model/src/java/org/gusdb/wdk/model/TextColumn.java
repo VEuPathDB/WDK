@@ -23,7 +23,8 @@ public class TextColumn extends Column implements DerivedColumnI {
 	    if (column instanceof DerivedColumnI) continue;
 	    String columnName = column.getName();
 
-	    Object columnVal = resultList.getValue(columnName);
+	    Object columnVal = 
+		resultList.getAttributeFieldValue(columnName).getValue();
 	    String columnValStr = columnVal == null ? "???" : columnVal.toString();
 	    instantiatedText = 
 		RecordInstance.instantiateText(instantiatedText, columnName, columnValStr);

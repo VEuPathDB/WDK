@@ -22,7 +22,11 @@ public class AttributeField implements FieldI {
     }
 	
     public String getType() {
-	return column.getDataTypeName();
+	return column.getSpecialType();
+    }
+	
+    public Boolean getIsInternal() {
+	return column.getIsInternal();
     }
 	
     public String toString() {

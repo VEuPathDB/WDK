@@ -204,7 +204,8 @@ public class Answer {
             for (int j = 0; j < columns.length; j++){
                 String nextColumnName = columns[j].getName();
                 logger.finer("Trying to get query for "+nextColumnName);
-                Object value = resultList.getValue(nextColumnName);
+                Object value = 
+		    resultList.getAttributeFieldValue(nextColumnName).getValue();
                 nextRecordInstance.setAttributeValue(nextColumnName, value);
             }
             tempCounter++;
@@ -231,7 +232,8 @@ public class Answer {
 		Column[] columns = query.getColumns();
 		String primaryKeyName = columns[0].getName();
 		this.listPrimaryKeyName = primaryKeyName;
-		String primaryKey = rl.getValue(primaryKeyName).toString();
+		String primaryKey = 
+		    rl.getAttributeFieldValue(primaryKeyName).getValue().toString();
 		nextRecordInstance.setPrimaryKey(primaryKey);
 		
 		nextRecordInstance.setAnswer(this);
