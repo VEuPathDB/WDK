@@ -65,11 +65,6 @@ public class Answer {
 	return this.question;
     }
 
-    public Iterator getRecords2() {
-	return null;
-	//	return new AnswerPage(this);
-    }
-
     public int getPageSize(){
         if (recordInstances != null) {
             return recordInstances.length;
