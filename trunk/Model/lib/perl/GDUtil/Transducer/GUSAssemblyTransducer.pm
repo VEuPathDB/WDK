@@ -502,7 +502,7 @@ sub getRHMapSpans {
 	my $href;
 
 	if ($accn =~ /\S/) {
-	    $href = "http://www.ncbi.nlm.nih.gov/htbin-post/Entrez/query?db=s&form=6&uid=$accn&Dopt=g";
+	  $href = "http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?db=Nucleotide&cmd=Search&term=$accn&doptcmdl=GenBank";
 	} else {
 	    $href = "#";
 	}
@@ -591,7 +591,7 @@ sub getInputSeqSpans {
 
     while (my($offset,$strand,$ss,$se,$gaps,$src,$defline,$seqLen,$pend,$washu,$stype) = $sth->fetchrow_array()) {
 	my $color;
-	my $href = "http://www.ncbi.nlm.nih.gov/htbin-post/Entrez/query?db=s&form=6&uid=$src&Dopt=g";
+	my $href = "http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?db=Nucleotide&cmd=Search&term=$src&doptcmdl=GenBank";
 
 	if ($pend =~ /5/) {
 	    $color = $mred;
