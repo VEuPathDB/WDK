@@ -24,7 +24,7 @@ public class QueryHolder extends SimpleTagSupport {
 	private String platformClass;
 	private String initCountString;
 	private int initCount;
-	private String querySet;
+	private String recordGroup;
 	
 	public void setBoolean(boolean bool) {
 		this.bool = bool;
@@ -70,7 +70,7 @@ public class QueryHolder extends SimpleTagSupport {
         JspWriter out = getJspContext().getOut();
         out.println("<form method=\"GET\" action=\"/sampleWDK/QueryTagsTester\">");
         out.println("<input type=\"hidden\" name=\"formName\" value=\""+name+"\">");
-        out.println("<input type=\"hidden\" name=\"querySet\" value=\""+querySet+"\">");
+        out.println("<input type=\"hidden\" name=\"recordGroup\" value=\""+recordGroup+"\">");
         
         // Print out any warning/validation error messages
         // They should all start with formName.error.
@@ -92,7 +92,7 @@ public class QueryHolder extends SimpleTagSupport {
 
             if ( initQuery != null) {
                 WdkModel wm = (WdkModel) getJspContext().getAttribute("wdk.wdkQueryModel", PageContext.APPLICATION_SCOPE);
-                QuerySet sqs = wm.getQuerySet(querySet);
+                QuerySet sqs = wm.getQuerySet(recordGroup);
             	Query sq = sqs.getQuery(initQuery);
             	sqii = sq.makeInstance();
             }
@@ -110,14 +110,14 @@ public class QueryHolder extends SimpleTagSupport {
 	/**
 	 * @return Returns the querySet.
 	 */
-	public String getQuerySet() {
-		return querySet;
+	public String getRecordGroup() {
+		return recordGroup;
 	}
     
 	/**
 	 * @param querySet The querySet to set.
 	 */
-	public void setQuerySet(String querySet) {
-		this.querySet = querySet;
+	public void setRecordGroup(String recordGroup) {
+		this.recordGroup = recordGroup;
 	}
 }
