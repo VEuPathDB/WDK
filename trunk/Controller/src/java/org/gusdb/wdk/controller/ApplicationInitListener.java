@@ -39,7 +39,7 @@ public class ApplicationInitListener implements ServletContextListener {
     private static final String DEFAULT_LOGIN_CONFIGURATION = "/WEB-INF/wdk-config/login.xml";
     private static final String DEFAULT_MODEL_CONFIGURATION = "/WEB-INF/wdk-config/model.xml";
     private static final String DEFAULT_PROPS_LOCATION = "/WEB-INF/wdk-config/macro.props";
-    private static final String DEFAULT_SCHEMA_CONFIGURATION = "/WEB-INF/wdk-config/wdkModel.rng";
+    private static final String DEFAULT_SCHEMA_NAME = "wdkModel.rng";
 
     private DataSource dataSource;
     
@@ -83,7 +83,7 @@ public class ApplicationInitListener implements ServletContextListener {
 
     
     private void initMemberVars(String loginConfigLocation, String queryConfigLocation, 
-            String schemaLocation, String propsLocation, ServletContext application) {
+            String schemaName, String propsLocation, ServletContext application) {
         
         if (loginConfigLocation == null) {
             loginConfigLocation = DEFAULT_LOGIN_CONFIGURATION;
@@ -91,20 +91,18 @@ public class ApplicationInitListener implements ServletContextListener {
         if (queryConfigLocation == null) {
             queryConfigLocation = DEFAULT_MODEL_CONFIGURATION;
         }
-        if (schemaLocation == null) {
-            schemaLocation = DEFAULT_SCHEMA_CONFIGURATION;
+        if (schemaName == null) {
+            schemaName = DEFAULT_SCHEMA_NAME;
         }
         if (propsLocation == null) {
             propsLocation = DEFAULT_PROPS_LOCATION;
         }
         
         URL querySetURL = null;
-        URL schemaURL = null;
         URL modelConfigXmlURL = null;
         URL propsURL = null;
         try {
             querySetURL = application.getResource(queryConfigLocation);
-            schemaURL = application.getResource(schemaLocation);
             modelConfigXmlURL = application.getResource(loginConfigLocation);
             propsURL = application.getResource(propsLocation);
         }
@@ -128,6 +126,8 @@ public class ApplicationInitListener implements ServletContextListener {
                 (RDBMSPlatformI)Class.forName(platformClass).newInstance();
             platform.setDataSource(dataSource);
             
+
+            URL schemaURL = WdkModel.INSTANCE.getClass().getResource(schemaName);   
             WdkModel wdkModel = ModelXmlParser.parseXmlFile(querySetURL, propsURL, schemaURL);
             
             ResultFactory resultFactory = new ResultFactory(dataSource, platform, 
