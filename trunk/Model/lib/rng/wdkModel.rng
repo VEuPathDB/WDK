@@ -3,6 +3,7 @@
   <start>
     <element name="wdkModel">
       <attribute name="name" />
+      <attribute name="displayName" />
       <optional>
           <element name="introduction">
               <text />
