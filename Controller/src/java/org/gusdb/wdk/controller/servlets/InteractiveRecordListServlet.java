@@ -1,15 +1,15 @@
 package org.gusdb.gus.wdk.controller.servlets;
 
+import org.gusdb.gus.wdk.controller.WdkModelExtra;
 import org.gusdb.gus.wdk.model.Param;
 import org.gusdb.gus.wdk.model.Query;
 import org.gusdb.gus.wdk.model.QueryInstance;
 import org.gusdb.gus.wdk.model.RecordInstance;
-import org.gusdb.gus.wdk.model.RecordList;
-import org.gusdb.gus.wdk.model.RecordListInstance;
+import org.gusdb.gus.wdk.model.Summary;
+import org.gusdb.gus.wdk.model.SummaryInstance;
 import org.gusdb.gus.wdk.model.WdkModel;
 import org.gusdb.gus.wdk.model.WdkModelException;
 import org.gusdb.gus.wdk.model.WdkUserException;
-import org.gusdb.gus.wdk.view.QueryRecordGroupMgr;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -85,7 +85,7 @@ public class InteractiveRecordListServlet extends HttpServlet {
 		// We have a queryRecord name
         WdkModel wm = (WdkModel) getServletContext().getAttribute("wdk.wdkModel");
         
-        RecordList recordList = QueryRecordGroupMgr.getRecordList(wm, queryRecordName);
+        Summary recordList = WdkModelExtra.getSummary(wm, queryRecordName);
         Query sq = recordList.getQuery();
 
         if (sq == null) {
@@ -94,7 +94,7 @@ public class InteractiveRecordListServlet extends HttpServlet {
         }
 		QueryInstance sqii = sq.makeInstance();
 		Map paramValues = new HashMap();
-        RecordListInstance rli = null;
+        SummaryInstance rli = null;
 		req.setAttribute(formName+".sqii", sqii);
         String formQueryPrefix = formName+"."+queryRecordName+".";
         System.err.println("formQueryPrefix is called: "+formQueryPrefix);
@@ -116,7 +116,7 @@ public class InteractiveRecordListServlet extends HttpServlet {
 
             try {
                 // TODO Proper start and stop values
-                rli = recordList.makeRecordListInstance(paramValues, 1, 20);
+                rli = recordList.makeSummaryInstance(paramValues, 1, 20);
                 //rli.setValues(paramValues, 1, 20);
             }
             catch (WdkUserException exp) {
