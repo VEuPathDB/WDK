@@ -104,7 +104,7 @@
  
     <td>
     <c:set var="recNam" value="${record.recordClass.fullName}"/>
-    <c:set var="fieldVal" value="${recAttr.value}"/>
+    <c:set var="fieldVal" value="${recAttr.briefValue}"/>
     <c:choose>
       <c:when test="${j == 0}">
 
