@@ -170,7 +170,7 @@ public class RecordInstance {
 	}
     }
 
-    boolean isSummaryAttribute(String attName){
+    public boolean isSummaryAttribute(String attName){
 	
 	if (answer != null){
 	    return answer.isSummaryAttribute(attName);
