@@ -1,6 +1,6 @@
 package org.gusdb.wdk.controller.servlets;
 
-import org.gusdb.wdk.controller.WdkLogManager;
+import org.gusdb.wdk.model.WdkLogManager;
 import org.gusdb.wdk.model.Record;
 import org.gusdb.wdk.model.RecordInstance;
 import org.gusdb.wdk.model.WdkModel;

@@ -1,6 +1,5 @@
 package org.gusdb.wdk.controller.servlets;
 
-import org.gusdb.wdk.controller.WdkLogManager;
 import org.gusdb.wdk.model.Param;
 import org.gusdb.wdk.model.Query;
 import org.gusdb.wdk.model.QueryInstance;
@@ -12,6 +11,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.view.RIVList;
+import org.gusdb.wdk.model.WdkLogManager;
 
 import java.io.File;
 import java.io.IOException;
