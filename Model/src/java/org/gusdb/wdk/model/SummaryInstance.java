@@ -37,6 +37,8 @@ public class SummaryInstance {
 
     private int endRow;
 
+    private Integer length;
+
     // ------------------------------------------------------------------
     // Constructor
     // ------------------------------------------------------------------
@@ -94,16 +96,21 @@ public class SummaryInstance {
 	}
     }
     
-    public int getTotalLength() throws WdkModelException{
+    public int getTotalLengthLength() throws WdkModelException{
 
-	ResultList rl = getRecordInstanceIds();
-	int counter = 0;
-	while (rl.next()){
-	    counter++;
+	if (this.length == null){
+	    
+	    ResultList rl = getRecordInstanceIds();
+	    int counter = 0;
+	    while (rl.next()){
+		counter++;
+	    }
+	    rl.close();
+	    this.length = new Integer(counter);
 	}
-	return counter;
+	return this.length.intValue();
 	
-    }
+    } 
 
     /**
      * @return Map where key is param name and value is param value
