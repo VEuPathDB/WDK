@@ -5,6 +5,8 @@ import javax.servlet.jsp.*;
 import javax.servlet.jsp.tagext.*;
 
 import org.gusdb.gus.wdk.model.Param;
+import org.gusdb.gus.wdk.model.SqlEnumParam;
+import org.gusdb.gus.wdk.model.StringParam;
 
 public class DisplayParam extends SimpleTagSupport {
     
@@ -18,56 +20,46 @@ public class DisplayParam extends SimpleTagSupport {
 
     private Param param;
     
-//    public void setBoolean(boolean bool) {
-//	this.bool = bool;
-//    }
-//
-//    public boolean isBoolean() {
-//	return bool;
-//    }
-//    
-//    public void setName(Param param) {
-//	this.name = name;
-//    }
-//
-//    public String getName() {
-//	return name;
-//    }
-//    
-//    public void setVar(String var) {
-//	this.var = var;
-//    }
-//
-//    public String getVar() {
-//	return var;
-//    }
-//    
-//    public void setInitQuery(String initQuery) {
-//	this.initQuery = initQuery;
-//    }
-//
-//    public String getInitQuery() {
-//	return initQuery;
-//    }
-//
-//    public void setInitCountString(String initCountString) {
-//	this.initCountString = initCountString;
-//    }
-//
-//    public int getInitCount() {
-//	return initCount;
-//    }
     
     public void doTag() throws IOException, JspException {
+    	if (param != null) {
 	JspWriter out = getJspContext().getOut();
-	out.println("<form>");
 
-	if (getJspBody() != null) {
-	    getJspBody().invoke(null);
+	if (param instanceof StringParam) {
+		handleStringParam((StringParam) param, out);
+		return;
 	}
-	out.println("</form>");
+
+	if (param instanceof SqlEnumParam) {
+		handlePairParam((SqlEnumParam) param, out);
+		return;
+	}
+	
+	//	out.println("<b>Got a param "+param.toString()+"</b>");
+
+//	if (getJspBody() != null) {
+//	    getJspBody().invoke(null);
+//	}
+//	out.println("</form>");
+    }
     }
 
+    private void handleStringParam(StringParam p, JspWriter out) throws IOException {
+    	String def = p.getDefault();
+    	if ( def == null) {
+    		def = "";
+    	}
+    	out.println("<input name=\""+p.getName()+"\" type=\"text\" length=\"8\" value=\""+def+"\">");
+    }
+  
+    private void handlePairParam(SqlEnumParam p, JspWriter out) throws IOException {
+    	String def = p.getDefault();
+    	if ( def == null) {
+    		def = "";
+    	}
+    	out.println("<input name=\""+p.getName()+"\" type=\"text\" length=\"8\" value=\""+def+"\">");
+    }
+    
 	/**
 	 * @return Returns the param.
 	 */
