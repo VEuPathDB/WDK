@@ -289,11 +289,10 @@ public class QueryTester {
 	options.addOptionGroup(specialOperations);
 
 	// params
-    Option params = new Option("params", true, "space delimited list of param_name param_value ....");
-    params.setArgName("params");
-    params.setArgs(Option.UNLIMITED_VALUES);
-    //params.setValueSeparator(',');
-	options.addOption(params);
+       Option params = new Option("params", true, "space delimited list of param_name param_value ....");
+       params.setArgName("params");
+       params.setArgs(Option.UNLIMITED_VALUES);
+       options.addOption(params);
 
 
 	return options;
