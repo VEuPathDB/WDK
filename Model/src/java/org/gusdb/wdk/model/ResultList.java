@@ -32,8 +32,10 @@ public abstract class ResultList {
 	    valuesInUse.put(attributeName,attributeName);
 	    Column column = query.getColumn(attributeName);
 	    // the next line has the potential to be circular
-	    if (column instanceof DerivedColumnI) 
+	    if (column instanceof DerivedColumnI) {
 		value = ((DerivedColumnI)column).getDerivedValue(this);
+	    }
+
 	    else value = getValueFromResult(attributeName);
 	    AttributeField field = new AttributeField(column);
 	    AttributeFieldValue fieldValue = 

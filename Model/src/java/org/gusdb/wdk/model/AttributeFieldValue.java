@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model;
 
+import org.gusdb.wdk.model.implementation.SqlResultList;
 import java.util.logging.Logger;
 
 public class AttributeFieldValue {
@@ -9,6 +10,7 @@ public class AttributeFieldValue {
     FieldI field;
     Object value;
     boolean isSummary;
+    boolean needsTruncate;
 
     public AttributeFieldValue(FieldI field, Object value) {
 	this.field = field;
@@ -36,6 +38,32 @@ public class AttributeFieldValue {
 	return value;
     }
 
+    public Object getBriefValue(){
+
+	if (value == null){
+	    return null;
+	}
+	if (value instanceof LinkValue || value instanceof LinkAttributeField){
+	    return value;
+	}
+
+	String briefValue = value.toString();
+	
+	Integer truncate = field.getTruncate();
+	if (truncate == null){
+	    truncate = WdkModel.TRUNCATE_DEFAULT;
+	}
+	int truncateInt = truncate.intValue();
+
+	if (briefValue.length() < truncateInt){
+	    return briefValue;
+	}
+	else {
+	    String returned = briefValue.substring(0, truncateInt + 1) + ". . .";
+	    return returned;
+	}
+    }
+
     public boolean isSummary() {
 	return this.isSummary;
     }
@@ -50,7 +78,6 @@ public class AttributeFieldValue {
 			    );
 
        return buf.toString();
-	
     }
 
     void setIsSummary(boolean isSummary){

@@ -59,6 +59,9 @@
       <attribute name="inSummary" />
     </optional>
     <optional>
+      <attribute name="truncateToRef" />
+    </optional>
+    <optional>
       <attribute name="displayName" />
     </optional>
     <optional>
@@ -285,6 +288,9 @@
       <attribute name="name" />
       <optional> 
         <attribute name="displayName" />
+      </optional>
+      <optional> 
+        <attribute name="truncateToRef" />
       </optional>
       <element name="text">
         <text />

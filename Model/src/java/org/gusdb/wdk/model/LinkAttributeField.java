@@ -8,6 +8,9 @@ public class LinkAttributeField implements FieldI {
     String visible;
     String url;
     String help;
+    String truncateToRef;
+    Integer truncateTo;
+
 
     public void setName(String name) {
 	this.name = name;
@@ -60,5 +63,16 @@ public class LinkAttributeField implements FieldI {
     public String toString() {
 	return getDisplayName();
     }
+
+    public void setTruncateToRef(String truncateToRef){
+	this.truncateToRef = truncateToRef;
+	
+	this.truncateTo = new Integer(truncateToRef);
+    }
+
+    public Integer getTruncate(){
+	return truncateTo;
+    }
+
     
 }

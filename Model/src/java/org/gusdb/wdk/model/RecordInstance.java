@@ -122,16 +122,7 @@ public class RecordInstance {
 	printAtts_Aux(buf, "Summary Attributes: " + newline, summaryAttributes);
 	printAtts_Aux(buf, "Non-Summary Attributes: " + newline, nonSummaryAttributes);
 	
-
 	Iterator fieldNames = attributeFields.keySet().iterator();
-	while (fieldNames.hasNext()) {
-	    String fieldName = (String)fieldNames.next();
-	    AttributeFieldValue field = 
-		(AttributeFieldValue)attributeFields.get(fieldName);
-	    buf.append(field.getDisplayName() + ":   " + 
-		       field.getValue()).append( newline );
-	}
-
 
 	Map tableFields = getTables();
 	fieldNames = tableFields.keySet().iterator();
@@ -323,7 +314,7 @@ public class RecordInstance {
 	    AttributeFieldValue field = 
 		(AttributeFieldValue)attributeFields.get(fieldName);
 	    buf.append(field.getDisplayName() + ":   " + 
-		       field.getValue()).append( newline );
+		       field.getBriefValue()).append( newline );
 	}
 	buf.append(newline);
     }

@@ -7,6 +7,9 @@ public class TextAttributeField implements FieldI {
     String text;
     String help;
     Boolean isInternal = new Boolean(false);
+    String truncateToRef;
+    Integer truncateTo;
+
 
     public void setName(String name) {
 	this.name = name;
@@ -55,5 +58,16 @@ public class TextAttributeField implements FieldI {
     public String toString() {
 	return getDisplayName();
     }
+    
+    public void setTruncateToRef(String truncateToRef){
+	this.truncateToRef = truncateToRef;
+	
+	this.truncateTo = new Integer(truncateToRef);
+    }
+
+    public Integer getTruncate(){
+	return truncateTo;
+    }
+
     
 }
