@@ -1,20 +1,19 @@
 package org.gusdb.gus.wdk.model.implementation;
 
-import org.apache.commons.digester.Digester;
-
-import java.io.File;
-import java.io.IOException;
-import org.xml.sax.SAXException;
-import org.gusdb.gus.wdk.model.WdkModel;
+import org.gusdb.gus.wdk.model.Column;
+import org.gusdb.gus.wdk.model.PageableQuerySet;
 import org.gusdb.gus.wdk.model.Record;
 import org.gusdb.gus.wdk.model.RecordSet;
 import org.gusdb.gus.wdk.model.Reference;
-import org.gusdb.gus.wdk.model.TextField;
 import org.gusdb.gus.wdk.model.SimpleQuerySet;
-import org.gusdb.gus.wdk.model.PageableQuerySet;
-import org.gusdb.gus.wdk.model.Column;
-import org.gusdb.gus.wdk.model.StringParam;
 import org.gusdb.gus.wdk.model.SqlEnumParam;
+import org.gusdb.gus.wdk.model.StringParam;
+import org.gusdb.gus.wdk.model.TextField;
+import org.gusdb.gus.wdk.model.WdkModel;
+
+import java.io.File;
+
+import org.apache.commons.digester.Digester;
 
 public class ModelXmlParser {
 

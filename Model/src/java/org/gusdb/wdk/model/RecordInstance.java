@@ -1,11 +1,9 @@
 package org.gusdb.gus.wdk.model;
 
-import java.util.HashMap;
-import java.util.Iterator;
+import org.gusdb.gus.wdk.model.implementation.SqlUtils;
 
 import java.sql.ResultSet;
-
-import org.gusdb.gus.wdk.model.implementation.SqlUtils;
+import java.util.HashMap;
 
 public class RecordInstance {
     
