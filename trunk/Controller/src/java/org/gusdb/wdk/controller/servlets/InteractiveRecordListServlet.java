@@ -6,7 +6,7 @@ import org.gusdb.gus.wdk.model.Param;
 import org.gusdb.gus.wdk.model.Query;
 import org.gusdb.gus.wdk.model.QueryInstance;
 import org.gusdb.gus.wdk.model.RecordInstance;
-import org.gusdb.gus.wdk.model.Reference;
+import org.gusdb.gus.wdk.model.Record;
 import org.gusdb.gus.wdk.model.Summary;
 import org.gusdb.gus.wdk.model.SummaryInstance;
 import org.gusdb.gus.wdk.model.WdkModel;
@@ -186,8 +186,7 @@ public class InteractiveRecordListServlet extends HttpServlet {
 
         } else {
             
-            Reference ref = summary.getRecord().getReference();
-            String renderer = getRendererForRecordRef(ref);
+            String renderer = getRendererForRecord(summary.getRecord());
             
             RIVList rivl = new RIVList(si);
             req.setAttribute("rivl", rivl);
@@ -200,9 +199,9 @@ public class InteractiveRecordListServlet extends HttpServlet {
 		return;
 	}
 
-    private String getRendererForRecordRef(Reference ref) {
+    private String getRendererForRecord(Record record) {
         // TODO Set default for where no renderer found
-        String renderer = ref.getTwoPartName();
+        String renderer = record.getFullName();
         String path = getServletContext().getRealPath(SUBVIEW_PREFIX+renderer+".jsp");
         File f = new File(path);
         if (f.exists()) {
