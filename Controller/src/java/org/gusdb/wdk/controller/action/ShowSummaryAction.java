@@ -75,7 +75,7 @@ public class ShowSummaryAction extends Action {
 	return summaryPaging(request, answerMaker, null);
     }
 
-    private AnswerBean summaryPaging (HttpServletRequest request, Object answerMaker, Map params)
+    protected AnswerBean summaryPaging (HttpServletRequest request, Object answerMaker, Map params)
 	throws WdkModelException, WdkUserException
     {
 	int start = 1;
