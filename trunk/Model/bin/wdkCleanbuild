@@ -8,8 +8,8 @@ if ($#argv < 1 || $#argv > 2) then
   echo
   echo "Before running wdkCleanbuild for the first time, please initialize cleanroom_dir_full_path by doing the following:"
   echo
-  echo "% mkdir -P cleanroom_dir_full_path/projects"
-  echo "% cp -r $PROJECT_HOME/install cleanroom_dir/projects" 
+  echo "% mkdir -p cleanroom_dir_full_path/projects"
+  echo '% cp -r $PROJECT_HOME/install cleanroom_dir/projects'
   echo
   exit(-1)
 endif
@@ -19,6 +19,8 @@ setenv CLEANROOM $1
 if ($#argv == 2) then
   setenv GUS_CONFIG_FILE $2
 endif
+
+setenv orig_gus_home $GUS_HOME
 
 setenv GUS_HOME $CLEANROOM/gushome
 setenv PROJECT_HOME $CLEANROOM/projects
@@ -36,9 +38,9 @@ echo PROJECT_HOME: $PROJECT_HOME
 echo GUS_CONFIG_FILE: $GUS_CONFIG_FILE
 echo
 
-if (-d "$PROJECT_HOME/GUS") then
-  echo removing $PROJECT_HOME/GUS
-  rm -r $PROJECT_HOME/GUS
+if (-d "$PROJECT_HOME/WDK") then
+  echo removing $PROJECT_HOME/WDK
+  rm -r $PROJECT_HOME/WDK
 endif
 
 if (-d $GUS_HOME) then
@@ -58,16 +60,20 @@ if ($status != 0) then
   exit(-1)
 endif
 
-cvs -d :ext:cvs.sanger.ac.uk:/cvsroot/GUS co GUS
+cvs -d :ext:cvs.sanger.ac.uk:/cvsroot/GUS co WDK
 
 if ($status != 0) then
-  echo could not cvs checkout 
+  echo could not cvs checkout $status
   exit(-1)
 endif
 
 mkdir $GUS_HOME/config
 cp $PROJECT_HOME/install/config/install.prop.sample $GUS_HOME/config/install.prop
-build GUS/WebDevKit install -append -returnErrStatus
+
+echo copying oracle driver from original GUS_HOME
+cp $orig_gus_home/lib/java/oracle-classes12.jar $PROJECT_HOME/WDK/Model/lib/java
+
+build WDK install -append -returnErrStatus
   
 exit $?
   
