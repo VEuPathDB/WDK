@@ -28,8 +28,13 @@ public class FlatVocabParamView implements ParamViewI {
     	    throw new RuntimeException(exp);
     	}
     	if (m != null && m.length>0) {
-    		out.println("<select name=\""+formQuery+"."+p.getName()+"\">");
-    		
+    		out.println("<select name=\""+formQuery+"."+p.getName()+"\"");
+            System.err.println("@@@ "+p.getName()+"  :  "+p.getMultiPick());
+            if (!p.getMultiPick().equals(Boolean.FALSE)) {
+                out.print(" multiple=\"multiple\"");
+            }
+            out.println(">");
+                		
     		for (int i = 0; i < m.length ; i++) {
     			String entry = m[i];
     			out.print("<option value=\""+entry+"\">"+entry);
