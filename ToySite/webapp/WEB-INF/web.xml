@@ -18,7 +18,7 @@
     <context-param>
     <param-name>querySetConfig</param-name>
    <!-- <param-value>/nfs/team81/art/gus/gus_home/lib/xml/PSUSampleQuerySet.xml</param-value> -->
-        <param-value>/nfs/team81/art/gus/gus_home/lib/xml/psuNew.xml</param-value>
+        <param-value>/nfs/team81/art/eclipse-3.Milestones/workspaces/gus/WDKTestSite/lib/xml/PSUSampleModel.xml</param-value>
   </context-param>
 <!--    <context-param>
     <param-name>recordSetConfig</param-name>
@@ -26,7 +26,7 @@
   </context-param> -->
   <context-param>
     <param-name>schemaLocation</param-name>
-    <param-value>/nfs/team81/art/gus/gus_home/lib/xml/schema.rng</param-value>
+    <param-value>/nfs/team81/art/eclipse-3.Milestones/workspaces/gus/WebDevKit/webinf/org/gusdb/gus/wdk/wdkModel.rng</param-value>
   </context-param>
   <listener>
     <listener-class>org.gusdb.gus.wdk.controller.ApplicationInitListener</listener-class>
@@ -45,7 +45,13 @@
     <description>A servlet that cooperates with the query tags to fill them out.</description>
     <servlet-class>org.gusdb.gus.wdk.controller.servlets.InteractiveRecordListServlet</servlet-class>
   </servlet>
-  
+  <servlet>
+    <servlet-name>ModelAdmin</servlet-name>
+    <display-name>ModelAdmin</display-name>
+    <description>A servlet that displays and manages the model/cache.</description>
+    <servlet-class>org.gusdb.gus.wdk.controller.servlets.ModelAdminServlet</servlet-class>
+  </servlet>
+    
   <servlet-mapping>
     <servlet-name>RecordTester</servlet-name>
     <url-pattern>/RecordTester</url-pattern>
@@ -54,5 +60,8 @@
     <servlet-name>InteractiveRecordList</servlet-name>
     <url-pattern>/InteractiveRecordList</url-pattern>
   </servlet-mapping> 
-  
+  <servlet-mapping>
+    <servlet-name>ModelAdmin</servlet-name>
+    <url-pattern>/admin/ModelAdmin</url-pattern>
+  </servlet-mapping> 
 </web-app> 
