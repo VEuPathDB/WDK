@@ -13,6 +13,9 @@ import org.gusdb.gus.wdk.model.SimpleQuerySet;
 import org.gusdb.gus.wdk.model.implementation.NullQueryInstance;
 import org.gusdb.gus.wdk.view.GlobalRepository;
 
+/**
+ * Custom tag which displays a Query to the user
+ */
 public class DisplayQuery extends SimpleTagSupport {
     
     private static final String DEFAULT_OPTION = "Choose...";

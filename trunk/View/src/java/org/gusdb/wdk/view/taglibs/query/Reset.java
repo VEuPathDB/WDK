@@ -4,6 +4,9 @@ import java.io.IOException;
 
 import javax.servlet.jsp.tagext.SimpleTagSupport;
 
+/**
+ * Custom tag that simply wraps the HTML reset tag
+ */
 public class Reset extends SimpleTagSupport {
     
     public void doTag() throws IOException {

@@ -12,6 +12,9 @@ import java.util.Enumeration;
 import javax.servlet.jsp.*;
 import javax.servlet.jsp.tagext.*;
 
+/**
+ * Custom tag that represents a simple or boolean query 
+ */ 
 public class QueryHolder extends SimpleTagSupport {
     
     private boolean bool;
