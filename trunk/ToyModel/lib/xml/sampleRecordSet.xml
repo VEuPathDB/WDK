@@ -17,8 +17,40 @@
 
 </recordSet>
 
+<recordListSet name="RNARecordLists">
+
+   <recordList name="RNARecordList"
+               recordRef="RNARecords.RNARecord"
+               queryRef="RNARecordQueries.RNAIdsByGoId" />
+</recordListSet>
 
 <querySet name="RNARecordQueries">
+
+   <sqlQuery name="RNAIdsByGoId">
+
+      <stringParam name="GoId"
+                   prompt="GO ID"
+                   sample="GO:0016597"
+                   regex="\S+"/>
+       
+      <column name="na_sequence_id" displayName="Assembly ID" />     
+
+      <sql>
+        select distinct a.na_sequence_id
+        from dots.Assembly a, dots.Protein P,
+             dots.GOAssociation ga, sres.GoTerm gt,
+             dots.RNAInstance rnai, dots.RNAFeature rnaf
+        where rnai.rna_id = p.rna_id
+          and rnai.na_feature_id = rnaf.na_feature_id
+          and rnaf.na_sequence_id = a.na_sequence_id
+          and p.protein_id = ga.row_id
+          and ga.table_id = 180
+          and ga.go_term_id = gt.go_term_id
+          and gt.go_id = '$$GoId$$'
+          and gt.external_database_release_id = 7798
+          and ga.is_deprecated = 0
+       </sql>
+   </sqlQuery>
 
    <sqlQuery name="RNAFields">
 
