@@ -51,9 +51,15 @@ public class TestDBManager {
 	    String instanceTable = modelConfig.getQueryInstanceTable();
 	    String platformClass = modelConfig.getPlatformClass();
 
+	    Integer maxIdle = modelConfig.getMaxIdle();
+	    Integer minIdle = modelConfig.getMinIdle();
+	    Integer maxWait = modelConfig.getMaxWait();
+	    Integer maxActive = modelConfig.getMaxActive();
+	    Integer initialSize = modelConfig.getInitialSize();
+	    
 	    RDBMSPlatformI platform = 
 		(RDBMSPlatformI)Class.forName(platformClass).newInstance();
-	    platform.init(connectionUrl, login, password);
+	    platform.init(connectionUrl, login, password, minIdle, maxIdle, maxWait, maxActive, initialSize);
 
 	    boolean drop = cmdLine.hasOption("dropDatabase");
 	    boolean create = cmdLine.hasOption("createDatabase");
