@@ -43,13 +43,13 @@ public class WdkModel {
 	recordSets.put(recordSet.getName(), recordSet);
     }
 
-    public RecordSet getRecordSet(String recordSetName) {
+    public RecordSet getRecordSet(String recordSetName) throws WdkModelException {
 	
 	if (!recordSets.containsKey(recordSetName)) {
 	    String err = "WDK Model " + name +
 		" does not contain a record set with name " + recordSetName;
 	    
-	    throw new IllegalArgumentException(err);
+	    throw new WdkModelException(err);
 	}
 	return (RecordSet)recordSets.get(recordSetName);
     }
@@ -61,11 +61,11 @@ public class WdkModel {
 	querySets.put(querySet.getName(), querySet);
     }
 
-    public QuerySet getQuerySet(String setName) {
+    public QuerySet getQuerySet(String setName) throws WdkModelException {
 	if (!querySets.containsKey(setName)) {
 	    String err = "WDK Model " + name +
 		" does not contain a query set with name " + setName;
-	    throw new IllegalArgumentException(err);
+	    throw new WdkModelException(err);
 	}
 	return (QuerySet)querySets.get(setName);
     }
@@ -76,20 +76,20 @@ public class WdkModel {
 
 
     //RecordList Sets
-    public void addRecordListSet(RecordListSet recordListSet) {
+    public void addRecordListSet(RecordListSet recordListSet) throws WdkModelException {
 	if (recordListSets.containsKey(recordListSet.getName())){
 	    String err = "WDK Model " + name + "already conatins a RecordList Set with name " +
 		recordListSet.getName();
-	    throw new IllegalArgumentException(err);
+	    throw new WdkModelException(err);
 	}
 	recordListSets.put(recordListSet.getName(), recordListSet);
     }
 
-    public RecordListSet getRecordListSet(String setName) {
+    public RecordListSet getRecordListSet(String setName) throws WdkModelException {
 	if (!recordListSets.containsKey(setName)) {
 	    String err = "WDK Model " + name +
 		" does not contain a RecordList set with name " + setName;
-	    throw new IllegalArgumentException(err);
+	    throw new WdkModelException(err);
 	}
 	return (RecordListSet)recordListSets.get(setName);
     }
@@ -100,22 +100,22 @@ public class WdkModel {
 
 
     //QueryNameLists
-    public void addQueryNameList(QueryNameList queryNameList){
+    public void addQueryNameList(QueryNameList queryNameList) throws WdkModelException {
 	
 	if (queryNameLists.containsKey(queryNameList.getName())){
 	    String err = "WDK Model " + name + "already conatins a QueryNameList with name " +
 		queryNameList.getName();
-	    throw new IllegalArgumentException(err);
+	    throw new WdkModelException(err);
 	}
 	queryNameLists.put(queryNameList.getName(), queryNameList);
     }
     
-    public QueryNameList getQueryNameList(String queryNameListName){
+    public QueryNameList getQueryNameList(String queryNameListName) throws WdkModelException {
 	
 	if (!queryNameLists.containsKey(queryNameListName)){
 	    String err = "WDK Model " + name +
 		" does not contain a  query set with name " + queryNameListName;
-	    throw new IllegalArgumentException(err);
+	    throw new WdkModelException(err);
 	}
 	return (QueryNameList)queryNameLists.get(queryNameListName);
     }
