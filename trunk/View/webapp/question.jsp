@@ -2,16 +2,19 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
 
+<!-- get wdkQuestion; setup requestScope HashMap to collect help info for footer -->  
 <c:set value="${sessionScope.wdkQuestion}" var="wdkQuestion"/>
 <jsp:useBean scope="request" id="helps" class="java.util.HashMap"/>
 
+<!-- display page header with wdkQuestion displayName as banner -->
 <site:header banner="${wdkQuestion.displayName} question page" />
 
+<!-- display description for wdkQuestion -->
 <p><b><jsp:getProperty name="wdkQuestion" property="description"/></b></p>
 
 <hr>
 
-<!-- all params of question -->
+<!-- show all params of question, collect help info along the way -->
 <c:set value="Help for question: ${wdkQuestion.displayName}" var="fromAnchorQ"/>
 <jsp:useBean id="helpQ" class="java.util.HashMap"/>
 
@@ -23,13 +26,13 @@
 <c:set value="${wdkQuestion.params}" var="qParams"/>
 <c:forEach items="${qParams}" var="qP">
 
-  <!-- an individual param -->
+  <!-- an individual param (can not use fullName, w/ '.', for mapped props) -->
   <c:set value="${qP.name}" var="pNam"/>
   <tr><td align="right"><b><jsp:getProperty name="qP" property="prompt"/></b></td>
 
   <!-- choose between flatVocabParam and straight text or number param -->
   <c:choose>
-    <c:when test="${qP.class.name eq 'org.gusdb.wdk.model.FlatVocabParam'}">
+    <c:when test="${qP.class.name eq 'org.gusdb.wdk.model.jspwrap.FlatVocabParamBean'}">
       <td>
         <html:select  property="myProp(${pNam})">
           <html:options property="values(${pNam})" labelProperty="labels(${pNam})"/>
