@@ -2,7 +2,24 @@
  
 <wdkModel name="RNAQueries">
 
-  <recordSet name="RNARecords">
+  	<recordListSet name="RNARecordLists">
+
+     	<recordList name="CDSNumExons"
+        	        recordRef="RNARecords.PSUCDSRecord"
+                    queryRef="RNASimpleQueries.CDSNumExons" />
+
+     	<recordList name="CDSByName"
+        	        recordRef="RNARecords.PSUCDSRecord"
+                    queryRef="RNASimpleQueries.CDSByName" /> 
+
+     	<recordList name="CDSByChromosome"
+        	        recordRef="RNARecords.PSUCDSRecord"
+                    queryRef="RNASimpleQueries.CDSByChromosome" />
+              
+  	</recordListSet>
+  
+  
+    <recordSet name="RNARecords">
     <record name="RNARecord" type="DoTS Transcript" idPrefix="DT.">
       <fieldsQuery referent="RNARecordQueries.RNAFields"/>
 
