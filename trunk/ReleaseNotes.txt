@@ -17,6 +17,10 @@ Model - Features
   * in the model XML file, <linkColumn> and <linkAttribute> have been
     introduced so that records and tables can include hyper-links.
 
+  * in the model XML file, <textAttribute> and <column> now have an 
+    isInternal="true" attribute.  If set the view should not show the
+    value.
+
   * code: a wide ranging refactoring and cleaning of the internals to improve
     the clarity of the code and API
 
