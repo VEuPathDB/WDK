@@ -10,8 +10,6 @@
 
   <target name="WDK-Installation" depends="WDK/Model-Installation,
                                            WDK/Controller-Installation,
-                                           WDK/ToyModel-Installation,
-                                           WDK/ToySite-Installation,
                                            WDK/View-Installation" >
 
     <ant target="defaultProjectInstall"/>
@@ -52,20 +50,6 @@
    
   </target>  
 
-  <target name="WDK/ToyModel-Installation" depends="ProjectTree">
-    <ant target="defaultComponentInstall">
-      <property name="project" value="WDK"/>
-      <property name="component" value="ToyModel"/>
-    </ant>
-  </target>  
-
-  <target name="WDK/ToySite-Installation" depends="ProjectTree">
-    <ant target="defaultComponentInstall">
-      <property name="project" value="WDK"/>
-      <property name="component" value="ToySite"/>
-    </ant>
-  </target>  
-
   <target name="WDK/View-Installation" depends="ProjectTree">
     <ant target="defaultComponentInstall">
       <property name="project" value="WDK"/>
@@ -95,14 +79,7 @@
     </ant>
   </target>  
 
-  <target name="WDK/ToySite-WebInstallation" depends="ProjectTree">
-    <ant target="defaultWebComponentInstall">
-      <property name="project" value="WDK"/>
-      <property name="component" value="ToySite"/>
-    </ant>
-  </target>  
-
-  <target name="WebitePlusGusHome" depends="WDK-Installation,WDK/Controller-WebInstallation,WDK/View-WebInstallation,WDK/ToySite-WebInstallation,checkLinks,libLink,configLink,rngLink"/>
+  <target name="WebitePlusGusHome" depends="WDK-Installation,WDK/Controller-WebInstallation,WDK/View-WebInstallation,checkLinks,libLink,configLink,rngLink"/>
 
   <target name="checkLinks">
      <available file="${webappTargetDir}/WEB-INF/lib" property="libLinkExists"/>
