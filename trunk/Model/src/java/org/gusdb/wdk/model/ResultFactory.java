@@ -593,8 +593,7 @@ public class ResultFactory {
 	String newline = System.getProperty( "line.separator" );
 	String cmdlineSyntax = 
 	    cmdName + 
-	    " -model model_name -noSchemaOutput!" +
-	    " -new|-reset|-drop";
+	    " -model model_name -new|-reset|-drop [-noSchemaOutput]";
 
 	String header = 
 	    newline + "Create, reset or drop a query cache. The name of the cache table is found in the Model config file (the table is placed in the schema owned by login).  Resetting the cache drops all results tables and deletes all rows from the cache table.  Dropping the cache first resets it then drops the cache table and sequence." + newline + newline + "Options:" ;
