@@ -30,7 +30,7 @@ public class SqlUtils {
             logger.finest("Success in executing sql in getResultSet: '" + sql + "'");
             return rs;
         } catch (SQLException sqlE) {
-            logger.severe("Failed attempting to execute sql in getResultSet: '" + sql + "'");
+            //logger.severe("Failed attempting to execute sql in getResultSet: '" + sql + "'");
             throw sqlE;
         }
     }
