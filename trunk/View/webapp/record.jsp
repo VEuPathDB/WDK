@@ -4,10 +4,9 @@
 <!-- get wdkRecord from proper scope -->
 <c:set value="${sessionScope.wdkRecord}" var="wdkRecord"/>
 
-<!-- display page header with recordClass full name and record id in banner -->
-<c:set value="${wdkRecord.recordClass.fullName}" var="recordName"/>
-<c:set value="${wdkRecord.primaryKey}" var="recordId"/>
-<site:header banner="${recordName} ${recordId}"/>
+<!-- display page header with recordClass type in banner -->
+<c:set value="${wdkRecord.recordClass.type}" var="recordType"/>
+<site:header banner="${recordType}"/>
 
 <table>
 <c:forEach items="${wdkRecord.attributes}" var="attr">

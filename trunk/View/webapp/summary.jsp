@@ -7,21 +7,29 @@
 <!-- get wdkAnswer from requestScope -->
 <c:set value="${requestScope.wdkAnswer}" var="wdkAnswer"/>
 
-<!-- display page header with wdkAnswer's wdkQuestion's displayName as banner -->
-<c:set value="${wdkAnswer.question.displayName}" var="wdkQuestionName"/>
-<site:header banner="${wdkQuestionName}" />
+<!-- display page header with wdkAnswer's recordClass's type as banner -->
+<c:set value="${wdkAnswer.recordClass.type}" var="wdkAnswerType"/>
+<site:header banner="${wdkAnswerType} Results" />
 
 <!-- display question and param values and result size for wdkAnswer -->
 <c:set value="${wdkAnswer.params}" var="params"/>
-<p><b>
-Summary result for query "${wdkQuestionName}" with parameters:
-<c:forEach items="${params}" var="p">
-   ${p.key} = "${p.value}"; 
-</c:forEach>
-<br>Number of results returned:
-${wdkAnswer.resultSize}<c:if test="${wdkAnswer.resultSize > 0}">,
-showing ${wdk_paging_start} to ${wdk_paging_end} </c:if>
-</b></p>
+<c:set value="${wdkAnswer.question.displayName}" var="wdkQuestionName"/>
+<table><tr><td valign="top" align="left"><b>Query:</b></td>
+           <td valign="top" align="left">${wdkQuestionName}</td></tr>
+       <tr><td valign="top" align="left"><b>Parameters:</b></td>
+           <td valign="top" align="left">
+               <table>
+               <c:forEach items="${params}" var="p">
+                 <tr><td align="right">${p.key}:</td><td><i>${p.value}</i></td></tr> 
+               </c:forEach>
+               </table></td></tr>
+       <tr><td valign="top" align="left"><b>Results:</b></td>
+           <td valign="top" align="left">
+               ${wdkAnswer.resultSize}
+               <c:if test="${wdkAnswer.resultSize > 0}">
+                (showing ${wdk_paging_start} to ${wdk_paging_end})
+               </c:if></td></tr>
+</table>
 
 <hr>
 

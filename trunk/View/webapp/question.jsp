@@ -7,7 +7,7 @@
 <jsp:useBean scope="request" id="helps" class="java.util.HashMap"/>
 
 <!-- display page header with wdkQuestion displayName as banner -->
-<site:header banner="${wdkQuestion.displayName} question page" />
+<site:header banner="${wdkQuestion.displayName}" />
 
 <!-- display description for wdkQuestion -->
 <p><b><jsp:getProperty name="wdkQuestion" property="description"/></b></p>
