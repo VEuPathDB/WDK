@@ -43,6 +43,7 @@ public class RecordInstance {
 		runFieldsQuery(query);
 	    }
 	    HashMap resultMap = (HashMap)fieldsResultSetsMap.get(queryName);
+
 	    value = resultMap.get(fieldName);
 	}
 	return value;
@@ -123,6 +124,7 @@ public class RecordInstance {
 	    recordListInstance.setMultiMode(instance);
 	    ResultList rl = instance.getResult();
 	    recordListInstance.setQueryResult(rl);
+	    rl.close();
 	}
 	else{ //do it all myself
 	    HashMap paramHash = new HashMap();

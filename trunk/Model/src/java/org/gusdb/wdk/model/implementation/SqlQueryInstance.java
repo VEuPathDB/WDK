@@ -1,8 +1,13 @@
 package org.gusdb.gus.wdk.model.implementation;
 
+import org.gusdb.gus.wdk.model.RDBMSPlatformI;
 import org.gusdb.gus.wdk.model.NotBooleanOperandException;
 import org.gusdb.gus.wdk.model.QueryInstance;
 import org.gusdb.gus.wdk.model.ResultList;
+import org.gusdb.gus.wdk.model.ResultFactory;
+import java.sql.SQLException;
+import java.sql.ResultSet;
+
 
 
 public class SqlQueryInstance extends QueryInstance  {
@@ -53,20 +58,46 @@ public class SqlQueryInstance extends QueryInstance  {
     public String getResultAsTable() throws Exception {
 	SqlQuery q = (SqlQuery)query;
 	if (resultTable == null) 
-	    resultTable = q.getResultFactory().getSqlResultFactory().getResultAsTable(this);
+	    resultTable = q.getResultFactory().getResultAsTable(this);
 	return resultTable;
     }
     
 
     public ResultList getResult() throws Exception {
 	SqlQuery q = (SqlQuery)query;
-	ResultList rl = q.getResultFactory().getSqlResultFactory().getResult(this);
+	ResultList rl = q.getResultFactory().getResult(this);
 	rl.checkQueryColumns(q, true);
 	return rl;
     }
 
     public String getBooleanOperandSql() throws NotBooleanOperandException{
 	return new String("method needs to be written!");
+    }
+
+    protected ResultList getNonpersistentResult() throws Exception {
+
+	ResultSet resultSet = null;
+
+	try {
+	    resultSet = SqlUtils.getResultSet(query.getPlatform().getDataSource(), getSql());
+
+	} catch (SQLException e) { 
+	    System.err.println("");
+	    System.err.println("Failed running query:");
+	    System.err.println("\"" + getSql() + "\"");
+	    System.err.println("");
+	    SqlUtils.closeResultSet(resultSet);
+	    throw e;
+	}
+	return new SqlResultList(this, null, resultSet);
+    }
+
+    protected void writeResultToTable(String resultTableName, 
+				      ResultFactory rf) throws SQLException {
+
+	query.getPlatform().createTableFromQuerySql(query.getPlatform().getDataSource(),
+						    resultTableName, 
+						    getSql());
     }
 
 

@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.Vector;
 import java.util.Iterator;
 
+import javax.sql.DataSource;
+
 import org.gusdb.gus.wdk.model.ResultFactory;
 import org.gusdb.gus.wdk.model.QueryParamsException;
 import org.gusdb.gus.wdk.model.Param;
@@ -22,6 +24,8 @@ public abstract class Query {
     protected HashMap columnsH;
     protected Vector columnsV;
     protected ResultFactory resultFactory;
+    protected RDBMSPlatformI platform;
+
 
     public Query () {
 	paramsH = new HashMap();
@@ -40,6 +44,14 @@ public abstract class Query {
 
     public String getName() {
 	return name;
+    }
+
+    public void setPlatform(RDBMSPlatformI platform){
+	this.platform = platform;
+    }
+    
+    public RDBMSPlatformI getPlatform(){
+	return this.platform;
     }
 
     public void setDisplayName(String displayName) {

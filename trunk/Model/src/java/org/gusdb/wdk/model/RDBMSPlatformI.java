@@ -13,6 +13,8 @@ public interface RDBMSPlatformI {
     
     public void setDataSource(DataSource dataSource);
 
+    public DataSource getDataSource();
+
     public String getTableFullName(String schemaName, String tableName);
 
     public String getNextId(String schemaName, String tableName) throws SQLException;
@@ -27,8 +29,8 @@ public interface RDBMSPlatformI {
     public void dropSequence(String sequenceName) throws SQLException;
 
     public void createTableFromQuerySql(DataSource dataSource,
-					     String tableName, 
-					     String sql) throws SQLException ;
+					String tableName, 
+					String sql) throws SQLException ;
 }
 
 

@@ -50,8 +50,8 @@ public class RecordListTester {
 	String recordListSetName = cmdLine.getOptionValue("recordListSetName");
 	String recordListName = cmdLine.getOptionValue("recordListName");
 	String[] rows = cmdLine.getOptionValues("rows");
-	int startRow = Integer.parseInt(rows[0]);
-	int endRow = Integer.parseInt(rows[1]);
+
+	validateRowCount(rows);
 	
 	String[] params = null;
 	boolean haveParams = cmdLine.hasOption("params");
@@ -79,11 +79,10 @@ public class RecordListTester {
 	    
 	    WdkModel wdkModel = 
 		ModelXmlParser.parseXmlFile(modelXmlFile);
-	    ResultFactory resultFactory = wdkModel.getResultFactory();
-	    SqlResultFactory sqlResultFactory = 
-		new SqlResultFactory(dataSource, platform, 
-				     login, instanceTable);
-	    resultFactory.setSqlResultFactory(sqlResultFactory);
+	    ResultFactory resultFactory = new ResultFactory(dataSource, platform, 
+							    login, instanceTable);
+            wdkModel.setResultFactory(resultFactory);
+	    wdkModel.setPlatform(platform);
 	    
 	    RecordListSet recordListSet = wdkModel.getRecordListSet(recordListSetName);
 	    RecordList recordList = recordListSet.getRecordList(recordListName);
@@ -92,11 +91,18 @@ public class RecordListTester {
 		Hashtable paramValues = parseParamArgs(params);
 		Query query = recordList.getQuery();
 		query.setIsCacheable(new Boolean(true));
-		RecordListInstance rli = recordList.makeRecordListInstance();
 		
-		rli.setValues(paramValues, startRow, endRow);
+		int pageCount = 1;
 
-		rli.print();
+		for (int i = 0; i < rows.length; i+=2){
+		    int nextStartRow = Integer.parseInt(rows[i]);
+		    int nextEndRow = Integer.parseInt(rows[i+1]);
+		    RecordListInstance rli = recordList.makeRecordListInstance();
+		    rli.setValues(paramValues, nextStartRow, nextEndRow);
+		    System.err.println("Printing Record Instances on page " + pageCount);
+		    rli.print();
+		    pageCount++;
+		}
 	    }
 	    else {
 		usage(cmdName, options);
@@ -131,8 +137,8 @@ public class RecordListTester {
 	//recordListName
 	addOption(options, "recordListName", "the name of the record list to run");
 	//rows to return
-	Option rows = new Option("rows", "the start and end of the Record Instance rows to return");
-	rows.setArgs(2);
+	Option rows = new Option("rows", "the start and end pairs of the Record Instance rows to return");
+	rows.setArgs(Option.UNLIMITED_VALUES);
 	rows.setRequired(true);
 	options.addOption(rows);
 	//params
@@ -162,6 +168,12 @@ public class RecordListTester {
 	}
 
 	return cmdLine;
+    }
+
+    static void validateRowCount(String[] rows){
+	if (rows.length %2 !=0){
+	    throw new IllegalArgumentException("The -rows option must be followed by pairs of row numbers (each pair representing the start and end of a page");
+	}
     }
 
 

@@ -88,11 +88,12 @@ public class RecordListInstance {
 	    }
 	    tempCounter++;
 	}
+
     }
     
     public void setMultiMode(QueryInstance instance) throws Exception{
-
-	String resultTableName = listIdQueryInstance.getResult().getResultTableName();
+	
+	String resultTableName = listIdQueryInstance.getResultAsTable();
 
 	instance.setMultiModeValues(resultTableName, listPrimaryKeyName, startRow, endRow);
     }
@@ -109,16 +110,14 @@ public class RecordListInstance {
 	this.currentRecordInstanceCounter = 0;
     }
 
-    public void print() throws Exception{  //change this so it works if startrow and endrow are not set
+    public void print() throws Exception{  
 	
 	if (recordInstances == null){
 	    initRecordInstances();
 	}
-	int rownum = startRow;
-	for (int i = startRow - 1; i < endRow; i++){
+	for (int i = 0; i < recordInstances.length; i++){
 	    
 	    System.err.println(recordInstances[i].print());
-	    rownum++;
 	}
     }
 
@@ -130,25 +129,28 @@ public class RecordListInstance {
     
     private void initRecordInstances() throws Exception{
 	ResultList rl = getRecordInstanceIds();
-	//	recordInstances = new RecordInstance[rl.size()];
 	Query query = listIdQueryInstance.getQuery();
 	Vector tempRecordInstances = new Vector();
-
+	int counter = 0;
 	while (rl.next()){
-
-	    RecordInstance nextRecordInstance = getRecordList().getRecord().makeInstance();
-
-	    Column[] columns = query.getColumns();
-	    String primaryKeyName = columns[0].getName();
-	    this.listPrimaryKeyName = primaryKeyName;
-	    String primaryKey = rl.getValue(primaryKeyName).toString();
-	    nextRecordInstance.setPrimaryKey(primaryKey);
-
-	    nextRecordInstance.setRecordListInstance(this);
-	    tempRecordInstances.add(nextRecordInstance);
+	    counter++;
+	    if (counter >= startRow && counter <= endRow){
+		RecordInstance nextRecordInstance = getRecordList().getRecord().makeInstance();
+		
+		Column[] columns = query.getColumns();
+		String primaryKeyName = columns[0].getName();
+		this.listPrimaryKeyName = primaryKeyName;
+		String primaryKey = rl.getValue(primaryKeyName).toString();
+		nextRecordInstance.setPrimaryKey(primaryKey);
+		
+		nextRecordInstance.setRecordListInstance(this);
+		tempRecordInstances.add(nextRecordInstance);
+	    }
 	}        
 	recordInstances = new RecordInstance[tempRecordInstances.size()];
 	tempRecordInstances.copyInto(recordInstances);
+	rl.close();
+	
     }
 
     private ResultList getRecordInstanceIds() throws Exception{

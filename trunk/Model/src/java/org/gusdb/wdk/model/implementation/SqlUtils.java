@@ -17,7 +17,8 @@ public class SqlUtils {
 	try {
 	    Connection connection = dataSource.getConnection();
 	    Statement stmt = connection.createStatement();
-	    return stmt.executeQuery(sql);
+	    ResultSet rs = stmt.executeQuery(sql);
+	    return rs;
 	} catch (SQLException sqlE) {
 	    System.err.println("Failed attempting to execute sql in getResultSet: '" + sql + "'");
 	    throw sqlE;
@@ -27,9 +28,14 @@ public class SqlUtils {
     public static void closeResultSet(ResultSet resultSet) throws SQLException {
 	if (resultSet != null) {
 	    Statement stmt = resultSet.getStatement();
-	    Connection connection = stmt.getConnection();
-	    
 	    try { resultSet.close(); } catch(Exception e) { }
+	    closeStatement(stmt);
+	}
+    }
+
+    public static void closeStatement(Statement stmt) throws SQLException{
+	if (stmt != null){
+	    Connection connection = stmt.getConnection();
 	    try { stmt.close(); } catch(Exception e) { }
 	    try { connection.close(); } catch(Exception e) { }
 	}
@@ -98,9 +104,7 @@ public class SqlUtils {
 	    System.err.println("Failed attempting to execute sql in runStringArrayQuery: '" + sql + "'");
 	    throw e;
 	} finally {
-	    try { resultSet.close(); } catch(Exception e2) { }
-	    try { stmt.close(); } catch(Exception e2) { }
-	    try { connection.close(); } catch(Exception e2) { }
+	    closeResultSet(resultSet);
 	}
 
 	String result[] = new String[v.size()];
@@ -125,7 +129,7 @@ public class SqlUtils {
 		colNames.add(metaData.getColumnName(i));
 	    }
 	} finally {
-	    try { connection.close(); } catch(Exception e2) { }
+	    closeStatement(stmt);
 	}
 
 	return (String[])colNames.toArray();	
@@ -151,8 +155,7 @@ public class SqlUtils {
 	    System.err.println("");
 	    throw e;
 	} finally {
-	    try { stmt.close(); } catch(Exception e2) { }
-	    try { connection.close(); } catch(Exception e2) { }
+	    closeStatement(stmt);
 	}
 
 	return result;
@@ -177,8 +180,7 @@ public class SqlUtils {
 	    System.err.println("");
 	    throw e;
 	} finally {
-	    try { stmt.close(); } catch(Exception e2) { }
-	    try { connection.close(); } catch(Exception e2) { }
+	    closeStatement(stmt);
 	}
     }
 

@@ -15,7 +15,7 @@ import org.gusdb.gus.wdk.model.StringParam;
 import org.gusdb.gus.wdk.model.WdkModel;
 import org.gusdb.gus.wdk.model.implementation.ModelXmlParser;
 import org.gusdb.gus.wdk.model.implementation.SqlQueryInstance;
-import org.gusdb.gus.wdk.model.implementation.SqlResultFactory;
+
 import org.gusdb.gus.wdk.model.QueryNameList;
 import org.gusdb.gus.wdk.model.QueryName;
 
@@ -205,12 +205,11 @@ public class QueryTester {
             
             WdkModel wdkModel = 
                 ModelXmlParser.parseXmlFile(modelXmlFile);
-            ResultFactory resultFactory = wdkModel.getResultFactory();
-            SqlResultFactory sqlResultFactory = 
-                new SqlResultFactory(dataSource, platform, 
-                        login, instanceTable);
-            resultFactory.setSqlResultFactory(sqlResultFactory);
-            QueryTester tester = new QueryTester(wdkModel, resultFactory);
+            ResultFactory resultFactory = new ResultFactory(dataSource, platform, 
+							    login, instanceTable);
+            wdkModel.setResultFactory(resultFactory);
+            wdkModel.setPlatform(platform);
+	    QueryTester tester = new QueryTester(wdkModel, resultFactory);
             
             // if no params supplied, show the query prompts
             if (!haveParams) {

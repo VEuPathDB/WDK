@@ -26,18 +26,22 @@ public class RecordList {
 
     //the only column in this query should be a primary key
     Query query;
+    
+    //QueryInstance to be shared across all RecordListInstances 
+    //produced by this RecordList
+    QueryInstance listIdQueryInstance;
+
     Record record;
-
-
 
     public RecordList(){
     }
     
     public RecordListInstance makeRecordListInstance(){
 
-	QueryInstance queryInstance = query.makeInstance();
-
-	return new RecordListInstance(this, queryInstance);
+	if (listIdQueryInstance == null){
+	    listIdQueryInstance = query.makeInstance();
+	}
+	return new RecordListInstance(this, listIdQueryInstance);
     }
 
     public Query getQuery(){

@@ -22,6 +22,10 @@ public class Oracle implements RDBMSPlatformI {
 	this.dataSource = dataSource;
     }
 
+    public DataSource getDataSource(){
+	return dataSource;
+    }
+
     public String getTableFullName(String schemaName, String tableName) {
 	return schemaName + "." + tableName;
     }

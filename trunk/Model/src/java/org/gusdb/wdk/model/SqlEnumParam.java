@@ -36,11 +36,11 @@ public class SqlEnumParam extends Param {
     }
 
     public Map getKeysAndValues(ResultFactory resultFactory) throws Exception {
-	SqlResultFactory sqlResultFactory = resultFactory.getSqlResultFactory();
+	
 	if (hash == null) {
 	    hash = new HashMap();
 	    SqlQueryInstance instance = new SqlQueryInstance(sqlQuery); 
-	    ResultList rl = sqlResultFactory.getResult(instance);
+	    ResultList rl = resultFactory.getResult(instance);
 	    try {
 		while (rl.next()) {
 		    hash.put(rl.getValue("key"), rl.getValue("value"));
