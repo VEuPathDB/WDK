@@ -1,18 +1,5 @@
 package org.gusdb.gus.wdk.model.test;
 
-import org.gusdb.gus.wdk.model.Column;
-import org.gusdb.gus.wdk.model.FlatVocabParam;
-import org.gusdb.gus.wdk.model.ParamSet;
-import org.gusdb.gus.wdk.model.QuerySet;
-import org.gusdb.gus.wdk.model.Record;
-import org.gusdb.gus.wdk.model.RecordSet;
-import org.gusdb.gus.wdk.model.Reference;
-import org.gusdb.gus.wdk.model.ReferenceList;
-import org.gusdb.gus.wdk.model.StringParam;
-import org.gusdb.gus.wdk.model.Summary;
-import org.gusdb.gus.wdk.model.SummarySet;
-import org.gusdb.gus.wdk.model.TextAttribute;
-import org.gusdb.gus.wdk.model.TextColumn;
 import org.gusdb.gus.wdk.model.test.SanityModel;
 import org.gusdb.gus.wdk.model.test.SanityRecord;
 import org.gusdb.gus.wdk.model.test.SanityQuery;
