@@ -1,5 +1,15 @@
 package org.gusdb.gus.wdk.controller.servlets;
 
+import org.gusdb.gus.wdk.model.Param;
+import org.gusdb.gus.wdk.model.QueryParamsException;
+import org.gusdb.gus.wdk.model.SimpleQueryI;
+import org.gusdb.gus.wdk.model.SimpleQueryInstanceI;
+import org.gusdb.gus.wdk.model.SimpleQuerySet;
+import org.gusdb.gus.wdk.model.implementation.PageableSqlQuery;
+import org.gusdb.gus.wdk.model.implementation.SimpleSqlQueryInstance;
+
+import org.gusdb.gus.wdk.view.GlobalRepository;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.ResultSet;
@@ -14,13 +24,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.gusdb.gus.wdk.model.Param;
-import org.gusdb.gus.wdk.model.QueryParamsException;
-import org.gusdb.gus.wdk.model.SimpleQueryI;
-import org.gusdb.gus.wdk.model.SimpleQueryInstanceI;
-import org.gusdb.gus.wdk.model.SimpleQuerySet;
-import org.gusdb.gus.wdk.view.GlobalRepository;
 
 
 
@@ -101,13 +104,38 @@ public class QueryTagsTesterServlet extends HttpServlet {
 			return;
 		} else {
 			// If OK, show success msg
-			msg("OK, we've got a valid query. Hooray", res);
+			//msg("OK, we've got a valid query. Hooray", res);
 			
 			StringBuffer sb = new StringBuffer();
 			try {
+                
+                SimpleQueryI pageQuery = sqs.getQuery("RNAListInDetail");
+                
 				sqii.setIsCacheable(true);
 				sqii.setValues(paramValues);
-				ResultSet rs = sqii.getResult();
+                
+                SimpleSqlQueryInstance ssqi = (SimpleSqlQueryInstance) sqii;
+                
+                String initialResultTable = ssqi.getResultAsTable();
+                Map values = new HashMap(3);
+                values.put(PageableSqlQuery.RESULT_TABLE_SYMBOL, initialResultTable);
+//                values.put(PageableSqlQuery.START_ROW_SYMBOL, 
+//                       Integer.toString(startRow));
+//                values.put(PageableSqlQuery.END_ROW_SYMBOL, 
+//                       Integer.toString(endRow));
+                values.put(PageableSqlQuery.START_ROW_SYMBOL, "1");
+                values.put(PageableSqlQuery.END_ROW_SYMBOL, "200");
+                SimpleSqlQueryInstance pageInstance = 
+                    (SimpleSqlQueryInstance)pageQuery.makeInstance();
+//                pageInstance.setIsCacheable(getIsCacheable());
+                pageInstance.setValues(values);
+                ResultSet rs =  pageInstance.getResult();
+                
+                
+                
+                
+                
+//				ResultSet rs = sqii.getResult();
 				
 				if (rs == null) {
 					sb.append("No result set returned");   
@@ -117,15 +145,19 @@ public class QueryTagsTesterServlet extends HttpServlet {
 					ResultSetMetaData rsmd = rs.getMetaData();
 					int numColumns = rsmd.getColumnCount();
 					// Get the column names; column indices start from 1
-					for (int i=1; i<numColumns+1; i++) {
-						sb.append("<th><b>"+rsmd.getColumnName(i)+"</b></th>");
+                    sb.append("<th align=\"center\"><b>&nbsp;</b></th>");
+					for (int i=3; i<numColumns; i++) {
+						sb.append("<th align=\"center\"><b>"+rsmd.getColumnName(i)+"</b></th>");
 					}
                     sb.append("</tr>");
                     while (rs.next()) {
                     	sb.append("<tr>");
-                        for (int i=1; i<numColumns+1; i++) {
-                            sb.append("<td>"+rs.getObject(i)+"</td>");
-                        }
+                        sb.append("<td align=\"center\"><a href=\"/sampleWDK/RecordTester?style=jsp&recordSetName=RNARecords&recordName=PSUCDSRecordId&primaryKey=");
+                        sb.append(rs.getObject(1)+"&objectType="+rs.getObject(2)+"\" >");
+                        sb.append("More details</a></td>");
+                        sb.append("<td align=\"center\">"+rs.getObject(3)+"</td>");
+                        sb.append("<td align=\"center\">"+rs.getObject(4)+"</td>");
+                        sb.append("<td align=\"center\"><i>"+rs.getObject(5)+"</i></td>");
                         sb.append("</tr>");
                     }
                     sb.append("<table>");

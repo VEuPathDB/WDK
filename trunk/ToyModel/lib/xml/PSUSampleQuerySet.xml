@@ -110,6 +110,34 @@
   </simpleSqlQuery>
 -->
 
+
+
+
+  <simpleSqlQuery name="RNAListInDetail"
+            displayName="RNAs">
+
+       <stringParam  name="resultTable"/>
+       <stringParam  name="startRow"/>
+       <stringParam  name="endRow"/>
+    <sql>
+select unique gf.na_feature_id,
+       gf.subclass_view,
+       gf.name,
+       gf.gene_type,
+       tn.name
+from sres.TaxonName tn,
+     dots.NASequence nas,
+     dots.GeneFeature gf,
+     $$resultTable$$ ids
+where tn.name_class = 'scientific name'
+      and gf.na_feature_id = ids.na_feature_id
+      and gf.na_sequence_id = nas.na_sequence_id
+      and nas.taxon_id = tn.taxon_id
+      and ids.i &gt;= $$startRow$$
+      and ids.i &lt;= $$endRow$$
+    </sql>
+  </simpleSqlQuery>
+
    <simpleSqlQuery name="CDSNumExons"
             displayName="CDS by number of exons">
 
