@@ -1,7 +1,6 @@
 package org.gusdb.gus.wdk.controller.servlets;
 
 import org.gusdb.gus.wdk.controller.WdkLogManager;
-import org.gusdb.gus.wdk.controller.WdkModelExtra;
 import org.gusdb.gus.wdk.model.Param;
 import org.gusdb.gus.wdk.model.Query;
 import org.gusdb.gus.wdk.model.QueryInstance;
@@ -136,7 +135,7 @@ public class InteractiveRecordListServlet extends HttpServlet {
 		// We have a queryRecord name
         WdkModel wm = (WdkModel) getServletContext().getAttribute("wdk.wdkModel");
         
-        Summary summary = WdkModelExtra.getSummary(wm, summaryName);
+        Summary summary = wm.getSummary(summaryName);
         Query sq = summary.getQuery();
 
         if (sq == null) {

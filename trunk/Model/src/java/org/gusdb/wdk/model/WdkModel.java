@@ -19,6 +19,43 @@ public class WdkModel {
     ResultFactory resultFactory;
     private Document document;
 
+    
+    /**
+     * @param initRecordList
+     * @return
+     * @throws WdkUserException
+     * @throws WdkModelException
+     */
+    public Summary getSummary(String initRecordList) {
+        try {
+            Reference r = new Reference(initRecordList);
+            SummarySet ss = getSummarySet(r.getSetName());
+            return ss.getSummary(r.getElementName());
+        }
+        catch (WdkModelException exp) {
+            throw new RuntimeException(exp);
+        }
+        catch (WdkUserException exp) {
+            throw new RuntimeException(exp);
+        }
+    }
+
+    
+    public Record getRecord(String recordReference) {
+        try {
+            Reference r = new Reference(recordReference);
+            RecordSet rs = getRecordSet(r.getSetName());
+            return rs.getRecord(r.getElementName());
+        }
+        catch (WdkModelException exp) {
+            throw new RuntimeException(exp);
+        }
+        catch (WdkUserException exp) {
+            throw new RuntimeException(exp);
+        }
+    }
+    
+    
     public static final WdkModel INSTANCE = new WdkModel();
 
     public ResultFactory getResultFactory() {
