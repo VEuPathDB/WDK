@@ -41,8 +41,14 @@
 
   <context-param>
     <param-name>schemaLocation</param-name>
-    <param-value>/WEB-INF/lib/rng/wdkModel.rng</param-value>
+    <param-value>/WEB-INF/wdk-model/lib/rng/wdkModel.rng</param-value>
   </context-param>
+
+  <context-param>
+    <param-name>parserClass</param-name>
+    <param-value>org.gusdb.wdk.model.implementation.ModelXmlParser</param-value>
+  </context-param>
+
   <listener>
     <listener-class>org.gusdb.wdk.controller.ApplicationInitListener</listener-class>
   </listener>
