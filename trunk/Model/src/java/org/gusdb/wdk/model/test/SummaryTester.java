@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model.test;
 
 import org.gusdb.wdk.model.Query;
+import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.QuestionSet;
@@ -25,18 +26,20 @@ public class SummaryTester {
     public static void main(String[] args) {
 	
 	String cmdName = System.getProperties().getProperty("cmdName");
+        File configDir = 
+	    new File(System.getProperties().getProperty("configDir"));
 	
 	// process args
 	Options options = declareOptions();
 	CommandLine cmdLine = parseOptions(cmdName, options, args);
-	
-	File modelConfigXmlFile = 
-	    new File(cmdLine.getOptionValue("configFile"));
-	File modelXmlFile = new File(cmdLine.getOptionValue("modelXmlFile"));
-        File modelPropFile = new File(cmdLine.getOptionValue("modelPropFile"));
 
-	String questionSetName = cmdLine.getOptionValue("questionSetName");
-	String questionName = cmdLine.getOptionValue("questionName");
+	String modelName = cmdLine.getOptionValue("model");
+
+        File modelConfigXmlFile = new File(configDir, modelName+"-config.xml");
+        File modelXmlFile = new File(configDir, modelName + ".xml");
+        File modelPropFile = new File(configDir, modelName + ".prop");
+
+	String questionFullName = cmdLine.getOptionValue("question");
 	String[] rows = cmdLine.getOptionValues("rows");
 
 	validateRowCount(rows);
@@ -51,6 +54,9 @@ public class SummaryTester {
 	try {
         
 	    File schemaFile = new File(System.getProperty("schemaFile"));
+	    Reference ref = new Reference(questionFullName);
+	    String questionSetName = ref.getSetName();
+	    String questionName = ref.getElementName();
 	    WdkModel wdkModel = 
 		ModelXmlParser.parseXmlFile(modelXmlFile.toURL(), modelPropFile.toURL(), schemaFile.toURL(), modelConfigXmlFile.toURL());
 
@@ -102,18 +108,12 @@ public class SummaryTester {
     static Options declareOptions() {
 	Options options = new Options();
 
-	// config file
-	addOption(options, "configFile", "the model config .xml file");
+	// model name
+	addOption(options, "model", "the name of the model.  This is used to find the Model XML file ($GUS_HOME/config/model_name.xml) the Model property file ($GUS_HOME/config/model_name.prop) and the Model config file ($GUS_HOME/config/model_name-config.xml)");
 
-	// model file
-	addOption(options, "modelXmlFile", "An .xml file that specifies WDK Model.");
-	// model prop file
-	addOption(options, "modelPropFile", "A .prop file that specifies key=value pairs to substitute into the model file.");
-
-	//questionSetName
-	addOption(options, "questionSetName", "The name of the questionSet in which to find the question");
-	//questionName
-	addOption(options, "questionName", "the name of the question to run");
+	// question name
+	addOption(options, "question", "The full name (set.element) of the question to run.");
+	
 	//rows to return
 	Option rows = new Option("rows", "the start and end pairs of the summary rows to return");
 	rows.setArgs(Option.UNLIMITED_VALUES);
@@ -174,11 +174,8 @@ public class SummaryTester {
 	String newline = System.getProperty( "line.separator" );
 	String cmdlineSyntax = 
 	    cmdName + 
-	    " -configFile config_file" +
-	    " -modelXmlFile model_xml_file" +
-            " -modelPropFile model_prop_file" +
-	    " -questionSetName question_set_name" +
-	    " -questionName question_name";
+	    " -model model_name" +
+	    " -question full_question_name";
 
 	String header = 
 	    newline + "Print a summary found in a WDK Model xml file. Options:" ;

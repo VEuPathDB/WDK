@@ -390,15 +390,19 @@ public class ModelXmlParser {
         try {
 	    
 	    String cmdName = System.getProperties().getProperty("cmdName");
+	    File configDir = 
+		new File(System.getProperties().getProperty("configDir"));
 	    
 	    // process args
 	    Options options = declareOptions();
 	    CommandLine cmdLine = parseOptions(cmdName, options, args);
 	    
+	    String modelName = cmdLine.getOptionValue("model");
+
 	    File modelConfigXmlFile = 
-		new File(cmdLine.getOptionValue("configFile"));
-	    File modelXmlFile = new File(cmdLine.getOptionValue("modelXmlFile"));
-	    File modelPropFile = new File(cmdLine.getOptionValue("modelPropFile"));
+		new File(configDir, modelName+"-config.xml");
+	    File modelXmlFile = new File(configDir, modelName + ".xml");
+	    File modelPropFile = new File(configDir, modelName + ".prop");
 
             File schemaFile = new File(System.getProperty("schemaFile"));
             WdkModel wdkModel = parseXmlFile(modelXmlFile.toURL(), modelPropFile.toURL(), schemaFile.toURL(), modelConfigXmlFile.toURL());
@@ -427,13 +431,8 @@ public class ModelXmlParser {
 	Options options = new Options();
 
 	// config file
-	addOption(options, "configFile", "the model config .xml file");
+	addOption(options, "model", "the name of the model.  This is used to find the Model XML file ($GUS_HOME/config/model_name.xml) the Model property file ($GUS_HOME/config/model_name.prop) and the Model config file ($GUS_HOME/config/model_name-config.xml)");
 
-	// model file
-	addOption(options, "modelXmlFile", "An .xml file that specifies WDK Model.");
-	// model prop file
-	addOption(options, "modelPropFile", "A .prop file that specifies key=value pairs to substitute into the model file.");
-	
 	return options;
     }
 
@@ -462,9 +461,7 @@ public class ModelXmlParser {
         String newline = System.getProperty( "line.separator" );
         String cmdlineSyntax = 
             cmdName + 
-            " -configFile config_file" +
-            " -modelPropFile model_prop_file" +
-            " -modelXmlFile model_xml_file";
+            " -model model_name";
         
         String header = 
             newline + "Parse and print out a WDK Model xml file." + newline + newline + "Options:" ;
