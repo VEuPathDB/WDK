@@ -20,6 +20,10 @@
      <xsd:attribute name="twoPartName" type="xsd:string" use="required"/>
    </xsd:complexType>
     
+   <xsd:complexType name="paramRef">
+     <xsd:attribute name="twoPartName" type="xsd:string" use="required"/>
+   </xsd:complexType>
+    
    <xsd:complexType name="param">
        <xsd:attribute name="name" type="xsd:string" use="required"/>
        <xsd:attribute name="prompt" type="xsd:string" />
@@ -71,7 +75,7 @@
     
    <xsd:complexType name="query">
      <xsd:sequence>
-       <xsd:element name="param" type="param" minOccurs="0" maxOccurs="unbounded"/>
+       <xsd:element name="paramRef" type="paramRef" minOccurs="0" maxOccurs="unbounded"/>
        <xsd:element name="column" type="column" minOccurs="1" maxOccurs="unbounded"/>
      </xsd:sequence>
      <xsd:attribute name="name" type="xsd:string" use="required"/>
@@ -112,6 +116,13 @@
      <xsd:attribute name="name" type="xsd:string"/>
    </xsd:complexType>
 
+   <xsd:complexType name="paramSet">
+     <xsd:sequence>
+       <xsd:element name="param" type="param" minOccurs="1" maxOccurs="unbounded"/>
+     </xsd:sequence>
+     <xsd:attribute name="name" type="xsd:string"/>
+   </xsd:complexType>
+
    <xsd:complexType name="recordSet">
      <xsd:sequence>
        <xsd:element name="record" type="record" minOccurs="1" maxOccurs="unbounded"/>
@@ -133,6 +144,7 @@
          <xsd:element name="recordSet" type="recordSet" minOccurs="0" maxOccurs="unbounded"/>
          <xsd:element name="summarySet" type="summarySet" minOccurs="0" maxOccurs="unbounded"/>
          <xsd:element name="querySet" type="querySet" minOccurs="1" maxOccurs="unbounded"/>
+         <xsd:element name="paramSet" type="paramSet" minOccurs="1" maxOccurs="unbounded"/>
        </xsd:sequence>
        <xsd:attribute name="name" type="xsd:string"/>
      </xsd:complexType>

@@ -2,6 +2,7 @@ package org.gusdb.gus.wdk.model;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Vector;
 import java.util.Iterator;
 
@@ -17,6 +18,7 @@ public abstract class Query {
     protected String displayName;
     protected String help;
     protected Boolean isCacheable = new Boolean(true);
+    protected HashSet paramRefs;
     protected HashMap paramsH;
     protected Vector paramsV;
     protected HashMap columnsH;
@@ -24,6 +26,7 @@ public abstract class Query {
     protected ResultFactory resultFactory;
 
     public Query () {
+	paramRefs = new HashSet();
 	paramsH = new HashMap();
 	paramsV = new Vector();
 	columnsH = new HashMap();
@@ -49,9 +52,12 @@ public abstract class Query {
     public String getDisplayName() {
 	return displayName;
     }
-    public void addParam(Param param) {
-	paramsV.add(param);
-	paramsH.put(param.getName(), param);
+
+    /**
+     * @param paramRef two part param name (set.name)
+     */
+    public void addParamRef(Reference paramRef) {
+	paramRefs.add(paramRef);
     }
 
     public Param[] getParams() {
@@ -59,7 +65,6 @@ public abstract class Query {
 	paramsV.copyInto(paramA);
 	return paramA;
     }
-
 
     public void setIsCacheable(Boolean isCacheable) {
 	this.isCacheable = isCacheable;
@@ -146,10 +151,21 @@ public abstract class Query {
     /////////////  Protected ////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////
 
+    protected void addParam(Param param) {
+	paramsV.add(param);
+	paramsH.put(param.getName(), param);
+    }
+
     protected void resolveReferences(WdkModel model) throws WdkModelException {
-	Iterator paramIterator = paramsH.values().iterator();
-	while (paramIterator.hasNext()) {
-	    Param param = (Param)paramIterator.next();
+	Iterator paramRefsIter = paramRefs.iterator();
+	while (paramRefsIter.hasNext()) {
+	    Reference paramRef = (Reference)paramRefsIter.next();
+	    String twoPartName = paramRef.getTwoPartName();
+	    Param param = (Param)model.resolveReference(twoPartName, 
+							this.name, 
+							"Query", 
+							"paramRef");
+	    addParam(param);
 	    param.resolveReferences(model);
 	}
     }

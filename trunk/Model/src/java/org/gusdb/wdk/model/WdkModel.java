@@ -8,6 +8,7 @@ public class WdkModel {
     protected RDBMSPlatformI platform;
 
     HashMap querySets = new HashMap();
+    HashMap paramSets = new HashMap();
     HashMap recordSets = new HashMap();
     HashMap referenceLists = new HashMap();
     HashMap summarySets = new HashMap();
@@ -183,6 +184,15 @@ public class WdkModel {
 					   + "'");
 
        buf.append( newline );
+       buf.append( "--- Param Sets---" );
+       buf.append( newline );
+       Iterator paramSetIterator = paramSets.values().iterator();
+       while (paramSetIterator.hasNext()) {
+	   buf.append( paramSetIterator.next() ).append( newline );
+       }
+       buf.append(newline);
+       
+       buf.append( newline );
        buf.append( "--- Query Sets---" );
        buf.append( newline );
        Iterator querySetIterator = querySets.values().iterator();
@@ -209,10 +219,16 @@ public class WdkModel {
        return buf.toString();
     }
 
-    /*
-    public void addParamSet(ParamSet paramSet) {
+
+    //Param Sets
+    public void addQuerySet(ParamSet paramSet) throws WdkModelException {
+	addSet(paramSet, paramSets);
     }
-    */
+    
+    public void addParamSet(ParamSet paramSet) throws WdkModelException {
+	addSet(paramSet, paramSets);
+    }
+
 
     ///////////////////////////////////////////////////////////////////
     ///////   Protected methods

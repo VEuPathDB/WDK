@@ -6,6 +6,7 @@ import org.gusdb.gus.wdk.model.RecordSet;
 import org.gusdb.gus.wdk.model.Reference;
 import org.gusdb.gus.wdk.model.QuerySet;
 import org.gusdb.gus.wdk.model.Param;
+import org.gusdb.gus.wdk.model.ParamSet;
 import org.gusdb.gus.wdk.model.TextField;
 import org.gusdb.gus.wdk.model.WdkModel;
 import org.gusdb.gus.wdk.model.ReferenceList;
@@ -83,7 +84,6 @@ public class ModelXmlParser {
 
 	//QuerySet
 
-
 	/**/ digester.addObjectCreate( "wdkModel/querySet", QuerySet.class );
 
 	/**/ digester.addSetProperties( "wdkModel/querySet");
@@ -94,12 +94,12 @@ public class ModelXmlParser {
 
 	/*  */ digester.addBeanPropertySetter( "wdkModel/querySet/query/sql");
 
-	/*    */ digester.addObjectCreate( "wdkModel/querySet/query/param", "xsi:type", Param.class );
-	/*    */ digester.addSetProperties( "wdkModel/querySet/query/param");
+	/*    */ digester.addObjectCreate( "wdkModel/querySet/query/paramRef", Reference.class );
 
-	/*    */ digester.addSetNext( "wdkModel/querySet/query/param", "addParam" );
-	
-	
+	/*    */ digester.addSetProperties( "wdkModel/querySet/query/paramRef");
+
+	/*    */ digester.addSetNext( "wdkModel/querySet/query/paramRef", "addParamRef" );
+
 	/*    */ digester.addObjectCreate( "wdkModel/querySet/query/column", "xsi:type", Column.class );
 
 	/*    */ digester.addSetProperties( "wdkModel/querySet/query/column");
@@ -109,6 +109,21 @@ public class ModelXmlParser {
 	/*  */ digester.addSetNext( "wdkModel/querySet/query", "addQuery" );
 
 	/**/ digester.addSetNext( "wdkModel/querySet", "addQuerySet" );
+
+
+	//ParamSet
+
+	/**/ digester.addObjectCreate( "wdkModel/paramSet", ParamSet.class );
+
+	/**/ digester.addSetProperties( "wdkModel/paramSet");
+	
+	/*  */ digester.addObjectCreate( "wdkModel/paramSet/param", "xsi:type", Param.class );
+
+	/*  */ digester.addSetProperties( "wdkModel/paramSet/param");
+
+	/*  */ digester.addSetNext( "wdkModel/paramSet/param", "addParam" );
+
+	/**/ digester.addSetNext( "wdkModel/paramSet", "addParamSet" );
 
 
 	//ReferenceList
@@ -144,8 +159,8 @@ public class ModelXmlParser {
     
     public static void main( String[] args ) {
 	try {
-	    File querySetXmlFile = new File(args[0]);
-	    WdkModel wdkModel = parseXmlFile(querySetXmlFile);
+	    File modelXmlFile = new File(args[0]);
+	    WdkModel wdkModel = parseXmlFile(modelXmlFile);
 	    
 	    System.out.println( wdkModel.toString() );
 	    

@@ -176,8 +176,6 @@ public class RecordInstance {
 		instantiatedText = instantiateText(instantiatedText, fieldName, 
 				getFieldValue(fieldName).toString());
 	    }
-	    //returns as 'null' otherwise
-
 	}
 
 	// get all text field names, and see if they appear as macro
