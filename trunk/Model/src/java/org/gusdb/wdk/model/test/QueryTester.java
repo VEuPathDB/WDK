@@ -298,6 +298,7 @@ public class QueryTester {
             cmdName + 
             " -configFile config_file" +
             " -modelXmlFile model_xml_file" +
+            " -modelPropFile model_prop_file" +
             " -querySetName query_set_name" +
             " -queryName query_name" +
             " [-dontCache]" +
