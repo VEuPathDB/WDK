@@ -5,7 +5,7 @@
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
 
 <!-- display page header -->
-<site:header banner="Boolean Question" />
+<site:header banner="Expanding Question" />
 
 <!-- show error messages, if any -->
 <wdk:errors/>
@@ -21,8 +21,8 @@
 
   <table width="100%">
   <tr><td colspan="2" align="center">
-      <b>After finished growing the boolean question and setting parameters:</b></td></tr>
-  <tr><td align="right"><html:submit property="process_boolean_question" value="Get Boolean Answer"/></td>
+      <b>After finished expanding the question and setting parameters:</b></td></tr>
+  <tr><td align="right"><html:submit property="process_boolean_question" value="Retrieve Answer"/></td>
       <td align="left"><html:reset property="reset_all_param" value="Reset All Parameters"/></td></tr>
   </table>
 </nested:form>

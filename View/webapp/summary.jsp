@@ -17,7 +17,7 @@
   <c:when test="${wdkAnswer.isBoolean}">
     <!-- boolean question -->
 
-    <table><tr><td valign="top" align="left"><b>Boolean Query:</b></td>
+    <table><tr><td valign="top" align="left"><b>Expanded Query:</b></td>
                <td valign="top" align="left">
                  <nested:root name="wdkAnswer">
                    <jsp:include page="/WEB-INF/includes/bqShowNode.jsp"/>
