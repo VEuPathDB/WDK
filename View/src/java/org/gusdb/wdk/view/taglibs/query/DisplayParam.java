@@ -60,7 +60,7 @@ public class DisplayParam extends SimpleTagSupport {
   
     private void handlePairParam(SqlEnumParam p, JspWriter out) throws IOException {
     	
-    	ResultFactory rf = GlobalRepository.getInstance().getResultFactory();
+    	ResultFactory rf = GlobalRepository.getInstance().getQueryResultFactory();
     	Map m = null;
     	try {
     		m = p.getKeysAndValues(rf);

@@ -69,7 +69,7 @@ public class QueryHolder extends SimpleTagSupport {
 	SimpleQueryInstanceI sqii = NullQueryInstance.INSTANCE;
 	
 	if ( initQuery != null) {
-		SimpleQuerySet sqs = GlobalRepository.getInstance().getSimpleQuerySet();
+		SimpleQuerySet sqs = GlobalRepository.getInstance().getSimpleQuerySet(querySet);
 		SimpleQueryI sq = sqs.getQuery(initQuery);
 		sqii = sq.makeInstance();
 	}
