@@ -28,11 +28,7 @@ public class StringParam extends Param {
 	return regex;
     }
 
-    /////////////////////////////////////////////////////////////////////
-    /////////////  Protected ////////////////////////////////////////////
-    /////////////////////////////////////////////////////////////////////
-
-    protected String validateValue(String value) {
+    public String validateValue(String value) {
 	if (regex != null && !value.matches(regex)) 
 	    return "Does not match regex '" + regex + "'";
 	else return null;

@@ -42,16 +42,10 @@ public abstract class Param {
 	return dfault;
     }
 
-
-    /////////////////////////////////////////////////////////////////////
-    /////////////  Protected ////////////////////////////////////////////
-    /////////////////////////////////////////////////////////////////////
-
     /**
      * @return Error string if an error.  null if no errors.
      */ 
-    protected abstract String validateValue(String value);
-
+    public abstract String validateValue(String value);
 
     public String toString() {
        String newline = System.getProperty( "line.separator" );

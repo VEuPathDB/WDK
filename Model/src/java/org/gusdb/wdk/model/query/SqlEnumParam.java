@@ -4,11 +4,15 @@ import java.util.Hashtable;
 import java.sql.SQLException;
 import java.sql.ResultSet;
 
+import org.gusdb.gus.wdk.model.query.implementation.SimpleSqlQuery;
+import org.gusdb.gus.wdk.model.query.implementation.SimpleSqlQueryInstance;
+import org.gusdb.gus.wdk.model.query.implementation.SqlUtils;
+import org.gusdb.gus.wdk.model.query.implementation.SqlResultFactory;
 
 public class SqlEnumParam extends Param {
     
     Boolean multiPick = new Boolean(false);
-    SqlQuery sqlQuery;
+    SimpleSqlQuery simpleSqlQuery;
     Hashtable hash;
 
     public SqlEnumParam () {}
@@ -25,19 +29,20 @@ public class SqlEnumParam extends Param {
 	return multiPick;
     }
 
-    public void setSqlQuery(SqlQuery sqlQuery) {
-	this.sqlQuery = sqlQuery;
+    public void setSimpleSqlQuery(SimpleSqlQuery simpleSqlQuery) {
+	this.simpleSqlQuery = simpleSqlQuery;
     }
 
-    public SqlQuery getSqlQuery() {
-	return sqlQuery;
+    public SimpleSqlQuery getSimpleSqlQuery() {
+	return simpleSqlQuery;
     }
 
-    public Hashtable getKeysAndValues(SqlResultFactory resultFactory) throws SQLException {
+    public Hashtable getKeysAndValues(ResultFactory resultFactory) throws SQLException {
+	SqlResultFactory sqlResultFactory = resultFactory.getSqlResultFactory();
 	if (hash == null) {
 	    hash = new Hashtable();
-	    SqlQueryInstance instance = new SqlQueryInstance(sqlQuery); 
-	    ResultSet rs = resultFactory.getResult(instance);
+	    SimpleSqlQueryInstance instance = new SimpleSqlQueryInstance(simpleSqlQuery); 
+	    ResultSet rs = sqlResultFactory.getResult(instance);
 	    try {
 		while (rs.next()) {
 		    hash.put(rs.getString("key"), rs.getString("value"));
@@ -52,20 +57,14 @@ public class SqlEnumParam extends Param {
 	return hash;
     }
 
-    /////////////////////////////////////////////////////////////////////
-    /////////////  Protected ////////////////////////////////////////////
-    /////////////////////////////////////////////////////////////////////
-
-    protected String validateValue(String value) { return null; }
-
-
+    public String validateValue(String value) { return null; }
 
     public String toString() {
        String newline = System.getProperty( "line.separator" );
        StringBuffer buf = 
 	   new StringBuffer(super.toString() + 
 			    "  multiPick='" + multiPick + "'" + newline +
-			    "  sql='" + getSqlQuery().getSql() + "'" + newline 
+			    "  sql='" + getSimpleSqlQuery().getSql() + "'" + newline 
 			    );
 
        return buf.toString();
