@@ -14,6 +14,7 @@ import org.gusdb.gus.wdk.model.QueryName;
 import org.gusdb.gus.wdk.model.TextColumn;
 import org.gusdb.gus.wdk.model.RecordListSet;
 import org.gusdb.gus.wdk.model.RecordList;
+import org.gusdb.gus.wdk.model.WdkModelException;
 
 
 import java.io.File;
@@ -34,10 +35,9 @@ import com.thaiopensource.xml.sax.ErrorHandlerImpl;
 public class ModelXMLParserRelaxNG {
 
     public static WdkModel parseXmlFile(WdkModel model, File modelXMLFile, File schemaFile)
-            throws java.io.IOException, org.xml.sax.SAXException, Exception {
+            throws IOException, SAXException, WdkModelException {
         if (!validModelFile(modelXMLFile, schemaFile)) {
-            // TODO Throw some kind of exception
-            System.err.println("***** Validation failed  ***********");
+            throw new WdkModelException("Model validation failed");
         }
         Digester digester = configureDigester(model);
         model = (WdkModel) digester.parse(modelXMLFile);
