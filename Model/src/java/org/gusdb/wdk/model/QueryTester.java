@@ -125,6 +125,9 @@ public class QueryTester {
 
     Hashtable parseParamArgs(String[] params) {
 	Hashtable h = new Hashtable();
+	if (params.length % 2 != 0) {
+	    throw new IllegalArgumentException("The -params option must be followed by key value pairs only");
+	}
 	for (int i=0; i<params.length; i+=2) {
 	    h.put(params[i], params[i+1]);
 	}

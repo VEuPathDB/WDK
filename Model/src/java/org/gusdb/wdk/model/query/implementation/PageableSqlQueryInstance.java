@@ -20,8 +20,10 @@ public class PageableSqlQueryInstance extends SimpleSqlQueryInstance implements 
 	String initialResultTable = getResultAsTable();
 	HashMap values = new HashMap(3);
 	values.put(PageableSqlQuery.RESULT_TABLE_SYMBOL, initialResultTable);
-	values.put(PageableSqlQuery.START_ROW_SYMBOL, new Integer(startRow));
-	values.put(PageableSqlQuery.END_ROW_SYMBOL, new Integer(endRow));
+	values.put(PageableSqlQuery.START_ROW_SYMBOL, 
+		   Integer.toString(startRow));
+	values.put(PageableSqlQuery.END_ROW_SYMBOL, 
+		   Integer.toString(endRow));
 	SimpleSqlQueryInstance pageInstance = 
 	    (SimpleSqlQueryInstance)pageQuery.makeInstance();
 	pageInstance.setIsCacheable(getIsCacheable());

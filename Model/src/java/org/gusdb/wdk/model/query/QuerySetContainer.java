@@ -32,7 +32,7 @@ public class QuerySetContainer {
     public SimpleQuerySet getSimpleQuerySet(String setName) {
 	if (!simpleQuerySets.containsKey(setName)) {
 	    String err = "Query set container " + name +
-		" does not contain a query set with name " + setName;
+		" does not contain a simple query set with name " + setName;
 	    throw new IllegalArgumentException(err);
 	}
 	return (SimpleQuerySet)simpleQuerySets.get(setName);
@@ -61,6 +61,18 @@ public class QuerySetContainer {
 	return pageableQuerySets.containsKey(setName);
     }
 
+    /**
+     * Some elements within the set may refer to others by name.  Resolve those
+     * references into real object references.
+     */ 
+    public void dereference() throws Exception {
+       Iterator querySetIterator = pageableQuerySets.values().iterator();
+       while (querySetIterator.hasNext()) {
+	   PageableQuerySet pqs = (PageableQuerySet)querySetIterator.next();
+	   pqs.dereference(simpleQuerySets);
+       }
+    }
+    
     public String toString() {
        String newline = System.getProperty( "line.separator" );
        StringBuffer buf = new StringBuffer("QuerySetContainer: name='" + name 

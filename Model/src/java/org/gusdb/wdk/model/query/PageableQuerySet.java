@@ -1,15 +1,16 @@
 package org.gusdb.gus.wdk.model.query;
 
-import java.util.Hashtable;
-import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Iterator;
 
 public class PageableQuerySet {
 
-    Hashtable querySet;
+    HashMap querySet;
     String name;
 
     public PageableQuerySet() {
-	querySet = new Hashtable();
+	querySet = new HashMap();
     }
 
     public void setName(String name) {
@@ -26,9 +27,10 @@ public class PageableQuerySet {
 
     public PageableQueryI[] getQueries() {
 	PageableQueryI[] queries = new PageableQueryI[querySet.size()];
-	Enumeration e = querySet.elements();
-	for (int i=0; i<querySet.size(); i++) {
-	    queries[i] = (PageableQueryI)e.nextElement();
+	Iterator queryIterator = querySet.values().iterator();
+	int i = 0;
+	while (queryIterator.hasNext()) {
+	    queries[i++] = (PageableQueryI)queryIterator.next();
 	}
 	return queries;
     }
@@ -50,14 +52,22 @@ public class PageableQuerySet {
        buf.append( newline );
        buf.append( "--- Queries ---" );
        buf.append( newline );
-       Enumeration e = querySet.elements();
-       for (int i=0; i<querySet.size(); i++) {
-	   buf.append( e.nextElement() ).append( newline );
+       Iterator queryIterator = querySet.values().iterator();
+       while (queryIterator.hasNext()) {
+	   buf.append(queryIterator.next()).append( newline );
        }
 
        return buf.toString();
     }
 
+    public void dereference(Map querySetMap) throws Exception {
+       Iterator queryIterator = querySet.values().iterator();
+       while (queryIterator.hasNext()) {
+	   PageableQueryI pq = (PageableQueryI)queryIterator.next();
+	   pq.dereference(querySetMap);
+       }
+    }
+    
     /////////////////////////////////////////////////////////////////
     ///////  protected
     /////////////////////////////////////////////////////////////////

@@ -7,6 +7,8 @@ import java.sql.SQLException;
 
 import org.gusdb.gus.wdk.model.query.PageableQueryI;
 import org.gusdb.gus.wdk.model.query.PageableQueryInstanceI;
+import org.gusdb.gus.wdk.model.query.SimpleQuerySet;
+import org.gusdb.gus.wdk.model.query.SimpleQueryI;
 import org.gusdb.gus.wdk.model.query.Param;
 
 public class PageableSqlQuery extends Query implements PageableQueryI {
@@ -18,6 +20,8 @@ public class PageableSqlQuery extends Query implements PageableQueryI {
 
     SimpleSqlQuery mainQuery;
     SimpleSqlQuery pageQuery;
+    String mainQueryName;
+    String pageQueryName;
 
     public PageableSqlQuery () {
 	super();
@@ -26,14 +30,47 @@ public class PageableSqlQuery extends Query implements PageableQueryI {
     /////////////////////////////////////////////////////////////////////
     /////////////  Public properties ////////////////////////////////////
     /////////////////////////////////////////////////////////////////////
-
-    public void setMainQuery(SimpleSqlQuery mainQuery) {
-	this.mainQuery = mainQuery;
+    public void setMainQueryRef(String mainQueryName) {
+	this.mainQueryName = mainQueryName;
     }
 
-    public void setPageQuery(SimpleSqlQuery pageQuery) {
+    public void setPageQueryRef(String pageQueryName) {
+	this.pageQueryName = pageQueryName;
+    }
+
+    public void dereference(Map querySetMap) throws Exception {
+	mainQuery = (SimpleSqlQuery)dereference(querySetMap, mainQueryName, 
+						"mainQueryRef");
+	pageQuery = (SimpleSqlQuery)dereference(querySetMap, pageQueryName,
+						"pageQueryRef");
 	checkPageQueryParams(pageQuery.getParams());
-	this.pageQuery = pageQuery;
+    }
+
+    SimpleQueryI dereference(Map querySetMap, String twoPartName, String part) throws Exception {
+	String s = "PageableSqlQuery '" + getName() + "' has a " + part;
+
+	if (!twoPartName.matches("\\w+\\.\\w+")) {
+	    String s2 = s + " which is not in the form 'simpleQuerySetName.simpleQueryName'";
+	    throw new Exception(s2);
+	}
+
+	String[] parts = twoPartName.split("\\.");
+	String querySetName = parts[0];
+	String queryName = parts[1];
+
+	SimpleQuerySet sqs = (SimpleQuerySet)querySetMap.get(parts[0]);
+	if (sqs == null) {
+	    String s3 = s + " which contains an unrecognized querySet '" 
+		+ querySetName + "'";
+	    throw new Exception(s3);
+	}
+	SimpleQueryI sq = sqs.getQuery(parts[1]);
+	if (sq == null) {
+	    String s4 = s + " which contains an unrecognized query '" 
+		+ queryName + "'";
+	    throw new Exception(s4);
+	}
+	return sq;
     }
 
     public PageableQueryInstanceI makeInstance() {
@@ -41,17 +78,20 @@ public class PageableSqlQuery extends Query implements PageableQueryI {
     }
 
     public String getDisplayName() {
-	if (displayName == null) return mainQuery.getDisplayName();
+	if (displayName == null && mainQuery != null) 
+	    return mainQuery.getDisplayName();
 	else return displayName;
     }
 
     public Boolean getIsCacheable() {
-	if (isCacheable == null) return mainQuery.getIsCacheable();
+	if (isCacheable == null && mainQuery != null) 
+	    return mainQuery.getIsCacheable();
 	else return isCacheable;
     }
 
     public String getHelp() {
-	if (help == null) return mainQuery.getHelp();
+	if (help == null && mainQuery != null) 
+	    return mainQuery.getHelp();
 	else return help;
     }
 
