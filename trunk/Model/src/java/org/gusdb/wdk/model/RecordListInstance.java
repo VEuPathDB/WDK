@@ -64,7 +64,7 @@ public class RecordListInstance {
 	else return 0;
     }
     
-    public int getTotalLength() throws Exception{
+    public int getTotalLength() throws WdkModelException{
 
 	ResultList rl = getRecordInstanceIds();
 	int counter = 0;
