@@ -1,20 +1,15 @@
 package org.gusdb.gus.wdk.controller.servlets;
 
-import org.gusdb.gus.wdk.model.Column;
 import org.gusdb.gus.wdk.model.Param;
 import org.gusdb.gus.wdk.model.Query;
 import org.gusdb.gus.wdk.model.QueryInstance;
-import org.gusdb.gus.wdk.model.QueryParamsException;
-import org.gusdb.gus.wdk.model.QuerySet;
 import org.gusdb.gus.wdk.model.RecordList;
-import org.gusdb.gus.wdk.model.ResultList;
+import org.gusdb.gus.wdk.model.RecordListInstance;
 import org.gusdb.gus.wdk.model.WdkModel;
-import org.gusdb.gus.wdk.model.implementation.SqlQueryInstance;
 import org.gusdb.gus.wdk.view.QueryRecordGroupMgr;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -83,8 +78,8 @@ public class QueryTagsTesterServlet extends HttpServlet {
 		// We have a queryRecord name
         WdkModel wm = (WdkModel) getServletContext().getAttribute("wdk.wdkModel");
         
-        RecordList queryRecord = QueryRecordGroupMgr.getRecordList(wm, queryRecordName);
-        Query sq = queryRecord.getQuery();
+        RecordList recordList = QueryRecordGroupMgr.getRecordList(wm, queryRecordName);
+        Query sq = recordList.getQuery();
 
         if (sq == null) {
             msg("sq is null for "+queryRecordName, res);
@@ -124,80 +119,26 @@ public class QueryTagsTesterServlet extends HttpServlet {
         
 		// If OK, show success msg
 		msg("OK, we've got a valid query. Hooray", res);
-//		ResultList rl = null;
-//		StringBuffer sb = new StringBuffer();
-//		try {
-//		    
-//		    Query pageQuery = queryRecord.getRecord().makeInstance();   getQuery("RNAListInDetail");
-//		    
-//		    sqii.setIsCacheable(true);
-//		    sqii.setValues(paramValues);
-//		    
-//		    SqlQueryInstance ssqi = (SqlQueryInstance) sqii;
-//		    
-//		    String initialResultTable = ssqi.getResultAsTable();
-//		    Map values = new HashMap(3);
-//		    values.put("resultTable", initialResultTable);
-//		    values.put("startRow", "1");
-//		    values.put("endRow", "200");
-//		    SqlQueryInstance pageInstance = 
-//		        (SqlQueryInstance)pageQuery.makeInstance();
-//		    // pageInstance.setIsCacheable(getIsCacheable());
-//		    pageInstance.setValues(values);
-//		    rl = pageInstance.getResult();
-//            
-//		    //				ResultSet rs = sqii.getResult();
-//		    
-//		    if (rl == null) {
-//		        sb.append("No result set returned");   
-//		    } else {
-//		        // Get result set meta data
-//		        sb.append("<table width=\"100%\"><tr>");
-//                Column[] columns = rl.getInstance().getQuery().getColumns();
-//                String[] columnNames = new String[columns.length];
-//                for (int i = 0; i < columns.length; i++) {
-//                    columnNames[i] = columns[i].getDisplayName();
-//                    System.err.println("columnNames["+i+"] is "+columnNames[i]);
-////                    sb.append("<th align=\"center\"><b>&nbsp;</b></th>");
-//                    sb.append("<th align=\"center\"><b>");
-//                    sb.append(columnNames[i]);
-//                    sb.append("</b></th>");
-//                }
-//                System.err.println("The number of columns is "+columnNames.length);
-//		        sb.append("</tr>");
-//		        while (rl.next()) {
-//		            sb.append("<tr>");
-//		            sb.append("<td align=\"center\"><a href=\"");
-//		            sb.append(req.getContextPath());
-//		            sb.append("/RecordTester");
-//		            sb.append("?style=jsp&recordSetName=RNARecords&recordName=PSUCDSRecordId&primaryKey=");
-//		            sb.append(rl.getValue(columnNames[0])+"&objectType="+rl.getValue(columnNames[1])+"\" >");
-//		            sb.append("More details</a></td>");
-//		            sb.append("<td align=\"center\">"+rl.getValue(columnNames[3])+"</td>");
-//		            sb.append("<td align=\"center\"><i>"+rl.getValue(columnNames[4])+"</i></td>");
-//		            sb.append("</tr>");
-//		        }
-//		        sb.append("<table>");
-//		    }
-//		} catch (SQLException e) {
-//		    sb = new StringBuffer(e.toString());
-//		} catch (QueryParamsException e) {
-//		    sb = new StringBuffer(e.toString());
-//		} catch (Exception e) {
-//            e.printStackTrace();
-//		    sb = new StringBuffer(e.toString());
-//		}
-//        finally {
-//            if (rl != null) {
-//                // TODO - close should probably throw RuntimeException or not at all
-//                try {
-//                    rl.close();
-//                } catch (Exception exp) {
-//                    // Deliberately empty
-//                }
-//            }
-//        }
-//		msg(sb.toString(), res);
+
+
+        sq.setIsCacheable(Boolean.TRUE);
+
+        RecordListInstance rli = recordList.makeRecordListInstance();
+        rli.setValues(paramValues, 1, 20);
+//        System.err.println("Printing Record Instances on page " + pageCount);
+        try {
+            rli.print();
+        }
+        catch (Exception exp) {
+            exp.printStackTrace();
+        }
+          
+        String toPage = "";
+        
+        req.setAttribute("rli", rli);
+        req.setAttribute("recordListName", queryRecordGroup + "." + queryRecordName);
+        
+        redirect(req, res, toPage);
 		return;
 	}
 
