@@ -30,6 +30,10 @@
     <param-name>schemaLocation</param-name>
     <param-value>/WEB-INF/wdk-config/wdkModel.rng</param-value>
   </context-param>
+  <context-param>
+    <param-name>connectionPoolMaxWait</param-name>
+    <param-value>10000</param-value>
+  </context-param>
   <listener>
     <listener-class>org.gusdb.gus.wdk.controller.ApplicationInitListener</listener-class>
   </listener>
