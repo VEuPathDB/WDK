@@ -1,20 +1,36 @@
-package org.gusdb.gus.wdk.model.query;
+package org.gusdb.gus.wdk.model.implementation;
 
 import java.sql.ResultSet;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
-public interface SimpleQueryInstanceI {
+import org.gusdb.gus.wdk.model.QueryI;
+import org.gusdb.gus.wdk.model.QueryParamsException;
 
-    public Collection getValues();
+public class NullQueryInstance {
 
-    public boolean getIsCacheable();
+    public Collection getValues() {
+    	return Collections.EMPTY_LIST;
+    }
 
-    public void setIsCacheable(boolean isCacheable);
+    public boolean getIsCacheable() {
+    	return false;
+    }
 
-    public QueryI getQuery();
+    public void setIsCacheable(boolean isCacheable) {
+    	// Deliberately empty
+    }
 
-    public ResultSet getResult() throws Exception;
+    public QueryI getQuery() {
+    	return NullQuery.INSTANCE;
+    }
 
-    public void setValues(Map values) throws QueryParamsException;
+    public ResultSet getResult() throws Exception {
+    	return null;
+    }
+
+    public void setValues(Map values) throws QueryParamsException {
+    	// Deliberately empty
+    }
 }
