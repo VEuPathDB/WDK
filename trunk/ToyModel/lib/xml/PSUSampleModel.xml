@@ -9,11 +9,11 @@
                     queryRef="RNASimpleQueries.CDSNumExons" />
 
      	<summary name="CDSByName"
-        	        recordRef="RNARecords.PSUCDSRecord"
+        	        recordRef="RNARecords.PSUCDSRecordByDbId"
                     queryRef="RNASimpleQueries.CDSByName" /> 
 
      	<summary name="CDSByChromosome"
-        	        recordRef="RNARecords.PSUCDSRecord"
+        	        recordRef="RNARecords.PSUCDSRecordByDbId"
                     queryRef="RNASimpleQueries.CDSByChromosome" />
               
   	</summarySet>
@@ -21,8 +21,20 @@
   
     <recordSet name="RNARecords">
 
-    <record name="PSUCDSRecord" type="CDS" idPrefix="">
-      <attributeQuery twoPartName="RNARecordQueries.PSUCDSFields"/>
+    <record name="PSUCDSRecordByDbId" type="CDS" idPrefix="">
+      <attributeQuery twoPartName="RNARecordQueries.PSUCDSFieldsByDbId"/>
+
+      <!-- <tableQuery twoPartName="RNARecordQueries.ExternalLinks"/> -->
+
+      <textAttribute name="overview">
+        <text>
+          This is the CDS $$primaryKey$$.
+        </text>
+      </textAttribute>
+    </record>
+    
+    <record name="PSUCDSRecordByName" type="CDS" idPrefix="">
+      <attributeQuery twoPartName="RNARecordQueries.PSUCDSFieldsByName"/>
 
       <!-- <tableQuery twoPartName="RNARecordQueries.ExternalLinks"/> -->
 
@@ -74,16 +86,16 @@
   </sqlQuery>
 
 
-   <sqlQuery name="PSUCDSFields">
+   <sqlQuery name="PSUCDSFieldsByDbId">
 
      <paramRef twoPartName="allparams.primaryKey"/>
 
-     <column name="na_feature_id" displayName="na_feature_id" />
-     <column name="name" displayName="Name" />
-     <column name="gene_type" displayName="Gene Type" />
+     <column name="na_feature_id" displayName="na_feature_id" inSummary="true" />
+     <column name="name" displayName="Name" inSummary="true" />
+     <column name="gene_type" displayName="Gene Type" inSummary="true" />
      <column name="is_pseudo" displayName="Pseudo" />
      <column name="is_partial" displayName="Partial" />
-     <column name="product" displayName="Product/Description" />
+     <column name="product" displayName="Product/Description" inSummary="true" />
      <column name="modification_date" displayName="Last modified" />
 
      <sql>
@@ -99,6 +111,31 @@ select gf.na_feature_id,
      </sql>
   </sqlQuery>
 
+
+   <sqlQuery name="PSUCDSFieldsByName">
+
+     <paramRef twoPartName="allparams.primaryKey"/>
+
+     <column name="na_feature_id" displayName="na_feature_id" />
+     <column name="name" displayName="Name"  inSummary="true" />
+     <column name="gene_type" displayName="Gene Type" inSummary="true" />
+     <column name="is_pseudo" displayName="Pseudo" />
+     <column name="is_partial" displayName="Partial" />
+     <column name="product" displayName="Product/Description" inSummary="true" />
+     <column name="modification_date" displayName="Last modified" />
+
+     <sql>
+select gf.na_feature_id, 
+       gf.name,
+       gf.gene_type,
+       gf.is_pseudo,
+       gf.is_partial,
+       gf.product, 
+       TO_CHAR(gf.modification_date, 'Mon DD, YYYY HH:MI:SSAM') as modification_date
+ from dots.GeneFeature gf
+ where gf.name like '$$primaryKey$$'
+     </sql>
+  </sqlQuery>
    <sqlQuery name="CDSFieldsWithExons">
 
      <paramRef twoPartName="allparams.primaryKey"/>

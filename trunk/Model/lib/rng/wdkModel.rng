@@ -48,6 +48,9 @@
   <define name="ColumnBaseContents">
     <attribute name="name" />
     <optional>
+      <attribute name="inSummary" />
+    </optional>
+    <optional>
       <attribute name="displayName" />
     </optional>
     <optional>
@@ -155,6 +158,9 @@
       </optional>
       <optional>
         <attribute name="sample" />
+      </optional>
+            <optional>
+        <attribute name="substitute" />
       </optional> 
     </element>
   </define>
