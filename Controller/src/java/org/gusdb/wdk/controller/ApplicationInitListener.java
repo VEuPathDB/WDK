@@ -4,7 +4,6 @@ import org.gusdb.wdk.model.RDBMSPlatformI;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkLogManager;
-import org.gusdb.wdk.model.implementation.ModelXmlParser;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
