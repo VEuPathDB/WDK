@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
  
-<wdkModel> name="RNAQueries">
+<wdkModel name="RNAQueries">
 
 <pageableQuerySet name="RNAPageableQueries">
    <pageableSqlQuery name="GeneCardName"
@@ -37,6 +37,7 @@
        <stringParam  name="startRow"/>
        <stringParam  name="endRow"/>
     <sql>
+      <!-- use CDATA because query includes angle brackets -->
       <![CDATA[
       select cd.gene_id, cd.taxon_name, cd.gene_symbol, 
              cd.gene_description, cd.na_sequence_id, cd.assembly_length, 
@@ -83,7 +84,7 @@
         where ga.go_term_id = $$GoTerm$$ 
         and ga.table_id = 180 
         and ga.row_id = cd.protein_id 
-        and cd.taxon_id $$Taxon$$ 
+        and cd.taxon_id = $$Taxon$$ 
         and ga.is_deprecated != 1 
         and ga.is_not != 1 
     </sql>
