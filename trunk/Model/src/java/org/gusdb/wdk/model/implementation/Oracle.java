@@ -43,7 +43,22 @@ public class Oracle implements RDBMSPlatformI {
     public String getCurrentDateFunction() {
 	return "sysdate";
     }
+    
+    public boolean checkTableExists(String tableName) throws SQLException{
+	
+	String[] parts = tableName.split("\\.");
+	String owner = parts[0];
+	String realTableName =  parts[1];
 
+	String sql = "select owner, table_name from all_tables where owner='" + owner.toUpperCase() + 
+	    "' and table_name='" + realTableName.toUpperCase() + "'";
+	
+	String result = SqlUtils.runStringQuery(dataSource, sql);
+	
+	boolean tableExists = result == null? false : true;
+	return tableExists;
+    }
+    
     public void createSequence(String sequenceName, int start, int increment) throws SQLException {
 
 	String sql = "create sequence " + sequenceName + " start with " +
@@ -56,6 +71,8 @@ public class Oracle implements RDBMSPlatformI {
 	String sql = "drop sequence " + sequenceName;
 	SqlUtils.execute(dataSource, sql);
     }
+
+    
 
     /**
      * @return count of removed rows
