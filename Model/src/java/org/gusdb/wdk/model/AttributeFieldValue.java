@@ -18,6 +18,10 @@ public class AttributeFieldValue {
         return field.getName();
     }
 
+    public Boolean getIsInternal() {
+        return field.getIsInternal();
+    }
+
     public String getHelp() {
         return field.getHelp();
     }

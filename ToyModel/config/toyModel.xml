@@ -103,6 +103,10 @@
 
             <tableQueryRef ref="RnaTables.ConstituentEsts"/>
 
+            <linkAttribute name="taxonLink" displayName="Taxon"
+                           visible="$$taxon_name$$"
+                           url="http://Taxon.org/taxon_id=$$taxon_name$$"/>
+
             <textAttribute name="overview" displayName="Overview">
                 <text>
                     Transcript $$primaryKey$$ is from $$taxon_name$$.
@@ -213,12 +217,15 @@
     <querySet name="RnaTables">
         <sqlQuery name="ConstituentEsts" displayName="Constituent ESTs">
             <paramRef ref="params.primaryKey"/>
-                <column displayName="EST Id" name="na_sequence_id"/>
-                <column displayName="Assembly Sequence Id" name="assembly_sequence_id"/>
-                <column displayName="Sequence Start" name="sequence_start"/>
-                <column displayName="Sequence End" name="sequence_end"/>
-                <column displayName="Quality Start" name="quality_start"/>
-                <column displayName="Quality End" name="quality_end"/>
+            <linkColumn displayName="EST" name="EST" 
+                        visible="$$na_sequence_id$$"
+                        url="@EST_URL@"/>
+            <column displayName="EST Id" name="na_sequence_id" isInternal="true"/>
+            <column displayName="Assembly Sequence Id" name="assembly_sequence_id"/>
+            <column displayName="Sequence Start" name="sequence_start"/>
+            <column displayName="Sequence End" name="sequence_end"/>
+            <column displayName="Quality Start" name="quality_start"/>
+            <column displayName="Quality End" name="quality_end" />
             <sql>
                 select aseq.na_sequence_id, aseq.assembly_sequence_id, aseq.sequence_start,
                        aseq.sequence_end, aseq.quality_start, aseq.quality_end

@@ -13,7 +13,7 @@ public class Column {
     Query query;
     String help;
     String dataTypeName;
-    Boolean isInternal = new Boolean(true);
+    Boolean isInternal = new Boolean(false);
 
     private boolean inSummary = true;
 

@@ -65,7 +65,10 @@ public abstract class ResultList {
 		Object colName = colNames.next();
 		AttributeFieldValue fVal = 
 		    (AttributeFieldValue)rowMap.get(colName);
-		buf.append(fVal.getValue() + "\t");
+		if (fVal.getIsInternal().booleanValue()) buf.append("[");
+		buf.append(fVal.getValue());
+		if (fVal.getIsInternal().booleanValue()) buf.append("]");
+		buf.append("\t");
 	    }
 	    buf.append(newline);
 	}

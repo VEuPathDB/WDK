@@ -222,7 +222,7 @@ public class RecordInstance {
 	}
 
 	alreadyVisited.put(linkAttributeName, linkAttributeName);
-	
+
 	return new LinkValue(instantiateAttr(field.getVisible(), 
 					     linkAttributeName),
 			     instantiateAttr(field.getUrl(), 
