@@ -6,7 +6,7 @@ use Getopt::Long;
 
 my ($dropDb, $createDb, $modelConfigFile);
 
-&GetOptions ('modelConfigFile=s' => \$modelConfigFile,
+&GetOptions ('configFile=s' => \$modelConfigFile,
 	     'dropDatabase!' => \$dropDb,
 	     'createDatabase!' => \$createDb);
 

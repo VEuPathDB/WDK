@@ -19,7 +19,7 @@ my ($configFile, $loadNewDatabase, $createNewExpected, $outputDir, $commandListF
 
 if ($loadNewDatabase){
     
-    my $dbCmd = "wdkTestDb --dataDirectory $ENV{GUS_HOME}/data/WDK/Model/testTables --dropDatabase --createDatabase --configFile $configFile"; 
+    my $dbCmd = "wdkTestDb --dropDatabase --createDatabase --configFile $configFile"; 
     print STDERR "Performing database management with command $dbCmd\n\n" if $verbose;
     system($dbCmd);
 }
