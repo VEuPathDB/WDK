@@ -41,7 +41,7 @@ import org.gusdb.gus.wdk.model.PageableQueryInstanceI;
 import org.gusdb.gus.wdk.model.Param;
 import org.gusdb.gus.wdk.model.StringParam;
 import org.gusdb.gus.wdk.model.RDBMSPlatformI;
-import org.gusdb.gus.wdk.model.implementation.QuerySetParser;
+import org.gusdb.gus.wdk.model.implementation.ModelXmlParser;
 import org.gusdb.gus.wdk.model.implementation.SqlResultFactory;
 
 
@@ -228,7 +228,7 @@ public class QueryTester {
 	    platform.setDataSource(dataSource);
        
 	    WdkModel wdkModel = 
-		QuerySetParser.parseXmlFile(querySetFile);
+		ModelXmlParser.parseXmlFile(querySetFile);
 	    ResultFactory resultFactory = wdkModel.getResultFactory();
 	    SqlResultFactory sqlResultFactory = 
 		new SqlResultFactory(dataSource, platform, 
