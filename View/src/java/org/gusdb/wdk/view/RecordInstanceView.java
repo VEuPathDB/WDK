@@ -3,6 +3,7 @@ package org.gusdb.gus.wdk.view;
 import org.gusdb.gus.wdk.controller.WdkLogManager;
 import org.gusdb.gus.wdk.model.Record;
 import org.gusdb.gus.wdk.model.RecordInstance;
+import org.gusdb.gus.wdk.model.ResultList;
 import org.gusdb.gus.wdk.model.WdkModelException;
 import org.gusdb.gus.wdk.util.FixableSmallMap;
 
@@ -33,7 +34,8 @@ public class RecordInstanceView implements Map {
     
     private RecordInstance ri;
     private Map map;
-    private List attributeNames;
+    private List attributeNames = new ArrayList();
+    private List tableNames = new ArrayList();
 
     public RecordInstanceView(RecordInstance ri) {
         // TODO Fix exception handling once exceptions and logging are pinned down
@@ -59,22 +61,48 @@ public class RecordInstanceView implements Map {
                 map.put(key, value);
             }
         }
+        
+        for (Iterator it = tableNames.iterator(); it.hasNext(); ) {
+            String key = (String) it.next();
+                ResultList value = null;
+                try {
+                    value = ri.getTableValue(key);
+                }
+                catch (WdkModelException exp) {
+                    exp.printStackTrace();
+                }
+                logger.severe("About to go and create RIVList ("+value+")for key "+key);
+                map.put(key, new RIVList(value));
+            }
     }
     
+    public RecordInstanceView(Map map) {
+        // TODO Fix exception handling once exceptions and logging are pinned down
 
+        logger.severe("Map based constructor called");
+        
+        this.map = map;
+        
+        for (Iterator it = map.keySet().iterator(); it.hasNext(); ) {
+            String key = (String) it.next();
+            attributeNames.add(key);
+            logger.severe("Just added key "+key);
+        }
+    }
+    
+    public void close() throws WdkModelException {
+        ri.close();
+    }
     
     private void generateAttributeNames() {
 //        if (summary) {
 //            //attributeNames = ri.getSummaryAttributes();
 //        } else {
-            List tempNames = new ArrayList();
             Record record = ri.getRecord();
-            logger.severe("Going off to fetch record names");
-            tempNames.addAll(record.getNonTextAttributeNames());
+            attributeNames.addAll(record.getNonTextAttributeNames());
             // FIXME Disabling text attributes for now
             //tempNames.addAll(record.getTextAttributeNames());
-            tempNames.addAll(record.getTableNames());
-            attributeNames = tempNames;
+            tableNames.addAll(record.getTableNames());
 
             
 //        }
@@ -132,6 +160,7 @@ public class RecordInstanceView implements Map {
      * @see java.util.Map#get(java.lang.Object)
      */
     public Object get(Object key) {
+        logger.severe("Returning "+map.get(key)+" for "+key);
         return map.get(key);
     }
 
@@ -184,5 +213,10 @@ public class RecordInstanceView implements Map {
         return map.entrySet();
     }
  
+    public String toString() {
+        return "I'm a RecordInstanceView";
+    }
+    
+    
 }
     
