@@ -130,7 +130,7 @@ public class Oracle implements RDBMSPlatformI {
      */
     public void init(String url, String user, String password, Integer minIdle,
 		     Integer maxIdle, Integer maxWait, Integer maxActive, 
-		     Integer initialSize) throws WdkModelException {
+		     Integer initialSize, String fileName) throws WdkModelException {
         
 	try{
 	    DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
@@ -146,7 +146,7 @@ public class Oracle implements RDBMSPlatformI {
 	    connection.close();
 	}
 	catch (SQLException sqle){
-	    throw new WdkModelException("\n\n*************ERROR***********\nCould not connect to database.\nIt is possible that you are using an incorrect url for connecting to the database or that your login or password is incorrect.\nPlease check $GUS_HOME/lib/xml/sampleModelConfig.xml and make sure all information provided there is valid.\n(This is the most likely cause of the error; note it could be something else)\n\n", sqle);
+	    throw new WdkModelException("\n\n*************ERROR***********\nCould not connect to database.\nIt is possible that you are using an incorrect url for connecting to the database or that your login or password is incorrect.\nPlease check " + fileName + " and make sure all information provided there is valid.\n(This is the most likely cause of the error; note it could be something else)\n\n", sqle);
 	    
 	}
 	connectionPool.setMaxWait(maxWait.intValue());

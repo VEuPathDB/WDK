@@ -230,6 +230,7 @@ public class WdkModel {
 	
 	ModelConfig modelConfig = 
 	    ModelConfigParser.parseXmlFile(modelConfigXmlFileURL);
+	String fileName = modelConfigXmlFileURL.getFile();
 	String connectionUrl = modelConfig.getConnectionUrl();
 	String login = modelConfig.getLogin();
 	String password = modelConfig.getPassword();
@@ -244,7 +245,7 @@ public class WdkModel {
 	RDBMSPlatformI platform = 
 	    (RDBMSPlatformI)Class.forName(platformClass).newInstance();
 
-	platform.init(connectionUrl, login, password, minIdle, maxIdle, maxWait, maxActive, initialSize);
+	platform.init(connectionUrl, login, password, minIdle, maxIdle, maxWait, maxActive, initialSize, fileName);
 	ResultFactory resultFactory = new ResultFactory(platform, login, instanceTable);
 	this.platform = platform;
 	this.resultFactory = resultFactory;
