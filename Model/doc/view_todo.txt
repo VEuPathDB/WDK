@@ -29,17 +29,18 @@ Write validator for query tag library. Wait until more solid
 
 Results Summary
 ---------------
-?
+Wait to see what TableResults looks like 
 
 
 Results Detail
 --------------
-How to view Record Tables?
-
+How to view Record Tables? Wait to see what TableResults looks like 
+Change variable name to generic one - ri
+Generic variable name should be configurable
 
 Controller
 ----------
-Navigation config files
+Navigation config files - for views base page name on record name
 
 
 
