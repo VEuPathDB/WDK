@@ -71,14 +71,15 @@ public class SummaryTester {
 	    String password = modelConfig.getPassword();
 	    String instanceTable = modelConfig.getQueryInstanceTable();
 	    String platformClass = modelConfig.getPlatformClass();
-	    
-	    DataSource dataSource = 
-		setupDataSource(connectionUrl,login, password);
+
 	    
 	    RDBMSPlatformI platform = 
 		(RDBMSPlatformI)Class.forName(platformClass).newInstance();
-	    platform.setDataSource(dataSource);
 	    
+        
+        DataSource dataSource = 
+        platform.createDataSource(connectionUrl,login, password);
+        
         File schemaFile = new File(System.getProperty("schemaFile"));
 	    WdkModel wdkModel = 
 		ModelXmlParser.parseXmlFile(modelXmlFile.toURL(), modelPropFile.toURL(), schemaFile.toURL());

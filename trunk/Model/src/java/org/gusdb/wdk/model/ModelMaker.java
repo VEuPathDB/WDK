@@ -134,8 +134,7 @@ public class ModelMaker {
       RDBMSPlatformI platform = 
 	(RDBMSPlatformI)Class.forName(platformClass).newInstance();
       DataSource dataSource = 
-	setupDataSource(connectionUrl,login, password);
-      platform.setDataSource(dataSource);
+	platform.createDataSource(connectionUrl,login, password);
       String instanceTable = modelConfig.getQueryInstanceTable();
       ResultFactory resultFactory = new ResultFactory(dataSource, platform, 
 						      login, instanceTable);

@@ -3,6 +3,7 @@ package org.gusdb.gus.wdk.model.implementation;
 import org.gusdb.gus.wdk.controller.WdkLogManager;
 import org.gusdb.gus.wdk.model.RDBMSPlatformI;
 
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.logging.Logger;
 
@@ -27,6 +28,7 @@ public class Oracle implements RDBMSPlatformI {
     }
 
     public DataSource getDataSource(){
+        System.err.println("%%%%%% Returning dataSource "+dataSource);
 	return dataSource;
     }
 
@@ -116,6 +118,14 @@ public class Oracle implements RDBMSPlatformI {
 	SqlUtils.execute(dataSource, rownumSql);
     }
 
+    /* (non-Javadoc)
+     * @see org.gusdb.gus.wdk.model.RDBMSPlatformI#createDataSource(java.lang.String, java.lang.String, java.lang.String)
+     */
+    public DataSource createDataSource(String url, String user, String password) throws SQLException {
+        DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
+        this.dataSource = SqlUtils.createDataSource(url, user,password);
+        return dataSource;
+    }
 
 }
 

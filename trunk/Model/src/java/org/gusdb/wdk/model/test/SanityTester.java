@@ -46,7 +46,7 @@ import org.apache.commons.pool.impl.GenericObjectPool;
  * Created: Mon August 23 12:00:00 2004 EDT
  *
  * @author David Barkan
- * @version $Revision$ $Date$Author: dbarkan $
+ * @version $Revision$ $Date$Author: art $
  */
 public class SanityTester {
 
@@ -121,13 +121,13 @@ public class SanityTester {
             String platformClass = modelConfig.getPlatformClass();
             
 	    //make wdkModel and QueryTester
-            DataSource dataSource = 
-                setupDataSource(connectionUrl,login, password);
+
             
             RDBMSPlatformI platform = 
                 (RDBMSPlatformI)Class.forName(platformClass).newInstance();
-            platform.setDataSource(dataSource);
-	    
+            
+            DataSource dataSource = 
+                platform.createDataSource(connectionUrl,login, password);	    
             File schemaFile = new File(System.getProperty("schemaFile"));
 	    WdkModel wdkModel = ModelXmlParser.parseXmlFile(modelXmlFile.toURL(), modelPropFile.toURL(), schemaFile.toURL());
 	    
