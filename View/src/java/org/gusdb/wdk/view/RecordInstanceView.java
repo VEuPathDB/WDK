@@ -68,13 +68,15 @@ public class RecordInstanceView implements Map {
                 ResultList value = null;
                 try {
                     value = ri.getTableValue(key);
+		    logger.finer("About to go and create RIVList ("+value+")for key "+key);
+		    logger.finer("#~#~ Adding TABLE "+key+" => "+value);
+		    map.put(key, new RIVList(value));
+		    value.close();
                 }
                 catch (WdkModelException exp) {
                     exp.printStackTrace();
                 }
-                logger.finer("About to go and create RIVList ("+value+")for key "+key);
-                logger.finer("#~#~ Adding TABLE "+key+" => "+value);
-                map.put(key, new RIVList(value));
+		
             }
     }
     
