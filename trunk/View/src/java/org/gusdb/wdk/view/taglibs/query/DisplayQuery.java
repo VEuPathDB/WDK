@@ -7,9 +7,7 @@ import javax.servlet.jsp.JspWriter;
 import javax.servlet.jsp.PageContext;
 import javax.servlet.jsp.tagext.SimpleTagSupport;
 
-import org.gusdb.gus.wdk.model.SimpleQueryI;
 import org.gusdb.gus.wdk.model.SimpleQueryInstanceI;
-import org.gusdb.gus.wdk.model.SimpleQuerySet;
 import org.gusdb.gus.wdk.model.implementation.NullQueryInstance;
 import org.gusdb.gus.wdk.view.GlobalRepository;
 

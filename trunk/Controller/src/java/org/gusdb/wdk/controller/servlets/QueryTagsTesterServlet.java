@@ -2,11 +2,7 @@ package org.gusdb.gus.wdk.controller.servlets;
 
 import org.gusdb.gus.wdk.model.Param;
 import org.gusdb.gus.wdk.model.QueryParamsException;
-import org.gusdb.gus.wdk.model.SimpleQueryI;
 import org.gusdb.gus.wdk.model.SimpleQueryInstanceI;
-import org.gusdb.gus.wdk.model.SimpleQuerySet;
-import org.gusdb.gus.wdk.model.implementation.PageableSqlQuery;
-import org.gusdb.gus.wdk.model.implementation.SimpleSqlQueryInstance;
 
 import org.gusdb.gus.wdk.view.GlobalRepository;
 
