@@ -1,12 +1,16 @@
 To Do
 
--use queryRef instead of twoPartName in <record>
+-consolidate the config files:
+   - model config could point to model file and prop file
+   - have model config use a default location
+   - upshot: lose lots of args on the command line, etc
+
+-move jdbc driver class name into config file so that it is not hard-coded into command line tools
 
 -why is Record.java catching WdkModelException?
 
 -why is SummaryInstance.java catching WdkModelException?
 
--why does Record need a Reference? (what reference is it?)
 
 
 For release 1.0
@@ -173,4 +177,9 @@ DONE
  - document: have to clear out cache if query sql select clause changes
 
  - document: when sql is joined with cache tables, need alias to avoid ambigous column names
+
+ -why does Record need a Reference? (what reference is it?)
+
+ -use queryRef instead of twoPartName in <record>
+
 
