@@ -35,8 +35,8 @@ public class SummaryTester {
 	File modelXmlFile = new File(cmdLine.getOptionValue("modelXmlFile"));
         File modelPropFile = new File(cmdLine.getOptionValue("modelPropFile"));
 
-	String summarySetName = cmdLine.getOptionValue("summarySetName");
-	String summaryName = cmdLine.getOptionValue("summaryName");
+	String summarySetName = cmdLine.getOptionValue("questionSetName");
+	String summaryName = cmdLine.getOptionValue("questionName");
 	String[] rows = cmdLine.getOptionValues("rows");
 
 	validateRowCount(rows);
