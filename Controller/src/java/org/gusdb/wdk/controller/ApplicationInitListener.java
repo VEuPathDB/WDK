@@ -12,7 +12,7 @@ import org.gusdb.gus.wdk.model.RDBMSPlatformI;
 import org.gusdb.gus.wdk.model.ResultFactory;
 import org.gusdb.gus.wdk.model.WdkModel;
 import org.gusdb.gus.wdk.model.WdkModelException;
-import org.gusdb.gus.wdk.model.implementation.ModelXMLParserRelaxNG;
+import org.gusdb.gus.wdk.model.implementation.ModelXmlParser;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -76,7 +76,7 @@ public class ApplicationInitListener implements ServletContextListener {
                     (RDBMSPlatformI)Class.forName(platformClass).newInstance();
                 platform.setDataSource(dataSource);
                 
-                WdkModel wdkModel = ModelXMLParserRelaxNG.parseXmlFile(querySetFile, schemaFile);
+                WdkModel wdkModel = ModelXmlParser.parseXmlFile(querySetFile, schemaFile);
                 
                 ResultFactory resultFactory = new ResultFactory(dataSource, platform, 
                         dbConfig.getLogin(), instanceTable);
