@@ -96,7 +96,7 @@ public class SummaryInstance {
 	}
     }
     
-    public int getTotalLengthLength() throws WdkModelException{
+    public int getTotalLength() throws WdkModelException{
 
 	if (this.length == null){
 	    
