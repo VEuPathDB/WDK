@@ -75,7 +75,7 @@ public class TestBooleanTree {
 
 	//root boolean node
 	Question q1 = model.makeBooleanQuestion(q7.getRecordClass());
-	Hashtable q1values = makeBooleanValues("Minus");
+	Hashtable q1values = makeBooleanValues("Subtract");
 
 	BooleanQuestionNode bqn4 = new BooleanQuestionNode(q4, null);
 	BooleanQuestionNode bqn5 = new BooleanQuestionNode(q5, null);
