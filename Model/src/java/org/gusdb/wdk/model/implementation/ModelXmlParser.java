@@ -56,7 +56,7 @@ public class ModelXmlParser {
     throws WdkModelException {
         
         if (schemaURL == null) {
-            schemaURL = WdkModel.INSTANCE.getClass().getResource(DEFAULT_SCHEMA_NAME);   
+            schemaURL = WdkModel.class.getResource(DEFAULT_SCHEMA_NAME);   
         }
         
         // NOTE: we are validating before we substitute in the properties

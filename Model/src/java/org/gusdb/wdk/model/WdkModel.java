@@ -54,9 +54,6 @@ public class WdkModel {
             throw new RuntimeException(exp);
         }
     }
-    
-    
-    public static final WdkModel INSTANCE = new WdkModel();
 
     public ResultFactory getResultFactory() {
         return resultFactory;
