@@ -15,15 +15,15 @@ public class ParamBean {
 	this.param = param;
     }
 
-    String getName() {
+    public String getName() {
 	return param.getFullName();
     }
 
-    String getPrompt() {
+    public String getPrompt() {
 	return param.getPrompt();
     }
 
-    String getHelp() {
+    public String getHelp() {
 	return param.getHelp();
     }
 }

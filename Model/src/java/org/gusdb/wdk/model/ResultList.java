@@ -89,14 +89,14 @@ public abstract class ResultList {
     //////////////////////////////////////////////////////////////////
 
     /**
-     * @returns Iterator of Maps as returned by getRow()
+     * @return Iterator of Maps as returned by getRow()
      */
     Iterator getRows() {
 	return new ResultListIterator(this);
     }
 
     /**
-     * @returns Map of columnName -> AttributeFieldValue
+     * @return Map of columnName -> AttributeFieldValue
      */
     Map getRow() {
 	// return new RowMap(this);
