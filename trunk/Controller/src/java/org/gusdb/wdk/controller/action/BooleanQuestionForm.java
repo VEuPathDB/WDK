@@ -49,11 +49,19 @@ public class BooleanQuestionForm extends QuestionForm {
 	    return errors;
 	}
 
-	BooleanQuestionNodeBean root =
-	    (BooleanQuestionNodeBean)request.getSession().getAttribute(CConstants.CURRENT_BOOLEAN_ROOT_KEY);
+	Object root = request.getSession().getAttribute(CConstants.CURRENT_BOOLEAN_ROOT_KEY);
+
+	if (!(root instanceof BooleanQuestionLeafBean || root instanceof BooleanQuestionNodeBean)) {
+	    throw new RuntimeException("expect BooleanQuestion Leaf or Node Bean but got " + root);
+	}
 
 	Vector allNodes = new Vector();
-        allNodes = root.getAllNodes(allNodes);
+	if (root instanceof BooleanQuestionLeafBean) {
+	    allNodes.add(root);
+	} else {
+	    BooleanQuestionNodeBean rootNode = (BooleanQuestionNodeBean)root;
+	    allNodes = rootNode.getAllNodes(allNodes);
+	}
 	
 	for (int i = 0; i < allNodes.size(); i++){
 	    Object nextNode = allNodes.elementAt(i);

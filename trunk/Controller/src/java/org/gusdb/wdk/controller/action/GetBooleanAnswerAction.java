@@ -20,6 +20,7 @@ import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
 import org.gusdb.wdk.model.BooleanQuery;
 
 import java.util.Vector;
+import java.util.Map;
 import java.util.Hashtable;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -42,25 +43,34 @@ public class GetBooleanAnswerAction extends ShowSummaryAction {
 
 	BooleanQuestionForm bqf = (BooleanQuestionForm)form;
 
-	BooleanQuestionNodeBean root = (BooleanQuestionNodeBean)request.getSession().getAttribute(CConstants.CURRENT_BOOLEAN_ROOT_KEY);
-	Vector allNodes = new Vector();
-        allNodes = root.getAllNodes(allNodes);
+	Object root = request.getSession().getAttribute(CConstants.CURRENT_BOOLEAN_ROOT_KEY);
+	AnswerBean answer;
+	if (root instanceof BooleanQuestionLeafBean) {
+	    BooleanQuestionLeafBean rootLeaf = (BooleanQuestionLeafBean)root;
+	    QuestionBean leafQuestion = rootLeaf.getQuestion();
+	    Map params = getParamsFromForm(bqf, rootLeaf);
+	    answer = summaryPaging(request, leafQuestion, params);
+	} else {
+	    BooleanQuestionNodeBean rootNode = (BooleanQuestionNodeBean)root;
+	    Vector allNodes = new Vector();
+	    allNodes = rootNode.getAllNodes(allNodes);
 	
-	for (int i = 0; i < allNodes.size(); i++){
-	    Object nextNode = allNodes.elementAt(i);
-	    if (nextNode instanceof BooleanQuestionLeafBean){
+	    for (int i = 0; i < allNodes.size(); i++){
+		Object nextNode = allNodes.elementAt(i);
+		if (nextNode instanceof BooleanQuestionLeafBean){
 		
-		BooleanQuestionLeafBean nextLeaf = (BooleanQuestionLeafBean)nextNode;
-		processLeaf(bqf, nextLeaf);
+		    BooleanQuestionLeafBean nextLeaf = (BooleanQuestionLeafBean)nextNode;
+		    Hashtable values = getParamsFromForm(bqf, nextLeaf);
+		    nextLeaf.setValues(values);
+		}
+		else { //node bean
+		    BooleanQuestionNodeBean nextRealNode = (BooleanQuestionNodeBean)nextNode;
+		    processNode(bqf, nextRealNode);
+		}
 	    }
-	    else { //node bean
-		BooleanQuestionNodeBean nextRealNode = (BooleanQuestionNodeBean)nextNode;
-		processNode(bqf, nextRealNode);
-	    }
+	    rootNode.setAllValues();
+	    answer = booleanAnswerPaging(request, rootNode);
 	}
-	root.setAllValues();
-	
-	AnswerBean answer = booleanAnswerPaging(request, root);
 
 	request.setAttribute(CConstants.WDK_ANSWER_KEY, answer);
 	
@@ -78,7 +88,7 @@ public class GetBooleanAnswerAction extends ShowSummaryAction {
 	node.setValues(values);
     }
 
-    private void processLeaf(BooleanQuestionForm bqf, BooleanQuestionLeafBean leaf){
+    private Hashtable getParamsFromForm(BooleanQuestionForm bqf, BooleanQuestionLeafBean leaf){
 
 	Integer leafId = leaf.getLeafId();
 	String leafPrefix = leafId.toString() + "_";
@@ -91,10 +101,8 @@ public class GetBooleanAnswerAction extends ShowSummaryAction {
 	    String nextValue = (String)bqf.getMyProps().get(formParamName);
 	    values.put(nextParam.getName(), nextValue);
 	}
-
-	leaf.setValues(values);
+	return values;
     }
-
 }
 
 
