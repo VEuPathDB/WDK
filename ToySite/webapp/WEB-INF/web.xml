@@ -12,25 +12,24 @@
  
   <context-param>
     <param-name>loggingFileLocation</param-name>
-    <param-value>/nfs/team81/art/genedb/external/jakarta-tomcat-5.0.18/logs/wdk.log</param-value>
+    <param-value>/usr/local/tomcat/5.0.24/logs/wdk.log</param-value>
   </context-param>
-   <!--
   <context-param>
     <param-name>loginConfig</param-name>
-    <param-value>/nfs/team81/art/gus/gus_home/lib/xml/modelConfig.xml</param-value>
+    <param-value>/WEB-INF/wdk-config/modelConfig.xml</param-value>
+  </context-param>
+  <context-param>
+    <param-name>propsFileLocation</param-name>
+    <param-value>/WEB-INF/wdk-config/sampleModel.prop</param-value>
   </context-param>
   <context-param>
     <param-name>querySetConfig</param-name>
-    <param-value>/nfs/team81/art/gus/gus_home/lib/xml/PSUSampleQuerySet.xml</param-value>
-  </context-param>
-   <context-param>
-    <param-name>recordSetConfig</param-name>
-    <param-value>/nfs/team81/art/gus/gus_home/lib/xml/PSUSampleRecordSet.xml</param-value>
+    <param-value>/WEB-INF/wdk-config/toyModel.xml</param-value>
   </context-param>
   <context-param>
-    <param-name>schemaName</param-name>
-    <param-value>wdkModel.rng</param-value>
-  </context-param> -->
+    <param-name>schemaLocation</param-name>
+    <param-value>/WEB-INF/wdk-config/wdkModel.rng</param-value>
+  </context-param>
   <listener>
     <listener-class>org.gusdb.gus.wdk.controller.ApplicationInitListener</listener-class>
   </listener>
