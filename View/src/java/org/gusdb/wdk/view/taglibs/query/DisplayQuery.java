@@ -9,7 +9,8 @@ import javax.servlet.jsp.tagext.SimpleTagSupport;
 
 import org.gusdb.gus.wdk.model.Query;
 import org.gusdb.gus.wdk.model.QueryInstance;
-import org.gusdb.gus.wdk.model.QuerySet;
+import org.gusdb.gus.wdk.model.RecordList;
+import org.gusdb.gus.wdk.model.RecordListSet;
 import org.gusdb.gus.wdk.model.WdkModel;
 import org.gusdb.gus.wdk.model.implementation.NullQueryInstance;
 
@@ -20,7 +21,7 @@ public class DisplayQuery extends SimpleTagSupport {
     
     private static final String DEFAULT_OPTION = "Choose...";
     private QueryInstance queryInstance;
-    private String querySet = "RNASimpleQueries"; // FIXME - Should get from QueryHolder
+    private String querySet = "RNARecordLists"; // FIXME - Should get from QueryHolder
     
     public void setQueryInstance(QueryInstance queryInstance) {
         this.queryInstance = queryInstance;
@@ -33,14 +34,18 @@ public class DisplayQuery extends SimpleTagSupport {
     	JspWriter out = getJspContext().getOut();
 
     	if ( queryInstance instanceof NullQueryInstance) {
-            WdkModel wm = (WdkModel) getJspContext().getAttribute("wdk.wdkQueryModel", PageContext.APPLICATION_SCOPE);
-    		QuerySet sqs = wm.getQuerySet(querySet);
-    		Query[] sq = sqs.getQueries();
-    		out.println("<b>Queries:</b> <select name=\"queryName\">");
+            WdkModel wm = (WdkModel) getJspContext().getAttribute("wdk.wdkModel", PageContext.APPLICATION_SCOPE);
+            RecordListSet rls = wm.getRecordListSet(querySet);
+            RecordList[] rla = rls.getRecordLists();
+            
+            
+//    		Query[] sq = sqs.getQueries();
+    		out.println("<b>Queries:</b> <select name=\"queryRecordName\">");
     		out.println("<option value=\""+DEFAULT_OPTION+"\">"+DEFAULT_OPTION);
-    		for ( int i=0 ; i < sq.length ;i++) {
-    			String val = sq[i].getDisplayName();
-    			out.println("<option value=\""+sq[i].getName()+"\">"+val);
+    		for ( int i=0 ; i < rla.length ;i++) {
+                Query sq = rla[i].getQuery();
+    			String val = sq.getDisplayName();
+    			out.println("<option value=\""+rls.getName()+"."+rla[i].getName()+"\">"+val);
     		}
     		out.println("</select>");
     		out.println("<input type=\"hidden\" name=\"defaultChoice\" value=\""+DEFAULT_OPTION+"\">");
