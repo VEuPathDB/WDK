@@ -1,7 +1,4 @@
-package org.gusdb.gus.wdk.model;
-
-import org.gusdb.gus.wdk.model.ModelConfig;
-import org.gusdb.gus.wdk.model.ModelConfigParser;
+package org.gusdb.gus.wdk.model.test;
 
 import java.util.Hashtable;
 import java.util.Enumeration;
@@ -29,9 +26,11 @@ import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.HelpFormatter;
 
+import org.gusdb.gus.wdk.model.ModelConfig;
+import org.gusdb.gus.wdk.model.ModelConfigParser;
 import org.gusdb.gus.wdk.model.ResultFactory;
 import org.gusdb.gus.wdk.model.QueryParamsException;
-import org.gusdb.gus.wdk.model.QuerySetContainer;
+import org.gusdb.gus.wdk.model.WdkModel;
 import org.gusdb.gus.wdk.model.QueryI;
 import org.gusdb.gus.wdk.model.SimpleQuerySet;
 import org.gusdb.gus.wdk.model.SimpleQueryI;
@@ -56,12 +55,12 @@ import org.gusdb.gus.wdk.model.implementation.SimpleSqlQueryInstance;
 
 public class QueryTester {
 
-    QuerySetContainer querySetContainer;
+    WdkModel wdkModel;
     ResultFactory resultFactory;
 
-    public QueryTester(QuerySetContainer querySetContainer, 
+    public QueryTester(WdkModel wdkModel, 
 		       ResultFactory resultFactory) {
-	this.querySetContainer = querySetContainer;
+	this.wdkModel = wdkModel;
 	this.resultFactory = resultFactory;
     }
 
@@ -73,7 +72,7 @@ public class QueryTester {
 			       Hashtable paramHash, 
 			       boolean useCache) throws Exception, QueryParamsException {
 	SimpleQuerySet simpleQuerySet 
-	    = querySetContainer.getSimpleQuerySet(querySetName);
+	    = wdkModel.getSimpleQuerySet(querySetName);
 	SimpleQueryI query = simpleQuerySet.getQuery(queryName);
 	SimpleQueryInstanceI instance = query.makeInstance();
 	instance.setIsCacheable(useCache);
@@ -86,7 +85,7 @@ public class QueryTester {
 				   Hashtable paramHash, 
 				   boolean useCache) throws Exception, QueryParamsException {
 	PageableQuerySet pageableQuerySet 
-	    = querySetContainer.getPageableQuerySet(querySetName);
+	    = wdkModel.getPageableQuerySet(querySetName);
 	PageableQueryI query = pageableQuerySet.getQuery(queryName);
 	PageableQueryInstanceI instance = query.makeInstance();
 	instance.setIsCacheable(useCache);
@@ -96,7 +95,7 @@ public class QueryTester {
 
     public String getResultAsTable(String querySetName, String queryName, Hashtable paramHash, boolean useCache) throws Exception, QueryParamsException {
 	SimpleQuerySet simpleQuerySet 
-	    = querySetContainer.getSimpleQuerySet(querySetName);
+	    = wdkModel.getSimpleQuerySet(querySetName);
 	SimpleQueryI query = simpleQuerySet.getQuery(queryName);
 	SimpleQueryInstanceI instance = query.makeInstance();
 	instance.setIsCacheable(useCache);
@@ -228,25 +227,25 @@ public class QueryTester {
 		(RDBMSPlatformI)Class.forName(platformClass).newInstance();
 	    platform.setDataSource(dataSource);
        
-	    QuerySetContainer querySetContainer = 
+	    WdkModel wdkModel = 
 		QuerySetParser.parseXmlFile(querySetFile);
-	    ResultFactory resultFactory = querySetContainer.getResultFactory();
+	    ResultFactory resultFactory = wdkModel.getResultFactory();
 	    SqlResultFactory sqlResultFactory = 
 		new SqlResultFactory(dataSource, platform, 
 				     login, instanceTable);
 	    resultFactory.setSqlResultFactory(sqlResultFactory);
-	    QueryTester tester = new QueryTester(querySetContainer, resultFactory);
+	    QueryTester tester = new QueryTester(wdkModel, resultFactory);
 
 	    // if no params supplied, show the query prompts
 	    if (!haveParams) {
 		QueryI query;
 		if (paging) {
 		    query = 
-			querySetContainer.getPageableQuerySet(querySetName).
+			wdkModel.getPageableQuerySet(querySetName).
 			getQuery(queryName);
 		} else {
 		    query = 
-			querySetContainer.getSimpleQuerySet(querySetName).
+			wdkModel.getSimpleQuerySet(querySetName).
 			getQuery(queryName);
 		}
 		tester.displayQuery(query);

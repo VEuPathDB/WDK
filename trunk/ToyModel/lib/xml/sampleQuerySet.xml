@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
  
-<querySetContainer name="RNAQueries">
+<wdkModel> name="RNAQueries">
 
 <pageableQuerySet name="RNAPageableQueries">
    <pageableSqlQuery name="GeneCardName"
@@ -108,5 +108,5 @@
   </simpleSqlQuery>
 
 </simpleQuerySet>
-</querySetContainer>
+</wdkModel>
 
