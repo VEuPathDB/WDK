@@ -32,7 +32,7 @@
     </fileset>
   </path>
 
-
+ <!--- dummy comment -->
 
   <target name="deploy" depends="package"
    description="Deploy to webapp directory">
