@@ -20,7 +20,7 @@ public class SqlUtils {
 	    Statement stmt = connection.createStatement();
 	    return stmt.executeQuery(sql);
 	} catch (SQLException sqlE) {
-	    System.err.println("Failed attempting to execute sql: '" + sql + "'");
+	    System.err.println("Failed attempting to execute sql in getResultSet: '" + sql + "'");
 	    throw sqlE;
 	}
     }
@@ -48,7 +48,8 @@ public class SqlUtils {
 	    resultSet = getResultSet(dataSource, sql);
 	    if (resultSet.next()) result = resultSet.getString(1);
 	} catch (SQLException e) {
-	    System.err.println("Failed attempting to execute sql: '" + sql + "'");
+	    System.err.println("Failed attempting to execute sql in runStringQuery: '" + sql + "'");
+	    e.printStackTrace(System.err);
 	    throw e;
 	} finally {
 	    closeResultSet(resultSet);
@@ -73,7 +74,7 @@ public class SqlUtils {
 	    resultSet = stmt.executeQuery(sql);
 	    while (resultSet.next()) v.addElement(resultSet.getString(1));
 	} catch (SQLException e) {
-	    System.err.println("Failed attempting to execute sql: '" + sql + "'");
+	    System.err.println("Failed attempting to execute sql in runStringArrayQuery: '" + sql + "'");
 	    throw e;
 	} finally {
 	    try { resultSet.close(); } catch(Exception e2) { }
