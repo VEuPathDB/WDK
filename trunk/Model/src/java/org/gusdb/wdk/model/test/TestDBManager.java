@@ -60,8 +60,8 @@ public class TestDBManager {
 		(RDBMSPlatformI)Class.forName(platformClass).newInstance();
 	    platform.init(connectionUrl, login, password, minIdle, maxIdle, maxWait, maxActive, initialSize, modelConfigXmlFile.getAbsolutePath());
 
-	    boolean drop = cmdLine.hasOption("dropDatabase");
-	    boolean create = cmdLine.hasOption("createDatabase");
+	    boolean drop = cmdLine.hasOption("drop");
+	    boolean create = cmdLine.hasOption("create");
 	    
 	    String[] tables = cmdLine.getOptionValues("tables");
 	    
