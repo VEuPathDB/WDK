@@ -445,6 +445,7 @@ public class ModelXmlParser {
         String cmdlineSyntax = 
             cmdName + 
             " -configFile config_file" +
+            " -modelPropFile model_prop_file" +
             " -modelXmlFile model_xml_file";
         
         String header = 
