@@ -4,7 +4,6 @@ import org.gusdb.wdk.model.RDBMSPlatformI;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkLogManager;
-import org.gusdb.wdk.model.implementation.ModelXmlParser;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -150,8 +149,6 @@ public class ApplicationInitListener implements ServletContextListener {
             Class parser = Class.forName(parserClass);
             Method build = parser.getDeclaredMethod("parseXmlFile", new Class[] {URL.class, URL.class, URL.class, URL.class});
             WdkModel wdkModel = (WdkModel) build.invoke(null, new Object[] {querySetURL, propsURL, schemaURL, modelConfigXmlURL});
-
-//            WdkModel wdkModel = ModelXmlParser.parseXmlFile(querySetURL, propsURL, schemaURL, modelConfigXmlURL);
             
             this.dataSource = wdkModel.getRDBMSPlatform().getDataSource();
             
