@@ -1,5 +1,6 @@
 package org.gusdb.wdk.view.taglibs.misc;
 
+import org.gusdb.wdk.model.PrimaryKey;
 import org.gusdb.wdk.model.RIVList;
 
 import java.io.IOException;
@@ -24,6 +25,11 @@ public class MultiTypeHandler extends SimpleTagSupport {
         JspWriter out = getJspContext().getOut();
         if (o instanceof RIVList) {
             RIVListHandler.process(getJspContext(), (RIVList)o);
+            return;
+        }
+        
+        if (o instanceof PrimaryKey) {
+            PrimaryKeyHandler.process(getJspContext(), ((PrimaryKey)o), null);
             return;
         }
         
