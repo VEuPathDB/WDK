@@ -97,17 +97,13 @@ public class RecordInstance {
     /**
      * @return Map of tableName -> AttributeFieldValue
      */
-    /*
-      different ways to get attributes from recordInstance:
-      FieldValueMap getAttributes()
-      Object getAttributeValue()
-     */
+
     public Map getAttributes() {
 	return new FieldValueMap(recordClass, this, false);
 	
     }
 
-    public String print() throws WdkModelException {
+    public String print() throws WdkModelException, WdkUserException {
 
 	String newline = System.getProperty( "line.separator" );
 	StringBuffer buf = new StringBuffer();
@@ -122,10 +118,8 @@ public class RecordInstance {
 	printAtts_Aux(buf, "Summary Attributes: " + newline, summaryAttributes);
 	printAtts_Aux(buf, "Non-Summary Attributes: " + newline, nonSummaryAttributes);
 	
-	Iterator fieldNames = attributeFields.keySet().iterator();
-
 	Map tableFields = getTables();
-	fieldNames = tableFields.keySet().iterator();
+	Iterator fieldNames = tableFields.keySet().iterator();
 	
 	while (fieldNames.hasNext()) {
 	    
@@ -139,11 +133,53 @@ public class RecordInstance {
 	    field.closeResult();
 	    buf.append(newline);
 	}
-
-	return buf.toString();
 	
+	buf.append("Nested Records belonging to this RecordInstance:" + newline);
+	NestedRecord nr[] = this.recordClass.getNestedRecords();
+	if (nr != null){
+	    for (int i = 0; i < nr.length; i++){
+		NestedRecord nextNr = nr[i];
+		RecordInstance ri = nextNr.getRecordInstance(this);
+		buf.append(nextNr.getFullName() + newline);
+		//decide whether record instances should keep track of their nested records' record instances.
+		buf.append (ri.printSummary());
+	    }
+	}
+
+	buf.append("Nested Record Lists belonging to this RecordInstance:" + newline);
+	NestedRecordList nrList[] = this.recordClass.getNestedRecordLists();
+	if (nrList != null){
+	    for (int i = 0; i < nrList.length; i++){
+		NestedRecordList nextNr = nrList[i];
+		RecordInstance riList[] = nextNr.getRecordInstances(this);
+		buf.append(nextNr.getFullName() + newline);
+		for (int j = 0; j < riList.length; j++){
+
+		    buf.append (riList[j].printSummary() + newline);
+		}
+	    }
+	}
+	
+	return buf.toString();
     }
     
+    public String printSummary() throws WdkModelException {
+
+	String newline = System.getProperty( "line.separator" );
+	StringBuffer buf = new StringBuffer();
+	
+	Map attributeFields = getAttributes();
+	
+	HashMap summaryAttributes = new HashMap();
+	HashMap nonSummaryAttributes = new HashMap();
+	
+	splitSummaryAttributes(attributeFields, summaryAttributes, nonSummaryAttributes);
+
+	printAtts_Aux(buf, "Summary Attributes: " + newline, summaryAttributes);
+	return buf.toString();
+    }
+	
+
 
     ///////////////////////////////////////////////////////////////////////////
     // package methods
@@ -311,6 +347,7 @@ public class RecordInstance {
 	Iterator fieldNames = attributeFields.keySet().iterator();
 	while (fieldNames.hasNext()) {
 	    String fieldName = (String)fieldNames.next();
+
 	    AttributeFieldValue field = 
 		(AttributeFieldValue)attributeFields.get(fieldName);
 	    buf.append(field.getDisplayName() + ":   " + 

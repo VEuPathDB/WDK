@@ -31,6 +31,8 @@ public class RecordClass {
     private String summaryAttributeList;
     private String attributeOrdering;
     private HashMap questions = new HashMap();
+    private HashMap nestedRecords = new LinkedHashMap();
+    private HashMap nestedRecordLists = new LinkedHashMap();
 
     public RecordClass() {
 	// make sure these keys are at the front of the list
@@ -103,6 +105,16 @@ public class RecordClass {
     public void addQuestion(Question q){
 	questions.put(q.getFullName(), q);
     }
+
+    public void addNestedRecord(NestedRecord nr){
+	
+	nestedRecords.put(nr.getFullName(), nr);
+    }
+
+    public void addNestedRecordList(NestedRecordList nr){
+	
+	nestedRecordLists.put(nr.getFullName(), nr);
+    }
     
     //////////////////////////////////////////////////////////////
     // public getters
@@ -140,6 +152,30 @@ public class RecordClass {
 	return (FieldI) fieldsMap.get(fieldName);
     }
 
+    public NestedRecord[] getNestedRecords(){
+	Iterator it = nestedRecords.values().iterator();
+	NestedRecord[] returnedNr = new NestedRecord[nestedRecords.size()];
+	int i = 0;
+	while (it.hasNext()){
+	    NestedRecord nextNr = (NestedRecord)it.next();
+	    returnedNr[i] = nextNr;
+	    i++;
+	}
+	return returnedNr;
+    }
+
+    public NestedRecordList[] getNestedRecordLists(){
+	Iterator it = nestedRecordLists.values().iterator();
+	NestedRecordList[] returnedNr = new NestedRecordList[nestedRecordLists.size()];
+	int i = 0;
+	while (it.hasNext()){
+	    NestedRecordList nextNr = (NestedRecordList)it.next();
+	    returnedNr[i] = nextNr;
+	    i++;
+	}
+	return returnedNr;
+    }
+    
     /**
      * @return all Questions in the current model that are using this record class as their return type.
      */
@@ -301,6 +337,25 @@ public class RecordClass {
 	    LinkedHashMap orderedAttributes = sortAllAttributes();
 	    attributeFieldsMap = orderedAttributes;
 	}
+
+	NestedRecord nr[] = getNestedRecords();
+	if (nr != null){
+	    for (int i = 0; i < nr.length; i++){
+		NestedRecord nextNr = nr[i];
+		nextNr.resolveReferences(model);
+	    }
+
+	}
+
+	NestedRecordList nrLists[] = getNestedRecordLists();
+	if (nrLists != null){
+	    for (int i = 0; i < nrLists.length; i++){
+		NestedRecordList nextNr = nrLists[i];
+		nextNr.resolveReferences(model);
+	    }
+
+	}
+
     }
 
     private LinkedHashMap sortAllAttributes() throws WdkModelException{

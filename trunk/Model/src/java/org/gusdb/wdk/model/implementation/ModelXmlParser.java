@@ -15,6 +15,8 @@ import org.gusdb.wdk.model.TextAttributeField;
 import org.gusdb.wdk.model.TextColumn;
 import org.gusdb.wdk.model.LinkAttributeField;
 import org.gusdb.wdk.model.LinkColumn;
+import org.gusdb.wdk.model.NestedRecord;
+import org.gusdb.wdk.model.NestedRecordList;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 
@@ -236,16 +238,28 @@ public class ModelXmlParser {
 
         /*    */ digester.addBeanPropertySetter( "wdkModel/recordClassSet/recordClass/linkAttribute/url");
         
-         /*    */ digester.addSetNext( "wdkModel/recordClassSet/recordClass/linkAttribute", "addLinkAttribute" );
+	/*    */ digester.addSetNext( "wdkModel/recordClassSet/recordClass/linkAttribute", "addLinkAttribute" );
         
-       /*    */ digester.addObjectCreate( "wdkModel/recordClassSet/recordClass/textAttribute", TextAttributeField.class );
+	/*    */ digester.addObjectCreate( "wdkModel/recordClassSet/recordClass/textAttribute", TextAttributeField.class );
         
         /*    */ digester.addSetProperties( "wdkModel/recordClassSet/recordClass/textAttribute");
-
+	
         /*      */ digester.addBeanPropertySetter( "wdkModel/recordClassSet/recordClass/textAttribute/text");
         
         /*    */ digester.addSetNext( "wdkModel/recordClassSet/recordClass/textAttribute", "addTextAttribute" );
         
+	/*    */ digester.addObjectCreate( "wdkModel/recordClassSet/recordClass/nestedRecord", NestedRecord.class );
+
+	/*    */ digester.addSetProperties( "wdkModel/recordClassSet/recordClass/nestedRecord");
+
+        /*    */ digester.addSetNext( "wdkModel/recordClassSet/recordClass/nestedRecord", "addNestedRecord" );
+
+	/*    */ digester.addObjectCreate( "wdkModel/recordClassSet/recordClass/nestedRecordList", NestedRecordList.class );
+
+	/*    */ digester.addSetProperties( "wdkModel/recordClassSet/recordClass/nestedRecordList");
+
+        /*    */ digester.addSetNext( "wdkModel/recordClassSet/recordClass/nestedRecordList", "addNestedRecordList" );
+
         /*  */ digester.addSetNext( "wdkModel/recordClassSet/recordClass", "addRecordClass" );
         
         /**/ digester.addSetNext( "wdkModel/recordClassSet", "addRecordClassSet" );
