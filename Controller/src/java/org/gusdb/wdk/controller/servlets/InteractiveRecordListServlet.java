@@ -43,6 +43,10 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class InteractiveRecordListServlet extends HttpServlet {
 
+    private static final String SUBVIEW_PREFIX = "/WEB-INF/indirectPages/subviews/";
+    
+    private static final String RESULT_SUMMARY_PAGE = "/WEB-INF/indirectPages/top/resultSummary.jsp";
+    
     private static final Logger logger = Logger.getLogger("org.gusdb.gus.wdk.controller.servlets.InteractiveRecordListServlet");
     
     private final static boolean autoRedirect = true;
@@ -155,7 +159,7 @@ public class InteractiveRecordListServlet extends HttpServlet {
 		}
 
           
-        String toPage = "/resultSummary.jsp";
+        String toPage = RESULT_SUMMARY_PAGE;
         
         // TODO Work out size
         int size = 0;
@@ -198,7 +202,7 @@ public class InteractiveRecordListServlet extends HttpServlet {
     private String getRendererForRecordRef(Reference ref) {
         // TODO Set default for where no renderer found
         String renderer = ref.getTwoPartName();
-        String path = getServletContext().getRealPath("/WEB-INF/subviews/"+renderer+".jsp");
+        String path = getServletContext().getRealPath(SUBVIEW_PREFIX+renderer+".jsp");
         File f = new File(path);
         if (f.exists()) {
             return renderer;
