@@ -32,7 +32,7 @@ import org.apache.commons.cli.ParseException;
  * Created: Mon August 23 12:00:00 2004 EST
  *
  * @author David Barkan
- * @version $Revision$ $Date$Author: sfischer $
+ * @version $Revision$ $Date$Author: dbarkan $
  */
 public class SanityTester {
 
@@ -316,16 +316,9 @@ public class SanityTester {
 	try{
 	    StringBuffer message = new StringBuffer("To test " + element.getType() + " " + element.getName() + ", run the following command: \n ");
 	    
-	    File modelConfigXmlFile = 
-		new File(cmdLine.getOptionValue("configFile"));
-	    File modelPropFile = new File(cmdLine.getOptionValue("modelPropFile"));
-	    File modelXmlFile = new File(cmdLine.getOptionValue("modelXmlFile"));
-	    
-	    String fullModelConfigXml = modelConfigXmlFile.getAbsolutePath();
-	    String fullModelProp = modelPropFile.getAbsolutePath();
-	    String fullModelXml = modelXmlFile.getAbsolutePath();
+	    String modelName = cmdLine.getOptionValue("model");
 	
-	    String globalArgs = "-configFile " + fullModelConfigXml + " -modelPropFile " + fullModelProp + " -modelXmlFile " + fullModelXml;
+	    String globalArgs = "-model " + modelName;
 	    String command = element.getCommand(globalArgs);
 	    message.append(command);
 

@@ -76,14 +76,11 @@ public class SanityRecord implements SanityElementI {
 
     public String getCommand(String globalArgs) throws WdkModelException{
 
-	Reference recordReference = new Reference(getRef());
-	String recordSetName = recordReference.getSetName();
-	String recordName = recordReference.getElementName();
 	String pk = getPrimaryKey().toString();
 
 	StringBuffer command = new StringBuffer ("wdkRecord " + globalArgs);
 
-	command.append(" -recordSetName " + recordSetName + " -recordName " + recordName + " -primaryKey " + pk);
+	command.append(" -record " + getRef() + " -primaryKey " + pk);
 	
 	return command.toString();
     }
