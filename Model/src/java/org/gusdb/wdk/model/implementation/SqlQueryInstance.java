@@ -1,7 +1,5 @@
 package org.gusdb.wdk.model.implementation;
 
-
-import org.gusdb.wdk.model.NotBooleanOperandException;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.QueryInstance;
 import org.gusdb.wdk.model.ResultList;
@@ -77,9 +75,6 @@ public class SqlQueryInstance extends QueryInstance  {
         return rl;
     }
 
-    public String getBooleanOperandSql() throws NotBooleanOperandException{
-        return new String("method needs to be written!");
-    }
 
     protected ResultList getNonpersistentResult() throws WdkModelException {
         ResultSet resultSet = null;
