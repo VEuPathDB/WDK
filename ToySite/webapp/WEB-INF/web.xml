@@ -9,6 +9,25 @@
   <description>
     This is a simple webapp to demonstrate the new GUS WebDevKit (WDK).
   </description>
+ 
+ 
+  <context-param>
+    <param-name>loginConfig</param-name>
+    <param-value>/nfs/team81/art/gus/gus_home/lib/xml/modelConfig.xml</param-value>
+  </context-param>
+    <context-param>
+    <param-name>querySetConfig</param-name>
+    <param-value>/nfs/team81/art/gus/gus_home/lib/xml/PSUSampleQuerySet.xml</param-value>
+  </context-param>
+    <context-param>
+    <param-name>recordSetConfig</param-name>
+    <param-value>/nfs/team81/art/gus/gus_home/lib/xml/PSUSampleRecordSet.xml</param-value>
+  </context-param>
+  
+  <listener>
+    <listener-class>org.gusdb.gus.wdk.controller.ApplicationInitListener</listener-class>
+  </listener>
+  
   
   <servlet>
     <servlet-name>RecordTester</servlet-name>

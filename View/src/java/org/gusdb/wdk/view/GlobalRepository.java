@@ -22,7 +22,7 @@ import javax.sql.DataSource;
 
 public class GlobalRepository {
 
-    private static final GlobalRepository INSTANCE = new GlobalRepository();
+    private static GlobalRepository INSTANCE;
     private SimpleQuerySet simpleQuerySet;
     private WdkModel wdkRecordModel;
     private WdkModel wdkQueryModel;
@@ -30,14 +30,23 @@ public class GlobalRepository {
     private ResultFactory queryResultFactory;
     
     static public GlobalRepository getInstance() {
+        if (INSTANCE == null) {
+            throw new RuntimeException("GlobalRepository instance hasn't been created");
+        }
         return INSTANCE;
     }
 
 
     private GlobalRepository() {
-        File querySetFile = new File("/nfs/team81/art/gus/gus_home/lib/xml/PSUSampleQuerySet.xml");
-        File recordSetFile = new File("/nfs/team81/art/gus/gus_home/lib/xml/PSUSampleRecordSet.xml");
-        File modelConfigXmlFile = new File("/nfs/team81/art/gus/gus_home/lib/xml/modelConfig.xml");
+        // Deliberately empty
+    }
+    
+    public static void createInstance(String loginConfigLocation, String queryConfigLocation, String recordConfigLocation) {
+        INSTANCE = new GlobalRepository();
+        
+        File querySetFile = new File(queryConfigLocation);
+        File recordSetFile = new File(recordConfigLocation);
+        File modelConfigXmlFile = new File(loginConfigLocation);
         
         try {
             // read config info
@@ -56,16 +65,16 @@ public class GlobalRepository {
                 (RDBMSPlatformI)Class.forName(platformClass).newInstance();
             platform.setDataSource(dataSource);
             
-            wdkQueryModel = ModelXmlParser.parseXmlFile(querySetFile);
-            wdkRecordModel = ModelXmlParser.parseXmlFile(recordSetFile);
-            queryResultFactory = wdkQueryModel.getResultFactory();
-            recordResultFactory = wdkRecordModel.getResultFactory();
+            INSTANCE.wdkQueryModel = ModelXmlParser.parseXmlFile(querySetFile);
+            INSTANCE.wdkRecordModel = ModelXmlParser.parseXmlFile(recordSetFile);
+            INSTANCE.queryResultFactory = INSTANCE.wdkQueryModel.getResultFactory();
+            INSTANCE.recordResultFactory = INSTANCE.wdkRecordModel.getResultFactory();
             SqlResultFactory sqlResultFactory = 
                 new SqlResultFactory(dataSource, platform, 
                         login, instanceTable);
-            recordResultFactory.setSqlResultFactory(sqlResultFactory);
+            INSTANCE.recordResultFactory.setSqlResultFactory(sqlResultFactory);
 
-            queryResultFactory.setSqlResultFactory(sqlResultFactory);
+            INSTANCE.queryResultFactory.setSqlResultFactory(sqlResultFactory);
             
         } catch (QueryParamsException e) {
             System.err.println(e.formatErrors());
@@ -94,10 +103,14 @@ public class GlobalRepository {
 
         try {
             OracleConnectionCacheImpl ds = new oracle.jdbc.pool.OracleConnectionCacheImpl();
-            ds.setURL("jdbc:oracle:thin:@ocs3:1532:tpat");
+            ds.setURL(connectURI);
 
-            ds.setPassword("GUSrw");
-            ds.setUser("GUSrw");
+            ds.setPassword(password);
+            ds.setUser(login);
+//            ds.setURL("jdbc:oracle:thin:@ocs3:1532:tpat");
+//
+//            ds.setPassword("GUSrw");
+//            ds.setUser("GUSrw");
             return (DataSource) ds;
         }
         catch (SQLException exp) {
