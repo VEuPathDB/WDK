@@ -2,28 +2,28 @@
  
 <wdkModel name="RNAQueries">
 
-  	<recordListSet name="RNARecordLists">
+  	<summarySet name="RNARecordLists">
 
-     	<recordList name="CDSNumExons"
+     	<summary name="CDSNumExons"
         	        recordRef="RNARecords.PSUCDSRecord"
                     queryRef="RNASimpleQueries.CDSNumExons" />
 
-     	<recordList name="CDSByName"
+     	<summary name="CDSByName"
         	        recordRef="RNARecords.PSUCDSRecord"
                     queryRef="RNASimpleQueries.CDSByName" /> 
 
-     	<recordList name="CDSByChromosome"
+     	<summary name="CDSByChromosome"
         	        recordRef="RNARecords.PSUCDSRecord"
                     queryRef="RNASimpleQueries.CDSByChromosome" />
               
-  	</recordListSet>
+  	</summarySet>
   
   
     <recordSet name="RNARecords">
     <record name="RNARecord" type="DoTS Transcript" idPrefix="DT.">
-      <fieldsQuery referent="RNARecordQueries.RNAFields"/>
+      <attributeQuery twoPartName="RNARecordQueries.RNAFields"/>
 
-      <!-- <tableQuery referent="RNARecordQueries.ExternalLinks"/> -->
+      <!-- <tableQuery twoPartName="RNARecordQueries.ExternalLinks"/> -->
 
       <textField name="overview">
         <text>
@@ -34,9 +34,9 @@
 
 
     <record name="PSUCDSRecord" type="CDS" idPrefix="CDS.">
-      <fieldsQuery referent="RNARecordQueries.PSUCDSFieldsByName"/>
+      <attributeQuery twoPartName="RNARecordQueries.PSUCDSFieldsByName"/>
 
-      <!-- <tableQuery referent="RNARecordQueries.ExternalLinks"/> -->
+      <!-- <tableQuery twoPartName="RNARecordQueries.ExternalLinks"/> -->
 
       <textField name="overview">
         <text>
@@ -46,9 +46,9 @@
     </record>
 
     <record name="PSUCDSRecordId" type="CDS" idPrefix="CDS.">
-      <fieldsQuery referent="RNARecordQueries.PSUCDSFieldsByPrimaryKey"/>
+      <attributeQuery towPartName="RNARecordQueries.PSUCDSFieldsByPrimaryKey"/>
 
-      <!-- <tableQuery referent="RNARecordQueries.ExternalLinks"/> -->
+      <!-- <tableQuery twoPartName="RNARecordQueries.ExternalLinks"/> -->
 
       <textField name="overview">
         <text>
