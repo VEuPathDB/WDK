@@ -61,7 +61,8 @@ public class QuestionForm extends ActionForm {
 	    try {
 	        String[] pVals = null;
 		if (p instanceof FlatVocabParamBean) {
-		    pVals = getMyMultiProp(p.getName()); 
+		    pVals = getMyMultiProp(p.getName());
+		    if (pVals == null) { pVals = new String[] {""}; }
 		} else {
 		    pVals = new String[] { getMyProp(p.getName()) }; 
 		}
