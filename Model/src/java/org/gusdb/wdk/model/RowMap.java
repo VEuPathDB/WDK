@@ -17,7 +17,7 @@ public class RowMap implements Map {
 
     public RowMap(ResultList resultList) {
 	this.resultList = resultList;
-	Set columnNameSet = new LinkedHashSet();
+	columnNameSet = new LinkedHashSet();
 	Column[] columns =  resultList.getColumns();
 	for (int i=0; i<columns.length; i++) {
 	    columnNameSet.add(columns[i].getName());
