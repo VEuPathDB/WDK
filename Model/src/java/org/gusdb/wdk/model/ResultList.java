@@ -36,10 +36,10 @@ public abstract class ResultList {
 	return value;
     }
     
-    public Query getQuery(){
-	return this.query;
+    public Query getQuery() {
+	return query;
     }
-    
+
     public abstract boolean next() throws Exception;
 
     public abstract void close() throws Exception;
