@@ -1,12 +1,12 @@
-package org.gusdb.gus.wdk.model.implementation;
+package org.gusdb.wdk.model.implementation;
 
 import java.util.Iterator;
 import java.util.Map;
-import org.gusdb.gus.wdk.model.WdkModel;
-import org.gusdb.gus.wdk.model.WdkModelException;
-import org.gusdb.gus.wdk.model.Query;
-import org.gusdb.gus.wdk.model.QueryInstance;
-import org.gusdb.gus.wdk.model.RDBMSPlatformI;
+import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.Query;
+import org.gusdb.wdk.model.QueryInstance;
+import org.gusdb.wdk.model.RDBMSPlatformI;
 
 public class SqlQuery extends Query {
     

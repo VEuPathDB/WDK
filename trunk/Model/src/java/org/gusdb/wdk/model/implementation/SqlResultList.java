@@ -1,11 +1,11 @@
-package org.gusdb.gus.wdk.model.implementation;
+package org.gusdb.wdk.model.implementation;
 
-import org.gusdb.gus.wdk.model.WdkModelException;
-import org.gusdb.gus.wdk.model.ResultList;
-import org.gusdb.gus.wdk.model.Query;
-import org.gusdb.gus.wdk.model.Column;
-import org.gusdb.gus.wdk.model.DerivedColumnI;
-import org.gusdb.gus.wdk.model.QueryInstance;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.ResultList;
+import org.gusdb.wdk.model.Query;
+import org.gusdb.wdk.model.Column;
+import org.gusdb.wdk.model.DerivedColumnI;
+import org.gusdb.wdk.model.QueryInstance;
 
 import java.util.HashMap;
 

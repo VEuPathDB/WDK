@@ -1,9 +1,9 @@
-package org.gusdb.gus.wdk.view.taglibs.query.HTMLParamViews;
+package org.gusdb.wdk.view.taglibs.query.HTMLParamViews;
 
-import org.gusdb.gus.wdk.model.FlatVocabParam;
-import org.gusdb.gus.wdk.model.Param;
-import org.gusdb.gus.wdk.model.ResultFactory;
-import org.gusdb.gus.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.FlatVocabParam;
+import org.gusdb.wdk.model.Param;
+import org.gusdb.wdk.model.ResultFactory;
+import org.gusdb.wdk.model.WdkModelException;
 
 import java.io.IOException;
 

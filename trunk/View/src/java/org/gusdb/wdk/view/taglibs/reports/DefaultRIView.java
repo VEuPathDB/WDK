@@ -1,6 +1,6 @@
-package org.gusdb.gus.wdk.view.taglibs.reports;
+package org.gusdb.wdk.view.taglibs.reports;
 
-import org.gusdb.gus.wdk.model.RecordInstance;
+import org.gusdb.wdk.model.RecordInstance;
 
 import java.io.IOException;
 

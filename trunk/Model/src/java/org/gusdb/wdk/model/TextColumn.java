@@ -1,4 +1,4 @@
-package org.gusdb.gus.wdk.model;
+package org.gusdb.wdk.model;
 
 /**
  * A subclass of Column which returns a text string containing interpolated values.  

@@ -1,7 +1,7 @@
-package org.gusdb.gus.wdk.model;
+package org.gusdb.wdk.model;
 
-import org.gusdb.gus.wdk.model.*;
-import org.gusdb.gus.wdk.model.implementation.*;
+import org.gusdb.wdk.model.*;
+import org.gusdb.wdk.model.implementation.*;
 
 
 import java.io.File;

@@ -1,4 +1,4 @@
-package org.gusdb.gus.wdk.model;
+package org.gusdb.wdk.model;
 
 /**
  * Represents a reference in a wdk model.  Has a two-part name: set and element

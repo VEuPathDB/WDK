@@ -1,12 +1,12 @@
-package org.gusdb.gus.wdk.model.test;
+package org.gusdb.wdk.model.test;
 
-import org.gusdb.gus.wdk.model.Query;
-import org.gusdb.gus.wdk.model.Summary;
-import org.gusdb.gus.wdk.model.SummaryInstance;
-import org.gusdb.gus.wdk.model.SummarySet;
-import org.gusdb.gus.wdk.model.WdkModel;
-import org.gusdb.gus.wdk.model.WdkUserException;
-import org.gusdb.gus.wdk.model.implementation.ModelXmlParser;
+import org.gusdb.wdk.model.Query;
+import org.gusdb.wdk.model.Summary;
+import org.gusdb.wdk.model.SummaryInstance;
+import org.gusdb.wdk.model.SummarySet;
+import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.implementation.ModelXmlParser;
 
 import java.io.File;
 import java.util.Hashtable;

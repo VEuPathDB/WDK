@@ -5,7 +5,7 @@
 	     connectionUrl="yourConnectionUrlHere"
 	     queryInstanceTable="QueryInstance"
 	     maxQueryParams="50"
-	     platformClass="org.gusdb.gus.wdk.model.implementation.Oracle"
+	     platformClass="org.gusdb.wdk.model.implementation.Oracle"
              initialSize="3"
              maxActive="20"
              maxIdle="3"

@@ -1,7 +1,7 @@
-package org.gusdb.gus.wdk.view.taglibs.query;
+package org.gusdb.wdk.view.taglibs.query;
 
-import org.gusdb.gus.wdk.model.Summary;
-import org.gusdb.gus.wdk.model.WdkModel;
+import org.gusdb.wdk.model.Summary;
+import org.gusdb.wdk.model.WdkModel;
 
 import java.io.*;
 import java.util.Enumeration;

@@ -1,4 +1,4 @@
-package org.gusdb.gus.wdk.model.implementation;
+package org.gusdb.wdk.model.implementation;
 
 import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.SAXParseException;

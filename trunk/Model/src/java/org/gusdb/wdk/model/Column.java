@@ -1,12 +1,12 @@
-package org.gusdb.gus.wdk.model;
+package org.gusdb.wdk.model;
 
-import org.gusdb.gus.wdk.controller.WdkLogManager;
+import org.gusdb.wdk.controller.WdkLogManager;
 
 import java.util.logging.Logger;
 
 public class Column {
 
-    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.gus.wdk.model.Column");
+    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.model.Column");
     
     String displayName;
     String name;

@@ -1,4 +1,4 @@
-package org.gusdb.gus.wdk.view.taglibs.query;
+package org.gusdb.wdk.view.taglibs.query;
 
 import java.io.IOException;
 
@@ -8,11 +8,11 @@ import javax.servlet.jsp.JspWriter;
 import javax.servlet.jsp.PageContext;
 import javax.servlet.jsp.tagext.SimpleTagSupport;
 
-import org.gusdb.gus.wdk.model.Query;
-import org.gusdb.gus.wdk.model.Summary;
-import org.gusdb.gus.wdk.model.SummarySet;
-import org.gusdb.gus.wdk.model.WdkModel;
-import org.gusdb.gus.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.Query;
+import org.gusdb.wdk.model.Summary;
+import org.gusdb.wdk.model.SummarySet;
+import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkUserException;
 
 /**
  * Custom tag which displays a Query to the user

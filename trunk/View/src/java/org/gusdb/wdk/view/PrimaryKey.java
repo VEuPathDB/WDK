@@ -1,4 +1,4 @@
-package org.gusdb.gus.wdk.view;
+package org.gusdb.wdk.view;
 
 public class PrimaryKey {
 

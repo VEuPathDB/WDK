@@ -1,4 +1,4 @@
-package org.gusdb.gus.wdk.view.taglibs.misc;
+package org.gusdb.wdk.view.taglibs.misc;
 
 import java.io.IOException;
 

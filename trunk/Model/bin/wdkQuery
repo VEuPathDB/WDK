@@ -8,6 +8,6 @@ foreach my $arg (@ARGV) {
     $args .= ($arg =~ /\-/ ? " $arg" : " \"$arg\"");
 }
 
-my $cmd = "java -Djdbc.drivers=oracle.jdbc.driver.OracleDriver -DcmdName=wdkQuery -DschemaFile=$GUS_HOME/lib/rng/wdkModel.rng -classpath $CLASSPATH org.gusdb.gus.wdk.model.test.QueryTester $args";
+my $cmd = "java -Djdbc.drivers=oracle.jdbc.driver.OracleDriver -DcmdName=wdkQuery -DschemaFile=$GUS_HOME/lib/rng/wdkModel.rng -classpath $CLASSPATH org.gusdb.wdk.model.test.QueryTester $args";
 
 system($cmd);

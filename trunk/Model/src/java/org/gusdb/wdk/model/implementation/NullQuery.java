@@ -1,9 +1,9 @@
-package org.gusdb.gus.wdk.model.implementation;
+package org.gusdb.wdk.model.implementation;
 
-import org.gusdb.gus.wdk.model.Column;
-import org.gusdb.gus.wdk.model.Param;
-import org.gusdb.gus.wdk.model.Query;
-import org.gusdb.gus.wdk.model.QueryInstance;
+import org.gusdb.wdk.model.Column;
+import org.gusdb.wdk.model.Param;
+import org.gusdb.wdk.model.Query;
+import org.gusdb.wdk.model.QueryInstance;
 
 public class NullQuery extends Query {
     
@@ -66,7 +66,7 @@ public class NullQuery extends Query {
 	}
 
     /* (non-Javadoc)
-     * @see org.gusdb.gus.wdk.model.Query#makeInstance()
+     * @see org.gusdb.wdk.model.Query#makeInstance()
      */
     public QueryInstance makeInstance() {
         // TODO Auto-generated method stub

@@ -1,16 +1,16 @@
-package org.gusdb.gus.wdk.controller.servlets;
+package org.gusdb.wdk.controller.servlets;
 
-import org.gusdb.gus.wdk.model.Param;
-import org.gusdb.gus.wdk.model.Query;
-import org.gusdb.gus.wdk.model.QueryInstance;
-import org.gusdb.gus.wdk.model.RecordInstance;
-import org.gusdb.gus.wdk.model.Record;
-import org.gusdb.gus.wdk.model.Summary;
-import org.gusdb.gus.wdk.model.SummaryInstance;
-import org.gusdb.gus.wdk.model.WdkModel;
-import org.gusdb.gus.wdk.model.WdkModelException;
-import org.gusdb.gus.wdk.model.WdkUserException;
-import org.gusdb.gus.wdk.view.RIVList;
+import org.gusdb.wdk.model.Param;
+import org.gusdb.wdk.model.Query;
+import org.gusdb.wdk.model.QueryInstance;
+import org.gusdb.wdk.model.RecordInstance;
+import org.gusdb.wdk.model.Record;
+import org.gusdb.wdk.model.Summary;
+import org.gusdb.wdk.model.SummaryInstance;
+import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.view.RIVList;
 
 import java.io.File;
 import java.io.IOException;
@@ -54,7 +54,7 @@ public class DirectSummaryServlet extends HttpServlet {
     
     private static String fullSummaryName;
     
-    private static final Logger logger = Logger.getLogger("org.gusdb.gus.wdk.controller.servlets.InteractiveRecordListServlet");
+    private static final Logger logger = Logger.getLogger("org.gusdb.wdk.controller.servlets.InteractiveRecordListServlet");
     
     private final static boolean autoRedirect = true;
     

@@ -1,10 +1,10 @@
-package org.gusdb.gus.wdk.view.taglibs.query;
+package org.gusdb.wdk.view.taglibs.query;
 
-import org.gusdb.gus.wdk.model.FlatVocabParam;
-import org.gusdb.gus.wdk.model.Param;
-import org.gusdb.gus.wdk.model.StringParam;
-import org.gusdb.gus.wdk.view.taglibs.query.HTMLParamViews.FlatVocabParamView;
-import org.gusdb.gus.wdk.view.taglibs.query.HTMLParamViews.StringParamView;
+import org.gusdb.wdk.model.FlatVocabParam;
+import org.gusdb.wdk.model.Param;
+import org.gusdb.wdk.model.StringParam;
+import org.gusdb.wdk.view.taglibs.query.HTMLParamViews.FlatVocabParamView;
+import org.gusdb.wdk.view.taglibs.query.HTMLParamViews.StringParamView;
 
 import java.io.IOException;
 

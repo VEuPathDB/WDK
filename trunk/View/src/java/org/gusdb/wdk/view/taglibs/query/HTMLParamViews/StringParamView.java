@@ -1,7 +1,7 @@
-package org.gusdb.gus.wdk.view.taglibs.query.HTMLParamViews;
+package org.gusdb.wdk.view.taglibs.query.HTMLParamViews;
 
-import org.gusdb.gus.wdk.model.Param;
-import org.gusdb.gus.wdk.model.StringParam;
+import org.gusdb.wdk.model.Param;
+import org.gusdb.wdk.model.StringParam;
 
 import java.io.IOException;
 

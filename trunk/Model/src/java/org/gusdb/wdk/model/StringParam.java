@@ -1,13 +1,13 @@
-package org.gusdb.gus.wdk.model;
+package org.gusdb.wdk.model;
 
-import org.gusdb.gus.wdk.controller.WdkLogManager;
+import org.gusdb.wdk.controller.WdkLogManager;
 
 import java.util.logging.Logger;
 
 
 public class StringParam extends Param {
     
-    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.gus.wdk.model.StringParam"); 
+    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.model.StringParam"); 
     
     private String sample;
     private String regex;

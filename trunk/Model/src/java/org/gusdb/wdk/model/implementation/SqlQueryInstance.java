@@ -1,12 +1,12 @@
-package org.gusdb.gus.wdk.model.implementation;
+package org.gusdb.wdk.model.implementation;
 
-import org.gusdb.gus.wdk.controller.WdkLogManager;
-import org.gusdb.gus.wdk.model.NotBooleanOperandException;
-import org.gusdb.gus.wdk.model.WdkModelException;
-import org.gusdb.gus.wdk.model.QueryInstance;
-import org.gusdb.gus.wdk.model.ResultList;
-import org.gusdb.gus.wdk.model.ResultFactory;
-import org.gusdb.gus.wdk.model.RDBMSPlatformI;
+import org.gusdb.wdk.controller.WdkLogManager;
+import org.gusdb.wdk.model.NotBooleanOperandException;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.QueryInstance;
+import org.gusdb.wdk.model.ResultList;
+import org.gusdb.wdk.model.ResultFactory;
+import org.gusdb.wdk.model.RDBMSPlatformI;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -14,7 +14,7 @@ import java.util.logging.Logger;
 
 public class SqlQueryInstance extends QueryInstance  {
 
-    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.gus.wdk.model.implementation.SqlQueryInstance");
+    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.model.implementation.SqlQueryInstance");
     
     // ------------------------------------------------------------------
     // Instance Variables
