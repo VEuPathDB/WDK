@@ -6,6 +6,7 @@ import org.gusdb.wdk.model.BooleanQuery;
 
 import java.util.Map;
 import java.util.Iterator;
+import java.util.Vector;
 
 /**
  * A wrapper on a {@link Answer} that provides simplified access for 
@@ -89,6 +90,22 @@ public class AnswerBean {
      */
     public Iterator getRecords() {
 	return new RecordBeanList();
+    }
+
+    public String[] getSummaryAttributeNames() {
+	Map attribs = answer.getQuestion().getRecordClass().getAttributeFields();
+	Iterator ai = attribs.keySet().iterator();
+	Vector v = new Vector();
+	while (ai.hasNext()) {
+	    String attribName = (String)ai.next();
+	    if (answer.isSummaryAttribute(attribName)) {
+		v.add(attribName);
+	    }
+	}
+	int size = v.size();
+	String[] sumAttribNames = new String[size];
+	v.copyInto(sumAttribNames);
+	return sumAttribNames;
     }
 
     ////////////////////////////////////////////////////////////////////////
