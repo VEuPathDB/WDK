@@ -71,6 +71,9 @@ public class SqlQuery extends Query {
 					     int startId, int endId, String initSql){
 
 	int whereBegins = initSql.indexOf(" where");
+	if (whereBegins == -1) {
+	    whereBegins = initSql.indexOf(" WHERE");
+	}
 	String firstPartSql = "";
 	String lastPartSql = "";
 	String rowStartSql = null;
