@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.jspwrap;
 
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.Param;
+import org.gusdb.wdk.model.FlatVocabParam;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import java.util.Map;
@@ -22,7 +23,12 @@ public class QuestionBean {
 	Param[] params = question.getParams();
 	ParamBean[] paramBeans = new ParamBean[params.length];
 	for (int i=0; i<params.length; i++) {
-	    paramBeans[i] = new ParamBean(params[i]);
+	    if (params[i] instanceof FlatVocabParam) {
+		paramBeans[i] = 
+		    new FlatVocabParamBean((FlatVocabParam)params[i]);
+	    } else {
+		paramBeans[i] = new ParamBean(params[i]);
+	    }
 	}
 	return paramBeans;
     }
