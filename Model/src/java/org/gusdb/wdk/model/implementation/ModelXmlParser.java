@@ -190,7 +190,7 @@ public class ModelXmlParser {
     /**
      * Substitute property values into model xml
      */
-    static InputStream configureModelFile(File modelXmlFile, File modelPropFile) throws WdkModelException {
+   public static InputStream configureModelFile(File modelXmlFile, File modelPropFile) throws WdkModelException {
 
 	try {
 	    StringBuffer substituted = new StringBuffer();
