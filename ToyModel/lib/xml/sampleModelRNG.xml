@@ -226,11 +226,11 @@
      <sqlQuery name="TaxonName"
             displayName="Taxon name">
 
-       <stringParam"
+       <stringParam
        name="TaxonId"
        prompt="Taxon Id"
        sample="8"
-       regex="\d+"/>
+       regex="\d+" />
       
        <column name="name"/>
 
