@@ -17,3 +17,11 @@ HR {
    background-color: maroon;
    height: 4px;
 }
+
+tr.rowLight {
+	
+}
+
+tr.rowDark {
+	background-color: #ff9980;
+}
