@@ -64,6 +64,18 @@ public class RecordListInstance {
 	else return 0;
     }
     
+    public int getTotalLength() throws Exception{
+
+	ResultList rl = getRecordInstanceIds();
+	int counter = 0;
+	while (rl.next()){
+	    counter++;
+	}
+	return counter;
+	
+    }
+
+
     //Returns null if we have already returned the last instance
     public RecordInstance getNextRecordInstance() throws WdkModelException{
 	
@@ -159,7 +171,7 @@ public class RecordListInstance {
     }
 
     private ResultList getRecordInstanceIds() throws WdkModelException{
-	
+
 	ResultList rl = listIdQueryInstance.getResult();
 	return rl;
     }

@@ -1,6 +1,7 @@
 package org.gusdb.gus.wdk.model;
 
 import java.util.Map;
+import java.util.Hashtable;
 
 /**
  * RecordList.java
@@ -73,5 +74,13 @@ public class RecordList {
     public void setName(String name){
 	this.name = name;
     }
+
+    public int getTotalLength(Hashtable values) throws Exception{
+	RecordListInstance rli = makeRecordListInstance();
+	rli.setValues(values, 0, 0); 
+	return rli.getTotalLength();
+    }
+    //set dummy values for start and end because they will not be used.
+    //(might have to change this depending on resolution of efficiency issue)
 
 }
