@@ -197,11 +197,11 @@
       <attribute name="type" />
       <attribute name="idPrefix" />
     
-      <oneOrMore>  
+      <zeroOrMore>  
         <element name="attributeQuery">
           <attribute name="twoPartName" />
         </element>
-      </oneOrMore>
+      </zeroOrMore>
    
       <zeroOrMore>
         <element name="tableQuery">
