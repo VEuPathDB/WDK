@@ -3,6 +3,7 @@ package org.gusdb.gus.wdk.controller.servlets;
 import org.gusdb.gus.wdk.model.Param;
 import org.gusdb.gus.wdk.model.Query;
 import org.gusdb.gus.wdk.model.QueryInstance;
+import org.gusdb.gus.wdk.model.RecordInstance;
 import org.gusdb.gus.wdk.model.RecordList;
 import org.gusdb.gus.wdk.model.RecordListInstance;
 import org.gusdb.gus.wdk.model.WdkModel;
@@ -43,7 +44,7 @@ public class InteractiveRecordListServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
         
 		String fromPage = req.getParameter("fromPage");
-		String queryRecordGroup = req.getParameter("recordGroup");
+		String queryRecordGroup = req.getParameter("queryRecordGroup");
 		String queryRecordName = req.getParameter("queryRecordName");
 		String formName = req.getParameter("formName");
 		String defaultChoice = req.getParameter("defaultChoice");
@@ -58,7 +59,7 @@ public class InteractiveRecordListServlet extends HttpServlet {
 			return;
 		}
 		if (queryRecordName == null) {
-			msg("queryRecordName shouldn't be null. Internal error", res);
+			msg("Qualified queryRecordName shouldn't be null. Internal error", res);
 			return;
 		}
 		if (formName == null) {
@@ -96,6 +97,7 @@ public class InteractiveRecordListServlet extends HttpServlet {
         RecordListInstance rli = null;
 		req.setAttribute(formName+".sqii", sqii);
         String formQueryPrefix = formName+"."+queryRecordName+".";
+        System.err.println("formQueryPrefix is called: "+formQueryPrefix);
         boolean problem = false;
         if ("true".equals(initialExpansion)) {
             problem = true;
@@ -104,14 +106,18 @@ public class InteractiveRecordListServlet extends HttpServlet {
             Enumeration names = req.getParameterNames();
             while (names.hasMoreElements()) {
                 String name = (String) names.nextElement();
+                System.err.println("Got an element called: "+name);
                 if (name.startsWith(formQueryPrefix)) {
                     // TODO Cope with multiple values
-                    paramValues.put(name, req.getParameter(name));
+                    String shortName = name.substring(formQueryPrefix.length());
+                    paramValues.put(shortName, req.getParameter(name));
                 }
             }
-            rli = recordList.makeRecordListInstance();
+
             try {
-                rli.setValues(paramValues, 1, 20);
+                // TODO Proper start and stop values
+                rli = recordList.makeRecordListInstance(paramValues, 1, 20);
+                //rli.setValues(paramValues, 1, 20);
             }
             catch (WdkUserException exp) {
                 Map errors = exp.getBooBoos();
@@ -149,16 +155,26 @@ public class InteractiveRecordListServlet extends HttpServlet {
 		}
 
           
-        String toPage = "";
+        String toPage = "/recordListInstanceView.jsp";
         
         // TODO Work out size
         int size = 3;
         
         if (size==1 && autoRedirect) {
-        
+            toPage="/ViewFullRecord";
+            RecordInstance ri = null; 
+            try {
+                ri = rli.getNextRecordInstance(); 
+            }
+            catch (WdkModelException exp) {
+                // FIXMe - What is it really?
+            }
+            req.setAttribute("ri", ri);
+
         } else {           
             req.setAttribute("rli", rli);
             req.setAttribute("recordListName", queryRecordGroup + "." + queryRecordName);
+            req.setAttribute("rliTotalSize", Integer.toString(size));
         }
         
         redirect(req, res, toPage);
