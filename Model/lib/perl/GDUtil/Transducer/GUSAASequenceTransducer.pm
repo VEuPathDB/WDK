@@ -682,7 +682,7 @@ sub getEpitopeFeatureSpans {
 
     my $sql = ("select aal.start_min, aal.end_max, " .
 	       "ef.haplotype, ef.type, ef.score, ef.max_score, ef.width " .
-	       "from EpitopeFeature ef, ${dotsDb}.AALocation aal " .
+	       "from gusdev.EpitopeFeature ef, ${dotsDb}.AALocation aal " .
 	       "where ef.aa_sequence_id = $aaSeqId " .
 	       "and ef.aa_feature_id = aal.aa_feature_id " .
 	       "order by aal.start_min asc ");
@@ -741,7 +741,7 @@ sub getLowComplexityFeatureSpans {
     # TO DO - dots.lowcomplexityfeature doesn't exist yet
 
     my $sql = ("select aal.start_min, aal.end_max, a.name " .
-	       "from LowComplexityAAFeature lc, ${dotsDb}.AALocation aal, ${coreDb}.Algorithm a " .
+	       "from gusdev.LowComplexityAAFeature lc, ${dotsDb}.AALocation aal, ${coreDb}.Algorithm a " .
 	       "where lc.aa_sequence_id = $aaSeqId " .
 	       "and aal.aa_feature_Id = lc.aa_feature_id " .
 	       "and lc.prediction_algorithm_id = a.algorithm_id " .
@@ -802,7 +802,7 @@ sub getSNPFeatureSpansFromAASeqVariation {
     # First retrieve all SNP features for this gene
     #
     my $sql = ("select aal.start_min, sv.strain, sv.original, sv.substitute, sv.genomic_locn " .
-	       "from AASeqVariation sv, ${dotsDb}.AALocation aal " .
+	       "from gusdev.AASeqVariation sv, ${dotsDb}.AALocation aal " .
 	       "where sv.aa_sequence_id = $aaSeqId " .
 	       "and aal.aa_feature_Id = sv.aa_feature_id " .
 	       "order by aal.start_min asc, sv.strain asc ");
