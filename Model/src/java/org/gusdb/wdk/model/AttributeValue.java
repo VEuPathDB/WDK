@@ -7,7 +7,7 @@ public class AttributeValue {
     private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.model.Attribute");
     
     String name;
-    Record record;
+    RecordClass recordClass;
     Object value;
 
     /**
@@ -15,8 +15,8 @@ public class AttributeValue {
      * This is used so that the attribute can be described in a context when
      * no values have been provided yet.
      */
-    public AttributeValue(Record record, String attributeName, Object value) {
-	this.record = record;
+    public AttributeValue(RecordClass recordClass, String attributeName, Object value) {
+	this.recordClass = recordClass;
 	this.name = attributeName;
 	this.value = value;
     } 
@@ -26,7 +26,7 @@ public class AttributeValue {
     }
 
     public String getSpecialType() {
-        return record.getAttributeSpecialType(name);
+        return recordClass.getAttributeSpecialType(name);
     }
 
     public String getHelp() {
@@ -34,7 +34,7 @@ public class AttributeValue {
     }
 
     public String getDisplayName() {
-        return record.getDisplayName(name);
+        return recordClass.getDisplayName(name);
     }
 
     public Object getValue() {
