@@ -33,7 +33,7 @@ public class CConstants {
     //button click detectors, used in action, action forms, and jsp pages
     public static final String PQ_SUBMIT_KEY = "questionSubmit"; //match question.jsp
     public static final String PQ_SUBMIT_GET_ANSWER = "Get Answer"; //match question.jsp
-    public static final String PQ_SUBMIT_EXPAND_QUERY = "Expand Query"; //match question.jsp
+    public static final String PQ_SUBMIT_EXPAND_QUERY = "Expand Question"; //match question.jsp
     public static final String PBQ_SUBMIT_KEY = "process_boolean_question"; //match booleanQuestion.jsp
     public static final String PBQ_SUBMIT_GET_BOOLEAN_ANSWER = "Retrieve Answer"; //match booleanQuestion.jsp
     public static final String PBQ_SUBMIT_GROW_BOOLEAN = "Expand"; //match WEB-INF/includes/booleanQuestionNode.jsp

@@ -38,10 +38,12 @@ public class StartBooleanAction extends Action{
 	    //change this so that it is getting it from the Leaf
 	    EnumParamBean booleanOps = wdkModel.getBooleanOps();
 	    String[] booleanOpsVocab = booleanOps.getVocab();
+	    String[] booleanOpsVocabInternal = booleanOps.getVocabInternal();
 	    
-	    bqf.getMyLabels().put(CConstants.BOOLEAN_OPERATIONS_PARAM_NAME, booleanOpsVocab);
-	    bqf.getMyValues().put(CConstants.BOOLEAN_OPERATIONS_PARAM_NAME, booleanOpsVocab);
 
+	    bqf.getMyLabels().put(CConstants.BOOLEAN_OPERATIONS_PARAM_NAME, booleanOpsVocab);
+	    bqf.getMyValues().put(CConstants.BOOLEAN_OPERATIONS_PARAM_NAME, booleanOpsVocabInternal);
+	    
 	    //get seed question, make into root of new tree
 	    QuestionBean wdkQuestion = (QuestionBean)request.getSession().getAttribute(CConstants.WDK_QUESTION_KEY);
 	    BooleanQuestionLeafBean leaf = wdkQuestion.makeBooleanQuestionLeaf();
