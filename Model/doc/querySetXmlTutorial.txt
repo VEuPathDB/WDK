@@ -179,8 +179,38 @@ org.gusdb.gus.wdk.model.query.SqlEnumParam: name='Taxon'
 
 
 ####################################################################
-# Get help for runQuerySetQuery (the query runner)
+# Get help for queryCache, the utility that creates a cache
 ####################################################################
+[sfischer@pythia ~]$ queryCache
+
+Create, reset or drop a query cache.
+The name of the cache table is found in the configFile (the table
+is placed in the schema owned by login).
+Resetting the cache drops all results tables and deletes all rows from the cache table.
+Dropping the cache first resets it then drops the cache table and sequence.
+
+Usage: queryCache configFile --new | --reset | --drop
+
+Where:
+  configFile: an .xml file that specifies a ModelConfig object
+
+
+####################################################################
+# Create the query cache
+####################################################################
+[sfischer@pythia ~]$ queryCache $GUS_HOME/lib/xml/sampleModelConfig.xml --new
+
+Making cache table sfischer.Queries with sql:
+create table sfischer.Queries (query_id number(12) not null, query_name varchar2(100) not null, param0 varchar2(25), param1 varchar2(25), param2 varchar2(25), param3 varchar2(25), param4 varchar2(25), param5 varchar2(25), param6 varchar2(25), param7 varchar2(25), param8 varchar2(25), param9 varchar2(25), param10 varchar2(25), param11 varchar2(25), param12 varchar2(25), param13 varchar2(25), param14 varchar2(25), param15 varchar2(25), param16 varchar2(25), param17 varchar2(25), param18 varchar2(25), param19 varchar2(25), param20 varchar2(25), param21 varchar2(25), param22 varchar2(25), param23 varchar2(25), param24 varchar2(25), param25 varchar2(25), param26 varchar2(25), param27 varchar2(25), param28 varchar2(25), param29 varchar2(25), param30 varchar2(25), param31 varchar2(25), param32 varchar2(25), param33 varchar2(25), param34 varchar2(25), param35 varchar2(25), param36 varchar2(25), param37 varchar2(25), param38 varchar2(25), param39 varchar2(25), param40 varchar2(25), param41 varchar2(25), param42 varchar2(25), param43
+varchar2(25), param44 varchar2(25), param45 varchar2(25), param46 varchar2(25),
+param47 varchar2(25), param48 varchar2(25), param49 varchar2(25), result_table varchar2(30) not null, start_time date not null, end_time date, dataset_name varchar2(100), session_id varchar2(50))
+
+Done
+
+Creating sequence sfischer.Queries_pkseq
+
+Done
+
 
 
 [sfischer@pythia ~]$ 
@@ -192,7 +222,7 @@ Run a query found in a query set xml file
 Usage: runQuerySetQuery configFile xmlFile queryName paramName1 paramValue1 paramName2 ...
 
 Where:
-  configFile: a .csh file that sets CONNECTION_URL LOGIN PASSWORD
+  configFile: a .xml file that specifies a ModelConfig object
   xmlFile:     the querySet xml file
   queryName:   a name of a query in that file
   paramName1:  name of a param for that query
@@ -207,13 +237,15 @@ Where:
 #  Take a look at the expected config file 
 ####################################################################
 
-[sfischer@pythia ~]$ more $HOME/.wdkconfig 
-#!/bin/csh
+[sfischer@pythia ~]$ more $GUS_HOME/lib/xml/sampleModelConfig.xml
+<?xml version="1.0"?>
 
-setenv CONNECTION_URL "jdbc:oracle:thin:@cbilbld.pcbi.upenn.edu:1521:cbilbld"
-setenv LOGIN your_login_here
-setenv PASSWORD your_password_here
-
+<modelConfig login="your_login_here"
+             password="your_password_here"
+             connectionUrl="jdbc:oracle:thin:@cbilbld.pcbi.upenn.edu:1521:cbilbld"
+             queryCacheTable="Queries"
+             maxQueryParams="50"
+             platformClass="org.gusdb.gus.wdk.model.query.Oracle"/>
 
 
 ####################################################################
@@ -222,7 +254,7 @@ setenv PASSWORD your_password_here
 
 [sfischer@pythia ~]$ 
 [sfischer@pythia ~]$ 
-[sfischer@pythia ~]$ runQuerySetQuery $HOME/.wdkconfig $GUS_HOME/lib/xml/sampleQuerySet.xml TaxonName TaxonId 14
+[sfischer@pythia ~]$ runQuerySetQuery $GUS_HOME/lib/xml/sampleModelConfig.xml $GUS_HOME/lib/xml/sampleQuerySet.xml TaxonName TaxonId 14
 Mus musculus
 LK3 transgenic mice
 mouse
@@ -244,7 +276,7 @@ house mouse
 [sfischer@pythia ~]$ 
 [sfischer@pythia ~]$ 
 [sfischer@pythia ~]$ 
-[sfischer@pythia ~]$ runQuerySetQuery $HOME/.wdkconfig $GUS_HOME/lib/xml/sampleQuerySet.xml RNAByGoTerm
+[sfischer@pythia ~]$ runQuerySetQuery $GUS_HOME/lib/xml/sampleModelConfig.xml $GUS_HOME/lib/xml/sampleQuerySet.xml RNAByGoTerm
 
 Query: GO functional classification (by term)
 
@@ -258,7 +290,7 @@ Parameters
 # Get help for another query (run it without any supplied params)
 ####################################################################
 
-[sfischer@pythia ~]$ runQuerySetQuery $HOME/.wdkconfig $GUS_HOME/lib/xml/sampleQuerySet.xml TaxonName
+[sfischer@pythia ~]$ runQuerySetQuery $GUS_HOME/lib/xml/sampleModelConfig.xml $GUS_HOME/lib/xml/sampleQuerySet.xml TaxonName
 
 Query: Taxon name
 
@@ -269,7 +301,7 @@ Parameters
 # Try to run a non-existent query (spelling error)
 ####################################################################
 
-[sfischer@pythia ~]$ runQuerySetQuery $HOME/.wdkconfig $GUS_HOME/lib/xml/sampleQuerySet.xml TaxonNam
+[sfischer@pythia ~]$ runQuerySetQuery $GUS_HOME/lib/xml/sampleModelConfig.xml $GUS_HOME/lib/xml/sampleQuerySet.xml TaxonNam
 java.lang.IllegalArgumentException: Query set 'RNAQueries' does not include a query named 'TaxonNam'
         at org.gusdb.gus.wdk.model.query.QueryTester.displayQuery(QueryTester.java:48)
         at org.gusdb.gus.wdk.model.query.QueryTester.main(QueryTester.java:148)
@@ -280,7 +312,7 @@ java.lang.IllegalArgumentException: Query set 'RNAQueries' does not include a qu
 # Run the TaxonName query, but with an invalid param value
 ####################################################################
 
-[sfischer@pythia ~]$ runQuerySetQuery $HOME/.wdkconfig $GUS_HOME/lib/xml/sampleQuerySet.xml TaxonName TaxonId oops
+[sfischer@pythia ~]$ runQuerySetQuery $GUS_HOME/lib/xml/sampleModelConfig.xml $GUS_HOME/lib/xml/sampleQuerySet.xml TaxonName TaxonId oops
 
 TaxonId value 'oops' has an error: Does not match regex '\d+'
 
@@ -289,7 +321,7 @@ TaxonId value 'oops' has an error: Does not match regex '\d+'
 # Run the TaxonName query correctly this time
 ####################################################################
 
-[sfischer@pythia ~]$ runQuerySetQuery $HOME/.wdkconfig $GUS_HOME/lib/xml/sampleQuerySet.xml TaxonName TaxonId 8
+[sfischer@pythia ~]$ runQuerySetQuery $GUS_HOME/lib/xml/sampleModelConfig.xml $GUS_HOME/lib/xml/sampleQuerySet.xml TaxonName TaxonId 8
 human
 man
 Homo sapiens
