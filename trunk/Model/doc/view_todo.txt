@@ -3,20 +3,20 @@ To Do
 
 General
 -------
-Ask about indentation style
-Ask about organizing imports
-Ask about adding version numbers to libs
+Ask about indentation style - spacesx4
+Ask about organizing imports - yes
+Ask about adding version numbers to libs - yes
 Ask about getting rid of XML libs
 Add a default (nearly-empty) stylesheet
+Check OK to change Hashtable to Map in SqlEnumParam
 
 Build
 -----
 
 Query
 -----
-Restore deleted tag handler files 
-Make query set a parameter on query holder
-Set up more param handling styles
+Make DisplayQuery pick up query set from QueryHolder
+Set up more param handling styles - new Interface
 
 Results Summary
 ---------------
@@ -45,7 +45,8 @@ Build
 
 Query
 -----
-
+Make query set a parameter on query holder
+Restore deleted tag handler files
 
 Results Summary
 ---------------
