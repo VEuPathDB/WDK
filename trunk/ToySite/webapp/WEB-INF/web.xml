@@ -16,11 +16,11 @@
   </context-param>
   <context-param>
     <param-name>loginConfig</param-name>
-    <param-value>/WEB-INF/wdk-config/modelConfig.xml</param-value>
+    <param-value>/WEB-INF/wdk-config/toyModelConfig.xml</param-value>
   </context-param>
   <context-param>
     <param-name>propsFileLocation</param-name>
-    <param-value>/WEB-INF/wdk-config/sampleModel.prop</param-value>
+    <param-value>/WEB-INF/wdk-config/toyModel.prop</param-value>
   </context-param>
   <context-param>
     <param-name>querySetConfig</param-name>
@@ -29,10 +29,6 @@
   <context-param>
     <param-name>schemaLocation</param-name>
     <param-value>/WEB-INF/wdk-config/wdkModel.rng</param-value>
-  </context-param>
-  <context-param>
-    <param-name>connectionPoolMaxWait</param-name>
-    <param-value>10000</param-value>
   </context-param>
   <listener>
     <listener-class>org.gusdb.wdk.controller.ApplicationInitListener</listener-class>
