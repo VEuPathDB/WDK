@@ -1,75 +1,78 @@
 <?xml version="1.0"?>
  
-<wdkModel name="RNARecords"
+<wdkModel name="RnaModel"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
-  <summarySet name="RNASummaries">
 
-     <summary name="RNASummary"
-               recordRef="RNARecords.RNARecord"
-               queryRef="RNARecordQueries.RNAIdsByGoId" />
-  </summarySet>
+  <referenceList name="RnaQueries">
 
-  <recordSet name="RNARecords">
-     <record name="RNARecord" type="DoTS Transcript" idPrefix="DT.">
+     <reference twoPartName="RnaQueries.RnaByGoTerm"/>
 
-       <fieldsQuery twoPartName="RNASimpleQueries.RNAListInDetail"/>  
+     <reference twoPartName="RnaQueries.TaxonName"/>
+
+  </referenceList>
+
+
+
+  <recordSet name="RnaRecords">
+
+     <record name="RnaRecord" type="DoTS Transcript" idPrefix="DT.">
+
+       <fieldsQuery twoPartName="RnaSummaryQueries.RnaSummary"/>  
    
-       <fieldsQuery twoPartName="RNARecordQueries.RNAFields"/>
+       <fieldsQuery twoPartName="RnaRecordQueries.RnaFields"/>
              
-       <tableQuery twoPartName="RNARecordQueries.ExternalLinks"/>
+       <tableQuery twoPartName="RnaRecordQueries.ExternalLinks"/>
        
        <textField name="overview">
          <text>
        This is DoTS Transcript DT.$$primaryKey$$.  It is has a length of $$length$$.
          </text>
        </textField>
+     </record>
 
-     
+     <record name="RnaSummaryRecord" type="DoTS Transcript" idPrefix="DT.">
+       <fieldsQuery twoPartName="RnaSummaryQueries.RnaSummary"/>  
+       <tableQuery twoPartName="RnaRecordQueries.ExternalLinks"/>
      </record>
 
   </recordSet>
 
-  <queryNameList name="RNAQueryNameList">
-
-     <fullQueryName fullQueryName="RNASimpleQueries.RNAByGoTerm"/>
-
-     <fullQueryName fullQueryName="RNASimpleQueries.TaxonName"/>
-
-  </queryNameList>
 
 
-  <querySet name="RNARecordQueries">
+  <summarySet name="RnaSummaries">
 
-     <query name="RNAIdsByGoId" 
-            xsi:type="org.gusdb.gus.wdk.model.implementation.SqlQuery">
+     <summary name="RnasByGoId"
+              queryRef="RnaIdQueries.ByGoId"
+              recordRef="RnaRecords.RnaSummaryRecord"/>
 
-        <param name="GoId"
-               xsi:type="org.gusdb.gus.wdk.model.StringParam"
-               prompt="GO ID"
-               sample="GO:0016597"
-               regex="\S+"/>
-       
-        <column name="na_sequence_id" displayName="Assembly ID" />     
+     <summary name="RnasByGeneCardName"
+              queryRef="RnaIdQueries.ByGeneCardName"
+              recordRef="RnaRecords.RnaSummaryRecord"/>
+  
+  </summarySet>
 
-        <sql>
-        select distinct a.na_sequence_id
-        from dots.Assembly a, dots.Protein P,
-             dots.GOAssociation ga, sres.GoTerm gt,
-             dots.RNAInstance rnai, dots.RNAFeature rnaf
-        where rnai.rna_id = p.rna_id
-          and rnai.na_feature_id = rnaf.na_feature_id
-          and rnaf.na_sequence_id = a.na_sequence_id
-          and p.protein_id = ga.row_id
-          and ga.table_id = 180
-          and ga.go_term_id = gt.go_term_id
-          and gt.go_id = '$$GoId$$'
-          and gt.external_database_release_id = 7798
-          and ga.is_deprecated = 0
-         </sql>
-     </query>
 
-     <query name="RNAFields" 
+
+  <querySet name="VocabQueries">
+
+    <query name="TaxonQuery"
+           xsi:type="org.gusdb.gus.wdk.model.implementation.SqlQuery">
+      <column name="term"/>
+      <column name="internal"/>
+      <sql>
+        select distinct name as term, taxon_id as internal
+        from SRes.taxonName
+        where name in ('mouse', 'human')
+      </sql>
+    </query>
+  </querySet>
+
+
+
+  <querySet name="RnaRecordQueries">
+    
+    <query name="RnaFields" 
             xsi:type="org.gusdb.gus.wdk.model.implementation.SqlQuery">
 
        <param name="primaryKey" 
@@ -135,42 +138,16 @@
 
   </querySet>
 
-  <querySet name="RNASimpleQueries">
 
-     <query name="DTGeneCardName"
-            xsi:type="org.gusdb.gus.wdk.model.implementation.SqlQuery"
-            displayName="Gene Card name">
 
-       <param
-       xsi:type="org.gusdb.gus.wdk.model.StringParam"
-       name="GeneName"
-       prompt="Gene Name"
-       sample="brca1"/>
+  <querySet name="RnaSummaryQueries">
 
-       <column name="na_sequence_id" />
-
-       <sql>
-       select distinct dbrn.na_sequence_id
-       from sres.DBRef dbr, dots.DBRefNASequence dbrn 
-       where dbr.lowercase_primary_identifier = '$$GeneName$$'
-       and dbr.external_database_release_id = 4892
-       and dbr.db_ref_id = dbrn.db_ref_id
-       </sql>
-    </query>
-
-    <query name="RNAListInDetail"
+    <query name="RnaSummary"
               xsi:type="org.gusdb.gus.wdk.model.implementation.SqlQuery"
               displayName="RNAs">
 
-      <param  
-        xsi:type="org.gusdb.gus.wdk.model.StringParam"
-        name="resultTable"/>
-      <param  
-        xsi:type="org.gusdb.gus.wdk.model.StringParam"
-        name="startRow"/>
-      <param  
-        xsi:type="org.gusdb.gus.wdk.model.StringParam"
-        name="endRow"/>
+      <param name="primaryKey" 
+             xsi:type="org.gusdb.gus.wdk.model.StringParam"/>
 
       <column name="gene_id"/>
       <column name="taxon_name"/>
@@ -194,10 +171,36 @@
       ]]>
       </sql>
     </query>
+  </querySet>
 
-    <query name="RNAByGoTerm"
+
+  <querySet name="RnaIdQueries">
+
+     <query name="ByGeneCardName"
+            xsi:type="org.gusdb.gus.wdk.model.implementation.SqlQuery"
+            displayName="Gene Card name">
+
+       <param
+       xsi:type="org.gusdb.gus.wdk.model.StringParam"
+       name="GeneName"
+       prompt="Gene Name"
+       sample="brca1"/>
+
+       <column name="na_sequence_id" />
+
+       <sql>
+       select distinct dbrn.na_sequence_id
+       from sres.DBRef dbr, dots.DBRefNASequence dbrn 
+       where dbr.lowercase_primary_identifier = '$$GeneName$$'
+       and dbr.external_database_release_id = 4892
+       and dbr.db_ref_id = dbrn.db_ref_id
+       </sql>
+    </query>
+
+
+    <query name="ByGoId"
            xsi:type="org.gusdb.gus.wdk.model.implementation.SqlQuery"
-           displayName="GO functional classification (by term)">
+           displayName="GO Id">
 
          <param 
           xsi:type="org.gusdb.gus.wdk.model.StringParam"
@@ -207,23 +210,13 @@
           sample="GO:0005013"
           regex="GO:\d+"/>
 
-         <param
-          xsi:type="org.gusdb.gus.wdk.model.SqlEnumParam"
+         <paramgoob
+          xsi:type="org.gusdb.gus.wdk.model.FlatCVParam"
           name="Taxon"
           prompt="Organism"
           help="You know what it is"
-          multipick="yes">
-            <query name="dontcare"
-                   xsi:type="org.gusdb.gus.wdk.model.implementation.SqlQuery">
-              <column name="name"/>
-              <sql>
-              select name as key,
-                     taxon_id as value
-              from SRes.taxonName
-              where name in ('mouse', 'human')
-              </sql>
-            </query>
-         </param> 
+          multipick="yes"
+          queryRef="VocabQueries.TaxonQuery"/>
 
       <column name="na_sequence_id"/>
 
@@ -240,28 +233,7 @@
       </sql>
 
     </query>
-
-
-     <query name="TaxonName"
-            xsi:type="org.gusdb.gus.wdk.model.implementation.SqlQuery"
-            displayName="Taxon name">
-
-       <param
-       xsi:type="org.gusdb.gus.wdk.model.StringParam"
-       name="TaxonId"
-       prompt="Taxon Id"
-       sample="8"
-       regex="\d+"/>
-      
-       <column name="name"/>
-
-       <sql>
-       select name
-       from SRes.TaxonName 
-       where taxon_id = $$TaxonId$$
-       </sql>
-    </query>
-
   </querySet>
+
 </wdkModel>
 
