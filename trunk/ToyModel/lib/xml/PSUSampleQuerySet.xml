@@ -124,7 +124,7 @@ select unique gf.na_feature_id,
        gf.subclass_view,
        gf.name,
        gf.gene_type,
-       tn.name
+       tn.name as taxon_name
 from sres.TaxonName tn,
      dots.NASequence nas,
      dots.GeneFeature gf,
