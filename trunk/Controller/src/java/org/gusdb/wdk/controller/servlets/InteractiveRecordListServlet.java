@@ -1,18 +1,5 @@
 package org.gusdb.wdk.controller.servlets;
 
-import org.gusdb.wdk.model.Param;
-import org.gusdb.wdk.model.Query;
-import org.gusdb.wdk.model.QueryInstance;
-import org.gusdb.wdk.model.RecordInstance;
-import org.gusdb.wdk.model.Record;
-import org.gusdb.wdk.model.Summary;
-import org.gusdb.wdk.model.SummaryInstance;
-import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.RIVList;
-import org.gusdb.wdk.model.WdkLogManager;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -30,6 +17,17 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.gusdb.wdk.model.Param;
+import org.gusdb.wdk.model.RIVList;
+import org.gusdb.wdk.model.Record;
+import org.gusdb.wdk.model.RecordInstance;
+import org.gusdb.wdk.model.Summary;
+import org.gusdb.wdk.model.SummaryInstance;
+import org.gusdb.wdk.model.WdkLogManager;
+import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 
 
 /**
@@ -52,6 +50,8 @@ public class InteractiveRecordListServlet extends HttpServlet {
     private static final String SUBVIEW_PREFIX = "/WEB-INF/indirectPages/subviews/";
     
     private static final String RESULT_SUMMARY_PAGE = "/WEB-INF/indirectPages/top/resultSummary.jsp";
+    private static final String RESULT_DETAIL_CONTROLLER = "/ViewFullRecord";
+    
     
     private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.controller.servlets.InteractiveRecordListServlet");
     
@@ -72,38 +72,13 @@ public class InteractiveRecordListServlet extends HttpServlet {
         String pageSizeString = req.getParameter("pageSize");
         
         
-		if (fromPage == null) {
-			msg("fromPage shouldn't be null. Internal error", res);
-			return;
-		}
-		if (questionSetName == null) {
-			msg("questionSetName shouldn't be null. Internal error", res);
-			return;
-		}
-		if (questionName == null) {
-			msg("Qualified questionName shouldn't be null. Internal error", res);
-			return;
-		}
-		if (formName == null) {
-			msg("formName shouldn't be null. Internal error", res);
-			return;
-		}
-		if (defaultChoice == null) {
-			msg("defaultChoice shouldn't be null. Internal error", res);
-			return;
-		}
-		
-        if (questionName.equals(defaultChoice)) {
-            req.setAttribute(formName+".error.query.noQuery", "Please choose a query");
-            redirect(req, res, fromPage);
-            return;
+       
+        if (!checkParamsSet(req, res, fromPage, questionSetName, questionName, 
+        		formName, defaultChoice)) {
+        	return;
         }
-        
-        if (questionName.indexOf('.')==-1) {
-            msg("question name isn't qualified: "+questionName, res);
-            return;
-		}
-		
+
+		// Check paging input variables are sensible, and set derived values
         try {
             if ( startString != null) {
                 start = Integer.parseInt(startString);
@@ -131,33 +106,27 @@ public class InteractiveRecordListServlet extends HttpServlet {
         }
         int end = start+pageSize-1;
         
-		// We have a queryRecord name
+        
+		// Retrieve the Question 
         WdkModel wm = (WdkModel) getServletContext().getAttribute("wdk_wdkModel");
         
         Summary question = wm.getSummary(questionName);
-        Query sq = question.getQuery();
-
-        if (sq == null) {
-            msg("sq is null for "+questionName, res);
-            return;
-        }
-		QueryInstance sqii = sq.makeInstance();
+        
 		Map paramValues = new HashMap();
         SummaryInstance si = null;
 		req.setAttribute(formName+".question", question);
         String formQueryPrefix = formName+"."+questionName+".";
-        System.err.println("formQueryPrefix is called: "+formQueryPrefix);
+
         boolean problem = false;
         if ("true".equals(initialExpansion)) {
             problem = true;
         } else {
-            // Now check state of params
+            // Set the values of the params from the input variables
             Enumeration names = req.getParameterNames();
             while (names.hasMoreElements()) {
                 String name = (String) names.nextElement();
-                System.err.println("Got an element called: "+name);
+
                 if (name.startsWith(formQueryPrefix)) {
-                    // TODO Cope with multiple values
                     String shortName = name.substring(formQueryPrefix.length());
                     paramValues.put(shortName, req.getParameter(name));
                 }
@@ -211,20 +180,10 @@ public class InteractiveRecordListServlet extends HttpServlet {
             end = totalSize;
         }
         
-        RIVList rivl = null;
         RecordInstance ri = null;
         
         if (totalSize==1 && autoRedirect) {
-            toPage="/ViewFullRecord";
-            try {
-                ri = si.getNextRecordInstance(); 
-            }
-            catch (WdkModelException exp) {
-                throw new RuntimeException(exp);
-            }
-            //req.setAttribute("ri", ri);
-            req.setAttribute("recordName", ri.getRecord().getFullName());
-            req.setAttribute("primaryKey", ri.getPrimaryKey());
+            toPage = singleResultForward(req, si);
             
         } else {
 
@@ -237,86 +196,47 @@ public class InteractiveRecordListServlet extends HttpServlet {
                     editedParamNames.add(key);
                 }
             }
-//              String[] values = req.getParameterValues(key);
-//              for (int i = 0; i < values.length; i++) {
-//                  String val = values[i];
-//
-//                  if (first) {
-//                      uri.append('?');
-//                      first = false;
-//                  } else {
-//                      uri.append('&');
-//                  }
-//                  uri.append(URLEncoder.encode(key, "UTF8"));
-//                  uri.append("=");
-//                  uri.append(URLEncoder.encode(val, "UTF8"));
-//              }
-//          }
-//      }
-            //Map paramMap = req.getParameterMap();
-//            logger.severe("uriString before is "+uriString);
-//            uriString = removeArg(uriString, "start");
-//            uriString = removeArg(uriString, "pager.offset");
-//            uriString = removeArg(uriString, "pageSize");
-//            logger.severe("uriString after is "+uriString);
-//            StringBuffer uri = new StringBuffer(uriString);
-//            boolean first = true;
-//            for (Enumeration en = req.getParameterNames(); en.hasMoreElements();) {
-//                String key = (String) en.nextElement();
-//                if (!"pageSize".equals(key) && !"start".equals(key) &&!"pager.offset".equals(key)) {
-//                    String[] values = req.getParameterValues(key);
-//                    for (int i = 0; i < values.length; i++) {
-//                        String val = values[i];
-//
-//                        if (first) {
-//                            uri.append('?');
-//                            first = false;
-//                        } else {
-//                            uri.append('&');
-//                        }
-//                        uri.append(URLEncoder.encode(key, "UTF8"));
-//                        uri.append("=");
-//                        uri.append(URLEncoder.encode(val, "UTF8"));
-//                    }
-//                }
-//            }
-//            uri.append("pager.offset=");
-//            uri.append(start);
-//            logger.severe("uri after is "+uri.toString());
             
             String renderer = getRendererForRecord(question.getRecord());
             
-            rivl = new RIVList(si);
+            RIVList rivl = new RIVList(si);
             req.setAttribute("rivl", rivl);
-            //req.setAttribute("recordListName", queryRecordGroup + "." + queryRecordName);
             req.setAttribute("wdk_paging_total", new Integer(totalSize));
             req.setAttribute("wdk_paging_pageSize", new Integer(pageSize));
             req.setAttribute("wdk_paging_start", new Integer(start));
             req.setAttribute("wdk_paging_end", new Integer(end));
             req.setAttribute("wdk_paging_url", uriString);
-            req.setAttribute("wdk_record_url", req.getContextPath()+"/ViewFullRecord?recordReference="+question.getRecord().getFullName());
+            req.setAttribute("wdk_record_url", req.getContextPath()+RESULT_DETAIL_CONTROLLER+"?recordReference="+question.getRecord().getFullName());
             req.setAttribute("wdk_paging_params", editedParamNames);
             req.setAttribute("renderer", renderer);
         }
         
         redirect(req, res, toPage);
         
-//        try {
-//            if (rivl != null) {
-//                rivl.close();
-//            }
-//            if (ri != null) {
-//                ri.close();
-//            }
-//        }
-//        catch (WdkModelException exp) {
-//            logger.severe(exp.getMessage());
-//        }
-        
 		return;
 	}
 
-    private String removeArg(String in, String arg) {
+    /**
+	 * @param req
+	 * @param si
+	 * @param ri
+	 * @return
+	 */
+	private String singleResultForward(HttpServletRequest req, SummaryInstance si) {
+		String toPage = RESULT_DETAIL_CONTROLLER; 
+		RecordInstance ri = null;
+		try {
+		    ri = si.getNextRecordInstance(); 
+		}
+		catch (WdkModelException exp) {
+		    throw new RuntimeException(exp);
+		}
+		req.setAttribute("recordName", ri.getRecord().getFullName());
+		req.setAttribute("primaryKey", ri.getPrimaryKey());
+		return toPage;
+	}
+
+	private String removeArg(String in, String arg) {
         int start = in.indexOf("?"+arg+"=");
         
         if ( start == -1) {
@@ -359,5 +279,42 @@ public class InteractiveRecordListServlet extends HttpServlet {
         RequestDispatcher rd = sc.getRequestDispatcher(page);
         rd.forward(req, res);
     }
-    
+   
+    private boolean checkParamsSet(HttpServletRequest req, HttpServletResponse res, 
+    		String fromPage, String questionSetName, String questionName, String formName, 
+			String defaultChoice ) throws IOException, ServletException {
+    	
+    	if (fromPage  == null) {
+    		msg("fromPage shouldn't be null. Internal error", res);
+    		return false;
+    	}
+    	if (questionSetName == null) {
+    		msg("questionSetName shouldn't be null. Internal error", res);
+    		return false;
+    	}
+    	if (questionName == null) {
+    		msg("Qualified questionName shouldn't be null. Internal error", res);
+    		return false;
+    	}
+    	if (formName == null) {
+    		msg("formName shouldn't be null. Internal error", res);
+    		return false;
+    	}
+    	if (defaultChoice == null) {
+    		msg("defaultChoice shouldn't be null. Internal error", res);
+    		return false;
+    	}
+    	
+    	if (questionName.equals(defaultChoice)) {
+    		req.setAttribute(formName+".error.query.noQuery", "Please choose a query");
+    		redirect(req, res, fromPage);
+    		return false;
+    	}
+    	
+    	if (questionName.indexOf('.')==-1) {
+    		msg("question name isn't qualified: "+questionName, res);
+    		return false;
+    	}
+    	return true;
+    }
 }
