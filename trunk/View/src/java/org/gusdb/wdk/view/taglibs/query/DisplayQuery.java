@@ -54,12 +54,12 @@ public class DisplayQuery extends SimpleTagSupport {
     	}
         
     	out.println("<h4>"+queryInstance.getQuery().getDisplayName()+"</h4>");
-    	out.println("<input type=\"hidden\" name =\"queryName\" value=\""+queryInstance.getQuery().getName()+"\">");
+    	out.println("<input type=\"hidden\" name =\"queryRecordName\" value=\""+querySet+"."+queryInstance.getQuery().getName()+"\">");
     	out.println("<input type=\"hidden\" name=\"defaultChoice\" value=\""+DEFAULT_OPTION+"\">");
 
         if (getJspBody() != null) {
             //out.println("<br>I'm trying to set wdk.queryName to fred<br>");
-            getJspContext().setAttribute("wdk.queryName", queryInstance.getQuery().getName(), PageContext.PAGE_SCOPE);
+            getJspContext().setAttribute("wdk.queryName", querySet +"."+queryInstance.getQuery().getName(), PageContext.PAGE_SCOPE);
             getJspBody().invoke(null);
             getJspContext().removeAttribute("wdk.queryName", PageContext.PAGE_SCOPE);
     	}
