@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+ 
+<querySet name="RNAQueries">
+
+  <sqlQuery name="RNAByGoTerm"
+            displayName="GO functional classification (by term)">
+
+       <stringParam 
+          name="GoTerm"
+          prompt="Go Term"
+          help="You know what it is"
+          sample="GO:0001233"
+          default="GO:"
+          regex="GO:\d+"/>
+
+       <sqlEnumParam
+          name="Taxon"
+          prompt="Organism"
+          help="You know what it is"
+          multipick="yes">
+          <sql>
+             select name as key,
+                    taxon_id as value
+             from dots.taxon
+             where name in ('mouse', 'horse', 'asparagus')
+          </sql>
+       </sqlEnumParam>
+
+    <sql>
+      select distinct cd.na_sequence_id 
+        from dots.GOAssociation ga, @ALLGENES_DB@.CentralDogma cd 
+        where ga.go_term_id = $$GoTerm$$ 
+        and ga.table_id = 180 
+        and ga.row_id = cd.protein_id 
+        and cd.taxon_id $$Taxon$$ 
+        and ga.is_deprecated != 1 
+        and ga.is_not != 1 
+    </sql>
+
+  </sqlQuery>
+
+
+
+   <sqlQuery name="RNAListInDetail"
+            displayName="RNAs">
+
+       <stringParam  name="RNATable"/>
+    <sql>
+      select cd.gene_id, cd.taxon_name, cd.gene_symbol, 
+             cd.gene_description, cd.na_sequence_id, cd.assembly_length, 
+             cd.assembly_num_sequences, 
+              cd.assembly_contains_mrna, cd.assembly_description 
+      from @ALLGENES_DB@.CentralDogma cd, $$RNATable$$ ids 
+      where cd.na_sequence_id = ids.na_sequence_id 
+      order by cd.gene_id, cd.assembly_length desc
+    </sql>
+  </sqlQuery>
+
+   <sqlQuery name="TaxonName"
+            displayName="Taxon name">
+
+     <stringParam  name="TaxonId"/>
+
+     <sql>
+       select name
+       from SRes.TaxonName 
+       where taxon_id = $$TaxonId$$
+     </sql>
+  </sqlQuery>
+
+</querySet>
+
