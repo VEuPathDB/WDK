@@ -1,4 +1,4 @@
-package org.gusdb.gus.wdk.model.implementation;
+package org.gusdb.gus.wdk.model.test;
 
 import org.gusdb.gus.wdk.model.Column;
 import org.gusdb.gus.wdk.model.FlatVocabParam;
