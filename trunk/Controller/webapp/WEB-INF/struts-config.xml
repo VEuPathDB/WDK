@@ -39,7 +39,7 @@
        name="questionForm"
        input="/question.jsp">
        <forward name="pq_show_summary" path="/showSummary.do"/>
-       <forward name="pq_grow_boolean" path="/growBoolean.do"/>
+       <forward name="pq_start_boolean" path="/startBoolean.do"/>
     </action>
     <action
       path="/showSummary"
@@ -49,7 +49,14 @@
       input="/question.jsp">
       <forward name="show_summary" path="/summary.jsp"/>
     </action>
-    
+    <action
+      path="/startBoolean"
+      type="org.gusdb.wdk.controller.action.StartBooleanAction"
+      scope="session"
+      name="questionForm"
+      input="/question.jsp">
+      <forward name="grow_boolean" path="/booleanQuestion.jsp"/>
+    </action>    
     <action
       path="/growBoolean"
       type="org.gusdb.wdk.controller.action.GrowBooleanAction"

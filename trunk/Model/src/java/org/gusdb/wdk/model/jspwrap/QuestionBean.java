@@ -40,6 +40,10 @@ public class QuestionBean {
     }
 
     public String getName() {
+	return question.getName();
+    }
+
+    public String getFullName() {
 	return question.getFullName();
     }
 

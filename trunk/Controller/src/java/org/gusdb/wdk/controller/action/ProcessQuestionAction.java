@@ -44,7 +44,7 @@ public class ProcessQuestionAction extends Action {
 	else {
 	    if (submitAction.equals("Booleanate")){
 		
-		forward = mapping.findForward(CConstants.PQ_GROW_BOOLEAN_MAPKEY);
+		forward = mapping.findForward(CConstants.PQ_START_BOOLEAN_MAPKEY);
 	    }
 	}
 	return forward;
