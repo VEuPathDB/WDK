@@ -3,15 +3,19 @@ To Do
 
 General
 -------
-Ask about getting rid of XML libs - which version of Java are they using?
-Be able to connect to GUS@CBIL
+Ask about getting rid of XML libs - which version of Java are CBIL using?
+Be able to connect to GUS@CBIL - need connection details 
 Ask about updating Oracle lib
 Pick up model config files from properties
 Ensure all paths are from properties not hard-coded
 Move this list to SF tracker?
 Model: better handling for null for StringParam - work around in-place
-Add debugging custom tag to show all vars in all contexts (or restrict by attributes)
-Force discussion on branding so we can decide on directory structure
+Custom tag: debugging - show all vars in all contexts (or restrict by attributes)
+Custom tag: default record view - version 1 - call toString
+Custom tag: default record view - version 2 - more structured view
+Custom tag: rename Map key in x scope (with option to alias)
+Discussion on branding so we can decide on directory structure
+
 
 Build
 -----
@@ -27,6 +31,7 @@ Shouldn't be error msg about missing params on first query expansion
 If have validation error should still be able to set values for other params.
 Write validator for query tag library. Wait until more solid
 
+
 Results Summary
 ---------------
 Wait to see what TableResults looks like 
@@ -35,12 +40,14 @@ Wait to see what TableResults looks like
 Results Detail
 --------------
 How to view Record Tables? Wait to see what TableResults looks like 
-Change variable name to generic one - ri
+Change variable name to generic one - ri. No custom tag to rename
 Generic variable name should be configurable
+We're initially assuming one ri per page.
+Redirect to view page name based on Record name
 
 Controller
 ----------
-Navigation config files - for views base page name on record name
+Navigation config files
 
 
 
@@ -68,7 +75,7 @@ Send deployment protocol to Steve
 Query
 -----
 Make query set a parameter on query holder
-Restore deleted tag handler files
+Restore tag handler files I accidentally deleted
 Write servlet to co-operate with custom tags for building incomplete/invalid queries
 [BUG] Query name not being passed properly to Param to construct it's name - inproper nesting
 
