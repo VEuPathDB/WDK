@@ -86,15 +86,16 @@ public class BooleanQuestionTester {
 	
 	    //create recursive question tree
 	    BooleanQuestionNode topNode = TestBooleanTree.getTestTree(wdkModel);
-	    
+	    System.err.println(topNode.toString());
 	    //init recursive method
 	    BooleanQuestionNode.setAllValues(topNode);
-	    
-	    runGrowTest(topNode, "01", wdkModel);
+
+	    //	    runGrowTest(topNode, "01", wdkModel);
 	   
 	    Question topQuestion = topNode.getQuestion();
 	    int pageCount = 1;
 	    for (int i = 0; i < rows.length; i+=2){
+
 		int nextStartRow = Integer.parseInt(rows[i]);
 		int nextEndRow = Integer.parseInt(rows[i+1]);
 		

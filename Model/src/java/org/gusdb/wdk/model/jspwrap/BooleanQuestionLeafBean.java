@@ -4,6 +4,8 @@ import org.gusdb.wdk.model.BooleanQuestionNode;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 
+import java.util.Hashtable;
+
 public class BooleanQuestionLeafBean {
     
     BooleanQuestionNode bqn;
@@ -64,6 +66,10 @@ public class BooleanQuestionLeafBean {
 
     public BooleanQuestionNodeBean getParent(){
 	return parent;
+    }
+
+    public void setValues(Hashtable values){
+	bqn.setValues(values);
     }
 
     protected void setParent(BooleanQuestionNodeBean parent){

@@ -39,7 +39,6 @@ public class ProcessQuestionAction extends Action {
 	String  submitAction = request.getParameter("questionSubmit");
 	if (submitAction.equals("Get Answer")){
 	    forward = mapping.findForward(CConstants.PQ_SHOW_SUMMARY_MAPKEY);
-	    
 	}
 	else {
 	    if (submitAction.equals("Booleanate")){
