@@ -64,7 +64,11 @@ public class AnswerBean {
 	}
     
 	public boolean hasNext() {
-	    return answer.hasMoreRecordInstances();
+	    try {
+		return answer.hasMoreRecordInstances();
+	    } catch (WdkModelException exp) {
+                throw new RuntimeException(exp);
+            }
 	}
 	
 	public Object next() {

@@ -31,33 +31,21 @@ public class WdkModel {
      * @throws WdkUserException
      * @throws WdkModelException
      */
-    public Question getQuestion(String initRecordClassList) {
-        try {
-            Reference r = new Reference(initRecordClassList);
-            QuestionSet ss = getQuestionSet(r.getSetName());
-            return ss.getQuestion(r.getElementName());
-        }
-        catch (WdkModelException exp) {
-            throw new RuntimeException(exp);
-        }
-        catch (WdkUserException exp) {
-            throw new RuntimeException(exp);
-        }
+    public Question getQuestion(String initRecordClassList) 
+	throws WdkUserException, WdkModelException 
+    {
+	Reference r = new Reference(initRecordClassList);
+	QuestionSet ss = getQuestionSet(r.getSetName());
+	return ss.getQuestion(r.getElementName());
     }
 
     
-    public RecordClass getRecordClass(String recordClassReference) {
-        try {
-            Reference r = new Reference(recordClassReference);
-            RecordClassSet rs = getRecordClassSet(r.getSetName());
-            return rs.getRecordClass(r.getElementName());
-        }
-        catch (WdkModelException exp) {
-            throw new RuntimeException(exp);
-        }
-        catch (WdkUserException exp) {
-            throw new RuntimeException(exp);
-        }
+    public RecordClass getRecordClass(String recordClassReference)
+	throws WdkUserException, WdkModelException 
+    {
+	Reference r = new Reference(recordClassReference);
+	RecordClassSet rs = getRecordClassSet(r.getSetName());
+	return rs.getRecordClass(r.getElementName());
     }
 
     public ResultFactory getResultFactory() {
