@@ -14,14 +14,7 @@
   <c:forEach var="row" items="${rivl}">
     <misc:tr>
       <c:forEach var="columnName" items="${rivl.columnNames}">
-        <c:choose>
-          <c:when test="${columnName == \"primary_key\"}">
-         	<td align="center"><misc:primaryKey primaryKey="${row[columnName]}" url="${wdk_record_url}" /></td>
-          </c:when>
-          <c:otherwise>
-          	<td align="center"><misc:multiType value="${row[columnName]}">${row[columnName]}</misc:multiType></td>
-          </c:otherwise>
-        </c:choose>
+        <td align="center"><misc:multiType value="${row[columnName]}">${row[columnName]}</misc:multiType></td>
 	  </c:forEach>
     </misc:tr>
   </c:forEach>

@@ -2,19 +2,22 @@ package org.gusdb.wdk.view.taglibs.misc;
 
 import java.io.IOException;
 
+import javax.servlet.jsp.JspContext;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.JspWriter;
 import javax.servlet.jsp.tagext.SimpleTagSupport;
 
+import org.gusdb.wdk.model.PrimaryKey;
+
 public class PrimaryKeyHandler extends SimpleTagSupport {
     
-    private String primaryKey;
+    private PrimaryKey primaryKey;
     private String url;
     
     /**
      * @param primaryKey The primaryKey to set.
      */
-    public void setPrimaryKey(String primaryKey) {
+    public void setPrimaryKey(PrimaryKey primaryKey) {
         this.primaryKey = primaryKey;
     }
     /**
@@ -26,13 +29,26 @@ public class PrimaryKeyHandler extends SimpleTagSupport {
     }
     
     public void doTag() throws IOException, JspException {
-        JspWriter out = getJspContext().getOut();
-        out.print("<a href=\"");
-        out.print(url);
-        out.print("&primaryKey=");
-        out.print(primaryKey);
-        out.print("\">Details</a>");
+        JspContext context = getJspContext();
+        process(context, primaryKey, url);
         return;
     }
+  
+    public static void process(JspContext context, PrimaryKey primaryKey, String url) throws IOException, JspException {
+        JspWriter out = context.getOut();
+        String uri = (String) context.findAttribute("wdk_record_url");
+        if (uri==null) {
+        	out.print(primaryKey);
+        } else {
+        	out.print("<a href=\"");
+        	out.print(uri);
+        	out.print("&primaryKey=");
+        	out.print(primaryKey);
+        	out.print("\">");
+        	out.print(primaryKey);
+        	out.print("</a>");
+        }
+    }
+    
     
 }

@@ -9,7 +9,7 @@
 <misc:table>
   <c:forEach var="entry" items="${ri}">
     <tr>
-      <td><b>${ri._displayName[entry.key]}</b></td>
+      <td><b>${ri._dname[entry.key]}</b></td>
       <td><misc:multiType value="${entry.value}">${entry.value}</misc:multiType></td></tr>
   </c:forEach>
 </misc:table>

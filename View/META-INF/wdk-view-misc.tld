@@ -96,7 +96,7 @@
     <attribute>
       <description>primary key</description>
       <name>primaryKey</name>
-      <type>java.lang.String</type>
+      <type>org.gusdb.wdk.model.PrimaryKey</type>
       <required>true</required>
       <rtexprvalue>true</rtexprvalue>
     </attribute>
@@ -105,7 +105,7 @@
       <description>primary key</description>
       <name>url</name>
       <type>java.lang.String</type>
-      <required>true</required>
+      <required>false</required>
       <rtexprvalue>true</rtexprvalue>
     </attribute>
 
