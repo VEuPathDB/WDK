@@ -68,6 +68,8 @@ public class BooleanQuestionTester {
 
 	String[] rows = cmdLine.getOptionValues("rows");
 		
+	validateRowCount(rows);
+
 	try {
 	    
 	    File schemaFile = new File(System.getProperty("schemaFile"));
@@ -86,9 +88,16 @@ public class BooleanQuestionTester {
 	    BooleanQuestionNode.setAllValues(topNode);
 	    
 	    Question topQuestion = topNode.getQuestion();
-
-	    Answer answer = topQuestion.makeAnswer(topNode.getValues(), startRow, endRow);
-	    answer.printAsTable();
+	    int pageCount = 1;
+	    for (int i = 0; i < rows.length; i+=2){
+		int nextStartRow = Integer.parseInt(rows[i]);
+		int nextEndRow = Integer.parseInt(rows[i+1]);
+		
+		Answer answer = topQuestion.makeAnswer(topNode.getValues(), nextStartRow, nextEndRow);
+		System.out.println("Printing Record Instances on page " + pageCount);
+		answer.printAsTable();
+		pageCount++;
+	    }
 	    
 	}
 	catch (WdkUserException e) {
