@@ -1,5 +1,6 @@
 package org.gusdb.gus.wdk.controller.servlets;
 
+import org.gusdb.gus.wdk.model.Column;
 import org.gusdb.gus.wdk.model.Param;
 import org.gusdb.gus.wdk.model.Query;
 import org.gusdb.gus.wdk.model.QueryInstance;
@@ -12,7 +13,6 @@ import org.gusdb.gus.wdk.view.GlobalRepository;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -115,7 +115,7 @@ public class QueryTagsTesterServlet extends HttpServlet {
         
 		// If OK, show success msg
 		//msg("OK, we've got a valid query. Hooray", res);
-		
+		ResultList rl = null;
 		StringBuffer sb = new StringBuffer();
 		try {
 		    
@@ -135,34 +135,37 @@ public class QueryTagsTesterServlet extends HttpServlet {
 		        (SqlQueryInstance)pageQuery.makeInstance();
 		    // pageInstance.setIsCacheable(getIsCacheable());
 		    pageInstance.setValues(values);
-		    ResultList rs = pageInstance.getResult();
+		    rl = pageInstance.getResult();
             
 		    //				ResultSet rs = sqii.getResult();
 		    
-		    if (rs == null) {
+		    if (rl == null) {
 		        sb.append("No result set returned");   
 		    } else {
 		        // Get result set meta data
 		        sb.append("<table width=\"100%\"><tr>");
-		        ResultSetMetaData rsmd = rs.getMetaData();
-		        int numColumns = rsmd.getColumnCount();
-		        // Get the column names; column indices start from 1
-		        sb.append("<th align=\"center\"><b>&nbsp;</b></th>");
-		        for (int i=3; i<numColumns; i++) {
-		            sb.append("<th align=\"center\"><b>"+rsmd.getColumnName(i)+"</b></th>");
-		        }
+                Column[] columns = rl.getInstance().getQuery().getColumns();
+                String[] columnNames = new String[columns.length];
+                for (int i = 0; i < columns.length; i++) {
+                    columnNames[i] = columns[i].getDisplayName();
+//                    sb.append("<th align=\"center\"><b>&nbsp;</b></th>");
+                    sb.append("<th align=\"center\"><b>");
+                    sb.append(columnNames[i]);
+                    sb.append("</b></th>");
+                }
+                
 		        sb.append("</tr>");
-		        while (rs.next()) {
+		        while (rl.next()) {
 		            sb.append("<tr>");
 		            sb.append("<td align=\"center\"><a href=\"");
 		            sb.append(req.getContextPath());
 		            sb.append("/RecordTester");
 		            sb.append("?style=jsp&recordSetName=RNARecords&recordName=PSUCDSRecordId&primaryKey=");
-		            sb.append(rs.getObject(1)+"&objectType="+rs.getObject(2)+"\" >");
+		            sb.append(rl.getValue(columnNames[0])+"&objectType="+rl.getValue(columnNames[1])+"\" >");
 		            sb.append("More details</a></td>");
-		            sb.append("<td align=\"center\">"+rs.getObject(3)+"</td>");
-		            sb.append("<td align=\"center\">"+rs.getObject(4)+"</td>");
-		            sb.append("<td align=\"center\"><i>"+rs.getObject(5)+"</i></td>");
+		            sb.append("<td align=\"center\">"+rl.getValue(columnNames[3])+"</td>");
+		            sb.append("<td align=\"center\">"+rl.getValue(columnNames[4])+"</td>");
+		            sb.append("<td align=\"center\"><i>"+rl.getValue(columnNames[5])+"</i></td>");
 		            sb.append("</tr>");
 		        }
 		        sb.append("<table>");
@@ -174,6 +177,16 @@ public class QueryTagsTesterServlet extends HttpServlet {
 		} catch (Exception e) {
 		    sb = new StringBuffer(e.toString());
 		}
+        finally {
+            if (rl != null) {
+                // TODO - close should probably throw RuntimeException or not at all
+                try {
+                    rl.close();
+                } catch (Exception exp) {
+                    // Deliberately empty
+                }
+            }
+        }
 		msg(sb.toString(), res);
 		return;
 	}
