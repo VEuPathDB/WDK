@@ -11,7 +11,6 @@ import org.gusdb.gus.wdk.model.WdkModel;
 import org.gusdb.gus.wdk.model.QueryNameList;
 import org.gusdb.gus.wdk.model.Query;
 import org.gusdb.gus.wdk.model.QueryName;
-import org.gusdb.gus.wdk.model.TextColumn;
 import org.gusdb.gus.wdk.model.RecordListSet;
 import org.gusdb.gus.wdk.model.RecordList;
 
@@ -19,7 +18,6 @@ import org.gusdb.gus.wdk.model.RecordList;
 import java.io.File;
 
 import org.apache.commons.digester.Digester;
-import org.xml.sax.helpers.DefaultHandler;
 
 public class ModelXmlParser {
 
