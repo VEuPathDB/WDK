@@ -1,5 +1,7 @@
 package org.gusdb.gus.wdk.model.implementation;
 
+//import oracle.jdbc.pool.OracleDataSource;
+
 import org.gusdb.gus.wdk.controller.WdkLogManager;
 import org.gusdb.gus.wdk.model.RDBMSPlatformI;
 
@@ -115,6 +117,18 @@ public class Oracle implements RDBMSPlatformI {
 	
 	SqlUtils.execute(dataSource, rownumSql);
     }
+
+
+//    public void close() {
+//        try {
+//            dataSource.close();
+//        }
+//        catch (SQLException exp) {
+//            logger.severe("Unable to close OracleDataSource: "+exp.getMessage());
+//        }
+//    }
+
+
 }
 
 
