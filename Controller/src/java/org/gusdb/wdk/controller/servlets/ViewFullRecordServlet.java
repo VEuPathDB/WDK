@@ -95,14 +95,14 @@ public class ViewFullRecordServlet extends HttpServlet {
     private String getRendererForRecordRef(Reference ref) {
         // TODO Set default for where no renderer found
         String renderer = ref.getTwoPartName();
-        logger.severe("renderer is "+renderer);
+        //logger.severe("renderer is "+renderer);
         String path = getServletContext().getRealPath("/WEB-INF/indirectPages/views/"+renderer+".jsp");
         File f = new File(path);
         if (f.exists()) {
-            logger.severe("Found file for "+path);
+            //logger.severe("Found file for "+path);
             return "/WEB-INF/indirectPages/views/"+renderer+".jsp";
         }
-        logger.severe("Returning default view, couldn't find "+path);
+        //logger.severe("Returning default view, couldn't find "+path);
         return "/WEB-INF/indirectPages/views/defaultView.jsp";
         
     }
