@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
  
-<wdkModel name="RNAQueries">
+<wdkModel name="RNAModel">
 
   	<summarySet name="RNARecordLists">
 
@@ -20,41 +20,17 @@
   
   
     <recordSet name="RNARecords">
-    <record name="RNARecord" type="DoTS Transcript" idPrefix="DT.">
-      <attributeQuery twoPartName="RNARecordQueries.RNAFields"/>
+
+    <record name="PSUCDSRecord" type="CDS" idPrefix="">
+      <attributeQuery twoPartName="RNARecordQueries.PSUCDSFields"/>
 
       <!-- <tableQuery twoPartName="RNARecordQueries.ExternalLinks"/> -->
 
-      <textField name="overview">
-        <text>
-          This is DoTS Transcript DT.$$primaryKey$$.  It is has a length of $$length$$.
-        </text>
-      </textField>
-    </record>
-
-
-    <record name="PSUCDSRecord" type="CDS" idPrefix="CDS.">
-      <attributeQuery twoPartName="RNARecordQueries.PSUCDSFieldsByName"/>
-
-      <!-- <tableQuery twoPartName="RNARecordQueries.ExternalLinks"/> -->
-
-      <textField name="overview">
+      <textAttribute name="overview">
         <text>
           This is the CDS $$primaryKey$$.  It has $$number_of_exons$$ exon(s).
         </text>
-      </textField>
-    </record>
-
-    <record name="PSUCDSRecordId" type="CDS" idPrefix="CDS.">
-      <attributeQuery twoPartName="RNARecordQueries.PSUCDSFieldsByPrimaryKey"/>
-
-      <!-- <tableQuery twoPartName="RNARecordQueries.ExternalLinks"/> -->
-
-      <textField name="overview">
-        <text>
-          It has $$number_of_exons$$ exon(s).
-        </text>
-      </textField>
+      </textAttribute>
     </record>
 
   </recordSet>
@@ -62,41 +38,6 @@
 
 
   <querySet name="RNARecordQueries">
-
-   <sqlQuery name="RNAFields">
-
-     <paramRef twoPartName="allparams.primaryKey"/>
-
-     <column name="description" displayName="Description" />
-     <column name="length" displayName="Length" />
-     <column name="assembly_consistency" displayName="Assembly consistency" />
-     <column name="contains_mrna" displayName="Contains mRNA" />
-     <column name="number_of_contained_sequences" displayName="Number contained sequences" />
-     <column name="taxon_name" displayName="Taxon Name" />
-     <column name="modification_date" displayName="Last modified" />
-     <column name="review_status_name" displayName="Review status" />
-
-     <sql>
-       select r.description, 
-              a.length, 
-              a.assembly_consistency, 
-              a.contains_mrna,
-              a.number_of_contained_sequences, 
-              tn.name as taxon_name, 
-              TO_CHAR(a.modification_date, 'Mon DD, YYYY HH:MI:SSAM') as modification_date, 
-              rvw.name as review_status_name
-      from dots.Assembly a, sres.TaxonName tn, 
-           dots.RNAFeature rf, dots.RNAInstance rs, 
-           dots.RNA r, sres.ReviewStatus rvw 
-      where a.na_sequence_id = $$primaryKey$$ 
-        and r.review_status_id = rvw.review_status_id 
-        and rf.na_sequence_id = a.na_sequence_id 
-        and rf.na_feature_id = rs.na_feature_id 
-        and rs.rna_id = r.rna_id 
-        and a.taxon_id = tn.taxon_id 
-        and tn.name_class = 'scientific name'
-     </sql>
-  </sqlQuery>
 
   <sqlQuery name="ExternalLinks">
 
@@ -121,7 +62,8 @@
     </sql>
   </sqlQuery>
 
-   <sqlQuery name="PSUCDSFieldsByName">
+
+   <sqlQuery name="PSUCDSFields">
 
      <paramRef twoPartName="allparams.primaryKey"/>
 
@@ -131,7 +73,6 @@
      <column name="is_pseudo" displayName="Pseudo" />
      <column name="is_partial" displayName="Partial" />
      <column name="product" displayName="Product/Description" />
-     <column name="taxon_name" displayName="Taxon Name" />
      <column name="modification_date" displayName="Last modified" />
 
      <sql>
@@ -140,48 +81,10 @@ select gf.name,
        gf.number_of_exons,
        gf.is_pseudo,
        gf.is_partial,
-       gf.product,
-       tn.name as taxon_name, 
+       gf.product, 
        TO_CHAR(gf.modification_date, 'Mon DD, YYYY HH:MI:SSAM') as modification_date
-from sres.TaxonName tn,
-     dots.NASequence nas,
-     dots.GeneFeature gf
-where tn.name_class = 'scientific name'
-      and gf.name = '$$primaryKey$$'
-      and gf.na_sequence_id = nas.na_sequence_id
-      and nas.taxon_id = tn.taxon_id
-     </sql>
-  </sqlQuery>
-
-   <sqlQuery name="PSUCDSFieldsByPrimaryKey">
-
-     <paramRef twoPartName="allparams.primaryKey"/>
-
-     <column name="name" displayName="Name" />
-     <column name="gene_type" displayName="Gene Type" />
-     <column name="number_of_exons" displayName="No. of exons" />
-     <column name="is_pseudo" displayName="Pseudo" />
-     <column name="is_partial" displayName="Partial" />
-     <column name="product" displayName="Product/Description" />
-     <column name="taxon_name" displayName="Taxon Name" />
-     <column name="modification_date" displayName="Last modified" />
-
-     <sql>
-select gf.name,
-       gf.gene_type,
-       gf.number_of_exons,
-       gf.is_pseudo,
-       gf.is_partial,
-       gf.product,
-       tn.name as taxon_name, 
-       TO_CHAR(gf.modification_date, 'Mon DD, YYYY HH:MI:SSAM') as modification_date
-from sres.TaxonName tn,
-     dots.NASequence nas,
-     dots.GeneFeature gf
-where tn.name_class = 'scientific name'
-      and gf.na_feature_id = '$$primaryKey$$'
-      and gf.na_sequence_id = nas.na_sequence_id
-      and nas.taxon_id = tn.taxon_id
+ from dots.GeneFeature gf
+ where gf.na_feature_id = $$primaryKey$$
      </sql>
   </sqlQuery>
 
@@ -194,36 +97,6 @@ where tn.name_class = 'scientific name'
 <querySet name="RNASimpleQueries">
 
 
-
-
-  <sqlQuery name="RNAListInDetail"
-            displayName="RNAs">
-
-       <paramRef twoPartName="allparams.resultTable"/>
-       <paramRef twoPartName="allparams.startRow"/>
-       <paramRef twoPartName="allparams.endRow"/>
-
-       <column name="resultTable" />
-
-    <sql>
-select unique gf.na_feature_id,
-       gf.subclass_view,
-       gf.name,
-       gf.gene_type,
-       tn.name as taxon_name
-from sres.TaxonName tn,
-     dots.NASequence nas,
-     dots.GeneFeature gf,
-     $$resultTable$$ ids
-where tn.name_class = 'scientific name'
-      and gf.na_feature_id = ids.na_feature_id
-      and gf.na_sequence_id = nas.na_sequence_id
-      and nas.taxon_id = tn.taxon_id
-      and ids.i &gt;= $$startRow$$
-      and ids.i &lt;= $$endRow$$
-    </sql>
-  </sqlQuery>
-
    <sqlQuery name="CDSNumExons"
             displayName="CDS by number of exons">
 
@@ -231,12 +104,12 @@ where tn.name_class = 'scientific name'
 
      <paramRef twoPartName="allparams.Max" />
        
-     <column name="name" />
+     <column name="na_feature_id" />
 
      <sql>
-select gf.na_feature_id, gf.name
-from dots.GeneFeature gf
-where gf.number_of_exons &gt;= '$$Min$$'
+select gf.na_feature_id
+ from dots.GeneFeature gf
+ where gf.number_of_exons &gt;= '$$Min$$'
   and gf.number_of_exons &lt;= '$$Max$$'
      </sql>
   </sqlQuery>
@@ -246,12 +119,12 @@ where gf.number_of_exons &gt;= '$$Min$$'
 
      <paramRef twoPartName="allparams.ByName" />
        
-      <column name="name" />
+      <column name="na_feature_id" />
 
      <sql>
-select gf.na_feature_id, gf.name
-from dots.GeneFeature gf
-where gf.name like '$$Name$$'
+select gf.na_feature_id
+ from dots.GeneFeature gf
+ where gf.name like '$$Name$$'
      </sql>
   </sqlQuery>
 
@@ -260,63 +133,61 @@ where gf.name like '$$Name$$'
 
        <paramRef twoPartName="allparams.Chromosome" />
        
-       <column name="todo" />
+       <column name="na_feature_id" />
 
      <sql>
-select gf.na_feature_id, gf.name
-from dots.ExternalNASequence ena,
+select gf.na_feature_id
+ from dots.ExternalNASequence ena,
      dots.GeneFeature gf
-where ena.taxon_id = '130246'
+ where ena.taxon_id = '130246'
       and ena.chromosome = '$$Chromosome$$'
       and gf.na_sequence_id = ena.na_sequence_id
      </sql>
   </sqlQuery>
 
-          <sqlQuery name="Chromosome">
-            <column name="name" />
-            <sql>
-select distinct ena.chromosome as key, ena.chromosome as value
-from dots.ExternalNASequence ena
-where ena.taxon_id = '130246'
-            </sql>
-          </sqlQuery>
 
 </querySet>
 
   <paramSet name="allparams">
   
-       <stringParam name="primaryKey"/>
-       <stringParam  name="resultTable"/>
-       <stringParam  name="startRow"/>
-       <stringParam  name="endRow"/>
+    <stringParam name="primaryKey"/>
   
-       <stringParam
-      	 name="Min"
-         prompt="Min"
-         sample="1"
-         regex="\d+" />
+    <stringParam name="Min"
+                 prompt="Min"
+                 sample="1"
+                 regex="\d+" />
 
-     	<stringParam
-         name="Max"
-         prompt="Max"
-         sample="5"
-         regex="\d+" />
+    <stringParam name="Max"
+                 prompt="Max"
+                 sample="5"
+                 regex="\d+" />
   
-       <stringParam
-       name="ByName"
-       prompt="Name"
-       sample="SPAC1701.1c"
-       regex=".*" />
+    <stringParam name="ByName"
+                 prompt="Name"
+                 sample="SPAC1701.1c"
+                 regex=".*" />
   
-         <flatCVParam
-          name="Chromosome"
-          prompt="Chromosome"
-          help="You know what it is"
-          multipick="no"
-          queryRef="RNASimpleQueries.Chromosome" />
+    <flatVocabParam name="Chromosome"
+                    prompt="Chromosome"
+                    help="You know what it is"
+                    multipick="no"
+                    queryRef="VocabQueries.Chromosome" />
 
-  
   </paramSet>
+
+
+  <querySet name="VocabQueries">
+    <sqlQuery name="Chromosome">
+      <column name="term" />
+      <column name="internal" />
+        <sql>
+select distinct ena.chromosome as term, ena.chromosome as internal
+  from dots.ExternalNASequence ena
+  where ena.taxon_id = '130246'
+        </sql>
+    </sqlQuery>
+  </querySet>
+
 
 </wdkModel>
 
