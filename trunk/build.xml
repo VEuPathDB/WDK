@@ -86,7 +86,7 @@
 access="private"
 packagenames="*">
       <doclet name="com.aurigalogic.doclet.core.Doclet"
-              path="./aurigadoclet/bin/AurigaDoclet.jar">
+              path="./lib/java/AurigaDoclet.jar">
         <param name="-out" value="api.pdf" />
         <param name="-format" value="pdf" />
       </doclet>
