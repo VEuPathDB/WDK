@@ -60,6 +60,7 @@ public class RowTag extends TableTag {
       out.println("</tr>");
     }
     catch (IOException ie){
+        // FIXME
   	}
     return EVAL_PAGE;
   }
