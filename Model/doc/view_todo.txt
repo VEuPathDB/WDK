@@ -1,0 +1,54 @@
+To Do
+=====
+
+General
+-------
+Ask about indentation style
+Ask about organizing imports
+Ask about adding version numbers to libs
+Add a default (nearly-empty) stylesheet
+
+Build
+-----
+
+Query
+-----
+Restore deleted tag handler files 
+Make query set a parameter on query holder
+Set up more param handling styles
+
+Results Summary
+---------------
+
+
+Results Detail
+--------------
+Set up initial hard-coded query and text/plain
+
+
+
+
+======================================================================
+Done
+====
+
+General
+-------
+Generate PDF Javadocs for off-line reading
+Access CVS through SSH
+Set up as project in eclipse
+
+Build
+-----
+
+
+Query
+-----
+
+
+Results Summary
+---------------
+
+
+Results Detail
+--------------
