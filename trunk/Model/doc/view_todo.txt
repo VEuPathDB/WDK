@@ -14,7 +14,6 @@ Custom tag: debugging - show all vars in all contexts (or restrict by scope)
 Custom tag: default record view - version 2 - more structured view
 Discussion on branding so we can decide on directory structure
 Set up taglibrarydoc and generate documentation for custom tags
-Add row highlighting
 cache manager page and protection
 
 Build
@@ -66,6 +65,7 @@ Pick up model config files from properties
 Hack together code for moving end-to-end with query ie query to detailed view
 Custom tag: rename Map key in some scope (with option to alias)
 View table page
+Add row highlighting
 
 Build
 -----
