@@ -23,11 +23,6 @@
 
   <!-- Schema grouping elements  -->
   <define name="queries">
-    <optional>
-        <element name="introduction">
-            <text />
-        </element>        
-    </optional>
     <choice>
       <ref name="sqlQuery" />
     </choice>
@@ -84,6 +79,11 @@
     </optional>
     <optional>
       <attribute name="displayName" />
+    </optional>
+    <optional>
+        <element name="description">
+            <text />
+        </element>        
     </optional>
     <zeroOrMore>
       <element name="paramRef">
