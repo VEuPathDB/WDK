@@ -1,6 +1,5 @@
 package org.gusdb.gus.wdk.controller.servlets;
 
-import org.gusdb.gus.wdk.controller.WdkLogManager;
 import org.gusdb.gus.wdk.controller.WdkModelExtra;
 import org.gusdb.gus.wdk.model.Param;
 import org.gusdb.gus.wdk.model.Query;
@@ -45,7 +44,7 @@ import javax.servlet.http.HttpServletResponse;
  * @author Adrian Tivey
  * @version $Revision$ $Date$ $Author$
  */
-public class InteractiveRecordListServlet extends HttpServlet {
+public class DirectSummaryServlet extends HttpServlet {
 
     private static final int DEFAULT_PAGE_SIZE = 5;
     private static final int MIN_PAGE_SIZE = 5;
@@ -55,56 +54,43 @@ public class InteractiveRecordListServlet extends HttpServlet {
     
     private static final String RESULT_SUMMARY_PAGE = "/WEB-INF/indirectPages/top/resultSummary.jsp";
     
-    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.gus.wdk.controller.servlets.InteractiveRecordListServlet");
+    private static String fullSummaryName;
+    
+    private static final Logger logger = Logger.getLogger("org.gusdb.gus.wdk.controller.servlets.InteractiveRecordListServlet");
     
     private final static boolean autoRedirect = true;
+    
+    private static final String searchErrorPage = "/WEB-INF/indirectPages/top/searchError.jsp";
+    
+    private Map aliases = new HashMap();
+    
+    /* (non-Javadoc)
+     * @see javax.servlet.GenericServlet#init()
+     */
+    public void init() throws ServletException {
+        super.init();
+        fullSummaryName = getInitParameter("twoPartName");
+        Enumeration e = getInitParameterNames();
+        while (e.hasMoreElements()) {
+            String name = (String) e.nextElement();
+            if (name.startsWith("alias_")) {
+                String value = getInitParameter(name);
+                name = name.substring(6); // Remove alias_ from start
+                System.err.println("Putting into alias '"+name+"', '"+value+"'");
+                aliases.put(name, value);
+            }
+        }
+    }
+    
     
 	protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
         
 	    int start = 1;
 	    int pageSize = DEFAULT_PAGE_SIZE;
-	    
-		String fromPage = req.getParameter("fromPage");
-		String summarySetName = req.getParameter("summarySetName");
-		String summaryName = req.getParameter("summaryName");
-		String formName = req.getParameter("formName");
-		String defaultChoice = req.getParameter("defaultChoice");
-        String initialExpansion = req.getParameter("initialExpansion");
+
         String startString = req.getParameter("pager.offset");
         String pageSizeString = req.getParameter("pageSize");
-        
-        
-		if (fromPage == null) {
-			msg("fromPage shouldn't be null. Internal error", res);
-			return;
-		}
-		if (summarySetName == null) {
-			msg("summarySetName shouldn't be null. Internal error", res);
-			return;
-		}
-		if (summaryName == null) {
-			msg("Qualified summaryName shouldn't be null. Internal error", res);
-			return;
-		}
-		if (formName == null) {
-			msg("formName shouldn't be null. Internal error", res);
-			return;
-		}
-		if (defaultChoice == null) {
-			msg("defaultChoice shouldn't be null. Internal error", res);
-			return;
-		}
-		
-        if (summaryName.equals(defaultChoice)) {
-            req.setAttribute(formName+".error.query.noQuery", "Please choose a query");
-            redirect(req, res, fromPage);
-            return;
-        }
-        
-        if (summaryName.indexOf('.')==-1) {
-            msg("queryRecord name isn't qualified: "+summaryName, res);
-            return;
-		}
+
 		
         try {
             if ( startString != null) {
@@ -136,62 +122,62 @@ public class InteractiveRecordListServlet extends HttpServlet {
 		// We have a queryRecord name
         WdkModel wm = (WdkModel) getServletContext().getAttribute("wdk.wdkModel");
         
-        Summary summary = WdkModelExtra.getSummary(wm, summaryName);
+        Summary summary = WdkModelExtra.getSummary(wm, fullSummaryName);
         Query sq = summary.getQuery();
 
         if (sq == null) {
-            msg("sq is null for "+summaryName, res);
+            msg("sq is null for "+fullSummaryName, res);
             return;
         }
 		QueryInstance sqii = sq.makeInstance();
 		Map paramValues = new HashMap();
         SummaryInstance si = null;
-		req.setAttribute(formName+".summary", summary);
-        String formQueryPrefix = formName+"."+summaryName+".";
-        System.err.println("formQueryPrefix is called: "+formQueryPrefix);
+		//req.setAttribute(formName+".summary", summary);
+        //String formQueryPrefix = formName+"."+fullSummaryName+".";
+        //System.err.println("formQueryPrefix is called: "+formQueryPrefix);
         boolean problem = false;
-        if ("true".equals(initialExpansion)) {
-            problem = true;
-        } else {
-            // Now check state of params
-            Enumeration names = req.getParameterNames();
-            while (names.hasMoreElements()) {
-                String name = (String) names.nextElement();
-                System.err.println("Got an element called: "+name);
-                if (name.startsWith(formQueryPrefix)) {
-                    // TODO Cope with multiple values
-                    String shortName = name.substring(formQueryPrefix.length());
-                    paramValues.put(shortName, req.getParameter(name));
-                }
+        // Now check state of params
+        Enumeration names = req.getParameterNames();
+        while (names.hasMoreElements()) {
+            String name = (String) names.nextElement();
+            System.err.println("Got an element called: "+name);
+            // TODO Cope with multiple values
+            if (aliases.containsKey(name)) {
+                String realName = (String) aliases.get(name);
+                paramValues.put(realName, req.getParameter(name));
+                System.err.println("Storing into paramValues '"+realName+"', '"+req.getParameter(name)+"'");
             }
-
-            try {
-                logger.finest("About to try and set param values");
-                si = summary.makeSummaryInstance(paramValues, start, end);
-            }
-            catch (WdkUserException exp) {
-                Map errors = exp.getBooBoos();
-                problem = true;
-                for (Iterator it = errors.keySet().iterator(); it.hasNext();) {
-                    Param param = (Param) it.next();
-                    String name = param.getName();
-                    // FIXME Magic number - struct?
-                    String errorMsg = ((String[]) errors.get(param))[1];
-                    req.setAttribute(formName+".error."+summaryName+"."+name, errorMsg);
-                    // TODO Cope with correct values
-                }
-            }           
-            catch (WdkModelException e) {
-                // TODO What does this mean?
-                e.printStackTrace();
-            }
-
         }
+        
+        try {
+            logger.finest("About to try and set param values");
+            si = summary.makeSummaryInstance(paramValues, start, end);
+        }
+        catch (WdkUserException exp) {
+            Map errors = exp.getBooBoos();
+            if (errors == null) {
+                throw new RuntimeException(exp);
+            }
+            problem = true;
+            for (Iterator it = errors.keySet().iterator(); it.hasNext();) {
+                Param param = (Param) it.next();
+                String name = param.getName();
+                // FIXME Magic number - struct?
+                String errorMsg = ((String[]) errors.get(param))[1];
+                req.setAttribute("error."+fullSummaryName+"."+name, errorMsg);
+                // TODO Cope with correct values
+            }
+        }           
+        catch (WdkModelException e) {
+            // TODO What does this mean?
+            e.printStackTrace();
+        }
+
 
 		
 		if (problem) {
 			// If fail, redirect to page
-			redirect(req, res, fromPage);
+			redirect(req, res, searchErrorPage);
 			return;
 		}
 
@@ -218,6 +204,7 @@ public class InteractiveRecordListServlet extends HttpServlet {
         
         if (totalSize==1 && autoRedirect) {
             toPage="/ViewFullRecord";
+            ri = null; 
             try {
                 ri = si.getNextRecordInstance(); 
             }
@@ -302,17 +289,17 @@ public class InteractiveRecordListServlet extends HttpServlet {
         
         redirect(req, res, toPage);
         
-//        try {
-//            if (rivl != null) {
-//                rivl.close();
-//            }
-//            if (ri != null) {
-//                ri.close();
-//            }
-//        }
-//        catch (WdkModelException exp) {
-//            logger.severe(exp.getMessage());
-//        }
+        try {
+            if (rivl != null) {
+                rivl.close();
+            }
+            if (ri != null) {
+                ri.close();
+            }
+        }
+        catch (WdkModelException exp) {
+            logger.severe(exp.getMessage());
+        }
         
 		return;
 	}
