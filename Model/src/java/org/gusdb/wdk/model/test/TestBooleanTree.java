@@ -77,14 +77,14 @@ public class TestBooleanTree {
 	Question q1 = model.makeBooleanQuestion(q7.getRecordClass());
 	Hashtable q1values = makeBooleanValues("Minus");
 
-	BooleanQuestionNode bqn4 = new BooleanQuestionNode(q4);
-	BooleanQuestionNode bqn5 = new BooleanQuestionNode(q5);
-	BooleanQuestionNode bqn6 = new BooleanQuestionNode(q6);
-	BooleanQuestionNode bqn7 = new BooleanQuestionNode(q7);
+	BooleanQuestionNode bqn4 = new BooleanQuestionNode(q4, null);
+	BooleanQuestionNode bqn5 = new BooleanQuestionNode(q5, null);
+	BooleanQuestionNode bqn6 = new BooleanQuestionNode(q6, null);
+	BooleanQuestionNode bqn7 = new BooleanQuestionNode(q7, null);
 
-	BooleanQuestionNode bqn3 = new BooleanQuestionNode(q3, bqn6, bqn7);
-	BooleanQuestionNode bqn2 = new BooleanQuestionNode(q2, bqn4, bqn5);
-	BooleanQuestionNode bqn1 = new BooleanQuestionNode(q1, bqn2, bqn3);
+	BooleanQuestionNode bqn3 = new BooleanQuestionNode(q3, bqn6, bqn7, null);
+	BooleanQuestionNode bqn2 = new BooleanQuestionNode(q2, bqn4, bqn5, null);
+	BooleanQuestionNode bqn1 = new BooleanQuestionNode(q1, bqn2, bqn3, null);
 	
 	bqn1.setValues(q1values);
 	bqn2.setValues(q2values);
@@ -101,7 +101,7 @@ public class TestBooleanTree {
 
 	Question q4 = makeNumSeqsQuestion(model);
 	Hashtable q4values = makeNumSeqsValues("7", "Eimeria tenella");
-	BooleanQuestionNode bqn = new BooleanQuestionNode(q4);
+	BooleanQuestionNode bqn = new BooleanQuestionNode(q4, null);
 	bqn.setValues(q4values);
 	return bqn;
 

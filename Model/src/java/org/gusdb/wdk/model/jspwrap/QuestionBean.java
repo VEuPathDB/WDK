@@ -5,6 +5,8 @@ import org.gusdb.wdk.model.Param;
 import org.gusdb.wdk.model.FlatVocabParam;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.BooleanQuestionNode;
+
 import java.util.Map;
 
 /**
@@ -17,6 +19,10 @@ public class QuestionBean {
 
     public QuestionBean(Question question) {
 	this.question = question;
+    }
+
+    public RecordClassBean getRecordClass(){
+	return new RecordClassBean(question.getRecordClass());
     }
 
     public ParamBean[] getParams() {
@@ -43,6 +49,14 @@ public class QuestionBean {
 
     public String getHelp() {
 	return question.getHelp();
+    }
+    
+    public BooleanQuestionLeafBean makeBooleanQuestionLeaf(){
+
+	BooleanQuestionNode bqn = new BooleanQuestionNode(this.question, null);
+	BooleanQuestionLeafBean leaf = new BooleanQuestionLeafBean(bqn, null);
+	return leaf;
+
     }
 
     /**

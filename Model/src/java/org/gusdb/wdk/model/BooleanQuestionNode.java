@@ -58,6 +58,12 @@ public class BooleanQuestionNode{
      */
     private Hashtable values;
 
+    /**
+     * Back-pointer to parent of this BooleanQuestionNode; null if this node is the root.
+     */
+    private BooleanQuestionNode parent;
+    
+
     
     // ------------------------------------------------------------------
     // Constructors
@@ -66,21 +72,27 @@ public class BooleanQuestionNode{
     /**
      * Constructor for a BooleanQuestionNode representing a boolean Question.
      */
-    public BooleanQuestionNode(Question q, BooleanQuestionNode firstChild, BooleanQuestionNode secondChild){
+    public BooleanQuestionNode(Question q, BooleanQuestionNode firstChild, BooleanQuestionNode secondChild, BooleanQuestionNode parent){
 	this.question = q;
 	this.firstChild = firstChild;
 	this.secondChild = secondChild;
+	this.parent = parent;
+	firstChild.setParent(this);
+	secondChild.setParent(this);
     }
 
     /**
      * Constructor for a BooleanQuestionNode representing a leaf in a boolean Query 
      * tree containing a Question that is not boolean.
+     *
+     * @param parent If the supplied parent is null; that implies that this node represents
+     *               a single-node tree.
      */
-  
-    public BooleanQuestionNode(Question q){
+    public BooleanQuestionNode(Question q, BooleanQuestionNode parent){
 	this.question = q;
 	this.firstChild = null;
 	this.secondChild = null;
+	this.parent = parent;
     }
 
     // ------------------------------------------------------------------
@@ -99,49 +111,39 @@ public class BooleanQuestionNode{
 	return secondChild;
     }
 
+    public BooleanQuestionNode getParent(){
+	return parent;
+    }
+
+
     /**
-     * Grows the tree that this leaf belongs to by copying this leaf, making this leaf a new internal
-     * node, setting the copied leaf to be the internal node's first child, and setting <code>bqn</code>
-     * to be the second child.  The copies are all by value so this actual leaf object undergoes a 
-     * transformation to be a node object. 
-     *
      * This method can only be performed on a leaf node and assumes that none of the noded in the tree
      * has had any parameter values set yet.
      */
 
-    public void grow(BooleanQuestionNode bqn, String operation, WdkModel model ) throws WdkModelException{
+    public BooleanQuestionNode grow(BooleanQuestionNode newSecondChild, String operation, WdkModel model ) throws WdkModelException{
 	
 	if (!isLeaf()){
 	    throw new WdkModelException("Cannot grow an internal node; can only grow a leaf");
 	}
-
-	//make value copy of myself to be new left child
-	BooleanQuestionNode newFirstChild = new BooleanQuestionNode(this.question);
-	Hashtable valuesCopy = (Hashtable)values.clone();
-	newFirstChild.setValues(valuesCopy);
 	
-	//set new left child
-	this.firstChild = newFirstChild;
+	BooleanQuestionNode tempParent = parent;
 
-	//set bqn to be new right child
-	this.secondChild = bqn;
+	RecordClass rc = this.question.getRecordClass();
+	Question question = model.makeBooleanQuestion(rc);
 	
-	//transform myself into an internal BooleanQuestionNode
-	this.values = null;
-	this.values = new Hashtable();
+	//sets my new parent to be <code>newBooleanNode</code> by side effect
+	//if old parent was null then <code>newBooleanNode</code> will be the new root
+	BooleanQuestionNode newBooleanNode = new BooleanQuestionNode(question, this, newSecondChild, parent);
+	
+	Hashtable values = new Hashtable();
 	values.put(BooleanQuery.OPERATION_PARAM_NAME, operation);
-	RecordClass rc = question.getRecordClass();
-	this.question = model.makeBooleanQuestion(rc);
+	newBooleanNode.setValues(values);
+	if (tempParent != null){
+	    tempParent.setFirstChild(newBooleanNode);
+	}
 	
-
-	//make new BooleanQuestionNode which is a copy of me and save it
-	//make me into a real booleanQuestionNode--new BooleanQuery, etc.
-	//assume that no Answers have been retrieved yet
-	//My left child is what I used to be
-	//right child is bqn
-	//operation is op
-	//acts on tree so no need to return anything
-
+	return newBooleanNode;
     }
 
     /**
@@ -158,6 +160,9 @@ public class BooleanQuestionNode{
 	String trimmedNodeId = null;
 	BooleanQuestionNode nextChild = null;
 	int nodeIdLength = nodeId.length();
+	if (nodeId.equals("-1") && this.parent == null){ //find was searching for root and I am it
+	    return this;
+	}
 	if (nodeId.equals("")){ //base case
 	    return this;
 	}
@@ -167,10 +172,10 @@ public class BooleanQuestionNode{
 	    if (nextChildPath == '0'){
 	        nextChild = firstChild; 
 	    }
-	    if (nextChildPath == '1'){
+	    else if (nextChildPath == '1'){
 		nextChild = secondChild;
 	    }
-	    if (nextChildPath != '0' && nextChildPath != '1'){
+	    else {
 		throw new WdkModelException("Path to find child in BooleanQuestionNode tree is not binary: " + nodeId);
 	    }
 	}
@@ -178,8 +183,6 @@ public class BooleanQuestionNode{
 	return nextChild.find(trimmedNodeId);
     }
 	
-  
-    
     /**
      * Recursive method that traverses <code>bqn</code> and sets its values,
      * which may be either normal query values if the node is a leaf or the 
@@ -258,6 +261,18 @@ public class BooleanQuestionNode{
 	    sb.append("\n\tSecond Child: " + secondChild.toString());
 	    return sb.toString();
 	}
+    }
+
+    protected void setFirstChild(BooleanQuestionNode child){
+	this.firstChild = child;
+   }
+
+    protected void setSecondChild(BooleanQuestionNode child){
+	this.secondChild = child;
+    }
+
+    protected void setParent(BooleanQuestionNode p){
+	this.parent = p;
     }
     
 }

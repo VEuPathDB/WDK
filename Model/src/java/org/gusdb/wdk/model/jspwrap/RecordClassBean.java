@@ -56,5 +56,4 @@ public class RecordClassBean {
 	}
 	return questionBeans;
     }
-
 }

@@ -10,30 +10,27 @@ import java.util.Hashtable;
 
 public class BooleanQuestionNodeBean {
 
-
     BooleanQuestionNode bqn;
+    BooleanQuestionNodeBean parent;
+    Object firstChild;
+    Object secondChild;
 
-    public BooleanQuestionNodeBean(BooleanQuestionNode bqn){
+
+    public BooleanQuestionNodeBean(BooleanQuestionNode bqn, Object firstChild, Object secondChild, BooleanQuestionNodeBean parent){
 	this.bqn = bqn;
+	this.firstChild = firstChild;
+	this.secondChild = secondChild;
+	this.parent = parent;
     }
 
     public Object getFirstChild(){
-	if (bqn.getFirstChild().isLeaf()){
-	    return new BooleanQuestionLeafBean(bqn.getFirstChild());
-	}
-	else{
-	    return new BooleanQuestionNodeBean(bqn.getFirstChild());
-	}
+	
+	return firstChild;
     }
 
     public Object getSecondChild(){
 
-	if (bqn.getSecondChild().isLeaf()){
-	    return new BooleanQuestionLeafBean(bqn.getSecondChild());
-	}
-	else{
-	    return new BooleanQuestionNodeBean(bqn.getSecondChild());
-	}
+	return secondChild;
     }
 
     public String getOperation(){
@@ -44,10 +41,22 @@ public class BooleanQuestionNodeBean {
     }
 
     //called on root only
-    public BooleanQuestionLeafBean find(String nodeId) throws WdkModelException{
+    /*    public BooleanQuestionLeafBean find(String nodeId) throws WdkModelException{
 	BooleanQuestionNode leaf = this.bqn.find(nodeId);
 	BooleanQuestionLeafBean leafBean = new BooleanQuestionLeafBean(leaf);
 	return leafBean;
+	}*/
+
+
+    protected void setParent(BooleanQuestionNodeBean newParent){
+	this.parent = newParent;
     }
 
+    protected void setFirstChild(Object firstChild){
+	this.firstChild = firstChild;
+    }
+    
+    protected void setSecondChild(Object secondChild){
+	this.secondChild = secondChild;
+    }
 }

@@ -23,6 +23,7 @@ public class WdkModel {
     String displayName;
     String introduction;
     ResultFactory resultFactory;
+    private EnumParam booleanOps;
     private Document document;
     public static final WdkModel INSTANCE = new WdkModel();
     
@@ -232,6 +233,8 @@ public class WdkModel {
      */
     public void setResources() throws WdkModelException {
 
+	makeBooleanOps();
+
         Iterator modelSets = allModelSets.values().iterator();
         while (modelSets.hasNext()) {
             ModelSetI modelSet = (ModelSetI)modelSets.next();
@@ -364,6 +367,30 @@ public class WdkModel {
     
     public void setDocument(Document document) {
         this.document = document;
+    }
+
+    public EnumParam getBooleanOps(){
+	return this.booleanOps;
+    }
+
+
+    private void makeBooleanOps(){
+
+	EnumItem union = new EnumItem();
+	union.setTerm("Union");
+	union.setInternal("union");
+
+	EnumItem intersect = new EnumItem();
+	intersect.setTerm("Intersect");
+	intersect.setInternal("intersect");
+
+	EnumParam booleanOpsEnum = new EnumParam();
+	booleanOpsEnum.addItem(union);
+	booleanOpsEnum.addItem(intersect);
+
+	booleanOpsEnum.setMultiPick(new Boolean(false));
+
+	this.booleanOps = booleanOpsEnum;
     }
 }
 
