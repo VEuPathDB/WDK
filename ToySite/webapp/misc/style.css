@@ -3,7 +3,7 @@ BODY {
 	color: black;
 }
 
-H1 { color: maroon }
+H1 { color: #ec0a0c }
 
 EM {
     color: red;
@@ -11,10 +11,9 @@ EM {
 }
 
 HR {
-   border-top: 1px dashed #f00;
-   border-bottom: 1px solid #f00;
+   border: 1px solid #f00;
    color: maroon;
-   background-color: maroon;
+   background-color: #fcd624;
    height: 4px;
 }
 
@@ -23,5 +22,5 @@ tr.rowLight {
 }
 
 tr.rowDark {
-	background-color: #ff9980;
+	background-color: #fcd624;
 }
