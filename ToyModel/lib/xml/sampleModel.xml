@@ -217,7 +217,7 @@
       sample="GO:0005013"
       regex="GO:\d+"/>
 
-    <flatCVParam
+    <flatVocabParam
       name="Taxon"
       prompt="Organism"
       help="You know what it is"
