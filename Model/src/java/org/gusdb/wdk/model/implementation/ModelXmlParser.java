@@ -19,6 +19,7 @@ import org.gusdb.gus.wdk.model.WdkModelException;
 import java.io.File;
 
 import org.apache.commons.digester.Digester;
+import org.xml.sax.SAXParseException;
 
 public class ModelXmlParser {
 
@@ -97,20 +98,6 @@ public class ModelXmlParser {
 	/*    */ digester.addObjectCreate( "wdkModel/querySet/query/param", "xsi:type", Param.class );
 	/*    */ digester.addSetProperties( "wdkModel/querySet/query/param");
 
-	/*      */ digester.addObjectCreate( "wdkModel/querySet/query/param/query", "xsi:type", Query.class );
-
-	/*      */ digester.addSetProperties( "wdkModel/querySet/query/param/query");
-
-	/*        */ digester.addBeanPropertySetter( "wdkModel/querySet/query/param/query/sql");
-
-	/*        */ digester.addObjectCreate( "wdkModel/querySet/query/param/query/column", "xsi:type", Column.class );
-
-	/*        */ digester.addSetProperties( "wdkModel/querySet/query/param/query/column");
-
-	/*        */ digester.addSetNext( "wdkModel/querySet/query/param/query/column", "addColumn" );
-
-	/*      */ digester.addSetNext( "wdkModel/querySet/query/param/query", "setQuery");
-
 	/*    */ digester.addSetNext( "wdkModel/querySet/query/param", "addParam" );
 	
 	
@@ -163,8 +150,12 @@ public class ModelXmlParser {
 	    
 	    System.out.println( wdkModel.toString() );
 	    
-	} catch( Exception exc ) {
-	    exc.printStackTrace();
+	} catch( SAXParseException e ) {
+	    System.exit(1);
+	} catch( Exception e ) {
+	    System.err.println(e.getMessage());
+	    e.printStackTrace();
+	    System.exit(1);
 	}
     }
 }

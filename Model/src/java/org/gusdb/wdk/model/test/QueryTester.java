@@ -236,6 +236,7 @@ public class QueryTester {
             System.err.println(e.formatErrors());
             System.exit(1);
         } catch (Exception e) {
+	    System.err.println(e);
             e.printStackTrace();
             System.exit(1);
         } 
