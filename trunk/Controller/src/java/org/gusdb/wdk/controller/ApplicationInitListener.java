@@ -36,6 +36,8 @@ import org.xml.sax.SAXException;
  */
 public class ApplicationInitListener implements ServletContextListener {
   
+    private static final Logger logger = Logger.getLogger("org.gusdb.gus.wdk.controller.ApplicationInitListener");
+    
     private static final String DEFAULT_LOGIN_CONFIGURATION = "/WEB-INF/wdk-config/login.xml";
     private static final String DEFAULT_MODEL_CONFIGURATION = "/WEB-INF/wdk-config/model.xml";
     private static final String DEFAULT_PROPS_LOCATION = "/WEB-INF/wdk-config/macro.props";
@@ -107,7 +109,8 @@ public class ApplicationInitListener implements ServletContextListener {
             propsURL = application.getResource(propsLocation);
         }
         catch (MalformedURLException exp) {
-            // FIXME Log this
+            Exception e = new RuntimeException(exp);
+            logger.throwing(this.getClass().getName(), "initMemberVars", e);
         }
             
         // read config info
