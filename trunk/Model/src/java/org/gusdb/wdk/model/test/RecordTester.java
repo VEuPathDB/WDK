@@ -6,18 +6,12 @@ import org.gusdb.gus.wdk.model.RDBMSPlatformI;
 import org.gusdb.gus.wdk.model.Record;
 import org.gusdb.gus.wdk.model.RecordInstance;
 import org.gusdb.gus.wdk.model.RecordSet;
-import org.gusdb.gus.wdk.model.RecordListInstance;
-import org.gusdb.gus.wdk.model.RecordList;
-import org.gusdb.gus.wdk.model.RecordListSet;
 import org.gusdb.gus.wdk.model.ResultFactory;
 import org.gusdb.gus.wdk.model.WdkModel;
 import org.gusdb.gus.wdk.model.implementation.ModelXmlParser;
 import org.gusdb.gus.wdk.model.implementation.SqlResultFactory;
-import org.gusdb.gus.wdk.model.Query;
-
 
 import java.io.File;
-import java.util.Hashtable;
 
 import javax.sql.DataSource;
 
@@ -58,8 +52,6 @@ public class RecordTester {
 	String recordSetName = cmdLine.getOptionValue("recordSetName");
 	String recordName = cmdLine.getOptionValue("recordName");
 	String primaryKey = cmdLine.getOptionValue("primaryKey");
-	String recordListSetName = cmdLine.getOptionValue("recordListSetName");
-	String recordListName = cmdLine.getOptionValue("recordListName");
 
 	try {
 	    // read config info
@@ -91,19 +83,6 @@ public class RecordTester {
 	    recordInstance.setPrimaryKey(primaryKey);
 	    System.out.println( recordInstance.print() );
 
-	    RecordListSet recordListSet = wdkModel.getRecordListSet(recordListSetName);
-	    RecordList recordList = recordListSet.getRecordList(recordListName);
-	    //dtb - whoops should not have start and end at this point, need to take it out.
-	    //also, if cacheable, returns some weird values for rownum when doing the print...figure this out.
-	    //if this query is not cacheable, the test should still pass (because of extra logic where things aren't
-	    //cacheable but still get a result table)--need to figure out why that's not working
-	    Query query = recordList.getQuery();
-	    query.setIsCacheable(new Boolean(true));
-	    RecordListInstance rli = recordList.makeRecordListInstance();
-	    
-	    Hashtable tempValues = new Hashtable();
-	    rli.setValues(tempValues); //for now no values
-	    rli.print();
 	} catch (Exception e) {
 	    e.printStackTrace();
 	    System.exit(1);
@@ -126,18 +105,14 @@ private static void addOption(Options options, String argName, String desc) {
 	// config file
 	addOption(options, "configFile", "An .xml file that specifies a ModelConfig object.");
 	// query set file
-	addOption(options, "modelXmlFile", "An .xml file that specifies a container of Query set objects.");
+    addOption(options, "modelXmlFile", "An .xml file that specifies a container of Query set objects.");
 	// record set name
-	addOption(options, "recordSetName", "The name of the record set in which to find the record");
+    addOption(options, "recordSetName", "The name of the record set in which to find the record");
 	// record name
-	addOption(options, "recordName", "The name of the record to print.");
+    addOption(options, "recordName", "The name of the record to print.");
 	// primary key
-	addOption(options, "primaryKey", "The primary key of the record to find.");
-	//recordListSetName
-	addOption(options, "recordListSetName", "The name of the recordListSet in which to find the recordList");
-	//recordListName
-	addOption(options, "recordListName", "the name of the record list to run");
-	
+    addOption(options, "primaryKey", "The primary key of the record to find.");
+
 	return options;
     }
 
