@@ -1,8 +1,8 @@
 package org.gusdb.gus.wdk.model;
 
 import org.gusdb.gus.wdk.controller.WdkLogManager;
-import org.gusdb.gus.wdk.model.implementation.SqlUtils;
 import org.gusdb.gus.wdk.model.implementation.SqlResultList;
+import org.gusdb.gus.wdk.model.implementation.SqlUtils;
 
 import java.io.File;
 import java.sql.ResultSet;
@@ -10,8 +10,6 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.logging.Logger;
-
-import javax.sql.DataSource;
 
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
@@ -21,12 +19,6 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.dbcp.ConnectionFactory;
-import org.apache.commons.dbcp.DriverManagerConnectionFactory;
-import org.apache.commons.dbcp.PoolableConnectionFactory;
-import org.apache.commons.dbcp.PoolingDataSource;
-import org.apache.commons.pool.ObjectPool;
-import org.apache.commons.pool.impl.GenericObjectPool;
 
 /**
    How the QueryInstance table works.

@@ -5,7 +5,6 @@ import org.gusdb.gus.wdk.model.Record;
 import org.gusdb.gus.wdk.model.RecordInstance;
 import org.gusdb.gus.wdk.model.RecordSet;
 import org.gusdb.gus.wdk.model.WdkUserException;
-import org.gusdb.gus.wdk.model.ModelMaker;
 import org.gusdb.gus.wdk.model.implementation.ModelXmlParser;
 
 import java.io.File;

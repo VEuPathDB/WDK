@@ -1,25 +1,17 @@
 package org.gusdb.gus.wdk.model.test;
 
-import org.gusdb.gus.wdk.model.ModelConfig;
-import org.gusdb.gus.wdk.model.ModelConfigParser;
 import org.gusdb.gus.wdk.model.Query;
 import org.gusdb.gus.wdk.model.QuerySet;
-import org.gusdb.gus.wdk.model.RecordSet;
 import org.gusdb.gus.wdk.model.Record;
 import org.gusdb.gus.wdk.model.RecordInstance;
-import org.gusdb.gus.wdk.model.RDBMSPlatformI;
+import org.gusdb.gus.wdk.model.RecordSet;
+import org.gusdb.gus.wdk.model.Reference;
 import org.gusdb.gus.wdk.model.ResultFactory;
 import org.gusdb.gus.wdk.model.ResultList;
-import org.gusdb.gus.wdk.model.test.SanityModel;
 import org.gusdb.gus.wdk.model.WdkModel;
-import org.gusdb.gus.wdk.model.Reference;
-import org.gusdb.gus.wdk.model.test.SanityTestXmlParser;
 import org.gusdb.gus.wdk.model.implementation.ModelXmlParser;
 
-
 import java.io.File;
-
-import javax.sql.DataSource;
 
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
@@ -28,12 +20,6 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.dbcp.ConnectionFactory;
-import org.apache.commons.dbcp.DriverManagerConnectionFactory;
-import org.apache.commons.dbcp.PoolableConnectionFactory;
-import org.apache.commons.dbcp.PoolingDataSource;
-import org.apache.commons.pool.ObjectPool;
-import org.apache.commons.pool.impl.GenericObjectPool;
 
 /**
  * SanityTester.java
@@ -46,7 +32,7 @@ import org.apache.commons.pool.impl.GenericObjectPool;
  * Created: Mon August 23 12:00:00 2004 EDT
  *
  * @author David Barkan
- * @version $Revision$ $Date$Author: art $
+ * @version $Revision$ $Date$Author: dbarkan $
  */
 public class SanityTester {
 

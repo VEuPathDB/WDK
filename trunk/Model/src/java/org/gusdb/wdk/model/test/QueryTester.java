@@ -1,13 +1,9 @@
 package org.gusdb.gus.wdk.model.test;
 import org.gusdb.gus.wdk.model.FlatVocabParam;
-import org.gusdb.gus.wdk.model.ModelConfig;
-import org.gusdb.gus.wdk.model.ModelConfigParser;
 import org.gusdb.gus.wdk.model.Param;
 import org.gusdb.gus.wdk.model.Query;
 import org.gusdb.gus.wdk.model.QueryInstance;
 import org.gusdb.gus.wdk.model.QuerySet;
-import org.gusdb.gus.wdk.model.RDBMSPlatformI;
-import org.gusdb.gus.wdk.model.ResultFactory;
 import org.gusdb.gus.wdk.model.ResultList;
 import org.gusdb.gus.wdk.model.StringParam;
 import org.gusdb.gus.wdk.model.WdkModel;
@@ -19,8 +15,6 @@ import org.gusdb.gus.wdk.model.implementation.SqlQueryInstance;
 import java.io.File;
 import java.util.Hashtable;
 
-import javax.sql.DataSource;
-
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -29,12 +23,6 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.dbcp.ConnectionFactory;
-import org.apache.commons.dbcp.DriverManagerConnectionFactory;
-import org.apache.commons.dbcp.PoolableConnectionFactory;
-import org.apache.commons.dbcp.PoolingDataSource;
-import org.apache.commons.pool.ObjectPool;
-import org.apache.commons.pool.impl.GenericObjectPool;
 
 
 public class QueryTester {
