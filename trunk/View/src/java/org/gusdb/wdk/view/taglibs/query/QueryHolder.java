@@ -18,23 +18,13 @@ import javax.servlet.jsp.tagext.*;
  * Custom tag that represents a simple or boolean query 
  */ 
 public class QueryHolder extends SimpleTagSupport {
-    
-	private boolean bool;
+
 	private String name;
 	private String var;
 	private String initRecordList;
 	private String platformClass;
-	private String initCountString;
-	private int initCount;
 	private String recordQueryGroup;
 	
-	public void setBoolean(boolean bool) {
-		this.bool = bool;
-	}
-	
-	public boolean isBoolean() {
-		return bool;
-	}
 	
 	public void setName(String name) {
 		this.name = name;
@@ -58,14 +48,6 @@ public class QueryHolder extends SimpleTagSupport {
 
     public String getInitRecordList() {
         return initRecordList;
-    }
-    
-    public void setInitCountString(String initCountString) {
-        this.initCountString = initCountString;
-    }
-    
-    public int getInitCount() {
-        return initCount;
     }
     
     public void doTag() throws IOException, JspException {
