@@ -68,7 +68,10 @@ public class BooleanQuestionForm extends QuestionForm {
 			Object pVal = getMyProp(pKey);
 			String errMsg = p.validateValue(pVal);
 			if (errMsg != null) {
-			    errors.add(pKey, new ActionError("mapped.properties",  p.getPrompt(), errMsg));
+			    errors.add(pKey,
+				       new ActionError("mapped.properties",
+						       p.getPrompt() + " \"" + pVal + "\"",
+						       "<br>" + errMsg));
 			}
 		    } catch (WdkModelException exp) {
 			throw new RuntimeException(exp.getMessage());
