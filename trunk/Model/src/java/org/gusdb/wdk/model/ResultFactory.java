@@ -66,7 +66,7 @@ public class ResultFactory {
     ///////////////   public  /////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////
 
-    public ResultList getResult(QueryInstance instance) throws WdkModelException{
+    public synchronized ResultList getResult(QueryInstance instance) throws WdkModelException{
 	ResultList resultList = instance.getIsPersistent()?
 	    getPersistentResult(instance) : instance.getNonpersistentResult();
 	return resultList;
@@ -75,7 +75,7 @@ public class ResultFactory {
     /**
      * @return Full name of table containing result
      */
-    public String getResultAsTable(QueryInstance instance) throws WdkModelException {
+    public synchronized String getResultAsTable(QueryInstance instance) throws WdkModelException {
 	return getResultTable(instance);
     }
 
@@ -128,7 +128,7 @@ public class ResultFactory {
      * the associated rows in the cache table both within one transaction; then
      * separately, as a post-process, drop the tables in the dropThese table.
      */    
-    public void resetCache(boolean noSchemaOutput) throws WdkModelException {
+    public synchronized void resetCache(boolean noSchemaOutput) throws WdkModelException {
 
 	// Query for the names of all cached result tables
 	//
@@ -165,7 +165,7 @@ public class ResultFactory {
     /**
      * Drop all tables and sequences associated with the cache
      */    
-    public void dropCache(boolean noSchemaOutput) throws WdkModelException {
+    public synchronized void dropCache(boolean noSchemaOutput) throws WdkModelException {
 	try {
 	    resetCache(noSchemaOutput);
 	    String nameToUse = (noSchemaOutput == true ? instanceTableName : instanceTableFullName);
@@ -185,7 +185,7 @@ public class ResultFactory {
     /**
      * @return Full table name of the result table
      */
-    protected String getNewResultTable(QueryInstance instance) throws WdkModelException {
+    private String getNewResultTable(QueryInstance instance) throws WdkModelException {
 	
 	//populates cache if not already in there
 
@@ -209,7 +209,7 @@ public class ResultFactory {
 	return resultTableName;
     }
 
-    protected ResultList getPersistentResult(QueryInstance instance) throws WdkModelException {
+    private ResultList getPersistentResult(QueryInstance instance) throws WdkModelException {
 	String resultTable = getResultTable(instance);
 	ResultSet rs = fetchCachedResult(resultTable);
 	return new SqlResultList(instance, resultTable, rs);
@@ -223,7 +223,7 @@ public class ResultFactory {
      *
      * @param instance  The instance of the query
      */
-    protected String getResultTable(QueryInstance instance)  throws WdkModelException {
+    private String getResultTable(QueryInstance instance)  throws WdkModelException {
 	String resultTableFullName;
 
 	// Construct SQL query to retrieve the requested table's name
@@ -259,7 +259,7 @@ public class ResultFactory {
      *
      * @return Full table name of result table
      */
-    protected Integer insertQueryInstance(QueryInstance instance) throws WdkModelException {
+    private Integer insertQueryInstance(QueryInstance instance) throws WdkModelException {
 	return insertQueryInstance(instance, null, null);
     }
 
@@ -276,7 +276,7 @@ public class ResultFactory {
      *
      * @return Full table name of result table
      */
-    protected Integer insertQueryInstance(QueryInstance instance, 
+    private Integer insertQueryInstance(QueryInstance instance, 
 					 String sessionId, String datasetName) throws WdkModelException {
 
 
@@ -331,7 +331,7 @@ public class ResultFactory {
 	return finalId;
     }
 
-    protected String formatInstanceParamVals(QueryInstance instance) {
+    private String formatInstanceParamVals(QueryInstance instance) {
 	StringBuffer sb = new StringBuffer();
 
     int count = 0;
@@ -358,7 +358,7 @@ public class ResultFactory {
      * 
      * @return Whether the operation succeeded.
      */
-    protected boolean finishQueryInstance(QueryInstance instance) throws WdkModelException {
+    private boolean finishQueryInstance(QueryInstance instance) throws WdkModelException {
 	StringBuffer sqlb = new StringBuffer();
 	sqlb.append("update " + instanceTableFullName 
 		    + " set end_time = " + platform.getCurrentDateFunction());
@@ -378,7 +378,7 @@ public class ResultFactory {
      * from the cache table the row corresponding to a particular query 
      * instance (if any).
      */
-    protected String instanceWhereClause(QueryInstance instance){
+    private String instanceWhereClause(QueryInstance instance){
 	StringBuffer sb = new StringBuffer();
 	Iterator iter = instance.getValues().iterator();
 
@@ -398,7 +398,7 @@ public class ResultFactory {
     /**
      * @return true if dataset name is in use for this session id
      */
-    protected boolean checkIfDatasetNameInUse(String sessionId, 
+    private boolean checkIfDatasetNameInUse(String sessionId, 
 					   String datasetName) throws WdkModelException {
 	StringBuffer s = new StringBuffer();
 	s.append("select result_table from " + instanceTableFullName + " where " +
@@ -414,7 +414,7 @@ public class ResultFactory {
 	return tables.length != 0;
     }
 
-    protected ResultSet fetchCachedResult(String resultTable) throws WdkModelException {
+    private ResultSet fetchCachedResult(String resultTable) throws WdkModelException {
 	String sql = "select * from " + resultTable;
 
 	ResultSet rs = null;
@@ -430,7 +430,7 @@ public class ResultFactory {
     // suspicious things here:
     //   - why is it inserting 
 
-    protected Integer getQueryInstanceId(QueryInstance instance) throws WdkModelException{
+    private Integer getQueryInstanceId(QueryInstance instance) throws WdkModelException{
 
 	Integer queryInstanceId = instance.getQueryInstanceId();
 	if (queryInstanceId == null){
