@@ -3,6 +3,7 @@
 use strict;
 use lib "$ENV{GUS_HOME}/lib/perl";
 use Getopt::Long;
+use Carp;
 
 my ($dropDb, $createDb, $modelConfigFile);
 
@@ -12,7 +13,19 @@ my ($dropDb, $createDb, $modelConfigFile);
 
 &usage unless $modelConfigFile && ($dropDb || $createDb);
 
-my $classpath = "$ENV{GUS_HOME}/lib/java/commons-digester-1.5.jar:$ENV{GUS_HOME}/lib/java/WDK-Model.jar:$ENV{GUS_HOME}/lib/java/commons-beanutils.jar:$ENV{GUS_HOME}/lib/java/commons-collections.jar:$ENV{GUS_HOME}/lib/java/commons-logging-api.jar:$ENV{GUS_HOME}/lib/java/oracle-classes12.jar:$ENV{GUS_HOME}/lib/java/commons-dbcp-1.1.jar:$ENV{GUS_HOME}/lib/java/commons-pool-1.1.jar:$ENV{GUS_HOME}/lib/java/commons-cli-1.0.jar";
+my $GUS_HOME=$ENV{GUS_HOME};
+
+my $javaDir = "$GUS_HOME/lib/java";
+
+opendir(DATADIR, $javaDir) || &confess ("Error:  Could not open $javaDir.  Please check the directory exists and try again.");
+
+my $CLASSPATH = "";
+
+while (my $nextFileName = readdir(DATADIR)){
+    if ($nextFileName =~ /.*\.jar$/){
+	$CLASSPATH .= "$javaDir/$nextFileName" . ":"
+    }
+}
 
 my $args = "-configFile $modelConfigFile ";
 
@@ -44,7 +57,7 @@ foreach my $tableName (@tables){
 
 $args .= "-tables $tableArg";
 
-my $cmd = "java -Djdbc.drivers=oracle.jdbc.driver.OracleDriver -DcmdName=wdkTestDb -classpath $classpath org.gusdb.wdk.model.test.TestDBManager $args";
+my $cmd = "java -Djdbc.drivers=oracle.jdbc.driver.OracleDriver -DcmdName=wdkTestDb -classpath $CLASSPATH org.gusdb.wdk.model.test.TestDBManager $args";
 
 #print STDERR "wdkTestDb: running command $cmd\n";
 
