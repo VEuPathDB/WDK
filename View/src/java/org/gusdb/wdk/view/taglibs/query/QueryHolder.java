@@ -71,7 +71,7 @@ public class QueryHolder extends SimpleTagSupport {
         JspWriter out = getJspContext().getOut();
         out.println("<form method=\"GET\" action=\"/sampleWDK/InteractiveRecordList\">");
         out.println("<input type=\"hidden\" name=\"formName\" value=\""+name+"\">");
-        out.println("<input type=\"hidden\" name=\"recordGroup\" value=\""+recordQueryGroup+"\">");
+        out.println("<input type=\"hidden\" name=\"queryRecordGroup\" value=\""+recordQueryGroup+"\">");
         
         // Print out any warning/validation error messages
         // They should all start with formName.error.
