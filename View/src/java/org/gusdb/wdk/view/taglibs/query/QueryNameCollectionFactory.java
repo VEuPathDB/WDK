@@ -8,6 +8,7 @@ import org.gusdb.gus.wdk.model.QueryName;
 import org.gusdb.gus.wdk.model.QueryNameList;
 import org.gusdb.gus.wdk.model.QuerySet;
 import org.gusdb.gus.wdk.model.WdkModel;
+import org.gusdb.gus.wdk.model.WdkModelException;
 
 public class QueryNameCollectionFactory {
 
@@ -18,11 +19,14 @@ public class QueryNameCollectionFactory {
 
     
     public QueryNameCollection getQueryNameCollection(String name, WdkModel model) {
-        if (model.hasQuerySet(name)) {
-            return new QuerySetFacade(model.getQuerySet(name)); 
-        }
-        QueryNameList qnl = model.getQueryNameList(name);
-        return new ExtendedQueryNameList(qnl);
+	try {
+	    if (model.hasQuerySet(name)) {
+		return new QuerySetFacade(model.getQuerySet(name)); 
+	    }
+	    QueryNameList qnl = model.getQueryNameList(name);
+	    return new ExtendedQueryNameList(qnl);
+	} catch (WdkModelException e) {}
+	return null;  // just to get it to compile
     }
 
     
