@@ -9,7 +9,7 @@
         <wdkq:queryHolder name="form1"
                           summarySetName="RnaSummaries"
                           var="q">
-          <input type="hidden" name="fromPage" value="/boolean.jsp">
+          <input type="hidden" name="fromPage" value="/simpleQueryDemo1.jsp">
             <tr><td><wdkq:displayQuery summary="${q}"></td></tr>
             <c:forEach var="p"
             items="${q.query.params}">
