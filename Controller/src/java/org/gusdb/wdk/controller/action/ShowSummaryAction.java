@@ -12,9 +12,9 @@ import org.apache.struts.action.ActionForm;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.gusdb.wdk.controller.CConstants;
-import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.Question;
-import org.gusdb.wdk.model.Answer;
+import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.model.jspwrap.QuestionBean;
+import org.gusdb.wdk.model.jspwrap.AnswerBean;
 
 /**
  * This Action is called by the ActionServlet when a WDK question is asked.
@@ -29,20 +29,20 @@ public class ShowSummaryAction extends Action {
 				 HttpServletRequest request,
 				 HttpServletResponse response) throws Exception {
 	//why I am not able to get back my question from the session? use the form for  now
-	//Summary wdkQuestion = (Summary)request.getSession().getAttribute(CConstants.WDK_QUESTION_KEY);
+	//QuestionBean wdkQuestion = (QuestionBean)request.getSession().getAttribute(CConstants.WDK_QUESTION_KEY);
 
 	QuestionForm qForm = (QuestionForm)form;
-	Question wdkQuestion = qForm.getQuestion();
+	QuestionBean wdkQuestion = qForm.getQuestion();
 
 	Map params = new java.util.HashMap(qForm.getMyProps());
-	/*
+
 	java.util.Iterator paramNames = params.keySet().iterator();
 	while (paramNames.hasNext()) {
 	    String paramName = (String)paramNames.next();
 	    Object paramVal = params.get(paramName);
-	    System.err.println("*** params: (k, v) = " + paramName + ", " + paramVal);
+	    System.err.println("*** debug params: (k, v) = " + paramName + ", " + paramVal);
 	}
-	*/
+
 
 	int start = 1;
 	if (request.getParameter("pager.offset") != null) {
@@ -56,7 +56,7 @@ public class ShowSummaryAction extends Action {
 	if (start <1) { start = 1; } 
 	int end = start + pageSize-1;
 
-	Answer wdkAnswer = wdkQuestion.makeAnswer(params, start, end);
+	AnswerBean wdkAnswer = wdkQuestion.makeAnswer(params, start, end);
 
 	int totalSize = wdkAnswer.getResultSize();
 

@@ -2,6 +2,7 @@ package org.gusdb.wdk.controller;
 
 import org.gusdb.wdk.model.RDBMSPlatformI;
 import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.WdkModelException;
 
 import java.io.IOException;
@@ -23,14 +24,11 @@ import javax.sql.DataSource;
  */
 public class ApplicationInitListener implements ServletContextListener {
     
-    private DataSource dataSource;
     private RDBMSPlatformI platform;
   
     public void contextDestroyed(ServletContextEvent sce) {
-        WdkModel model = (WdkModel) sce.getServletContext().getAttribute(CConstants.WDK_MODEL_KEY);
-        RDBMSPlatformI platform = model.getRDBMSPlatform();
         try {
-            platform.close();
+            getPlatform().close();
         } catch (WdkModelException exp) {
             throw new RuntimeException(exp);
         }
@@ -49,7 +47,7 @@ public class ApplicationInitListener implements ServletContextListener {
       
         initMemberVars(configXml, modelXml, schema, props, parserClass, application);
         
-        Config.set(application, Config.SQL_DATA_SOURCE, dataSource);
+        //Config.set(application, Config.SQL_DATA_SOURCE, dataSource);
     }
     
 
@@ -75,10 +73,12 @@ public class ApplicationInitListener implements ServletContextListener {
     }
 
 
-    protected DataSource getDataSource() {
-        return dataSource;
+    protected RDBMSPlatformI getPlatform() {
+        return platform;
     }
-
+    protected void setPlatform(RDBMSPlatformI platform) {
+        this.platform = platform;
+    }
     
     private void initMemberVars(String configXml, String modelXml, String schema,
 				String props, String parserClass, ServletContext application) {
@@ -101,12 +101,11 @@ public class ApplicationInitListener implements ServletContextListener {
             
             Class parser = Class.forName(parserClass);
             Method build = parser.getDeclaredMethod("parseXmlFile", new Class[] {URL.class, URL.class, URL.class, URL.class});
-            WdkModel wdkModel = (WdkModel) build.invoke(null, new Object[] {modelURL, propsURL, schemaURL, configURL});
+            WdkModel wdkModelRaw = (WdkModel) build.invoke(null, new Object[] {modelURL, propsURL, schemaURL, configURL});
+	    WdkModelBean wdkModel = new WdkModelBean(wdkModelRaw);
 
-            this.dataSource = wdkModel.getRDBMSPlatform().getDataSource();
-            
-            application.setAttribute(CConstants.WDK_RESULTFACTORY_KEY, wdkModel.getResultFactory());
-            application.setAttribute(CConstants.WDK_MODEL_KEY, wdkModel);         
+            setPlatform(wdkModelRaw.getRDBMSPlatform());
+	    application.setAttribute(CConstants.WDK_MODEL_KEY, wdkModel);         
         } catch (Exception exp) {
 	    exp.printStackTrace();
             throw new RuntimeException(exp);
