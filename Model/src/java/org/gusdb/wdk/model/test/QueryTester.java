@@ -1,6 +1,6 @@
 package org.gusdb.gus.wdk.model.test;
 
-import org.gusdb.gus.wdk.model.FlatCVParam;
+import org.gusdb.gus.wdk.model.FlatVocabParam;
 import org.gusdb.gus.wdk.model.ModelConfig;
 import org.gusdb.gus.wdk.model.ModelConfigParser;
 import org.gusdb.gus.wdk.model.Param;
@@ -115,8 +115,8 @@ public class QueryTester {
         
         String prompt = "  " + param.getPrompt();
         
-        if (param instanceof FlatCVParam) {
-            FlatCVParam enumParam = (FlatCVParam)param;
+        if (param instanceof FlatVocabParam) {
+            FlatVocabParam enumParam = (FlatVocabParam)param;
             prompt += " (chose one";
             if (enumParam.getMultiPick().booleanValue()) prompt += " or more"; 
             prompt += "):";

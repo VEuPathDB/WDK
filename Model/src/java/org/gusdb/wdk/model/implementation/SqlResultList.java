@@ -23,10 +23,10 @@ public class SqlResultList extends ResultList {
         this.resultSet = resultSet;
     }
 
-    public Object getValueFromResult(String fieldName) throws WdkModelException {
+    public Object getValueFromResult(String attributeName) throws WdkModelException {
 	Object o = null;
 	try {
-	    o = resultSet.getObject(fieldName);
+	    o = resultSet.getObject(attributeName);
 	} catch (SQLException e) {
 	    throw new WdkModelException(e);
 	}

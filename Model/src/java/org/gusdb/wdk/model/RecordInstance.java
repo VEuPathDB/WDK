@@ -6,12 +6,12 @@ public class RecordInstance {
     
     String primaryKey;
     Record record;
-    HashMap fieldsResultSetsMap;
+    HashMap attributesResultSetsMap;
     SummaryInstance summaryInstance;
 
     public RecordInstance(Record record) {
 	this.record = record;
-	fieldsResultSetsMap = new HashMap();
+	attributesResultSetsMap = new HashMap();
     }
 
     public Record getRecord() { return record; }
@@ -29,27 +29,27 @@ public class RecordInstance {
     }
 
     /**
-     * Get the value for a field or a text field
+     * Get the value for a attribute or a text attribute
      */
-    public Object getFieldValue(String fieldName) throws WdkModelException {
+    public Object getAttributeValue(String attributeName) throws WdkModelException {
 	Object value;
-	if (record.isTextField(fieldName)) {
-	    String rawText = record.getTextField(fieldName);
-	    value = instantiateTextField(fieldName, rawText, new HashMap());
+	if (record.isTextAttribute(attributeName)) {
+	    String rawText = record.getTextAttribute(attributeName);
+	    value = instantiateTextAttribute(attributeName, rawText, new HashMap());
 	} else {
-	    Query query = record.getFieldsQuery(fieldName);
+	    Query query = record.getAttributesQuery(attributeName);
 	    String queryName = query.getName();
-	    if (!fieldsResultSetsMap.containsKey(queryName)) {
-		runFieldsQuery(query);
+	    if (!attributesResultSetsMap.containsKey(queryName)) {
+		runAttributesQuery(query);
 	    }
-	    HashMap resultMap = (HashMap)fieldsResultSetsMap.get(queryName);
+	    HashMap resultMap = (HashMap)attributesResultSetsMap.get(queryName);
 
-	    value = resultMap.get(fieldName);
+	    value = resultMap.get(attributeName);
 	}
 	return value;
     }
 
-    public String getFieldSpecialType(String fieldName) {
+    public String getAttributeSpecialType(String attributeName) {
 	return null;
     }
 
@@ -74,16 +74,16 @@ public class RecordInstance {
 	StringBuffer buf =
 	    new StringBuffer(record.getType() + " " + record.getIdPrefix() + primaryKey).append( newline );
 
-	String[] fieldNames = record.getNonTextFieldNames();
-	for (int i=0; i<fieldNames.length; i++) {
-	    String fieldName = fieldNames[i];
-	    buf.append(fieldName + ":   " + getFieldValue(fieldName)).append( newline );
+	String[] attributeNames = record.getNonTextAttributeNames();
+	for (int i=0; i<attributeNames.length; i++) {
+	    String attributeName = attributeNames[i];
+	    buf.append(attributeName + ":   " + getAttributeValue(attributeName)).append( newline );
 	}
 	
-	String[] textFieldNames = record.getTextFieldNames();
-	for (int i=0; i<textFieldNames.length; i++){
-	    String fieldName = textFieldNames[i];
-	    buf.append(fieldName + ":   " + getFieldValue(fieldName)).append( newline );
+	String[] textAttributeNames = record.getTextAttributeNames();
+	for (int i=0; i<textAttributeNames.length; i++){
+	    String attributeName = textAttributeNames[i];
+	    buf.append(attributeName + ":   " + getAttributeValue(attributeName)).append( newline );
 	}
 	
 	String[] tableNames = record.getTableNames();
@@ -106,22 +106,22 @@ public class RecordInstance {
     // protected
     ///////////////////////////////////////////////////////////////////////////////////////
 
-    protected void setFieldValue(String fieldName, Object fieldValue) throws WdkModelException{
+    protected void setAttributeValue(String attributeName, Object attributeValue) throws WdkModelException{
 	
-	Query query = record.getFieldsQuery(fieldName);
+	Query query = record.getAttributesQuery(attributeName);
 	String queryName = query.getName();
-	HashMap resultMap = (HashMap)fieldsResultSetsMap.get(queryName);
+	HashMap resultMap = (HashMap)attributesResultSetsMap.get(queryName);
 	if (resultMap == null){
 	    resultMap = new HashMap();
-	    fieldsResultSetsMap.put(queryName, resultMap);
+	    attributesResultSetsMap.put(queryName, resultMap);
 	}
-	resultMap.put(fieldName, fieldValue);
+	resultMap.put(attributeName, attributeValue);
     }
 
     /**
      * Place hash of single row result into hash keyed on query name
      */
-    protected void runFieldsQuery(Query query) throws WdkModelException {
+    protected void runAttributesQuery(Query query) throws WdkModelException {
 	QueryInstance instance = query.makeInstance();
 	instance.setIsCacheable(false);
 	if (summaryInstance != null){
@@ -147,20 +147,20 @@ public class RecordInstance {
 	    rl.next();
 	    for (int i=0; i<columns.length; i++) {
 		String columnName = columns[i].getName();
-		setFieldValue(columnName, rl.getValue(columnName));
+		setAttributeValue(columnName, rl.getValue(columnName));
 	    }
 	}
     }
 
-    protected String instantiateTextField(String textFieldName, String rawText, 
+    protected String instantiateTextAttribute(String textAttributeName, String rawText, 
 					  HashMap alreadyVisited) throws WdkModelException {
 
-	if (alreadyVisited.containsKey(textFieldName)) {
-	    throw new WdkModelException("Circular text field subsitution involving text field '" 
-				+ textFieldName + "'");
+	if (alreadyVisited.containsKey(textAttributeName)) {
+	    throw new WdkModelException("Circular text attribute subsitution involving text attribute '" 
+				+ textAttributeName + "'");
 	}
 
-	alreadyVisited.put(textFieldName, textFieldName);
+	alreadyVisited.put(textAttributeName, textAttributeName);
 
 	String instantiatedText = rawText;
 
@@ -168,24 +168,24 @@ public class RecordInstance {
 	instantiatedText = instantiateText(instantiatedText, "primaryKey", 
 					   getPrimaryKey());
 	
-	// get all non-text field names, and see if they appear as a macro
-	String[] allNonTextFieldNames = record.getNonTextFieldNames();
-	for (int i=0; i<allNonTextFieldNames.length; i++) {
-	    String fieldName = allNonTextFieldNames[i];
-	    if (getFieldValue(fieldName) != null){
-		instantiatedText = instantiateText(instantiatedText, fieldName, 
-				getFieldValue(fieldName).toString());
+	// get all non-text attribute names, and see if they appear as a macro
+	String[] allNonTextAttributeNames = record.getNonTextAttributeNames();
+	for (int i=0; i<allNonTextAttributeNames.length; i++) {
+	    String attributeName = allNonTextAttributeNames[i];
+	    if (getAttributeValue(attributeName) != null){
+		instantiatedText = instantiateText(instantiatedText, attributeName, 
+				getAttributeValue(attributeName).toString());
 	    }
 	}
 
-	// get all text field names, and see if they appear as macro
-	String[] allTextFieldNames = record.getTextFieldNames();
-	for (int i=0; i<allTextFieldNames.length; i++) {
-	    String fieldName = allTextFieldNames[i];
-	    if (fieldName.equals(textFieldName)) continue;
+	// get all text attribute names, and see if they appear as macro
+	String[] allTextAttributeNames = record.getTextAttributeNames();
+	for (int i=0; i<allTextAttributeNames.length; i++) {
+	    String attributeName = allTextAttributeNames[i];
+	    if (attributeName.equals(textAttributeName)) continue;
 
-	    instantiatedText = instantiateText(instantiatedText, fieldName, 
-					       getFieldValue(fieldName).toString());
+	    instantiatedText = instantiateText(instantiatedText, attributeName, 
+					       getAttributeValue(attributeName).toString());
 	}
 
 	checkInstantiatedText(instantiatedText);

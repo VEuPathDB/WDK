@@ -1,6 +1,6 @@
 package org.gusdb.gus.wdk.view.taglibs.query;
 
-import org.gusdb.gus.wdk.model.FlatCVParam;
+import org.gusdb.gus.wdk.model.FlatVocabParam;
 import org.gusdb.gus.wdk.model.Param;
 import org.gusdb.gus.wdk.model.ResultFactory;
 import org.gusdb.gus.wdk.model.StringParam;
@@ -46,8 +46,8 @@ public class DisplayParam extends SimpleTagSupport {
     				return;
     			}
 
-    		if (param instanceof FlatCVParam) {
-    			handlePairParam((FlatCVParam) param, formQuery, out);
+    		if (param instanceof FlatVocabParam) {
+    			handlePairParam((FlatVocabParam) param, formQuery, out);
     			return;
     		}
 	
@@ -68,7 +68,7 @@ public class DisplayParam extends SimpleTagSupport {
     	out.println("<input name=\""+formQuery+"."+p.getName()+"\" type=\"text\" length=\"8\" value=\""+def+"\">");
     }
   
-    private void handlePairParam(FlatCVParam p, String formQuery, JspWriter out) throws IOException {
+    private void handlePairParam(FlatVocabParam p, String formQuery, JspWriter out) throws IOException {
     	
     	ResultFactory rf = (ResultFactory) getJspContext().getAttribute("wdk.queryResultFactory", PageContext.APPLICATION_SCOPE);
     	String[] m = null;
