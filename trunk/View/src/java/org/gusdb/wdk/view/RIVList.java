@@ -22,11 +22,9 @@ import java.util.NoSuchElementException;
 public class RIVList implements Iterator {
 
     private SummaryInstance si;
-    private boolean summary;
 
-    public RIVList(SummaryInstance si, boolean summary) {
+    public RIVList(SummaryInstance si) {
         this.si = si;
-        this.summary = summary;
     }
 
     public int getSize() {
@@ -48,7 +46,7 @@ public class RIVList implements Iterator {
         if ( ri == null ) {
             return new NoSuchElementException();  
         }
-        return new RecordInstanceView(ri, summary);
+        return new RecordInstanceView(ri);
     }
 
     public void remove() {

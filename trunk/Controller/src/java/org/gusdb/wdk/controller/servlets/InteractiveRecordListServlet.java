@@ -184,7 +184,7 @@ public class InteractiveRecordListServlet extends HttpServlet {
             Reference ref = summary.getRecord().getReference();
             String renderer = getRendererForRecordRef(ref);
             
-            RIVList rivl = new RIVList(si, true);
+            RIVList rivl = new RIVList(si);
             req.setAttribute("rivl", rivl);
             //req.setAttribute("recordListName", queryRecordGroup + "." + queryRecordName);
             req.setAttribute("siTotalSize", Integer.toString(size));
