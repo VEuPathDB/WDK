@@ -1,16 +1,22 @@
 package org.gusdb.gus.wdk.model;
 
+import java.util.logging.Logger;
+
 public class Column {
 
+    private static final Logger logger = Logger.getLogger("org.gusdb.gus.wdk.model.Column");
+    
     String displayName;
     String name;
     Query query;
     String help;
     String dataTypeName;
+    private boolean inSummary = true;
 
     public Column() {} 
 
     public void setName(String name) {
+        logger.severe("Column setName for "+name);
         this.name = name;
     }
 
@@ -58,11 +64,26 @@ public class Column {
 	   new StringBuffer(classnm + ": name='" + name + "'" + newline +
 			    "  displayName='" + displayName + "'" + newline +
 			    "  help='" + help + "'" + newline +
-			    "  dataTypeName='" + dataTypeName + "'" + newline
+			    "  dataTypeName='" + dataTypeName + "'" + newline +
+                "  inSummary='" + inSummary +"'" + newline
 			    );
 
        return buf.toString();
 	
+    }
+    
+    public String isInSummary() {
+        return inSummary? "true" : "false";
+    }
+    
+    public boolean isInSummaryAsBool() {
+        return inSummary;
+    }
+    
+    public void setInSummary(String in) {
+        logger.severe("Column setInSummary for "+name+" is called with *"+in+"*");
+        this.inSummary = Boolean.valueOf(in.trim()).booleanValue();
+        logger.severe("So inSummary is "+inSummary);
     }
 }
 
