@@ -12,7 +12,7 @@ public class RenameAttributeKey extends SimpleTagSupport {
     private String from;
     private String to;
     private int context = 0;
-    private boolean remove;
+    private boolean remove = true;
     
 
     public void setContext(String context) {
