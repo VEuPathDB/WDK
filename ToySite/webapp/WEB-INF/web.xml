@@ -37,10 +37,10 @@
   
   
   <servlet>
-    <servlet-name>RecordTester</servlet-name>
-    <display-name>RecordTester</display-name>
+    <servlet-name>ViewFullRecord</servlet-name>
+    <display-name>ViewFullRecord</display-name>
     <description>A servlet that tests the Records part of the model</description>
-    <servlet-class>org.gusdb.gus.wdk.controller.servlets.RecordTesterServlet</servlet-class>
+    <servlet-class>org.gusdb.gus.wdk.controller.servlets.ViewFullRecordServlet</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>InteractiveRecordList</servlet-name>
@@ -68,8 +68,8 @@
   </servlet>
       
   <servlet-mapping>
-    <servlet-name>RecordTester</servlet-name>
-    <url-pattern>/RecordTester</url-pattern>
+    <servlet-name>ViewFullRecord</servlet-name>
+    <url-pattern>/ViewFullRecord</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>InteractiveRecordList</servlet-name>
