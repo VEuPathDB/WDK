@@ -81,6 +81,9 @@
       <attribute name="displayName" />
     </optional>
     <optional>
+      <attribute name="isCacheable" />
+    </optional>
+    <optional>
         <element name="description">
             <text />
         </element>        
@@ -236,8 +239,17 @@
   <define name="question">
     <element name="question">
       <attribute name="name" />
+      <attribute name="displayName" />
       <attribute name="recordClassRef" />
       <attribute name="queryRef" />
+      <element name="description">
+          <text />
+      </element>        
+      <optional>
+         <element name="help">
+             <text />
+         </element>        
+      </optional>
     </element>
   </define>
     
