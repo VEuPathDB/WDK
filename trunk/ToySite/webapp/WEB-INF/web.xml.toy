@@ -21,15 +21,15 @@
   </context-param>
   <context-param>
     <param-name>loginConfig</param-name>
-    <param-value>/WEB-INF/wdk-config/toyModelConfig.xml</param-value>
+    <param-value>/WEB-INF/wdk-model/config/toyModelConfig.xml</param-value>
   </context-param>
   <context-param>
     <param-name>propsFileLocation</param-name>
-    <param-value>/WEB-INF/wdk-config/toyModel.prop</param-value>
+    <param-value>/WEB-INF/wdk-model/config/toyModel.prop</param-value>
   </context-param>
   <context-param>
     <param-name>querySetConfig</param-name>
-    <param-value>/WEB-INF/wdk-config/toyModel.xml</param-value>
+    <param-value>/WEB-INF/wdk-model/config/toyModel.xml</param-value>
   </context-param>
 
 
@@ -41,7 +41,7 @@
 
   <context-param>
     <param-name>schemaLocation</param-name>
-    <param-value>/WEB-INF/wdk-config/wdkModel.rng</param-value>
+    <param-value>/WEB-INF/lib/rng/wdkModel.rng</param-value>
   </context-param>
   <listener>
     <listener-class>org.gusdb.wdk.controller.ApplicationInitListener</listener-class>
