@@ -1,220 +1,253 @@
 package org.gusdb.gus.wdk.model;
 
-import java.util.HashMap;
-import java.util.HashSet;
+
+import org.gusdb.gus.wdk.util.FixableSmallMap;
+import org.gusdb.gus.wdk.util.FixableSmallSet;
+
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Logger;
 
 public class Record {
     
-    HashMap attributesQueryMap;  // attributeName -> Query
-    HashMap tableQueryMap;   // tableName -> Query
-    HashMap textAttributeMap;    // attributeName -> text (String)
-    HashSet tableQueryRefs;
-    HashSet attributesQueryRefs;
-    String name;
-    String type;
-    String idPrefix;
+    private static final Logger logger = Logger.getLogger("org.gusdb.gus.wdk.model.Record");
     
-    public Record() {
-	attributesQueryMap = new HashMap();
-	tableQueryMap = new HashMap();
-	attributesQueryRefs = new HashSet();
-	tableQueryRefs = new HashSet();
-	textAttributeMap = new HashMap();
+    private Map attributesQueryMap = new FixableSmallMap();  // attributeName -> Query
+    private Map tableQueryMap = new FixableSmallMap();   // tableName -> Query
+    private Map textAttributeMap = new FixableSmallMap();    // attributeName -> text (String)
+    private List summaryColumnNames = new ArrayList();
+    private Set tableQueryRefs = new FixableSmallSet();
+    private Set attributesQueryRefs = new FixableSmallSet();
+    private String name;
+    private String type;
+    private String idPrefix;
+    private Reference reference;
+    
+    /**
+     * @param reference The reference to set.
+     */
+    public void setReference(Reference reference) {
+        this.reference = reference;
     }
-
+    
     public void setName(String name) {
-	this.name = name;
+        this.name = name;
     }
-
+    
     public String getName() {
-	return name;
+        return name;
     }
-
+    
     public void setIdPrefix(String idPrefix) {
-	this.idPrefix = idPrefix;
+        this.idPrefix = idPrefix;
     }
-
+    
     public String getIdPrefix() {
-	return idPrefix;
+        return idPrefix;
     }
-
+    
     public void setType(String type) {
-	this.type = type;
+        this.type = type;
     }
-
+    
     public String getType() {
-	return type;
+        return type;
     }
-
+    
     public String getAttributeSpecialType(String attributeName) {
-	return null;
+        return null;
     }
-
+    
     /**
      * @param attributesQueryRef two part query name (set.name)
      */
     public void addAttributesQueryRef(Reference attributesQueryRef) {
-	attributesQueryRefs.add(attributesQueryRef.getTwoPartName());
+        attributesQueryRefs.add(attributesQueryRef.getTwoPartName());
     }
-
+    
     /**
      * @param tableQueryRef two part query name (set.name)
      */
     public void addTableQueryRef(Reference tableQueryRef) {
-	tableQueryRefs.add(tableQueryRef.getTwoPartName());
-    }
-
-    public void resolveReferences(WdkModel model) throws WdkModelException {
-	
-	Iterator fQueryRefs = attributesQueryRefs.iterator();
-	while (fQueryRefs.hasNext()) {
-	    String queryName = (String)fQueryRefs.next();
-	    Query query = 
-		(Query)model.resolveReference(queryName,
-					      getName(), 
-					      this.getClass().getName(),
-					      "attributesQueryRef");
-	    addAttributesQuery(query);
-	}
-
-	Iterator tQueryRefs = tableQueryRefs.iterator();
-	while (tQueryRefs.hasNext()) {
-	    String queryName = (String)tQueryRefs.next();
-	    Query query = 
-		(Query)model.resolveReference(queryName,
-					      getName(), 
-					      "record",
-					      "tableQueryRef");
-	    addTableQuery(query);
-	}
-    }
-
-
-
-    public void addTextAttribute(TextAttribute textAttribute) throws WdkModelException {
-	checkAttributeName(textAttribute.getName());
-	textAttributeMap.put(textAttribute.getName(), textAttribute.getText());
-    }
-
-    public RecordInstance makeInstance() {
-	return new RecordInstance(this);
-    }
-
-    public String toString() {
-	String newline = System.getProperty( "line.separator" );
-	StringBuffer buf =
-	    new StringBuffer("Record: name='" + name + "'").append( newline );
-
-	buf.append( "--- Attributes ---" ).append( newline );
-	String[] attributeNames = getNonTextAttributeNames();
-	for (int i=0; i<attributeNames.length; i++) {
-	    buf.append(attributeNames[i]).append( newline );
-	}
-	
-	buf.append( "--- Text Attributes ---" ).append( newline );
-	String[] textAttributeNames = getTextAttributeNames();
-	for (int i=0; i<textAttributeNames.length; i++){
-	    buf.append(textAttributeNames[i]).append( newline );
-	}
-	
-	buf.append( "--- Tables ---" ).append( newline );
-	Iterator tableIterator = tableQueryMap.keySet().iterator();
-	while (tableIterator.hasNext()) {
-	    buf.append(tableIterator.next()).append( newline );
-	}
-	return buf.toString();
+        tableQueryRefs.add(tableQueryRef.getTwoPartName());
     }
     
-    public String[] getTableNames() {
-	String[] s = {};
-	return (String[])tableQueryMap.keySet().toArray(s);
+    public void resolveReferences(WdkModel model) throws WdkModelException {
+        
+        Iterator fQueryRefs = attributesQueryRefs.iterator();
+        while (fQueryRefs.hasNext()) {
+            String queryName = (String)fQueryRefs.next();
+            Query query = 
+                (Query)model.resolveReference(queryName,
+                        getName(), 
+                        this.getClass().getName(),
+                "attributesQueryRef");
+            addAttributesQuery(query);
+        }
+        attributesQueryRefs = null;
+        
+        Iterator tQueryRefs = tableQueryRefs.iterator();
+        while (tQueryRefs.hasNext()) {
+            String queryName = (String)tQueryRefs.next();
+            Query query = 
+                (Query)model.resolveReference(queryName,
+                        getName(), 
+                        "record",
+                "tableQueryRef");
+            addTableQuery(query);
+        }
+        tableQueryRefs = null;
+    }
+    
+    
+    
+    public void addTextAttribute(TextAttribute textAttribute) throws WdkModelException {
+        checkAttributeName(textAttribute.getName());
+        textAttributeMap.put(textAttribute.getName(), textAttribute.getText());
+    }
+    
+    public RecordInstance makeRecordInstance() {
+        return new RecordInstance(this);
+    }
+    
+    public String toString() {
+        String newline = System.getProperty( "line.separator" );
+        StringBuffer buf =
+            new StringBuffer("Record: name='" + name + "'").append( newline );
+        
+        buf.append( "--- Attributes ---" ).append( newline );
+        Iterator attributeNamesIt = getNonTextAttributeNames().iterator();
+        while (attributeNamesIt.hasNext()) {
+            buf.append(attributeNamesIt.next()).append( newline );
+        }
+        
+        buf.append( "--- Text Attributes ---" ).append( newline );
+        Iterator textAttributeNamesIt = getTextAttributeNames().iterator();
+        while (textAttributeNamesIt.hasNext()) {
+            buf.append(textAttributeNamesIt.next());
+            buf.append(newline);
+        }
+        
+        buf.append( "--- Tables ---" ).append( newline );
+        Iterator tableIterator = getTableNames().iterator();
+        while (tableIterator.hasNext()) {
+            buf.append(tableIterator.next()).append( newline );
+        }
+        return buf.toString();
+    }
+    
+    public Set getTableNames() {
+        return tableQueryMap.keySet();
     }
 
-    public String[] getNonTextAttributeNames() {
-	String[] s = {};
-	return (String[])attributesQueryMap.keySet().toArray(s);
-    }
 
-    public String[] getTextAttributeNames() {
-	String[] s = {};
-	return (String[])textAttributeMap.keySet().toArray(s);
+    public Set getNonTextAttributeNames() {
+        return attributesQueryMap.keySet();
     }
+    
 
+    public Set getTextAttributeNames() {
+        return textAttributeMap.keySet();
+    }
+    
+    
+//    public String[] getTextAttributeNames() {
+//        String[] s = {};
+//        return (String[])textAttributeMap.keySet().toArray(s);
+//    }
+    
     ///////////////////////////////////////////////////////////////////////////////////////
     // protected
     ///////////////////////////////////////////////////////////////////////////////////////
-
+    
     /**
      * Add a attributes query. Map it by all of its column names
      */
     protected void addAttributesQuery(Query query) throws WdkModelException {
-	Column[] columns = query.getColumns();
-	for (int i=0; i<columns.length;i++) {
-	    Column column = columns[i];
-	    checkAttributeName(column.getName());
-	    attributesQueryMap.put(column.getName(), query);
-	}
+        Column[] columns = query.getColumns();
+        for (int i=0; i<columns.length;i++) {
+            Column column = columns[i];
+            checkAttributeName(column.getName());
+            if (column.isInSummaryAsBool()) {
+                summaryColumnNames.add(column.getName());
+            }
+            attributesQueryMap.put(column.getName(), query);
+        }
     }
-
+    
     /**
      * Add a table query. Map it by its query name
      */
     protected void addTableQuery(Query query) throws WdkModelException {
-	if (tableQueryMap.containsKey(query.getName())) {
-	    throw new WdkModelException("Record " + getName() + " already has table query named " + query.getName());
-	}
-	tableQueryMap.put(query.getName(), query);
+        if (tableQueryMap.containsKey(query.getName())) {
+            throw new WdkModelException("Record " + getName() + " already has table query named " + query.getName());
+        }
+        tableQueryMap.put(query.getName(), query);
     }
-
+    
     protected void checkAttributeName(String name) throws WdkModelException {
-	if (attributesQueryMap.containsKey(name) 
-	    || textAttributeMap.containsKey(name)) {
-	    throw new WdkModelException("Record " + getName() + 
-				" already has a attribute named " + name);
-	}
+        if (attributesQueryMap.containsKey(name) 
+                || textAttributeMap.containsKey(name)) {
+            throw new WdkModelException("Record " + getName() + 
+                    " already has a attribute named " + name);
+        }
     }
-
-    protected void checkQueryParams(Query query, String queryType) throws WdkUserException {
-
-	String s = "The " + queryType + " " + query.getName() + 
-	    " contained in Record " + getName();
-	Param[] params = query.getParams();
-	if (params.length != 1 || !params[0].getName().equals("primaryKey")) 
-	    throw new WdkUserException(s + " must have only one param, and it must be named 'primaryKey'");
+    
+    protected void checkQueryParams(Query query, String queryType) throws WdkModelException {
+        
+        String s = "The " + queryType + " " + query.getName() + 
+        " contained in Record " + getName();
+        Param[] params = query.getParams();
+        if (params.length != 1 || !params[0].getName().equals("primaryKey")) 
+            throw new WdkModelException(s + " must have only one param, and it must be named 'primaryKey'");
     }
-
+    
     protected Query getAttributesQuery(String attributeName) throws WdkModelException {
-	Query query = (Query)attributesQueryMap.get(attributeName);
-	if (query == null) {
-	    throw new WdkModelException("Record " + getName() + 
-				" does not have a attribute with name '" +
-				attributeName + "'");
-	}
-	return query;
+        Query query = (Query)attributesQueryMap.get(attributeName);
+        if (query == null) {
+            logger.severe("can't find attribute called "+attributeName+". Have got "+attributesQueryMap.keySet());
+            throw new WdkModelException("Record " + getName() + 
+                    " doesn't have an attribute with name '" +
+                    attributeName + "'");
+        }
+        return query;
     }
-
+    
     protected Query getTableQuery(String tableQueryName) throws WdkModelException {
-	Query query = (Query)tableQueryMap.get(tableQueryName);
-	if (query == null) {
-	    throw new WdkModelException("Record " + getName() + 
-				" does not have a tableQuery with name '" +
-				tableQueryName + "'");
-	}
-	return query;
+        Query query = (Query)tableQueryMap.get(tableQueryName);
+        if (query == null) {
+            throw new WdkModelException("Record " + getName() + 
+                    " does not have a tableQuery with name '" +
+                    tableQueryName + "'");
+        }
+        return query;
     }
-
+    
     protected String getTextAttribute(String textAttributeName) throws WdkModelException {
-	String text = (String)textAttributeMap.get(textAttributeName);
-	if (text == null) {
-	    throw new WdkModelException("Record " + getName() + 
-				" does not have a text attribute with name '" +
-				textAttributeName + "'");
-	}
-	return text;
+        String text = (String)textAttributeMap.get(textAttributeName);
+        if (text == null) {
+            throw new WdkModelException("Record " + getName() + 
+                    " does not have a text attribute with name '" +
+                    textAttributeName + "'");
+        }
+        return text;
+    }
+    
+    protected boolean isTextAttribute(String attributeName) {
+        return textAttributeMap.containsKey(attributeName);
+    }
+    
+    public Reference getReference() {
+        return reference;
     }
 
-    protected boolean isTextAttribute(String attributeName) {
-	return textAttributeMap.containsKey(attributeName);
+    /**
+     * @return
+     */
+    public List getSummaryColumnNames() {
+        return null;
     }
 }
