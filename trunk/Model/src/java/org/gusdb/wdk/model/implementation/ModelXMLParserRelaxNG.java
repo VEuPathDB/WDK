@@ -62,27 +62,6 @@ public class ModelXMLParserRelaxNG {
             vd.loadSchema(ValidationDriver.fileInputSource(schemaFile));
             
             return vd.validate(ValidationDriver.fileInputSource(modelXMLFile));
-                
-  //          Schema schema = factory.compileSchema(schemaFile); /* compile schema */
-//            Digester digester = configureDigester(null);
-//            
-//            System.err.println("digester is "+digester);
-//            
-//            Verifier verifier = schema.newVerifier();
-//            VerifierFilter filter = verifier.getVerifierFilter();
-//
-//            
-//            filter.setContentHandler( digester );
-//
-//            filter.parse(new InputSource(modelXMLFile.getAbsolutePath()));
-
-           
-////          wrap it into a JAXP
-//            SAXParserFactory parserFactory = new ValidatingSAXParserFactory(schema);
-//
-////          create a new XMLReader from it
-//         parserFactory.setNamespaceAware(true);
-//         XMLReader reader = parserFactory.newSAXParser().getXMLReader();
             
         } catch (VerifierConfigurationException e) {
             // TODO Auto-generated catch block
@@ -94,9 +73,7 @@ public class ModelXMLParserRelaxNG {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        
-        
-        // TODO - should check!
+
         return false;
     }
     
