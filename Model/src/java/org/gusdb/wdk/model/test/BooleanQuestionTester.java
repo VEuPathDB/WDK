@@ -1,5 +1,8 @@
 package org.gusdb.wdk.model.test;
 
+import org.gusdb.wdk.model.RecordClass;
+import org.gusdb.wdk.model.RecordClassSet;
+
 import org.gusdb.wdk.model.Query;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.Answer;
@@ -101,6 +104,7 @@ public class BooleanQuestionTester {
 		pageCount++;
 	    }
 	    
+
 	}
 	catch (WdkUserException e) {
             System.err.println(e.formatErrors());

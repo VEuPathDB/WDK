@@ -42,6 +42,10 @@ public class RecordClassSet implements ModelSetI {
 	return recordClasses;
     }
 
+    boolean hasRecordClass(RecordClass recordClass){
+	return recordClassSet.containsKey(recordClass.getName());
+    }
+
     public void addRecordClass(RecordClass recordClass) throws WdkModelException {
         if (recordClassSet.get(recordClass.getName()) != null) 
             throw new WdkModelException("RecordClass named " 
@@ -74,13 +78,15 @@ public class RecordClassSet implements ModelSetI {
 	   recordClass.resolveReferences(model);
        }
     }
-
+    
     public void setResources(WdkModel model) throws WdkModelException {
-       Iterator recordClassIterator = recordClassSet.values().iterator();
-       while (recordClassIterator.hasNext()) {
+	Iterator recordClassIterator = recordClassSet.values().iterator();
+	while (recordClassIterator.hasNext()) {
 	   RecordClass recordClass = (RecordClass)recordClassIterator.next();
 	   recordClass.setFullName(this.getName());
-       }
+	}
     }
+ 
+	   
 
 }

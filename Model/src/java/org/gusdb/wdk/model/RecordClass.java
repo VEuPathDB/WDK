@@ -3,6 +3,7 @@ package org.gusdb.wdk.model;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,7 @@ public class RecordClass {
     private String type;
     private String idPrefix;
     private String fullName;
+    private HashMap questions = new HashMap();
 
     public RecordClass() {
 	// make sure these keys are at the front of the list
@@ -83,6 +85,10 @@ public class RecordClass {
 			       linkAttributeField);	    
 	fieldsMap.put(linkAttributeField.getName(), linkAttributeField);	    
     }
+
+    public void addQuestion(Question q){
+	questions.put(q.getFullName(), q);
+    }
     
     //////////////////////////////////////////////////////////////
     // public getters
@@ -119,7 +125,22 @@ public class RecordClass {
     public FieldI getField(String fieldName) {
 	return (FieldI) fieldsMap.get(fieldName);
     }
-    
+
+    /**
+     * @return all Questions in the current model that are using this record class as their return type.
+     */
+    public Question[] getQuestions(){
+	Iterator it = questions.values().iterator();
+	
+	Question[] returnedQuestions = new Question[questions.size()];
+	int i = 0;
+	while (it.hasNext()){
+	    Question nextQuestion = (Question)it.next();
+	    returnedQuestions[i] = nextQuestion;
+	    i++;
+	}
+	return returnedQuestions;
+    }    
     /**
      * @return
      */

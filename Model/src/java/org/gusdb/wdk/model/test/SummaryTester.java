@@ -4,6 +4,8 @@ import org.gusdb.wdk.model.Query;
 import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.Answer;
+import org.gusdb.wdk.model.RecordClass;
+import org.gusdb.wdk.model.RecordClassSet;
 import org.gusdb.wdk.model.QuestionSet;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkUserException;
@@ -81,6 +83,8 @@ public class SummaryTester {
 		    //		    si.print();
 		    pageCount++;
 		}
+		
+		
 	    }
 	    else {
 		usage(cmdName, options);

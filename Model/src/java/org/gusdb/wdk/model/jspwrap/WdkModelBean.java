@@ -4,8 +4,12 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.QuestionSet;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.RecordClassSet;
+import org.gusdb.wdk.model.RecordClass;
+
 
 import java.util.Map;
+import java.util.Vector;
 import java.util.LinkedHashMap;
 import java.util.Iterator;
 
@@ -71,6 +75,28 @@ public class WdkModelBean {
 	    qSetBeans[i++] = qSetBean;
 	}
 	return qSetBeans;
+    }
+
+    public RecordClassBean[] getRecordClasses() {
+	
+	Vector recordClassBeans = new Vector();
+	RecordClassSet sets[] = model.getAllRecordClassSets();
+	for (int i = 0; i < sets.length; i++){
+	    RecordClassSet nextSet = sets[i];
+	    RecordClass recordClasses[] = nextSet.getRecordClasses();
+	    for (int j = 0; j < recordClasses.length; j++){
+		RecordClass nextClass = recordClasses[j];
+		RecordClassBean bean = new RecordClassBean(nextClass);
+		recordClassBeans.addElement(bean);
+	    }
+	}
+	
+	RecordClassBean[] returnedBeans = new RecordClassBean[recordClassBeans.size()];
+	for (int i = 0; i < recordClassBeans.size(); i++){
+	    RecordClassBean nextReturnedBean = (RecordClassBean)recordClassBeans.elementAt(i);
+	    returnedBeans[i] = nextReturnedBean;
+	}
+	return returnedBeans;
     }
 
 }

@@ -92,7 +92,10 @@ public class QuestionSet implements ModelSetI {
 	while (questionIterator.hasNext()){
 	    Question question = (Question)questionIterator.next();
 	    question.setQuestionSet(this);
+	    RecordClass rc = question.getRecordClass();
+	    rc.addQuestion(question);
 	}
+	
     }
 
     public String toString() {
