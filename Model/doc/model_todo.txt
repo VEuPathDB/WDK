@@ -1,5 +1,19 @@
 To Do
 
+NEW
+
+ - update tutorial (include wdkCache)
+
+ - SqlEnumParam not working?
+
+ - document that the queries may be in a "create table as" context
+
+ - wdkQuery: if -querySet or -query omitted, list the available query sets and queries
+
+
+
+SORTED AND PRIORITIZED
+
 General
 
  - exceptions.  define two classes. QueryParamException, ModelDefinitionException.
