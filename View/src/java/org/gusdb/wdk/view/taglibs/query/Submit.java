@@ -4,6 +4,9 @@ import java.io.IOException;
 
 import javax.servlet.jsp.tagext.SimpleTagSupport;
 
+/**
+ * Custom tag that simply wraps the HTML submit tag
+ */
 public class Submit extends SimpleTagSupport {
     
     public void doTag() throws IOException {

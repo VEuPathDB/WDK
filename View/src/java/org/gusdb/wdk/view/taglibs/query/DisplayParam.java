@@ -18,6 +18,9 @@ import javax.servlet.jsp.JspWriter;
 import javax.servlet.jsp.PageContext;
 import javax.servlet.jsp.tagext.SimpleTagSupport;
 
+/**
+ * Custom tag that displays the param of a query by delegating to a renderer
+ */
 public class DisplayParam extends SimpleTagSupport {
 
     private Param param;
