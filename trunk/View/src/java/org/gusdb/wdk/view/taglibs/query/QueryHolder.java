@@ -1,11 +1,11 @@
 package org.gusdb.gus.wdk.view.taglibs.query;
 
+import org.gusdb.gus.wdk.controller.WdkModelExtra;
 import org.gusdb.gus.wdk.model.Query;
 import org.gusdb.gus.wdk.model.QueryInstance;
-import org.gusdb.gus.wdk.model.RecordList;
+import org.gusdb.gus.wdk.model.Summary;
 import org.gusdb.gus.wdk.model.WdkModel;
 import org.gusdb.gus.wdk.model.implementation.NullQueryInstance;
-import org.gusdb.gus.wdk.view.QueryRecordGroupMgr;
 
 import java.io.*;
 import java.util.Enumeration;
@@ -94,7 +94,7 @@ public class QueryHolder extends SimpleTagSupport {
             if ( initRecordList != null) {
                 WdkModel wm = (WdkModel) getJspContext().getAttribute("wdk.wdkModel", PageContext.APPLICATION_SCOPE);
 
-                RecordList rl = QueryRecordGroupMgr.getRecordList(wm, initRecordList);
+                Summary rl = WdkModelExtra.getSummary(wm, initRecordList);
                 Query sq = rl.getQuery();
             	sqii = sq.makeInstance();
             }
