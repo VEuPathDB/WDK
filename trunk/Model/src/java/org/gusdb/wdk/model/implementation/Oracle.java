@@ -3,6 +3,7 @@ package org.gusdb.gus.wdk.model.implementation;
 import org.gusdb.gus.wdk.model.RDBMSPlatformI;
 
 import java.sql.SQLException;
+import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 
@@ -14,7 +15,9 @@ import javax.sql.DataSource;
  */
 public class Oracle implements RDBMSPlatformI {
     
-    DataSource dataSource;
+    private static final Logger logger = Logger.getLogger("org.gusdb.gus.wdk.model.implementation.Oracle");
+    
+    private DataSource dataSource;
 
     public Oracle() {}
 
@@ -31,9 +34,11 @@ public class Oracle implements RDBMSPlatformI {
     }
 
     public String getNextId(String schemaName, String tableName) throws SQLException  {
-	String sql = "select " + schemaName + "." + tableName + 
-	    "_pkseq.nextval from dual";
-	return SqlUtils.runStringQuery(dataSource, sql);
+        String sql = "select " + schemaName + "." + tableName + 
+        "_pkseq.nextval from dual";
+        String nextId = SqlUtils.runStringQuery(dataSource, sql);
+        logger.finest("getNextId is: "+nextId+" after running "+sql);
+        return nextId;
     }
 
     public String cleanStringValue(String val) {
