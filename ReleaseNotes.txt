@@ -27,9 +27,18 @@ Model - Features
 
   * new wdkBooleanQuestion command to exercise BooleanQuestions
 
+  * the model configuration files now must conform to a pattern.  They must
+    be found in $GUS_HOME/config.  And their name must be based on a
+    model name prefix.  The prefix can be whatever you decide.  Here is 
+    the pattern:
+         $GUS_HOME/config/model_name_prefix.xml          (the Model XML file)
+         $GUS_HOME/config/model_name_prefix.prop         (the property file)
+         $GUS_HOME/config/model_name_prefix-config.xml   (the config file)
+         $GUS_HOME/config/ model_name_prefix-sanity.xml  (the sanity test file)
+
   * the command line tools (wdkXml, wdkQuery, wdkSummary, wdkRecord and
     wdkSanityTest) have had their command line arguments significantly
-    simplified
+    simplified (by taking advantage of the config files pattern)
 
 
 Controller - Features
