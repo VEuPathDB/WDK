@@ -34,7 +34,6 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
@@ -261,6 +260,7 @@ public class QueryTester {
 	    System.exit(1);
         } 
     }
+    
     private static void addOption(Options options, String argName, String desc) {
         
         Option option = new Option(argName, true, desc);
