@@ -47,4 +47,6 @@
     </action>
   </action-mappings>
 
+  <message-resources parameter="org.gusdb.wdk.view.DefaultViewResources" null="false"/>
+
 </struts-config>
