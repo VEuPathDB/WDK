@@ -573,7 +573,7 @@ public class ResultFactory {
 	String newline = System.getProperty( "line.separator" );
 	String cmdlineSyntax = 
 	    cmdName + 
-	    " -configFile config_file" +
+	    " -configFile config_file -noSchemaOutput!" +
 	    " -new|-reset|-drop";
 
 	String header = 
