@@ -16,11 +16,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.jspwrap.EnumParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.AnswerBean;
-import org.gusdb.wdk.model.jspwrap.BooleanQuestionLeafBean;
+import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
 
 /**
  * This Action is called by the ActionServlet when a WDK question is asked.
@@ -49,7 +51,24 @@ public class ShowSummaryAction extends Action {
 	    System.err.println("*** debug params: (k, v) = " + paramName + ", " + paramVal);
 	}
 	
+	AnswerBean wdkAnswer = summaryPaging(request, wdkQuestion, params);
+
+	request.setAttribute(CConstants.WDK_ANSWER_KEY, wdkAnswer);
 	
+	ActionForward forward = mapping.findForward(CConstants.SHOW_SUMMARY_MAPKEY);
+	return forward;
+    }
+
+    
+    protected AnswerBean booleanAnswerPaging(HttpServletRequest request, Object answerMaker)
+	throws WdkModelException, WdkUserException
+    {
+	return summaryPaging(request, answerMaker, null);
+    }
+
+    private AnswerBean summaryPaging (HttpServletRequest request, Object answerMaker, Map params)
+	throws WdkModelException, WdkUserException
+    {
 	int start = 1;
 	if (request.getParameter("pager.offset") != null) {
 	    start = Integer.parseInt(request.getParameter("pager.offset"));
@@ -59,13 +78,20 @@ public class ShowSummaryAction extends Action {
 	if (request.getParameter("pageSize") != null) {
 	    start = Integer.parseInt(request.getParameter("pageSize"));
 	}
+
 	if (start <1) { start = 1; } 
-	int end = start + pageSize-1;
-	
-	AnswerBean wdkAnswer = wdkQuestion.makeAnswer(params, start, end);
-	
+	int end = start + pageSize-1;	
+
+	AnswerBean wdkAnswer = null;
+	if (answerMaker instanceof org.gusdb.wdk.model.jspwrap.QuestionBean) {
+	    wdkAnswer = ((QuestionBean)answerMaker).makeAnswer(params, start, end);
+	} else if (answerMaker instanceof org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean) {
+	    wdkAnswer = ((BooleanQuestionNodeBean)answerMaker).makeAnswer(start, end);
+	} else {
+	    throw new RuntimeException("unexpected answerMaker: " + answerMaker);
+	}
 	int totalSize = wdkAnswer.getResultSize();
-	
+
 	if (end > totalSize) { end = totalSize; }
 	
 	String uriString = request.getRequestURI();
@@ -83,11 +109,7 @@ public class ShowSummaryAction extends Action {
 	request.setAttribute("wdk_paging_end", new Integer(end));
 	request.setAttribute("wdk_paging_url", uriString);
 	request.setAttribute("wdk_paging_params", editedParamNames);
-	
-	request.setAttribute(CConstants.WDK_ANSWER_KEY, wdkAnswer);
-	
-	ActionForward forward = mapping.findForward(CConstants.SHOW_SUMMARY_MAPKEY);
-	return forward;
+	return wdkAnswer;
     }
 }
 
