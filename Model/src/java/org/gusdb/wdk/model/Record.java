@@ -248,6 +248,23 @@ public class Record {
      * @return
      */
     public List getSummaryColumnNames() {
-        return null;
+        return summaryColumnNames;
+    }
+
+    /**
+     * @param name2
+     * @return
+     * @throws 
+     */
+    public String getDisplayName(String attributeName) {
+        Query q = (Query) attributesQueryMap.get(attributeName);
+        try {
+            Column c = q.getColumn(attributeName);
+            return c.getDisplayName();
+        }
+        catch (WdkModelException exp) {
+            logger.severe("Can't get displayName for "+attributeName+" in "+q.getName());
+        }
+        return attributeName;
     }
 }
