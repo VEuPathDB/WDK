@@ -94,33 +94,37 @@ public class ModelMaker {
     return this.wdkModel;
   }
 
-  public static WdkModel makeModelInstance(String modelXmlFile, 
-				     String modelPropFile, 
-				     String modelCfgFile, 
-				     String schemaFile) 
+  public static WdkModel makeModelInstance(File modelXmlFile, 
+					   File modelPropFile, 
+					   File modelCfgFile, 
+					   File schemaFile) 
   {
-    WdkModel model =  ModelXmlParser.parseXmlFile(modelXmlFile.toURL(), modelPropFile.toURL(), schemaFile.toURL()) ;
+    try{
+      WdkModel model =  ModelXmlParser.parseXmlFile(modelXmlFile.toURL(), modelPropFile.toURL(), schemaFile.toURL()) ;
+      ModelConfig modelConfig = 
+	ModelConfigParser.parseXmlFile(modelCfgFile);
+      String connectionUrl = modelConfig.getConnectionUrl();
+      String login = modelConfig.getLogin();
+      String password = modelConfig.getPassword();
+      String platformClass = modelConfig.getPlatformClass();
+      RDBMSPlatformI platform = 
+	(RDBMSPlatformI)Class.forName(platformClass).newInstance();
+      DataSource dataSource = 
+	setupDataSource(connectionUrl,login, password);
+      platform.setDataSource(dataSource);
+      String instanceTable = modelConfig.getQueryInstanceTable();
+      ResultFactory resultFactory = new ResultFactory(dataSource, platform, 
+						      login, instanceTable);
     
-    
-    ModelConfig modelConfig = 
-      ModelConfigParser.parseXmlFile(modelConfigXmlFile);
-    String connectionUrl = modelConfig.getConnectionUrl();
-    String login = modelConfig.getLogin();
-    String password = modelConfig.getPassword();
-    String platformClass = modelConfig.getPlatformClass();
-    RDBMSPlatformI platform = 
-      (RDBMSPlatformI)Class.forName(platformClass).newInstance();
-    DataSource dataSource = 
-      setupDataSource(connectionUrl,login, password);
-    platform.setDataSource(dataSource);
-    String instanceTable = modelConfig.getQueryInstanceTable();
-    ResultFactory resultFactory = new ResultFactory(dataSource, platform, 
-						    login, instanceTable);
-    
-    model.setResources(resultFactory, platform);
-    return model;
+      model.setResources(resultFactory, platform);
+      return model;
+    } catch (Exception e) {
+      e.printStackTrace();
+      System.exit(1);
+    } 
+    return null;
   }
-    
+  
   /**
    * Initializes the WdkModel if all required files are present
    *
