@@ -46,10 +46,10 @@ public class SummaryInstance {
 	this.summary = summary;
 	this.listIdQueryInstance = queryInstance;
 	this.currentRecordInstanceCounter = 0;
-	this.startRow = startRow;
-	this.endRow = endRow;   
-	listIdQueryInstance.setValues(paramValues);
-	initRecordInstances();
+    this.startRow = startRow;
+    this.endRow = endRow;   
+    listIdQueryInstance.setValues(paramValues);
+    initRecordInstances();
     }
 
     // ------------------------------------------------------------------
@@ -61,10 +61,10 @@ public class SummaryInstance {
     }
 
     public int size(){
-	if (recordInstances != null){
-	    return recordInstances.length;
-	}
-	else return 0;
+        if (recordInstances != null) {
+            return recordInstances.length;
+        }
+        return 0;
     }
     
     public int getTotalLength() throws WdkModelException{
@@ -147,8 +147,7 @@ public class SummaryInstance {
 	    initRecordInstances();
 	}
 	for (int i = 0; i < recordInstances.length; i++){
-	    
-	    logger.finer(recordInstances[i].print());
+	    System.out.println(recordInstances[i].print());
 	}
     }
 
@@ -206,7 +205,6 @@ public class SummaryInstance {
 		tempRecordInstances.add(nextRecordInstance);
 	    }
 	}        
-	System.err.println("SummaryInstance: creating new RI array with " + tempRecordInstances.size() + " entries");
 	recordInstances = new RecordInstance[tempRecordInstances.size()];
 	tempRecordInstances.copyInto(recordInstances);
 	rl.close();
