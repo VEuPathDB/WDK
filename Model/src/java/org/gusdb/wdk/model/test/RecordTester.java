@@ -107,18 +107,18 @@ private static void addOption(Options options, String argName, String desc) {
 
 	// config file
 	addOption(options, "configFile", "An .xml file that specifies a ModelConfig object.");
-    // model file
-    addOption(options, "modelXmlFile", "An .xml file that specifies WDK Model.");
-    // model prop file
-    addOption(options, "modelPropFile", "A .prop file that specifies key=value pairs to substitute into the model file.");
-
-    // record set name
-    addOption(options, "recordSetName", "The name of the record set in which to find the record");
-    // record name
-    addOption(options, "recordName", "The name of the record to print.");
-    // primary key
-    addOption(options, "primaryKey", "The primary key of the record to find.");
-
+	// model file
+	addOption(options, "modelXmlFile", "An .xml file that specifies WDK Model.");
+	// model prop file
+	addOption(options, "modelPropFile", "A .prop file that specifies key=value pairs to substitute into the model file.");
+	
+	// record set name
+	addOption(options, "recordSetName", "The name of the record set in which to find the record");
+	// record name
+	addOption(options, "recordName", "The name of the record to print.");
+	// primary key
+	addOption(options, "primaryKey", "The primary key of the record to find.");
+	
 	return options;
     }
 

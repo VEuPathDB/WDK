@@ -134,7 +134,8 @@ public class SummaryTester {
 	Options options = new Options();
 
 	// config file
-	addOption(options, "configFile", "An .xml file that specifies a ModelConfig object.");
+	addOption(options, "configFile", "the model config .xml file");
+
 	// model file
 	addOption(options, "modelXmlFile", "An .xml file that specifies WDK Model.");
 	// model prop file

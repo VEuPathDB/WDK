@@ -252,18 +252,19 @@ public class QueryTester {
     static Options declareOptions() {
 	Options options = new Options();
 
-    // config file
-    addOption(options, "configFile", "An .xml file that specifies a ModelConfig object.");
-    // model file
-    addOption(options, "modelXmlFile", "An .xml file that specifies WDK Model.");
-    // model prop file
-    addOption(options, "modelPropFile", "A .prop file that specifies key=value pairs to substitute into the model file.");
+	// config file
+	addOption(options, "configFile", "the model config .xml file");
 
-    // record set name
-    addOption(options, "querySetName", "The name of the query set in which to find the query");
-    // record name
-    addOption(options, "queryName", "The name of the query to run.");
-
+	// model file
+	addOption(options, "modelXmlFile", "An .xml file that specifies WDK Model.");
+	// model prop file
+	addOption(options, "modelPropFile", "A .prop file that specifies key=value pairs to substitute into the model file.");
+	
+	// record set name
+	addOption(options, "querySetName", "The name of the query set in which to find the query");
+	// record name
+	addOption(options, "queryName", "The name of the query to run.");
+	
 	// use cache
 	Option useCache = new Option("dontCache","Do not use the cache for this query (even if it is cache enabled).");
 	options.addOption(useCache);

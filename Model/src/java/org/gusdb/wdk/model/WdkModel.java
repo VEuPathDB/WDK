@@ -2,6 +2,7 @@ package org.gusdb.gus.wdk.model;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import org.w3c.dom.Document;
 
 public class WdkModel {
 
@@ -15,6 +16,7 @@ public class WdkModel {
     HashMap allModelSets = new HashMap();
     String name;
     ResultFactory resultFactory;
+    Document document;
 
     public WdkModel() {
     }
@@ -25,6 +27,14 @@ public class WdkModel {
 
     public void setName(String name) {
 	this.name = name;
+    }
+
+    public void setDocument(Document document) {
+	this.document = document;
+    }
+
+    public Document getDocument() {
+	return document;
     }
 
     //Record Sets

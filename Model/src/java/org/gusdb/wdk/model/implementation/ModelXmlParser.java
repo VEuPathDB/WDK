@@ -1,16 +1,19 @@
 package org.gusdb.gus.wdk.model.implementation;
 
 import org.gusdb.gus.wdk.model.Column;
+import org.gusdb.gus.wdk.model.Param;
+import org.gusdb.gus.wdk.model.ParamSet;
+import org.gusdb.gus.wdk.model.Query;
 import org.gusdb.gus.wdk.model.Record;
 import org.gusdb.gus.wdk.model.RecordSet;
 import org.gusdb.gus.wdk.model.Reference;
 import org.gusdb.gus.wdk.model.QuerySet;
-import org.gusdb.gus.wdk.model.Param;
-import org.gusdb.gus.wdk.model.ParamSet;
+import org.gusdb.gus.wdk.model.FlatCVParam;
+import org.gusdb.gus.wdk.model.StringParam;
 import org.gusdb.gus.wdk.model.TextField;
 import org.gusdb.gus.wdk.model.WdkModel;
 import org.gusdb.gus.wdk.model.ReferenceList;
-import org.gusdb.gus.wdk.model.Query;
+import org.gusdb.gus.wdk.model.TextColumn;
 import org.gusdb.gus.wdk.model.SummarySet;
 import org.gusdb.gus.wdk.model.Summary;
 import org.gusdb.gus.wdk.model.WdkModelException;
@@ -27,8 +30,24 @@ import java.io.FileInputStream;
 import java.io.BufferedReader;
 import java.io.FileReader;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.apache.commons.digester.Digester;
+import org.iso_relax.verifier.VerifierConfigurationException;
+import org.iso_relax.verifier.VerifierFactory;
+import org.w3c.dom.Document;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+import org.xml.sax.InputSource;
+
+import com.thaiopensource.util.PropertyMap;
+import com.thaiopensource.util.SinglePropertyMap;
+import com.thaiopensource.validate.ValidateProperty;
+import com.thaiopensource.validate.ValidationDriver;
+import com.thaiopensource.xml.sax.ErrorHandlerImpl;
 
 public class ModelXmlParser {
 
@@ -36,8 +55,36 @@ public class ModelXmlParser {
 	return parseXmlFile(modelXmlFile, null);
     }
 
-    public static WdkModel parseXmlFile(File modelXmlFile, File modelPropFile) throws org.xml.sax.SAXException, WdkModelException {
+    public static WdkModel parseXmlFile(File modelXmlFile, File modelPropFile)
+            throws SAXException, WdkModelException {
+
+	InputStream modelXmlStream = makeModelXmlStream(modelXmlFile, modelPropFile);
 	
+        if (!validModelFile(modelXmlStream)) {
+            throw new WdkModelException("Model validation failed");
+        }
+
+        Digester digester = configureDigester();
+	WdkModel model = null;
+	modelXmlStream = makeModelXmlStream(modelXmlFile, modelPropFile);
+	try {
+	    model = (WdkModel)digester.parse(modelXmlStream);
+	} catch (IOException e) {
+	    throw new WdkModelException(e);
+	}
+	model.resolveReferences();
+	try {
+	    modelXmlStream = makeModelXmlStream(modelXmlFile, modelPropFile);
+	    model.setDocument(buildDocument(modelXmlStream));
+	} catch (IOException e) {
+	    throw new WdkModelException(e);
+	} catch (ParserConfigurationException e) {
+	    throw new WdkModelException(e);
+	}
+	return model;
+    }
+
+    private static InputStream makeModelXmlStream(File modelXmlFile, File modelPropFile) throws WdkModelException {
 	InputStream modelXmlStream;
 	
 	if (modelPropFile != null) {
@@ -49,144 +96,220 @@ public class ModelXmlParser {
 		throw new WdkModelException(e);
 	    }
 	}
-
-	Digester digester = configureDigester();
-	WdkModel model = null;
-	try {
-	    model = (WdkModel)digester.parse(modelXmlStream);
-	} catch (IOException e) {
-	    throw new WdkModelException(e);
-	}
-	model.resolveReferences();
-	return model;
+	return modelXmlStream;
     }
 
-    static Digester configureDigester() {
+    public static Document buildDocument(InputStream modelXMLStream) throws ParserConfigurationException, SAXException, IOException {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        // Turn on validation, and turn off namespaces
+        factory.setValidating(false);
+        factory.setNamespaceAware(false);
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        ErrorHandler errorHandler = new ErrorHandlerImpl(System.err);
+        //builder.setErrorHandler(errorHandler);
+        builder.setErrorHandler(
+                new org.xml.sax.ErrorHandler() {
+                  // ignore fatal errors (an exception is guaranteed)
+                  public void fatalError(SAXParseException exception)
+                  throws SAXException {
+                      exception.printStackTrace(System.err);
+                  }
+                  // treat validation errors as fatal
+                  public void error(SAXParseException e)
+                  throws SAXParseException
+                  {
+                      e.printStackTrace(System.err);
+                    throw e;
+                  }
 
-	Digester digester = new Digester();
-	digester.setValidating(true);
-	digester.setNamespaceAware(true);
-	digester.setSchemaLanguage("http://www.w3.org/2001/XMLSchema");
-	digester.setSchema(System.getProperty("schemaFile"));
-	digester.setErrorHandler(new ParserErrorHandler());
-
-	//Root -- WDK Model
-
-	digester.addObjectCreate( "wdkModel", WdkModel.class );
-	digester.addSetProperties( "wdkModel");
-
-
-	
-	//RecordSet
-
-	/**/ digester.addObjectCreate( "wdkModel/recordSet", RecordSet.class );
-
-	/**/ digester.addSetProperties( "wdkModel/recordSet");
-	
-	/*  */ digester.addObjectCreate( "wdkModel/recordSet/record", Record.class );
-
-	/*  */ digester.addSetProperties( "wdkModel/recordSet/record");
-
-	/*    */ digester.addObjectCreate( "wdkModel/recordSet/record/fieldsQuery", Reference.class );
-
-	/*    */ digester.addSetProperties( "wdkModel/recordSet/record/fieldsQuery");
-
-	/*    */ digester.addSetNext( "wdkModel/recordSet/record/fieldsQuery", "addFieldsQueryRef" );
-
-	/*    */ digester.addObjectCreate( "wdkModel/recordSet/record/tableQuery", Reference.class );
-
-	/*    */ digester.addSetProperties( "wdkModel/recordSet/record/tableQuery");
-
-	/*    */ digester.addSetNext( "wdkModel/recordSet/record/tableQuery", "addTableQueryRef" );
-
-	/*    */ digester.addObjectCreate( "wdkModel/recordSet/record/textField", TextField.class );
-
-	/*    */ digester.addSetProperties( "wdkModel/recordSet/record/textField");
-
-	/*      */ digester.addBeanPropertySetter( "wdkModel/recordSet/record/textField/text");
-
-	/*    */ digester.addSetNext( "wdkModel/recordSet/record/textField", "addTextField" );
-
-	/*  */ digester.addSetNext( "wdkModel/recordSet/record", "addRecord" );
-
-	/**/ digester.addSetNext( "wdkModel/recordSet", "addRecordSet" );
+                   // dump warnings too
+                  public void warning(SAXParseException err)
+                  throws SAXParseException
+                  {
+                    System.err.println("** Warning"
+                      + ", line " + err.getLineNumber()
+                      + ", uri " + err.getSystemId());
+                    System.err.println("   " + err.getMessage());
+                  }
+                }
+              );  
+        
+        Document doc = builder.parse(modelXMLStream);
+        
+	return doc;
+    }
 
 
-	//QuerySet
 
-	/**/ digester.addObjectCreate( "wdkModel/querySet", QuerySet.class );
+    private static boolean validModelFile(InputStream modelXMLStream) {
 
-	/**/ digester.addSetProperties( "wdkModel/querySet");
-	
-	/*  */ digester.addObjectCreate( "wdkModel/querySet/query", "xsi:type", Query.class );
+	File schemaFile = new File(System.getProperty("schemaFile"));
 
-	/*  */ digester.addSetProperties( "wdkModel/querySet/query");
+        System.setProperty("org.apache.xerces.xni.parser.XMLParserConfiguration", "org.apache.xerces.parsers.XIncludeParserConfiguration"); 
+        
+        VerifierFactory factory = null;
+        try {
+            factory = VerifierFactory.newInstance("http://relaxng.org/ns/structure/1.0");
 
-	/*  */ digester.addBeanPropertySetter( "wdkModel/querySet/query/sql");
+            ErrorHandler errorHandler = new ErrorHandlerImpl(System.err);
+            PropertyMap schemaProperties = new SinglePropertyMap(ValidateProperty.ERROR_HANDLER, errorHandler);
+            ValidationDriver vd = new ValidationDriver(schemaProperties, PropertyMap.EMPTY, null);
+            
+            vd.loadSchema(ValidationDriver.fileInputSource(schemaFile));
+	    
+            
 
-	/*    */ digester.addObjectCreate( "wdkModel/querySet/query/paramRef", Reference.class );
+            return vd.validate(new InputSource(modelXMLStream));
+            
+        } catch (VerifierConfigurationException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (SAXException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 
-	/*    */ digester.addSetProperties( "wdkModel/querySet/query/paramRef");
+        return false;
+    }
+    
+    private static Digester configureDigester() {
 
-	/*    */ digester.addSetNext( "wdkModel/querySet/query/paramRef", "addParamRef" );
+        Digester digester = new Digester();
+        digester.setValidating(false);
 
-	/*    */ digester.addObjectCreate( "wdkModel/querySet/query/column", "xsi:type", Column.class );
-
-	/*    */ digester.addSetProperties( "wdkModel/querySet/query/column");
-
-	/*    */ digester.addSetNext( "wdkModel/querySet/query/column", "addColumn" );
-
-	/*  */ digester.addSetNext( "wdkModel/querySet/query", "addQuery" );
-
-	/**/ digester.addSetNext( "wdkModel/querySet", "addQuerySet" );
-
-
-	//ParamSet
-
-	/**/ digester.addObjectCreate( "wdkModel/paramSet", ParamSet.class );
-
-	/**/ digester.addSetProperties( "wdkModel/paramSet");
-	
-	/*  */ digester.addObjectCreate( "wdkModel/paramSet/param", "xsi:type", Param.class );
-
-	/*  */ digester.addSetProperties( "wdkModel/paramSet/param");
-
-	/*  */ digester.addSetNext( "wdkModel/paramSet/param", "addParam" );
-
-	/**/ digester.addSetNext( "wdkModel/paramSet", "addParamSet" );
+        //Root -- WDK Model
+        
+        digester.addObjectCreate( "wdkModel", WdkModel.class );
+        digester.addSetProperties( "wdkModel");
 
 
-	//ReferenceList
-	
-	/**/ digester.addObjectCreate("wdkModel/referenceList", ReferenceList.class);
+        
+        //RecordSet
 
-	/**/ digester.addSetProperties("wdkModel/referenceList");
-	
-	/*  */ digester.addObjectCreate("wdkModel/referenceList/reference", Reference.class);
+        /**/ digester.addObjectCreate( "wdkModel/recordSet", RecordSet.class );
 
-	/*  */ digester.addSetProperties("wdkModel/referenceList/reference");
+        /**/ digester.addSetProperties( "wdkModel/recordSet");
+        
+        /*  */ digester.addObjectCreate( "wdkModel/recordSet/record", Record.class );
 
-	/*  */ digester.addSetNext("wdkModel/referenceList/reference", "addReference");
+        /*  */ digester.addSetProperties( "wdkModel/recordSet/record");
 
-	/**/ digester.addSetNext("wdkModel/referenceList", "addReferenceList");
+        /*    */ digester.addObjectCreate( "wdkModel/recordSet/record/attributeQuery", Reference.class );
 
-	//SummarySet
-	
-	/**/ digester.addObjectCreate("wdkModel/summarySet", SummarySet.class);
+        /*    */ digester.addSetProperties( "wdkModel/recordSet/record/attributeQuery");
 
-	/**/ digester.addSetProperties("wdkModel/summarySet");
+        /*    */ digester.addSetNext( "wdkModel/recordSet/record/attributeQuery", "addFieldsQueryRef" );
 
-	/*  */ digester.addObjectCreate("wdkModel/summarySet/summary", Summary.class);
+        /*    */ digester.addObjectCreate( "wdkModel/recordSet/record/tableQuery", Reference.class );
 
-	/*  */ digester.addSetProperties("wdkModel/summarySet/summary");
+        /*    */ digester.addSetProperties( "wdkModel/recordSet/record/tableQuery");
 
-	/*  */ digester.addSetNext("wdkModel/summarySet/summary", "addSummary");
+        /*    */ digester.addSetNext( "wdkModel/recordSet/record/tableQuery", "addTableQueryRef" );
+
+        /*    */ digester.addObjectCreate( "wdkModel/recordSet/record/textField", TextField.class );
+
+        /*    */ digester.addSetProperties( "wdkModel/recordSet/record/textField");
+
+        /*      */ digester.addBeanPropertySetter( "wdkModel/recordSet/record/textField/text");
+
+        /*    */ digester.addSetNext( "wdkModel/recordSet/record/textField", "addTextField" );
+
+        /*  */ digester.addSetNext( "wdkModel/recordSet/record", "addRecord" );
+
+        /**/ digester.addSetNext( "wdkModel/recordSet", "addRecordSet" );
+
+
+        //QuerySet
+
+        /**/ digester.addObjectCreate( "wdkModel/querySet", QuerySet.class );
+
+        /**/ digester.addSetProperties( "wdkModel/querySet");
+        
+        /*  */ digester.addObjectCreate( "wdkModel/querySet/sqlQuery", SqlQuery.class );
+
+        /*  */ digester.addSetProperties( "wdkModel/querySet/sqlQuery");
+
+	/*  */ digester.addBeanPropertySetter( "wdkModel/querySet/sqlQuery/sql");
+
+        /*    */ digester.addObjectCreate( "wdkModel/querySet/sqlQuery/paramRef", Reference.class );
+
+        /*    */ digester.addSetProperties( "wdkModel/querySet/sqlQuery/paramRef");
+
+        /*    */ digester.addSetNext( "wdkModel/querySet/sqlQuery/paramRef", "addParamRef" );
+
+        /*    */ digester.addObjectCreate( "wdkModel/querySet/sqlQuery/column", Column.class );
+
+        /*    */ digester.addSetProperties( "wdkModel/querySet/sqlQuery/column");
+
+        /*    */ digester.addSetNext( "wdkModel/querySet/sqlQuery/column", "addColumn" );
+
+        /*    */ digester.addObjectCreate( "wdkModel/querySet/sqlQuery/textColumn", TextColumn.class );
+
+        /*    */ digester.addSetProperties( "wdkModel/querySet/sqlQuery/textColumn");
+
+        /*    */ digester.addSetNext( "wdkModel/querySet/sqlQuery/textColumn", "addColumn" );
+
+        /*  */ digester.addSetNext( "wdkModel/querySet/sqlQuery", "addQuery" );
+
+        /**/ digester.addSetNext( "wdkModel/querySet", "addQuerySet" );
+
+
+        //ParamSet
+
+        /**/ digester.addObjectCreate( "wdkModel/paramSet", ParamSet.class );
+
+        /**/ digester.addSetProperties( "wdkModel/paramSet");
+        
+        /*  */ digester.addObjectCreate( "wdkModel/paramSet/stringParam", StringParam.class );
+
+        /*  */ digester.addSetProperties( "wdkModel/paramSet/stringParam");
+
+        /*  */ digester.addSetNext( "wdkModel/paramSet/stringParam", "addParam" );
+
+        /*  */ digester.addObjectCreate( "wdkModel/paramSet/flatCVParam", FlatCVParam.class );
+
+        /*  */ digester.addSetProperties( "wdkModel/paramSet/flatCVParam");
+
+        /*  */ digester.addSetNext( "wdkModel/paramSet/flatCVParam", "addParam" );
+        
+        /**/ digester.addSetNext( "wdkModel/paramSet", "addParamSet" );
+
+
+        //ReferenceList
+        
+        /**/ digester.addObjectCreate("wdkModel/referenceList", ReferenceList.class);
+
+        /**/ digester.addSetProperties("wdkModel/referenceList");
+        
+        /*  */ digester.addObjectCreate("wdkModel/referenceList/reference", Reference.class);
+
+        /*  */ digester.addSetProperties("wdkModel/referenceList/reference");
+
+        /*  */ digester.addSetNext("wdkModel/referenceList/reference", "addReference");
+
+        /**/ digester.addSetNext("wdkModel/referenceList", "addReferenceList");
+
+        //SummarySet
+        
+        /**/ digester.addObjectCreate("wdkModel/summarySet", SummarySet.class);
+
+        /**/ digester.addSetProperties("wdkModel/summarySet");
+
+        /*  */ digester.addObjectCreate("wdkModel/summarySet/summary", Summary.class);
+
+        /*  */ digester.addSetProperties("wdkModel/summarySet/summary");
+
+        /*  */ digester.addSetNext("wdkModel/summarySet/summary", "addSummary");
 
         /**/ digester.addSetNext("wdkModel/summarySet", "addSummarySet");
 
-	return digester;
+        return digester;
+
     }
-    
+
     /**
      * Substitute property values into model xml
      */
