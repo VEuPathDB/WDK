@@ -157,9 +157,10 @@ public class Question {
 	
 	this.query = (Query)model.resolveReference(queryTwoPartName, name, "question", "queryRef");
 	this.recordClass = (RecordClass)model.resolveReference(recordClassTwoPartName, name, "question", "recordClassRef");
+	Map attribFields = getRecordClass().getAttributeFields();
 
 	String[] summaryAttributeList;
-	//throw exception
+
 	if (summaryAttributesRef != null){
 	    String primaryKey = "primaryKey";
 	    if (!(summaryAttributesRef.equals(primaryKey)
@@ -169,8 +170,16 @@ public class Question {
 		summaryAttributesRef = primaryKey + "," + summaryAttributesRef;
 	    }
 	    summaryAttributeList = summaryAttributesRef.split(",");
+
+	    for (int i = 0; i< summaryAttributeList.length; i++){
+		String nextAtt = summaryAttributeList[i];
+		if (attribFields.get(nextAtt) == null){
+		    throw new WdkModelException("Question " + getName() + " defined attribute " +
+						nextAtt + " as a summary attribute, but that is not a " + 
+						"valid attribute for this Question");
+		}
+	    }
 	} else {
-	    Map attribFields = getRecordClass().getAttributeFields();
 	    Iterator ai = attribFields.keySet().iterator();
 	    Vector v = new Vector();
 	    while (ai.hasNext()) {
