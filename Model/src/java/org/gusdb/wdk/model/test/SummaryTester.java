@@ -113,7 +113,7 @@ public class SummaryTester {
 	//summaryName
 	addOption(options, "questionName", "the name of the question to run");
 	//rows to return
-	Option rows = new Option("rows", "the start and end pairs of the Record Instance rows to return");
+	Option rows = new Option("rows", "the start and end pairs of the summary rows to return");
 	rows.setArgs(Option.UNLIMITED_VALUES);
 	rows.setRequired(true);
 	options.addOption(rows);
