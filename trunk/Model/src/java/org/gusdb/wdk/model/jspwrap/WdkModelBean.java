@@ -26,6 +26,10 @@ public class WdkModelBean {
 	return model.getName();
     }
     
+    public String getDisplayName() {
+	return model.getDisplayName();
+    }
+
     public String getIntroduction() {
 	return model.getIntroduction();
     }
