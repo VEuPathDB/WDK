@@ -124,7 +124,7 @@ select gf.na_feature_id
      <sql>
 select gf.na_feature_id
  from dots.GeneFeature gf
- where gf.name like '$$Name$$'
+ where gf.name like '$$ByName$$'
      </sql>
   </sqlQuery>
 
