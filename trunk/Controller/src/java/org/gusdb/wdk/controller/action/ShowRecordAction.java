@@ -45,7 +45,7 @@ public class ShowRecordAction extends Action {
 	    + wdkRecordClass.getFullName() + ".jsp";
 	ActionForward forward = null;
 	if (ApplicationInitListener.resourceExists(customViewFile, svltCtx)) {
-	    forward = new ActionForward(customViewFile + "?id=" + id, true);
+	    forward = new ActionForward(customViewFile + "?id=" + id, false);
 	} else {
 	    forward = mapping.findForward(CConstants.SHOW_RECORD_MAPKEY);
 	}
