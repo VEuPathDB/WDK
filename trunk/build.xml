@@ -50,7 +50,7 @@
     <copy  todir="${build.home}/classes">
       <fileset dir="${jar_resources.home}" />
     </copy>
-    <copy  todir="${build.home}/classes/org/gusdb/gus/wdk/model" file="${src.home}/../../lib/rng/wdkModel.rng" />
+    <copy todir="${build.home}/classes/org/gusdb/gus/wdk/model" file="${src.home}/../../lib/rng/wdkModel.rng" />
 
   </target>
 
