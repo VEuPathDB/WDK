@@ -36,7 +36,8 @@ public class ShowRecordAction extends Action {
 
 	RecordClassBean wdkRecordClass = wdkModel.findRecordClass(request.getParameter("name"));
 	RecordBean wdkRecord = wdkRecordClass.makeRecord();
-	wdkRecord.assignPrimaryKey(request.getParameter("id"));
+	String id = request.getParameter("id");
+	wdkRecord.assignPrimaryKey(id);
 
 	request.getSession().setAttribute(CConstants.WDK_RECORD_KEY, wdkRecord);
 
@@ -44,7 +45,7 @@ public class ShowRecordAction extends Action {
 	    + wdkRecordClass.getFullName() + ".jsp";
 	ActionForward forward = null;
 	if (ApplicationInitListener.resourceExists(customViewFile, svltCtx)) {
-	    forward = new ActionForward(customViewFile, true);
+	    forward = new ActionForward(customViewFile + "?id=" + id, true);
 	} else {
 	    forward = mapping.findForward(CConstants.SHOW_RECORD_MAPKEY);
 	}
