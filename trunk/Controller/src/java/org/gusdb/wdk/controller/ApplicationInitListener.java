@@ -11,6 +11,7 @@ import org.gusdb.gus.wdk.model.QueryParamsException;
 import org.gusdb.gus.wdk.model.RDBMSPlatformI;
 import org.gusdb.gus.wdk.model.ResultFactory;
 import org.gusdb.gus.wdk.model.WdkModel;
+import org.gusdb.gus.wdk.model.implementation.ModelXMLParserRelaxNG;
 import org.gusdb.gus.wdk.model.implementation.ModelXmlParser;
 import org.gusdb.gus.wdk.model.implementation.SqlResultFactory;
 
@@ -37,9 +38,9 @@ public class ApplicationInitListener implements ServletContextListener {
         
         String loginXML = application.getInitParameter("loginConfig");
         String querySetLocation = application.getInitParameter("querySetConfig");
-        String recordSetLocation = application.getInitParameter("recordSetConfig");
+        String schemaLocation = application.getInitParameter("schemaLocation");
         
-        initMemberVars(loginXML, querySetLocation, recordSetLocation, application);
+        initMemberVars(loginXML, querySetLocation, schemaLocation, application);
         
         Config.set(application, Config.SQL_DATA_SOURCE, dataSource);
 
@@ -51,10 +52,10 @@ public class ApplicationInitListener implements ServletContextListener {
     }
 
     
-    private void initMemberVars(String loginConfigLocation, String queryConfigLocation, String recordConfigLocation, ServletContext application) {
+    private void initMemberVars(String loginConfigLocation, String queryConfigLocation, String schemaLocation, ServletContext application) {
         
         File querySetFile = new File(queryConfigLocation);
-        File recordSetFile = new File(recordConfigLocation);
+        File schemaFile = new File(schemaLocation);
         File modelConfigXmlFile = new File(loginConfigLocation);
         
         try {
@@ -72,21 +73,21 @@ public class ApplicationInitListener implements ServletContextListener {
                 (RDBMSPlatformI)Class.forName(platformClass).newInstance();
             platform.setDataSource(dataSource);
             
-            WdkModel wdkQueryModel = ModelXmlParser.parseXmlFile(querySetFile);
-            WdkModel wdkRecordModel = ModelXmlParser.parseXmlFile(recordSetFile);
+            WdkModel wdkQueryModel = ModelXMLParserRelaxNG.parseXmlFile(null, querySetFile, schemaFile);
+//            WdkModel wdkRecordModel = ModelXmlParser.parseXmlFile(recordSetFile);
             ResultFactory queryResultFactory = wdkQueryModel.getResultFactory();
-            ResultFactory recordResultFactory = wdkRecordModel.getResultFactory();
+            //ResultFactory recordResultFactory = wdkRecordModel.getResultFactory();
             SqlResultFactory sqlResultFactory = 
                 new SqlResultFactory(dataSource, platform, 
                         dbConfig.getLogin(), instanceTable);
-            recordResultFactory.setSqlResultFactory(sqlResultFactory);
+            //recordResultFactory.setSqlResultFactory(sqlResultFactory);
 
             queryResultFactory.setSqlResultFactory(sqlResultFactory);
             
             application.setAttribute("wdk.queryResultfactory", queryResultFactory);
-            application.setAttribute("wdk.recordResultfactory", recordResultFactory);
+            //application.setAttribute("wdk.recordResultfactory", recordResultFactory);
             application.setAttribute("wdk.wdkQueryModel", wdkQueryModel);
-            application.setAttribute("wdk.wdkRecordModel", wdkRecordModel);
+            //application.setAttribute("wdk.wdkRecordModel", wdkRecordModel);
             
         } catch (QueryParamsException e) {
             System.err.println(e.formatErrors());

@@ -21,11 +21,19 @@ import java.io.IOException;
 
 import org.apache.commons.digester.Digester;
 import org.iso_relax.verifier.Schema;
+import org.iso_relax.verifier.Verifier;
 import org.iso_relax.verifier.VerifierConfigurationException;
 import org.iso_relax.verifier.VerifierFactory;
 import org.iso_relax.verifier.VerifierFilter;
+import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+
+import com.thaiopensource.util.PropertyMap;
+import com.thaiopensource.util.SinglePropertyMap;
+import com.thaiopensource.validate.ValidateProperty;
+import com.thaiopensource.validate.ValidationDriver;
+import com.thaiopensource.xml.sax.ErrorHandlerImpl;
 
 public class ModelXMLParserRelaxNG {
 
@@ -33,6 +41,7 @@ public class ModelXMLParserRelaxNG {
             throws java.io.IOException, org.xml.sax.SAXException, Exception {
         if (!validModelFile(modelXMLFile, schemaFile)) {
             // TODO Throw some kind of exception
+            System.err.println("***** Validation failed  ***********");
         }
         Digester digester = configureDigester(model);
         model = (WdkModel) digester.parse(modelXMLFile);
@@ -47,18 +56,30 @@ public class ModelXMLParserRelaxNG {
         VerifierFactory factory = null;
         try {
             factory = VerifierFactory.newInstance("http://relaxng.org/ns/structure/1.0");
-            Schema schema = factory.compileSchema(schemaFile); /* compile schema */;
 
-            VerifierFilter filter = schema.newVerifier().getVerifierFilter();
-            Digester digester = configureDigester(null);
-            filter.setContentHandler( digester );
+            System.err.println("schemaFile is "+schemaFile.getAbsolutePath());
+            
+            ErrorHandler errorHandler = new ErrorHandlerImpl(System.err);
+            PropertyMap schemaProperties = new SinglePropertyMap(ValidateProperty.ERROR_HANDLER, errorHandler);
+            ValidationDriver vd = new ValidationDriver(schemaProperties, PropertyMap.EMPTY, null);
+            
+            vd.loadSchema(ValidationDriver.fileInputSource(schemaFile));
+            
+            return vd.validate(ValidationDriver.fileInputSource(modelXMLFile));
+                
+  //          Schema schema = factory.compileSchema(schemaFile); /* compile schema */
+//            Digester digester = configureDigester(null);
+//            
+//            System.err.println("digester is "+digester);
+//            
+//            Verifier verifier = schema.newVerifier();
+//            VerifierFilter filter = verifier.getVerifierFilter();
+//
+//            
+//            filter.setContentHandler( digester );
+//
+//            filter.parse(new InputSource(modelXMLFile.getAbsolutePath()));
 
-            filter.parse(new InputSource(modelXMLFile.getAbsolutePath()));
-            if(filter.isValid()) {
-                // the parsed document was valid
-            } else {
-                // invalid
-            }
            
 ////          wrap it into a JAXP
 //            SAXParserFactory parserFactory = new ValidatingSAXParserFactory(schema);
@@ -80,7 +101,7 @@ public class ModelXMLParserRelaxNG {
         
         
         // TODO - should check!
-        return true;
+        return false;
     }
     
     private static Digester configureDigester(WdkModel model) {
