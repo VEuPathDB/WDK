@@ -19,6 +19,7 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.jsp.jstl.core.Config;
 import javax.sql.DataSource;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
 
@@ -75,7 +76,7 @@ public class ApplicationInitListener implements ServletContextListener {
                     (RDBMSPlatformI)Class.forName(platformClass).newInstance();
                 platform.setDataSource(dataSource);
                 
-                WdkModel wdkModel = ModelXMLParserRelaxNG.parseXmlFile(null, querySetFile, schemaFile);
+                WdkModel wdkModel = ModelXMLParserRelaxNG.parseXmlFile(querySetFile, schemaFile);
                 
                 ResultFactory resultFactory = new ResultFactory(dataSource, platform, 
                         dbConfig.getLogin(), instanceTable);
@@ -96,6 +97,9 @@ public class ApplicationInitListener implements ServletContextListener {
                 throw new RuntimeException(e);
             } catch (WdkModelException e) {
                 throw new RuntimeException(e);
+            } catch (ParserConfigurationException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
             }
             
             //        } catch (WdkUserException e) {
