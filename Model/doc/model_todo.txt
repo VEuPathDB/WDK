@@ -1,6 +1,8 @@
 To Do
 
 NEW
+ - derived column: must check that referenced columns exist
+
  - make test suite
 
  - improve the output of wdkXml (use indenting)
