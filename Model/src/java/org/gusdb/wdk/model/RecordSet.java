@@ -55,12 +55,12 @@ public class RecordSet implements ModelSetI {
        String newline = System.getProperty( "line.separator" );
        StringBuffer buf = new StringBuffer("RecordSet: name='" + name 
 					   + "'");
-
-       buf.append( newline );
-       buf.append( "--- Records ---" );
        buf.append( newline );
        Iterator recordIterator = recordSet.values().iterator();
        while (recordIterator.hasNext()) {
+	    buf.append( newline );
+	    buf.append( ":::::::::::::::::::::::::::::::::::::::::::::" );
+	    buf.append( newline );
 	   buf.append(recordIterator.next()).append( newline );
        }
 

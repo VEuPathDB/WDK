@@ -70,12 +70,12 @@ public class QuerySet implements ModelSetI {
 	String newline = System.getProperty( "line.separator" );
 	StringBuffer buf = new StringBuffer("QuerySet: name='" + name 
 					   + "'");
-
-	buf.append( newline );
-	buf.append( "--- Queries ---" );
 	buf.append( newline );
 	Iterator queryIterator = querySet.values().iterator();
 	while (queryIterator.hasNext()) {
+	    buf.append( newline );
+	    buf.append( ":::::::::::::::::::::::::::::::::::::::::::::" );
+	    buf.append( newline );
 	    buf.append( queryIterator.next() ).append( newline );	
 	}
 	return buf.toString();

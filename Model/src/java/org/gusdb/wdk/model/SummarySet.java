@@ -76,12 +76,13 @@ public class SummarySet implements ModelSetI {
        String newline = System.getProperty( "line.separator" );
        StringBuffer buf = new StringBuffer("SummarySet: name='" + name 
 					   + "'");
+       buf.append( newline );
 
-       buf.append( newline );
-       buf.append( "--- Summaries ---" );
-       buf.append( newline );
        Iterator summaryIterator = summarySet.values().iterator();
        while (summaryIterator.hasNext()) {
+	   buf.append( newline );
+	   buf.append( ":::::::::::::::::::::::::::::::::::::::::::::" );
+	   buf.append( newline );
 	   buf.append(summaryIterator.next()).append( newline );
        }
 
