@@ -46,7 +46,7 @@
     </record>
 
     <record name="PSUCDSRecordId" type="CDS" idPrefix="CDS.">
-      <attributeQuery towPartName="RNARecordQueries.PSUCDSFieldsByPrimaryKey"/>
+      <attributeQuery twoPartName="RNARecordQueries.PSUCDSFieldsByPrimaryKey"/>
 
       <!-- <tableQuery twoPartName="RNARecordQueries.ExternalLinks"/> -->
 
@@ -65,7 +65,7 @@
 
    <sqlQuery name="RNAFields">
 
-     <stringParam name="primaryKey"/>
+     <paramRef twoPartName="allparams.primaryKey"/>
 
      <column name="description" displayName="Description" />
      <column name="length" displayName="Length" />
@@ -100,7 +100,7 @@
 
   <sqlQuery name="ExternalLinks">
 
-    <stringParam  name="primaryKey"/>
+    <paramRef  twoPartName="allparams.primaryKey"/>
 
     <column name="name" displayName="Database" />
     <column name="primary_identifier" displayName="Id" />
@@ -123,7 +123,7 @@
 
    <sqlQuery name="PSUCDSFieldsByName">
 
-     <stringParam name="primaryKey"/>
+     <paramRef twoPartName="allparams.primaryKey"/>
 
      <column name="name" displayName="Name" />
      <column name="gene_type" displayName="Gene Type" />
@@ -155,7 +155,7 @@ where tn.name_class = 'scientific name'
 
    <sqlQuery name="PSUCDSFieldsByPrimaryKey">
 
-     <stringParam name="primaryKey"/>
+     <paramRef twoPartName="allparams.primaryKey"/>
 
      <column name="name" displayName="Name" />
      <column name="gene_type" displayName="Gene Type" />
@@ -199,9 +199,9 @@ where tn.name_class = 'scientific name'
   <sqlQuery name="RNAListInDetail"
             displayName="RNAs">
 
-       <stringParam  name="resultTable"/>
-       <stringParam  name="startRow"/>
-       <stringParam  name="endRow"/>
+       <paramRef twoPartName="allparams.resultTable"/>
+       <paramRef twoPartName="allparams.startRow"/>
+       <paramRef twoPartName="allparams.endRow"/>
 
        <column name="resultTable" />
 
@@ -227,17 +227,9 @@ where tn.name_class = 'scientific name'
    <sqlQuery name="CDSNumExons"
             displayName="CDS by number of exons">
 
-     <stringParam
-       name="Min"
-       prompt="Min"
-       sample="1"
-       regex="\d+" />
+     <paramRef twoPartName="allparams.Min" />
 
-     <stringParam
-       name="Max"
-       prompt="Max"
-       sample="5"
-       regex="\d+" />
+     <paramRef twoPartName="allparams.Max" />
        
      <column name="name" />
 
@@ -252,11 +244,7 @@ where gf.number_of_exons &gt;= '$$Min$$'
    <sqlQuery name="CDSByName"
             displayName="CDS by systematic id">
 
-     <stringParam
-       name="Name"
-       prompt="Name"
-       sample="SPAC1701.1c"
-       regex=".*" />
+     <paramRef twoPartName="allparams.ByName" />
        
       <column name="name" />
 
@@ -270,20 +258,7 @@ where gf.name like '$$Name$$'
    <sqlQuery name="CDSByChromosome"
             displayName="CDS on a given chromosome">
 
-       <sqlEnumParam
-          name="Chromosome"
-          prompt="Chromosome"
-          help="You know what it is"
-          multipick="no">
-          <sqlQuery>
-            <column name="name" />
-            <sql>
-select distinct ena.chromosome as key, ena.chromosome as value
-from dots.ExternalNASequence ena
-where ena.taxon_id = '130246'
-            </sql>
-          </sqlQuery>
-       </sqlEnumParam>
+       <paramRef twoPartName="allparams.Chromosome" />
        
        <column name="todo" />
 
@@ -297,6 +272,51 @@ where ena.taxon_id = '130246'
      </sql>
   </sqlQuery>
 
+          <sqlQuery name="Chromosome">
+            <column name="name" />
+            <sql>
+select distinct ena.chromosome as key, ena.chromosome as value
+from dots.ExternalNASequence ena
+where ena.taxon_id = '130246'
+            </sql>
+          </sqlQuery>
+
 </querySet>
+
+  <paramSet name="allparams">
+  
+       <stringParam name="primaryKey"/>
+       <stringParam  name="resultTable"/>
+       <stringParam  name="startRow"/>
+       <stringParam  name="endRow"/>
+  
+       <stringParam
+      	 name="Min"
+         prompt="Min"
+         sample="1"
+         regex="\d+" />
+
+     	<stringParam
+         name="Max"
+         prompt="Max"
+         sample="5"
+         regex="\d+" />
+  
+       <stringParam
+       name="ByName"
+       prompt="Name"
+       sample="SPAC1701.1c"
+       regex=".*" />
+  
+         <flatCVParam
+          name="Chromosome"
+          prompt="Chromosome"
+          help="You know what it is"
+          multipick="no"
+          queryRef="RNASimpleQueries.Chromosome" />
+
+  
+  </paramSet>
+
 </wdkModel>
 
