@@ -20,6 +20,7 @@ public class WdkModel {
     LinkedHashMap questionSets = new LinkedHashMap();
     HashMap allModelSets = new HashMap();
     String name;
+    String displayName;
     String introduction;
     ResultFactory resultFactory;
     private Document document;
@@ -58,6 +59,14 @@ public class WdkModel {
 
     public String getName(){
 	return name;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
+
+    public String getDisplayName(){
+	return displayName;
     }
 
     public void setIntroduction(String introduction) {
@@ -287,10 +296,9 @@ public class WdkModel {
     
     public String toString() {
        String newline = System.getProperty( "line.separator" );
-       StringBuffer buf = new StringBuffer("WdkModel: name='" + name 
-					   + "'" + newline + 
-					   "introduction='" + introduction
-					   + "'");
+       StringBuffer buf = new StringBuffer("WdkModel: name='" + name + "'" + newline
+					   + "displayName='"  + displayName + "'" + newline
+					   + "introduction='" + introduction + "'");
        buf.append(showSet("Param", paramSets));
        buf.append(showSet("Query", querySets));
        buf.append(showSet("RecordClass", recordClassSets));

@@ -20,6 +20,10 @@ public class RecordClassBean {
 	return recordClass.getFullName();
     }
 
+    public String getType() {
+	return recordClass.getType();
+    }
+
     /**
      * @return Map of fieldName --> {@link org.gusdb.wdk.model.FieldI}
      */
