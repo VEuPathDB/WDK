@@ -56,7 +56,7 @@
                     <c:choose>
                       <c:when test="${qP.multiPick}">
                         <!-- multiPick is true, use scroll pane -->
-                        <html:select  property="myProp(${leafPrefix}${pNam})" multiple="1">
+                        <html:select  property="myMultiProp(${leafPrefix}${pNam})" multiple="1">
                           <c:set var="opt" value="${opt+1}"/>
                           <c:set var="sel" value=""/>
                           <c:if test="${opt == 1}"><c:set var="sel" value="selected"/></c:if>      

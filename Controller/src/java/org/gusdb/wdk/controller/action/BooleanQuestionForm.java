@@ -15,6 +15,7 @@ import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
 import org.gusdb.wdk.model.jspwrap.BooleanQuestionLeafBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
+import org.gusdb.wdk.model.jspwrap.FlatVocabParamBean;
 import org.gusdb.wdk.controller.CConstants;
 
 /**
@@ -73,13 +74,23 @@ public class BooleanQuestionForm extends QuestionForm {
 		    ParamBean p = params[j];
 		    try {
 			String pKey = leafId.toString() + '_' + p.getName();
-			Object pVal = getMyProp(pKey);
-			String errMsg = p.validateValue(pVal);
-			if (errMsg != null) {
-			    errors.add(pKey,
-				       new ActionError("mapped.properties",
-						       p.getPrompt() + " \"" + pVal + "\"",
-						       "<br>" + errMsg));
+			String[] pVals;
+			// should we check menu selections?
+			if (p instanceof FlatVocabParamBean && ((FlatVocabParamBean)p).getMultiPick().booleanValue()) {
+			    pVals = getMyMultiProp(pKey);
+			} else {
+			    String val = (String)getMyProp(pKey); 
+			    pVals = new String[] {val};
+			}
+			for (int k=0; k<pVals.length; k++) {
+			    String pVal = pVals[k];
+			    String errMsg = p.validateValue(pVal);
+			    if (errMsg != null) {
+				errors.add(pKey,
+					   new ActionError("mapped.properties",
+							   p.getPrompt() + " \"" + pVal + "\"",
+							   "<br>" + errMsg));
+			    }
 			}
 		    } catch (WdkModelException exp) {
 			throw new RuntimeException(exp.getMessage());

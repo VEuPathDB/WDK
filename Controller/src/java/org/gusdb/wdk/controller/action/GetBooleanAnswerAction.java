@@ -98,7 +98,15 @@ public class GetBooleanAnswerAction extends ShowSummaryAction {
 	for (int i = 0; i < params.length; i++){
 	    ParamBean nextParam = params[i];
 	    String formParamName = leafPrefix + nextParam.getName();
-	    String nextValue = (String)bqf.getMyProps().get(formParamName);
+	    Object nextValObj = bqf.getMyProps().get(formParamName);
+	    String nextValue;
+	    if (nextValObj instanceof String[]) {
+		String[] vals = (String[])nextValObj;
+		nextValue = vals[0];
+		for (int j=1; j<vals.length; j++) { nextValue += "," + vals[j]; }
+	    } else {
+		nextValue = (String)nextValObj;
+	    }
 	    values.put(nextParam.getName(), nextValue);
 	}
 	return values;
