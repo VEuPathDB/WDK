@@ -22,8 +22,6 @@ public abstract class Query {
     protected HashMap columnsH;
     protected Vector columnsV;
     protected ResultFactory resultFactory;
-    protected RDBMSPlatformI platform;
-
 
     public Query () {
 	paramsH = new HashMap();
@@ -42,10 +40,6 @@ public abstract class Query {
 
     public String getName() {
 	return name;
-    }
-
-    public RDBMSPlatformI getPlatform(){
-	return this.platform;
     }
 
     public void setDisplayName(String displayName) {
@@ -103,9 +97,6 @@ public abstract class Query {
 				+ columnName + "'");
 	return (Column)columnsH.get(columnName);
     }
-    public void setResultFactory(ResultFactory resultFactory) {
-	this.resultFactory = resultFactory;
-    }
     
     //DTB -- changed to public access since this method is now in a different
     //       package than SqlQueryInstance which is trying to use it.
@@ -117,9 +108,30 @@ public abstract class Query {
 
     public abstract QueryInstance makeInstance();
 
+    /**
+     * transform a set of param values to internal param values
+     */
+    public Map getInternalParamValues(Map values) throws WdkModelException {
+
+	HashMap internalValues = new HashMap();
+	Iterator paramNames = values.keySet().iterator();
+	while (paramNames.hasNext()) {
+	    String paramName = (String)paramNames.next();
+	    Param param = (Param)paramsH.get(paramName);
+	    internalValues.put(paramName, 
+			       param.getInternalValue(values.get(paramName)));
+	}
+	return internalValues;
+    }
+
     public String toString() {
        String newline = System.getProperty( "line.separator" );
        StringBuffer buf = formatHeader();
+
+       buf.append( "--- Columns ---" ).append( newline );
+       for( int i=0; i<columnsV.size(); i++ ){
+	   buf.append( columnsV.elementAt(i) ).append( newline );
+       }
 
        buf.append( "--- Params ---" ).append( newline );
        for( int i=0; i<paramsV.size(); i++ ){
@@ -135,6 +147,16 @@ public abstract class Query {
     /////////////////////////////////////////////////////////////////////
 
     protected void resolveReferences(WdkModel model) throws WdkModelException {}
+    protected void setResources(WdkModel model) throws WdkModelException {
+
+	this.resultFactory = model.getResultFactory();
+
+	Iterator paramIterator = paramsH.values().iterator();
+	while (paramIterator.hasNext()) {
+	    Param param = (Param)paramIterator.next();
+	    param.setResources(model);
+	}
+    }
 
     protected void validateParamValues(Map values) throws WdkUserException, WdkModelException {
 	HashMap errors = null;
@@ -153,7 +175,12 @@ public abstract class Query {
 	for(int i=0; i<size; i++) {
 	    Param p = (Param)paramsV.elementAt(i);
 	    String value = (String)values.get(p.getName());
-	    String errMsg = p.validateValue(value);
+	    String errMsg;
+	    if (value == null) {
+		errMsg = "No value supplied";
+	    } else {
+		errMsg = p.validateValue(value);
+	    }
 	    if (errMsg != null) {
 		if (errors == null) errors = new HashMap();
 		String booBoo[] = {value, errMsg};
@@ -184,14 +211,4 @@ public abstract class Query {
        return buf;
     }
 
-    protected void setModelResources(WdkModel model){
-	this.platform = model.getPlatform();
-	int size = paramsV.size();
-	for(int i=0; i<size; i++) {
-	    Param p = (Param)paramsV.elementAt(i);
-	    p.setModelResources(model);
-	}
-    }
-    
-	
 }

@@ -67,6 +67,9 @@ public class SummarySet implements ModelSetI {
 	}
     }
 
+    public void setResources(WdkModel model) throws WdkModelException {
+    }
+
     public String toString() {
        String newline = System.getProperty( "line.separator" );
        StringBuffer buf = new StringBuffer("SummarySet: name='" + name 

@@ -50,16 +50,19 @@ public class StringParam extends Param {
 
     protected void resolveReferences(WdkModel model) throws WdkModelException {}
 
-    protected String validateValue(String value) {
+    protected String validateValue(Object value) throws WdkModelException {
+	if (!(value instanceof String)) 
+	    throw new WdkModelException("Value must be a String " + value);
+	String svalue = (String)value;
         if (regex == null) {
             // TODO - Correct? Assuming no regex means we don't care about value
             return null;
         }
-        if (substitute.booleanValue() && value != null) {
-            value = substitute(value);
+        if (substitute.booleanValue() && svalue != null) {
+            svalue = substitute(svalue);
         }
-        if ( value == null || !value.matches(regex)) {
-            return "Value '" + value + "'does not match regex '" + regex + "' or is null";
+        if ( svalue == null || !svalue.matches(regex)) {
+            return "Value '" + svalue + "'does not match regex '" + regex + "' or is null";
         }
         return null;
     }

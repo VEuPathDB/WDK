@@ -22,16 +22,6 @@ public class WdkModel {
 	return resultFactory;
     }
 
-    public void setResultFactory(ResultFactory rf){
-	this.resultFactory = rf;
-	Iterator querySetIterator = querySets.values().iterator();
-	while (querySetIterator.hasNext()) {
-
-	    QuerySet qs = (QuerySet)querySetIterator.next();
-	    qs.setResultFactory(resultFactory);
-	}
-    }
-
     public void setName(String name) {
 	this.name = name;
     }
@@ -141,21 +131,19 @@ public class WdkModel {
     /**
      * Set whatever resources the model needs.  It will pass them to its kids
      */
-    public void setResources(RDBMSPlatformI platform){
+    public void setResources(ResultFactory rf, RDBMSPlatformI platform) throws WdkModelException {
 
 	this.platform = platform;
-	Iterator querySetIterator = querySets.values().iterator();
-	while (querySetIterator.hasNext()) {
-	    QuerySet qs = (QuerySet)querySetIterator.next();
-	    Query queries[] = qs.getQueries();
-	    for (int i = 0; i < queries.length; i++){
-		Query nextQuery = queries[i];
-		nextQuery.setModelResources(this);
-	    }
+	this.resultFactory = rf;
+
+	Iterator modelSets = allModelSets.values().iterator();
+	while (modelSets.hasNext()) {
+	    ModelSetI modelSet = (ModelSetI)modelSets.next();
+	    modelSet.setResources(this);
 	}
     }
 
-    public RDBMSPlatformI getPlatform() {
+    public RDBMSPlatformI getRDBMSPlatform() {
 	return platform;
     }
 

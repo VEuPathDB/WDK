@@ -50,5 +50,19 @@ public class Column {
         if (displayName != null) return displayName;
         return name;
     }
+
+    public String toString() {
+       String newline = System.getProperty( "line.separator" );
+       String classnm = this.getClass().getName();
+       StringBuffer buf = 
+	   new StringBuffer(classnm + ": name='" + name + "'" + newline +
+			    "  displayName='" + displayName + "'" + newline +
+			    "  help='" + help + "'" + newline +
+			    "  dataTypeName='" + dataTypeName + "'" + newline
+			    );
+
+       return buf.toString();
+	
+    }
 }
 

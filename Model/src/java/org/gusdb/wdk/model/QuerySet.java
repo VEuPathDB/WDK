@@ -46,11 +46,18 @@ public class QuerySet implements ModelSetI {
 					+ query.getName() 
 					+ " already exists in query set "
 					+ getName());
-	query.setResultFactory(resultFactory);
 	querySet.put(query.getName(), query);
     }
 
     public void resolveReferences(WdkModel model) throws WdkModelException {
+    }
+
+    public void setResources(WdkModel model) throws WdkModelException {
+	Iterator queryIterator = querySet.values().iterator();
+	while (queryIterator.hasNext()) {
+	    Query query = (Query)queryIterator.next();
+	    query.setResources(model);
+	}
     }
 
     public String toString() {
@@ -71,12 +78,5 @@ public class QuerySet implements ModelSetI {
     /////////////////////////////////////////////////////////////////
     ///////  protected
     /////////////////////////////////////////////////////////////////
-    void setResultFactory(ResultFactory resultFactory) {
-	this.resultFactory = resultFactory;
-	Iterator queryIterator = querySet.values().iterator();
-	while (queryIterator.hasNext()) {
-	    Query query = (Query)queryIterator.next();
-	    query.setResultFactory(resultFactory);
-	}
-    }
+
 }
