@@ -1,4 +1,6 @@
 <%@ taglib prefix="site" tagdir="/WEB-INF/tags/site" %>
+<%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
+<%@ taglib prefix="pg" uri="http://jsptags.com/tags/navigation/pager" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
 
@@ -8,17 +10,41 @@
 <site:header banner="${wdkQuestionName}" />
 
 <c:set value="${wdkSummary.params}" var="params"/>
-<!--c:set value="${sessionScope.questionForm.myProps}" var="params"/-->
+
 <p><b>
 Summary result for query "${wdkQuestionName}" with parameters:
 <c:forEach items="${params}" var="p">
    ${p.key} = "${p.value}"; 
 </c:forEach>
-<br>Number of results returned: ${wdkSummary.totalSize}
+<br>Number of results returned:
+${wdkSummary.totalSize}<c:if test="${wdkSummary.totalSize > 0}">,
+showing ${wdk_paging_start} to ${wdk_paging_end} </c:if>
 </b></p>
 
 <hr>
 
+
+<c:choose>
+  <c:when test='${wdkSummary.totalSize == 0}'>
+    No results for your query
+  </c:when>
+  <c:otherwise>
+
+<!-- pager -->
+<pg:pager isOffset="true"
+          scope="request"
+          items="${wdk_paging_total}"
+          maxItems="${wdk_paging_total}"
+          url="${wdk_paging_url}"
+          maxPageItems="${wdk_paging_pageSize}"
+          export="currentPageNumber=pageNumber">
+  <c:forEach var="paramName" items="${wdk_paging_params}">
+    <pg:param name="${paramName}" id="pager" />
+  </c:forEach>
+  <!-- pager on top -->
+  <wdk:pager /> 
+
+<!-- content of current page -->
 <table border="2">
 <tr>
 <c:forEach items="${wdkSummary.attributes}" var="attr">
@@ -33,7 +59,7 @@ Summary result for query "${wdkQuestionName}" with parameters:
     <c:choose>
       <c:when test="${i == 0}">
 
-        <a href="showRecord.do?name=${record.record.fullName}&id=${recAttr.value.value}">${recAttr.value.value}</a>
+        <a href="showRecord.do?name=${record.record.fullName}&id=${record.primaryKey}">${recAttr.value.value}</a>
 
       </c:when>
       <c:otherwise>
@@ -48,5 +74,12 @@ Summary result for query "${wdkQuestionName}" with parameters:
 
 </tr>
 </table>
+
+  <!-- pager at bottom -->
+  <wdk:pager />
+</pg:pager>
+
+  </c:otherwise>
+</c:choose>
 
 <site:footer/>

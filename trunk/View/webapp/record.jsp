@@ -15,11 +15,33 @@
   </tr>
 </c:forEach>
 
+<!-- show all tables for record -->
 <c:forEach items="${wdkRecord.tables}"  var="tbl">
   <tr>
-    <td><b>${tbl.value.name}</b></td>
+    <td valign="top"><b>${tbl.value.name}</b></td>
     <td>
-      <font corlor="red"> how to show ${tbl.value.value}? </font>
+      <c:set var="resLst" value="${tbl.value.value}"/>
+
+      <!-- show one table -->
+      <table border="1">
+        <!-- table header -->
+        <tr>
+          <c:forEach var="hCol" items="${resLst.columns}">
+            <th>${hCol.displayName}</th>
+          </c:forEach>
+        </tr>
+
+        <!-- table rows -->
+        <c:forEach var="row" items="${resLst.rows}">
+          <tr>
+            <c:forEach var="rCol" items="${row}">
+              <td>${rCol.value}</td>
+            </c:forEach>
+          </tr>
+        </c:forEach>
+      </table>
+      <!-- close resultList -->
+      <c:set var="junk" value="close"/>
     </td>
   </tr>
 </c:forEach>
