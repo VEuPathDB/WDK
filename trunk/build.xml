@@ -45,7 +45,7 @@
       <property name="component" value="Model"/>
     </ant>
     <echo message="." />
-    <echo message="IMPORTANT REMINDER: If you have not already done so, please copy any .jar needed for database connectivity (such as oracle-classes12.jar) into ${targetDir}/lib/java.  The WDK does not supply these.  See the installation instructions available at www.gusdb.org/wdk for details."  />
+    <echo message="IMPORTANT REMINDER: If you have not already done so, please copy any .jar needed for database connectivity (such as the oracle file classes12.jar) into ${targetDir}/lib/java.  The WDK does not supply these.  See the installation instructions available at www.gusdb.org/wdk for details."  />
     <echo message="." />
    
   </target>  
