@@ -8,16 +8,12 @@ Steve
 
  - wdk home page
 
- - configuration
-
  - web install for view? 
 
  - move to new CVS structure
 
  - replace CV with Vocab
  
- - improve the output of wdkXml (use indenting)
-
 
 Dave
 
@@ -78,15 +74,12 @@ NEW
 
  - model should have all queries check their derived columns (to make sure that they are interpolating valid column names)
 
+
 SORTED AND PRIORITIZED
 
 General
 
  - logging
-
- - configuration
-
-----------------------------------------------------------------------
 
  - use webinstall for WDKTestSite
 
@@ -94,15 +87,10 @@ General
  
  - importing model xml files into each other
 
- - make test suite
 
 UserQueries
 
- - allow param refs
-
  - boolean queries
-
--------------------------------------------------------------------
 
  - also... handle CVs in different forms (list, tree, graph)
 
@@ -122,6 +110,10 @@ Records
 
 
 DONE
+
+ - improve the output of wdkXml (use indenting)
+
+ - configuration with .prop file
 
  - param references 
 
