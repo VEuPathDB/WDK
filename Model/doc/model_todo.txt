@@ -1,11 +1,61 @@
 To Do
 
-NEW
- - derived column: must check that referenced columns exist
+For release 1.0
+
+Steve
+
+ - documentation
+
+ - wdk home page
+
+ - configuration
+
+ - web install for view? 
+
+ - move to new CVS structure
+
+ - replace CV with Vocab
+ 
+ - improve the output of wdkXml (use indenting)
+
+
+Dave
 
  - make test suite
+   - create test database
+      - decide what tables we want (based on the queries that ApiDots offers)
+      - figure out how to extract an organism's data for those table to file
+      - (lose overhead rows, and possibly simplify the schema)
+      - create new command: wdkTestDb
+          - has option to create and to delete
+          - obviously reads files.
+   - create wdkTest command which:
+       - optionally calls wdkTestDb to create and destroy the db
+       - simply runs a bunch of wdkCache, wdkXml, wdkQuery, wdkSummary, etc commands
+       - this could be in a simple shell or perl script.  each command we call could be commented with what we think it is testing.
+       - has two modes:
+           - create expected answer
+           - compate against previously saved expected answer
+       - captures output of them all, and that output better match the expected, which we have previously saved.
+       - tests are added modularly.  a give test can be flagged as "show stopper"
+   - create model xml that is compatible and exercises our code
+   - 
 
- - improve the output of wdkXml (use indenting)
+ - move to RNG from XML Schema
+    - get our hands on all adrian did
+    - upgrade it for the current schema
+    - get it working again
+
+ - try to get an RNG (RELAX NG) editor working (xmloperator or the emacs plugin)
+
+ - wdkSummary output
+
+
+
+
+
+NEW
+ - derived column: must check that referenced columns exist
 
  - factor the various Tester classes.
 
@@ -72,6 +122,8 @@ Records
 
 
 DONE
+
+ - param references 
 
  - abstract SqlEnumParam into ControlledVocabParam
 
