@@ -17,6 +17,10 @@ HR {
    height: 4px;
 }
 
+tr.headerRow {
+	background-color: #aeaeff;
+}
+
 tr.rowLight {
 	
 }
