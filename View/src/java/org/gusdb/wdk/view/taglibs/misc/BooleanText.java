@@ -31,7 +31,6 @@ public class BooleanText extends SimpleTagSupport {
     
     public void doTag() throws IOException, JspException {       
         if (getJspBody() != null) {
-            JspFragment jspf = getJspBody();
             StringWriter bodyWriter = new StringWriter();
             getJspBody().invoke(bodyWriter);
             String body = bodyWriter.getBuffer().toString().trim();
