@@ -101,7 +101,7 @@ public class SummaryInstance {
 	    for (int j = 0; j < columns.length; j++){
 		String nextColumnName = columns[j].getName();
 		Object value = resultList.getValue(nextColumnName);
-		nextRecordInstance.setFieldValue(nextColumnName, value);
+		nextRecordInstance.setAttributeValue(nextColumnName, value);
 	    }
 	    tempCounter++;
 	}

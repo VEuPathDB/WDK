@@ -15,7 +15,7 @@ import java.util.Set;
 
 
 /**
- * A view on a RecordInstance as a Map. Currently only handles the text and non-text fields 
+ * A view on a RecordInstance as a Map. Currently only handles the text and non-text attributes 
  * ie not nested tables. If this works it should probably be refactored into the model 
  * to avoid the extra wrapper instance.
  * 
@@ -35,17 +35,17 @@ public class RecordInstanceView implements Map {
         // TODO Fix exception handling once exceptions and logging are pinned down
         // TODO Special case handling for "overview" - Is there a better way
         this.ri = ri;
-        List fieldNames = new ArrayList();
+        List attributeNames = new ArrayList();
         Record record = ri.getRecord();
-        addArrayContentsToList(fieldNames, record.getNonTextFieldNames());
-        addArrayContentsToList(fieldNames, record.getTextFieldNames());
+        addArrayContentsToList(attributeNames, record.getNonTextAttributeNames());
+        addArrayContentsToList(attributeNames, record.getTextAttributeNames());
         map = new HashMap();
-        for (Iterator it = fieldNames.iterator(); it.hasNext(); ) {
+        for (Iterator it = attributeNames.iterator(); it.hasNext(); ) {
             String key = (String) it.next();
             if (!"overview".equals(key)) {
                 Object value = null;
                 try {
-                    value = ri.getFieldValue(key);
+                    value = ri.getAttributeValue(key);
                 }
                 catch (WdkModelException exp) {
                     exp.printStackTrace();

@@ -19,19 +19,19 @@ public abstract class ResultList {
 
     public abstract void checkQueryColumns(Query query, boolean checkAll) throws WdkModelException;
 
-    public Object getValue(String fieldName) throws WdkModelException {
-	if (valuesInUse.containsKey(fieldName)) 
-	    throw new WdkModelException("Circular attempt to access field " + fieldName);
+    public Object getValue(String attributeName) throws WdkModelException {
+	if (valuesInUse.containsKey(attributeName)) 
+	    throw new WdkModelException("Circular attempt to access attribute " + attributeName);
 	Object value;
 	try {
-	    valuesInUse.put(fieldName,fieldName);
-	    Column column = query.getColumn(fieldName);
+	    valuesInUse.put(attributeName,attributeName);
+	    Column column = query.getColumn(attributeName);
 	    // the next line has the potential to be circular
 	    if (column instanceof DerivedColumnI) 
 		value = ((DerivedColumnI)column).getDerivedValue(this);
-	    else value = getValueFromResult(fieldName);
+	    else value = getValueFromResult(attributeName);
 	} finally {
-	    valuesInUse.remove(fieldName);
+	    valuesInUse.remove(attributeName);
 	}
 	return value;
     }
@@ -61,7 +61,7 @@ public abstract class ResultList {
     //  protected
     //////////////////////////////////////////////////////////////////
 
-    protected abstract Object getValueFromResult(String fieldName) throws WdkModelException;
+    protected abstract Object getValueFromResult(String attributeName) throws WdkModelException;
 
     public QueryInstance getInstance() {
         return instance;

@@ -1,12 +1,12 @@
 package org.gusdb.gus.wdk.model;
 
 
-public class TextField {
+public class TextAttribute {
 
     String name;
     String text;
 
-    public TextField() {}
+    public TextAttribute() {}
 
     public void setName(String name) {
 	this.name = name;

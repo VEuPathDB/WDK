@@ -6,21 +6,21 @@ import java.util.Iterator;
 
 public class Record {
     
-    HashMap fieldsQueryMap;  // fieldName -> Query
+    HashMap attributesQueryMap;  // attributeName -> Query
     HashMap tableQueryMap;   // tableName -> Query
-    HashMap textFieldMap;    // fieldName -> text (String)
+    HashMap textAttributeMap;    // attributeName -> text (String)
     HashSet tableQueryRefs;
-    HashSet fieldsQueryRefs;
+    HashSet attributesQueryRefs;
     String name;
     String type;
     String idPrefix;
     
     public Record() {
-	fieldsQueryMap = new HashMap();
+	attributesQueryMap = new HashMap();
 	tableQueryMap = new HashMap();
-	fieldsQueryRefs = new HashSet();
+	attributesQueryRefs = new HashSet();
 	tableQueryRefs = new HashSet();
-	textFieldMap = new HashMap();
+	textAttributeMap = new HashMap();
     }
 
     public void setName(String name) {
@@ -47,15 +47,15 @@ public class Record {
 	return type;
     }
 
-    public String getFieldSpecialType(String fieldName) {
+    public String getAttributeSpecialType(String attributeName) {
 	return null;
     }
 
     /**
-     * @param fieldsQueryRef two part query name (set.name)
+     * @param attributesQueryRef two part query name (set.name)
      */
-    public void addFieldsQueryRef(Reference fieldsQueryRef) {
-	fieldsQueryRefs.add(fieldsQueryRef.getTwoPartName());
+    public void addAttributesQueryRef(Reference attributesQueryRef) {
+	attributesQueryRefs.add(attributesQueryRef.getTwoPartName());
     }
 
     /**
@@ -67,15 +67,15 @@ public class Record {
 
     public void resolveReferences(WdkModel model) throws WdkModelException {
 	
-	Iterator fQueryRefs = fieldsQueryRefs.iterator();
+	Iterator fQueryRefs = attributesQueryRefs.iterator();
 	while (fQueryRefs.hasNext()) {
 	    String queryName = (String)fQueryRefs.next();
 	    Query query = 
 		(Query)model.resolveReference(queryName,
 					      getName(), 
 					      this.getClass().getName(),
-					      "fieldsQueryRef");
-	    addFieldsQuery(query);
+					      "attributesQueryRef");
+	    addAttributesQuery(query);
 	}
 
 	Iterator tQueryRefs = tableQueryRefs.iterator();
@@ -92,9 +92,9 @@ public class Record {
 
 
 
-    public void addTextField(TextField textField) throws WdkModelException {
-	checkFieldName(textField.getName());
-	textFieldMap.put(textField.getName(), textField.getText());
+    public void addTextAttribute(TextAttribute textAttribute) throws WdkModelException {
+	checkAttributeName(textAttribute.getName());
+	textAttributeMap.put(textAttribute.getName(), textAttribute.getText());
     }
 
     public RecordInstance makeInstance() {
@@ -106,16 +106,16 @@ public class Record {
 	StringBuffer buf =
 	    new StringBuffer("Record: name='" + name + "'").append( newline );
 
-	buf.append( "--- Fields ---" ).append( newline );
-	String[] fieldNames = getNonTextFieldNames();
-	for (int i=0; i<fieldNames.length; i++) {
-	    buf.append(fieldNames[i]).append( newline );
+	buf.append( "--- Attributes ---" ).append( newline );
+	String[] attributeNames = getNonTextAttributeNames();
+	for (int i=0; i<attributeNames.length; i++) {
+	    buf.append(attributeNames[i]).append( newline );
 	}
 	
-	buf.append( "--- Text Fields ---" ).append( newline );
-	String[] textFieldNames = getTextFieldNames();
-	for (int i=0; i<textFieldNames.length; i++){
-	    buf.append(textFieldNames[i]).append( newline );
+	buf.append( "--- Text Attributes ---" ).append( newline );
+	String[] textAttributeNames = getTextAttributeNames();
+	for (int i=0; i<textAttributeNames.length; i++){
+	    buf.append(textAttributeNames[i]).append( newline );
 	}
 	
 	buf.append( "--- Tables ---" ).append( newline );
@@ -131,14 +131,14 @@ public class Record {
 	return (String[])tableQueryMap.keySet().toArray(s);
     }
 
-    public String[] getNonTextFieldNames() {
+    public String[] getNonTextAttributeNames() {
 	String[] s = {};
-	return (String[])fieldsQueryMap.keySet().toArray(s);
+	return (String[])attributesQueryMap.keySet().toArray(s);
     }
 
-    public String[] getTextFieldNames() {
+    public String[] getTextAttributeNames() {
 	String[] s = {};
-	return (String[])textFieldMap.keySet().toArray(s);
+	return (String[])textAttributeMap.keySet().toArray(s);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////
@@ -146,14 +146,14 @@ public class Record {
     ///////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Add a fields query. Map it by all of its column names
+     * Add a attributes query. Map it by all of its column names
      */
-    protected void addFieldsQuery(Query query) throws WdkModelException {
+    protected void addAttributesQuery(Query query) throws WdkModelException {
 	Column[] columns = query.getColumns();
 	for (int i=0; i<columns.length;i++) {
 	    Column column = columns[i];
-	    checkFieldName(column.getName());
-	    fieldsQueryMap.put(column.getName(), query);
+	    checkAttributeName(column.getName());
+	    attributesQueryMap.put(column.getName(), query);
 	}
     }
 
@@ -167,11 +167,11 @@ public class Record {
 	tableQueryMap.put(query.getName(), query);
     }
 
-    protected void checkFieldName(String name) throws WdkModelException {
-	if (fieldsQueryMap.containsKey(name) 
-	    || textFieldMap.containsKey(name)) {
+    protected void checkAttributeName(String name) throws WdkModelException {
+	if (attributesQueryMap.containsKey(name) 
+	    || textAttributeMap.containsKey(name)) {
 	    throw new WdkModelException("Record " + getName() + 
-				" already has a field named " + name);
+				" already has a attribute named " + name);
 	}
     }
 
@@ -184,12 +184,12 @@ public class Record {
 	    throw new WdkUserException(s + " must have only one param, and it must be named 'primaryKey'");
     }
 
-    protected Query getFieldsQuery(String fieldName) throws WdkModelException {
-	Query query = (Query)fieldsQueryMap.get(fieldName);
+    protected Query getAttributesQuery(String attributeName) throws WdkModelException {
+	Query query = (Query)attributesQueryMap.get(attributeName);
 	if (query == null) {
 	    throw new WdkModelException("Record " + getName() + 
-				" does not have a field with name '" +
-				fieldName + "'");
+				" does not have a attribute with name '" +
+				attributeName + "'");
 	}
 	return query;
     }
@@ -204,17 +204,17 @@ public class Record {
 	return query;
     }
 
-    protected String getTextField(String textFieldName) throws WdkModelException {
-	String text = (String)textFieldMap.get(textFieldName);
+    protected String getTextAttribute(String textAttributeName) throws WdkModelException {
+	String text = (String)textAttributeMap.get(textAttributeName);
 	if (text == null) {
 	    throw new WdkModelException("Record " + getName() + 
-				" does not have a text field with name '" +
-				textFieldName + "'");
+				" does not have a text attribute with name '" +
+				textAttributeName + "'");
 	}
 	return text;
     }
 
-    protected boolean isTextField(String fieldName) {
-	return textFieldMap.containsKey(fieldName);
+    protected boolean isTextAttribute(String attributeName) {
+	return textAttributeMap.containsKey(attributeName);
     }
 }

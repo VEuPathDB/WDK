@@ -8,9 +8,9 @@ import org.gusdb.gus.wdk.model.Record;
 import org.gusdb.gus.wdk.model.RecordSet;
 import org.gusdb.gus.wdk.model.Reference;
 import org.gusdb.gus.wdk.model.QuerySet;
-import org.gusdb.gus.wdk.model.FlatCVParam;
+import org.gusdb.gus.wdk.model.FlatVocabParam;
 import org.gusdb.gus.wdk.model.StringParam;
-import org.gusdb.gus.wdk.model.TextField;
+import org.gusdb.gus.wdk.model.TextAttribute;
 import org.gusdb.gus.wdk.model.WdkModel;
 import org.gusdb.gus.wdk.model.ReferenceList;
 import org.gusdb.gus.wdk.model.TextColumn;
@@ -213,7 +213,7 @@ public class ModelXmlParser {
 
         /*    */ digester.addSetProperties( "wdkModel/recordSet/record/attributeQuery");
 
-        /*    */ digester.addSetNext( "wdkModel/recordSet/record/attributeQuery", "addFieldsQueryRef" );
+        /*    */ digester.addSetNext( "wdkModel/recordSet/record/attributeQuery", "addAttributesQueryRef" );
 
         /*    */ digester.addObjectCreate( "wdkModel/recordSet/record/tableQuery", Reference.class );
 
@@ -221,13 +221,13 @@ public class ModelXmlParser {
 
         /*    */ digester.addSetNext( "wdkModel/recordSet/record/tableQuery", "addTableQueryRef" );
 
-        /*    */ digester.addObjectCreate( "wdkModel/recordSet/record/textField", TextField.class );
+        /*    */ digester.addObjectCreate( "wdkModel/recordSet/record/textAttribute", TextAttribute.class );
 
-        /*    */ digester.addSetProperties( "wdkModel/recordSet/record/textField");
+        /*    */ digester.addSetProperties( "wdkModel/recordSet/record/textAttribute");
 
-        /*      */ digester.addBeanPropertySetter( "wdkModel/recordSet/record/textField/text");
+        /*      */ digester.addBeanPropertySetter( "wdkModel/recordSet/record/textAttribute/text");
 
-        /*    */ digester.addSetNext( "wdkModel/recordSet/record/textField", "addTextField" );
+        /*    */ digester.addSetNext( "wdkModel/recordSet/record/textAttribute", "addTextAttribute" );
 
         /*  */ digester.addSetNext( "wdkModel/recordSet/record", "addRecord" );
 
@@ -281,11 +281,11 @@ public class ModelXmlParser {
 
         /*  */ digester.addSetNext( "wdkModel/paramSet/stringParam", "addParam" );
 
-        /*  */ digester.addObjectCreate( "wdkModel/paramSet/flatCVParam", FlatCVParam.class );
+        /*  */ digester.addObjectCreate( "wdkModel/paramSet/flatVocabParam", FlatVocabParam.class );
 
-        /*  */ digester.addSetProperties( "wdkModel/paramSet/flatCVParam");
+        /*  */ digester.addSetProperties( "wdkModel/paramSet/flatVocabParam");
 
-        /*  */ digester.addSetNext( "wdkModel/paramSet/flatCVParam", "addParam" );
+        /*  */ digester.addSetNext( "wdkModel/paramSet/flatVocabParam", "addParam" );
         
         /**/ digester.addSetNext( "wdkModel/paramSet", "addParamSet" );
 
