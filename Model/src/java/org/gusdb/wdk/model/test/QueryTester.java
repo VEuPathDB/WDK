@@ -305,7 +305,7 @@ public class QueryTester {
 	options.addOptionGroup(specialOperations);
 
 	// params
-    Option params = new Option("params", true, "Comma delimited list of param_name,param_value,....");
+    Option params = new Option("params", true, "space delimited list of param_name param_value ....");
     params.setArgName("params");
 	options.addOption(params);
 
