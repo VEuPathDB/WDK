@@ -13,6 +13,7 @@ import org.gusdb.gus.wdk.model.Query;
 import org.gusdb.gus.wdk.model.QueryName;
 import org.gusdb.gus.wdk.model.RecordListSet;
 import org.gusdb.gus.wdk.model.RecordList;
+import org.gusdb.gus.wdk.model.WdkModelException;
 
 
 import java.io.File;
@@ -21,7 +22,7 @@ import org.apache.commons.digester.Digester;
 
 public class ModelXmlParser {
 
-    public static WdkModel parseXmlFile(File modelXmlFile) throws java.io.IOException, org.xml.sax.SAXException, Exception {
+    public static WdkModel parseXmlFile(File modelXmlFile) throws java.io.IOException, org.xml.sax.SAXException, WdkModelException {
 	Digester digester = configureDigester();
 	WdkModel model = 
 	    (WdkModel)digester.parse(modelXmlFile);

@@ -81,7 +81,7 @@ public class QuerySet {
 
     public static Query resolveReference(Map querySetMap, String twoPartName, 
 					 String callerType, String callerName, 
-					 String callerAttribute) throws Exception {
+					 String callerAttribute) throws WdkModelException {
 	String s = callerType + " '" + callerName + "' has a " + callerAttribute;
 
 	//ensures <code>twoPartName</code> is formatted correctly
@@ -94,14 +94,14 @@ public class QuerySet {
 	if (sqs == null) {
 	    String s3 = s + " which contains an unrecognized querySet '" 
 		+ querySetName + "'";
-	    throw new Exception(s3);
+	    throw new WdkModelException(s3);
 	}
 	Query sq = sqs.getQuery(queryName);
 	if (sq == null) {
 
 	    String s4 = s + " which contains an unrecognized query '" 
 		+ queryName + "'";
-	    throw new Exception(s4);
+	    throw new WdkModelException(s4);
 	}
 	return sq;
     }

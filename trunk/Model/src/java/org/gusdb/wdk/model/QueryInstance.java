@@ -1,10 +1,5 @@
 package org.gusdb.gus.wdk.model;
 
-import org.gusdb.gus.wdk.model.QueryParamsException;
-import org.gusdb.gus.wdk.model.NotBooleanOperandException;
-
-import java.sql.SQLException;
-
 import java.util.Collection;
 import java.util.Map;
 import java.util.TreeMap;
@@ -53,7 +48,7 @@ public abstract class QueryInstance {
     // Public Methods
     // ------------------------------------------------------------------
 
-    public void setValues(Map values) throws QueryParamsException {
+    public void setValues(Map values) throws WdkUserException, WdkModelException {
 	this.values = new TreeMap(values);
 	query.applyDefaults(values);
 	query.validateParamValues(values);
@@ -104,9 +99,9 @@ public abstract class QueryInstance {
 
     public abstract String getBooleanOperandSql() throws NotBooleanOperandException;
 
-    public abstract ResultList getResult() throws Exception;
+    public abstract ResultList getResult() throws WdkModelException;
 
-    public abstract String getResultAsTable() throws Exception;
+    public abstract String getResultAsTable() throws WdkModelException;
 
     // ------------------------------------------------------------------
     // Constructor (Protected)
@@ -118,8 +113,8 @@ public abstract class QueryInstance {
 	this.inMultiMode = false;
     }
 
-    protected abstract ResultList getNonpersistentResult() throws Exception;
+    protected abstract ResultList getNonpersistentResult() throws WdkModelException;
 
     protected abstract void writeResultToTable(String resultTableName, 
-					       ResultFactory rf) throws SQLException;
+					       ResultFactory rf) throws WdkModelException;
 }

@@ -3,9 +3,12 @@ package org.gusdb.gus.wdk.controller.servlets;
 import org.gusdb.gus.wdk.model.Param;
 import org.gusdb.gus.wdk.model.Query;
 import org.gusdb.gus.wdk.model.QueryInstance;
+import org.gusdb.gus.wdk.model.QuerySet;
 import org.gusdb.gus.wdk.model.RecordList;
 import org.gusdb.gus.wdk.model.RecordListInstance;
 import org.gusdb.gus.wdk.model.WdkModel;
+import org.gusdb.gus.wdk.model.WdkModelException;
+import org.gusdb.gus.wdk.model.WdkUserException;
 import org.gusdb.gus.wdk.view.QueryRecordGroupMgr;
 
 import java.io.IOException;
@@ -101,7 +104,12 @@ public class QueryTagsTesterServlet extends HttpServlet {
                 Param param = params[i];
                 String paramName = param.getName();
                 String passedIn = req.getParameter(formName+"."+queryRecordName+"."+paramName);
-                String error = param.validateValue(passedIn);
+		String error;
+		try {
+		    error = param.validateValue(passedIn);
+		} catch (WdkModelException e) {
+		    error = e.getMessage();
+		}
                 if ( error == null) {
                     paramValues.put(paramName, passedIn);
                 } else {
@@ -120,11 +128,14 @@ public class QueryTagsTesterServlet extends HttpServlet {
 		// If OK, show success msg
 		msg("OK, we've got a valid query. Hooray", res);
 
-
         sq.setIsCacheable(Boolean.TRUE);
 
         RecordListInstance rli = recordList.makeRecordListInstance();
-        rli.setValues(paramValues, 1, 20);
+	try {
+	    rli.setValues(paramValues, 1, 20);
+	} catch (WdkUserException wue) {
+	} catch (WdkModelException wue) {
+	}
 //        System.err.println("Printing Record Instances on page " + pageCount);
         try {
             rli.print();

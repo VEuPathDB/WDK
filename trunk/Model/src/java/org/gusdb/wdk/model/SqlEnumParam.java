@@ -34,7 +34,7 @@ public class SqlEnumParam extends Param {
 	return sqlQuery;
     }
 
-    public Map getKeysAndValues(ResultFactory resultFactory) throws Exception {
+    public Map getKeysAndValues(ResultFactory resultFactory) throws WdkModelException {
 	
 	if (hash == null) {
 	    hash = new HashMap();
@@ -44,8 +44,6 @@ public class SqlEnumParam extends Param {
 		while (rl.next()) {
 		    hash.put(rl.getValue("key"), rl.getValue("value"));
 		}
-	    } catch (Exception e) {
-		    throw e;
 	    } finally {
 		rl.close();
 	    }

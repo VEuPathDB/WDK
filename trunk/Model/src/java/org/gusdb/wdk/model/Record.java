@@ -66,7 +66,7 @@ public class Record {
 	tableQueryRefs.add(tableQueryRef.getReferent());
     }
 
-    public void resolveReferences(Map querySetMap) throws Exception {
+    public void resolveReferences(Map querySetMap) throws WdkModelException {
 	Iterator fQueryRefs = fieldsQueryRefs.iterator();
 	while (fQueryRefs.hasNext()) {
 	    String queryName = (String)fQueryRefs.next();
@@ -94,7 +94,7 @@ public class Record {
 
 
 
-    public void addTextField(TextField textField) throws Exception {
+    public void addTextField(TextField textField) throws WdkModelException {
 	checkFieldName(textField.getName());
 	textFieldMap.put(textField.getName(), textField.getText());
     }
@@ -150,7 +150,7 @@ public class Record {
     /**
      * Add a fields query. Map it by all of its column names
      */
-    protected void addFieldsQuery(Query query) throws Exception {
+    protected void addFieldsQuery(Query query) throws WdkModelException {
 	Column[] columns = query.getColumns();
 	for (int i=0; i<columns.length;i++) {
 	    Column column = columns[i];
@@ -162,17 +162,17 @@ public class Record {
     /**
      * Add a table query. Map it by its query name
      */
-    protected void addTableQuery(Query query) throws Exception {
+    protected void addTableQuery(Query query) throws WdkModelException {
 	if (tableQueryMap.containsKey(query.getName())) {
-	    throw new Exception("Record " + getName() + " already has table query named " + query.getName());
+	    throw new WdkModelException("Record " + getName() + " already has table query named " + query.getName());
 	}
 	tableQueryMap.put(query.getName(), query);
     }
 
-    protected void checkFieldName(String name) throws Exception {
+    protected void checkFieldName(String name) throws WdkModelException {
 	if (fieldsQueryMap.containsKey(name) 
 	    || textFieldMap.containsKey(name)) {
-	    throw new Exception("Record " + getName() + 
+	    throw new WdkModelException("Record " + getName() + 
 				" already has a field named " + name);
 	}
     }
@@ -186,30 +186,30 @@ public class Record {
 	    throw new IllegalArgumentException(s + " must have only one param, and it must be named 'primaryKey'");
     }
 
-    protected Query getFieldsQuery(String fieldName) throws Exception {
+    protected Query getFieldsQuery(String fieldName) throws WdkModelException {
 	Query query = (Query)fieldsQueryMap.get(fieldName);
 	if (query == null) {
-	    throw new Exception("Record " + getName() + 
+	    throw new WdkModelException("Record " + getName() + 
 				" does not have a field with name '" +
 				fieldName + "'");
 	}
 	return query;
     }
 
-    protected Query getTableQuery(String tableQueryName) throws Exception {
+    protected Query getTableQuery(String tableQueryName) throws WdkModelException {
 	Query query = (Query)tableQueryMap.get(tableQueryName);
 	if (query == null) {
-	    throw new Exception("Record " + getName() + 
+	    throw new WdkModelException("Record " + getName() + 
 				" does not have a tableQuery with name '" +
 				tableQueryName + "'");
 	}
 	return query;
     }
 
-    protected String getTextField(String textFieldName) throws Exception {
+    protected String getTextField(String textFieldName) throws WdkModelException {
 	String text = (String)textFieldMap.get(textFieldName);
 	if (text == null) {
-	    throw new Exception("Record " + getName() + 
+	    throw new WdkModelException("Record " + getName() + 
 				" does not have a text field with name '" +
 				textFieldName + "'");
 	}

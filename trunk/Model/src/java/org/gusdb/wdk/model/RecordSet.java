@@ -35,12 +35,12 @@ public class RecordSet {
 	return records;
     }
 
-    public void addRecord(Record record) {
+    public void addRecord(Record record) throws WdkModelException {
 	if (recordSet.get(record.getName()) != null) 
-	    throw new IllegalArgumentException("Record named " 
-					       + record.getName() 
-					       + " already exists in record set "
-					       + getName());
+	    throw new WdkModelException("Record named " 
+				       + record.getName() 
+				       + " already exists in record set "
+				       + getName());
 	recordSet.put(record.getName(), record);
     }
 
@@ -60,7 +60,7 @@ public class RecordSet {
        return buf.toString();
     }
 
-    public void resolveReferences(Map querySetMap) throws Exception {
+    public void resolveReferences(Map querySetMap) throws WdkModelException {
        Iterator recordIterator = recordSet.values().iterator();
        while (recordIterator.hasNext()) {
 	   Record record = (Record)recordIterator.next();
@@ -68,7 +68,7 @@ public class RecordSet {
        }
     }
     
-    public static Record resolveRecordReference(Map recordSetMap, String twoPartRecordName) throws Exception {
+    public static Record resolveRecordReference(Map recordSetMap, String twoPartRecordName) throws WdkModelException {
 
 	//change to RecordName eventually
 	
@@ -79,13 +79,13 @@ public class RecordSet {
 	RecordSet rs = (RecordSet)recordSetMap.get(recordSetName);
 	if (rs == null) {
 	    //maybe change to mirror SimpleQuerySet error messaging?
-	    throw new Exception ("Could not find RecordSet " + recordSetName);
+	    throw new WdkModelException ("Could not find RecordSet " + recordSetName);
 	}
 	Record record = (Record)rs.getRecord(recordName);
 
 	if (record == null) {
 
-	    throw new Exception ("Could not find Record " + recordName);
+	    throw new WdkModelException ("Could not find Record " + recordName);
 	}
 	return record;
     }

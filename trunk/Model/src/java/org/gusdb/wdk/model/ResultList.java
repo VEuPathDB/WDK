@@ -17,11 +17,11 @@ public abstract class ResultList {
     }
 
 
-    public abstract void checkQueryColumns(Query query, boolean checkAll) throws Exception;
+    public abstract void checkQueryColumns(Query query, boolean checkAll) throws WdkModelException;
 
-    public Object getValue(String fieldName) throws Exception {
+    public Object getValue(String fieldName) throws WdkModelException {
 	if (valuesInUse.containsKey(fieldName)) 
-	    throw new Exception("Circular attempt to access field " + fieldName);
+	    throw new WdkModelException("Circular attempt to access field " + fieldName);
 	Object value;
 	try {
 	    valuesInUse.put(fieldName,fieldName);
@@ -40,16 +40,16 @@ public abstract class ResultList {
 	return query;
     }
 
-    public abstract boolean next() throws Exception;
+    public abstract boolean next() throws WdkModelException;
 
-    public abstract void close() throws Exception;
+    public abstract void close() throws WdkModelException;
 
-    public abstract void write(StringBuffer buf) throws Exception;
+    public abstract void write(StringBuffer buf) throws WdkModelException;
 
-    public abstract void print() throws Exception;
+    public abstract void print() throws WdkModelException;
 
-    public String getResultTableName() throws Exception {
-	if (!hasResultTable()) throw new Exception("Has no result table");
+    public String getResultTableName() throws WdkModelException {
+	if (!hasResultTable()) throw new WdkModelException("Has no result table");
 	return resultTableName;
     }
 
@@ -61,7 +61,7 @@ public abstract class ResultList {
     //  protected
     //////////////////////////////////////////////////////////////////
 
-    protected abstract Object getValueFromResult(String fieldName) throws Exception;
+    protected abstract Object getValueFromResult(String fieldName) throws WdkModelException;
 
     public QueryInstance getInstance() {
         return instance;

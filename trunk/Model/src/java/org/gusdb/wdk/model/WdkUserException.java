@@ -3,26 +3,26 @@ package org.gusdb.gus.wdk.model;
 import java.util.Map;
 import java.util.Iterator;
 
-public class QueryParamsException extends Exception {
+public class WdkUserException extends Exception {
 
     Map booBoos;
 
-    public QueryParamsException(Map booBoos) {
+    public WdkUserException(Map booBoos) {
 	super();
 	this.booBoos = booBoos;
     }
 
-    public QueryParamsException(String message, Map booBoos) {
+    public WdkUserException(String message, Map booBoos) {
 	super(message);
 	this.booBoos = booBoos;
     }
 
-    public QueryParamsException(Throwable cause, Map booBoos) {
+    public WdkUserException(Throwable cause, Map booBoos) {
 	super(cause);
 	this.booBoos = booBoos;
     }
 
-    public QueryParamsException(String message, Throwable cause, Map booBoos) {
+    public WdkUserException(String message, Throwable cause, Map booBoos) {
 	super(message, cause);
 	this.booBoos = booBoos;
     }

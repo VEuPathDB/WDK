@@ -31,7 +31,7 @@ public class RecordInstance {
     /**
      * Get the value for a field or a text field
      */
-    public Object getFieldValue(String fieldName) throws Exception {
+    public Object getFieldValue(String fieldName) throws WdkModelException {
 	Object value;
 	if (record.isTextField(fieldName)) {
 	    String rawText = record.getTextField(fieldName);
@@ -53,19 +53,23 @@ public class RecordInstance {
 	return null;
     }
 
-    public ResultList getTableValue(String tableName) throws Exception {
+    public ResultList getTableValue(String tableName) throws WdkModelException {
 	Query query = record.getTableQuery(tableName);
 	QueryInstance instance = query.makeInstance();
 	instance.setIsCacheable(false);
 	HashMap paramHash = new HashMap();
 	if (primaryKey == null) 
-	    throw new NullPointerException("primaryKey is null");
+	    throw new WdkModelException("primaryKey is null");
 	paramHash.put("primaryKey", primaryKey);
-	instance.setValues(paramHash);
+	try {
+	    instance.setValues(paramHash);
+	} catch (WdkUserException e) {
+	    throw new WdkModelException(e);
+	}
 	return instance.getResult();
     }
 
-    public String print() throws Exception {
+    public String print() throws WdkModelException {
 	String newline = System.getProperty( "line.separator" );
 	StringBuffer buf =
 	    new StringBuffer(record.getType() + " " + record.getIdPrefix() + primaryKey).append( newline );
@@ -102,7 +106,7 @@ public class RecordInstance {
     // protected
     ///////////////////////////////////////////////////////////////////////////////////////
 
-    protected void setFieldValue(String fieldName, Object fieldValue) throws Exception{
+    protected void setFieldValue(String fieldName, Object fieldValue) throws WdkModelException{
 	
 	Query query = record.getFieldsQuery(fieldName);
 	String queryName = query.getName();
@@ -117,7 +121,7 @@ public class RecordInstance {
     /**
      * Place hash of single row result into hash keyed on query name
      */
-    protected void runFieldsQuery(Query query) throws Exception {
+    protected void runFieldsQuery(Query query) throws WdkModelException {
 	QueryInstance instance = query.makeInstance();
 	instance.setIsCacheable(false);
 	if (recordListInstance != null){
@@ -129,9 +133,13 @@ public class RecordInstance {
 	else{ //do it all myself
 	    HashMap paramHash = new HashMap();
 	    if (primaryKey == null) 
-		throw new NullPointerException("primaryKey is null");
+		throw new WdkModelException("primaryKey is null");
 	    paramHash.put("primaryKey", primaryKey);
-	    instance.setValues(paramHash);
+	    try {
+		instance.setValues(paramHash);
+	    } catch (WdkUserException e) {
+		throw new WdkModelException(e);
+	    }
 	    ResultList rl = instance.getResult();
 	    //	rl.checkQueryColumns(query, true);
 	    
@@ -145,10 +153,10 @@ public class RecordInstance {
     }
 
     protected String instantiateTextField(String textFieldName, String rawText, 
-					  HashMap alreadyVisited) throws Exception {
+					  HashMap alreadyVisited) throws WdkModelException {
 
 	if (alreadyVisited.containsKey(textFieldName)) {
-	    throw new Exception("Circular text field subsitution involving text field '" 
+	    throw new WdkModelException("Circular text field subsitution involving text field '" 
 				+ textFieldName + "'");
 	}
 
@@ -206,9 +214,9 @@ public class RecordInstance {
 	return text;
     }
 
-    public static void checkInstantiatedText(String instantiatedText) throws Exception {
+    public static void checkInstantiatedText(String instantiatedText) throws WdkModelException {
 	if (instantiatedText.matches("\\$\\$\\w+\\$\\$")) 
-	    throw new Exception ("'" + instantiatedText + 
+	    throw new WdkModelException ("'" + instantiatedText + 
 				 "' contains unrecognized macro");
     }
 	

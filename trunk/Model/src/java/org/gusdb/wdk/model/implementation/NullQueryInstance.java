@@ -3,7 +3,8 @@ package org.gusdb.gus.wdk.model.implementation;
 import org.gusdb.gus.wdk.model.NotBooleanOperandException;
 import org.gusdb.gus.wdk.model.Query;
 import org.gusdb.gus.wdk.model.QueryInstance;
-import org.gusdb.gus.wdk.model.QueryParamsException;
+import org.gusdb.gus.wdk.model.WdkUserException;
+import org.gusdb.gus.wdk.model.WdkModelException;
 import org.gusdb.gus.wdk.model.ResultList;
 import org.gusdb.gus.wdk.model.ResultFactory;
 
@@ -38,11 +39,11 @@ public class NullQueryInstance extends QueryInstance {
     	return NullQuery.INSTANCE;
     }
 
-    public ResultList getResult() throws Exception {
+    public ResultList getResult() throws WdkModelException {
     	return null;
     }
 
-    public void setValues(Map values) throws QueryParamsException {
+    public void setValues(Map values) throws WdkUserException {
     	// Deliberately empty
     }
 
@@ -51,17 +52,17 @@ public class NullQueryInstance extends QueryInstance {
         return new String("method needs to be written!");
     }
 
-    protected ResultList getNonpersistentResult() throws Exception {
+    protected ResultList getNonpersistentResult() throws WdkModelException {
 	return null;
     }
 
     protected void writeResultToTable(String resultTableName, 
-				      ResultFactory rf) throws SQLException{
+				      ResultFactory rf) throws WdkModelException{
         //TODO Need to write
 	System.err.println("need to write method");
     }
 
-    public String getResultAsTable() throws Exception {
+    public String getResultAsTable() throws WdkModelException {
         // TODO Auto-generated method stub
         return null;
     }

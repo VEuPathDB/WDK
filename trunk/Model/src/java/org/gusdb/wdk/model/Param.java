@@ -45,7 +45,17 @@ public abstract class Param {
     /**
      * @return Error string if an error.  null if no errors.
      */ 
-    public abstract String validateValue(String value);
+    public abstract String validateValue(String value) throws WdkModelException ;
+
+    /**
+     * Transforms external value into internal value if needed
+     * By default returns provided value
+     */
+    public String getInternalValue(String value) throws WdkModelException {
+	return value;
+    }
+
+    public void resolveReferences() {}
 
     public String toString() {
        String newline = System.getProperty( "line.separator" );

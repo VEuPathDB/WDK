@@ -46,7 +46,7 @@ public class QueryName{
      * Constructor that takes a fully qualified name of a Query (in "QuerySetName.QueryName") format to initialize
      * this QueryName.
      */
-    public QueryName(String fullQueryName) throws Exception{
+    public QueryName(String fullQueryName) throws WdkModelException{
 	
 	setFullQueryName(fullQueryName);
     }
@@ -70,14 +70,14 @@ public class QueryName{
      * @param fullQueryName String with format "QuerySetName.QueryName" representing a fully 
      *                      qualified query name.
      *
-     * @throws Exception    if the Query is in the incorrect format, or if this QueryName has 
+     * @throws WdkModelException    if the Query is in the incorrect format, or if this QueryName has 
      *                      already been initialized.
      */
      
-    public void setFullQueryName(String fullQueryName)throws Exception{
+    public void setFullQueryName(String fullQueryName)throws WdkModelException{
 	
 	if (querySetName != null || queryName != null){
-	    throw new Exception("Cannot reset initialized QueryName (query set: " + querySetName + ", query name: " + queryName + " to be " + fullQueryName);
+	    throw new WdkModelException("Cannot reset initialized QueryName (query set: " + querySetName + ", query name: " + queryName + " to be " + fullQueryName);
 	}
 	validateAndSetQueryName(fullQueryName);
     }
@@ -90,7 +90,7 @@ public class QueryName{
      * @param pageableSets a HashMap of PageableQuerySets which may hold this query.
      * @return true if the check passes 
      */
-        public boolean checkReferences(HashMap querySets) throws Exception {
+        public boolean checkReferences(HashMap querySets) throws WdkModelException {
 
 
 	//DTB -- this could be cleaned up if we abstract QuerySet to be the superclass of SimpleQuerySet and PageableQuerySet
@@ -104,22 +104,22 @@ public class QueryName{
 	        return true;  //passed check
 	    } 
 		String error = "QueryNameList error: '" + queryName + "' did not pass check; querySet '" + querySet.getName() + "' does not contain '" + queryName + "'";
-		throw new Exception(error);
+		throw new WdkModelException(error);
 	}
 
-	throw new Exception("QueryNameList error: '" + queryName + "' did not pass check;  there is no querySet with name '" + queryName + "' in this model");
+	throw new WdkModelException("QueryNameList error: '" + queryName + "' did not pass check;  there is no querySet with name '" + queryName + "' in this model");
 
     }
 
     // ------------------------------------------------------------------
     // Private Methods
     // ------------------------------------------------------------------
-    private void validateAndSetQueryName(String fullQueryName) throws Exception{
+    private void validateAndSetQueryName(String fullQueryName) throws WdkModelException{
 	
 
 	if (!fullQueryName.matches("\\w+\\.\\w+")) {
 	    String error = "QueryNameList format error:  QueryName '" + queryName + "' is not in the form 'querySetName.QueryName'";
-	    throw new Exception(error);
+	    throw new WdkModelException(error);
 	}
 	    
 	String[] parts = fullQueryName.split("\\.");

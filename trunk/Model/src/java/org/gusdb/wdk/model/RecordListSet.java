@@ -55,7 +55,7 @@ public class RecordListSet {
 	recordListSet.put(recordList.getName(), recordList);
     }
 
-    public void resolveReferences(Map queryMap, Map recordMap) throws Exception{
+    public void resolveReferences(Map queryMap, Map recordMap) throws WdkModelException{
 	
 	Iterator recordListIterator = recordListSet.values().iterator();
 	while (recordListIterator.hasNext()){
