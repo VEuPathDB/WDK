@@ -53,7 +53,7 @@
     </copy>
 
     <copy tofile="${build.home}/webapp/WEB-INF/wdk-config/macro.props" 
-	      file="ToyModel/config/sampleModel.prop"/>
+	      file="ToyModel/config/toyModel.prop"/>
       
     <copy tofile="${build.home}/webapp/WEB-INF/wdk-config/login.xml" 
 	      file="ToyModel/lib/xml/login.xml.d1pat"/>
