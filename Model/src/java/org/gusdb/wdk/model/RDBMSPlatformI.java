@@ -23,6 +23,8 @@ public interface RDBMSPlatformI {
 
     public String getCurrentDateFunction();
 
+    public boolean checkTableExists(String tableName) throws SQLException;
+
     public int dropTable(String schemaName, String tableName) throws SQLException;
     public void createSequence(String sequenceName, int start, int increment) throws SQLException;
 
