@@ -16,7 +16,7 @@
   <property name="compile.deprecation" value="false"/>
   <property name="compile.optimize"    value="true"/>
 
-
+  <property name="webapp.dir" value="/nfs/team81/art/genedb/webapps/sampleWDK/" />
 
   <path id="compile.classpath">
 
@@ -33,8 +33,93 @@
   </path>
 
 
-<!--  <target name="all" depends="clean,compile"
-   description="BROKEN Clean build and dist directories, then compile"/> -->
+
+  <target name="deploy" depends="package"
+   description="Deploy to webapp directory">
+
+    <!-- Compile Java classes as necessary -->
+    <mkdir dir="${build.home}/webapp"/>
+    <mkdir dir="${build.home}/WEB-INF/"/>  
+    <mkdir dir="${build.home}/WEB-INF/lib/"/>
+    <mkdir dir="${build.home}/webapp/WEB-INF/wdk-config" /> 	
+  	
+    <!-- Copy application resources -->
+    <copy todir="${build.home}/webapp/WEB-INF">
+      <fileset dir="ToySite/webinf" />
+    </copy>
+
+    <copy todir="${build.home}/webapp/">
+      <fileset dir="ToySite/docroot" />
+    </copy>
+
+    <copy tofile="${build.home}/webapp/WEB-INF/wdk-config/macro.props" 
+	      file="ToyModel/config/sampleModel.prop"/>
+      
+    <copy tofile="${build.home}/webapp/WEB-INF/wdk-config/login.xml" 
+	      file="ToyModel/lib/xml/login.xml.d1pat"/>
+      
+        	<copy tofile="${build.home}/webapp/WEB-INF/wdk-config/model.xml" 
+  		  file="ToyModel/lib/xml/toyModel.xml"/>
+      
+      <copy todir="${build.home}/webapp/WEB-INF/classes">
+      <fileset dir="${build.home}/classes/"/>
+      </copy>
+<!--    <copy todir="${build.home}/webapp/WEB-INF/lib">
+    	<fileset dir="${basedir}/lib/java" />
+    </copy>
+-->
+<!--  	<copy todir="${build.home}/webapp/WEB-INF/lib" 
+  		  file="${build.home}/GUS-WebDevKit.jar"/> -->
+  	
+  	
+  	
+ <!--   <copy todir="${gus.home}/lib/xml"> 
+      <fileset dir="lib/xml" includes="*.xml" />
+  	</copy> -->
+  	
+
+  	
+<!--  	<mkdir dir="${build.home}/webapp/WEB-INF/classes" />
+  	<copy todir="${build.home}/webapp/WEB-INF/classes">
+  	  	<fileset dir="${build.home}/classes" />
+  	  		</copy> -->
+  	
+  	    <copy  todir="${build.home}/webapp/WEB-INF/lib">
+      <fileset dir="${jar_resources_controller.home}" />
+    </copy>
+    <copy  todir="${build.home}/webapp/WEB-INF/lib">
+      <fileset dir="${jar_resources_model.home}" />
+    </copy>
+    <copy  todir="${build.home}/webapp/WEB-INF/lib">
+      <fileset dir="${jar_resources_view.home}" />
+    </copy>
+
+    <copy  todir="${build.home}/webapp/WEB-INF/lib">
+      <fileset dir="ToyModel/lib/java/" />
+    </copy>
+    
+<!--  	<copy todir="${build.home}/webapp/WEB-INF/lib">
+      <fileset dir="../WebDevKit/lib/java" 
+               includes="commons-digester-1.5.jar,
+                         ojdbc14.jar,
+                         commons-beanutils.jar,
+                         commons-cli-1.0.jar
+                         jstl.jar,
+                         pager-taglib.jar,
+                         standard.jar,
+                         jing-20030619.jar,
+                         commons-dbcp-1.1.jar,
+                         commons-pool-1.1.jar" />
+    </copy> -->
+  	
+  	<mkdir dir="${webapp.dir}"/>
+    <copy todir="${webapp.dir}">
+      <fileset dir="${build.home}/webapp" />
+    </copy>	
+  	
+  </target>
+
+
 
 
   <target name="clean"
@@ -78,6 +163,7 @@
     </javac>
 
     <!-- Copy application resources -->
+    <!--
     <copy  todir="${build.home}/classes">
       <fileset dir="${jar_resources_controller.home}" />
     </copy>
@@ -90,6 +176,7 @@
     <copy  todir="${build.home}/classes">
       <fileset dir="${jar_resources.home}" />
     </copy>
+    -->
     <copy todir="${build.home}/classes/org/gusdb/wdk/model" file="${basedir}/Model/lib/rng/wdkModel.rng" />
 
   </target>
@@ -99,6 +186,11 @@
   <target name="package" depends="compile"
    description="Create JAR file">
 
+    <copy todir="${build.home}/classes/META-INF">
+      <fileset dir="View/webinf/META-INF" />
+    </copy>	
+  		
+
     <!-- Create application JAR file -->
     <jar jarfile="${build.home}/GUS-WebDevKit.jar"
          basedir="${build.home}/classes/"/>
@@ -106,6 +198,7 @@
     <!-- Copy additional files to ${dist.home} as necessary -->
 
   </target>
+
 
 
   <target name="javadoc" depends="compile"
