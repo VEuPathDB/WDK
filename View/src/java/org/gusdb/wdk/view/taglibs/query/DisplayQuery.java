@@ -12,7 +12,6 @@ import org.gusdb.gus.wdk.model.QueryInstance;
 import org.gusdb.gus.wdk.model.RecordList;
 import org.gusdb.gus.wdk.model.RecordListSet;
 import org.gusdb.gus.wdk.model.WdkModel;
-import org.gusdb.gus.wdk.model.WdkModelException;
 import org.gusdb.gus.wdk.model.implementation.NullQueryInstance;
 
 /**
@@ -36,11 +35,7 @@ public class DisplayQuery extends SimpleTagSupport {
 
     	if ( queryInstance instanceof NullQueryInstance) {
             WdkModel wm = (WdkModel) getJspContext().getAttribute("wdk.wdkModel", PageContext.APPLICATION_SCOPE);
-	    RecordListSet rls = null;
-	    try {
-		rls = wm.getRecordListSet(querySet);
-	    } catch (WdkModelException e) {
-	    }
+            RecordListSet rls = wm.getRecordListSet(querySet);
             RecordList[] rla = rls.getRecordLists();
             
             
