@@ -1,13 +1,13 @@
-package org.gusdb.gus.wdk.model.query;
+package org.gusdb.gus.wdk.model;
 
 import java.util.Hashtable;
 import java.sql.SQLException;
 import java.sql.ResultSet;
 
-import org.gusdb.gus.wdk.model.query.implementation.SimpleSqlQuery;
-import org.gusdb.gus.wdk.model.query.implementation.SimpleSqlQueryInstance;
-import org.gusdb.gus.wdk.model.query.implementation.SqlUtils;
-import org.gusdb.gus.wdk.model.query.implementation.SqlResultFactory;
+import org.gusdb.gus.wdk.model.implementation.SimpleSqlQuery;
+import org.gusdb.gus.wdk.model.implementation.SimpleSqlQueryInstance;
+import org.gusdb.gus.wdk.model.implementation.SqlUtils;
+import org.gusdb.gus.wdk.model.implementation.SqlResultFactory;
 
 public class SqlEnumParam extends Param {
     

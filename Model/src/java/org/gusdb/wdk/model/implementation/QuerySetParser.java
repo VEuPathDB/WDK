@@ -1,15 +1,15 @@
-package org.gusdb.gus.wdk.model.query.implementation;
+package org.gusdb.gus.wdk.model.implementation;
 
 import org.apache.commons.digester.Digester;
 
 import java.io.File;
 import java.io.IOException;
 import org.xml.sax.SAXException;
-import org.gusdb.gus.wdk.model.query.QuerySetContainer;
-import org.gusdb.gus.wdk.model.query.SimpleQuerySet;
-import org.gusdb.gus.wdk.model.query.PageableQuerySet;
-import org.gusdb.gus.wdk.model.query.StringParam;
-import org.gusdb.gus.wdk.model.query.SqlEnumParam;
+import org.gusdb.gus.wdk.model.QuerySetContainer;
+import org.gusdb.gus.wdk.model.SimpleQuerySet;
+import org.gusdb.gus.wdk.model.PageableQuerySet;
+import org.gusdb.gus.wdk.model.StringParam;
+import org.gusdb.gus.wdk.model.SqlEnumParam;
 
 public class QuerySetParser {
 

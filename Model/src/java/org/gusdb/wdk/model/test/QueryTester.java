@@ -29,30 +29,30 @@ import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.HelpFormatter;
 
-import org.gusdb.gus.wdk.model.query.ResultFactory;
-import org.gusdb.gus.wdk.model.query.QueryParamsException;
-import org.gusdb.gus.wdk.model.query.QuerySetContainer;
-import org.gusdb.gus.wdk.model.query.QueryI;
-import org.gusdb.gus.wdk.model.query.SimpleQuerySet;
-import org.gusdb.gus.wdk.model.query.SimpleQueryI;
-import org.gusdb.gus.wdk.model.query.SimpleQueryInstanceI;
-import org.gusdb.gus.wdk.model.query.PageableQuerySet;
-import org.gusdb.gus.wdk.model.query.PageableQueryI;
-import org.gusdb.gus.wdk.model.query.PageableQueryInstanceI;
-import org.gusdb.gus.wdk.model.query.Param;
-import org.gusdb.gus.wdk.model.query.StringParam;
-import org.gusdb.gus.wdk.model.query.RDBMSPlatformI;
-import org.gusdb.gus.wdk.model.query.implementation.QuerySetParser;
-import org.gusdb.gus.wdk.model.query.implementation.SqlResultFactory;
+import org.gusdb.gus.wdk.model.ResultFactory;
+import org.gusdb.gus.wdk.model.QueryParamsException;
+import org.gusdb.gus.wdk.model.QuerySetContainer;
+import org.gusdb.gus.wdk.model.QueryI;
+import org.gusdb.gus.wdk.model.SimpleQuerySet;
+import org.gusdb.gus.wdk.model.SimpleQueryI;
+import org.gusdb.gus.wdk.model.SimpleQueryInstanceI;
+import org.gusdb.gus.wdk.model.PageableQuerySet;
+import org.gusdb.gus.wdk.model.PageableQueryI;
+import org.gusdb.gus.wdk.model.PageableQueryInstanceI;
+import org.gusdb.gus.wdk.model.Param;
+import org.gusdb.gus.wdk.model.StringParam;
+import org.gusdb.gus.wdk.model.RDBMSPlatformI;
+import org.gusdb.gus.wdk.model.implementation.QuerySetParser;
+import org.gusdb.gus.wdk.model.implementation.SqlResultFactory;
 
 
-import org.gusdb.gus.wdk.model.query.SqlEnumParam;
-import org.gusdb.gus.wdk.model.query.implementation.SqlUtils;
+import org.gusdb.gus.wdk.model.SqlEnumParam;
+import org.gusdb.gus.wdk.model.implementation.SqlUtils;
 
-import org.gusdb.gus.wdk.model.query.implementation.SimpleSqlQueryInstance;
+import org.gusdb.gus.wdk.model.implementation.SimpleSqlQueryInstance;
 
-//import org.gusdb.gus.wdk.model.query.;
-//import org.gusdb.gus.wdk.model.query.;
+//import org.gusdb.gus.wdk.model.;
+//import org.gusdb.gus.wdk.model.;
 
 public class QueryTester {
 

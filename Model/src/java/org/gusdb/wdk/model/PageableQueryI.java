@@ -1,4 +1,4 @@
-package org.gusdb.gus.wdk.model.query;
+package org.gusdb.gus.wdk.model;
 
 import java.util.Map;
 
@@ -9,5 +9,5 @@ public interface PageableQueryI extends QueryI {
     /**
      * Resolve any by-name references to queries.
      */
-    public void dereference(Map queryMap) throws Exception ;
+    public void resolveReferences(Map queryMap) throws Exception ;
 }

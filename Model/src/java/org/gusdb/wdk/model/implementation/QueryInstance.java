@@ -1,12 +1,12 @@
-package org.gusdb.gus.wdk.model.query.implementation;
+package org.gusdb.gus.wdk.model.implementation;
 
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.Map;
 import java.util.Collection;
 
-import org.gusdb.gus.wdk.model.query.QueryParamsException;
-import org.gusdb.gus.wdk.model.query.QueryI;
+import org.gusdb.gus.wdk.model.QueryParamsException;
+import org.gusdb.gus.wdk.model.QueryI;
 
 public class QueryInstance {
 

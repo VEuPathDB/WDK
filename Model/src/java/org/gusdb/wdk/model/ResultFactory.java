@@ -1,6 +1,6 @@
-package org.gusdb.gus.wdk.model.query;
+package org.gusdb.gus.wdk.model;
 
-import org.gusdb.gus.wdk.model.query.implementation.SqlResultFactory;
+import org.gusdb.gus.wdk.model.implementation.SqlResultFactory;
 
 public class ResultFactory {
     SqlResultFactory sqlResultFactory;

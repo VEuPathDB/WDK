@@ -1,4 +1,4 @@
-package org.gusdb.gus.wdk.model.query;
+package org.gusdb.gus.wdk.model;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -60,11 +60,11 @@ public class PageableQuerySet {
        return buf.toString();
     }
 
-    public void dereference(Map querySetMap) throws Exception {
+    public void resolveReferences(Map querySetMap) throws Exception {
        Iterator queryIterator = querySet.values().iterator();
        while (queryIterator.hasNext()) {
 	   PageableQueryI pq = (PageableQueryI)queryIterator.next();
-	   pq.dereference(querySetMap);
+	   pq.resolveReferences(querySetMap);
        }
     }
     

@@ -1,4 +1,4 @@
-package org.gusdb.gus.wdk.model.query;
+package org.gusdb.gus.wdk.model;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -65,11 +65,11 @@ public class QuerySetContainer {
      * Some elements within the set may refer to others by name.  Resolve those
      * references into real object references.
      */ 
-    public void dereference() throws Exception {
+    public void resolveReferences() throws Exception {
        Iterator querySetIterator = pageableQuerySets.values().iterator();
        while (querySetIterator.hasNext()) {
 	   PageableQuerySet pqs = (PageableQuerySet)querySetIterator.next();
-	   pqs.dereference(simpleQuerySets);
+	   pqs.resolveReferences(simpleQuerySets);
        }
     }
     

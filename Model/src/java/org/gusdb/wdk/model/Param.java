@@ -1,4 +1,4 @@
-package org.gusdb.gus.wdk.model.query;
+package org.gusdb.gus.wdk.model;
 
 
 public abstract class Param {

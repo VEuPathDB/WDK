@@ -1,4 +1,4 @@
-package org.gusdb.gus.wdk.model.query.implementation;
+package org.gusdb.gus.wdk.model.implementation;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -12,7 +12,7 @@ import javax.sql.DataSource;
 import org.gusdb.gus.wdk.model.ModelConfig;
 import org.gusdb.gus.wdk.model.ModelConfigParser;
 
-import org.gusdb.gus.wdk.model.query.RDBMSPlatformI;
+import org.gusdb.gus.wdk.model.RDBMSPlatformI;
 
 import java.io.IOException;
 import java.io.File;
