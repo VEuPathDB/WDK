@@ -1,9 +1,9 @@
 package org.gusdb.wdk.model.test;
 
 import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.Record;
+import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.RecordInstance;
-import org.gusdb.wdk.model.RecordSet;
+import org.gusdb.wdk.model.RecordClassSet;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.implementation.ModelXmlParser;
 
@@ -37,8 +37,8 @@ public class RecordTester {
 	File modelConfigXmlFile = new File(cmdLine.getOptionValue("configFile"));
 	File schemaFile = new File(System.getProperty("schemaFile"));
 
-	String recordSetName = cmdLine.getOptionValue("recordSetName");
-	String recordName = cmdLine.getOptionValue("recordName");
+	String recordClassSetName = cmdLine.getOptionValue("recordSetName");
+	String recordClassName = cmdLine.getOptionValue("recordName");
 	String primaryKey = cmdLine.getOptionValue("primaryKey");
 
 	try {
@@ -46,9 +46,9 @@ public class RecordTester {
 	    WdkModel wdkModel = 
 		ModelXmlParser.parseXmlFile(modelXmlFile.toURL(), modelPropFile.toURL(), schemaFile.toURL(), modelConfigXmlFile.toURL()) ;
 
-	    RecordSet recordSet = wdkModel.getRecordSet(recordSetName);
-	    Record record = recordSet.getRecord(recordName);
-	    RecordInstance recordInstance = record.makeRecordInstance();
+	    RecordClassSet recordClassSet = wdkModel.getRecordClassSet(recordClassSetName);
+	    RecordClass recordClass = recordClassSet.getRecordClass(recordClassName);
+	    RecordInstance recordInstance = recordClass.makeRecordInstance();
 	    recordInstance.setPrimaryKey(primaryKey);
 	    System.out.println( recordInstance.print() );
 

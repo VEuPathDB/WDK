@@ -4,8 +4,8 @@ import org.gusdb.wdk.model.Column;
 import org.gusdb.wdk.model.FlatVocabParam;
 import org.gusdb.wdk.model.ParamSet;
 import org.gusdb.wdk.model.QuerySet;
-import org.gusdb.wdk.model.Record;
-import org.gusdb.wdk.model.RecordSet;
+import org.gusdb.wdk.model.RecordClass;
+import org.gusdb.wdk.model.RecordClassSet;
 import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.ReferenceList;
 import org.gusdb.wdk.model.StringParam;
@@ -208,11 +208,11 @@ public class ModelXmlParser {
         
         //RecordClassSet
         
-        /**/ digester.addObjectCreate( "wdkModel/recordClassSet", RecordSet.class );
+        /**/ digester.addObjectCreate( "wdkModel/recordClassSet", RecordClassSet.class );
         
         /**/ digester.addSetProperties( "wdkModel/recordClassSet");
         
-        /*  */ digester.addObjectCreate( "wdkModel/recordClassSet/recordClass", Record.class );
+        /*  */ digester.addObjectCreate( "wdkModel/recordClassSet/recordClass", RecordClass.class );
         
         /*  */ digester.addSetProperties( "wdkModel/recordClassSet/recordClass");
         
@@ -236,9 +236,9 @@ public class ModelXmlParser {
         
         /*    */ digester.addSetNext( "wdkModel/recordClassSet/recordClass/textAttribute", "addTextAttribute" );
         
-        /*  */ digester.addSetNext( "wdkModel/recordClassSet/recordClass", "addRecord" );
+        /*  */ digester.addSetNext( "wdkModel/recordClassSet/recordClass", "addRecordClass" );
         
-        /**/ digester.addSetNext( "wdkModel/recordClassSet", "addRecordSet" );
+        /**/ digester.addSetNext( "wdkModel/recordClassSet", "addRecordClassSet" );
         
         
         //QuerySet

@@ -13,7 +13,7 @@ public class WdkModel {
 
     HashMap querySets = new HashMap();
     HashMap paramSets = new HashMap();
-    HashMap recordSets = new HashMap();
+    HashMap recordClassSets = new HashMap();
     HashMap referenceLists = new HashMap();
     HashMap summarySets = new HashMap();
     HashMap allModelSets = new HashMap();
@@ -24,14 +24,14 @@ public class WdkModel {
     public static final WdkModel INSTANCE = new WdkModel();
     
     /**
-     * @param initRecordList
+     * @param initRecordClassList
      * @return
      * @throws WdkUserException
      * @throws WdkModelException
      */
-    public Summary getSummary(String initRecordList) {
+    public Summary getSummary(String initRecordClassList) {
         try {
-            Reference r = new Reference(initRecordList);
+            Reference r = new Reference(initRecordClassList);
             SummarySet ss = getSummarySet(r.getSetName());
             return ss.getSummary(r.getElementName());
         }
@@ -44,11 +44,11 @@ public class WdkModel {
     }
 
     
-    public Record getRecord(String recordReference) {
+    public RecordClass getRecordClass(String recordClassReference) {
         try {
-            Reference r = new Reference(recordReference);
-            RecordSet rs = getRecordSet(r.getSetName());
-            return rs.getRecord(r.getElementName());
+            Reference r = new Reference(recordClassReference);
+            RecordClassSet rs = getRecordClassSet(r.getSetName());
+            return rs.getRecordClass(r.getElementName());
         }
         catch (WdkModelException exp) {
             throw new RuntimeException(exp);
@@ -78,31 +78,31 @@ public class WdkModel {
 	return introduction;
     }
 
-    //Record Sets
-    public void addRecordSet(RecordSet recordSet) throws WdkModelException {
-        addSet(recordSet, recordSets);
+    //RecordClass Sets
+    public void addRecordClassSet(RecordClassSet recordClassSet) throws WdkModelException {
+        addSet(recordClassSet, recordClassSets);
     }
 
-    public RecordSet getRecordSet(String recordSetName) throws WdkUserException {
+    public RecordClassSet getRecordClassSet(String recordClassSetName) throws WdkUserException {
 	
-        if (!recordSets.containsKey(recordSetName)) {   
+        if (!recordClassSets.containsKey(recordClassSetName)) {   
             String err = "WDK Model " + name +
-            " does not contain a record set with name " + recordSetName;
+            " does not contain a recordClass set with name " + recordClassSetName;
 	    
             throw new WdkUserException(err);
         }
-        return (RecordSet)recordSets.get(recordSetName);
+        return (RecordClassSet)recordClassSets.get(recordClassSetName);
     }
 
-    public RecordSet[] getAllRecordSets(){
+    public RecordClassSet[] getAllRecordClassSets(){
 	    
-        RecordSet sets[] = new RecordSet[recordSets.size()];
-        Iterator keys = recordSets.keySet().iterator();
+        RecordClassSet sets[] = new RecordClassSet[recordClassSets.size()];
+        Iterator keys = recordClassSets.keySet().iterator();
         int counter = 0;
         while (keys.hasNext()){
             String name = (String)keys.next();
-            RecordSet nextRecordSet = (RecordSet)recordSets.get(name);
-            sets[counter] = nextRecordSet;
+            RecordClassSet nextRecordClassSet = (RecordClassSet)recordClassSets.get(name);
+            sets[counter] = nextRecordClassSet;
             counter++;
         }
         return sets;
@@ -306,7 +306,7 @@ public class WdkModel {
 					   + "'");
        buf.append(showSet("Param", paramSets));
        buf.append(showSet("Query", querySets));
-       buf.append(showSet("Record", recordSets));
+       buf.append(showSet("RecordClass", recordClassSets));
        buf.append(showSet("Question", summarySets));
        return buf.toString();
     }
