@@ -5,13 +5,11 @@ import org.gusdb.gus.wdk.model.ModelConfigParser;
 import org.gusdb.gus.wdk.model.RDBMSPlatformI;
 import org.gusdb.gus.wdk.model.ResultFactory;
 import org.gusdb.gus.wdk.model.WdkModel;
-
-import org.gusdb.gus.wdk.model.WdkModelException;
 import org.gusdb.gus.wdk.model.implementation.ModelXmlParser;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
-
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.FileHandler;
@@ -36,7 +34,7 @@ public class ApplicationInitListener implements ServletContextListener {
     
     private static final String DEFAULT_LOGIN_CONFIGURATION = "/WEB-INF/wdk-config/login.xml";
     private static final String DEFAULT_MODEL_CONFIGURATION = "/WEB-INF/wdk-config/model.xml";
-
+    private static final String DEFAULT_MODEL_PARSER = "org.gusdb.gus.wdk.model.implementation.ModelXmlParser";
     private static final String DEFAULT_PROPS_LOCATION = "/WEB-INF/wdk-config/macro.props";
   
     private static final Logger logger = Logger.getLogger("org.gusdb.gus.wdk.controller.ApplicationInitListener");
@@ -132,28 +130,32 @@ public class ApplicationInitListener implements ServletContextListener {
             schemaURL = createURL(schemaLocation, null, application);
         }
         
+        if (parserClass == null) {
+            parserClass = DEFAULT_MODEL_PARSER;
+        }
+        
         URL querySetURL = createURL(queryConfigLocation, DEFAULT_MODEL_CONFIGURATION, application);
         URL modelConfigXmlURL = createURL(loginConfigLocation, DEFAULT_LOGIN_CONFIGURATION, application);
         URL propsURL = createURL(propsLocation, DEFAULT_PROPS_LOCATION, application);
             
         // read config info
-
         try {
+            
+            Class parser = Class.forName(parserClass);
+            Method build = parser.getDeclaredMethod("parseXmlFile", new Class[] {URL.class, URL.class, URL.class});
+            WdkModel wdkModel = (WdkModel) build.invoke(null, new Object[] {querySetURL, propsURL, schemaURL});
 
-	    WdkModel wdkModel = ModelXmlParser.parseXmlFile(querySetURL, propsURL, schemaURL);
-	    wdkModel.configure(modelConfigXmlURL);
-        
+            wdkModel.configure(modelConfigXmlURL);
             wdkModel.setResources();
+            
+            this.dataSource = wdkModel.getRDBMSPlatform().getDataSource();
             
             application.setAttribute("wdk.resultFactory", wdkModel.getResultFactory());
             application.setAttribute("wdk.wdkModel", wdkModel);
          
         } catch (Exception exp) {
             throw new RuntimeException(exp);
-
-	}
-
+        }
 
     }
-
 }
