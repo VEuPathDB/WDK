@@ -16,6 +16,7 @@ public class ModelConfigParser {
         Digester digester = configureDigester();
         return (ModelConfig)digester.parse(modelConfigXmlURL.openStream());
     }
+    
     static Digester configureDigester() {
 
 	Digester digester = new Digester();
