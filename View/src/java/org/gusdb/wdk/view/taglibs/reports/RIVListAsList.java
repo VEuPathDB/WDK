@@ -1,8 +1,8 @@
 package org.gusdb.wdk.view.taglibs.reports;
 
-import org.gusdb.wdk.controller.WdkLogManager;
-import org.gusdb.wdk.view.RIVList;
-import org.gusdb.wdk.view.RecordInstanceView;
+import org.gusdb.wdk.model.WdkLogManager;
+import org.gusdb.wdk.model.RIVList;
+import org.gusdb.wdk.model.RecordInstanceView;
 
 import java.io.IOException;
 import java.util.logging.Logger;
