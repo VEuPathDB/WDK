@@ -38,6 +38,16 @@ public class WdkModelBean {
 	return model.getIntroduction();
     }
 
+    public EnumParamBean getBooleanOps(){
+	return new EnumParamBean(model.getBooleanOps());
+    }
+    
+    //to do: figure out how to do this without using getModel()
+    public WdkModel getModel(){
+	return this.model;
+    }
+
+
     /**
      * used by the controller
      */

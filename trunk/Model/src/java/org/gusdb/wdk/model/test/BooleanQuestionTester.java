@@ -122,7 +122,7 @@ public class BooleanQuestionTester {
     private static void runGrowTest(BooleanQuestionNode topNode, String nodeId, WdkModel model) throws WdkModelException, WdkUserException{
 	
 	BooleanQuestionNode found = topNode.find(nodeId);
-
+	System.out.println("BooleanQuestionTester.runGrowTest: Tree before growing\n " + topNode.toString());
 	System.out.println("BooleanQuestionTester.runGrowTest:  Found node " + found.toString());
 	found.grow(TestBooleanTree.makeNewLeafNode(model), "Union", model);
 	System.out.println("BooleanQuestionTester.runGrowTest:  New tree after growing\n " + topNode.toString());
