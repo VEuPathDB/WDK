@@ -127,8 +127,6 @@ public class RecordInstance {
 
 	String instantiatedText = rawText;
 
-	System.err.println("RecordInstance: " + instantiatedText);
-	
 	// primary key
 	String pk = "$$primaryKey$$";
 	String pkRegex = "\\$\\$primaryKey\\$\\$";
