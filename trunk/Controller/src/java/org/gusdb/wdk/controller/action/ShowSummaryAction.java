@@ -4,17 +4,23 @@ import java.util.Map;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.HashMap;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionForm;
+import org.apache.struts.action.ActionServlet; 
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.model.jspwrap.EnumParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.AnswerBean;
+import org.gusdb.wdk.model.jspwrap.BooleanQuestionLeafBean;
 
 /**
  * This Action is called by the ActionServlet when a WDK question is asked.
@@ -30,20 +36,20 @@ public class ShowSummaryAction extends Action {
 				 HttpServletResponse response) throws Exception {
 	//why I am not able to get back my question from the session? use the form for  now
 	//QuestionBean wdkQuestion = (QuestionBean)request.getSession().getAttribute(CConstants.WDK_QUESTION_KEY);
-
+	
 	QuestionForm qForm = (QuestionForm)form;
 	QuestionBean wdkQuestion = qForm.getQuestion();
-
+		    
 	Map params = new java.util.HashMap(qForm.getMyProps());
-
-	java.util.Iterator paramNames = params.keySet().iterator();
-	while (paramNames.hasNext()) {
-	    String paramName = (String)paramNames.next();
+	
+	java.util.Iterator newParamNames = params.keySet().iterator();
+	while (newParamNames.hasNext()) {
+	    String paramName = (String)newParamNames.next();
 	    Object paramVal = params.get(paramName);
 	    System.err.println("*** debug params: (k, v) = " + paramName + ", " + paramVal);
 	}
-
-
+	
+	
 	int start = 1;
 	if (request.getParameter("pager.offset") != null) {
 	    start = Integer.parseInt(request.getParameter("pager.offset"));
@@ -55,13 +61,13 @@ public class ShowSummaryAction extends Action {
 	}
 	if (start <1) { start = 1; } 
 	int end = start + pageSize-1;
-
+	
 	AnswerBean wdkAnswer = wdkQuestion.makeAnswer(params, start, end);
-
+	
 	int totalSize = wdkAnswer.getResultSize();
-
+	
 	if (end > totalSize) { end = totalSize; }
-
+	
 	String uriString = request.getRequestURI();
 	List editedParamNames = new ArrayList();
 	for (Enumeration en = request.getParameterNames(); en.hasMoreElements();) {
@@ -70,17 +76,20 @@ public class ShowSummaryAction extends Action {
 		editedParamNames.add(key);
 	    }
 	}
-
+	
 	request.setAttribute("wdk_paging_total", new Integer(totalSize));
 	request.setAttribute("wdk_paging_pageSize", new Integer(pageSize));
 	request.setAttribute("wdk_paging_start", new Integer(start));
 	request.setAttribute("wdk_paging_end", new Integer(end));
 	request.setAttribute("wdk_paging_url", uriString);
 	request.setAttribute("wdk_paging_params", editedParamNames);
-
+	
 	request.setAttribute(CConstants.WDK_ANSWER_KEY, wdkAnswer);
 	
 	ActionForward forward = mapping.findForward(CConstants.SHOW_SUMMARY_MAPKEY);
 	return forward;
     }
 }
+
+
+
