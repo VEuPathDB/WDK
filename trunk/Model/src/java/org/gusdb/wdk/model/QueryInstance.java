@@ -1,5 +1,5 @@
 package org.gusdb.wdk.model;
-
+ 
 import java.util.Collection;
 import java.util.Map;
 import java.util.HashMap;
@@ -77,7 +77,7 @@ public abstract class QueryInstance {
     // Package methods
     // ------------------------------------------------------------------
 
-    Collection getValues() {
+    public Collection getValues() {
 	return values.values();
     }
     
@@ -101,7 +101,9 @@ public abstract class QueryInstance {
 	this.endId = endId;
 	this.inMultiMode = true;
     }
-	
+
+    public abstract Collection getCacheValues() throws WdkModelException;
+    
     // ------------------------------------------------------------------
     // Protected methods
     // ------------------------------------------------------------------

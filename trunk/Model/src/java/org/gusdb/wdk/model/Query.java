@@ -213,7 +213,7 @@ public abstract class Query {
 	int size = paramsV.size();
 	for(int i=0; i<size; i++) {
 	    Param p = (Param)paramsV.elementAt(i);
-	    String value = (String)values.get(p.getName());
+	    Object value = values.get(p.getName());
 	    String errMsg;
 	    if (value == null) {
 		errMsg = "No value supplied";
@@ -222,7 +222,7 @@ public abstract class Query {
 	    }
 	    if (errMsg != null) {
 		if (errors == null) errors = new HashMap();
-		String booBoo[] = {value, errMsg};
+		String booBoo[] = {value.toString(), errMsg};
 		errors.put(p, booBoo);
 	    }
 	}

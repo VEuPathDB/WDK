@@ -190,6 +190,13 @@ public class WdkModel {
         return lists;
     }
        
+    public BooleanQuery makeBooleanQuery(){
+	BooleanQuery booleanQuery = new BooleanQuery();
+	booleanQuery.setResultFactory(resultFactory);
+	booleanQuery.setRDBMSPlatform(platform);
+	return booleanQuery;
+    }
+
     public BooleanQueryInstance makeBooleanQueryInstance(){
 
 	BooleanQuery booleanQuery = new BooleanQuery();

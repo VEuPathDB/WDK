@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model;
 
 import java.util.Map;
+import java.util.Hashtable;
 
 /**
  * Question.java
@@ -31,14 +32,15 @@ public class Question {
 
     private Query query;
     
-    private QueryInstance listIdQueryInstance;
-
-    private RecordClass recordClass;
+    protected RecordClass recordClass;
 
     ///////////////////////////////////////////////////////////////////////
     // setters called at initialization
     ///////////////////////////////////////////////////////////////////////
     
+    public Question(){}
+
+
     public void setName(String name){
 	this.name = name;
     }
@@ -70,13 +72,12 @@ public class Question {
 
     public Answer makeAnswer(Map paramValues, int i, int j) throws WdkUserException, WdkModelException{
 	
-	if (listIdQueryInstance == null){
-	    listIdQueryInstance = query.makeInstance();
-	}
-	//return new Answer(this, listIdQueryInstance);
+	QueryInstance qi = query.makeInstance();
+	qi.setValues(paramValues);
 	Answer answer = 
-	    new Answer(this, query.makeInstance(), paramValues, i, j);
+	    new Answer(this, qi, i, j);
 	return answer;
+
     }
 
     public Param[] getParams() {
@@ -97,6 +98,18 @@ public class Question {
 	
     public RecordClass getRecordClass(){
 	return this.recordClass;
+    }
+
+    Query getQuery(){
+	return this.query;
+    }
+
+    public void setRecordClass(RecordClass rc){
+	this.recordClass = rc;
+    }
+    
+    public void setQuery(Query q){
+	this.query = q;
     }
 
     public String getName(){
@@ -131,6 +144,13 @@ public class Question {
 	this.query = (Query)model.resolveReference(queryTwoPartName, name, "question", "queryRef");
 	this.recordClass = (RecordClass)model.resolveReference(recordClassTwoPartName, name, "question", "recordClassRef");
     }
+
+
+    ///////////////////////////////////////////////////////////////////////
+    // Protected Methods
+    ///////////////////////////////////////////////////////////////////////
+        
+    
 
     protected void setQuestionSet(QuestionSet questionSet) {
 	this.questionSet = questionSet;

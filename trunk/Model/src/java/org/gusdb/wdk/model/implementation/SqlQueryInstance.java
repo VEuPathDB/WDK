@@ -11,6 +11,7 @@ import org.gusdb.wdk.model.WdkLogManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Logger;
+import java.util.Collection;
 
 public class SqlQueryInstance extends QueryInstance  {
 
@@ -79,6 +80,10 @@ public class SqlQueryInstance extends QueryInstance  {
 	SqlQuery q = (SqlQuery)query;
 	String cacheSql = q.getResultFactory().getSqlForCache(this);
 	return cacheSql;
+    }
+
+    public Collection getCacheValues() throws WdkModelException{
+	return getValues();
     }
 
     protected ResultList getNonpersistentResult() throws WdkModelException {

@@ -29,7 +29,7 @@ import org.apache.commons.cli.ParseException;
  * even over the course of code base development.  See the usage() method for parameter information,
  * and see the gusDb.org wiki page for the structure and content of the sanity test.
  *
- * Created: Mon August 23 12:00:00 2004 EDT
+ * Created: Mon August 23 12:00:00 2004 EST
  *
  * @author David Barkan
  * @version $Revision$ $Date$Author: sfischer $
@@ -122,7 +122,7 @@ public class SanityTester {
 	    Integer queryResults[] = sanityTester.runQueryValidationTest(queryTester, verbose, cmdLine);
 	    Integer recordResults[] = sanityTester.runRecordValidationTest(queryTester, verbose, cmdLine);
     
-	    if (verbose) System.err.println(sanityModel.toString());
+	    if (verbose) System.out.println(sanityModel.toString());
 	    boolean failedOverall = sanityTester.printSummaryLine(queryResults, recordResults);
 	    if (failedOverall){
 		System.exit(1);
@@ -146,7 +146,7 @@ public class SanityTester {
      * other validation tests.
      */
     private void runExistenceTest(QueryTester queryTester, boolean verbose){
-	System.err.println("Sanity Test:  Checking to make sure all Queries and RecordClasss in model " + queryTester.getWdkModel().getName() +
+	System.out.println("Sanity Test:  Checking to make sure all Queries and RecordClasss in model " + queryTester.getWdkModel().getName() +
 			   " are represented in the test\n");
 	QuerySet querySets[] = queryTester.getWdkModel().getAllQuerySets();
 	if (querySets != null){
@@ -156,12 +156,12 @@ public class SanityTester {
 		for (int j = 0; j < queries.length; j++){
 		    Query nextQuery = queries[j];
 		    if (!sanityModel.hasSanityQuery(nextQuerySet.getName() + "." + nextQuery.getName())){
-			System.err.println("Sanity Test Failed!  Query " + nextQuerySet.getName() + "." + nextQuery.getName() +
+			System.out.println("Sanity Test Failed!  Query " + nextQuerySet.getName() + "." + nextQuery.getName() +
 					   " is not represented in the sanity test\n");
 		    }
 		    else {
 			if (verbose){
-			    System.err.println("Query " + nextQuerySet.getName() + "." + nextQuery.getName() +
+			    System.out.println("Query " + nextQuerySet.getName() + "." + nextQuery.getName() +
 					       " is accounted for in the sanity test\n");
 			} 
 		    }
@@ -176,12 +176,12 @@ public class SanityTester {
 		for (int j = 0; j < recordClasses.length; j++){
 		    RecordClass nextRecordClass = recordClasses[j];
 		    if (!sanityModel.hasSanityRecord(nextRecordClassSet.getName() + "." + nextRecordClass.getName())){
-			System.err.println("Sanity Test Failed!  RecordClass " + nextRecordClassSet.getName() + "." + nextRecordClass.getName() + 
+			System.out.println("Sanity Test Failed!  RecordClass " + nextRecordClassSet.getName() + "." + nextRecordClass.getName() + 
 					   " is not represented in the sanity test\n");
 		    }
 		    else {
 			if (verbose){
-			    System.err.println("RecordClass " + nextRecordClassSet.getName() + "." + nextRecordClass.getName() +
+			    System.out.println("RecordClass " + nextRecordClassSet.getName() + "." + nextRecordClass.getName() +
 					       " is accounted for in the sanity test\n");
 			} 
 		    }
@@ -199,7 +199,7 @@ public class SanityTester {
      *               the second is the number of queries that failed.
      */		
     private Integer[] runQueryValidationTest(QueryTester queryTester, boolean verbose, CommandLine cmdLine){
-	System.err.println("Sanity Test:  Checking queries\n");
+	System.out.println("Sanity Test:  Checking queries\n");
 	
 	Reference nextQueryReference = null;
 	int queryPass = 0;
@@ -230,25 +230,25 @@ public class SanityTester {
 		    }
 		    //		    rs.close();
 		    if (!(sanityMin <= counter && counter <= sanityMax)){
-			System.err.println(BANNER_LINE);
-			System.err.println("***QUERY " + nextQueryReference.getSetName() + "." + nextQueryReference.getElementName() + 
+			System.out.println(BANNER_LINE);
+			System.out.println("***QUERY " + nextQueryReference.getSetName() + "." + nextQueryReference.getElementName() + 
 					   " FAILED!***  It returned " + counter + " rows--not within expected range (" + sanityMin + " - " + sanityMax + ")");
 			printFailureMessage(nextSanityQuery, cmdLine);
-			System.err.println(BANNER_LINE + "\n");
+			System.out.println(BANNER_LINE + "\n");
 			queryFail++;
 		    }
 		    else {
-			System.err.println("Query " + nextQueryReference.getSetName() + "." + nextQueryReference.getElementName() +
+			System.out.println("Query " + nextQueryReference.getSetName() + "." + nextQueryReference.getElementName() +
 					   " passed--returned " + counter + " rows, within expected range (" + sanityMin + " - " + sanityMax + ")\n");
 		    }
 		    queryPass++;
 		}
 	     	catch(Exception e){
 		    queryFail++;
-		    System.err.println(BANNER_LINE);
-		    System.err.println("***QUERY " + nextQueryReference.getSetName() + "." + nextQueryReference.getElementName() + " FAILED!***  It threw an exception.");
+		    System.out.println(BANNER_LINE);
+		    System.out.println("***QUERY " + nextQueryReference.getSetName() + "." + nextQueryReference.getElementName() + " FAILED!***  It threw an exception.");
 		    printFailureMessage(nextSanityQuery, cmdLine);
-		    System.err.println(BANNER_LINE + "\n");
+		    System.out.println(BANNER_LINE + "\n");
 		}
 	    }
 	}
@@ -267,7 +267,7 @@ public class SanityTester {
      */		
     private Integer[] runRecordValidationTest(QueryTester queryTester, boolean verbose, CommandLine cmdLine){
 	//DTB -- this could probably be refactored to combine with the query validation method
-	System.err.println("Sanity Test:  Checking records\n");
+	System.out.println("Sanity Test:  Checking records\n");
 
 	int recordPass = 0;
 	int recordFail = 0;
@@ -290,16 +290,16 @@ public class SanityTester {
 		    nextRecordInstance.setPrimaryKey(nextSanityRecord.getPrimaryKey().toString());
 		    
 		    String riString = nextRecordInstance.print();
-		    System.err.println("Record " + nextRecordReference.getSetName() + "." + nextRecordReference.getElementName() + " passed\n");
-		    if (verbose) System.err.println(riString + "\n");
+		    System.out.println("Record " + nextRecordReference.getSetName() + "." + nextRecordReference.getElementName() + " passed\n");
+		    if (verbose) System.out.println(riString + "\n");
 		    recordPass++;
 		}
 	    	catch (Exception wme){
 		    recordFail++;
-		    System.err.println(BANNER_LINE);
-		    System.err.println("***RECORD " + nextRecordReference.getSetName() + "." + nextRecordReference.getElementName() + " FAILED!***");
+		    System.out.println(BANNER_LINE);
+		    System.out.println("***RECORD " + nextRecordReference.getSetName() + "." + nextRecordReference.getElementName() + " FAILED!***");
 		    printFailureMessage(nextSanityRecord, cmdLine);
-		    System.err.println(BANNER_LINE + "\n");
+		    System.out.println(BANNER_LINE + "\n");
 		} 
 	    }
 	}
@@ -329,12 +329,12 @@ public class SanityTester {
 	    String command = element.getCommand(globalArgs);
 	    message.append(command);
 
-	    System.err.println(message.toString());
+	    System.out.println(message.toString());
 
 	}
 	catch (Exception e){
-	    System.err.println("An error occurred when attempting to create a message explaining a previous error");
-	    System.err.println(e.getMessage());
+	    System.out.println("An error occurred when attempting to create a message explaining a previous error");
+	    System.out.println(e.getMessage());
 	    e.printStackTrace();
 	}
     }
@@ -364,7 +364,7 @@ public class SanityTester {
 	resultLine.append(queryPassed + " queries passed, " + queryFailed + " queries failed\n");
  	resultLine.append(recordPassed + " records passed, " + recordFailed + " records failed\n");
 	resultLine.append("Sanity Test " + result + "\n");
-	System.err.println(resultLine.toString());
+	System.out.println(resultLine.toString());
 	return failedOverall;
     }
 
@@ -402,9 +402,9 @@ public class SanityTester {
         }
         catch( ParseException exp ) {
             // oops, something went wrong
-            System.err.println("");
-            System.err.println( "Parsing failed.  Reason: " + exp.getMessage() ); 
-            System.err.println("");
+            System.out.println("");
+            System.out.println( "Parsing failed.  Reason: " + exp.getMessage() ); 
+            System.out.println("");
             usage(cmdName, options);
         }
 
