@@ -1,6 +1,8 @@
 package org.gusdb.wdk.model.jspwrap;
 
 import org.gusdb.wdk.model.RecordClass;
+import org.gusdb.wdk.model.Question;
+
 
 import java.util.Map;
 
@@ -44,4 +46,15 @@ public class RecordClassBean {
     public RecordBean makeRecord () {
 	return new RecordBean(recordClass.makeRecordInstance());
     }
+
+    public QuestionBean[] getQuestions(){
+
+	Question questions[] = recordClass.getQuestions();
+	QuestionBean[] questionBeans = new QuestionBean[questions.length];
+	for (int i = 0; i < questions.length; i++){
+	    questionBeans[i] = new QuestionBean(questions[i]);
+	}
+	return questionBeans;
+    }
+
 }
