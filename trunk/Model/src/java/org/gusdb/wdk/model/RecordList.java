@@ -1,6 +1,5 @@
 package org.gusdb.gus.wdk.model;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.gusdb.gus.wdk.model.implementation.SqlQuery;

@@ -20,13 +20,9 @@ import java.io.File;
 import java.io.IOException;
 
 import org.apache.commons.digester.Digester;
-import org.iso_relax.verifier.Schema;
-import org.iso_relax.verifier.Verifier;
 import org.iso_relax.verifier.VerifierConfigurationException;
 import org.iso_relax.verifier.VerifierFactory;
-import org.iso_relax.verifier.VerifierFilter;
 import org.xml.sax.ErrorHandler;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import com.thaiopensource.util.PropertyMap;
