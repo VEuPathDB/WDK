@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.implementation;
 
+import java.lang.StringBuffer;
 import java.util.Iterator;
 import java.util.Map;
 import org.gusdb.wdk.model.WdkModel;
@@ -67,24 +68,39 @@ public class SqlQuery extends Query {
        return buf;
     }
 
-    protected String addMultiModeConstraints(String resultTableName, String pkToJoinWith,
-					     int startId, int endId, String initSql){
+    protected String addMultiModeConstraints(String resultTableName, String pkValue, int startId, 
+					     int endId, String initSql){
 
-	int whereBegins = initSql.indexOf(" where");
+	StringBuffer initSqlBuf = new StringBuffer(initSql);
+	int whereBegins = initSqlBuf.indexOf(" where");
 	if (whereBegins == -1) {
-	    whereBegins = initSql.indexOf(" WHERE");
+	    whereBegins = initSqlBuf.indexOf(" WHERE");
 	}
+	
 	String firstPartSql = "";
 	String lastPartSql = "";
 	String rowStartSql = null;
-
+	
 	if (whereBegins != -1){   
-	    firstPartSql = initSql.substring(0, whereBegins);	    
-	    lastPartSql = initSql.substring(whereBegins);
+	    
+	    //trim quotes from primary key value if they are there
+	    int pkValueStart = initSqlBuf.indexOf(pkValue);
+	    int pkValueEnd = pkValueStart + pkValue.length();
+
+	    if (initSqlBuf.charAt(pkValueStart - 1) == '\''){
+		initSqlBuf = initSqlBuf.deleteCharAt(pkValueStart -1);
+		//initSqlBuf size reduced by 1; delete ' at new position
+		initSqlBuf = initSqlBuf.deleteCharAt(pkValueEnd - 1);
+	    }
+	
+	    //join result table name with row number
+	    firstPartSql = initSqlBuf.substring(0, whereBegins);	    
+	    lastPartSql = initSqlBuf.substring(whereBegins);
 	    rowStartSql = " and " + resultTableName + ".i >= " + startId;
+	    
 	}
 	else{  //no where clause
-	    firstPartSql = initSql;
+	    firstPartSql = initSqlBuf.toString();
 	    rowStartSql = " where " + resultTableName + ".i >= " + startId;
 	}
 

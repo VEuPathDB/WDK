@@ -41,14 +41,15 @@ public class SqlQueryInstance extends QueryInstance  {
 
         SqlQuery q = (SqlQuery)query;
         String sql = null;
-        if (inMultiMode){
-            String newPkJoin = multiModeResultTableName + "." + pkToJoinWith;
+	String newPkJoin = null;
+       if (inMultiMode){
+            newPkJoin = multiModeResultTableName + "." + pkToJoinWith;
             values.put("primaryKey", newPkJoin); //will this destroy the query for later use?
         }
         String initSql = 
             q.instantiateSql(query.getInternalParamValues(values));
         if (inMultiMode){
-            sql = q.addMultiModeConstraints(multiModeResultTableName, pkToJoinWith,
+            sql = q.addMultiModeConstraints(multiModeResultTableName,  newPkJoin,
 					    startId, endId, initSql);
         } else {
             sql = initSql;

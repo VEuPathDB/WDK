@@ -2,6 +2,7 @@ package org.gusdb.wdk.model;
 
 import java.util.Map;
 import java.util.Hashtable;
+import java.util.HashMap;
 
 /**
  * Question.java
@@ -34,11 +35,17 @@ public class Question {
     
     protected RecordClass recordClass;
 
+    private String summaryAttributesRef;
+
+    private Map summaryAttributeMap;
+
     ///////////////////////////////////////////////////////////////////////
     // setters called at initialization
     ///////////////////////////////////////////////////////////////////////
     
-    public Question(){}
+    public Question(){
+	summaryAttributeMap = new HashMap();
+    }
 
 
     public void setName(String name){
@@ -67,6 +74,11 @@ public class Question {
 	this.displayName = displayName;
     }
 
+    public void setSummaryAttributesRef(String summaryAttributesRef){
+	this.summaryAttributesRef = summaryAttributesRef;
+    }
+
+
     ///////////////////////////////////////////////////////////////////////
 
 
@@ -76,8 +88,8 @@ public class Question {
 	qi.setValues(paramValues);
 	Answer answer = 
 	    new Answer(this, qi, i, j);
+	
 	return answer;
-
     }
 
     public Param[] getParams() {
@@ -143,6 +155,25 @@ public class Question {
 	
 	this.query = (Query)model.resolveReference(queryTwoPartName, name, "question", "queryRef");
 	this.recordClass = (RecordClass)model.resolveReference(recordClassTwoPartName, name, "question", "recordClassRef");
+	if (summaryAttributesRef != null){
+
+	    String summaryAttributeList[] = summaryAttributesRef.split(",");
+	    for (int i = 0; i < summaryAttributeList.length; i++){
+		String nextSummaryAtt = summaryAttributeList[i];
+
+		summaryAttributeMap.put(nextSummaryAtt, new Integer(1));
+	    }
+	}
+    }
+
+    boolean isSummaryAttribute(String attName){
+	Object isSummaryAtt = summaryAttributeMap.get(attName);
+	if (isSummaryAtt == null){
+	    return false;
+	}
+	else {
+	    return true;
+	}
     }
 
 

@@ -12,11 +12,13 @@ public class RecordInstance {
     String primaryKey;
     RecordClass recordClass;
     HashMap attributesResultSetsMap;
+    HashMap summaryAttributeMap;
     Answer answer;
 
     public RecordInstance(RecordClass recordClass) {
 	this.recordClass = recordClass;
 	attributesResultSetsMap = new HashMap();
+	summaryAttributeMap = new HashMap();
     }
 
     public RecordClass getRecordClass() { return recordClass; }
@@ -95,8 +97,14 @@ public class RecordInstance {
     /**
      * @return Map of tableName -> AttributeFieldValue
      */
+    /*
+      different ways to get attributes from recordInstance:
+      FieldValueMap getAttributes()
+      Object getAttributeValue()
+     */
     public Map getAttributes() {
 	return new FieldValueMap(recordClass, this, false);
+	
     }
 
     public String print() throws WdkModelException {
@@ -105,6 +113,16 @@ public class RecordInstance {
 	StringBuffer buf = new StringBuffer();
 	
 	Map attributeFields = getAttributes();
+	
+	HashMap summaryAttributes = new HashMap();
+	HashMap nonSummaryAttributes = new HashMap();
+	
+	splitSummaryAttributes(attributeFields, summaryAttributes, nonSummaryAttributes);
+
+	printAtts_Aux(buf, "Summary Attributes: " + newline, summaryAttributes);
+	printAtts_Aux(buf, "Non-Summary Attributes: " + newline, nonSummaryAttributes);
+	
+
 	Iterator fieldNames = attributeFields.keySet().iterator();
 	while (fieldNames.hasNext()) {
 	    String fieldName = (String)fieldNames.next();
@@ -126,7 +144,8 @@ public class RecordInstance {
 	    buf.append("Table " + field.getDisplayName()).append( newline );
 	    ResultList resultList = getTableValue(fieldName);
 	    resultList.write(buf);
-	    
+	    resultList.close();
+	    field.closeResult();
 	    buf.append(newline);
 	}
 
@@ -141,6 +160,23 @@ public class RecordInstance {
 
     void setAnswer(Answer answer){
 	this.answer = answer;
+    }
+
+    void setSummaryAttributeList(String[] summaryAttributeList){
+	if (summaryAttributeList != null){
+	    for (int i = 0; i < summaryAttributeList.length; i++){
+		summaryAttributeMap.put(summaryAttributeList[i], new Integer(1));
+	    }
+	}
+    }
+
+    boolean isSummaryAttribute(String attName){
+	
+	if (answer != null){
+	    return answer.isSummaryAttribute(attName);
+	}
+	else return false;
+
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -252,6 +288,44 @@ public class RecordInstance {
 	checkInstantiatedText(instantiatedText);
 
 	return instantiatedText;
+    }
+
+    /**
+     * Given a map of all attributes in this recordInstance, separate them into those that are summary attributes
+     * and those that are not summary attributes.  Place results into @param summaryAttributes and @param
+     * nonSummaryAttributes.
+     */
+    
+    private void splitSummaryAttributes(Map attributeFields, Map summaryAttributes, Map nonSummaryAttributes){
+
+	Iterator fieldNames = attributeFields.keySet().iterator();
+	while (fieldNames.hasNext()) {
+	    String fieldName = (String)fieldNames.next();
+	    AttributeFieldValue field = 
+		(AttributeFieldValue)attributeFields.get(fieldName);
+	    if (field.isSummary()){
+		summaryAttributes.put(fieldName, field);
+	    }
+	    else {
+		nonSummaryAttributes.put(fieldName, field);
+	    }
+	}
+    }
+
+
+    private void printAtts_Aux(StringBuffer buf, String header, Map attributeFields){
+	String newline = System.getProperty( "line.separator" );
+	buf.append(header);
+	
+	Iterator fieldNames = attributeFields.keySet().iterator();
+	while (fieldNames.hasNext()) {
+	    String fieldName = (String)fieldNames.next();
+	    AttributeFieldValue field = 
+		(AttributeFieldValue)attributeFields.get(fieldName);
+	    buf.append(field.getDisplayName() + ":   " + 
+		       field.getValue()).append( newline );
+	}
+	buf.append(newline);
     }
 
     ////////////////////////////////////////////////////////////////////

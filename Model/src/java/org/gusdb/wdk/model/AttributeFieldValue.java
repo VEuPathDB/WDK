@@ -8,10 +8,12 @@ public class AttributeFieldValue {
     
     FieldI field;
     Object value;
+    boolean isSummary;
 
     public AttributeFieldValue(FieldI field, Object value) {
 	this.field = field;
 	this.value = value;
+	this.isSummary = false;
     } 
 
     public String getName() {
@@ -34,17 +36,25 @@ public class AttributeFieldValue {
 	return value;
     }
 
+    public boolean isSummary() {
+	return this.isSummary;
+    }
+
     public String toString() {
        String newline = System.getProperty( "line.separator" );
        String classnm = this.getClass().getName();
        StringBuffer buf = 
 	   new StringBuffer(classnm + ": name='" + getName() + "'" + newline +
 			    "  displayName='" + getDisplayName() + "'" + newline +
-			    "  help='" + getHelp() + "'" + newline
+			    "  help='" + getHelp() + "'" + newline + "isSummary? = '" + isSummary() + "'" + newline
 			    );
 
        return buf.toString();
 	
+    }
+
+    void setIsSummary(boolean isSummary){
+	this.isSummary = isSummary;
     }
     
 }

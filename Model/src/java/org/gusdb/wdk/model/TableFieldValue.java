@@ -74,10 +74,17 @@ public class TableFieldValue {
 			    "  displayName='" + getDisplayName() + "'" + newline +
 			    "  help='" + getHelp() + "'" + newline
 			    );
-
        return buf.toString();
-	
     }
+    
+    void closeResult() throws WdkModelException {
+	
+	if (resultList != null){
+	    resultList.close();
+	}
+
+    }
+    
     
 }
 

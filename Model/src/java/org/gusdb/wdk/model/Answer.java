@@ -194,7 +194,6 @@ public class Answer {
 	    counter++;
 	    if (counter >= startRow && counter <= endRow){
 		RecordInstance nextRecordInstance = getQuestion().getRecordClass().makeRecordInstance();
-		
 		Column[] columns = query.getColumns();
 		String primaryKeyName = columns[0].getName();
 		this.listPrimaryKeyName = primaryKeyName;
@@ -218,7 +217,7 @@ public class Answer {
     // ------------------------------------------------------------------
     // Package Methods
     // ------------------------------------------------------------------
-    
+
     void setMultiMode(QueryInstance instance) throws WdkModelException{
         
         String resultTableName = queryInstance.getResultAsTable();
@@ -243,6 +242,10 @@ public class Answer {
             }
             tempCounter++;
         }
+    }
+
+    boolean isSummaryAttribute(String attName){
+	return question.isSummaryAttribute(attName);
     }
     
     QueryInstance getQueryInstance(){
