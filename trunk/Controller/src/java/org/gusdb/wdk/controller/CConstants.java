@@ -7,6 +7,7 @@ public class CConstants {
     //key for objects in cache, used in Action/ActionForm classes and maybe jsp pages
     public static final String WDK_RESULTFACTORY_KEY = "wdkResultFactory";
     public static final String WDK_MODEL_KEY = "wdkModel";
+    public static final String WDK_CUSTOMVIEWDIR_KEY = "wdkCustomeViewDir";
     public static final String WDK_QUESTION_KEY = "wdkQuestion";
     public static final String WDK_ANSWER_KEY = "wdkAnswer";
     public static final String WDK_RECORD_KEY = "wdkRecord";
@@ -48,6 +49,7 @@ public class CConstants {
     protected static final String WDK_MODELPROPS_PARAM = "wdkModelProps_param";
     protected static final String WDK_LOGFILE_PARAM = "wdkLogFile_param";
     protected static final String WDK_MODELPARSER_PARAM = "wdkModelParser_param";
+    protected static final String WDK_CUSTOMVIEWDIR_PARAM = "wdkCustomViewDir_param";
 
     //default value of webapp init params, from web.xml, used in ApplicationInitListener.java
     protected static final String DEFAULT_WDKMODELCONFIGXML = "/WEB-INF/wdk-config/wdkModelConfig.xml";
@@ -55,4 +57,5 @@ public class CConstants {
     protected static final String DEFAULT_WDKMODELSCHEMA = "/WEB-INF/wdk-config/wdkModel.rng";
     protected static final String DEFAULT_WDKMODELPROPS = "/WEB-INF/wdk-config/wdkModel.props";
     protected static final String DEFAULT_WDKMODELPARSER = "org.gusdb.wdk.model.implementation.ModelXmlParser";
+    protected static final String DEFAULT_WDKCUSTOMVIEWDIR = "/custom_view/";
 }
