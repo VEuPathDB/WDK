@@ -52,7 +52,7 @@ General
 -------
 Generate PDF Javadocs for off-line reading
 Access CVS through SSH
-Set up as project in eclipse - build system too hacky to do whole thing, based on individual projects
+Set up as project in eclipse - based on individual projects
 Ask about indentation style - spacesx4
 Ask about organizing imports - yes
 Ask about adding version numbers to libs - yes
