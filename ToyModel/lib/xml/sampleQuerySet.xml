@@ -1,8 +1,53 @@
 <?xml version="1.0"?>
  
-<querySet name="RNAQueries">
+<querySetContainer name="RNAQueries">
 
-  <sqlQuery name="RNAByGoTerm"
+<pageableQuerySet name="RNAPageableQueries">
+
+</pageableQuerySet>
+
+
+<simpleQuerySet name="RNASimpleQueries">
+
+   <simpleSqlQuery name="GeneCardName"
+            displayName="Gene Card name">
+
+     <stringParam
+       name="GeneName"
+       prompt="Gene Name"
+       sample="brca1"/>
+
+     <sql>
+       select distinct dbrn.na_sequence_id
+       from sres.DBRef dbr, dots.DBRefNASequence dbrn, 
+       where dbr.lowercase_primary_identifier = $$geneName$$
+       and dbr.external_database_release_id = 4892
+       and dbr.db_ref_id = dbrn.db_ref_id
+     </sql>
+  </simpleSqlQuery>
+
+   <simpleSqlQuery name="RNAListInDetail"
+            displayName="RNAs">
+
+       <stringParam  name="resultTable"/>
+       <stringParam  name="startRow"/>
+       <stringParam  name="endRow"/>
+    <sql>
+      <![CDATA[
+      select cd.gene_id, cd.taxon_name, cd.gene_symbol, 
+             cd.gene_description, cd.na_sequence_id, cd.assembly_length, 
+             cd.assembly_num_sequences, 
+              cd.assembly_contains_mrna
+      from dotsgenes.CentralDogma cd, $$resultTable$$ ids 
+      where cd.na_sequence_id = ids.na_sequence_id
+      and ids.i >= $$startRow$$
+      and ids.i < $$endRow$$
+      order by cd.gene_id, cd.assembly_length desc
+      ]]>
+    </sql>
+  </simpleSqlQuery>
+
+  <simpleSqlQuery name="RNAByGoTerm"
             displayName="GO functional classification (by term)">
 
        <stringParam 
@@ -18,14 +63,14 @@
           prompt="Organism"
           help="You know what it is"
           multipick="yes">
-          <sqlQuery>
+          <simpleSqlQuery>
             <sql>
               select name as key,
                      taxon_id as value
               from SRes.taxonName
               where name in ('mouse', 'human')
             </sql>
-          </sqlQuery>
+          </simpleSqlQuery>
        </sqlEnumParam>
 
     <sql>
@@ -39,26 +84,10 @@
         and ga.is_not != 1 
     </sql>
 
-  </sqlQuery>
+  </simpleSqlQuery>
 
 
-
-   <sqlQuery name="RNAListInDetail"
-            displayName="RNAs">
-
-       <stringParam  name="RNATable"/>
-    <sql>
-      select cd.gene_id, cd.taxon_name, cd.gene_symbol, 
-             cd.gene_description, cd.na_sequence_id, cd.assembly_length, 
-             cd.assembly_num_sequences, 
-              cd.assembly_contains_mrna, cd.assembly_description 
-      from @ALLGENES_DB@.CentralDogma cd, $$RNATable$$ ids 
-      where cd.na_sequence_id = ids.na_sequence_id 
-      order by cd.gene_id, cd.assembly_length desc
-    </sql>
-  </sqlQuery>
-
-   <sqlQuery name="TaxonName"
+   <simpleSqlQuery name="TaxonName"
             displayName="Taxon name">
 
      <stringParam
@@ -72,7 +101,8 @@
        from SRes.TaxonName 
        where taxon_id = $$TaxonId$$
      </sql>
-  </sqlQuery>
+  </simpleSqlQuery>
 
-</querySet>
+</simpleQuerySet>
+</querySetContainer>
 

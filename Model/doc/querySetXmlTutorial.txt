@@ -243,7 +243,7 @@ Where:
 <modelConfig login="your_login_here"
              password="your_password_here"
              connectionUrl="jdbc:oracle:thin:@cbilbld.pcbi.upenn.edu:1521:cbilbld"
-             queryCacheTable="Queries"
+             queryInstanceTable="QueryInstance"
              maxQueryParams="50"
              platformClass="org.gusdb.gus.wdk.model.query.Oracle"/>
 
