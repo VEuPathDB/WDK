@@ -10,24 +10,27 @@
     This is a simple webapp to demonstrate the new GUS WebDevKit (WDK).
   </description>
  
- 
+  <context-param>
+    <param-name>loggingFileLocation</param-name>
+    <param-value>/nfs/team81/art/genedb/external/jakarta-tomcat-5.0.18/logs/wdk.log</param-value>
+  </context-param>
+   <!--
   <context-param>
     <param-name>loginConfig</param-name>
     <param-value>/nfs/team81/art/gus/gus_home/lib/xml/modelConfig.xml</param-value>
   </context-param>
-    <context-param>
+  <context-param>
     <param-name>querySetConfig</param-name>
-   <!-- <param-value>/nfs/team81/art/gus/gus_home/lib/xml/PSUSampleQuerySet.xml</param-value> -->
-        <param-value>/nfs/team81/art/eclipse-3.Milestones/workspaces/gus/WDKTestSite/lib/xml/PSUSampleModel.xml</param-value>
+    <param-value>/nfs/team81/art/gus/gus_home/lib/xml/PSUSampleQuerySet.xml</param-value>
   </context-param>
-<!--    <context-param>
+   <context-param>
     <param-name>recordSetConfig</param-name>
     <param-value>/nfs/team81/art/gus/gus_home/lib/xml/PSUSampleRecordSet.xml</param-value>
-  </context-param> -->
+  </context-param>
   <context-param>
     <param-name>schemaLocation</param-name>
     <param-value>/nfs/team81/art/eclipse-3.Milestones/workspaces/gus/WebDevKit/webinf/org/gusdb/gus/wdk/wdkModel.rng</param-value>
-  </context-param>
+  </context-param> -->
   <listener>
     <listener-class>org.gusdb.gus.wdk.controller.ApplicationInitListener</listener-class>
   </listener>
@@ -48,10 +51,22 @@
   <servlet>
     <servlet-name>ModelAdmin</servlet-name>
     <display-name>ModelAdmin</display-name>
-    <description>A servlet that displays and manages the model/cache.</description>
+    <description>A servlet that displays and manages the cache.</description>
     <servlet-class>org.gusdb.gus.wdk.controller.servlets.ModelAdminServlet</servlet-class>
   </servlet>
-    
+  <servlet>
+    <servlet-name>CacheMgr</servlet-name>
+    <display-name>CacheMgr</display-name>
+    <description>A servlet that displays and manages the cache.</description>
+    <servlet-class>org.gusdb.gus.wdk.controller.servlets.CacheMgrServlet</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>LogMgr</servlet-name>
+    <display-name>LogMgr</display-name>
+    <description>A servlet that displays and manages the webapp logging.</description>
+    <servlet-class>org.gusdb.gus.wdk.controller.servlets.LogMgrServlet</servlet-class>
+  </servlet>
+      
   <servlet-mapping>
     <servlet-name>RecordTester</servlet-name>
     <url-pattern>/RecordTester</url-pattern>
@@ -63,5 +78,13 @@
   <servlet-mapping>
     <servlet-name>ModelAdmin</servlet-name>
     <url-pattern>/admin/ModelAdmin</url-pattern>
-  </servlet-mapping> 
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>CacheMgr</servlet-name>
+    <url-pattern>/admin/private/CacheMgr</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>LogMgr</servlet-name>
+    <url-pattern>/admin/private/LogMgr</url-pattern>
+  </servlet-mapping>  
 </web-app> 
