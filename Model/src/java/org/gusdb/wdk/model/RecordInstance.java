@@ -39,7 +39,9 @@ public class RecordInstance {
     public Object getAttributeValue(String attributeName) throws WdkModelException {
 	Object value;
 	if (attributeName.equals(record.PRIMARY_KEY_NAME)) {
-	    value = record.getIdPrefix() + getPrimaryKey();
+	    // hack this out for first release
+	    // value = record.getIdPrefix() + getPrimaryKey();
+	    value = getPrimaryKey();
 	} else if (record.isTextAttribute(attributeName)) {
 	    String rawText = record.getTextAttribute(attributeName);
 	    value = instantiateTextAttribute(attributeName, rawText, new HashMap());
