@@ -36,12 +36,44 @@ public abstract class Query {
     }
 
     /////////////////////////////////////////////////////////////////////
-    /////////////  Public properties ////////////////////////////////////
+    /////////////  Setters for initialization ///////////////////////////
     /////////////////////////////////////////////////////////////////////
 
     public void setName(String name) {
 	this.name = name;
     }
+
+    public void setDisplayName(String displayName) {
+	this.displayName = displayName;
+    }
+
+    public void setDescription(String description) {
+	this.description = description;
+    }
+
+    public void addParamRef(Reference paramRef) {
+	paramRefs.add(paramRef);
+    }
+
+    public void setIsCacheable(Boolean isCacheable) {
+	this.isCacheable = isCacheable;
+    }
+
+    public void setHelp(String help) {
+	this.help = help;
+    }
+
+    public void addColumn(Column column) {
+
+	column.setQuery(this);
+	columnsV.add(column);
+	columnsH.put(column.getName(), column);
+    }
+
+
+    /////////////////////////////////////////////////////////////////////////
+    //  public getters
+    /////////////////////////////////////////////////////////////////////////
 
     public String getName() {
 	return name;
@@ -51,30 +83,8 @@ public abstract class Query {
 	return fullName;
     }
     
-    /**
-     * Assumes that the name of this query has already been set.  Note this is slightly
-     * different than a simple accessor in that the full name of the query is <code>querySetName</code>
-     * concatenated with ".queryName".
-     *
-     * @param querySetName name of the querySet to which this query belongs.
-     */
-    public void setFullName(String querySetName){
-	this.fullName = querySetName + "." + name;
-    }
-
-    public void setDisplayName(String displayName) {
-	this.displayName = displayName;
-    }
-
     public String getDisplayName() {
 	return (displayName != null)? displayName : name;
-    }
-
-    /**
-     * @param paramRef two part param name (set.name)
-     */
-    public void addParamRef(Reference paramRef) {
-	paramRefs.add(paramRef);
     }
 
     public Param[] getParams() {
@@ -83,35 +93,16 @@ public abstract class Query {
 	return paramA;
     }
 
-    public void setIsCacheable(Boolean isCacheable) {
-	this.isCacheable = isCacheable;
-    }
-
     public Boolean getIsCacheable() {
 	return isCacheable;
-    }
-
-    public void setDescription(String description) {
-	this.description = description;
     }
 
     public String getDescription() {
 	return description;
     }
 
-    public void setHelp(String help) {
-	this.help = help;
-    }
-
     public String getHelp() {
 	return help;
-    }
-
-    public void addColumn(Column column) {
-
-	column.setQuery(this);
-	columnsV.add(column);
-	columnsH.put(column.getName(), column);
     }
 
     public Column[] getColumns() {
@@ -128,14 +119,6 @@ public abstract class Query {
 	return (Column)columnsH.get(columnName);
     }
     
-    //DTB -- changed to public access since this method is now in a different
-    //       package than SqlQueryInstance which is trying to use it.
-
-    public ResultFactory getResultFactory() {
-	return resultFactory;
-    }
-
-
     public abstract QueryInstance makeInstance();
 
     /**
@@ -173,8 +156,16 @@ public abstract class Query {
 
 
     /////////////////////////////////////////////////////////////////////
-    /////////////  Protected ////////////////////////////////////////////
+    /////////////  Protected methods ////////////////////////////////////
     /////////////////////////////////////////////////////////////////////
+
+    public ResultFactory getResultFactory() {
+	return resultFactory;
+    }
+
+    void setSetName(String querySetName){
+	this.fullName = querySetName + "." + name;
+    }
 
     protected void addParam(Param param) {
 	paramsV.add(param);

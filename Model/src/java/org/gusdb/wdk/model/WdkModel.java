@@ -1,12 +1,11 @@
 package org.gusdb.wdk.model;
 
 import java.net.URL;
+import java.util.Map;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Iterator;
 import java.io.File;
-import org.gusdb.wdk.model.implementation.BooleanQuery;
-import org.gusdb.wdk.model.implementation.BooleanQueryInstance;
-
 
 import org.w3c.dom.Document;
 
@@ -18,7 +17,7 @@ public class WdkModel {
     HashMap paramSets = new HashMap();
     HashMap recordClassSets = new HashMap();
     HashMap referenceLists = new HashMap();
-    HashMap questionSets = new HashMap();
+    LinkedHashMap questionSets = new LinkedHashMap();
     HashMap allModelSets = new HashMap();
     String name;
     String introduction;
@@ -161,18 +160,8 @@ public class WdkModel {
         return questionSets.containsKey(setName);
     }
 
-    public QuestionSet[] getAllQuestionSets(){
-	    
-        QuestionSet sets[] = new QuestionSet[questionSets.size()];
-        Iterator keys = questionSets.keySet().iterator();
-        int counter = 0;
-        while (keys.hasNext()){
-            String name = (String)keys.next();
-            QuestionSet nextQuestionSet = (QuestionSet)questionSets.get(name);
-            sets[counter] = nextQuestionSet;
-            counter++;
-        }
-        return sets;
+    public Map getQuestionSets(){
+	return new LinkedHashMap(questionSets);
     }
 
     //ReferenceLists

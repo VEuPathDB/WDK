@@ -59,8 +59,10 @@ public class SummaryTester {
 
 	    if (haveParams){
 		Hashtable paramValues = parseParamArgs(params);
-		Query query = question.getQuery();
-		query.setIsCacheable(new Boolean(true));
+
+		// this is suspicious
+		//Query query = question.getQuery();
+		//query.setIsCacheable(new Boolean(true));
 		int pageCount = 1;
 		
 		for (int i = 0; i < rows.length; i+=2){

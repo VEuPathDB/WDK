@@ -19,7 +19,7 @@ public class SummaryInstanceList implements Iterator {
     }
 
     public int getSize() {
-	return summaryInstance.size();
+	return summaryInstance.getPageSize();
     }
     
     public boolean hasNext() {

@@ -21,54 +21,34 @@ public class Question {
 
     private String name;
 
+    private String displayName;
+
+    private String description;
+
+    private String help;
+
     private QuestionSet questionSet;
 
-
-    //the only column in this query should be a primary key
-    Query query;
+    private Query query;
     
-    //QueryInstance to be shared across all SummaryInstances 
-    //produced by this Question
-    QueryInstance listIdQueryInstance;
+    private QueryInstance listIdQueryInstance;
 
-    RecordClass recordClass;
+    private RecordClass recordClass;
 
-    public Question(){
-    }
+    ///////////////////////////////////////////////////////////////////////
+    // setters called at initialization
+    ///////////////////////////////////////////////////////////////////////
     
-    public SummaryInstance makeSummaryInstance(Map paramValues, int i, int j) throws WdkUserException, WdkModelException{
-	
-	if (listIdQueryInstance == null){
-	    listIdQueryInstance = query.makeInstance();
-	}
-	//return new SummaryInstance(this, listIdQueryInstance);
-	SummaryInstance summaryInstance = 
-	    new SummaryInstance(this, query.makeInstance(), paramValues, i, j);
-	return summaryInstance;
+    public void setName(String name){
+	this.name = name;
     }
 
-    public Query getQuery(){
-	return this.query;
+    public void setDescription(String description) {
+	this.description = description;
     }
 
-    public Param[] getParams() {
-	return query.getParams();
-    }
-
-    public String getDisplayName() {
-	return query.getDisplayName();
-    }
-	
-    public String getHelp() {
-	return query.getHelp();
-    }
-
-    public String getDescription() {
-	return query.getDescription();
-    }
-
-    public RecordClass getRecordClass(){
-	return this.recordClass;
+    public void setHelp(String help) {
+	this.help = help;
     }
 
     public void setRecordClassRef(String recordClassTwoPartName){
@@ -81,41 +61,77 @@ public class Question {
 	this.queryTwoPartName = queryTwoPartName;
     }
 
-    public void resolveReferences(WdkModel model)throws WdkModelException{
+    public void setDisplayName(String displayName) {
+	this.displayName = displayName;
+    }
+
+    ///////////////////////////////////////////////////////////////////////
+
+
+    public SummaryInstance makeSummaryInstance(Map paramValues, int i, int j) throws WdkUserException, WdkModelException{
 	
-	this.query = (Query)model.resolveReference(queryTwoPartName, name, "question", "queryRef");
-	this.recordClass = (RecordClass)model.resolveReference(recordClassTwoPartName, name, "question", "recordClassRef");
+	if (listIdQueryInstance == null){
+	    listIdQueryInstance = query.makeInstance();
+	}
+	//return new SummaryInstance(this, listIdQueryInstance);
+	SummaryInstance summaryInstance = 
+	    new SummaryInstance(this, query.makeInstance(), paramValues, i, j);
+	return summaryInstance;
+    }
+
+    public Param[] getParams() {
+	return query.getParams();
+    }
+
+    public String getDescription() {
+	return description;
+    }
+
+    public String getHelp() {
+	return help;
+    }
+
+    public String getDisplayName() {
+	return displayName;
+    }
+	
+    public RecordClass getRecordClass(){
+	return this.recordClass;
     }
 
     public String getName(){
 	return name;
     }
 
-    public void setName(String name){
-	this.name = name;
-    }
-
     public String getFullName() {
 	return questionSet.getName() + "." + name;
     }
-
-    public int getTotalLength(Map values) throws WdkModelException, WdkUserException{
-        SummaryInstance si = makeSummaryInstance(values, 0, 0);
-        return si.getTotalLength();
-    }
-    //set dummy values for start and end because they will not be used.
-    //(might have to change this depending on resolution of efficiency issue)
 
     public String toString() {
 	String newline = System.getProperty( "line.separator" );
 	StringBuffer buf =
 	    new StringBuffer("Question: name='" + name + "'" + newline  +
 			     "  recordClass='" + recordClassTwoPartName + "'" + newline +
-			     "  query='" + queryTwoPartName + "'" + newline
+			     "  query='" + queryTwoPartName + "'" + newline +
+			    "  displayName='" + getDisplayName() + "'" + newline +
+			    "  description='" + getDescription() + "'" + newline +
+			    "  help='" + getHelp() + "'" + newline 
 			     );	    
 	return buf.toString();
     }
     
+
+    ///////////////////////////////////////////////////////////////////////
+    // package methods
+    ///////////////////////////////////////////////////////////////////////
+
+
+    void resolveReferences(WdkModel model)throws WdkModelException{
+	
+	this.query = (Query)model.resolveReference(queryTwoPartName, name, "question", "queryRef");
+	this.recordClass = (RecordClass)model.resolveReference(recordClassTwoPartName, name, "question", "recordClassRef");
+    }
+
     protected void setQuestionSet(QuestionSet questionSet) {
 	this.questionSet = questionSet;
     }

@@ -10,9 +10,6 @@ import java.util.HashMap;
  */
 public abstract class QueryInstance {
 
-    // ------------------------------------------------------------------
-    // Instance Variables
-    // ------------------------------------------------------------------
     protected boolean isCacheable;
 
     /**
@@ -44,6 +41,7 @@ public abstract class QueryInstance {
 
     protected boolean inMultiMode;
 
+
     // ------------------------------------------------------------------
     // Public Methods
     // ------------------------------------------------------------------
@@ -52,14 +50,6 @@ public abstract class QueryInstance {
 	this.values = new HashMap(values);
 	query.applyDefaults(values);
 	query.validateParamValues(values);
-    }
-
-    public Collection getValues() {
-	return values.values();
-    }
-    
-    public Map getValuesMap() {
-	return values;
     }
 
     public boolean getIsCacheable() {
@@ -75,19 +65,35 @@ public abstract class QueryInstance {
 	this.isCacheable =query.getIsCacheable().booleanValue() && isCacheable;
     }
 
-    public Integer getQueryInstanceId() {
-	return queryInstanceId;
-    }
-    
-    public void setQueryInstanceId(Integer queryInstanceId) {
-	this.queryInstanceId = queryInstanceId;
-    }
-
     public Query getQuery() {
 	return this.query;
     }
 
-    public void setMultiModeValues(String resultTableName, String pkToJoinWith, int startId, int endId){
+    public abstract ResultList getResult() throws WdkModelException;
+
+    public abstract String getResultAsTable() throws WdkModelException;
+
+    // ------------------------------------------------------------------
+    // Package methods
+    // ------------------------------------------------------------------
+
+    Collection getValues() {
+	return values.values();
+    }
+    
+    Map getValuesMap() {
+	return values;
+    }
+
+    Integer getQueryInstanceId() {
+	return queryInstanceId;
+    }
+    
+    void setQueryInstanceId(Integer queryInstanceId) {
+	this.queryInstanceId = queryInstanceId;
+    }
+
+    void setMultiModeValues(String resultTableName, String pkToJoinWith, int startId, int endId){
 
 	this.multiModeResultTableName = resultTableName;
 	this.pkToJoinWith = pkToJoinWith;
@@ -96,21 +102,20 @@ public abstract class QueryInstance {
 	this.inMultiMode = true;
     }
 	
-
-    public abstract String getSqlForCache() throws WdkModelException;
-
-    public abstract ResultList getResult() throws WdkModelException;
-
-    public abstract String getResultAsTable() throws WdkModelException;
-
     // ------------------------------------------------------------------
-    // Constructor (Protected)
+    // Protected methods
     // ------------------------------------------------------------------
+
+    protected abstract String getSqlForCache() throws WdkModelException;
 
     protected QueryInstance (Query query) {
 	this.query = query;
 	this.isCacheable = query.getIsCacheable().booleanValue();
 	this.inMultiMode = false;
+    }
+
+    protected ResultFactory getResultFactory() {
+	return query.getResultFactory();
     }
 
     protected abstract ResultList getNonpersistentResult() throws WdkModelException;

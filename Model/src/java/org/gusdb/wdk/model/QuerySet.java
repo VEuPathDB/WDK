@@ -63,7 +63,7 @@ public class QuerySet implements ModelSetI {
 	while (queryIterator.hasNext()) {
 	    Query query = (Query)queryIterator.next();
 	    query.setResources(model);
-	    query.setFullName(this.getName());
+	    query.setSetName(this.getName());
 	}
     }
 

@@ -61,9 +61,8 @@ public class SqlQueryInstance extends QueryInstance  {
      * @return Full name of table containing result
      */
     public String getResultAsTable() throws WdkModelException {
-        SqlQuery q = (SqlQuery)query;
         if (resultTable == null) 
-            resultTable = q.getResultFactory().getResultAsTable(this);
+            resultTable = getResultFactory().getResultAsTable(this);
         return resultTable;
     }
     
@@ -71,7 +70,7 @@ public class SqlQueryInstance extends QueryInstance  {
     public ResultList getResult() throws WdkModelException {
 
 	SqlQuery q = (SqlQuery)query;
-        ResultList rl = q.getResultFactory().getResult(this);
+        ResultList rl = getResultFactory().getResult(this);
         rl.checkQueryColumns(q, true);
         return rl;
     }

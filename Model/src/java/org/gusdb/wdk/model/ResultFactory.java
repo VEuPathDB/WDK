@@ -133,9 +133,9 @@ public class ResultFactory {
 	    System.out.println("Creating sequence " + nameToUse + "_pkseq"
 			       + newline);
 	    System.out.println("Done" + newline);
-    } catch (SQLException e) {
-	throw new WdkModelException(e);
-    }
+	} catch (SQLException e) {
+	    throw new WdkModelException(e);
+	}
     }
 
     /**
@@ -201,6 +201,10 @@ public class ResultFactory {
     ///////////////////////////////////////////////////////////////////////////
     ///////////////   protected   /////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////
+
+    RDBMSPlatformI getRDBMSPlatform() {
+	return platform;
+    }
 
     /**
      * @return Full table name of the result table

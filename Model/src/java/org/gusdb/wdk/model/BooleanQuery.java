@@ -1,9 +1,4 @@
-package org.gusdb.wdk.model.implementation;
-
-import org.gusdb.wdk.model.Query;
-import org.gusdb.wdk.model.implementation.BooleanQueryInstance;
-import org.gusdb.wdk.model.QueryInstance;
-import org.gusdb.wdk.model.StringParam;
+package org.gusdb.wdk.model;
 
 import java.util.Hashtable;
 import java.util.Enumeration;
@@ -37,7 +32,7 @@ public class BooleanQuery extends Query {
     
     public BooleanQuery(){
 	setName("BooleanQuery");
-	setFullName("BooleanQuerySet");
+	setSetName("BooleanQuerySet");
 	StringParam firstParam = new StringParam();
 	firstParam.setName(FIRST_INSTANCE_PARAM_NAME);
 	firstParam.setFullName(BOOLEAN_PARAM_SET_NAME);
