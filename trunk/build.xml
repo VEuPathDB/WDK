@@ -1,5 +1,7 @@
 <project name="WDK temp build" default="package" basedir=".">
 
+  <taskdef name="jing" classname="com.thaiopensource.relaxng.util.JingTask"/>
+	
   <property name="build.home"    value="${basedir}/ant-build"/>
   <property name="src.home"      value="${basedir}/src/java"/>
   <property name="jar_resources.home"      value="${basedir}/webinf"/>
@@ -122,5 +124,9 @@
 
   </target>
 
-
+  <target name="validate">
+    <jing file="../WDKTestSite/lib/xml/sampleModelRNG.xml" rngfile="webinf/org/gusdb/gus/wdk/wdkModel.rng" />
+  </target>
+	
+	
 </project>
