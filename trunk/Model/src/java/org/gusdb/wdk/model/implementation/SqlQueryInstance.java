@@ -9,10 +9,12 @@ import org.gusdb.gus.wdk.model.RDBMSPlatformI;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.logging.Logger;
 
 public class SqlQueryInstance extends QueryInstance  {
 
-
+    private static final Logger logger = Logger.getLogger("org.gusdb.gus.wdk.model.implementation.SqlQueryInstance");
+    
     // ------------------------------------------------------------------
     // Instance Variables
     // ------------------------------------------------------------------
@@ -28,82 +30,80 @@ public class SqlQueryInstance extends QueryInstance  {
     // ------------------------------------------------------------------
     
     public SqlQueryInstance (SqlQuery query) {
-	
-	super(query);
-	setIsCacheable(query.getIsCacheable().booleanValue());
+        super(query);
+        logger.finest("I've got a new sqlQueryInstance being created");
+        setIsCacheable(query.getIsCacheable().booleanValue());
     }
 
     protected String getSql() throws WdkModelException {
-	SqlQuery q = (SqlQuery)query;
-	String sql = null;
-	if (inMultiMode){
-
-	    String newPkJoin = multiModeResultTableName + "." + pkToJoinWith;
-	    values.put("primaryKey", newPkJoin); //will this destroy the query for later use?
-	}
-	String initSql = 
-	    q.instantiateSql(query.getInternalParamValues(values));
-	if (inMultiMode){
-	    sql = q.addMultiModeConstraints(multiModeResultTableName, pkToJoinWith,
-					    startId, endId, initSql);
-	}
-	else {
-	    sql = initSql;
-	}
-	return sql;
+        SqlQuery q = (SqlQuery)query;
+        String sql = null;
+        if (inMultiMode){
+            String newPkJoin = multiModeResultTableName + "." + pkToJoinWith;
+            values.put("primaryKey", newPkJoin); //will this destroy the query for later use?
+        }
+        String initSql = 
+            q.instantiateSql(query.getInternalParamValues(values));
+        if (inMultiMode){
+            sql = q.addMultiModeConstraints(multiModeResultTableName, pkToJoinWith,
+                    startId, endId, initSql);
+        } else {
+            sql = initSql;
+        }
+        return sql;
     }
 
     /**
      * @return Full name of table containing result
      */
     public String getResultAsTable() throws WdkModelException {
-	SqlQuery q = (SqlQuery)query;
-	if (resultTable == null) 
-	    resultTable = q.getResultFactory().getResultAsTable(this);
-	return resultTable;
+        SqlQuery q = (SqlQuery)query;
+        if (resultTable == null) 
+            resultTable = q.getResultFactory().getResultAsTable(this);
+        return resultTable;
     }
     
 
     public ResultList getResult() throws WdkModelException {
-	SqlQuery q = (SqlQuery)query;
-	ResultList rl = q.getResultFactory().getResult(this);
-	rl.checkQueryColumns(q, true);
-	return rl;
+        SqlQuery q = (SqlQuery)query;
+        ResultList rl = q.getResultFactory().getResult(this);
+        rl.checkQueryColumns(q, true);
+        return rl;
     }
 
     public String getBooleanOperandSql() throws NotBooleanOperandException{
-	return new String("method needs to be written!");
+        return new String("method needs to be written!");
     }
 
     protected ResultList getNonpersistentResult() throws WdkModelException {
 
-	ResultSet resultSet = null;
-	RDBMSPlatformI platform = ((SqlQuery)query).getRDBMSPlatform();
+        ResultSet resultSet = null;
+        RDBMSPlatformI platform = ((SqlQuery)query).getRDBMSPlatform();
 
-	try {
-	    resultSet = SqlUtils.getResultSet(platform.getDataSource(), 
-					      getSql());
+        try {
+            resultSet = SqlUtils.getResultSet(platform.getDataSource(), 
+                    getSql());
 
-	} catch (SQLException e) { 
-	    String newline = System.getProperty( "line.separator" );
-	    String msg = newline + "Failed running query:" + newline +
-		"\"" + getSql() + "\"" + newline;
-	    throw new WdkModelException(msg, e);
-	}
-	return new SqlResultList(this, null, resultSet);
+        } catch (SQLException e) { 
+            String newline = System.getProperty( "line.separator" );
+            String msg = newline + "Failed running query:" + newline +
+            "\"" + getSql() + "\"" + newline;
+            throw new WdkModelException(msg, e);
+        }
+        return new SqlResultList(this, null, resultSet);
     }
 
     protected void writeResultToTable(String resultTableName, 
-				      ResultFactory rf) throws WdkModelException {
-	RDBMSPlatformI platform = ((SqlQuery)query).getRDBMSPlatform();
+            ResultFactory rf) throws WdkModelException {
+        RDBMSPlatformI platform = ((SqlQuery)query).getRDBMSPlatform();
 
-	try {
-	    platform.createTableFromQuerySql(platform.getDataSource(),
-					     resultTableName, 
-					     getSql());
-	} catch (SQLException e) {
-	    throw new WdkModelException(e);
-	}
+        try {
+            platform.createTableFromQuerySql(platform.getDataSource(),
+                    resultTableName, 
+                    getSql());
+        } catch (SQLException e) {
+            throw new WdkModelException(e);
+        }
     }
 
 }
