@@ -9,6 +9,7 @@ package org.gusdb.gus.wdk.view;
 import org.gusdb.gus.wdk.model.RecordList;
 import org.gusdb.gus.wdk.model.RecordListSet;
 import org.gusdb.gus.wdk.model.WdkModel;
+import org.gusdb.gus.wdk.model.WdkModelException;
 
 
 /**
@@ -28,9 +29,12 @@ public class QueryRecordGroupMgr {
         int dotIndex = initRecordList.indexOf(".");
         String groupName = initRecordList.substring(0, dotIndex);
         String pairName = initRecordList.substring(dotIndex+1);
-        RecordListSet rls = model.getRecordListSet(groupName);
-        RecordList ret = rls.getRecordList(pairName);
-        return ret;
+	try {
+	    RecordListSet rls = model.getRecordListSet(groupName);
+	    RecordList ret = rls.getRecordList(pairName);
+	    return ret;
+	} catch (WdkModelException e) {}
+	return null;  // to get it to compile
     }
 
 }
