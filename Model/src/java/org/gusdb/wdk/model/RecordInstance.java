@@ -16,6 +16,8 @@ public class RecordInstance {
 	fieldsResultSetsMap = new HashMap();
     }
 
+    public Record getRecord() { return record; }
+
     public void setPrimaryKey(String primaryKey) {
 	this.primaryKey = primaryKey;
     }
