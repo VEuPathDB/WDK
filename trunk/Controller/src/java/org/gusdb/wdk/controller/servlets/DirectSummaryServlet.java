@@ -10,7 +10,7 @@ import org.gusdb.wdk.model.SummaryInstance;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.view.RIVList;
+import org.gusdb.wdk.model.RIVList;
 
 import java.io.File;
 import java.io.IOException;
