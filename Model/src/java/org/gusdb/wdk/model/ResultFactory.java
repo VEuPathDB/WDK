@@ -84,36 +84,36 @@ public class ResultFactory {
      */
     public void createCache(int numParams) throws WdkModelException {
 	String newline = System.getProperty( "line.separator" );
-
+	
 	// Format sql to create table
 	StringBuffer sqlb = new StringBuffer();
 	String tblName = schemaName + "." + instanceTableName;
-
+	
 	sqlb.append("create table " + tblName + 
 		    " (query_instance_id number(12) not null, query_name varchar2(100) not null, cached number(1) not null,");
 	
-    sqlb.append("result_table varchar2(30), start_time date not null, end_time date, dataset_name varchar2(100), session_id varchar2(50), ");
-    for (int i=0;i < numParams -1; i++) {
+	sqlb.append("result_table varchar2(30), start_time date not null, end_time date, dataset_name varchar2(100), session_id varchar2(50), ");
+	for (int i=0;i < numParams -1; i++) {
 	    sqlb.append("param" + i + " varchar2(25), ");
 	}
-    sqlb.append("param" + numParams + " varchar2(25))");
-
+	sqlb.append("param" + numParams + " varchar2(25))");
+	
 	// Execute it
-	logger.fine(newline + "Making cache table " + tblName 
-			   + " with sql:" + newline + sqlb.toString()
-			   + newline);
+	System.out.println(newline + "Making cache table " + tblName + newline);
+	
+	logger.fine("Using sql: " + sqlb.toString());
 	try {
 	    SqlUtils.execute(platform.getDataSource(), sqlb.toString());
 	    logger.fine("Done" + newline);
-
+	    
 	    // Create sequence 
 	    platform.createSequence(tblName + "_pkseq", 1, 1);
-	    logger.fine("Creating sequence " + tblName + "_pkseq"
+	    System.out.println("Creating sequence " + tblName + "_pkseq"
 			       + newline);
-	    logger.fine("Done" + newline);
-	} catch (SQLException e) {
-	    throw new WdkModelException(e);
-	}
+	    System.out.println("Done" + newline);
+    } catch (SQLException e) {
+	throw new WdkModelException(e);
+    }
     }
 
     /**
