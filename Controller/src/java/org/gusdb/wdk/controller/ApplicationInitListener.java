@@ -61,10 +61,10 @@ public class ApplicationInitListener implements ServletContextListener {
         String propsFileLocation = application.getInitParameter("propsFileLocation");
         String loggingFileLocation = application.getInitParameter("loggingFileLocation");
         String parserClass = application.getInitParameter("parserClass");
-        int poolMaxWait = Integer.parseInt(application.getInitParameter("connectionPoolMaxWait"));
+       // int poolMaxWait = Integer.parseInt(application.getInitParameter("connectionPoolMaxWait"));
 
         
-        initMemberVars(loginXML, parserClass, querySetLocation, schemaName, schemaLocation, propsFileLocation, poolMaxWait, application);
+        initMemberVars(loginXML, parserClass, querySetLocation, schemaName, schemaLocation, propsFileLocation, application);
         
         Config.set(application, Config.SQL_DATA_SOURCE, dataSource);
 
@@ -119,7 +119,7 @@ public class ApplicationInitListener implements ServletContextListener {
 
     
     private void initMemberVars(String loginConfigLocation, String parserClass, String queryConfigLocation, 
-            String schemaName, String schemaLocation, String propsLocation, int maxWait, ServletContext application) {
+            String schemaName, String schemaLocation, String propsLocation, ServletContext application) {
         
         if (schemaName != null && schemaLocation != null) {
             throw new RuntimeException("Configuration error. Both schemaName and schemaLocation are specified.");
@@ -154,7 +154,8 @@ public class ApplicationInitListener implements ServletContextListener {
             application.setAttribute("wdk.wdkModel", wdkModel);
          
         } catch (Exception exp) {
-            throw new RuntimeException(exp);
+        	exp.printStackTrace();
+           // throw new RuntimeException(exp);
         }
 
     }
