@@ -1,6 +1,8 @@
 package org.gusdb.wdk.model.jspwrap;
 
 import org.gusdb.wdk.model.BooleanQuestionNode;
+import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelException;
 
 public class BooleanQuestionLeafBean {
     
@@ -10,9 +12,9 @@ public class BooleanQuestionLeafBean {
 	this.bqn = bqn;
     }
     
-    public void grow(BooleanQuestionLeafBean leaf, String operation){
+    public void grow(BooleanQuestionLeafBean leaf, String operation, WdkModel model)throws WdkModelException{
 	
-	bqn.grow(leaf.getBooleanQuestionNode(), operation);
+	bqn.grow(leaf.getBooleanQuestionNode(), operation, model);
     }
     
     public QuestionBean getQuestion(){

@@ -99,6 +99,16 @@ public class BooleanQuestionNode{
 	return secondChild;
     }
 
+    /**
+     * Grows the tree that this leaf belongs to by copying this leaf, making this leaf a new internal
+     * node, setting the copied leaf to be the internal node's first child, and setting <code>bqn</code>
+     * to be the second child.  The copies are all by value so this actual leaf object undergoes a 
+     * transformation to be a node object. 
+     *
+     * This method can only be performed on a leaf node and assumes that none of the noded in the tree
+     * has had any parameter values set yet.
+     */
+
     public void grow(BooleanQuestionNode bqn, String operation, WdkModel model ) throws WdkModelException{
 	
 	if (!isLeaf()){

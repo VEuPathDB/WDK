@@ -18,7 +18,7 @@ public class AnswerParam extends Param {
 
     protected void resolveReferences(WdkModel model) throws WdkModelException {}
 
-    protected String validateValue(Object value) throws WdkModelException {
+    public String validateValue(Object value) throws WdkModelException {
         if (!(value instanceof Answer)) {
             throw new WdkModelException("Value must be a Answer " + value) ;
         }
