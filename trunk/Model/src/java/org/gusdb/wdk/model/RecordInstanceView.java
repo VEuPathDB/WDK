@@ -55,9 +55,6 @@ public class RecordInstanceView implements Map {
                 catch (WdkModelException exp) {
                     exp.printStackTrace();
                 }
-                if ("primary_key".equals(key)) {
-                    value = new PrimaryKey(value);
-                }
                 logger.finer("#~#~ Adding "+key+" => "+value);
                 map.put(key, value);
             }

@@ -208,7 +208,7 @@ public class SanityTester {
 		try{    
 		    //get model query from sanity query
 		    nextSanityQuery = queries[i];
-		    nextQueryReference = new Reference(nextSanityQuery.getTwoPartName());
+		    nextQueryReference = new Reference(nextSanityQuery.getRef());
 		    QuerySet nextQuerySet = queryTester.getWdkModel().getQuerySet(nextQueryReference.getSetName());
 		    Query nextQuery = nextQuerySet.getQuery(nextQueryReference.getElementName());
 		    
@@ -279,7 +279,7 @@ public class SanityTester {
 		    
 		    //get model record from sanity record
 		    nextSanityRecord = records[i];
-		    nextRecordReference = new Reference(nextSanityRecord.getTwoPartName());
+		    nextRecordReference = new Reference(nextSanityRecord.getRef());
 		    RecordSet nextRecordSet = queryTester.getWdkModel().getRecordSet(nextRecordReference.getSetName());
 		    Record nextRecord = nextRecordSet.getRecord(nextRecordReference.getElementName());
 		    RecordInstance nextRecordInstance = nextRecord.makeRecordInstance();
