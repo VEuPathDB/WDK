@@ -68,7 +68,7 @@ public class RecordTesterServlet extends HttpServlet {
           break;
       case DESTINATION_JSP:
           try {
-              req.setAttribute( "cds" , new RecordInstanceView(recordInstance));
+              req.setAttribute( "ri" , new RecordInstanceView(recordInstance));
               ServletContext sc = getServletContext();
               RequestDispatcher rd = sc.getRequestDispatcher("/views/CDSView.jsp");
               rd.forward(req, res);
