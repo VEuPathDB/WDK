@@ -10,6 +10,7 @@
 
 <table>
 <c:forEach items="${wdkRecord.attributes}" var="attr">
+<c:if test="${!attr.value.isInternal}">
   <tr>
     <td><b>${attr.value.displayName}</b></td>
     <td>
@@ -25,6 +26,7 @@
       </c:choose>
     </td>
   </tr>
+</c:if>
 </c:forEach>
 
 <!-- show all tables for record -->
@@ -39,7 +41,9 @@
         <!-- table header -->
         <tr class="headerRow">
           <c:forEach var="hCol" items="${tbl.fields}">
-            <th>${hCol.displayName}</th>
+          <c:if test="${!hCol.isInternal}">
+            <th align="left">${hCol.displayName}</th>
+          </c:if>
           </c:forEach>
         </tr>
 
@@ -53,6 +57,7 @@
           </c:choose>
 
             <c:forEach var="rCol" items="${row}">
+            <c:if test="${!rCol.value.isInternal}">
 
               <!-- need to know if value should be hot linked -->
               <td>
@@ -67,6 +72,7 @@
               </c:choose>
               </td>
 
+            </c:if>
             </c:forEach>
           </tr>
         <c:set var="i" value="${i +  1}"/>
