@@ -33,12 +33,11 @@ import java.util.List;
  *    3) forwards control to a jsp page that displays a summary
  */
 
-public class GetBooleanAnswerAction extends Action {
+public class GetBooleanAnswerAction extends ShowSummaryAction {
     public ActionForward execute(ActionMapping mapping,
 				 ActionForm form,
 				 HttpServletRequest request,
 				 HttpServletResponse response) throws Exception {
-	//todo: create AnswerBean
 	System.err.println("GetBooleanAnswerAction: started");
 
 	BooleanQuestionForm bqf = (BooleanQuestionForm)form;
@@ -59,48 +58,10 @@ public class GetBooleanAnswerAction extends Action {
 		processNode(nextRealNode);
 	    }
 	}
-	//offending line of code
 	root.setAllValues();
 	
-	//5. set values using hashtable
-	//6. setAllValues on root (calls set all values on root bqn)
-	//7. call make answer on root, pass in param values for root
+	AnswerBean answer = booleanAnswerPaging(request, root);
 
-	//Show Summary stuff
-	int start = 1;
-	if (request.getParameter("pager.offset") != null) {
-	    start = Integer.parseInt(request.getParameter("pager.offset"));
-	    start++;  //following Adrian's lead on this. (find out why it is necessary)
-	}
-	int pageSize = 20;
-	if (request.getParameter("pageSize") != null) {
-	    start = Integer.parseInt(request.getParameter("pageSize"));
-	}
-	if (start <1) { start = 1; } 
-	int end = start + pageSize-1;
-
-	AnswerBean answer = root.makeAnswer(1, 20);
-	
-	int totalSize = answer.getResultSize();
-	
-	if (end > totalSize) { end = totalSize; }
-	
-	String uriString = request.getRequestURI();
-	List editedParamNames = new ArrayList();
-	for (Enumeration en = request.getParameterNames(); en.hasMoreElements();) {
-	    String key = (String) en.nextElement();
-	    if (!"pageSize".equals(key) && !"start".equals(key) &&!"pager.offset".equals(key)) {
-		editedParamNames.add(key);
-	    }
-	}
-	
-	request.setAttribute("wdk_paging_total", new Integer(totalSize));
-	request.setAttribute("wdk_paging_pageSize", new Integer(pageSize));
-	request.setAttribute("wdk_paging_start", new Integer(start));
-	request.setAttribute("wdk_paging_end", new Integer(end));
-	request.setAttribute("wdk_paging_url", uriString);
-	request.setAttribute("wdk_paging_params", editedParamNames);
-	
 	request.setAttribute(CConstants.WDK_ANSWER_KEY, answer);
 	
 	ActionForward forward = mapping.findForward(CConstants.GET_BOOLEAN_ANSWER_MAPKEY);
