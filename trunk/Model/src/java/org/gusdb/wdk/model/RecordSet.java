@@ -49,7 +49,6 @@ public class RecordSet implements ModelSetI {
                     + " already exists in record set "
                     + getName());
         recordSet.put(record.getName(), record);
-        record.setReference(new Reference(getName()+"."+record.getName()));
     }
 
     public String toString() {

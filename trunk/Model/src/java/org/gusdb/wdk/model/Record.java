@@ -25,15 +25,7 @@ public class Record {
     private String name;
     private String type;
     private String idPrefix;
-    private Reference reference;
     private RecordSet recordSet;
-    
-    /**
-     * @param reference The reference to set.
-     */
-    public void setReference(Reference reference) {
-        this.reference = reference;
-    }
     
     public void setName(String name) {
         this.name = name;
@@ -249,8 +241,8 @@ public class Record {
 	this.recordSet = recordSet;
     }
 
-    public Reference getReference() {
-        return reference;
+    public Reference getReference() throws WdkModelException {
+        return new Reference(getFullName());
     }
 
     /**
