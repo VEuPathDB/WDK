@@ -1,10 +1,16 @@
 <project name="WDK temp build" default="package" basedir=".">
 
-  <taskdef name="jing" classname="com.thaiopensource.relaxng.util.JingTask"/>
+  <!--<taskdef name="jing" classname="com.thaiopensource.relaxng.util.JingTask"/>-->
 	
   <property name="build.home"    value="${basedir}/ant-build"/>
-  <property name="src.home"      value="${basedir}/src/java"/>
-  <property name="jar_resources.home"      value="${basedir}/webinf"/>
+  <property name="src.home"      value="/src/java"/>
+  <property name="srcController.home"      value="${basedir}/Controller/src/java"/>
+  <property name="srcModel.home"      value="${basedir}/Model/src/java"/>
+  <property name="srcView.home"      value="${basedir}/View/src/java"/>
+  <property name="jar_resources_controller.home"      value="${basedir}/Controller/lib/java"/>
+  <property name="jar_resources_model.home"      value="${basedir}/Model/lib/java"/>
+  <property name="jar_resources_view.home"      value="${basedir}/View/lib/java"/>
+  <property name="jar_resources.home"      value="${basedir}/View/webinf"/>
 	
   <property name="compile.debug"       value="true"/>
   <property name="compile.deprecation" value="false"/>
@@ -15,10 +21,15 @@
   <path id="compile.classpath">
 
     <!-- <pathelement location="${catalina.home}/common/classes"/> -->
-    <fileset dir="${basedir}/lib/java">
+    <fileset dir="${basedir}/Controller/lib/java">
       <include name="*.jar"/>
     </fileset>
-
+	<fileset dir="${basedir}/Model/lib/java">
+      <include name="*.jar"/>
+    </fileset>
+    <fileset dir="${basedir}/View/lib/java">
+      <include name="*.jar"/>
+    </fileset>
   </path>
 
 
@@ -36,9 +47,29 @@
   <target name="compile" depends="prepare"
    description="Compile Java sources">
 
+	<mkdir dir="${build.home}/classes"/>
+    <javac srcdir="${srcModel.home}"
+          destdir="${build.home}/classes"
+            debug="${compile.debug}"
+      deprecation="${compile.deprecation}"
+         optimize="${compile.optimize}">
+        <classpath refid="compile.classpath"/>
+    </javac>
+
     <!-- Compile Java classes as necessary -->
     <mkdir dir="${build.home}/classes"/>
-    <javac srcdir="${src.home}"
+    <javac srcdir="${srcController.home}"
+          destdir="${build.home}/classes"
+            debug="${compile.debug}"
+      deprecation="${compile.deprecation}"
+         optimize="${compile.optimize}">
+        <classpath refid="compile.classpath"/>
+    </javac>
+
+	
+    
+    <mkdir dir="${build.home}/classes"/>
+    <javac srcdir="${srcView.home}"
           destdir="${build.home}/classes"
             debug="${compile.debug}"
       deprecation="${compile.deprecation}"
@@ -48,9 +79,18 @@
 
     <!-- Copy application resources -->
     <copy  todir="${build.home}/classes">
+      <fileset dir="${jar_resources_controller.home}" />
+    </copy>
+    <copy  todir="${build.home}/classes">
+      <fileset dir="${jar_resources_model.home}" />
+    </copy>
+    <copy  todir="${build.home}/classes">
+      <fileset dir="${jar_resources_view.home}" />
+    </copy>
+    <copy  todir="${build.home}/classes">
       <fileset dir="${jar_resources.home}" />
     </copy>
-    <copy todir="${build.home}/classes/org.gusdb/wdk/model" file="${src.home}/../../lib/rng/wdkModel.rng" />
+    <copy todir="${build.home}/classes/org/gusdb/wdk/model" file="${basedir}/Model/lib/rng/wdkModel.rng" />
 
   </target>
 
