@@ -11,9 +11,8 @@ Ensure all paths are from properties not hard-coded
 Move this list to SF tracker?
 Model: better handling for null for StringParam - work around in-place
 Custom tag: debugging - show all vars in all contexts (or restrict by attributes)
-Custom tag: default record view - version 1 - call toString
 Custom tag: default record view - version 2 - more structured view
-Custom tag: rename Map key in x scope (with option to alias)
+Custom tag: rename Map key in x scope (with option to alias) - partially done
 Discussion on branding so we can decide on directory structure
 
 
@@ -39,9 +38,7 @@ Wait to see what TableResults looks like
 
 Results Detail
 --------------
-How to view Record Tables? Wait to see what TableResults looks like 
-Change variable name to generic one - ri. No custom tag to rename
-Generic variable name should be configurable
+How to view Record Tables? Wait to see what TableResults looks like
 We're initially assuming one ri per page.
 Redirect to view page name based on Record name
 
@@ -88,3 +85,5 @@ Results Detail
 Set up initial hard-coded query and text/plain
 Set up wrapper for RecordInstance to implement Map
 Set up simple JSP based-view
+Change variable name to generic one - ri. Use custom tag to rename
+Custom tag: default record view - version 1 - call toString
