@@ -6,6 +6,8 @@
  */
 package org.gusdb.gus.wdk.controller;
 
+import org.gusdb.gus.wdk.model.Record;
+import org.gusdb.gus.wdk.model.RecordSet;
 import org.gusdb.gus.wdk.model.Reference;
 import org.gusdb.gus.wdk.model.Summary;
 import org.gusdb.gus.wdk.model.SummarySet;
@@ -43,5 +45,18 @@ public class WdkModelExtra {
     }
 
     
+    public static Record getRecord(WdkModel wm, String recordReference) {
+        try {
+            Reference r = new Reference(recordReference);
+            RecordSet rs = wm.getRecordSet(r.getSetName());
+            return rs.getRecord(r.getElementName());
+        }
+        catch (WdkModelException exp) {
+            throw new RuntimeException(exp);
+        }
+        catch (WdkUserException exp) {
+            throw new RuntimeException(exp);
+        }
+    }
     
 }
