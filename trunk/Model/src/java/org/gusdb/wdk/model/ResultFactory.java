@@ -3,6 +3,7 @@ package org.gusdb.wdk.model;
 
 import org.gusdb.wdk.model.implementation.SqlResultList;
 import org.gusdb.wdk.model.implementation.SqlUtils;
+import org.gusdb.wdk.model.Column;
 
 import java.io.File;
 import java.sql.ResultSet;
@@ -67,6 +68,7 @@ public class ResultFactory {
     ///////////////////////////////////////////////////////////////////////////
 
     public synchronized ResultList getResult(QueryInstance instance) throws WdkModelException{
+	System.err.println("ResultFactory: getting result for instance " + instance.getQuery().getName());
 	ResultList resultList = instance.getIsPersistent()?
 	    getPersistentResult(instance) : instance.getNonpersistentResult();
 	return resultList;
@@ -77,6 +79,24 @@ public class ResultFactory {
      */
     public synchronized String getResultAsTable(QueryInstance instance) throws WdkModelException {
 	return getResultTable(instance);
+    }
+
+    public synchronized String getSqlForCache(QueryInstance instance) throws WdkModelException {
+	Column columns[] = instance.getQuery().getColumns();
+	StringBuffer sqlb = new StringBuffer("select ");
+	
+	int columnLength = columns.length;
+
+	for (int i = 0; i < columnLength - 1; i++){
+	    Column nextColumn = columns[i];
+	    sqlb.append(nextColumn.getName() + ", ");
+	}
+	sqlb.append(columns[columnLength - 1].getName() + " ");
+	    
+	String resultTable = getResultTable(instance); //ensures instance is inserted into cache
+	sqlb.append("from " + resultTable);
+	System.err.println("ResultFactory.getSqlForCache: returning for query " + instance.getQuery().getName() + " sql " + sqlb.toString());
+	return sqlb.toString();
     }
 
     /**
@@ -191,6 +211,11 @@ public class ResultFactory {
 
 	// add row to QueryInstance table
 	Integer queryInstanceId = getQueryInstanceId(instance);
+	if (queryInstanceId == null){
+	    queryInstanceId = insertQueryInstance(instance);
+	}	    
+	
+	System.err.println("ResultFactory.getNewResultTable: creating rt for query " + instance.getQuery().getName() + " with id " + queryInstanceId);
 	String resultTableName = "query_result_" + queryInstanceId;
 	StringBuffer sql = new StringBuffer();
 	sql.append("update " + instanceTableFullName + " set result_table = '" + resultTableName + "'");
@@ -211,6 +236,7 @@ public class ResultFactory {
 
     private ResultList getPersistentResult(QueryInstance instance) throws WdkModelException {
 	String resultTable = getResultTable(instance);
+
 	ResultSet rs = fetchCachedResult(resultTable);
 	return new SqlResultList(instance, resultTable, rs);
     }
@@ -228,13 +254,14 @@ public class ResultFactory {
 
 	// Construct SQL query to retrieve the requested table's name
 	//
- 	StringBuffer sqlb = new StringBuffer();
+	StringBuffer sqlb = new StringBuffer();
 	sqlb.append("select result_table from " + instanceTableFullName + " where ");
 	
 	if (instance.getIsCacheable()){
 	    sqlb.append("cached = 1 and end_time IS NOT NULL and "); 
 	}
 	sqlb.append(instanceWhereClause(instance));
+	System.err.println("ResultFactory: getting result for query " + instance.getQuery().getName() + " with sql " + sqlb.toString());
 	String resultTableName = null;
 	try {
 	    resultTableName = SqlUtils.runStringQuery(platform.getDataSource(), sqlb.toString());
@@ -245,6 +272,9 @@ public class ResultFactory {
 	if (resultTableName == null) {
 	    resultTableFullName = getNewResultTable(instance);
 	} else {
+	    if (instance.getQueryInstanceId() == null){ //instance result is in cache but is newly created object
+		instance.setQueryInstanceId(getQueryInstanceId(instance));
+	    }
 	    resultTableFullName = 
 		platform.getTableFullName(schemaName,resultTableName);    
 	}
@@ -279,20 +309,18 @@ public class ResultFactory {
     private Integer insertQueryInstance(QueryInstance instance, 
 					 String sessionId, String datasetName) throws WdkModelException {
 
-
 	String nextID = null;
 	try {
 	    nextID = platform.getNextId(schemaName, instanceTableName);
+	    
 	} catch (SQLException e) {
 	    logger.finest("Got an SQLException");
 	    throw new WdkModelException(e);
 	}
 	if (nextID == null) {
-	    logger.finest("nextId is null so being set to 1");
 	    nextID = "1"; 
 	}
-	logger.finest("nextId is "+nextID);
-    
+
 	// format values
 	String queryName = "'" + instance.getQuery().getFullName() + "'";
 	sessionId = (sessionId != null)? ("'" + sessionId + "'") : "null";
@@ -314,6 +342,7 @@ public class ResultFactory {
 		    datasetName + ", sysdate" + pVals+ ")"); 
 	
 	int numRows = 0;
+	System.err.println("ResultFactory: inserting instance " + instance.getQuery().getName() + " with sql " + sqlb.toString());
 	try {
 	    numRows = SqlUtils.executeUpdate(platform.getDataSource(),sqlb.toString());
 	} catch (SQLException e) {
@@ -333,8 +362,8 @@ public class ResultFactory {
 
     private String formatInstanceParamVals(QueryInstance instance) {
 	StringBuffer sb = new StringBuffer();
-
-    int count = 0;
+	
+	int count = 0;
 	Iterator paramValues = instance.getValues().iterator();
 	while (paramValues.hasNext()) {
 	    String val = (String)paramValues.next();
@@ -415,9 +444,10 @@ public class ResultFactory {
     }
 
     private ResultSet fetchCachedResult(String resultTable) throws WdkModelException {
+	
 	String sql = "select * from " + resultTable;
 
-	ResultSet rs = null;
+ 	ResultSet rs = null;
 	try {
 	    rs = SqlUtils.getResultSet(platform.getDataSource(), sql);
 	} catch (SQLException e) {
@@ -426,36 +456,22 @@ public class ResultFactory {
 	return rs;
     }
 
-    //does not restrict on whether instance is cacheable or not
-    // suspicious things here:
-    //   - why is it inserting 
-
     private Integer getQueryInstanceId(QueryInstance instance) throws WdkModelException{
-
+	
 	Integer queryInstanceId = instance.getQueryInstanceId();
 	if (queryInstanceId == null){
 	    
-        logger.finest("queryInstanceId is currently null. Trying to find.");
 	    StringBuffer sqlb = new StringBuffer();
 	    sqlb.append("select query_instance_id from " + instanceTableFullName + " where "); 
 	    sqlb.append(instanceWhereClause(instance));
 		    
 	    try {
-            logger.finest("About to try and execute:" +sqlb.toString());
 	        queryInstanceId = SqlUtils.runIntegerQuery(platform.getDataSource(), sqlb.toString());
 	    } catch (SQLException e) {
-            logger.severe("Got an SQL exception");
-	        throw new WdkModelException(e);
+		throw new WdkModelException(e);
 	    }
-
-	    if (queryInstanceId == null){
-            logger.finest("queryInstanceId is still currently null. Trying to find.");
-	        queryInstanceId = insertQueryInstance(instance);
-	    }	    
 	}
-	logger.finest("Returning a queryInstanceId of "+queryInstanceId);
 	return queryInstanceId;
-
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -573,7 +589,8 @@ public class ResultFactory {
 	String newline = System.getProperty( "line.separator" );
 	String cmdlineSyntax = 
 	    cmdName + 
-	    " -configFile config_file -new|-reset|-drop [-noSchemaOutput]";
+	    " -configFile config_file -noSchemaOutput!" +
+	    " -new|-reset|-drop";
 
 	String header = 
 	    newline + "Create, reset or drop a query cache. The name of the cache table is found in the configFile (the table is placed in the schema owned by login).  Resetting the cache drops all results tables and deletes all rows from the cache table.  Dropping the cache first resets it then drops the cache table and sequence." + newline + newline + "Options:" ;

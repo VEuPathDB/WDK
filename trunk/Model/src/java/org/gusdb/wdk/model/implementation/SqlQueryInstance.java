@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.implementation;
 
+
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.QueryInstance;
 import org.gusdb.wdk.model.ResultList;
@@ -75,6 +76,11 @@ public class SqlQueryInstance extends QueryInstance  {
         return rl;
     }
 
+    public String getSqlForCache() throws WdkModelException{
+	SqlQuery q = (SqlQuery)query;
+	String cacheSql = q.getResultFactory().getSqlForCache(this);
+	return cacheSql;
+    }
 
     protected ResultList getNonpersistentResult() throws WdkModelException {
         ResultSet resultSet = null;

@@ -4,6 +4,9 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.io.File;
+import org.gusdb.wdk.model.implementation.BooleanQuery;
+import org.gusdb.wdk.model.implementation.BooleanQueryInstance;
+
 
 import org.w3c.dom.Document;
 
@@ -199,6 +202,13 @@ public class WdkModel {
             counter++;
         }
         return lists;
+    }
+       
+    public BooleanQueryInstance makeBooleanQueryInstance(){
+
+	BooleanQuery booleanQuery = new BooleanQuery();
+	BooleanQueryInstance bqi = new BooleanQueryInstance(booleanQuery);
+	return bqi;
     }
     
     //ModelSetI's
