@@ -1,13 +1,11 @@
 package org.gusdb.gus.wdk.model.implementation;
 
-import java.util.HashMap;
+import org.gusdb.gus.wdk.model.Column;
+import org.gusdb.gus.wdk.model.SimpleQueryInstanceI;
 
-import java.sql.SQLException;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
-
-import org.gusdb.gus.wdk.model.SimpleQueryInstanceI;
-import org.gusdb.gus.wdk.model.Column;
+import java.util.HashMap;
 
 public class SimpleSqlQueryInstance extends QueryInstance implements SimpleQueryInstanceI {
 
