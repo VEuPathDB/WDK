@@ -21,6 +21,8 @@ public class Summary {
 
     private String name;
 
+    private SummarySet summarySet;
+
 
     //the only column in this query should be a primary key
     Query query;
@@ -75,6 +77,10 @@ public class Summary {
 	this.name = name;
     }
 
+    public String getFullName() {
+	return summarySet.getName() + "." + name;
+    }
+
     public int getTotalLength(Map values) throws WdkModelException, WdkUserException{
         SummaryInstance si = makeSummaryInstance(values, 0, 0);
         return si.getTotalLength();
@@ -92,4 +98,8 @@ public class Summary {
 	return buf.toString();
     }
     
+    protected void setSummarySet(SummarySet summarySet) {
+	this.summarySet = summarySet;
+    }
+
 }

@@ -294,17 +294,17 @@ public class ResultFactory {
 	try {
 	    nextID = platform.getNextId(schemaName, instanceTableName);
 	} catch (SQLException e) {
-        logger.finest("Got an SQLException");
+	    logger.finest("Got an SQLException");
 	    throw new WdkModelException(e);
 	}
 	if (nextID == null) {
 	    logger.finest("nextId is null so being set to 1");
-        nextID = "1"; 
-    }
+	    nextID = "1"; 
+	}
 	logger.finest("nextId is "+nextID);
     
 	// format values
-	String queryName = "'" + instance.getQuery().getName() + "'";
+	String queryName = "'" + instance.getQuery().getFullName() + "'";
 	sessionId = (sessionId != null)? ("'" + sessionId + "'") : "null";
 	datasetName = (datasetName != null)? ("'" +datasetName + "'") : "null";
 	String pVals = formatInstanceParamVals(instance);
@@ -392,7 +392,7 @@ public class ResultFactory {
 	StringBuffer sb = new StringBuffer();
 	Iterator iter = instance.getValues().iterator();
 
-	sb.append(" query_name = '" + instance.getQuery().getName() + "'");
+	sb.append(" query_name = '" + instance.getQuery().getFullName() + "'");
 
 	int i = 0;
 	while (iter.hasNext()) {

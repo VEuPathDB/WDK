@@ -63,6 +63,7 @@ public class ParamSet implements ModelSetI {
 	while (paramIterator.hasNext()) {
 	    Param param = (Param)paramIterator.next();
 	    param.setResources(model);
+	    param.setParamSet(this);
 	}
     }
 

@@ -24,6 +24,7 @@ public abstract class Query {
     protected HashMap columnsH;
     protected Vector columnsV;
     protected ResultFactory resultFactory;
+    protected QuerySet querySet;
 
     public Query () {
 	paramRefs = new HashSet();
@@ -43,6 +44,10 @@ public abstract class Query {
 
     public String getName() {
 	return name;
+    }
+
+    public String getFullName() {
+	return querySet.getName() + "." + name;
     }
 
     public void setDisplayName(String displayName) {
@@ -232,6 +237,10 @@ public abstract class Query {
 			    "  help='" + getHelp() + "'" + newline 
 			    );
        return buf;
+    }
+
+    protected void setQuerySet(QuerySet querySet) {
+	this.querySet = querySet;
     }
 
 }

@@ -147,10 +147,17 @@ public class RecordInstance {
 	    //	rl.checkQueryColumns(query, true);
 	    
 	    Column[] columns = query.getColumns();
-	    rl.next();
+	    if (!rl.next()) {
+		String msg = "Attributes query '" + query.getFullName() + "' in Record '" + record.getFullName() + "' does not return any rows";
+		throw new WdkModelException(msg);
+	    }
 	    for (int i=0; i<columns.length; i++) {
 		String columnName = columns[i].getName();
 		setAttributeValue(columnName, rl.getValue(columnName));
+	    }
+	    if (rl.next()) {
+		String msg = "Attributes query '" + query.getFullName() + "' in Record '" + record.getFullName() + "' returns more than one row";
+		throw new WdkModelException(msg);
 	    }
 	}
     }

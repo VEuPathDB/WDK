@@ -16,7 +16,6 @@ public class Column {
     public Column() {} 
 
     public void setName(String name) {
-        logger.severe("Column setName for "+name);
         this.name = name;
     }
 
@@ -81,9 +80,7 @@ public class Column {
     }
     
     public void setInSummary(String in) {
-        logger.severe("Column setInSummary for "+name+" is called with *"+in+"*");
         this.inSummary = Boolean.valueOf(in.trim()).booleanValue();
-        logger.severe("So inSummary is "+inSummary);
     }
 }
 
