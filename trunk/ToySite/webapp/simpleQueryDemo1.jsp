@@ -7,7 +7,7 @@
   <hr><p>
       <table>
         <wdkq:queryHolder name="form1"
-                          summarySetName="RnaQuestions"
+                          questionSetName="RnaQuestions"
                           var="q">
           <input type="hidden" name="fromPage" value="/simpleQueryDemo1.jsp">
             <tr><td><wdkq:displayQuery question="${q}"></td></tr>

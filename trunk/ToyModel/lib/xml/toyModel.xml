@@ -33,7 +33,7 @@
         <!-- a RNA recordClass, a list of which may be returned by a RNA question -->
         <recordClass idPrefix="DT." name="RnaRecordClass" type="DoTS Transcript">
             <!-- an attribute query that returns question attributes (one row) for a record -->
-            <attributeQuery twoPartName="RnaRecordAttributeQueries.RnaQuestion"/>  
+            <attributeQuery twoPartName="RnaRecordAttributeQueries.RnaSummary"/>  
             <!-- an attribute query that returns non-question attributes (one row) for a record -->
             <attributeQuery twoPartName="RnaRecordAttributeQueries.RnaFields"/>
             <!-- a table query that returns a table (0 or more rows) of values associated with a record -->
@@ -103,13 +103,13 @@
     <!-- a set of queries (for RnaRecord attributes) that return one row  -->    
     <querySet name="RnaRecordAttributeQueries">
         <!-- a query that returns question attributes of a RNA record -->
-        <sqlQuery displayName="RNA question" name="RnaQuestion">
+        <sqlQuery displayName="RNA summary" name="RnaSummary">
             <paramRef twoPartName="params.primaryKey"/>
-            <column name="rna_id"/>
-            <column name="taxon_name"/>
-            <column name="gene_symbol"/>
+            <column displayName="RNA Id" name="primary_key"/>
+            <column displayName="Organism" name="taxon_name"/>
+            <column displayName="Gene Symbol" name="gene_symbol"/>
             <sql>
-                select 'DT.' || a.na_sequence_id as rna_id,
+                select a.na_sequence_id as primary_key,
                        tn.name as taxon_name,
                        'MyFavoriteGene' as gene_symbol 
                 from WDKTestAssembly a, WDKTestTaxonName tn

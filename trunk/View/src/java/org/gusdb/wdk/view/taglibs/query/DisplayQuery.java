@@ -20,10 +20,10 @@ import org.gusdb.wdk.model.WdkUserException;
 public class DisplayQuery extends SimpleTagSupport {
     
     private static final String DEFAULT_OPTION = "Choose...";
-    private Summary summary;
+    private Summary question;
     
-    public void setSummary(Summary summary) {
-        this.summary = summary;
+    public void setQuestion(Summary question) {
+        this.question = question;
     }
 
 // TODO Should it pick up other names through NullQuery???
@@ -37,16 +37,16 @@ public class DisplayQuery extends SimpleTagSupport {
         if (parent == null) {
             throw new JspTagException("The DisplayQuery tag is not enclosed by a QueryHolder tag");
         }
-        String summarySetName = parent.getSummarySetName();
+        String questionSetName = parent.getQuestionSetName();
             
 
 
         
-    	if ( summary == null) {
+    	if ( question == null) {
             WdkModel wm = (WdkModel) getJspContext().getAttribute("wdk.wdkModel", PageContext.APPLICATION_SCOPE);
             SummarySet rls = null;
             try {
-                rls = wm.getSummarySet(summarySetName);
+                rls = wm.getSummarySet(questionSetName);
             } catch (WdkUserException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -55,7 +55,7 @@ public class DisplayQuery extends SimpleTagSupport {
             
             
 //    		Query[] sq = sqs.getQueries();
-    		out.println("<b>Queries:</b> <select name=\"summaryName\">");
+    		out.println("<b>Queries:</b> <select name=\"questionName\">");
     		out.println("<option value=\""+DEFAULT_OPTION+"\">"+DEFAULT_OPTION);
     		for ( int i=0 ; i < rla.length ;i++) {
                 Query sq = rla[i].getQuery();
@@ -68,13 +68,13 @@ public class DisplayQuery extends SimpleTagSupport {
     		return;
     	}
         
-    	out.println("<h4>"+summary.getQuery().getDisplayName()+"</h4>");
-    	out.println("<input type=\"hidden\" name =\"summaryName\" value=\""+summarySetName+"."+summary.getName()+"\">");
+    	out.println("<h4>"+question.getQuery().getDisplayName()+"</h4>");
+    	out.println("<input type=\"hidden\" name =\"questionName\" value=\""+questionSetName+"."+question.getName()+"\">");
     	out.println("<input type=\"hidden\" name=\"defaultChoice\" value=\""+DEFAULT_OPTION+"\">");
 
         if (getJspBody() != null) {
             //out.println("<br>I'm trying to set wdk.queryName to fred<br>");
-            getJspContext().setAttribute("wdk.queryName", summarySetName +"."+summary.getName(), PageContext.PAGE_SCOPE);
+            getJspContext().setAttribute("wdk.queryName", questionSetName +"."+question.getName(), PageContext.PAGE_SCOPE);
             getJspBody().invoke(null);
             getJspContext().removeAttribute("wdk.queryName", PageContext.PAGE_SCOPE);
     	}

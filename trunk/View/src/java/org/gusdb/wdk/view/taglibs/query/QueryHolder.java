@@ -17,9 +17,9 @@ public class QueryHolder extends SimpleTagSupport {
 
 	private String name;
 	private String var;
-	private String summaryName;
+	private String questionName;
 	private String platformClass;
-	private String summarySetName;
+	private String questionSetName;
 	
 	
 	public void setName(String name) {
@@ -38,12 +38,12 @@ public class QueryHolder extends SimpleTagSupport {
 		return var;
 	}
 	
-	public void setSummaryName(String initQuery) {
-		this.summaryName = initQuery;
+	public void setQuestionName(String initQuery) {
+		this.questionName = initQuery;
 	}
 
-    public String getSummaryName() {
-        return summaryName;
+    public String getQuestionName() {
+        return questionName;
     }
     
     public void doTag() throws IOException, JspException {
@@ -57,7 +57,7 @@ public class QueryHolder extends SimpleTagSupport {
 
         out.println("<form method=\"GET\" action=\""+contextPath+"/InteractiveRecordList\">");
         out.println("<input type=\"hidden\" name=\"formName\" value=\""+name+"\">");
-        out.println("<input type=\"hidden\" name=\"summarySetName\" value=\""+summarySetName+"\">");
+        out.println("<input type=\"hidden\" name=\"questionSetName\" value=\""+questionSetName+"\">");
         
         // Print out any warning/validation error messages
         // They should all start with formName.error.
@@ -72,21 +72,21 @@ public class QueryHolder extends SimpleTagSupport {
             } 
         }
         
-        Summary summary = (Summary) getJspContext().getAttribute(name+".summary", PageContext.REQUEST_SCOPE);
+        Summary question = (Summary) getJspContext().getAttribute(name+".question", PageContext.REQUEST_SCOPE);
             
-        if (summary == null) {    
+        if (question == null) {    
             //sqii = NullQueryInstance.INSTANCE;
 
-            if ( summaryName != null) {
+            if ( questionName != null) {
                 WdkModel wm = (WdkModel) getJspContext().getAttribute("wdk.wdkModel", PageContext.APPLICATION_SCOPE);
 
-                summary = wm.getSummary(summaryName);
+                question = wm.getSummary(questionName);
             }
         }
         
         if (getJspBody() != null) {
             getJspContext().setAttribute("wdk.formName", name, PageContext.PAGE_SCOPE);
-            getJspContext().setAttribute(var, summary, PageContext.PAGE_SCOPE);
+            getJspContext().setAttribute(var, question, PageContext.PAGE_SCOPE);
             getJspBody().invoke(null);
             getJspContext().removeAttribute("wdk.formName", PageContext.PAGE_SCOPE);
         }
@@ -96,14 +96,14 @@ public class QueryHolder extends SimpleTagSupport {
 	/**
 	 * @return Returns the querySet.
 	 */
-	public String getSummarySetName() {
-		return summarySetName;
+	public String getQuestionSetName() {
+		return questionSetName;
 	}
     
 	/**
 	 * @param querySet The querySet to set.
 	 */
-	public void setSummarySetName(String recordGroup) {
-		this.summarySetName = recordGroup;
+	public void setQuestionSetName(String recordGroup) {
+		this.questionSetName = recordGroup;
 	}
 }
