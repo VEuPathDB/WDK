@@ -1,5 +1,13 @@
 To Do
 
+- clean up the bean and map properties 
+   - remove deprecated methods
+   - move all bean properties to a special section in the file
+
+- change the name of any class that is exposed as a Bean to end in Bean. 
+
+- fix the ordering of params, queries, etc.
+
 -consolidate the config files:
    - model config could point to model file and prop file
    - have model config use a default location
