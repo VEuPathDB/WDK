@@ -5,7 +5,7 @@ import org.gusdb.wdk.model.Record;
 import org.gusdb.wdk.model.RecordInstance;
 import org.gusdb.wdk.model.WdkModel;
 
-import org.gusdb.wdk.view.RecordInstanceView;
+import org.gusdb.wdk.model.RecordInstanceView;
 
 import java.io.File;
 import java.io.IOException;
