@@ -79,6 +79,14 @@ public class RecordInstance {
 	return instance.getResult();
     }
 
+    public Map getTables() {
+	return new AttributeValueMap(record, this, true);
+    }
+
+    public Map getAttributes() {
+	return new AttributeValueMap(record, this, false);
+    }
+
     public String print() throws WdkModelException {
 	String newline = System.getProperty( "line.separator" );
 	StringBuffer buf = new StringBuffer();

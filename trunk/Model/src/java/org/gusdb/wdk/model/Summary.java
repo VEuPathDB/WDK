@@ -42,13 +42,31 @@ public class Summary {
 	    listIdQueryInstance = query.makeInstance();
 	}
 	//return new SummaryInstance(this, listIdQueryInstance);
-	return new SummaryInstance(this, query.makeInstance(), paramValues, i, j);
+	SummaryInstance summaryInstance = 
+	    new SummaryInstance(this, query.makeInstance(), paramValues, i, j);
+	return summaryInstance;
     }
 
     public Query getQuery(){
 	return this.query;
     }
+
+    public Param[] getParams() {
+	return query.getParams();
+    }
+
+    public String getDisplayName() {
+	return query.getDisplayName();
+    }
 	
+    public String getHelp() {
+	return query.getHelp();
+    }
+
+    public String getDescription() {
+	return query.getDescription();
+    }
+
     public Record getRecord(){
 	return this.record;
     }
