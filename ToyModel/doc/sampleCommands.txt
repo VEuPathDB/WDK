@@ -1,5 +1,3 @@
-build GUS/WebDevKit install -append ; cp ~/gushome/lib/java/GUS-WebDevKit.jar /www/htdocs/wdk-dev/WEB-INF/lib/
-
 wdkXml $GUS_HOME/lib/xml/toyModel.xml $GUS_HOME/config/toyModel.prop $GUS_HOME/lib/xml/toyModelConfig.xml
 
 wdkCache -configFile $GUS_HOME/lib/xml/toyModelConfig.xml -reset
