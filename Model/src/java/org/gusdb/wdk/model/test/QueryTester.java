@@ -2,6 +2,8 @@ package org.gusdb.gus.wdk.model.test;
 
 import java.util.Hashtable;
 import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.Map;
 import java.io.File;
 import java.io.IOException;
 import java.sql.ResultSet;
@@ -144,10 +146,10 @@ public class QueryTester {
 	    prompt += " (chose one";
 	    if (enumParam.getMultiPick().booleanValue()) prompt += " or more"; 
 	    prompt += "):";
-	    Hashtable hash = enumParam.getKeysAndValues(resultFactory);
-	    Enumeration keys = hash.keys();
-	    while (keys.hasMoreElements()) {
-		String key = (String)keys.nextElement();
+	    Map hash = enumParam.getKeysAndValues(resultFactory);
+	    Iterator keys = hash.keySet().iterator();
+	    while (keys.hasNext()) {
+		String key = (String)keys.next();
 		prompt += newline + "    " + key + " = " + hash.get(key);
 	    }
 	} 
