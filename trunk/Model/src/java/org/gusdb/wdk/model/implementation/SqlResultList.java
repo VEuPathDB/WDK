@@ -51,6 +51,8 @@ public class SqlResultList extends ResultList {
         }
     }
 
+    /* deprecated.  handled in super class
+
     public void write(StringBuffer buf) throws WdkModelException {
 	try {
 	    SqlUtils.writeResultSet(resultSet, buf);
@@ -58,6 +60,8 @@ public class SqlResultList extends ResultList {
 	    throw new WdkModelException(e);
 	}
     }
+
+    */
 
     public void print() throws WdkModelException {
 	try {

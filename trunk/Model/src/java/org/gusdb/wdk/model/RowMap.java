@@ -84,14 +84,14 @@ public class RowMap implements Map {
      * @see java.util.Map#remove(java.lang.Object)
      */
     public Object remove(Object key) {
-	throw new UnsupportedOperationException("Illegal operation 'remove' on RecordINstance");
+	throw new UnsupportedOperationException("Illegal operation 'remove' on RowMap");
     }
 
     /**
      * @see java.util.Map#putAll(java.util.Map)
      */
     public void putAll(Map t) {
-	throw new UnsupportedOperationException("Illegal operation 'putAll' on RecordINstance");
+	throw new UnsupportedOperationException("Illegal operation 'putAll' on RowMap");
     }
 
     /**
