@@ -8,7 +8,7 @@
       No results for your query
    </c:when>
    <c:otherwise>
-     <c:import url="/WEB-INF/subviews/${renderer}.jsp" />
+     <c:import url="/WEB-INF/indirectPages/subviews/${renderer}.jsp" />
    </c:otherwise>
   </c:choose>
   <sample:footer />
