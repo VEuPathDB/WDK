@@ -12,5 +12,6 @@
 	<classpathentry kind="lib" path="Model/lib/java/commons-dbcp-1.1.jar"/>
 	<classpathentry kind="lib" path="Model/lib/java/commons-pool-1.1.jar"/>
 	<classpathentry kind="lib" path="Model/lib/java/jing-20030619.jar"/>
+	<classpathentry kind="lib" path="Model/lib/java/ojdbc14.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
