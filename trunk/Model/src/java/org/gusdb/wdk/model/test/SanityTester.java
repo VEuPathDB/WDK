@@ -19,7 +19,7 @@ import org.gusdb.gus.wdk.model.WdkModel;
 import org.gusdb.gus.wdk.model.WdkModelException;
 import org.gusdb.gus.wdk.model.WdkUserException;
 import org.gusdb.gus.wdk.model.Reference;
-import org.gusdb.gus.wdk.model.implementation.SanityTestXmlParser;
+import org.gusdb.gus.wdk.model.test.SanityTestXmlParser;
 import org.gusdb.gus.wdk.model.implementation.ModelXmlParser;
 import org.gusdb.gus.wdk.model.implementation.SqlQueryInstance;
 
@@ -57,7 +57,7 @@ import org.apache.commons.pool.impl.GenericObjectPool;
  * Created: Mon August 23 12:00:00 2004 EDT
  *
  * @author David Barkan
- * @version $Revision$ $Date$Author: $
+ * @version $Revision$ $Date$Author: dbarkan $
  */
 public class SanityTester {
 
