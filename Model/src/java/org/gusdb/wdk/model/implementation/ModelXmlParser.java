@@ -16,17 +16,47 @@ import org.gusdb.gus.wdk.model.Summary;
 import org.gusdb.gus.wdk.model.WdkModelException;
 
 
+import java.util.Properties;
+import java.util.Enumeration;
+import java.io.IOException;
+import java.io.FileNotFoundException;
 import java.io.File;
+import java.io.InputStream;
+import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.io.BufferedReader;
+import java.io.FileReader;
 
 import org.apache.commons.digester.Digester;
 import org.xml.sax.SAXParseException;
 
 public class ModelXmlParser {
 
-    public static WdkModel parseXmlFile(File modelXmlFile) throws java.io.IOException, org.xml.sax.SAXException, WdkModelException {
+    public static WdkModel parseXmlFile(File modelXmlFile) throws org.xml.sax.SAXException, WdkModelException {
+	return parseXmlFile(modelXmlFile, null);
+    }
+
+    public static WdkModel parseXmlFile(File modelXmlFile, File modelPropFile) throws org.xml.sax.SAXException, WdkModelException {
+	
+	InputStream modelXmlStream;
+	
+	if (modelPropFile != null) {
+	    modelXmlStream = configureModelFile(modelXmlFile, modelPropFile);
+	} else {
+	    try {
+		modelXmlStream = new FileInputStream(modelXmlFile);
+	    } catch (FileNotFoundException e) {
+		throw new WdkModelException(e);
+	    }
+	}
+
 	Digester digester = configureDigester();
-	WdkModel model = 
-	    (WdkModel)digester.parse(modelXmlFile);
+	WdkModel model = null;
+	try {
+	    model = (WdkModel)digester.parse(modelXmlStream);
+	} catch (IOException e) {
+	    throw new WdkModelException(e);
+	}
 	model.resolveReferences();
 	return model;
     }
@@ -37,7 +67,7 @@ public class ModelXmlParser {
 	digester.setValidating(true);
 	digester.setNamespaceAware(true);
 	digester.setSchemaLanguage("http://www.w3.org/2001/XMLSchema");
-	digester.setSchema("wdkModelSchema.xsd");
+	digester.setSchema(System.getProperty("schemaFile"));
 	digester.setErrorHandler(new ParserErrorHandler());
 
 	//Root -- WDK Model
@@ -157,11 +187,51 @@ public class ModelXmlParser {
 	return digester;
     }
     
+    /**
+     * Substitute property values into model xml
+     */
+    static InputStream configureModelFile(File modelXmlFile, File modelPropFile) throws WdkModelException {
+
+	try {
+	    StringBuffer substituted = new StringBuffer();
+	    Properties properties = new Properties();
+	    properties.load(new FileInputStream(modelPropFile));
+	    BufferedReader reader = 
+		new BufferedReader(new FileReader(modelXmlFile));
+	    while (reader.ready()) {
+		String line = reader.readLine();
+		line = substituteProps(line, properties);
+		substituted.append(line);
+	    }
+	
+	    return new ByteArrayInputStream(substituted.toString().getBytes());
+	} catch (FileNotFoundException e) {
+	    throw new WdkModelException(e);
+	} catch (IOException e) {
+	    throw new WdkModelException(e);
+	}
+    }
+
+    static String substituteProps(String string, Properties properties) {
+	Enumeration propNames = properties.propertyNames();
+	String newString = string;
+	while (propNames.hasMoreElements()) {
+	    String propName = (String)propNames.nextElement();
+	    String value = properties.getProperty(propName);
+	    newString = newString.replaceAll("\\@" + propName + "\\@", value);
+	}
+	return newString;
+    }
+
     public static void main( String[] args ) {
 	try {
 	    File modelXmlFile = new File(args[0]);
-	    WdkModel wdkModel = parseXmlFile(modelXmlFile);
-	    
+	    File modelPropFile = null;
+	    if (args.length > 1) { 
+		modelPropFile = new File(args[1]);
+	    } 
+	    WdkModel wdkModel = parseXmlFile(modelXmlFile, modelPropFile);
+
 	    System.out.println( wdkModel.toString() );
 	    
 	} catch( SAXParseException e ) {
