@@ -57,7 +57,13 @@ public class NullQueryInstance extends QueryInstance {
 
     protected void writeResultToTable(String resultTableName, 
 				      ResultFactory rf) throws SQLException{
+        //TODO Need to write
 	System.err.println("need to write method");
+    }
+
+    public String getResultAsTable() throws Exception {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 	
