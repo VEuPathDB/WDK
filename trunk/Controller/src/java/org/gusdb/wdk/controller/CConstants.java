@@ -57,5 +57,5 @@ public class CConstants {
     protected static final String DEFAULT_WDKMODELSCHEMA = "/WEB-INF/wdk-config/wdkModel.rng";
     protected static final String DEFAULT_WDKMODELPROPS = "/WEB-INF/wdk-config/wdkModel.props";
     protected static final String DEFAULT_WDKMODELPARSER = "org.gusdb.wdk.model.implementation.ModelXmlParser";
-    protected static final String DEFAULT_WDKCUSTOMVIEWDIR = "/custom_view/";
+    protected static final String DEFAULT_WDKCUSTOMVIEWDIR = "/customPages/";
 }
