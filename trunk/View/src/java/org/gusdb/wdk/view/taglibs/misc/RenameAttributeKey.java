@@ -6,6 +6,9 @@ import javax.servlet.jsp.JspContext;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.SimpleTagSupport;
 
+/**
+ * Rename (copy) an attribute from one key to another 
+ */
 public class RenameAttributeKey extends SimpleTagSupport {
     // TODO Logging, better error checking
     

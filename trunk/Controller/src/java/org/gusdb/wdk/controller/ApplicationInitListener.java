@@ -9,6 +9,11 @@ import javax.servlet.jsp.jstl.core.Config;
 import javax.sql.DataSource;
 
   
+/**
+ * A class that is initialised at the start of the web application. This makes sure global resources 
+ * are available to all the contexts that need them
+ * 
+ */
 public class ApplicationInitListener implements ServletContextListener {
   
     public void contextInitialized(ServletContextEvent sce) {

@@ -20,6 +20,9 @@ import javax.sql.DataSource;
 
 
 
+/**
+ * A hack for making global resources available. Should be phased out
+ */
 public class GlobalRepository {
 
     private static GlobalRepository INSTANCE;
