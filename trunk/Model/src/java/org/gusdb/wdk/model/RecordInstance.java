@@ -78,14 +78,12 @@ public class RecordInstance {
 
     public String print() throws WdkModelException {
 	String newline = System.getProperty( "line.separator" );
-	StringBuffer buf =
-	    new StringBuffer(record.getType() + " " + record.getIdPrefix() + primaryKey).append( newline );
-
+	StringBuffer buf = new StringBuffer();
 	
 	Iterator attributeNamesIt = record.getNonTextAttributeNames().iterator();
 	while (attributeNamesIt.hasNext()) {
 	    String attributeName = (String) attributeNamesIt.next();
-	    buf.append(attributeName + ":   " + getAttributeValue(attributeName)).append( newline );
+	    buf.append(record.getDisplayName(attributeName) + ":   " + getAttributeValue(attributeName)).append( newline );
 	}
 	Iterator textAttributeNamesIt = record.getTextAttributeNames().iterator();
 	while (textAttributeNamesIt.hasNext()) {
