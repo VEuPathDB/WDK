@@ -1,11 +1,8 @@
 package org.gusdb.gus.wdk.view.taglibs.query;
 
 import org.gusdb.gus.wdk.controller.WdkModelExtra;
-import org.gusdb.gus.wdk.model.Query;
-import org.gusdb.gus.wdk.model.QueryInstance;
 import org.gusdb.gus.wdk.model.Summary;
 import org.gusdb.gus.wdk.model.WdkModel;
-import org.gusdb.gus.wdk.model.implementation.NullQueryInstance;
 
 import java.io.*;
 import java.util.Enumeration;
@@ -21,9 +18,9 @@ public class QueryHolder extends SimpleTagSupport {
 
 	private String name;
 	private String var;
-	private String initRecordList;
+	private String summaryName;
 	private String platformClass;
-	private String recordQueryGroup;
+	private String summarySetName;
 	
 	
 	public void setName(String name) {
@@ -42,12 +39,12 @@ public class QueryHolder extends SimpleTagSupport {
 		return var;
 	}
 	
-	public void setInitRecordList(String initQuery) {
-		this.initRecordList = initQuery;
+	public void setSummaryName(String initQuery) {
+		this.summaryName = initQuery;
 	}
 
-    public String getInitRecordList() {
-        return initRecordList;
+    public String getSummaryName() {
+        return summaryName;
     }
     
     public void doTag() throws IOException, JspException {
@@ -61,7 +58,7 @@ public class QueryHolder extends SimpleTagSupport {
 
         out.println("<form method=\"GET\" action=\""+contextPath+"/InteractiveRecordList\">");
         out.println("<input type=\"hidden\" name=\"formName\" value=\""+name+"\">");
-        out.println("<input type=\"hidden\" name=\"queryRecordGroup\" value=\""+recordQueryGroup+"\">");
+        out.println("<input type=\"hidden\" name=\"summarySetName\" value=\""+summarySetName+"\">");
         
         // Print out any warning/validation error messages
         // They should all start with formName.error.
@@ -76,23 +73,21 @@ public class QueryHolder extends SimpleTagSupport {
             } 
         }
         
-        QueryInstance sqii = (QueryInstance) getJspContext().getAttribute(name+".sqii", PageContext.REQUEST_SCOPE);
+        Summary summary = (Summary) getJspContext().getAttribute(name+".summary", PageContext.REQUEST_SCOPE);
             
-        if (sqii == null) {    
-            sqii = NullQueryInstance.INSTANCE;
+        if (summary == null) {    
+            //sqii = NullQueryInstance.INSTANCE;
 
-            if ( initRecordList != null) {
+            if ( summaryName != null) {
                 WdkModel wm = (WdkModel) getJspContext().getAttribute("wdk.wdkModel", PageContext.APPLICATION_SCOPE);
 
-                Summary rl = WdkModelExtra.getSummary(wm, initRecordList);
-                Query sq = rl.getQuery();
-            	sqii = sq.makeInstance();
+                summary = WdkModelExtra.getSummary(wm, summaryName);
             }
         }
         
         if (getJspBody() != null) {
             getJspContext().setAttribute("wdk.formName", name, PageContext.PAGE_SCOPE);
-            getJspContext().setAttribute(var, sqii, PageContext.PAGE_SCOPE);
+            getJspContext().setAttribute(var, summary, PageContext.PAGE_SCOPE);
             getJspBody().invoke(null);
             getJspContext().removeAttribute("wdk.formName", PageContext.PAGE_SCOPE);
         }
@@ -102,14 +97,14 @@ public class QueryHolder extends SimpleTagSupport {
 	/**
 	 * @return Returns the querySet.
 	 */
-	public String getRecordQueryGroup() {
-		return recordQueryGroup;
+	public String getSummarySetName() {
+		return summarySetName;
 	}
     
 	/**
 	 * @param querySet The querySet to set.
 	 */
-	public void setRecordQueryGroup(String recordGroup) {
-		this.recordQueryGroup = recordGroup;
+	public void setSummarySetName(String recordGroup) {
+		this.summarySetName = recordGroup;
 	}
 }
