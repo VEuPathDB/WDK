@@ -102,7 +102,8 @@ sub runTest{
 	    $testFailed = 1;
 	    my $errStr = "Error!  Test $name failed!\n";
 	    $errStr .= "The observed result of the test was different than the expected result of a test previously run.\n";
-	    $errStr .= "To see the difference, run diff $outputDir/$name" . ".out expectedResultsDir/$name" . ".out\n";
+	    $errStr .= "To see the difference, run diff $outputDir/$name" . ".out $expectedResultsDir/$name" . ".out\n";
+	    print STDERR "\n$errStr\n";
 	    if ($critical){
 		die ("Received error in critical test $name.  Ending regression test");
 	    }

@@ -32,7 +32,7 @@ import org.apache.commons.cli.ParseException;
  * Created: Mon August 23 12:00:00 2004 EDT
  *
  * @author David Barkan
- * @version $Revision$ $Date$Author: sfischer $
+ * @version $Revision$ $Date$Author: dbarkan $
  */
 public class SanityTester {
 
@@ -243,8 +243,6 @@ public class SanityTester {
 		    queryFail++;
 		    System.err.println(BANNER_LINE);
 		    System.err.println("***QUERY " + nextQueryReference.getSetName() + "." + nextQueryReference.getElementName() + " FAILED!***  It threw an exception.");
-		    System.err.println(e.getMessage());
-		    e.printStackTrace();
 		    printFailureMessage(nextSanityQuery, cmdLine);
 		    System.err.println(BANNER_LINE + "\n");
 		}
