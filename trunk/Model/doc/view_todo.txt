@@ -6,6 +6,7 @@ General
 Ask about indentation style
 Ask about organizing imports
 Ask about adding version numbers to libs
+Ask about getting rid of XML libs
 Add a default (nearly-empty) stylesheet
 
 Build
