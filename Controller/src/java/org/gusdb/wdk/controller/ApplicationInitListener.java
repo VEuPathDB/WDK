@@ -97,9 +97,6 @@ public class ApplicationInitListener implements ServletContextListener {
                 throw new RuntimeException(e);
             } catch (WdkModelException e) {
                 throw new RuntimeException(e);
-            } catch (ParserConfigurationException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
             }
             
             //        } catch (WdkUserException e) {
