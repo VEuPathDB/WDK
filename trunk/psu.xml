@@ -84,19 +84,22 @@
   	  	<fileset dir="${build.home}/classes" />
   	  		</copy> -->
   	
-  	    <copy  todir="${build.home}/webapp/WEB-INF/lib">
+  	   <!-- <copy  todir="${build.home}/webapp/WEB-INF/lib">
       <fileset dir="${jar_resources_controller.home}" />
-    </copy>
+    </copy> -->
     <copy  todir="${build.home}/webapp/WEB-INF/lib">
       <fileset dir="${jar_resources_model.home}" />
     </copy>
     <copy  todir="${build.home}/webapp/WEB-INF/lib">
-      <fileset dir="${jar_resources_view.home}" />
+      <fileset dir="${jar_resources_view.home}"
+               includes="jstl.jar,
+                         pager-taglib.jar,
+                         standard.jar" />
     </copy>
-
-    <copy  todir="${build.home}/webapp/WEB-INF/lib">
-      <fileset dir="ToyModel/lib/java/" />
-    </copy>
+    
+    
+    <copy  todir="${build.home}/webapp/WEB-INF/wdk-config" 
+       file="Model/lib/rng/wdkModel.rng" />
     
 <!--  	<copy todir="${build.home}/webapp/WEB-INF/lib">
       <fileset dir="../WebDevKit/lib/java" 
