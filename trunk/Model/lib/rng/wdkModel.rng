@@ -26,7 +26,7 @@
   <define name="params">
     <choice>
       <ref name="stringParam" />
-      <ref name="flatCVParam" />
+      <ref name="flatVocabParam" />
     </choice>
   </define>
   
@@ -159,8 +159,8 @@
     </element>
   </define>
     
-  <define name="flatCVParam">
-    <element name="flatCVParam">
+  <define name="flatVocabParam">
+    <element name="flatVocabParam">
       <ref name="ParamBaseContents" />
       <optional>
         <attribute name="multipick" />
