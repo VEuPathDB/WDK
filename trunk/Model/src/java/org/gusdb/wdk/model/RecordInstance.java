@@ -12,7 +12,7 @@ public class RecordInstance {
     String primaryKey;
     RecordClass recordClass;
     HashMap attributesResultSetsMap;
-    SummaryInstance summaryInstance;
+    Answer answer;
 
     public RecordInstance(RecordClass recordClass) {
 	this.recordClass = recordClass;
@@ -27,10 +27,6 @@ public class RecordInstance {
 
     public String getPrimaryKey() {
 	return primaryKey;
-    }
-
-    public void setSummaryInstance(SummaryInstance rli){
-	this.summaryInstance = rli;
     }
 
     /**
@@ -130,7 +126,15 @@ public class RecordInstance {
     
 
     ///////////////////////////////////////////////////////////////////////////
-    // protected
+    // package methods
+    ///////////////////////////////////////////////////////////////////////////
+
+    void setAnswer(Answer answer){
+	this.answer = answer;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // protected methods
     ///////////////////////////////////////////////////////////////////////////
 
     protected void setAttributeValue(String attributeName, Object attributeValue) throws WdkModelException{
@@ -152,10 +156,10 @@ public class RecordInstance {
     protected void runAttributesQuery(Query query) throws WdkModelException {
 	QueryInstance instance = query.makeInstance();
 	instance.setIsCacheable(false);
-	if (summaryInstance != null){
-	    summaryInstance.setMultiMode(instance);
+	if (answer != null){
+	    answer.setMultiMode(instance);
 	    ResultList rl = instance.getResult();
-	    summaryInstance.setQueryResult(rl);
+	    answer.setQueryResult(rl);
 	    rl.close();
 	}	
 	else{ //do it all myself

@@ -14,12 +14,12 @@ import javax.servlet.http.HttpServletResponse;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.Question;
-import org.gusdb.wdk.model.SummaryInstance;
+import org.gusdb.wdk.model.Answer;
 
 /**
  * This Action is called by the ActionServlet when a WDK question is asked.
  * It 1) reads param values from input form bean,
- *    2) runs the query and saves the summary
+ *    2) runs the query and saves the answer
  *    3) forwards control to a jsp page that displays a summary
  */
 
@@ -56,9 +56,9 @@ public class ShowSummaryAction extends Action {
 	if (start <1) { start = 1; } 
 	int end = start + pageSize-1;
 
-	SummaryInstance wdkSummary = wdkQuestion.makeSummaryInstance(params, start, end);
+	Answer wdkAnswer = wdkQuestion.makeAnswer(params, start, end);
 
-	int totalSize = wdkSummary.getResultSize();
+	int totalSize = wdkAnswer.getResultSize();
 	if (end > totalSize) { end = totalSize; }
 
 	String uriString = request.getRequestURI();
@@ -77,7 +77,7 @@ public class ShowSummaryAction extends Action {
 	request.setAttribute("wdk_paging_url", uriString);
 	request.setAttribute("wdk_paging_params", editedParamNames);
 
-	request.getSession().setAttribute(CConstants.WDK_SUMMARY_KEY, wdkSummary);
+	request.getSession().setAttribute(CConstants.WDK_SUMMARY_KEY, wdkAnswer);
 	
 	ActionForward forward = mapping.findForward(CConstants.SHOW_SUMMARY_MAPKEY);
 	return forward;

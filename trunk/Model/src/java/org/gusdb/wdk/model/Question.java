@@ -68,15 +68,15 @@ public class Question {
     ///////////////////////////////////////////////////////////////////////
 
 
-    public SummaryInstance makeSummaryInstance(Map paramValues, int i, int j) throws WdkUserException, WdkModelException{
+    public Answer makeAnswer(Map paramValues, int i, int j) throws WdkUserException, WdkModelException{
 	
 	if (listIdQueryInstance == null){
 	    listIdQueryInstance = query.makeInstance();
 	}
-	//return new SummaryInstance(this, listIdQueryInstance);
-	SummaryInstance summaryInstance = 
-	    new SummaryInstance(this, query.makeInstance(), paramValues, i, j);
-	return summaryInstance;
+	//return new Answer(this, listIdQueryInstance);
+	Answer answer = 
+	    new Answer(this, query.makeInstance(), paramValues, i, j);
+	return answer;
     }
 
     public Param[] getParams() {
