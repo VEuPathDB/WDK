@@ -1,14 +1,15 @@
 To Do
 
 NEW
+ - make test suite
+
+ - improve the output of wdkXml (use indenting)
 
  - factor the various Tester classes.
 
  - factor the various Set classes?
 
  - update tutorial (include wdkCache)
-
- - SqlEnumParam not working?
 
  - document that the queries may be in a "create table as" context
 
@@ -43,8 +44,6 @@ General
 
 UserQueries
 
- - abstract SqlEnumParam into ControlledVocabParam
-
  - allow param refs
 
  - boolean queries
@@ -69,6 +68,8 @@ Records
 
 
 DONE
+
+ - abstract SqlEnumParam into ControlledVocabParam
 
  - use connection pool
 
