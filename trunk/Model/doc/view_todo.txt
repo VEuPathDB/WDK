@@ -6,14 +6,14 @@ General
 Ask about getting rid of XML libs - which version of Java are CBIL using?
 Be able to connect to GUS@CBIL - need connection details 
 Ask about updating Oracle lib
-Pick up model config files from properties
-Ensure all paths are from properties not hard-coded
+Ensure all paths are not hard-coded - partially done, 1 left
 Move this list to SF tracker?
 Model: better handling for null for StringParam - work around in-place (in PSU)
-Custom tag: debugging - show all vars in all contexts (or restrict by attributes)
+Model: allow translation of * to % in StringParam
+Custom tag: debugging - show all vars in all contexts (or restrict by scope)
 Custom tag: default record view - version 2 - more structured view
-Custom tag: rename Map key in x scope (with option to alias) - partially done
 Discussion on branding so we can decide on directory structure
+Set up tagdoclet, or whatever it's called
 
 
 Build
@@ -25,7 +25,6 @@ Query
 -----
 Add custom tag to pick validation errors
 Make DisplayQuery pick up query set from QueryHolder? - wait for BooleanQueryModel
-Set up more param handlers
 new ParamView Interface - done, not yet called
 If have validation error should still be able to set values for other params.
 Write validator for query tag library. Wait until more solid
@@ -62,7 +61,9 @@ Ask about organizing imports - yes
 Ask about adding version numbers to libs - yes
 Check OK to change Hashtable to Map in SqlEnumParam - Yes
 Add a default (nearly-empty) stylesheet
-
+Pick up model config files from properties
+Hack together code for moving end-to-end with query ie query to detailed view
+Custom tag: rename Map key in some scope (with option to alias)
 
 Build
 -----
