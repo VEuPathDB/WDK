@@ -8,7 +8,10 @@ NEW
 
  - document that the queries may be in a "create table as" context
 
- - wdkQuery: if -querySet or -query omitted, list the available query sets and queries
+ - wdkQuery: 
+       - if -querySet or -query omitted, list the available query sets and queries
+       - if -queryLists, show all queryLists
+       - offer a -sqlDebug mode which shows all sql
 
  - how do we define complex parameter value constraints in the XML?   There are these
    types of constraints:
@@ -16,15 +19,15 @@ NEW
      - logic (require a programming language, eg, length must be even number
      - cross-param constraints (eg, width < length)
 
-
+ - model should have all queries check their derived columns (to make sure that they are interpolating valid column names)
 
 SORTED AND PRIORITIZED
 
 General
 
- - logging
-
  - error handling during parse of model xml file
+
+ - logging
 
 ----------------------------------------------------------------------
 
@@ -36,30 +39,19 @@ General
  
  - importing model xml files into each other
 
-
- - where do we specify multi-column transforms (eg, use use ext_db_id to decide which url to use)
-
  - make test suite
-
- - do we need a ModelDefinitionException?
 
 UserQueries
 
- - virtual query sets (sets of queries already defined elsewhere)
+ - abstract SqlEnumParam into ControlledVocabParam
 
  - allow param refs
 
  - boolean queries
 
- - associate additional info with query result columns, such as URLs, help
-
  - prevent detail query instance from being cached
 
- - abstract ResultSet into TableResult
-
 -------------------------------------------------------------------
-
- - abstract SqlEnumParam into ControlledVocabParam
 
  - also... handle CVs in different forms (list, tree, graph)
 
@@ -69,13 +61,9 @@ UserQueries
 
  - process queries
 
- - define page queries as a set of modular queries (a la report maker).  and, instead of returning result set, return abstract result with accessor methods that trigger the queries.
-
 
 
 Records
-
- - For table results, use declared columns to provide default heading names
 
  - implement specialDataTypes
 
@@ -93,3 +81,14 @@ DONE
  - cache results
 
  - records: figure out basic architecture:  generic v. generated beans
+
+ - virtual query sets (sets of queries already defined elsewhere)
+
+ - abstract ResultSet into TableResult
+
+ - associate additional info with query result columns, such as URLs, help
+
+ - define page queries as a set of modular queries (a la report maker).  and, instead of returning result set, return abstract result with accessor methods that trigger the queries.
+
+ - For table results, use declared columns to provide default heading names
+
