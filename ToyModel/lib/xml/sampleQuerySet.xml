@@ -18,12 +18,14 @@
           prompt="Organism"
           help="You know what it is"
           multipick="yes">
-          <sql>
-             select name as key,
-                    taxon_id as value
-             from dots.taxon
-             where name in ('mouse', 'horse', 'asparagus')
-          </sql>
+          <sqlQuery>
+            <sql>
+              select name as key,
+                     taxon_id as value
+              from SRes.taxonName
+              where name in ('mouse', 'human')
+            </sql>
+          </sqlQuery>
        </sqlEnumParam>
 
     <sql>
@@ -59,7 +61,11 @@
    <sqlQuery name="TaxonName"
             displayName="Taxon name">
 
-     <stringParam  name="TaxonId"/>
+     <stringParam
+       name="TaxonId"
+       prompt="Taxon Id"
+       sample="8"
+       regex="\d+"/>
 
      <sql>
        select name
