@@ -123,14 +123,10 @@ public class Answer {
 	return nextInstance;
     }
     
-    public boolean hasMoreRecordInstances(){
+    public boolean hasMoreRecordInstances() throws WdkModelException 
+    {
         if (recordInstances == null){
-            try {
-                initRecordInstances();
-            }
-            catch (WdkModelException exp) {
-                exp.printStackTrace(System.err);
-            }
+	    initRecordInstances();
         }
         if (recordInstances == null){
             logger.finer("recordInstances is still null");

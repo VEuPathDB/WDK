@@ -2,6 +2,8 @@ package org.gusdb.wdk.model.jspwrap;
 
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.QuestionSet;
+import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.WdkModelException;
 
 import java.util.Map;
 import java.util.LinkedHashMap;
@@ -31,7 +33,9 @@ public class WdkModelBean {
     /**
      * used by the controller
      */
-    public RecordClassBean findRecordClass (String recClassRef) {
+    public RecordClassBean findRecordClass (String recClassRef) 
+	throws WdkUserException, WdkModelException
+    {
 	return new RecordClassBean(model.getRecordClass(recClassRef));
     }
     
