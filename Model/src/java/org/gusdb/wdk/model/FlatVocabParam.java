@@ -1,7 +1,7 @@
 package org.gusdb.gus.wdk.model;
 
 import java.util.HashMap;
-
+import java.util.Iterator;
 
 public class FlatVocabParam extends Param {
     

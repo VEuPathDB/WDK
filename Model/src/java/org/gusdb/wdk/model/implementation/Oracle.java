@@ -7,6 +7,12 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.logging.Logger;
 
+import org.apache.commons.dbcp.ConnectionFactory;
+import org.apache.commons.dbcp.DriverManagerConnectionFactory;
+import org.apache.commons.dbcp.PoolableConnectionFactory;
+import org.apache.commons.dbcp.PoolingDataSource;
+import org.apache.commons.pool.impl.GenericObjectPool;
+
 import javax.sql.DataSource;
 
 /**
@@ -23,12 +29,8 @@ public class Oracle implements RDBMSPlatformI {
 
     public Oracle() {}
 
-    public void setDataSource(DataSource dataSource) {
-	this.dataSource = dataSource;
-    }
-
     public DataSource getDataSource(){
-        System.err.println("%%%%%% Returning dataSource "+dataSource);
+
 	return dataSource;
     }
 
@@ -121,17 +123,26 @@ public class Oracle implements RDBMSPlatformI {
     /* (non-Javadoc)
      * @see org.gusdb.gus.wdk.model.RDBMSPlatformI#createDataSource(java.lang.String, java.lang.String, java.lang.String)
      */
-    public DataSource createDataSource(String url, String user, String password, int maxWait) throws SQLException {
-        DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
-        this.dataSource = SqlUtils.createDataSource(url, user,password, maxWait);
-        return dataSource;
-    }
-    
-    /* (non-Javadoc)
-     * @see org.gusdb.gus.wdk.model.RDBMSPlatformI#createDataSource(java.lang.String, java.lang.String, java.lang.String)
-     */
-    public DataSource createDataSource(String url, String user, String password) throws SQLException {
-        return createDataSource(url, user,password, -1);
+    public void init(String url, String user, String password, Integer minIdle,
+		     Integer maxIdle, Integer maxWait, Integer maxActive, 
+		     Integer initialSize) throws SQLException {
+        
+	DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
+	GenericObjectPool connectionPool = new GenericObjectPool(null);
+                
+        ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(url, user, password);
+        
+        PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(connectionFactory,connectionPool,null,null,false,true);
+        
+        PoolingDataSource dataSource = new PoolingDataSource(connectionPool);
+	System.err.println("max wait: " + maxWait);
+	connectionPool.setMaxWait(maxWait.intValue());
+	connectionPool.setMaxIdle(maxIdle.intValue());
+	connectionPool.setMinIdle(minIdle.intValue());
+	connectionPool.setMaxActive(maxActive.intValue());
+	//no initial size yet
+        
+	this.dataSource = dataSource;
     }
 }
 

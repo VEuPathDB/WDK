@@ -8,6 +8,11 @@ public class ModelConfig {
     String instanceTable;
     String platformClass;
     Integer maxQueryParams;
+    Integer maxIdle;
+    Integer maxWait;
+    Integer maxActive;
+    Integer minIdle;
+    Integer initialSize;
 
     public ModelConfig() {}
     
@@ -59,4 +64,38 @@ public class ModelConfig {
 	return maxQueryParams;
     }
     
+    public Integer getInitialSize(){
+	return initialSize;
+    }
+    public void setInitialSize(Integer initialSize){
+	this.initialSize = initialSize;
+    }
+
+    public Integer getMinIdle(){
+	return minIdle;
+    }
+    public void setMinIdle(Integer minIdle){
+	this.minIdle = minIdle;
+    }
+
+    public Integer getMaxIdle(){
+	return maxIdle;
+    }
+    public void setMaxIdle(Integer maxIdle){
+	this.maxIdle = maxIdle;
+    }
+
+    public Integer getMaxWait(){
+     return maxWait;
+    }
+    public void setMaxWait(Integer maxWait){
+	this.maxWait = maxWait;
+    }
+
+    public Integer getMaxActive(){
+	return maxActive;
+    }
+    public void setMaxActive(Integer maxActive){
+	this.maxActive = maxActive;
+    }
 }

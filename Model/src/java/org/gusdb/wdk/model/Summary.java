@@ -37,12 +37,12 @@ public class Summary {
     }
     
     public SummaryInstance makeSummaryInstance(Map paramValues, int i, int j) throws WdkUserException, WdkModelException{
-
+	
 	if (listIdQueryInstance == null){
 	    listIdQueryInstance = query.makeInstance();
 	}
 	//return new SummaryInstance(this, listIdQueryInstance);
-    return new SummaryInstance(this, query.makeInstance(), paramValues, i, j);
+	return new SummaryInstance(this, query.makeInstance(), paramValues, i, j);
     }
 
     public Query getQuery(){

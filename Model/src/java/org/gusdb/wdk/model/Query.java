@@ -15,6 +15,7 @@ import org.gusdb.gus.wdk.model.QueryInstance;
 public abstract class Query {
     
     protected String name;
+    protected String fullName;
     protected String displayName;
     protected String help;
     protected Boolean isCacheable = new Boolean(true);
@@ -24,8 +25,7 @@ public abstract class Query {
     protected HashMap columnsH;
     protected Vector columnsV;
     protected ResultFactory resultFactory;
-    protected QuerySet querySet;
-
+   
     public Query () {
 	paramRefs = new HashSet();
 	paramsH = new HashMap();
@@ -47,7 +47,18 @@ public abstract class Query {
     }
 
     public String getFullName() {
-	return querySet.getName() + "." + name;
+	return fullName;
+    }
+    
+    /**
+     * Assumes that the name of this query has already been set.  Note this is slightly
+     * different than a simple accessor in that the full name of the query is <code>querySetName</code>
+     * concatenated with ".queryName".
+     *
+     * @param querySetName name of the querySet to which this query belongs.
+     */
+    public void setFullName(String querySetName){
+	this.fullName = querySetName + "." + name;
     }
 
     public void setDisplayName(String displayName) {
@@ -237,10 +248,6 @@ public abstract class Query {
 			    "  help='" + getHelp() + "'" + newline 
 			    );
        return buf;
-    }
-
-    protected void setQuerySet(QuerySet querySet) {
-	this.querySet = querySet;
     }
 
 }

@@ -51,7 +51,6 @@ system($cmd);
 ############
 
 sub usage {
-    print "\nusage: wdkTestDb -modelConfigFile <file> -dataDirectory <dir> "
-	. "<-dropDatabase|-createDatabase>\n\n";
+    print "usage:\n  wdkTestDb\n \t-modelConfigFile (database configuration file to use with wdk model) \n\t-dataDirectory (directory in with WDKTest tables are located) \n\t<-dropDatabase|-createDatabase> (action to take with database; dropping when non-existent\n\t\or creating when already existing will do nothing; include both to reset datbase)";
     exit(1);
 }

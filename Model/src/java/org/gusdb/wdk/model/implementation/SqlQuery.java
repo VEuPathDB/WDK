@@ -96,3 +96,4 @@ public class SqlQuery extends Query {
 	return finalSql;
     }
 }
+

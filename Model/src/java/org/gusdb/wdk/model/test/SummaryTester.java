@@ -63,29 +63,14 @@ public class SummaryTester {
 	
 	
 	try {
-	    // read config info
-	    ModelConfig modelConfig = 
-		ModelConfigParser.parseXmlFile(modelConfigXmlFile);
-	    String connectionUrl = modelConfig.getConnectionUrl();
-	    String login = modelConfig.getLogin();
-	    String password = modelConfig.getPassword();
-	    String instanceTable = modelConfig.getQueryInstanceTable();
-	    String platformClass = modelConfig.getPlatformClass();
-
-	    
-	    RDBMSPlatformI platform = 
-		(RDBMSPlatformI)Class.forName(platformClass).newInstance();
-	    
         
-        DataSource dataSource = 
-        platform.createDataSource(connectionUrl,login, password);
-        
-        File schemaFile = new File(System.getProperty("schemaFile"));
+	    File schemaFile = new File(System.getProperty("schemaFile"));
 	    WdkModel wdkModel = 
 		ModelXmlParser.parseXmlFile(modelXmlFile.toURL(), modelPropFile.toURL(), schemaFile.toURL());
-	    ResultFactory resultFactory = new ResultFactory(dataSource, platform, 
-							    login, instanceTable);
-	    wdkModel.setResources(resultFactory, platform);
+
+	    wdkModel.configure(modelConfigXmlFile);
+	    wdkModel.setResources();
+
 	    System.err.println("SummaryTester: getting summary " + summaryName);
 	    SummarySet summarySet = wdkModel.getSummarySet(summarySetName);
 	    Summary summary = summarySet.getSummary(summaryName);
@@ -121,7 +106,6 @@ public class SummaryTester {
 	}
 	    
     }
-    
 
     private static void addOption(Options options, String argName, String desc) {
 	
@@ -203,8 +187,6 @@ public class SummaryTester {
 
     }
 
-
-
     static void usage(String cmdName, Options options) {
 
 	String newline = System.getProperty( "line.separator" );
@@ -226,44 +208,4 @@ public class SummaryTester {
 	System.exit(1);
     }
 
-
-
-    static DataSource setupDataSource(String connectURI, String login, 
-				      String password)  {
-
-	//	DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
-
-        //
-        // First, we'll need a ObjectPool that serves as the
-        // actual pool of connections.
-        //
-        // We'll use a GenericObjectPool instance, although
-        // any ObjectPool implementation will suffice.
-        //
-        ObjectPool connectionPool = new GenericObjectPool(null);
-
-        //
-        // Next, we'll create a ConnectionFactory that the
-        // pool will use to create Connections.
-        // We'll use the DriverManagerConnectionFactory,
-        // using the connect string passed in the command line
-        // arguments.
-        //
-        ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(connectURI, login, password);
-
-        //
-        // Now we'll create the PoolableConnectionFactory, which wraps
-        // the "real" Connections created by the ConnectionFactory with
-        // the classes that implement the pooling functionality.
-        //
-        PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(connectionFactory,connectionPool,null,null,false,true);
-
-        //
-        // Finally, we create the PoolingDriver itself,
-        // passing in the object pool we created.
-        //
-        PoolingDataSource dataSource = new PoolingDataSource(connectionPool);
-
-        return dataSource;
-    }
 }
