@@ -1,13 +1,12 @@
 package org.gusdb.wdk.model;
 
 
-public class TextAttribute {
+public class TextAttributeField implements FieldI {
 
     String name;
     String displayName;
     String text;
-
-    public TextAttribute() {}
+    String help;
 
     public void setName(String name) {
 	this.name = name;
@@ -15,6 +14,14 @@ public class TextAttribute {
     
     public String getName() {
 	return name;
+    }
+   
+    public void setHelp(String help) {
+	this.help = help;
+    }
+    
+    public String getHelp() {
+	return help;
     }
    
     public void setDisplayName(String displayName) {
@@ -31,6 +38,14 @@ public class TextAttribute {
 
     public String getText() {
 	return text;
+    }
+
+    public String getType() {
+	return null;
+    }
+
+    public String toString() {
+	return getDisplayName();
     }
     
 }

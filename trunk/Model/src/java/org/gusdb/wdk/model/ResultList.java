@@ -48,38 +48,9 @@ public abstract class ResultList {
 	return query.getColumns();
     }
 
-    public Map getRow() {
-	// return new RowMap(this);
-	LinkedHashMap row = new LinkedHashMap();
-	Column[] cols = getColumns();
-        for (int i=0; i<cols.length; i++) {
-	    String colName = cols[i].getName();
-	    try {
-		row.put(colName, getValue(colName));
-	    } catch (WdkModelException e) {
-		throw new RuntimeException(e);
-	    }
-	}
-	return row;
-    }
-
-    public Iterator getRows() {
-	return new ResultListIterator(this);
-    }
-
     public abstract boolean next() throws WdkModelException;
 
-    public abstract boolean hasNext() throws WdkModelException;
-
     public abstract void close() throws WdkModelException;
-    public Object getClose() {
-	try {
-	    close(); 
-	} catch (WdkModelException e) {
-	    throw new RuntimeException(e);
-	}
-	return null;
-    }
 
     /* depracated.  handled here
     public abstract void write(StringBuffer buf) throws WdkModelException;
@@ -117,42 +88,70 @@ public abstract class ResultList {
     //  protected
     //////////////////////////////////////////////////////////////////
 
+    /**
+     * @returns Iterator of Maps as returned by getRow()
+     */
+    Iterator getRows() {
+	return new ResultListIterator(this);
+    }
+
+    /**
+     * @returns Map of columnName -> AttributeFieldValue
+     */
+    Map getRow() {
+	// return new RowMap(this);
+	LinkedHashMap row = new LinkedHashMap();
+	Column[] cols = getColumns();
+        for (int i=0; i<cols.length; i++) {
+	    String colName = cols[i].getName();
+	    try {
+		row.put(colName, getValue(colName));
+	    } catch (WdkModelException e) {
+		throw new RuntimeException(e);
+	    }
+	}
+	return row;
+    }
+
     protected abstract Object getValueFromResult(String attributeName) throws WdkModelException;
 
     public QueryInstance getInstance() {
         return instance;
     }
 
-   
+    /////////////////////////////////////////////////////////////////////
+    //  Inner classes
+    /////////////////////////////////////////////////////////////////////
+
     public class ResultListIterator implements Iterator {
 
 	ResultList rl;
 	Map nextCache = null;
-
+	
 	ResultListIterator(ResultList rl) {
 	    this.rl = rl;
 	}
-
+	
 	public boolean hasNext() {
 	    // if nextCache is not consumed, return true (allow repeated calls)
 	    if (nextCache != null) { return true; }
-
+	    
 	    // ask rl if a next thing is available
 	    boolean hasNext = false;
 	    try {
 		hasNext = rl.next();
-
+		
 		// if a next thing is available, cache it
 		if (hasNext) {
 		    nextCache = rl.getRow();
 		}
 	    } catch (WdkModelException e) {
 		throw new RuntimeException(e);
-    }
-
+	    }
+	    
 	    return hasNext;
 	}
-
+	
 	public Object next() throws NoSuchElementException {
 	    // if the next thing is already in the cache, return it and clear cache
 	    if (nextCache != null) {
@@ -169,10 +168,11 @@ public abstract class ResultList {
 		}
 	    }
 	}
-
+	
 	public void remove() {
 	    throw new UnsupportedOperationException();
 	}
     }
+      
 }
 

@@ -38,15 +38,19 @@ public class RecordInstance {
      */
     public Object getAttributeValue(String attributeName) throws WdkModelException {
 	Object value;
-	if (attributeName.equals(recordClass.PRIMARY_KEY_NAME)) {
-	    // hack this out for first release
-	    // value = recordClass.getIdPrefix() + getPrimaryKey();
-	    value = getPrimaryKey();
-	} else if (recordClass.isTextAttribute(attributeName)) {
-	    String rawText = recordClass.getTextAttribute(attributeName);
-	    value = instantiateTextAttribute(attributeName, rawText, new HashMap());
-	} else {
-	    Query query = recordClass.getAttributesQuery(attributeName);
+	FieldI field = (FieldI)recordClass.getField(attributeName); 
+	if (field instanceof PrimaryKeyField) {
+	    value = recordClass.getIdPrefix() + getPrimaryKey();
+
+	} else if (field instanceof TextAttributeField) {
+	    TextAttributeField taField = (TextAttributeField)field;
+	    value = instantiateTextAttribute(attributeName, 
+					     taField.getText(), 
+					     new HashMap());
+
+	} else if (field instanceof AttributeField){
+	    AttributeField aField = (AttributeField)field;
+	    Query query = aField.getQuery();
 	    String queryName = query.getName();
 
 	    if (!attributesResultSetsMap.containsKey(queryName)) {
@@ -57,16 +61,14 @@ public class RecordInstance {
 	        throw new WdkModelException("Unable to get resultMap for queryName of '"+queryName+"'");
 	    }
 	    value = resultMap.get(attributeName);
+	} else {
+	    throw new WdkModelException("Unsupported field type: " + field.getClass());
 	}
 	return value;
     }
 
-    public String getAttributeSpecialType(String attributeName) {
-	return null;
-    }
-
     public ResultList getTableValue(String tableName) throws WdkModelException {
-	Query query = recordClass.getTableQuery(tableName);
+	Query query = recordClass.getTableField(tableName).getQuery();
 	QueryInstance instance = query.makeInstance();
 	instance.setIsCacheable(false);
 	HashMap paramHash = new HashMap();
@@ -81,33 +83,42 @@ public class RecordInstance {
 	return instance.getResult();
     }
 
+    /**
+     * @return Map of tableName -> TableFieldValue
+     */
     public Map getTables() {
-	return new AttributeValueMap(recordClass, this, true);
+	return new FieldValueMap(recordClass, this, true);
     }
 
+    /**
+     * @return Map of tableName -> AttributeFieldValue
+     */
     public Map getAttributes() {
-	return new AttributeValueMap(recordClass, this, false);
+	return new FieldValueMap(recordClass, this, false);
     }
 
     public String print() throws WdkModelException {
 	String newline = System.getProperty( "line.separator" );
 	StringBuffer buf = new StringBuffer();
 	
-	Iterator attributeNamesIt = recordClass.getNonTextAttributeNames().iterator();
-	while (attributeNamesIt.hasNext()) {
-	    String attributeName = (String) attributeNamesIt.next();
-	    buf.append(recordClass.getDisplayName(attributeName) + ":   " + getAttributeValue(attributeName)).append( newline );
+	Map attributeFields = getAttributes();
+	Iterator fieldNames = attributeFields.keySet().iterator();
+	while (fieldNames.hasNext()) {
+	    String fieldName = (String)fieldNames.next();
+	    AttributeFieldValue field = 
+		(AttributeFieldValue)attributeFields.get(fieldName);
+	    buf.append(field.getDisplayName() + ":   " + 
+		       field.getValue()).append( newline );
 	}
-	Iterator textAttributeNamesIt = recordClass.getTextAttributeNames().iterator();
-	while (textAttributeNamesIt.hasNext()) {
-	    String attributeName = (String) textAttributeNamesIt.next();
-	    buf.append(attributeName + ":   " + getAttributeValue(attributeName)).append( newline );
-	}
-	Iterator tableNamesIt = recordClass.getTableNames().iterator();
-	while (tableNamesIt.hasNext()){
-	    String tableName = (String) tableNamesIt.next();
-	    buf.append("Table " + tableName).append( newline );
-	    ResultList resultList = getTableValue(tableName);
+
+	Map tableFields = getTables();
+	fieldNames = tableFields.keySet().iterator();
+	while (fieldNames.hasNext()) {
+	    String fieldName = (String)fieldNames.next();
+	    TableFieldValue field = 
+		(TableFieldValue)tableFields.get(fieldName);
+	    buf.append("Table " + field.getDisplayName()).append( newline );
+	    ResultList resultList = getTableValue(fieldName);
 	    resultList.write(buf);
 	    
 	    buf.append(newline);
@@ -116,119 +127,17 @@ public class RecordInstance {
 	return buf.toString();
 	
     }
-
     
-    ////////////////////////////////////////////////////////////////////
-    //  implementation of Map
-    ////////////////////////////////////////////////////////////////////
 
-    /**
-     * @see java.util.Map#size()
-     */
-    public int size() {
-        return recordClass.getAllNames().size();
-    }
-
-    /**
-     * @see java.util.Map#isEmpty()
-     */
-    public boolean isEmpty() {
-        return false;
-    }
-
-    /**
-     * @see java.util.Map#containsKey(java.lang.Object)
-     */
-    public boolean containsKey(Object key) {
-	return recordClass.containsName((String)key);
-    }
-
-    /**
-     * @see java.util.Map#containsValue(java.lang.Object)
-     */
-    public boolean containsValue(Object value) {
-	throw new UnsupportedOperationException("Illegal operation 'containsValue' on RecordInstance");
-    }
-
-    /**
-     * @see java.util.Map#get(java.lang.Object)
-     */
-    public Object get(Object key) {
-	Object value = null;
-	try {
-	    if (recordClass.getNonTextAttributeNames().contains(key)
-		|| recordClass.getNonTextAttributeNames().contains(key)) 
-		value = getAttributeValue((String)key);
-	    
-	    else if (recordClass.getTableNames().contains(key))
-		value = getTableValue((String)key);
-
-	    else throw new IllegalArgumentException("Record " + recordClass.getFullName() + " does not have any value with key " + key);
-
-	} catch (WdkModelException e) {
-	    throw new RuntimeException(e);
-	}
-	return value;
-    }
-    /**
-     * @see java.util.Map#put(java.lang.Object, java.lang.Object)
-     */
-    public Object put(Object key, Object value) {
-	throw new UnsupportedOperationException("Illegal operation 'put' on RecordInstance");
-    }
-
-    /**
-     * @see java.util.Map#remove(java.lang.Object)
-     */
-    public Object remove(Object key) {
-	throw new UnsupportedOperationException("Illegal operation 'remove' on RecordInstance");
-    }
-
-    /**
-     * @see java.util.Map#putAll(java.util.Map)
-     */
-    public void putAll(Map t) {
-	throw new UnsupportedOperationException("Illegal operation 'putAll' on RecordInstance");
-    }
-
-    /**
-     * @see java.util.Map#clear()
-     */
-    public void clear() {
-    }
-
-    /**
-     * @see java.util.Map#keySet()
-     */
-    public Set keySet() {
-	return recordClass.getAllNames();
-    }
-
-    /**
-     * @see java.util.Map#values()
-     */
-    public Collection values() {
-	throw new UnsupportedOperationException("Illegal operation 'values' on RecordInstance");
-    }
-
-    /**
-     * @see java.util.Map#entrySet()
-     */
-    public Set entrySet() {
-	throw new UnsupportedOperationException("Illegal operation 'entrySet' on RecordInstance");
-    }
- 
-
-
-
-    ///////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
     // protected
-    ///////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
 
     protected void setAttributeValue(String attributeName, Object attributeValue) throws WdkModelException{
 	
-	Query query = recordClass.getAttributesQuery(attributeName);
-	String queryName = query.getName();
+	AttributeField field 
+	    = (AttributeField)recordClass.getField(attributeName);
+	String queryName = field.getQuery().getName();
 	HashMap resultMap = (HashMap)attributesResultSetsMap.get(queryName);
 	if (resultMap == null){
 	    resultMap = new HashMap();
@@ -279,8 +188,9 @@ public class RecordInstance {
 	}
     }
 
-    protected String instantiateTextAttribute(String textAttributeName, String rawText, 
-					  HashMap alreadyVisited) throws WdkModelException {
+    protected String instantiateTextAttribute(String textAttributeName, 
+					      String rawText, 
+					      HashMap alreadyVisited) throws WdkModelException {
 
 	if (alreadyVisited.containsKey(textAttributeName)) {
 	    throw new WdkModelException("Circular text attribute subsitution involving text attribute '" 
@@ -291,28 +201,17 @@ public class RecordInstance {
 
 	String instantiatedText = rawText;
 
-	// primary key
-	instantiatedText = instantiateText(instantiatedText, "primaryKey", 
-					   getPrimaryKey());
-	
-	// get all non-text attribute names, and see if they appear as a macro
-	Iterator allNonTextAttributeNamesIt = recordClass.getNonTextAttributeNames().iterator();
-	while (allNonTextAttributeNamesIt.hasNext()) {
-	    String attributeName = (String) allNonTextAttributeNamesIt.next();
-	    if (getAttributeValue(attributeName) != null){
-	        instantiatedText = instantiateText(instantiatedText, attributeName, 
-				getAttributeValue(attributeName).toString());
+	Iterator attributeNames = getAttributes().keySet().iterator();
+	while (attributeNames.hasNext()) {
+	    String attrName = (String)attributeNames.next();
+	    if (attrName.equals(textAttributeName)) continue;
+	    if (containsMacro(instantiatedText, attrName)) {
+		String valString =  
+		    getAttributeValue(attrName.toString()).toString();
+		instantiatedText = instantiateText(instantiatedText, 
+						   attrName, 
+						   valString);
 	    }
-	}
-
-	// get all text attribute names, and see if they appear as macro
-	Iterator allTextAttributeNamesIt = recordClass.getTextAttributeNames().iterator();
-    while (allTextAttributeNamesIt.hasNext()) {
-	    String attributeName = (String) allTextAttributeNamesIt.next();
-	    if (attributeName.equals(textAttributeName)) continue;
-
-	    instantiatedText = instantiateText(instantiatedText, attributeName, 
-					       getAttributeValue(attributeName).toString());
 	}
 
 	checkInstantiatedText(instantiatedText);
@@ -337,6 +236,11 @@ public class RecordInstance {
 	    text = text.replaceAll(macroRegex, value);
 	}
 	return text;
+    }
+
+    public static boolean containsMacro(String text, String macroName) {
+	String macro = "$$" + macroName + "$$";
+	return text.indexOf(macro) != -1;
     }
 
     public static void checkInstantiatedText(String instantiatedText) throws WdkModelException {

@@ -11,7 +11,7 @@ import org.gusdb.wdk.model.ReferenceList;
 import org.gusdb.wdk.model.StringParam;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
-import org.gusdb.wdk.model.TextAttribute;
+import org.gusdb.wdk.model.TextAttributeField;
 import org.gusdb.wdk.model.TextColumn;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -228,7 +228,7 @@ public class ModelXmlParser {
         
         /*    */ digester.addSetNext( "wdkModel/recordClassSet/recordClass/tableQueryRef", "addTableQueryRef" );
         
-        /*    */ digester.addObjectCreate( "wdkModel/recordClassSet/recordClass/textAttribute", TextAttribute.class );
+        /*    */ digester.addObjectCreate( "wdkModel/recordClassSet/recordClass/textAttribute", TextAttributeField.class );
         
         /*    */ digester.addSetProperties( "wdkModel/recordClassSet/recordClass/textAttribute");
         
@@ -323,6 +323,10 @@ public class ModelXmlParser {
         /*  */ digester.addObjectCreate("wdkModel/questionSet/question", Question.class);
         
         /*  */ digester.addSetProperties("wdkModel/questionSet/question");
+        
+	/*  */ digester.addBeanPropertySetter("wdkModel/questionSet/question/description");
+
+	/*  */ digester.addBeanPropertySetter("wdkModel/questionSet/question/help");
         
         /*  */ digester.addSetNext("wdkModel/questionSet/question", "addQuestion");
         

@@ -1,15 +1,4 @@
-package org.gusdb.wdk.model.implementation;
-
-import org.gusdb.wdk.model.QueryInstance;
-import org.gusdb.wdk.model.Column;
-import org.gusdb.wdk.model.Query;
-import org.gusdb.wdk.model.implementation.BooleanQuery;
-import org.gusdb.wdk.model.ResultFactory;
-import org.gusdb.wdk.model.ResultList;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.RDBMSPlatformI;
-
+package org.gusdb.wdk.model;
 
 import java.util.Hashtable;
 import java.util.Enumeration;
@@ -209,7 +198,7 @@ public class BooleanQueryInstance extends QueryInstance {
     //same method as in SqlQueryInstance; can we factor them?
     protected void writeResultToTable(String resultTableName, 
 				      ResultFactory rf) throws WdkModelException {
-        RDBMSPlatformI platform = ((SqlQuery)refQuery).getRDBMSPlatform();
+        RDBMSPlatformI platform = rf.getRDBMSPlatform();
 	
 	//	System.err.println("BQI.WriteResultToTable: sql = " + getSql());
 

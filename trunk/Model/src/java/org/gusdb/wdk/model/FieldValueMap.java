@@ -8,19 +8,15 @@ import java.util.Iterator;
 
 import java.util.logging.Logger;
 
-public class AttributeValueMap implements Map {
+public class FieldValueMap implements Map {
 
-    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.view.AttributeValueMap");
+    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.view.FieldValueMap");
     
     private RecordClass recordClass;
     private RecordInstance recordInstance;
     private boolean isTableMap;
 
-    /**
-     * @param recordInstance May be null to indicate this is a map to hold
-     * valueless attributes
-     */
-    public AttributeValueMap(RecordClass recordClass, RecordInstance recordInstance, boolean isTableMap) {
+    public FieldValueMap(RecordClass recordClass, RecordInstance recordInstance, boolean isTableMap) {
 	this.recordInstance = recordInstance;
 	this.recordClass = recordClass;
 	this.isTableMap = isTableMap;
@@ -57,8 +53,8 @@ public class AttributeValueMap implements Map {
      */
     public Set keySet() {
 	return isTableMap?
-	    recordClass.getTableNames() :
-	    recordClass.getAllAttributeNames();
+	    recordClass.getTableFields().keySet() :
+	    recordClass.getAttributeFields().keySet();
     }
 
     /**
@@ -68,16 +64,17 @@ public class AttributeValueMap implements Map {
 	if (!containsKey(key)) throw new IllegalArgumentException("Record " + recordClass.getFullName() + " does not have any value with key " + key);
 
 	try {
-	    String attrName = (String)key;
-	    Object value =  null;
-	    if (recordInstance != null) {
-		value =  isTableMap?
-		    recordInstance.getTableValue(attrName) :
-		    recordInstance.getAttributeValue(attrName);
+	    String fieldName = (String)key;
+	    FieldI field = recordClass.getField(fieldName);
+	    Object fieldValue;
+	    if (isTableMap) {
+		ResultList value = recordInstance.getTableValue(fieldName);
+		fieldValue = new TableFieldValue(field, value);
+	    } else {
+		Object value = recordInstance.getAttributeValue(fieldName);
+		fieldValue = new AttributeFieldValue(field, value);
 	    }
-	    AttributeValue attrValue = 
-		new AttributeValue(recordClass, attrName,value);
-	    return attrValue;
+	    return fieldValue;
 	} catch (WdkModelException e) {
 	    throw new RuntimeException(e);
 	}
@@ -87,28 +84,28 @@ public class AttributeValueMap implements Map {
      * @see java.util.Map#containsValue(java.lang.Object)
      */
     public boolean containsValue(Object value) {
-	throw new UnsupportedOperationException("Illegal operation 'containsValue' on AttributeValueMap");
+	throw new UnsupportedOperationException("Illegal operation 'containsValue' on FieldValueMap");
     }
 
     /**
      * @see java.util.Map#put(java.lang.Object, java.lang.Object)
      */
     public Object put(Object key, Object value) {
-	throw new UnsupportedOperationException("Illegal operation 'put' on AttributeValueMap");
+	throw new UnsupportedOperationException("Illegal operation 'put' on FieldValueMap");
     }
 
     /**
      * @see java.util.Map#remove(java.lang.Object)
      */
     public Object remove(Object key) {
-	throw new UnsupportedOperationException("Illegal operation 'remove' on AttributeValueMap");
+	throw new UnsupportedOperationException("Illegal operation 'remove' on FieldValueMap");
     }
 
     /**
      * @see java.util.Map#putAll(java.util.Map)
      */
     public void putAll(Map t) {
-	throw new UnsupportedOperationException("Illegal operation 'putAll' on AttributeValueMap");
+	throw new UnsupportedOperationException("Illegal operation 'putAll' on FieldValueMap");
     }
 
     /**
@@ -121,7 +118,7 @@ public class AttributeValueMap implements Map {
      * @see java.util.Map#values()
      */
     public Collection values() {
-	throw new UnsupportedOperationException("Illegal operation 'values' on AttributeValueMap");
+	throw new UnsupportedOperationException("Illegal operation 'values' on FieldValueMap");
     }
 
     /**
@@ -156,6 +153,6 @@ public class AttributeValueMap implements Map {
 	    return value;
 	}
     }
- 
+
 }   
     

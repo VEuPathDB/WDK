@@ -43,26 +43,6 @@ public class SqlResultList extends ResultList {
         return b;
     }
 
-    public boolean hasNext() throws WdkModelException {
-        try {
-            return (resultSet.isLast() || resultSet.isAfterLast());
-        } catch (SQLException e) {
-            throw new WdkModelException(e);
-        }
-    }
-
-    /* deprecated.  handled in super class
-
-    public void write(StringBuffer buf) throws WdkModelException {
-	try {
-	    SqlUtils.writeResultSet(resultSet, buf);
-	} catch (SQLException e) {
-	    throw new WdkModelException(e);
-	}
-    }
-
-    */
-
     public void print() throws WdkModelException {
 	try {
 	    SqlUtils.printResultSet(resultSet);

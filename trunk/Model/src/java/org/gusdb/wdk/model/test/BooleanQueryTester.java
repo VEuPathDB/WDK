@@ -7,8 +7,8 @@ import org.gusdb.wdk.model.QuestionSet;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.implementation.ModelXmlParser;
-import org.gusdb.wdk.model.implementation.BooleanQuery;
-import org.gusdb.wdk.model.implementation.BooleanQueryInstance;
+import org.gusdb.wdk.model.BooleanQuery;
+import org.gusdb.wdk.model.BooleanQueryInstance;
 import org.gusdb.wdk.model.QueryInstance;
 import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.ResultList;
@@ -31,7 +31,7 @@ import org.apache.commons.cli.ParseException;
  * Created: Wed October 6 12:00:00 2004 EDT
  *
  * @author David Barkan
- * @version $Revision$ $Date$Author: $
+ * @version $Revision$ $Date$Author: dbarkan $
  *
  */
 

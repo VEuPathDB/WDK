@@ -1,7 +1,7 @@
 package org.gusdb.wdk.model;
 
-
 import java.util.Map;
+import java.util.LinkedHashMap;
 import java.util.Vector;
 import java.util.logging.Logger;
 import java.util.Iterator;
@@ -37,13 +37,13 @@ public class SummaryInstance {
 
     private int endRow;
 
-    private Integer length;
+    private Integer resultSize;   // size of total result
 
     // ------------------------------------------------------------------
     // Constructor
     // ------------------------------------------------------------------
 
-    public SummaryInstance(Question question, QueryInstance queryInstance, Map paramValues, int startRow, int endRow) throws WdkUserException, WdkModelException{
+    SummaryInstance(Question question, QueryInstance queryInstance, Map paramValues, int startRow, int endRow) throws WdkUserException, WdkModelException{
 
 	this.question = question;
 	this.queryInstance = queryInstance;
@@ -69,43 +69,25 @@ public class SummaryInstance {
 	return new SummaryInstanceList(this);
     }
 
-    public Map getTables() {
-	return new AttributeValueMap(question.getRecordClass(), null, true);
-    }
-
-    public Map getAttributes() {
-	return new AttributeValueMap(question.getRecordClass(), null, false);
-    }
-
-    public int size(){
+    public int getPageSize(){
         if (recordInstances != null) {
             return recordInstances.length;
         }
         return 0;
     }
     
-    public int getTotalSize() {
-	try {
-	    return getTotalLength();
-	} catch (WdkModelException e) {
-	    throw new RuntimeException(e);
-	}
-    }
-    
-    public int getTotalLength() throws WdkModelException{
+    public int getResultSize() throws WdkModelException{
 
-	if (this.length == null){
-	    
+	if (resultSize == null) {
 	    ResultList rl = getRecordInstanceIds();
 	    int counter = 0;
 	    while (rl.next()){
 		counter++;
 	    }
 	    rl.close();
-	    this.length = new Integer(counter);
+	    resultSize = new Integer(counter);
 	}
-	return this.length.intValue();
-	
+	return resultSize.intValue();
     }
 
     /**
@@ -113,6 +95,21 @@ public class SummaryInstance {
      */
     public Map getParams() {
 	return queryInstance.getValuesMap();
+    }
+
+    /**
+     * @return Map where key is param display name and value is param value
+     */
+    public Map getDisplayParams() {
+	LinkedHashMap displayParamsMap = new LinkedHashMap();
+	Map paramsMap = getParams();
+	Param[] params = question.getParams();
+	for (int i=0; i<params.length; i++) {
+	    Param param = params[i];
+	    displayParamsMap.put(param.getPrompt(), 
+				 paramsMap.get(param.getName()));
+	}
+	return displayParamsMap;
     }
 
 
@@ -128,32 +125,6 @@ public class SummaryInstance {
 	    currentRecordInstanceCounter++;
 	}
 	return nextInstance;
-    }
-    
-    public void setQueryResult(ResultList resultList) throws WdkModelException{
-        logger.finer("In setQueryList and resultList is "+resultList);
-        int tempCounter = 0;
-        while (resultList.next()){
-            
-            RecordInstance nextRecordInstance = recordInstances[tempCounter];
-            Query query = resultList.getQuery();
-            Column[] columns = query.getColumns();
-            for (int j = 0; j < columns.length; j++){
-                String nextColumnName = columns[j].getName();
-                logger.finer("Trying to get query for "+nextColumnName);
-                Object value = resultList.getValue(nextColumnName);
-                nextRecordInstance.setAttributeValue(nextColumnName, value);
-            }
-            tempCounter++;
-        }
-
-    }
-    
-    public void setMultiMode(QueryInstance instance) throws WdkModelException{
-        
-        String resultTableName = queryInstance.getResultAsTable();
-        
-        instance.setMultiModeValues(resultTableName, listPrimaryKeyName, startRow, endRow);
     }
     
     public boolean hasMoreRecordInstances(){
@@ -174,10 +145,6 @@ public class SummaryInstance {
         return false;
     }
 
-    public void reset(){
-	this.currentRecordInstanceCounter = 0;
-    }
-
     public void print() throws WdkModelException{  
 	
 	if (recordInstances == null){
@@ -195,27 +162,60 @@ public class SummaryInstance {
 	}
 	if (recordInstances != null){
 	    RecordClass recordClass = recordInstances[0].getRecordClass();
-	    Iterator attributeNames = recordClass.getNonTextAttributeNames().iterator();
-	    String nameLine = "";
+	    Iterator attributeNames = 
+		recordClass.getAttributeFields().keySet().iterator();
+	    StringBuffer heading = new  StringBuffer();
 	    while (attributeNames.hasNext()){
-		String nextAttName = (String)attributeNames.next();
-		nameLine = nameLine.concat(nextAttName + "\t");
+		heading.append((String)attributeNames.next() + "\t");
 	    }
-	    System.out.println(nameLine);
+	    System.out.println(heading);
+
 	    for (int i = 0; i < recordInstances.length; i++){
-		String nextLine = "";
-		RecordInstance nextRecordInstance = recordInstances[i];
-		Iterator attributes = recordClass.getNonTextAttributeNames().iterator();
-		while (attributes.hasNext()){
-		    String nextAttName = (String)attributes.next();
-		    Object nextAttValue = nextRecordInstance.getAttributeValue(nextAttName);
-		    nextLine = nextLine.concat(nextAttValue.toString() + "\t");
+		StringBuffer recordLine = new StringBuffer();
+		RecordInstance recordInstance = recordInstances[i];
+		attributeNames = 
+		    recordInstance.getAttributes().keySet().iterator();
+		while (attributeNames.hasNext()){
+		    Object value = 
+			recordInstance.getAttributeValue((String)attributeNames.next());
+		    recordLine.append(value.toString() + "\t");
 		}
-		System.out.println(nextLine);
+		System.out.println(recordLine);
 	    }
 	}
     }
 
+
+    // ------------------------------------------------------------------
+    // Package Methods
+    // ------------------------------------------------------------------
+    
+    void setMultiMode(QueryInstance instance) throws WdkModelException{
+        
+        String resultTableName = queryInstance.getResultAsTable();
+        
+        instance.setMultiModeValues(resultTableName, listPrimaryKeyName, startRow, endRow);
+    }
+    
+    void setQueryResult(ResultList resultList) throws WdkModelException {
+        logger.finer("In setQueryList and resultList is "+resultList);
+        int tempCounter = 0;
+        while (resultList.next()){
+            
+            RecordInstance nextRecordInstance = recordInstances[tempCounter];
+            Query query = resultList.getQuery();
+            Column[] columns = query.getColumns();
+            for (int j = 0; j < columns.length; j++){
+                String nextColumnName = columns[j].getName();
+                logger.finer("Trying to get query for "+nextColumnName);
+                Object value = resultList.getValue(nextColumnName);
+                nextRecordInstance.setAttributeValue(nextColumnName, value);
+            }
+            tempCounter++;
+        }
+
+    }
+    
 
     // ------------------------------------------------------------------
     // Private Methods
