@@ -1,8 +1,8 @@
-<%@ taglib prefix="sample" tagdir="/WEB-INF/tags/local" %>
+<%@ taglib prefix="sample" tagdir="/WEB-INF/tags/site" %>
 <%@ taglib prefix="wdkq" uri="http://www.gusdb.org/taglibs/wdk-query-0.1" %>
 <%@ taglib prefix="wdkm" uri="http://www.gusdb.org/taglibs/wdk-misc-0.1" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<sample:header banner="Simple Query 1" />
+<site:header banner="Simple Query 1" />
 
 
 <p><b><wdkm:modelIntroduction /></b>
@@ -37,4 +37,4 @@
       </c:forEach>
    </wdkm:model>
       
-      <sample:footer />
+      <site:footer />

@@ -1,6 +1,6 @@
-<%@ taglib prefix="sample" tagdir="/WEB-INF/tags/local" %>
+<%@ taglib prefix="site" tagdir="/WEB-INF/tags/site" %>
 
-<sample:header banner="Simple Record Demo Driver" />
+<site:header banner="Simple Record Demo Driver" />
 
 <p>This page has some links to test out record retrieval 
 <hr><p>
@@ -24,4 +24,4 @@
 </form>
 
 
-<sample:footer />
+<site:footer />

@@ -1,8 +1,8 @@
-<%@ taglib prefix="sample" tagdir="/WEB-INF/tags/local" %>
+<%@ taglib prefix="site" tagdir="/WEB-INF/tags/site" %>
 <%@ taglib prefix="wdkq" uri="http://www.gusdb.org/taglibs/wdk-query-0.1" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<sample:header banner="Simple Query 2" />
+<site:header banner="Simple Query 2" />
 
 <p>This page has a simple, non-boolean query. An initial query is selected 
 so you should go straight into the form. 
@@ -40,5 +40,5 @@ so you should go straight into the form.
 </table>
 
 
-<sample:footer />
+<site:footer />
 
