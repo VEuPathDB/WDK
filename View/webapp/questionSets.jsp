@@ -6,8 +6,8 @@
 <c:set var="wdkModel" value="${applicationScope.wdkModel}"/>
 
 <!-- get wdkModel name to display as page header -->
-<c:set value="${wdkModel.name}" var="wdkModelName"/>
-<site:header banner="${wdkModelName} main page" />
+<c:set value="${wdkModel.displayName}" var="wdkModelDispName"/>
+<site:header banner="${wdkModelDispName}" />
 
 <!-- display wdkModel introduction text -->
 <p><b><jsp:getProperty name="wdkModel" property="introduction"/></b></p>
