@@ -6,6 +6,7 @@ public class Column {
     String name;
     Query query;
     String help;
+    String dataTypeName;
 
     public Column() {} 
 
@@ -15,6 +16,14 @@ public class Column {
 
     public String getName() {
         return name;
+    }
+
+    public void setDataTypeName(String dataTypeName) {
+        this.dataTypeName = dataTypeName;
+    }
+
+    public String getDataTypeName() {
+        return dataTypeName;
     }
 
     public void setQuery(Query query) {
