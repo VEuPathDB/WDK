@@ -68,9 +68,11 @@ public class ApplicationInitListener implements ServletContextListener {
         String propsFileLocation = application.getInitParameter("propsFileLocation");
         String loggingFileLocation = application.getInitParameter("loggingFileLocation");
         String parserClass = application.getInitParameter("parserClass");
+        int poolMaxWait = Integer.parseInt(application.getInitParameter("connectionPoolMaxWait"));
 
         
-        initMemberVars(loginXML, parserClass, querySetLocation, schemaName, schemaLocation, propsFileLocation, application);
+        initMemberVars(loginXML, parserClass, querySetLocation, schemaName, schemaLocation,
+		       propsFileLocation, poolMaxWait, application);
         
         Config.set(application, Config.SQL_DATA_SOURCE, dataSource);
 
@@ -100,7 +102,7 @@ public class ApplicationInitListener implements ServletContextListener {
 
     
     private void initMemberVars(String loginConfigLocation, String parserClass, String queryConfigLocation, 
-            String schemaName, String schemaLocation, String propsLocation, ServletContext application) {
+            String schemaName, String schemaLocation, String propsLocation, int maxWait, ServletContext application) {
         
         if (schemaName != null && schemaLocation != null) {
             throw new RuntimeException("Configuration error. Both schemaName and schemaLocation are specified.");
@@ -132,7 +134,8 @@ public class ApplicationInitListener implements ServletContextListener {
             
             dataSource = setupDataSource(dbConfig.getConnectionUrl()
                     , dbConfig.getLogin()
-                    , dbConfig.getPassword());
+                    , dbConfig.getPassword()
+		    , maxWait);
             
             RDBMSPlatformI platform = 
                 (RDBMSPlatformI)Class.forName(platformClass).newInstance();
@@ -201,11 +204,15 @@ public class ApplicationInitListener implements ServletContextListener {
  
     
     private DataSource setupDataSource(String connectURI, String login, 
-            String password)  throws SQLException {
+            String password, int maxWait)  throws SQLException {
         
     	DriverManager.registerDriver(new oracle.jdbc.OracleDriver());
         
-        ObjectPool connectionPool = new GenericObjectPool(null);
+        GenericObjectPool connectionPool = new GenericObjectPool(null);
+	
+	if (maxWait >= 0) {
+	    connectionPool.setMaxWait(maxWait);
+	}
 
         ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(connectURI, login, password);
 
