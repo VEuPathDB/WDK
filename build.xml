@@ -83,9 +83,9 @@
     <mkdir dir="${build.home}/docs/api"/>
 
     <javadoc sourcepath="${src.home}"
-access="private"
-packagenames="*">
-      <doclet name="com.aurigalogic.doclet.core.Doclet"
+	access="private"
+	packagenames="*">
+   <doclet name="com.aurigalogic.doclet.core.Doclet"
               path="./lib/java/AurigaDoclet.jar">
         <param name="-out" value="api.pdf" />
         <param name="-format" value="pdf" />
