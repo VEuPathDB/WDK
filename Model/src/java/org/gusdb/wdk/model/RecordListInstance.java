@@ -117,7 +117,6 @@ public class RecordListInstance {
 	int rownum = startRow;
 	for (int i = startRow - 1; i < endRow; i++){
 	    
-	    System.err.println("Data For Record Instance number " + rownum + ":\n");
 	    System.err.println(recordInstances[i].print());
 	    rownum++;
 	}

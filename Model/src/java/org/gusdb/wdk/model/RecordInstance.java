@@ -162,8 +162,12 @@ public class RecordInstance {
 	String[] allNonTextFieldNames = record.getNonTextFieldNames();
 	for (int i=0; i<allNonTextFieldNames.length; i++) {
 	    String fieldName = allNonTextFieldNames[i];
-	    instantiatedText = instantiateText(instantiatedText, fieldName, 
+	    if (getFieldValue(fieldName) != null){
+		instantiatedText = instantiateText(instantiatedText, fieldName, 
 				getFieldValue(fieldName).toString());
+	    }
+	    //returns as 'null' otherwise
+
 	}
 
 	// get all text field names, and see if they appear as macro
@@ -171,6 +175,7 @@ public class RecordInstance {
 	for (int i=0; i<allTextFieldNames.length; i++) {
 	    String fieldName = allTextFieldNames[i];
 	    if (fieldName.equals(textFieldName)) continue;
+
 	    instantiatedText = instantiateText(instantiatedText, fieldName, 
 					       getFieldValue(fieldName).toString());
 	}
