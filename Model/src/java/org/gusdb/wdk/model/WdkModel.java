@@ -15,7 +15,7 @@ public class WdkModel {
     HashMap paramSets = new HashMap();
     HashMap recordClassSets = new HashMap();
     HashMap referenceLists = new HashMap();
-    HashMap summarySets = new HashMap();
+    HashMap questionSets = new HashMap();
     HashMap allModelSets = new HashMap();
     String name;
     String introduction;
@@ -29,11 +29,11 @@ public class WdkModel {
      * @throws WdkUserException
      * @throws WdkModelException
      */
-    public Summary getSummary(String initRecordClassList) {
+    public Question getQuestion(String initRecordClassList) {
         try {
             Reference r = new Reference(initRecordClassList);
-            SummarySet ss = getSummarySet(r.getSetName());
-            return ss.getSummary(r.getElementName());
+            QuestionSet ss = getQuestionSet(r.getSetName());
+            return ss.getQuestion(r.getElementName());
         }
         catch (WdkModelException exp) {
             throw new RuntimeException(exp);
@@ -140,33 +140,33 @@ public class WdkModel {
         return sets;
     }
 
-    //Summary Sets
-    public void addSummarySet(SummarySet summarySet) throws WdkModelException {
-        addSet(summarySet, summarySets);
+    //Question Sets
+    public void addQuestionSet(QuestionSet questionSet) throws WdkModelException {
+        addSet(questionSet, questionSets);
     }
 
-    public SummarySet getSummarySet(String setName) throws WdkUserException {
-        if (!summarySets.containsKey(setName)) {
+    public QuestionSet getQuestionSet(String setName) throws WdkUserException {
+        if (!questionSets.containsKey(setName)) {
             String err = "WDK Model " + name +
-            " does not contain a Summary set with name " + setName;
+            " does not contain a Question set with name " + setName;
             throw new WdkUserException(err);
         }
-        return (SummarySet)summarySets.get(setName);
+        return (QuestionSet)questionSets.get(setName);
     }
 
-    public boolean hasSummarySet(String setName) {
-        return summarySets.containsKey(setName);
+    public boolean hasQuestionSet(String setName) {
+        return questionSets.containsKey(setName);
     }
 
-    public SummarySet[] getAllSummarySets(){
+    public QuestionSet[] getAllQuestionSets(){
 	    
-        SummarySet sets[] = new SummarySet[summarySets.size()];
-        Iterator keys = summarySets.keySet().iterator();
+        QuestionSet sets[] = new QuestionSet[questionSets.size()];
+        Iterator keys = questionSets.keySet().iterator();
         int counter = 0;
         while (keys.hasNext()){
             String name = (String)keys.next();
-            SummarySet nextSummarySet = (SummarySet)summarySets.get(name);
-            sets[counter] = nextSummarySet;
+            QuestionSet nextQuestionSet = (QuestionSet)questionSets.get(name);
+            sets[counter] = nextQuestionSet;
             counter++;
         }
         return sets;
@@ -307,7 +307,7 @@ public class WdkModel {
        buf.append(showSet("Param", paramSets));
        buf.append(showSet("Query", querySets));
        buf.append(showSet("RecordClass", recordClassSets));
-       buf.append(showSet("Question", summarySets));
+       buf.append(showSet("Question", questionSets));
        return buf.toString();
     }
        

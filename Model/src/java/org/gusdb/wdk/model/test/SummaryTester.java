@@ -1,9 +1,9 @@
 package org.gusdb.wdk.model.test;
 
 import org.gusdb.wdk.model.Query;
-import org.gusdb.wdk.model.Summary;
+import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.SummaryInstance;
-import org.gusdb.wdk.model.SummarySet;
+import org.gusdb.wdk.model.QuestionSet;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.implementation.ModelXmlParser;
@@ -35,8 +35,8 @@ public class SummaryTester {
 	File modelXmlFile = new File(cmdLine.getOptionValue("modelXmlFile"));
         File modelPropFile = new File(cmdLine.getOptionValue("modelPropFile"));
 
-	String summarySetName = cmdLine.getOptionValue("questionSetName");
-	String summaryName = cmdLine.getOptionValue("questionName");
+	String questionSetName = cmdLine.getOptionValue("questionSetName");
+	String questionName = cmdLine.getOptionValue("questionName");
 	String[] rows = cmdLine.getOptionValues("rows");
 
 	validateRowCount(rows);
@@ -54,12 +54,12 @@ public class SummaryTester {
 	    WdkModel wdkModel = 
 		ModelXmlParser.parseXmlFile(modelXmlFile.toURL(), modelPropFile.toURL(), schemaFile.toURL(), modelConfigXmlFile.toURL());
 
-	    SummarySet summarySet = wdkModel.getSummarySet(summarySetName);
-	    Summary summary = summarySet.getSummary(summaryName);
+	    QuestionSet questionSet = wdkModel.getQuestionSet(questionSetName);
+	    Question question = questionSet.getQuestion(questionName);
 
 	    if (haveParams){
 		Hashtable paramValues = parseParamArgs(params);
-		Query query = summary.getQuery();
+		Query query = question.getQuery();
 		query.setIsCacheable(new Boolean(true));
 		int pageCount = 1;
 		
@@ -67,7 +67,7 @@ public class SummaryTester {
 		    int nextStartRow = Integer.parseInt(rows[i]);
 		    int nextEndRow = Integer.parseInt(rows[i+1]);
 
-		    SummaryInstance si = summary.makeSummaryInstance(paramValues, nextStartRow, nextEndRow);
+		    SummaryInstance si = question.makeSummaryInstance(paramValues, nextStartRow, nextEndRow);
 		    System.out.println("Printing Record Instances on page " + pageCount);
 		    si.printAsTable();
 		    //		    si.print();
@@ -108,9 +108,9 @@ public class SummaryTester {
 	// model prop file
 	addOption(options, "modelPropFile", "A .prop file that specifies key=value pairs to substitute into the model file.");
 
-	//summarySetName
+	//questionSetName
 	addOption(options, "questionSetName", "The name of the questionSet in which to find the question");
-	//summaryName
+	//questionName
 	addOption(options, "questionName", "the name of the question to run");
 	//rows to return
 	Option rows = new Option("rows", "the start and end pairs of the summary rows to return");
@@ -175,8 +175,8 @@ public class SummaryTester {
 	    " -configFile config_file" +
 	    " -modelXmlFile model_xml_file" +
             " -modelPropFile model_prop_file" +
-	    " -questionSetName summary_set_name" +
-	    " -questionName summary_name";
+	    " -questionSetName question_set_name" +
+	    " -questionName question_name";
 
 	String header = 
 	    newline + "Print a summary found in a WDK Model xml file. Options:" ;
