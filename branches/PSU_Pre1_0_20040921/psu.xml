@@ -44,22 +44,18 @@
     <mkdir dir="${build.home}/webapp/WEB-INF/wdk-config" /> 	
   	
     <!-- Copy application resources -->
-    <copy todir="${build.home}/webapp/WEB-INF">
-      <fileset dir="ToySite/webinf" />
-    </copy>
-
     <copy todir="${build.home}/webapp/">
-      <fileset dir="ToySite/docroot" />
+      <fileset dir="ToySite/webapp" />
     </copy>
 
     <copy tofile="${build.home}/webapp/WEB-INF/wdk-config/macro.props" 
 	      file="ToyModel/config/toyModel.prop"/>
       
     <copy tofile="${build.home}/webapp/WEB-INF/wdk-config/login.xml" 
-	      file="ToyModel/lib/xml/login.xml.d1pat"/>
+	      file="ToyModel/config/login.xml.d1pat"/>
       
-        	<copy tofile="${build.home}/webapp/WEB-INF/wdk-config/model.xml" 
-  		  file="ToyModel/lib/xml/toyModel.xml"/>
+    <copy tofile="${build.home}/webapp/WEB-INF/wdk-config/model.xml" 
+  		  file="ToyModel/config/toyModel.xml"/>
       
       <copy todir="${build.home}/webapp/WEB-INF/classes">
       <fileset dir="${build.home}/classes/"/>
@@ -190,7 +186,7 @@
    description="Create JAR file">
 
     <copy todir="${build.home}/classes/META-INF">
-      <fileset dir="View/webinf/META-INF" />
+      <fileset dir="View/META-INF" />
     </copy>	
   		
 
