@@ -39,7 +39,8 @@ public class Summary {
 	if (listIdQueryInstance == null){
 	    listIdQueryInstance = query.makeInstance();
 	}
-	return new SummaryInstance(this, listIdQueryInstance);
+	//return new SummaryInstance(this, listIdQueryInstance);
+    return new SummaryInstance(this, query.makeInstance());
     }
 
     public Query getQuery(){
