@@ -2,20 +2,12 @@ package org.gusdb.gus.wdk.model;
 
 public class Column {
 
-    String typeName;
     String displayName;
     String name;
+    Query query;
     String help;
 
     public Column() {} 
-
-    public void setSpecialDataType(String typeName) {
-	this.typeName = typeName;
-    }
-
-    public String getSpecialDataType() {
-	return typeName;
-    }
 
     public void setName(String name) {
 	this.name = name;
@@ -23,6 +15,14 @@ public class Column {
 
     public String getName() {
 	return name;
+    }
+
+    public void setQuery(Query query) {
+	this.query = query;
+    }
+
+    public Query getQuery() {
+	return query;
     }
 
     public void setHelp(String help) {

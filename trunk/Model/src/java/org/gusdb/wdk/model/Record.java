@@ -7,8 +7,8 @@ import java.util.Iterator;
 
 public class Record {
     
-    HashMap fieldsQueryMap;  // fieldName -> SimpleQueryI
-    HashMap tableQueryMap;   // tableName -> SimpleQueryI
+    HashMap fieldsQueryMap;  // fieldName -> Query
+    HashMap tableQueryMap;   // tableName -> Query
     HashMap textFieldMap;    // fieldName -> text (String)
     HashSet tableQueryRefs;
     HashSet fieldsQueryRefs;
@@ -70,24 +70,24 @@ public class Record {
 	Iterator fQueryRefs = fieldsQueryRefs.iterator();
 	while (fQueryRefs.hasNext()) {
 	    String queryName = (String)fQueryRefs.next();
-	    SimpleQueryI query = 
-		(SimpleQueryI)SimpleQuerySet.resolveReference(querySetMap, 
-							      queryName,
-							      this.getClass().getName(),
-							      getName(),
-							      "fieldsQueryRef");
+	    Query query = 
+		(Query)QuerySet.resolveReference(querySetMap, 
+						 queryName,
+						 this.getClass().getName(),
+						 getName(),
+						 "fieldsQueryRef");
 	    addFieldsQuery(query);
 	}
 
 	Iterator tQueryRefs = tableQueryRefs.iterator();
 	while (tQueryRefs.hasNext()) {
 	    String queryName = (String)tQueryRefs.next();
-	    SimpleQueryI query = 
-		(SimpleQueryI)SimpleQuerySet.resolveReference(querySetMap, 
-							      queryName,
-							      this.getClass().getName(),
-							      getName(),
-							      "tableQueryRef");
+	    Query query = 
+		(Query)QuerySet.resolveReference(querySetMap, 
+						 queryName,
+						 this.getClass().getName(),
+						 getName(),
+						 "tableQueryRef");
 	    addTableQuery(query);
 	}
     }
@@ -148,7 +148,7 @@ public class Record {
     /**
      * Add a fields query. Map it by all of its column names
      */
-    protected void addFieldsQuery(SimpleQueryI query) throws Exception {
+    protected void addFieldsQuery(Query query) throws Exception {
 	Column[] columns = query.getColumns();
 	for (int i=0; i<columns.length;i++) {
 	    Column column = columns[i];
@@ -160,24 +160,22 @@ public class Record {
     /**
      * Add a table query. Map it by its query name
      */
-    protected void addTableQuery(SimpleQueryI query) throws Exception {
+    protected void addTableQuery(Query query) throws Exception {
 	if (tableQueryMap.containsKey(query.getName())) {
-	    throw new Exception("already have table query named " + query.getName());
+	    throw new Exception("Record " + getName() + " already has table query named " + query.getName());
 	}
 	tableQueryMap.put(query.getName(), query);
     }
 
     protected void checkFieldName(String name) throws Exception {
-	if (fieldsQueryMap.containsKey(name)) {
-	    throw new Exception("already have a field named" + name);
+	if (fieldsQueryMap.containsKey(name) 
+	    || textFieldMap.containsKey(name)) {
+	    throw new Exception("Record " + getName() + 
+				" already has a field named " + name);
 	}
-	if (textFieldMap.containsKey(name)) {
-	    throw new Exception("already have a field named" + name);
-	}
-	
     }
 
-    protected void checkQueryParams(SimpleQueryI query, String queryType) {
+    protected void checkQueryParams(Query query, String queryType) {
 
 	String s = "The " + queryType + " " + query.getName() + 
 	    " contained in Record " + getName();
@@ -186,8 +184,8 @@ public class Record {
 	    throw new IllegalArgumentException(s + " must have only one param, and it must be named 'primaryKey'");
     }
 
-    protected SimpleQueryI getFieldsQuery(String fieldName) throws Exception {
-	SimpleQueryI query = (SimpleQueryI)fieldsQueryMap.get(fieldName);
+    protected Query getFieldsQuery(String fieldName) throws Exception {
+	Query query = (Query)fieldsQueryMap.get(fieldName);
 	if (query == null) {
 	    throw new Exception("Record " + getName() + 
 				" does not have a field with name '" +
@@ -196,8 +194,8 @@ public class Record {
 	return query;
     }
 
-    protected SimpleQueryI getTableQuery(String tableQueryName) throws Exception {
-	SimpleQueryI query = (SimpleQueryI)tableQueryMap.get(tableQueryName);
+    protected Query getTableQuery(String tableQueryName) throws Exception {
+	Query query = (Query)tableQueryMap.get(tableQueryName);
 	if (query == null) {
 	    throw new Exception("Record " + getName() + 
 				" does not have a tableQuery with name '" +
@@ -216,4 +214,7 @@ public class Record {
 	return text;
     }
 
+    protected boolean isTextField(String fieldName) {
+	return textFieldMap.containsKey(fieldName);
+    }
 }

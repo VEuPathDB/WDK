@@ -1,15 +1,15 @@
 package org.gusdb.gus.wdk.model.implementation;
 
-import java.sql.ResultSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
 import org.gusdb.gus.wdk.model.QueryI;
+import org.gusdb.gus.wdk.model.ResultList;
 import org.gusdb.gus.wdk.model.QueryParamsException;
 import org.gusdb.gus.wdk.model.SimpleQueryInstanceI;
 
-public class NullQueryInstance implements SimpleQueryInstanceI {
+public class NullQueryInstance {
 
 	public static final NullQueryInstance INSTANCE = new NullQueryInstance();
 	
@@ -33,7 +33,7 @@ public class NullQueryInstance implements SimpleQueryInstanceI {
     	return NullQuery.INSTANCE;
     }
 
-    public ResultSet getResult() throws Exception {
+    public ResultList getResult() throws Exception {
     	return null;
     }
 
@@ -41,7 +41,4 @@ public class NullQueryInstance implements SimpleQueryInstanceI {
     	// Deliberately empty
     }
 
-	public void checkColumns(ResultSet rs, boolean checkAll) throws Exception {
-		// TODO Auto-generated method stub		
-	}
 }

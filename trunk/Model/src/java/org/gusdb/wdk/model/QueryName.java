@@ -3,10 +3,8 @@ package org.gusdb.gus.wdk.model;
 import java.util.Hashtable;
 import java.util.HashMap;
 import java.util.Enumeration;
-import org.gusdb.gus.wdk.model.PageableQuerySet;
-import org.gusdb.gus.wdk.model.PageableQueryI;
-import org.gusdb.gus.wdk.model.SimpleQuerySet;
-import org.gusdb.gus.wdk.model.SimpleQueryI;
+import org.gusdb.gus.wdk.model.QuerySet;
+
 
 /**
  * QueryName.java
@@ -94,37 +92,21 @@ public class QueryName{
      * @param pageableSets a HashMap of PageableQuerySets which may hold this query.
      * @return true if the check passes 
      */
-    public boolean checkReferences(HashMap simpleSets, HashMap pageableSets) throws Exception {
+        public boolean checkReferences(HashMap querySets) throws Exception {
 
 
 	//DTB -- this could be cleaned up if we abstract QuerySet to be the superclass of SimpleQuerySet and PageableQuerySet
+	//UPTATE time to clean it up!
+	QuerySet querySet = (QuerySet)querySets.get(querySetName);
 
-	SimpleQuerySet simpleQuerySet = (SimpleQuerySet)simpleSets.get(querySetName);
+	if (querySet != null){
 
-	if (simpleQuerySet != null){
-
-	    SimpleQueryI simpleQuery = simpleQuerySet.getQuery(queryName);
-	    if (simpleQuery != null){
+	    Query query = querySet.getQuery(queryName);
+	    if (query != null){
 		return true;  //passed check
 	    }
 	    else {  
-		String error = "QueryNameList error: '" + queryName + "' did not pass check; querySet '" + simpleQuerySet.getName() + "' does not contain '" + queryName + "'";
-		throw new Exception(error);
-	    }
-	}
-
-	//if we got this far, the query set for this query is (presumably) a PageableQuerySet
-	
-	PageableQuerySet pageableQuerySet = (PageableQuerySet)pageableSets.get(querySetName);
-
-	if (pageableQuerySet != null){
-
-	    PageableQueryI pageableQuery = pageableQuerySet.getQuery(queryName);
-	    if (pageableQuery != null){
-		return true;  //passed check
-	    }
-	    else {  
-		String error = "QueryNameList error: '" + queryName + "' did not pass check; querySet '" + pageableQuerySet.getName() + "' does not contain '" + queryName + "'";
+		String error = "QueryNameList error: '" + queryName + "' did not pass check; querySet '" + querySet.getName() + "' does not contain '" + queryName + "'";
 		throw new Exception(error);
 	    }
 	}

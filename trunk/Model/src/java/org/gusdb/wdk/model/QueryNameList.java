@@ -86,14 +86,14 @@ public class QueryNameList{
     /**
      * Wrapper method; checks to make sure each Query Name is of the correct format and exists in a QuerySet.
      */
-    public void checkReferences(HashMap simpleSets, HashMap pageableSets)throws Exception{
+    public void checkReferences(HashMap querySets)throws Exception{
 	
 	Enumeration queryNames = queryNameList.keys();
 	while (queryNames.hasMoreElements()){
 	    QueryName nextQueryName = (QueryName)queryNames.nextElement();
 	    
 	    //Errors will be handled in the method; we don't use <code>passedCheck</code>
-	    boolean passedCheck = nextQueryName.checkReferences(simpleSets, pageableSets);
+	    boolean passedCheck = nextQueryName.checkReferences(querySets);
 	}
     }
 

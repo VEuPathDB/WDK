@@ -57,6 +57,28 @@ public class SqlUtils {
 	return result;
     }
 
+
+    /**
+     * Execute a JDBC query that returns a single Integer and return the Integer.
+     */
+    public static Integer runIntegerQuery(DataSource dataSource, String sql) throws SQLException {
+	ResultSet resultSet = null;
+	Integer result = null;
+			
+	try {
+	    resultSet = getResultSet(dataSource, sql);
+	    if (resultSet.next()) result = new Integer(resultSet.getInt(1));
+	} catch (SQLException e) {
+	    System.err.println("Failed attempting to execute sql in runIntegerQuery: '" + sql + "'");
+	    e.printStackTrace(System.err);
+	    throw e;
+	} finally {
+	    closeResultSet(resultSet);
+	}
+
+	return result;
+    }
+
     /**
      * Execute a JDBC query that returns a list of strings,
      * and return the strings in an array.
@@ -160,6 +182,8 @@ public class SqlUtils {
 	}
     }
 
+
+    // TODO: this method and writeResultSet should be factored
     public static void printResultSet(ResultSet rs) throws SQLException {
 	try {
 	    int colCount = rs.getMetaData().getColumnCount();
