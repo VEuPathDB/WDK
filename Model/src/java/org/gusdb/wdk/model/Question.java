@@ -1,6 +1,8 @@
 package org.gusdb.wdk.model;
 
 import java.util.Map;
+import java.util.Iterator;
+import java.util.Vector;
 import java.util.Hashtable;
 import java.util.HashMap;
 
@@ -155,14 +157,30 @@ public class Question {
 	
 	this.query = (Query)model.resolveReference(queryTwoPartName, name, "question", "queryRef");
 	this.recordClass = (RecordClass)model.resolveReference(recordClassTwoPartName, name, "question", "recordClassRef");
+
+	String[] summaryAttributeList;
 	if (summaryAttributesRef != null){
-
-	    String summaryAttributeList[] = summaryAttributesRef.split(",");
-	    for (int i = 0; i < summaryAttributeList.length; i++){
-		String nextSummaryAtt = summaryAttributeList[i];
-
-		summaryAttributeMap.put(nextSummaryAtt, new Integer(1));
+	    String primaryKey = "primaryKey";
+	    if (!(summaryAttributesRef.equals(primaryKey)
+		  || summaryAttributesRef.startsWith(primaryKey + ",")
+		  || summaryAttributesRef.endsWith("," + primaryKey)
+		  || summaryAttributesRef.indexOf("," + primaryKey + ",") > 0)) {
+		summaryAttributesRef = primaryKey + "," + summaryAttributesRef;
 	    }
+	    summaryAttributeList = summaryAttributesRef.split(",");
+	} else {
+	    Map attribFields = getRecordClass().getAttributeFields();
+	    Iterator ai = attribFields.keySet().iterator();
+	    Vector v = new Vector();
+	    while (ai.hasNext()) {
+		v.add((String)ai.next());
+	    }
+	    summaryAttributeList = new String[v.size()];
+	    v.copyInto(summaryAttributeList);
+	}
+	for (int i = 0; i < summaryAttributeList.length; i++){
+	    String nextSummaryAtt = summaryAttributeList[i];
+	    summaryAttributeMap.put(nextSummaryAtt, new Integer(1));
 	}
     }
 
