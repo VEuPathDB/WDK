@@ -1,26 +1,25 @@
 <?xml version="1.0"?>
  
-<wdkModel name="RnaModel"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<wdkModel name="RnaModel">
 
 
+<!--
   <referenceList name="InterestingRnaSummaries">
 
      <reference twoPartName="RnaSummaries.RnasByGoId"/>
-
      <reference twoPartName="RnaSummaries.RnasByGeneCardName"/>
 
   </referenceList>
-
+-->
 
 
   <recordSet name="RnaRecords">
 
      <record name="RnaRecord" type="DoTS Transcript" idPrefix="DT.">
 
-       <fieldsQuery twoPartName="RnaSummaryQueries.RnaSummary"/>  
+       <attributeQuery twoPartName="RnaSummaryQueries.RnaSummary"/>  
    
-       <fieldsQuery twoPartName="RnaRecordQueries.RnaFields"/>
+       <attributeQuery twoPartName="RnaRecordQueries.RnaFields"/>
              
        <tableQuery twoPartName="RnaRecordQueries.ExternalLinks"/>
        
@@ -32,7 +31,7 @@
      </record>
 
      <record name="RnaSummaryRecord" type="DoTS Transcript" idPrefix="DT.">
-       <fieldsQuery twoPartName="RnaSummaryQueries.RnaSummary"/>  
+       <attributeQuery twoPartName="RnaSummaryQueries.RnaSummary"/>  
        <tableQuery twoPartName="RnaRecordQueries.ExternalLinks"/>
      </record>
 
@@ -56,8 +55,7 @@
 
   <querySet name="VocabQueries">
 
-    <query name="TaxonQuery"
-           xsi:type="org.gusdb.gus.wdk.model.implementation.SqlQuery">
+    <sqlQuery name="TaxonQuery">
       <column name="term"/>
       <column name="internal"/>
       <sql>
@@ -65,15 +63,14 @@
         from SRes.taxonName
         where name in ('mouse', 'human')
       </sql>
-    </query>
+    </sqlQuery>
   </querySet>
 
 
 
   <querySet name="RnaRecordQueries">
     
-    <query name="RnaFields" 
-            xsi:type="org.gusdb.gus.wdk.model.implementation.SqlQuery">
+    <sqlQuery name="RnaFields">
 
        <paramRef twoPartName="params.primaryKey"/>
 
@@ -84,8 +81,7 @@
        <column name="number_of_contained_sequences" displayName="Number contained sequences" />
        <column name="modification_date" displayName="Last modified" />
        <column name="review_status_name" displayName="Review status" />
-       <column name="numseqs" 
-               xsi:type="org.gusdb.gus.wdk.model.TextColumn"
+       <textColumn name="numseqs" 
                displayName="Nice Num" 
                text="number of contained seqs is $$number_of_contained_sequences$$" />
  
@@ -108,10 +104,9 @@
         and a.taxon_id = tn.taxon_id 
         and tn.name_class = 'scientific name'
        </sql>
-    </query>
+    </sqlQuery>
 
-    <query name="ExternalLinks" 
-           xsi:type="org.gusdb.gus.wdk.model.implementation.SqlQuery">
+    <sqlQuery name="ExternalLinks">
 
       <paramRef twoPartName="params.primaryKey"/>
 
@@ -132,7 +127,7 @@
          and dbr.external_database_release_id = edr.external_database_release_id 
          and edr.external_database_id = ed.external_database_id
       </sql>
-    </query>
+    </sqlQuery>
 
   </querySet>
 
@@ -140,8 +135,7 @@
 
   <querySet name="RnaSummaryQueries">
 
-    <query name="RnaSummary"
-              xsi:type="org.gusdb.gus.wdk.model.implementation.SqlQuery"
+    <sqlQuery name="RnaSummary"
               displayName="RNAs">
 
       <paramRef twoPartName="params.primaryKey"/>
@@ -156,25 +150,20 @@
       <column name="assembly_contains_mrna"/>
 
       <sql>
-        <!-- use CDATA because query includes angle brackets -->
-        <![CDATA[
       select cd.gene_id, cd.taxon_name, cd.gene_symbol, 
              cd.gene_description, cd.na_sequence_id, cd.assembly_length, 
              cd.assembly_num_sequences, 
               cd.assembly_contains_mrna 
       from allgenes.CentralDogma cd
       where cd.na_sequence_id = $$primaryKey$$
-
-      ]]>
       </sql>
-    </query>
+    </sqlQuery>
   </querySet>
 
 
   <querySet name="RnaIdQueries">
 
-     <query name="ByGeneCardName"
-            xsi:type="org.gusdb.gus.wdk.model.implementation.SqlQuery"
+     <sqlQuery name="ByGeneCardName"
             displayName="Gene Card name">
 
        <paramRef twoPartName="params.GeneName"/>
@@ -188,11 +177,10 @@
        and dbr.external_database_release_id = 4892
        and dbr.db_ref_id = dbrn.db_ref_id
        </sql>
-    </query>
+    </sqlQuery>
 
 
-    <query name="ByGoId"
-           xsi:type="org.gusdb.gus.wdk.model.implementation.SqlQuery"
+    <sqlQuery name="ByGoId"
            displayName="GO Id">
 
       <paramRef twoPartName="params.GoId"/>
@@ -213,37 +201,32 @@
         and ga.is_not != 1 
       </sql>
 
-    </query>
+    </sqlQuery>
   </querySet>
 
   <paramSet name="params">
-    <param
+    <stringParam
       name="GeneName"
-      xsi:type="org.gusdb.gus.wdk.model.StringParam"
       prompt="Gene Name"
       sample="brca1"/>
 
-    <param 
+    <stringParam 
       name="GoId"
-      xsi:type="org.gusdb.gus.wdk.model.StringParam"
       prompt="GO Id"
       help="You know what it is"
       sample="GO:0005013"
       regex="GO:\d+"/>
 
-    <param
+    <flatCVParam
       name="Taxon"
-      xsi:type="org.gusdb.gus.wdk.model.FlatCVParam"
       prompt="Organism"
       help="You know what it is"
       multipick="yes"
       queryRef="VocabQueries.TaxonQuery"/>
     
-    <param 
-      name="primaryKey" 
-      xsi:type="org.gusdb.gus.wdk.model.StringParam"/>
+    <stringParam 
+      name="primaryKey" />
 
   </paramSet>
 
 </wdkModel>
-
