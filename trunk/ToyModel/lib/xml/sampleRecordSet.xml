@@ -18,9 +18,9 @@
 </recordSet>
 
 
-<simpleQuerySet name="RNARecordQueries">
+<querySet name="RNARecordQueries">
 
-   <simpleSqlQuery name="RNAFields">
+   <sqlQuery name="RNAFields">
 
      <stringParam name="primaryKey"/>
 
@@ -53,9 +53,9 @@
         and a.taxon_id = tn.taxon_id 
         and tn.name_class = 'scientific name'
      </sql>
-  </simpleSqlQuery>
+  </sqlQuery>
 
-  <simpleSqlQuery name="ExternalLinks">
+  <sqlQuery name="ExternalLinks">
 
     <stringParam  name="primaryKey"/>
 
@@ -76,8 +76,8 @@
          and dbr.external_database_release_id = edr.external_database_release_id 
          and edr.external_database_id = ed.external_database_id
     </sql>
-  </simpleSqlQuery>
+  </sqlQuery>
 
-</simpleQuerySet>
+</querySet>
 </wdkModel>
 

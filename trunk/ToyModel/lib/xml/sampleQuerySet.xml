@@ -2,15 +2,6 @@
  
 <wdkModel name="RNAQueries">
 
-<pageableQuerySet name="RNAPageableQueries">
-   <pageableSqlQuery name="GeneCardName"
-		     displayName="Gene Card name"
-		     mainQueryRef="RNASimpleQueries.DTGeneCardName"
-		     pageQueryRef="RNASimpleQueries.RNAListInDetail"/>
-
-</pageableQuerySet>
-
-
 <queryNameList name="RNAQueryNameList">
 
    <fullQueryName fullQueryName="RNASimpleQueries.RNAByGoTerm"/>
@@ -20,9 +11,9 @@
 </queryNameList>
 
 
-<simpleQuerySet name="RNASimpleQueries">
+<querySet name="RNASimpleQueries">
 
-   <simpleSqlQuery name="DTGeneCardName"
+   <sqlQuery name="DTGeneCardName"
             displayName="Gene Card name">
 
      <stringParam
@@ -37,9 +28,9 @@
        and dbr.external_database_release_id = 4892
        and dbr.db_ref_id = dbrn.db_ref_id
      </sql>
-  </simpleSqlQuery>
+  </sqlQuery>
 
-  <simpleSqlQuery name="RNAListInDetail"
+  <sqlQuery name="RNAListInDetail"
             displayName="RNAs">
 
        <stringParam  name="resultTable"/>
@@ -59,9 +50,9 @@
       order by cd.gene_id, cd.assembly_length desc
       ]]>
     </sql>
-  </simpleSqlQuery>
+  </sqlQuery>
 
-  <simpleSqlQuery name="RNAByGoTerm"
+  <sqlQuery name="RNAByGoTerm"
             displayName="GO functional classification (by term)">
 
        <stringParam 
@@ -77,14 +68,14 @@
           prompt="Organism"
           help="You know what it is"
           multipick="yes">
-          <simpleSqlQuery>
+          <sqlQuery>
             <sql>
               select name as key,
                      taxon_id as value
               from SRes.taxonName
               where name in ('mouse', 'human')
             </sql>
-          </simpleSqlQuery>
+          </sqlQuery>
        </sqlEnumParam> 
 
     <sql>
@@ -98,10 +89,10 @@
         and ga.is_not != 1 
     </sql>
 
-  </simpleSqlQuery>
+  </sqlQuery>
 
 
-   <simpleSqlQuery name="TaxonName"
+   <sqlQuery name="TaxonName"
             displayName="Taxon name">
 
      <stringParam
@@ -115,8 +106,8 @@
        from SRes.TaxonName 
        where taxon_id = $$TaxonId$$
      </sql>
-  </simpleSqlQuery>
+  </sqlQuery>
 
-</simpleQuerySet>
+</querySet>
 </wdkModel>
 
