@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -48,7 +49,18 @@ public abstract class ResultList {
     }
 
     public Map getRow() {
-	return new RowMap(this);
+	// return new RowMap(this);
+	LinkedHashMap row = new LinkedHashMap();
+	Column[] cols = getColumns();
+        for (int i=0; i<cols.length; i++) {
+	    String colName = cols[i].getName();
+	    try {
+		row.put(colName, getValue(colName));
+	    } catch (WdkModelException e) {
+		throw new RuntimeException(e);
+	    }
+	}
+	return row;
     }
 
     public Iterator getRows() {
@@ -60,6 +72,14 @@ public abstract class ResultList {
     public abstract boolean hasNext() throws WdkModelException;
 
     public abstract void close() throws WdkModelException;
+    public Object getClose() {
+	try {
+	    close(); 
+	} catch (WdkModelException e) {
+	    throw new RuntimeException(e);
+	}
+	return null;
+    }
 
     /* depracated.  handled here
     public abstract void write(StringBuffer buf) throws WdkModelException;
@@ -107,7 +127,7 @@ public abstract class ResultList {
     public class ResultListIterator implements Iterator {
 
 	ResultList rl;
-	RowMap nextCache = null;
+	Map nextCache = null;
 
 	ResultListIterator(ResultList rl) {
 	    this.rl = rl;
@@ -121,14 +141,14 @@ public abstract class ResultList {
 	    boolean hasNext = false;
 	    try {
 		hasNext = rl.next();
+
+		// if a next thing is available, cache it
+		if (hasNext) {
+		    nextCache = rl.getRow();
+		}
 	    } catch (WdkModelException e) {
 		throw new RuntimeException(e);
-	    }
-
-	    // if a next thing is available, cache it
-	    if (hasNext) {
-		nextCache = (RowMap) rl.getRow();
-	    }
+    }
 
 	    return hasNext;
 	}
@@ -136,7 +156,7 @@ public abstract class ResultList {
 	public Object next() throws NoSuchElementException {
 	    // if the next thing is already in the cache, return it and clear cache
 	    if (nextCache != null) {
-		RowMap theNext = nextCache;
+		Map theNext = nextCache;
 		nextCache = null;
 		return theNext;
 	    }
