@@ -152,7 +152,10 @@ public class QueryTagsTesterServlet extends HttpServlet {
                     sb.append("</tr>");
                     while (rs.next()) {
                     	sb.append("<tr>");
-                        sb.append("<td align=\"center\"><a href=\"/sampleWDK/RecordTester?style=jsp&recordSetName=RNARecords&recordName=PSUCDSRecordId&primaryKey=");
+                        sb.append("<td align=\"center\"><a href=\"");
+                        sb.append(req.getContextPath());
+                        sb.append("/RecordTester");
+                        sb.append("?style=jsp&recordSetName=RNARecords&recordName=PSUCDSRecordId&primaryKey=");
                         sb.append(rs.getObject(1)+"&objectType="+rs.getObject(2)+"\" >");
                         sb.append("More details</a></td>");
                         sb.append("<td align=\"center\">"+rs.getObject(3)+"</td>");

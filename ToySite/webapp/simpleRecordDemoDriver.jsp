@@ -5,7 +5,7 @@
 <p>This page has some links to test out record retrieval 
 <hr><p>
 
-<form method="GET" action="/sampleWDK/RecordTester">
+<form method="GET" action="${pageContext.request.contextPath}/RecordTester">
 <input type="hidden" name="recordSetName" value="RNARecords">
 <input type="hidden" name="recordName" value="PSUCDSRecord">
 

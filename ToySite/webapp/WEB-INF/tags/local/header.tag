@@ -12,10 +12,10 @@
 <title>
 <c:out value="${title}" default="${banner}" />
 </title>
-<link rel="StyleSheet" href="/sampleWDK/style.css" type="text/css">
+<link rel="StyleSheet" href="<c:url value="/misc/style.css" />" type="text/css">
 </head>
 <body>
 <table width="100%"><tr>
-<td><a href="/sampleWDK/"><img src="/sampleWDK/images/WDKTestSite.png" border="0" alt="Site logo"></a></td>
+<td><a href="<c:url value="/" />"><img src="<c:url value="/images/WDKTestSite.png" />" border="0" alt="Site logo"></a></td>
 <td><h1>${banner}</h1></td></tr></table>
 <hr>
