@@ -28,6 +28,7 @@ public class TableTag extends TagSupport {
       out.println("<table cellspacing=\"0\" cellpadding=\"2\">");
     }
     catch (IOException ie){
+        // FIXME
     }
    	return EVAL_BODY_INCLUDE;
   }
@@ -38,6 +39,7 @@ public class TableTag extends TagSupport {
       out.println("</table>");
     }
     catch (IOException ie) {
+        // FIXME
     }
     rowPosition = 0;
     return EVAL_PAGE;
