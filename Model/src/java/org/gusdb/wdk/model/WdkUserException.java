@@ -42,14 +42,18 @@ public class WdkUserException extends Exception {
      * @return A default formatting of contained errors
      */
     public String formatErrors() {
-	Iterator keys = booBoos.keySet().iterator();
+	
 	String newline = System.getProperty( "line.separator" );
 	StringBuffer buf = new StringBuffer(newline);
-	while(keys.hasNext()) {
-	    Param param = (Param)keys.next();
-	    String[] details = (String[])booBoos.get(param);
-	    buf.append(param.getName() + " value '" + details[0] + "' has an error: " 
-		       + details[1] + newline);
+	if (getMessage() != null) buf.append(getMessage() + newline);
+	if (booBoos != null) {
+	    Iterator keys = booBoos.keySet().iterator();
+	    while(keys.hasNext()) {
+		Param param = (Param)keys.next();
+		String[] details = (String[])booBoos.get(param);
+		buf.append(param.getName() + " value '" + details[0] + "' has an error: " 
+			   + details[1] + newline);
+	    }
 	}
 	return buf.toString();
     }

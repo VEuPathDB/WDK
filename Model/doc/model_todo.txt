@@ -32,6 +32,8 @@ General
 
  - logging
 
+ - configuration
+
 ----------------------------------------------------------------------
 
  - use webinstall for WDKTestSite

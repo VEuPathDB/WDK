@@ -21,8 +21,10 @@ public class QuerySet implements ModelSetI {
 	return name;
     }
 
-    public Query getQuery(String name) {
-	return (Query)querySet.get(name);
+    public Query getQuery(String name) throws WdkUserException {
+	Query q = (Query)querySet.get(name);
+	if (q == null) throw new WdkUserException("Query Set " + getName() + " does not include query " + name);
+	return q;
     }
 
     public Object getElement(String name) {
@@ -49,6 +51,11 @@ public class QuerySet implements ModelSetI {
     }
 
     public void resolveReferences(WdkModel model) throws WdkModelException {
+	Iterator queryIterator = querySet.values().iterator();
+	while (queryIterator.hasNext()) {
+	    Query query = (Query)queryIterator.next();
+	    query.resolveReferences(model);
+	}
     }
 
     public void setResources(WdkModel model) throws WdkModelException {
