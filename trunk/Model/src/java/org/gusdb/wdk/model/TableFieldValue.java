@@ -28,6 +28,10 @@ public class TableFieldValue {
         return field.getDisplayName();
     }
 
+    public Boolean getIsInternal() {
+        return field.getIsInternal();
+    }
+
     /**
      * @return A list of fields, one describing each column.
      */

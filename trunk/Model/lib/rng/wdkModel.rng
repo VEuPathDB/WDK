@@ -39,13 +39,15 @@
     <choice>
       <ref name="column" />
       <ref name="textColumn" />
+      <ref name="linkColumn" />
     </choice>
   </define>
     
   <define name="attributes">
-    <!-- <choice> -->
+    <choice>
       <ref name="textAttribute" />
-    <!-- </choice> -->
+      <ref name="linkAttribute" />
+    </choice>
   </define>
     
 
@@ -60,6 +62,12 @@
     </optional>
     <optional>
       <attribute name="help" />
+    </optional>
+    <optional>
+      <attribute name="specialType" />
+    </optional>
+    <optional>
+      <attribute name="isInternal" />
     </optional>
   </define>
 
@@ -209,6 +217,15 @@
   </define>
   
   
+  <define name="linkColumn">
+    <element name="linkColumn">
+      <ref name="ColumnBaseContents" />
+      <attribute name="visible" />
+      <attribute name="url" />
+    </element>
+  </define>
+  
+  
   <!-- RecordClass -->
   <define name="recordClass">
     <element name="recordClass">
@@ -227,9 +244,9 @@
           <attribute name="ref" />
         </element>
       </zeroOrMore>
-      <optional>
+      <zeroOrMore>
         <ref name="attributes" />
-      </optional>
+      </zeroOrMore>
     </element>
   </define>
     
@@ -266,5 +283,15 @@
     </element>
   </define>
 
+  <define name ="linkAttribute">
+    <element name="linkAttribute">
+      <attribute name="name" />
+      <optional> 
+        <attribute name="displayName" />
+      </optional>
+      <attribute name="visible" />
+      <attribute name="url" />
+    </element>
+  </define>
   
 </grammar>

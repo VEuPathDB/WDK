@@ -22,7 +22,7 @@ public class LinkColumn extends Column implements DerivedColumnI {
     /**
      * A string that may have macros for values from other columns
      */
-    public void setURL(String url) {
+    public void setUrl(String url) {
 	this.url = url;
     }
 
