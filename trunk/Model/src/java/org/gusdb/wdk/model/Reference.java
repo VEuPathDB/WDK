@@ -21,7 +21,7 @@ public class Reference {
      * @param twoPartName Of the form "set.element"
      */
     public Reference(String twoPartName) throws WdkModelException{
-        setTwoPartName(twoPartName);
+        setRef(twoPartName);
     }
     
     public String getSetName(){
@@ -39,7 +39,7 @@ public class Reference {
     /**
      * @param twoPartName Of the form "set.element"
      */
-    public void setTwoPartName(String twoPartName) throws WdkModelException {
+    public void setRef(String twoPartName) throws WdkModelException {
         
         if (twoPartName == null) {
             throw new WdkModelException("Error: twoPartName is null");
