@@ -3,6 +3,8 @@ package org.gusdb.wdk.model.jspwrap;
 import org.gusdb.wdk.model.RecordInstance;
 
 import java.util.Map;
+import java.util.Iterator;
+import java.util.Vector;
 
 /**
  * A wrapper on a {@link RecordInstance} that provides simplified access for 
@@ -22,6 +24,22 @@ public class RecordBean {
 
     public RecordClassBean getRecordClass() {
 	return new RecordClassBean(recordInstance.getRecordClass());
+    }
+
+    public String[] getSummaryAttributeNames() {
+	Map attribs = getAttributes();
+	Iterator ai = attribs.keySet().iterator();
+	Vector v = new Vector();
+	while (ai.hasNext()) {
+	    String attribName = (String)ai.next();
+	    if (recordInstance.isSummaryAttribute(attribName)) {
+		v.add(attribName);
+	    }
+	}
+	int size = v.size();
+	String[] sumAttribNames = new String[size];
+	v.copyInto(sumAttribNames);
+	return sumAttribNames;
     }
 
     /**
