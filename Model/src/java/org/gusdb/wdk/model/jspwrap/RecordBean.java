@@ -12,12 +12,16 @@ public class RecordBean {
 
     RecordInstance recordInstance;
 
-    public RecordBean(RecordInstance record) {
+    public RecordBean(RecordInstance recordInstance) {
 	this.recordInstance = recordInstance;
     }
 
     public String getPrimaryKey() {
 	return recordInstance.getPrimaryKey();
+    }
+
+    public RecordClassBean getRecordClass() {
+	return new RecordClassBean(recordInstance.getRecordClass());
     }
 
     /**
@@ -34,4 +38,10 @@ public class RecordBean {
 	return recordInstance.getTables();
     }
 
+    /**
+     * used by the controller
+     */
+    public void assignPrimaryKey(String key) {
+	recordInstance.setPrimaryKey(key);
+    }
 }
