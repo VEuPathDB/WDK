@@ -2,17 +2,6 @@ package org.gusdb.gus.wdk.view;
 
 import oracle.jdbc.pool.OracleConnectionCacheImpl;
 
-import java.io.File;
-import java.sql.SQLException;
-
-import javax.sql.DataSource;
-
-//import org.apache.commons.dbcp.ConnectionFactory;
-//import org.apache.commons.dbcp.DriverManagerConnectionFactory;
-//import org.apache.commons.dbcp.PoolableConnectionFactory;
-//import org.apache.commons.dbcp.PoolingDataSource;
-//import org.apache.commons.pool.ObjectPool;
-//import org.apache.commons.pool.impl.GenericObjectPool;
 import org.gusdb.gus.wdk.model.ModelConfig;
 import org.gusdb.gus.wdk.model.ModelConfigParser;
 import org.gusdb.gus.wdk.model.QueryParamsException;
@@ -23,6 +12,11 @@ import org.gusdb.gus.wdk.model.SimpleQuerySet;
 import org.gusdb.gus.wdk.model.WdkModel;
 import org.gusdb.gus.wdk.model.implementation.ModelXmlParser;
 import org.gusdb.gus.wdk.model.implementation.SqlResultFactory;
+
+import java.io.File;
+import java.sql.SQLException;
+
+import javax.sql.DataSource;
 
 
 
