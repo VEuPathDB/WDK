@@ -1,10 +1,6 @@
 package org.gusdb.gus.wdk.model.test;
 
-import org.gusdb.gus.wdk.model.WdkUserException;
 import org.gusdb.gus.wdk.model.WdkModelException;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Enumeration;
 
 /**
  * SanityElementI.java
@@ -14,7 +10,7 @@ import java.util.Enumeration;
  * Created: Mon August 23 12:00:00 2004 EDT
  *
  * @author David Barkan
- * @version $Revision$ $Date$Author: $
+ * @version $Revision$ $Date$Author: dbarkan $
  */
 
 public interface SanityElementI {
