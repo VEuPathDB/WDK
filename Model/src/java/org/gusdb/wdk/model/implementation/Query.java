@@ -24,6 +24,8 @@ public class Query implements QueryI {
     public Query () {
 	paramsH = new HashMap();
 	paramsV = new Vector();
+	columnsH = new HashMap();
+	columnsV = new Vector();
     }
 
     /////////////////////////////////////////////////////////////////////

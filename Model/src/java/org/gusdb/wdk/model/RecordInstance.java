@@ -1,8 +1,11 @@
 package org.gusdb.gus.wdk.model;
 
 import java.util.HashMap;
+import java.util.Iterator;
 
 import java.sql.ResultSet;
+
+import org.gusdb.gus.wdk.model.implementation.SqlUtils;
 
 public class RecordInstance {
     
@@ -17,6 +20,10 @@ public class RecordInstance {
 
     public void setPrimaryKey(String primaryKey) {
 	this.primaryKey = primaryKey;
+    }
+
+    public String getPrimaryKey() {
+	return primaryKey;
     }
 
     public Object getFieldValue(String fieldName) throws Exception {
@@ -50,6 +57,36 @@ public class RecordInstance {
 	return instantiateTextField(textFieldName, rawText, new HashMap());
     }
 
+    public String print() throws Exception {
+	String newline = System.getProperty( "line.separator" );
+	StringBuffer buf =
+	    new StringBuffer(record.getType() + " " + record.getIdPrefix() + primaryKey).append( newline );
+
+	String[] fieldNames = record.getNonTextFieldNames();
+	for (int i=0; i<fieldNames.length; i++) {
+	    String fieldName = fieldNames[i];
+	    buf.append(fieldName + ":   " + getFieldValue(fieldName)).append( newline );
+	}
+	
+	String[] textFieldNames = record.getTextFieldNames();
+	for (int i=0; i<textFieldNames.length; i++){
+	    String fieldName = textFieldNames[i];
+	    buf.append(fieldName + ":   " + getTextFieldValue(fieldName)).append( newline );
+	}
+	
+	String[] tableNames = record.getTableNames();
+	for (int i=0; i<tableNames.length; i++){
+	    String tableName = tableNames[i];
+	    buf.append("Table " + tableName).append( newline );
+	    ResultSet resultSet = getTableValue(tableName);
+	    SqlUtils.writeResultSet(resultSet,buf);
+	    buf.append(newline);
+	}
+
+	return buf.toString();
+	
+    }
+
     ///////////////////////////////////////////////////////////////////////////////////////
     // protected
     ///////////////////////////////////////////////////////////////////////////////////////
@@ -70,6 +107,7 @@ public class RecordInstance {
 	instance.checkColumns(rs, true);
 	HashMap queryResult = new HashMap();
 	Column[] columns = query.getColumns();
+	rs.next();
 	for (int i=0; i<columns.length; i++) {
 	    String columnName = columns[i].getName();
 	    queryResult.put(columnName, rs.getObject(columnName));
@@ -87,32 +125,44 @@ public class RecordInstance {
 
 	alreadyVisited.put(textFieldName, textFieldName);
 
-	// get all non-text field names, and see if they appear as macro
-	String[] allNonTextFieldNames = record.getAllNonTextFieldNames();
 	String instantiatedText = rawText;
+
+	System.err.println("RecordInstance: " + instantiatedText);
+	
+	// primary key
+	String pk = "$$primaryKey$$";
+	String pkRegex = "\\$\\$primaryKey\\$\\$";
+	if (instantiatedText.indexOf(pk) != -1) {
+	    instantiatedText = instantiatedText.replaceAll(pkRegex, getPrimaryKey());
+	}
+
+	// get all non-text field names, and see if they appear as a macro
+	String[] allNonTextFieldNames = record.getNonTextFieldNames();
 	for (int i=0; i<allNonTextFieldNames.length; i++) {
 	    String fieldName = allNonTextFieldNames[i];
 	    String macro = "$$" + fieldName + "$$";
+	    String macroRegex = "\\$\\$" + fieldName + "\\$\\$";
 	    if (instantiatedText.indexOf(macro) != -1) {
 		instantiatedText = 
-		    instantiatedText.replaceAll(macro, 
+		    instantiatedText.replaceAll(macroRegex, 
 						getFieldValue(fieldName).toString());
 	    }
 	}
 
 	// get all text field names, and see if they appear as macro
-	String[] allTextFieldNames = record.getAllTextFieldNames();
+	String[] allTextFieldNames = record.getTextFieldNames();
 	for (int i=0; i<allTextFieldNames.length; i++) {
 	    String fieldName = allTextFieldNames[i];
 	    String macro = "$$" + fieldName + "$$";
+	    String macroRegex = "\\$\\$" + fieldName + "\\$\\$";
 	    if (instantiatedText.indexOf(macro) != -1) {
 		instantiatedText = 
-		    instantiatedText.replaceAll(macro, 
+		    instantiatedText.replaceAll(macroRegex, 
 						getTextFieldValue(fieldName));
 	    }
 	}
 
-	if (instantiatedText.matches("$$\\w+$$")) {
+	if (instantiatedText.matches("\\$\\$\\w+\\$\\$")) {
 	    throw new Exception ("textField '" + textFieldName + "' contains unrecognized field macro: " + instantiatedText);
 	}
 	return instantiatedText;
