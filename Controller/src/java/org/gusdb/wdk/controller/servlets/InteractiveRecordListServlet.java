@@ -10,6 +10,7 @@ import org.gusdb.gus.wdk.model.SummaryInstance;
 import org.gusdb.gus.wdk.model.WdkModel;
 import org.gusdb.gus.wdk.model.WdkModelException;
 import org.gusdb.gus.wdk.model.WdkUserException;
+import org.gusdb.gus.wdk.view.RIVList;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -85,8 +86,8 @@ public class InteractiveRecordListServlet extends HttpServlet {
 		// We have a queryRecord name
         WdkModel wm = (WdkModel) getServletContext().getAttribute("wdk.wdkModel");
         
-        Summary recordList = WdkModelExtra.getSummary(wm, queryRecordName);
-        Query sq = recordList.getQuery();
+        Summary summary = WdkModelExtra.getSummary(wm, queryRecordName);
+        Query sq = summary.getQuery();
 
         if (sq == null) {
             msg("sq is null for "+queryRecordName, res);
@@ -94,7 +95,7 @@ public class InteractiveRecordListServlet extends HttpServlet {
         }
 		QueryInstance sqii = sq.makeInstance();
 		Map paramValues = new HashMap();
-        SummaryInstance rli = null;
+        SummaryInstance si = null;
 		req.setAttribute(formName+".sqii", sqii);
         String formQueryPrefix = formName+"."+queryRecordName+".";
         System.err.println("formQueryPrefix is called: "+formQueryPrefix);
@@ -116,8 +117,9 @@ public class InteractiveRecordListServlet extends HttpServlet {
 
             try {
                 // TODO Proper start and stop values
-                rli = recordList.makeSummaryInstance();
-                rli.setValues(paramValues, 1, 20);
+//                rli = summary.makeSummaryInstance(paramValues, 1, 20);
+                si = summary.makeSummaryInstance();
+                si.setValues(paramValues, 1, 20);
             }
             catch (WdkUserException exp) {
                 Map errors = exp.getBooBoos();
@@ -133,7 +135,7 @@ public class InteractiveRecordListServlet extends HttpServlet {
             }           
             catch (WdkModelException e) {
                 // TODO What does this mean?
-                //e.printStackTrace();
+                e.printStackTrace();
             }
                 
                 
@@ -164,15 +166,16 @@ public class InteractiveRecordListServlet extends HttpServlet {
             toPage="/ViewFullRecord";
             RecordInstance ri = null; 
             try {
-                ri = rli.getNextRecordInstance(); 
+                ri = si.getNextRecordInstance(); 
             }
             catch (WdkModelException exp) {
-                // FIXMe - What is it really?
+                // FIXME - What is it really?
             }
             req.setAttribute("ri", ri);
 
-        } else {           
-            req.setAttribute("rli", rli);
+        } else {
+            RIVList rivl = new RIVList(si);
+            req.setAttribute("rivl", rivl);
             req.setAttribute("recordListName", queryRecordGroup + "." + queryRecordName);
             req.setAttribute("rliTotalSize", Integer.toString(size));
         }
