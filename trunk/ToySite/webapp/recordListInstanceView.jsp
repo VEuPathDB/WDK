@@ -1,28 +1,14 @@
 <%@ taglib prefix="sample" tagdir="/WEB-INF/tags/local" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="misc" uri="http://www.gusdb.org/taglibs/wdk-misc-0.1" %>
 <sample:header title="Results Page" banner="Results" />
-<p>This is the results page.
 
-<p>There are ${rliTotalSize} queries here.
-
-  <misc:table border="1">
-
-    <misc:tr>
-    <c:forEach var="ri" items="${rliInstance}">
-      <th align="center"><pre>${ri}</pre></th>
-    </c:forEach>
-    </misc:tr>
-
-<!--
-  <c:forEach var="row" items="${rli}">
-    <tr>
-    <c:forEach var="cell" items="${row}">
-      <td><c:out value="${cell}" default="&nbsp;"/></td>
-    </c:forEach>
-    </tr>
-  </c:forEach>
--->
-  </misc:table>
-
-
+  <c:choose>
+   <c:when test='${siTotalSize == 0}'>
+      No results for your query
+   </c:when>
+   <c:otherwise>
+     <c:import url="/WEB-INF/subviews/${renderer}.jsp" />
+   </c:otherwise>
+  </c:choose>
   <sample:footer />
