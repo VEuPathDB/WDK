@@ -47,19 +47,22 @@
         <!-- list of RNAs by the number of EST libs that contributed sequence tags -->
         <sqlQuery name="ByDbESTLib" displayName="RNAs by number of EST libs">
             <paramRef twoPartName="params.NumEstLibs"/>
- <!--           <paramRef twoPartName="params.ApiTaxon"/>
-  -->          <column name="na_sequence_id"/>
+            <paramRef twoPartName="params.ApiTaxon"/>
+            <column name="na_sequence_id"/>
             <sql>
                 <!-- use CDATA because query includes angle brackets -->
                 <![CDATA[
                     select distinct aseq.assembly_na_sequence_id as na_sequence_id 
-                    from WDKTestEst est, WDKTestLibrary lib, WDKTestAssemblySequence aseq
+                    from WDKTestEst est, WDKTestLibrary lib,
+                         WDKTestAssemblySequence aseq, WDKTestAssembly a
                     where lib.library_id = est.library_id 
                     and est.na_sequence_id = aseq.na_sequence_id 
+                    and aseq.assembly_na_sequence_id = a.na_sequence_id
                     and aseq.assembly_na_sequence_id is not NULL 
+                    and a.taxon_id in ($$ApiTaxon$$)
                     group by aseq.assembly_na_sequence_id 
                     having count (distinct lib.dbest_id) >= $$NumEstLibs$$
-               ]]>
+                ]]>
             </sql>
         </sqlQuery>
 
