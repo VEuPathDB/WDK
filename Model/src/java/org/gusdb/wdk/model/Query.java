@@ -2,7 +2,7 @@ package org.gusdb.wdk.model;
 
 import java.util.Map;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Vector;
 import java.util.Iterator;
 
