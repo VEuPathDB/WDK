@@ -2,6 +2,7 @@ package org.gusdb.gus.wdk.model.implementation;
 
 import org.gusdb.gus.wdk.controller.WdkLogManager;
 import org.gusdb.gus.wdk.model.RDBMSPlatformI;
+import org.gusdb.gus.wdk.model.WdkModelException;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -26,6 +27,7 @@ public class PostgreSQL implements RDBMSPlatformI {
     private static final Logger logger = WdkLogManager.getLogger("org.gusdb.gus.wdk.model.implementation.PostgreSQL");
     
     private DataSource dataSource;
+    private GenericObjectPool connectionPool;
 
     public PostgreSQL() {}
 
@@ -131,7 +133,7 @@ public class PostgreSQL implements RDBMSPlatformI {
 		     Integer maxIdle, Integer maxWait, Integer maxActive, 
 		     Integer initialSize) throws SQLException {
         DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
-	GenericObjectPool connectionPool = new GenericObjectPool(null);
+	this.connectionPool = new GenericObjectPool(null);
 	connectionPool.setMaxWait(maxWait.intValue());
 	connectionPool.setMaxIdle(maxIdle.intValue());
 	connectionPool.setMinIdle(minIdle.intValue());
@@ -144,7 +146,21 @@ public class PostgreSQL implements RDBMSPlatformI {
         PoolingDataSource dataSource = new PoolingDataSource(connectionPool);
         
 	this.dataSource = dataSource;
-    }    
+    }   
+    
+    /* (non-Javadoc)
+     * @see org.gusdb.gus.wdk.model.RDBMSPlatformI#close()
+     */
+    public void close() throws WdkModelException {
+        try {
+            connectionPool.close();
+        }
+        catch (Exception exp) {
+            throw new WdkModelException(exp);
+        }
+    }
+    
+    
 }
 
 

@@ -36,6 +36,8 @@ public interface RDBMSPlatformI {
     public void createTableFromQuerySql(DataSource dataSource,
 					String tableName, 
 					String sql) throws SQLException ;
+
+    public void close() throws WdkModelException;
 }
 
 
