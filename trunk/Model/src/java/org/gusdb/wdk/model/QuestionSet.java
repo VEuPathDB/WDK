@@ -4,7 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.Iterator;
 
 /**
- * SummarySet.java
+ * QuestionSet.java
  *
  * Created: Fri June 4 15:05:30 2004 EDT
  *
@@ -13,15 +13,15 @@ import java.util.Iterator;
  */
 
 
-public class SummarySet implements ModelSetI {
+public class QuestionSet implements ModelSetI {
 
-    LinkedHashMap summarySet;
+    LinkedHashMap questionSet;
     String name;
     String displayName;
     String description;
 
-    public SummarySet() {
-	summarySet = new LinkedHashMap();
+    public QuestionSet() {
+	questionSet = new LinkedHashMap();
     }
 
     public void setName(String name) {
@@ -48,50 +48,50 @@ public class SummarySet implements ModelSetI {
 	return description;
     }
 
-    public Summary getSummary(String name) throws WdkUserException {
+    public Question getQuestion(String name) throws WdkUserException {
 
-	Summary s = (Summary)summarySet.get(name);
-	if (s == null) throw new WdkUserException("Summary Set " + getName() + " does not include summary " + name);
+	Question s = (Question)questionSet.get(name);
+	if (s == null) throw new WdkUserException("Question Set " + getName() + " does not include question " + name);
 	return s;
     }
 
     public Object getElement(String name) {
-	return summarySet.get(name);
+	return questionSet.get(name);
     }
 
-    public Summary[] getSummaries() {
-	Summary[] summarys = new Summary[summarySet.size()];
-	Iterator summaryIterator = summarySet.values().iterator();
+    public Question[] getSummaries() {
+	Question[] questions = new Question[questionSet.size()];
+	Iterator questionIterator = questionSet.values().iterator();
 	int i = 0;
-	while (summaryIterator.hasNext()) {
-	    summarys[i++] = (Summary)summaryIterator.next();
+	while (questionIterator.hasNext()) {
+	    questions[i++] = (Question)questionIterator.next();
 	}
-	return summarys;
+	return questions;
     }
 
-    public void addSummary(Summary summary) throws WdkModelException {
-	if (summarySet.get(summary.getName()) != null) 
-	    throw new WdkModelException("Summary named " 
-					+ summary.getName() 
-					+ " already exists in summary set "
+    public void addQuestion(Question question) throws WdkModelException {
+	if (questionSet.get(question.getName()) != null) 
+	    throw new WdkModelException("Question named " 
+					+ question.getName() 
+					+ " already exists in question set "
 					+ getName());
 	
-	summarySet.put(summary.getName(), summary);
+	questionSet.put(question.getName(), question);
     }
 
     public void resolveReferences(WdkModel model) throws WdkModelException{
-	Iterator summaryIterator = summarySet.values().iterator();
-	while (summaryIterator.hasNext()){
-	    Summary summary = (Summary)summaryIterator.next();
-	    summary.resolveReferences(model);
+	Iterator questionIterator = questionSet.values().iterator();
+	while (questionIterator.hasNext()){
+	    Question question = (Question)questionIterator.next();
+	    question.resolveReferences(model);
 	}
     }
 
     public void setResources(WdkModel model) throws WdkModelException {
-	Iterator summaryIterator = summarySet.values().iterator();
-	while (summaryIterator.hasNext()){
-	    Summary summary = (Summary)summaryIterator.next();
-	    summary.setSummarySet(this);
+	Iterator questionIterator = questionSet.values().iterator();
+	while (questionIterator.hasNext()){
+	    Question question = (Question)questionIterator.next();
+	    question.setQuestionSet(this);
 	}
     }
 
@@ -103,12 +103,12 @@ public class SummarySet implements ModelSetI {
 			    "  description='" + getDescription() + "'" + newline);
        buf.append( newline );
 
-       Iterator summaryIterator = summarySet.values().iterator();
-       while (summaryIterator.hasNext()) {
+       Iterator questionIterator = questionSet.values().iterator();
+       while (questionIterator.hasNext()) {
 	   buf.append( newline );
 	   buf.append( ":::::::::::::::::::::::::::::::::::::::::::::" );
 	   buf.append( newline );
-	   buf.append(summaryIterator.next()).append( newline );
+	   buf.append(questionIterator.next()).append( newline );
        }
 
        return buf.toString();

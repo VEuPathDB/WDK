@@ -9,8 +9,8 @@ import org.gusdb.wdk.model.RecordClassSet;
 import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.ReferenceList;
 import org.gusdb.wdk.model.StringParam;
-import org.gusdb.wdk.model.Summary;
-import org.gusdb.wdk.model.SummarySet;
+import org.gusdb.wdk.model.Question;
+import org.gusdb.wdk.model.QuestionSet;
 import org.gusdb.wdk.model.TextAttribute;
 import org.gusdb.wdk.model.TextColumn;
 import org.gusdb.wdk.model.WdkModel;
@@ -313,20 +313,20 @@ public class ModelXmlParser {
         
         /**/ digester.addSetNext("wdkModel/referenceList", "addReferenceList");
         
-        //SummarySet
+        //QuestionSet
         
-        /**/ digester.addObjectCreate("wdkModel/questionSet", SummarySet.class);
+        /**/ digester.addObjectCreate("wdkModel/questionSet", QuestionSet.class);
         
         /**/ digester.addSetProperties("wdkModel/questionSet");
         
         /**/ digester.addBeanPropertySetter( "wdkModel/questionSet/description");
-        /*  */ digester.addObjectCreate("wdkModel/questionSet/question", Summary.class);
+        /*  */ digester.addObjectCreate("wdkModel/questionSet/question", Question.class);
         
         /*  */ digester.addSetProperties("wdkModel/questionSet/question");
         
-        /*  */ digester.addSetNext("wdkModel/questionSet/question", "addSummary");
+        /*  */ digester.addSetNext("wdkModel/questionSet/question", "addQuestion");
         
-        /**/ digester.addSetNext("wdkModel/questionSet", "addSummarySet");
+        /**/ digester.addSetNext("wdkModel/questionSet", "addQuestionSet");
         
         return digester;
         

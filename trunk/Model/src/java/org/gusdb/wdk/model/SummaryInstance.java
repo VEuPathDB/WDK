@@ -31,7 +31,7 @@ public class SummaryInstance {
 
     private String listPrimaryKeyName;
 
-    private Summary summary;
+    private Question question;
 
     private int startRow;
 
@@ -41,9 +41,9 @@ public class SummaryInstance {
     // Constructor
     // ------------------------------------------------------------------
 
-    public SummaryInstance(Summary summary, QueryInstance queryInstance, Map paramValues, int startRow, int endRow) throws WdkUserException, WdkModelException{
+    public SummaryInstance(Question question, QueryInstance queryInstance, Map paramValues, int startRow, int endRow) throws WdkUserException, WdkModelException{
 
-	this.summary = summary;
+	this.question = question;
 	this.queryInstance = queryInstance;
 	this.currentRecordInstanceCounter = 0;
     this.startRow = startRow;
@@ -56,15 +56,11 @@ public class SummaryInstance {
     // Public Methods
     // ------------------------------------------------------------------
 
-    public Summary getSummary(){
-	return this.summary;
-    }
-
     /**
-     * provide property that user's term for summary
+     * provide property that user's term for question
      */
-    public Summary getQuestion(){
-	return this.summary;
+    public Question getQuestion(){
+	return this.question;
     }
 
     public Iterator getRecords() {
@@ -72,11 +68,11 @@ public class SummaryInstance {
     }
 
     public Map getTables() {
-	return new AttributeValueMap(summary.getRecordClass(), null, true);
+	return new AttributeValueMap(question.getRecordClass(), null, true);
     }
 
     public Map getAttributes() {
-	return new AttributeValueMap(summary.getRecordClass(), null, false);
+	return new AttributeValueMap(question.getRecordClass(), null, false);
     }
 
     public int size(){
@@ -227,7 +223,7 @@ public class SummaryInstance {
 	while (rl.next()){
 	    counter++;
 	    if (counter >= startRow && counter <= endRow){
-		RecordInstance nextRecordInstance = getSummary().getRecordClass().makeRecordInstance();
+		RecordInstance nextRecordInstance = getQuestion().getRecordClass().makeRecordInstance();
 		
 		Column[] columns = query.getColumns();
 		String primaryKeyName = columns[0].getName();

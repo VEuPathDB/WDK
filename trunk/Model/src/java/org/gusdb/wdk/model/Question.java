@@ -3,7 +3,7 @@ package org.gusdb.wdk.model;
 import java.util.Map;
 
 /**
- * Summary.java
+ * Question.java
  *
  * A class representing a binding between a RecordClass and a Query.
  *
@@ -13,7 +13,7 @@ import java.util.Map;
  * @version $Revision$ $Date$ $Author$
  */
 
-public class Summary {
+public class Question {
 
     private String recordClassTwoPartName;
 
@@ -21,19 +21,19 @@ public class Summary {
 
     private String name;
 
-    private SummarySet summarySet;
+    private QuestionSet questionSet;
 
 
     //the only column in this query should be a primary key
     Query query;
     
     //QueryInstance to be shared across all SummaryInstances 
-    //produced by this Summary
+    //produced by this Question
     QueryInstance listIdQueryInstance;
 
     RecordClass recordClass;
 
-    public Summary(){
+    public Question(){
     }
     
     public SummaryInstance makeSummaryInstance(Map paramValues, int i, int j) throws WdkUserException, WdkModelException{
@@ -96,7 +96,7 @@ public class Summary {
     }
 
     public String getFullName() {
-	return summarySet.getName() + "." + name;
+	return questionSet.getName() + "." + name;
     }
 
     public int getTotalLength(Map values) throws WdkModelException, WdkUserException{
@@ -116,8 +116,8 @@ public class Summary {
 	return buf.toString();
     }
     
-    protected void setSummarySet(SummarySet summarySet) {
-	this.summarySet = summarySet;
+    protected void setQuestionSet(QuestionSet questionSet) {
+	this.questionSet = questionSet;
     }
 
 }

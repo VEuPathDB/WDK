@@ -43,28 +43,6 @@ public class WdkLogManager {
         // Hide constructor
     }
     
-    
-    
-    /**
-     * @param initRecordList
-     * @return
-     * @throws WdkUserException
-     * @throws WdkModelException
-     */
-    public static Summary getSummary(WdkModel wm, String initRecordList) {
-        try {
-            Reference r = new Reference(initRecordList);
-            SummarySet ss = wm.getSummarySet(r.getSetName());
-            return ss.getSummary(r.getElementName());
-        }
-        catch (WdkModelException exp) {
-            throw new RuntimeException(exp);
-        }
-        catch (WdkUserException exp) {
-            throw new RuntimeException(exp);
-        }
-    }
-
     /**
      * @param string
      * @return
