@@ -4,8 +4,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.jsp.JspContext;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.JspWriter;
+import javax.servlet.jsp.PageContext;
 import javax.servlet.jsp.tagext.SimpleTagSupport;
 
 import org.gusdb.wdk.model.RIVList;
@@ -28,7 +30,11 @@ public class RIVListHandler extends SimpleTagSupport {
     
 	
     public void doTag() throws IOException, JspException {
-        JspWriter out = getJspContext().getOut();
+        process(getJspContext(), rivl);
+    }
+    
+    public static void process(JspContext context, RIVList rivl) throws IOException, JspException {
+        JspWriter out = context.getOut();
         if (rivl == null) {
             out.print("No information available");
             return;
