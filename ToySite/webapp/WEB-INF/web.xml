@@ -28,8 +28,8 @@
     <param-value>/nfs/team81/art/gus/gus_home/lib/xml/PSUSampleRecordSet.xml</param-value>
   </context-param>
   <context-param>
-    <param-name>schemaLocation</param-name>
-    <param-value>/nfs/team81/art/eclipse-3.Milestones/workspaces/gus/WebDevKit/webinf/org/gusdb/gus/wdk/wdkModel.rng</param-value>
+    <param-name>schemaName</param-name>
+    <param-value>wdkModel.rng</param-value>
   </context-param> -->
   <listener>
     <listener-class>org.gusdb.gus.wdk.controller.ApplicationInitListener</listener-class>
