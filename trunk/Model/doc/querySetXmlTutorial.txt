@@ -1,0 +1,315 @@
+
+####################################################################
+#  take a look at the xml file  (there is no DTD yet)
+####################################################################
+
+[sfischer@pythia ~]$ more $GUS_HOME/lib/xml/sampleQuerySet.xml 
+<?xml version="1.0"?>
+ 
+<querySet name="RNAQueries">
+
+  <sqlQuery name="RNAByGoTerm"
+            displayName="GO functional classification (by term)">
+
+       <stringParam 
+          name="GoTerm"
+          prompt="Go Term"
+          help="You know what it is"
+          sample="GO:0001233"
+          default="GO:"
+          regex="GO:\d+"/>
+
+       <sqlEnumParam
+          name="Taxon"
+          prompt="Organism"
+          help="You know what it is"
+          multipick="yes">
+          <sql>
+             select name as key,
+                    taxon_id as value
+             from dots.taxon
+             where name in ('mouse', 'horse', 'asparagus')
+          </sql>
+       </sqlEnumParam>
+
+    <sql>
+      select distinct cd.na_sequence_id 
+        from dots.GOAssociation ga, @ALLGENES_DB@.CentralDogma cd 
+        where ga.go_term_id = $$GoTerm$$ 
+        and ga.table_id = 180 
+        and ga.row_id = cd.protein_id 
+        and cd.taxon_id $$Taxon$$ 
+        and ga.is_deprecated != 1 
+        and ga.is_not != 1 
+    </sql>
+
+  </sqlQuery>
+
+
+
+   <sqlQuery name="RNAListInDetail"
+            displayName="RNAs">
+
+       <stringParam  name="RNATable"/>
+    <sql>
+      select cd.gene_id, cd.taxon_name, cd.gene_symbol, 
+             cd.gene_description, cd.na_sequence_id, cd.assembly_length, 
+             cd.assembly_num_sequences, 
+              cd.assembly_contains_mrna, cd.assembly_description 
+      from @ALLGENES_DB@.CentralDogma cd, $$RNATable$$ ids 
+      where cd.na_sequence_id = ids.na_sequence_id 
+      order by cd.gene_id, cd.assembly_length desc
+    </sql>
+  </sqlQuery>
+
+   <sqlQuery name="TaxonName"
+            displayName="Taxon name">
+
+     <stringParam  name="TaxonId"/>
+
+     <sql>
+       select name
+       from SRes.TaxonName 
+       where taxon_id = $$TaxonId$$
+     </sql>
+  </sqlQuery>
+
+</querySet>
+
+####################################################################
+# Get help for the query set xml parser
+####################################################################
+
+[sfischer@pythia ~]$ 
+[sfischer@pythia ~]$ 
+[sfischer@pythia ~]$ 
+[sfischer@pythia ~]$ 
+[sfischer@pythia ~]$ 
+[sfischer@pythia ~]$ 
+[sfischer@pythia ~]$ parseQuerySetXml
+
+Parse a query set xml file
+
+Usage: parseQuerySetXml xmlFile
+
+Where:
+  xmlFile:     the querySet xml file
+
+
+
+####################################################################
+#  Run the parser on the xml file.  It just dumps out the query set 
+####################################################################
+
+[sfischer@pythia ~]$ 
+[sfischer@pythia ~]$ 
+[sfischer@pythia ~]$ 
+[sfischer@pythia ~]$ parseQuerySetXml $GUS_HOME/lib/xml/sampleQuerySet.xml
+QuerySet: name='RNAQueries'
+--- Queries ---
+SqlQuery: name='RNAListInDetail'
+  displayName='RNAs'
+  help='null'
+  sql='select cd.gene_id, cd.taxon_name, cd.gene_symbol, 
+             cd.gene_description, cd.na_sequence_id, cd.assembly_length, 
+             cd.assembly_num_sequences, 
+              cd.assembly_contains_mrna, cd.assembly_description 
+      from @ALLGENES_DB@.CentralDogma cd, $$RNATable$$ ids 
+      where cd.na_sequence_id = ids.na_sequence_id 
+      order by cd.gene_id, cd.assembly_length desc'
+--- Params ---
+org.gusdb.gus.wdk.model.query.StringParam: name='RNATable'
+  prompt='null'
+  help='null'
+  default='null'
+  sample='null'
+  regex='null'
+
+
+SqlQuery: name='TaxonName'
+  displayName='Taxon name'
+  help='null'
+  sql='select name
+       from SRes.TaxonName 
+       where taxon_id = $$TaxonId$$'
+--- Params ---
+org.gusdb.gus.wdk.model.query.StringParam: name='TaxonId'
+  prompt='null'
+  help='null'
+  default='null'
+  sample='null'
+  regex='null'
+
+
+SqlQuery: name='RNAByGoTerm'
+  displayName='GO functional classification (by term)'
+  help='null'
+  sql='select distinct cd.na_sequence_id 
+        from dots.GOAssociation ga, @ALLGENES_DB@.CentralDogma cd 
+        where ga.go_term_id = $$GoTerm$$ 
+        and ga.table_id = 180 
+        and ga.row_id = cd.protein_id 
+        and cd.taxon_id $$Taxon$$ 
+        and ga.is_deprecated != 1 
+        and ga.is_not != 1'
+--- Params ---
+org.gusdb.gus.wdk.model.query.StringParam: name='GoTerm'
+  prompt='Go Term'
+  help='You know what it is'
+  default='GO:'
+  sample='GO:0001233'
+  regex='GO:\d+'
+
+org.gusdb.gus.wdk.model.query.SqlEnumParam: name='Taxon'
+  prompt='Organism'
+  help='You know what it is'
+  default='null'
+  multiPick='null'
+  sql='select name as key,
+                    taxon_id as value
+             from dots.taxon
+             where name in ('mouse', 'horse', 'asparagus')'
+
+
+####################################################################
+# Get help for runQuerySetQuery (the query runner)
+####################################################################
+
+
+[sfischer@pythia ~]$ 
+[sfischer@pythia ~]$ 
+[sfischer@pythia ~]$ 
+[sfischer@pythia ~]$ runQuerySetQuery                                                   
+Run a query found in a query set xml file
+
+Usage: runQuerySetQuery configFile xmlFile queryName paramName1 paramValue1 paramName2 ...
+
+Where:
+  configFile: a .csh file that sets CONNECTION_URL LOGIN PASSWORD
+  xmlFile:     the querySet xml file
+  queryName:   a name of a query in that file
+  paramName1:  name of a param for that query
+  paramValue1: the value for that param
+  etc
+[sfischer@pythia ~]$ 
+[sfischer@pythia ~]$ 
+
+
+
+####################################################################
+#  Take a look at the expected config file 
+####################################################################
+
+[sfischer@pythia ~]$ more $HOME/.wdkconfig 
+#!/bin/csh
+
+setenv CONNECTION_URL "jdbc:oracle:thin:@cbilbld.pcbi.upenn.edu:1521:cbilbld"
+setenv LOGIN your_login_here
+setenv PASSWORD your_password_here
+
+
+
+####################################################################
+# Run the query (the TaxonName query, with param TaxonId=14) 
+####################################################################
+
+[sfischer@pythia ~]$ 
+[sfischer@pythia ~]$ 
+[sfischer@pythia ~]$ runQuerySetQuery $HOME/.wdkconfig $GUS_HOME/lib/xml/sampleQuerySet.xml TaxonName TaxonId 14
+Mus musculus
+LK3 transgenic mice
+mouse
+nude mice
+Mus sp. 129SV
+transgenic mice
+Mus muscaris
+house mouse
+mice C57BL/6xCBA/CaJ hybrid
+house mouse
+
+
+####################################################################
+#  take a look at the parseQuerySetXml shell script
+####################################################################
+
+[sfischer@pythia ~]$ more $PROJECT_HOME/GUS/WebDevKit/bin/parseQuerySetXml
+#!/bin/csh
+
+if ($#argv == 0) then
+  echo ""
+  echo "Parse a query set xml file"
+  echo ""
+  echo "Usage: parseQuerySetXml xmlFile"
+  echo  ""
+  echo "Where:"
+  echo "  xmlFile: the querySet xml file"
+  exit 1 
+endif
+
+setenv CLASSPATH "$GUS_HOME/lib/java/commons-digester.jar:$GUS_HOME/lib/java/GUS-WebDevK
+it.jar:$GUS_HOME/lib/java/commons-beanutils.jar:$GUS_HOME/lib/java/commons-collections.j
+ar:$GUS_HOME/lib/java/commons-logging-api.jar:$GUS_HOME/lib/java/xercesImpl.jar"
+
+java -classpath $CLASSPATH org.gusdb.gus.wdk.model.query.QuerySetParser $1
+
+
+
+####################################################################
+#  take a look at the runQuerySetQuery shell script
+####################################################################
+
+[sfischer@pythia ~]$ 
+[sfischer@pythia ~]$ 
+[sfischer@pythia ~]$ more $PROJECT_HOME/GUS/WebDevKit/bin/runQuerySetQuery
+#!/bin/csh
+
+if ($#argv == 0) then
+  echo ""
+  echo "Run a query found in a query set xml file"
+  echo ""
+  echo "Usage: runQuerySetQuery configFile xmlFile queryName paramName1 paramValue1 para
+mName2 ..."
+  echo  ""
+  echo "Where:"
+  echo "  configFile: a .csh file that sets CONNECTION_URL LOGIN PASSWORD"
+  echo "  xmlFile:     the querySet xml file"
+  echo "  queryName:   a name of a query in that file"
+  echo "  paramName1:  name of a param for that query" 
+  echo "  paramValue1: the value for that param" 
+  echo "  etc"
+  exit 1 
+endif
+
+setenv CONFIG_FILE $argv[1]
+shift
+setenv XML_FILE $argv[1]
+shift
+setenv QUERYNAME $argv[1]
+shift
+
+# must set $CONNECTION_URL, $LOGIN, $PASSWORD
+source $CONFIG_FILE
+
+setenv CLASSPATH "$GUS_HOME/lib/java/commons-digester.jar:$GUS_HOME/lib/java/GUS-WebDevK
+it.jar:$GUS_HOME/lib/java/commons-beanutils.jar:$GUS_HOME/lib/java/commons-collections.j
+ar:$GUS_HOME/lib/java/commons-logging-api.jar:$GUS_HOME/lib/java/xercesImpl.jar:$GUS_HOM
+E/lib/java/oracle-classes12.jar" 
+
+java -classpath $CLASSPATH org.gusdb.gus.wdk.model.query.QueryTester $CONNECTION_URL $LO
+GIN $PASSWORD $XML_FILE $QUERYNAME $argv
+
+
+####################################################################
+#  A listing of the java classes that make it all happen 
+####################################################################
+
+
+[sfischer@pythia ~]$ 
+[sfischer@pythia ~]$ 
+[sfischer@pythia ~]$ cd $PROJECT_HOME/GUS/WebDevKit/src/java/org/gusdb/gus/wdk/model/query
+[sfischer@pythia ~]$ 
+[sfischer@pythia query]$ ls *.java
+Param.java     QuerySetParser.java  SqlQueryInstance.java     StringParam.java
+Query.java     QueryTester.java     SqlQuery.java
+QuerySet.java  SqlEnumParam.java    SqlResultSetManager.java
+
