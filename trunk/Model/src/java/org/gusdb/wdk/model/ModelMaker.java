@@ -99,7 +99,7 @@ public class ModelMaker {
 					   File modelCfgFile, 
 					   File schemaFile) 
   {
-    try{
+    try {
       WdkModel model =  ModelXmlParser.parseXmlFile(modelXmlFile.toURL(), modelPropFile.toURL(), schemaFile.toURL()) ;
       ModelConfig modelConfig = 
 	ModelConfigParser.parseXmlFile(modelCfgFile);
@@ -115,13 +115,16 @@ public class ModelMaker {
       String instanceTable = modelConfig.getQueryInstanceTable();
       ResultFactory resultFactory = new ResultFactory(dataSource, platform, 
 						      login, instanceTable);
-    
+      
       model.setResources(resultFactory, platform);
       return model;
-    } catch (Exception e) {
+    }catch (java.net.MalformedURLException e ) {
       e.printStackTrace();
-      System.exit(1);
-    } 
+      System.exit(1) ;
+    } catch (Exception e ) {
+      e.printStackTrace();
+      System.exit(1) ;
+    }
     return null;
   }
   
