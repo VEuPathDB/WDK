@@ -1,0 +1,24 @@
+#!/usr/bin/perl
+
+
+if ($#ARGV != 3) {
+   print STDERR "usage: nightlybuild gushome projecthome guspropsfile recipients\n";
+   exit(1);
+}
+
+my ($gushome, $projecthome, $gusproperties, $recipients) = @ARGV;
+
+
+my $cleanbuild = `cleanbuild $gushome $projecthome $gusproperties`;
+my $status = $? >> 8;
+
+my $msg;
+if ($status) {
+   print STDERR "failed\n";
+   $msg = "subject: wdk nightly build: FAILED\n$cleanbuild\n.\n";
+} else {
+   $msg = "subject: wdk nightly build: passed\nJava code compiled ok\n.\n";
+}
+
+open(MAIL, "| /usr/lib/sendmail $recipients"); 
+print MAIL $msg;

@@ -1,0 +1,61 @@
+#!/bin/csh
+
+setenv GUS_HOME $1
+setenv PROJECT_HOME $2
+setenv GUS_CONFIG_FILE $3
+
+echo
+echo Running WDK clean build
+echo
+echo GUS_HOME: $GUS_HOME
+echo PROJECT_HOME: $PROJECT_HOME
+echo GUS_CONFIG_FILE: $GUS_CONFIG_FILE
+echo
+
+if ($#argv != 3) then
+  echo usage: cleanbuild gus_home project_home gus_config_file
+  exit(-1)
+endif
+
+if (-d $GUS_HOME) then
+  echo removing $GUS_HOME/*
+  echo
+  rm -r $GUS_HOME/*
+else
+  echo making $GUS_HOME
+  echo
+  mkdir $GUS_HOME
+endif
+
+if (! -d $PROJECT_HOME) then
+  echo PROJECT_HOME "$PROJECT_HOME" does not exist
+  exit(-1)
+endif
+
+if (-d $PROJECT_HOME/GUS) then
+  echo removing $PROJECT_HOME/GUS
+  rm -r $PROJECT_HOME/GUS
+endif
+
+
+cd $PROJECT_HOME
+
+if ($status != 0) then
+  echo could not 'cd $PROJECT_HOME'
+  exit(-1)
+endif
+
+cvs -d :ext:cvs.sanger.ac.uk:/cvsroot/GUS co GUS
+
+if ($status != 0) then
+  echo could not cvs checkout 
+  exit(-1)
+endif
+
+mkdir $GUS_HOME/config
+cp $PROJECT_HOME/install/config/install.prop.sample $GUS_HOME/config/install.prop
+build GUS/WebDevKit install -append -returnErrStatus
+  
+exit $?
+  
+
