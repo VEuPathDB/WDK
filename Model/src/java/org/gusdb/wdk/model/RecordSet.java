@@ -43,12 +43,13 @@ public class RecordSet implements ModelSetI {
     }
 
     public void addRecord(Record record) throws WdkModelException {
-	if (recordSet.get(record.getName()) != null) 
-	    throw new WdkModelException("Record named " 
-				       + record.getName() 
-				       + " already exists in record set "
-				       + getName());
-	recordSet.put(record.getName(), record);
+        if (recordSet.get(record.getName()) != null) 
+            throw new WdkModelException("Record named " 
+                    + record.getName() 
+                    + " already exists in record set "
+                    + getName());
+        recordSet.put(record.getName(), record);
+        record.setReference(new Reference(getName()+"."+record.getName()));
     }
 
     public String toString() {
