@@ -28,6 +28,7 @@ public class GlobalRepository {
     private WdkModel wdkQueryModel;
     private ResultFactory recordResultFactory;
     private ResultFactory queryResultFactory;
+    private DataSource dataSource;
     
     static public GlobalRepository getInstance() {
         if (INSTANCE == null) {
@@ -58,8 +59,7 @@ public class GlobalRepository {
             String instanceTable = modelConfig.getQueryInstanceTable();
             String platformClass = modelConfig.getPlatformClass();
             
-            DataSource dataSource = 
-                setupDataSource(connectionUrl,login, password);
+            DataSource dataSource = setupDataSource(connectionUrl,login, password);
             
             RDBMSPlatformI platform = 
                 (RDBMSPlatformI)Class.forName(platformClass).newInstance();
@@ -75,6 +75,7 @@ public class GlobalRepository {
             INSTANCE.recordResultFactory.setSqlResultFactory(sqlResultFactory);
 
             INSTANCE.queryResultFactory.setSqlResultFactory(sqlResultFactory);
+            INSTANCE.dataSource = dataSource;
             
         } catch (QueryParamsException e) {
             System.err.println(e.formatErrors());
@@ -137,5 +138,11 @@ public class GlobalRepository {
     public RecordSet getRecordSet(String recordSetName) {
         return wdkRecordModel.getRecordSet(recordSetName);
     }
+	/**
+	 * @return Returns the dataSource.
+	 */
+	public DataSource getDataSource() {
+		return dataSource;
+	}
 }
     
