@@ -377,16 +377,21 @@ public class WdkModel {
     private void makeBooleanOps(){
 
 	EnumItem union = new EnumItem();
-	union.setTerm("Union");
+	union.setTerm("Union With");
 	union.setInternal("union");
 
 	EnumItem intersect = new EnumItem();
-	intersect.setTerm("Intersect");
+	intersect.setTerm("Intersect With");
 	intersect.setInternal("intersect");
+
+	EnumItem subtract = new EnumItem();
+	subtract.setTerm("Subtract");
+	subtract.setInternal("minus");
 
 	EnumParam booleanOpsEnum = new EnumParam();
 	booleanOpsEnum.addItem(union);
 	booleanOpsEnum.addItem(intersect);
+	booleanOpsEnum.addItem(subtract);
 
 	booleanOpsEnum.setMultiPick(new Boolean(false));
 

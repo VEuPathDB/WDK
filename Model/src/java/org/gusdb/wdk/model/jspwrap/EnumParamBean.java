@@ -18,6 +18,15 @@ public class EnumParamBean extends ParamBean {
 	return ((EnumParam)param).getMultiPick();
     }
 
+    public String[] getVocabInternal() {
+	try {
+	    return ((EnumParam)param).getVocabInternal();
+	} catch (WdkModelException e) {
+	    throw new RuntimeException(e);
+	}
+    }
+
+
     public String[] getVocab() {
 	try {
 	    return ((EnumParam)param).getVocab();

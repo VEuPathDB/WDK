@@ -75,6 +75,12 @@ public abstract class AbstractEnumParam extends Param {
 	return a;
     }
 
+    public String[] getVocabInternal() throws WdkModelException {
+	initVocabMap();
+	String[] a = new String[0];
+	a = (String[])(vocabMap.values().toArray(a));
+	return a;
+    }
     /////////////////////////////////////////////////////////////////////
     /////////////  Protected properties ////////////////////////////////////
     /////////////////////////////////////////////////////////////////////
