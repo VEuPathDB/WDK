@@ -56,31 +56,33 @@ public class ModelXmlParser {
     }
 
     public static WdkModel parseXmlFile(File modelXmlFile, File modelPropFile)
-            throws SAXException, WdkModelException {
+            throws WdkModelException {
 
-	InputStream modelXmlStream = makeModelXmlStream(modelXmlFile, modelPropFile);
 	
-        if (!validModelFile(modelXmlStream)) {
+	// NOTE: we are validating before we substitute in the properties
+	// so that the validator will operate on a file instead of a stream.
+	// this way the validator spits out line numbers for errors
+        if (!validModelFile(modelXmlFile)) {
             throw new WdkModelException("Model validation failed");
         }
 
         Digester digester = configureDigester();
 	WdkModel model = null;
-	modelXmlStream = makeModelXmlStream(modelXmlFile, modelPropFile);
+
 	try {
+	    InputStream modelXmlStream = 
+		makeModelXmlStream(modelXmlFile, modelPropFile);
 	    model = (WdkModel)digester.parse(modelXmlStream);
+	} catch (SAXException e) {
+	    throw new WdkModelException(e);
 	} catch (IOException e) {
 	    throw new WdkModelException(e);
 	}
+
+	setModelDocument(model, modelXmlFile, modelPropFile);
+
 	model.resolveReferences();
-	try {
-	    modelXmlStream = makeModelXmlStream(modelXmlFile, modelPropFile);
-	    model.setDocument(buildDocument(modelXmlStream));
-	} catch (IOException e) {
-	    throw new WdkModelException(e);
-	} catch (ParserConfigurationException e) {
-	    throw new WdkModelException(e);
-	}
+
 	return model;
     }
 
@@ -99,49 +101,63 @@ public class ModelXmlParser {
 	return modelXmlStream;
     }
 
-    public static Document buildDocument(InputStream modelXMLStream) throws ParserConfigurationException, SAXException, IOException {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        // Turn on validation, and turn off namespaces
-        factory.setValidating(false);
-        factory.setNamespaceAware(false);
-        DocumentBuilder builder = factory.newDocumentBuilder();
-        ErrorHandler errorHandler = new ErrorHandlerImpl(System.err);
-        //builder.setErrorHandler(errorHandler);
-        builder.setErrorHandler(
-                new org.xml.sax.ErrorHandler() {
-                  // ignore fatal errors (an exception is guaranteed)
-                  public void fatalError(SAXParseException exception)
-                  throws SAXException {
-                      exception.printStackTrace(System.err);
-                  }
-                  // treat validation errors as fatal
-                  public void error(SAXParseException e)
-                  throws SAXParseException
-                  {
-                      e.printStackTrace(System.err);
-                    throw e;
-                  }
+    private static void setModelDocument(WdkModel model, File modelXmlFile, File modelPropFile) throws WdkModelException {
+	try {
+	    InputStream modelXmlStream = 
+		makeModelXmlStream(modelXmlFile, modelPropFile);
+	    model.setDocument(buildDocument(modelXmlStream));
+	} catch (SAXException e) {
+	    throw new WdkModelException(e);
+	} catch (IOException e) {
+	    throw new WdkModelException(e);
+	} catch (ParserConfigurationException e) {
+	    throw new WdkModelException(e);
+	}
+    }
 
-                   // dump warnings too
-                  public void warning(SAXParseException err)
-                  throws SAXParseException
-                  {
-                    System.err.println("** Warning"
-                      + ", line " + err.getLineNumber()
-                      + ", uri " + err.getSystemId());
-                    System.err.println("   " + err.getMessage());
-                  }
-                }
-              );  
+    public static Document buildDocument(InputStream modelXMLStream) throws ParserConfigurationException, SAXException, IOException {
+
+        Document doc = null;
+	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+	// Turn on validation, and turn off namespaces
+	factory.setValidating(false);
+	factory.setNamespaceAware(false);
+	DocumentBuilder builder = factory.newDocumentBuilder();
+	ErrorHandler errorHandler = new ErrorHandlerImpl(System.err);
+	//builder.setErrorHandler(errorHandler);
+	builder.setErrorHandler(
+	       new org.xml.sax.ErrorHandler() {
+		   // ignore fatal errors (an exception is guaranteed)
+		   public void fatalError(SAXParseException exception)
+		       throws SAXException {
+		       exception.printStackTrace(System.err);
+		   }
+		   // treat validation errors as fatal
+		   public void error(SAXParseException e)
+		       throws SAXParseException
+		   {
+		       e.printStackTrace(System.err);
+		       throw e;
+		   }
+		   
+		   // dump warnings too
+		   public void warning(SAXParseException err)
+		       throws SAXParseException
+		   {
+		       System.err.println("** Warning"
+					  + ", line " + err.getLineNumber()
+					  + ", uri " + err.getSystemId());
+		       System.err.println("   " + err.getMessage());
+		   }
+	       }
+	       );  
         
-        Document doc = builder.parse(modelXMLStream);
-        
+	doc = builder.parse(modelXMLStream);
 	return doc;
     }
 
 
-
-    private static boolean validModelFile(InputStream modelXMLStream) {
+    private static boolean validModelFile(File modelXMLFile) throws WdkModelException {
 
 	File schemaFile = new File(System.getProperty("schemaFile"));
 
@@ -151,7 +167,7 @@ public class ModelXmlParser {
         try {
             factory = VerifierFactory.newInstance("http://relaxng.org/ns/structure/1.0");
 
-            ErrorHandler errorHandler = new ErrorHandlerImpl(System.err);
+	    ErrorHandler errorHandler = new ErrorHandlerImpl(System.err);
             PropertyMap schemaProperties = new SinglePropertyMap(ValidateProperty.ERROR_HANDLER, errorHandler);
             ValidationDriver vd = new ValidationDriver(schemaProperties, PropertyMap.EMPTY, null);
             
@@ -159,20 +175,16 @@ public class ModelXmlParser {
 	    
             
 
-            return vd.validate(new InputSource(modelXMLStream));
+	    //            return vd.validate(new InputSource(modelXMLStream));
+            return vd.validate(ValidationDriver.fileInputSource(modelXMLFile));
             
         } catch (VerifierConfigurationException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            throw new WdkModelException(e);
         } catch (SAXException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            throw new WdkModelException(e);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            throw new WdkModelException(e);
         }
-
-        return false;
     }
     
     private static Digester configureDigester() {
@@ -357,8 +369,6 @@ public class ModelXmlParser {
 
 	    System.out.println( wdkModel.toString() );
 	    
-	} catch( SAXParseException e ) {
-	    System.exit(1);
 	} catch( Exception e ) {
 	    System.err.println(e.getMessage());
 	    System.err.println("");
