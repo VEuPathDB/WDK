@@ -133,7 +133,8 @@ public class RecordInstance {
 	    ResultList rl = instance.getResult();
 	    summaryInstance.setQueryResult(rl);
 	    rl.close();
-	}	else{ //do it all myself
+	}	
+	else{ //do it all myself
 	    HashMap paramHash = new HashMap();
 	    if (primaryKey == null) 
 		throw new WdkModelException("primaryKey is null");
@@ -159,6 +160,7 @@ public class RecordInstance {
 		String msg = "Attributes query '" + query.getFullName() + "' in Record '" + record.getFullName() + "' returns more than one row";
 		throw new WdkModelException(msg);
 	    }
+	    rl.close();
 	}
     }
 
