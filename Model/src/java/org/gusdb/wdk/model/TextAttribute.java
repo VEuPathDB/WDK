@@ -4,6 +4,7 @@ package org.gusdb.wdk.model;
 public class TextAttribute {
 
     String name;
+    String displayName;
     String text;
 
     public TextAttribute() {}
@@ -15,8 +16,16 @@ public class TextAttribute {
     public String getName() {
 	return name;
     }
+   
+    public void setDisplayName(String displayName) {
+	this.displayName = displayName;
+    }
     
-    public void setText(String text) {
+    public String getDisplayName() {
+	return (displayName != null)? displayName : name;
+    }
+    
+     public void setText(String text) {
 	this.text = text;
     }
 

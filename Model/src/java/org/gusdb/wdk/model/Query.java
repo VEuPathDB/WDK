@@ -67,7 +67,7 @@ public abstract class Query {
     }
 
     public String getDisplayName() {
-	return displayName;
+	return (displayName != null)? displayName : name;
     }
 
     /**

@@ -37,7 +37,7 @@ public class SummarySet implements ModelSetI {
     }
 
     public String getDisplayName() {
-	return displayName;
+	return (displayName != null)? displayName : name;
     }
 
      public void setDescription(String description) {

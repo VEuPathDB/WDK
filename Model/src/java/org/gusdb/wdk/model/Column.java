@@ -54,8 +54,7 @@ public class Column {
     }
 
     public String getDisplayName() {
-        if (displayName != null) return displayName;
-        return name;
+	return (displayName != null)? displayName : name;
     }
 
     public String toString() {
