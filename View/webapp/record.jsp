@@ -1,5 +1,6 @@
 <%@ taglib prefix="site" tagdir="/WEB-INF/tags/site" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="w" uri="http://www.servletsuite.com/servlets/wraptag" %>
 
 <!-- get wdkRecord from proper scope -->
 <c:set value="${sessionScope.wdkRecord}" var="wdkRecord"/>
@@ -8,12 +9,13 @@
 <c:set value="${wdkRecord.recordClass.type}" var="recordType"/>
 <site:header banner="${recordType}"/>
 
-<table>
+<table width="100%">
 <c:forEach items="${wdkRecord.attributes}" var="attr">
 <c:if test="${!attr.value.isInternal}">
   <tr>
     <td><b>${attr.value.displayName}</b></td>
     <td>
+      <w:wrap size="60">
       <c:set var="fieldVal" value="${attr.value.value}"/>
       <!-- need to know if fieldVal should be hot linked -->
       <c:choose>
@@ -24,6 +26,7 @@
           ${fieldVal}
         </c:otherwise>
       </c:choose>
+      </w:wrap>
     </td>
   </tr>
 </c:if>
