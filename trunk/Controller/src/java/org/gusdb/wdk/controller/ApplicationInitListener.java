@@ -1,16 +1,17 @@
 package org.gusdb.gus.wdk.controller;
 
 import java.io.File;
+import java.io.IOException;
 import java.sql.SQLException;
 
 import oracle.jdbc.pool.OracleConnectionCacheImpl;
 
 import org.gusdb.gus.wdk.model.ModelConfig;
 import org.gusdb.gus.wdk.model.ModelConfigParser;
-import org.gusdb.gus.wdk.model.WdkUserException;
 import org.gusdb.gus.wdk.model.RDBMSPlatformI;
 import org.gusdb.gus.wdk.model.ResultFactory;
 import org.gusdb.gus.wdk.model.WdkModel;
+import org.gusdb.gus.wdk.model.WdkModelException;
 import org.gusdb.gus.wdk.model.implementation.ModelXMLParserRelaxNG;
 
 import javax.servlet.ServletContext;
@@ -18,6 +19,8 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.jsp.jstl.core.Config;
 import javax.sql.DataSource;
+
+import org.xml.sax.SAXException;
 
   
 /**
@@ -56,37 +59,51 @@ public class ApplicationInitListener implements ServletContextListener {
         File schemaFile = new File(schemaLocation);
         File modelConfigXmlFile = new File(loginConfigLocation);
         
-        try {
             // read config info
-            ModelConfig dbConfig = 
-                ModelConfigParser.parseXmlFile(modelConfigXmlFile);
-            String instanceTable = dbConfig.getQueryInstanceTable();
-            String platformClass = dbConfig.getPlatformClass();
-            
-            dataSource = setupDataSource(dbConfig.getConnectionUrl()
+            ModelConfig dbConfig;
+            try {
+                dbConfig = ModelConfigParser.parseXmlFile(modelConfigXmlFile);
+                
+                String instanceTable = dbConfig.getQueryInstanceTable();
+                String platformClass = dbConfig.getPlatformClass();
+                
+                dataSource = setupDataSource(dbConfig.getConnectionUrl()
                         , dbConfig.getLogin()
                         , dbConfig.getPassword());
+                
+                RDBMSPlatformI platform = 
+                    (RDBMSPlatformI)Class.forName(platformClass).newInstance();
+                platform.setDataSource(dataSource);
+                
+                WdkModel wdkModel = ModelXMLParserRelaxNG.parseXmlFile(null, querySetFile, schemaFile);
+                
+                ResultFactory resultFactory = new ResultFactory(dataSource, platform, 
+                        dbConfig.getLogin(), instanceTable);
+                wdkModel.setResultFactory(resultFactory);
+                wdkModel.setPlatform(platform);
+                
+                
+                application.setAttribute("wdk.resultfactory", resultFactory);
+                application.setAttribute("wdk.wdkModel", wdkModel);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            } catch (SAXException e) {
+                throw new RuntimeException(e);
+            } catch (InstantiationException e) {
+                throw new RuntimeException(e);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            } catch (WdkModelException e) {
+                throw new RuntimeException(e);
+            }
             
-            RDBMSPlatformI platform = 
-                (RDBMSPlatformI)Class.forName(platformClass).newInstance();
-            platform.setDataSource(dataSource);
-            
-            WdkModel wdkModel = ModelXMLParserRelaxNG.parseXmlFile(null, querySetFile, schemaFile);
-
-            ResultFactory resultFactory = new ResultFactory(dataSource, platform, 
-                                    dbConfig.getLogin(), instanceTable);
-            wdkModel.setResultFactory(resultFactory);
-            wdkModel.setPlatform(platform);
-
-            
-            application.setAttribute("wdk.resultfactory", resultFactory);
-            application.setAttribute("wdk.wdkModel", wdkModel);
-            
-        } catch (WdkUserException e) {
-            System.err.println(e.formatErrors());
-        } catch (Exception e) {
-            e.printStackTrace();
-        } 
+            //        } catch (WdkUserException e) {
+//            System.err.println(e.formatErrors());
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        } 
         
     }
     
