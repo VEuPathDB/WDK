@@ -25,7 +25,7 @@ public class TableTag extends TagSupport {
   public int doStartTag() throws JspException {
    	JspWriter out = pageContext.getOut();
     try {
-      out.println("<table>");
+      out.println("<table cellspacing=\"0\" cellpadding=\"2\">");
     }
     catch (IOException ie){
     }
