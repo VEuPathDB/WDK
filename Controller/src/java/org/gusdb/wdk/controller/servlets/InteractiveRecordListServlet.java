@@ -116,8 +116,8 @@ public class InteractiveRecordListServlet extends HttpServlet {
 
             try {
                 // TODO Proper start and stop values
-                rli = recordList.makeSummaryInstance(paramValues, 1, 20);
-                //rli.setValues(paramValues, 1, 20);
+                rli = recordList.makeSummaryInstance();
+                rli.setValues(paramValues, 1, 20);
             }
             catch (WdkUserException exp) {
                 Map errors = exp.getBooBoos();
