@@ -1,5 +1,5 @@
 name="newCacheTest"
-command="wdkCache -new"
+command="wdkCache -new -noSchemaOutput"
 critical=true
 name="simpleQueryTest"
 command="wdkQuery -modelPropFile $GUS_HOME/config/sampleModel.prop -modelXmlFile $GUS_HOME/lib/xml/toyModel.xml -querySetName RnaQueries -queryName ByDbESTLib -params NumEstLibs 6 ApiTaxon 'Neospora caninum'"
@@ -11,5 +11,5 @@ name="simpleRecordTest"
 command="wdkRecord -modelPropFile $GUS_HOME/config/sampleModel.prop -modelXmlFile $GUS_HOME/lib/xml/toyModel.xml -recordSetName RnaRecords -recordName RnaRecord -primaryKey 92484673"
 critical=true
 name="dropCacheTest"
-command="wdkCache -drop"
+command="wdkCache -drop -noSchemaOutput"
 critical=true
