@@ -5,12 +5,12 @@ import org.gusdb.gus.wdk.model.Record;
 import org.gusdb.gus.wdk.model.RecordInstance;
 import org.gusdb.gus.wdk.model.ResultList;
 import org.gusdb.gus.wdk.model.WdkModelException;
-import org.gusdb.gus.wdk.util.FixableSmallMap;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -44,7 +44,7 @@ public class RecordInstanceView implements Map {
         
         generateAttributeNames();
  
-        map = new FixableSmallMap();
+        map = new LinkedHashMap();
         for (Iterator it = attributeNames.iterator(); it.hasNext(); ) {
             String key = (String) it.next();
             if (!"overview".equals(key)) {
