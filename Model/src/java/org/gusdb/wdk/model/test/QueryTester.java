@@ -1,5 +1,4 @@
 package org.gusdb.gus.wdk.model.test;
-doh
 import org.gusdb.gus.wdk.model.FlatVocabParam;
 import org.gusdb.gus.wdk.model.ModelConfig;
 import org.gusdb.gus.wdk.model.ModelConfigParser;
