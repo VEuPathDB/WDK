@@ -2,6 +2,15 @@
 <wdkModel name="toyModel">
 
     <!-- ******************* -->
+    <!-- model introduction  -->
+    <!-- ******************* -->
+    <introduction>
+        Welcome to WDKToySite, a basic website driven by WebDevKit.
+        You are invited to explore this site to find out about the core functionalities of WDK.
+        Enjoy the surfing!
+    </introduction>
+
+    <!-- ******************* -->
     <!-- model questionSet(s) -->
     <!-- ******************* -->
     
@@ -46,6 +55,10 @@
     <querySet name="RnaQueries">
         <!-- list of RNAs by the number of EST libs that contributed sequence tags -->
         <sqlQuery name="ByDbESTLib" displayName="RNAs by number of EST libs">
+            <description>
+                This is a query that finds RNAs which are from given organism
+                and contain ESTs from more than a specified number of libraries.
+            </description>
             <paramRef twoPartName="params.NumEstLibs"/>
             <paramRef twoPartName="params.ApiTaxon"/>
             <column name="na_sequence_id"/>
@@ -68,6 +81,10 @@
 
         <!-- list of RNAs by the number of contained EST sequence tags -->
         <sqlQuery name="ByNumSeqs" displayName="RNAs by number of seqs included">
+            <description>
+                This is a query that finds RNAs which are from given organism
+                and contain more than a specified number of ESTs.
+            </description>
             <paramRef twoPartName="params.NumSeqs"/>
             <paramRef twoPartName="params.ApiTaxon"/>
             <column name="na_sequence_id"/>
