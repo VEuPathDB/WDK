@@ -90,7 +90,7 @@
 
      <paramRef twoPartName="allparams.primaryKey"/>
 
-     <column name="na_feature_id" displayName="na_feature_id" inSummary="true" />
+     <column name="primary_key" displayName=" " inSummary="true" />
      <column name="name" displayName="Name" inSummary="true" />
      <column name="gene_type" displayName="Gene Type" inSummary="true" />
      <column name="is_pseudo" displayName="Pseudo" />
@@ -99,7 +99,7 @@
      <column name="modification_date" displayName="Last modified" />
 
      <sql>
-select gf.na_feature_id, 
+select gf.na_feature_id as primary_key, 
        gf.name,
        gf.gene_type,
        gf.is_pseudo,

@@ -11,15 +11,15 @@ so you should go straight into the form.
 
 <table>
 <wdkq:queryHolder name="form1"
-                  querySet="RNASimpleQueries"
-                  initQuery="TaxonName"                 
-                  var="q">
+                  summarySetName="RNARecordLists"
+                  summaryName="RNARecordLists.CDSNumExons"                 
+                  var="s">
 
   <input type="hidden" name="fromPage" value="/simpleQueryDemo2.jsp">
 
-  <tr><td><wdkq:displayQuery queryInstance="${q}"></td></tr>
+  <tr><td><wdkq:displayQuery summary="${s}"></td></tr>
     <c:forEach var="p" 
-               items="${q.query.params}">
+               items="${s.query.params}">
 	     
        <tr>
 	     <td><b>${p.prompt}</b></td>
