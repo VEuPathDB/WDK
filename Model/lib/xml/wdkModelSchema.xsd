@@ -91,9 +91,9 @@
 
    <xsd:complexType name="record">
      <xsd:sequence>
-       <xsd:element name="fieldsQuery" type="fieldsQuery"/>
-       <xsd:element name="tableQuery" type="tableQuery"/>
-       <xsd:element name="textField" type="textField"/>
+       <xsd:element name="fieldsQuery" type="fieldsQuery" minOccurs="0" maxOccurs="unbounded"/>
+       <xsd:element name="tableQuery" type="tableQuery" minOccurs="0" maxOccurs="unbounded"/>
+       <xsd:element name="textField" type="textField" minOccurs="0" maxOccurs="unbounded"/> 
      </xsd:sequence>
      <xsd:attribute name="name" type="xsd:string"/>
      <xsd:attribute name="type" type="xsd:string"/>
