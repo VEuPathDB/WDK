@@ -67,11 +67,12 @@ system($cmd);
 
 sub usage {
     print "
-
 Create a toy database to use in testing the WDK.  (The database is created from files included in the WDK distribution.) 
 
-usage: wdkTestDb -configFile modelConfigFile [-createDatabase | -dropDatabase]
+usage: wdkTestDb -configFile config_file [-createDatabase | -dropDatabase]
 
+Options:
+-configFile <config_file>         The model config .xml file
 ";
     exit(1);
 }
