@@ -174,12 +174,12 @@ public class RIVList implements Iterator {
     
     
     public void close() throws WdkModelException {
-        if (si != null) {
-            si.close();
-        }
-        if (rl != null) {
-            rl.close();
-        }
+//        if (si != null) {
+//            si.close();
+//        }
+//        if (rl != null) {
+//            rl.close();
+//        }
     }
     
 }
