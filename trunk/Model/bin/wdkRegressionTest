@@ -5,20 +5,18 @@ use lib "$ENV{GUS_HOME}/lib/perl";
 use Getopt::Long;
 use FileHandle;
 
-my ($configFile, $useExistingDb, $createNewExpected, $modelXmlFile, $modelPropFile, $outputDir, $commandListFile, $verbose);
+my ($configFile, $useExistingDb, $createNewExpected, $outputDir, $commandListFile, $verbose);
 
 &GetOptions('configFile=s' => \$configFile,
-	    'modelPropFile=s' => \$modelPropFile,
-	    'modelXmlFile=s' => \$modelXmlFile,
- 	    'useExistingDB!' => \$useExistingDb,
+	    'useExistingDB!' => \$useExistingDb,
 	    'createNewExpectedResult!' => \$createNewExpected,
 	    'outputDirectory=s' => \$outputDir,
 	    'commandListFile=s' => \$commandListFile,
 	    'verbose!' => \$verbose,
 	    );
 
-&usage() unless $configFile;
-
+&usage() unless $commandListFile;
+&processOutputDir($outputDir);
 if (!$useExistingDb){
     
     my $dbCmd = "wdkTestDb --dataDirectory $ENV{GUS_HOME}/data/WDK/Model/testTables --dropDatabase --createDatabase --configFile $configFile"; 
@@ -26,7 +24,7 @@ if (!$useExistingDb){
     system($dbCmd);
 }
 
-my $globalArgs = "-configFile $configFile -modelPropFile $modelPropFile -modelXmlFile $modelXmlFile";
+my $globalArgs = "-configFile $configFile";
 
 my $commandFh = FileHandle->new("<" . $commandListFile);
 
@@ -116,9 +114,25 @@ sub runTest{
 }
 
 
+sub processOutputDir{
+
+    my ($outputDir) = @_;
+    
+    opendir(OUTPUTDIR, $outputDir) || die ("could not open $outputDir");
+    closedir(OUTPUTDIR);
+    my $failuresExists = opendir(FAILURES, "$outputDir/failures");
+    if (!$failuresExists){
+	mkdir("$outputDir/failures", 0755) || die ("could not create new directory $outputDir/failures");
+    }
+    my $expectedExists = opendir(EXPECTED, "$outputDir/expected");
+    if (!$expectedExists){
+	mkdir("$outputDir/expected", 0755) || die ("could not create new directory $outputDir/expected");
+    }
+}
+
 
 sub usage{
-    print STDERR "usage:\n  wdkRegressionTest\n\t--configFile (database configuration file to use with wdk model) \n\t--modelPropFile (basic properties file to use with wdk model) \n\t--modelXmlFile (xml file that defines model itself) \n\t--useExistingDB! (flag to skip creating database from provided test flat files) \n\t--createNewExpectedResult! (overwrite existing regression test expected result) \n\t--outputDirectory (results of test will be placed in this directory) \n\t--commandListFile (file that contains lists of commands to run in test) \n\t--verbose (prints out names of shell commands being executed)\n";
+    print STDERR "usage:\n  wdkRegressionTest\n\t--configFile (database configuration file to use with wdk model) \n\t--useExistingDB! (flag to skip creating database from provided test flat files) \n\t--createNewExpectedResult! (overwrite existing regression test expected result) \n\t--outputDirectory (results of test will be placed in this directory) \n\t--commandListFile (file that contains lists of commands to run in test) \n\t--verbose (prints out names of shell commands being executed)\n";
     exit(1);
 
 }

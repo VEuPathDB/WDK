@@ -164,7 +164,7 @@ public class SummaryInstance {
 		String nextAttName = (String)attributeNames.next();
 		nameLine = nameLine.concat(nextAttName + "\t");
 	    }
-	    System.err.println(nameLine);
+	    System.out.println(nameLine);
 	    for (int i = 0; i < recordInstances.length; i++){
 		String nextLine = "";
 		RecordInstance nextRecordInstance = recordInstances[i];
@@ -174,7 +174,7 @@ public class SummaryInstance {
 		    Object nextAttValue = nextRecordInstance.getAttributeValue(nextAttName);
 		    nextLine = nextLine.concat(nextAttValue.toString() + "\t");
 		}
-		System.err.println(nextLine);
+		System.out.println(nextLine);
 	    }
 	}
     }
