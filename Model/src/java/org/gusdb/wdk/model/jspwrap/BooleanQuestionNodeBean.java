@@ -40,13 +40,27 @@ public class BooleanQuestionNodeBean {
 	return op;
     }
 
-    //called on root only
-    /*    public BooleanQuestionLeafBean find(String nodeId) throws WdkModelException{
-	BooleanQuestionNode leaf = this.bqn.find(nodeId);
-	BooleanQuestionLeafBean leafBean = new BooleanQuestionLeafBean(leaf);
-	return leafBean;
-	}*/
+    public BooleanQuestionLeafBean findLeaf(int leafId) {
+	BooleanQuestionLeafBean leaf = null;
 
+	leaf = findLeaf_aux(firstChild, leafId);
+	if (leaf == null) {
+	    leaf = findLeaf_aux(secondChild, leafId);
+	}
+	return leaf;
+    }
+
+    private BooleanQuestionLeafBean findLeaf_aux (Object child, int leafId) {
+	BooleanQuestionLeafBean leaf = null;
+	if (child instanceof org.gusdb.wdk.model.jspwrap.BooleanQuestionLeafBean) {
+	    BooleanQuestionLeafBean leafChild = (BooleanQuestionLeafBean)child;
+	    if(leafId == leafChild.getLeafId().intValue()) { leaf = leafChild; } 
+	} else if (child instanceof org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean) {
+	    BooleanQuestionNodeBean nodeChild = (BooleanQuestionNodeBean)child;
+	    leaf = nodeChild.findLeaf(leafId);
+	}
+	return leaf;
+    }
 
     protected void setParent(BooleanQuestionNodeBean newParent){
 	this.parent = newParent;
@@ -59,4 +73,9 @@ public class BooleanQuestionNodeBean {
     protected void setSecondChild(Object secondChild){
 	this.secondChild = secondChild;
     }
+
+    public String toString() {
+	return getFirstChild().toString() + "\n" + getOperation() + "\n" + getSecondChild().toString(); 
+    }
+
 }

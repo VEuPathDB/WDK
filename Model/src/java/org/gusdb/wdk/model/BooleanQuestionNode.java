@@ -115,6 +115,11 @@ public class BooleanQuestionNode{
 	return parent;
     }
 
+    public boolean isFirstChild() {
+	if(getParent() == null) { return true; }
+
+	return this == getParent().getFirstChild();
+    }
 
     /**
      * This method can only be performed on a leaf node and assumes that none of the noded in the tree
@@ -131,6 +136,7 @@ public class BooleanQuestionNode{
 
 	RecordClass rc = this.question.getRecordClass();
 	Question question = model.makeBooleanQuestion(rc);
+	boolean wasFirstChild = isFirstChild();
 	
 	//sets my new parent to be <code>newBooleanNode</code> by side effect
 	//if old parent was null then <code>newBooleanNode</code> will be the new root
@@ -140,7 +146,11 @@ public class BooleanQuestionNode{
 	values.put(BooleanQuery.OPERATION_PARAM_NAME, operation);
 	newBooleanNode.setValues(values);
 	if (tempParent != null){
-	    tempParent.setFirstChild(newBooleanNode);
+	    if (wasFirstChild) {
+		tempParent.setFirstChild(newBooleanNode);
+	    } else {
+		tempParent.setSecondChild(newBooleanNode);
+	    }
 	}
 	
 	return newBooleanNode;
