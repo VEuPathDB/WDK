@@ -23,21 +23,28 @@
       <c:set var="resLst" value="${tbl.value.value}"/>
 
       <!-- show one table -->
-      <table border="1">
+      <table border="1" cellspacing="0" cellpadding="2">
         <!-- table header -->
-        <tr>
+        <tr class="headerRow">
           <c:forEach var="hCol" items="${resLst.columns}">
             <th>${hCol.displayName}</th>
           </c:forEach>
         </tr>
 
         <!-- table rows -->
+        <c:set var="i" value="0"/>
         <c:forEach var="row" items="${resLst.rows}">
-          <tr>
+
+          <c:choose>
+            <c:when test="${i % 2 == 0}"><tr class="rowLight"></c:when>
+            <c:otherwise><tr class="rowDark"></c:otherwise>
+          </c:choose>
+
             <c:forEach var="rCol" items="${row}">
               <td>${rCol.value}</td>
             </c:forEach>
           </tr>
+        <c:set var="i" value="${i +  1}"/>
         </c:forEach>
       </table>
       <!-- close resultList -->
