@@ -3,6 +3,8 @@ package org.gusdb.gus.wdk.model;
 import org.gusdb.gus.wdk.model.QueryParamsException;
 import org.gusdb.gus.wdk.model.NotBooleanOperandException;
 
+import java.sql.SQLException;
+
 import java.util.Collection;
 import java.util.Map;
 import java.util.TreeMap;
@@ -69,6 +71,11 @@ public abstract class QueryInstance {
 	return isCacheable;
     }
     
+    public boolean getIsPersistent() {
+	//eventually this will include whether this can be put into history as well
+	return getIsCacheable();
+    }
+    
     public void setIsCacheable(boolean isCacheable) {
 	this.isCacheable =query.getIsCacheable().booleanValue() && isCacheable;
     }
@@ -99,6 +106,7 @@ public abstract class QueryInstance {
 
     public abstract ResultList getResult() throws Exception;
 
+    public abstract String getResultAsTable() throws Exception;
 
     // ------------------------------------------------------------------
     // Constructor (Protected)
@@ -110,4 +118,8 @@ public abstract class QueryInstance {
 	this.inMultiMode = false;
     }
 
+    protected abstract ResultList getNonpersistentResult() throws Exception;
+
+    protected abstract void writeResultToTable(String resultTableName, 
+					       ResultFactory rf) throws SQLException;
 }

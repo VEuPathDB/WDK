@@ -3,7 +3,11 @@ package org.gusdb.gus.wdk.model;
 import java.util.HashMap;
 import java.util.Iterator;
 
+
+
 public class WdkModel {
+
+    protected RDBMSPlatformI platform;
 
     HashMap querySets = new HashMap();
     HashMap recordSets = new HashMap();
@@ -13,11 +17,20 @@ public class WdkModel {
     ResultFactory resultFactory;
 
     public WdkModel() {
-	this.resultFactory = new ResultFactory();
     }
 
     public ResultFactory getResultFactory() {
 	return resultFactory;
+    }
+
+    public void setResultFactory(ResultFactory rf){
+	this.resultFactory = rf;
+	Iterator querySetIterator = querySets.values().iterator();
+	while (querySetIterator.hasNext()) {
+
+	    QuerySet qs = (QuerySet)querySetIterator.next();
+	    qs.setResultFactory(resultFactory);
+	}
     }
 
     public void setName(String name) {
@@ -51,7 +64,7 @@ public class WdkModel {
     public void addQuerySet(QuerySet querySet) {
 	String err = checkName(querySet.getName());
 	if (err != null) throw new IllegalArgumentException(err);
-	querySet.setResultFactory(resultFactory);
+
 	querySets.put(querySet.getName(), querySet);
     }
 
@@ -127,7 +140,20 @@ public class WdkModel {
 	}
 	return lists;
     }
+    
+    public void setPlatform(RDBMSPlatformI platform){
 
+	this.platform = platform;
+	Iterator querySetIterator = querySets.values().iterator();
+	while (querySetIterator.hasNext()) {
+	    QuerySet qs = (QuerySet)querySetIterator.next();
+	    Query queries[] = qs.getQueries();
+	    for (int i = 0; i < queries.length; i++){
+		Query nextQuery = queries[i];
+		nextQuery.setPlatform(platform);
+	    }
+	}
+    }
 
     /**
      * Some elements within the set may refer to others by name.  Resolve those

@@ -72,11 +72,11 @@ public class RecordTester {
        
 	    WdkModel wdkModel = 
 		ModelXmlParser.parseXmlFile(modelXmlFile);
-	    ResultFactory resultFactory = wdkModel.getResultFactory();
-	    SqlResultFactory sqlResultFactory = 
-		new SqlResultFactory(dataSource, platform, 
-				     login, instanceTable);
-	    resultFactory.setSqlResultFactory(sqlResultFactory);
+	    ResultFactory resultFactory = new ResultFactory(dataSource, platform, 
+							    login, instanceTable);
+            wdkModel.setResultFactory(resultFactory);
+	    wdkModel.setPlatform(platform);
+
 	    RecordSet recordSet = wdkModel.getRecordSet(recordSetName);
 	    Record record = recordSet.getRecord(recordName);
 	    RecordInstance recordInstance = record.makeInstance();
