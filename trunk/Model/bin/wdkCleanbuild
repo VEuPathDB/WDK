@@ -19,7 +19,7 @@ setenv GUS_HOME $CLEANROOM/gushome
 setenv PROJECT_HOME $CLEANROOM/projects
 
 if (! -d $PROJECT_HOME/install) then
-  echo cleanroom PROJECT_HOME "$PROJECT_HOME" does not exist.  Please create it and put an install dir there (copy it from your regular PROJECT_HOME)
+  echo "cleanroom PROJECT_HOME "$PROJECT_HOME" does not exist.  Please create it and put an install dir there (copy it from your regular PROJECT_HOME)"
   exit(-1)
 endif
 
