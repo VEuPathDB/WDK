@@ -1,12 +1,6 @@
 package org.gusdb.wdk.view.taglibs.misc;
 
-import org.gusdb.wdk.model.RIVList;
-
 import java.io.IOException;
-import java.io.StringWriter;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
 import javax.servlet.jsp.JspContext;
 import javax.servlet.jsp.JspException;
