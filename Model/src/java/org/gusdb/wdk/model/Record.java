@@ -1,7 +1,5 @@
 package org.gusdb.wdk.model;
 
-
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -24,6 +22,7 @@ public class Record {
     private Set tableQueryRefs = new LinkedHashSet();
     private Set attributesQueryRefs = new LinkedHashSet();
     private Set allNames;
+    private Set allAttributeNames;
     private String name;
     private String type;
     private String idPrefix;
@@ -167,9 +166,18 @@ public class Record {
         return textAttributeMap.keySet();
     }
 
+    public Set getAllAttributeNames() {
+	if (allAttributeNames == null) {
+	    allAttributeNames = new LinkedHashSet();
+	    allAttributeNames.addAll(getNonTextAttributeNames());
+	    allAttributeNames.addAll(getTextAttributeNames());
+	}
+	return allAttributeNames;
+    }
+
     public Set getAllNames() {
 	if (allNames == null) {
-	    LinkedHashSet allNames = new LinkedHashSet();
+	    allNames = new LinkedHashSet();
 	    allNames.addAll(getNonTextAttributeNames());
 	    allNames.addAll(getTextAttributeNames());
 	    allNames.addAll(getTableNames());

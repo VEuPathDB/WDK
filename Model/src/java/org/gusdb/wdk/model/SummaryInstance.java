@@ -25,7 +25,7 @@ public class SummaryInstance {
 
     int currentRecordInstanceCounter;
 
-    private QueryInstance listIdQueryInstance;
+    private QueryInstance queryInstance;
 
     private RecordInstance[] recordInstances;
 
@@ -44,11 +44,11 @@ public class SummaryInstance {
     public SummaryInstance(Summary summary, QueryInstance queryInstance, Map paramValues, int startRow, int endRow) throws WdkUserException, WdkModelException{
 
 	this.summary = summary;
-	this.listIdQueryInstance = queryInstance;
+	this.queryInstance = queryInstance;
 	this.currentRecordInstanceCounter = 0;
     this.startRow = startRow;
     this.endRow = endRow;   
-    listIdQueryInstance.setValues(paramValues);
+    queryInstance.setValues(paramValues);
     initRecordInstances();
     }
 
@@ -60,11 +60,38 @@ public class SummaryInstance {
 	return this.summary;
     }
 
+    /**
+     * provide property that user's term for summary
+     */
+    public Summary getQuestion(){
+	return this.summary;
+    }
+
+    public Iterator getRecords() {
+	return new SummaryInstanceList(this);
+    }
+
+    public Map getTables() {
+	return new AttributeValueMap(summary.getRecord(), null, true);
+    }
+
+    public Map getAttributes() {
+	return new AttributeValueMap(summary.getRecord(), null, false);
+    }
+
     public int size(){
         if (recordInstances != null) {
             return recordInstances.length;
         }
         return 0;
+    }
+    
+    public int getTotalSize() {
+	try {
+	    return getTotalLength();
+	} catch (WdkModelException e) {
+	    throw new RuntimeException(e);
+	}
     }
     
     public int getTotalLength() throws WdkModelException{
@@ -76,6 +103,13 @@ public class SummaryInstance {
 	}
 	return counter;
 	
+    }
+
+    /**
+     * @return Map where key is param name and value is param value
+     */
+    public Map getParams() {
+	return queryInstance.getValuesMap();
     }
 
 
@@ -114,7 +148,7 @@ public class SummaryInstance {
     
     public void setMultiMode(QueryInstance instance) throws WdkModelException{
         
-        String resultTableName = listIdQueryInstance.getResultAsTable();
+        String resultTableName = queryInstance.getResultAsTable();
         
         instance.setMultiModeValues(resultTableName, listPrimaryKeyName, startRow, endRow);
     }
@@ -187,7 +221,7 @@ public class SummaryInstance {
     
     private void initRecordInstances() throws WdkModelException {
 	ResultList rl = getRecordInstanceIds();
-	Query query = listIdQueryInstance.getQuery();
+	Query query = queryInstance.getQuery();
 	Vector tempRecordInstances = new Vector();
 	int counter = 0;
 	while (rl.next()){
@@ -213,7 +247,7 @@ public class SummaryInstance {
 
     private ResultList getRecordInstanceIds() throws WdkModelException{
 
-	ResultList rl = listIdQueryInstance.getResult();
+	ResultList rl = queryInstance.getResult();
 	return rl;
     }
     
