@@ -87,28 +87,28 @@ public class AttributeValueMap implements Map {
      * @see java.util.Map#containsValue(java.lang.Object)
      */
     public boolean containsValue(Object value) {
-	throw new UnsupportedOperationException("Illegal operation 'containsValue' on RecordINstance");
+	throw new UnsupportedOperationException("Illegal operation 'containsValue' on AttributeValueMap");
     }
 
     /**
      * @see java.util.Map#put(java.lang.Object, java.lang.Object)
      */
     public Object put(Object key, Object value) {
-	throw new UnsupportedOperationException("Illegal operation 'put' on RecordINstance");
+	throw new UnsupportedOperationException("Illegal operation 'put' on AttributeValueMap");
     }
 
     /**
      * @see java.util.Map#remove(java.lang.Object)
      */
     public Object remove(Object key) {
-	throw new UnsupportedOperationException("Illegal operation 'remove' on RecordINstance");
+	throw new UnsupportedOperationException("Illegal operation 'remove' on AttributeValueMap");
     }
 
     /**
      * @see java.util.Map#putAll(java.util.Map)
      */
     public void putAll(Map t) {
-	throw new UnsupportedOperationException("Illegal operation 'putAll' on RecordINstance");
+	throw new UnsupportedOperationException("Illegal operation 'putAll' on AttributeValueMap");
     }
 
     /**
@@ -121,7 +121,7 @@ public class AttributeValueMap implements Map {
      * @see java.util.Map#values()
      */
     public Collection values() {
-	throw new UnsupportedOperationException("Illegal operation 'values' on RecordINstance");
+	throw new UnsupportedOperationException("Illegal operation 'values' on AttributeValueMap");
     }
 
     /**
