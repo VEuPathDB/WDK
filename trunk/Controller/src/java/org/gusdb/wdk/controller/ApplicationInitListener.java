@@ -52,8 +52,14 @@ public class ApplicationInitListener implements ServletContextListener {
     }
     
     public static boolean resourceExists(String path, ServletContext servletContext) {
-	URL url = createURL(path, null, servletContext);
-	return url != null;
+        try {
+            URL url = servletContext.getResource(path);
+            return url !=null;
+        }
+        catch (MalformedURLException exp) {
+            RuntimeException e = new RuntimeException(exp);
+            throw e;
+        }
     }
 
     private static URL createURL(String param, String defaultLoc, ServletContext application) {
