@@ -1,13 +1,14 @@
-package org.gusdb.gus.wdk.model.query.implementation;
+package org.gusdb.gus.wdk.model.implementation;
 
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Vector;
 import java.util.Iterator;
 
-import org.gusdb.gus.wdk.model.query.QueryI;
-import org.gusdb.gus.wdk.model.query.QueryParamsException;
-import org.gusdb.gus.wdk.model.query.Param;
+import org.gusdb.gus.wdk.model.QueryI;
+import org.gusdb.gus.wdk.model.QueryParamsException;
+import org.gusdb.gus.wdk.model.Param;
+import org.gusdb.gus.wdk.model.Column;
 
 public class Query implements QueryI {
     
@@ -17,6 +18,8 @@ public class Query implements QueryI {
     Boolean isCacheable = new Boolean(true);
     HashMap paramsH;
     Vector paramsV;
+    HashMap columnsH;
+    Vector columnsV;
 
     public Query () {
 	paramsH = new HashMap();
@@ -42,6 +45,17 @@ public class Query implements QueryI {
     public String getDisplayName() {
 	return displayName;
     }
+    public void addParam(Param param) {
+	paramsV.add(param);
+	paramsH.put(param.getName(), param);
+    }
+
+    public Param[] getParams() {
+	Param[] paramA = new Param[paramsV.size()];
+	paramsV.copyInto(paramA);
+	return paramA;
+    }
+
 
     public void setIsCacheable(Boolean isCacheable) {
 	this.isCacheable = isCacheable;
@@ -59,17 +73,20 @@ public class Query implements QueryI {
 	return help;
     }
 
-    public void addParam(Param param) {
-	paramsV.add(param);
-	paramsH.put(param.getName(), param);
+    public void addColumn(Column column) {
+	columnsV.add(column);
+	columnsH.put(column.getName(), column);
     }
 
-    public Param[] getParams() {
-	Param[] paramA = new Param[paramsV.size()];
-	paramsV.copyInto(paramA);
-	return paramA;
+    public Column[] getColumns() {
+	Column[] columnA = new Column[columnsV.size()];
+	columnsV.copyInto(columnA);
+	return columnA;
     }
 
+    public Column getColumn(String columnName) {
+	return (Column)columnsH.get(columnName);
+    }
 
     /////////////////////////////////////////////////////////////////////
     /////////////  Protected ////////////////////////////////////////////

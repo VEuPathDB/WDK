@@ -1,6 +1,7 @@
-package org.gusdb.gus.wdk.model.query;
+package org.gusdb.gus.wdk.model;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Iterator;
 
 public class SimpleQuerySet {
@@ -71,4 +72,39 @@ public class SimpleQuerySet {
 	    query.setResultFactory(resultFactory);
 	}
     }
+
+    /////////////////////////////////////////////////////////////////
+    ///////  static
+    /////////////////////////////////////////////////////////////////
+
+    public static SimpleQueryI resolveReference(Map querySetMap, String twoPartName, 
+					 String callerType, String callerName, 
+					 String callerAttribute) throws Exception {
+	String s = callerType + " '" + callerName + "' has a " + callerAttribute;
+	
+	if (!twoPartName.matches("\\w+\\.\\w+")) {
+	    String s2 = s + " which is not in the form 'simpleQuerySetName.simpleQueryName'";
+	    throw new Exception(s2);
+	}
+
+	String[] parts = twoPartName.split("\\.");
+	String querySetName = parts[0];
+	String queryName = parts[1];
+
+	SimpleQuerySet sqs = (SimpleQuerySet)querySetMap.get(parts[0]);
+	if (sqs == null) {
+	    String s3 = s + " which contains an unrecognized querySet '" 
+		+ querySetName + "'";
+	    throw new Exception(s3);
+	}
+	SimpleQueryI sq = sqs.getQuery(parts[1]);
+	if (sq == null) {
+	    String s4 = s + " which contains an unrecognized query '" 
+		+ queryName + "'";
+	    throw new Exception(s4);
+	}
+	return sq;
+    }
+
+
 }

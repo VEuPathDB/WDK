@@ -1,4 +1,4 @@
-package org.gusdb.gus.wdk.model.query.implementation;
+package org.gusdb.gus.wdk.model.implementation;
 
 import java.sql.DriverManager;
 import java.sql.Statement;

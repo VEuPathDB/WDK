@@ -1,4 +1,4 @@
-package org.gusdb.gus.wdk.model.query;
+package org.gusdb.gus.wdk.model;
 
 import java.sql.ResultSet;
 import java.util.Collection;
@@ -17,4 +17,6 @@ public interface SimpleQueryInstanceI {
     public ResultSet getResult() throws Exception;
 
     public void setValues(Map values) throws QueryParamsException;
+
+    public void checkColumns(ResultSet rs, boolean checkAll) throws Exception;
 }

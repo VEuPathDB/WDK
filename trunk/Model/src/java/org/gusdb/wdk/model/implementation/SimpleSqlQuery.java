@@ -1,13 +1,13 @@
-package org.gusdb.gus.wdk.model.query.implementation;
+package org.gusdb.gus.wdk.model.implementation;
 
 import java.util.Map;
 import java.util.Iterator;
 import javax.sql.DataSource;
 import java.sql.SQLException;
 
-import org.gusdb.gus.wdk.model.query.SimpleQueryI;
-import org.gusdb.gus.wdk.model.query.SimpleQueryInstanceI;
-import org.gusdb.gus.wdk.model.query.ResultFactory;
+import org.gusdb.gus.wdk.model.SimpleQueryI;
+import org.gusdb.gus.wdk.model.SimpleQueryInstanceI;
+import org.gusdb.gus.wdk.model.ResultFactory;
 
 public class SimpleSqlQuery extends Query implements SimpleQueryI {
     

@@ -1,4 +1,4 @@
-package org.gusdb.gus.wdk.model.query;
+package org.gusdb.gus.wdk.model;
 
 public interface QueryI {
     
@@ -22,4 +22,9 @@ public interface QueryI {
 
     public Param[] getParams();
 
+    public void addColumn(Column column);
+
+    public Column[] getColumns();
+
+    public Column getColumn(String columnName);
 }
