@@ -85,10 +85,10 @@
        <column name="number_of_contained_sequences" displayName="Number contained sequences" />
        <column name="modification_date" displayName="Last modified" />
        <column name="review_status_name" displayName="Review status" />
-       <column name="hello" 
+       <column name="numseqs" 
                xsi:type="org.gusdb.gus.wdk.model.TextColumn"
-               displayName="Last modified" 
-               text="hello $$taxon_name$$, you are nice" />
+               displayName="Nice Num" 
+               text="number of contained seqs is $$number_of_contained_sequences$$" />
  
        <sql>
        select r.description, 
