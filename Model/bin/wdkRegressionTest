@@ -1,0 +1,140 @@
+#!/usr/bin/perl
+
+use strict;
+use lib "$ENV{GUS_HOME}/lib/perl";
+use Getopt::Long;
+use FileHandle;
+
+my ($modelConfigFile, $useExistingDb, $createNewExpected, $modelXmlFile, $modelPropFile, $outputDir, $commandListFile, $verbose);
+
+&GetOptions('modelConfigFile=s' => \$modelConfigFile,
+	    'modelPropFile=s' => \$modelPropFile,
+	    'modelXmlFile=s' => \$modelXmlFile,
+ 	    'useExistingDB!' => \$useExistingDb,
+	    'createNewExpectedResult!' => \$createNewExpected,
+	    'outputDirectory=s' => \$outputDir,
+	    'commandListFile=s' => \$commandListFile,
+	    'verbose!' => \$verbose,
+	    );
+
+#add output directory as param
+
+&usage() unless $modelConfigFile;
+
+if (!$useExistingDb){
+    
+    my $dbCmd = "wdkTestDb --dataDirectory $ENV{GUS_HOME}/data/GUS/WebDevKit/testTables --dropDatabase --createDatabase --modelConfigFile $modelConfigFile"; 
+    print STDERR "Performing database management with command $dbCmd\n\n" if $verbose;
+    system($dbCmd);
+}
+
+my $globalArgs = "-configFile $modelConfigFile -modelPropFile $modelPropFile -modelXmlFile $modelXmlFile";
+
+my $commandFh = FileHandle->new("<" . $commandListFile);
+
+die "could not open $commandListFile" unless $commandFh;
+
+my ($name, $testCmd, $critical);
+my $failed = 0;
+
+while (<$commandFh>){
+    chomp;
+    my $nameLine = $_;
+    if ($nameLine =~ /^name="(.*)"/){
+	$name = $1;
+    }
+    else {
+	&commandFileUsage($commandListFile, $nameLine);
+    }
+    my $cmdLine = <$commandFh>;
+    if ($cmdLine =~ /^command="(.*)"/){
+	$testCmd = $1 . " $globalArgs";
+    }
+    else {
+	&commandFileUsage($commandListFile, $cmdLine);
+    }
+    my $criticalLine = <$commandFh>;
+    if ($criticalLine =~ /^critical=(\S+)/){
+	$critical = $1;
+	if ($critical ne "true" && $critical ne "false"){
+	    &commandFileUsage($commandListFile, $criticalLine);
+	}
+    }
+    else {
+	&commandFileUsage($commandListFile, $criticalLine);
+    }
+    
+    my $tempFailed = &runTest($name, $testCmd, $critical);
+    $failed = $tempFailed if $failed == 0;
+}
+
+if ($failed){ exit(1);}
+
+
+sub runTest{
+
+    my ($name, $cmd, $critical) = @_;
+
+    my $fullCmd = $cmd . " >  $outputDir/failures/$name" . ".out 2> $outputDir/failures/$name" . ".err";
+
+    my $testFailed = 0;
+ 
+    print STDERR "running regression test $name\n\n";
+    print STDERR "running command $fullCmd\n\n" if $verbose;
+    system($fullCmd);
+    
+     if ($createNewExpected){
+	my $existing = "$outputDir/testResults/expected/$name" . ".out";
+	my $fh = FileHandle->new("<$existing");
+	if ($fh){ #expected result exists already
+	    my $backupCmd = "cp $outputDir/expected/$name" . ".out $outputDir/expected/$name" . ".out.save";
+	    print STDERR "copying existing expected result to $outputDir/expected/$name" . ".out.save\n\n" if $verbose;
+	    system($backupCmd);
+	}
+
+	my $copyCmd = "cp $outputDir/failures/$name" . ".out $outputDir/expected/$name" . ".out";
+	print STDERR "running $copyCmd\n\n" if $verbose;
+	system($copyCmd);
+    }
+    else {  #this means things will die if user does not have current expected and has not selected --createNewExpectedResult
+	my $compareCmd = "diff -q $outputDir/failures/$name" . ".out $outputDir/expected/$name" . ".out";
+	print STDERR "running $compareCmd\n\n" if $verbose;
+	my $diffResults = system($compareCmd); #get result of last system call, right shift by 8
+	if ($diffResults){
+	    $testFailed = 1;
+	    my $errStr = "Error!  Test $name failed!\n";
+	    $errStr .= "The observed result of the test was different than the expected result of a test previously run.\n";
+	    $errStr .= "To see the difference, run diff $outputDir/failures/$name" . ".out $outputDir/expected/$name" . ".out\n";
+	    if ($critical){
+		die ("Received error in critical test $name.  Ending regression test");
+	    }
+	}
+	else{
+	    print STDERR "Test $name passed!\n\n";
+	}
+	
+    }
+    return $testFailed;
+}
+
+
+
+sub usage{
+    print STDERR "usage:  wdkRegressionTest\n--modelConfigFile (database configuration file to use with wdk model) \n--modelPropFile (basic properties file to use with wdk model) \n--modelXmlFile (xml file that defines model itself) \n--useExistingDB! (flag to skip creating database from provided test flat files) \n--createNewExpectedResult! (overwrite existing regression test expected result) \n--outputDirectory (results of test will be placed in this directory) \n--commandListFile (file that contains lists of commands to run in test) \n--verbose (prints out names of shell commands being executed)";
+    die;
+
+}
+
+sub commandFileUsage{
+
+    my ($commandListFile, $errorLine) = @_;
+    my $errStr = "The file $commandListFile needs to conform\n to the following input specifications for each test provided in the file:\n";
+    $errStr .= "name=\"[name of test]\"\n";
+    $errStr .= "command=\"[command to run with any parameters necessary for the command except global parameters passed into wdkRegressionTest]\"\n";
+    $errStr .= "critical=\"[true/false depending on whether wdkRegressionTest should die if the test fails]\"\n";
+    $errStr .= "\nThe line that fails this input requirement is the following: $errorLine\n";
+    if ($errorLine =~ /\s*/){
+	$errStr .= "(If this failure line is blank, you may be missing a line at the end of the command file)\n";
+    }
+    die ($errStr);
+}
