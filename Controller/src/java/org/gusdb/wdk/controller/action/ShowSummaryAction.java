@@ -1,6 +1,10 @@
 package org.gusdb.wdk.controller.action;
 
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
@@ -31,20 +35,47 @@ public class ShowSummaryAction extends Action {
 	Summary wdkQuestion = qForm.getQuestion();
 
 	Map params = new java.util.HashMap(qForm.getMyProps());
-	System.err.println("ShowSummaryAction: num params: " + params.size() );
-
-
+	/*
 	java.util.Iterator paramNames = params.keySet().iterator();
 	while (paramNames.hasNext()) {
 	    String paramName = (String)paramNames.next();
 	    Object paramVal = params.get(paramName);
 	    System.err.println("*** params: (k, v) = " + paramName + ", " + paramVal);
 	}
-	//int s = qForm.getAnswerStartIndex();
-	int s = 0;
-	//int e = qForm.getAnswerEndIndex();
-	int e = 50;
-	SummaryInstance wdkSummary = wdkQuestion.makeSummaryInstance(params, s, e);
+	*/
+
+	int start = 1;
+	if (request.getParameter("pager.offset") != null) {
+	    start = Integer.parseInt(request.getParameter("pager.offset"));
+	    start++;  //following Adrian's lead on this. (find out why it is necessary)
+	}
+	int pageSize = 20;
+	if (request.getParameter("pageSize") != null) {
+	    start = Integer.parseInt(request.getParameter("pageSize"));
+	}
+	if (start <1) { start = 1; } 
+	int end = start + pageSize-1;
+
+	SummaryInstance wdkSummary = wdkQuestion.makeSummaryInstance(params, start, end);
+
+	int totalSize = wdkSummary.getTotalSize();
+	if (end > totalSize) { end = totalSize; }
+
+	String uriString = request.getRequestURI();
+	List editedParamNames = new ArrayList();
+	for (Enumeration en = request.getParameterNames(); en.hasMoreElements();) {
+	    String key = (String) en.nextElement();
+	    if (!"pageSize".equals(key) && !"start".equals(key) &&!"pager.offset".equals(key)) {
+		editedParamNames.add(key);
+	    }
+	}
+
+	request.setAttribute("wdk_paging_total", new Integer(totalSize));
+	request.setAttribute("wdk_paging_pageSize", new Integer(pageSize));
+	request.setAttribute("wdk_paging_start", new Integer(start));
+	request.setAttribute("wdk_paging_end", new Integer(end));
+	request.setAttribute("wdk_paging_url", uriString);
+	request.setAttribute("wdk_paging_params", editedParamNames);
 
 	request.getSession().setAttribute(CConstants.WDK_SUMMARY_KEY, wdkSummary);
 	
