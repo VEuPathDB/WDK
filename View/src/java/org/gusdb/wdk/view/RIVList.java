@@ -166,9 +166,9 @@ public class RIVList implements Iterator {
 
     public String toString() {
         if (si != null) {
-            return "I'm an RIVList: si="+si+", size="+getSize();
+            return "RIVList: si="+si+", size="+getSize();
         }
-        return "I'm an RIVList: rl="+rl;
+        return "RIVList: rl="+rl;
     }
     
     
