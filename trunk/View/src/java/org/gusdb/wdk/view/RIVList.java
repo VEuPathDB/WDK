@@ -4,8 +4,12 @@ import org.gusdb.gus.wdk.model.RecordInstance;
 import org.gusdb.gus.wdk.model.SummaryInstance;
 import org.gusdb.gus.wdk.model.WdkModelException;
 
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.logging.Logger;
 
 
 
@@ -21,12 +25,36 @@ import java.util.NoSuchElementException;
  */
 public class RIVList implements Iterator {
 
+    private static final Logger logger = Logger.getLogger("org.gusdb.gus.wdk.view.RIVList");
+    
     private SummaryInstance si;
+    private Map displayNames = new HashMap(); 
 
+    
+    
     public RIVList(SummaryInstance si) {
         this.si = si;
+        
+        List columnNames = getColumnNames();
+        if (columnNames != null) {
+            for (Iterator it = columnNames.iterator(); it.hasNext();) {
+                String name = (String) it.next();
+                displayNames.put(name, si.getSummary().getRecord().getDisplayName(name));
+            }
+        } else {
+            logger.severe("No summary column information available");
+        }
     }
 
+    public Map getDisplayName() {
+        return displayNames;
+    }
+    
+    
+    public List getColumnNames() {
+        return si.getSummary().getRecord().getSummaryColumnNames();
+    }
+    
     public int getSize() {
         return si.size();
     }
