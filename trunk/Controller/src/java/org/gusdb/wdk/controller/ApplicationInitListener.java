@@ -1,8 +1,6 @@
 package org.gusdb.gus.wdk.controller;
 
 
-//import oracle.jdbc.pool.OracleDataSource;
-
 import org.gusdb.gus.wdk.model.ModelConfig;
 import org.gusdb.gus.wdk.model.ModelConfigParser;
 import org.gusdb.gus.wdk.model.RDBMSPlatformI;
@@ -15,9 +13,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Properties;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -30,12 +26,6 @@ import javax.servlet.ServletContextListener;
 import javax.servlet.jsp.jstl.core.Config;
 import javax.sql.DataSource;
 
-import org.apache.commons.dbcp.ConnectionFactory;
-import org.apache.commons.dbcp.DriverManagerConnectionFactory;
-import org.apache.commons.dbcp.PoolableConnectionFactory;
-import org.apache.commons.dbcp.PoolingDataSource;
-import org.apache.commons.pool.ObjectPool;
-import org.apache.commons.pool.impl.GenericObjectPool;
 import org.xml.sax.SAXException;
 
   
@@ -45,17 +35,18 @@ import org.xml.sax.SAXException;
  * 
  */
 public class ApplicationInitListener implements ServletContextListener {
-  
-    private static final Logger logger = Logger.getLogger("org.gusdb.gus.wdk.controller.ApplicationInitListener");
-    
-    private static final String DEFAULT_MODEL_PARSER = "org.gusdb.gus.wdk.model.implementation.ModelXmlParser";
     
     private static final String DEFAULT_LOGIN_CONFIGURATION = "/WEB-INF/wdk-config/login.xml";
     private static final String DEFAULT_MODEL_CONFIGURATION = "/WEB-INF/wdk-config/model.xml";
+    
+    private static final String DEFAULT_MODEL_PARSER = "org.gusdb.gus.wdk.model.implementation.ModelXmlParser";
     private static final String DEFAULT_PROPS_LOCATION = "/WEB-INF/wdk-config/macro.props";
+  
+    private static final Logger logger = Logger.getLogger("org.gusdb.gus.wdk.controller.ApplicationInitListener");
 
     private DataSource dataSource;
     private RDBMSPlatformI platform;
+  
     
     public void contextInitialized(ServletContextEvent sce) {
   
@@ -71,8 +62,7 @@ public class ApplicationInitListener implements ServletContextListener {
         int poolMaxWait = Integer.parseInt(application.getInitParameter("connectionPoolMaxWait"));
 
         
-        initMemberVars(loginXML, parserClass, querySetLocation, schemaName, schemaLocation,
-		       propsFileLocation, poolMaxWait, application);
+        initMemberVars(loginXML, parserClass, querySetLocation, schemaName, schemaLocation, propsFileLocation, poolMaxWait, application);
         
         Config.set(application, Config.SQL_DATA_SOURCE, dataSource);
 
@@ -131,15 +121,14 @@ public class ApplicationInitListener implements ServletContextListener {
             
             String instanceTable = dbConfig.getQueryInstanceTable();
             String platformClass = dbConfig.getPlatformClass();
-            
-            dataSource = setupDataSource(dbConfig.getConnectionUrl()
-                    , dbConfig.getLogin()
-                    , dbConfig.getPassword()
-		    , maxWait);
+
             
             RDBMSPlatformI platform = 
                 (RDBMSPlatformI)Class.forName(platformClass).newInstance();
-            platform.setDataSource(dataSource);
+            //platform.setDataSource(dataSource);
+            this.dataSource = platform.createDataSource(dbConfig.getConnectionUrl()
+                    , dbConfig.getLogin()
+                    , dbConfig.getPassword(), maxWait);
             
             Class parser = Class.forName(parserClass);
             Method build = parser.getDeclaredMethod("parseXmlFile", new Class[] {URL.class, URL.class, URL.class});
@@ -178,6 +167,7 @@ public class ApplicationInitListener implements ServletContextListener {
         }
 
     }
+    
 
     private URL createURL(String param, String defaultLoc, ServletContext application) {
 
@@ -201,63 +191,8 @@ public class ApplicationInitListener implements ServletContextListener {
         }
         return ret;
     }
- 
-    
-    private DataSource setupDataSource(String connectURI, String login, 
-            String password, int maxWait)  throws SQLException {
-        
-    	DriverManager.registerDriver(new oracle.jdbc.OracleDriver());
-        
-        GenericObjectPool connectionPool = new GenericObjectPool(null);
-	
-	if (maxWait >= 0) {
-	    connectionPool.setMaxWait(maxWait);
-	}
-
-        ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(connectURI, login, password);
-
-        PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(connectionFactory,connectionPool,null,null,false,true);
-
-        PoolingDataSource dataSource = new PoolingDataSource(connectionPool);
-
-        return dataSource;
-  }
 
 
-
-    
-    
-//    private DataSource setupDataSource(String connectURI, String login, 
-//              String password)  {
-//
-////        Properties props = new Properties();
-////        props.setProperty("InitialLimit", "10");
-////        props.setProperty("MaxLimit", "60");
-////        props.setProperty("MinLimit", "10");
-//        
-//        
-//        try {
-//            OracleDataSource ods = new OracleDataSource();
-//            ods.setURL(connectURI);
-//
-//            ods.setPassword(password);
-//            ods.setUser(login);
-//
-//            ods.setConnectionCachingEnabled(false);
-//            
-////            ods.setConnectionCacheName("wdk");          
-//  //          ods.setConnectionCacheProperties(props);
-//
-//            
-//            
-//            return ods;
-//        }
-//        catch (SQLException exp) {
-//            exp.printStackTrace();
-//        }
-//
-//        return null;
-//    }
 
     protected DataSource getDataSource() {
         return dataSource;

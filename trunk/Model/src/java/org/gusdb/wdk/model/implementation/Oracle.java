@@ -121,12 +121,18 @@ public class Oracle implements RDBMSPlatformI {
     /* (non-Javadoc)
      * @see org.gusdb.gus.wdk.model.RDBMSPlatformI#createDataSource(java.lang.String, java.lang.String, java.lang.String)
      */
-    public DataSource createDataSource(String url, String user, String password) throws SQLException {
+    public DataSource createDataSource(String url, String user, String password, int maxWait) throws SQLException {
         DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
-        this.dataSource = SqlUtils.createDataSource(url, user,password);
+        this.dataSource = SqlUtils.createDataSource(url, user,password, maxWait);
         return dataSource;
     }
-
+    
+    /* (non-Javadoc)
+     * @see org.gusdb.gus.wdk.model.RDBMSPlatformI#createDataSource(java.lang.String, java.lang.String, java.lang.String)
+     */
+    public DataSource createDataSource(String url, String user, String password) throws SQLException {
+        return createDataSource(url, user,password, -1);
+    }
 }
 
 

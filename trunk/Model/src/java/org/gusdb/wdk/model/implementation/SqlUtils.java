@@ -18,7 +18,6 @@ import org.apache.commons.dbcp.ConnectionFactory;
 import org.apache.commons.dbcp.DriverManagerConnectionFactory;
 import org.apache.commons.dbcp.PoolableConnectionFactory;
 import org.apache.commons.dbcp.PoolingDataSource;
-import org.apache.commons.pool.ObjectPool;
 import org.apache.commons.pool.impl.GenericObjectPool;
 
 public class SqlUtils {
@@ -259,11 +258,16 @@ public class SqlUtils {
      * @param url
      * @param user
      * @param password
+     * @param maxWait
      * @return
      */
-    public static DataSource createDataSource(String connectURI, String login, String password) {
+    public static DataSource createDataSource(String connectURI, String login, String password, int maxWait) {
         
-        ObjectPool connectionPool = new GenericObjectPool(null);
+        GenericObjectPool connectionPool = new GenericObjectPool(null);
+        
+        if (maxWait >= 0) {
+            connectionPool.setMaxWait(maxWait);
+        }
         
         ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(connectURI, login, password);
         
