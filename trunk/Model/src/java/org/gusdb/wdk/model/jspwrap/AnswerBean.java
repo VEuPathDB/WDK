@@ -26,6 +26,7 @@ public class AnswerBean {
 	return answer.getDisplayParams();
     }
 
+
     public int getPageSize() {
 	return answer.getPageSize();
     }

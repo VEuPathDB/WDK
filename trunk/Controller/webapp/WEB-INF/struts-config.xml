@@ -80,7 +80,7 @@
       scope="session"
       name="booleanQuestionForm"
       input="/booleanQuestion.jsp">
-      <forward name="get_boolean_answer" path="/showSummary.do"/>
+      <forward name="get_boolean_answer" path="/summary.jsp"/>
     </action>
     <action
       path="/showRecord"

@@ -111,7 +111,10 @@ public class BooleanQueryInstance extends QueryInstance {
 	setIsCacheable(firstQueryInstance.getIsCacheable() && secondQueryInstance.getIsCacheable());
 	
 	Column columns[] = firstQueryInstance.getQuery().getColumns();
+
+	System.err.println("adding columns from " + firstQueryInstance.getQuery().getName() + " to boolean");
 	for (int i = 0; i < columns.length; i++){
+	    System.err.println("next column to add is " + columns[i]);
 	    booleanQuery.addColumn(columns[i]);
 	}
     }
@@ -200,6 +203,15 @@ public class BooleanQueryInstance extends QueryInstance {
 	int secondColumnCount = secondColumns.length;
 
 	if (firstColumnCount != secondColumnCount){
+	    System.err.println ("first query column count: " + firstColumnCount + " second: " + secondColumnCount);
+	    for (int i = 0; i < firstColumns.length; i++){
+		System.err.println(firstColumns[i].getName());
+	    }
+	    System.err.println ("that was first, here is second");
+	    for (int i = 0; i < secondColumns.length; i++){
+		System.err.println(secondColumns[i].getName());
+	    }
+	    
 	    StringBuffer e = new StringBuffer("Must have the same number of columns when making a BooleanQuery\n");
 	    e.append("ID Queries in Questions " + firstAnswer.getQuestion().getName() + " and " + secondAnswer.getQuestion().getName() + " do not");
 	    throw new WdkModelException(e.toString());

@@ -83,8 +83,8 @@ public class TestBooleanTree {
 	BooleanQuestionNode bqn7 = new BooleanQuestionNode(q7, null);
 
 	BooleanQuestionNode bqn3 = new BooleanQuestionNode(q3, bqn6, bqn7, null);
-	BooleanQuestionNode bqn2 = new BooleanQuestionNode(q2, bqn4, bqn5, null);
-	BooleanQuestionNode bqn1 = new BooleanQuestionNode(q1, bqn2, bqn3, null);
+	BooleanQuestionNode bqn2 = new BooleanQuestionNode(q2, bqn5, bqn3, null);
+	BooleanQuestionNode bqn1 = new BooleanQuestionNode(q1, bqn2, bqn4, null);
 	
 	bqn1.setValues(q1values);
 	bqn2.setValues(q2values);

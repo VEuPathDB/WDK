@@ -3,8 +3,12 @@ package org.gusdb.wdk.model.jspwrap;
 import org.gusdb.wdk.model.BooleanQuestionNode;
 import org.gusdb.wdk.model.BooleanQuery;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.Answer;
+import org.gusdb.wdk.model.jspwrap.AnswerBean;
 
 
+import java.util.Vector;
 import java.util.Hashtable;
 
 
@@ -33,6 +37,22 @@ public class BooleanQuestionNodeBean {
 	return secondChild;
     }
 
+    public void setAllValues() throws WdkModelException, WdkUserException {
+	BooleanQuestionNode.setAllValues(bqn);
+    }
+    
+    //should be called only from root
+    public AnswerBean makeAnswer(int start, int end) throws WdkModelException, WdkUserException {
+	
+	Hashtable values = bqn.getValues();
+	Answer answer = bqn.getQuestion().makeAnswer(values, start, end);
+	System.err.println("BooleanQuestionNode Bean: made answer!!");
+	answer.printAsTable();
+	return new AnswerBean(answer);
+	
+
+    }
+
     public String getOperation(){
 	//change this when we make EnumParams.
 	Hashtable values = this.bqn.getValues();
@@ -49,6 +69,28 @@ public class BooleanQuestionNodeBean {
 	}
 	return leaf;
     }
+
+    public Vector getAllNodes(Vector nodesSoFar){
+
+	nodesSoFar.addElement(this);
+	if (firstChild instanceof org.gusdb.wdk.model.jspwrap.BooleanQuestionLeafBean){
+	    nodesSoFar.addElement(firstChild);
+	}
+	else{
+	    ((BooleanQuestionNodeBean)firstChild).getAllNodes(nodesSoFar);
+	}
+	if (secondChild instanceof org.gusdb.wdk.model.jspwrap.BooleanQuestionLeafBean){
+	    nodesSoFar.addElement(secondChild);
+	}
+	else{
+	    ((BooleanQuestionNodeBean)secondChild).getAllNodes(nodesSoFar);
+	}
+	return nodesSoFar;
+    }
+
+
+
+
 
     private BooleanQuestionLeafBean findLeaf_aux (Object child, int leafId) {
 	BooleanQuestionLeafBean leaf = null;
@@ -72,6 +114,11 @@ public class BooleanQuestionNodeBean {
     
     protected void setSecondChild(Object secondChild){
 	this.secondChild = secondChild;
+    }
+
+
+    public void setValues(Hashtable values){
+	bqn.setValues(values);
     }
 
     public String toString() {
