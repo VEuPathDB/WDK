@@ -99,9 +99,17 @@ public class ModelXmlParser {
 
 	/*      */ digester.addObjectCreate( "wdkModel/querySet/query/param/query", "xsi:type", Query.class );
 
+	/*      */ digester.addSetProperties( "wdkModel/querySet/query/param/query");
+
 	/*        */ digester.addBeanPropertySetter( "wdkModel/querySet/query/param/query/sql");
 
-	/*      */ digester.addSetNext( "wdkModel/querySet/query/param/query", "setSqlQuery");
+	/*        */ digester.addObjectCreate( "wdkModel/querySet/query/param/query/column", "xsi:type", Column.class );
+
+	/*        */ digester.addSetProperties( "wdkModel/querySet/query/param/query/column");
+
+	/*        */ digester.addSetNext( "wdkModel/querySet/query/param/query/column", "addColumn" );
+
+	/*      */ digester.addSetNext( "wdkModel/querySet/query/param/query", "setQuery");
 
 	/*    */ digester.addSetNext( "wdkModel/querySet/query/param", "addParam" );
 	

@@ -2,7 +2,7 @@ package org.gusdb.gus.wdk.model;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.TreeMap;
+import java.util.HashMap;
 
 /**
  * Simple implementation of QueryInstanceI; generally expects its subclasses
@@ -28,7 +28,7 @@ public abstract class QueryInstance {
     /**
      * Values that define this QueryInstance relative to others pointing to <code>query</code>
      */
-    protected TreeMap values = new TreeMap();
+    protected HashMap values = new HashMap();
 
     /**
      * Values that will be used when the QueryInstance is being run in multi-mode to join it with
@@ -49,7 +49,7 @@ public abstract class QueryInstance {
     // ------------------------------------------------------------------
 
     public void setValues(Map values) throws WdkUserException, WdkModelException {
-	this.values = new TreeMap(values);
+	this.values = new HashMap(values);
 	query.applyDefaults(values);
 	query.validateParamValues(values);
     }

@@ -5,6 +5,7 @@ import org.gusdb.gus.wdk.model.WdkModelException;
 import org.gusdb.gus.wdk.model.QueryInstance;
 import org.gusdb.gus.wdk.model.ResultList;
 import org.gusdb.gus.wdk.model.ResultFactory;
+import org.gusdb.gus.wdk.model.RDBMSPlatformI;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -32,7 +33,7 @@ public class SqlQueryInstance extends QueryInstance  {
 	setIsCacheable(query.getIsCacheable().booleanValue());
     }
 
-    protected String getSql() {
+    protected String getSql() throws WdkModelException {
 	SqlQuery q = (SqlQuery)query;
 	String sql = null;
 	if (inMultiMode){
@@ -40,7 +41,8 @@ public class SqlQueryInstance extends QueryInstance  {
 	    String newPkJoin = multiModeResultTableName + "." + pkToJoinWith;
 	    values.put("primaryKey", newPkJoin); //will this destroy the query for later use?
 	}
-	String initSql = q.instantiateSql(values);
+	String initSql = 
+	    q.instantiateSql(query.getInternalParamValues(values));
 	if (inMultiMode){
 	    sql = q.addMultiModeConstraints(multiModeResultTableName, pkToJoinWith,
 					    startId, endId, initSql);
@@ -76,9 +78,11 @@ public class SqlQueryInstance extends QueryInstance  {
     protected ResultList getNonpersistentResult() throws WdkModelException {
 
 	ResultSet resultSet = null;
+	RDBMSPlatformI platform = ((SqlQuery)query).getRDBMSPlatform();
 
 	try {
-	    resultSet = SqlUtils.getResultSet(query.getPlatform().getDataSource(), getSql());
+	    resultSet = SqlUtils.getResultSet(platform.getDataSource(), 
+					      getSql());
 
 	} catch (SQLException e) { 
 	    String newline = System.getProperty( "line.separator" );
@@ -91,11 +95,12 @@ public class SqlQueryInstance extends QueryInstance  {
 
     protected void writeResultToTable(String resultTableName, 
 				      ResultFactory rf) throws WdkModelException {
+	RDBMSPlatformI platform = ((SqlQuery)query).getRDBMSPlatform();
 
 	try {
-	    query.getPlatform().createTableFromQuerySql(query.getPlatform().getDataSource(),
-							resultTableName, 
-							getSql());
+	    platform.createTableFromQuerySql(platform.getDataSource(),
+					     resultTableName, 
+					     getSql());
 	} catch (SQLException e) {
 	    throw new WdkModelException(e);
 	}

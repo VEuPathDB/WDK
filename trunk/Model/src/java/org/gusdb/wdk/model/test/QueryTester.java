@@ -11,7 +11,7 @@ import org.gusdb.gus.wdk.model.RDBMSPlatformI;
 import org.gusdb.gus.wdk.model.ResultFactory;
 import org.gusdb.gus.wdk.model.ResultList;
 import org.gusdb.gus.wdk.model.QuerySet;
-import org.gusdb.gus.wdk.model.SqlEnumParam;
+import org.gusdb.gus.wdk.model.FlatCVParam;
 import org.gusdb.gus.wdk.model.StringParam;
 import org.gusdb.gus.wdk.model.WdkModel;
 import org.gusdb.gus.wdk.model.implementation.ModelXmlParser;
@@ -120,16 +120,16 @@ public class QueryTester {
         
         String prompt = "  " + param.getPrompt();
         
-        if (param instanceof SqlEnumParam) {
-            SqlEnumParam enumParam = (SqlEnumParam)param;
+        if (param instanceof FlatCVParam) {
+            FlatCVParam enumParam = (FlatCVParam)param;
             prompt += " (chose one";
             if (enumParam.getMultiPick().booleanValue()) prompt += " or more"; 
             prompt += "):";
-            Map hash = enumParam.getKeysAndValues(resultFactory);
-            Iterator keys = hash.keySet().iterator();
-            while (keys.hasNext()) {
-                String key = (String)keys.next();
-                prompt += newline + "    " + key + " = " + hash.get(key);
+            String[] vocab = enumParam.getVocab();
+	    for (int i=0; i<vocab.length; i++) {
+                String term = vocab[i];
+                prompt += newline + "    " + term + " (" + 
+		    enumParam.getInternalValue(term) + ")";
             }
         } 
         
@@ -195,8 +195,7 @@ public class QueryTester {
                 ModelXmlParser.parseXmlFile(modelXmlFile);
             ResultFactory resultFactory = new ResultFactory(dataSource, platform, 
 							    login, instanceTable);
-            wdkModel.setResultFactory(resultFactory);
-            wdkModel.setResources(platform);
+            wdkModel.setResources(resultFactory, platform);
 	    QueryTester tester = new QueryTester(wdkModel, resultFactory);
             
             // if no params supplied, show the query prompts

@@ -80,4 +80,7 @@ public class ReferenceList implements ModelSetI {
 	}
 	
     }
+
+    public void setResources(WdkModel model) throws WdkModelException {
+    }
 } 

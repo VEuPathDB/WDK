@@ -71,4 +71,8 @@ public class RecordSet implements ModelSetI {
 	   record.resolveReferences(model);
        }
     }
+
+    public void setResources(WdkModel model) throws WdkModelException {
+    }
+
 }

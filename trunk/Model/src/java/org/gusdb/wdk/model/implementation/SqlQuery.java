@@ -2,13 +2,16 @@ package org.gusdb.gus.wdk.model.implementation;
 
 import java.util.Iterator;
 import java.util.Map;
+import org.gusdb.gus.wdk.model.WdkModel;
+import org.gusdb.gus.wdk.model.WdkModelException;
 import org.gusdb.gus.wdk.model.Query;
 import org.gusdb.gus.wdk.model.QueryInstance;
+import org.gusdb.gus.wdk.model.RDBMSPlatformI;
 
 public class SqlQuery extends Query {
     
     String sql;
-
+    RDBMSPlatformI platform;
 
     public SqlQuery () {
 	super();
@@ -30,9 +33,18 @@ public class SqlQuery extends Query {
 	return new SqlQueryInstance(this);
     }
 
+    public RDBMSPlatformI getRDBMSPlatform() {
+	return platform;
+    }
+
     /////////////////////////////////////////////////////////////////////
     /////////////  Protected ////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////
+
+    protected void setResources(WdkModel model) throws WdkModelException {
+	this.platform = model.getRDBMSPlatform();
+	super.setResources(model);
+    }
 
     /**
      * @param values These values are assumed to be pre-validated

@@ -62,18 +62,18 @@ public abstract class Param {
     /**
      * @return Error string if an error.  null if no errors.
      */ 
-    protected abstract String validateValue(String value) throws WdkModelException ;
+    protected abstract String validateValue(Object value) throws WdkModelException ;
 
     /**
      * Transforms external value into internal value if needed
      * By default returns provided value
      */
-    protected String getInternalValue(String value) throws WdkModelException {
+    protected Object getInternalValue(Object value) throws WdkModelException {
 	return value;
     }
 
     protected abstract void resolveReferences(WdkModel model) throws WdkModelException;
 
-    protected void setModelResources(WdkModel model) {}
+    protected void setResources(WdkModel model) throws WdkModelException {}
 
 }

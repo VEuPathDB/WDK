@@ -5,7 +5,7 @@ import org.gusdb.gus.wdk.model.Record;
 import org.gusdb.gus.wdk.model.RecordSet;
 import org.gusdb.gus.wdk.model.Reference;
 import org.gusdb.gus.wdk.model.QuerySet;
-import org.gusdb.gus.wdk.model.SqlEnumParam;
+import org.gusdb.gus.wdk.model.FlatCVParam;
 import org.gusdb.gus.wdk.model.StringParam;
 import org.gusdb.gus.wdk.model.TextField;
 import org.gusdb.gus.wdk.model.WdkModel;
@@ -143,22 +143,22 @@ public class ModelXMLParserRelaxNG {
         /*  */digester.addBeanPropertySetter("wdkModel/querySet/sqlQuery/sql");
 
         /*    */digester.addObjectCreate(
-                "wdkModel/querySet/sqlQuery/sqlEnumParam", SqlEnumParam.class);
-        /*    */digester.addSetProperties("wdkModel/querySet/sqlQuery/sqlEnumParam");
+                "wdkModel/querySet/sqlQuery/flatCVParam", FlatCVParam.class);
+        /*    */digester.addSetProperties("wdkModel/querySet/sqlQuery/flatCVParam");
 
-        /*      */digester.addObjectCreate("wdkModel/querySet/sqlQuery/sqlEnumParam/sqlQuery", SqlQuery.class);
+        /*      */digester.addObjectCreate("wdkModel/querySet/sqlQuery/flatCVParam/sqlQuery", SqlQuery.class);
 
-        /*        */digester.addBeanPropertySetter("wdkModel/querySet/sqlQuery/sqlEnumParam/sqlQuery/sql");
+        /*        */digester.addBeanPropertySetter("wdkModel/querySet/sqlQuery/flatCVParam/sqlQuery/sql");
 
-        /*        */digester.addObjectCreate("wdkModel/querySet/sqlQuery/sqlEnumParam/sqlQuery/column", Column.class);
+        /*        */digester.addObjectCreate("wdkModel/querySet/sqlQuery/flatCVParam/sqlQuery/column", Column.class);
 
-        /*        */digester.addSetProperties("wdkModel/querySet/sqlQuery/sqlEnumParam/sqlQuery/column");
+        /*        */digester.addSetProperties("wdkModel/querySet/sqlQuery/flatCVParam/sqlQuery/column");
 
-        /*        */digester.addSetNext("wdkModel/querySet/sqlQuery/sqlEnumParam/sqlQuery/column", "addColumn");
+        /*        */digester.addSetNext("wdkModel/querySet/sqlQuery/flatCVParam/sqlQuery/column", "addColumn");
 
-        /*      */digester.addSetNext("wdkModel/querySet/sqlQuery/sqlEnumParam/sqlQuery", "setSqlQuery");
+        /*      */digester.addSetNext("wdkModel/querySet/sqlQuery/flatCVParam/sqlQuery", "setSqlQuery");
 
-        /*    */digester.addSetNext("wdkModel/querySet/sqlQuery/sqlEnumParam", "addParam");
+        /*    */digester.addSetNext("wdkModel/querySet/sqlQuery/flatCVParam", "addParam");
 
         /*    */digester.addObjectCreate("wdkModel/querySet/sqlQuery/stringParam", StringParam.class);
 

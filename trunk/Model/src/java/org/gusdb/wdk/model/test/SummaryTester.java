@@ -80,8 +80,7 @@ public class SummaryTester {
 		ModelXmlParser.parseXmlFile(modelXmlFile);
 	    ResultFactory resultFactory = new ResultFactory(dataSource, platform, 
 							    login, instanceTable);
-            wdkModel.setResultFactory(resultFactory);
-	    wdkModel.setResources(platform);
+	    wdkModel.setResources(resultFactory, platform);
 	    
 	    SummarySet summarySet = wdkModel.getSummarySet(summarySetName);
 	    Summary summary = summarySet.getSummary(summaryName);
