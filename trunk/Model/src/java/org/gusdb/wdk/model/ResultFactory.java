@@ -94,7 +94,7 @@ public class ResultFactory {
 	    
 	String resultTable = getResultTable(instance); //ensures instance is inserted into cache
 	sqlb.append("from " + resultTable);
-	System.err.println("ResultFactory.getSqlForCache: returning for query " + instance.getQuery().getName() + " sql " + sqlb.toString());
+
 	return sqlb.toString();
     }
 
@@ -218,7 +218,6 @@ public class ResultFactory {
 	    queryInstanceId = insertQueryInstance(instance);
 	}	    
 	
-	System.err.println("ResultFactory.getNewResultTable: creating rt for query " + instance.getQuery().getName() + " with id " + queryInstanceId);
 	String resultTableName = "query_result_" + queryInstanceId;
 	StringBuffer sql = new StringBuffer();
 	sql.append("update " + instanceTableFullName + " set result_table = '" + resultTableName + "'");
@@ -264,7 +263,7 @@ public class ResultFactory {
 	    sqlb.append("cached = 1 and end_time IS NOT NULL and "); 
 	}
 	sqlb.append(instanceWhereClause(instance));
-	System.err.println("ResultFactory: getting result for query " + instance.getQuery().getName() + " with sql " + sqlb.toString());
+
 	String resultTableName = null;
 	try {
 	    resultTableName = SqlUtils.runStringQuery(platform.getDataSource(), sqlb.toString());
@@ -345,7 +344,7 @@ public class ResultFactory {
 		    datasetName + ", sysdate" + pVals+ ")"); 
 	
 	int numRows = 0;
-	System.err.println("ResultFactory: inserting instance " + instance.getQuery().getName() + " with sql " + sqlb.toString());
+
 	try {
 	    numRows = SqlUtils.executeUpdate(platform.getDataSource(),sqlb.toString());
 	} catch (SQLException e) {
