@@ -13,4 +13,8 @@ endif
 
 setenv CLASSPATH "$GUS_HOME/lib/java/commons-digester.jar:$GUS_HOME/lib/java/GUS-WebDevKit.jar:$GUS_HOME/lib/java/commons-beanutils.jar:$GUS_HOME/lib/java/commons-collections.jar:$GUS_HOME/lib/java/commons-logging-api.jar:$GUS_HOME/lib/java/xercesImpl.jar"
 
-java -classpath $CLASSPATH org.gusdb.gus.wdk.model.query.QuerySetParser $1
+#setenv LOGGING_PROPS "-Dorg.apache.commons.logging.Log=org.apache.commons.logging.impl.SimpleLog -Dorg.apache.commons.logging.simplelog.log.org.apache.commons.digester.Digester=debug -Dorg.apache.commons.logging.simplelog.log.org.apache.commons.digester.Digester.sax=info"
+
+setenv LOGGING_PROPS 
+
+java -classpath $CLASSPATH $LOGGING_PROPS org.gusdb.gus.wdk.model.query.QuerySetParser $1

@@ -26,9 +26,9 @@ shift
 # must set $CONNECTION_URL, $LOGIN, $PASSWORD
 source $CONFIG_FILE
 
-setenv CLASSPATH "$GUS_HOME/lib/java/commons-digester.jar:$GUS_HOME/lib/java/GUS-WebDevKit.jar:$GUS_HOME/lib/java/commons-beanutils.jar:$GUS_HOME/lib/java/commons-collections.jar:$GUS_HOME/lib/java/commons-logging-api.jar:$GUS_HOME/lib/java/xercesImpl.jar:$GUS_HOME/lib/java/oracle-classes12.jar" 
+setenv CLASSPATH "$GUS_HOME/lib/java/commons-digester.jar:$GUS_HOME/lib/java/GUS-WebDevKit.jar:$GUS_HOME/lib/java/commons-beanutils.jar:$GUS_HOME/lib/java/commons-collections.jar:$GUS_HOME/lib/java/commons-logging-api.jar:$GUS_HOME/lib/java/xercesImpl.jar:$GUS_HOME/lib/java/oracle-classes12.jar:$GUS_HOME/lib/java/commons-dbcp-1.1.jar:$GUS_HOME/lib/java/commons-pool-1.1.jar" 
 
-java -classpath $CLASSPATH org.gusdb.gus.wdk.model.query.QueryTester $CONNECTION_URL $LOGIN $PASSWORD $XML_FILE $QUERYNAME $argv
+java -Djdbc.drivers=oracle.jdbc.driver.OracleDriver -classpath $CLASSPATH org.gusdb.gus.wdk.model.query.QueryTester $CONNECTION_URL $LOGIN $PASSWORD $XML_FILE $QUERYNAME $argv
 
 
 
