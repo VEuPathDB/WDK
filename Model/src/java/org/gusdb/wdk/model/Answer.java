@@ -43,15 +43,18 @@ public class Answer {
     // Constructor
     // ------------------------------------------------------------------
 
-    Answer(Question question, QueryInstance queryInstance, Map paramValues, int startRow, int endRow) throws WdkUserException, WdkModelException{
+    /**
+     * Assumes the values of <code>queryInstance</code> have been set already.
+     */
+    Answer(Question question, QueryInstance queryInstance, int startRow, int endRow) throws WdkUserException, WdkModelException{
 
 	this.question = question;
 	this.queryInstance = queryInstance;
 	this.currentRecordInstanceCounter = 0;
 	this.startRow = startRow;
 	this.endRow = endRow;   
-	queryInstance.setValues(paramValues);
-	initRecordInstances();
+	getRecordInstanceIds();
+	
     }
 
     // ------------------------------------------------------------------
@@ -177,44 +180,6 @@ public class Answer {
 	}
     }
 
-
-    // ------------------------------------------------------------------
-    // Package Methods
-    // ------------------------------------------------------------------
-    
-    void setMultiMode(QueryInstance instance) throws WdkModelException{
-        
-        String resultTableName = queryInstance.getResultAsTable();
-        
-        instance.setMultiModeValues(resultTableName, listPrimaryKeyName, startRow, endRow);
-    }
-    
-    void setQueryResult(ResultList resultList) throws WdkModelException {
-        logger.finer("In setQueryList and resultList is "+resultList);
-        int tempCounter = 0;
-        while (resultList.next()){
-            
-            RecordInstance nextRecordInstance = recordInstances[tempCounter];
-            Query query = resultList.getQuery();
-            Column[] columns = query.getColumns();
-            for (int j = 0; j < columns.length; j++){
-                String nextColumnName = columns[j].getName();
-                logger.finer("Trying to get query for "+nextColumnName);
-                Object value = 
-		    resultList.getAttributeFieldValue(nextColumnName).getValue();
-                nextRecordInstance.setAttributeValue(nextColumnName, value);
-            }
-            tempCounter++;
-        }
-
-    }
-    
-
-    // ------------------------------------------------------------------
-    // Private Methods
-    // ------------------------------------------------------------------
-    
-    
     private void initRecordInstances() throws WdkModelException {
 	ResultList rl = getRecordInstanceIds();
 	Query query = queryInstance.getQuery();
@@ -242,6 +207,44 @@ public class Answer {
 	
     }
 
+    // ------------------------------------------------------------------
+    // Package Methods
+    // ------------------------------------------------------------------
+    
+    void setMultiMode(QueryInstance instance) throws WdkModelException{
+        
+        String resultTableName = queryInstance.getResultAsTable();
+        
+        instance.setMultiModeValues(resultTableName, listPrimaryKeyName, startRow, endRow);
+    }
+    
+    void setQueryResult(ResultList resultList) throws WdkModelException {
+
+        int tempCounter = 0;
+        while (resultList.next()){
+            
+            RecordInstance nextRecordInstance = recordInstances[tempCounter];
+            Query query = resultList.getQuery();
+            Column[] columns = query.getColumns();
+            for (int j = 0; j < columns.length; j++){
+                String nextColumnName = columns[j].getName();
+
+                Object value = 
+		    resultList.getAttributeFieldValue(nextColumnName).getValue();
+                nextRecordInstance.setAttributeValue(nextColumnName, value);
+            }
+            tempCounter++;
+        }
+    }
+    
+    QueryInstance getQueryInstance(){
+	return queryInstance;
+    }
+
+    // ------------------------------------------------------------------
+    // Private Methods
+    // ------------------------------------------------------------------
+    
     private ResultList getRecordInstanceIds() throws WdkModelException{
 
 	ResultList rl = queryInstance.getResult();

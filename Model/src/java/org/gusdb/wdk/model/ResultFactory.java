@@ -334,7 +334,7 @@ public class ResultFactory {
 	StringBuffer sqlb = new StringBuffer();
 	sqlb.append("insert into " + instanceTableFullName +
 		    " (query_instance_id, query_name, cached, session_id, dataset_name, start_time");
-	Collection instanceValues = instance.getValues();
+	Collection instanceValues = instance.getCacheValues();
 	for (int i = 0;i < instanceValues.size();++i) {
 	    sqlb.append(", param" + i);
 	}
@@ -362,14 +362,13 @@ public class ResultFactory {
 	return finalId;
     }
 
-    private String formatInstanceParamVals(QueryInstance instance) {
+    private String formatInstanceParamVals(QueryInstance instance) throws WdkModelException {
 	StringBuffer sb = new StringBuffer();
 	
 	int count = 0;
-	Iterator paramValues = instance.getValues().iterator();
+	Iterator paramValues = instance.getCacheValues().iterator();
 	while (paramValues.hasNext()) {
 	    String val = (String)paramValues.next();
-
 	    String cleaned = platform.cleanStringValue(val);
 
         //if (count != 0) {
@@ -409,9 +408,9 @@ public class ResultFactory {
      * from the cache table the row corresponding to a particular query 
      * instance (if any).
      */
-    private String instanceWhereClause(QueryInstance instance){
+    private String instanceWhereClause(QueryInstance instance) throws WdkModelException{
 	StringBuffer sb = new StringBuffer();
-	Iterator iter = instance.getValues().iterator();
+	Iterator iter = instance.getCacheValues().iterator();
 
 	sb.append(" query_name = '" + instance.getQuery().getFullName() + "'");
 
