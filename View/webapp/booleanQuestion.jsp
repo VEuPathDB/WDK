@@ -4,7 +4,7 @@
 <%@ taglib prefix="nested" uri="http://jakarta.apache.org/struts/tags-nested" %>
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
 
-<!-- display page header with seedQuestion displayName as banner -->
+<!-- display page header -->
 <site:header banner="Boolean Question" />
 
 <nested:form method="get" action="/processBooleanQuestion.do">
