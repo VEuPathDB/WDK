@@ -43,7 +43,7 @@ public class DisplayQuery extends SimpleTagSupport {
 
         
     	if ( question == null) {
-            WdkModel wm = (WdkModel) getJspContext().getAttribute("wdk.wdkModel", PageContext.APPLICATION_SCOPE);
+            WdkModel wm = (WdkModel) getJspContext().getAttribute("wdk_wdkModel", PageContext.APPLICATION_SCOPE);
             SummarySet rls = null;
             try {
                 rls = wm.getSummarySet(questionSetName);

@@ -57,7 +57,7 @@ public class ViewFullRecordServlet extends HttpServlet {
           try {
               //	    ResultFactory resultFactory = 
               //            (ResultFactory) getServletContext().getAttribute("wdk.recordResultFactory");
-              WdkModel wm = (WdkModel) getServletContext().getAttribute("wdk.wdkModel");
+              WdkModel wm = (WdkModel) getServletContext().getAttribute("wdk_wdkModel");
               Record record = wm.getRecord(recordReference);
               recordInstance = record.makeRecordInstance();
               recordInstance.setPrimaryKey(primaryKey);

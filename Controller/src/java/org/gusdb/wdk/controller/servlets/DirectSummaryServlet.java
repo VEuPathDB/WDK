@@ -118,7 +118,7 @@ public class DirectSummaryServlet extends HttpServlet {
         int end = start+pageSize-1;
         
 		// We have a queryRecord name
-        WdkModel wm = (WdkModel) getServletContext().getAttribute("wdk.wdkModel");
+        WdkModel wm = (WdkModel) getServletContext().getAttribute("wdk_wdkModel");
         
         Summary summary = wm.getSummary(fullSummaryName);
         Query sq = summary.getQuery();
