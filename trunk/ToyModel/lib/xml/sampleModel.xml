@@ -75,8 +75,7 @@
     <query name="RnaFields" 
             xsi:type="org.gusdb.gus.wdk.model.implementation.SqlQuery">
 
-       <param name="primaryKey" 
-              xsi:type="org.gusdb.gus.wdk.model.StringParam"/>
+       <paramRef twoPartName="params.primaryKey"/>
 
        <column name="description" displayName="Description" />
        <column name="length" displayName="Length" />
@@ -114,8 +113,7 @@
     <query name="ExternalLinks" 
            xsi:type="org.gusdb.gus.wdk.model.implementation.SqlQuery">
 
-      <param name="primaryKey" 
-             xsi:type="org.gusdb.gus.wdk.model.StringParam"/>
+      <paramRef twoPartName="params.primaryKey"/>
 
       <column name="name" displayName="Database" />
       <column name="primary_identifier" displayName="Id" />
@@ -146,8 +144,7 @@
               xsi:type="org.gusdb.gus.wdk.model.implementation.SqlQuery"
               displayName="RNAs">
 
-      <param name="primaryKey" 
-             xsi:type="org.gusdb.gus.wdk.model.StringParam"/>
+      <paramRef twoPartName="params.primaryKey"/>
 
       <column name="gene_id"/>
       <column name="taxon_name"/>
@@ -180,11 +177,7 @@
             xsi:type="org.gusdb.gus.wdk.model.implementation.SqlQuery"
             displayName="Gene Card name">
 
-       <param
-       xsi:type="org.gusdb.gus.wdk.model.StringParam"
-       name="GeneName"
-       prompt="Gene Name"
-       sample="brca1"/>
+       <paramRef twoPartName="params.GeneName"/>
 
        <column name="na_sequence_id" />
 
@@ -202,21 +195,9 @@
            xsi:type="org.gusdb.gus.wdk.model.implementation.SqlQuery"
            displayName="GO Id">
 
-         <param 
-          xsi:type="org.gusdb.gus.wdk.model.StringParam"
-          name="GoId"
-          prompt="GO Id"
-          help="You know what it is"
-          sample="GO:0005013"
-          regex="GO:\d+"/>
+      <paramRef twoPartName="params.GoId"/>
 
-         <param
-          xsi:type="org.gusdb.gus.wdk.model.FlatCVParam"
-          name="Taxon"
-          prompt="Organism"
-          help="You know what it is"
-          multipick="yes"
-          queryRef="VocabQueries.TaxonQuery"/>
+      <paramRef twoPartName="params.Taxon"/>
 
       <column name="na_sequence_id"/>
 
@@ -234,6 +215,35 @@
 
     </query>
   </querySet>
+
+  <paramSet name="params">
+    <param
+      name="GeneName"
+      xsi:type="org.gusdb.gus.wdk.model.StringParam"
+      prompt="Gene Name"
+      sample="brca1"/>
+
+    <param 
+      name="GoId"
+      xsi:type="org.gusdb.gus.wdk.model.StringParam"
+      prompt="GO Id"
+      help="You know what it is"
+      sample="GO:0005013"
+      regex="GO:\d+"/>
+
+    <param
+      name="Taxon"
+      xsi:type="org.gusdb.gus.wdk.model.FlatCVParam"
+      prompt="Organism"
+      help="You know what it is"
+      multipick="yes"
+      queryRef="VocabQueries.TaxonQuery"/>
+    
+    <param 
+      name="primaryKey" 
+      xsi:type="org.gusdb.gus.wdk.model.StringParam"/>
+
+  </paramSet>
 
 </wdkModel>
 
