@@ -16,8 +16,11 @@ General
 
  - importing model xml files into each other
 
+ - exceptions.  define two classes. QueryParamException, ModelDefinitionException.
 
 UserQueries
+
+ - virtual query sets 
 
  - prevent detail query instance from being cached
 

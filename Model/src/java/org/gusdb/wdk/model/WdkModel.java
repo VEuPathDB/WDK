@@ -3,14 +3,14 @@ package org.gusdb.gus.wdk.model;
 import java.util.HashMap;
 import java.util.Iterator;
 
-public class QuerySetContainer {
+public class WdkModel {
 
     HashMap simpleQuerySets = new HashMap();
     HashMap pageableQuerySets = new HashMap();
     String name;
     ResultFactory resultFactory;
 
-    public QuerySetContainer() {
+    public WdkModel() {
 	this.resultFactory = new ResultFactory();
     }
 
@@ -75,7 +75,7 @@ public class QuerySetContainer {
     
     public String toString() {
        String newline = System.getProperty( "line.separator" );
-       StringBuffer buf = new StringBuffer("QuerySetContainer: name='" + name 
+       StringBuffer buf = new StringBuffer("WdkModel: name='" + name 
 					   + "'");
 
        buf.append( newline );
