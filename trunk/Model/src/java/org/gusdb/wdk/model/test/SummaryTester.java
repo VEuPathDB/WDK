@@ -46,6 +46,7 @@ public class SummaryTester {
 	File modelConfigXmlFile = 
 	    new File(cmdLine.getOptionValue("configFile"));
 	File modelXmlFile = new File(cmdLine.getOptionValue("modelXmlFile"));
+        File modelPropFile = new File(cmdLine.getOptionValue("modelPropFile"));
 	
 	String summarySetName = cmdLine.getOptionValue("summarySetName");
 	String summaryName = cmdLine.getOptionValue("summaryName");
@@ -78,7 +79,7 @@ public class SummaryTester {
 	    platform.setDataSource(dataSource);
 	    
 	    WdkModel wdkModel = 
-		ModelXmlParser.parseXmlFile(modelXmlFile);
+		ModelXmlParser.parseXmlFile(modelXmlFile, modelPropFile);
 	    ResultFactory resultFactory = new ResultFactory(dataSource, platform, 
 							    login, instanceTable);
 	    wdkModel.setResources(resultFactory, platform);
@@ -134,8 +135,11 @@ public class SummaryTester {
 
 	// config file
 	addOption(options, "configFile", "An .xml file that specifies a ModelConfig object.");
-	// query set file
-	addOption(options, "modelXmlFile", "An .xml file that specifies a container of Query set objects.");
+	// model file
+	addOption(options, "modelXmlFile", "An .xml file that specifies WDK Model.");
+	// model prop file
+	addOption(options, "modelPropFile", "A .prop file that specifies key=value pairs to substitute into the model file.");
+
 	//summarySetName
 	addOption(options, "summarySetName", "The name of the summarySet in which to find the summary");
 	//summaryName
