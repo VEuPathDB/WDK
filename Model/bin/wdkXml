@@ -2,12 +2,12 @@
 
 if ($#argv == 0) then
   echo ""
-  echo "Parse a query set xml file"
+  echo "Parse a wdk model xml file"
   echo ""
-  echo "Usage: parseQuerySetXml xmlFile"
+  echo "Usage: wdkXml xmlFile"
   echo	""
   echo "Where:"
-  echo "  xmlFile: the querySet xml file"
+  echo "  xmlFile: the model xml file"
   exit 1 
 endif
 
