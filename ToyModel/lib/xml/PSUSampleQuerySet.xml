@@ -13,6 +13,7 @@
 
 <simpleQuerySet name="RNASimpleQueries">
 
+<!--
    <simpleSqlQuery name="DTGeneCardName"
             displayName="Gene Card name">
 
@@ -102,6 +103,70 @@
 
      <sql>
        select name
+       from SRes.TaxonName 
+       where taxon_id = $$TaxonId$$
+     </sql>
+  </simpleSqlQuery>
+-->
+
+   <simpleSqlQuery name="CDSNumExons"
+            displayName="CDS by number of exons">
+
+     <stringParam
+       name="Min"
+       prompt="Min"
+       sample="1"
+       regex="\d+" />
+
+     <stringParam
+       name="Max"
+       prompt="Max"
+       sample="5"
+       regex="\d+" />
+       
+     <sql>
+       select name wrong
+       from SRes.TaxonName 
+       where taxon_id = $$TaxonId$$
+     </sql>
+  </simpleSqlQuery>
+
+   <simpleSqlQuery name="CDSByName"
+            displayName="CDS by systematic id">
+
+     <stringParam
+       name="Name"
+       prompt="Name"
+       sample="SPAC1701.1c"
+       regex="\d+" />
+       
+     <sql>
+       select name wrong
+       from SRes.TaxonName 
+       where taxon_id = $$TaxonId$$
+     </sql>
+  </simpleSqlQuery>
+
+   <simpleSqlQuery name="CDSByChromosome"
+            displayName="CDS on a given chromosome">
+
+       <sqlEnumParam
+          name="Chromosome"
+          prompt="Chromosome"
+          help="You know what it is"
+          multipick="no">
+          <simpleSqlQuery>
+            <sql>
+              select name as key, wrong
+                     taxon_id as value
+              from SRes.taxonName
+              where name in ('mouse', 'human')
+            </sql>
+          </simpleSqlQuery>
+       </sqlEnumParam>
+       
+     <sql>
+       select name wrong
        from SRes.TaxonName 
        where taxon_id = $$TaxonId$$
      </sql>
