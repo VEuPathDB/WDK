@@ -4,7 +4,7 @@ To Do
 General
 -------
 Ask about getting rid of XML libs - which version of Java are CBIL using?
-Be able to connect to GUS@CBIL - need connection details 
+Be able to connect to GUS@CBIL - need connection details - test 
 Ask about updating Oracle lib
 Ensure all paths are not hard-coded - partially done, 1 left
 Move this list to SF tracker?
@@ -13,8 +13,10 @@ Model: allow translation of * to % in StringParam
 Custom tag: debugging - show all vars in all contexts (or restrict by scope)
 Custom tag: default record view - version 2 - more structured view
 Discussion on branding so we can decide on directory structure
-Set up tagdoclet, or whatever it's called
-
+Set up taglibrarydoc and generate documentation for custom tags
+Add row highlighting
+cache manager page and protection
+View table page
 
 Build
 -----
@@ -32,7 +34,7 @@ Write validator for query tag library. Wait until more solid
 
 Results Summary
 ---------------
-Wait to see what TableResults looks like 
+Wait to see what TableResults looks like
 
 
 Results Detail
@@ -43,7 +45,7 @@ Redirect to view page name based on Record name
 
 Controller
 ----------
-Navigation config files
+Navigation config files?
 
 
 
