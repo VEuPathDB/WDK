@@ -14,7 +14,7 @@
 
       <sanityQuery twoPartName="VocabQueries.ApiTaxonQuery" minOutputLength="3" maxOutputLength="3"/>
 
-      <sanityQuery twoPartName="RnaRecordAttributeQueries.RnaSummary" minOutputLength="1" maxOutputLength="1">
+      <sanityQuery twoPartName="RnaRecordAttributeQueries.RnaQuestion" minOutputLength="1" maxOutputLength="1">
            <sanityParam name="primaryKey" value="92484673"/>
       </sanityQuery>
 
@@ -26,5 +26,5 @@
            <sanityParam name="primaryKey" value="92484673"/>
       </sanityQuery>
 
-      <sanityRecord twoPartName="RnaRecords.RnaRecord" primaryKey="92484673" />
+      <sanityRecord twoPartName="RnaRecordClasses.RnaRecordClass" primaryKey="92484673" />
 </sanityModel>

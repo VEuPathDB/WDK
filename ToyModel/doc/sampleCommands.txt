@@ -5,7 +5,7 @@ wdkCache -configFile $GUS_HOME/lib/xml/toyModelConfig.xml -reset
 wdkRecord -configFile $GUS_HOME/lib/xml/toyModelConfig.xml \
 -modelXmlFile $GUS_HOME/lib/xml/toyModel.xml \
 -modelPropFile $GUS_HOME/config/toyModel.prop \
--recordSetName RnaRecords -recordName RnaRecord -primaryKey 92484673
+-recordSetName RnaRecordClasses -recordName RnaRecordClass -primaryKey 92484673
 
 wdkSummary -configFile $GUS_HOME/lib/xml/toyModelConfig.xml \
 -modelXmlFile $GUS_HOME/lib/xml/toyModel.xml \
