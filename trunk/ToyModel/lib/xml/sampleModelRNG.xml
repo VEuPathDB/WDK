@@ -3,13 +3,14 @@
 <wdkModel name="RnaModel">
 
 
+<!--
   <referenceList name="InterestingRnaSummaries">
 
      <reference twoPartName="RnaSummaries.RnasByGoId"/>
      <reference twoPartName="RnaSummaries.RnasByGeneCardName"/>
 
   </referenceList>
-
+-->
 
 
   <recordSet name="RnaRecords">
