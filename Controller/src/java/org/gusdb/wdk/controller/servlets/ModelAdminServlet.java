@@ -31,7 +31,7 @@ public class ModelAdminServlet extends HttpServlet {
     
 	protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
         
-        WdkModel model = null; // FIXME
+        WdkModel model = (WdkModel) getServletContext().getAttribute("wdk.wdkModel");
         
 		String action = req.getParameter("action");
 		String type = req.getParameter("type");
