@@ -5,12 +5,16 @@
   <recordListSet name="RNARecordLists">
 
      <recordList name="RNARecordList"
-               recordRef="RNARecords.RNARecord"
-               queryRef="RNARecordQueries.RNAIdsByGoId" />
+                 recordRef="RNARecords.RNARecord"
+                 queryRef="RNARecordQueries.RNAIdsByGoId" />
   </recordListSet>
 
   <recordSet name="RNARecords">
-     <record name="RNARecord" type="DoTS Transcript" idPrefix="DT.">
+     <record name="RNARecord" 
+             type="DoTS Transcript" 
+             idPrefix="DT.">
+       <fieldsQuery referent="RNASimpleQueries.RNAListInDetail"/>  
+
        <fieldsQuery referent="RNARecordQueries.RNAFields"/>
 
        <tableQuery referent="RNARecordQueries.ExternalLinks"/>
@@ -38,9 +42,9 @@
      <sqlQuery name="RNAIdsByGoId">
 
         <stringParam name="GoId"
-               prompt="GO ID"
-               sample="GO:0016597"
-               regex="\S+"/>
+                     prompt="GO ID"
+                     sample="GO:0016597"
+                     regex="\S+"/>
        
         <column name="na_sequence_id" displayName="Assembly ID" />     
 
@@ -70,12 +74,11 @@
        <column name="assembly_consistency" displayName="Assembly consistency" />
        <column name="contains_mrna" displayName="Contains mRNA" />
        <column name="number_of_contained_sequences" displayName="Number contained sequences" />
-       <column name="taxon_name" displayName="Taxon Name" />
        <column name="modification_date" displayName="Last modified" />
        <column name="review_status_name" displayName="Review status" />
        <textColumn name="hello" 
-               displayName="Last modified" 
-               text="hello $$taxon_name$$, you are nice" />
+                   displayName="Last modified" 
+                   text="hello $$taxon_name$$, you are nice" />
  
        <sql>
        select r.description, 
@@ -83,7 +86,6 @@
               a.assembly_consistency, 
               a.contains_mrna,
               a.number_of_contained_sequences, 
-              tn.name as taxon_name, 
               TO_CHAR(a.modification_date, 'Mon DD, YYYY HH:MI:SSAM') as modification_date, 
               rvw.name as review_status_name
       from dots.Assembly a, sres.TaxonName tn, 
@@ -127,12 +129,11 @@
   <querySet name="RNASimpleQueries">
 
      <sqlQuery name="DTGeneCardName"
-            displayName="Gene Card name">
+               displayName="Gene Card name">
 
-       <stringParam
-       name="GeneName"
-       prompt="Gene Name"
-       sample="brca1"/>
+       <stringParam name="GeneName"
+                    prompt="Gene Name"
+                    sample="brca1"/>
 
        <column name="na_sequence_id" />
 
@@ -148,12 +149,9 @@
     <sqlQuery name="RNAListInDetail"
               displayName="RNAs">
 
-      <stringParam  
-        name="resultTable"/>
-      <stringParam  
-        name="startRow"/>
-      <stringParam  
-        name="endRow"/>
+      <stringParam name="resultTable"/>
+      <stringParam name="startRow"/>
+      <stringParam name="endRow"/>
 
       <column name="gene_id"/>
       <column name="taxon_name"/>
@@ -171,30 +169,25 @@
              cd.gene_description, cd.na_sequence_id, cd.assembly_length, 
              cd.assembly_num_sequences, 
               cd.assembly_contains_mrna
-      from allgenes.CentralDogma cd, $$resultTable$$ ids 
-      where cd.na_sequence_id = ids.na_sequence_id
-      and ids.i >= $$startRow$$
-      and ids.i   <= $$endRow$$
-      order by cd.gene_id, cd.assembly_length desc
+      from allgenes.CentralDogma cd
+      where cd.na_sequence_id = $$primaryKey$$
       ]]>
       </sql>
     </sqlQuery>
 
     <sqlQuery name="RNAByGoTerm"
-           displayName="GO functional classification (by term)">
+              displayName="GO functional classification (by term)">
 
-         <stringParam 
-          name="GoId"
-          prompt="GO Id"
-          help="You know what it is"
-          sample="GO:0005013"
-          regex="GO:\d+"/>
+         <stringParam name="GoId"
+                      prompt="GO Id"
+                      help="You know what it is"
+                      sample="GO:0005013"
+                      regex="GO:\d+"/>
 
-         <sqlEnumParam
-          name="Taxon"
-          prompt="Organism"
-          help="You know what it is"
-          multipick="yes">
+         <sqlEnumParam name="Taxon"
+                       prompt="Organism"
+                       help="You know what it is"
+                       multipick="yes">
             <sqlQuery name="dontcare">
               <column name="name"/>
               <sql>
@@ -224,13 +217,12 @@
 
 
      <sqlQuery name="TaxonName"
-            displayName="Taxon name">
+               displayName="Taxon name">
 
-       <stringParam
-       name="TaxonId"
-       prompt="Taxon Id"
-       sample="8"
-       regex="\d+" />
+       <stringParam name="TaxonId"
+                    prompt="Taxon Id"
+                    sample="8"
+                    regex="\d+" />
       
        <column name="name"/>
 
