@@ -1,6 +1,5 @@
 package org.gusdb.gus.wdk.model;
 
-
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -41,6 +40,7 @@ public class RecordInstance {
 	} else {
 	    Query query = record.getAttributesQuery(attributeName);
 	    String queryName = query.getName();
+
 	    if (!attributesResultSetsMap.containsKey(queryName)) {
 		runAttributesQuery(query);
 	    }
@@ -77,18 +77,16 @@ public class RecordInstance {
 	    new StringBuffer(record.getType() + " " + record.getIdPrefix() + primaryKey).append( newline );
 
 
-    Iterator attributeNamesIt = record.getNonTextAttributeNames().iterator();
+	Iterator attributeNamesIt = record.getNonTextAttributeNames().iterator();
 	while (attributeNamesIt.hasNext()) {
 	    String attributeName = (String) attributeNamesIt.next();
 	    buf.append(attributeName + ":   " + getAttributeValue(attributeName)).append( newline );
 	}
-	
 	Iterator textAttributeNamesIt = record.getTextAttributeNames().iterator();
 	while (textAttributeNamesIt.hasNext()) {
 	    String attributeName = (String) textAttributeNamesIt.next();
 	    buf.append(attributeName + ":   " + getAttributeValue(attributeName)).append( newline );
 	}
-	
 	Iterator tableNamesIt = record.getTableNames().iterator();
 	while (tableNamesIt.hasNext()){
 	    String tableName = (String) tableNamesIt.next();
@@ -159,6 +157,7 @@ public class RecordInstance {
 		String msg = "Attributes query '" + query.getFullName() + "' in Record '" + record.getFullName() + "' returns more than one row";
 		throw new WdkModelException(msg);
 	    }
+	    rl.close();
 	}
     }
 
