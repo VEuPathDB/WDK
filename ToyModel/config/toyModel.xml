@@ -36,12 +36,24 @@
         </description>
 
         <question name="ByNumSeqs" 
+                  displayName="RNAs by number of assembly sequences" 
                   queryRef="RnaIds.ByNumSeqs" 
-                  recordClassRef="RnaRecordClasses.RnaRecordClass"/>
+                  recordClassRef="RnaRecordClasses.RnaRecordClass">
+            <description>
+                Find RNAs from a given organism that contain more than a 
+                specified number of ESTs in their assembly.
+            </description>
+        </question>
 
         <question name="ByDbESTLib" 
+                  displayName="RNAs by number of EST libs"
                   queryRef="RnaIds.ByDbESTLib" 
-                  recordClassRef="RnaRecordClasses.RnaRecordClass"/>
+                  recordClassRef="RnaRecordClasses.RnaRecordClass">
+            <description>
+                Find RNAs from a given organism that contain ESTs from more than a specified number of libraries.
+            </description>
+        </question>
+
 
     </questionSet>
 
@@ -91,9 +103,9 @@
 
             <tableQueryRef ref="RnaTables.ConstituentEsts"/>
 
-            <textAttribute name="overview">
+            <textAttribute name="overview" displayName="Overview">
                 <text>
-                    This is DoTS Transcript DT.$$primaryKey$$.  It is from $$taxon_name$$.
+                    Transcript $$primaryKey$$ is from $$taxon_name$$.
                 </text>
             </textAttribute>
         </recordClass>
@@ -124,11 +136,22 @@
 
     <querySet name="RnaIds">
 
-        <sqlQuery name="ByDbESTLib" displayName="RNAs by number of EST libs">
-            <description>
-                Find RNAs from a given organism and contain ESTs from more than a specified number of libraries.
-            </description>
-
+        <sqlQuery name="ByNumSeqs">
+            <paramRef ref="params.NumSeqs"/>
+            <paramRef ref="params.ApiTaxon"/>
+            <column name="na_sequence_id"/>
+            <sql>
+                <!-- use CDATA because query includes angle brackets -->
+                <![CDATA[
+                    select distinct a.na_sequence_id
+                    from WDKTestAssembly a
+                    where a.number_of_contained_sequences > $$NumSeqs$$
+                    and a.taxon_id in ($$ApiTaxon$$)
+                ]]>
+            </sql>
+        </sqlQuery>  
+      
+        <sqlQuery name="ByDbESTLib">
             <paramRef ref="params.NumEstLibs"/>
             <paramRef ref="params.ApiTaxon"/>
             <column name="na_sequence_id"/>
@@ -149,25 +172,6 @@
             </sql>
         </sqlQuery>
 
-
-        <sqlQuery name="ByNumSeqs" displayName="RNAs by number of assembled seqs">
-            <description>
-                Find RNAs from a given organism that contain more than a 
-                specified number of ESTs in their assembly.
-            </description>
-            <paramRef ref="params.NumSeqs"/>
-            <paramRef ref="params.ApiTaxon"/>
-            <column name="na_sequence_id"/>
-            <sql>
-                <!-- use CDATA because query includes angle brackets -->
-                <![CDATA[
-                    select distinct a.na_sequence_id
-                    from WDKTestAssembly a
-                    where a.number_of_contained_sequences > $$NumSeqs$$
-                    and a.taxon_id in ($$ApiTaxon$$)
-                ]]>
-            </sql>
-        </sqlQuery>        
     </querySet>
 
 
@@ -207,7 +211,7 @@
     <!-- Queries that retrieve tables belonging to RNAs  -->
     
     <querySet name="RnaTables">
-        <sqlQuery name="ConstituentEsts">
+        <sqlQuery name="ConstituentEsts" displayName="Constituent ESTs">
             <paramRef ref="params.primaryKey"/>
                 <column displayName="EST Id" name="na_sequence_id"/>
                 <column displayName="Assembly Sequence Id" name="assembly_sequence_id"/>
