@@ -1,6 +1,8 @@
 package org.gusdb.gus.wdk.model;
 
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 import java.sql.SQLException;
 import java.sql.ResultSet;
 
@@ -13,7 +15,7 @@ public class SqlEnumParam extends Param {
     
     Boolean multiPick = new Boolean(false);
     SimpleSqlQuery simpleSqlQuery;
-    Hashtable hash;
+    Map hash;
 
     public SqlEnumParam () {}
 
@@ -37,10 +39,10 @@ public class SqlEnumParam extends Param {
 	return simpleSqlQuery;
     }
 
-    public Hashtable getKeysAndValues(ResultFactory resultFactory) throws SQLException {
+    public Map getKeysAndValues(ResultFactory resultFactory) throws SQLException {
 	SqlResultFactory sqlResultFactory = resultFactory.getSqlResultFactory();
 	if (hash == null) {
-	    hash = new Hashtable();
+	    hash = new HashMap();
 	    SimpleSqlQueryInstance instance = new SimpleSqlQueryInstance(simpleSqlQuery); 
 	    ResultSet rs = sqlResultFactory.getResult(instance);
 	    try {
