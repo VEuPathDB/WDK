@@ -25,8 +25,8 @@
             <c:set value="${qSet.name}" var="qSetName"/>
             <c:set value="${qSet.questions}" var="questions"/>
             <c:forEach items="${questions}" var="q">
-            <c:set value="${q.name}" var="qName"/>
-            <c:set value="${q.displayName}" var="qDispName"/>
+              <c:set value="${q.name}" var="qName"/>
+              <c:set value="${q.displayName}" var="qDispName"/>
               <html:option value="${qSetName}.${qName}">${qDispName}</html:option>
             </c:forEach>
           </html:select>

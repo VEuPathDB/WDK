@@ -4,6 +4,8 @@
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
 <%@ taglib prefix="nested" uri="http://jakarta.apache.org/struts/tags-nested" %>
 
+<dir>
+
   <c:choose>
     <c:when test="${class.name eq 'org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean'}">
 
@@ -28,8 +30,12 @@
             <c:set value="${leafPref}_" var="leafPrefix"/>
             <c:set value="${wdkQ.params}" var="qParams"/>
 
-            <c:forEach items="${qParams}" var="qP">
+            <!-- display description -->
+            <tr><td colspan="2">
+                <b><jsp:getProperty name="wdkQ" property="description"/></b></td></tr>
 
+            <!-- display params -->
+            <c:forEach items="${qParams}" var="qP">
                <!-- an individual param (can not use fullName, w/ '.', for mapped props) -->
                <c:set value="${qP.name}" var="pNam"/>
                <tr><td align="right"><b><jsp:getProperty name="qP" property="prompt"/></b></td>
@@ -55,18 +61,21 @@
                      </td>
                   </c:otherwise>
                 </c:choose>
+                </tr>
             </c:forEach>
+
+            <!-- display boolean stuff -->
             <tr>
-               <td>
+               <td align="right">
                <!-- get possible questions to boolean with and display them -->
                <html:select property="nextQuestionOperand">
                      <c:set var="recordClass" value="${wdkQ.recordClass}"/>
                      <c:set var="questions" value="${recordClass.questions}"/>
 
                      <c:forEach items="${questions}" var="q">
-                        <c:set value="${q.name}" var="qName"/>
+                        <c:set value="${q.fullName}" var="qFullName"/>
                         <c:set value="${q.displayName}" var="qDispName"/>
-                        <html:option value="${qName}">${qDispName}</html:option>
+                        <html:option value="${qFullName}">${qDispName}</html:option>
                      </c:forEach>
                   </html:select>
                </td>
@@ -76,10 +85,11 @@
                      <c:set value="booleanOps" var="booleanName"/>
                      <html:options property="values(${booleanName})"/>
                   </html:select>
-               </td>
-               <tr>
-               <td><html:submit property="grow" value="${nodePath}"/></td>
+                  <html:submit property="grow" value="Grow Boolean (${leafPref})"/>
+               </td></tr>
          </table>
 
     </c:otherwise>
   </c:choose>
+
+</dir>
