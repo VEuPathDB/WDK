@@ -3,29 +3,36 @@ To Do
 
 General
 -------
-Ask about indentation style - spacesx4
-Ask about organizing imports - yes
-Ask about adding version numbers to libs - yes
-Ask about getting rid of XML libs
+Ask about getting rid of XML libs - somethings broken if we need them in this location
 Add a default (nearly-empty) stylesheet
-Check OK to change Hashtable to Map in SqlEnumParam
+Be able to connect to GUS@CBIL
+Ask about updating Oracle lib
+Pick up model config files from properties
+Ensure all paths are from properties not hard-coded
 
 Build
 -----
+Send deployment protocol to Steve
 
 Query
 -----
-Make DisplayQuery pick up query set from QueryHolder
+Write servlet to co-operate with custom tags for building incomplete/invalid queries - done, needs testing
+Add custom tag to pick validation errors
+Make DisplayQuery pick up query set from QueryHolder? - wait for BooleanQueryModel
 Set up more param handling styles - new Interface
 
 Results Summary
 ---------------
+?
 
 
 Results Detail
 --------------
-Set up initial hard-coded query and text/plain
+How to view Record Tables?
 
+Controller
+----------
+Navigation config files
 
 
 
@@ -37,7 +44,11 @@ General
 -------
 Generate PDF Javadocs for off-line reading
 Access CVS through SSH
-Set up as project in eclipse
+Set up as project in eclipse - build system too hacky to do whole thing, based on individual projects
+Ask about indentation style - spacesx4
+Ask about organizing imports - yes
+Ask about adding version numbers to libs - yes
+Check OK to change Hashtable to Map in SqlEnumParam - Yes
 
 Build
 -----
@@ -54,3 +65,6 @@ Results Summary
 
 Results Detail
 --------------
+Set up initial hard-coded query and text/plain
+Set up wrapper for RecordInstance to implement Map
+Set up simple JSP based-view
