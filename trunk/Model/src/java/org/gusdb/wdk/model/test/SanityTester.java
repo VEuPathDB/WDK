@@ -32,7 +32,7 @@ import org.apache.commons.cli.ParseException;
  * Created: Mon August 23 12:00:00 2004 EDT
  *
  * @author David Barkan
- * @version $Revision$ $Date$Author: dbarkan $
+ * @version $Revision$ $Date$Author: sfischer $
  */
 public class SanityTester {
 
@@ -357,9 +357,9 @@ public class SanityTester {
 	String result = failedOverall ? "FAILED" : "PASSED";
 
 	StringBuffer resultLine = new StringBuffer("***Sanity test summary***\n");
-	resultLine.append("Overall Result:  Sanity Test " + result + "\n");
 	resultLine.append(queryPassed + " queries passed, " + queryFailed + " queries failed\n");
  	resultLine.append(recordPassed + " records passed, " + recordFailed + " records failed");
+	resultLine.append("Sanity Test " + result + "\n");
 	System.err.println(resultLine.toString());
 	return failedOverall;
     }
