@@ -2,11 +2,11 @@ package org.gusdb.gus.wdk.model;
 
 
 import org.gusdb.gus.wdk.controller.WdkLogManager;
-import org.gusdb.gus.wdk.util.FixableSmallMap;
-import org.gusdb.gus.wdk.util.FixableSmallSet;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -16,12 +16,12 @@ public class Record {
     
     private static final Logger logger = WdkLogManager.getLogger("org.gusdb.gus.wdk.model.Record");
     
-    private Map attributesQueryMap = new FixableSmallMap();  // attributeName -> Query
-    private Map tableQueryMap = new FixableSmallMap();   // tableName -> Query
-    private Map textAttributeMap = new FixableSmallMap();    // attributeName -> text (String)
+    private Map attributesQueryMap = new LinkedHashMap();  // attributeName -> Query
+    private Map tableQueryMap = new LinkedHashMap();   // tableName -> Query
+    private Map textAttributeMap = new LinkedHashMap();    // attributeName -> text (String)
     private List summaryColumnNames = new ArrayList();
-    private Set tableQueryRefs = new FixableSmallSet();
-    private Set attributesQueryRefs = new FixableSmallSet();
+    private Set tableQueryRefs = new LinkedHashSet();
+    private Set attributesQueryRefs = new LinkedHashSet();
     private String name;
     private String type;
     private String idPrefix;
