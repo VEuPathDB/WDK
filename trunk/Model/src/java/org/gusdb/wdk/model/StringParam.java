@@ -1,10 +1,14 @@
 package org.gusdb.gus.wdk.model;
 
+import java.util.logging.Logger;
+
 
 public class StringParam extends Param {
     
-    String sample;
-    String regex;
+    private static final Logger logger = Logger.getLogger("org.gusdb.gus.wdk.model.StringParam"); 
+    
+    private String sample;
+    private String regex;
     private Boolean substitute = Boolean.FALSE;
 
     public StringParam () {}
@@ -51,15 +55,13 @@ public class StringParam extends Param {
     protected void resolveReferences(WdkModel model) throws WdkModelException {}
 
     protected String validateValue(Object value) throws WdkModelException {
-	if (!(value instanceof String)) 
-	    throw new WdkModelException("Value must be a String " + value);
-	String svalue = (String)value;
+        if (!(value instanceof String)) {
+            throw new WdkModelException("Value must be a String " + value) ;
+        }
+	    String svalue = (String)value;
         if (regex == null) {
             // TODO - Correct? Assuming no regex means we don't care about value
             return null;
-        }
-        if (substitute.booleanValue() && svalue != null) {
-            svalue = substitute(svalue);
         }
         if ( svalue == null || !svalue.matches(regex)) {
             return "Value '" + svalue + "'does not match regex '" + regex + "' or is null";
@@ -67,8 +69,21 @@ public class StringParam extends Param {
         return null;
     }
 
-    private String substitute(String value) {
-        return value.replaceAll("*","%");
+    public String substitute(String value) {
+        logger.finest("substitute is called");
+        if (!substitute.equals(Boolean.TRUE)) {
+            return value;
+        }
+        StringBuffer ret = new StringBuffer();
+        for (int i=0; i < value.length(); i++) {
+            if ('*' != value.charAt(i)) {
+                ret.append(value.charAt(i));
+            } else {
+                ret.append('%');
+            }
+        }
+        logger.finest("I've created "+ret.toString());
+        return ret.toString();
     }
 
 }
