@@ -20,11 +20,7 @@ import org.gusdb.wdk.model.jspwrap.ParamBean;
  *  form bean for setting up a boolean question
  */
 
-public class BooleanQuestionForm extends ActionForm {
-
-    private Map myProps = new HashMap();
-    private Map myLabels = new HashMap();
-    private Map myValues = new HashMap();
+public class BooleanQuestionForm extends QuestionForm {
 
     private BooleanQuestionNodeBean rootNode = null;
     private BooleanQuestionLeafBean seedLeaf = null;
@@ -56,7 +52,7 @@ public class BooleanQuestionForm extends ActionForm {
 
 	//DTB -- need to figure out what to validate
 	
-	BooleanQuestionNodeBean booleanQuestionNode = getBooleanQuestionNode();
+	//BooleanQuestionNodeBean booleanQuestionNode = getBooleanQuestionNode();
 	//	ParamBean[] params = booleanQuestionNode.getParams();
 	/*for (int i=0; i<params.length; i++) {
 	    ParamBean p = params[i];
@@ -71,45 +67,14 @@ public class BooleanQuestionForm extends ActionForm {
 		throw new RuntimeException(exp);
 	    }
 	    }*/
-	return errors;
+	//return errors;
+	return null;
     }
 
     public int getNextId(){
 	currentNodeId++;
 	return currentNodeId;
     }
-
-    public void setMyProp(String key, Object val)
-    {
-	myProps.put(key, val);
-    }
-
-    public Object getMyProp(String key)  throws WdkModelException
-    {
-	Object res = myProps.get(key);
-	return res;
-    }
-
-    /* returns a list of labels for a select box */
-    public String[] getLabels(String key) throws WdkModelException
-    {
-	return (String[])myLabels.get(key);
-    }
-
-    /* returns a list of values for a select box */
-    public String[] getValues(String key) throws WdkModelException
-    {
-	return (String[])myValues.get(key);
-    }
-
-    void setMyProps(Map props) { myProps = props; }
-    public Map getMyProps() { return myProps; }
-
-    void setMyLabels (Map lbls) { myLabels = lbls; }
-    Map getMyLabels () { return myLabels; }
-
-    void setMyValues (Map vals) { myValues = vals; }
-    Map getMyValues () { return myValues; }
 
     public String getOperation(){
 	return operation;
