@@ -75,7 +75,7 @@ public class RecordList {
 	this.name = name;
     }
 
-    public int getTotalLength(Hashtable values) throws Exception{
+    public int getTotalLength(Hashtable values) throws WdkModelException{
 	RecordListInstance rli = makeRecordListInstance();
 	rli.setValues(values, 0, 0); 
 	return rli.getTotalLength();
