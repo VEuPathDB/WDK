@@ -52,15 +52,15 @@ public class RecordInstanceView implements Map {
                 catch (WdkModelException exp) {
                     exp.printStackTrace();
                 }
+                if ("primary_key".equals(key)) {
+                    value = new PrimaryKey(value);
+                }
                 map.put(key, value);
             }
         }
     }
     
-    
-    public List getColumnNames() {
-        return ri.getRecord().getSummaryColumnNames();
-    }
+
     
     private void generateAttributeNames() {
 //        if (summary) {
@@ -74,6 +74,8 @@ public class RecordInstanceView implements Map {
             //tempNames.addAll(record.getTextAttributeNames());
             tempNames.addAll(record.getTableNames());
             attributeNames = tempNames;
+
+            
 //        }
 //        
 //        // FIXME Just waiting for method on model
