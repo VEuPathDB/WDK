@@ -1,11 +1,11 @@
-package org.gusdb.gus.wdk.view;
+package org.gusdb.wdk.view;
 
-import org.gusdb.gus.wdk.controller.WdkLogManager;
-import org.gusdb.gus.wdk.model.Column;
-import org.gusdb.gus.wdk.model.RecordInstance;
-import org.gusdb.gus.wdk.model.ResultList;
-import org.gusdb.gus.wdk.model.SummaryInstance;
-import org.gusdb.gus.wdk.model.WdkModelException;
+import org.gusdb.wdk.controller.WdkLogManager;
+import org.gusdb.wdk.model.Column;
+import org.gusdb.wdk.model.RecordInstance;
+import org.gusdb.wdk.model.ResultList;
+import org.gusdb.wdk.model.SummaryInstance;
+import org.gusdb.wdk.model.WdkModelException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,7 +29,7 @@ import java.util.logging.Logger;
  */
 public class RIVList implements Iterator {
 
-    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.gus.wdk.view.RIVList");
+    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.view.RIVList");
     
     private ResultList rl;
     private SummaryInstance si;

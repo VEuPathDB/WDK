@@ -1,8 +1,8 @@
-package org.gusdb.gus.wdk.model.implementation;
+package org.gusdb.wdk.model.implementation;
 
-import org.gusdb.gus.wdk.controller.WdkLogManager;
-import org.gusdb.gus.wdk.model.RDBMSPlatformI;
-import org.gusdb.gus.wdk.model.WdkModelException;
+import org.gusdb.wdk.controller.WdkLogManager;
+import org.gusdb.wdk.model.RDBMSPlatformI;
+import org.gusdb.wdk.model.WdkModelException;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -24,7 +24,7 @@ import javax.sql.DataSource;
  */
 public class PostgreSQL implements RDBMSPlatformI {
     
-    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.gus.wdk.model.implementation.PostgreSQL");
+    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.model.implementation.PostgreSQL");
     
     private DataSource dataSource;
     private GenericObjectPool connectionPool;
@@ -127,7 +127,7 @@ public class PostgreSQL implements RDBMSPlatformI {
 
     
     /* (non-Javadoc)
-     * @see org.gusdb.gus.wdk.model.RDBMSPlatformI#createDataSource(java.lang.String, java.lang.String, java.lang.String)
+     * @see org.gusdb.wdk.model.RDBMSPlatformI#createDataSource(java.lang.String, java.lang.String, java.lang.String)
      */
     public void init(String url, String user, String password, Integer minIdle,
 		     Integer maxIdle, Integer maxWait, Integer maxActive, 
@@ -149,7 +149,7 @@ public class PostgreSQL implements RDBMSPlatformI {
     }   
     
     /* (non-Javadoc)
-     * @see org.gusdb.gus.wdk.model.RDBMSPlatformI#close()
+     * @see org.gusdb.wdk.model.RDBMSPlatformI#close()
      */
     public void close() throws WdkModelException {
         try {

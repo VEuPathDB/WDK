@@ -1,11 +1,11 @@
-package org.gusdb.gus.wdk.model.test;
+package org.gusdb.wdk.model.test;
 
 import java.util.Vector;
 
 import org.w3c.dom.Document;
 
-import org.gusdb.gus.wdk.model.WdkModelException;
-import org.gusdb.gus.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 
 
 /**
@@ -17,7 +17,7 @@ import org.gusdb.gus.wdk.model.WdkUserException;
  * Created: Mon August 23 12:00:00 2004 EDT
  *
  * @author David Barkan
- * @version $Revision$ $Date$Author: dbarkan $
+ * @version $Revision$ $Date$Author: art $
  */
 
 //DTB -- Took out ability to get a SanityRecord or SanityQuery by name, as so far is 

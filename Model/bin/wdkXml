@@ -20,4 +20,4 @@ setenv CLASSPATH "$GUS_HOME/lib/java/commons-digester-1.5.jar:$GUS_HOME/lib/java
 
 setenv LOGGING_PROPS
 
-java -classpath $CLASSPATH $LOGGING_PROPS -DerrorHandler=org.xml.sax.helpers.DefaultHandler -DschemaFile=$GUS_HOME/lib/rng/wdkModel.rng org.gusdb.gus.wdk.model.implementation.ModelXmlParser $1 $2
+java -classpath $CLASSPATH $LOGGING_PROPS -DerrorHandler=org.xml.sax.helpers.DefaultHandler -DschemaFile=$GUS_HOME/lib/rng/wdkModel.rng org.gusdb.wdk.model.implementation.ModelXmlParser $1 $2

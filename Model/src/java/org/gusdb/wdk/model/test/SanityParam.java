@@ -1,4 +1,4 @@
-package org.gusdb.gus.wdk.model.test;
+package org.gusdb.wdk.model.test;
 
 /**
  * SanityParam.java
@@ -9,7 +9,7 @@ package org.gusdb.gus.wdk.model.test;
  * Created: Mon August 23 12:00:00 2004 EDT
  *
  * @author David Barkan
- * @version $Revision$ $Date$Author: dbarkan $
+ * @version $Revision$ $Date$Author: art $
  */
 public class SanityParam {
 

@@ -1,4 +1,4 @@
-package org.gusdb.gus.wdk.model;
+package org.gusdb.wdk.model;
 
 import java.io.File;
 import java.net.URL;

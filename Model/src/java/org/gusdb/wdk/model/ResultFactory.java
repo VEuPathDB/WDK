@@ -1,8 +1,8 @@
-package org.gusdb.gus.wdk.model;
+package org.gusdb.wdk.model;
 
-import org.gusdb.gus.wdk.controller.WdkLogManager;
-import org.gusdb.gus.wdk.model.implementation.SqlResultList;
-import org.gusdb.gus.wdk.model.implementation.SqlUtils;
+import org.gusdb.wdk.controller.WdkLogManager;
+import org.gusdb.wdk.model.implementation.SqlResultList;
+import org.gusdb.wdk.model.implementation.SqlUtils;
 
 import java.io.File;
 import java.sql.ResultSet;
@@ -46,7 +46,7 @@ import org.apache.commons.cli.ParseException;
 
 public class ResultFactory {
 
-    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.gus.wdk.model.ResultFactory");
+    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.model.ResultFactory");
     
     RDBMSPlatformI platform;
     String schemaName;

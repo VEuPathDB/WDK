@@ -1,11 +1,11 @@
-package org.gusdb.gus.wdk.controller.servlets;
+package org.gusdb.wdk.controller.servlets;
 
-import org.gusdb.gus.wdk.controller.WdkLogManager;
-import org.gusdb.gus.wdk.model.Record;
-import org.gusdb.gus.wdk.model.RecordInstance;
-import org.gusdb.gus.wdk.model.WdkModel;
+import org.gusdb.wdk.controller.WdkLogManager;
+import org.gusdb.wdk.model.Record;
+import org.gusdb.wdk.model.RecordInstance;
+import org.gusdb.wdk.model.WdkModel;
 
-import org.gusdb.gus.wdk.view.RecordInstanceView;
+import org.gusdb.wdk.view.RecordInstanceView;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,7 +25,7 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class ViewFullRecordServlet extends HttpServlet {
 
-    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.gus.wdk.controller.servlets.ViewFullRecordServlet");
+    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.controller.servlets.ViewFullRecordServlet");
     
     private static final int DESTINATION_PLAIN=0;
     private static final int DESTINATION_JSP=1;

@@ -1,8 +1,8 @@
-package org.gusdb.gus.wdk.controller;
+package org.gusdb.wdk.controller;
 
-import org.gusdb.gus.wdk.model.RDBMSPlatformI;
-import org.gusdb.gus.wdk.model.WdkModel;
-import org.gusdb.gus.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.RDBMSPlatformI;
+import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelException;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -30,10 +30,10 @@ public class ApplicationInitListener implements ServletContextListener {
     
     private static final String DEFAULT_LOGIN_CONFIGURATION = "/WEB-INF/wdk-config/login.xml";
     private static final String DEFAULT_MODEL_CONFIGURATION = "/WEB-INF/wdk-config/model.xml";
-    private static final String DEFAULT_MODEL_PARSER = "org.gusdb.gus.wdk.model.implementation.ModelXmlParser";
+    private static final String DEFAULT_MODEL_PARSER = "org.gusdb.wdk.model.implementation.ModelXmlParser";
     private static final String DEFAULT_PROPS_LOCATION = "/WEB-INF/wdk-config/macro.props";
   
-    private static final Logger logger = Logger.getLogger("org.gusdb.gus.wdk.controller.ApplicationInitListener");
+    private static final Logger logger = Logger.getLogger("org.gusdb.wdk.controller.ApplicationInitListener");
 
     private DataSource dataSource;
     private RDBMSPlatformI platform;
@@ -76,8 +76,8 @@ public class ApplicationInitListener implements ServletContextListener {
                 fh = new FileHandler(loggingFileLocation);
                 fh.setFormatter(new SimpleFormatter());
                 fh.setLevel(Level.ALL);
-                Logger.getLogger("org.gusdb.gus").addHandler(fh);
-                //Logger.getLogger("org.gusdb.gus").setUseParentHandlers(false);
+                Logger.getLogger("org.gusdb").addHandler(fh);
+                //Logger.getLogger("org.gusdb").setUseParentHandlers(false);
             } catch (SecurityException exp) {
                 application.log("IMPORTANT: Unable to create a logging handler - security exception", exp);
             } catch (IOException exp) {

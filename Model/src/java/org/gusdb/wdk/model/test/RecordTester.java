@@ -1,11 +1,11 @@
-package org.gusdb.gus.wdk.model.test;
+package org.gusdb.wdk.model.test;
 
-import org.gusdb.gus.wdk.model.WdkModel;
-import org.gusdb.gus.wdk.model.Record;
-import org.gusdb.gus.wdk.model.RecordInstance;
-import org.gusdb.gus.wdk.model.RecordSet;
-import org.gusdb.gus.wdk.model.WdkUserException;
-import org.gusdb.gus.wdk.model.implementation.ModelXmlParser;
+import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.Record;
+import org.gusdb.wdk.model.RecordInstance;
+import org.gusdb.wdk.model.RecordSet;
+import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.implementation.ModelXmlParser;
 
 import java.io.File;
 

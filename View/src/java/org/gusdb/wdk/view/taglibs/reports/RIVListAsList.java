@@ -1,8 +1,8 @@
-package org.gusdb.gus.wdk.view.taglibs.reports;
+package org.gusdb.wdk.view.taglibs.reports;
 
-import org.gusdb.gus.wdk.controller.WdkLogManager;
-import org.gusdb.gus.wdk.view.RIVList;
-import org.gusdb.gus.wdk.view.RecordInstanceView;
+import org.gusdb.wdk.controller.WdkLogManager;
+import org.gusdb.wdk.view.RIVList;
+import org.gusdb.wdk.view.RecordInstanceView;
 
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -16,7 +16,7 @@ import javax.servlet.jsp.tagext.SimpleTagSupport;
  */
 public class RIVListAsList extends SimpleTagSupport {
 
-    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.gus.wdk.view.taglibs.reports.RIVListAsList");
+    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.view.taglibs.reports.RIVListAsList");
     
     private RIVList list;
     private String column;

@@ -1,12 +1,12 @@
-package org.gusdb.gus.wdk.model.implementation;
+package org.gusdb.wdk.model.implementation;
 
-import org.gusdb.gus.wdk.model.NotBooleanOperandException;
-import org.gusdb.gus.wdk.model.Query;
-import org.gusdb.gus.wdk.model.QueryInstance;
-import org.gusdb.gus.wdk.model.WdkUserException;
-import org.gusdb.gus.wdk.model.WdkModelException;
-import org.gusdb.gus.wdk.model.ResultList;
-import org.gusdb.gus.wdk.model.ResultFactory;
+import org.gusdb.wdk.model.NotBooleanOperandException;
+import org.gusdb.wdk.model.Query;
+import org.gusdb.wdk.model.QueryInstance;
+import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.ResultList;
+import org.gusdb.wdk.model.ResultFactory;
 
 import java.util.Collection;
 import java.util.Collections;

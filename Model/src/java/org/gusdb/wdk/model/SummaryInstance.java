@@ -1,5 +1,5 @@
-package org.gusdb.gus.wdk.model;
-import org.gusdb.gus.wdk.controller.WdkLogManager;
+package org.gusdb.wdk.model;
+import org.gusdb.wdk.controller.WdkLogManager;
 
 import java.util.Map;
 import java.util.Vector;
@@ -17,7 +17,7 @@ import java.util.Iterator;
 
 public class SummaryInstance {
 
-    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.gus.wdk.model.SummaryInstance");
+    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.model.SummaryInstance");
     
     // ------------------------------------------------------------------
     // Instance variables

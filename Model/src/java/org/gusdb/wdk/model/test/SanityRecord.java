@@ -1,7 +1,7 @@
-package org.gusdb.gus.wdk.model.test;
+package org.gusdb.wdk.model.test;
 
-import org.gusdb.gus.wdk.model.Reference;
-import org.gusdb.gus.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.Reference;
+import org.gusdb.wdk.model.WdkModelException;
 
 /**
  * SanityRecord.java
@@ -11,7 +11,7 @@ import org.gusdb.gus.wdk.model.WdkModelException;
  * Created: Mon August 23 12:00:00 2004 EDT
  *
  * @author David Barkan
- * @version $Revision$ $Date$Author: $
+ * @version $Revision$ $Date$Author: dbarkan $
  */
 
 

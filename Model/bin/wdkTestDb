@@ -42,7 +42,7 @@ foreach my $tableName (@tables){
 
 $args .= "-tables $tableArg";
 
-my $cmd = "java -Djdbc.drivers=oracle.jdbc.driver.OracleDriver -DcmdName=wdkTestDb -classpath $classpath org.gusdb.gus.wdk.model.test.TestDBManager $args";
+my $cmd = "java -Djdbc.drivers=oracle.jdbc.driver.OracleDriver -DcmdName=wdkTestDb -classpath $classpath org.gusdb.wdk.model.test.TestDBManager $args";
 
 #print STDERR "wdkTestDb: running command $cmd\n";
 

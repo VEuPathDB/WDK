@@ -1,4 +1,4 @@
-package org.gusdb.gus.wdk.view.taglibs.query.HTMLParamViews;
+package org.gusdb.wdk.view.taglibs.query.HTMLParamViews;
 
 /**
  * Interface indicating a class that can represent a Param in some view context

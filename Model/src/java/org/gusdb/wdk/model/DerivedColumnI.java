@@ -1,4 +1,4 @@
-package org.gusdb.gus.wdk.model;
+package org.gusdb.wdk.model;
 
 public interface DerivedColumnI {
 

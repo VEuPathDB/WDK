@@ -1,11 +1,11 @@
-package org.gusdb.gus.wdk.model.test;
+package org.gusdb.wdk.model.test;
 
-import org.gusdb.gus.wdk.model.test.SanityModel;
-import org.gusdb.gus.wdk.model.test.SanityRecord;
-import org.gusdb.gus.wdk.model.test.SanityQuery;
-import org.gusdb.gus.wdk.model.test.SanityParam;
+import org.gusdb.wdk.model.test.SanityModel;
+import org.gusdb.wdk.model.test.SanityRecord;
+import org.gusdb.wdk.model.test.SanityQuery;
+import org.gusdb.wdk.model.test.SanityParam;
 
-import org.gusdb.gus.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkModelException;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;

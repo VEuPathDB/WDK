@@ -1,9 +1,9 @@
-package org.gusdb.gus.wdk.model.test;
+package org.gusdb.wdk.model.test;
 
-import org.gusdb.gus.wdk.model.ModelConfig;
-import org.gusdb.gus.wdk.model.ModelConfigParser;
-import org.gusdb.gus.wdk.model.RDBMSPlatformI;
-import org.gusdb.gus.wdk.model.implementation.SqlUtils;
+import org.gusdb.wdk.model.ModelConfig;
+import org.gusdb.wdk.model.ModelConfigParser;
+import org.gusdb.wdk.model.RDBMSPlatformI;
+import org.gusdb.wdk.model.implementation.SqlUtils;
 
 import java.io.BufferedReader;
 import java.io.File;

@@ -1,15 +1,15 @@
-package org.gusdb.gus.wdk.model.test;
+package org.gusdb.wdk.model.test;
 
-import org.gusdb.gus.wdk.model.Query;
-import org.gusdb.gus.wdk.model.QuerySet;
-import org.gusdb.gus.wdk.model.Record;
-import org.gusdb.gus.wdk.model.RecordInstance;
-import org.gusdb.gus.wdk.model.RecordSet;
-import org.gusdb.gus.wdk.model.Reference;
-import org.gusdb.gus.wdk.model.ResultFactory;
-import org.gusdb.gus.wdk.model.ResultList;
-import org.gusdb.gus.wdk.model.WdkModel;
-import org.gusdb.gus.wdk.model.implementation.ModelXmlParser;
+import org.gusdb.wdk.model.Query;
+import org.gusdb.wdk.model.QuerySet;
+import org.gusdb.wdk.model.Record;
+import org.gusdb.wdk.model.RecordInstance;
+import org.gusdb.wdk.model.RecordSet;
+import org.gusdb.wdk.model.Reference;
+import org.gusdb.wdk.model.ResultFactory;
+import org.gusdb.wdk.model.ResultList;
+import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.implementation.ModelXmlParser;
 
 import java.io.File;
 
@@ -32,7 +32,7 @@ import org.apache.commons.cli.ParseException;
  * Created: Mon August 23 12:00:00 2004 EDT
  *
  * @author David Barkan
- * @version $Revision$ $Date$Author: dbarkan $
+ * @version $Revision$ $Date$Author: art $
  */
 public class SanityTester {
 

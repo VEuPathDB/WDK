@@ -1,4 +1,4 @@
-package org.gusdb.gus.wdk.model;
+package org.gusdb.wdk.model;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -6,11 +6,11 @@ import java.util.HashSet;
 import java.util.Vector;
 import java.util.Iterator;
 
-import org.gusdb.gus.wdk.model.ResultFactory;
-import org.gusdb.gus.wdk.model.WdkUserException;
-import org.gusdb.gus.wdk.model.Param;
-import org.gusdb.gus.wdk.model.Column;
-import org.gusdb.gus.wdk.model.QueryInstance;
+import org.gusdb.wdk.model.ResultFactory;
+import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.Param;
+import org.gusdb.wdk.model.Column;
+import org.gusdb.wdk.model.QueryInstance;
 
 public abstract class Query {
     

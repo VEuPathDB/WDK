@@ -4,7 +4,7 @@
  * TODO To change the template for this generated file go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-package org.gusdb.gus.wdk.controller;
+package org.gusdb.wdk.controller;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRequest;

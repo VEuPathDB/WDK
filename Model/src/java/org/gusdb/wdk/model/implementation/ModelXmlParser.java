@@ -1,20 +1,20 @@
-package org.gusdb.gus.wdk.model.implementation;
+package org.gusdb.wdk.model.implementation;
 
-import org.gusdb.gus.wdk.model.Column;
-import org.gusdb.gus.wdk.model.FlatVocabParam;
-import org.gusdb.gus.wdk.model.ParamSet;
-import org.gusdb.gus.wdk.model.QuerySet;
-import org.gusdb.gus.wdk.model.Record;
-import org.gusdb.gus.wdk.model.RecordSet;
-import org.gusdb.gus.wdk.model.Reference;
-import org.gusdb.gus.wdk.model.ReferenceList;
-import org.gusdb.gus.wdk.model.StringParam;
-import org.gusdb.gus.wdk.model.Summary;
-import org.gusdb.gus.wdk.model.SummarySet;
-import org.gusdb.gus.wdk.model.TextAttribute;
-import org.gusdb.gus.wdk.model.TextColumn;
-import org.gusdb.gus.wdk.model.WdkModel;
-import org.gusdb.gus.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.Column;
+import org.gusdb.wdk.model.FlatVocabParam;
+import org.gusdb.wdk.model.ParamSet;
+import org.gusdb.wdk.model.QuerySet;
+import org.gusdb.wdk.model.Record;
+import org.gusdb.wdk.model.RecordSet;
+import org.gusdb.wdk.model.Reference;
+import org.gusdb.wdk.model.ReferenceList;
+import org.gusdb.wdk.model.StringParam;
+import org.gusdb.wdk.model.Summary;
+import org.gusdb.wdk.model.SummarySet;
+import org.gusdb.wdk.model.TextAttribute;
+import org.gusdb.wdk.model.TextColumn;
+import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelException;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;

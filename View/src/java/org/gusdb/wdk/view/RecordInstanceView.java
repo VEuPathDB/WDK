@@ -1,10 +1,10 @@
-package org.gusdb.gus.wdk.view;
+package org.gusdb.wdk.view;
 
-import org.gusdb.gus.wdk.controller.WdkLogManager;
-import org.gusdb.gus.wdk.model.Record;
-import org.gusdb.gus.wdk.model.RecordInstance;
-import org.gusdb.gus.wdk.model.ResultList;
-import org.gusdb.gus.wdk.model.WdkModelException;
+import org.gusdb.wdk.controller.WdkLogManager;
+import org.gusdb.wdk.model.Record;
+import org.gusdb.wdk.model.RecordInstance;
+import org.gusdb.wdk.model.ResultList;
+import org.gusdb.wdk.model.WdkModelException;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,7 +30,7 @@ import java.util.logging.Logger;
  */
 public class RecordInstanceView implements Map {
 
-    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.gus.wdk.view.RecordInstanceView");
+    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.view.RecordInstanceView");
     
     private RecordInstance ri;
     private Map map;

@@ -1,6 +1,6 @@
-package org.gusdb.gus.wdk.model.test;
+package org.gusdb.wdk.model.test;
 
-import org.gusdb.gus.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkModelException;
 
 /**
  * SanityElementI.java
@@ -10,7 +10,7 @@ import org.gusdb.gus.wdk.model.WdkModelException;
  * Created: Mon August 23 12:00:00 2004 EDT
  *
  * @author David Barkan
- * @version $Revision$ $Date$Author: dbarkan $
+ * @version $Revision$ $Date$Author: art $
  */
 
 public interface SanityElementI {

@@ -1,4 +1,4 @@
-package org.gusdb.gus.wdk.view.taglibs.misc;
+package org.gusdb.wdk.view.taglibs.misc;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
@@ -8,7 +8,7 @@ import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.JspWriter;
 import javax.servlet.jsp.tagext.SimpleTagSupport;
 
-import org.gusdb.gus.wdk.view.RIVList;
+import org.gusdb.wdk.view.RIVList;
 
 
 

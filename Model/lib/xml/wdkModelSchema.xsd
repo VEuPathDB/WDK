@@ -30,7 +30,7 @@
        <xsd:attribute name="help" type="xsd:string" />
    </xsd:complexType>
    
-   <xsd:complexType name="org.gusdb.gus.wdk.model.StringParam">
+   <xsd:complexType name="org.gusdb.wdk.model.StringParam">
      <xsd:complexContent>
        <xsd:extension base="param">
          <xsd:attribute name="default" type="xsd:string"/>
@@ -40,7 +40,7 @@
      </xsd:complexContent>
    </xsd:complexType>
     
-   <xsd:complexType name="org.gusdb.gus.wdk.model.FlatCVParam">
+   <xsd:complexType name="org.gusdb.wdk.model.FlatCVParam">
      <xsd:complexContent>
        <xsd:extension base="param">
          <xsd:attribute name="queryRef" type="xsd:string" use="required"/>
@@ -57,7 +57,7 @@
      <xsd:attribute name="dataTypeName" type="xsd:string"/>
    </xsd:complexType>
     
-   <xsd:complexType name="org.gusdb.gus.wdk.model.TextColumn">
+   <xsd:complexType name="org.gusdb.wdk.model.TextColumn">
      <xsd:complexContent>
        <xsd:extension base="column">
          <xsd:attribute name="text" type="xsd:string" use="required"/>
@@ -82,7 +82,7 @@
      <xsd:attribute name="displayName" type="xsd:string"/>
    </xsd:complexType>
 
-   <xsd:complexType name="org.gusdb.gus.wdk.model.implementation.SqlQuery">
+   <xsd:complexType name="org.gusdb.wdk.model.implementation.SqlQuery">
      <xsd:complexContent>
        <xsd:extension base="query">
          <xsd:sequence>

@@ -4,14 +4,14 @@
  * TODO To change the template for this generated file go to
  * Window - Preferences - Java - Code Generation - Code and Comments
  */
-package org.gusdb.gus.wdk.controller;
+package org.gusdb.wdk.controller;
 
-import org.gusdb.gus.wdk.model.Reference;
-import org.gusdb.gus.wdk.model.Summary;
-import org.gusdb.gus.wdk.model.SummarySet;
-import org.gusdb.gus.wdk.model.WdkModel;
-import org.gusdb.gus.wdk.model.WdkModelException;
-import org.gusdb.gus.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.Reference;
+import org.gusdb.wdk.model.Summary;
+import org.gusdb.wdk.model.SummarySet;
+import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 
 import java.util.ArrayList;
 import java.util.List;
