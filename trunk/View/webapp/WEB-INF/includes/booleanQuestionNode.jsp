@@ -9,7 +9,10 @@
   <nested:define id="rootClassName" property="class.name"/>
   <c:choose>
     <c:when test="${rootClassName eq 'org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean'}">
+
+    <img alt="spacer" width="12" height="16" src="http://www.allgenes.org/images/blue1.gif">
     <nested:write property="operation"/><br>
+
     <nested:nest property="firstChild">
       <jsp:include page="/WEB-INF/includes/booleanQuestionNode.jsp"/>
     </nested:nest>
@@ -32,10 +35,11 @@
 
       <!-- put an anchor here for linking back from help sections -->
       <A name="${fromAnchorQ}"></A>
-         <table border="1">
+         <table border="0">
             <!-- Print out question -->
             <!-- display description -->
             <tr><td colspan="2">
+                <img alt="spacer" width="12" height="16" src="http://www.allgenes.org/images/blue1.gif">
                 <b><jsp:getProperty name="wdkQ" property="description"/></b></td></tr>
 
             <!-- display params -->
@@ -96,7 +100,7 @@
                      <c:set value="booleanOps" var="booleanName"/>
                      <html:options property="values(${booleanName})"/>
                   </html:select>
-                  <html:submit property="process_boolean_question" value="Grow Boolean (${leafPref})"/>
+                  <html:submit property="process_boolean_question" value="Expand (${leafPref})"/>
                </td></tr>
          </table>
 

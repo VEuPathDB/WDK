@@ -35,8 +35,8 @@ public class CConstants {
     public static final String PQ_SUBMIT_GET_ANSWER = "Get Answer"; //match question.jsp
     public static final String PQ_SUBMIT_EXPAND_QUERY = "Expand Query"; //match question.jsp
     public static final String PBQ_SUBMIT_KEY = "process_boolean_question"; //match booleanQuestion.jsp
-    public static final String PBQ_SUBMIT_GET_BOOLEAN_ANSWER = "Get Boolean Answer"; //match booleanQuestion.jsp
-    public static final String PBQ_SUBMIT_GROW_BOOLEAN = "Grow Boolean"; //match question.jsp
+    public static final String PBQ_SUBMIT_GET_BOOLEAN_ANSWER = "Retrieve Answer"; //match booleanQuestion.jsp
+    public static final String PBQ_SUBMIT_GROW_BOOLEAN = "Expand"; //match WEB-INF/includes/booleanQuestionNode.jsp
 
     //used in action, action forms, and jsp pages
     public static final String NEXT_QUESTION_OPERAND_SUFFIX = "_nextQuestionOperand"; //match WEB-INF/includes/booleanQuestionNode.jsp
