@@ -107,3 +107,9 @@ Implementation Details
         - offers the dataset name as a column
         - these checkboxes actually go to a separate variable, where the values are datasetname:tablename
         - these are sent to gusreport in the mappingTables argument
+
+
+TODO
+  - fix regex test of dataset name
+  - use (or not) guswww.xxxxxx
+  - incorporate into real queries
