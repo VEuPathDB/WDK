@@ -111,12 +111,26 @@ UserQueries
 
 
 
+ - query history
+
 Records
 
  - implement specialDataTypes
 
  - column names must be lower case.  throw exception if not
 
+RecordLists:
+
+ - handle RecordList ID Queries that are uncacheable (currently only support cacheable queries for getting
+   the IDs; if they are uncacheable there is the potential that they would not be returned in the order we
+   expect
+
+ - Optomize outer query for RecordList; instead of iterating through the ResultList for the ID QueryInstance for 
+   a new RecordListInstance and throwing away IDs that fall outside of the start row and end row, we want to do 
+   the following: run the ID Query, put it in the cache, and then call a method on the ResultFactory that says 
+   "get all IDs from this QueryResult table that fall within this range (start row and end row)."  Method will
+   be named getIdsInRange(int startRow, int endRow) or something similar.  This is an optomization so is lower
+   on the priority list.
 
 DONE
 
@@ -159,3 +173,4 @@ DONE
  - document: have to clear out cache if query sql select clause changes
 
  - document: when sql is joined with cache tables, need alias to avoid ambigous column names
+
