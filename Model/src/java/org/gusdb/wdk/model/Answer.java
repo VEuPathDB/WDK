@@ -53,8 +53,8 @@ public class Answer {
 	this.currentRecordInstanceCounter = 0;
 	this.startRow = startRow;
 	this.endRow = endRow;   
-	getRecordInstanceIds();
-	
+	ResultList rl = getRecordInstanceIds();
+	rl.close(); // rl only needed to close connection
     }
 
     // ------------------------------------------------------------------
