@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model;
 
-import org.gusdb.wdk.model.*;
 import org.gusdb.wdk.model.implementation.*;
 
 
