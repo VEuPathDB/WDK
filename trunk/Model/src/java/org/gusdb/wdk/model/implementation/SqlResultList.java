@@ -34,8 +34,7 @@ public class SqlResultList extends ResultList {
 	    if (columnType == Types.CLOB){
 		Clob clob = resultSet.getClob(attributeName);
 		Long length = new Long(clob.length());
-		int lengthValue = length.intValue() - 1;
-		o = clob.getSubString(1, length.intValue() - 1);
+		o = clob.getSubString(1, length.intValue());
 	    }
 	    else{
 		o = resultSet.getObject(attributeName);
