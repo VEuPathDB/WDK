@@ -5,8 +5,6 @@ import org.gusdb.gus.wdk.model.ResultFactory;
 import org.gusdb.gus.wdk.model.SqlEnumParam;
 import org.gusdb.gus.wdk.model.StringParam;
 
-import org.gusdb.gus.wdk.view.GlobalRepository;
-
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
@@ -74,7 +72,7 @@ public class DisplayParam extends SimpleTagSupport {
   
     private void handlePairParam(SqlEnumParam p, String formQuery, JspWriter out) throws IOException {
     	
-    	ResultFactory rf = GlobalRepository.getInstance().getQueryResultFactory();
+    	ResultFactory rf = (ResultFactory) getJspContext().getAttribute("wdk.queryResultFactory", PageContext.APPLICATION_SCOPE);
     	Map m = null;
     	try {
     		m = p.getKeysAndValues(rf);

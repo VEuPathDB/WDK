@@ -1,6 +1,18 @@
 package org.gusdb.gus.wdk.controller;
 
-import org.gusdb.gus.wdk.view.GlobalRepository;
+import java.io.File;
+import java.sql.SQLException;
+
+import oracle.jdbc.pool.OracleConnectionCacheImpl;
+
+import org.gusdb.gus.wdk.model.ModelConfig;
+import org.gusdb.gus.wdk.model.ModelConfigParser;
+import org.gusdb.gus.wdk.model.QueryParamsException;
+import org.gusdb.gus.wdk.model.RDBMSPlatformI;
+import org.gusdb.gus.wdk.model.ResultFactory;
+import org.gusdb.gus.wdk.model.WdkModel;
+import org.gusdb.gus.wdk.model.implementation.ModelXmlParser;
+import org.gusdb.gus.wdk.model.implementation.SqlResultFactory;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -16,6 +28,8 @@ import javax.sql.DataSource;
  */
 public class ApplicationInitListener implements ServletContextListener {
   
+    private DataSource dataSource;
+    
     public void contextInitialized(ServletContextEvent sce) {
   
         ServletContext application  = sce.getServletContext(  );
@@ -25,24 +39,79 @@ public class ApplicationInitListener implements ServletContextListener {
         String querySetLocation = application.getInitParameter("querySetConfig");
         String recordSetLocation = application.getInitParameter("recordSetConfig");
         
-        GlobalRepository.createInstance(loginXML, querySetLocation, recordSetLocation);
+        initMemberVars(loginXML, querySetLocation, recordSetLocation, application);
         
-        DataSource ds = GlobalRepository.getInstance().getDataSource();
-        
-        Config.set(application, Config.SQL_DATA_SOURCE, ds);
-        
-        
-//        EmployeeRegistryBean empReg = new EmployeeRegistryBean(  );
-//        empReg.setDataSource(ds);
-//        application.setAttribute("empReg", empReg);
-//  
-//        NewsBean news = new NewsBean(  );
-//        application.setAttribute("news", news);
+        Config.set(application, Config.SQL_DATA_SOURCE, dataSource);
+
+
     }
   
     public void contextDestroyed(ServletContextEvent sce) {
-//        ServletContext application  = sce.getServletContext(  );
-//        application.removeAttribute("empReg");
-//        application.removeAttribute("news");
+        // Nothing to do here for now
     }
+
+    
+    private void initMemberVars(String loginConfigLocation, String queryConfigLocation, String recordConfigLocation, ServletContext application) {
+        
+        File querySetFile = new File(queryConfigLocation);
+        File recordSetFile = new File(recordConfigLocation);
+        File modelConfigXmlFile = new File(loginConfigLocation);
+        
+        try {
+            // read config info
+            ModelConfig dbConfig = 
+                ModelConfigParser.parseXmlFile(modelConfigXmlFile);
+            String instanceTable = dbConfig.getQueryInstanceTable();
+            String platformClass = dbConfig.getPlatformClass();
+            
+            dataSource = setupDataSource(dbConfig.getConnectionUrl()
+                        , dbConfig.getLogin()
+                        , dbConfig.getPassword());
+            
+            RDBMSPlatformI platform = 
+                (RDBMSPlatformI)Class.forName(platformClass).newInstance();
+            platform.setDataSource(dataSource);
+            
+            WdkModel wdkQueryModel = ModelXmlParser.parseXmlFile(querySetFile);
+            WdkModel wdkRecordModel = ModelXmlParser.parseXmlFile(recordSetFile);
+            ResultFactory queryResultFactory = wdkQueryModel.getResultFactory();
+            ResultFactory recordResultFactory = wdkRecordModel.getResultFactory();
+            SqlResultFactory sqlResultFactory = 
+                new SqlResultFactory(dataSource, platform, 
+                        dbConfig.getLogin(), instanceTable);
+            recordResultFactory.setSqlResultFactory(sqlResultFactory);
+
+            queryResultFactory.setSqlResultFactory(sqlResultFactory);
+            
+            application.setAttribute("wdk.queryResultfactory", queryResultFactory);
+            application.setAttribute("wdk.recordResultfactory", recordResultFactory);
+            application.setAttribute("wdk.wdkQueryModel", wdkQueryModel);
+            application.setAttribute("wdk.wdkRecordModel", wdkRecordModel);
+            
+        } catch (QueryParamsException e) {
+            System.err.println(e.formatErrors());
+        } catch (Exception e) {
+            e.printStackTrace();
+        } 
+        
+    }
+    
+    private DataSource setupDataSource(String connectURI, String login, 
+              String password)  {
+
+        try {
+            OracleConnectionCacheImpl ds = new oracle.jdbc.pool.OracleConnectionCacheImpl();
+            ds.setURL(connectURI);
+
+            ds.setPassword(password);
+            ds.setUser(login);
+            return (DataSource) ds;
+        }
+        catch (SQLException exp) {
+            exp.printStackTrace();
+        }
+
+        return null;
+    }
+
 }

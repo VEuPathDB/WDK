@@ -6,13 +6,14 @@ import org.gusdb.gus.wdk.model.StringParam;
 import java.io.IOException;
 
 import javax.servlet.jsp.JspWriter;
+import javax.servlet.jsp.PageContext;
 
 /**
  * Simple HTML form view of s StringParam
  */
 public class StringParamView implements ParamViewI {
 
-    public void showParam(Param param, String formQuery, JspWriter out) throws IOException {
+    public void showParam(Param param, String formQuery, JspWriter out, PageContext pc) throws IOException {
         StringParam p = (StringParam) param;
     	String def = p.getDefault();
     	if ( def == null) {

@@ -4,8 +4,8 @@ import org.gusdb.gus.wdk.model.Record;
 import org.gusdb.gus.wdk.model.RecordInstance;
 import org.gusdb.gus.wdk.model.RecordSet;
 import org.gusdb.gus.wdk.model.ResultFactory;
+import org.gusdb.gus.wdk.model.WdkModel;
 
-import org.gusdb.gus.wdk.view.GlobalRepository;
 import org.gusdb.gus.wdk.view.RecordInstanceView;
 
 import java.io.IOException;
@@ -42,8 +42,10 @@ public class RecordTesterServlet extends HttpServlet {
       RecordInstance recordInstance = null;
       
       try {
-	    ResultFactory resultFactory = GlobalRepository.getInstance().getRecordResultFactory();
-	    RecordSet recordSet = GlobalRepository.getInstance().getRecordSet(recordSetName);
+	    ResultFactory resultFactory = 
+            (ResultFactory) getServletContext().getAttribute("wdk.recordResultFactory");
+	    RecordSet recordSet = 
+            ((WdkModel) getServletContext().getAttribute("wdk.wdkRecordModel")).getRecordSet(recordSetName);
 	    Record record = recordSet.getRecord(recordName);
 	    recordInstance = record.makeInstance();
 	    recordInstance.setPrimaryKey(primaryKey);
