@@ -244,7 +244,7 @@ public class Answer {
         }
     }
 
-    boolean isSummaryAttribute(String attName){
+    public boolean isSummaryAttribute(String attName){
 	return question.isSummaryAttribute(attName);
     }
     
