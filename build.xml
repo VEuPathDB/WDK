@@ -56,7 +56,7 @@
    description="Create JAR file">
 
     <!-- Create application JAR file -->
-    <jar jarfile="${build.home}/wdk.jar"
+    <jar jarfile="${build.home}/GUS-WebDevKit.jar"
          basedir="${build.home}/classes/"/>
 
     <!-- Copy additional files to ${dist.home} as necessary -->
