@@ -1,16 +1,16 @@
 package org.gusdb.gus.wdk.view.taglibs.query;
 
-import org.gusdb.gus.wdk.model.query.QueryI;
-import org.gusdb.gus.wdk.model.query.SimpleQueryI;
-import org.gusdb.gus.wdk.model.query.NullQuery;
-import org.gusdb.gus.wdk.model.query.SimpleQuerySet;
-import  org.gusdb.gus.wdk.view.GlobalRepository;
+import java.io.IOException;
 
-import java.io.*;
-import java.util.Iterator;
-import java.util.Set;
-import javax.servlet.jsp.*;
-import javax.servlet.jsp.tagext.*;
+import javax.servlet.jsp.JspException;
+import javax.servlet.jsp.JspWriter;
+import javax.servlet.jsp.tagext.SimpleTagSupport;
+
+import org.gusdb.gus.wdk.model.SimpleQueryI;
+import org.gusdb.gus.wdk.model.SimpleQueryInstanceI;
+import org.gusdb.gus.wdk.model.SimpleQuerySet;
+import org.gusdb.gus.wdk.model.implementation.NullQueryInstance;
+import org.gusdb.gus.wdk.view.GlobalRepository;
 
 public class DisplayQuery extends SimpleTagSupport {
     
@@ -29,7 +29,7 @@ public class DisplayQuery extends SimpleTagSupport {
 	JspWriter out = getJspContext().getOut();
 
 	if ( queryInstance instanceof NullQueryInstance) {
-	    SimpleQuerySet sqs = GlobalRepository.getInstance().getQuerySetContainer().getSimpleQuerySet(querySet);
+	    SimpleQuerySet sqs = GlobalRepository.getInstance().getSimpleQuerySet();
 	    SimpleQueryI[] sq = sqs.getQueries();
 	    out.println("<b>Queries:</b> <select>");
 	    for ( int i=0 ; i < sq.length ;i++) {
