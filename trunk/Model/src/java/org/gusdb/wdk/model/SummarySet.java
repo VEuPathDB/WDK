@@ -73,7 +73,7 @@ public class SummarySet implements ModelSetI {
 					   + "'");
 
        buf.append( newline );
-       buf.append( "--- Summarys ---" );
+       buf.append( "--- Summaries ---" );
        buf.append( newline );
        Iterator summaryIterator = summarySet.values().iterator();
        while (summaryIterator.hasNext()) {
