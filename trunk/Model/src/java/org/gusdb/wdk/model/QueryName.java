@@ -1,8 +1,6 @@
 package org.gusdb.gus.wdk.model;
 
-import java.util.Hashtable;
 import java.util.HashMap;
-import java.util.Enumeration;
 import org.gusdb.gus.wdk.model.QuerySet;
 
 

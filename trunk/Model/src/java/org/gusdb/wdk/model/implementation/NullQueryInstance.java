@@ -1,12 +1,11 @@
 package org.gusdb.gus.wdk.model.implementation;
 
+import org.gusdb.gus.wdk.model.QueryParamsException;
+import org.gusdb.gus.wdk.model.ResultList;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
-
-import org.gusdb.gus.wdk.model.ResultList;
-import org.gusdb.gus.wdk.model.QueryParamsException;
-import org.gusdb.gus.wdk.model.SimpleQueryInstanceI;
 
 public class NullQueryInstance {
 
