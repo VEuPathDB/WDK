@@ -1,7 +1,6 @@
 package org.gusdb.gus.wdk.controller.servlets;
 
 import org.gusdb.gus.wdk.controller.WdkLogManager;
-import org.gusdb.gus.wdk.controller.WdkModelExtra;
 import org.gusdb.gus.wdk.model.Record;
 import org.gusdb.gus.wdk.model.RecordInstance;
 import org.gusdb.gus.wdk.model.WdkModel;
@@ -59,7 +58,7 @@ public class ViewFullRecordServlet extends HttpServlet {
               //	    ResultFactory resultFactory = 
               //            (ResultFactory) getServletContext().getAttribute("wdk.recordResultFactory");
               WdkModel wm = (WdkModel) getServletContext().getAttribute("wdk.wdkModel");
-              Record record = WdkModelExtra.getRecord(wm, recordReference);
+              Record record = wm.getRecord(recordReference);
               recordInstance = record.makeRecordInstance();
               recordInstance.setPrimaryKey(primaryKey);
               
