@@ -13,8 +13,9 @@ endif
 
 setenv CLASSPATH "$GUS_HOME/lib/java/commons-digester-1.5.jar:$GUS_HOME/lib/java/GUS-WebDevKit.jar:$GUS_HOME/lib/java/commons-beanutils.jar:$GUS_HOME/lib/java/commons-collections.jar:$GUS_HOME/lib/java/commons-logging-api.jar:$GUS_HOME/lib/java/xercesImpl.jar"
 
-setenv LOGGING_PROPS
 
-setenv LOGGING_PROPS "-Dorg.apache.commons.logging.Log=org.apache.commons.logging.impl.SimpleLog -Dorg.apache.commons.logging.simplelog.log.org.apache.commons.digester.Digester=error -Dorg.apache.commons.logging.simplelog.log.org.apache.commons.digester.Digester.sax=info"
+#setenv LOGGING_PROPS "-Dorg.apache.commons.logging.Log=org.apache.commons.logging.impl.SimpleLog -Dorg.apache.commons.logging.simplelog.log.org.apache.commons.digester.Digester=error -Dorg.apache.commons.logging.simplelog.log.org.apache.commons.digester.Digester.sax=info"
+
+setenv LOGGING_PROPS
 
 java -classpath $CLASSPATH $LOGGING_PROPS -DerrorHandler=org.xml.sax.helpers.DefaultHandler org.gusdb.gus.wdk.model.implementation.ModelXmlParser $1
