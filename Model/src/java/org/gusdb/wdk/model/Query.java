@@ -194,7 +194,7 @@ public abstract class Query {
 	while (valueNames.hasNext()) {
 	    String valueName = (String)valueNames.next();
 	    if (paramsH.get(valueName) == null) {
-		throw new WdkUserException("'" + valueName + "' is not a legal parameter name for query '" + name + "'"  );
+		throw new WdkUserException("'" + valueName + "' is not a legal parameter name for query '" + getFullName() + "'"  );
 	    }
 	}
 
