@@ -491,7 +491,7 @@ sub getRHMapSpans {
 	       "and epcr.map_table_id = 2782 " .
 	       "and epcr.map_id = rhm.rh_marker_id " .
 	       "and rhm.rh_marker_id = rhmm.rh_marker_id " .
-	       "and rhmmm.rh_map_id = rm.rh_map_id " .
+	       "and rhmm.rh_map_id = rm.rh_map_id " .
 	       "order by rhmm.panel_description, epcr.start_pos ");
 
     my $sth = $dbh->prepare($sql);
