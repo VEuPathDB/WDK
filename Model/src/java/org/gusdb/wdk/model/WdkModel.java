@@ -21,7 +21,6 @@ public class WdkModel {
 
     public static final WdkModel INSTANCE = new WdkModel();
 
-
     public ResultFactory getResultFactory() {
         return resultFactory;
     }
@@ -46,22 +45,23 @@ public class WdkModel {
         return (RecordSet)recordSets.get(recordSetName);
     }
 
+    public RecordSet[] getAllRecordSets(){
+	    
+        RecordSet sets[] = new RecordSet[recordSets.size()];
+        Iterator keys = recordSets.keySet().iterator();
+        int counter = 0;
+        while (keys.hasNext()){
+            String name = (String)keys.next();
+            RecordSet nextRecordSet = (RecordSet)recordSets.get(name);
+            sets[counter] = nextRecordSet;
+            counter++;
+        }
+        return sets;
+    }
 
     //Query Sets
     public void addQuerySet(QuerySet querySet) throws WdkModelException {
         addSet(querySet, querySets);
-    }
-    
-    private void addSet(ModelSetI set, HashMap setMap) throws WdkModelException {
-        String setName = set.getName();
-        if (allModelSets.containsKey(setName)) {
-            String err = "WDK Model " + name +
-            " already contains a set with name " + setName;
-	
-            throw new WdkModelException(err);	
-        }
-        setMap.put(setName, set);
-        allModelSets.put(setName, set);
     }
 
     public QuerySet getQuerySet(String setName) throws WdkUserException {
@@ -77,6 +77,19 @@ public class WdkModel {
         return querySets.containsKey(setName);
     }
 
+    public QuerySet[] getAllQuerySets(){
+	    
+        QuerySet sets[] = new QuerySet[querySets.size()];
+        Iterator keys = querySets.keySet().iterator();
+        int counter = 0;
+        while (keys.hasNext()){
+            String name = (String)keys.next();
+            QuerySet nextQuerySet = (QuerySet)querySets.get(name);
+            sets[counter] = nextQuerySet;
+            counter++;
+        }
+        return sets;
+    }
 
     //Summary Sets
     public void addSummarySet(SummarySet summarySet) throws WdkModelException {
@@ -96,6 +109,19 @@ public class WdkModel {
         return summarySets.containsKey(setName);
     }
 
+    public SummarySet[] getAllSummarySets(){
+	    
+        SummarySet sets[] = new SummarySet[summarySets.size()];
+        Iterator keys = summarySets.keySet().iterator();
+        int counter = 0;
+        while (keys.hasNext()){
+            String name = (String)keys.next();
+            SummarySet nextSummarySet = (SummarySet)summarySets.get(name);
+            sets[counter] = nextSummarySet;
+            counter++;
+        }
+        return sets;
+    }
 
     //ReferenceLists
     public void addReferenceList(ReferenceList referenceList) throws WdkModelException {
@@ -124,6 +150,19 @@ public class WdkModel {
             counter++;
         }
         return lists;
+    }
+    
+    //ModelSetI's
+    private void addSet(ModelSetI set, HashMap setMap) throws WdkModelException {
+        String setName = set.getName();
+        if (allModelSets.containsKey(setName)) {
+            String err = "WDK Model " + name +
+            " already contains a set with name " + setName;
+	
+            throw new WdkModelException(err);	
+        }
+        setMap.put(setName, set);
+        allModelSets.put(setName, set);
     }
     
     /**
