@@ -1,6 +1,7 @@
 package org.gusdb.gus.wdk.model;
 import java.util.Map;
 import java.util.Vector;
+import java.util.logging.Logger;
 
 /**
  * SummaryInstance.java
@@ -13,6 +14,8 @@ import java.util.Vector;
 
 public class SummaryInstance {
 
+    private static final Logger logger = Logger.getLogger("org.gusdb.gus.wdk.model.SummaryInstance");
+    
     // ------------------------------------------------------------------
     // Instance variables
     // ------------------------------------------------------------------
@@ -51,6 +54,7 @@ public class SummaryInstance {
 	this.startRow = startRow;
 	this.endRow = endRow;	
 	listIdQueryInstance.setValues(values);
+    initRecordInstances();
     }
 
     public Summary getSummary(){
@@ -91,36 +95,47 @@ public class SummaryInstance {
     }
     
     public void setQueryResult(ResultList resultList) throws WdkModelException{
-	
-	int tempCounter = 0;
-	while (resultList.next()){
-	    	    
-	    RecordInstance nextRecordInstance = recordInstances[tempCounter];
-	    Query query = resultList.getQuery();
-	    Column[] columns = query.getColumns();
-	    for (int j = 0; j < columns.length; j++){
-		String nextColumnName = columns[j].getName();
-		Object value = resultList.getValue(nextColumnName);
-		nextRecordInstance.setAttributeValue(nextColumnName, value);
-	    }
-	    tempCounter++;
-	}
+        logger.finer("In setQueryList and resultList is "+resultList);
+        int tempCounter = 0;
+        while (resultList.next()){
+            
+            RecordInstance nextRecordInstance = recordInstances[tempCounter];
+            Query query = resultList.getQuery();
+            Column[] columns = query.getColumns();
+            for (int j = 0; j < columns.length; j++){
+                String nextColumnName = columns[j].getName();
+                logger.finer("Trying to get query for "+nextColumnName);
+                Object value = resultList.getValue(nextColumnName);
+                nextRecordInstance.setAttributeValue(nextColumnName, value);
+            }
+            tempCounter++;
+        }
 
     }
     
     public void setMultiMode(QueryInstance instance) throws WdkModelException{
-	
-	String resultTableName = listIdQueryInstance.getResultAsTable();
-
-	instance.setMultiModeValues(resultTableName, listPrimaryKeyName, startRow, endRow);
+        
+        String resultTableName = listIdQueryInstance.getResultAsTable();
+        
+        instance.setMultiModeValues(resultTableName, listPrimaryKeyName, startRow, endRow);
     }
-
+    
     public boolean hasMoreRecordInstances(){
-
-	if (currentRecordInstanceCounter < recordInstances.length){
-	    return true;
-	}
-	else { return false; }
+        if (recordInstances == null){
+            try {
+                initRecordInstances();
+            }
+            catch (WdkModelException exp) {
+                exp.printStackTrace(System.err);
+            }
+        }
+        if (recordInstances == null){
+            logger.finer("recordInstances is still null");
+        }
+        if (currentRecordInstanceCounter < recordInstances.length){
+            return true;
+        }
+        return false;
     }
 
     public void reset(){
@@ -134,7 +149,7 @@ public class SummaryInstance {
 	}
 	for (int i = 0; i < recordInstances.length; i++){
 	    
-	    System.err.println(recordInstances[i].print());
+	    logger.finer(recordInstances[i].print());
 	}
     }
 
@@ -152,7 +167,7 @@ public class SummaryInstance {
 	while (rl.next()){
 	    counter++;
 	    if (counter >= startRow && counter <= endRow){
-		RecordInstance nextRecordInstance = getSummary().getRecord().makeInstance();
+		RecordInstance nextRecordInstance = getSummary().getRecord().makeRecordInstance();
 		
 		Column[] columns = query.getColumns();
 		String primaryKeyName = columns[0].getName();
