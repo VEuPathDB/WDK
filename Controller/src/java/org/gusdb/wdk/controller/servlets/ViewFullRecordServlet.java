@@ -4,7 +4,6 @@ import org.gusdb.gus.wdk.controller.WdkLogManager;
 import org.gusdb.gus.wdk.controller.WdkModelExtra;
 import org.gusdb.gus.wdk.model.Record;
 import org.gusdb.gus.wdk.model.RecordInstance;
-import org.gusdb.gus.wdk.model.Reference;
 import org.gusdb.gus.wdk.model.WdkModel;
 
 import org.gusdb.gus.wdk.view.RecordInstanceView;
@@ -78,7 +77,7 @@ public class ViewFullRecordServlet extends HttpServlet {
           try {
               req.setAttribute( "ri" , new RecordInstanceView(recordInstance));
               ServletContext sc = getServletContext();
-              String page = getRendererForRecordRef(new Reference(recordReference));
+              String page = getRendererForRecordRef(recordReference);
               RequestDispatcher rd = sc.getRequestDispatcher(page);
               rd.forward(req, res);
           } catch (IOException exp) {
@@ -92,10 +91,11 @@ public class ViewFullRecordServlet extends HttpServlet {
       
     }
 
-    private String getRendererForRecordRef(Reference ref) {
+    private String getRendererForRecordRef(String recordFullName) {
         // TODO Set default for where no renderer found
-        String renderer = ref.getTwoPartName();
+        String renderer = recordFullName;
         //logger.severe("renderer is "+renderer);
+
         String path = getServletContext().getRealPath("/WEB-INF/indirectPages/views/"+renderer+".jsp");
         File f = new File(path);
         if (f.exists()) {
