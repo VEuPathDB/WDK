@@ -12,15 +12,20 @@
 
   <recordSet name="RNARecords">
      <record name="RNARecord" type="DoTS Transcript" idPrefix="DT.">
+
+       <fieldsQuery referent="RNASimpleQueries.RNAListInDetail"/>  
+   
        <fieldsQuery referent="RNARecordQueries.RNAFields"/>
-
+             
        <tableQuery referent="RNARecordQueries.ExternalLinks"/>
-
+       
        <textField name="overview">
          <text>
        This is DoTS Transcript DT.$$primaryKey$$.  It is has a length of $$length$$.
          </text>
        </textField>
+
+     
      </record>
 
   </recordSet>
@@ -75,7 +80,6 @@
        <column name="assembly_consistency" displayName="Assembly consistency" />
        <column name="contains_mrna" displayName="Contains mRNA" />
        <column name="number_of_contained_sequences" displayName="Number contained sequences" />
-       <column name="taxon_name" displayName="Taxon Name" />
        <column name="modification_date" displayName="Last modified" />
        <column name="review_status_name" displayName="Review status" />
        <column name="hello" 
@@ -89,7 +93,6 @@
               a.assembly_consistency, 
               a.contains_mrna,
               a.number_of_contained_sequences, 
-              tn.name as taxon_name, 
               TO_CHAR(a.modification_date, 'Mon DD, YYYY HH:MI:SSAM') as modification_date, 
               rvw.name as review_status_name
       from dots.Assembly a, sres.TaxonName tn, 
@@ -184,12 +187,10 @@
       select cd.gene_id, cd.taxon_name, cd.gene_symbol, 
              cd.gene_description, cd.na_sequence_id, cd.assembly_length, 
              cd.assembly_num_sequences, 
-              cd.assembly_contains_mrna
-      from allgenes.CentralDogma cd, $$resultTable$$ ids 
-      where cd.na_sequence_id = ids.na_sequence_id
-      and ids.i >= $$startRow$$
-      and ids.i   <= $$endRow$$
-      order by cd.gene_id, cd.assembly_length desc
+              cd.assembly_contains_mrna 
+      from allgenes.CentralDogma cd
+      where cd.na_sequence_id = $$primaryKey$$
+
       ]]>
       </sql>
     </query>
