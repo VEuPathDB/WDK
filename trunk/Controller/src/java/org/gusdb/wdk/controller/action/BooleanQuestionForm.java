@@ -102,10 +102,12 @@ public class BooleanQuestionForm extends QuestionForm {
 	this.nextBooleanOperation = nextBooleanOperation;
     }
 
-    public String getNextQuestionOperand(){
-	return nextQuestionOperand;
+    String getNextQuestionOperand(int leafId) throws WdkModelException {
+	Integer lId = new Integer(leafId); 
+	return (String)getMyProp(lId.toString() + '_' + CConstants.NEXT_QUESTION_OPERAND_SUFFIX);
     }
-    public String getNextBooleanOperation(){
-	return nextBooleanOperation;
+    String getNextBooleanOperation(int leafId) throws WdkModelException {
+	Integer lId = new Integer(leafId); 
+	return (String)getMyProp(lId.toString() + '_' + CConstants.NEXT_BOOLEAN_OPERATION_SUFFIX);
     }
 }

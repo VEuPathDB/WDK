@@ -67,7 +67,7 @@
             <tr>
                <td align="right">
                <!-- get possible questions to boolean with and display them -->
-               <html:select property="nextQuestionOperand">
+               <html:select property="myProp(${leafPrefix}_nextQuestionOperand)">
                      <c:set var="recordClass" value="${wdkQ.recordClass}"/>
                      <c:set var="questions" value="${recordClass.questions}"/>
 
@@ -80,7 +80,7 @@
                </td>
                 <!-- get boolean operations and display in select box -->
                <td>
-                  <html:select property="nextBooleanOperation">
+                  <html:select property="myProp(${leafPrefix}_nextBooleanOperation)">
                      <c:set value="booleanOps" var="booleanName"/>
                      <html:options property="values(${booleanName})"/>
                   </html:select>

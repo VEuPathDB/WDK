@@ -32,10 +32,14 @@ public class CConstants {
     //button click detectors, used in action, action forms, and jsp pages
     public static final String PQ_SUBMIT_KEY = "questionSubmit"; //match question.jsp
     public static final String PQ_SUBMIT_GET_ANSWER = "Get Answer"; //match question.jsp
-    public static final String PQ_SUBMIT_BOOLEANATE = "Booleanate"; //match question.jsp
+    public static final String PQ_SUBMIT_EXPAND_QUERY = "Expand Query"; //match question.jsp
     public static final String PBQ_SUBMIT_KEY = "process_boolean_question"; //match booleanQuestion.jsp
     public static final String PBQ_SUBMIT_GET_BOOLEAN_ANSWER = "Get Boolean Answer"; //match booleanQuestion.jsp
     public static final String PBQ_SUBMIT_GROW_BOOLEAN = "Grow Boolean"; //match question.jsp
+
+    //used in action, action forms, and jsp pages
+    public static final String NEXT_QUESTION_OPERAND_SUFFIX = "_nextQuestionOperand"; //match WEB-INF/includes/booleanQuestionNode.jsp
+    public static final String NEXT_BOOLEAN_OPERATION_SUFFIX = "_nextBooleanOperation"; //match WEB-INF/includes/booleanQuestionNode.jsp
 
     //name of webapp init params, from web.xml, used in ApplicationInitListener.java
     protected static final String WDK_MODELCONFIGXML_PARAM = "wdkModelConfigXml_param";

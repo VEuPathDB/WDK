@@ -44,7 +44,7 @@ public class QuestionForm extends ActionForm {
 	ActionErrors errors = new ActionErrors();
 
 	String clicked = request.getParameter(CConstants.PQ_SUBMIT_KEY);
-	if (clicked != null && clicked.equals(CConstants.PQ_SUBMIT_BOOLEANATE)) {
+	if (clicked != null && clicked.equals(CConstants.PQ_SUBMIT_EXPAND_QUERY)) {
 	    return errors;
 	}
 
