@@ -16,6 +16,7 @@ import java.net.URL;
 import java.sql.SQLException;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
@@ -64,7 +65,9 @@ public class ApplicationInitListener implements ServletContextListener {
             try {
                 fh = new FileHandler(loggingFileLocation);
                 fh.setFormatter(new SimpleFormatter());
+                fh.setLevel(Level.ALL);
                 Logger.getLogger("org.gusdb.gus").addHandler(fh);
+                //Logger.getLogger("org.gusdb.gus").setUseParentHandlers(false);
             } catch (SecurityException exp) {
                 application.log("IMPORTANT: Unable to create a logging handler - security exception", exp);
             } catch (IOException exp) {
@@ -133,7 +136,7 @@ public class ApplicationInitListener implements ServletContextListener {
             
             application.setAttribute("wdk.resultFactory", resultFactory);
             application.setAttribute("wdk.wdkModel", wdkModel);
-            
+         
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (SAXException e) {
