@@ -223,7 +223,7 @@ public class InteractiveRecordListServlet extends HttpServlet {
                 throw new RuntimeException(exp);
             }
             //req.setAttribute("ri", ri);
-            req.setAttribute("recordName", ri.getRecord().getFullName());
+            req.setAttribute("recordClassName", ri.getRecord().getFullName());
             req.setAttribute("primaryKey", ri.getPrimaryKey());
             
         } else {
