@@ -71,15 +71,16 @@ public class RecordTester {
 		(RDBMSPlatformI)Class.forName(platformClass).newInstance();
 	    platform.setDataSource(dataSource);
        
+        File schemaFile = new File(System.getProperty("schemaFile"));
 	    WdkModel wdkModel = 
-		ModelXmlParser.parseXmlFile(modelXmlFile, modelPropFile) ;
+		ModelXmlParser.parseXmlFile(modelXmlFile.toURL(), modelPropFile.toURL(), schemaFile.toURL()) ;
 	    ResultFactory resultFactory = new ResultFactory(dataSource, platform, 
 							    login, instanceTable);
 	    wdkModel.setResources(resultFactory, platform);
 
 	    RecordSet recordSet = wdkModel.getRecordSet(recordSetName);
 	    Record record = recordSet.getRecord(recordName);
-	    RecordInstance recordInstance = record.makeInstance();
+	    RecordInstance recordInstance = record.makeRecordInstance();
 	    recordInstance.setPrimaryKey(primaryKey);
 	    System.out.println( recordInstance.print() );
 
