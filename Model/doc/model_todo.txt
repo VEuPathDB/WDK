@@ -1,5 +1,14 @@
 To Do
 
+-use queryRef instead of twoPartName in <record>
+
+-why is Record.java catching WdkModelException?
+
+-why is SummaryInstance.java catching WdkModelException?
+
+-why does Record need a Reference? (what reference is it?)
+
+
 For release 1.0
 
 Steve
@@ -143,3 +152,10 @@ DONE
 
  - DTD/XmlSchema for WdkXml?
 
+ - better handle when an atrribute query returns no result
+
+ - use full query names all over
+
+ - document: have to clear out cache if query sql select clause changes
+
+ - document: when sql is joined with cache tables, need alias to avoid ambigous column names
