@@ -100,7 +100,7 @@ public class InteractiveRecordListServlet extends HttpServlet {
         }
         
         if (questionName.indexOf('.')==-1) {
-            msg("queryRecord name isn't qualified: "+questionName, res);
+            msg("question name isn't qualified: "+questionName, res);
             return;
 		}
 		
