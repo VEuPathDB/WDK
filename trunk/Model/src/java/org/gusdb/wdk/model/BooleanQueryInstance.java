@@ -115,7 +115,9 @@ public class BooleanQueryInstance extends QueryInstance {
 	System.err.println("adding columns from " + firstQueryInstance.getQuery().getName() + " to boolean");
 	for (int i = 0; i < columns.length; i++){
 	    System.err.println("next column to add is " + columns[i]);
-	    booleanQuery.addColumn(columns[i]);
+	    if (booleanQuery.getColumnMap().get(columns[i].getName()) == null) {
+		booleanQuery.addColumn(columns[i]);
+	    }
 	}
     }
 
