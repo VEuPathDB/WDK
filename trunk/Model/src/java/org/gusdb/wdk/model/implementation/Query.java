@@ -96,7 +96,7 @@ public class Query implements QueryI {
 
     protected void validateParamValues(Map values) throws QueryParamsException {
 	HashMap errors = null;
-
+	
 	// first confirm that all supplied values have legal names
 	Iterator valueNames = values.keySet().iterator();
 	while (valueNames.hasNext()) {

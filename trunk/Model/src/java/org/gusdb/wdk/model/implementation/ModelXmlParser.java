@@ -10,6 +10,8 @@ import org.gusdb.gus.wdk.model.SqlEnumParam;
 import org.gusdb.gus.wdk.model.StringParam;
 import org.gusdb.gus.wdk.model.TextField;
 import org.gusdb.gus.wdk.model.WdkModel;
+import org.gusdb.gus.wdk.model.QueryNameList;
+import org.gusdb.gus.wdk.model.QueryName;
 
 import java.io.File;
 
@@ -30,8 +32,13 @@ public class ModelXmlParser {
 	Digester digester = new Digester();
 	digester.setValidating( false );
 	
+	//Root -- WDK Model
+
 	digester.addObjectCreate( "wdkModel", WdkModel.class );
 	digester.addSetProperties( "wdkModel");
+
+
+	//PageableQuerySet
 	
 	/**/ digester.addObjectCreate( "wdkModel/pageableQuerySet", PageableQuerySet.class );
 
@@ -45,6 +52,8 @@ public class ModelXmlParser {
 
 	/**/ digester.addSetNext( "wdkModel/pageableQuerySet", "addPageableQuerySet" );
 	
+	
+	//RecordSet
 
 	/**/ digester.addObjectCreate( "wdkModel/recordSet", RecordSet.class );
 
@@ -78,6 +87,10 @@ public class ModelXmlParser {
 
 	/**/ digester.addSetNext( "wdkModel/recordSet", "addRecordSet" );
 
+
+	//SimpleQuerySet
+
+
 	/**/ digester.addObjectCreate( "wdkModel/simpleQuerySet", SimpleQuerySet.class );
 
 	/**/ digester.addSetProperties( "wdkModel/simpleQuerySet");
@@ -102,21 +115,37 @@ public class ModelXmlParser {
 	
 	/*    */ digester.addObjectCreate( "wdkModel/simpleQuerySet/simpleSqlQuery/stringParam", 
 				  StringParam.class );
-	/*    */ digester.addSetProperties( "wdkModel/simpleQuerySet/simpleSqlQuery/stringParam");
 
+	/*    */ digester.addSetProperties( "wdkModel/simpleQuerySet/simpleSqlQuery/stringParam");
 
 	/*    */ digester.addSetNext( "wdkModel/simpleQuerySet/simpleSqlQuery/stringParam", "addParam" );
 	
 	/*    */ digester.addObjectCreate( "wdkModel/simpleQuerySet/simpleSqlQuery/column", 
 				  Column.class );
-	/*    */ digester.addSetProperties( "wdkModel/simpleQuerySet/simpleSqlQuery/column");
 
+	/*    */ digester.addSetProperties( "wdkModel/simpleQuerySet/simpleSqlQuery/column");
 
 	/*    */ digester.addSetNext( "wdkModel/simpleQuerySet/simpleSqlQuery/column", "addColumn" );
 	
 	/*  */ digester.addSetNext( "wdkModel/simpleQuerySet/simpleSqlQuery", "addQuery" );
 
 	/**/ digester.addSetNext( "wdkModel/simpleQuerySet", "addSimpleQuerySet" );
+
+
+	//QueryNameList
+	
+	/**/ digester.addObjectCreate("wdkModel/queryNameList", QueryNameList.class);
+
+	/**/ digester.addSetProperties("wdkModel/queryNameList");
+	
+	/*  */ digester.addObjectCreate("wdkModel/queryNameList/fullQueryName", QueryName.class);
+
+	/*  */ digester.addSetProperties("wdkModel/queryNameList/fullQueryName");
+
+	/*  */ digester.addSetNext("wdkModel/queryNameList/fullQueryName", "addQueryName");
+
+	/**/ digester.addSetNext("wdkModel/queryNameList", "addQueryNameList");
+
 	
 	return digester;
     }

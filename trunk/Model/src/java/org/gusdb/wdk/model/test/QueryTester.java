@@ -20,6 +20,8 @@ import org.gusdb.gus.wdk.model.implementation.ModelXmlParser;
 import org.gusdb.gus.wdk.model.implementation.SimpleSqlQueryInstance;
 import org.gusdb.gus.wdk.model.implementation.SqlResultFactory;
 import org.gusdb.gus.wdk.model.implementation.SqlUtils;
+import org.gusdb.gus.wdk.model.QueryNameList;
+import org.gusdb.gus.wdk.model.QueryName;
 
 import java.io.File;
 import java.sql.ResultSet;
@@ -117,14 +119,17 @@ public class QueryTester {
     }
     
     Hashtable parseParamArgs(String[] params) {
-        Hashtable h = new Hashtable();
-        if (params.length % 2 != 0) {
-            throw new IllegalArgumentException("The -params option must be followed by key value pairs only");
-        }
-        for (int i=0; i<params.length; i+=2) {
-            h.put(params[i], params[i+1]);
-        }
-        return h;
+
+	Hashtable h = new Hashtable();
+
+	if (params.length % 2 != 0) {
+	    throw new IllegalArgumentException("The -params option must be followed by key value pairs only");
+	}
+	for (int i=0; i<params.length; i+=2) {
+	    h.put(params[i], params[i+1]);
+	}
+	return h;
+
     }
     
     String formatParamPrompt(Param param) throws Exception {
@@ -252,6 +257,7 @@ public class QueryTester {
                     SqlUtils.printResultSet(rs);
                 }
             }
+	    runQueryNameListTest(tester, wdkModel, querySetName);
         } catch (QueryParamsException e) {
             System.err.println(e.formatErrors());
             System.exit(1);
@@ -259,8 +265,50 @@ public class QueryTester {
             e.printStackTrace();
             System.exit(1);
         } 
+
+
     }
     
+
+    private static void runQueryNameListTest(QueryTester queryTester, WdkModel wdkModel, String querySetName){
+
+	System.err.println("QueryNameListTest: displaying all queries in provided QueryNameLists");
+	QueryNameList queryNameLists[] = wdkModel.getAllQueryNameLists();
+	if (queryNameLists != null){
+	    for (int i = 0; i < queryNameLists.length; i++){
+		QueryNameList nextQueryNameList = queryNameLists[i];
+		
+		QueryName queries[] = nextQueryNameList.getQueryNames();
+		
+		if (queries != null){
+		    for (int j = 0; j < queries.length; j++){
+			QueryName nextQueryName = queries[j];
+			String nextQuerySetName = nextQueryName.getQuerySetName();
+			String realQueryName = nextQueryName.getQueryName();
+			try {
+			 
+			    if (wdkModel.hasPageableQuerySet(nextQuerySetName)){
+				PageableQuerySet pqs = wdkModel.getPageableQuerySet(nextQuerySetName);
+				PageableQueryI pq = pqs.getQuery(realQueryName);
+				queryTester.displayQuery(pq);
+			    }
+			    else{  //since it passed all checks; queySetName has to be simpleQuerySet
+				SimpleQuerySet sqs = wdkModel.getSimpleQuerySet(nextQuerySetName);
+				SimpleQueryI sq = sqs.getQuery(realQueryName);
+				queryTester.displayQuery(sq);
+			    }
+			}
+			catch (Exception e){
+			    System.err.println(e.getMessage());
+			    e.printStackTrace();
+			}
+			    
+		    }
+		}
+	    }
+	}
+    }
+
     private static void addOption(Options options, String argName, String desc) {
         
         Option option = new Option(argName, true, desc);
