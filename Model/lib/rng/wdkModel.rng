@@ -197,7 +197,7 @@
     <element name="flatVocabParam">
       <ref name="ParamBaseContents" />
       <optional>
-        <attribute name="multipick" />
+        <attribute name="multiPick" />
       </optional>
       <attribute name="queryRef" />
     </element>
