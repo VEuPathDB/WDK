@@ -1,0 +1,19 @@
+BODY {
+	background: white;
+	color: black;
+}
+
+H1 { color: maroon }
+
+EM {
+    color: red;
+	font-style: italic
+}
+
+HR {
+   border-top: 1px dashed #f00;
+   border-bottom: 1px solid #f00;
+   color: maroon;
+   background-color: maroon;
+   height: 4px;
+}
