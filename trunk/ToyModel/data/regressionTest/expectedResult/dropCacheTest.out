@@ -1,5 +1,5 @@
 Attempting to drop 3 results tables
 Succeeded in dropping 3
-Deleting all rows from dbarkan.RTQueryInstance
-Dropping table dbarkan.RTQueryInstance
-Dropping sequence dbarkan.RTQueryInstance_pkseq
+Deleting all rows from RTQueryInstance
+Dropping table RTQueryInstance
+Dropping sequence RTQueryInstance_pkseq
