@@ -11,6 +11,15 @@
 </pageableQuerySet>
 
 
+<queryNameList name="RNAQueryNameList">
+
+   <fullQueryName fullQueryName="RNASimpleQueries.RNAByGoTerm"/>
+
+   <fullQueryName fullQueryName="RNASimpleQueries.TaxonName"/>
+
+</queryNameList>
+
+
 <simpleQuerySet name="RNASimpleQueries">
 
    <simpleSqlQuery name="DTGeneCardName"
@@ -76,7 +85,7 @@
               where name in ('mouse', 'human')
             </sql>
           </simpleSqlQuery>
-       </sqlEnumParam>
+       </sqlEnumParam> 
 
     <sql>
       select distinct cd.na_sequence_id 
