@@ -98,34 +98,18 @@ public class GlobalRepository {
     static DataSource setupDataSource(String connectURI, String login, 
 				      String password)  {
 
-	//	DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
-
         try {
-        OracleConnectionCacheImpl ds = new oracle.jdbc.pool.OracleConnectionCacheImpl();
-        ds.setURL("jdbc:oracle:thin:@ocs3:1532:tpat");
-//        
-        ds.setPassword("GUSrw");
-        ds.setUser("GUSrw");
-        return (DataSource) ds;
+            OracleConnectionCacheImpl ds = new oracle.jdbc.pool.OracleConnectionCacheImpl();
+            ds.setURL("jdbc:oracle:thin:@ocs3:1532:tpat");
+
+            ds.setPassword("GUSrw");
+            ds.setUser("GUSrw");
+            return (DataSource) ds;
         }
         catch (SQLException exp) {
             exp.printStackTrace();
         }
         
-//        <data-sources>
-//        <data-source type="oracle.jdbc.pool.OracleConnectionCacheImpl">
-//          <set-property property="autocommit" value="false" />
-//          <set-property property="readOnly" value="true" />
-//          <set-property property="description" value="Gusdev Oracle data source" />
-//        </data-source>
-//      </data-sources>
-      
-        
-        
-//        ObjectPool connectionPool = new GenericObjectPool(null);
-//        ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(connectURI, login, password);
-//        PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(connectionFactory,connectionPool,null,null,false,true);
-//        PoolingDataSource dataSource = new PoolingDataSource(connectionPool);
         return null;
     }
     
