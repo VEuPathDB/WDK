@@ -15,7 +15,6 @@ import org.gusdb.gus.wdk.view.RIVList;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;

@@ -16,7 +16,6 @@ import org.gusdb.gus.wdk.view.RIVList;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -295,6 +294,7 @@ public class InteractiveRecordListServlet extends HttpServlet {
             req.setAttribute("wdk_paging_start", new Integer(start));
             req.setAttribute("wdk_paging_end", new Integer(end));
             req.setAttribute("wdk_paging_url", uriString);
+            req.setAttribute("wdk_record_url", req.getContextPath()+"/ViewFullRecord?recordReference="+summary.getRecord().getFullName());
             req.setAttribute("wdk_paging_params", editedParamNames);
             req.setAttribute("renderer", renderer);
         }
