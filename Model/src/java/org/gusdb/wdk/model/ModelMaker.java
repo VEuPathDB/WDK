@@ -124,10 +124,8 @@ public class ModelMaker {
 					   File schemaFile) 
   {
     try {
-      WdkModel model =  ModelXmlParser.parseXmlFile(modelXmlFile.toURL(), modelPropFile.toURL(), schemaFile.toURL()) ;
-      model.configure(modelCfgFile);
-      
-      model.setResources();
+      WdkModel model =  ModelXmlParser.parseXmlFile(modelXmlFile.toURL(), modelPropFile.toURL(), schemaFile.toURL(), modelCfgFile.toURL()) ;
+
       return model;
     }catch (java.net.MalformedURLException e ) {
       e.printStackTrace();
