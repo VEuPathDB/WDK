@@ -2,8 +2,9 @@ package org.gusdb.gus.wdk.view.taglibs.query;
 
 import org.gusdb.gus.wdk.model.FlatVocabParam;
 import org.gusdb.gus.wdk.model.Param;
-import org.gusdb.gus.wdk.model.ResultFactory;
 import org.gusdb.gus.wdk.model.StringParam;
+import org.gusdb.gus.wdk.view.taglibs.query.HTMLParamViews.FlatVocabParamView;
+import org.gusdb.gus.wdk.view.taglibs.query.HTMLParamViews.StringParamView;
 
 import java.io.IOException;
 
@@ -22,9 +23,9 @@ public class DisplayParam extends SimpleTagSupport {
     
     
     public void doTag() throws IOException, JspException {
-    	if (param != null) {
-            JspContext context = getJspContext();
-    		JspWriter out = context.getOut();
+        if (param != null) {
+            JspContext context = getJspContext();   
+            JspWriter out = context.getOut();
             
             // TODO Move into a debugging custom tag
 //            Enumeration e = context.getAttributeNamesInScope(PageContext.PAGE_SCOPE);
@@ -40,14 +41,19 @@ public class DisplayParam extends SimpleTagSupport {
     		String formQuery = context.getAttribute("wdk.formName", PageContext.PAGE_SCOPE)
                 + "."
                 + (String) context.getAttribute("wdk.queryName", PageContext.PAGE_SCOPE);
-            
-    			if (param instanceof StringParam) {
-    				handleStringParam((StringParam) param, formQuery, out);
-    				return;
-    			}
+                
+    		if (param instanceof StringParam) {
+                StringParamView.showParam(param, formQuery, out, context);
+    		    return;
+    		}
 
+//    		Class parser = Class.forName(parserClass);
+//    		Method build = parser.getDeclaredMethod("parseXmlFile", new Class[] {URL.class, URL.class, URL.class});
+//    		WdkModel wdkModel = (WdkModel) build.invoke(null, new Object[] {querySetURL, propsURL, schemaURL});
+                    
+                
     		if (param instanceof FlatVocabParam) {
-    			handlePairParam((FlatVocabParam) param, formQuery, out);
+                FlatVocabParamView.showParam(param, formQuery, out, context);
     			return;
     		}
 	
@@ -59,35 +65,7 @@ public class DisplayParam extends SimpleTagSupport {
 //	out.println("</form>");
     	}
     }
-
-    private void handleStringParam(StringParam p, String formQuery, JspWriter out) throws IOException {
-    	String def = p.getDefault();
-    	if ( def == null) {
-    		def = "";
-    	}
-    	out.println("<input name=\""+formQuery+"."+p.getName()+"\" type=\"text\" length=\"8\" value=\""+def+"\">");
-    }
-  
-    private void handlePairParam(FlatVocabParam p, String formQuery, JspWriter out) throws IOException {
-    	
-    	ResultFactory rf = (ResultFactory) getJspContext().getAttribute("wdk.queryResultFactory", PageContext.APPLICATION_SCOPE);
-    	String[] m = null;
-    	try {
-    		m = p.getVocab();
-    	}
-    	catch (Exception exp) {
-    		// TODO How are we logging?
-    	}
-    	if (m != null) {
-    		out.println("<select name=\""+formQuery+"."+p.getName()+"\">");
-    		
-    		for (int i = 0; i< m.length ; i++) {
-    			String entry = m[i];
-    			out.print("<option value=\""+entry+"\">"+entry);
-    		}
-    		out.println("</select>");
-    	}
-    }
+    
     
 	/**
 	 * @return Returns the param.
