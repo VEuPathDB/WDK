@@ -157,7 +157,8 @@ public class ApplicationInitListener implements ServletContextListener {
             
             application.setAttribute("wdk.resultFactory", wdkModel.getResultFactory());
             application.setAttribute("wdk_wdkModel", wdkModel);
-         
+	    System.err.println("made model ok: " + wdkModel);
+
         } catch (Exception exp) {
         	exp.printStackTrace();
            // throw new RuntimeException(exp);

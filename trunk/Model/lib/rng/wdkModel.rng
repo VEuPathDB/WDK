@@ -117,6 +117,12 @@
   <define name="questionSet">
     <element name="questionSet">
       <attribute name="name" />
+      <attribute name="displayName" />
+      <optional>
+          <element name="description">
+              <text />
+          </element>        
+      </optional>
       <oneOrMore>
         <ref name="question" />
       </oneOrMore>

@@ -28,7 +28,12 @@
 
 
     <!-- questions that return RNA records -->
-    <questionSet name="RnaQuestions">
+    <questionSet name="RnaQuestions"
+                 displayName="Queries to find RNAs">
+
+        <description>
+          These queries find RNAs
+        </description>
 
         <question name="ByDbESTLib" 
                   queryRef="RnaIds.ByDbESTLib" 
@@ -122,8 +127,7 @@
 
         <sqlQuery name="ByDbESTLib" displayName="RNAs by number of EST libs">
             <description>
-                Find RNAs from a given organism and contain ESTs from more 
-                than a specified number of libraries.
+                Find RNAs from a given organism and contain ESTs from more than a specified number of libraries.
             </description>
 
             <paramRef ref="params.NumEstLibs"/>

@@ -71,7 +71,9 @@ public class QueryTester {
     void displayQuery(Query query) throws WdkModelException {
         String newline = System.getProperty( "line.separator" );
         System.out.println(newline + "Query: " + 
-                query.getDisplayName() + newline);
+			   query.getDisplayName() + newline); 
+	if (query.getDescription() != null)
+	    System.out.println(query.getDescription() + newline);
         
         System.out.println("Parameters");
         
