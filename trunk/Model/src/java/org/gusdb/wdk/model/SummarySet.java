@@ -30,15 +30,18 @@ public class SummarySet implements ModelSetI {
 	return name;
     }
 
-    public Summary getSummary(String name) {
-	return (Summary)summarySet.get(name);
+    public Summary getSummary(String name) throws WdkUserException {
+
+	Summary s = (Summary)summarySet.get(name);
+	if (s == null) throw new WdkUserException("Summary Set " + getName() + " does not include summary " + name);
+	return s;
     }
 
     public Object getElement(String name) {
 	return summarySet.get(name);
     }
 
-    public Summary[] getSummarys() {
+    public Summary[] getSummaries() {
 	Summary[] summarys = new Summary[summarySet.size()];
 	Iterator summaryIterator = summarySet.values().iterator();
 	int i = 0;

@@ -20,8 +20,12 @@ public class RecordSet implements ModelSetI {
 	return name;
     }
 
-    public Record getRecord(String name) {
-	return (Record)recordSet.get(name);
+
+    public Record getRecord(String name) throws WdkUserException {
+
+	Record s = (Record)recordSet.get(name);
+	if (s == null) throw new WdkUserException("Record Set " + getName() + " does not include record " + name);
+	return s;
     }
 
     public Object getElement(String name) {
