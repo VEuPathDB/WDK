@@ -17,8 +17,8 @@ import org.gusdb.gus.wdk.model.WdkModel;
 import org.gusdb.gus.wdk.model.implementation.ModelXmlParser;
 import org.gusdb.gus.wdk.model.implementation.SqlQueryInstance;
 
-import org.gusdb.gus.wdk.model.QueryNameList;
-import org.gusdb.gus.wdk.model.QueryName;
+import org.gusdb.gus.wdk.model.ReferenceList;
+import org.gusdb.gus.wdk.model.Reference;
 
 import java.io.File;
 import java.util.Hashtable;
@@ -70,19 +70,6 @@ public class QueryTester {
 	instance.setValues(paramHash);
 	return instance.getResult();
     }
-
-    /*public ResultSet getResultPage(String querySetName, String queryName, 
-				   int startRow, int endRow,
-				   Hashtable paramHash, 
-				   boolean useCache) throws WdkModelException, WdkUserException {
-	PageableQuerySet pageableQuerySet 
-	    = wdkModel.getPageableQuerySet(querySetName);
-	PageableQueryI query = pageableQuerySet.getQuery(queryName);
-	PageableQueryInstanceI instance = query.makeInstance();
-	instance.setIsCacheable(useCache);
-	instance.setValues(paramHash);
-	return instance.getResult(startRow, endRow);
-	}*/
 
     public String getResultAsTable(String querySetName, String queryName, Hashtable paramHash, boolean useCache) throws WdkModelException, WdkUserException {
 	QuerySet querySet 
@@ -209,7 +196,7 @@ public class QueryTester {
             ResultFactory resultFactory = new ResultFactory(dataSource, platform, 
 							    login, instanceTable);
             wdkModel.setResultFactory(resultFactory);
-            wdkModel.setPlatform(platform);
+            wdkModel.setResources(platform);
 	    QueryTester tester = new QueryTester(wdkModel, resultFactory);
             
             // if no params supplied, show the query prompts
@@ -235,15 +222,6 @@ public class QueryTester {
 							   useCache);
                     System.out.println(table);
                 } 
-		/*else if (paging) {
-                    ResultSet rs = tester.getResultPage(querySetName, 
-                            queryName, 
-                            Integer.parseInt(rows[0]),
-                            Integer.parseInt(rows[1]),
-                            paramHash,
-                            useCache);
-                    SqlUtils.printResultSet(rs);
-		    }*/ 
 		else {
 		    Query temp = 
                         wdkModel.getQuerySet(querySetName).
@@ -255,7 +233,6 @@ public class QueryTester {
 		    rs.print();
                 }
             }
-	    runQueryNameListTest(tester, wdkModel, querySetName);
         } catch (WdkUserException e) {
             System.err.println(e.formatErrors());
             System.exit(1);
@@ -265,44 +242,6 @@ public class QueryTester {
         } 
     }
     
-
-    private static void runQueryNameListTest(QueryTester queryTester, WdkModel wdkModel, String querySetName){
-
-	QueryNameList queryNameLists[] = wdkModel.getAllQueryNameLists();
-	if (queryNameLists != null){
-	    for (int i = 0; i < queryNameLists.length; i++){
-		QueryNameList nextQueryNameList = queryNameLists[i];
-		
-		QueryName queries[] = nextQueryNameList.getQueryNames();
-		
-		if (queries != null){
-		    for (int j = 0; j < queries.length; j++){
-			QueryName nextQueryName = queries[j];
-			String nextQuerySetName = nextQueryName.getQuerySetName();
-			String realQueryName = nextQueryName.getQueryName();
-			try {
-			 
-			    //			    if (wdkModel.hasPageableQuerySet(nextQuerySetName)){
-				//PageableQuerySet pqs = wdkModel.getPageableQuerySet(nextQuerySetName);
-				//PageableQueryI pq = pqs.getQuery(realQueryName);
-				//queryTester.displayQuery(pq);
-			    //}
-			      //since it passed all checks; queySetName has to be simpleQuerySet
-			    QuerySet qs = wdkModel.getQuerySet(nextQuerySetName);
-			    Query q = qs.getQuery(realQueryName);
-			    queryTester.displayQuery(q);
-			    
-			}
-			catch (Exception e){
-			    System.err.println(e.getMessage());
-			    e.printStackTrace();
-			}
-			    
-		    }
-		}
-	    }
-	}
-    }
 
     private static void addOption(Options options, String argName, String desc) {
         

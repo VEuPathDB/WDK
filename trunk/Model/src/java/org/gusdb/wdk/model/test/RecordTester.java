@@ -74,7 +74,7 @@ public class RecordTester {
 	    ResultFactory resultFactory = new ResultFactory(dataSource, platform, 
 							    login, instanceTable);
             wdkModel.setResultFactory(resultFactory);
-	    wdkModel.setPlatform(platform);
+	    wdkModel.setResources(platform);
 
 	    RecordSet recordSet = wdkModel.getRecordSet(recordSetName);
 	    Record record = recordSet.getRecord(recordName);

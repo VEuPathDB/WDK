@@ -5,11 +5,15 @@ import java.util.Iterator;
 
 public class WdkUserException extends Exception {
 
-    Map booBoos;
+    Map booBoos = null;
 
     public WdkUserException(Map booBoos) {
 	super();
 	this.booBoos = booBoos;
+    }
+
+    public WdkUserException(String message) {
+	super(message);
     }
 
     public WdkUserException(String message, Map booBoos) {

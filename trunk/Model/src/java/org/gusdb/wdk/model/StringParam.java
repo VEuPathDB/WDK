@@ -33,8 +33,24 @@ public class StringParam extends Param {
         substitute = Boolean.valueOf(subst);
     }
     
-    
-    public String validateValue(String value) {
+    public String toString() {
+       String newline = System.getProperty( "line.separator" );
+       StringBuffer buf = 
+	   new StringBuffer(super.toString() +
+			    "  sample='" + sample + "'" + newline +
+			    "  regex='" + regex + "'" + newline +
+                "  substitute='" + substitute + "'"
+			    );
+       return buf.toString();
+    }
+
+    /////////////////////////////////////////////////////////////////
+    // protected methods
+    /////////////////////////////////////////////////////////////////
+
+    protected void resolveReferences(WdkModel model) throws WdkModelException {}
+
+    protected String validateValue(String value) {
         if (regex == null) {
             // TODO - Correct? Assuming no regex means we don't care about value
             return null;
@@ -52,14 +68,4 @@ public class StringParam extends Param {
         return value.replaceAll("*","%");
     }
 
-    public String toString() {
-       String newline = System.getProperty( "line.separator" );
-       StringBuffer buf = 
-	   new StringBuffer(super.toString() +
-			    "  sample='" + sample + "'" + newline +
-			    "  regex='" + regex + "'" + newline +
-                "  substitute='" + substitute + "'"
-			    );
-       return buf.toString();
-    }
 }

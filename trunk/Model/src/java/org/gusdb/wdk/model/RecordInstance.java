@@ -7,7 +7,7 @@ public class RecordInstance {
     String primaryKey;
     Record record;
     HashMap fieldsResultSetsMap;
-    RecordListInstance recordListInstance;
+    SummaryInstance summaryInstance;
 
     public RecordInstance(Record record) {
 	this.record = record;
@@ -24,8 +24,8 @@ public class RecordInstance {
 	return primaryKey;
     }
 
-    public void setRecordListInstance(RecordListInstance rli){
-	this.recordListInstance = rli;
+    public void setSummaryInstance(SummaryInstance rli){
+	this.summaryInstance = rli;
     }
 
     /**
@@ -124,10 +124,10 @@ public class RecordInstance {
     protected void runFieldsQuery(Query query) throws WdkModelException {
 	QueryInstance instance = query.makeInstance();
 	instance.setIsCacheable(false);
-	if (recordListInstance != null){
-	    recordListInstance.setMultiMode(instance);
+	if (summaryInstance != null){
+	    summaryInstance.setMultiMode(instance);
 	    ResultList rl = instance.getResult();
-	    recordListInstance.setQueryResult(rl);
+	    summaryInstance.setQueryResult(rl);
 	    rl.close();
 	}
 	else{ //do it all myself

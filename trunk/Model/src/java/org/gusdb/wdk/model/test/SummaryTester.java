@@ -3,9 +3,9 @@ package org.gusdb.gus.wdk.model.test;
 import org.gusdb.gus.wdk.model.ModelConfig;
 import org.gusdb.gus.wdk.model.ModelConfigParser;
 import org.gusdb.gus.wdk.model.RDBMSPlatformI;
-import org.gusdb.gus.wdk.model.RecordListInstance;
-import org.gusdb.gus.wdk.model.RecordList;
-import org.gusdb.gus.wdk.model.RecordListSet;
+import org.gusdb.gus.wdk.model.SummaryInstance;
+import org.gusdb.gus.wdk.model.Summary;
+import org.gusdb.gus.wdk.model.SummarySet;
 import org.gusdb.gus.wdk.model.ResultFactory;
 import org.gusdb.gus.wdk.model.WdkModel;
 import org.gusdb.gus.wdk.model.implementation.ModelXmlParser;
@@ -32,7 +32,7 @@ import org.apache.commons.pool.ObjectPool;
 import org.apache.commons.pool.impl.GenericObjectPool;
 
 
-public class RecordListTester {
+public class SummaryTester {
     
     public static void main(String[] args) {
 	
@@ -46,8 +46,8 @@ public class RecordListTester {
 	    new File(cmdLine.getOptionValue("configFile"));
 	File modelXmlFile = new File(cmdLine.getOptionValue("modelXmlFile"));
 	
-	String recordListSetName = cmdLine.getOptionValue("recordListSetName");
-	String recordListName = cmdLine.getOptionValue("recordListName");
+	String summarySetName = cmdLine.getOptionValue("summarySetName");
+	String summaryName = cmdLine.getOptionValue("summaryName");
 	String[] rows = cmdLine.getOptionValues("rows");
 
 	validateRowCount(rows);
@@ -81,14 +81,14 @@ public class RecordListTester {
 	    ResultFactory resultFactory = new ResultFactory(dataSource, platform, 
 							    login, instanceTable);
             wdkModel.setResultFactory(resultFactory);
-	    wdkModel.setPlatform(platform);
+	    wdkModel.setResources(platform);
 	    
-	    RecordListSet recordListSet = wdkModel.getRecordListSet(recordListSetName);
-	    RecordList recordList = recordListSet.getRecordList(recordListName);
+	    SummarySet summarySet = wdkModel.getSummarySet(summarySetName);
+	    Summary summary = summarySet.getSummary(summaryName);
 
 	    if (haveParams){
 		Hashtable paramValues = parseParamArgs(params);
-		Query query = recordList.getQuery();
+		Query query = summary.getQuery();
 		query.setIsCacheable(new Boolean(true));
 		
 		int pageCount = 1;
@@ -96,8 +96,8 @@ public class RecordListTester {
 		for (int i = 0; i < rows.length; i+=2){
 		    int nextStartRow = Integer.parseInt(rows[i]);
 		    int nextEndRow = Integer.parseInt(rows[i+1]);
-		    System.err.println("RecordListTester: have " + recordList.getTotalLength(paramValues) + " total rows");
-		    RecordListInstance rli = recordList.makeRecordListInstance();
+		    System.err.println("SummaryTester: have " + summary.getTotalLength(paramValues) + " total rows");
+		    SummaryInstance rli = summary.makeSummaryInstance();
 		    
 		    rli.setValues(paramValues, nextStartRow, nextEndRow);
 		    System.err.println("Printing Record Instances on page " + pageCount);
@@ -133,10 +133,10 @@ public class RecordListTester {
 	addOption(options, "configFile", "An .xml file that specifies a ModelConfig object.");
 	// query set file
 	addOption(options, "modelXmlFile", "An .xml file that specifies a container of Query set objects.");
-	//recordListSetName
-	addOption(options, "recordListSetName", "The name of the recordListSet in which to find the recordList");
-	//recordListName
-	addOption(options, "recordListName", "the name of the record list to run");
+	//summarySetName
+	addOption(options, "summarySetName", "The name of the summarySet in which to find the summary");
+	//summaryName
+	addOption(options, "summaryName", "the name of the summary to run");
 	//rows to return
 	Option rows = new Option("rows", "the start and end pairs of the Record Instance rows to return");
 	rows.setArgs(Option.UNLIMITED_VALUES);
@@ -201,11 +201,11 @@ public class RecordListTester {
 	    cmdName + 
 	    " -configFile config_file" +
 	    " -modelXmlFile model_xml_file" +
-	    " -recordListSetName record_list_set_name" +
-	    " -recordListName record_list_name";
+	    " -summarySetName summary_set_name" +
+	    " -summaryName summary_name";
 
 	String header = 
-	    newline + "Print a record list found in a WDK Model xml file. Options:" ;
+	    newline + "Print a summary found in a WDK Model xml file. Options:" ;
 
 	String footer = "";
 

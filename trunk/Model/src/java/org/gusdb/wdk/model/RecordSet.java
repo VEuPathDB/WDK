@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Iterator;
 
-public class RecordSet {
+public class RecordSet implements ModelSetI {
 
     HashMap recordSet;
     String name;
@@ -23,6 +23,10 @@ public class RecordSet {
 
     public Record getRecord(String name) {
 	return (Record)recordSet.get(name);
+    }
+
+    public Object getElement(String name) {
+	return recordSet.get(name);
     }
 
     public Record[] getRecords() {
@@ -60,33 +64,11 @@ public class RecordSet {
        return buf.toString();
     }
 
-    public void resolveReferences(Map querySetMap) throws WdkModelException {
+    public void resolveReferences(WdkModel model) throws WdkModelException {
        Iterator recordIterator = recordSet.values().iterator();
        while (recordIterator.hasNext()) {
 	   Record record = (Record)recordIterator.next();
-	   record.resolveReferences(querySetMap);
+	   record.resolveReferences(model);
        }
-    }
-    
-    public static Record resolveRecordReference(Map recordSetMap, String twoPartRecordName) throws WdkModelException {
-
-	//change to RecordName eventually
-	
-	String[] parts = twoPartRecordName.split("\\.");
-	String recordSetName = parts[0];
-	String recordName = parts[1];
-
-	RecordSet rs = (RecordSet)recordSetMap.get(recordSetName);
-	if (rs == null) {
-	    //maybe change to mirror SimpleQuerySet error messaging?
-	    throw new WdkModelException ("Could not find RecordSet " + recordSetName);
-	}
-	Record record = (Record)rs.getRecord(recordName);
-
-	if (record == null) {
-
-	    throw new WdkModelException ("Could not find Record " + recordName);
-	}
-	return record;
     }
 }

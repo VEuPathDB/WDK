@@ -42,21 +42,6 @@ public abstract class Param {
 	return dfault;
     }
 
-    /**
-     * @return Error string if an error.  null if no errors.
-     */ 
-    public abstract String validateValue(String value) throws WdkModelException ;
-
-    /**
-     * Transforms external value into internal value if needed
-     * By default returns provided value
-     */
-    public String getInternalValue(String value) throws WdkModelException {
-	return value;
-    }
-
-    public void resolveReferences() {}
-
     public String toString() {
        String newline = System.getProperty( "line.separator" );
        String classnm = this.getClass().getName();
@@ -69,4 +54,26 @@ public abstract class Param {
 
        return buf.toString();
     }
+
+    //////////////////////////////////////////////////////////////////////
+    // protected methods
+    //////////////////////////////////////////////////////////////////////
+
+    /**
+     * @return Error string if an error.  null if no errors.
+     */ 
+    protected abstract String validateValue(String value) throws WdkModelException ;
+
+    /**
+     * Transforms external value into internal value if needed
+     * By default returns provided value
+     */
+    protected String getInternalValue(String value) throws WdkModelException {
+	return value;
+    }
+
+    protected abstract void resolveReferences(WdkModel model) throws WdkModelException;
+
+    protected void setModelResources(WdkModel model) {}
+
 }

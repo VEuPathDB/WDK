@@ -2,6 +2,10 @@ To Do
 
 NEW
 
+ - factor the various Tester classes.
+
+ - factor the various Set classes?
+
  - update tutorial (include wdkCache)
 
  - SqlEnumParam not working?
