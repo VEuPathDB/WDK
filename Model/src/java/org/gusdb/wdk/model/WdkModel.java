@@ -18,6 +18,7 @@ public class WdkModel {
     HashMap summarySets = new HashMap();
     HashMap allModelSets = new HashMap();
     String name;
+    String introduction;
     ResultFactory resultFactory;
     private Document document;
     public static final WdkModel INSTANCE = new WdkModel();
@@ -67,6 +68,14 @@ public class WdkModel {
 
     public String getName(){
 	return name;
+    }
+
+    public void setIntroduction(String introduction) {
+        this.introduction = introduction;
+    }
+
+    public String getIntroduction(){
+	return introduction;
     }
 
     //Record Sets

@@ -3,12 +3,17 @@
   <start>
     <element name="wdkModel">
       <attribute name="name" />
+      <optional>
+          <element name="introduction">
+              <text />
+          </element>
+      </optional>
       <oneOrMore>
         <choice>
+          <ref name="questionSet" />
           <ref name="querySet" />
           <ref name="queryNameList" />
-          <ref name="recordSet" />
-          <ref name="summarySet" />
+          <ref name="recordClassSet" />
           <ref name="paramSet" />
         </choice>
       </oneOrMore>
@@ -18,6 +23,11 @@
 
   <!-- Schema grouping elements  -->
   <define name="queries">
+    <optional>
+        <element name="introduction">
+            <text />
+        </element>        
+    </optional>
     <choice>
       <ref name="sqlQuery" />
     </choice>
@@ -95,20 +105,20 @@
     </element>
   </define>
 
-  <define name="recordSet">
-    <element name="recordSet">
+  <define name="recordClassSet">
+    <element name="recordClassSet">
       <attribute name="name" />
       <oneOrMore>
-        <ref name="record" />
+        <ref name="recordClass" />
       </oneOrMore>
     </element>
   </define>
 
-  <define name="summarySet">
-    <element name="summarySet">
+  <define name="questionSet">
+    <element name="questionSet">
       <attribute name="name" />
       <oneOrMore>
-        <ref name="summary" />
+        <ref name="question" />
       </oneOrMore>
     </element>
   </define>
@@ -190,9 +200,9 @@
   </define>
   
   
-  <!-- Record -->
-  <define name="record">
-    <element name="record">
+  <!-- RecordClass -->
+  <define name="recordClass">
+    <element name="recordClass">
       <attribute name="name" />
       <attribute name="type" />
       <attribute name="idPrefix" />
@@ -216,11 +226,11 @@
     
 
 
-  <!-- Summary -->
-  <define name="summary">
-    <element name="summary">
+  <!-- Question -->
+  <define name="question">
+    <element name="question">
       <attribute name="name" />
-      <attribute name="recordRef" />
+      <attribute name="recordClassRef" />
       <attribute name="queryRef" />
     </element>
   </define>
