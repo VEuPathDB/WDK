@@ -3,7 +3,7 @@ To Do
 
 General
 -------
-Ask about getting rid of XML libs - somethings broken if we need them in this location
+Ask about getting rid of XML libs - which version of Java are they using?
 Add a default (nearly-empty) stylesheet
 Be able to connect to GUS@CBIL
 Ask about updating Oracle lib
