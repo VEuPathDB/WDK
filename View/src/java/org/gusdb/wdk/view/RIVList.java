@@ -45,6 +45,7 @@ public class RIVList implements Iterator {
         if (columnNames != null) {
             for (Iterator it = columnNames.iterator(); it.hasNext();) {
                 String name = (String) it.next();
+                logger.finer("I've got a column name of "+name);
                 displayNames.put(name, si.getSummary().getRecord().getDisplayName(name));
             }
         } else {
@@ -69,8 +70,6 @@ public class RIVList implements Iterator {
         } else {
             logger.severe("No summary column information available");
         }       
-        
-        // TODO Auto-generated constructor stub
     }
 
     public Map getDisplayName() {

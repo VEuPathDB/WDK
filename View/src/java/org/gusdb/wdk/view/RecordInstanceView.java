@@ -58,6 +58,7 @@ public class RecordInstanceView implements Map {
                 if ("primary_key".equals(key)) {
                     value = new PrimaryKey(value);
                 }
+                logger.finer("#~#~ Adding "+key+" => "+value);
                 map.put(key, value);
             }
         }
@@ -71,7 +72,8 @@ public class RecordInstanceView implements Map {
                 catch (WdkModelException exp) {
                     exp.printStackTrace();
                 }
-                logger.severe("About to go and create RIVList ("+value+")for key "+key);
+                logger.finer("About to go and create RIVList ("+value+")for key "+key);
+                logger.finer("#~#~ Adding TABLE "+key+" => "+value);
                 map.put(key, new RIVList(value));
             }
     }
@@ -95,9 +97,6 @@ public class RecordInstanceView implements Map {
     }
     
     private void generateAttributeNames() {
-//        if (summary) {
-//            //attributeNames = ri.getSummaryAttributes();
-//        } else {
             Record record = ri.getRecord();
             attributeNames.addAll(record.getNonTextAttributeNames());
             // FIXME Disabling text attributes for now
@@ -123,10 +122,6 @@ public class RecordInstanceView implements Map {
         return attributeNames;
     }
     
-    
-//    private void addListContentsToList(List l, List a) {
-//        l.addAll(a);
-//    }
 
     /**
      * @see java.util.Map#size()
