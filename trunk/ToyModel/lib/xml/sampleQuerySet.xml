@@ -30,7 +30,7 @@
      </sql>
   </simpleSqlQuery>
 
-   <simpleSqlQuery name="RNAListInDetail"
+  <simpleSqlQuery name="RNAListInDetail"
             displayName="RNAs">
 
        <stringParam  name="resultTable"/>
