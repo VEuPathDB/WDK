@@ -12,7 +12,7 @@ public class AttributeValueMap implements Map {
 
     private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.view.AttributeValueMap");
     
-    private Record record;
+    private RecordClass recordClass;
     private RecordInstance recordInstance;
     private boolean isTableMap;
 
@@ -20,9 +20,9 @@ public class AttributeValueMap implements Map {
      * @param recordInstance May be null to indicate this is a map to hold
      * valueless attributes
      */
-    public AttributeValueMap(Record record, RecordInstance recordInstance, boolean isTableMap) {
+    public AttributeValueMap(RecordClass recordClass, RecordInstance recordInstance, boolean isTableMap) {
 	this.recordInstance = recordInstance;
-	this.record = record;
+	this.recordClass = recordClass;
 	this.isTableMap = isTableMap;
     }
 
@@ -57,15 +57,15 @@ public class AttributeValueMap implements Map {
      */
     public Set keySet() {
 	return isTableMap?
-	    record.getTableNames() :
-	    record.getAllAttributeNames();
+	    recordClass.getTableNames() :
+	    recordClass.getAllAttributeNames();
     }
 
     /**
      * @see java.util.Map#get(java.lang.Object)
      */
     public Object get(Object key) {
-	if (!containsKey(key)) throw new IllegalArgumentException("Record " + record.getFullName() + " does not have any value with key " + key);
+	if (!containsKey(key)) throw new IllegalArgumentException("Record " + recordClass.getFullName() + " does not have any value with key " + key);
 
 	try {
 	    String attrName = (String)key;
@@ -76,7 +76,7 @@ public class AttributeValueMap implements Map {
 		    recordInstance.getAttributeValue(attrName);
 	    }
 	    AttributeValue attrValue = 
-		new AttributeValue(record, attrName,value);
+		new AttributeValue(recordClass, attrName,value);
 	    return attrValue;
 	} catch (WdkModelException e) {
 	    throw new RuntimeException(e);

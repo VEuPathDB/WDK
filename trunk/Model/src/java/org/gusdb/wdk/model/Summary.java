@@ -5,7 +5,7 @@ import java.util.Map;
 /**
  * Summary.java
  *
- * A class representing a binding between a Record and a Query.
+ * A class representing a binding between a RecordClass and a Query.
  *
  * Created: Fri June 4 11:19:30 2004 EDT
  *
@@ -15,7 +15,7 @@ import java.util.Map;
 
 public class Summary {
 
-    private String recordTwoPartName;
+    private String recordClassTwoPartName;
 
     private String queryTwoPartName;
 
@@ -31,7 +31,7 @@ public class Summary {
     //produced by this Summary
     QueryInstance listIdQueryInstance;
 
-    Record record;
+    RecordClass recordClass;
 
     public Summary(){
     }
@@ -67,13 +67,13 @@ public class Summary {
 	return query.getDescription();
     }
 
-    public Record getRecord(){
-	return this.record;
+    public RecordClass getRecordClass(){
+	return this.recordClass;
     }
 
-    public void setRecordClassRef(String recordTwoPartName){
+    public void setRecordClassRef(String recordClassTwoPartName){
 
-	this.recordTwoPartName = recordTwoPartName;
+	this.recordClassTwoPartName = recordClassTwoPartName;
     }
 
     public void setQueryRef(String queryTwoPartName){
@@ -84,7 +84,7 @@ public class Summary {
     public void resolveReferences(WdkModel model)throws WdkModelException{
 	
 	this.query = (Query)model.resolveReference(queryTwoPartName, name, "question", "queryRef");
-	this.record = (Record)model.resolveReference(recordTwoPartName, name, "question", "recordClassRef");
+	this.recordClass = (RecordClass)model.resolveReference(recordClassTwoPartName, name, "question", "recordClassRef");
     }
 
     public String getName(){
@@ -110,7 +110,7 @@ public class Summary {
 	String newline = System.getProperty( "line.separator" );
 	StringBuffer buf =
 	    new StringBuffer("Question: name='" + name + "'" + newline  +
-			     "  recordClass='" + recordTwoPartName + "'" + newline +
+			     "  recordClass='" + recordClassTwoPartName + "'" + newline +
 			     "  query='" + queryTwoPartName + "'" + newline
 			     );	    
 	return buf.toString();
