@@ -13,6 +13,8 @@ import java.util.logging.Logger;
 
 public class Record {
     
+    public static final String PRIMARY_KEY_NAME = "primary_key";
+
     private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.model.Record");
     
     private Map attributesQueryMap = new LinkedHashMap();  // attributeName -> Query
@@ -143,7 +145,7 @@ public class Record {
 
     public Set getNonTextAttributeNames() {
 	LinkedHashSet orderedSet = new LinkedHashSet();
-	orderedSet.add(getType());
+	orderedSet.add(PRIMARY_KEY_NAME);
 	orderedSet.addAll( attributesQueryMap.keySet());
         return orderedSet;
     }
@@ -261,6 +263,8 @@ public class Record {
      * @throws 
      */
     public String getDisplayName(String attributeName) {
+	if (attributeName.equals(PRIMARY_KEY_NAME)) 
+	    return getType();
         Query q = (Query) attributesQueryMap.get(attributeName);
         try {
             Column c = q.getColumn(attributeName);
