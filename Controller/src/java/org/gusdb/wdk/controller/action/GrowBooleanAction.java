@@ -33,10 +33,13 @@ public class GrowBooleanAction extends StartBooleanAction{
 	BooleanQuestionForm bqf = (BooleanQuestionForm)form;
 	System.err.println("Grow Boolean Action: starting method");
 
+	String  submitAction = request.getParameter("process_boolean_question");
+	int clickedLeafId = parseLeafId(submitAction);
+
 	Object currentRoot = request.getSession().getAttribute(CConstants.CURRENT_BOOLEAN_ROOT_KEY);
 
-	String operation = bqf.getNextBooleanOperation();
-	String nextQuestionName = bqf.getNextQuestionOperand();
+	String operation = bqf.getNextBooleanOperation(clickedLeafId);
+	String nextQuestionName = bqf.getNextQuestionOperand(clickedLeafId);
 	System.err.println("new question to add is " + nextQuestionName);
 	QuestionBean nextQuestion = getQuestionFromModel(nextQuestionName);
 	BooleanQuestionLeafBean newLeaf = nextQuestion.makeBooleanQuestionLeaf();
@@ -49,10 +52,8 @@ public class GrowBooleanAction extends StartBooleanAction{
 	    currentRoot = currentLeafRoot.getParent();
 	}
 	else if (currentRoot instanceof org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean){
-	    String  submitAction = request.getParameter("process_boolean_question");
-	    int leafId = parseLeafId(submitAction);
 	    BooleanQuestionNodeBean currentNodeRoot = (BooleanQuestionNodeBean)currentRoot;	    
-	    BooleanQuestionLeafBean leafToGrow = currentNodeRoot.findLeaf(leafId);
+	    BooleanQuestionLeafBean leafToGrow = currentNodeRoot.findLeaf(clickedLeafId);
 	    leafToGrow.grow(newLeaf, operation, wdkModel);
 	} else {
 	    throw new RuntimeException("expect BooleanQuestion<Leaf|Node>Bean but got: " + currentRoot);
