@@ -1,12 +1,10 @@
-DoTS Transcript DT.92484673
-DoTS Transcript:   DT.92484673
-primary_key:   92484673
-taxon_name:   Neospora caninum
-gene_symbol:   MyFavoriteGene
-assembly_consistency:   99
-contains_mrna:   0
-number_of_contained_sequences:   55
-numseqs:   number of contained seqs is 55
+DoTS Transcript:   92484673
+Organism:   Neospora caninum
+Gene Symbol:   MyFavoriteGene
+Assembly consistency:   99
+Contains mRNA:   0
+Number contained sequences:   55
+Nice Num:   number of contained seqs is 55
 overview:   This is DoTS Transcript DT.92484673.  It is from Neospora caninum.
 Table ConstituentEsts
 90401797	23693776	1	398	null	null	
