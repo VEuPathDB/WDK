@@ -54,3 +54,5 @@ View - Features
 
   * a number of minor aesthetic improvements
 
+  * boolean questions
+
