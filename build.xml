@@ -124,11 +124,12 @@
 
   </target>
 
-  <target name="validate">
+  <target name="validateCBIL">
     <jing file="../WDKTestSite/lib/xml/sampleModelRNG.xml" rngfile="webinf/org/gusdb/gus/wdk/wdkModel.rng" />
   </target>
 	
-  <target name="validateSchema">
-	<jing file="webinf/org/gusdb/gus/wdk/wdkModel.rng" rngfile="/nfs/team81/art/relaxng.rng" />
+  <target name="validatePSU">
+	 <jing file="../WDKTestSite/lib/xml/PSUSampleModel.xml" rngfile="webinf/org/gusdb/gus/wdk/wdkModel.rng" />
   </target>
+
 </project>
