@@ -46,7 +46,6 @@ public class RecordInstanceView implements Map {
                 Object value = null;
                 try {
                     value = ri.getFieldValue(key);
-                    System.err.println("And got a value of "+value);
                 } catch (QueryParamsException exp) {
                     exp.printStackTrace();
                 }
