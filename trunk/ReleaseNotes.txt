@@ -1,5 +1,12 @@
 Version 1.1
 
+General
+  * the WDKToySite has been separated into its own project.  The components
+    WDK/ToyModel and WDK/ToySite are now in WDKToySite/Model and
+    WDKToySite/Site respectively.  The Wiki documentation explains how to
+    use the WDKToySite project as a template to create a new WDK-based
+    project, build it and store it in CVS.
+
 Model - Fixed Bugs
 
   * connection pool leak
