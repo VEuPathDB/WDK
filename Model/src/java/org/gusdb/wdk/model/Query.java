@@ -78,6 +78,7 @@ public abstract class Query {
     }
 
     public void addColumn(Column column) {
+
 	column.setQuery(this);
 	columnsV.add(column);
 	columnsH.put(column.getName(), column);

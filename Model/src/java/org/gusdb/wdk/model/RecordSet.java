@@ -68,4 +68,25 @@ public class RecordSet {
        }
     }
     
+    public static Record resolveRecordReference(Map recordSetMap, String twoPartRecordName) throws Exception {
+
+	//change to RecordName eventually
+	
+	String[] parts = twoPartRecordName.split("\\.");
+	String recordSetName = parts[0];
+	String recordName = parts[1];
+
+	RecordSet rs = (RecordSet)recordSetMap.get(recordSetName);
+	if (rs == null) {
+	    //maybe change to mirror SimpleQuerySet error messaging?
+	    throw new Exception ("Could not find RecordSet " + recordSetName);
+	}
+	Record record = (Record)rs.getRecord(recordName);
+
+	if (record == null) {
+
+	    throw new Exception ("Could not find Record " + recordName);
+	}
+	return record;
+    }
 }

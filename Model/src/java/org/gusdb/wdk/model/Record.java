@@ -92,6 +92,8 @@ public class Record {
 	}
     }
 
+
+
     public void addTextField(TextField textField) throws Exception {
 	checkFieldName(textField.getName());
 	textFieldMap.put(textField.getName(), textField.getText());

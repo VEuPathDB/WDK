@@ -33,6 +33,19 @@ public abstract class QueryInstance {
      */
     protected TreeMap values = new TreeMap();
 
+    /**
+     * Values that will be used when the QueryInstance is being run in multi-mode to join it with
+     * a table containing a list of primary keys in a RecordListInstance.
+     */
+    protected String multiModeResultTableName;
+
+    protected String pkToJoinWith;
+    
+    protected int startId;
+    
+    protected int endId;
+
+    protected boolean inMultiMode;
 
     // ------------------------------------------------------------------
     // Public Methods
@@ -43,8 +56,6 @@ public abstract class QueryInstance {
 	query.applyDefaults(values);
 	query.validateParamValues(values);
     }
-
-
 
     public Collection getValues() {
 	return values.values();
@@ -74,9 +85,20 @@ public abstract class QueryInstance {
 	return this.query;
     }
 
+    public void setMultiModeValues(String resultTableName, String pkToJoinWith, int startId, int endId){
+
+	this.multiModeResultTableName = resultTableName;
+	this.pkToJoinWith = pkToJoinWith;
+	this.startId = startId;
+	this.endId = endId;
+	this.inMultiMode = true;
+    }
+	
+
     public abstract String getBooleanOperandSql() throws NotBooleanOperandException;
 
     public abstract ResultList getResult() throws Exception;
+
 
     // ------------------------------------------------------------------
     // Constructor (Protected)
@@ -85,6 +107,7 @@ public abstract class QueryInstance {
     protected QueryInstance (Query query) {
 	this.query = query;
 	this.isCacheable = query.getIsCacheable().booleanValue();
+	this.inMultiMode = false;
     }
 
 }

@@ -8,6 +8,7 @@ public class WdkModel {
     HashMap querySets = new HashMap();
     HashMap recordSets = new HashMap();
     HashMap queryNameLists = new HashMap();
+    HashMap recordListSets = new HashMap();
     String name;
     ResultFactory resultFactory;
 
@@ -23,6 +24,7 @@ public class WdkModel {
 	this.name = name;
     }
 
+    //Record Sets
     public void addRecordSet(RecordSet recordSet) {
 	if (recordSets.containsKey(recordSet.getName())) {
 	    String err = "WDK Model " + name +
@@ -44,6 +46,8 @@ public class WdkModel {
 	return (RecordSet)recordSets.get(recordSetName);
     }
 
+
+    //Query Sets
     public void addQuerySet(QuerySet querySet) {
 	String err = checkName(querySet.getName());
 	if (err != null) throw new IllegalArgumentException(err);
@@ -64,10 +68,39 @@ public class WdkModel {
 	return querySets.containsKey(setName);
     }
 
+
+    //RecordList Sets
+    public void addRecordListSet(RecordListSet recordListSet) {
+	if (recordListSets.containsKey(recordListSet.getName())){
+	    String err = "WDK Model " + name + "already conatins a RecordList Set with name " +
+		recordListSet.getName();
+	    throw new IllegalArgumentException(err);
+	}
+	recordListSets.put(recordListSet.getName(), recordListSet);
+    }
+
+    public RecordListSet getRecordListSet(String setName) {
+	if (!recordListSets.containsKey(setName)) {
+	    String err = "WDK Model " + name +
+		" does not contain a RecordList set with name " + setName;
+	    throw new IllegalArgumentException(err);
+	}
+	return (RecordListSet)recordListSets.get(setName);
+    }
+
+    public boolean hasRecordListSet(String setName) {
+	return recordListSets.containsKey(setName);
+    }
+
+
+    //QueryNameLists
     public void addQueryNameList(QueryNameList queryNameList){
 	
-	String err = checkName(queryNameList.getName());
-	if (err != null) throw new IllegalArgumentException(err);
+	if (queryNameLists.containsKey(queryNameList.getName())){
+	    String err = "WDK Model " + name + "already conatins a QueryNameList with name " +
+		queryNameList.getName();
+	    throw new IllegalArgumentException(err);
+	}
 	queryNameLists.put(queryNameList.getName(), queryNameList);
     }
     
@@ -111,8 +144,16 @@ public class WdkModel {
        Iterator queryNameListIterator = queryNameLists.values().iterator();
        while (queryNameListIterator.hasNext()){
 	   QueryNameList nextList = (QueryNameList)queryNameListIterator.next();
-	   //nextList.checkReferences(querySets, pageableQuerySets);
+	   //	   nextList.checkReferences(querySets, pageableQuerySets);
+	   //need to change checkReferences to not use pageable query sets before we can run this again
        }
+       
+       Iterator recordListSetIterator = recordListSets.values().iterator();
+       while (recordListSetIterator.hasNext()){
+	   RecordListSet nextRecordListSet = (RecordListSet)recordListSetIterator.next();
+	   nextRecordListSet.resolveReferences(querySets, recordSets);
+       }
+
     }
     
     public String toString() {

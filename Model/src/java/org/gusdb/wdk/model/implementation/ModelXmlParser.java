@@ -12,6 +12,8 @@ import org.gusdb.gus.wdk.model.WdkModel;
 import org.gusdb.gus.wdk.model.QueryNameList;
 import org.gusdb.gus.wdk.model.QueryName;
 import org.gusdb.gus.wdk.model.TextColumn;
+import org.gusdb.gus.wdk.model.RecordListSet;
+import org.gusdb.gus.wdk.model.RecordList;
 
 
 import java.io.File;
@@ -96,6 +98,12 @@ public class ModelXmlParser {
 
 	/*        */ digester.addBeanPropertySetter( "wdkModel/querySet/sqlQuery/sqlEnumParam/sqlQuery/sql");
 
+	/*        */ digester.addObjectCreate( "wdkModel/querySet/sqlQuery/sqlEnumParam/sqlQuery/column", Column.class );
+
+       	/*        */ digester.addSetProperties( "wdkModel/querySet/sqlQuery/sqlEnumParam/sqlQuery/column");
+
+	/*        */ digester.addSetNext ("wdkModel/querySet/sqlQuery/sqlEnumParam/sqlQuery/column", "addColumn");
+
 	/*      */ digester.addSetNext( "wdkModel/querySet/sqlQuery/sqlEnumParam/sqlQuery", "setSqlQuery");
 
 	/*    */ digester.addSetNext( "wdkModel/querySet/sqlQuery/sqlEnumParam", "addParam" );
@@ -140,7 +148,20 @@ public class ModelXmlParser {
 
 	/**/ digester.addSetNext("wdkModel/queryNameList", "addQueryNameList");
 
+	//RecordListSet
 	
+	/**/ digester.addObjectCreate("wdkModel/recordListSet", RecordListSet.class);
+
+	/**/ digester.addSetProperties("wdkModel/recordListSet");
+
+	/*  */ digester.addObjectCreate("wdkModel/recordListSet/recordList", RecordList.class);
+
+	/*  */ digester.addSetProperties("wdkModel/recordListSet/recordList");
+
+	/*  */ digester.addSetNext("wdkModel/recordListSet/recordList", "addRecordList");
+
+        /**/ digester.addSetNext("wdkModel/recordListSet", "addRecordListSet");
+
 	return digester;
     }
     

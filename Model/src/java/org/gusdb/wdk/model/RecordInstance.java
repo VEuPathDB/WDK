@@ -7,6 +7,7 @@ public class RecordInstance {
     String primaryKey;
     Record record;
     HashMap fieldsResultSetsMap;
+    RecordListInstance recordListInstance;
 
     public RecordInstance(Record record) {
 	this.record = record;
@@ -21,6 +22,10 @@ public class RecordInstance {
 
     public String getPrimaryKey() {
 	return primaryKey;
+    }
+
+    public void setRecordListInstance(RecordListInstance rli){
+	this.recordListInstance = rli;
     }
 
     /**
@@ -89,10 +94,24 @@ public class RecordInstance {
 	
     }
 
+    
+
+
     ///////////////////////////////////////////////////////////////////////////////////////
     // protected
     ///////////////////////////////////////////////////////////////////////////////////////
 
+    protected void setFieldValue(String fieldName, Object fieldValue) throws Exception{
+	
+	Query query = record.getFieldsQuery(fieldName);
+	String queryName = query.getName();
+	HashMap resultMap = (HashMap)fieldsResultSetsMap.get(queryName);
+	if (resultMap == null){
+	    resultMap = new HashMap();
+	    fieldsResultSetsMap.put(queryName, resultMap);
+	}
+	resultMap.put(fieldName, fieldValue);
+    }
 
     /**
      * Place hash of single row result into hash keyed on query name
@@ -100,21 +119,27 @@ public class RecordInstance {
     protected void runFieldsQuery(Query query) throws Exception {
 	QueryInstance instance = query.makeInstance();
 	instance.setIsCacheable(false);
-	HashMap paramHash = new HashMap();
-	if (primaryKey == null) 
-	    throw new NullPointerException("primaryKey is null");
-	paramHash.put("primaryKey", primaryKey);
-	instance.setValues(paramHash);
-	ResultList rl = instance.getResult();
-	rl.checkQueryColumns(query, true);
-	HashMap queryResult = new HashMap();
-	Column[] columns = query.getColumns();
-	rl.next();
-	for (int i=0; i<columns.length; i++) {
-	    String columnName = columns[i].getName();
-	    queryResult.put(columnName, rl.getValue(columnName));
+	if (recordListInstance != null){
+	    recordListInstance.setMultiMode(instance);
+	    ResultList rl = instance.getResult();
+	    recordListInstance.setQueryResult(rl);
 	}
-	fieldsResultSetsMap.put(query.getName(), queryResult);
+	else{ //do it all myself
+	    HashMap paramHash = new HashMap();
+	    if (primaryKey == null) 
+		throw new NullPointerException("primaryKey is null");
+	    paramHash.put("primaryKey", primaryKey);
+	    instance.setValues(paramHash);
+	    ResultList rl = instance.getResult();
+	    //	rl.checkQueryColumns(query, true);
+	    
+	    Column[] columns = query.getColumns();
+	    rl.next();
+	    for (int i=0; i<columns.length; i++) {
+		String columnName = columns[i].getName();
+		setFieldValue(columnName, rl.getValue(columnName));
+	    }
+	}
     }
 
     protected String instantiateTextField(String textFieldName, String rawText, 
