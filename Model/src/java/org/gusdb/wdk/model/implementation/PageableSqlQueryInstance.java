@@ -1,10 +1,9 @@
 package org.gusdb.gus.wdk.model.implementation;
 
-import java.util.HashMap;
-import java.sql.SQLException;
-import java.sql.ResultSet;
-
 import org.gusdb.gus.wdk.model.PageableQueryInstanceI;
+
+import java.sql.ResultSet;
+import java.util.HashMap;
 
 public class PageableSqlQueryInstance extends SimpleSqlQueryInstance implements PageableQueryInstanceI {
 
