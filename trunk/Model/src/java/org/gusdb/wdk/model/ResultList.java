@@ -2,6 +2,8 @@ package org.gusdb.wdk.model;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 public abstract class ResultList {
 
@@ -49,7 +51,13 @@ public abstract class ResultList {
 	return new RowMap(this);
     }
 
+    public Iterator getRows() {
+	return new ResultListIterator(this);
+    }
+
     public abstract boolean next() throws WdkModelException;
+
+    public abstract boolean hasNext() throws WdkModelException;
 
     public abstract void close() throws WdkModelException;
 
@@ -77,31 +85,35 @@ public abstract class ResultList {
     }
 
 
-    /*
+    
     public class ResultListIterator implements Iterator {
 
 	ResultList rl;
-	Boolean hasNext = null;
-	Object next = null;
 
 	ResultListIterator(ResultList rl) {
 	    this.rl = rl;
 	}
 
 	public boolean hasNext() {
-	    if (hasNext != null) return hasNext.booleanValue();
-
+	    try {
+		return rl.hasNext();
+	    } catch (WdkModelException e) {
+		throw new RuntimeException(e);
+	    }
 	}
 
 	public Object next() {
-	    if (!hasNext()) throw new NoSuchElementException();
-	    return 
+	    try {
+		if (!rl.next()) throw new NoSuchElementException();
+		return rl.getRow();
+	    } catch (WdkModelException e) {
+		throw new RuntimeException(e);
+	    }
 	}
 
 	public void remove() {
-
+	    throw new UnsupportedOperationException();
 	}
     }
-    */
 }
 
