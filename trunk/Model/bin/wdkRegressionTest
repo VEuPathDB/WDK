@@ -16,7 +16,7 @@ my ($configFile, $useExistingDb, $createNewExpected, $outputDir, $commandListFil
 	    );
 
 &usage() unless $commandListFile;
-&processOutputDir($outputDir);
+
 if (!$useExistingDb){
     
     my $dbCmd = "wdkTestDb --dataDirectory $ENV{GUS_HOME}/data/WDK/Model/testTables --dropDatabase --createDatabase --configFile $configFile"; 
@@ -71,36 +71,38 @@ sub runTest{
 
     my ($name, $cmd, $critical) = @_;
 
-    my $fullCmd = $cmd . " >  $outputDir/failures/$name" . ".out 2> $outputDir/failures/$name" . ".err";
+    my $fullCmd = $cmd . " >  $outputDir/$name" . ".out 2> $outputDir/$name" . ".err";
 
     my $testFailed = 0;
  
+    my $expectedResultsDir = "$ENV{GUS_HOME}/data/WDK/ToyModel/regressionTest/expectedResult";
+
     print STDERR "running regression test $name\n\n";
     print STDERR "running command $fullCmd\n\n" if $verbose;
     system($fullCmd);
     
      if ($createNewExpected){
-	my $existing = "$outputDir/testResults/expected/$name" . ".out";
+	my $existing = "$expectedResultsDir/$name" . ".out";
 	my $fh = FileHandle->new("<$existing");
 	if ($fh){ #expected result exists already
-	    my $backupCmd = "cp $outputDir/expected/$name" . ".out $outputDir/expected/$name" . ".out.save";
-	    print STDERR "copying existing expected result to $outputDir/expected/$name" . ".out.save\n\n" if $verbose;
+	    my $backupCmd = "cp --reply=yes $expectedResultsDir/$name" . ".out $expectedResultsDir/$name" . ".out.save";
+	    print STDERR "copying existing expected result to $expectedResultsDir/$name" . ".out.save\n\n" if $verbose;
 	    system($backupCmd);
 	}
 
-	my $copyCmd = "cp $outputDir/failures/$name" . ".out $outputDir/expected/$name" . ".out";
+	my $copyCmd = "cp --reply=yes $outputDir/$name" . ".out $expectedResultsDir/$name" . ".out";
 	print STDERR "running $copyCmd\n\n" if $verbose;
 	system($copyCmd);
     }
     else {  #this means things will die if user does not have current expected and has not selected --createNewExpectedResult
-	my $compareCmd = "diff -q $outputDir/failures/$name" . ".out $outputDir/expected/$name" . ".out";
+	my $compareCmd = "diff -q $outputDir/$name" . ".out $expectedResultsDir/$name" . ".out";
 	print STDERR "running $compareCmd\n\n" if $verbose;
-	my $diffResults = system($compareCmd); #get result of last system call, right shift by 8
+	my $diffResults = system($compareCmd); 
 	if ($diffResults){
 	    $testFailed = 1;
 	    my $errStr = "Error!  Test $name failed!\n";
 	    $errStr .= "The observed result of the test was different than the expected result of a test previously run.\n";
-	    $errStr .= "To see the difference, run diff $outputDir/failures/$name" . ".out $outputDir/expected/$name" . ".out\n";
+	    $errStr .= "To see the difference, run diff $outputDir/$name" . ".out expectedResultsDir/$name" . ".out\n";
 	    if ($critical){
 		die ("Received error in critical test $name.  Ending regression test");
 	    }
@@ -113,7 +115,7 @@ sub runTest{
     return $testFailed;
 }
 
-
+#dtb: method no longer used after changing to using constant expected result dir; will keep around for a bit just in case
 sub processOutputDir{
 
     my ($outputDir) = @_;
@@ -124,15 +126,15 @@ sub processOutputDir{
     if (!$failuresExists){
 	mkdir("$outputDir/failures", 0755) || die ("could not create new directory $outputDir/failures");
     }
-    my $expectedExists = opendir(EXPECTED, "$outputDir/expected");
+    my $expectedExists = opendir(EXPECTED, "$outputDir/expectedResult");
     if (!$expectedExists){
-	mkdir("$outputDir/expected", 0755) || die ("could not create new directory $outputDir/expected");
+	mkdir("$outputDir/expectedResult", 0755) || die ("could not create new directory $outputDir/expectedResult");
     }
 }
 
 
 sub usage{
-    print STDERR "usage:\n  wdkRegressionTest\n\t--configFile (database configuration file to use with wdk model) \n\t--useExistingDB! (flag to skip creating database from provided test flat files) \n\t--createNewExpectedResult! (overwrite existing regression test expected result) \n\t--outputDirectory (results of test will be placed in this directory) \n\t--commandListFile (file that contains lists of commands to run in test) \n\t--verbose (prints out names of shell commands being executed)\n";
+    print STDERR "usage:\n  wdkRegressionTest\n\t--configFile (database configuration file to use with wdk model) \n\t--useExistingDB! (flag to skip creating database from provided test flat files) \n\t--createNewExpectedResult! (overwrite existing regression test expected result) \n\t--outputDirectory (all results of test including error files will be placed in this directory) \n\t--commandListFile (file that contains lists of commands to run in test) \n\t--verbose (prints out names of shell commands being executed)\n";
     exit(1);
 
 }
