@@ -27,7 +27,7 @@ public class GlobalRepository {
     private static final GlobalRepository INSTANCE = new GlobalRepository();
     private SimpleQuerySet simpleQuerySet;
     private ResultFactory resultFactory;
-
+    private DataSource dataSource;
     
     static public GlobalRepository getInstance() {
 	return INSTANCE;
@@ -49,7 +49,7 @@ public class GlobalRepository {
 	    String instanceTable = modelConfig.getQueryInstanceTable();
 	    String platformClass = modelConfig.getPlatformClass();
 	    
-	    DataSource dataSource = 
+	    this.dataSource = 
 		setupDataSource(connectionUrl,login, password);
 	
 	    RDBMSPlatformI platform = 
@@ -97,5 +97,17 @@ public class GlobalRepository {
         PoolingDataSource dataSource = new PoolingDataSource(connectionPool);
         return dataSource;
     }
+	/**
+	 * @return Returns the resultFactory.
+	 */
+	public ResultFactory getResultFactory() {
+		return resultFactory;
+	}
+	/**
+	 * @return Returns the dataSource.
+	 */
+	public DataSource getDataSource() {
+		return dataSource;
+	}
 }
     
