@@ -26,7 +26,16 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 
-
+/**
+ * QueryTagsTesterServlet
+ *
+ * TODO Class description
+ *
+ * Created: May 9, 2004
+ *
+ * @author Adrian Tivey
+ * @version $Revision$ $Date$ $Author$
+ */
 public class QueryTagsTesterServlet extends HttpServlet {
 
 	protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
@@ -102,79 +111,75 @@ public class QueryTagsTesterServlet extends HttpServlet {
 			// If fail, redirect to page
 			redirect(req, res, fromPage);
 			return;
-		} else {
-			// If OK, show success msg
-			//msg("OK, we've got a valid query. Hooray", res);
-			
-			StringBuffer sb = new StringBuffer();
-			try {
-                
-                SimpleQueryI pageQuery = sqs.getQuery("RNAListInDetail");
-                
-				sqii.setIsCacheable(true);
-				sqii.setValues(paramValues);
-                
-                SimpleSqlQueryInstance ssqi = (SimpleSqlQueryInstance) sqii;
-                
-                String initialResultTable = ssqi.getResultAsTable();
-                Map values = new HashMap(3);
-                values.put(PageableSqlQuery.RESULT_TABLE_SYMBOL, initialResultTable);
-//                values.put(PageableSqlQuery.START_ROW_SYMBOL, 
-//                       Integer.toString(startRow));
-//                values.put(PageableSqlQuery.END_ROW_SYMBOL, 
-//                       Integer.toString(endRow));
-                values.put(PageableSqlQuery.START_ROW_SYMBOL, "1");
-                values.put(PageableSqlQuery.END_ROW_SYMBOL, "200");
-                SimpleSqlQueryInstance pageInstance = 
-                    (SimpleSqlQueryInstance)pageQuery.makeInstance();
-//                pageInstance.setIsCacheable(getIsCacheable());
-                pageInstance.setValues(values);
-                ResultSet rs =  pageInstance.getResult();
-                
-                
-                
-                
-                
-//				ResultSet rs = sqii.getResult();
-				
-				if (rs == null) {
-					sb.append("No result set returned");   
-				} else {
-					// Get result set meta data
-                    sb.append("<table width=\"100%\"><tr>");
-					ResultSetMetaData rsmd = rs.getMetaData();
-					int numColumns = rsmd.getColumnCount();
-					// Get the column names; column indices start from 1
-                    sb.append("<th align=\"center\"><b>&nbsp;</b></th>");
-					for (int i=3; i<numColumns; i++) {
-						sb.append("<th align=\"center\"><b>"+rsmd.getColumnName(i)+"</b></th>");
-					}
-                    sb.append("</tr>");
-                    while (rs.next()) {
-                    	sb.append("<tr>");
-                        sb.append("<td align=\"center\"><a href=\"");
-                        sb.append(req.getContextPath());
-                        sb.append("/RecordTester");
-                        sb.append("?style=jsp&recordSetName=RNARecords&recordName=PSUCDSRecordId&primaryKey=");
-                        sb.append(rs.getObject(1)+"&objectType="+rs.getObject(2)+"\" >");
-                        sb.append("More details</a></td>");
-                        sb.append("<td align=\"center\">"+rs.getObject(3)+"</td>");
-                        sb.append("<td align=\"center\">"+rs.getObject(4)+"</td>");
-                        sb.append("<td align=\"center\"><i>"+rs.getObject(5)+"</i></td>");
-                        sb.append("</tr>");
-                    }
-                    sb.append("<table>");
-				}
-			} catch (SQLException e) {
-				sb = new StringBuffer(e.toString());
-			} catch (QueryParamsException e) {
-				sb = new StringBuffer(e.toString());
-			} catch (Exception e) {
-				sb = new StringBuffer(e.toString());
-			}
-			msg(sb.toString(), res);
-			return;
 		}
+        
+		// If OK, show success msg
+		//msg("OK, we've got a valid query. Hooray", res);
+		
+		StringBuffer sb = new StringBuffer();
+		try {
+		    
+		    SimpleQueryI pageQuery = sqs.getQuery("RNAListInDetail");
+		    
+		    sqii.setIsCacheable(true);
+		    sqii.setValues(paramValues);
+		    
+		    SimpleSqlQueryInstance ssqi = (SimpleSqlQueryInstance) sqii;
+		    
+		    String initialResultTable = ssqi.getResultAsTable();
+		    Map values = new HashMap(3);
+		    values.put(PageableSqlQuery.RESULT_TABLE_SYMBOL, initialResultTable);
+		    // values.put(PageableSqlQuery.START_ROW_SYMBOL, 
+		    //                       Integer.toString(startRow));
+		    // values.put(PageableSqlQuery.END_ROW_SYMBOL, 
+		    //                       Integer.toString(endRow));
+		    values.put(PageableSqlQuery.START_ROW_SYMBOL, "1");
+		    values.put(PageableSqlQuery.END_ROW_SYMBOL, "200");
+		    SimpleSqlQueryInstance pageInstance = 
+		        (SimpleSqlQueryInstance)pageQuery.makeInstance();
+		    // pageInstance.setIsCacheable(getIsCacheable());
+		    pageInstance.setValues(values);
+		    ResultSet rs =  pageInstance.getResult();
+            
+		    //				ResultSet rs = sqii.getResult();
+		    
+		    if (rs == null) {
+		        sb.append("No result set returned");   
+		    } else {
+		        // Get result set meta data
+		        sb.append("<table width=\"100%\"><tr>");
+		        ResultSetMetaData rsmd = rs.getMetaData();
+		        int numColumns = rsmd.getColumnCount();
+		        // Get the column names; column indices start from 1
+		        sb.append("<th align=\"center\"><b>&nbsp;</b></th>");
+		        for (int i=3; i<numColumns; i++) {
+		            sb.append("<th align=\"center\"><b>"+rsmd.getColumnName(i)+"</b></th>");
+		        }
+		        sb.append("</tr>");
+		        while (rs.next()) {
+		            sb.append("<tr>");
+		            sb.append("<td align=\"center\"><a href=\"");
+		            sb.append(req.getContextPath());
+		            sb.append("/RecordTester");
+		            sb.append("?style=jsp&recordSetName=RNARecords&recordName=PSUCDSRecordId&primaryKey=");
+		            sb.append(rs.getObject(1)+"&objectType="+rs.getObject(2)+"\" >");
+		            sb.append("More details</a></td>");
+		            sb.append("<td align=\"center\">"+rs.getObject(3)+"</td>");
+		            sb.append("<td align=\"center\">"+rs.getObject(4)+"</td>");
+		            sb.append("<td align=\"center\"><i>"+rs.getObject(5)+"</i></td>");
+		            sb.append("</tr>");
+		        }
+		        sb.append("<table>");
+		    }
+		} catch (SQLException e) {
+		    sb = new StringBuffer(e.toString());
+		} catch (QueryParamsException e) {
+		    sb = new StringBuffer(e.toString());
+		} catch (Exception e) {
+		    sb = new StringBuffer(e.toString());
+		}
+		msg(sb.toString(), res);
+		return;
 	}
 
     private void msg(String msg, HttpServletResponse res) throws IOException {
