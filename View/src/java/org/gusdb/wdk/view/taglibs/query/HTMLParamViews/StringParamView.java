@@ -5,21 +5,21 @@ import org.gusdb.gus.wdk.model.StringParam;
 
 import java.io.IOException;
 
+import javax.servlet.jsp.JspContext;
 import javax.servlet.jsp.JspWriter;
-import javax.servlet.jsp.PageContext;
 
 /**
  * Simple HTML form view of s StringParam
  */
 public class StringParamView implements ParamViewI {
 
-    public void showParam(Param param, String formQuery, JspWriter out, PageContext pc) throws IOException {
+    public static void showParam(Param param, String formQuery, JspWriter out, JspContext context) throws IOException {
         StringParam p = (StringParam) param;
     	String def = p.getDefault();
     	if ( def == null) {
     		def = "";
     	}
-    	out.println("<input name=\""+formQuery+"."+p.getName()+"\" type=\"text\" length=\"8\" value=\""+def+"\">");
+    	out.println("<input name=\""+formQuery+"."+p.getName()+"\" type=\"text\" length=\"8\" value=\""+def+"\" />");
     }
 
 }
