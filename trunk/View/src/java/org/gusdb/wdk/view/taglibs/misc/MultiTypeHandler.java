@@ -1,6 +1,6 @@
 package org.gusdb.wdk.view.taglibs.misc;
 
-import org.gusdb.wdk.view.PrimaryKey;
+import org.gusdb.wdk.model.PrimaryKey;
 
 import java.io.IOException;
 
