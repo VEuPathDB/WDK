@@ -2,9 +2,9 @@ package org.gusdb.wdk.model.test;
 
 import org.gusdb.wdk.model.Query;
 import org.gusdb.wdk.model.QuerySet;
-import org.gusdb.wdk.model.Record;
+import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.RecordInstance;
-import org.gusdb.wdk.model.RecordSet;
+import org.gusdb.wdk.model.RecordClassSet;
 import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.ResultFactory;
 import org.gusdb.wdk.model.ResultList;
@@ -24,7 +24,7 @@ import org.apache.commons.cli.ParseException;
 /**
  * SanityTester.java
  *
- * Main class for running the sanity tests, which is a way to test all Queries and Records in
+ * Main class for running the sanity tests, which is a way to test all Queries and RecordClasss in
  * a wdk model to make sure they work as intended and their results fall within an expected range,
  * even over the course of code base development.  See the usage() method for parameter information,
  * and see the gusDb.org wiki page for the structure and content of the sanity test.
@@ -41,13 +41,13 @@ public class SanityTester {
     // ------------------------------------------------------------------
 
     /*
-     * Wdk model that contains the Queries and Records to be tested.
+     * Wdk model that contains the Queries and RecordClasss to be tested.
      */ 
     WdkModel wdkModel;
 
     /**
      * Root model object containing information about the tests to run, created from a model xml file.
-     * Every Query and Record in <code>wdkModel</code> must be represented here.
+     * Every Query and RecordClass in <code>wdkModel</code> must be represented here.
      */
     SanityModel sanityModel;
 
@@ -137,12 +137,12 @@ public class SanityTester {
     // ------------------------------------------------------------------
     
     /**
-     * Checks to make sure every Query and Record in the wdkModel is represented in the sanity test.
-     * If a query or record is in the sanity test but not the model then that will be caught in the
+     * Checks to make sure every Query and RecordClass in the wdkModel is represented in the sanity test.
+     * If a query or recordClass is in the sanity test but not the model then that will be caught in the
      * other validation tests.
      */
     private void runExistenceTest(QueryTester queryTester, boolean verbose){
-	System.err.println("Sanity Test:  Checking to make sure all Queries and Records in model " + queryTester.getWdkModel().getName() +
+	System.err.println("Sanity Test:  Checking to make sure all Queries and RecordClasss in model " + queryTester.getWdkModel().getName() +
 			   " are represented in the test\n");
 	QuerySet querySets[] = queryTester.getWdkModel().getAllQuerySets();
 	if (querySets != null){
@@ -164,20 +164,20 @@ public class SanityTester {
 		}
 	    }
 	}
-	RecordSet recordSets[] = queryTester.getWdkModel().getAllRecordSets();
-	for (int i = 0; i < recordSets.length; i++){
-	    RecordSet nextRecordSet = recordSets[i];
-	    Record records[] = nextRecordSet.getRecords();
-	    if (records != null){
-		for (int j = 0; j < records.length; j++){
-		    Record nextRecord = records[j];
-		    if (!sanityModel.hasSanityRecord(nextRecordSet.getName() + "." + nextRecord.getName())){
-			System.err.println("Sanity Test Failed!  Record " + nextRecordSet.getName() + "." + nextRecord.getName() + 
+	RecordClassSet recordClassSets[] = queryTester.getWdkModel().getAllRecordClassSets();
+	for (int i = 0; i < recordClassSets.length; i++){
+	    RecordClassSet nextRecordClassSet = recordClassSets[i];
+	    RecordClass recordClasses[] = nextRecordClassSet.getRecordClasses();
+	    if (recordClasses != null){
+		for (int j = 0; j < recordClasses.length; j++){
+		    RecordClass nextRecordClass = recordClasses[j];
+		    if (!sanityModel.hasSanityRecord(nextRecordClassSet.getName() + "." + nextRecordClass.getName())){
+			System.err.println("Sanity Test Failed!  RecordClass " + nextRecordClassSet.getName() + "." + nextRecordClass.getName() + 
 					   " is not represented in the sanity test\n");
 		    }
 		    else {
 			if (verbose){
-			    System.err.println("Record " + nextRecordSet.getName() + "." + nextRecord.getName() +
+			    System.err.println("RecordClass " + nextRecordClassSet.getName() + "." + nextRecordClass.getName() +
 					       " is accounted for in the sanity test\n");
 			} 
 		    }
@@ -255,7 +255,7 @@ public class SanityTester {
     }
 
     /**
-     * Processes each Record (by simply calling its print method, which exercises all of the queries within that record)
+     * Processes each RecordClass (by simply calling its print method, which exercises all of the queries within that recordClass)
      * provided in the sanity test.  The test fails if an exception is thrown.
      *
      * @param return a two-value array where the first entry is the number of records that passed the test and
@@ -280,9 +280,9 @@ public class SanityTester {
 		    //get model record from sanity record
 		    nextSanityRecord = records[i];
 		    nextRecordReference = new Reference(nextSanityRecord.getRef());
-		    RecordSet nextRecordSet = queryTester.getWdkModel().getRecordSet(nextRecordReference.getSetName());
-		    Record nextRecord = nextRecordSet.getRecord(nextRecordReference.getElementName());
-		    RecordInstance nextRecordInstance = nextRecord.makeRecordInstance();
+		    RecordClassSet nextRecordClassSet = queryTester.getWdkModel().getRecordClassSet(nextRecordReference.getSetName());
+		    RecordClass nextRecordClass = nextRecordClassSet.getRecordClass(nextRecordReference.getElementName());
+		    RecordInstance nextRecordInstance = nextRecordClass.makeRecordInstance();
 		    nextRecordInstance.setPrimaryKey(nextSanityRecord.getPrimaryKey().toString());
 		    
 		    String riString = nextRecordInstance.print();

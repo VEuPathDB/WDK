@@ -72,11 +72,11 @@ public class SummaryInstance {
     }
 
     public Map getTables() {
-	return new AttributeValueMap(summary.getRecord(), null, true);
+	return new AttributeValueMap(summary.getRecordClass(), null, true);
     }
 
     public Map getAttributes() {
-	return new AttributeValueMap(summary.getRecord(), null, false);
+	return new AttributeValueMap(summary.getRecordClass(), null, false);
     }
 
     public int size(){
@@ -191,8 +191,8 @@ public class SummaryInstance {
 	    initRecordInstances();
 	}
 	if (recordInstances != null){
-	    Record record = recordInstances[0].getRecord();
-	    Iterator attributeNames = record.getNonTextAttributeNames().iterator();
+	    RecordClass recordClass = recordInstances[0].getRecordClass();
+	    Iterator attributeNames = recordClass.getNonTextAttributeNames().iterator();
 	    String nameLine = "";
 	    while (attributeNames.hasNext()){
 		String nextAttName = (String)attributeNames.next();
@@ -202,7 +202,7 @@ public class SummaryInstance {
 	    for (int i = 0; i < recordInstances.length; i++){
 		String nextLine = "";
 		RecordInstance nextRecordInstance = recordInstances[i];
-		Iterator attributes = record.getNonTextAttributeNames().iterator();
+		Iterator attributes = recordClass.getNonTextAttributeNames().iterator();
 		while (attributes.hasNext()){
 		    String nextAttName = (String)attributes.next();
 		    Object nextAttValue = nextRecordInstance.getAttributeValue(nextAttName);
@@ -227,7 +227,7 @@ public class SummaryInstance {
 	while (rl.next()){
 	    counter++;
 	    if (counter >= startRow && counter <= endRow){
-		RecordInstance nextRecordInstance = getSummary().getRecord().makeRecordInstance();
+		RecordInstance nextRecordInstance = getSummary().getRecordClass().makeRecordInstance();
 		
 		Column[] columns = query.getColumns();
 		String primaryKeyName = columns[0].getName();
