@@ -142,7 +142,10 @@ public class Record {
 
 
     public Set getNonTextAttributeNames() {
-        return attributesQueryMap.keySet();
+	LinkedHashSet orderedSet = new LinkedHashSet();
+	orderedSet.add(getType());
+	orderedSet.addAll( attributesQueryMap.keySet());
+        return orderedSet;
     }
     
 
@@ -187,7 +190,8 @@ public class Record {
     
     protected void checkAttributeName(String name) throws WdkModelException {
         if (attributesQueryMap.containsKey(name) 
-                || textAttributeMap.containsKey(name)) {
+	    || textAttributeMap.containsKey(name)
+	    || getType().equals(name)) {
             throw new WdkModelException("Record " + getName() + 
                     " already has a attribute named " + name);
         }
