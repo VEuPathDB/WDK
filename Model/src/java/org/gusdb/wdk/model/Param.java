@@ -7,7 +7,7 @@ public abstract class Param {
     String prompt;
     String help;
     String dfault;
-    ParamSet paramSet;
+    String fullName;
 
     public Param () {}
 
@@ -20,8 +20,20 @@ public abstract class Param {
     }
 
     public String getFullName() {
-	return paramSet.getName() + "." + name;
+	return fullName;
     }
+
+    /**
+     * Assumes that the name of this param has already been set.  Note this is slightly
+     * different than a simple accessor in that the full name of the param is <code>paramSetName</code>
+     * concatenated with ".paramName".
+     *
+     * @param paramSetName name of the paramSet to which this param belongs.
+     */
+    public void setFullName(String paramSetName){
+	this.fullName = paramSetName + "." + name;
+    }
+
 
     public void setPrompt(String prompt) {
 	this.prompt = prompt;
@@ -81,8 +93,5 @@ public abstract class Param {
 
     protected void setResources(WdkModel model) throws WdkModelException {}
 
-    protected void setParamSet(ParamSet paramSet) {
-	this.paramSet = paramSet;
-    }
 
 }

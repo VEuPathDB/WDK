@@ -26,8 +26,8 @@ public class Record {
     private String name;
     private String type;
     private String idPrefix;
-    private RecordSet recordSet;
-    
+    private String fullName;
+
     public void setName(String name) {
         this.name = name;
     }
@@ -37,7 +37,18 @@ public class Record {
     }
     
     public String getFullName() {
-	return recordSet.getName() + "." + name;
+	return fullName;
+    }
+
+    /**
+     * Assumes that the name of this record has already been set.  Note this is slightly
+     * different than a simple accessor in that the full name of the record is <code>recordSetName</code>
+     * concatenated with ".recordName".
+     *
+     * @param recordSetName name of the recordSet to which this record belongs.
+     */
+    public void setFullName(String recordSetName){
+	this.fullName = recordSetName + "." + name;
     }
 
     public void setIdPrefix(String idPrefix) {
@@ -242,10 +253,6 @@ public class Record {
         return textAttributeMap.containsKey(attributeName);
     }
     
-    protected void setRecordSet(RecordSet recordSet) {
-	this.recordSet = recordSet;
-    }
-
     public Reference getReference() throws WdkModelException {
         return new Reference(getFullName());
     }
