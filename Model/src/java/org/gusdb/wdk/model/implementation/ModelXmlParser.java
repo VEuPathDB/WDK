@@ -46,6 +46,8 @@ import com.thaiopensource.xml.sax.ErrorHandlerImpl;
 
 public class ModelXmlParser {
     
+    private static final String DEFAULT_SCHEMA_NAME = "wdkModel.rng";
+    
 //    public static WdkModel parseXmlFile(File modelXmlFile, File schemaFile) throws org.xml.sax.SAXException, WdkModelException {
 //        return parseXmlFile(modelXmlFile, null, schemaFile);
 //    }
@@ -53,6 +55,9 @@ public class ModelXmlParser {
     public static WdkModel parseXmlFile(URL modelXmlURL, URL modelPropURL, URL schemaURL)
     throws WdkModelException {
         
+        if (schemaURL == null) {
+            schemaURL = WdkModel.INSTANCE.getClass().getResource(DEFAULT_SCHEMA_NAME);   
+        }
         
         // NOTE: we are validating before we substitute in the properties
         // so that the validator will operate on a file instead of a stream.

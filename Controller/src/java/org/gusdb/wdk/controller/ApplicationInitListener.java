@@ -41,7 +41,6 @@ public class ApplicationInitListener implements ServletContextListener {
     private static final String DEFAULT_LOGIN_CONFIGURATION = "/WEB-INF/wdk-config/login.xml";
     private static final String DEFAULT_MODEL_CONFIGURATION = "/WEB-INF/wdk-config/model.xml";
     private static final String DEFAULT_PROPS_LOCATION = "/WEB-INF/wdk-config/macro.props";
-    private static final String DEFAULT_SCHEMA_NAME = "wdkModel.rng";
 
     private DataSource dataSource;
     
@@ -52,10 +51,11 @@ public class ApplicationInitListener implements ServletContextListener {
         String loginXML = application.getInitParameter("loginConfig");
         String querySetLocation = application.getInitParameter("querySetConfig");
         String schemaLocation = application.getInitParameter("schemaLocation");
+        String schemaName = application.getInitParameter("schemaName");
         String propsFileLocation = application.getInitParameter("propsFileLocation");
         String loggingFileLocation = application.getInitParameter("loggingFileLocation");
         
-        initMemberVars(loginXML, querySetLocation, schemaLocation, propsFileLocation, application);
+        initMemberVars(loginXML, querySetLocation, schemaName, schemaLocation, propsFileLocation, application);
         
         Config.set(application, Config.SQL_DATA_SOURCE, dataSource);
 
@@ -85,10 +85,18 @@ public class ApplicationInitListener implements ServletContextListener {
 
     
     private void initMemberVars(String loginConfigLocation, String queryConfigLocation, 
-            String schemaName, String propsLocation, ServletContext application) {
+            String schemaName, String schemaLocation, String propsLocation, ServletContext application) {
         
-        if (schemaName == null) {
-            schemaName = DEFAULT_SCHEMA_NAME;
+        if (schemaName != null && schemaLocation != null) {
+            throw new RuntimeException("Configuration error. Both schemaName and schemaLocation are specified.");
+        }
+        
+        URL schemaURL = null;   
+        if (schemaName != null) {
+            schemaURL = WdkModel.INSTANCE.getClass().getResource(schemaName);   
+        }
+        if (schemaLocation != null) {
+            schemaURL = createURL(schemaLocation, null, application);
         }
         
         URL querySetURL = createURL(queryConfigLocation, DEFAULT_MODEL_CONFIGURATION, application);
@@ -112,7 +120,6 @@ public class ApplicationInitListener implements ServletContextListener {
             platform.setDataSource(dataSource);
             
 
-            URL schemaURL = WdkModel.INSTANCE.getClass().getResource(schemaName);   
             WdkModel wdkModel = ModelXmlParser.parseXmlFile(querySetURL, propsURL, schemaURL);
             
             ResultFactory resultFactory = new ResultFactory(dataSource, platform, 
