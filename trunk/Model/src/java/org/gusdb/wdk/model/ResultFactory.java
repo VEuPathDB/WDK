@@ -496,7 +496,7 @@ public class ResultFactory {
 
 	    RDBMSPlatformI platform = 
 		(RDBMSPlatformI)Class.forName(platformClass).newInstance();
-	    platform.init(connectionUrl, login, password, minIdle, maxIdle, maxWait, maxActive, initialSize);
+	    platform.init(connectionUrl, login, password, minIdle, maxIdle, maxWait, maxActive, initialSize, modelConfigXmlFile.getAbsolutePath());
 
 	    ResultFactory factory =
 		new ResultFactory(platform, login, instanceTable);
