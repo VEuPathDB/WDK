@@ -489,7 +489,7 @@ public class ResultFactory {
 	CommandLine cmdLine = parseOptions(cmdName, options, args);
 
 	File modelConfigXmlFile = 
-	    new File(cmdLine.getOptionValue("configFile"));
+	    new File(cmdLine.getOptionValue("model"));
 	boolean newCache = cmdLine.hasOption("new");
 	boolean resetCache = cmdLine.hasOption("reset");
 	boolean dropCache = cmdLine.hasOption("drop");
@@ -535,7 +535,7 @@ public class ResultFactory {
 	Options options = new Options();
 
 	// config file
-	addOption(options, "configFile", "the model config .xml file");
+	addOption(options, "model", "the name of the model.  This is used to find the Model config file ($GUS_HOME/config/model_name-config.xml)");
 
 	// operation
 	Option newQ = new Option("new", "create a new query cache");
@@ -591,7 +591,7 @@ public class ResultFactory {
 	String newline = System.getProperty( "line.separator" );
 	String cmdlineSyntax = 
 	    cmdName + 
-	    " -configFile config_file -noSchemaOutput!" +
+	    " -model model_name -noSchemaOutput!" +
 	    " -new|-reset|-drop";
 
 	String header = 
