@@ -1,15 +1,17 @@
 package org.gusdb.gus.wdk.controller.servlets;
 
-import org.gusdb.gus.wdk.model.Param;
 import org.gusdb.gus.wdk.model.Query;
 import org.gusdb.gus.wdk.model.QueryInstance;
 import org.gusdb.gus.wdk.model.RecordList;
 import org.gusdb.gus.wdk.model.RecordListInstance;
 import org.gusdb.gus.wdk.model.WdkModel;
+import org.gusdb.gus.wdk.model.WdkModelException;
+import org.gusdb.gus.wdk.model.WdkUserException;
 import org.gusdb.gus.wdk.view.QueryRecordGroupMgr;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -87,51 +89,53 @@ public class QueryTagsTesterServlet extends HttpServlet {
         }
 		QueryInstance sqii = sq.makeInstance();
 		Map paramValues = new HashMap();
-		
+        RecordListInstance rli = null;
 		req.setAttribute(formName+".sqii", sqii);
-        
+        String formQueryPrefix = formName+"."+queryRecordName+".";
         boolean problem = false;
         if ("true".equals(initialExpansion)) {
             problem = true;
         } else {
             // Now check state of params
-            Param[] params = sq.getParams();
-
-            for (int i = 0; i < params.length; i++) {
-                Param param = params[i];
-                String paramName = param.getName();
-                String passedIn = req.getParameter(formName+"."+queryRecordName+"."+paramName);
-                String error = param.validateValue(passedIn);
-                if ( error == null) {
-                    paramValues.put(paramName, passedIn);
-                } else {
-                    problem = true;
-                    req.setAttribute(formName+".error."+queryRecordName+"."+paramName, error);	
-                }   
+            Enumeration names = req.getParameterNames();
+            while (names.hasMoreElements()) {
+                String name = (String) names.nextElement();
+                if (name.startsWith(formQueryPrefix)) {
+                    // TODO Cope with multiple values
+                    paramValues.put(name, req.getParameter(name));
+                }
             }
-        }
+            rli = recordList.makeRecordListInstance();
+            try {
+                rli.setValues(paramValues, 1, 20);
+            }
+            catch (WdkUserException exp) {
+            }       
+//                           problem = true;
+         //                   req.setAttribute(formName+".error."+queryRecordName+"."+paramName, error);     
+            catch (WdkModelException e) {
+                // TODO Auto-generated catch block
+                //e.printStackTrace();
+            }
+                
+                
+                try {
+                    //            System.err.println("Printing Record Instances on page " + pageCount);
+//            try {
+                    rli.print();
+                } catch (WdkModelException e1) {
+                    // TODO Auto-generated catch block
+                    e1.printStackTrace();
+                }
+            }
+
 		
 		if (problem) {
 			// If fail, redirect to page
 			redirect(req, res, fromPage);
 			return;
 		}
-        
-		// If OK, show success msg
-		msg("OK, we've got a valid query. Hooray", res);
 
-
-        sq.setIsCacheable(Boolean.TRUE);
-
-        RecordListInstance rli = recordList.makeRecordListInstance();
-        rli.setValues(paramValues, 1, 20);
-//        System.err.println("Printing Record Instances on page " + pageCount);
-//        try {
-            rli.print();
-//        }
-//        catch (WdkUserException exp) {
-//            exp.printStackTrace();
-//        }
           
         String toPage = "";
         
