@@ -8,9 +8,6 @@ import org.gusdb.gus.wdk.model.WdkModelException;
 import org.gusdb.gus.wdk.model.ResultList;
 import org.gusdb.gus.wdk.model.ResultFactory;
 
-
-import java.sql.SQLException;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
