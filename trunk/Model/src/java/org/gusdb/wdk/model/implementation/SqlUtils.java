@@ -160,4 +160,37 @@ public class SqlUtils {
 	}
     }
 
+    public static void printResultSet(ResultSet rs) throws SQLException {
+	try {
+	    int colCount = rs.getMetaData().getColumnCount();
+	    int count = 0;
+	    while (rs.next() && count++ <= 100) {
+		for (int i=1; i<=colCount; i++) {
+		    System.out.print(rs.getString(i) + "\t");
+		}
+		System.out.println("");
+	    }
+	} catch (SQLException e) {
+	    throw e;
+	} finally {
+	    SqlUtils.closeResultSet(rs);
+	}
+    }
+
+    public static void writeResultSet(ResultSet rs, StringBuffer buf) throws SQLException {
+	String newline = System.getProperty( "line.separator" );
+	try {
+	    int colCount = rs.getMetaData().getColumnCount();
+	    int count = 0;
+	    while (rs.next() && count++ <= 100) {
+		for (int i=1; i<=colCount; i++) {
+		    buf.append(rs.getString(i) + "\t");
+		}
+		buf.append(newline);
+	    }
+	} finally {
+	    SqlUtils.closeResultSet(rs);
+	}
+    }
+
 }

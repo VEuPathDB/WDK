@@ -3,6 +3,7 @@ package org.gusdb.gus.wdk.model;
 public class Column {
 
     String typeName;
+    String displayName;
     String name;
     String help;
 
@@ -30,6 +31,15 @@ public class Column {
 
     public String getHelp() {
 	return help;
+    }
+
+    public void setDisplayName(String displayName) {
+	this.displayName = displayName;
+    }
+
+    public String getDisplayName() {
+	if (displayName != null) return displayName;
+	else return name;
     }
 }
 

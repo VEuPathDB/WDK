@@ -7,19 +7,21 @@ import java.util.Iterator;
 
 public class Record {
     
-    HashMap fieldsQueryMap;  // fieldName -> query
-    HashMap tableQueryMap;   // tableName -> query
-    HashMap textFieldMap;    // fieldName -> text
+    HashMap fieldsQueryMap;  // fieldName -> SimpleQueryI
+    HashMap tableQueryMap;   // tableName -> SimpleQueryI
+    HashMap textFieldMap;    // fieldName -> text (String)
     HashSet tableQueryRefs;
     HashSet fieldsQueryRefs;
     String name;
+    String type;
+    String idPrefix;
     
     public Record() {
 	fieldsQueryMap = new HashMap();
 	tableQueryMap = new HashMap();
 	fieldsQueryRefs = new HashSet();
 	tableQueryRefs = new HashSet();
-	textFieldMap = new HashMap();       
+	textFieldMap = new HashMap();
     }
 
     public void setName(String name) {
@@ -30,6 +32,22 @@ public class Record {
 	return name;
     }
 
+    public void setIdPrefix(String idPrefix) {
+	this.idPrefix = idPrefix;
+    }
+
+    public String getIdPrefix() {
+	return idPrefix;
+    }
+
+    public void setType(String type) {
+	this.type = type;
+    }
+
+    public String getType() {
+	return type;
+    }
+
     public String getFieldSpecialType(String fieldName) {
 	return null;
     }
@@ -37,15 +55,15 @@ public class Record {
     /**
      * @param fieldsQueryRef two part query name (set.name)
      */
-    public void addFieldsQueryRef(String fieldsQueryRef) {
-	fieldsQueryRefs.add(fieldsQueryRef);
+    public void addFieldsQueryRef(Reference fieldsQueryRef) {
+	fieldsQueryRefs.add(fieldsQueryRef.getReferent());
     }
 
     /**
      * @param tableQueryRef two part query name (set.name)
      */
-    public void addTableQueryRef(String tableQueryRef) {
-	fieldsQueryRefs.add(fieldsQueryRefs);
+    public void addTableQueryRef(Reference tableQueryRef) {
+	tableQueryRefs.add(tableQueryRef.getReferent());
     }
 
     public void resolveReferences(Map querySetMap) throws Exception {
@@ -54,16 +72,16 @@ public class Record {
 	    String queryName = (String)fQueryRefs.next();
 	    SimpleQueryI query = 
 		(SimpleQueryI)SimpleQuerySet.resolveReference(querySetMap, 
-							     queryName,
-							     this.getClass().getName(),
-							     getName(),
-							     "fieldsQueryRef");
+							      queryName,
+							      this.getClass().getName(),
+							      getName(),
+							      "fieldsQueryRef");
 	    addFieldsQuery(query);
 	}
 
 	Iterator tQueryRefs = tableQueryRefs.iterator();
 	while (tQueryRefs.hasNext()) {
-	    String queryName = (String)fQueryRefs.next();
+	    String queryName = (String)tQueryRefs.next();
 	    SimpleQueryI query = 
 		(SimpleQueryI)SimpleQuerySet.resolveReference(querySetMap, 
 							      queryName,
@@ -74,15 +92,54 @@ public class Record {
 	}
     }
 
-    public void addTextField(String fieldName, String textField) throws Exception {
-	checkFieldName(fieldName);
-	textFieldMap.put(fieldName, textField);
+    public void addTextField(TextField textField) throws Exception {
+	checkFieldName(textField.getName());
+	textFieldMap.put(textField.getName(), textField.getText());
     }
 
     public RecordInstance makeInstance() {
 	return new RecordInstance(this);
     }
 
+    public String toString() {
+	String newline = System.getProperty( "line.separator" );
+	StringBuffer buf =
+	    new StringBuffer("Record: name='" + name + "'").append( newline );
+
+	buf.append( "--- Fields ---" ).append( newline );
+	String[] fieldNames = getNonTextFieldNames();
+	for (int i=0; i<fieldNames.length; i++) {
+	    buf.append(fieldNames[i]).append( newline );
+	}
+	
+	buf.append( "--- Text Fields ---" ).append( newline );
+	String[] textFieldNames = getTextFieldNames();
+	for (int i=0; i<textFieldNames.length; i++){
+	    buf.append(textFieldNames[i]).append( newline );
+	}
+	
+	buf.append( "--- Tables ---" ).append( newline );
+	Iterator tableIterator = tableQueryMap.keySet().iterator();
+	while (tableIterator.hasNext()) {
+	    buf.append(tableIterator.next()).append( newline );
+	}
+	return buf.toString();
+    }
+    
+    public String[] getTableNames() {
+	String[] s = {};
+	return (String[])tableQueryMap.keySet().toArray(s);
+    }
+
+    public String[] getNonTextFieldNames() {
+	String[] s = {};
+	return (String[])fieldsQueryMap.keySet().toArray(s);
+    }
+
+    public String[] getTextFieldNames() {
+	String[] s = {};
+	return (String[])textFieldMap.keySet().toArray(s);
+    }
 
     ///////////////////////////////////////////////////////////////////////////////////////
     // protected
@@ -130,7 +187,7 @@ public class Record {
     }
 
     protected SimpleQueryI getFieldsQuery(String fieldName) throws Exception {
-	SimpleQueryI query = (SimpleQueryI)fieldsQueryMap.get(name);
+	SimpleQueryI query = (SimpleQueryI)fieldsQueryMap.get(fieldName);
 	if (query == null) {
 	    throw new Exception("Record " + getName() + 
 				" does not have a field with name '" +
@@ -159,13 +216,4 @@ public class Record {
 	return text;
     }
 
-    protected String[] getAllNonTextFieldNames() {
-	String[] s = {};
-	return (String[])fieldsQueryMap.keySet().toArray(s);
-    }
-
-    protected String[] getAllTextFieldNames() {
-	String[] s = {};
-	return (String[])textFieldMap.keySet().toArray(s);
-    }
 }

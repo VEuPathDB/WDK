@@ -133,23 +133,6 @@ public class QueryTester {
 	return h;
     }
 
-    void printResultSet(ResultSet rs) throws SQLException{
-	try {
-	    int colCount = rs.getMetaData().getColumnCount();
-	    int count = 0;
-	    while (rs.next() && count++ <= 100) {
-		for (int i=1; i<=colCount; i++) {
-		    System.out.print(rs.getString(i) + "\t");
-		}
-		System.out.println("");
-	    }
-	} catch (SQLException e) {
-	    throw e;
-	} finally {
-	    SqlUtils.closeResultSet(rs);
-	}
-    }
-
     String formatParamPrompt(Param param) throws Exception {
 
 	String newline = System.getProperty( "line.separator" );
@@ -197,7 +180,7 @@ public class QueryTester {
 
 	File modelConfigXmlFile = 
 	    new File(cmdLine.getOptionValue("configFile"));
-	File querySetFile = new File(cmdLine.getOptionValue("querySetFile"));
+	File modelXmlFile = new File(cmdLine.getOptionValue("modelXmlFile"));
 
 	String querySetName = cmdLine.getOptionValue("querySetName");
 	String queryName = cmdLine.getOptionValue("queryName");
@@ -228,7 +211,7 @@ public class QueryTester {
 	    platform.setDataSource(dataSource);
        
 	    WdkModel wdkModel = 
-		ModelXmlParser.parseXmlFile(querySetFile);
+		ModelXmlParser.parseXmlFile(modelXmlFile);
 	    ResultFactory resultFactory = wdkModel.getResultFactory();
 	    SqlResultFactory sqlResultFactory = 
 		new SqlResultFactory(dataSource, platform, 
@@ -267,12 +250,12 @@ public class QueryTester {
 							Integer.parseInt(rows[1]),
 							paramHash,
 							useCache);
-		    tester.printResultSet(rs);
+		    SqlUtils.printResultSet(rs);
 		} else {
 		    ResultSet rs = tester.getResult(querySetName, 
 						    queryName, paramHash,
 						    useCache);
-		    tester.printResultSet(rs);
+		    SqlUtils.printResultSet(rs);
 		}
 	    }
 	} catch (QueryParamsException e) {
@@ -297,13 +280,13 @@ public class QueryTester {
 	options.addOption(configFile);
 
 	// query set file
-	Option querySetFile = OptionBuilder
-	    .withArgName("querySetFile")
+	Option modelXmlFile = OptionBuilder
+	    .withArgName("modelXmlFile")
 	    .hasArg()
 	    .withDescription("An .xml file that specifies a container of Query set objects.")
 	    .isRequired()
-	    .create("querySetFile");
-	options.addOption(querySetFile);
+	    .create("modelXmlFile");
+	options.addOption(modelXmlFile);
 
 	// query set name
 	Option querySetName = OptionBuilder
@@ -382,7 +365,7 @@ public class QueryTester {
 	String cmdlineSyntax = 
 	    cmdName + 
 	    " -configFile config_file" +
-	    " -querySetFile query_set_file" +
+	    " -modelXmlFile model_xml_file" +
 	    " -querySetName query_set_name" +
 	    " -queryName query_name" +
 	    " [-dontCache]" +
@@ -390,7 +373,7 @@ public class QueryTester {
 	    " [-params param_1_name,param_1_value,...]";
 
 	String header = 
-	    newline + "Run a query found in a query set xml file.  If run without -params, displays the parameters for the specified query" + newline + newline + "Options:" ;
+	    newline + "Run a query found in a WDK Model xml file.  If run without -params, displays the parameters for the specified query" + newline + newline + "Options:" ;
 
 	String footer = "";
 

@@ -52,8 +52,8 @@ public class SimpleSqlQueryInstance extends QueryInstance implements SimpleQuery
 	}
 
 	HashMap rsCols = new HashMap();
-	for (int i=0; i<rsColCount; i++) {
-	    rsCols.put(metaData.getColumnName(i), "");
+	for (int i=1; i<=rsColCount; i++) {
+ 	    rsCols.put(metaData.getColumnName(i).toLowerCase(), "");
 	}
 	
 	HashMap alreadySeen = new HashMap();
