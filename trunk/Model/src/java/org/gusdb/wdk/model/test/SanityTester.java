@@ -358,7 +358,7 @@ public class SanityTester {
 
 	StringBuffer resultLine = new StringBuffer("***Sanity test summary***\n");
 	resultLine.append(queryPassed + " queries passed, " + queryFailed + " queries failed\n");
- 	resultLine.append(recordPassed + " records passed, " + recordFailed + " records failed");
+ 	resultLine.append(recordPassed + " records passed, " + recordFailed + " records failed\n");
 	resultLine.append("Sanity Test " + result + "\n");
 	System.err.println(resultLine.toString());
 	return failedOverall;
