@@ -7,10 +7,10 @@
   <hr><p>
       <table>
         <wdkq:queryHolder name="form1"
-                          recordQueryGroup="RNARecordLists"
+                          summarySetName="RNARecordLists"
                           var="q">
           <input type="hidden" name="fromPage" value="/simpleQueryDemo1.jsp">
-            <tr><td><wdkq:displayQuery queryInstance="${q}"></td></tr>
+            <tr><td><wdkq:displayQuery summary="${q}"></td></tr>
             <c:forEach var="p"
             items="${q.query.params}">
               <tr>
