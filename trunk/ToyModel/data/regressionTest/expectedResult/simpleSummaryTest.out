@@ -1,27 +1,27 @@
 Printing Record Instances on page 1
-DoTS Transcript	primary_key	taxon_name	gene_symbol	assembly_consistency	contains_mrna	number_of_contained_sequences	numseqs	
-DT.92483634	92483634	Neospora caninum	MyFavoriteGene	99	0	77	number of contained seqs is 77	
-DT.92483702	92483702	Neospora caninum	MyFavoriteGene	99	0	51	number of contained seqs is 51	
-DT.92483978	92483978	Neospora caninum	MyFavoriteGene	99	0	53	number of contained seqs is 53	
-DT.92484042	92484042	Neospora caninum	MyFavoriteGene	99	0	70	number of contained seqs is 70	
-DT.92484433	92484433	Neospora caninum	MyFavoriteGene	99	0	60	number of contained seqs is 60	
-DT.92484562	92484562	Neospora caninum	MyFavoriteGene	99	0	77	number of contained seqs is 77	
-DT.92484584	92484584	Neospora caninum	MyFavoriteGene	99	0	72	number of contained seqs is 72	
-DT.92484586	92484586	Neospora caninum	MyFavoriteGene	99	0	57	number of contained seqs is 57	
-DT.92484616	92484616	Neospora caninum	MyFavoriteGene	99	0	65	number of contained seqs is 65	
-DT.92484639	92484639	Neospora caninum	MyFavoriteGene	99	0	60	number of contained seqs is 60	
-DT.92484645	92484645	Neospora caninum	MyFavoriteGene	99	0	57	number of contained seqs is 57	
-DT.92484659	92484659	Neospora caninum	MyFavoriteGene	99	0	54	number of contained seqs is 54	
-DT.92484660	92484660	Neospora caninum	MyFavoriteGene	99	0	73	number of contained seqs is 73	
-DT.92484666	92484666	Neospora caninum	MyFavoriteGene	99	0	58	number of contained seqs is 58	
-DT.92484673	92484673	Neospora caninum	MyFavoriteGene	99	0	55	number of contained seqs is 55	
-DT.92484682	92484682	Neospora caninum	MyFavoriteGene	99	0	51	number of contained seqs is 51	
-DT.92484686	92484686	Neospora caninum	MyFavoriteGene	99	1	155	number of contained seqs is 155	
-DT.92484703	92484703	Neospora caninum	MyFavoriteGene	99	0	61	number of contained seqs is 61	
-DT.92484706	92484706	Neospora caninum	MyFavoriteGene	99	0	55	number of contained seqs is 55	
-DT.92484709	92484709	Neospora caninum	MyFavoriteGene	99	0	53	number of contained seqs is 53	
-DT.92484710	92484710	Neospora caninum	MyFavoriteGene	99	0	71	number of contained seqs is 71	
-DT.92484714	92484714	Neospora caninum	MyFavoriteGene	99	0	59	number of contained seqs is 59	
-DT.92484717	92484717	Neospora caninum	MyFavoriteGene	99	0	100	number of contained seqs is 100	
-DT.92484718	92484718	Neospora caninum	MyFavoriteGene	99	0	52	number of contained seqs is 52	
-DT.92484721	92484721	Neospora caninum	MyFavoriteGene	99	0	54	number of contained seqs is 54	
+primary_key	taxon_name	gene_symbol	assembly_consistency	contains_mrna	number_of_contained_sequences	numseqs	
+92483634	Neospora caninum	MyFavoriteGene	99	0	77	number of contained seqs is 77	
+92483702	Neospora caninum	MyFavoriteGene	99	0	51	number of contained seqs is 51	
+92483978	Neospora caninum	MyFavoriteGene	99	0	53	number of contained seqs is 53	
+92484042	Neospora caninum	MyFavoriteGene	99	0	70	number of contained seqs is 70	
+92484433	Neospora caninum	MyFavoriteGene	99	0	60	number of contained seqs is 60	
+92484562	Neospora caninum	MyFavoriteGene	99	0	77	number of contained seqs is 77	
+92484584	Neospora caninum	MyFavoriteGene	99	0	72	number of contained seqs is 72	
+92484586	Neospora caninum	MyFavoriteGene	99	0	57	number of contained seqs is 57	
+92484616	Neospora caninum	MyFavoriteGene	99	0	65	number of contained seqs is 65	
+92484639	Neospora caninum	MyFavoriteGene	99	0	60	number of contained seqs is 60	
+92484645	Neospora caninum	MyFavoriteGene	99	0	57	number of contained seqs is 57	
+92484659	Neospora caninum	MyFavoriteGene	99	0	54	number of contained seqs is 54	
+92484660	Neospora caninum	MyFavoriteGene	99	0	73	number of contained seqs is 73	
+92484666	Neospora caninum	MyFavoriteGene	99	0	58	number of contained seqs is 58	
+92484673	Neospora caninum	MyFavoriteGene	99	0	55	number of contained seqs is 55	
+92484682	Neospora caninum	MyFavoriteGene	99	0	51	number of contained seqs is 51	
+92484686	Neospora caninum	MyFavoriteGene	99	1	155	number of contained seqs is 155	
+92484703	Neospora caninum	MyFavoriteGene	99	0	61	number of contained seqs is 61	
+92484706	Neospora caninum	MyFavoriteGene	99	0	55	number of contained seqs is 55	
+92484709	Neospora caninum	MyFavoriteGene	99	0	53	number of contained seqs is 53	
+92484710	Neospora caninum	MyFavoriteGene	99	0	71	number of contained seqs is 71	
+92484714	Neospora caninum	MyFavoriteGene	99	0	59	number of contained seqs is 59	
+92484717	Neospora caninum	MyFavoriteGene	99	0	100	number of contained seqs is 100	
+92484718	Neospora caninum	MyFavoriteGene	99	0	52	number of contained seqs is 52	
+92484721	Neospora caninum	MyFavoriteGene	99	0	54	number of contained seqs is 54	
