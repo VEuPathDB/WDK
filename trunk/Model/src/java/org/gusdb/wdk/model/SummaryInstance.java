@@ -4,6 +4,7 @@ import org.gusdb.gus.wdk.controller.WdkLogManager;
 import java.util.Map;
 import java.util.Vector;
 import java.util.logging.Logger;
+import java.util.Iterator;
 
 /**
  * SummaryInstance.java
@@ -45,10 +46,10 @@ public class SummaryInstance {
 	this.summary = summary;
 	this.listIdQueryInstance = queryInstance;
 	this.currentRecordInstanceCounter = 0;
-    this.startRow = startRow;
-    this.endRow = endRow;   
-    listIdQueryInstance.setValues(paramValues);
-    initRecordInstances();
+	this.startRow = startRow;
+	this.endRow = endRow;   
+	listIdQueryInstance.setValues(paramValues);
+	initRecordInstances();
     }
 
     // ------------------------------------------------------------------
@@ -146,7 +147,36 @@ public class SummaryInstance {
 	    initRecordInstances();
 	}
 	for (int i = 0; i < recordInstances.length; i++){
-	    System.out.println(recordInstances[i].print());
+	    
+	    logger.finer(recordInstances[i].print());
+	}
+    }
+
+    public void printAsTable() throws WdkModelException{
+	
+	if (recordInstances == null){
+	    initRecordInstances();
+	}
+	if (recordInstances != null){
+	    Record record = recordInstances[0].getRecord();
+	    Iterator attributeNames = record.getNonTextAttributeNames().iterator();
+	    String nameLine = "";
+	    while (attributeNames.hasNext()){
+		String nextAttName = (String)attributeNames.next();
+		nameLine = nameLine.concat(nextAttName + "\t");
+	    }
+	    System.err.println(nameLine);
+	    for (int i = 0; i < recordInstances.length; i++){
+		String nextLine = "";
+		RecordInstance nextRecordInstance = recordInstances[i];
+		Iterator attributes = record.getNonTextAttributeNames().iterator();
+		while (attributes.hasNext()){
+		    String nextAttName = (String)attributes.next();
+		    Object nextAttValue = nextRecordInstance.getAttributeValue(nextAttName);
+		    nextLine = nextLine.concat(nextAttValue.toString() + "\t");
+		}
+		System.err.println(nextLine);
+	    }
 	}
     }
 
@@ -176,6 +206,7 @@ public class SummaryInstance {
 		tempRecordInstances.add(nextRecordInstance);
 	    }
 	}        
+	System.err.println("SummaryInstance: creating new RI array with " + tempRecordInstances.size() + " entries");
 	recordInstances = new RecordInstance[tempRecordInstances.size()];
 	tempRecordInstances.copyInto(recordInstances);
 	rl.close();
