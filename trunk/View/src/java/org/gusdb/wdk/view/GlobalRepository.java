@@ -1,30 +1,31 @@
 package org.gusdb.gus.wdk.view;
 
-import org.gusdb.gus.wdk.model.ModelConfig;
-import org.gusdb.gus.wdk.model.ModelConfigParser;
-import org.gusdb.gus.wdk.model.query.ResultFactory;
-import org.gusdb.gus.wdk.model.query.QueryParamsException;
-import org.gusdb.gus.wdk.model.query.QuerySetContainer;
-import org.gusdb.gus.wdk.model.query.RDBMSPlatformI;
-import org.gusdb.gus.wdk.model.query.implementation.QuerySetParser;
-import org.gusdb.gus.wdk.model.query.implementation.SqlResultFactory;
-
 import java.io.File;
+
 import javax.sql.DataSource;
 
+import org.apache.commons.dbcp.ConnectionFactory;
+import org.apache.commons.dbcp.DriverManagerConnectionFactory;
+import org.apache.commons.dbcp.PoolableConnectionFactory;
+import org.apache.commons.dbcp.PoolingDataSource;
 import org.apache.commons.pool.ObjectPool;
 import org.apache.commons.pool.impl.GenericObjectPool;
-import org.apache.commons.dbcp.ConnectionFactory;
-import org.apache.commons.dbcp.PoolingDataSource;
-import org.apache.commons.dbcp.PoolableConnectionFactory;
-import org.apache.commons.dbcp.DriverManagerConnectionFactory;
+import org.gusdb.gus.wdk.model.ModelConfig;
+import org.gusdb.gus.wdk.model.ModelConfigParser;
+import org.gusdb.gus.wdk.model.QueryParamsException;
+import org.gusdb.gus.wdk.model.RDBMSPlatformI;
+import org.gusdb.gus.wdk.model.ResultFactory;
+import org.gusdb.gus.wdk.model.SimpleQuerySet;
+import org.gusdb.gus.wdk.model.WdkModel;
+import org.gusdb.gus.wdk.model.implementation.ModelXmlParser;
+import org.gusdb.gus.wdk.model.implementation.SqlResultFactory;
 
 
 
 public class GlobalRepository {
 
     private static final GlobalRepository INSTANCE = new GlobalRepository();
-    private QuerySetContainer querySetContainer;
+    private SimpleQuerySet simpleQuerySet;
     private ResultFactory resultFactory;
 
     
@@ -34,7 +35,7 @@ public class GlobalRepository {
 
 
     private GlobalRepository() {
-	File querySetFile = new File("/nfs/team81/art/gus/gus_home/lib/xml/sampleQuerySet.xml");
+	File modelXmlFile = new File("/nfs/team81/art/gus/gus_home/lib/xml/sampleQuerySet.xml");
 	File modelConfigXmlFile = new File("/nfs/team81/art/gus/gus_home/lib/xml/modelConfig.xml");
 	String querySetName = "RNASimpleQueries";
 
@@ -55,14 +56,16 @@ public class GlobalRepository {
 		(RDBMSPlatformI)Class.forName(platformClass).newInstance();
 	    platform.setDataSource(dataSource);
        
-	    QuerySetContainer querySetContainer = 
-		QuerySetParser.parseXmlFile(querySetFile);
-	    ResultFactory resultFactory = querySetContainer.getResultFactory();
+	    WdkModel wdkModel = ModelXmlParser.parseXmlFile(modelXmlFile);
+	    SimpleQuerySet simpleQuerySet = wdkModel.getSimpleQuerySet(querySetName);
+//	    QuerySetContainer querySetContainer = 
+//		QuerySetParser.parseXmlFile(querySetFile);
+	    ResultFactory resultFactory = wdkModel.getResultFactory();
 	    SqlResultFactory sqlResultFactory = 
 		new SqlResultFactory(dataSource, platform, 
 				     login, instanceTable);
 	    resultFactory.setSqlResultFactory(sqlResultFactory);
-	    this.querySetContainer = querySetContainer;
+	    this.simpleQuerySet = simpleQuerySet;
 	    this.resultFactory = resultFactory;
 
 	} catch (QueryParamsException e) {
@@ -74,8 +77,8 @@ public class GlobalRepository {
     }
 
 
-    public QuerySetContainer getQuerySetContainer() {
-	return querySetContainer;
+    public SimpleQuerySet getSimpleQuerySet() {
+	return simpleQuerySet;
     }
 
 
