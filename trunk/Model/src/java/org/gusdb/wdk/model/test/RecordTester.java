@@ -20,7 +20,6 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.dbcp.ConnectionFactory;
@@ -90,53 +89,29 @@ public class RecordTester {
         } 
     }
 
+private static void addOption(Options options, String argName, String desc) {
+    
+    Option option = new Option(argName, true, desc);
+    option.setRequired(true);
+    option.setArgName(argName);
+    
+    options.addOption(option);
+}
+    
+    
     static Options declareOptions() {
 	Options options = new Options();
 
 	// config file
-	Option configFile = OptionBuilder
-	    .withArgName("configFile")
-	    .hasArg()
-	    .withDescription("An .xml file that specifies a ModelConfig object.")
-	    .isRequired()
-	    .create("configFile");
-	options.addOption(configFile);
-
+	addOption(options, "configFile", "An .xml file that specifies a ModelConfig object.");
 	// query set file
-	Option modelXmlFile = OptionBuilder
-	    .withArgName("modelXmlFile")
-	    .hasArg()
-	    .withDescription("An .xml file that specifies a container of Query set objects.")
-	    .isRequired()
-	    .create("modelXmlFile");
-	options.addOption(modelXmlFile);
-
+    addOption(options, "modelXmlFile", "An .xml file that specifies a container of Query set objects.");
 	// record set name
-	Option recordSetName = OptionBuilder
-	    .withArgName("recordSetName")
-	    .hasArg()
-	    .withDescription("The name of the record set in which to find the record")
-	    .isRequired()
-	    .create("recordSetName");
-	options.addOption(recordSetName);
-
+    addOption(options, "recordSetName", "The name of the record set in which to find the record");
 	// record name
-	Option recordName = OptionBuilder
-	    .withArgName("recordName")
-	    .hasArg()
-	    .withDescription("The name of the record to print.")
-	    .isRequired()
-	    .create("recordName");
-	options.addOption(recordName);
-
+    addOption(options, "recordName", "The name of the record to print.");
 	// primary key
-	Option primaryKey = OptionBuilder
-	    .withArgName("primaryKey")
-	    .hasArg()
-	    .withDescription("The primary key of the record to find.")
-	    .isRequired()
-	    .create("primaryKey");
-	options.addOption(primaryKey);
+    addOption(options, "primaryKey", "The primary key of the record to find.");
 
 	return options;
     }

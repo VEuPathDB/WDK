@@ -399,13 +399,7 @@ public class SqlResultFactory {
 	Options options = new Options();
 
 	// config file
-	Option configFile = OptionBuilder
-	    .withArgName("configFile")
-	    .hasArg()
-	    .withDescription("an .xml file that specifies a ModelConfig object")
-	    .isRequired()
-	    .create("configFile");
-	options.addOption(configFile);
+    addOption(options, "configFile", "an .xml file that specifies a ModelConfig object");
 
 	// operation
 	Option newQ = new Option("new", "create a new query cache");
@@ -424,6 +418,15 @@ public class SqlResultFactory {
 	return options;
     }
 
+    private static void addOption(Options options, String argName, String desc) {
+        
+        Option option = new Option(argName, true, desc);
+        option.setRequired(true);
+        option.setArgName(argName);
+        
+        options.addOption(option);
+    }
+    
     static CommandLine parseOptions(String cmdName, Options options, 
 				    String[] args) {
 
