@@ -72,21 +72,18 @@ public class ApplicationInitListener implements ServletContextListener {
                 (RDBMSPlatformI)Class.forName(platformClass).newInstance();
             platform.setDataSource(dataSource);
             
-            WdkModel wdkQueryModel = ModelXMLParserRelaxNG.parseXmlFile(null, querySetFile, schemaFile);
-//            WdkModel wdkRecordModel = ModelXmlParser.parseXmlFile(recordSetFile);
-            ResultFactory queryResultFactory = wdkQueryModel.getResultFactory();
-            //ResultFactory recordResultFactory = wdkRecordModel.getResultFactory();
+            WdkModel wdkModel = ModelXMLParserRelaxNG.parseXmlFile(null, querySetFile, schemaFile);
+
+            ResultFactory resultFactory = wdkModel.getResultFactory();
+
             SqlResultFactory sqlResultFactory = 
                 new SqlResultFactory(dataSource, platform, 
                         dbConfig.getLogin(), instanceTable);
-            //recordResultFactory.setSqlResultFactory(sqlResultFactory);
 
-            queryResultFactory.setSqlResultFactory(sqlResultFactory);
+            resultFactory.setSqlResultFactory(sqlResultFactory);
             
-            application.setAttribute("wdk.queryResultfactory", queryResultFactory);
-            //application.setAttribute("wdk.recordResultfactory", recordResultFactory);
-            application.setAttribute("wdk.wdkQueryModel", wdkQueryModel);
-            //application.setAttribute("wdk.wdkRecordModel", wdkRecordModel);
+            application.setAttribute("wdk.resultfactory", resultFactory);
+            application.setAttribute("wdk.wdkModel", wdkModel);
             
         } catch (QueryParamsException e) {
             System.err.println(e.formatErrors());
