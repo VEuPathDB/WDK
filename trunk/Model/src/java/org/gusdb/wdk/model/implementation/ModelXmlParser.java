@@ -13,6 +13,8 @@ import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
 import org.gusdb.wdk.model.TextAttributeField;
 import org.gusdb.wdk.model.TextColumn;
+import org.gusdb.wdk.model.LinkAttributeField;
+import org.gusdb.wdk.model.LinkColumn;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 
@@ -228,10 +230,16 @@ public class ModelXmlParser {
         
         /*    */ digester.addSetNext( "wdkModel/recordClassSet/recordClass/tableQueryRef", "addTableQueryRef" );
         
-        /*    */ digester.addObjectCreate( "wdkModel/recordClassSet/recordClass/textAttribute", TextAttributeField.class );
+        /*    */ digester.addObjectCreate( "wdkModel/recordClassSet/recordClass/linkAttribute", LinkAttributeField.class );
+        
+        /*    */ digester.addSetProperties( "wdkModel/recordClassSet/recordClass/linkAttribute");
+        
+         /*    */ digester.addSetNext( "wdkModel/recordClassSet/recordClass/linkAttribute", "addLinkAttribute" );
+        
+       /*    */ digester.addObjectCreate( "wdkModel/recordClassSet/recordClass/textAttribute", TextAttributeField.class );
         
         /*    */ digester.addSetProperties( "wdkModel/recordClassSet/recordClass/textAttribute");
-        
+
         /*      */ digester.addBeanPropertySetter( "wdkModel/recordClassSet/recordClass/textAttribute/text");
         
         /*    */ digester.addSetNext( "wdkModel/recordClassSet/recordClass/textAttribute", "addTextAttribute" );
@@ -266,6 +274,12 @@ public class ModelXmlParser {
         /*    */ digester.addSetProperties( "wdkModel/querySet/sqlQuery/column");
         
         /*    */ digester.addSetNext( "wdkModel/querySet/sqlQuery/column", "addColumn" );
+        
+        /*    */ digester.addObjectCreate( "wdkModel/querySet/sqlQuery/linkColumn", LinkColumn.class );
+        
+        /*    */ digester.addSetProperties( "wdkModel/querySet/sqlQuery/linkColumn");
+        
+        /*    */ digester.addSetNext( "wdkModel/querySet/sqlQuery/linkColumn", "addColumn" );
         
         /*    */ digester.addObjectCreate( "wdkModel/querySet/sqlQuery/textColumn", TextColumn.class );
         

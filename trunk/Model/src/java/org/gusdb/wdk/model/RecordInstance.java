@@ -41,7 +41,13 @@ public class RecordInstance {
 	} else if (field instanceof TextAttributeField) {
 	    TextAttributeField taField = (TextAttributeField)field;
 	    value = instantiateTextAttribute(attributeName, 
-					     taField.getText(), 
+					     taField, 
+					     new HashMap());
+
+	} else if (field instanceof LinkAttributeField) {
+	    LinkAttributeField laField = (LinkAttributeField)field;
+	    value = instantiateLinkAttribute(attributeName, 
+					     laField, 
 					     new HashMap());
 
 	} else if (field instanceof AttributeField){
@@ -182,7 +188,8 @@ public class RecordInstance {
 	    }
 	    for (int i=0; i<columns.length; i++) {
 		String columnName = columns[i].getName();
-		setAttributeValue(columnName, rl.getValue(columnName));
+		setAttributeValue(columnName, 
+				  rl.getAttributeFieldValue(columnName).getValue());
 	    }
 	    if (rl.next()) {
 		String msg = "Attributes query '" + query.getFullName() + "' in Record '" + recordClass.getFullName() + "' returns more than one row";
@@ -193,22 +200,42 @@ public class RecordInstance {
     }
 
     protected String instantiateTextAttribute(String textAttributeName, 
-					      String rawText, 
+					      TextAttributeField field, 
 					      HashMap alreadyVisited) throws WdkModelException {
 
 	if (alreadyVisited.containsKey(textAttributeName)) {
 	    throw new WdkModelException("Circular text attribute subsitution involving text attribute '" 
-				+ textAttributeName + "'");
+					+ textAttributeName + "'");
 	}
 
 	alreadyVisited.put(textAttributeName, textAttributeName);
+	return instantiateAttr(field.getText(), textAttributeName);
+    }
 
+    protected LinkValue instantiateLinkAttribute(String linkAttributeName, 
+						 LinkAttributeField field, 
+						 HashMap alreadyVisited) throws WdkModelException {
+
+	if (alreadyVisited.containsKey(linkAttributeName)) {
+	    throw new WdkModelException("Circular link attribute subsitution involving text attribute '" 
+					+ linkAttributeName + "'");
+	}
+
+	alreadyVisited.put(linkAttributeName, linkAttributeName);
+	
+	return new LinkValue(instantiateAttr(field.getVisible(), 
+					     linkAttributeName),
+			     instantiateAttr(field.getUrl(), 
+					     linkAttributeName));
+    }
+
+    private String instantiateAttr(String rawText, String targetAttrName) throws WdkModelException { 
 	String instantiatedText = rawText;
 
 	Iterator attributeNames = getAttributes().keySet().iterator();
 	while (attributeNames.hasNext()) {
 	    String attrName = (String)attributeNames.next();
-	    if (attrName.equals(textAttributeName)) continue;
+	    if (attrName.equals(targetAttrName)) continue;
 	    if (containsMacro(instantiatedText, attrName)) {
 		String valString =  
 		    getAttributeValue(attrName.toString()).toString();

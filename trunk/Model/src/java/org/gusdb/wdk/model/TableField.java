@@ -17,6 +17,10 @@ public class TableField implements FieldI {
 	return query.getDisplayName();
     }
 
+    public Boolean getIsInternal() {
+	return new Boolean(false);
+    }
+   
     public String getHelp() {
 	return query.getHelp();
     }

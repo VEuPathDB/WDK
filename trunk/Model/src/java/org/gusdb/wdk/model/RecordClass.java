@@ -77,6 +77,13 @@ public class RecordClass {
 	fieldsMap.put(textAttributeField.getName(), textAttributeField);	    
     }
     
+    public void addLinkAttribute(LinkAttributeField linkAttributeField) throws WdkModelException {
+        checkAttributeName(linkAttributeField.getName());
+	attributeFieldsMap.put(linkAttributeField.getName(), 
+			       linkAttributeField);	    
+	fieldsMap.put(linkAttributeField.getName(), linkAttributeField);	    
+    }
+    
     //////////////////////////////////////////////////////////////
     // public getters
     //////////////////////////////////////////////////////////////

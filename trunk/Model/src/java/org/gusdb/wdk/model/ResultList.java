@@ -23,7 +23,7 @@ public abstract class ResultList {
 
     public abstract void checkQueryColumns(Query query, boolean checkAll) throws WdkModelException;
 
-    public Object getValue(String attributeName) throws WdkModelException {
+    public AttributeFieldValue getAttributeFieldValue(String attributeName) throws WdkModelException {
 	if (valuesInUse.containsKey(attributeName)) 
 	    throw new WdkModelException("Circular attempt to access attribute " + attributeName);
 	Object value;
@@ -34,10 +34,13 @@ public abstract class ResultList {
 	    if (column instanceof DerivedColumnI) 
 		value = ((DerivedColumnI)column).getDerivedValue(this);
 	    else value = getValueFromResult(attributeName);
+	    AttributeField field = new AttributeField(column);
+	    AttributeFieldValue fieldValue = 
+		new AttributeFieldValue(field, value);
+	    return fieldValue;
 	} finally {
 	    valuesInUse.remove(attributeName);
 	}
-	return value;
     }
     
     public Query getQuery() {
@@ -52,21 +55,17 @@ public abstract class ResultList {
 
     public abstract void close() throws WdkModelException;
 
-    /* depracated.  handled here
-    public abstract void write(StringBuffer buf) throws WdkModelException;
-
-    */
-
     public void write(StringBuffer buf)  throws WdkModelException {
         String newline = System.getProperty( "line.separator" );
 	Iterator rows = getRows();
 	while (rows.hasNext()) {
-	    Map map = (Map)rows.next();
-	    Iterator colKeys = map.keySet().iterator();
-	    while (colKeys.hasNext()) {
-		Object key = colKeys.next();
-		Object val = map.get(key);
-		buf.append(val + "\t");
+	    Map rowMap = (Map)rows.next();
+	    Iterator colNames = rowMap.keySet().iterator();
+	    while (colNames.hasNext()) {
+		Object colName = colNames.next();
+		AttributeFieldValue fVal = 
+		    (AttributeFieldValue)rowMap.get(colName);
+		buf.append(fVal.getValue() + "\t");
 	    }
 	    buf.append(newline);
 	}
@@ -105,7 +104,7 @@ public abstract class ResultList {
         for (int i=0; i<cols.length; i++) {
 	    String colName = cols[i].getName();
 	    try {
-		row.put(colName, getValue(colName));
+		row.put(colName, getAttributeFieldValue(colName));
 	    } catch (WdkModelException e) {
 		throw new RuntimeException(e);
 	    }

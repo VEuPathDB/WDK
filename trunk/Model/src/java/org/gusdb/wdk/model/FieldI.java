@@ -7,5 +7,6 @@ public interface FieldI {
     public String getDisplayName();
     public String getHelp();
     public String getType();
+    public Boolean getIsInternal();
 }
 

@@ -13,6 +13,8 @@ public class Column {
     Query query;
     String help;
     String dataTypeName;
+    Boolean isInternal = new Boolean(true);
+
     private boolean inSummary = true;
 
     public Column() {} 
@@ -25,11 +27,22 @@ public class Column {
         return name;
     }
 
-    public void setDataTypeName(String dataTypeName) {
+    public void setIsInternal(Boolean isInternal) {
+	this.isInternal = isInternal;
+    }
+
+    /**
+     * Hint to a view to not show this column.
+     */
+    public Boolean getIsInternal() {
+	return isInternal;
+    }
+
+    public void setSpecialType(String specialType) {
         this.dataTypeName = dataTypeName;
     }
 
-    public String getDataTypeName() {
+    public String getSpecialType() {
         return dataTypeName;
     }
 

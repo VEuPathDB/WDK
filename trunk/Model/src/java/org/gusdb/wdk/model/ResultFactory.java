@@ -68,7 +68,6 @@ public class ResultFactory {
     ///////////////////////////////////////////////////////////////////////////
 
     public synchronized ResultList getResult(QueryInstance instance) throws WdkModelException{
-	System.err.println("ResultFactory: getting result for instance " + instance.getQuery().getName());
 	ResultList resultList = instance.getIsPersistent()?
 	    getPersistentResult(instance) : instance.getNonpersistentResult();
 	return resultList;

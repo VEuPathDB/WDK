@@ -1,12 +1,12 @@
 package org.gusdb.wdk.model;
 
-
 public class TextAttributeField implements FieldI {
 
     String name;
     String displayName;
     String text;
     String help;
+    Boolean isInternal = new Boolean(false);
 
     public void setName(String name) {
 	this.name = name;
@@ -22,6 +22,14 @@ public class TextAttributeField implements FieldI {
     
     public String getHelp() {
 	return help;
+    }
+   
+    public void setIsInternal(Boolean isInternal) {
+	this.isInternal = isInternal;
+    }
+    
+    public Boolean getIsInternal() {
+	return isInternal;
     }
    
     public void setDisplayName(String displayName) {
