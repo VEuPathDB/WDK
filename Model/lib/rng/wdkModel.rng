@@ -235,7 +235,9 @@
       <attribute name="name" />
       <attribute name="type" />
       <attribute name="idPrefix" />
-    
+      <optional>
+         <attribute name="attributeOrdering" />
+      </optional>
       <zeroOrMore>  
         <element name="attributeQueryRef">
           <attribute name="ref" />

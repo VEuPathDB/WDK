@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model;
 
 import java.util.HashMap;
+import java.util.Vector;
 
 public class FlatVocabParam extends AbstractEnumParam {
     
@@ -42,10 +43,13 @@ public class FlatVocabParam extends AbstractEnumParam {
     protected void initVocabMap() throws WdkModelException {
         if (vocabMap == null) {
             vocabMap = new HashMap();
+	    orderedKeySet = new Vector();
             QueryInstance instance = query.makeInstance();
             ResultList result = instance.getResult();	
             while (result.next()) {
-	        vocabMap.put(result.getAttributeFieldValue("term").getValue(),
+		Object value = result.getAttributeFieldValue("term").getValue();
+		orderedKeySet.add(value);
+	        vocabMap.put(value,
 			     result.getAttributeFieldValue("internal").getValue());
             }
         }

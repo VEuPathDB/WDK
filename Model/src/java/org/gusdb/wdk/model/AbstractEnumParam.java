@@ -1,11 +1,13 @@
 package org.gusdb.wdk.model;
 
 import java.util.HashMap;
+import java.util.Vector;
 
 public abstract class AbstractEnumParam extends Param {
     
     boolean multiPick = false;
     HashMap vocabMap;
+    Vector orderedKeySet;
     boolean quoteInternalValue;
 
     public AbstractEnumParam () {
@@ -70,15 +72,22 @@ public abstract class AbstractEnumParam extends Param {
 
     public String[] getVocab() throws WdkModelException {
 	initVocabMap();
-	String[] a = new String[0];
-	a = (String[])(vocabMap.keySet().toArray(a));
+	int keySize = orderedKeySet.size();
+	String[] a = new String[keySize];
+	for (int i = 0; i < keySize; i++){
+	    a[i] = orderedKeySet.elementAt(i).toString();
+	}
 	return a;
     }
 
     public String[] getVocabInternal() throws WdkModelException {
 	initVocabMap();
-	String[] a = new String[0];
-	a = (String[])(vocabMap.values().toArray(a));
+	int keySize = orderedKeySet.size();
+	String[] a = new String[keySize];
+	for (int i = 0; i < keySize; i++){
+	    Object nextKey = orderedKeySet.elementAt(i);
+	    a[i] = vocabMap.get(nextKey).toString();
+	}
 	return a;
     }
     /////////////////////////////////////////////////////////////////////

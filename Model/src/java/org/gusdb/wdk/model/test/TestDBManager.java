@@ -119,6 +119,9 @@ public class TestDBManager {
 			}
 			SqlUtils.closeStatement(prepStmt);
 		    }
+		    else {
+			System.err.println("Table " + tableName + " already exists; no change made.  To reload this table, first drop it and then create it again");
+		    }
 		}
 	    }
 	}
