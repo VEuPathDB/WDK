@@ -24,12 +24,14 @@
           prompt="Organism"
           help="You know what it is"
           multipick="yes">
-          <sql>
-             select name as key,
-                    taxon_id as value
-             from dots.taxon
-             where name in ('mouse', 'horse', 'asparagus')
-          </sql>
+          <sqlQuery>
+            <sql>
+              select name as key,
+                     taxon_id as value
+              from SRes.taxonName
+              where name in ('mouse', 'human')
+            </sql>
+          </sqlQuery>
        </sqlEnumParam>
 
     <sql>
@@ -65,7 +67,11 @@
    <sqlQuery name="TaxonName"
             displayName="Taxon name">
 
-     <stringParam  name="TaxonId"/>
+     <stringParam
+       name="TaxonId"
+       prompt="Taxon Id"
+       sample="8"
+       regex="\d+"/>
 
      <sql>
        select name
@@ -76,8 +82,9 @@
 
 </querySet>
 
+
 ####################################################################
-# Get help for the query set xml parser
+# Get help for the querySetXml parser
 ####################################################################
 
 [sfischer@pythia ~]$ 
@@ -227,6 +234,68 @@ house mouse
 mice C57BL/6xCBA/CaJ hybrid
 house mouse
 
+####################################################################
+# Get help for a query (run it without any supplied params)
+# Note: in this example, the Organism param is an SqlEnumParam.
+#       It queries the db to find the ids for the species in the xml
+####################################################################
+
+[sfischer@pythia ~]$ 
+[sfischer@pythia ~]$ 
+[sfischer@pythia ~]$ 
+[sfischer@pythia ~]$ 
+[sfischer@pythia ~]$ runQuerySetQuery $HOME/.wdkconfig $GUS_HOME/lib/xml/sampleQuerySet.xml RNAByGoTerm
+
+Query: GO functional classification (by term)
+
+Parameters
+  Go Term (GO:0001233):
+  Organism (chose one):
+    mouse = 14
+    human = 8
+
+####################################################################
+# Get help for another query (run it without any supplied params)
+####################################################################
+
+[sfischer@pythia ~]$ runQuerySetQuery $HOME/.wdkconfig $GUS_HOME/lib/xml/sampleQuerySet.xml TaxonName
+
+Query: Taxon name
+
+Parameters
+  Taxon Id (8):
+
+####################################################################
+# Try to run a non-existent query (spelling error)
+####################################################################
+
+[sfischer@pythia ~]$ runQuerySetQuery $HOME/.wdkconfig $GUS_HOME/lib/xml/sampleQuerySet.xml TaxonNam
+java.lang.IllegalArgumentException: Query set 'RNAQueries' does not include a query named 'TaxonNam'
+        at org.gusdb.gus.wdk.model.query.QueryTester.displayQuery(QueryTester.java:48)
+        at org.gusdb.gus.wdk.model.query.QueryTester.main(QueryTester.java:148)
+
+
+
+####################################################################
+# Run the TaxonName query, but with an invalid param value
+####################################################################
+
+[sfischer@pythia ~]$ runQuerySetQuery $HOME/.wdkconfig $GUS_HOME/lib/xml/sampleQuerySet.xml TaxonName TaxonId oops
+
+TaxonId value 'oops' has an error: Does not match regex '\d+'
+
+
+####################################################################
+# Run the TaxonName query correctly this time
+####################################################################
+
+[sfischer@pythia ~]$ runQuerySetQuery $HOME/.wdkconfig $GUS_HOME/lib/xml/sampleQuerySet.xml TaxonName TaxonId 8
+human
+man
+Homo sapiens
+human
+
+ 
 
 ####################################################################
 #  take a look at the parseQuerySetXml shell script
@@ -309,7 +378,51 @@ GIN $PASSWORD $XML_FILE $QUERYNAME $argv
 [sfischer@pythia ~]$ cd $PROJECT_HOME/GUS/WebDevKit/src/java/org/gusdb/gus/wdk/model/query
 [sfischer@pythia ~]$ 
 [sfischer@pythia query]$ ls *.java
-Param.java     QuerySetParser.java  SqlQueryInstance.java     StringParam.java
-Query.java     QueryTester.java     SqlQuery.java
-QuerySet.java  SqlEnumParam.java    SqlResultSetManager.java
+Param.java                 QuerySet.java        SqlQueryInstance.java
+QueryInstance.java         QuerySetParser.java  SqlQuery.java
+Query.java                 QueryTester.java     SqlResultSetManager.java
+QueryParamsException.java  SqlEnumParam.java    StringParam.java
 
+
+####################################################################
+#  Create a javadocs for the Query model
+####################################################################
+
+[sfischer@pythia query]$ which makeWDKModelJavadoc
+/home/sfischer/gushome/bin/makeWDKModelJavadoc
+
+[sfischer@pythia query]$ makeWDKModelJavadoc /home/sfischer/jdoc/
+Loading source files for package org.gusdb.gus.wdk.model.query...
+Constructing Javadoc information...
+Standard Doclet version 1.4.0
+
+Generating /home/sfischer/jdoc/constant-values.html...
+Building tree for all the packages and classes...
+Building index for all the packages and classes...
+Generating /home/sfischer/jdoc/overview-tree.html...
+Generating /home/sfischer/jdoc/index-all.html...
+Generating /home/sfischer/jdoc/deprecated-list.html...
+Building index for all classes...
+Generating /home/sfischer/jdoc/allclasses-frame.html...
+Generating /home/sfischer/jdoc/allclasses-noframe.html...
+Generating /home/sfischer/jdoc/index.html...
+Generating /home/sfischer/jdoc/packages.html...
+Generating /home/sfischer/jdoc/org/gusdb/gus/wdk/model/query/package-frame.html...
+Generating /home/sfischer/jdoc/org/gusdb/gus/wdk/model/query/package-summary.html...
+Generating /home/sfischer/jdoc/org/gusdb/gus/wdk/model/query/package-tree.html...
+Generating /home/sfischer/jdoc/org/gusdb/gus/wdk/model/query/Param.html...
+Generating /home/sfischer/jdoc/org/gusdb/gus/wdk/model/query/Query.html...
+Generating /home/sfischer/jdoc/org/gusdb/gus/wdk/model/query/QueryInstance.html...
+Generating /home/sfischer/jdoc/org/gusdb/gus/wdk/model/query/QuerySet.html...
+Generating /home/sfischer/jdoc/org/gusdb/gus/wdk/model/query/QuerySetParser.html...
+Generating /home/sfischer/jdoc/org/gusdb/gus/wdk/model/query/QueryTester.html...
+Generating /home/sfischer/jdoc/org/gusdb/gus/wdk/model/query/SqlEnumParam.html...
+Generating /home/sfischer/jdoc/org/gusdb/gus/wdk/model/query/SqlQuery.html...
+Generating /home/sfischer/jdoc/org/gusdb/gus/wdk/model/query/SqlQueryInstance.html...
+Generating /home/sfischer/jdoc/org/gusdb/gus/wdk/model/query/SqlResultSetManager.html...
+Generating /home/sfischer/jdoc/org/gusdb/gus/wdk/model/query/StringParam.html...
+Generating /home/sfischer/jdoc/org/gusdb/gus/wdk/model/query/QueryParamsException.html...
+Generating /home/sfischer/jdoc/serialized-form.html...
+Generating /home/sfischer/jdoc/package-list...
+Generating /home/sfischer/jdoc/help-doc.html...
+Generating /home/sfischer/jdoc/stylesheet.css...
