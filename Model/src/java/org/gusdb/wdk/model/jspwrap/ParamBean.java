@@ -1,7 +1,7 @@
 package org.gusdb.wdk.model.jspwrap;
 
 import org.gusdb.wdk.model.Param;
-
+import org.gusdb.wdk.model.WdkModelException;
 
 /**
  * A wrapper on a {@link Param} that provides simplified access for 
@@ -33,5 +33,12 @@ public class ParamBean {
 
     public String getDefault() {
 	return param.getDefault();
+    }
+
+    /**
+     * for controller
+     */
+    public String validateValue(Object val) throws WdkModelException {
+	return param.validateValue(val);
     }
 }

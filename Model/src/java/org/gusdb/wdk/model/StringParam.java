@@ -50,13 +50,7 @@ public class StringParam extends Param {
        return buf.toString();
     }
 
-    /////////////////////////////////////////////////////////////////
-    // protected methods
-    /////////////////////////////////////////////////////////////////
-
-    protected void resolveReferences(WdkModel model) throws WdkModelException {}
-
-    protected String validateValue(Object value) throws WdkModelException {
+    public String validateValue(Object value) throws WdkModelException {
         if (!(value instanceof String)) {
             throw new WdkModelException("Value must be a String " + value) ;
         }
@@ -70,6 +64,12 @@ public class StringParam extends Param {
         }
         return null;
     }
+
+    /////////////////////////////////////////////////////////////////
+    // protected methods
+    /////////////////////////////////////////////////////////////////
+
+    protected void resolveReferences(WdkModel model) throws WdkModelException {}
 
     public String substitute(String value) {
         logger.finest("substitute is called");

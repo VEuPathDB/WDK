@@ -72,14 +72,14 @@ public abstract class Param {
        return buf.toString();
     }
 
-    //////////////////////////////////////////////////////////////////////
-    // protected methods
-    //////////////////////////////////////////////////////////////////////
-
     /**
      * @return Error string if an error.  null if no errors.
      */ 
-    protected abstract String validateValue(Object value) throws WdkModelException ;
+    public abstract String validateValue(Object value) throws WdkModelException ;
+
+    //////////////////////////////////////////////////////////////////////
+    // protected methods
+    //////////////////////////////////////////////////////////////////////
 
     /**
      * Transforms external value into internal value if needed
