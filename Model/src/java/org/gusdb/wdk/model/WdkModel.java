@@ -2,6 +2,7 @@ package org.gusdb.gus.wdk.model;
 
 import java.util.HashMap;
 import java.util.Iterator;
+
 import org.w3c.dom.Document;
 
 public class WdkModel {
@@ -16,7 +17,7 @@ public class WdkModel {
     HashMap allModelSets = new HashMap();
     String name;
     ResultFactory resultFactory;
-    Document document;
+    private Document document;
 
     public WdkModel() {
     }
@@ -27,14 +28,6 @@ public class WdkModel {
 
     public void setName(String name) {
 	this.name = name;
-    }
-
-    public void setDocument(Document document) {
-	this.document = document;
-    }
-
-    public Document getDocument() {
-	return document;
     }
 
     //Record Sets
@@ -149,30 +142,32 @@ public class WdkModel {
     }
 
     public RDBMSPlatformI getRDBMSPlatform() {
-	return platform;
+        return platform;
     }
 
-    public Object resolveReference(String twoPartName, String refererName, String refererClassName, String refererAttributeName) throws WdkModelException {
-	String s = "Invalid reference in " + refererClassName + " '" + refererName + "' at " + refererAttributeName + "=\"" + twoPartName + "\".";
+    public Object resolveReference(String twoPartName, String refererName, 
+                String refererClassName, String refererAttributeName) throws WdkModelException {
+        String s = "Invalid reference in " + refererClassName + " '" + refererName 
+            + "' at " + refererAttributeName + "=\"" + twoPartName + "\".";
 
-	//ensures <code>twoPartName</code> is formatted correctly
-	Reference reference = new Reference(twoPartName);
+        //ensures <code>twoPartName</code> is formatted correctly
+        Reference reference = new Reference(twoPartName);
 
-	String setName = reference.getSetName();
-	String elementName = reference.getElementName();
+        String setName = reference.getSetName();
+        String elementName = reference.getElementName();
 
-	ModelSetI set = (ModelSetI)allModelSets.get(setName);
-	if (set == null) {
-	    String s3 = s + " There is no set called '" + setName + "'";
-	    throw new WdkModelException(s3);
-	}
-	Object element = set.getElement(elementName);
-	if (element == null) {
-	    String s4 = s + " Set '" + setName + 
-		"' does not have an element called '" + elementName + "'";
-	    throw new WdkModelException(s4);
-	}
-	return element;
+        ModelSetI set = (ModelSetI)allModelSets.get(setName);
+        if (set == null) {
+            String s3 = s + " There is no set called '" + setName + "'";
+            throw new WdkModelException(s3);
+        }
+        Object element = set.getElement(elementName);
+        if (element == null) {
+            String s4 = s + " Set '" + setName + 
+            "' returned null for '" + elementName + "'";
+            throw new WdkModelException(s4);
+        }
+        return element;
     }
 
     /**
@@ -181,11 +176,11 @@ public class WdkModel {
      */ 
     public void resolveReferences() throws WdkModelException {
        
-       Iterator modelSets = allModelSets.values().iterator();
-       while (modelSets.hasNext()) {
-	   ModelSetI modelSet = (ModelSetI)modelSets.next();
-	   modelSet.resolveReferences(this);
-       }
+        Iterator modelSets = allModelSets.values().iterator();
+        while (modelSets.hasNext()) {
+            ModelSetI modelSet = (ModelSetI) modelSets.next();
+            modelSet.resolveReferences(this);
+        }
     }
     
     public String toString() {
@@ -212,8 +207,16 @@ public class WdkModel {
 	    buf.append( "=========================== " + set.getName()+ " ===============================" + newline + newline);
 	    buf.append(set).append( newline );
        }
-	buf.append(newline);
-	return buf.toString();
+       buf.append(newline);
+
+       buf.append( "--- Summary Sets---" );
+       buf.append( newline );
+       Iterator summarySetIterator = summarySets.values().iterator();
+       while (summarySetIterator.hasNext()) {
+	   buf.append( summarySetIterator.next() ).append( newline );
+       }
+
+       return buf.toString();
     }
  
     //Param Sets
@@ -225,12 +228,19 @@ public class WdkModel {
 	addSet(paramSet, paramSets);
     }
 
-
     ///////////////////////////////////////////////////////////////////
     ///////   Protected methods
     ///////////////////////////////////////////////////////////////////
 
     void checkName(String setName) throws WdkModelException {
+    }
+    
+    public Document getDocument() {
+        return document;
+    }
+    
+    public void setDocument(Document document) {
+        this.document = document;
     }
 }
 
