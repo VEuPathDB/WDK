@@ -58,7 +58,9 @@
 <table border="0" cellpadding="2" cellspacing="0">
 <tr class="headerRow">
 <c:forEach items="${wdkAnswer.recordClass.attributeFields}" var="attr">
-<th>${attr.value.displayName}</th>
+<c:if test="${!attr.value.isInternal}">
+  <th align="left">${attr.value.displayName}</th>
+</c:if>
 </c:forEach>
 
 <c:set var="i" value="0"/>
@@ -71,6 +73,8 @@
 
   <c:set var="j" value="0"/>
   <c:forEach items="${record.attributes}" var="recAttr">
+  <c:if test="${!recAttr.value.isInternal}">
+ 
     <td>
     <c:set var="recNam" value="${record.recordClass.fullName}"/>
     <c:set var="fieldVal" value="${recAttr.value.value}"/>
@@ -96,6 +100,8 @@
     </c:choose>
     </td>
     <c:set var="j" value="${j+1}"/>
+
+  </c:if>
   </c:forEach>
 </tr>
 <c:set var="i" value="${i+1}"/>

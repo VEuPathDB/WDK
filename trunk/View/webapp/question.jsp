@@ -40,7 +40,11 @@
       <td>
         <c:set var="mp" value="0"/>
         <c:if test="${qP.multiPick}"><c:set var="mp" value="1"/></c:if>
+        <c:set var="opt" value="0"/>
         <html:select  property="myProp(${pNam})" multiple="${mp}">
+          <c:set var="opt" value="${opt+1}"/>
+          <c:set var="sel" value=""/>
+          <c:if test="${opt == 1}"><c:set var="sel" value="selected"/></c:if>      
           <html:options property="values(${pNam})" labelProperty="labels(${pNam})"/>
         </html:select>
       </td>

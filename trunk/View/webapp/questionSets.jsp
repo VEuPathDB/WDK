@@ -10,12 +10,12 @@
 <site:header banner="${wdkModelDispName}" />
 
 <!-- display wdkModel introduction text -->
-<p><b><jsp:getProperty name="wdkModel" property="introduction"/></b></p>
+<b><jsp:getProperty name="wdkModel" property="introduction"/></b>
 
 <hr>
 
 <!-- show all questionSets in model -->
-<table>
+<table width="100%">
 <c:set value="${wdkModel.questionSets}" var="questionSets"/>
 <c:forEach items="${questionSets}" var="qSet">
   <tr><td bgcolor="lightblue"><jsp:getProperty name="qSet" property="description"/></td></tr>
