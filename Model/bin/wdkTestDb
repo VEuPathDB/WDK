@@ -66,6 +66,12 @@ system($cmd);
 ############
 
 sub usage {
-    print "\nusage:  parses flat files representing database tables and inserts them into the database. \n\nwdkTestDb\n \t-configFile (database configuration file to use with wdk model)\n\t<-dropDatabase|-createDatabase> (action to take with database; dropping when non-existent or creating when already existing will do nothing; include both to reset database)\n\n";
+    print "
+
+Create a toy database to use in testing the WDK.  (The database is created from files included in the WDK distribution.) 
+
+usage: wdkTestDb -configFile modelConfigFile [-createDatabase | -dropDatabase]
+
+";
     exit(1);
 }
