@@ -7,6 +7,7 @@ public abstract class Param {
     String prompt;
     String help;
     String dfault;
+    ParamSet paramSet;
 
     public Param () {}
 
@@ -16,6 +17,10 @@ public abstract class Param {
 
     public String getName() {
 	return name;
+    }
+
+    public String getFullName() {
+	return paramSet.getName() + "." + name;
     }
 
     public void setPrompt(String prompt) {
@@ -75,5 +80,9 @@ public abstract class Param {
     protected abstract void resolveReferences(WdkModel model) throws WdkModelException;
 
     protected void setResources(WdkModel model) throws WdkModelException {}
+
+    protected void setParamSet(ParamSet paramSet) {
+	this.paramSet = paramSet;
+    }
 
 }

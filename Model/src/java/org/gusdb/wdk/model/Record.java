@@ -25,6 +25,7 @@ public class Record {
     private String type;
     private String idPrefix;
     private Reference reference;
+    private RecordSet recordSet;
     
     /**
      * @param reference The reference to set.
@@ -41,6 +42,10 @@ public class Record {
         return name;
     }
     
+    public String getFullName() {
+	return recordSet.getName() + "." + name;
+    }
+
     public void setIdPrefix(String idPrefix) {
         this.idPrefix = idPrefix;
     }
@@ -184,7 +189,7 @@ public class Record {
     protected void addTableQuery(Query query) throws WdkModelException {
         if (tableQueryMap.containsKey(query.getName())) {
             throw new WdkModelException("Record " + getName() + " already has table query named " + query.getName());
-        }
+        }    
         tableQueryMap.put(query.getName(), query);
     }
     
@@ -208,7 +213,6 @@ public class Record {
     protected Query getAttributesQuery(String attributeName) throws WdkModelException {
         Query query = (Query)attributesQueryMap.get(attributeName);
         if (query == null) {
-            logger.severe("can't find attribute called "+attributeName+". Have got "+attributesQueryMap.keySet());
             throw new WdkModelException("Record " + getName() + 
                     " doesn't have an attribute with name '" +
                     attributeName + "'");
@@ -240,6 +244,10 @@ public class Record {
         return textAttributeMap.containsKey(attributeName);
     }
     
+    protected void setRecordSet(RecordSet recordSet) {
+	this.recordSet = recordSet;
+    }
+
     public Reference getReference() {
         return reference;
     }

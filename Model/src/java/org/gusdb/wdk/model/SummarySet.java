@@ -70,6 +70,11 @@ public class SummarySet implements ModelSetI {
     }
 
     public void setResources(WdkModel model) throws WdkModelException {
+	Iterator summaryIterator = summarySet.values().iterator();
+	while (summaryIterator.hasNext()){
+	    Summary summary = (Summary)summaryIterator.next();
+	    summary.setSummarySet(this);
+	}
     }
 
     public String toString() {

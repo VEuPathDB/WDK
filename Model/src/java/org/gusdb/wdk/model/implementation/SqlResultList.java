@@ -87,7 +87,7 @@ public class SqlResultList extends ResultList {
 	
 	    HashMap alreadySeen = new HashMap();
 	    Column[] columns = query.getColumns();
-	    String queryName = query.getName();
+	    String queryName = query.getFullName();
 	    int colCount = 0;
 	    for (int i=0; i<columns.length; i++) {
 		if (columns[i] instanceof DerivedColumnI) continue;

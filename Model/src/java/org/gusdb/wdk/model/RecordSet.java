@@ -77,6 +77,11 @@ public class RecordSet implements ModelSetI {
     }
 
     public void setResources(WdkModel model) throws WdkModelException {
+       Iterator recordIterator = recordSet.values().iterator();
+       while (recordIterator.hasNext()) {
+	   Record record = (Record)recordIterator.next();
+	   record.setRecordSet(this);
+       }
     }
 
 }
