@@ -1,6 +1,6 @@
 package org.gusdb.gus.wdk.view.taglibs.query.HTMLParamViews;
 
-import org.gusdb.gus.wdk.model.FlatCVParam;
+import org.gusdb.gus.wdk.model.FlatVocabParam;
 import org.gusdb.gus.wdk.model.Param;
 import org.gusdb.gus.wdk.model.ResultFactory;
 
@@ -12,11 +12,11 @@ import javax.servlet.jsp.PageContext;
 /**
  * Simple HTML form view on a SqlEnumParam
  */
-public class FlatCVParamView implements ParamViewI {
+public class FlatVocabParamView implements ParamViewI {
   
     public void showParam(Param param, String formQuery, JspWriter out, PageContext pc) throws IOException {
     	
-        FlatCVParam p = (FlatCVParam) param;
+        FlatVocabParam p = (FlatVocabParam) param;
     	ResultFactory rf = (ResultFactory) pc.getAttribute("wdk.queryResultFactory", PageContext.APPLICATION_SCOPE);
     	String[] m = null;
     	try {
