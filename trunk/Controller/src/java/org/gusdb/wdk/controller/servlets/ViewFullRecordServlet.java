@@ -36,27 +36,39 @@ public class ViewFullRecordServlet extends HttpServlet {
       String recordReference = req.getParameter("recordReference");
       String primaryKey = req.getParameter("primaryKey");
       String style = req.getParameter("style");
-        
+
+      
       int destination = DESTINATION_JSP;
       if ("plain".equalsIgnoreCase(style)) {
           destination = DESTINATION_PLAIN;
       }
       
-      RecordInstance recordInstance = null;
+      RecordInstance recordInstance = (RecordInstance) req.getAttribute("ri");
       
-      try {
-//	    ResultFactory resultFactory = 
-//            (ResultFactory) getServletContext().getAttribute("wdk.recordResultFactory");
-        WdkModel wm = (WdkModel) getServletContext().getAttribute("wdk.wdkModel");
-	    Record record = WdkModelExtra.getRecord(wm, recordReference);
-	    recordInstance = record.makeRecordInstance();
-	    recordInstance.setPrimaryKey(primaryKey);
-
-
-      } catch (Exception e) {
-	    e.printStackTrace();
-//	    System.exit(1);
+      String recordName = (String) req.getAttribute("recordName");
+      if (recordName != null) {
+          recordReference = recordName;
+          primaryKey = (String) req.getAttribute("primaryKey");
       }
+//      if (recordInstance != null) {
+//          recordReference = recordInstance.getRecord().getFullName();
+//          
+//      } else {
+
+          try {
+              //	    ResultFactory resultFactory = 
+              //            (ResultFactory) getServletContext().getAttribute("wdk.recordResultFactory");
+              WdkModel wm = (WdkModel) getServletContext().getAttribute("wdk.wdkModel");
+              Record record = WdkModelExtra.getRecord(wm, recordReference);
+              recordInstance = record.makeRecordInstance();
+              recordInstance.setPrimaryKey(primaryKey);
+              
+              
+          } catch (Exception e) {
+              e.printStackTrace();
+              //	    System.exit(1);
+          }
+//      }
     
       switch (destination) {
       case DESTINATION_PLAIN:
