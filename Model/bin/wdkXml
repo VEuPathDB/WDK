@@ -17,4 +17,4 @@ setenv CLASSPATH "$GUS_HOME/lib/java/commons-digester.jar:$GUS_HOME/lib/java/GUS
 
 setenv LOGGING_PROPS 
 
-java -classpath $CLASSPATH $LOGGING_PROPS org.gusdb.gus.wdk.model.query.QuerySetParser $1
+java -classpath $CLASSPATH $LOGGING_PROPS org.gusdb.gus.wdk.model.implementation.QuerySetParser $1
