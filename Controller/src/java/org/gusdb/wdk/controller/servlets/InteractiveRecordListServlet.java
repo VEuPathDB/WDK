@@ -155,7 +155,7 @@ public class InteractiveRecordListServlet extends HttpServlet {
 		}
 
           
-        String toPage = "/recordListInstanceView.jsp";
+        String toPage = "/resultSummary.jsp";
         
         // TODO Work out size
         int size = 0;
