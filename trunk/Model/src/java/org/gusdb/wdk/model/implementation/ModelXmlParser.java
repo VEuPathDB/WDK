@@ -233,6 +233,8 @@ public class ModelXmlParser {
         /*    */ digester.addObjectCreate( "wdkModel/recordClassSet/recordClass/linkAttribute", LinkAttributeField.class );
         
         /*    */ digester.addSetProperties( "wdkModel/recordClassSet/recordClass/linkAttribute");
+
+        /*    */ digester.addBeanPropertySetter( "wdkModel/recordClassSet/recordClass/linkAttribute/url");
         
          /*    */ digester.addSetNext( "wdkModel/recordClassSet/recordClass/linkAttribute", "addLinkAttribute" );
         
@@ -279,6 +281,8 @@ public class ModelXmlParser {
         
         /*    */ digester.addSetProperties( "wdkModel/querySet/sqlQuery/linkColumn");
         
+        /*    */ digester.addBeanPropertySetter( "wdkModel/querySet/sqlQuery/linkColumn/url");
+
         /*    */ digester.addSetNext( "wdkModel/querySet/sqlQuery/linkColumn", "addColumn" );
         
         /*    */ digester.addObjectCreate( "wdkModel/querySet/sqlQuery/textColumn", TextColumn.class );
