@@ -2,6 +2,7 @@
  
 <wdkModel name="RNAQueries">
 
+<!--
 <pageableQuerySet name="RNAPageableQueries">
    <pageableSqlQuery name="GeneCardName"
 		     displayName="Gene Card name"
@@ -9,7 +10,7 @@
 		     pageQueryRef="RNASimpleQueries.RNAListInDetail"/>
 
 </pageableQuerySet>
-
+-->
 
 <simpleQuerySet name="RNASimpleQueries">
 
@@ -125,9 +126,10 @@
        regex="\d+" />
        
      <sql>
-       select name wrong
-       from SRes.TaxonName 
-       where taxon_id = $$TaxonId$$
+select gf.na_feature_id, gf.name
+from dots.GeneFeature gf
+where gf.number_of_exons &gt;= '$$Min$$'
+  and gf.number_of_exons &lt;= '$$Max$$'
      </sql>
   </simpleSqlQuery>
 
@@ -138,12 +140,12 @@
        name="Name"
        prompt="Name"
        sample="SPAC1701.1c"
-       regex="\d+" />
+       regex=".*" />
        
      <sql>
-       select name wrong
-       from SRes.TaxonName 
-       where taxon_id = $$TaxonId$$
+select gf.na_feature_id, gf.name
+from dots.GeneFeature gf
+where gf.name like '$$Name$$'
      </sql>
   </simpleSqlQuery>
 
@@ -157,18 +159,20 @@
           multipick="no">
           <simpleSqlQuery>
             <sql>
-              select name as key, wrong
-                     taxon_id as value
-              from SRes.taxonName
-              where name in ('mouse', 'human')
+select distinct ena.chromosome as key, ena.chromosome as value
+from dots.ExternalNASequence ena
+where ena.taxon_id = '130246'
             </sql>
           </simpleSqlQuery>
        </sqlEnumParam>
        
      <sql>
-       select name wrong
-       from SRes.TaxonName 
-       where taxon_id = $$TaxonId$$
+select gf.na_feature_id, gf.name
+from dots.ExternalNASequence ena,
+     dots.GeneFeature gf
+where ena.taxon_id = '130246'
+      and ena.chromosome = '$$Chromosome$$'
+      and gf.na_sequence_id = ena.na_sequence_id
      </sql>
   </simpleSqlQuery>
 
