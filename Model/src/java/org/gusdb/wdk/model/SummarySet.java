@@ -2,7 +2,6 @@ package org.gusdb.gus.wdk.model;
 
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 
 /**
  * SummarySet.java
