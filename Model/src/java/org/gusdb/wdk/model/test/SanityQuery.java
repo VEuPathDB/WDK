@@ -17,7 +17,7 @@ import java.util.Enumeration;
  * Created: Mon August 23 12:00:00 2004 EDT
  *
  * @author David Barkan
- * @version $Revision$ $Date$Author: dbarkan $
+ * @version $Revision$ $Date$Author: sfischer $
  */
 
 public class SanityQuery implements SanityElementI {
@@ -61,11 +61,11 @@ public class SanityQuery implements SanityElementI {
     // ------------------------------------------------------------------
     // Public Methods
     // ------------------------------------------------------------------
-    public void setTwoPartName(String twoPartName){
+    public void setRef(String twoPartName){
 	this.twoPartName = twoPartName;
     }
     
-    public String getTwoPartName(){
+    public String getRef(){
 	return this.twoPartName;
     }
 
@@ -75,7 +75,7 @@ public class SanityQuery implements SanityElementI {
     
     public SanityParam getParam(String paramName) throws WdkUserException{
 	SanityParam param = (SanityParam)params.get(paramName);
-	if (param == null) throw new WdkUserException("SanityQuery " + getTwoPartName() + " does not include param " + paramName);
+	if (param == null) throw new WdkUserException("SanityQuery " + getRef() + " does not include param " + paramName);
 	return param;
     }
 

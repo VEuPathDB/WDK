@@ -11,7 +11,7 @@ import org.gusdb.wdk.model.WdkModelException;
  * Created: Mon August 23 12:00:00 2004 EDT
  *
  * @author David Barkan
- * @version $Revision$ $Date$Author: dbarkan $
+ * @version $Revision$ $Date$Author: sfischer $
  */
 
 
@@ -42,11 +42,11 @@ public class SanityRecord implements SanityElementI {
     // ------------------------------------------------------------------
     // Public Methods
     // ------------------------------------------------------------------
-    public void setTwoPartName(String twoPartName){
+    public void setRef(String twoPartName){
 	this.twoPartName = twoPartName;
     }
     
-    public String getTwoPartName(){
+    public String getRef(){
 	return this.twoPartName;
     }
 
@@ -76,7 +76,7 @@ public class SanityRecord implements SanityElementI {
 
     public String getCommand(String globalArgs) throws WdkModelException{
 
-	Reference recordReference = new Reference(getTwoPartName());
+	Reference recordReference = new Reference(getRef());
 	String recordSetName = recordReference.getSetName();
 	String recordName = recordReference.getElementName();
 	String pk = getPrimaryKey().toString();

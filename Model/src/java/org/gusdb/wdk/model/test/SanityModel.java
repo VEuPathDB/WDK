@@ -17,7 +17,7 @@ import org.gusdb.wdk.model.WdkUserException;
  * Created: Mon August 23 12:00:00 2004 EDT
  *
  * @author David Barkan
- * @version $Revision$ $Date$Author: art $
+ * @version $Revision$ $Date$Author: sfischer $
  */
 
 //DTB -- Took out ability to get a SanityRecord or SanityQuery by name, as so far is 
@@ -79,7 +79,7 @@ public class SanityModel {
 
 	for (int i = 0; i < sanityRecords.size(); i++){
 	    SanityRecord nextRecord = (SanityRecord)sanityRecords.elementAt(i);
-	    if (nextRecord.getTwoPartName().equals(recordName)){
+	    if (nextRecord.getRef().equals(recordName)){
 		return true;
 	    }
 	}
@@ -109,7 +109,7 @@ public class SanityModel {
 
 	for (int i = 0; i < sanityQueries.size(); i++){
 	    SanityQuery nextQuery = (SanityQuery)sanityQueries.elementAt(i);
-	    if (nextQuery.getTwoPartName().equals(queryName)){
+	    if (nextQuery.getRef().equals(queryName)){
 		return true;
 	    }
 	}
@@ -141,7 +141,7 @@ public class SanityModel {
 	for (int i = 0; i < sanityQueries.size(); i++){
 	    SanityQuery nextSanityQuery = (SanityQuery)sanityQueries.elementAt(i);
 	    if (nextSanityQuery.getMinOutputLength().intValue() < 1){
-		throw new WdkUserException("SanityQuery " + nextSanityQuery.getTwoPartName() + " must return at least 1 row.  Please set its minOutputLength attribute to reflect this");
+		throw new WdkUserException("SanityQuery " + nextSanityQuery.getRef() + " must return at least 1 row.  Please set its minOutputLength attribute to reflect this");
 	    }
 	}
     }
