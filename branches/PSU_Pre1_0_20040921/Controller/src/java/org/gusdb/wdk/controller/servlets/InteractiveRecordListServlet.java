@@ -301,17 +301,17 @@ public class InteractiveRecordListServlet extends HttpServlet {
         
         redirect(req, res, toPage);
         
-//        try {
-//            if (rivl != null) {
+        try {
+//            if (si != null) {
 //                rivl.close();
 //            }
-//            if (ri != null) {
-//                ri.close();
-//            }
-//        }
-//        catch (WdkModelException exp) {
-//            logger.severe(exp.getMessage());
-//        }
+            if (ri != null) {
+                ri.close();
+            }
+        }
+        catch (WdkModelException exp) {
+            logger.severe(exp.getMessage());
+        }
         
 		return;
 	}

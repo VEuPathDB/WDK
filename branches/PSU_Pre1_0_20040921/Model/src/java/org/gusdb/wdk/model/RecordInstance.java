@@ -1,8 +1,10 @@
 package org.gusdb.wdk.model;
 
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 
 public class RecordInstance {
     
@@ -10,6 +12,7 @@ public class RecordInstance {
     Record record;
     HashMap attributesResultSetsMap;
     SummaryInstance summaryInstance;
+    List openResultLists = new ArrayList();
 
     public RecordInstance(Record record) {
     this.record = record;
@@ -61,19 +64,21 @@ public class RecordInstance {
     }
 
     public ResultList getTableValue(String tableName) throws WdkModelException {
-    Query query = record.getTableQuery(tableName);
-    QueryInstance instance = query.makeInstance();
-    instance.setIsCacheable(false);
-    HashMap paramHash = new HashMap();
-    if (primaryKey == null) 
-        throw new WdkModelException("primaryKey is null");
-    paramHash.put("primaryKey", primaryKey);
-    try {
-        instance.setValues(paramHash);
-    } catch (WdkUserException e) {
-        throw new WdkModelException(e);
-    }
-    return instance.getResult();
+        Query query = record.getTableQuery(tableName);
+        QueryInstance instance = query.makeInstance();
+        instance.setIsCacheable(false);
+        HashMap paramHash = new HashMap();
+        if (primaryKey == null) 
+            throw new WdkModelException("primaryKey is null");
+        paramHash.put("primaryKey", primaryKey);
+        try {
+            instance.setValues(paramHash);
+        } catch (WdkUserException e) {
+            throw new WdkModelException(e);
+        }
+        ResultList ret = instance.getResult();
+        openResultLists.add(ret);
+        return ret;
     }
 
     public String print() throws WdkModelException {
@@ -104,7 +109,12 @@ public class RecordInstance {
     
     }
 
-    
+    public void close() throws WdkModelException {
+        for (Iterator it = openResultLists.iterator(); it.hasNext();) {
+            ResultList rl = (ResultList) it.next();
+            rl.close();
+        }
+    }
 
 
     ///////////////////////////////////////////////////////////////////////////////////////
@@ -133,7 +143,8 @@ public class RecordInstance {
         summaryInstance.setMultiMode(instance);
         ResultList rl = instance.getResult();
         summaryInstance.setQueryResult(rl);
-        rl.close();
+        openResultLists.add(rl);
+        //rl.close();
     }   
     else{ //do it all myself
         HashMap paramHash = new HashMap();
@@ -161,7 +172,8 @@ public class RecordInstance {
         String msg = "Attributes query '" + query.getFullName() + "' in Record '" + record.getFullName() + "' returns more than one row";
         throw new WdkModelException(msg);
         }
-        rl.close();
+        openResultLists.add(rl);
+        //rl.close();
     }
     }
 

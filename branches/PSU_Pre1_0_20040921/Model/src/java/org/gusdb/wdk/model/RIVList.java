@@ -97,7 +97,16 @@ public class RIVList implements Iterator {
     }
 
     private boolean summaryInstanceHasNext() {
-        return si.hasMoreRecordInstances();
+        boolean next = si.hasMoreRecordInstances();
+        if (!next) {
+            try {
+                si.close();
+            }
+            catch (WdkModelException exp) {
+                logger.severe(exp.getMessage());
+            }
+        }
+        return next;
     }
     
     private boolean resultListHasNext() {
@@ -106,6 +115,12 @@ public class RIVList implements Iterator {
             return rl.next();
         }
         catch (WdkModelException exp) {
+            try {
+                rl.close();
+            }
+            catch (WdkModelException exp1) {
+                logger.severe(exp.getMessage());
+            }
             logger.severe(exp.getMessage());
         }
         return false;
