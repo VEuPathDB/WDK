@@ -44,7 +44,7 @@ public class ViewFullRecordServlet extends HttpServlet {
       
       RecordInstance recordInstance = (RecordInstance) req.getAttribute("ri");
       
-      String recordName = (String) req.getAttribute("recordName");
+      String recordName = (String) req.getAttribute("recordClassName");
       if (recordName != null) {
           recordReference = recordName;
           primaryKey = (String) req.getAttribute("primaryKey");

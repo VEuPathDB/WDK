@@ -63,8 +63,8 @@ public class InteractiveRecordListServlet extends HttpServlet {
 	    int pageSize = DEFAULT_PAGE_SIZE;
 	    
 		String fromPage = req.getParameter("fromPage");
-		String summarySetName = req.getParameter("summarySetName");
-		String summaryName = req.getParameter("summaryName");
+		String questionSetName = req.getParameter("questionSetName");
+		String questionName = req.getParameter("questionName");
 		String formName = req.getParameter("formName");
 		String defaultChoice = req.getParameter("defaultChoice");
         String initialExpansion = req.getParameter("initialExpansion");
@@ -76,12 +76,12 @@ public class InteractiveRecordListServlet extends HttpServlet {
 			msg("fromPage shouldn't be null. Internal error", res);
 			return;
 		}
-		if (summarySetName == null) {
-			msg("summarySetName shouldn't be null. Internal error", res);
+		if (questionSetName == null) {
+			msg("questionSetName shouldn't be null. Internal error", res);
 			return;
 		}
-		if (summaryName == null) {
-			msg("Qualified summaryName shouldn't be null. Internal error", res);
+		if (questionName == null) {
+			msg("Qualified questionName shouldn't be null. Internal error", res);
 			return;
 		}
 		if (formName == null) {
@@ -93,14 +93,14 @@ public class InteractiveRecordListServlet extends HttpServlet {
 			return;
 		}
 		
-        if (summaryName.equals(defaultChoice)) {
+        if (questionName.equals(defaultChoice)) {
             req.setAttribute(formName+".error.query.noQuery", "Please choose a query");
             redirect(req, res, fromPage);
             return;
         }
         
-        if (summaryName.indexOf('.')==-1) {
-            msg("queryRecord name isn't qualified: "+summaryName, res);
+        if (questionName.indexOf('.')==-1) {
+            msg("queryRecord name isn't qualified: "+questionName, res);
             return;
 		}
 		
@@ -134,18 +134,18 @@ public class InteractiveRecordListServlet extends HttpServlet {
 		// We have a queryRecord name
         WdkModel wm = (WdkModel) getServletContext().getAttribute("wdk.wdkModel");
         
-        Summary summary = wm.getSummary(summaryName);
-        Query sq = summary.getQuery();
+        Summary question = wm.getSummary(questionName);
+        Query sq = question.getQuery();
 
         if (sq == null) {
-            msg("sq is null for "+summaryName, res);
+            msg("sq is null for "+questionName, res);
             return;
         }
 		QueryInstance sqii = sq.makeInstance();
 		Map paramValues = new HashMap();
         SummaryInstance si = null;
-		req.setAttribute(formName+".summary", summary);
-        String formQueryPrefix = formName+"."+summaryName+".";
+		req.setAttribute(formName+".question", question);
+        String formQueryPrefix = formName+"."+questionName+".";
         System.err.println("formQueryPrefix is called: "+formQueryPrefix);
         boolean problem = false;
         if ("true".equals(initialExpansion)) {
@@ -165,7 +165,7 @@ public class InteractiveRecordListServlet extends HttpServlet {
 
             try {
                 logger.finest("About to try and set param values");
-                si = summary.makeSummaryInstance(paramValues, start, end);
+                si = question.makeSummaryInstance(paramValues, start, end);
             }
             catch (WdkUserException exp) {
                 Map errors = exp.getBooBoos();
@@ -175,7 +175,7 @@ public class InteractiveRecordListServlet extends HttpServlet {
                     String name = param.getName();
                     // FIXME Magic number - struct?
                     String errorMsg = ((String[]) errors.get(param))[1];
-                    req.setAttribute(formName+".error."+summaryName+"."+name, errorMsg);
+                    req.setAttribute(formName+".error."+questionName+"."+name, errorMsg);
                     // TODO Cope with correct values
                 }
             }           
@@ -284,7 +284,7 @@ public class InteractiveRecordListServlet extends HttpServlet {
 //            uri.append(start);
 //            logger.severe("uri after is "+uri.toString());
             
-            String renderer = getRendererForRecord(summary.getRecord());
+            String renderer = getRendererForRecord(question.getRecord());
             
             rivl = new RIVList(si);
             req.setAttribute("rivl", rivl);
@@ -294,7 +294,7 @@ public class InteractiveRecordListServlet extends HttpServlet {
             req.setAttribute("wdk_paging_start", new Integer(start));
             req.setAttribute("wdk_paging_end", new Integer(end));
             req.setAttribute("wdk_paging_url", uriString);
-            req.setAttribute("wdk_record_url", req.getContextPath()+"/ViewFullRecord?recordReference="+summary.getRecord().getFullName());
+            req.setAttribute("wdk_record_url", req.getContextPath()+"/ViewFullRecord?recordReference="+question.getRecord().getFullName());
             req.setAttribute("wdk_paging_params", editedParamNames);
             req.setAttribute("renderer", renderer);
         }
