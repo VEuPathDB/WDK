@@ -15,16 +15,15 @@ import org.gusdb.gus.wdk.view.GlobalRepository;
 public class DisplayQuery extends SimpleTagSupport {
     
     private SimpleQueryInstanceI queryInstance;
-    private String querySet = "RNASimpleQueries";
+    private String querySet = "RNASimpleQueries"; // FIXME - Should get from QueryHolder
     
     public void setQueryInstance(SimpleQueryInstanceI queryInstance) {
 	this.queryInstance = queryInstance;
     }
 
-    public void setQuerySet(String querySet) {
-	this.querySet = querySet;
-    }
-
+// TODO Should it pick up other names through NullQuery???
+    
+    
     public void doTag() throws IOException, JspException {
 	JspWriter out = getJspContext().getOut();
 
@@ -39,7 +38,7 @@ public class DisplayQuery extends SimpleTagSupport {
 	    out.println("</select>");
 	    return;
 	} else {
-	    // handle query
+		out.println("<h4>"+queryInstance.getQuery().getDisplayName()+"</h4>");
 	}
 	if (getJspBody() != null) {
 	    getJspBody().invoke(null);
