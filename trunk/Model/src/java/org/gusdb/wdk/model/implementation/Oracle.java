@@ -139,7 +139,7 @@ public class Oracle implements RDBMSPlatformI {
         PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(connectionFactory,connectionPool,null,null,false,true);
         
         PoolingDataSource dataSource = new PoolingDataSource(connectionPool);
-	System.err.println("max wait: " + maxWait);
+
 	connectionPool.setMaxWait(maxWait.intValue());
 	connectionPool.setMaxIdle(maxIdle.intValue());
 	connectionPool.setMinIdle(minIdle.intValue());
