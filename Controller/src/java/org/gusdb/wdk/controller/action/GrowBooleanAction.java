@@ -31,7 +31,6 @@ public class GrowBooleanAction extends StartBooleanAction{
 				 HttpServletResponse response) throws Exception {
 
 	BooleanQuestionForm bqf = (BooleanQuestionForm)form;
-	System.err.println("Grow Boolean Action: starting method");
 
 	String  submitAction = request.getParameter("process_boolean_question");
 	int clickedLeafId = parseLeafId(submitAction);
@@ -40,7 +39,7 @@ public class GrowBooleanAction extends StartBooleanAction{
 
 	String operation = bqf.getNextBooleanOperation(clickedLeafId);
 	String nextQuestionName = bqf.getNextQuestionOperand(clickedLeafId);
-	System.err.println("new question to add is " + nextQuestionName);
+
 	QuestionBean nextQuestion = getQuestionFromModel(nextQuestionName);
 	BooleanQuestionLeafBean newLeaf = nextQuestion.makeBooleanQuestionLeaf();
 	newLeaf.setLeafId(bqf.getNextId());
@@ -59,7 +58,6 @@ public class GrowBooleanAction extends StartBooleanAction{
 	    throw new RuntimeException("expect BooleanQuestion<Leaf|Node>Bean but got: " + currentRoot);
 	}
 
-	System.err.println("Current Root after grow: " + currentRoot);
 	//add params from incoming leaf to form
 	addNewQuestionParams(bqf, newLeaf);
 
@@ -88,7 +86,7 @@ public class GrowBooleanAction extends StartBooleanAction{
 	int dotI = fullQuestionName.indexOf('.');
 	String qSetName = fullQuestionName.substring(0, dotI);
 	String qName = fullQuestionName.substring(dotI+1, fullQuestionName.length());
-	System.err.println("getQuestionFromModel: getting qset " + qSetName + " question " + qName);
+
 	WdkModelBean wdkModel = (WdkModelBean)getServlet().getServletContext().getAttribute(CConstants.WDK_MODEL_KEY);
 	if (wdkModel == null){
 	    throw new RuntimeException("couldn't find model by key: " + CConstants.WDK_MODEL_KEY);

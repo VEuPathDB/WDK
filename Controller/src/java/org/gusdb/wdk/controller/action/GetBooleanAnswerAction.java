@@ -38,10 +38,10 @@ public class GetBooleanAnswerAction extends ShowSummaryAction {
 				 ActionForm form,
 				 HttpServletRequest request,
 				 HttpServletResponse response) throws Exception {
-	System.err.println("GetBooleanAnswerAction: started");
+
 
 	BooleanQuestionForm bqf = (BooleanQuestionForm)form;
-	System.err.println("BQF params: properties are " + bqf.getMyProps().toString());
+
 	BooleanQuestionNodeBean root = (BooleanQuestionNodeBean)request.getSession().getAttribute(CConstants.CURRENT_BOOLEAN_ROOT_KEY);
 	Vector allNodes = new Vector();
         allNodes = root.getAllNodes(allNodes);
@@ -55,7 +55,7 @@ public class GetBooleanAnswerAction extends ShowSummaryAction {
 	    }
 	    else { //node bean
 		BooleanQuestionNodeBean nextRealNode = (BooleanQuestionNodeBean)nextNode;
-		processNode(nextRealNode);
+		processNode(bqf, nextRealNode);
 	    }
 	}
 	root.setAllValues();
@@ -69,10 +69,12 @@ public class GetBooleanAnswerAction extends ShowSummaryAction {
     }
 
 
-    private void processNode(BooleanQuestionNodeBean node){
+    private void processNode(BooleanQuestionForm bqf, BooleanQuestionNodeBean node){
 	Hashtable values = new Hashtable();
-	values.put(BooleanQuery.OPERATION_PARAM_NAME, node.getOperation());
-	System.err.println("process node: created values: " + values.toString());
+	String opInternalName = node.getOperation();
+	
+	//	String value = (String)bqf.getMyProps().get(opDisplayName);
+	values.put(BooleanQuery.OPERATION_PARAM_NAME, opInternalName);
 	node.setValues(values);
     }
 
@@ -89,7 +91,7 @@ public class GetBooleanAnswerAction extends ShowSummaryAction {
 	    String nextValue = (String)bqf.getMyProps().get(formParamName);
 	    values.put(nextParam.getName(), nextValue);
 	}
-	System.err.println("process leaf, leafId " + leafId + ": here is the hashtable: " + values.toString());
+
 	leaf.setValues(values);
     }
 
