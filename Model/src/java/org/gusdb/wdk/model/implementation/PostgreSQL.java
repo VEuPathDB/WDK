@@ -1,8 +1,9 @@
 package org.gusdb.wdk.model.implementation;
 
-import org.gusdb.wdk.controller.WdkLogManager;
+
 import org.gusdb.wdk.model.RDBMSPlatformI;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkLogManager;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;

@@ -1,12 +1,13 @@
 package org.gusdb.wdk.model.implementation;
 
-import org.gusdb.wdk.controller.WdkLogManager;
+
 import org.gusdb.wdk.model.NotBooleanOperandException;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.QueryInstance;
 import org.gusdb.wdk.model.ResultList;
 import org.gusdb.wdk.model.ResultFactory;
 import org.gusdb.wdk.model.RDBMSPlatformI;
+import org.gusdb.wdk.model.WdkLogManager;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
