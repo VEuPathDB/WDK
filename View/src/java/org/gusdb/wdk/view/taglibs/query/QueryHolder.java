@@ -3,8 +3,8 @@ package org.gusdb.gus.wdk.view.taglibs.query;
 import org.gusdb.gus.wdk.model.Query;
 import org.gusdb.gus.wdk.model.QueryInstance;
 import org.gusdb.gus.wdk.model.QuerySet;
+import org.gusdb.gus.wdk.model.WdkModel;
 import org.gusdb.gus.wdk.model.implementation.NullQueryInstance;
-import org.gusdb.gus.wdk.view.GlobalRepository;
 
 import java.io.*;
 import java.util.Enumeration;
@@ -17,42 +17,42 @@ import javax.servlet.jsp.tagext.*;
  */ 
 public class QueryHolder extends SimpleTagSupport {
     
-    private boolean bool;
-    private String name;
-    private String var;
-    private String initQuery;
-    private String platformClass;
-    private String initCountString;
-    private int initCount;
-    private String querySet;
-    
-    public void setBoolean(boolean bool) {
-	this.bool = bool;
-    }
-
-    public boolean isBoolean() {
-	return bool;
-    }
-    
-    public void setName(String name) {
-	this.name = name;
-    }
-
-    public String getName() {
-	return name;
-    }
-    
-    public void setVar(String var) {
-	this.var = var;
-    }
-
-    public String getVar() {
-	return var;
-    }
-    
-    public void setInitQuery(String initQuery) {
-	this.initQuery = initQuery;
-    }
+	private boolean bool;
+	private String name;
+	private String var;
+	private String initQuery;
+	private String platformClass;
+	private String initCountString;
+	private int initCount;
+	private String querySet;
+	
+	public void setBoolean(boolean bool) {
+		this.bool = bool;
+	}
+	
+	public boolean isBoolean() {
+		return bool;
+	}
+	
+	public void setName(String name) {
+		this.name = name;
+	}
+	
+	public String getName() {
+	    return name;
+	}
+	
+	public void setVar(String var) {
+		this.var = var;
+	}
+	
+	public String getVar() {
+		return var;
+	}
+	
+	public void setInitQuery(String initQuery) {
+		this.initQuery = initQuery;
+	}
 
     public String getInitQuery() {
         return initQuery;
@@ -91,7 +91,8 @@ public class QueryHolder extends SimpleTagSupport {
             sqii = NullQueryInstance.INSTANCE;
 
             if ( initQuery != null) {
-            	QuerySet sqs = GlobalRepository.getInstance().getQuerySet(querySet);
+                WdkModel wm = (WdkModel) getJspContext().getAttribute("wdk.wdkQueryModel", PageContext.APPLICATION_SCOPE);
+                QuerySet sqs = wm.getQuerySet(querySet);
             	Query sq = sqs.getQuery(initQuery);
             	sqii = sq.makeInstance();
             }

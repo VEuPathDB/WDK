@@ -7,9 +7,8 @@ import org.gusdb.gus.wdk.model.QueryInstance;
 import org.gusdb.gus.wdk.model.QueryParamsException;
 import org.gusdb.gus.wdk.model.QuerySet;
 import org.gusdb.gus.wdk.model.ResultList;
+import org.gusdb.gus.wdk.model.WdkModel;
 import org.gusdb.gus.wdk.model.implementation.SqlQueryInstance;
-
-import org.gusdb.gus.wdk.view.GlobalRepository;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -75,7 +74,8 @@ public class QueryTagsTesterServlet extends HttpServlet {
 		}
 		
 		// We have a query name
-		QuerySet sqs = GlobalRepository.getInstance().getQuerySet(querySet);
+		QuerySet sqs = ((WdkModel) getServletContext().getAttribute("wdk.wdkQueryModel")).getQuerySet(querySet);
+            
 		Query sq = sqs.getQuery(queryName);
         if (sq == null) {
             msg("sq is null for "+querySet+"."+queryName, res);

@@ -10,8 +10,8 @@ import javax.servlet.jsp.tagext.SimpleTagSupport;
 import org.gusdb.gus.wdk.model.Query;
 import org.gusdb.gus.wdk.model.QueryInstance;
 import org.gusdb.gus.wdk.model.QuerySet;
+import org.gusdb.gus.wdk.model.WdkModel;
 import org.gusdb.gus.wdk.model.implementation.NullQueryInstance;
-import org.gusdb.gus.wdk.view.GlobalRepository;
 
 /**
  * Custom tag which displays a Query to the user
@@ -33,7 +33,8 @@ public class DisplayQuery extends SimpleTagSupport {
     	JspWriter out = getJspContext().getOut();
 
     	if ( queryInstance instanceof NullQueryInstance) {
-    		QuerySet sqs = GlobalRepository.getInstance().getQuerySet(querySet);
+            WdkModel wm = (WdkModel) getJspContext().getAttribute("wdk.wdkQueryModel", PageContext.APPLICATION_SCOPE);
+    		QuerySet sqs = wm.getQuerySet(querySet);
     		Query[] sq = sqs.getQueries();
     		out.println("<b>Queries:</b> <select name=\"queryName\">");
     		out.println("<option value=\""+DEFAULT_OPTION+"\">"+DEFAULT_OPTION);
