@@ -34,13 +34,19 @@ public class ModelMaker {
   File schemaFile;
   WdkModel wdkModel;
 
-  // CONSTRUCTOR
+  // CONSTRUCTORS
   /**
-   * SimpleModel bean constructor
-   *
+   * Simple bean constructor
    */
   public ModelMaker () {}
 
+  /**
+   * Constructor with all necessary files
+   * @param modelXmlFile        The XML model definition file
+   * @param modelPropertyFile   The model properties file
+   * @param modelConfigXmlFile  The model data source configuration file
+   * @param schemaFile          The WDK relaxNG schema file
+   */
   public ModelMaker (String modelXmlFile, 
 		     String modelPropertyFile,
 		     String modelConfigXmlFile,
@@ -90,10 +96,28 @@ public class ModelMaker {
     return this.schemaFile;
   }
 
+  /**
+   * Instance method for retrieving the currently 
+   * instantiated <code>WdkModel</code>
+   * 
+   * @return     Returns a <code>WdkModel</code> object 
+   *
+   */
   public WdkModel getModel() {
     return this.wdkModel;
   }
 
+  /**
+   * Static method for creating a WdkModel. Requires that all
+   * WdkModel configuration files are given as arguments
+
+   * @param modelXmlFile    The XML model definition file
+   * @param modelPropFile   The model properties file
+   * @param modelCfgFile    The model data source configuration file
+   * @param schemaFile      The WDK relaxNG schema file
+   * @return                Returns a <code>WdkModel</code> object 
+   *
+   */
   public static WdkModel makeModelInstance(File modelXmlFile, 
 					   File modelPropFile, 
 					   File modelCfgFile, 
