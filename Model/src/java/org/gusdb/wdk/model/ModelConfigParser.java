@@ -1,16 +1,21 @@
 package org.gusdb.gus.wdk.model;
 
 import java.io.File;
+import java.net.URL;
 
 import org.apache.commons.digester.Digester;
 
 public class ModelConfigParser {
 
     public static ModelConfig parseXmlFile(File modelConfigXmlFile) throws java.io.IOException, org.xml.sax.SAXException {
-	Digester digester = configureDigester();
-	return (ModelConfig)digester.parse(modelConfigXmlFile);
+        Digester digester = configureDigester();
+        return (ModelConfig)digester.parse(modelConfigXmlFile);
     }
-
+    
+    public static ModelConfig parseXmlFile(URL modelConfigXmlURL) throws java.io.IOException, org.xml.sax.SAXException {
+        Digester digester = configureDigester();
+        return (ModelConfig)digester.parse(modelConfigXmlURL.openStream());
+    }
     static Digester configureDigester() {
 
 	Digester digester = new Digester();
