@@ -1,8 +1,8 @@
 package org.gusdb.gus.wdk.view;
 
-import org.gusdb.gus.wdk.model.QueryParamsException;
 import org.gusdb.gus.wdk.model.Record;
 import org.gusdb.gus.wdk.model.RecordInstance;
+import org.gusdb.gus.wdk.model.WdkModelException;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -46,10 +46,8 @@ public class RecordInstanceView implements Map {
                 Object value = null;
                 try {
                     value = ri.getFieldValue(key);
-                } catch (QueryParamsException exp) {
-                    exp.printStackTrace();
                 }
-                catch (Exception exp) {
+                catch (WdkModelException exp) {
                     exp.printStackTrace();
                 }
                 map.put(key, value);
