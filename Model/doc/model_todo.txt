@@ -10,13 +10,18 @@ NEW
 
  - wdkQuery: if -querySet or -query omitted, list the available query sets and queries
 
+ - how do we define complex parameter value constraints in the XML?   There are these
+   types of constraints:
+     - simple (eg regex, min, max) which are easy in XML
+     - logic (require a programming language, eg, length must be even number
+     - cross-param constraints (eg, width < length)
+
 
 
 SORTED AND PRIORITIZED
 
 General
 
- - exceptions.  define two classes. QueryParamException, ModelDefinitionException.
  - logging
 
  - error handling during parse of model xml file
@@ -36,6 +41,7 @@ General
 
  - make test suite
 
+ - do we need a ModelDefinitionException?
 
 UserQueries
 
@@ -63,7 +69,7 @@ UserQueries
 
  - process queries
 
- - define page queries as a set of modular queries (a la report maker)
+ - define page queries as a set of modular queries (a la report maker).  and, instead of returning result set, return abstract result with accessor methods that trigger the queries.
 
 
 
