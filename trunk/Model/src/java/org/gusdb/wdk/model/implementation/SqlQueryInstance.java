@@ -37,6 +37,7 @@ public class SqlQueryInstance extends QueryInstance  {
     }
 
     protected String getSql() throws WdkModelException {
+
         SqlQuery q = (SqlQuery)query;
         String sql = null;
         if (inMultiMode){
@@ -47,11 +48,13 @@ public class SqlQueryInstance extends QueryInstance  {
             q.instantiateSql(query.getInternalParamValues(values));
         if (inMultiMode){
             sql = q.addMultiModeConstraints(multiModeResultTableName, pkToJoinWith,
-                    startId, endId, initSql);
+					    startId, endId, initSql);
         } else {
             sql = initSql;
         }
+	//	System.err.println("SqlQueryInstance.getSql:  returning " + sql + " to run query " + query.getName());
         return sql;
+
     }
 
     /**
@@ -66,7 +69,8 @@ public class SqlQueryInstance extends QueryInstance  {
     
 
     public ResultList getResult() throws WdkModelException {
-        SqlQuery q = (SqlQuery)query;
+
+	SqlQuery q = (SqlQuery)query;
         ResultList rl = q.getResultFactory().getResult(this);
         rl.checkQueryColumns(q, true);
         return rl;
@@ -77,7 +81,6 @@ public class SqlQueryInstance extends QueryInstance  {
     }
 
     protected ResultList getNonpersistentResult() throws WdkModelException {
-
         ResultSet resultSet = null;
         RDBMSPlatformI platform = ((SqlQuery)query).getRDBMSPlatform();
 

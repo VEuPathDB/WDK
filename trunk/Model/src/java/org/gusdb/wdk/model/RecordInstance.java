@@ -79,8 +79,8 @@ public class RecordInstance {
 	StringBuffer buf =
 	    new StringBuffer(record.getType() + " " + record.getIdPrefix() + primaryKey).append( newline );
 
-
-    Iterator attributeNamesIt = record.getNonTextAttributeNames().iterator();
+	
+	Iterator attributeNamesIt = record.getNonTextAttributeNames().iterator();
 	while (attributeNamesIt.hasNext()) {
 	    String attributeName = (String) attributeNamesIt.next();
 	    buf.append(attributeName + ":   " + getAttributeValue(attributeName)).append( newline );
@@ -96,6 +96,7 @@ public class RecordInstance {
 	    buf.append("Table " + tableName).append( newline );
 	    ResultList resultList = getTableValue(tableName);
 	    resultList.write(buf);
+	    
 	    buf.append(newline);
 	}
 

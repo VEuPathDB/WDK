@@ -1,7 +1,9 @@
 package org.gusdb.gus.wdk.model;
 
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.io.File;
 
 import org.w3c.dom.Document;
 
@@ -18,7 +20,7 @@ public class WdkModel {
     String name;
     ResultFactory resultFactory;
     private Document document;
-
+    public static final WdkModel INSTANCE = new WdkModel();
     
     /**
      * @param initRecordList
@@ -206,17 +208,43 @@ public class WdkModel {
     /**
      * Set whatever resources the model needs.  It will pass them to its kids
      */
-    public void setResources(ResultFactory rf, RDBMSPlatformI platform) throws WdkModelException {
+    public void setResources() throws WdkModelException {
 
-        this.platform = platform;
-        this.resultFactory = rf;
-        
         Iterator modelSets = allModelSets.values().iterator();
         while (modelSets.hasNext()) {
             ModelSetI modelSet = (ModelSetI)modelSets.next();
             modelSet.setResources(this);
         }
     }
+
+    public void configure(URL modelConfigXmlFileURL) throws Exception{
+	
+	ModelConfig modelConfig = 
+	    ModelConfigParser.parseXmlFile(modelConfigXmlFileURL);
+	String connectionUrl = modelConfig.getConnectionUrl();
+	String login = modelConfig.getLogin();
+	String password = modelConfig.getPassword();
+	String instanceTable = modelConfig.getQueryInstanceTable();
+	String platformClass = modelConfig.getPlatformClass();
+	Integer maxIdle = modelConfig.getMaxIdle();
+	Integer minIdle = modelConfig.getMinIdle();
+	Integer maxWait = modelConfig.getMaxWait();
+	Integer maxActive = modelConfig.getMaxActive();
+	Integer initialSize = modelConfig.getInitialSize();
+	
+	RDBMSPlatformI platform = 
+	    (RDBMSPlatformI)Class.forName(platformClass).newInstance();
+
+	platform.init(connectionUrl, login, password, minIdle, maxIdle, maxWait, maxActive, initialSize);
+	ResultFactory resultFactory = new ResultFactory(platform, login, instanceTable);
+	this.platform = platform;
+	this.resultFactory = resultFactory;
+    }
+
+    public void configure(File modelConfigXmlFile) throws Exception{
+	configure(modelConfigXmlFile.toURL());
+    }
+
 
     public RDBMSPlatformI getRDBMSPlatform() {
         return platform;

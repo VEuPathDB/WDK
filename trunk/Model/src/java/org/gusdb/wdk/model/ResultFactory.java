@@ -35,7 +35,7 @@ import org.apache.commons.pool.impl.GenericObjectPool;
    created), if any of these applies (in priority order):
 
      - the query is cacheable
-          - the "cached" bit it set
+          - the "cached" bit is set
           - dispose of row/resultTable when whole cache is dropped (new data)
 
      - the query will be in the history (even if not cacheable, to provide a 
@@ -44,12 +44,11 @@ import org.apache.commons.pool.impl.GenericObjectPool;
 
      - the query is being used in a boolean operation
           - this depends on the query being in the history
-  
 
-  A row in QueryInstance is, by definition, persistent.  If its "cacheable"
-  flag is on, its cacheable.  If not, it is still available to the history.
+   A row in QueryInstance is, by definition, persistent.  If its "cacheable"
+   flag is on, its cacheable.  If not, it is still available to the history.
 
-  We can think of "cacheability" as "shared for all users."  
+   We can think of "cacheability" as "shared for all users."  
  */
 
 
@@ -57,15 +56,13 @@ public class ResultFactory {
 
     private static final Logger logger = WdkLogManager.getLogger("org.gusdb.gus.wdk.model.ResultFactory");
     
-    DataSource dataSource;
     RDBMSPlatformI platform;
     String schemaName;
     String instanceTableName;
     String instanceTableFullName;
 
-    public ResultFactory(DataSource dataSource, RDBMSPlatformI platform,
+    public ResultFactory(RDBMSPlatformI platform,
 			 String schemaName, String instanceTableName) {
-	this.dataSource = dataSource;
 	this.platform = platform;
 	this.schemaName = schemaName;
 	this.instanceTableName = instanceTableName;
@@ -99,6 +96,7 @@ public class ResultFactory {
 	// Format sql to create table
 	StringBuffer sqlb = new StringBuffer();
 	String tblName = schemaName + "." + instanceTableName;
+
 	sqlb.append("create table " + tblName + 
 		    " (query_instance_id number(12) not null, query_name varchar2(100) not null, cached number(1) not null,");
 	
@@ -113,7 +111,7 @@ public class ResultFactory {
 			   + " with sql:" + newline + sqlb.toString()
 			   + newline);
 	try {
-	    SqlUtils.execute(dataSource, sqlb.toString());
+	    SqlUtils.execute(platform.getDataSource(), sqlb.toString());
 	    logger.fine("Done" + newline);
 
 	    // Create sequence 
@@ -135,7 +133,6 @@ public class ResultFactory {
      * names of the result tables to a "dropThese" table and delete
      * the associated rows in the cache table both within one transaction; then
      * separately, as a post-process, drop the tables in the dropThese table.
-     * 
      */    
     public void resetCache() throws WdkModelException {
 
@@ -145,7 +142,7 @@ public class ResultFactory {
 	s.append("select result_table from " + instanceTableFullName);
 	String tables[] = null; 
 	try {
-	    tables = SqlUtils.runStringArrayQuery(dataSource, s.toString());
+	    tables = SqlUtils.runStringArrayQuery(platform.getDataSource(), s.toString());
 	} catch (SQLException e) {
 	    throw new WdkModelException(e);
 	}
@@ -164,7 +161,7 @@ public class ResultFactory {
 	System.err.println("Deleting all rows from " + instanceTableFullName);
 
 	try {
-	    SqlUtils.execute(dataSource, "delete from " + instanceTableFullName);
+	    SqlUtils.execute(platform.getDataSource(), "delete from " + instanceTableFullName);
 	} catch (SQLException e) {
 	    throw new WdkModelException(e);
 	}
@@ -204,14 +201,12 @@ public class ResultFactory {
 	sql.append(" where query_instance_id = " + queryInstanceId.toString());
 	int numRows = 0;
 	try {
-	    numRows = SqlUtils.executeUpdate(dataSource, sql.toString());
+	    numRows = SqlUtils.executeUpdate(platform.getDataSource(), sql.toString());
 	} catch (SQLException e) {
 	    throw new WdkModelException(e);
 	}
-
 	// write result into result table
 	instance.writeResultToTable(resultTableName, this);
-
 	// update row in QueryInstance table with final timestamp
 	finishQueryInstance(instance);
 
@@ -246,7 +241,7 @@ public class ResultFactory {
 	sqlb.append(instanceWhereClause(instance));
 	String resultTableName = null;
 	try {
-	    resultTableName = SqlUtils.runStringQuery(dataSource, sqlb.toString());
+	    resultTableName = SqlUtils.runStringQuery(platform.getDataSource(), sqlb.toString());
 	} catch (SQLException e) {
 	    throw new WdkModelException(e);
 	}
@@ -256,9 +251,7 @@ public class ResultFactory {
 	} else {
 	    resultTableFullName = 
 		platform.getTableFullName(schemaName,resultTableName);    
-
 	}
-
 	return resultTableFullName;
     }
 
@@ -326,7 +319,7 @@ public class ResultFactory {
 	
 	int numRows = 0;
 	try {
-	    numRows = SqlUtils.executeUpdate(dataSource,sqlb.toString());
+	    numRows = SqlUtils.executeUpdate(platform.getDataSource(),sqlb.toString());
 	} catch (SQLException e) {
 	    throw new WdkModelException(e);
 	}
@@ -377,7 +370,7 @@ public class ResultFactory {
 	sqlb.append(instanceWhereClause(instance));
 	boolean ok = false;
 	try {
-	    ok = SqlUtils.executeUpdate(dataSource, sqlb.toString()) == 1;
+	    ok = SqlUtils.executeUpdate(platform.getDataSource(), sqlb.toString()) == 1;
 	} catch (SQLException e) {
 	    throw new WdkModelException(e);
 	}
@@ -418,7 +411,7 @@ public class ResultFactory {
 
 	String tables[] = null;
 	try {
-	    tables = SqlUtils.runStringArrayQuery(dataSource, s.toString());
+	    tables = SqlUtils.runStringArrayQuery(platform.getDataSource(), s.toString());
 	} catch (SQLException e) {
 	    throw new WdkModelException(e);
 	}
@@ -430,7 +423,7 @@ public class ResultFactory {
 
 	ResultSet rs = null;
 	try {
-	    rs = SqlUtils.getResultSet(dataSource, sql);
+	    rs = SqlUtils.getResultSet(platform.getDataSource(), sql);
 	} catch (SQLException e) {
 	    throw new WdkModelException(e);
 	}
@@ -453,7 +446,7 @@ public class ResultFactory {
 		    
 	    try {
             logger.finest("About to try and execute:" +sqlb.toString());
-	        queryInstanceId = SqlUtils.runIntegerQuery(dataSource, sqlb.toString());
+	        queryInstanceId = SqlUtils.runIntegerQuery(platform.getDataSource(), sqlb.toString());
 	    } catch (SQLException e) {
             logger.severe("Got an SQL exception");
 	        throw new WdkModelException(e);
@@ -464,7 +457,7 @@ public class ResultFactory {
 	        queryInstanceId = insertQueryInstance(instance);
 	    }	    
 	}
-    logger.finest("Returning a queryInstanceId of "+queryInstanceId);
+	logger.finest("Returning a queryInstanceId of "+queryInstanceId);
 	return queryInstanceId;
 
     }
@@ -497,15 +490,13 @@ public class ResultFactory {
 	    Integer maxQueryParams = modelConfig.getMaxQueryParams();
 	    String instanceTable = modelConfig.getQueryInstanceTable();
 	    String platformClass = modelConfig.getPlatformClass();
-        
+	    
 	    RDBMSPlatformI platform = 
 		(RDBMSPlatformI)Class.forName(platformClass).newInstance();
+	    platform.init(connectionUrl, login, password);
 
-        DataSource dataSource = 
-            platform.createDataSource(connectionUrl, login, password, -1);
-        
 	    ResultFactory factory =
-		new ResultFactory(dataSource, platform, login, instanceTable);
+		new ResultFactory(platform, login, instanceTable);
 
 	    if (newCache) factory.createCache(maxQueryParams.intValue());
 	    else if (resetCache) factory.resetCache();
@@ -588,44 +579,5 @@ public class ResultFactory {
 	HelpFormatter formatter = new HelpFormatter();
 	formatter.printHelp(75, cmdlineSyntax, header, options, footer);
 	System.exit(1);
-    }
-
-    static DataSource setupDataSource(String connectURI, String login, 
-				      String password)  {
-
-	//	DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
-
-        //
-        // First, we'll need a ObjectPool that serves as the
-        // actual pool of connections.
-        //
-        // We'll use a GenericObjectPool instance, although
-        // any ObjectPool implementation will suffice.
-        //
-        ObjectPool connectionPool = new GenericObjectPool(null);
-
-        //
-        // Next, we'll create a ConnectionFactory that the
-        // pool will use to create Connections.
-        // We'll use the DriverManagerConnectionFactory,
-        // using the connect string passed in the command line
-        // arguments.
-        //
-        ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(connectURI, login, password);
-
-        //
-        // Now we'll create the PoolableConnectionFactory, which wraps
-        // the "real" Connections created by the ConnectionFactory with
-        // the classes that implement the pooling functionality.
-        //
-        PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(connectionFactory,connectionPool,null,null,false,true);
-
-        //
-        // Finally, we create the PoolingDriver itself,
-        // passing in the object pool we created.
-        //
-        PoolingDataSource dataSource = new PoolingDataSource(connectionPool);
-
-        return dataSource;
     }
 }

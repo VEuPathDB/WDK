@@ -14,11 +14,6 @@ import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.dbcp.ConnectionFactory;
-import org.apache.commons.dbcp.DriverManagerConnectionFactory;
-import org.apache.commons.dbcp.PoolableConnectionFactory;
-import org.apache.commons.dbcp.PoolingDataSource;
-import org.apache.commons.pool.impl.GenericObjectPool;
 
 public class SqlUtils {
     
@@ -26,9 +21,10 @@ public class SqlUtils {
     private static final Logger logger = WdkLogManager.getLogger("org.gusdb.gus.wdk.model.implementation.SqlUtils");
     
     public static ResultSet getResultSet(DataSource dataSource, String sql) throws SQLException {
+
         try {
-            Connection connection = dataSource.getConnection();
-            Statement stmt = connection.createStatement();
+	    Connection connection = dataSource.getConnection();
+	    Statement stmt = connection.createStatement();
             ResultSet rs = stmt.executeQuery(sql);
             logger.finest("Success in executing sql in getResultSet: '" + sql + "'");
             return rs;
@@ -59,7 +55,7 @@ public class SqlUtils {
     }
     
     public static void closeResultSet(ResultSet resultSet) throws SQLException {
-        if (resultSet != null) {
+	if (resultSet != null) {
             Statement stmt = resultSet.getStatement();
             try { resultSet.close(); } catch(Exception e) { }
             closeStatement(stmt);
@@ -254,28 +250,4 @@ public class SqlUtils {
         }
     }
 
-    /**
-     * @param url
-     * @param user
-     * @param password
-     * @param maxWait
-     * @return
-     */
-    public static DataSource createDataSource(String connectURI, String login, String password, int maxWait) {
-        
-        GenericObjectPool connectionPool = new GenericObjectPool(null);
-        
-        if (maxWait >= 0) {
-            connectionPool.setMaxWait(maxWait);
-        }
-        
-        ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(connectURI, login, password);
-        
-        PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(connectionFactory,connectionPool,null,null,false,true);
-        
-        PoolingDataSource dataSource = new PoolingDataSource(connectionPool);
-        
-        return dataSource;
-    }
-    
 }

@@ -1,6 +1,5 @@
 package org.gusdb.gus.wdk.model;
 
-
 import org.gusdb.gus.wdk.controller.WdkLogManager;
 
 import java.util.ArrayList;
@@ -80,9 +79,9 @@ public class Record {
             String queryName = (String)fQueryRefs.next();
             Query query = 
                 (Query)model.resolveReference(queryName,
-                        getName(), 
-                        this.getClass().getName(),
-                "attributesQueryRef");
+					      getName(), 
+					      this.getClass().getName(),
+					      "attributesQueryRef");
             addAttributesQuery(query);
         }
         attributesQueryRefs = null;

@@ -125,21 +125,9 @@ public class ModelMaker {
   {
     try {
       WdkModel model =  ModelXmlParser.parseXmlFile(modelXmlFile.toURL(), modelPropFile.toURL(), schemaFile.toURL()) ;
-      ModelConfig modelConfig = 
-	ModelConfigParser.parseXmlFile(modelCfgFile);
-      String connectionUrl = modelConfig.getConnectionUrl();
-      String login = modelConfig.getLogin();
-      String password = modelConfig.getPassword();
-      String platformClass = modelConfig.getPlatformClass();
-      RDBMSPlatformI platform = 
-	(RDBMSPlatformI)Class.forName(platformClass).newInstance();
-      DataSource dataSource = 
-	platform.createDataSource(connectionUrl,login, password);
-      String instanceTable = modelConfig.getQueryInstanceTable();
-      ResultFactory resultFactory = new ResultFactory(dataSource, platform, 
-						      login, instanceTable);
+      model.configure(modelCfgFile);
       
-      model.setResources(resultFactory, platform);
+      model.setResources();
       return model;
     }catch (java.net.MalformedURLException e ) {
       e.printStackTrace();

@@ -53,11 +53,8 @@ public class TestDBManager {
 
 	    RDBMSPlatformI platform = 
 		(RDBMSPlatformI)Class.forName(platformClass).newInstance();
-        
-        DataSource dataSource = 
-        platform.createDataSource(connectionUrl,login, password);
-        
-        
+	    platform.init(connectionUrl, login, password);
+
 	    boolean drop = cmdLine.hasOption("dropDatabase");
 	    boolean create = cmdLine.hasOption("createDatabase");
 	    
@@ -80,19 +77,19 @@ public class TestDBManager {
 		if (drop){
 		    if (platform.checkTableExists(tableName) == true){
 			System.err.println("Dropping existing table " + tableName);
-			dropTable(tableName, dataSource);
+			dropTable(tableName, platform.getDataSource());
 		    }
 		}
 		if (create){
 		    if (platform.checkTableExists(tableName) == false){
-			createTable(tableName, firstLine, dataSource);
+			createTable(tableName, firstLine, platform.getDataSource());
 			
 			String noReturn = "select * from " + tableName;
 			
 			//HACK -- query empty table to get MetaData for use later (we will need column types, etc.)
-			ResultSet empty = SqlUtils.getResultSet(dataSource, noReturn);
+			ResultSet empty = SqlUtils.getResultSet(platform.getDataSource(), noReturn);
 			ResultSetMetaData rsmd = empty.getMetaData();
-			PreparedStatement prepStmt = makePreparedStatement(tableName, dataSource, rsmd);
+			PreparedStatement prepStmt = makePreparedStatement(tableName, platform.getDataSource(), rsmd);
 			int columnCount = rsmd.getColumnCount();
 			String nextLine = reader.readLine();
 			System.err.println("Loading table " + tableName + " to database from file\n");
@@ -106,12 +103,13 @@ public class TestDBManager {
 				if (nextValue.trim().equals("")){
 				    int origSqlType = rsmd.getColumnType(i+1);
 				    prepStmt.setNull(i+1, origSqlType);
+
 			    }
 				else {
 				    prepStmt.setObject(i + 1, nextValue);
 				}
 			    }
-			    SqlUtils.getResultSet(dataSource, prepStmt);
+			    SqlUtils.getResultSet(platform.getDataSource(), prepStmt);
 			    nextLine = reader.readLine();
 			}
 			SqlUtils.closeStatement(prepStmt);
@@ -219,44 +217,6 @@ public class TestDBManager {
 	}
 
 	return cmdLine;
-    }
-    static DataSource setupDataSource(String connectURI, String login, 
-				      String password)  {
-
-	//	DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
-
-        //
-        // First, we'll need a ObjectPool that serves as the
-        // actual pool of connections.
-        //
-        // We'll use a GenericObjectPool instance, although
-        // any ObjectPool implementation will suffice.
-        //
-        ObjectPool connectionPool = new GenericObjectPool(null);
-
-        //
-        // Next, we'll create a ConnectionFactory that the
-        // pool will use to create Connections.
-        // We'll use the DriverManagerConnectionFactory,
-        // using the connect string passed in the command line
-        // arguments.
-        //
-        ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(connectURI, login, password);
-
-        //
-        // Now we'll create the PoolableConnectionFactory, which wraps
-        // the "real" Connections created by the ConnectionFactory with
-        // the classes that implement the pooling functionality.
-        //
-        PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(connectionFactory,connectionPool,null,null,false,true);
-
-        //
-        // Finally, we create the PoolingDriver itself,
-        // passing in the object pool we created.
-        //
-        PoolingDataSource dataSource = new PoolingDataSource(connectionPool);
-
-        return dataSource;
     }
 
 }

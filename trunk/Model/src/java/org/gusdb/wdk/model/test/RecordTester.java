@@ -6,6 +6,7 @@ import org.gusdb.gus.wdk.model.RecordInstance;
 import org.gusdb.gus.wdk.model.RecordSet;
 import org.gusdb.gus.wdk.model.WdkUserException;
 import org.gusdb.gus.wdk.model.ModelMaker;
+import org.gusdb.gus.wdk.model.implementation.ModelXmlParser;
 
 import java.io.File;
 
@@ -42,29 +43,20 @@ public class RecordTester {
 	String primaryKey = cmdLine.getOptionValue("primaryKey");
 
 	try {
-	  
-	  WdkModel wdkModel = ModelMaker.makeModelInstance(modelXmlFile, 
-							   modelPropFile,
-							   modelConfigXmlFile,
-							   schemaFile) ;
-	  
-	  /* Could also have done the following:
-	   *
-	   * ModelMaker modelMaker = new ModelMaker();
-	   * modelMaker.setModelConfigXmlFile(cmdLine.getOptionValue("configFile"));
-	   * modelMaker.setModelXmlFile(cmdLine.getOptionValue("modelXmlFile"));
-	   * modelMaker.setModelPropertyFile(cmdLine.getOptionValue("modelPropFile"));
-	   * modelMaker.setSchemaFile(System.getProperty("schemaFile"));
-	   * WdkModel wdkModel = modelMaker.getModel();
-	   */
 
-	  
-	  RecordSet recordSet = wdkModel.getRecordSet(recordSetName);
-	  Record record = recordSet.getRecord(recordName);
-	  RecordInstance recordInstance = record.makeRecordInstance();
-	  recordInstance.setPrimaryKey(primaryKey);
-	  System.out.println( recordInstance.print() );
-	  
+	    WdkModel wdkModel = 
+		ModelXmlParser.parseXmlFile(modelXmlFile.toURL(), modelPropFile.toURL(), schemaFile.toURL()) ;
+
+	    wdkModel.configure(modelConfigXmlFile);
+	    
+	    wdkModel.setResources();
+
+	    RecordSet recordSet = wdkModel.getRecordSet(recordSetName);
+	    Record record = recordSet.getRecord(recordName);
+	    RecordInstance recordInstance = record.makeRecordInstance();
+	    recordInstance.setPrimaryKey(primaryKey);
+	    System.out.println( recordInstance.print() );
+
         } catch (WdkUserException e) {
 	  System.err.println(e.formatErrors());
 	  System.exit(1);
