@@ -79,8 +79,7 @@ public class ApplicationInitListener implements ServletContextListener {
                 
                 ResultFactory resultFactory = new ResultFactory(dataSource, platform, 
                         dbConfig.getLogin(), instanceTable);
-                wdkModel.setResultFactory(resultFactory);
-                wdkModel.setPlatform(platform);
+                wdkModel.setResources(resultFactory, platform);
                 
                 
                 application.setAttribute("wdk.resultfactory", resultFactory);
