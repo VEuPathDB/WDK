@@ -48,7 +48,16 @@ public class ShowSummaryAction extends Action {
 	while (newParamNames.hasNext()) {
 	    String paramName = (String)newParamNames.next();
 	    Object paramVal = params.get(paramName);
-	    System.err.println("*** debug params: (k, v) = " + paramName + ", " + paramVal);
+	    String paramValStr = null;
+	    if (paramVal instanceof String[]) {
+		String[] pVals = (String[])paramVal;
+		paramValStr = pVals[0];
+		for (int i=1; i<pVals.length; i++) { paramValStr += "," + pVals[i]; }
+		params.put(paramName, paramValStr);
+	    } else {
+		paramValStr = (paramVal == null ? null : paramVal.toString());
+	    }
+	    System.err.println("*** debug params: (k, v) = " + paramName + ", " + paramValStr);
 	}
 	
 	AnswerBean wdkAnswer = summaryPaging(request, wdkQuestion, params);
