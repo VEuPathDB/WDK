@@ -5,6 +5,7 @@ import org.gusdb.gus.wdk.model.ModelConfigParser;
 import org.gusdb.gus.wdk.model.RDBMSPlatformI;
 import org.gusdb.gus.wdk.model.ResultFactory;
 import org.gusdb.gus.wdk.model.WdkModel;
+import org.gusdb.gus.wdk.model.WdkModelException;
 import org.gusdb.gus.wdk.model.implementation.ModelXmlParser;
 
 import java.io.File;
@@ -43,7 +44,13 @@ public class ApplicationInitListener implements ServletContextListener {
     private RDBMSPlatformI platform;
   
     public void contextDestroyed(ServletContextEvent sce) {
-        //platform.close();
+        WdkModel model = (WdkModel) sce.getServletContext().getAttribute("wdk.wdkModel");
+        RDBMSPlatformI platform = model.getRDBMSPlatform();
+        try {
+            platform.close();
+        } catch (WdkModelException exp) {
+            throw new RuntimeException(exp);
+        }
     }
   
     

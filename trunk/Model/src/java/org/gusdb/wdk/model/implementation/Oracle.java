@@ -2,6 +2,7 @@ package org.gusdb.gus.wdk.model.implementation;
 
 import org.gusdb.gus.wdk.controller.WdkLogManager;
 import org.gusdb.gus.wdk.model.RDBMSPlatformI;
+import org.gusdb.gus.wdk.model.WdkModelException;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -26,6 +27,8 @@ public class Oracle implements RDBMSPlatformI {
     private static final Logger logger = WdkLogManager.getLogger("org.gusdb.gus.wdk.model.implementation.Oracle");
     
     private DataSource dataSource;
+    private GenericObjectPool connectionPool;
+    
 
     public Oracle() {}
 
@@ -128,7 +131,7 @@ public class Oracle implements RDBMSPlatformI {
 		     Integer initialSize) throws SQLException {
         
 	DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
-	GenericObjectPool connectionPool = new GenericObjectPool(null);
+	this.connectionPool = new GenericObjectPool(null);
                 
         ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(url, user, password);
         
@@ -143,6 +146,18 @@ public class Oracle implements RDBMSPlatformI {
 	//no initial size yet
         
 	this.dataSource = dataSource;
+    }
+
+    /* (non-Javadoc)
+     * @see org.gusdb.gus.wdk.model.RDBMSPlatformI#close()
+     */
+    public void close() throws WdkModelException {
+        try {
+            connectionPool.close();
+        }
+        catch (Exception exp) {
+            throw new WdkModelException(exp);
+        }
     }
 }
 
