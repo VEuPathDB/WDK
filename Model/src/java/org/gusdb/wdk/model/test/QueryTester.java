@@ -292,7 +292,7 @@ public class QueryTester {
         String newline = System.getProperty( "line.separator" );
         String cmdlineSyntax = 
             cmdName + 
-            " -model model" +
+            " -model model_name" +
             " -query full_query_name" +
             " [-dontCache]" +
             " [-returnTable | -returnSize | -rows start end]" +
