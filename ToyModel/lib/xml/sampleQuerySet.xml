@@ -3,13 +3,17 @@
 <querySetContainer name="RNAQueries">
 
 <pageableQuerySet name="RNAPageableQueries">
+   <pageableSqlQuery name="GeneCardName"
+		     displayName="Gene Card name"
+		     mainQueryRef="RNASimpleQueries.DTGeneCardName"
+		     pageQueryRef="RNASimpleQueries.RNAListInDetail"/>
 
 </pageableQuerySet>
 
 
 <simpleQuerySet name="RNASimpleQueries">
 
-   <simpleSqlQuery name="GeneCardName"
+   <simpleSqlQuery name="DTGeneCardName"
             displayName="Gene Card name">
 
      <stringParam
@@ -19,8 +23,8 @@
 
      <sql>
        select distinct dbrn.na_sequence_id
-       from sres.DBRef dbr, dots.DBRefNASequence dbrn, 
-       where dbr.lowercase_primary_identifier = $$geneName$$
+       from sres.DBRef dbr, dots.DBRefNASequence dbrn 
+       where dbr.lowercase_primary_identifier = '$$GeneName$$'
        and dbr.external_database_release_id = 4892
        and dbr.db_ref_id = dbrn.db_ref_id
      </sql>
@@ -38,10 +42,10 @@
              cd.gene_description, cd.na_sequence_id, cd.assembly_length, 
              cd.assembly_num_sequences, 
               cd.assembly_contains_mrna
-      from dotsgenes.CentralDogma cd, $$resultTable$$ ids 
+      from allgenes.CentralDogma cd, $$resultTable$$ ids 
       where cd.na_sequence_id = ids.na_sequence_id
       and ids.i >= $$startRow$$
-      and ids.i < $$endRow$$
+      and ids.i <= $$endRow$$
       order by cd.gene_id, cd.assembly_length desc
       ]]>
     </sql>
