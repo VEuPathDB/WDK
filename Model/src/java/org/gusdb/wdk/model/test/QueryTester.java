@@ -1,56 +1,49 @@
 package org.gusdb.gus.wdk.model.test;
 
+import org.gusdb.gus.wdk.model.ModelConfig;
+import org.gusdb.gus.wdk.model.ModelConfigParser;
+import org.gusdb.gus.wdk.model.PageableQueryI;
+import org.gusdb.gus.wdk.model.PageableQueryInstanceI;
+import org.gusdb.gus.wdk.model.PageableQuerySet;
+import org.gusdb.gus.wdk.model.Param;
+import org.gusdb.gus.wdk.model.QueryI;
+import org.gusdb.gus.wdk.model.QueryParamsException;
+import org.gusdb.gus.wdk.model.RDBMSPlatformI;
+import org.gusdb.gus.wdk.model.ResultFactory;
+import org.gusdb.gus.wdk.model.SimpleQueryI;
+import org.gusdb.gus.wdk.model.SimpleQueryInstanceI;
+import org.gusdb.gus.wdk.model.SimpleQuerySet;
+import org.gusdb.gus.wdk.model.SqlEnumParam;
+import org.gusdb.gus.wdk.model.StringParam;
+import org.gusdb.gus.wdk.model.WdkModel;
+import org.gusdb.gus.wdk.model.implementation.ModelXmlParser;
+import org.gusdb.gus.wdk.model.implementation.SimpleSqlQueryInstance;
+import org.gusdb.gus.wdk.model.implementation.SqlResultFactory;
+import org.gusdb.gus.wdk.model.implementation.SqlUtils;
+
+import java.io.File;
+import java.sql.ResultSet;
 import java.util.Hashtable;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Map;
-import java.io.File;
-import java.io.IOException;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.DriverManager;
+
 import javax.sql.DataSource;
 
-import org.apache.commons.pool.ObjectPool;
-import org.apache.commons.pool.impl.GenericObjectPool;
-import org.apache.commons.dbcp.ConnectionFactory;
-import org.apache.commons.dbcp.PoolingDataSource;
-import org.apache.commons.dbcp.PoolableConnectionFactory;
-import org.apache.commons.dbcp.DriverManagerConnectionFactory;
-
+import org.apache.commons.cli.BasicParser;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.HelpFormatter;
-
-import org.gusdb.gus.wdk.model.ModelConfig;
-import org.gusdb.gus.wdk.model.ModelConfigParser;
-import org.gusdb.gus.wdk.model.ResultFactory;
-import org.gusdb.gus.wdk.model.QueryParamsException;
-import org.gusdb.gus.wdk.model.WdkModel;
-import org.gusdb.gus.wdk.model.QueryI;
-import org.gusdb.gus.wdk.model.SimpleQuerySet;
-import org.gusdb.gus.wdk.model.SimpleQueryI;
-import org.gusdb.gus.wdk.model.SimpleQueryInstanceI;
-import org.gusdb.gus.wdk.model.PageableQuerySet;
-import org.gusdb.gus.wdk.model.PageableQueryI;
-import org.gusdb.gus.wdk.model.PageableQueryInstanceI;
-import org.gusdb.gus.wdk.model.Param;
-import org.gusdb.gus.wdk.model.StringParam;
-import org.gusdb.gus.wdk.model.RDBMSPlatformI;
-import org.gusdb.gus.wdk.model.implementation.ModelXmlParser;
-import org.gusdb.gus.wdk.model.implementation.SqlResultFactory;
-
-
-import org.gusdb.gus.wdk.model.SqlEnumParam;
-import org.gusdb.gus.wdk.model.implementation.SqlUtils;
-
-import org.gusdb.gus.wdk.model.implementation.SimpleSqlQueryInstance;
+import org.apache.commons.dbcp.ConnectionFactory;
+import org.apache.commons.dbcp.DriverManagerConnectionFactory;
+import org.apache.commons.dbcp.PoolableConnectionFactory;
+import org.apache.commons.dbcp.PoolingDataSource;
+import org.apache.commons.pool.ObjectPool;
+import org.apache.commons.pool.impl.GenericObjectPool;
 
 //import org.gusdb.gus.wdk.model.;
 //import org.gusdb.gus.wdk.model.;

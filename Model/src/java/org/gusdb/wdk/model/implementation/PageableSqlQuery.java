@@ -1,15 +1,11 @@
 package org.gusdb.gus.wdk.model.implementation;
 
-import java.util.Map;
-import java.util.Iterator;
-import javax.sql.DataSource;
-import java.sql.SQLException;
-
 import org.gusdb.gus.wdk.model.PageableQueryI;
 import org.gusdb.gus.wdk.model.PageableQueryInstanceI;
-import org.gusdb.gus.wdk.model.SimpleQuerySet;
-import org.gusdb.gus.wdk.model.SimpleQueryI;
 import org.gusdb.gus.wdk.model.Param;
+import org.gusdb.gus.wdk.model.SimpleQuerySet;
+
+import java.util.Map;
 
 public class PageableSqlQuery extends Query implements PageableQueryI {
     
