@@ -33,7 +33,8 @@ public class QueryTagsTesterServlet extends HttpServlet {
 		String queryName = req.getParameter("queryName");
 		String formName = req.getParameter("formName");
 		String defaultChoice = req.getParameter("defaultChoice");
-		
+        String initialExpansion = req.getParameter("initialExpansion");
+        
 		if (fromPage == null) {
 			msg("fromPage shouldn't be null. Internal error", res);
 			return;
@@ -72,21 +73,27 @@ public class QueryTagsTesterServlet extends HttpServlet {
 		Map paramValues = new HashMap();
 		
 		req.setAttribute(formName+".sqii", sqii);
-		// Now check state of params
-		Param[] params = sq.getParams();
-		boolean problem = false;
-		for (int i = 0; i < params.length; i++) {
-			Param param = params[i];
-			String paramName = param.getName();
-			String passedIn = req.getParameter(formName+"."+queryName+"."+paramName);
-			String error = param.validateValue(passedIn);
-			if ( error == null) {
-				paramValues.put(paramName, passedIn);
-			} else {
-				problem = true;
-				req.setAttribute(formName+".error."+queryName+"."+paramName, error);	
-			}
-		}
+        
+        boolean problem = false;
+        if ("true".equals(initialExpansion)) {
+            problem = true;
+        } else {
+            // Now check state of params
+            Param[] params = sq.getParams();
+
+            for (int i = 0; i < params.length; i++) {
+                Param param = params[i];
+                String paramName = param.getName();
+                String passedIn = req.getParameter(formName+"."+queryName+"."+paramName);
+                String error = param.validateValue(passedIn);
+                if ( error == null) {
+                    paramValues.put(paramName, passedIn);
+                } else {
+                    problem = true;
+                    req.setAttribute(formName+".error."+queryName+"."+paramName, error);	
+                }   
+            }
+        }
 		
 		if (problem) {
 			// If fail, redirect to page
