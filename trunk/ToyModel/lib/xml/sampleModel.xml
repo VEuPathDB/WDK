@@ -4,11 +4,11 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
 
-  <referenceList name="RnaQueries">
+  <referenceList name="InterestingRnaSummaries">
 
-     <reference twoPartName="RnaQueries.RnaByGoTerm"/>
+     <reference twoPartName="RnaSummaries.RnasByGoId"/>
 
-     <reference twoPartName="RnaQueries.TaxonName"/>
+     <reference twoPartName="RnaSummaries.RnasByGeneCardName"/>
 
   </referenceList>
 
@@ -210,7 +210,7 @@
           sample="GO:0005013"
           regex="GO:\d+"/>
 
-         <paramgoob
+         <param
           xsi:type="org.gusdb.gus.wdk.model.FlatCVParam"
           name="Taxon"
           prompt="Organism"
