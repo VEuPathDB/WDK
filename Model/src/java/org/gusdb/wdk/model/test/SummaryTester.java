@@ -99,11 +99,10 @@ public class SummaryTester {
 		    int nextStartRow = Integer.parseInt(rows[i]);
 		    int nextEndRow = Integer.parseInt(rows[i+1]);
 		    System.err.println("SummaryTester: have " + summary.getTotalLength(paramValues) + " total rows");
-		    SummaryInstance rli = summary.makeSummaryInstance();
+		    SummaryInstance si = summary.makeSummaryInstance(paramValues, nextStartRow, nextEndRow);
 		    
-		    rli.setValues(paramValues, nextStartRow, nextEndRow);
 		    System.err.println("Printing Record Instances on page " + pageCount);
-		    rli.print();
+		    si.print();
 		    pageCount++;
 		}
 	    }

@@ -38,24 +38,20 @@ public class SummaryInstance {
     // Constructor
     // ------------------------------------------------------------------
 
-    public SummaryInstance(Summary summary, QueryInstance queryInstance){
+    public SummaryInstance(Summary summary, QueryInstance queryInstance, Map paramValues, int startRow, int endRow) throws WdkUserException, WdkModelException{
 
 	this.summary = summary;
 	this.listIdQueryInstance = queryInstance;
 	this.currentRecordInstanceCounter = 0;
+    this.startRow = startRow;
+    this.endRow = endRow;   
+    listIdQueryInstance.setValues(paramValues);
+    initRecordInstances();
     }
 
     // ------------------------------------------------------------------
     // Public Methods
     // ------------------------------------------------------------------
-
-    public void setValues(Map values, int startRow, int endRow) throws WdkUserException, WdkModelException {
-
-	this.startRow = startRow;
-	this.endRow = endRow;	
-	listIdQueryInstance.setValues(values);
-    initRecordInstances();
-    }
 
     public Summary getSummary(){
 	return this.summary;
