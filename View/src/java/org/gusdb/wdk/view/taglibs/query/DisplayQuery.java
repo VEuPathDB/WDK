@@ -12,7 +12,7 @@ import org.gusdb.gus.wdk.model.QueryInstance;
 import org.gusdb.gus.wdk.model.Summary;
 import org.gusdb.gus.wdk.model.SummarySet;
 import org.gusdb.gus.wdk.model.WdkModel;
-import org.gusdb.gus.wdk.model.WdkModelException;
+import org.gusdb.gus.wdk.model.WdkUserException;
 import org.gusdb.gus.wdk.model.implementation.NullQueryInstance;
 
 /**
@@ -39,11 +39,11 @@ public class DisplayQuery extends SimpleTagSupport {
             SummarySet rls = null;
             try {
                 rls = wm.getSummarySet(querySet);
-            } catch (WdkModelException e) {
+            } catch (WdkUserException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-            Summary[] rla = rls.getSummarys();
+            Summary[] rla = rls.getSummaries();
             
             
 //    		Query[] sq = sqs.getQueries();
