@@ -95,9 +95,9 @@ public class RecordInstanceView implements Map {
     }
     
     
-    private void addListContentsToList(List l, List a) {
-        l.addAll(a);
-    }
+//    private void addListContentsToList(List l, List a) {
+//        l.addAll(a);
+//    }
 
     /**
      * @see java.util.Map#size()
