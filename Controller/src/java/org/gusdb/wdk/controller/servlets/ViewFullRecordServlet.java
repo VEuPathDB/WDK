@@ -1,15 +1,17 @@
 package org.gusdb.gus.wdk.controller.servlets;
 
+import org.gusdb.gus.wdk.controller.WdkModelExtra;
 import org.gusdb.gus.wdk.model.Record;
 import org.gusdb.gus.wdk.model.RecordInstance;
-import org.gusdb.gus.wdk.model.RecordSet;
-import org.gusdb.gus.wdk.model.ResultFactory;
+import org.gusdb.gus.wdk.model.Reference;
 import org.gusdb.gus.wdk.model.WdkModel;
 
 import org.gusdb.gus.wdk.view.RecordInstanceView;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.logging.Logger;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
@@ -24,30 +26,30 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class ViewFullRecordServlet extends HttpServlet {
 
+    private static final Logger logger = Logger.getLogger("org.gusdb.gus.wdk.controller.servlets.ViewFullRecordServlet");
+    
     private static final int DESTINATION_PLAIN=0;
     private static final int DESTINATION_JSP=1;
     
     protected void doGet(HttpServletRequest req, HttpServletResponse res) {
 
-      String recordSetName = req.getParameter("recordSetName");
-      String recordName = req.getParameter("recordName");
+      String recordReference = req.getParameter("recordReference");
       String primaryKey = req.getParameter("primaryKey");
       String style = req.getParameter("style");
         
-      int destination = DESTINATION_PLAIN;
-      if ("jsp".equalsIgnoreCase(style)) {
-          destination = DESTINATION_JSP;
+      int destination = DESTINATION_JSP;
+      if ("plain".equalsIgnoreCase(style)) {
+          destination = DESTINATION_PLAIN;
       }
       
       RecordInstance recordInstance = null;
       
       try {
-	    ResultFactory resultFactory = 
-            (ResultFactory) getServletContext().getAttribute("wdk.recordResultFactory");
-	    RecordSet recordSet = 
-            ((WdkModel) getServletContext().getAttribute("wdk.wdkRecordModel")).getRecordSet(recordSetName);
-	    Record record = recordSet.getRecord(recordName);
-	    recordInstance = record.makeInstance();
+//	    ResultFactory resultFactory = 
+//            (ResultFactory) getServletContext().getAttribute("wdk.recordResultFactory");
+        WdkModel wm = (WdkModel) getServletContext().getAttribute("wdk.wdkModel");
+	    Record record = WdkModelExtra.getRecord(wm, recordReference);
+	    recordInstance = record.makeRecordInstance();
 	    recordInstance.setPrimaryKey(primaryKey);
 
 
@@ -75,7 +77,8 @@ public class ViewFullRecordServlet extends HttpServlet {
           try {
               req.setAttribute( "ri" , new RecordInstanceView(recordInstance, false));
               ServletContext sc = getServletContext();
-              RequestDispatcher rd = sc.getRequestDispatcher("/views/CDSView.jsp");
+              String page = getRendererForRecordRef(new Reference(recordReference));
+              RequestDispatcher rd = sc.getRequestDispatcher(page);
               rd.forward(req, res);
           } catch (IOException exp) {
               exp.printStackTrace();
@@ -88,5 +91,20 @@ public class ViewFullRecordServlet extends HttpServlet {
       
     }
 
+    private String getRendererForRecordRef(Reference ref) {
+        // TODO Set default for where no renderer found
+        String renderer = ref.getTwoPartName();
+        logger.severe("renderer is "+renderer);
+        String path = getServletContext().getRealPath("/WEB-INF/views/"+renderer+".jsp");
+        File f = new File(path);
+        if (f.exists()) {
+            logger.severe("Found file for "+path);
+            return "/WEB-INF/views/"+renderer+".jsp";
+        }
+        logger.severe("Returning default view, couldn't find "+path);
+        return "/WEB-INF/views/defaultView.jsp";
+        
+    }
+    
 }
     
