@@ -178,11 +178,9 @@
 
         <sqlQuery name="GeneAttrs">
             <paramRef ref="params.primaryKey"/>
-            <column displayName="RNA Id" name="primary_key"/>
             <column displayName="Organism" name="taxon_name"/>
             <sql>
-                select a.na_sequence_id as primary_key,
-                       tn.name as taxon_name
+                select tn.name as taxon_name
                 from WDKTestAssembly a, WDKTestTaxonName tn
                 where a.na_sequence_id = $$primaryKey$$ and a.taxon_id = tn.taxon_id
             </sql>
