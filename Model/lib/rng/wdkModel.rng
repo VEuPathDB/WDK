@@ -264,10 +264,14 @@
       <attribute name="displayName" />
       <attribute name="recordClassRef" />
       <attribute name="queryRef" />
+      <optional>
+           <attribute name="summaryAttributesRef" />
+      </optional>
       <element name="description">
           <text />
       </element>        
-      <optional>
+      <optional>          
+       
          <element name="help">
              <text />
          </element>        

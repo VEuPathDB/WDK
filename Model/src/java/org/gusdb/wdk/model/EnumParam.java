@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model;
 
 import java.util.HashMap;
+import java.util.Vector;
 
 public class EnumParam extends AbstractEnumParam {
     
@@ -13,7 +14,9 @@ public class EnumParam extends AbstractEnumParam {
     /////////////////////////////////////////////////////////////////////
 
     public void addItem(EnumItem item) {
+	
 	if (vocabMap == null) vocabMap = new HashMap();
+	orderedKeySet.add(item.getTerm());
 	vocabMap.put(item.getTerm(), item.getInternal());
     }
 
@@ -25,5 +28,6 @@ public class EnumParam extends AbstractEnumParam {
     }
 
     protected void initVocabMap() throws WdkModelException {
+	
     }
 }

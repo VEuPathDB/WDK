@@ -7,7 +7,7 @@ public abstract class AbstractEnumParam extends Param {
     
     boolean multiPick = false;
     HashMap vocabMap;
-    Vector orderedKeySet;
+    Vector orderedKeySet = new Vector();
     boolean quoteInternalValue;
 
     public AbstractEnumParam () {
@@ -71,6 +71,7 @@ public abstract class AbstractEnumParam extends Param {
     }
 
     public String[] getVocab() throws WdkModelException {
+
 	initVocabMap();
 	int keySize = orderedKeySet.size();
 	String[] a = new String[keySize];
