@@ -58,6 +58,13 @@ public class RecordListInstance {
     public RecordList getRecordList(){
 	return this.recordList;
     }
+
+    public int size(){
+	if (recordInstances != null){
+	    return recordInstances.length;
+	}
+	else return 0;
+    }
     
     //Returns null if we have already returned the last instance
     public RecordInstance getNextRecordInstance() throws Exception{
