@@ -73,7 +73,7 @@ public class ViewFullRecordServlet extends HttpServlet {
           break;
       case DESTINATION_JSP:
           try {
-              req.setAttribute( "ri" , new RecordInstanceView(recordInstance));
+              req.setAttribute( "ri" , new RecordInstanceView(recordInstance, false));
               ServletContext sc = getServletContext();
               RequestDispatcher rd = sc.getRequestDispatcher("/views/CDSView.jsp");
               rd.forward(req, res);

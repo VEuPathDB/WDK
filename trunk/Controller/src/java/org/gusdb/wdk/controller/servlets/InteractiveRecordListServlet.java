@@ -5,6 +5,7 @@ import org.gusdb.gus.wdk.model.Param;
 import org.gusdb.gus.wdk.model.Query;
 import org.gusdb.gus.wdk.model.QueryInstance;
 import org.gusdb.gus.wdk.model.RecordInstance;
+import org.gusdb.gus.wdk.model.Reference;
 import org.gusdb.gus.wdk.model.Summary;
 import org.gusdb.gus.wdk.model.SummaryInstance;
 import org.gusdb.gus.wdk.model.WdkModel;
@@ -12,12 +13,14 @@ import org.gusdb.gus.wdk.model.WdkModelException;
 import org.gusdb.gus.wdk.model.WdkUserException;
 import org.gusdb.gus.wdk.view.RIVList;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
@@ -40,6 +43,8 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class InteractiveRecordListServlet extends HttpServlet {
 
+    private static final Logger logger = Logger.getLogger("org.gusdb.gus.wdk.controller.servlets.InteractiveRecordListServlet");
+    
     private final static boolean autoRedirect = true;
     
 	protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
@@ -118,6 +123,7 @@ public class InteractiveRecordListServlet extends HttpServlet {
             try {
                 // TODO Proper start and stop values
 //                rli = summary.makeSummaryInstance(paramValues, 1, 20);
+                logger.finest("About to try and set param values");
                 si = summary.makeSummaryInstance();
                 si.setValues(paramValues, 1, 20);
             }
@@ -137,16 +143,7 @@ public class InteractiveRecordListServlet extends HttpServlet {
                 // TODO What does this mean?
                 e.printStackTrace();
             }
-                
-                
-//                try {
-//                    //            System.err.println("Printing Record Instances on page " + pageCount);
-////            try {
-//                    rli.print();
-//                } catch (WdkModelException e1) {
-//                    // TODO Auto-generated catch block
-//                    e1.printStackTrace();
-//                }
+
         }
 
 		
@@ -160,7 +157,15 @@ public class InteractiveRecordListServlet extends HttpServlet {
         String toPage = "/recordListInstanceView.jsp";
         
         // TODO Work out size
-        int size = 3;
+        int size = 0;
+        
+        try {
+            size = si.getTotalLength();
+            logger.severe("The size of the results is "+size);
+        }
+        catch (WdkModelException exp) {
+            throw new RuntimeException(exp);
+        }
         
         if (size==1 && autoRedirect) {
             toPage="/ViewFullRecord";
@@ -174,16 +179,34 @@ public class InteractiveRecordListServlet extends HttpServlet {
             req.setAttribute("ri", ri);
 
         } else {
-            RIVList rivl = new RIVList(si);
+            
+            Reference ref = summary.getRecord().getReference();
+            String renderer = getRendererForRecordRef(ref);
+            
+            RIVList rivl = new RIVList(si, true);
             req.setAttribute("rivl", rivl);
-            req.setAttribute("recordListName", queryRecordGroup + "." + queryRecordName);
-            req.setAttribute("rliTotalSize", Integer.toString(size));
+            //req.setAttribute("recordListName", queryRecordGroup + "." + queryRecordName);
+            req.setAttribute("siTotalSize", Integer.toString(size));
+            req.setAttribute("renderer", renderer);
         }
         
         redirect(req, res, toPage);
 		return;
 	}
 
+    private String getRendererForRecordRef(Reference ref) {
+        // TODO Set default for where no renderer found
+        String renderer = ref.getTwoPartName();
+        String path = getServletContext().getRealPath("/WEB-INF/subviews/"+renderer+".jsp");
+        File f = new File(path);
+        if (f.exists()) {
+            return renderer;
+        }
+        return "default";
+        
+    }
+    
+    
     private void msg(String msg, HttpServletResponse res) throws IOException {
         res.setContentType("text/html");
         PrintWriter out = res.getWriter();
