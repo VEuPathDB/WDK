@@ -227,11 +227,14 @@ public class RecordInstance {
      * Place hash of single row result into hash keyed on query name
      */
     protected void runAttributesQuery(Query query) throws WdkModelException {
-	QueryInstance instance = query.makeInstance();
-	instance.setIsCacheable(false);
+	QueryInstance qInstance = query.makeInstance();
+	qInstance.setIsCacheable(false);
+
+	// If in the context of an Answer, then we are doing a "summary"
+	// and need to be in multi mode
 	if (answer != null){
-	    answer.setMultiMode(instance);
-	    ResultList rl = instance.getResult();
+	    answer.setMultiMode(qInstance);
+	    ResultList rl = qInstance.getResult();
 	    answer.setQueryResult(rl);
 	    rl.close();
 	}	
@@ -241,11 +244,11 @@ public class RecordInstance {
 		throw new WdkModelException("primaryKey is null");
 	    paramHash.put("primaryKey", primaryKey);
 	    try {
-		instance.setValues(paramHash);
+		qInstance.setValues(paramHash);
 	    } catch (WdkUserException e) {
 		throw new WdkModelException(e);
 	    }
-	    ResultList rl = instance.getResult();
+	    ResultList rl = qInstance.getResult();
 	    //	rl.checkQueryColumns(query, true);
 	    
 	    Column[] columns = query.getColumns();
