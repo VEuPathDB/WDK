@@ -5,8 +5,7 @@ import java.util.Iterator;
 
 public class WdkModel {
 
-    HashMap simpleQuerySets = new HashMap();
-    HashMap pageableQuerySets = new HashMap();
+    HashMap querySets = new HashMap();
     HashMap recordSets = new HashMap();
     HashMap queryNameLists = new HashMap();
     String name;
@@ -35,51 +34,34 @@ public class WdkModel {
     }
 
     public RecordSet getRecordSet(String recordSetName) {
+	
 	if (!recordSets.containsKey(recordSetName)) {
 	    String err = "WDK Model " + name +
 		" does not contain a record set with name " + recordSetName;
+	    
 	    throw new IllegalArgumentException(err);
 	}
 	return (RecordSet)recordSets.get(recordSetName);
     }
 
-    public void addSimpleQuerySet(SimpleQuerySet querySet) {
+    public void addQuerySet(QuerySet querySet) {
 	String err = checkName(querySet.getName());
 	if (err != null) throw new IllegalArgumentException(err);
 	querySet.setResultFactory(resultFactory);
-	simpleQuerySets.put(querySet.getName(), querySet);
+	querySets.put(querySet.getName(), querySet);
     }
 
-    public SimpleQuerySet getSimpleQuerySet(String setName) {
-	if (!simpleQuerySets.containsKey(setName)) {
+    public QuerySet getQuerySet(String setName) {
+	if (!querySets.containsKey(setName)) {
 	    String err = "WDK Model " + name +
-		" does not contain a simple query set with name " + setName;
+		" does not contain a query set with name " + setName;
 	    throw new IllegalArgumentException(err);
 	}
-	return (SimpleQuerySet)simpleQuerySets.get(setName);
+	return (QuerySet)querySets.get(setName);
     }
 
-    public boolean hasSimpleQuerySet(String setName) {
-	return simpleQuerySets.containsKey(setName);
-    }
-
-    public void addPageableQuerySet(PageableQuerySet querySet) {
-	String err = checkName(querySet.getName());
-	if (err != null) throw new IllegalArgumentException(err);
-	pageableQuerySets.put(querySet.getName(), querySet);
-    }
-
-    public PageableQuerySet getPageableQuerySet(String setName) {
-	if (!pageableQuerySets.containsKey(setName)) {
-	    String err = "WDK Model " + name +
-		" does not contain a pageable query set with name " + setName;
-	    throw new IllegalArgumentException(err);
-	}
-	return (PageableQuerySet)pageableQuerySets.get(setName);
-    }
-
-    public boolean hasPageableQuerySet(String setName) {
-	return pageableQuerySets.containsKey(setName);
+    public boolean hasQuerySet(String setName) {
+	return querySets.containsKey(setName);
     }
 
     public void addQueryNameList(QueryNameList queryNameList){
@@ -93,7 +75,7 @@ public class WdkModel {
 	
 	if (!queryNameLists.containsKey(queryNameListName)){
 	    String err = "WDK Model " + name +
-		" does not contain a pageable query set with name " + queryNameListName;
+		" does not contain a  query set with name " + queryNameListName;
 	    throw new IllegalArgumentException(err);
 	}
 	return (QueryNameList)queryNameLists.get(queryNameListName);
@@ -119,22 +101,17 @@ public class WdkModel {
      * references into real object references.
      */ 
     public void resolveReferences() throws Exception {
-       Iterator querySetIterator = pageableQuerySets.values().iterator();
-       while (querySetIterator.hasNext()) {
-	   PageableQuerySet pqs = (PageableQuerySet)querySetIterator.next();
-	   pqs.resolveReferences(simpleQuerySets);
-       }
-
+       
        Iterator recordSetIterator = recordSets.values().iterator();
        while (recordSetIterator.hasNext()) {
 	   RecordSet recordSet = (RecordSet)recordSetIterator.next();
-	   recordSet.resolveReferences(simpleQuerySets);
+	   recordSet.resolveReferences(querySets);
        }
        
        Iterator queryNameListIterator = queryNameLists.values().iterator();
        while (queryNameListIterator.hasNext()){
 	   QueryNameList nextList = (QueryNameList)queryNameListIterator.next();
-	   nextList.checkReferences(simpleQuerySets, pageableQuerySets);
+	   //nextList.checkReferences(querySets, pageableQuerySets);
        }
     }
     
@@ -146,17 +123,12 @@ public class WdkModel {
        buf.append( newline );
        buf.append( "--- Query Sets---" );
        buf.append( newline );
-       Iterator querySetIterator = simpleQuerySets.values().iterator();
+       Iterator querySetIterator = querySets.values().iterator();
        while (querySetIterator.hasNext()) {
 	   buf.append( querySetIterator.next() ).append( newline );
        }
        buf.append(newline);
-       querySetIterator = pageableQuerySets.values().iterator();
-       while (querySetIterator.hasNext()) {
-	   buf.append( querySetIterator.next() ).append( newline );
-       }
-
-       buf.append( newline );
+       
        buf.append( "--- Record Sets---" );
        buf.append( newline );
        Iterator recordSetIterator = recordSets.values().iterator();
@@ -180,15 +152,11 @@ public class WdkModel {
      */
     String checkName(String setName) {
 	String err = null;
-	if (simpleQuerySets.containsKey(setName)) {
+	if (querySets.containsKey(setName)) {
 	    err = "WDK Model " + name +
 		" already contains a query set with name " + setName;
 	}
 
-	if (pageableQuerySets.containsKey(setName)) {
-	    err = "WDK Model " + name +
-		" already contains a pageable query set with name " + setName;
-	}
 	return err;
     }
 }

@@ -5,19 +5,21 @@ import org.gusdb.gus.wdk.model.ModelConfigParser;
 import org.gusdb.gus.wdk.model.PageableQueryI;
 import org.gusdb.gus.wdk.model.PageableQueryInstanceI;
 import org.gusdb.gus.wdk.model.PageableQuerySet;
+import org.gusdb.gus.wdk.model.Query;
+import org.gusdb.gus.wdk.model.QueryInstance;
 import org.gusdb.gus.wdk.model.Param;
 import org.gusdb.gus.wdk.model.QueryI;
 import org.gusdb.gus.wdk.model.QueryParamsException;
 import org.gusdb.gus.wdk.model.RDBMSPlatformI;
 import org.gusdb.gus.wdk.model.ResultFactory;
-import org.gusdb.gus.wdk.model.SimpleQueryI;
-import org.gusdb.gus.wdk.model.SimpleQueryInstanceI;
-import org.gusdb.gus.wdk.model.SimpleQuerySet;
+import org.gusdb.gus.wdk.model.ResultList;
+import org.gusdb.gus.wdk.model.QuerySet;
 import org.gusdb.gus.wdk.model.SqlEnumParam;
 import org.gusdb.gus.wdk.model.StringParam;
 import org.gusdb.gus.wdk.model.WdkModel;
 import org.gusdb.gus.wdk.model.implementation.ModelXmlParser;
-import org.gusdb.gus.wdk.model.implementation.SimpleSqlQueryInstance;
+import org.gusdb.gus.wdk.model.implementation.SqlQueryInstance;
+import org.gusdb.gus.wdk.model.implementation.SqlQuery;
 import org.gusdb.gus.wdk.model.implementation.SqlResultFactory;
 import org.gusdb.gus.wdk.model.implementation.SqlUtils;
 import org.gusdb.gus.wdk.model.QueryNameList;
@@ -46,8 +48,6 @@ import org.apache.commons.dbcp.PoolingDataSource;
 import org.apache.commons.pool.ObjectPool;
 import org.apache.commons.pool.impl.GenericObjectPool;
 
-//import org.gusdb.gus.wdk.model.;
-//import org.gusdb.gus.wdk.model.;
 
 public class QueryTester {
 
@@ -60,23 +60,24 @@ public class QueryTester {
 	this.resultFactory = resultFactory;
     }
 
+
     //////////////////////////////////////////////////////////////////////
     /////////////   public methods   /////////////////////////////////////
     //////////////////////////////////////////////////////////////////////
 
-    public ResultSet getResult(String querySetName, String queryName, 
+    public ResultList getResult(String querySetName, String queryName, 
 			       Hashtable paramHash, 
 			       boolean useCache) throws Exception, QueryParamsException {
-	SimpleQuerySet simpleQuerySet 
-	    = wdkModel.getSimpleQuerySet(querySetName);
-	SimpleQueryI query = simpleQuerySet.getQuery(queryName);
-	SimpleQueryInstanceI instance = query.makeInstance();
+	QuerySet querySet 
+	    = wdkModel.getQuerySet(querySetName);
+	Query query = querySet.getQuery(queryName);
+	QueryInstance instance = query.makeInstance();
 	instance.setIsCacheable(useCache);
 	instance.setValues(paramHash);
 	return instance.getResult();
     }
 
-    public ResultSet getResultPage(String querySetName, String queryName, 
+    /*public ResultSet getResultPage(String querySetName, String queryName, 
 				   int startRow, int endRow,
 				   Hashtable paramHash, 
 				   boolean useCache) throws Exception, QueryParamsException {
@@ -87,23 +88,23 @@ public class QueryTester {
 	instance.setIsCacheable(useCache);
 	instance.setValues(paramHash);
 	return instance.getResult(startRow, endRow);
-    }
+	}*/
 
     public String getResultAsTable(String querySetName, String queryName, Hashtable paramHash, boolean useCache) throws Exception, QueryParamsException {
-	SimpleQuerySet simpleQuerySet 
-	    = wdkModel.getSimpleQuerySet(querySetName);
-	SimpleQueryI query = simpleQuerySet.getQuery(queryName);
-	SimpleQueryInstanceI instance = query.makeInstance();
+	QuerySet querySet 
+	    = wdkModel.getQuerySet(querySetName);
+	Query  query = querySet.getQuery(queryName);
+	QueryInstance instance = query.makeInstance();
 	instance.setIsCacheable(useCache);
 	instance.setValues(paramHash);
-	return ((SimpleSqlQueryInstance)instance).getResultAsTable();
+	return ((SqlQueryInstance)instance).getResultAsTable();
     }
 
     //////////////////////////////////////////////////////////////////////
     /////////////   protected methods   //////////////////////////////////
     //////////////////////////////////////////////////////////////////////
 
-    void displayQuery(QueryI query) throws Exception {
+    void displayQuery(Query query) throws Exception {
         String newline = System.getProperty( "line.separator" );
         System.out.println(newline + "Query: " + 
                 query.getDisplayName() + newline);
@@ -220,14 +221,12 @@ public class QueryTester {
             
             // if no params supplied, show the query prompts
             if (!haveParams) {
-                QueryI query;
+                Query query = null;
                 if (paging) {
-                    query = 
-                        wdkModel.getPageableQuerySet(querySetName).
-                        getQuery(queryName);
+		    //record set stuff eventually?
                 } else {
-                    query = 
-                        wdkModel.getSimpleQuerySet(querySetName).
+		    query = 
+                        wdkModel.getQuerySet(querySetName).
                         getQuery(queryName);
                 }
                 tester.displayQuery(query);
@@ -238,11 +237,12 @@ public class QueryTester {
                 Hashtable paramHash = tester.parseParamArgs(params);
                 if (returnResultAsTable) {
                     String table = tester.getResultAsTable(querySetName, 
-                            queryName, 
-                            paramHash,
-                            useCache);
+							   queryName, 
+							   paramHash,
+							   useCache);
                     System.out.println(table);
-                } else if (paging) {
+                } 
+		/*else if (paging) {
                     ResultSet rs = tester.getResultPage(querySetName, 
                             queryName, 
                             Integer.parseInt(rows[0]),
@@ -250,11 +250,16 @@ public class QueryTester {
                             paramHash,
                             useCache);
                     SqlUtils.printResultSet(rs);
-                } else {
-                    ResultSet rs = tester.getResult(querySetName, 
-                            queryName, paramHash,
-                            useCache);
-                    SqlUtils.printResultSet(rs);
+		    }*/ 
+		else {
+		    Query temp = 
+                        wdkModel.getQuerySet(querySetName).
+                        getQuery(queryName);
+
+		    ResultList rs = tester.getResult(querySetName, 
+						     queryName, paramHash,
+						     useCache);
+		    rs.print();
                 }
             }
 	    runQueryNameListTest(tester, wdkModel, querySetName);
@@ -265,14 +270,11 @@ public class QueryTester {
             e.printStackTrace();
             System.exit(1);
         } 
-
-
     }
     
 
     private static void runQueryNameListTest(QueryTester queryTester, WdkModel wdkModel, String querySetName){
 
-	System.err.println("QueryNameListTest: displaying all queries in provided QueryNameLists");
 	QueryNameList queryNameLists[] = wdkModel.getAllQueryNameLists();
 	if (queryNameLists != null){
 	    for (int i = 0; i < queryNameLists.length; i++){
@@ -287,16 +289,16 @@ public class QueryTester {
 			String realQueryName = nextQueryName.getQueryName();
 			try {
 			 
-			    if (wdkModel.hasPageableQuerySet(nextQuerySetName)){
-				PageableQuerySet pqs = wdkModel.getPageableQuerySet(nextQuerySetName);
-				PageableQueryI pq = pqs.getQuery(realQueryName);
-				queryTester.displayQuery(pq);
-			    }
-			    else{  //since it passed all checks; queySetName has to be simpleQuerySet
-				SimpleQuerySet sqs = wdkModel.getSimpleQuerySet(nextQuerySetName);
-				SimpleQueryI sq = sqs.getQuery(realQueryName);
-				queryTester.displayQuery(sq);
-			    }
+			    //			    if (wdkModel.hasPageableQuerySet(nextQuerySetName)){
+				//PageableQuerySet pqs = wdkModel.getPageableQuerySet(nextQuerySetName);
+				//PageableQueryI pq = pqs.getQuery(realQueryName);
+				//queryTester.displayQuery(pq);
+			    //}
+			      //since it passed all checks; queySetName has to be simpleQuerySet
+			    QuerySet qs = wdkModel.getQuerySet(nextQuerySetName);
+			    Query q = qs.getQuery(realQueryName);
+			    queryTester.displayQuery(q);
+			    
 			}
 			catch (Exception e){
 			    System.err.println(e.getMessage());

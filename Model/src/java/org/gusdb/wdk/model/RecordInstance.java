@@ -1,8 +1,5 @@
 package org.gusdb.gus.wdk.model;
 
-import org.gusdb.gus.wdk.model.implementation.SqlUtils;
-
-import java.sql.ResultSet;
 import java.util.HashMap;
 
 public class RecordInstance {
@@ -26,23 +23,33 @@ public class RecordInstance {
 	return primaryKey;
     }
 
+    /**
+     * Get the value for a field or a text field
+     */
     public Object getFieldValue(String fieldName) throws Exception {
-	SimpleQueryI query = record.getFieldsQuery(fieldName);
-	String queryName = query.getName();
-	if (!fieldsResultSetsMap.containsKey(queryName)) {
-	    runFieldsQuery(query);
+	Object value;
+	if (record.isTextField(fieldName)) {
+	    String rawText = record.getTextField(fieldName);
+	    value = instantiateTextField(fieldName, rawText, new HashMap());
+	} else {
+	    Query query = record.getFieldsQuery(fieldName);
+	    String queryName = query.getName();
+	    if (!fieldsResultSetsMap.containsKey(queryName)) {
+		runFieldsQuery(query);
+	    }
+	    HashMap resultMap = (HashMap)fieldsResultSetsMap.get(queryName);
+	    value = resultMap.get(fieldName);
 	}
-	HashMap resultMap = (HashMap)fieldsResultSetsMap.get(queryName);
-	return resultMap.get(fieldName);
+	return value;
     }
 
     public String getFieldSpecialType(String fieldName) {
 	return null;
     }
 
-    public ResultSet getTableValue(String tableName) throws Exception {
-	SimpleQueryI query = record.getTableQuery(tableName);
-	SimpleQueryInstanceI instance = query.makeInstance();
+    public ResultList getTableValue(String tableName) throws Exception {
+	Query query = record.getTableQuery(tableName);
+	QueryInstance instance = query.makeInstance();
 	instance.setIsCacheable(false);
 	HashMap paramHash = new HashMap();
 	if (primaryKey == null) 
@@ -50,11 +57,6 @@ public class RecordInstance {
 	paramHash.put("primaryKey", primaryKey);
 	instance.setValues(paramHash);
 	return instance.getResult();
-    }
-
-    public String getTextFieldValue(String textFieldName) throws Exception {
-	String rawText = record.getTextField(textFieldName);
-	return instantiateTextField(textFieldName, rawText, new HashMap());
     }
 
     public String print() throws Exception {
@@ -71,15 +73,15 @@ public class RecordInstance {
 	String[] textFieldNames = record.getTextFieldNames();
 	for (int i=0; i<textFieldNames.length; i++){
 	    String fieldName = textFieldNames[i];
-	    buf.append(fieldName + ":   " + getTextFieldValue(fieldName)).append( newline );
+	    buf.append(fieldName + ":   " + getFieldValue(fieldName)).append( newline );
 	}
 	
 	String[] tableNames = record.getTableNames();
 	for (int i=0; i<tableNames.length; i++){
 	    String tableName = tableNames[i];
 	    buf.append("Table " + tableName).append( newline );
-	    ResultSet resultSet = getTableValue(tableName);
-	    SqlUtils.writeResultSet(resultSet,buf);
+	    ResultList resultList = getTableValue(tableName);
+	    resultList.write(buf);
 	    buf.append(newline);
 	}
 
@@ -95,22 +97,22 @@ public class RecordInstance {
     /**
      * Place hash of single row result into hash keyed on query name
      */
-    protected void runFieldsQuery(SimpleQueryI query) throws Exception {
-	SimpleQueryInstanceI instance = query.makeInstance();
+    protected void runFieldsQuery(Query query) throws Exception {
+	QueryInstance instance = query.makeInstance();
 	instance.setIsCacheable(false);
 	HashMap paramHash = new HashMap();
 	if (primaryKey == null) 
 	    throw new NullPointerException("primaryKey is null");
 	paramHash.put("primaryKey", primaryKey);
 	instance.setValues(paramHash);
-	ResultSet rs = instance.getResult();
-	instance.checkColumns(rs, true);
+	ResultList rl = instance.getResult();
+	rl.checkQueryColumns(query, true);
 	HashMap queryResult = new HashMap();
 	Column[] columns = query.getColumns();
-	rs.next();
+	rl.next();
 	for (int i=0; i<columns.length; i++) {
 	    String columnName = columns[i].getName();
-	    queryResult.put(columnName, rs.getObject(columnName));
+	    queryResult.put(columnName, rl.getValue(columnName));
 	}
 	fieldsResultSetsMap.put(query.getName(), queryResult);
     }
@@ -128,42 +130,54 @@ public class RecordInstance {
 	String instantiatedText = rawText;
 
 	// primary key
-	String pk = "$$primaryKey$$";
-	String pkRegex = "\\$\\$primaryKey\\$\\$";
-	if (instantiatedText.indexOf(pk) != -1) {
-	    instantiatedText = instantiatedText.replaceAll(pkRegex, getPrimaryKey());
-	}
-
+	instantiatedText = instantiateText(instantiatedText, "primaryKey", 
+					   getPrimaryKey());
+	
 	// get all non-text field names, and see if they appear as a macro
 	String[] allNonTextFieldNames = record.getNonTextFieldNames();
 	for (int i=0; i<allNonTextFieldNames.length; i++) {
 	    String fieldName = allNonTextFieldNames[i];
-	    String macro = "$$" + fieldName + "$$";
-	    String macroRegex = "\\$\\$" + fieldName + "\\$\\$";
-	    if (instantiatedText.indexOf(macro) != -1) {
-		instantiatedText = 
-		    instantiatedText.replaceAll(macroRegex, 
-						getFieldValue(fieldName).toString());
-	    }
+	    instantiatedText = instantiateText(instantiatedText, fieldName, 
+				getFieldValue(fieldName).toString());
 	}
 
 	// get all text field names, and see if they appear as macro
 	String[] allTextFieldNames = record.getTextFieldNames();
 	for (int i=0; i<allTextFieldNames.length; i++) {
 	    String fieldName = allTextFieldNames[i];
-	    String macro = "$$" + fieldName + "$$";
-	    String macroRegex = "\\$\\$" + fieldName + "\\$\\$";
-	    if (instantiatedText.indexOf(macro) != -1) {
-		instantiatedText = 
-		    instantiatedText.replaceAll(macroRegex, 
-						getTextFieldValue(fieldName));
-	    }
+	    if (fieldName.equals(textFieldName)) continue;
+	    instantiatedText = instantiateText(instantiatedText, fieldName, 
+					       getFieldValue(fieldName).toString());
 	}
 
-	if (instantiatedText.matches("\\$\\$\\w+\\$\\$")) {
-	    throw new Exception ("textField '" + textFieldName + "' contains unrecognized field macro: " + instantiatedText);
-	}
+	checkInstantiatedText(instantiatedText);
+
 	return instantiatedText;
     }
 
+    ////////////////////////////////////////////////////////////////////
+    //   static
+    ////////////////////////////////////////////////////////////////////
+
+    /**
+     * substitute a value for a macro in a text string.  The macro is delimited by $$
+     @param text the text which contains the macro
+     @param macroName the name of the macro, without the delimiter
+     @param value the value to substitute in
+     */
+    public static String instantiateText(String text, String macroName, String value) {
+	String macro = "$$" + macroName + "$$";
+	String macroRegex = "\\$\\$" + macroName + "\\$\\$";
+	if (text.indexOf(macro) != -1) {
+	    text = text.replaceAll(macroRegex, value);
+	}
+	return text;
+    }
+
+    public static void checkInstantiatedText(String instantiatedText) throws Exception {
+	if (instantiatedText.matches("\\$\\$\\w+\\$\\$")) 
+	    throw new Exception ("'" + instantiatedText + 
+				 "' contains unrecognized macro");
+    }
+	
 }

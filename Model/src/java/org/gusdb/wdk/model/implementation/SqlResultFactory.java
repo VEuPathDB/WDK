@@ -1,8 +1,11 @@
 package org.gusdb.gus.wdk.model.implementation;
 
 import org.gusdb.gus.wdk.model.ModelConfig;
+import org.gusdb.gus.wdk.model.QueryInstance;
 import org.gusdb.gus.wdk.model.ModelConfigParser;
 import org.gusdb.gus.wdk.model.RDBMSPlatformI;
+import org.gusdb.gus.wdk.model.ResultList;
+
 
 import java.io.File;
 import java.sql.ResultSet;
@@ -49,15 +52,39 @@ public class SqlResultFactory {
     ///////////////   public  /////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////
 
-    public ResultSet getResult(SimpleSqlQueryInstance instance) throws SQLException {
-	return instance.getIsCacheable()?
+    public ResultList getResult(SqlQueryInstance instance) throws SQLException {
+	ResultSet resultSet = instance.getIsCacheable()?
 	    getCachedResult(instance) : getUncachedResult(instance);
+	return new SqlResultList(instance, null, resultSet);
+    }
+    
+    //does not restrict on whether instance is cacheable or not
+    public Integer getQueryInstanceId(QueryInstance instance) throws SQLException{
+
+	Integer queryInstanceId = instance.getQueryInstanceId();
+	if (queryInstanceId == null){
+	    
+	    StringBuffer sqlb = new StringBuffer();
+	    sqlb.append("select query_instance_id from " + instanceTableFullName + " where "); 
+	    sqlb.append(instanceWhereClause(instance));
+	    if (instance.getIsCacheable()){
+		sqlb.append(" and cached = 1 and end_time IS NOT NULL");
+	    }
+	    
+	    queryInstanceId = SqlUtils.runIntegerQuery(dataSource, sqlb.toString());
+
+	    if (queryInstanceId == null){
+		queryInstanceId = insertQueryInstance(instance);
+	    }	    
+	}
+	return queryInstanceId;
+
     }
 
     /**
      * @return Full name of table containing result
      */
-    public String getResultAsTable(SimpleSqlQueryInstance instance) throws SQLException {
+    public String getResultAsTable(SqlQueryInstance instance) throws SQLException {
 	return instance.getIsCacheable()?
 	    getCachedResultTable(instance) : getNewResultTable(instance);
     }
@@ -72,12 +99,12 @@ public class SqlResultFactory {
 	StringBuffer sqlb = new StringBuffer();
 	String tblName = schemaName + "." + instanceTableName;
 	sqlb.append("create table " + tblName + 
-		    " (query_id number(12) not null, query_name varchar2(100) not null, cached number(1) not null,");
+		    " (query_instance_id number(12) not null, query_name varchar2(100) not null, cached number(1) not null,");
 	
 	for (int i=0;i < numParams; i++) {
 	    sqlb.append("param" + i + " varchar2(25), ");
 	}
-	sqlb.append("result_table varchar2(30) not null, start_time date not null, end_time date, dataset_name varchar2(100), session_id varchar2(50))");
+	sqlb.append("result_table varchar2(30), start_time date not null, end_time date, dataset_name varchar2(100), session_id varchar2(50))");
 
 	// Execute it
 	System.err.println(newline + "Making cache table " + tblName 
@@ -111,7 +138,7 @@ public class SqlResultFactory {
 	//
 	StringBuffer s = new StringBuffer();
 	s.append("select result_table from " + instanceTableFullName);
-
+	System.err.println("SqlResultFactory.resetCache: running query " + s.toString());
 	String tables[] = 
 	    SqlUtils.runStringArrayQuery(dataSource, s.toString());
 	int nTables = tables.length;
@@ -146,8 +173,10 @@ public class SqlResultFactory {
     ///////////////   protected   /////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////
 
-    protected ResultSet getUncachedResult(SimpleSqlQueryInstance instance) throws SQLException {
+    protected ResultSet getUncachedResult(SqlQueryInstance instance) throws SQLException {
 	ResultSet resultSet = null;
+	//populates in QueryInstanceTable if not already there
+	Integer queryInstanceId = getQueryInstanceId(instance);
 
 	try {
 	    resultSet = SqlUtils.getResultSet(dataSource, instance.getSql());
@@ -166,15 +195,27 @@ public class SqlResultFactory {
     /**
      * @return Full table name of the result table
      */
-    protected String getNewResultTable(SimpleSqlQueryInstance instance) throws SQLException {
-	String resultTable = insertQueryInstance(instance);
-	platform.createTableFromQuerySql(dataSource, resultTable, 
+    protected String getNewResultTable(SqlQueryInstance instance) throws SQLException {
+	
+	//populates cache if not already in there
+	Integer queryInstanceId = getQueryInstanceId(instance);
+	String resultTableName = "query_result_" + queryInstanceId.toString();
+	StringBuffer sql = new StringBuffer();
+	sql.append("update " + instanceTableFullName + " set result_table = '" + resultTableName + "'");
+	sql.append(" where query_instance_id = " + queryInstanceId.toString());
+	int numRows = SqlUtils.executeUpdate(dataSource, sql.toString());
+
+	System.err.println("about to create new rt with sql " + instance.getSql());
+
+	platform.createTableFromQuerySql(dataSource, resultTableName, 
 					 instance.getSql());
+	
 	finishQueryInstance(instance);
-	return resultTable;
+	return resultTableName;
     }
 
-    protected ResultSet getCachedResult(SimpleSqlQueryInstance instance) throws SQLException {
+
+    protected ResultSet getCachedResult(SqlQueryInstance instance) throws SQLException {
 	String resultTable = getCachedResultTable(instance);	
 	return fetchCachedResult(resultTable);
     }
@@ -187,12 +228,12 @@ public class SqlResultFactory {
      *
      * @param instance  The instance of the query
      */
-    protected String getCachedResultTable(SimpleSqlQueryInstance instance)  throws SQLException {
+    protected String getCachedResultTable(SqlQueryInstance instance)  throws SQLException {
 	String resultTableFullName;
 
 	// Construct SQL query to retrieve the requested table's name
 	//
-	StringBuffer sqlb = new StringBuffer();
+ 	StringBuffer sqlb = new StringBuffer();
 	sqlb.append("select result_table from " + instanceTableFullName
 		    + " where cached = 1 and ");
 	sqlb.append(instanceWhereClause(instance));
@@ -216,11 +257,14 @@ public class SqlResultFactory {
      *
      * @return Full table name of result table
      */
-    protected String insertQueryInstance(SimpleSqlQueryInstance instance) throws SQLException {
+    protected Integer insertQueryInstance(QueryInstance instance) throws SQLException {
 	return insertQueryInstance(instance, null, null);
     }
 
     /**
+     * Documentation needs update: but note this does not restrict on whether the
+     * instance is cacheable.  Sets the ID in the QueryInstance by side-effect.
+    
      * This variant of the method is called when the query has a dataset
      * param.  In that case, the sessionId and datasetName must be recorded
      * in the table that tracks the queries.
@@ -230,14 +274,12 @@ public class SqlResultFactory {
      *
      * @return Full table name of result table
      */
-    protected String insertQueryInstance(SimpleSqlQueryInstance instance, 
+    protected Integer insertQueryInstance(QueryInstance instance, 
 					 String sessionId, String datasetName) throws SQLException {
 
-	// format result table name
-	String resultTableName = null;
+
 	String nextID = platform.getNextId(schemaName, instanceTableName);
 	if (nextID == null) nextID = "1"; 
-	resultTableName = "query_result_" + nextID;
 
 	// format values
 	String queryName = "'" + instance.getQuery().getName() + "'";
@@ -249,17 +291,17 @@ public class SqlResultFactory {
 	// format insert statement
 	StringBuffer sqlb = new StringBuffer();
 	sqlb.append("insert into " + instanceTableFullName +
-		    " (query_id, query_name, cached, session_id, dataset_name");
+		    " (query_instance_id, query_name, cached, session_id, dataset_name");
 	Collection instanceValues = instance.getValues();
 	for (int i = 0;i < instanceValues.size();++i) {
 	    sqlb.append(", param" + i);
 	}
-	sqlb.append(", result_table, start_time) values (");
+	sqlb.append(", start_time) values (");
 	sqlb.append(nextID + ", " + queryName + ", " + cached + ", " 
 		    + sessionId + ", " + 
 		    datasetName + ", " + pVals +  
-		    "'" + resultTableName + "', sysdate)"); 
-
+		    "sysdate)"); 
+	
 	int numRows = SqlUtils.executeUpdate(dataSource,sqlb.toString());
 
 	// This may happen because a parameter value is too large
@@ -268,17 +310,20 @@ public class SqlResultFactory {
 	if (numRows != 1) {
 	    String err = "insert failed: '" + sqlb.toString() + "'";
 	}
-
-	return platform.getTableFullName(schemaName, resultTableName);
+	Integer finalId = new Integer(nextID);
+	instance.setQueryInstanceId(finalId);
+	return finalId;
     }
 
-    protected String formatInstanceParamVals(SimpleSqlQueryInstance instance) {
+    protected String formatInstanceParamVals(QueryInstance instance) {
 	StringBuffer sb = new StringBuffer();
 
 	Iterator paramValues = instance.getValues().iterator();
 	while (paramValues.hasNext()) {
 	    String val = (String)paramValues.next();
+
 	    String cleaned = platform.cleanStringValue(val);
+
 	    sb.append("'" + cleaned + "', ");
 	}
 	return sb.toString();
@@ -292,7 +337,7 @@ public class SqlResultFactory {
      * 
      * @return Whether the operation succeeded.
      */
-    protected boolean finishQueryInstance(SimpleSqlQueryInstance instance) throws SQLException {
+    protected boolean finishQueryInstance(SqlQueryInstance instance) throws SQLException {
 	StringBuffer sqlb = new StringBuffer();
 	sqlb.append("update " + instanceTableFullName 
 		    + " set end_time = " + platform.getCurrentDateFunction());
@@ -307,7 +352,7 @@ public class SqlResultFactory {
      * from the cache table the row corresponding to a particular query 
      * instance (if any).
      */
-    protected String instanceWhereClause(SimpleSqlQueryInstance instance) {
+    protected String instanceWhereClause(QueryInstance instance){
 	StringBuffer sb = new StringBuffer();
 	Iterator iter = instance.getValues().iterator();
 

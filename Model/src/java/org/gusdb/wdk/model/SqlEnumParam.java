@@ -1,19 +1,17 @@
 package org.gusdb.gus.wdk.model;
 
-import org.gusdb.gus.wdk.model.implementation.SimpleSqlQuery;
-import org.gusdb.gus.wdk.model.implementation.SimpleSqlQueryInstance;
+import org.gusdb.gus.wdk.model.implementation.SqlQuery;
+import org.gusdb.gus.wdk.model.implementation.SqlQueryInstance;
 import org.gusdb.gus.wdk.model.implementation.SqlResultFactory;
 import org.gusdb.gus.wdk.model.implementation.SqlUtils;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
 public class SqlEnumParam extends Param {
     
     Boolean multiPick = new Boolean(false);
-    SimpleSqlQuery simpleSqlQuery;
+    SqlQuery sqlQuery;
     Map hash;
 
     public SqlEnumParam () {}
@@ -30,28 +28,28 @@ public class SqlEnumParam extends Param {
 	return multiPick;
     }
 
-    public void setSimpleSqlQuery(SimpleSqlQuery simpleSqlQuery) {
-	this.simpleSqlQuery = simpleSqlQuery;
+    public void setSqlQuery(SqlQuery sqlQuery) {
+	this.sqlQuery = sqlQuery;
     }
 
-    public SimpleSqlQuery getSimpleSqlQuery() {
-	return simpleSqlQuery;
+    public SqlQuery getSqlQuery() {
+	return sqlQuery;
     }
 
-    public Map getKeysAndValues(ResultFactory resultFactory) throws SQLException {
+    public Map getKeysAndValues(ResultFactory resultFactory) throws Exception {
 	SqlResultFactory sqlResultFactory = resultFactory.getSqlResultFactory();
 	if (hash == null) {
 	    hash = new HashMap();
-	    SimpleSqlQueryInstance instance = new SimpleSqlQueryInstance(simpleSqlQuery); 
-	    ResultSet rs = sqlResultFactory.getResult(instance);
+	    SqlQueryInstance instance = new SqlQueryInstance(sqlQuery); 
+	    ResultList rl = sqlResultFactory.getResult(instance);
 	    try {
-		while (rs.next()) {
-		    hash.put(rs.getString("key"), rs.getString("value"));
+		while (rl.next()) {
+		    hash.put(rl.getValue("key"), rl.getValue("value"));
 		}
-	    } catch (SQLException e) {
+	    } catch (Exception e) {
 		    throw e;
 	    } finally {
-		SqlUtils.closeResultSet(rs);
+		rl.close();
 	    }
 	}
 
@@ -65,7 +63,7 @@ public class SqlEnumParam extends Param {
        StringBuffer buf = 
 	   new StringBuffer(super.toString() + 
 			    "  multiPick='" + multiPick + "'" + newline +
-			    "  sql='" + getSimpleSqlQuery().getSql() + "'" + newline 
+			    "  sql='" + getSqlQuery().getSql() + "'" + newline 
 			    );
 
        return buf.toString();
