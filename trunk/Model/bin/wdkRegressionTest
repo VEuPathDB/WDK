@@ -5,10 +5,10 @@ use lib "$ENV{GUS_HOME}/lib/perl";
 use Getopt::Long;
 use FileHandle;
 
-my ($configFile, $useExistingDb, $createNewExpected, $outputDir, $commandListFile, $verbose);
+my ($configFile, $loadNewDatabase, $createNewExpected, $outputDir, $commandListFile, $verbose);
 
 &GetOptions('configFile=s' => \$configFile,
-	    'useExistingDB!' => \$useExistingDb,
+	    'loadNewDatabase!' => \$loadNewDatabase,
 	    'createNewExpectedResult!' => \$createNewExpected,
 	    'outputDirectory=s' => \$outputDir,
 	    'commandListFile=s' => \$commandListFile,
@@ -17,7 +17,7 @@ my ($configFile, $useExistingDb, $createNewExpected, $outputDir, $commandListFil
 
 &usage() unless $commandListFile;
 
-if (!$useExistingDb){
+if ($loadNewDatabase){
     
     my $dbCmd = "wdkTestDb --dataDirectory $ENV{GUS_HOME}/data/WDK/Model/testTables --dropDatabase --createDatabase --configFile $configFile"; 
     print STDERR "Performing database management with command $dbCmd\n\n" if $verbose;
@@ -142,7 +142,7 @@ sub processOutputDir{
 
 
 sub usage{
-    print STDERR "usage:\n  wdkRegressionTest\n\t--configFile (database configuration file to use with wdk model) \n\t--useExistingDB! (flag to skip creating database from provided test flat files) \n\t--createNewExpectedResult! (overwrite existing regression test expected result) \n\t--outputDirectory (all results of test including error files will be placed in this directory) \n\t--commandListFile (file that contains lists of commands to run in test) \n\t--verbose (prints out names of shell commands being executed)\n";
+    print STDERR "\nusage:  Runs wdk executables from provided file and compares output to an expected result for testing purposes\n\nwdkRegressionTest\n\t--configFile (database configuration file to use with wdk model) \n\t--loadNewDatabase! (flag to create database from provided test flat files; set this flag when running the regression test for the first time and when data in the files have changed) \n\t--createNewExpectedResult! (overwrite existing regression test expected result) \n\t--outputDirectory (all results of test including error files will be placed in this directory) \n\t--commandListFile (file that contains lists of commands to run in test) \n\t--verbose (prints out names of shell commands being executed)\n";
     exit(1);
 
 }
