@@ -53,7 +53,7 @@ public class Summary {
 	return this.record;
     }
 
-    public void setRecordRef(String recordTwoPartName){
+    public void setRecordClassRef(String recordTwoPartName){
 
 	this.recordTwoPartName = recordTwoPartName;
     }
@@ -66,7 +66,7 @@ public class Summary {
     public void resolveReferences(WdkModel model)throws WdkModelException{
 	
 	this.query = (Query)model.resolveReference(queryTwoPartName, name, "summary", "queryRef");
-	this.record = (Record)model.resolveReference(recordTwoPartName, name, "summary", "recordRef");
+	this.record = (Record)model.resolveReference(recordTwoPartName, name, "summary", "recordClassRef");
     }
 
     public String getName(){

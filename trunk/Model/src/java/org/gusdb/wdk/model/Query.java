@@ -17,6 +17,7 @@ public abstract class Query {
     protected String name;
     protected String fullName;
     protected String displayName;
+    protected String description;
     protected String help;
     protected Boolean isCacheable = new Boolean(true);
     protected HashSet paramRefs;
@@ -88,6 +89,14 @@ public abstract class Query {
 
     public Boolean getIsCacheable() {
 	return isCacheable;
+    }
+
+    public void setDescription(String description) {
+	this.description = description;
+    }
+
+    public String getDescription() {
+	return description;
     }
 
     public void setHelp(String help) {
@@ -245,6 +254,7 @@ public abstract class Query {
        StringBuffer buf = 
 	   new StringBuffer("Query: name='" + getName() + "'" + newline +
 			    "  displayName='" + getDisplayName() + "'" + newline +
+			    "  description='" + getDescription() + "'" + newline +
 			    "  help='" + getHelp() + "'" + newline 
 			    );
        return buf;

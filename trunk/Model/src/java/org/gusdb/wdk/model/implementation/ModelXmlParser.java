@@ -198,39 +198,39 @@ public class ModelXmlParser {
         
         
         
-        //RecordSet
+        //RecordClassSet
         
-        /**/ digester.addObjectCreate( "wdkModel/recordSet", RecordSet.class );
+        /**/ digester.addObjectCreate( "wdkModel/recordClassSet", RecordSet.class );
         
-        /**/ digester.addSetProperties( "wdkModel/recordSet");
+        /**/ digester.addSetProperties( "wdkModel/recordClassSet");
         
-        /*  */ digester.addObjectCreate( "wdkModel/recordSet/record", Record.class );
+        /*  */ digester.addObjectCreate( "wdkModel/recordClassSet/recordClass", Record.class );
         
-        /*  */ digester.addSetProperties( "wdkModel/recordSet/record");
+        /*  */ digester.addSetProperties( "wdkModel/recordClassSet/recordClass");
         
-        /*    */ digester.addObjectCreate( "wdkModel/recordSet/record/attributeQuery", Reference.class );
+        /*    */ digester.addObjectCreate( "wdkModel/recordClassSet/recordClass/attributeQuery", Reference.class );
         
-        /*    */ digester.addSetProperties( "wdkModel/recordSet/record/attributeQuery");
+        /*    */ digester.addSetProperties( "wdkModel/recordClassSet/recordClass/attributeQuery");
         
-        /*    */ digester.addSetNext( "wdkModel/recordSet/record/attributeQuery", "addAttributesQueryRef" );
+        /*    */ digester.addSetNext( "wdkModel/recordClassSet/recordClass/attributeQuery", "addAttributesQueryRef" );
         
-        /*    */ digester.addObjectCreate( "wdkModel/recordSet/record/tableQuery", Reference.class );
+        /*    */ digester.addObjectCreate( "wdkModel/recordClassSet/recordClass/tableQuery", Reference.class );
         
-        /*    */ digester.addSetProperties( "wdkModel/recordSet/record/tableQuery");
+        /*    */ digester.addSetProperties( "wdkModel/recordClassSet/recordClass/tableQuery");
         
-        /*    */ digester.addSetNext( "wdkModel/recordSet/record/tableQuery", "addTableQueryRef" );
+        /*    */ digester.addSetNext( "wdkModel/recordClassSet/recordClass/tableQuery", "addTableQueryRef" );
         
-        /*    */ digester.addObjectCreate( "wdkModel/recordSet/record/textAttribute", TextAttribute.class );
+        /*    */ digester.addObjectCreate( "wdkModel/recordClassSet/recordClass/textAttribute", TextAttribute.class );
         
-        /*    */ digester.addSetProperties( "wdkModel/recordSet/record/textAttribute");
+        /*    */ digester.addSetProperties( "wdkModel/recordClassSet/recordClass/textAttribute");
         
-        /*      */ digester.addBeanPropertySetter( "wdkModel/recordSet/record/textAttribute/text");
+        /*      */ digester.addBeanPropertySetter( "wdkModel/recordClassSet/recordClass/textAttribute/text");
         
-        /*    */ digester.addSetNext( "wdkModel/recordSet/record/textAttribute", "addTextAttribute" );
+        /*    */ digester.addSetNext( "wdkModel/recordClassSet/recordClass/textAttribute", "addTextAttribute" );
         
-        /*  */ digester.addSetNext( "wdkModel/recordSet/record", "addRecord" );
+        /*  */ digester.addSetNext( "wdkModel/recordClassSet/recordClass", "addRecord" );
         
-        /**/ digester.addSetNext( "wdkModel/recordSet", "addRecordSet" );
+        /**/ digester.addSetNext( "wdkModel/recordClassSet", "addRecordSet" );
         
         
         //QuerySet
@@ -305,17 +305,17 @@ public class ModelXmlParser {
         
         //SummarySet
         
-        /**/ digester.addObjectCreate("wdkModel/summarySet", SummarySet.class);
+        /**/ digester.addObjectCreate("wdkModel/questionSet", SummarySet.class);
         
-        /**/ digester.addSetProperties("wdkModel/summarySet");
+        /**/ digester.addSetProperties("wdkModel/questionSet");
         
-        /*  */ digester.addObjectCreate("wdkModel/summarySet/summary", Summary.class);
+        /*  */ digester.addObjectCreate("wdkModel/questionSet/question", Summary.class);
         
-        /*  */ digester.addSetProperties("wdkModel/summarySet/summary");
+        /*  */ digester.addSetProperties("wdkModel/questionSet/question");
         
-        /*  */ digester.addSetNext("wdkModel/summarySet/summary", "addSummary");
+        /*  */ digester.addSetNext("wdkModel/questionSet/question", "addSummary");
         
-        /**/ digester.addSetNext("wdkModel/summarySet", "addSummarySet");
+        /**/ digester.addSetNext("wdkModel/questionSet", "addSummarySet");
         
         return digester;
         
@@ -360,13 +360,8 @@ public class ModelXmlParser {
     public static void main( String[] args ) {
         try {
             File modelXmlFile = new File(args[0]);
-            File modelPropFile = null;
-	    File modelConfigFile = null;
-            if (args.length > 1) { 
-                modelPropFile = new File(args[1]);
-		modelConfigFile = new File(args[2]);
-	    } 
-	                
+	    File modelPropFile = new File(args[1]);
+	    File modelConfigFile = new File(args[2]);
             File schemaFile = new File(System.getProperty("schemaFile"));
             WdkModel wdkModel = parseXmlFile(modelXmlFile.toURL(), modelPropFile.toURL(), schemaFile.toURL(), modelConfigFile.toURL());
             

@@ -2,30 +2,30 @@
 <wdkModel name="toyModel">
 
     <!-- ******************* -->
-    <!-- model summarySet(s) -->
+    <!-- model questionSet(s) -->
     <!-- ******************* -->
     
-    <!-- a set of summaries that return lists of RNAs -->
-    <summarySet name="RnaSummaries">
+    <!-- a set of questions that return lists of RNAs -->
+    <questionSet name="RnaQuestions">
         <!-- list of RNAs returned by the query RnaQueries.ByDbESTLib -->
-        <summary name="ByDbESTLib" queryRef="RnaQueries.ByDbESTLib" recordRef="RnaRecords.RnaRecord"/>
+        <question name="ByDbESTLib" queryRef="RnaQueries.ByDbESTLib" recordClassRef="RnaRecordClasses.RnaRecordClass"/>
 
         <!-- list of RNAs returned by the qyery RnaQueries.ByNumSeqs -->
-        <summary name="ByNumSeqs" queryRef="RnaQueries.ByNumSeqs" recordRef="RnaRecords.RnaRecord"/>
-    </summarySet>
+        <question name="ByNumSeqs" queryRef="RnaQueries.ByNumSeqs" recordClassRef="RnaRecordClasses.RnaRecordClass"/>
+    </questionSet>
 
 
     <!-- ****************** -->
-    <!-- model recordSet(s) -->
+    <!-- model recordClassSet(s) -->
     <!-- ****************** -->
 
-    <!-- a set of records, a list of each of which may be returned by a summary -->
-    <recordSet name="RnaRecords">
-        <!-- a RNA record, a list of which may be returned by a RNA summary -->
-        <record idPrefix="DT." name="RnaRecord" type="DoTS Transcript">
-            <!-- an attribute query that returns summary attributes (one row) for a record -->
-            <attributeQuery twoPartName="RnaRecordAttributeQueries.RnaSummary"/>  
-            <!-- an attribute query that returns non-summary attributes (one row) for a record -->
+    <!-- a set of recordClasses, a list of each of which may be returned by a question -->
+    <recordClassSet name="RnaRecordClasses">
+        <!-- a RNA recordClass, a list of which may be returned by a RNA question -->
+        <recordClass idPrefix="DT." name="RnaRecordClass" type="DoTS Transcript">
+            <!-- an attribute query that returns question attributes (one row) for a record -->
+            <attributeQuery twoPartName="RnaRecordAttributeQueries.RnaQuestion"/>  
+            <!-- an attribute query that returns non-question attributes (one row) for a record -->
             <attributeQuery twoPartName="RnaRecordAttributeQueries.RnaFields"/>
             <!-- a table query that returns a table (0 or more rows) of values associated with a record -->
             <tableQuery twoPartName="RnaRecordTableQueries.ConstituentEsts"/>
@@ -35,14 +35,14 @@
                     This is DoTS Transcript DT.$$primaryKey$$.  It is from $$taxon_name$$.
                 </text>
             </textAttribute>
-        </record>
-    </recordSet>
+        </recordClass>
+    </recordClassSet>
 
     <!-- ***************** -->
     <!-- model querySet(s) -->
     <!-- ***************** -->
 
-    <!-- a set of queries (for RnaSummaries) that return list of RNAs  -->
+    <!-- a set of queries (for RnaQuestions) that return list of RNAs  -->
     <querySet name="RnaQueries">
         <!-- list of RNAs by the number of EST libs that contributed sequence tags -->
         <sqlQuery name="ByDbESTLib" displayName="RNAs by number of EST libs">
@@ -85,8 +85,8 @@
 
     <!-- a set of queries (for RnaRecord attributes) that return one row  -->    
     <querySet name="RnaRecordAttributeQueries">
-        <!-- a query that returns summary attributes of a RNA record -->
-        <sqlQuery displayName="RNA summary" name="RnaSummary">
+        <!-- a query that returns question attributes of a RNA record -->
+        <sqlQuery displayName="RNA question" name="RnaQuestion">
             <paramRef twoPartName="params.primaryKey"/>
             <column name="rna_id"/>
             <column name="taxon_name"/>
@@ -100,7 +100,7 @@
             </sql>
         </sqlQuery>
 
-        <!-- a query that returns non-summary attributes of a RNA record -->
+        <!-- a query that returns non-question attributes of a RNA record -->
         <sqlQuery name="RnaFields">
             <paramRef twoPartName="params.primaryKey"/>
             <column displayName="Assembly consistency" name="assembly_consistency"/>
@@ -118,7 +118,7 @@
         </sqlQuery>
     </querySet>
 
-    <!-- a set of queries (for RnaRecord) that return a table (0 or more rows)  -->    
+    <!-- a set of queries (for RnaRecordClass) that return a table (0 or more rows)  -->    
     <querySet name="RnaRecordTableQueries">
         <sqlQuery name="ConstituentEsts">
             <paramRef twoPartName="params.primaryKey"/>
