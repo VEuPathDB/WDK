@@ -9,7 +9,6 @@ import org.gusdb.gus.wdk.model.RecordSet;
 import org.gusdb.gus.wdk.model.ResultFactory;
 import org.gusdb.gus.wdk.model.WdkModel;
 import org.gusdb.gus.wdk.model.implementation.ModelXmlParser;
-import org.gusdb.gus.wdk.model.implementation.SqlResultFactory;
 
 import java.io.File;
 

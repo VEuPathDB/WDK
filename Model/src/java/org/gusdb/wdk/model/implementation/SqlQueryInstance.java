@@ -1,6 +1,5 @@
 package org.gusdb.gus.wdk.model.implementation;
 
-import org.gusdb.gus.wdk.model.RDBMSPlatformI;
 import org.gusdb.gus.wdk.model.NotBooleanOperandException;
 import org.gusdb.gus.wdk.model.QueryInstance;
 import org.gusdb.gus.wdk.model.ResultList;

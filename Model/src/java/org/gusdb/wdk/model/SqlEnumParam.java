@@ -2,7 +2,6 @@ package org.gusdb.gus.wdk.model;
 
 import org.gusdb.gus.wdk.model.implementation.SqlQuery;
 import org.gusdb.gus.wdk.model.implementation.SqlQueryInstance;
-import org.gusdb.gus.wdk.model.implementation.SqlResultFactory;
 
 import java.util.HashMap;
 import java.util.Map;
