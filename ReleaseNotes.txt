@@ -1,78 +1,58 @@
-Version 1.1
-
-General
-  * the WDKToySite has been separated into its own project.  The components
-    WDK/ToyModel and WDK/ToySite are now in WDKToySite/Model and
-    WDKToySite/Site respectively.  The Wiki documentation explains how to
-    use the WDKToySite project as a template to create a new WDK-based
-    project, build it and store it in CVS.
+WDK Version 1.2
 
 Model - Fixed Bugs
 
-  * connection pool leak
+   * Now correctly handling sql queries that have quoted primary keys.
 
-  * in the model XML file, <sqlQuery> now supports an isCachable= attribute
-    as documented
+   * Added special handling for processing Clob values retrieved from an SQL ResultSet
 
+   * Sanity test now uses Strings for its primary keys rather than Integers.
 
 Model - Features
 
-  * in the model XML file, <question> now has a required displayName= 
-    attribute, a required <description> element and an optional <help>
-    element
+   * The model now preserves the order of query results as they are returned by the SQL ResultSet.
 
-  * in the model XML file, <linkColumn> and <linkAttribute> have been
-    introduced so that records and tables can include hyper-links.
+   * Allow the user to define the set of attributes that the Summary displays as a subset of all
+     attributes for the Summary's Question.
 
-  * in the model XML file, <textAttribute> and <column> now have an 
-    isInternal="true" attribute.  If set the view should not show the
-    value.
+   * When two Questions are joined into an Expanded Question, the Summary attributes displayed in
+     the Expanded Summary are those in the union of the Summary attributes defined for each individual
+     Question.
 
-  * code: a wide ranging refactoring and cleaning of the internals to improve
-    the clarity of the code and API
+   * Allow the user to define the ordering of the columns that a Summary displays.
 
-  * code: introduction of the org.gusdb.wdk.model.jspwrap package to provide 
-    a concise API for a JSP based controller and view.
+   * Allow the user to define a stable unique identifier as the primary key for a Record instead of 
+     restricting the identifier to a table's Primary Key.
 
-  * BooleanQuestions
+   * Allow the user to specify attribute truncating for all attributes and sequences in particular.  Created
+     a global default of 100 characters if no truncating is specified.
 
-  * new wdkBooleanQuestion command to exercise BooleanQuestions
+   * Updated Regression Test with new command line arguments; decommissioned Regression Test
+     except for internal testing.
 
-  * the model configuration files now must conform to a pattern.  They must
-    be found in $GUS_HOME/config.  And their name must be based on a
-    model name prefix.  The prefix can be whatever you decide.  Here is 
-    the pattern:
-         $GUS_HOME/config/model_name_prefix.xml          (the Model XML file)
-         $GUS_HOME/config/model_name_prefix.prop         (the property file)
-         $GUS_HOME/config/model_name_prefix-config.xml   (the config file)
-         $GUS_HOME/config/ model_name_prefix-sanity.xml  (the sanity test file)
 
-  * the command line tools (wdkXml, wdkQuery, wdkSummary, wdkRecord and
-    wdkSanityTest) have had their command line arguments significantly
-    simplified (by taking advantage of the config files pattern)
+Controller - Fixed Bugs
+
+   * When a FlatVocabParam's multi-pick feature is enabled in the model, fixed the bug that was 
+     only processing the first value instead of all selected values.
+
+   * Fixed error that occurred when submitting an expanded Question with only one entry in the 
+     Expanded Question Page.  
 
 
 Controller - Features
- 
-  * the controller has been rewritten and is now based on Struts
- 
-  * it uses the jspwrap package for access to the model
 
-  * error handling has been improved
+
+View - Fixed Bugs
 
 
 View - Features
 
-  * the view has been rewritten and is now implemented entirely in four
-    .jsp files.
+   * When a FlatVocabParam's multi-pick feature is enabled in the model, use a scrollpane to display 
+     params; otherwise, use a pulldown menu.  Added this to both normal Questions and expanded Questions.
 
-  * the view may include hyperlinks as specified in the model XML file
+   * A record detail page now displays a Clob in its entirety; long sequences are wrapped so 
+     they don't trail off the screen
 
-  * question page: parameter help is now displayed
-
-  * summary page: parameter values are now displayed
-
-  * a number of minor aesthetic improvements
-
-  * boolean questions
+   * Stable unique identifier is always present in a summary, and comes first in the column order.
 
