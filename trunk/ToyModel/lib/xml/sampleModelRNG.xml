@@ -1,24 +1,27 @@
 <?xml version="1.0"?>
  
-<wdkModel name="RNARecords">
+<wdkModel name="RnaModel">
 
-  <recordListSet name="RNARecordLists">
 
-     <recordList name="RNARecordList"
-                 recordRef="RNARecords.RNARecord"
-                 queryRef="RNARecordQueries.RNAIdsByGoId" />
-  </recordListSet>
+  <referenceList name="InterestingRnaSummaries">
 
-  <recordSet name="RNARecords">
-     <record name="RNARecord" 
-             type="DoTS Transcript" 
-             idPrefix="DT.">
-       <fieldsQuery referent="RNASimpleQueries.RNAListInDetail"/>  
+     <reference twoPartName="RnaSummaries.RnasByGoId"/>
+     <reference twoPartName="RnaSummaries.RnasByGeneCardName"/>
 
-       <fieldsQuery referent="RNARecordQueries.RNAFields"/>
+  </referenceList>
 
-       <tableQuery referent="RNARecordQueries.ExternalLinks"/>
 
+
+  <recordSet name="RnaRecords">
+
+     <record name="RnaRecord" type="DoTS Transcript" idPrefix="DT.">
+
+       <attributeQuery twoPartName="RnaSummaryQueries.RnaSummary"/>  
+   
+       <attributeQuery twoPartName="RnaRecordQueries.RnaFields"/>
+             
+       <tableQuery twoPartName="RnaRecordQueries.ExternalLinks"/>
+       
        <textField name="overview">
          <text>
        This is DoTS Transcript DT.$$primaryKey$$.  It is has a length of $$length$$.
@@ -26,48 +29,49 @@
        </textField>
      </record>
 
+     <record name="RnaSummaryRecord" type="DoTS Transcript" idPrefix="DT.">
+       <attributeQuery twoPartName="RnaSummaryQueries.RnaSummary"/>  
+       <tableQuery twoPartName="RnaRecordQueries.ExternalLinks"/>
+     </record>
+
   </recordSet>
 
-  <queryNameList name="RNAQueryNameList">
-
-     <fullQueryName fullQueryName="RNASimpleQueries.RNAByGoTerm"/>
-
-     <fullQueryName fullQueryName="RNASimpleQueries.TaxonName"/>
-
-  </queryNameList>
 
 
-  <querySet name="RNARecordQueries">
+  <summarySet name="RnaSummaries">
 
-     <sqlQuery name="RNAIdsByGoId">
+     <summary name="RnasByGoId"
+              queryRef="RnaIdQueries.ByGoId"
+              recordRef="RnaRecords.RnaSummaryRecord"/>
 
-        <stringParam name="GoId"
-                     prompt="GO ID"
-                     sample="GO:0016597"
-                     regex="\S+"/>
-       
-        <column name="na_sequence_id" displayName="Assembly ID" />     
+     <summary name="RnasByGeneCardName"
+              queryRef="RnaIdQueries.ByGeneCardName"
+              recordRef="RnaRecords.RnaSummaryRecord"/>
+  
+  </summarySet>
 
-        <sql>
-        select distinct a.na_sequence_id
-        from dots.Assembly a, dots.Protein P,
-             dots.GOAssociation ga, sres.GoTerm gt,
-             dots.RNAInstance rnai, dots.RNAFeature rnaf
-        where rnai.rna_id = p.rna_id
-          and rnai.na_feature_id = rnaf.na_feature_id
-          and rnaf.na_sequence_id = a.na_sequence_id
-          and p.protein_id = ga.row_id
-          and ga.table_id = 180
-          and ga.go_term_id = gt.go_term_id
-          and gt.go_id = '$$GoId$$'
-          and gt.external_database_release_id = 7798
-          and ga.is_deprecated = 0
-         </sql>
-     </sqlQuery>
 
-     <sqlQuery name="RNAFields" >
 
-       <stringParam name="primaryKey" />
+  <querySet name="VocabQueries">
+
+    <sqlQuery name="TaxonQuery">
+      <column name="term"/>
+      <column name="internal"/>
+      <sql>
+        select distinct name as term, taxon_id as internal
+        from SRes.taxonName
+        where name in ('mouse', 'human')
+      </sql>
+    </sqlQuery>
+  </querySet>
+
+
+
+  <querySet name="RnaRecordQueries">
+    
+    <sqlQuery name="RnaFields">
+
+       <paramRef twoPartName="params.primaryKey"/>
 
        <column name="description" displayName="Description" />
        <column name="length" displayName="Length" />
@@ -76,9 +80,9 @@
        <column name="number_of_contained_sequences" displayName="Number contained sequences" />
        <column name="modification_date" displayName="Last modified" />
        <column name="review_status_name" displayName="Review status" />
-       <textColumn name="hello" 
-                   displayName="Last modified" 
-                   text="hello $$taxon_name$$, you are nice" />
+       <textColumn name="numseqs" 
+               displayName="Nice Num" 
+               text="number of contained seqs is $$number_of_contained_sequences$$" />
  
        <sql>
        select r.description, 
@@ -101,9 +105,9 @@
        </sql>
     </sqlQuery>
 
-    <sqlQuery name="ExternalLinks" >
+    <sqlQuery name="ExternalLinks">
 
-      <stringParam name="primaryKey" />
+      <paramRef twoPartName="params.primaryKey"/>
 
       <column name="name" displayName="Database" />
       <column name="primary_identifier" displayName="Id" />
@@ -126,14 +130,42 @@
 
   </querySet>
 
-  <querySet name="RNASimpleQueries">
 
-     <sqlQuery name="DTGeneCardName"
-               displayName="Gene Card name">
 
-       <stringParam name="GeneName"
-                    prompt="Gene Name"
-                    sample="brca1"/>
+  <querySet name="RnaSummaryQueries">
+
+    <sqlQuery name="RnaSummary"
+              displayName="RNAs">
+
+      <paramRef twoPartName="params.primaryKey"/>
+
+      <column name="gene_id"/>
+      <column name="taxon_name"/>
+      <column name="gene_symbol"/>
+      <column name="gene_description"/>
+      <column name="na_sequence_id"/>
+      <column name="assembly_length"/> 
+      <column name="assembly_num_sequences"/>
+      <column name="assembly_contains_mrna"/>
+
+      <sql>
+      select cd.gene_id, cd.taxon_name, cd.gene_symbol, 
+             cd.gene_description, cd.na_sequence_id, cd.assembly_length, 
+             cd.assembly_num_sequences, 
+              cd.assembly_contains_mrna 
+      from allgenes.CentralDogma cd
+      where cd.na_sequence_id = $$primaryKey$$
+      </sql>
+    </sqlQuery>
+  </querySet>
+
+
+  <querySet name="RnaIdQueries">
+
+     <sqlQuery name="ByGeneCardName"
+            displayName="Gene Card name">
+
+       <paramRef twoPartName="params.GeneName"/>
 
        <column name="na_sequence_id" />
 
@@ -146,58 +178,13 @@
        </sql>
     </sqlQuery>
 
-    <sqlQuery name="RNAListInDetail"
-              displayName="RNAs">
 
-      <stringParam name="resultTable"/>
-      <stringParam name="startRow"/>
-      <stringParam name="endRow"/>
+    <sqlQuery name="ByGoId"
+           displayName="GO Id">
 
-      <column name="gene_id"/>
-      <column name="taxon_name"/>
-      <column name="gene_symbol"/>
-      <column name="gene_description"/>
-      <column name="na_sequence_id"/>
-      <column name="assembly_length"/> 
-      <column name="assembly_num_sequences"/>
-      <column name="assembly_contains_mrna"/>
+      <paramRef twoPartName="params.GoId"/>
 
-      <sql>
-        <!-- use CDATA because query includes angle brackets -->
-        <![CDATA[
-      select cd.gene_id, cd.taxon_name, cd.gene_symbol, 
-             cd.gene_description, cd.na_sequence_id, cd.assembly_length, 
-             cd.assembly_num_sequences, 
-              cd.assembly_contains_mrna
-      from allgenes.CentralDogma cd
-      where cd.na_sequence_id = $$primaryKey$$
-      ]]>
-      </sql>
-    </sqlQuery>
-
-    <sqlQuery name="RNAByGoTerm"
-              displayName="GO functional classification (by term)">
-
-         <stringParam name="GoId"
-                      prompt="GO Id"
-                      help="You know what it is"
-                      sample="GO:0005013"
-                      regex="GO:\d+"/>
-
-         <sqlEnumParam name="Taxon"
-                       prompt="Organism"
-                       help="You know what it is"
-                       multipick="yes">
-            <sqlQuery name="dontcare">
-              <column name="name"/>
-              <sql>
-              select name as key,
-                     taxon_id as value
-              from SRes.taxonName
-              where name in ('mouse', 'human')
-              </sql>
-            </sqlQuery>
-         </sqlEnumParam> 
+      <paramRef twoPartName="params.Taxon"/>
 
       <column name="na_sequence_id"/>
 
@@ -206,7 +193,7 @@
         from dots.GOAssociation ga, sres.goTerm gt, allgenes.CentralDogma cd 
         where gt.go_id = '$$GoId$$'
         and ga.go_term_id = gt.go_term_id
-        and ga.table_id = 180 
+        and ga.table_id =  @PROTEIN_TABLE@ 
         and ga.row_id = cd.protein_id 
         and cd.taxon_id = $$Taxon$$ 
         and ga.is_deprecated != 1 
@@ -214,25 +201,31 @@
       </sql>
 
     </sqlQuery>
-
-
-     <sqlQuery name="TaxonName"
-               displayName="Taxon name">
-
-       <stringParam name="TaxonId"
-                    prompt="Taxon Id"
-                    sample="8"
-                    regex="\d+" />
-      
-       <column name="name"/>
-
-       <sql>
-       select name
-       from SRes.TaxonName 
-       where taxon_id = $$TaxonId$$
-       </sql>
-    </sqlQuery>
-
   </querySet>
-</wdkModel>
 
+  <paramSet name="params">
+    <stringParam
+      name="GeneName"
+      prompt="Gene Name"
+      sample="brca1"/>
+
+    <stringParam 
+      name="GoId"
+      prompt="GO Id"
+      help="You know what it is"
+      sample="GO:0005013"
+      regex="GO:\d+"/>
+
+    <flatCVParam
+      name="Taxon"
+      prompt="Organism"
+      help="You know what it is"
+      multipick="yes"
+      queryRef="VocabQueries.TaxonQuery"/>
+    
+    <stringParam 
+      name="primaryKey" />
+
+  </paramSet>
+
+</wdkModel>
