@@ -261,45 +261,27 @@ public class QueryTester {
 	    System.exit(1);
         } 
     }
-
+    private static void addOption(Options options, String argName, String desc) {
+        
+        Option option = new Option(argName, true, desc);
+        option.setRequired(true);
+        option.setArgName(argName);
+        
+        options.addOption(option);
+    }
+    
+    
     static Options declareOptions() {
 	Options options = new Options();
 
-	// config file
-	Option configFile = OptionBuilder
-	    .withArgName("configFile")
-	    .hasArg()
-	    .withDescription("An .xml file that specifies a ModelConfig object.")
-	    .isRequired()
-	    .create("configFile");
-	options.addOption(configFile);
-
-	// query set file
-	Option modelXmlFile = OptionBuilder
-	    .withArgName("modelXmlFile")
-	    .hasArg()
-	    .withDescription("An .xml file that specifies a container of Query set objects.")
-	    .isRequired()
-	    .create("modelXmlFile");
-	options.addOption(modelXmlFile);
-
-	// query set name
-	Option querySetName = OptionBuilder
-	    .withArgName("querySetName")
-	    .hasArg()
-	    .withDescription("The name of the query set in which to find the query.")
-	    .isRequired()
-	    .create("querySetName");
-	options.addOption(querySetName);
-
-	// query name
-	Option queryName = OptionBuilder
-	    .withArgName("queryName")
-	    .hasArg()
-	    .withDescription("The name of the query to run.")
-	    .isRequired()
-	    .create("queryName");
-	options.addOption(queryName);
+    // config file
+    addOption(options, "configFile", "An .xml file that specifies a ModelConfig object.");
+    // query set file
+    addOption(options, "modelXmlFile", "An .xml file that specifies a container of Query set objects.");
+    // record set name
+    addOption(options, "querySetName", "The name of the query set in which to find the query");
+    // record name
+    addOption(options, "queryName", "The name of the query to run.");
 
 	// use cache
 	Option useCache = new Option("dontCache","Do not use the cache for this query (even if it is cache enabled).");
@@ -323,11 +305,8 @@ public class QueryTester {
 	options.addOptionGroup(specialOperations);
 
 	// params
-	Option params = OptionBuilder
-	    .withArgName("params")
-	    .hasArgs()
-	    .withDescription("Comma delimited list of param_name,param_value,....")
-	    .create("params");
+    Option params = new Option("params", true, "Comma delimited list of param_name,param_value,....");
+    params.setArgName("params");
 	options.addOption(params);
 
 
