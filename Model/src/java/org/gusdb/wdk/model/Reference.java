@@ -41,6 +41,9 @@ public class Reference {
      */
     public void setTwoPartName(String twoPartName) throws WdkModelException {
         
+        if (twoPartName == null) {
+            throw new WdkModelException("Error: twoPartName is null");
+        }
         if (!twoPartName.matches("\\w+\\.\\w+")) {
             throw new WdkModelException("Error: Reference '" + twoPartName + "' is not in the form 'setName.elementName'");
         }
