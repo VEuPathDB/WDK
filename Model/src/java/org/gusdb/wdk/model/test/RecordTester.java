@@ -1,15 +1,12 @@
 package org.gusdb.gus.wdk.model.test;
 
-import org.gusdb.gus.wdk.model.ModelConfig;
-import org.gusdb.gus.wdk.model.ModelConfigParser;
-import org.gusdb.gus.wdk.model.RDBMSPlatformI;
+import org.gusdb.gus.wdk.model.WdkModel;
 import org.gusdb.gus.wdk.model.Record;
 import org.gusdb.gus.wdk.model.RecordInstance;
 import org.gusdb.gus.wdk.model.RecordSet;
 import org.gusdb.gus.wdk.model.ResultFactory;
-import org.gusdb.gus.wdk.model.WdkModel;
 import org.gusdb.gus.wdk.model.WdkUserException;
-import org.gusdb.gus.wdk.model.implementation.ModelXmlParser;
+import org.gusdb.gus.wdk.model.ModelMaker;
 
 import java.io.File;
 
@@ -22,13 +19,6 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.dbcp.ConnectionFactory;
-import org.apache.commons.dbcp.DriverManagerConnectionFactory;
-import org.apache.commons.dbcp.PoolableConnectionFactory;
-import org.apache.commons.dbcp.PoolingDataSource;
-import org.apache.commons.pool.ObjectPool;
-import org.apache.commons.pool.impl.GenericObjectPool;
-
 
 
 public class RecordTester {
@@ -44,56 +34,50 @@ public class RecordTester {
 	// process args
 	Options options = declareOptions();
 	CommandLine cmdLine = parseOptions(cmdName, options, args);
-
-	File modelConfigXmlFile = 
-	    new File(cmdLine.getOptionValue("configFile"));
+	
 	File modelXmlFile = new File(cmdLine.getOptionValue("modelXmlFile"));
         File modelPropFile = new File(cmdLine.getOptionValue("modelPropFile"));
+	File modelConfigXmlFile = new File(cmdLine.getOptionValue("configFile"));
+	File schemaFile = new File(System.getProperty("schemaFile"));
 
 	String recordSetName = cmdLine.getOptionValue("recordSetName");
 	String recordName = cmdLine.getOptionValue("recordName");
 	String primaryKey = cmdLine.getOptionValue("primaryKey");
 
 	try {
-	    // read config info
-	    ModelConfig modelConfig = 
-		ModelConfigParser.parseXmlFile(modelConfigXmlFile);
-	    String connectionUrl = modelConfig.getConnectionUrl();
-	    String login = modelConfig.getLogin();
-	    String password = modelConfig.getPassword();
-	    String instanceTable = modelConfig.getQueryInstanceTable();
-	    String platformClass = modelConfig.getPlatformClass();
-	    
-	    DataSource dataSource = 
-		setupDataSource(connectionUrl,login, password);
-	
-	    RDBMSPlatformI platform = 
-		(RDBMSPlatformI)Class.forName(platformClass).newInstance();
-	    platform.setDataSource(dataSource);
-       
-        File schemaFile = new File(System.getProperty("schemaFile"));
-	    WdkModel wdkModel = 
-		ModelXmlParser.parseXmlFile(modelXmlFile.toURL(), modelPropFile.toURL(), schemaFile.toURL()) ;
-	    ResultFactory resultFactory = new ResultFactory(dataSource, platform, 
-							    login, instanceTable);
-	    wdkModel.setResources(resultFactory, platform);
+	  
+	  WdkModel wdkModel = ModelMaker.makeModelInstance(modelXmlFile, 
+							   modelPropFile,
+							   modelConfigXmlFile,
+							   schemaFile) ;
+	  
+	  /* Could also have done the following:
+	   *
+	   * ModelMaker modelMaker = new ModelMaker();
+	   * modelMaker.setModelConfigXmlFile(cmdLine.getOptionValue("configFile"));
+	   * modelMaker.setModelXmlFile(cmdLine.getOptionValue("modelXmlFile"));
+	   * modelMaker.setModelPropertyFile(cmdLine.getOptionValue("modelPropFile"));
+	   * modelMaker.setSchemaFile(System.getProperty("schemaFile"));
+	   * WdkModel wdkModel = modelMaker.getModel();
+	   */
 
-	    RecordSet recordSet = wdkModel.getRecordSet(recordSetName);
-	    Record record = recordSet.getRecord(recordName);
-	    RecordInstance recordInstance = record.makeRecordInstance();
-	    recordInstance.setPrimaryKey(primaryKey);
-	    System.out.println( recordInstance.print() );
-
+	  
+	  RecordSet recordSet = wdkModel.getRecordSet(recordSetName);
+	  Record record = recordSet.getRecord(recordName);
+	  RecordInstance recordInstance = record.makeRecordInstance();
+	  recordInstance.setPrimaryKey(primaryKey);
+	  System.out.println( recordInstance.print() );
+	  
         } catch (WdkUserException e) {
-            System.err.println(e.formatErrors());
-            System.exit(1);
+	  System.err.println(e.formatErrors());
+	  System.exit(1);
 	} catch (Exception e) {
-	    e.printStackTrace();
-	    System.exit(1);
+	  e.printStackTrace();
+	  System.exit(1);
         } 
     }
 
-private static void addOption(Options options, String argName, String desc) {
+  private static void addOption(Options options, String argName, String desc) {
     
     Option option = new Option(argName, true, desc);
     option.setRequired(true);
@@ -163,45 +147,6 @@ private static void addOption(Options options, String argName, String desc) {
 	HelpFormatter formatter = new HelpFormatter();
 	formatter.printHelp(75, cmdlineSyntax, header, options, footer);
 	System.exit(1);
-    }
-
-    static DataSource setupDataSource(String connectURI, String login, 
-				      String password)  {
-
-	//	DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
-
-        //
-        // First, we'll need a ObjectPool that serves as the
-        // actual pool of connections.
-        //
-        // We'll use a GenericObjectPool instance, although
-        // any ObjectPool implementation will suffice.
-        //
-        ObjectPool connectionPool = new GenericObjectPool(null);
-
-        //
-        // Next, we'll create a ConnectionFactory that the
-        // pool will use to create Connections.
-        // We'll use the DriverManagerConnectionFactory,
-        // using the connect string passed in the command line
-        // arguments.
-        //
-        ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(connectURI, login, password);
-
-        //
-        // Now we'll create the PoolableConnectionFactory, which wraps
-        // the "real" Connections created by the ConnectionFactory with
-        // the classes that implement the pooling functionality.
-        //
-        PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(connectionFactory,connectionPool,null,null,false,true);
-
-        //
-        // Finally, we create the PoolingDriver itself,
-        // passing in the object pool we created.
-        //
-        PoolingDataSource dataSource = new PoolingDataSource(connectionPool);
-
-        return dataSource;
     }
 }
     
