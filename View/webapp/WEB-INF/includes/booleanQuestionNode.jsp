@@ -10,7 +10,7 @@
   <c:choose>
     <c:when test="${rootClassName eq 'org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean'}">
 
-    <img alt="spacer" width="12" height="16" src="http://www.allgenes.org/images/blue1.gif">
+    <img alt="spacer" width="12" height="16" src="<c:url value="/images/booleanBlue.gif" />">
     <nested:write property="operation"/><br>
 
     <nested:nest property="firstChild">
@@ -39,7 +39,7 @@
             <!-- Print out question -->
             <!-- display description -->
             <tr><td colspan="2">
-                <img alt="spacer" width="12" height="16" src="http://www.allgenes.org/images/blue1.gif">
+                <img alt="spacer" width="12" height="16" src="<c:url value="/images/booleanBlue.gif" />">
                 <b><jsp:getProperty name="wdkQ" property="description"/></b></td></tr>
 
             <!-- display params -->
@@ -81,27 +81,26 @@
 
             <!-- display boolean stuff -->
             <tr>
-               <td align="right">
+               <!-- get boolean operations and display in select box -->
+	       <td align="right">
+	          <html:select property="myProp(${leafPrefix}_nextBooleanOperation)">
+                     <c:set value="booleanOps" var="booleanName"/>
+                     <html:options property="values(${booleanName})" labelProperty="labels(${booleanName})"/>
+                  </html:select>
+               </td>
                <!-- get possible questions to boolean with and display them -->
-               <html:select property="myProp(${leafPrefix}_nextQuestionOperand)">
+               <td>
+                  <html:select property="myProp(${leafPrefix}_nextQuestionOperand)">
                      <c:set var="recordClass" value="${wdkQ.recordClass}"/>
                      <c:set var="questions" value="${recordClass.questions}"/>
-
                      <c:forEach items="${questions}" var="q">
                         <c:set value="${q.fullName}" var="qFullName"/>
                         <c:set value="${q.displayName}" var="qDispName"/>
                         <html:option value="${qFullName}">${qDispName}</html:option>
                      </c:forEach>
                   </html:select>
-               </td>
-                <!-- get boolean operations and display in select box -->
-               <td>
-                  <html:select property="myProp(${leafPrefix}_nextBooleanOperation)">
-                     <c:set value="booleanOps" var="booleanName"/>
-                     <html:options property="values(${booleanName})"/>
-                  </html:select>
-                  <html:submit property="process_boolean_question" value="Expand (${leafPref})"/>
-               </td></tr>
+                <html:submit property="process_boolean_question" value="Expand (${leafPref})"/>  
+             </td></tr>
          </table>
 
     </c:otherwise>
