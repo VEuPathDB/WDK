@@ -128,9 +128,9 @@ public class QueryTagsTesterServlet extends HttpServlet {
 		    
 		    String initialResultTable = ssqi.getResultAsTable();
 		    Map values = new HashMap(3);
-//		    values.put(PageableSqlQuery.RESULT_TABLE_SYMBOL, initialResultTable);
-//		    values.put(PageableSqlQuery.START_ROW_SYMBOL, "1");
-//		    values.put(PageableSqlQuery.END_ROW_SYMBOL, "200");
+		    values.put("resultTable", initialResultTable);
+		    values.put("startRow", "1");
+		    values.put("endRow", "200");
 		    SqlQueryInstance pageInstance = 
 		        (SqlQueryInstance)pageQuery.makeInstance();
 		    // pageInstance.setIsCacheable(getIsCacheable());
@@ -148,12 +148,13 @@ public class QueryTagsTesterServlet extends HttpServlet {
                 String[] columnNames = new String[columns.length];
                 for (int i = 0; i < columns.length; i++) {
                     columnNames[i] = columns[i].getDisplayName();
+                    System.err.println("columnNames["+i+"] is "+columnNames[i]);
 //                    sb.append("<th align=\"center\"><b>&nbsp;</b></th>");
                     sb.append("<th align=\"center\"><b>");
                     sb.append(columnNames[i]);
                     sb.append("</b></th>");
                 }
-                
+                System.err.println("The number of columns is "+columnNames.length);
 		        sb.append("</tr>");
 		        while (rl.next()) {
 		            sb.append("<tr>");
@@ -164,8 +165,7 @@ public class QueryTagsTesterServlet extends HttpServlet {
 		            sb.append(rl.getValue(columnNames[0])+"&objectType="+rl.getValue(columnNames[1])+"\" >");
 		            sb.append("More details</a></td>");
 		            sb.append("<td align=\"center\">"+rl.getValue(columnNames[3])+"</td>");
-		            sb.append("<td align=\"center\">"+rl.getValue(columnNames[4])+"</td>");
-		            sb.append("<td align=\"center\"><i>"+rl.getValue(columnNames[5])+"</i></td>");
+		            sb.append("<td align=\"center\"><i>"+rl.getValue(columnNames[4])+"</i></td>");
 		            sb.append("</tr>");
 		        }
 		        sb.append("<table>");
@@ -175,6 +175,7 @@ public class QueryTagsTesterServlet extends HttpServlet {
 		} catch (QueryParamsException e) {
 		    sb = new StringBuffer(e.toString());
 		} catch (Exception e) {
+            e.printStackTrace();
 		    sb = new StringBuffer(e.toString());
 		}
         finally {
