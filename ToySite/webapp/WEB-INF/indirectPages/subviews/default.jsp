@@ -19,7 +19,7 @@
          	<td align="center"><misc:primaryKey primaryKey="${row[columnName]}" url="${wdk_record_url}" /></td>
           </c:when>
           <c:otherwise>
-          	<td align="center"><misc:multiType value="${row[columnName]}" /></td>
+          	<td align="center"><misc:multiType value="${row[columnName]}">${row[columnName]}</misc:multiType></td>
           </c:otherwise>
         </c:choose>
 	  </c:forEach>
