@@ -1,8 +1,8 @@
-<%@ taglib prefix="sample" tagdir="/WEB-INF/tags/local" %>
+<%@ taglib prefix="site" tagdir="/WEB-INF/tags/site" %>
 <%@ taglib prefix="wdkm" uri="http://www.gusdb.org/taglibs/wdk-misc-0.1" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<sample:header banner="RNA View" />
+<site:header banner="RNA View" />
 
 <wdkm:renameAttribute from="ri" to="rna" />
 
@@ -19,4 +19,4 @@
 </table>
 
 
-<sample:footer />
+<site:footer />

@@ -1,10 +1,11 @@
-<%@ taglib prefix="sample" tagdir="/WEB-INF/tags/local" %>
+<%@ taglib prefix="site" tagdir="/WEB-INF/tags/site" %>
+<%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="misc" uri="http://www.gusdb.org/taglibs/wdk-misc-0.1" %>
 <%@ taglib uri="http://jsptags.com/tags/navigation/pager" prefix="pg" %>
 
 
-<sample:header title="Results Page" banner="Results" />
+<site:header title="Results Page" banner="Results" />
 
   <c:choose>
    <c:when test='${wdk_paging_total == 0}'>
@@ -27,13 +28,13 @@
        <pg:param name="${paramName}" id="pager" />
      </c:forEach>
      
-     <sample:pager /> 
+     <wdk:pager /> 
      
      <c:import url="/WEB-INF/indirectPages/subviews/${renderer}.jsp" />
 
-     <sample:pager />
+     <wdk:pager />
 
   </pg:pager>
    </c:otherwise>
   </c:choose>
-  <sample:footer />
+  <site:footer />
