@@ -7,6 +7,11 @@
 <!-- display page header -->
 <site:header banner="Boolean Question" />
 
+<!-- show error messages, if any -->
+<wdk:errors/>
+
+<jsp:useBean scope="request" id="helps" class="java.util.HashMap"/>
+
 <nested:form method="get" action="/processBooleanQuestion.do">
   <nested:root name="currentBooleanRoot">
     <jsp:include page="/WEB-INF/includes/booleanQuestionNode.jsp"/>

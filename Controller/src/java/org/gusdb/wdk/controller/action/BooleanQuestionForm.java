@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Vector;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
@@ -32,15 +33,8 @@ public class BooleanQuestionForm extends QuestionForm {
     private String nextQuestionOperand;
 
     public void reset() {
-	//DTB -- differs from question form -- what should be reset?  Maybe parameters of all
-	// Questions on page
-
-	/*BooleanQuestionNodeBean bqn = getBooleanQuestionNode();
-	ParamBean[] params = booleanQuestionNode.getParams();
-	for (int i=0; i<params.length; i++) {
-	    ParamBean p = params[i];
-	    setMyProp(p.getName(), null);
-	    }*/
+	//TODO: implement reset to handle the cases
+	// where session scope formbean being used by multiple jsp pages
     }
 
     /**
@@ -51,27 +45,37 @@ public class BooleanQuestionForm extends QuestionForm {
 	ActionErrors errors = new ActionErrors();
 
 	String clicked = request.getParameter(CConstants.PBQ_SUBMIT_KEY);
-	if (clicked != null && clicked.equals(CConstants.PBQ_SUBMIT_GROW_BOOLEAN)) {
+	if (clicked != null && clicked.startsWith(CConstants.PBQ_SUBMIT_GROW_BOOLEAN)) {
 	    return errors;
 	}
 
-	//DTB -- need to figure out what to validate
+	BooleanQuestionNodeBean root =
+	    (BooleanQuestionNodeBean)request.getSession().getAttribute(CConstants.CURRENT_BOOLEAN_ROOT_KEY);
+
+	Vector allNodes = new Vector();
+        allNodes = root.getAllNodes(allNodes);
 	
-	//BooleanQuestionNodeBean booleanQuestionNode = getBooleanQuestionNode();
-	//	ParamBean[] params = booleanQuestionNode.getParams();
-	/*for (int i=0; i<params.length; i++) {
-	    ParamBean p = params[i];
-	    try {
-		Object pVal = getMyProp(p.getName());
-		String errMsg = p.validateValue(pVal);
-		if (errMsg != null) {
-		    errors.add(ActionErrors.GLOBAL_ERROR,
-			       new ActionError("mapped.properties", p.getPrompt(), errMsg));
+	for (int i = 0; i < allNodes.size(); i++){
+	    Object nextNode = allNodes.elementAt(i);
+	    if (nextNode instanceof BooleanQuestionLeafBean){		
+		BooleanQuestionLeafBean nextLeaf = (BooleanQuestionLeafBean)nextNode;
+		Integer leafId = nextLeaf.getLeafId();
+		ParamBean[] params = nextLeaf.getQuestion().getParams();
+		for (int j=0; j<params.length; j++) {
+		    ParamBean p = params[j];
+		    try {
+			String pKey = leafId.toString() + '_' + p.getName();
+			Object pVal = getMyProp(pKey);
+			String errMsg = p.validateValue(pVal);
+			if (errMsg != null) {
+			    errors.add(pKey, new ActionError("mapped.properties",  p.getPrompt(), errMsg));
+			}
+		    } catch (WdkModelException exp) {
+			throw new RuntimeException(exp.getMessage());
+		    }
 		}
-	    } catch (WdkModelException exp) {
-		throw new RuntimeException(exp);
 	    }
-	    }*/
+	}
 	return errors;
     }
 
