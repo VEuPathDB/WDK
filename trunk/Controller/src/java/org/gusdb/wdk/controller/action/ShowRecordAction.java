@@ -9,9 +9,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.gusdb.wdk.controller.CConstants;
 
-import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.RecordClass;
-import org.gusdb.wdk.model.RecordInstance;
+import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.model.jspwrap.RecordClassBean;
+import org.gusdb.wdk.model.jspwrap.RecordBean;
 
 
 /**
@@ -27,10 +27,10 @@ public class ShowRecordAction extends Action {
 				 HttpServletRequest request,
 				 HttpServletResponse response) throws Exception {
 
-	WdkModel wdkModel = (WdkModel)getServlet().getServletContext().getAttribute(CConstants.WDK_MODEL_KEY);
-	RecordClass wdkRecordClass = wdkModel.getRecordClass(request.getParameter("name"));
-	RecordInstance wdkRecord = wdkRecordClass.makeRecordInstance();
-	wdkRecord.setPrimaryKey(request.getParameter("id"));
+	WdkModelBean wdkModel = (WdkModelBean)getServlet().getServletContext().getAttribute(CConstants.WDK_MODEL_KEY);
+	RecordClassBean wdkRecordClass = wdkModel.findRecordClass(request.getParameter("name"));
+	RecordBean wdkRecord = wdkRecordClass.makeRecord();
+	wdkRecord.assignPrimaryKey(request.getParameter("id"));
 
 	request.getSession().setAttribute(CConstants.WDK_RECORD_KEY, wdkRecord);
 
