@@ -7,6 +7,8 @@ import org.gusdb.gus.wdk.model.implementation.NullQueryInstance;
 import org.gusdb.gus.wdk.view.GlobalRepository;
 
 import java.io.*;
+import java.util.Enumeration;
+
 import javax.servlet.jsp.*;
 import javax.servlet.jsp.tagext.*;
 
@@ -50,35 +52,49 @@ public class QueryHolder extends SimpleTagSupport {
     }
 
     public String getInitQuery() {
-	return initQuery;
+        return initQuery;
     }
-
+    
     public void setInitCountString(String initCountString) {
-	this.initCountString = initCountString;
+        this.initCountString = initCountString;
     }
-
+    
     public int getInitCount() {
-	return initCount;
+        return initCount;
     }
     
     public void doTag() throws IOException, JspException {
-	JspWriter out = getJspContext().getOut();
-	out.println("<form>");
-
-	
-	SimpleQueryInstanceI sqii = NullQueryInstance.INSTANCE;
-	
-	if ( initQuery != null) {
-		SimpleQuerySet sqs = GlobalRepository.getInstance().getSimpleQuerySet(querySet);
-		SimpleQueryI sq = sqs.getQuery(initQuery);
-		sqii = sq.makeInstance();
-	}
-	
-	if (getJspBody() != null) {
-		getJspContext().setAttribute(var, sqii, PageContext.PAGE_SCOPE);
-	    getJspBody().invoke(null);
-	}
-	out.println("</form>");
+        JspWriter out = getJspContext().getOut();
+        out.println("<form method=\"GET\" action=\"/sampleWDK/QueryTagsTester\">");
+        out.println("<input type=\"hidden\" name=\"formName\" value=\""+name+"\">");
+        out.println("<input type=\"hidden\" name=\"querySet\" value=\""+querySet+"\">");
+        
+        // Print out any warning/validation error messages
+        // They should all start with formName.error.
+        Enumeration e = getJspContext().getAttributeNamesInScope(PageContext.REQUEST_SCOPE);
+        while (e.hasMoreElements()) {
+            String key = (String) e.nextElement();
+            System.err.println("The key is "+key);
+            if (key.startsWith(name+".error.")) {
+                out.println("<font color=\"red\">");
+                out.println(getJspContext().getAttribute(key, PageContext.REQUEST_SCOPE));
+                out.println("</font><br>");
+            } 
+        }
+        
+        SimpleQueryInstanceI sqii = NullQueryInstance.INSTANCE;
+        
+        if ( initQuery != null) {
+            SimpleQuerySet sqs = GlobalRepository.getInstance().getSimpleQuerySet(querySet);
+            SimpleQueryI sq = sqs.getQuery(initQuery);
+            sqii = sq.makeInstance();
+        }
+        
+        if (getJspBody() != null) {
+            getJspContext().setAttribute(var, sqii, PageContext.PAGE_SCOPE);
+            getJspBody().invoke(null);
+        }
+        out.println("</form>");
     }
 
 	/**
@@ -87,6 +103,7 @@ public class QueryHolder extends SimpleTagSupport {
 	public String getQuerySet() {
 		return querySet;
 	}
+    
 	/**
 	 * @param querySet The querySet to set.
 	 */
