@@ -61,27 +61,6 @@
     <description>A servlet that cooperates with the query tags to fill them out.</description>
     <servlet-class>org.gusdb.wdk.controller.servlets.InteractiveRecordListServlet</servlet-class>
   </servlet>
-
-  <servlet>
-    <servlet-name>ModelAdmin</servlet-name>
-    <display-name>ModelAdmin</display-name>
-    <description>A servlet that displays and manages the cache.</description>
-    <servlet-class>org.gusdb.wdk.controller.servlets.ModelAdminServlet</servlet-class>
-  </servlet>
-
-  <servlet>
-    <servlet-name>CacheMgr</servlet-name>
-    <display-name>CacheMgr</display-name>
-    <description>A servlet that displays and manages the cache.</description>
-    <servlet-class>org.gusdb.wdk.controller.servlets.CacheMgrServlet</servlet-class>
-  </servlet>
-
-  <servlet>
-    <servlet-name>LogMgr</servlet-name>
-    <display-name>LogMgr</display-name>
-    <description>A servlet that displays and manages the webapp logging.</description>
-    <servlet-class>org.gusdb.wdk.controller.servlets.LogMgrServlet</servlet-class>
-  </servlet>
       
   <servlet-mapping>
     <servlet-name>ViewFullRecord</servlet-name>
@@ -92,20 +71,5 @@
     <servlet-name>InteractiveRecordList</servlet-name>
     <url-pattern>/InteractiveRecordList</url-pattern>
   </servlet-mapping> 
-
-  <servlet-mapping>
-    <servlet-name>ModelAdmin</servlet-name>
-    <url-pattern>/admin/ModelAdmin</url-pattern>
-  </servlet-mapping>
-
-  <servlet-mapping>
-    <servlet-name>CacheMgr</servlet-name>
-    <url-pattern>/admin/private/CacheMgr</url-pattern>
-  </servlet-mapping>
-
-  <servlet-mapping>
-    <servlet-name>LogMgr</servlet-name>
-    <url-pattern>/admin/private/LogMgr</url-pattern>
-  </servlet-mapping>  
 
 </web-app> 
