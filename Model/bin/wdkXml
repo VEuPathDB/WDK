@@ -1,23 +1,13 @@
-#!/bin/csh
+#!/usr/bin/perl
 
-if ($#argv == 0) then
-  echo ""
-  echo "Parse a wdk model xml file"
-  echo ""
-  echo "Usage: wdkXml xmlFile propFile configFile"
-  echo	""
-  echo "Where:"
-  echo "  xmlFile: the model xml file"
-  echo "  propFile: a properties file containing key-value pairs to substitute into macros in the model xml file.  The macros are of the form @key@."
-  echo "  configFile: configuration information for the model."
-  exit 1 
-endif
+$GUS_HOME=$ENV{GUS_HOME};
+$CLASSPATH="$GUS_HOME/lib/java/commons-digester-1.5.jar:$GUS_HOME/lib/java/WDK-Model.jar:$GUS_HOME/lib/java/commons-beanutils.jar:$GUS_HOME/lib/java/commons-collections.jar:$GUS_HOME/lib/java/commons-logging-api.jar:$GUS_HOME/lib/java/xercesImpl.jar:$GUS_HOME/lib/java/oracle-classes12.jar:$GUS_HOME/lib/java/commons-dbcp-1.1.jar:$GUS_HOME/lib/java/commons-pool-1.1.jar:$GUS_HOME/lib/java/commons-cli-1.0.jar:$GUS_HOME/lib/java/jing-20030619.jar";
 
+my $args = "";
+foreach my $arg (@ARGV) {
+    $args .= ($arg =~ /\-/ ? " $arg" : " \"$arg\"");
+}
 
-setenv CLASSPATH "$GUS_HOME/lib/java/commons-cli-1.0.jar:$GUS_HOME/lib/java/oracle-classes12.jar:$GUS_HOME/lib/java/commons-pool-1.1.jar:$GUS_HOME/lib/java/commons-dbcp-1.1.jar:$GUS_HOME/lib/java/commons-digester-1.5.jar:$GUS_HOME/lib/java/WDK-Model.jar:$GUS_HOME/lib/java/commons-beanutils.jar:$GUS_HOME/lib/java/commons-collections.jar:$GUS_HOME/lib/java/commons-logging-api.jar:$GUS_HOME/lib/java/xercesImpl.jar:$GUS_HOME/lib/java/jing-20030619.jar"
+my $cmd = "java -Djdbc.drivers=oracle.jdbc.driver.OracleDriver -DcmdName=wdkXml -DschemaFile=$GUS_HOME/lib/rng/wdkModel.rng -classpath $CLASSPATH org.gusdb.wdk.model.implementation.ModelXmlParser $args";
 
-#setenv LOGGING_PROPS "-Dorg.apache.commons.logging.Log=org.apache.commons.logging.impl.SimpleLog -Dorg.apache.commons.logging.simplelog.log.org.apache.commons.digester.Digester=error -Dorg.apache.commons.logging.simplelog.log.org.apache.commons.digester.Digester.sax=info"
-
-setenv LOGGING_PROPS
-
-java -classpath $CLASSPATH $LOGGING_PROPS -DerrorHandler=org.xml.sax.helpers.DefaultHandler -DschemaFile=$GUS_HOME/lib/rng/wdkModel.rng org.gusdb.wdk.model.implementation.ModelXmlParser $1 $2 $3
+system($cmd);

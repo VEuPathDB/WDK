@@ -38,6 +38,15 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
+import org.apache.commons.cli.BasicParser;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionGroup;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+
 import com.thaiopensource.util.PropertyMap;
 import com.thaiopensource.util.SinglePropertyMap;
 import com.thaiopensource.validate.ValidateProperty;
@@ -359,11 +368,20 @@ public class ModelXmlParser {
     
     public static void main( String[] args ) {
         try {
-            File modelXmlFile = new File(args[0]);
-	    File modelPropFile = new File(args[1]);
-	    File modelConfigFile = new File(args[2]);
+	    
+	    String cmdName = System.getProperties().getProperty("cmdName");
+	    
+	    // process args
+	    Options options = declareOptions();
+	    CommandLine cmdLine = parseOptions(cmdName, options, args);
+	    
+	    File modelConfigXmlFile = 
+		new File(cmdLine.getOptionValue("configFile"));
+	    File modelXmlFile = new File(cmdLine.getOptionValue("modelXmlFile"));
+	    File modelPropFile = new File(cmdLine.getOptionValue("modelPropFile"));
+
             File schemaFile = new File(System.getProperty("schemaFile"));
-            WdkModel wdkModel = parseXmlFile(modelXmlFile.toURL(), modelPropFile.toURL(), schemaFile.toURL(), modelConfigFile.toURL());
+            WdkModel wdkModel = parseXmlFile(modelXmlFile.toURL(), modelPropFile.toURL(), schemaFile.toURL(), modelConfigXmlFile.toURL());
             
             System.out.println( wdkModel.toString() );
             
@@ -374,6 +392,70 @@ public class ModelXmlParser {
             System.exit(1);
         }
     }
+
+    private static void addOption(Options options, String argName, String desc) {
+        
+        Option option = new Option(argName, true, desc);
+        option.setRequired(true);
+        option.setArgName(argName);
+        
+        options.addOption(option);
+    }
+    
+    
+    static Options declareOptions() {
+	Options options = new Options();
+
+	// config file
+	addOption(options, "configFile", "the model config .xml file");
+
+	// model file
+	addOption(options, "modelXmlFile", "An .xml file that specifies WDK Model.");
+	// model prop file
+	addOption(options, "modelPropFile", "A .prop file that specifies key=value pairs to substitute into the model file.");
+	
+	return options;
+    }
+
+    static CommandLine parseOptions(String cmdName, Options options, 
+				    String[] args) {
+
+        CommandLineParser parser = new BasicParser();
+        CommandLine cmdLine = null;
+        try {
+            // parse the command line arguments
+            cmdLine = parser.parse( options, args );
+        }
+        catch( ParseException exp ) {
+            // oops, something went wrong
+            System.err.println("");
+            System.err.println( "Parsing failed.  Reason: " + exp.getMessage() ); 
+            System.err.println("");
+            usage(cmdName, options);
+        }
+
+        return cmdLine;
+    }   
+
+        static void usage(String cmdName, Options options) {
+        
+        String newline = System.getProperty( "line.separator" );
+        String cmdlineSyntax = 
+            cmdName + 
+            " -configFile config_file" +
+            " -modelXmlFile model_xml_file" +
+            " -querySetName query_set_name";
+        
+        String header = 
+            newline + "Parse and print out a WDK Model xml file." + newline + newline + "Options:" ;
+        
+        String footer = "";
+        
+        //	PrintWriter stderr = new PrintWriter(System.err);
+        HelpFormatter formatter = new HelpFormatter();
+        formatter.printHelp(75, cmdlineSyntax, header, options, footer);
+        System.exit(1);
+    }
+
+
 }
-
-
