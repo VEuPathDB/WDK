@@ -9,6 +9,7 @@
   <form-beans>
     <form-bean name="questionSetForm" type="org.gusdb.wdk.controller.action.QuestionSetForm"/>
     <form-bean name="questionForm" type="org.gusdb.wdk.controller.action.QuestionForm"/>
+    <form-bean name="booleanQuestionForm" type="org.gusdb.wdk.controller.action.BooleanQuestionForm"/>
   </form-beans>
 
   <global-exceptions>
@@ -32,12 +33,30 @@
       <forward name="show_question" path="/question.jsp"/>
     </action>
     <action
+       path="/processQuestion"
+       type="org.gusdb.wdk.controller.action.ProcessQuestionAction"
+       scope="session"
+       name="questionForm"
+       input="/question.jsp">
+       <forward name="pq_show_summary" path="/showSummary.do"/>
+       <forward name="pq_grow_boolean" path="/growBoolean.do"/>
+    </action>
+    <action
       path="/showSummary"
       type="org.gusdb.wdk.controller.action.ShowSummaryAction"
       scope="session"
       name="questionForm"
       input="/question.jsp">
       <forward name="show_summary" path="/summary.jsp"/>
+    </action>
+    
+    <action
+      path="/growBoolean"
+      type="org.gusdb.wdk.controller.action.GrowBooleanAction"
+      scope="session"
+      name="booleanQuestionForm"
+      input="/booleanQuestion.jsp">
+      <forward name="grow_boolean" path="/booleanQuestion.jsp"/>
     </action>
     <action
       path="/showRecord"
