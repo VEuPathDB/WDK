@@ -84,13 +84,13 @@ public class QuestionForm extends ActionForm {
 
     public void setMyProp(String key, String val)
     {
-	System.err.println("*** QuestionForm.setMyProp: " + key + " = " + val + "\n");
+	//System.err.println("*** QuestionForm.setMyProp: " + key + " = " + val + "\n");
 	myProps.put(key, val);
     }
 
     public void setMyMultiProp(String key, String[] vals)
     {
-	System.err.println("*** QuestionForm.setMyMultiProp: " + key + " with " + vals.length + " values\n");
+	//System.err.println("*** QuestionForm.setMyMultiProp: " + key + " with " + vals.length + " values\n");
 	myProps.put(key, vals);
     }
 
