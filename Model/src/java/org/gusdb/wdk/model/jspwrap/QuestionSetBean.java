@@ -2,6 +2,8 @@ package org.gusdb.wdk.model.jspwrap;
 
 import org.gusdb.wdk.model.QuestionSet;
 import org.gusdb.wdk.model.Question;
+import java.util.Map;
+import java.util.LinkedHashMap;
 
 /**
  * A wrapper on a {@link QuestionSet} that provides simplified access for 
@@ -22,6 +24,15 @@ public class QuestionSetBean {
 	    questionBeans[i] = new QuestionBean(questions[i]);
 	}
 	return questionBeans;
+    }
+
+    public Map getQuestionsMap() {
+	LinkedHashMap map = new LinkedHashMap();
+	QuestionBean[] questions = getQuestions();
+	for (int i=0; i<questions.length; i++) {
+	    map.put(questions[i].getName(), questions[i]);
+	}
+	return map;
     }
 
     public String getName() {

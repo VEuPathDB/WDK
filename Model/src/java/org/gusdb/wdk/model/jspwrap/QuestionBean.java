@@ -2,6 +2,9 @@ package org.gusdb.wdk.model.jspwrap;
 
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.Param;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
+import java.util.Map;
 
 /**
  * A wrapper on a {@link Question} that provides simplified access for 
@@ -36,6 +39,16 @@ public class QuestionBean {
 	return question.getHelp();
     }
 
+    /**
+     * Called by the controller
+     * @param paramValues Map of paramName-->value
+     * @param start Index of the first record to include in the answer
+     * @param end Index of the last record to include in the answer
+     */
+    public AnswerBean makeAnswer(Map paramValues, int start, int end) throws WdkModelException, WdkUserException {
+	return new AnswerBean(question.makeAnswer(paramValues, start,end));
+    }
+    
     public String getDescription(){
 	return question.getDescription();
     }

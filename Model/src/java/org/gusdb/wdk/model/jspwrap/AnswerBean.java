@@ -10,36 +10,40 @@ import java.util.Iterator;
  * A wrapper on a {@link Answer} that provides simplified access for 
  * consumption by a view
  */ 
-public class SummaryBean {
+public class AnswerBean {
 
-    Answer summary;
+    Answer answer;
     
 
-    public SummaryBean(Answer summary) {
-	this.summary = summary;
+    public AnswerBean(Answer answer) {
+	this.answer = answer;
     }
 
     /**
-     * @return A Map of paramName --> {@link ParamBean}.
+     * @return A Map of param displayName --> param value.
      */
     public Map getParams() {
-	return summary.getDisplayParams();
+	return answer.getDisplayParams();
     }
 
     public int getPageSize() {
-	return summary.getPageSize();
+	return answer.getPageSize();
     }
 
     public int getResultSize() {
 	try {
-	    return summary.getResultSize();
+	    return answer.getResultSize();
 	} catch (WdkModelException e) {
 	    throw new RuntimeException(e);
 	}
     }
 
     public RecordClassBean getRecordClass() {
-	return new RecordClassBean(summary.getQuestion().getRecordClass());
+	return new RecordClassBean(answer.getQuestion().getRecordClass());
+    }
+
+    public QuestionBean getQuestion() {
+	return new QuestionBean(answer.getQuestion());
     }
 
     /**
@@ -56,16 +60,16 @@ public class SummaryBean {
     class RecordBeanList implements Iterator {
 
 	public int getSize() {
-	    return summary.getPageSize();
+	    return answer.getPageSize();
 	}
     
 	public boolean hasNext() {
-	    return summary.hasMoreRecordInstances();
+	    return answer.hasMoreRecordInstances();
 	}
 	
 	public Object next() {
 	    try {
-		return new RecordBean(summary.getNextRecordInstance());
+		return new RecordBean(answer.getNextRecordInstance());
 	    }
 	    catch (WdkModelException exp) {
 		throw new RuntimeException(exp);

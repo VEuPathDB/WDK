@@ -17,6 +17,10 @@ public class WdkModelBean {
 	this.model = model;
     }
 
+    public String getName() {
+	return model.getName();
+    }
+    
     public String getIntroduction() {
 	return model.getIntroduction();
     }
