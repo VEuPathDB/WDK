@@ -1,19 +1,21 @@
 package org.gusdb.gus.wdk.model.query;
 
-import java.util.Hashtable;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Vector;
-import java.util.Enumeration;
+import java.util.Iterator;
 
 public abstract class Query {
     
     String name;
     String displayName;
     String help;
-    Hashtable paramsH;
+    Boolean isCacheable = new Boolean(true);
+    HashMap paramsH;
     Vector paramsV;
 
     public Query () {
-	paramsH = new Hashtable();
+	paramsH = new HashMap();
 	paramsV = new Vector();
     }
 
@@ -35,6 +37,14 @@ public abstract class Query {
 
     public String getDisplayName() {
 	return displayName;
+    }
+
+    public void setIsCacheable(Boolean isCacheable) {
+	this.isCacheable = isCacheable;
+    }
+
+    public Boolean getIsCacheable() {
+	return isCacheable;
     }
 
     public void setHelp(String help) {
@@ -61,10 +71,27 @@ public abstract class Query {
     /////////////  Protected ////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////
 
-    protected abstract QueryInstance makeInstance();
+    protected QueryInstance makeInstance() {
+	return makeInstance(true);
+    }
 
-    protected void validateParamValues(Hashtable values) throws QueryParamsException {
-	Hashtable errors = null;
+    /**
+     * @param useCache True to allow this instance to insert into and/or 
+     * retrieve from the cache (if permitted by the Query).
+     */
+    protected abstract QueryInstance makeInstance(boolean useCache);
+
+    protected void validateParamValues(Map values) throws QueryParamsException {
+	HashMap errors = null;
+
+	// first confirm that all supplied values have legal names
+	Iterator valueNames = values.keySet().iterator();
+	while (valueNames.hasNext()) {
+	    String valueName = (String)valueNames.next();
+	    if (paramsH.get(valueName) == null) {
+		throw new IllegalArgumentException("'" + valueName + "' is not a legal parameter name for query '" + name + "'"  );
+	    }
+	}
 
 	int size = paramsV.size();
 	for(int i=0; i<size; i++) {
@@ -72,7 +99,7 @@ public abstract class Query {
 	    String value = (String)values.get(p.getName());
 	    String errMsg = p.validateValue(value);
 	    if (errMsg != null) {
-		if (errors == null) errors = new Hashtable();
+		if (errors == null) errors = new HashMap();
 		String booBoo[] = {value, errMsg};
 		errors.put(p, booBoo);
 	    }

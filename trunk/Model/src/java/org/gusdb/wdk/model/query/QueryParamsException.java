@@ -1,36 +1,36 @@
 package org.gusdb.gus.wdk.model.query;
 
-import java.util.Hashtable;
-import java.util.Enumeration;
+import java.util.Map;
+import java.util.Iterator;
 
 public class QueryParamsException extends Exception {
 
-    Hashtable booBoos;
+    Map booBoos;
 
-    public QueryParamsException(Hashtable booBoos) {
+    public QueryParamsException(Map booBoos) {
 	super();
 	this.booBoos = booBoos;
     }
 
-    public QueryParamsException(String message, Hashtable booBoos) {
+    public QueryParamsException(String message, Map booBoos) {
 	super(message);
 	this.booBoos = booBoos;
     }
 
-    public QueryParamsException(Throwable cause, Hashtable booBoos) {
+    public QueryParamsException(Throwable cause, Map booBoos) {
 	super(cause);
 	this.booBoos = booBoos;
     }
 
-    public QueryParamsException(String message, Throwable cause, Hashtable booBoos) {
+    public QueryParamsException(String message, Throwable cause, Map booBoos) {
 	super(message, cause);
 	this.booBoos = booBoos;
     }
 
     /**
-     * @return Hashtable where keys are Params and values are an tuple of (value, errMsg), one for each error param value
+     * @return Map where keys are Params and values are an tuple of (value, errMsg), one for each error param value
      */
-    public Hashtable getBooBoos() {
+    public Map getBooBoos() {
 	return booBoos;
     }
 
@@ -38,11 +38,11 @@ public class QueryParamsException extends Exception {
      * @return A default formatting of contained errors
      */
     public String formatErrors() {
-	Enumeration keys = booBoos.keys();
+	Iterator keys = booBoos.keySet().iterator();
 	String newline = System.getProperty( "line.separator" );
 	StringBuffer buf = new StringBuffer(newline);
-	while(keys.hasMoreElements()) {
-	    Param param = (Param)keys.nextElement();
+	while(keys.hasNext()) {
+	    Param param = (Param)keys.next();
 	    String[] details = (String[])booBoos.get(param);
 	    buf.append(param.getName() + " value '" + details[0] + "' has an error: " 
 		       + details[1] + newline);

@@ -33,11 +33,11 @@ public class SqlEnumParam extends Param {
 	return sqlQuery;
     }
 
-    public Hashtable getKeysAndValues(SqlResultSetManager resultMgr) throws SQLException {
+    public Hashtable getKeysAndValues(SqlResultFactory resultFactory) throws SQLException {
 	if (hash == null) {
 	    hash = new Hashtable();
 	    SqlQueryInstance instance = new SqlQueryInstance(sqlQuery); 
-	    ResultSet rs = resultMgr.getResult(instance);
+	    ResultSet rs = resultFactory.getResult(instance);
 	    try {
 		while (rs.next()) {
 		    hash.put(rs.getString("key"), rs.getString("value"));
@@ -45,7 +45,7 @@ public class SqlEnumParam extends Param {
 	    } catch (SQLException e) {
 		    throw e;
 	    } finally {
-		resultMgr.closeResultSet(rs);
+		SqlUtils.closeResultSet(rs);
 	    }
 	}
 
