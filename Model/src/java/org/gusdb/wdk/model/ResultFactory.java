@@ -82,9 +82,11 @@ public class ResultFactory {
     /**
      * @param numParams Number of parameters allowed in a cached query
      */
-    public void createCache(int numParams) throws WdkModelException {
+    public void createCache(int numParams, boolean noSchemaOutput) throws WdkModelException {
 	String newline = System.getProperty( "line.separator" );
 	
+	String nameToUse = (noSchemaOutput == true ? instanceTableName : instanceTableFullName);
+
 	// Format sql to create table
 	StringBuffer sqlb = new StringBuffer();
 	String tblName = schemaName + "." + instanceTableName;
@@ -99,7 +101,7 @@ public class ResultFactory {
 	sqlb.append("param" + numParams + " varchar2(25))");
 	
 	// Execute it
-	System.out.println(newline + "Making cache table " + tblName + newline);
+	System.out.println(newline + "Making cache table " + nameToUse + newline);
 	
 	logger.fine("Using sql: " + sqlb.toString());
 	try {
@@ -108,7 +110,7 @@ public class ResultFactory {
 	    
 	    // Create sequence 
 	    platform.createSequence(tblName + "_pkseq", 1, 1);
-	    System.out.println("Creating sequence " + tblName + "_pkseq"
+	    System.out.println("Creating sequence " + nameToUse + "_pkseq"
 			       + newline);
 	    System.out.println("Done" + newline);
     } catch (SQLException e) {
@@ -126,10 +128,11 @@ public class ResultFactory {
      * the associated rows in the cache table both within one transaction; then
      * separately, as a post-process, drop the tables in the dropThese table.
      */    
-    public void resetCache() throws WdkModelException {
+    public void resetCache(boolean noSchemaOutput) throws WdkModelException {
 
 	// Query for the names of all cached result tables
 	//
+	String nameToUse = (noSchemaOutput == true ? instanceTableName : instanceTableFullName);
 	StringBuffer s = new StringBuffer();
 	s.append("select result_table from " + instanceTableFullName);
 	String tables[] = null; 
@@ -150,7 +153,7 @@ public class ResultFactory {
 	}
 
 	System.out.println("Succeeded in dropping " + nDropped);
-	System.out.println("Deleting all rows from " + instanceTableFullName);
+	System.out.println("Deleting all rows from " + nameToUse);
 
 	try {
 	    SqlUtils.execute(platform.getDataSource(), "delete from " + instanceTableFullName);
@@ -162,12 +165,13 @@ public class ResultFactory {
     /**
      * Drop all tables and sequences associated with the cache
      */    
-    public void dropCache() throws WdkModelException {
+    public void dropCache(boolean noSchemaOutput) throws WdkModelException {
 	try {
-	    resetCache();
-	    System.out.println("Dropping table " + instanceTableFullName);
+	    resetCache(noSchemaOutput);
+	    String nameToUse = (noSchemaOutput == true ? instanceTableName : instanceTableFullName);
+	    System.out.println("Dropping table " + nameToUse);
 	    platform.dropTable(schemaName, instanceTableName);
-	    System.out.println("Dropping sequence " + instanceTableFullName + "_pkseq");
+	    System.out.println("Dropping sequence " + nameToUse + "_pkseq");
 	    platform.dropSequence(instanceTableFullName + "_pkseq");
 	} catch (SQLException e) {
 	    throw new WdkModelException(e);
@@ -471,6 +475,7 @@ public class ResultFactory {
 	boolean newCache = cmdLine.hasOption("new");
 	boolean resetCache = cmdLine.hasOption("reset");
 	boolean dropCache = cmdLine.hasOption("drop");
+	boolean noSchemaOutput = cmdLine.hasOption("noSchemaOutput");
 
 	try {
 	    // read config info
@@ -496,9 +501,9 @@ public class ResultFactory {
 	    ResultFactory factory =
 		new ResultFactory(platform, login, instanceTable);
 
-	    if (newCache) factory.createCache(maxQueryParams.intValue());
-	    else if (resetCache) factory.resetCache();
-	    else if (dropCache) factory.dropCache();
+	    if (newCache) factory.createCache(maxQueryParams.intValue(), noSchemaOutput);
+	    else if (resetCache) factory.resetCache(noSchemaOutput);
+	    else if (dropCache) factory.dropCache(noSchemaOutput);
 
 	} catch (Exception e) {
 	    System.err.println("FAILED");
@@ -521,11 +526,14 @@ public class ResultFactory {
 
 	Option dropQ = new Option("drop", "drop the query cache");
 
+	Option noSchema = new Option("noSchemaOutput", "remove references to the schema when printing out messages regarding a table");
+
 	OptionGroup operation = new OptionGroup();
 	operation.setRequired(true);
 	operation.addOption(newQ);
-	operation.addOption(resetQ);
+ 	operation.addOption(resetQ);
 	operation.addOption(dropQ);
+	options.addOption(noSchema);
 	options.addOptionGroup(operation);
 
 	return options;
