@@ -149,7 +149,7 @@ sub drawSelf {
 
 	my $label;
 
-	if (defined($tickLabels)) {
+	if ((defined($tickLabels) && (scalar(@$tickLabels) == $nTicks))) {
 	    $label = $tickLabels->[$t];
 	} else {
 	    $label = $tW . $tickL;
