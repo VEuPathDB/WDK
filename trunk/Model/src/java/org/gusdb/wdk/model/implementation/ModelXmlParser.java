@@ -5,11 +5,11 @@ import org.gusdb.gus.wdk.model.Record;
 import org.gusdb.gus.wdk.model.RecordSet;
 import org.gusdb.gus.wdk.model.Reference;
 import org.gusdb.gus.wdk.model.QuerySet;
-import org.gusdb.gus.wdk.model.SqlEnumParam;
-import org.gusdb.gus.wdk.model.StringParam;
+import org.gusdb.gus.wdk.model.Param;
 import org.gusdb.gus.wdk.model.TextField;
 import org.gusdb.gus.wdk.model.WdkModel;
 import org.gusdb.gus.wdk.model.QueryNameList;
+import org.gusdb.gus.wdk.model.Query;
 import org.gusdb.gus.wdk.model.QueryName;
 import org.gusdb.gus.wdk.model.TextColumn;
 import org.gusdb.gus.wdk.model.RecordListSet;
@@ -19,6 +19,7 @@ import org.gusdb.gus.wdk.model.RecordList;
 import java.io.File;
 
 import org.apache.commons.digester.Digester;
+import org.xml.sax.helpers.DefaultHandler;
 
 public class ModelXmlParser {
 
@@ -33,8 +34,12 @@ public class ModelXmlParser {
     static Digester configureDigester() {
 
 	Digester digester = new Digester();
-	digester.setValidating( false );
-	
+	digester.setValidating(true);
+	digester.setNamespaceAware(true);
+	digester.setSchemaLanguage("http://www.w3.org/2001/XMLSchema");
+	digester.setSchema("wdkModelSchema.xsd");
+	digester.setErrorHandler(new ParserErrorHandler());
+
 	//Root -- WDK Model
 
 	digester.addObjectCreate( "wdkModel", WdkModel.class );
@@ -84,52 +89,31 @@ public class ModelXmlParser {
 
 	/**/ digester.addSetProperties( "wdkModel/querySet");
 	
-	/*  */ digester.addObjectCreate( "wdkModel/querySet/sqlQuery", SqlQuery.class );
+	/*  */ digester.addObjectCreate( "wdkModel/querySet/query", "xsi:type", Query.class );
 
-	/*  */ digester.addSetProperties( "wdkModel/querySet/sqlQuery");
+	/*  */ digester.addSetProperties( "wdkModel/querySet/query");
 
-	/*  */ digester.addBeanPropertySetter( "wdkModel/querySet/sqlQuery/sql");
+	/*  */ digester.addBeanPropertySetter( "wdkModel/querySet/query/sql");
 
-	/*    */ digester.addObjectCreate( "wdkModel/querySet/sqlQuery/sqlEnumParam", 
-				  SqlEnumParam.class );
-	/*    */ digester.addSetProperties( "wdkModel/querySet/sqlQuery/sqlEnumParam");
+	/*    */ digester.addObjectCreate( "wdkModel/querySet/query/param", "xsi:type", Param.class );
+	/*    */ digester.addSetProperties( "wdkModel/querySet/query/param");
 
-	/*      */ digester.addObjectCreate( "wdkModel/querySet/sqlQuery/sqlEnumParam/sqlQuery", SqlQuery.class );
+	/*      */ digester.addObjectCreate( "wdkModel/querySet/query/param/query", "xsi:type", Query.class );
 
-	/*        */ digester.addBeanPropertySetter( "wdkModel/querySet/sqlQuery/sqlEnumParam/sqlQuery/sql");
+	/*        */ digester.addBeanPropertySetter( "wdkModel/querySet/query/param/query/sql");
 
-	/*        */ digester.addObjectCreate( "wdkModel/querySet/sqlQuery/sqlEnumParam/sqlQuery/column", Column.class );
+	/*      */ digester.addSetNext( "wdkModel/querySet/query/param/query", "setSqlQuery");
 
-       	/*        */ digester.addSetProperties( "wdkModel/querySet/sqlQuery/sqlEnumParam/sqlQuery/column");
-
-	/*        */ digester.addSetNext ("wdkModel/querySet/sqlQuery/sqlEnumParam/sqlQuery/column", "addColumn");
-
-	/*      */ digester.addSetNext( "wdkModel/querySet/sqlQuery/sqlEnumParam/sqlQuery", "setSqlQuery");
-
-	/*    */ digester.addSetNext( "wdkModel/querySet/sqlQuery/sqlEnumParam", "addParam" );
+	/*    */ digester.addSetNext( "wdkModel/querySet/query/param", "addParam" );
 	
-	/*    */ digester.addObjectCreate( "wdkModel/querySet/sqlQuery/stringParam", 
-				  StringParam.class );
-
-	/*    */ digester.addSetProperties( "wdkModel/querySet/sqlQuery/stringParam");
-
-	/*    */ digester.addSetNext( "wdkModel/querySet/sqlQuery/stringParam", "addParam" );
 	
-	/*    */ digester.addObjectCreate( "wdkModel/querySet/sqlQuery/column", 
-				  Column.class );
+	/*    */ digester.addObjectCreate( "wdkModel/querySet/query/column", "xsi:type", Column.class );
 
-	/*    */ digester.addSetProperties( "wdkModel/querySet/sqlQuery/column");
+	/*    */ digester.addSetProperties( "wdkModel/querySet/query/column");
 
-	/*    */ digester.addSetNext( "wdkModel/querySet/sqlQuery/column", "addColumn" );
+	/*    */ digester.addSetNext( "wdkModel/querySet/query/column", "addColumn" );
 
-	/*    */ digester.addObjectCreate( "wdkModel/querySet/sqlQuery/textColumn", 
-				  TextColumn.class );
-
-	/*    */ digester.addSetProperties( "wdkModel/querySet/sqlQuery/textColumn");
-
-	/*    */ digester.addSetNext( "wdkModel/querySet/sqlQuery/textColumn", "addColumn" );
-
-	/*  */ digester.addSetNext( "wdkModel/querySet/sqlQuery", "addQuery" );
+	/*  */ digester.addSetNext( "wdkModel/querySet/query", "addQuery" );
 
 	/**/ digester.addSetNext( "wdkModel/querySet", "addQuerySet" );
 
