@@ -144,8 +144,7 @@ public class SummaryInstance {
 	    initRecordInstances();
 	}
 	for (int i = 0; i < recordInstances.length; i++){
-	    
-	    logger.finer(recordInstances[i].print());
+	    System.out.println(recordInstances[i].print());
 	}
     }
 
