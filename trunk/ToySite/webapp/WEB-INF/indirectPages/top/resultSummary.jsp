@@ -7,10 +7,13 @@
 <sample:header title="Results Page" banner="Results" />
 
   <c:choose>
-   <c:when test='${wdk.paging.total == 0}'>
+   <c:when test='${wdk_paging_total == 0}'>
       No results for your query
    </c:when>
    <c:otherwise>
+
+<p>Total number of results: ${wdk_paging_total}
+<p>
 
      <pg:pager isOffset="true"
                scope="request"
@@ -18,6 +21,7 @@
                maxItems="${wdk_paging_total}"
                url="${wdk_paging_url}"
                maxPageItems="${wdk_paging_pageSize}"
+               export="currentPageNumber=pageNumber"
                >
      <c:forEach var="paramName" items="${wdk_paging_params}">
        <pg:param name="${paramName}" id="pager" />
