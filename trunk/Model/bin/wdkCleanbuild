@@ -4,7 +4,12 @@ if ($#argv < 1 || $#argv > 2) then
   echo
   echo "usage: wdkCleanbuild cleanroom_dir_full_path [gus_config_file]"
   echo
-  echo "Create a clean build by making a clean PROJECT_HOME directly from CVS and making a fresh GUS_HOME.  Uses cleanroom_dir as the target.  (Please initialize it by creating the cleanroom dir and placing an install dir there, copied from your PROJECT_HOME).   gus_config_file is optional.  The default is $GUS_CONFIG_FILE  "
+  echo "Create a clean build by making a clean PROJECT_HOME directly from CVS and making a fresh GUS_HOME.  Uses cleanroom_dir as the target. gus_config_file is optional.  The default is $GUS_CONFIG_FILE."
+  echo
+  echo "Before running wdkCleanbuild for the first time, please initialize cleanroom_dir_full_path by doing the following:"
+  echo
+  echo "% mkdir -P cleanroom_dir_full_path/projects"
+  echo "% cp -r $PROJECT_HOME/install cleanroom_dir/projects" 
   echo
   exit(-1)
 endif
