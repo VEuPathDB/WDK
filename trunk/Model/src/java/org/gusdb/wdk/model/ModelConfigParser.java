@@ -1,10 +1,8 @@
 package org.gusdb.gus.wdk.model;
 
-import org.apache.commons.digester.Digester;
-
 import java.io.File;
-import java.io.IOException;
-import org.xml.sax.SAXException;
+
+import org.apache.commons.digester.Digester;
 
 public class ModelConfigParser {
 

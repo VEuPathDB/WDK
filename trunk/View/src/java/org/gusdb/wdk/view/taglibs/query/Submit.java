@@ -1,8 +1,8 @@
 package org.gusdb.gus.wdk.view.taglibs.query;
 
-import java.io.*;
-import javax.servlet.jsp.*;
-import javax.servlet.jsp.tagext.*;
+import java.io.IOException;
+
+import javax.servlet.jsp.tagext.SimpleTagSupport;
 
 public class Submit extends SimpleTagSupport {
     
