@@ -60,11 +60,11 @@ public class WdkModel {
 	allModelSets.put(setName, set);
     }
 
-    public QuerySet getQuerySet(String setName) throws WdkModelException {
+    public QuerySet getQuerySet(String setName) throws WdkUserException {
 	if (!querySets.containsKey(setName)) {
 	    String err = "WDK Model " + name +
 		" does not contain a query set with name " + setName;
-	    throw new WdkModelException(err);
+	    throw new WdkUserException(err);
 	}
 	return (QuerySet)querySets.get(setName);
     }
@@ -95,13 +95,7 @@ public class WdkModel {
 
     //ReferenceLists
     public void addReferenceList(ReferenceList referenceList) throws WdkModelException {
-	
-	if (referenceLists.containsKey(referenceList.getName())){
-	    String err = "WDK Model " + name + "already conatins a ReferenceList with name " +
-		referenceList.getName();
-	    throw new WdkModelException(err);
-	}
-	referenceLists.put(referenceList.getName(), referenceList);
+	addSet(referenceList, referenceLists);
     }
     
     public ReferenceList getReferenceList(String referenceListName) throws WdkModelException {

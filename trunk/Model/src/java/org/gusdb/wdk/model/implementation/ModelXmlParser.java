@@ -117,11 +117,11 @@ public class ModelXmlParser {
 
 	/**/ digester.addSetProperties("wdkModel/referenceList");
 	
-	/*  */ digester.addObjectCreate("wdkModel/referenceList/twoPartName", Reference.class);
+	/*  */ digester.addObjectCreate("wdkModel/referenceList/reference", Reference.class);
 
-	/*  */ digester.addSetProperties("wdkModel/referenceList/twoPartName");
+	/*  */ digester.addSetProperties("wdkModel/referenceList/reference");
 
-	/*  */ digester.addSetNext("wdkModel/referenceList/twoPartName", "addReference");
+	/*  */ digester.addSetNext("wdkModel/referenceList/reference", "addReference");
 
 	/**/ digester.addSetNext("wdkModel/referenceList", "addReferenceList");
 
@@ -153,6 +153,7 @@ public class ModelXmlParser {
 	    System.exit(1);
 	} catch( Exception e ) {
 	    System.err.println(e.getMessage());
+	    System.err.println("");
 	    e.printStackTrace();
 	    System.exit(1);
 	}

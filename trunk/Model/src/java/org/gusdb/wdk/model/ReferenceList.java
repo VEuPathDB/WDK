@@ -70,12 +70,12 @@ public class ReferenceList implements ModelSetI {
      * Check to make sure the reference twoPartNames are valid
      */
     public void resolveReferences(WdkModel model) throws WdkModelException {
-	Iterator refIter = referenceMap.values().iterator();
+	Iterator refIter = referenceMap.keySet().iterator();
 	while (refIter.hasNext()) {
 	    Reference ref = (Reference)refIter.next();
 	    model.resolveReference(ref.getTwoPartName(),
 				   getName(),
-				   this.getClass().getName(),
+				   "referenceList",
 				   "twoPartName");
 	}
 	

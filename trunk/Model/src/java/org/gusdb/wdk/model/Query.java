@@ -146,7 +146,14 @@ public abstract class Query {
     /////////////  Protected ////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////
 
-    protected void resolveReferences(WdkModel model) throws WdkModelException {}
+    protected void resolveReferences(WdkModel model) throws WdkModelException {
+	Iterator paramIterator = paramsH.values().iterator();
+	while (paramIterator.hasNext()) {
+	    Param param = (Param)paramIterator.next();
+	    param.resolveReferences(model);
+	}
+    }
+
     protected void setResources(WdkModel model) throws WdkModelException {
 
 	this.resultFactory = model.getResultFactory();

@@ -84,7 +84,7 @@ public class Record {
 	    Query query = 
 		(Query)model.resolveReference(queryName,
 					      getName(), 
-					      this.getClass().getName(),
+					      "record",
 					      "tableQueryRef");
 	    addTableQuery(query);
 	}
