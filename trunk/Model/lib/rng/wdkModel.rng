@@ -87,7 +87,7 @@
     </optional>
     <zeroOrMore>
       <element name="paramRef">
-        <attribute name="twoPartName" />
+        <attribute name="ref" />
       </element>
     </zeroOrMore>
     <oneOrMore>
@@ -208,14 +208,14 @@
       <attribute name="idPrefix" />
     
       <zeroOrMore>  
-        <element name="attributeQuery">
-          <attribute name="twoPartName" />
+        <element name="attributeQueryRef">
+          <attribute name="ref" />
         </element>
       </zeroOrMore>
    
       <zeroOrMore>
-        <element name="tableQuery">
-          <attribute name="twoPartName" />
+        <element name="tableQueryRef">
+          <attribute name="ref" />
         </element>
       </zeroOrMore>
       <optional>
