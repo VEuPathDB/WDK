@@ -91,7 +91,7 @@ public class RecordInstanceView implements Map {
     }
     
     public void close() throws WdkModelException {
-        ri.close();
+     //   ri.close();
     }
     
     private void generateAttributeNames() {
