@@ -2,13 +2,9 @@ package org.gusdb.gus.wdk.model.test;
 
 import org.gusdb.gus.wdk.model.ModelConfig;
 import org.gusdb.gus.wdk.model.ModelConfigParser;
-import org.gusdb.gus.wdk.model.PageableQueryI;
-import org.gusdb.gus.wdk.model.PageableQueryInstanceI;
-import org.gusdb.gus.wdk.model.PageableQuerySet;
 import org.gusdb.gus.wdk.model.Query;
 import org.gusdb.gus.wdk.model.QueryInstance;
 import org.gusdb.gus.wdk.model.Param;
-import org.gusdb.gus.wdk.model.QueryI;
 import org.gusdb.gus.wdk.model.QueryParamsException;
 import org.gusdb.gus.wdk.model.RDBMSPlatformI;
 import org.gusdb.gus.wdk.model.ResultFactory;

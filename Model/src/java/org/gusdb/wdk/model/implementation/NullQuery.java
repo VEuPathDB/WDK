@@ -2,7 +2,6 @@ package org.gusdb.gus.wdk.model.implementation;
 
 import org.gusdb.gus.wdk.model.Column;
 import org.gusdb.gus.wdk.model.Param;
-import org.gusdb.gus.wdk.model.QueryI;
 
 public class NullQuery implements QueryI {
     
