@@ -1,5 +1,11 @@
 package org.gusdb.gus.wdk.view.taglibs.query;
 
+import org.gusdb.gus.wdk.model.SimpleQueryI;
+import org.gusdb.gus.wdk.model.SimpleQueryInstanceI;
+import org.gusdb.gus.wdk.model.SimpleQuerySet;
+import org.gusdb.gus.wdk.model.implementation.NullQueryInstance;
+import org.gusdb.gus.wdk.view.GlobalRepository;
+
 import java.io.*;
 import javax.servlet.jsp.*;
 import javax.servlet.jsp.tagext.*;
@@ -13,7 +19,7 @@ public class QueryHolder extends SimpleTagSupport {
     private String platformClass;
     private String initCountString;
     private int initCount;
-
+    private String querySet;
     
     public void setBoolean(boolean bool) {
 	this.bool = bool;
@@ -59,10 +65,32 @@ public class QueryHolder extends SimpleTagSupport {
 	JspWriter out = getJspContext().getOut();
 	out.println("<form>");
 
+	
+	SimpleQueryInstanceI sqii = NullQueryInstance.INSTANCE;
+	
+	if ( initQuery != null) {
+		SimpleQuerySet sqs = GlobalRepository.getInstance().getSimpleQuerySet();
+		SimpleQueryI sq = sqs.getQuery(initQuery);
+		sqii = sq.makeInstance();
+	}
+	
 	if (getJspBody() != null) {
+		getJspContext().setAttribute(var, sqii, PageContext.PAGE_SCOPE);
 	    getJspBody().invoke(null);
 	}
 	out.println("</form>");
     }
 
+	/**
+	 * @return Returns the querySet.
+	 */
+	public String getQuerySet() {
+		return querySet;
+	}
+	/**
+	 * @param querySet The querySet to set.
+	 */
+	public void setQuerySet(String querySet) {
+		this.querySet = querySet;
+	}
 }
