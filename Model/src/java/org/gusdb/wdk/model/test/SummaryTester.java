@@ -47,7 +47,8 @@ public class SummaryTester {
 	    new File(cmdLine.getOptionValue("configFile"));
 	File modelXmlFile = new File(cmdLine.getOptionValue("modelXmlFile"));
         File modelPropFile = new File(cmdLine.getOptionValue("modelPropFile"));
-	
+	System.err.println("SummaryTester: model xml file: " + cmdLine.getOptionValue("modelXmlFile"));
+	System.err.println("SummaryTester: model prop file: " + cmdLine.getOptionValue("modelPropFile"));
 	String summarySetName = cmdLine.getOptionValue("summarySetName");
 	String summaryName = cmdLine.getOptionValue("summaryName");
 	String[] rows = cmdLine.getOptionValues("rows");
@@ -84,7 +85,7 @@ public class SummaryTester {
 	    ResultFactory resultFactory = new ResultFactory(dataSource, platform, 
 							    login, instanceTable);
 	    wdkModel.setResources(resultFactory, platform);
-	    
+	    System.err.println("SummaryTester: getting summary " + summaryName);
 	    SummarySet summarySet = wdkModel.getSummarySet(summarySetName);
 	    Summary summary = summarySet.getSummary(summaryName);
 
@@ -92,17 +93,18 @@ public class SummaryTester {
 		Hashtable paramValues = parseParamArgs(params);
 		Query query = summary.getQuery();
 		query.setIsCacheable(new Boolean(true));
-		
+		System.err.println("SummaryTester: going through rows");
 		int pageCount = 1;
-
+		
 		for (int i = 0; i < rows.length; i+=2){
 		    int nextStartRow = Integer.parseInt(rows[i]);
 		    int nextEndRow = Integer.parseInt(rows[i+1]);
-		    System.err.println("SummaryTester: have " + summary.getTotalLength(paramValues) + " total rows");
+
 		    SummaryInstance si = summary.makeSummaryInstance(paramValues, nextStartRow, nextEndRow);
-		    
+		    System.err.println("SummaryTester: have " + summary.getTotalLength(paramValues) + " total rows");		    
 		    System.err.println("Printing Record Instances on page " + pageCount);
 		    si.print();
+		    si.printAsTable();
 		    pageCount++;
 		}
 	    }
