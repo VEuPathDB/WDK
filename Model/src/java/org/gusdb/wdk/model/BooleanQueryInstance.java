@@ -257,13 +257,15 @@ public class BooleanQueryInstance extends QueryInstance {
 	    Integer firstQueryInstanceId = firstQueryInstance.getQueryInstanceId();
 	    if (firstQueryInstanceId == null){
 
-		firstQueryInstance.getResult();//assumes values have been set
+		ResultList rl1 = firstQueryInstance.getResult();//assumes values have been set
+		rl1.close(); //rl1 is only needed to close connection
 		firstQueryInstanceId = firstQueryInstance.getQueryInstanceId();
 	    }
 
 	    Integer secondQueryInstanceId = secondQueryInstance.getQueryInstanceId();
 	    if (secondQueryInstanceId == null){
-		secondQueryInstance.getResult();//assumes values have been set
+		ResultList rl2 = secondQueryInstance.getResult();//assumes values have been set
+		rl2.close(); //rl2 is only needed to close connection
 		secondQueryInstanceId = secondQueryInstance.getQueryInstanceId();
 	    }
 	    Hashtable h = new Hashtable();
