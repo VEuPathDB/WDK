@@ -596,7 +596,7 @@ sub getMassSpecFeatureSpans {
     # and so we group only by developmental_stage
     #
     my $sql = ("select aal.start_min, aal.end_max, a.name, msf.developmental_stage " .
-	       "from MassSpecFeature msf, ${dotsDb}.AALocation aal, ${coreDb}.Algorithm a " .
+	       "from gusdev.MassSpecFeature msf, ${dotsDb}.AALocation aal, ${coreDb}.Algorithm a " .
 	       "where msf.aa_sequence_id = $aaSeqId " .
 	       "and aal.aa_feature_id = msf.aa_feature_id " .
 	       "and msf.prediction_algorithm_id = a.algorithm_id " .
