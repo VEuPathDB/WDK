@@ -59,5 +59,8 @@ public abstract class ResultList {
 
     protected abstract Object getValueFromResult(String fieldName) throws Exception;
 
+    public QueryInstance getInstance() {
+        return instance;
+    }
 }
 
