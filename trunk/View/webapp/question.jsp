@@ -64,9 +64,8 @@
           <img src='<c:url value="/images/toHelp.jpg"/>' border="0" alt="Help!"></a>
       </td>
   </tr>
-
-  <c:set target="${helps}" property="${fromAnchorQ}" value="${helpQ}"/>
 </c:forEach>
+<c:set target="${helps}" property="${fromAnchorQ}" value="${helpQ}"/>
 
   <tr><td></td>
       <td><html:submit property="questionSubmit" value="Get Answer"/></td>

@@ -21,14 +21,19 @@
     </c:when>	
     <c:otherwise>
 
+      <nested:define id="wdkQ" property="question"/>
+      <nested:define id="leafPref" property="leafId"/>
+      <c:set value="${leafPref}_" var="leafPrefix"/>
+      <c:set value="${wdkQ.params}" var="qParams"/>
+
+      <!-- show all params of a question, collect help info along the way -->
+      <c:set value="Help for question: ${wdkQ.displayName}" var="fromAnchorQ"/>
+      <jsp:useBean id="helpQ" class="java.util.HashMap"/>
+
+      <!-- put an anchor here for linking back from help sections -->
+      <A name="${fromAnchorQ}"></A>
          <table border="1">
             <!-- Print out question -->
-            <nested:define id="wdkQ" property="question"/>
-            <nested:define id="leafPref" property="leafId"/>
-
-            <c:set value="${leafPref}_" var="leafPrefix"/>
-            <c:set value="${wdkQ.params}" var="qParams"/>
-
             <!-- display description -->
             <tr><td colspan="2">
                 <b><jsp:getProperty name="wdkQ" property="description"/></b></td></tr>
@@ -40,28 +45,35 @@
                <tr><td align="right"><b><jsp:getProperty name="qP" property="prompt"/></b></td>
 
                <!-- choose between flatVocabParam and straight text or number param -->
+               <td>
                <c:choose>
                   <c:when test="${qP.class.name eq 'org.gusdb.wdk.model.jspwrap.FlatVocabParamBean'}">
-                     <td>
-                        <c:set var="mp" value="0"/>
-                        <c:if test="${qP.multiPick}"><c:set var="mp" value="1"/></c:if>
-                        <c:set var="opt" value="0"/>
-                        <html:select  property="myProp(${leafPrefix}${pNam})" multiple="${mp}">
-                           <c:set var="opt" value="${opt+1}"/>
-                           <c:set var="sel" value=""/>
-                           <c:if test="${opt == 1}"><c:set var="sel" value="selected"/></c:if>      
-                           <html:options property="values(${leafPrefix}${pNam})" labelProperty="labels(${leafPrefix}${pNam})"/>
-                        </html:select>
-                     </td>
+                      <c:set var="mp" value="0"/>
+                      <c:if test="${qP.multiPick}"><c:set var="mp" value="1"/></c:if>
+                      <c:set var="opt" value="0"/>
+                      <html:select  property="myProp(${leafPrefix}${pNam})" multiple="${mp}">
+                         <c:set var="opt" value="${opt+1}"/>
+                         <c:set var="sel" value=""/>
+                         <c:if test="${opt == 1}"><c:set var="sel" value="selected"/></c:if>      
+                         <html:options property="values(${leafPrefix}${pNam})" labelProperty="labels(${leafPrefix}${pNam})"/>
+                      </html:select>
                   </c:when>
                   <c:otherwise>
-                     <td>
-                        <html:text property="myProp(${leafPrefix}${pNam})"/>
-                     </td>
+                      <html:text property="myProp(${leafPrefix}${pNam})"/>
                   </c:otherwise>
                 </c:choose>
+
+                <html:errors property="myProp(${leafPrefix}${pNam})"/>
+                
+                <c:set var="anchorQp" value="HELP_${fromAnchorQ}_${pNam}"/>
+                <c:set target="${helpQ}" property="${anchorQp}" value="${qP}"/>
+                   &nbsp;&nbsp;&nbsp;&nbsp;
+                   <a href="#${anchorQp}">
+                   <img src='<c:url value="/images/toHelp.jpg"/>' border="0" alt="Help!"></a>
+                </td>
                 </tr>
             </c:forEach>
+            <c:set target="${helps}" property="${fromAnchorQ}" value="${helpQ}"/>  
 
             <!-- display boolean stuff -->
             <tr>
