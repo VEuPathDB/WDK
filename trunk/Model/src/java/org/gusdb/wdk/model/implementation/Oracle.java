@@ -94,21 +94,26 @@ public class Oracle implements RDBMSPlatformI {
     }
     
     /**
-     * Transform an SQL query into an equivalent query that will write its
-     * output (along with a column "i" numbering the rows) into a table.
+     * Write the output of a query into a table, to which will be added a 
+     * column "i" numbering the rows.
      */
     public void createTableFromQuerySql(DataSource dataSource,
 					     String tableName, 
 					     String sql) throws SQLException {
-	sql = sql.replaceAll("\\s+from\\s+", ", rownum as i from ");
-
-	// Construct a 'create as' statement that will number the rows in
-	// the query (using the ROWNUM pseudocolumn) and write the entire
-	// shebang into the specified table, <code>tableName</code>.
-
+	
+	//Initialize the table with the results of <code>sql</code>
 	String newSql = "create table " + tableName + " as " + sql;
-
+	
 	SqlUtils.execute(dataSource, newSql);
+
+	//Add "i" to the table and initialize each row in that column to be rownum
+	String alterSql = "alter table " + tableName + " add i number(12)";
+
+	SqlUtils.execute(dataSource, alterSql);
+
+	String rownumSql = "update " + tableName + " set i = rownum";
+	
+	SqlUtils.execute(dataSource, rownumSql);
     }
 }
 
