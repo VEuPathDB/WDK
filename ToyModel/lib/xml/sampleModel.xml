@@ -23,11 +23,11 @@
              
        <tableQuery twoPartName="RnaRecordQueries.ExternalLinks"/>
        
-       <textField name="overview">
+       <textAttribute name="overview">
          <text>
        This is DoTS Transcript DT.$$primaryKey$$.  It is has a length of $$length$$.
          </text>
-       </textField>
+       </textAttribute>
      </record>
 
      <record name="RnaSummaryRecord" type="DoTS Transcript" idPrefix="DT.">
