@@ -182,44 +182,30 @@ public class WdkModel {
        String newline = System.getProperty( "line.separator" );
        StringBuffer buf = new StringBuffer("WdkModel: name='" + name 
 					   + "'");
-
-       buf.append( newline );
-       buf.append( "--- Param Sets---" );
-       buf.append( newline );
-       Iterator paramSetIterator = paramSets.values().iterator();
-       while (paramSetIterator.hasNext()) {
-	   buf.append( paramSetIterator.next() ).append( newline );
-       }
-       buf.append(newline);
-       
-       buf.append( newline );
-       buf.append( "--- Query Sets---" );
-       buf.append( newline );
-       Iterator querySetIterator = querySets.values().iterator();
-       while (querySetIterator.hasNext()) {
-	   buf.append( querySetIterator.next() ).append( newline );
-       }
-       buf.append(newline);
-       
-       buf.append( "--- Record Sets---" );
-       buf.append( newline );
-       Iterator recordSetIterator = recordSets.values().iterator();
-       while (recordSetIterator.hasNext()) {
-	   buf.append( recordSetIterator.next() ).append( newline );
-       }
-       buf.append(newline);
-
-       buf.append( "--- Summary Sets---" );
-       buf.append( newline );
-       Iterator summarySetIterator = summarySets.values().iterator();
-       while (summarySetIterator.hasNext()) {
-	   buf.append( summarySetIterator.next() ).append( newline );
-       }
-
+       buf.append(showSet("Param", paramSets));
+       buf.append(showSet("Query", querySets));
+       buf.append(showSet("Record", recordSets));
+       buf.append(showSet("Summary", summarySets));
        return buf.toString();
     }
-
-
+       
+    protected String showSet(String setType, HashMap setMap) {
+	StringBuffer buf = new StringBuffer();
+	String newline = System.getProperty("line.separator");
+	buf.append( newline );
+	buf.append( "ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo" + newline );
+	buf.append( "ooooooooooooooooooooooooooooo " + setType + " Sets oooooooooooooooooooooooooo" + newline );
+	buf.append( "ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo" + newline + newline);
+	Iterator setIterator = setMap.values().iterator();
+	while (setIterator.hasNext()) {
+	    ModelSetI set = (ModelSetI)setIterator.next();
+	    buf.append( "=========================== " + set.getName()+ " ===============================" + newline + newline);
+	    buf.append(set).append( newline );
+       }
+	buf.append(newline);
+	return buf.toString();
+    }
+ 
     //Param Sets
     public void addQuerySet(ParamSet paramSet) throws WdkModelException {
 	addSet(paramSet, paramSets);
