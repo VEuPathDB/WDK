@@ -84,30 +84,50 @@ public abstract class ResultList {
         return instance;
     }
 
-
-    
+   
     public class ResultListIterator implements Iterator {
 
 	ResultList rl;
+	RowMap nextCache = null;
 
 	ResultListIterator(ResultList rl) {
 	    this.rl = rl;
 	}
 
 	public boolean hasNext() {
+	    // if nextCache is not consumed, return true (allow repeated calls)
+	    if (nextCache != null) { return true; }
+
+	    // ask rl if a next thing is available
+	    boolean hasNext = false;
 	    try {
-		return rl.hasNext();
+		hasNext = rl.next();
 	    } catch (WdkModelException e) {
 		throw new RuntimeException(e);
 	    }
+
+	    // if a next thing is available, cache it
+	    if (hasNext) {
+		nextCache = (RowMap) rl.getRow();
+	    }
+
+	    return hasNext;
 	}
 
-	public Object next() {
-	    try {
-		if (!rl.next()) throw new NoSuchElementException();
-		return rl.getRow();
-	    } catch (WdkModelException e) {
-		throw new RuntimeException(e);
+	public Object next() throws NoSuchElementException {
+	    // if the next thing is already in the cache, return it and clear cache
+	    if (nextCache != null) {
+		RowMap theNext = nextCache;
+		nextCache = null;
+		return theNext;
+	    }
+	    // if nothing in cache, ask hasNext for an answer
+	    else {
+		if (hasNext()) {
+		    return nextCache;
+		} else {
+		    throw new NoSuchElementException("no more element left");
+		}
 	    }
 	}
 
