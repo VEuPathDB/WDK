@@ -23,7 +23,8 @@ public abstract class ResultList {
 
     public abstract void checkQueryColumns(Query query, boolean checkAll) throws WdkModelException;
 
-    public AttributeFieldValue getAttributeFieldValue(String attributeName) throws WdkModelException {
+
+    AttributeFieldValue getAttributeFieldValue(String attributeName) throws WdkModelException {
 	if (valuesInUse.containsKey(attributeName)) 
 	    throw new WdkModelException("Circular attempt to access attribute " + attributeName);
 	Object value;

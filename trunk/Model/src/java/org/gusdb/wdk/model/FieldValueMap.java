@@ -59,6 +59,8 @@ public class FieldValueMap implements Map {
 
     /**
      * @see java.util.Map#get(java.lang.Object)
+     * If this method creates and returns a TableFieldValue, be sure to close the wrapped ResultList when 
+     * finished with it.
      */
     public Object get(Object key) {
 	if (!containsKey(key)) throw new IllegalArgumentException("Record " + recordClass.getFullName() + " does not have any value with key " + key);
@@ -72,7 +74,10 @@ public class FieldValueMap implements Map {
 		fieldValue = new TableFieldValue(field, value);
 	    } else {
 		Object value = recordInstance.getAttributeValue(fieldName);
-		fieldValue = new AttributeFieldValue(field, value);
+		AttributeFieldValue temp = new AttributeFieldValue(field, value);
+
+		temp.setIsSummary(recordInstance.isSummaryAttribute(fieldName));
+		fieldValue = temp;
 	    }
 	    return fieldValue;
 	} catch (WdkModelException e) {

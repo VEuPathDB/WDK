@@ -33,6 +33,7 @@ public class AttributeField implements FieldI {
 	return getDisplayName();
     }
 
+    
     Query getQuery() {
 	return column.getQuery();
     }

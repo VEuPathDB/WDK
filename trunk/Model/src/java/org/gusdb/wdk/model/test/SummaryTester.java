@@ -80,7 +80,7 @@ public class SummaryTester {
 		    Answer si = question.makeAnswer(paramValues, nextStartRow, nextEndRow);
 		    System.out.println("Printing Record Instances on page " + pageCount);
 		    //si.printAsTable();
-		    		    si.print();
+		    si.print();
 		    pageCount++;
 		}
 		
