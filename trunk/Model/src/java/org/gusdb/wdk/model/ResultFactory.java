@@ -497,14 +497,13 @@ public class ResultFactory {
 	    Integer maxQueryParams = modelConfig.getMaxQueryParams();
 	    String instanceTable = modelConfig.getQueryInstanceTable();
 	    String platformClass = modelConfig.getPlatformClass();
-	    
-	    DataSource dataSource = 
-		setupDataSource(connectionUrl, login, password);
-
+        
 	    RDBMSPlatformI platform = 
 		(RDBMSPlatformI)Class.forName(platformClass).newInstance();
-	    platform.setDataSource(dataSource);
 
+        DataSource dataSource = 
+            platform.createDataSource(connectionUrl, login, password, -1);
+        
 	    ResultFactory factory =
 		new ResultFactory(dataSource, platform, login, instanceTable);
 
