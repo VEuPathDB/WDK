@@ -7,14 +7,18 @@ import java.io.IOException;
 import org.xml.sax.SAXException;
 import org.gusdb.gus.wdk.model.query.QuerySetContainer;
 import org.gusdb.gus.wdk.model.query.SimpleQuerySet;
+import org.gusdb.gus.wdk.model.query.PageableQuerySet;
 import org.gusdb.gus.wdk.model.query.StringParam;
 import org.gusdb.gus.wdk.model.query.SqlEnumParam;
 
 public class QuerySetParser {
 
-    public static QuerySetContainer parseXmlFile(File querySetXmlFile) throws java.io.IOException, org.xml.sax.SAXException {
+    public static QuerySetContainer parseXmlFile(File querySetXmlFile) throws java.io.IOException, org.xml.sax.SAXException, Exception {
 	Digester digester = configureDigester();
-	return (QuerySetContainer)digester.parse(querySetXmlFile);
+	QuerySetContainer qsc = 
+	    (QuerySetContainer)digester.parse(querySetXmlFile);
+	qsc.dereference();
+	return qsc;
     }
 
     static Digester configureDigester() {
@@ -25,10 +29,24 @@ public class QuerySetParser {
 	digester.addObjectCreate( "querySetContainer", QuerySetContainer.class );
 	digester.addSetProperties( "querySetContainer");
 	
+	digester.addObjectCreate( "querySetContainer/pageableQuerySet", PageableQuerySet.class );
+
+	digester.addSetProperties( "querySetContainer/pageableQuerySet");
+	
+	digester.addObjectCreate( "querySetContainer/pageableQuerySet/pageableSqlQuery", PageableSqlQuery.class );
+
+	digester.addSetProperties( "querySetContainer/pageableQuerySet/pageableSqlQuery");
+
+	digester.addSetNext( "querySetContainer/pageableQuerySet/pageableSqlQuery", "addQuery" );
+
+	digester.addSetNext( "querySetContainer/pageableQuerySet", "addPageableQuerySet" );
+	
 	digester.addObjectCreate( "querySetContainer/simpleQuerySet", SimpleQuerySet.class );
+
 	digester.addSetProperties( "querySetContainer/simpleQuerySet");
 	
 	digester.addObjectCreate( "querySetContainer/simpleQuerySet/simpleSqlQuery", SimpleSqlQuery.class );
+
 	digester.addSetProperties( "querySetContainer/simpleQuerySet/simpleSqlQuery");
 	digester.addBeanPropertySetter( "querySetContainer/simpleQuerySet/simpleSqlQuery/sql");
 
@@ -38,7 +56,9 @@ public class QuerySetParser {
 	digester.addSetProperties( "querySetContainer/simpleQuerySet/simpleSqlQuery/sqlEnumParam");
 
 	digester.addObjectCreate( "querySetContainer/simpleQuerySet/simpleSqlQuery/sqlEnumParam/simpleSqlQuery", SimpleSqlQuery.class );
+
 	digester.addBeanPropertySetter( "querySetContainer/simpleQuerySet/simpleSqlQuery/sqlEnumParam/simpleSqlQuery/sql");
+
 	digester.addSetNext( "querySetContainer/simpleQuerySet/simpleSqlQuery/sqlEnumParam/simpleSqlQuery", "setSimpleSqlQuery");
 
 	digester.addSetNext( "querySetContainer/simpleQuerySet/simpleSqlQuery/sqlEnumParam", "addParam" );

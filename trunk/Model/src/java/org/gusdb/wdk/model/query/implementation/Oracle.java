@@ -80,7 +80,7 @@ public class Oracle implements RDBMSPlatformI {
 	// the query (using the ROWNUM pseudocolumn) and write the entire
 	// shebang into the specified table, <code>tableName</code>.
 
-	String newSql = "create table " + tableName + " as (" + sql + ")";
+	String newSql = "create table " + tableName + " as " + sql;
 
 	SqlUtils.execute(dataSource, newSql);
     }
