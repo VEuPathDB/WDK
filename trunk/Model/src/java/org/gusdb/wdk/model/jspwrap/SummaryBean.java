@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.jspwrap;
 
-import org.gusdb.wdk.model.FieldI;
 import org.gusdb.wdk.model.SummaryInstance;
 import org.gusdb.wdk.model.WdkModelException;
 
@@ -8,7 +7,7 @@ import java.util.Map;
 import java.util.Iterator;
 
 /**
- * A wrapper on a Summary that provides simplified access for 
+ * A wrapper on a {@link SummaryInstance} that provides simplified access for 
  * consumption by a view
  */ 
 public class SummaryBean {
@@ -49,6 +48,10 @@ public class SummaryBean {
     public Iterator getRecords() {
 	return new RecordBeanList();
     }
+
+    ////////////////////////////////////////////////////////////////////////
+    // Inner classes
+    ////////////////////////////////////////////////////////////////////////
 
     class RecordBeanList implements Iterator {
 

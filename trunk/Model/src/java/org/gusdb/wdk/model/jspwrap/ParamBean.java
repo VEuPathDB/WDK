@@ -4,7 +4,7 @@ import org.gusdb.wdk.model.Param;
 
 
 /**
- * A wrapper on the wdk model that provides simplified access for 
+ * A wrapper on a {@link Param} that provides simplified access for 
  * consumption by a view
  */ 
 public class ParamBean {
