@@ -1,15 +1,8 @@
 package org.gusdb.gus.wdk.model.implementation;
 
-import org.gusdb.gus.wdk.model.ResultList;
-import org.gusdb.gus.wdk.model.Column;
-
-import org.gusdb.gus.wdk.model.QueryInstance;
-import org.gusdb.gus.wdk.model.QueryParamsException;
 import org.gusdb.gus.wdk.model.NotBooleanOperandException;
-
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.util.HashMap;
+import org.gusdb.gus.wdk.model.QueryInstance;
+import org.gusdb.gus.wdk.model.ResultList;
 
 
 public class SqlQueryInstance extends QueryInstance  {

@@ -10,36 +10,36 @@ public class Column {
     public Column() {} 
 
     public void setName(String name) {
-	this.name = name;
+        this.name = name;
     }
 
     public String getName() {
-	return name;
+        return name;
     }
 
     public void setQuery(Query query) {
-	this.query = query;
+        this.query = query;
     }
 
     public Query getQuery() {
-	return query;
+        return query;
     }
 
     public void setHelp(String help) {
-	this.help = help;
+        this.help = help;
     }
 
     public String getHelp() {
-	return help;
+        return help;
     }
 
     public void setDisplayName(String displayName) {
-	this.displayName = displayName;
+        this.displayName = displayName;
     }
 
     public String getDisplayName() {
-	if (displayName != null) return displayName;
-	else return name;
+        if (displayName != null) return displayName;
+        else return name;
     }
 }
 

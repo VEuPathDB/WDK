@@ -15,14 +15,11 @@ import org.gusdb.gus.wdk.model.StringParam;
 import org.gusdb.gus.wdk.model.WdkModel;
 import org.gusdb.gus.wdk.model.implementation.ModelXmlParser;
 import org.gusdb.gus.wdk.model.implementation.SqlQueryInstance;
-import org.gusdb.gus.wdk.model.implementation.SqlQuery;
 import org.gusdb.gus.wdk.model.implementation.SqlResultFactory;
-import org.gusdb.gus.wdk.model.implementation.SqlUtils;
 import org.gusdb.gus.wdk.model.QueryNameList;
 import org.gusdb.gus.wdk.model.QueryName;
 
 import java.io.File;
-import java.sql.ResultSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;

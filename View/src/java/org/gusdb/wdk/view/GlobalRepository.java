@@ -5,6 +5,7 @@ import oracle.jdbc.pool.OracleConnectionCacheImpl;
 import org.gusdb.gus.wdk.model.ModelConfig;
 import org.gusdb.gus.wdk.model.ModelConfigParser;
 import org.gusdb.gus.wdk.model.QueryParamsException;
+import org.gusdb.gus.wdk.model.QuerySet;
 import org.gusdb.gus.wdk.model.RDBMSPlatformI;
 import org.gusdb.gus.wdk.model.RecordSet;
 import org.gusdb.gus.wdk.model.ResultFactory;
@@ -88,12 +89,12 @@ public class GlobalRepository {
     }
     
     
-    public SimpleQuerySet getSimpleQuerySet(String querySetName) {
+    public QuerySet getQuerySet(String querySetName) {
         if (wdkQueryModel == null) {
             System.err.println("wdkQueryModel is null!");
             return null;
         }
-        return wdkQueryModel.getSimpleQuerySet(querySetName);
+        return wdkQueryModel.getQuerySet(querySetName);
     }
 
 

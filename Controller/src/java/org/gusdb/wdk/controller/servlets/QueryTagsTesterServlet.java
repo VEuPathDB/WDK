@@ -1,7 +1,10 @@
 package org.gusdb.gus.wdk.controller.servlets;
 
 import org.gusdb.gus.wdk.model.Param;
+import org.gusdb.gus.wdk.model.Query;
+import org.gusdb.gus.wdk.model.QueryInstance;
 import org.gusdb.gus.wdk.model.QueryParamsException;
+import org.gusdb.gus.wdk.model.QuerySet;
 import org.gusdb.gus.wdk.model.SimpleQueryInstanceI;
 
 import org.gusdb.gus.wdk.view.GlobalRepository;
@@ -72,13 +75,13 @@ public class QueryTagsTesterServlet extends HttpServlet {
 		}
 		
 		// We have a query name
-		SimpleQuerySet sqs = GlobalRepository.getInstance().getSimpleQuerySet(querySet);
-		SimpleQueryI sq = sqs.getQuery(queryName);
+		QuerySet sqs = GlobalRepository.getInstance().getQuerySet(querySet);
+		Query sq = sqs.getQuery(queryName);
         if (sq == null) {
             msg("sq is null for "+querySet+"."+queryName, res);
             return;
         }
-		SimpleQueryInstanceI sqii = sq.makeInstance();
+		QueryInstance sqii = sq.makeInstance();
 		Map paramValues = new HashMap();
 		
 		req.setAttribute(formName+".sqii", sqii);
@@ -116,7 +119,7 @@ public class QueryTagsTesterServlet extends HttpServlet {
 		StringBuffer sb = new StringBuffer();
 		try {
 		    
-		    SimpleQueryI pageQuery = sqs.getQuery("RNAListInDetail");
+		    Query pageQuery = sqs.getQuery("RNAListInDetail");
 		    
 		    sqii.setIsCacheable(true);
 		    sqii.setValues(paramValues);
