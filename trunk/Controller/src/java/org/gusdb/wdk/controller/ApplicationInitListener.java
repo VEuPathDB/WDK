@@ -4,6 +4,7 @@ import org.gusdb.wdk.model.RDBMSPlatformI;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkLogManager;
+import org.gusdb.wdk.model.implementation.ModelXmlParser;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -40,12 +41,14 @@ public class ApplicationInitListener implements ServletContextListener {
     private RDBMSPlatformI platform;
   
     public void contextDestroyed(ServletContextEvent sce) {
-        WdkModel model = (WdkModel) sce.getServletContext().getAttribute("wdk.wdkModel");
-        RDBMSPlatformI platform = model.getRDBMSPlatform();
-        try {
-            platform.close();
-        } catch (WdkModelException exp) {
-            throw new RuntimeException(exp);
+        WdkModel model = (WdkModel) sce.getServletContext().getAttribute("wdk_wdkModel");
+        if (model != null) {
+            RDBMSPlatformI platform = model.getRDBMSPlatform();
+            try {
+                platform.close();
+            } catch (WdkModelException exp) {
+                throw new RuntimeException(exp);
+            }
         }
     }
   
@@ -148,10 +151,12 @@ public class ApplicationInitListener implements ServletContextListener {
             Method build = parser.getDeclaredMethod("parseXmlFile", new Class[] {URL.class, URL.class, URL.class, URL.class});
             WdkModel wdkModel = (WdkModel) build.invoke(null, new Object[] {querySetURL, propsURL, schemaURL, modelConfigXmlURL});
 
+//            WdkModel wdkModel = ModelXmlParser.parseXmlFile(querySetURL, propsURL, schemaURL, modelConfigXmlURL);
+            
             this.dataSource = wdkModel.getRDBMSPlatform().getDataSource();
             
             application.setAttribute("wdk.resultFactory", wdkModel.getResultFactory());
-            application.setAttribute("wdk.wdkModel", wdkModel);
+            application.setAttribute("wdk_wdkModel", wdkModel);
          
         } catch (Exception exp) {
         	exp.printStackTrace();

@@ -78,7 +78,7 @@ public class QueryHolder extends SimpleTagSupport {
             //sqii = NullQueryInstance.INSTANCE;
 
             if ( questionName != null) {
-                WdkModel wm = (WdkModel) getJspContext().getAttribute("wdk.wdkModel", PageContext.APPLICATION_SCOPE);
+                WdkModel wm = (WdkModel) getJspContext().getAttribute("wdk_wdkModel", PageContext.APPLICATION_SCOPE);
 
                 question = wm.getSummary(questionName);
             }
