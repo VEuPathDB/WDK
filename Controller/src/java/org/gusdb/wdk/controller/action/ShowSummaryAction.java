@@ -59,6 +59,7 @@ public class ShowSummaryAction extends Action {
 	Answer wdkAnswer = wdkQuestion.makeAnswer(params, start, end);
 
 	int totalSize = wdkAnswer.getResultSize();
+
 	if (end > totalSize) { end = totalSize; }
 
 	String uriString = request.getRequestURI();
@@ -77,7 +78,7 @@ public class ShowSummaryAction extends Action {
 	request.setAttribute("wdk_paging_url", uriString);
 	request.setAttribute("wdk_paging_params", editedParamNames);
 
-	request.getSession().setAttribute(CConstants.WDK_SUMMARY_KEY, wdkAnswer);
+	request.setAttribute(CConstants.WDK_ANSWER_KEY, wdkAnswer);
 	
 	ActionForward forward = mapping.findForward(CConstants.SHOW_SUMMARY_MAPKEY);
 	return forward;
