@@ -1,0 +1,56 @@
+Version 1.1
+
+Model - Fixed Bugs
+
+  * connection pool leak
+
+  * in the model XML file, <sqlQuery> now supports an isCachable= attribute
+    as documented
+
+
+Model - Features
+
+  * in the model XML file, <question> now has a required displayName= 
+    attribute, a required <description> element and an optional <help>
+    element
+
+  * in the model XML file, <linkColumn> and <linkAttribute> have been
+    introduced so that records and tables can include hyper-links.
+
+  * code: a wide ranging refactoring and cleaning of the internals to improve
+    the clarity of the code and API
+
+  * code: introduction of the org.gusdb.wdk.model.jspwrap package to provide 
+    a concise API for a JSP based controller and view.
+
+  * BooleanQuestions
+
+  * new wdkBooleanQuestion command to exercise BooleanQuestions
+
+  * the command line tools (wdkXml, wdkQuery, wdkSummary, wdkRecord and
+    wdkSanityTest) have had their command line arguments significantly
+    simplified
+
+
+Controller - Features
+ 
+  * the controller has been rewritten and is now based on Struts
+ 
+  * it uses the jspwrap package for access to the model
+
+  * error handling has been improved
+
+
+View - Features
+
+  * the view has been rewritten and is now implemented entirely in four
+    .jsp files.
+
+  * the view may include hyperlinks as specified in the model XML file
+
+  * question page: parameter help is now displayed
+
+  * summary page: parameter values are now displayed
+
+  * a number of minor aesthetic improvements
+
