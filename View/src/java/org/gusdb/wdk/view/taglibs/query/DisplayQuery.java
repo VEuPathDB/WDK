@@ -9,9 +9,10 @@ import javax.servlet.jsp.tagext.SimpleTagSupport;
 
 import org.gusdb.gus.wdk.model.Query;
 import org.gusdb.gus.wdk.model.QueryInstance;
-import org.gusdb.gus.wdk.model.RecordList;
-import org.gusdb.gus.wdk.model.RecordListSet;
+import org.gusdb.gus.wdk.model.Summary;
+import org.gusdb.gus.wdk.model.SummarySet;
 import org.gusdb.gus.wdk.model.WdkModel;
+import org.gusdb.gus.wdk.model.WdkModelException;
 import org.gusdb.gus.wdk.model.implementation.NullQueryInstance;
 
 /**
@@ -35,8 +36,14 @@ public class DisplayQuery extends SimpleTagSupport {
 
     	if ( queryInstance instanceof NullQueryInstance) {
             WdkModel wm = (WdkModel) getJspContext().getAttribute("wdk.wdkModel", PageContext.APPLICATION_SCOPE);
-            RecordListSet rls = wm.getRecordListSet(querySet);
-            RecordList[] rla = rls.getRecordLists();
+            SummarySet rls = null;
+            try {
+                rls = wm.getSummarySet(querySet);
+            } catch (WdkModelException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            Summary[] rla = rls.getSummarys();
             
             
 //    		Query[] sq = sqs.getQueries();
