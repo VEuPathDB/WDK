@@ -69,7 +69,7 @@ public class QueryHolder extends SimpleTagSupport {
     
     public void doTag() throws IOException, JspException {
         JspWriter out = getJspContext().getOut();
-        out.println("<form method=\"GET\" action=\"/sampleWDK/QueryTagsTester\">");
+        out.println("<form method=\"GET\" action=\"/sampleWDK/InteractiveRecordList\">");
         out.println("<input type=\"hidden\" name=\"formName\" value=\""+name+"\">");
         out.println("<input type=\"hidden\" name=\"recordGroup\" value=\""+recordQueryGroup+"\">");
         
