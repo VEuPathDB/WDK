@@ -23,6 +23,7 @@ public class Record {
     private List summaryColumnNames = new ArrayList();
     private Set tableQueryRefs = new LinkedHashSet();
     private Set attributesQueryRefs = new LinkedHashSet();
+    private Set allNames;
     private String name;
     private String type;
     private String idPrefix;
@@ -164,6 +165,20 @@ public class Record {
 
     public Set getTextAttributeNames() {
         return textAttributeMap.keySet();
+    }
+
+    public Set getAllNames() {
+	if (allNames == null) {
+	    LinkedHashSet allNames = new LinkedHashSet();
+	    allNames.addAll(getNonTextAttributeNames());
+	    allNames.addAll(getTextAttributeNames());
+	    allNames.addAll(getTableNames());
+	}
+        return allNames;
+    }
+
+    public boolean containsName(String name) {
+	return getAllNames().contains(name);
     }
     
     
