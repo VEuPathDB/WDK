@@ -14,19 +14,16 @@
 <c:if test="${!attr.value.isInternal}">
   <tr>
     <td><b>${attr.value.displayName}</b></td>
-    <td>
-      <w:wrap size="60">
-      <c:set var="fieldVal" value="${attr.value.value}"/>
+    <td><c:set var="fieldVal" value="${attr.value.value}"/>
       <!-- need to know if fieldVal should be hot linked -->
       <c:choose>
         <c:when test="${fieldVal.class.name eq 'org.gusdb.wdk.model.LinkValue'}">
           <a href="${fieldVal.url}">${fieldVal.visible}</a>
         </c:when>
         <c:otherwise>
-          ${fieldVal}
+          <font class="fixed"><w:wrap size="60">${fieldVal}</w:wrap></font>
         </c:otherwise>
       </c:choose>
-      </w:wrap>
     </td>
   </tr>
 </c:if>
