@@ -36,7 +36,7 @@ public class DisplayQuery extends SimpleTagSupport {
     		out.println("<option value=\""+DEFAULT_OPTION+"\">"+DEFAULT_OPTION);
     		for ( int i=0 ; i < sq.length ;i++) {
     			String val = sq[i].getDisplayName();
-    			out.println("<option value=\""+val+"\">"+val);
+    			out.println("<option value=\""+sq[i].getName()+"\">"+val);
     		}
     		out.println("</select>");
     		out.println("<input type=\"hidden\" name=\"defaultChoice\" value=\""+DEFAULT_OPTION+"\">");
@@ -46,11 +46,14 @@ public class DisplayQuery extends SimpleTagSupport {
     		out.println("<input type=\"hidden\" name =\"queryName\" value=\""+queryInstance.getQuery().getName()+"\">");
     	}
     	out.println("<input type=\"hidden\" name=\"defaultChoice\" value=\""+DEFAULT_OPTION+"\">");
-    	if (getJspBody() != null) {
-    		getJspContext().setAttribute("wdk.queryName", queryInstance.getQuery().getName(), PageContext.PAGE_SCOPE);
-    		getJspBody().invoke(null);
-            getJspContext().removeAttribute("wdk.queryName", PageContext.PAGE_SCOPE);           
+
+        if (getJspBody() != null) {
+            //out.println("<br>I'm trying to set wdk.queryName to fred<br>");
+            getJspContext().setAttribute("wdk.queryName", queryInstance.getQuery().getName(), PageContext.PAGE_SCOPE);
+            getJspBody().invoke(null);
+            getJspContext().removeAttribute("wdk.queryName", PageContext.PAGE_SCOPE);
     	}
+  
     }
 
 }

@@ -64,6 +64,10 @@ public class QueryTagsTesterServlet extends HttpServlet {
 		// We have a query name
 		SimpleQuerySet sqs = GlobalRepository.getInstance().getSimpleQuerySet(querySet);
 		SimpleQueryI sq = sqs.getQuery(queryName);
+        if (sq == null) {
+            msg("sq is null for "+querySet+"."+queryName, res);
+            return;
+        }
 		SimpleQueryInstanceI sqii = sq.makeInstance();
 		Map paramValues = new HashMap();
 		

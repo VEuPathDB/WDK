@@ -74,7 +74,7 @@ public class QueryHolder extends SimpleTagSupport {
         Enumeration e = getJspContext().getAttributeNamesInScope(PageContext.REQUEST_SCOPE);
         while (e.hasMoreElements()) {
             String key = (String) e.nextElement();
-            System.err.println("The key is "+key);
+            //System.err.println("The key is "+key);
             if (key.startsWith(name+".error.")) {
                 out.println("<font color=\"red\">");
                 out.println(getJspContext().getAttribute(key, PageContext.REQUEST_SCOPE));
