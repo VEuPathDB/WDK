@@ -212,9 +212,9 @@ public class ModelXmlParser {
         
         /*    */ digester.addSetProperties( "wdkModel/recordClassSet/recordClass/attributeQuery");
         
-        /*    */ digester.addSetNext( "wdkModel/recordClassSet/recordClass/attributeQuery", "addAttributesQueryRef" );
+        /*    */ digester.addSetNext( "wdkModel/recordClassSet/recordClass/attributeQueryRef", "addAttributesQueryRef" );
         
-        /*    */ digester.addObjectCreate( "wdkModel/recordClassSet/recordClass/tableQuery", Reference.class );
+        /*    */ digester.addObjectCreate( "wdkModel/recordClassSet/recordClass/tableQueryRef", Reference.class );
         
         /*    */ digester.addSetProperties( "wdkModel/recordClassSet/recordClass/tableQuery");
         
