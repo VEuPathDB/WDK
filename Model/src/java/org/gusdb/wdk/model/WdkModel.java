@@ -3,16 +3,15 @@ package org.gusdb.gus.wdk.model;
 import java.util.HashMap;
 import java.util.Iterator;
 
-
-
 public class WdkModel {
 
     protected RDBMSPlatformI platform;
 
     HashMap querySets = new HashMap();
     HashMap recordSets = new HashMap();
-    HashMap queryNameLists = new HashMap();
-    HashMap recordListSets = new HashMap();
+    HashMap referenceLists = new HashMap();
+    HashMap summarySets = new HashMap();
+    HashMap allModelSets = new HashMap();
     String name;
     ResultFactory resultFactory;
 
@@ -39,8 +38,7 @@ public class WdkModel {
 
     //Record Sets
     public void addRecordSet(RecordSet recordSet) throws WdkModelException {
-	checkName(recordSet.getName());
-	recordSets.put(recordSet.getName(), recordSet);
+	addSet(recordSet, recordSets);
     }
 
     public RecordSet getRecordSet(String recordSetName) throws WdkModelException {
@@ -57,8 +55,19 @@ public class WdkModel {
 
     //Query Sets
     public void addQuerySet(QuerySet querySet) throws WdkModelException {
-	checkName(querySet.getName());
-	querySets.put(querySet.getName(), querySet);
+	addSet(querySet, querySets);
+    }
+    
+    private void addSet(ModelSetI set, HashMap setMap) throws WdkModelException {
+	String setName = set.getName();
+	if (allModelSets.containsKey(setName)) {
+	   String err = "WDK Model " + name +
+		" already contains a set with name " + setName;
+	
+	    throw new WdkModelException(err);	
+	}
+	setMap.put(setName, set);
+	allModelSets.put(setName, set);
     }
 
     public QuerySet getQuerySet(String setName) throws WdkModelException {
@@ -75,66 +84,64 @@ public class WdkModel {
     }
 
 
-    //RecordList Sets
-    public void addRecordListSet(RecordListSet recordListSet) throws WdkModelException {
-	if (recordListSets.containsKey(recordListSet.getName())){
-	    String err = "WDK Model " + name + "already conatins a RecordList Set with name " +
-		recordListSet.getName();
-	    throw new WdkModelException(err);
-	}
-	recordListSets.put(recordListSet.getName(), recordListSet);
+    //Summary Sets
+    public void addSummarySet(SummarySet summarySet) throws WdkModelException {
+	addSet(summarySet, summarySets);
     }
 
-    public RecordListSet getRecordListSet(String setName) throws WdkModelException {
-	if (!recordListSets.containsKey(setName)) {
+    public SummarySet getSummarySet(String setName) throws WdkModelException {
+	if (!summarySets.containsKey(setName)) {
 	    String err = "WDK Model " + name +
-		" does not contain a RecordList set with name " + setName;
+		" does not contain a Summary set with name " + setName;
 	    throw new WdkModelException(err);
 	}
-	return (RecordListSet)recordListSets.get(setName);
+	return (SummarySet)summarySets.get(setName);
     }
 
-    public boolean hasRecordListSet(String setName) {
-	return recordListSets.containsKey(setName);
+    public boolean hasSummarySet(String setName) {
+	return summarySets.containsKey(setName);
     }
 
 
-    //QueryNameLists
-    public void addQueryNameList(QueryNameList queryNameList) throws WdkModelException {
+    //ReferenceLists
+    public void addReferenceList(ReferenceList referenceList) throws WdkModelException {
 	
-	if (queryNameLists.containsKey(queryNameList.getName())){
-	    String err = "WDK Model " + name + "already conatins a QueryNameList with name " +
-		queryNameList.getName();
+	if (referenceLists.containsKey(referenceList.getName())){
+	    String err = "WDK Model " + name + "already conatins a ReferenceList with name " +
+		referenceList.getName();
 	    throw new WdkModelException(err);
 	}
-	queryNameLists.put(queryNameList.getName(), queryNameList);
+	referenceLists.put(referenceList.getName(), referenceList);
     }
     
-    public QueryNameList getQueryNameList(String queryNameListName) throws WdkModelException {
+    public ReferenceList getReferenceList(String referenceListName) throws WdkModelException {
 	
-	if (!queryNameLists.containsKey(queryNameListName)){
+	if (!referenceLists.containsKey(referenceListName)){
 	    String err = "WDK Model " + name +
-		" does not contain a  query set with name " + queryNameListName;
+		" does not contain a  query set with name " + referenceListName;
 	    throw new WdkModelException(err);
 	}
-	return (QueryNameList)queryNameLists.get(queryNameListName);
+	return (ReferenceList)referenceLists.get(referenceListName);
     }
 
-    public QueryNameList[] getAllQueryNameLists(){
+    public ReferenceList[] getAllReferenceLists(){
 
-	QueryNameList lists[] = new QueryNameList[queryNameLists.size()];
-	Iterator keys = queryNameLists.keySet().iterator();
+	ReferenceList lists[] = new ReferenceList[referenceLists.size()];
+	Iterator keys = referenceLists.keySet().iterator();
 	int counter = 0;
 	while (keys.hasNext()){
 	    String name = (String)keys.next();
-	    QueryNameList nextQueryNameList = (QueryNameList)queryNameLists.get(name);
-	    lists[counter] = nextQueryNameList;
+	    ReferenceList nextReferenceList = (ReferenceList)referenceLists.get(name);
+	    lists[counter] = nextReferenceList;
 	    counter++;
 	}
 	return lists;
     }
     
-    public void setPlatform(RDBMSPlatformI platform){
+    /**
+     * Set whatever resources the model needs.  It will pass them to its kids
+     */
+    public void setResources(RDBMSPlatformI platform){
 
 	this.platform = platform;
 	Iterator querySetIterator = querySets.values().iterator();
@@ -143,9 +150,36 @@ public class WdkModel {
 	    Query queries[] = qs.getQueries();
 	    for (int i = 0; i < queries.length; i++){
 		Query nextQuery = queries[i];
-		nextQuery.setPlatform(platform);
+		nextQuery.setModelResources(this);
 	    }
 	}
+    }
+
+    public RDBMSPlatformI getPlatform() {
+	return platform;
+    }
+
+    public Object resolveReference(String twoPartName, String refererName, String refererClassName, String refererAttributeName) throws WdkModelException {
+	String s = "Invalid reference in " + refererClassName + " '" + refererName + "' at " + refererAttributeName + "=\"" + twoPartName + "\".";
+
+	//ensures <code>twoPartName</code> is formatted correctly
+	Reference reference = new Reference(twoPartName);
+
+	String setName = reference.getSetName();
+	String elementName = reference.getElementName();
+
+	ModelSetI set = (ModelSetI)allModelSets.get(setName);
+	if (set == null) {
+	    String s3 = s + " There is no set called '" + setName + "'";
+	    throw new WdkModelException(s3);
+	}
+	Object element = set.getElement(elementName);
+	if (element == null) {
+	    String s4 = s + " Set '" + setName + 
+		"' does not have an element called '" + elementName + "'";
+	    throw new WdkModelException(s4);
+	}
+	return element;
     }
 
     /**
@@ -154,25 +188,11 @@ public class WdkModel {
      */ 
     public void resolveReferences() throws WdkModelException {
        
-       Iterator recordSetIterator = recordSets.values().iterator();
-       while (recordSetIterator.hasNext()) {
-	   RecordSet recordSet = (RecordSet)recordSetIterator.next();
-	   recordSet.resolveReferences(querySets);
+       Iterator modelSets = allModelSets.values().iterator();
+       while (modelSets.hasNext()) {
+	   ModelSetI modelSet = (ModelSetI)modelSets.next();
+	   modelSet.resolveReferences(this);
        }
-       
-       Iterator queryNameListIterator = queryNameLists.values().iterator();
-       while (queryNameListIterator.hasNext()){
-	   QueryNameList nextList = (QueryNameList)queryNameListIterator.next();
-	   //	   nextList.checkReferences(querySets, pageableQuerySets);
-	   //need to change checkReferences to not use pageable query sets before we can run this again
-       }
-       
-       Iterator recordListSetIterator = recordListSets.values().iterator();
-       while (recordListSetIterator.hasNext()){
-	   RecordListSet nextRecordListSet = (RecordListSet)recordListSetIterator.next();
-	   nextRecordListSet.resolveReferences(querySets, recordSets);
-       }
-
     }
     
     public String toString() {
@@ -195,6 +215,14 @@ public class WdkModel {
        while (recordSetIterator.hasNext()) {
 	   buf.append( recordSetIterator.next() ).append( newline );
        }
+       buf.append(newline);
+
+       buf.append( "--- Summary Sets---" );
+       buf.append( newline );
+       Iterator summarySetIterator = summarySets.values().iterator();
+       while (summarySetIterator.hasNext()) {
+	   buf.append( summarySetIterator.next() ).append( newline );
+       }
 
        return buf.toString();
     }
@@ -209,12 +237,6 @@ public class WdkModel {
     ///////////////////////////////////////////////////////////////////
 
     void checkName(String setName) throws WdkModelException {
-	if (querySets.containsKey(setName) || recordSets.containsKey(setName)){ 
-	   String err = "WDK Model " + name +
-		" already contains a set with name " + setName;
-	
-	    throw new WdkModelException(err);	
-	}
     }
 }
 

@@ -56,26 +56,26 @@ public class Record {
      * @param fieldsQueryRef two part query name (set.name)
      */
     public void addFieldsQueryRef(Reference fieldsQueryRef) {
-	fieldsQueryRefs.add(fieldsQueryRef.getReferent());
+	fieldsQueryRefs.add(fieldsQueryRef.getTwoPartName());
     }
 
     /**
      * @param tableQueryRef two part query name (set.name)
      */
     public void addTableQueryRef(Reference tableQueryRef) {
-	tableQueryRefs.add(tableQueryRef.getReferent());
+	tableQueryRefs.add(tableQueryRef.getTwoPartName());
     }
 
-    public void resolveReferences(Map querySetMap) throws WdkModelException {
+    public void resolveReferences(WdkModel model) throws WdkModelException {
+	
 	Iterator fQueryRefs = fieldsQueryRefs.iterator();
 	while (fQueryRefs.hasNext()) {
 	    String queryName = (String)fQueryRefs.next();
 	    Query query = 
-		(Query)QuerySet.resolveReference(querySetMap, 
-						 queryName,
-						 this.getClass().getName(),
-						 getName(),
-						 "fieldsQueryRef");
+		(Query)model.resolveReference(queryName,
+					      getName(), 
+					      this.getClass().getName(),
+					      "fieldsQueryRef");
 	    addFieldsQuery(query);
 	}
 
@@ -83,11 +83,10 @@ public class Record {
 	while (tQueryRefs.hasNext()) {
 	    String queryName = (String)tQueryRefs.next();
 	    Query query = 
-		(Query)QuerySet.resolveReference(querySetMap, 
-						 queryName,
-						 this.getClass().getName(),
-						 getName(),
-						 "tableQueryRef");
+		(Query)model.resolveReference(queryName,
+					      getName(), 
+					      this.getClass().getName(),
+					      "tableQueryRef");
 	    addTableQuery(query);
 	}
     }
@@ -177,13 +176,13 @@ public class Record {
 	}
     }
 
-    protected void checkQueryParams(Query query, String queryType) {
+    protected void checkQueryParams(Query query, String queryType) throws WdkUserException {
 
 	String s = "The " + queryType + " " + query.getName() + 
 	    " contained in Record " + getName();
 	Param[] params = query.getParams();
 	if (params.length != 1 || !params[0].getName().equals("primaryKey")) 
-	    throw new IllegalArgumentException(s + " must have only one param, and it must be named 'primaryKey'");
+	    throw new WdkUserException(s + " must have only one param, and it must be named 'primaryKey'");
     }
 
     protected Query getFieldsQuery(String fieldName) throws WdkModelException {

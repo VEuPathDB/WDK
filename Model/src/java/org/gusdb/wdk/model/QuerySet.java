@@ -4,9 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Iterator;
 
-import org.gusdb.gus.wdk.model.QueryName;
-
-public class QuerySet {
+public class QuerySet implements ModelSetI {
 
     HashMap querySet;
     String name;
@@ -28,6 +26,10 @@ public class QuerySet {
 	return (Query)querySet.get(name);
     }
 
+    public Object getElement(String name) {
+	return querySet.get(name);
+    }
+
     public Query[] getQueries() {
 	Query[] queries = new Query[querySet.size()];
 	Iterator queryIterator = querySet.values().iterator();
@@ -38,14 +40,17 @@ public class QuerySet {
 	return queries;
     }
 
-    public void addQuery(Query query) {
+    public void addQuery(Query query) throws WdkModelException {
 	if (querySet.get(query.getName()) != null) 
-	    throw new IllegalArgumentException("Query named " 
-					       + query.getName() 
-					       + " already exists in query set "
-					       + getName());
+	    throw new WdkModelException("Query named " 
+					+ query.getName() 
+					+ " already exists in query set "
+					+ getName());
 	query.setResultFactory(resultFactory);
 	querySet.put(query.getName(), query);
+    }
+
+    public void resolveReferences(WdkModel model) throws WdkModelException {
     }
 
     public String toString() {
@@ -73,36 +78,5 @@ public class QuerySet {
 	    Query query = (Query)queryIterator.next();
 	    query.setResultFactory(resultFactory);
 	}
-    }
-
-    /////////////////////////////////////////////////////////////////
-    ///////  static
-    /////////////////////////////////////////////////////////////////
-
-    public static Query resolveReference(Map querySetMap, String twoPartName, 
-					 String callerType, String callerName, 
-					 String callerAttribute) throws WdkModelException {
-	String s = callerType + " '" + callerName + "' has a " + callerAttribute;
-
-	//ensures <code>twoPartName</code> is formatted correctly
-	QueryName fullQueryName = new QueryName(twoPartName);
-
-	String querySetName = fullQueryName.getQuerySetName();
-	String queryName = fullQueryName.getQueryName();
-
-	QuerySet sqs = (QuerySet)querySetMap.get(querySetName);
-	if (sqs == null) {
-	    String s3 = s + " which contains an unrecognized querySet '" 
-		+ querySetName + "'";
-	    throw new WdkModelException(s3);
-	}
-	Query sq = sqs.getQuery(queryName);
-	if (sq == null) {
-
-	    String s4 = s + " which contains an unrecognized query '" 
-		+ queryName + "'";
-	    throw new WdkModelException(s4);
-	}
-	return sq;
     }
 }

@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.Hashtable;
 
 /**
- * RecordList.java
+ * Summary.java
  *
  * A class representing a binding between a Record and a Query.
  *
@@ -14,7 +14,7 @@ import java.util.Hashtable;
  * @version $Revision$ $Date$ $Author$
  */
 
-public class RecordList {
+public class Summary {
 
     private String recordTwoPartName;
 
@@ -26,21 +26,21 @@ public class RecordList {
     //the only column in this query should be a primary key
     Query query;
     
-    //QueryInstance to be shared across all RecordListInstances 
-    //produced by this RecordList
+    //QueryInstance to be shared across all SummaryInstances 
+    //produced by this Summary
     QueryInstance listIdQueryInstance;
 
     Record record;
 
-    public RecordList(){
+    public Summary(){
     }
     
-    public RecordListInstance makeRecordListInstance(){
+    public SummaryInstance makeSummaryInstance(){
 
 	if (listIdQueryInstance == null){
 	    listIdQueryInstance = query.makeInstance();
 	}
-	return new RecordListInstance(this, listIdQueryInstance);
+	return new SummaryInstance(this, listIdQueryInstance);
     }
 
     public Query getQuery(){
@@ -61,10 +61,10 @@ public class RecordList {
 	this.queryTwoPartName = queryTwoPartName;
     }
 
-    public void resolveReferences(Map querySetMap, Map recordSetMap)throws WdkModelException{
+    public void resolveReferences(WdkModel model)throws WdkModelException{
 	
-	this.query = QuerySet.resolveReference(querySetMap, queryTwoPartName, "recordList", name, "queryRef");
-	this.record = RecordSet.resolveRecordReference(recordSetMap, recordTwoPartName);
+	this.query = (Query)model.resolveReference(queryTwoPartName, name, "summary", "queryRef");
+	this.record = (Record)model.resolveReference(recordTwoPartName, name, "summary", "recordRef");
     }
 
     public String getName(){
@@ -76,11 +76,21 @@ public class RecordList {
     }
 
     public int getTotalLength(Map values) throws WdkModelException, WdkUserException{
-	RecordListInstance rli = makeRecordListInstance();
+	SummaryInstance rli = makeSummaryInstance();
 	rli.setValues(values, 0, 0); 
 	return rli.getTotalLength();
     }
     //set dummy values for start and end because they will not be used.
     //(might have to change this depending on resolution of efficiency issue)
 
+    public String toString() {
+	String newline = System.getProperty( "line.separator" );
+	StringBuffer buf =
+	    new StringBuffer("Summary: name='" + name + "'" + newline  +
+			     "  record='" + recordTwoPartName + "'" + newline +
+			     "  query='" + queryTwoPartName + "'" + newline
+			     );	    
+	return buf.toString();
+    }
+    
 }

@@ -52,8 +52,6 @@ public class SqlEnumParam extends Param {
 	return hash;
     }
 
-    public String validateValue(String value) { return null; }
-
     public String toString() {
        String newline = System.getProperty( "line.separator" );
        StringBuffer buf = 
@@ -64,4 +62,12 @@ public class SqlEnumParam extends Param {
 
        return buf.toString();
     }
+
+    /////////////////////////////////////////////////////////////////
+    // protected methods
+    /////////////////////////////////////////////////////////////////
+
+    protected void resolveReferences(WdkModel model) throws WdkModelException {}
+    protected String validateValue(String value) { return null; }
+
 }

@@ -13,11 +13,11 @@
    </xsd:complexType>
 
    <xsd:complexType name="fieldsQuery">
-     <xsd:attribute name="referent" type="xsd:string" use="required"/>
+     <xsd:attribute name="twoPartName" type="xsd:string" use="required"/>
    </xsd:complexType>
     
    <xsd:complexType name="tableQuery">
-     <xsd:attribute name="referent" type="xsd:string" use="required"/>
+     <xsd:attribute name="twoPartName" type="xsd:string" use="required"/>
    </xsd:complexType>
     
    <xsd:complexType name="param">

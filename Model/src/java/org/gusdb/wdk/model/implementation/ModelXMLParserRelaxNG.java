@@ -9,11 +9,11 @@ import org.gusdb.gus.wdk.model.SqlEnumParam;
 import org.gusdb.gus.wdk.model.StringParam;
 import org.gusdb.gus.wdk.model.TextField;
 import org.gusdb.gus.wdk.model.WdkModel;
-import org.gusdb.gus.wdk.model.QueryNameList;
-import org.gusdb.gus.wdk.model.QueryName;
+import org.gusdb.gus.wdk.model.ReferenceList;
+import org.gusdb.gus.wdk.model.Reference;
 import org.gusdb.gus.wdk.model.TextColumn;
-import org.gusdb.gus.wdk.model.RecordListSet;
-import org.gusdb.gus.wdk.model.RecordList;
+import org.gusdb.gus.wdk.model.SummarySet;
+import org.gusdb.gus.wdk.model.Summary;
 import org.gusdb.gus.wdk.model.WdkModelException;
 
 
@@ -182,33 +182,33 @@ public class ModelXMLParserRelaxNG {
 
         /**/digester.addSetNext("wdkModel/querySet", "addQuerySet");
 
-        //QueryNameList
+        //ReferenceList
 
-        /**/digester.addObjectCreate("wdkModel/queryNameList", QueryNameList.class);
+        /**/digester.addObjectCreate("wdkModel/referenceList", ReferenceList.class);
 
-        /**/digester.addSetProperties("wdkModel/queryNameList");
+        /**/digester.addSetProperties("wdkModel/referenceList");
 
-        /*  */digester.addObjectCreate("wdkModel/queryNameList/fullQueryName", QueryName.class);
+        /*  */digester.addObjectCreate("wdkModel/referenceList/twoPartName", Reference.class);
 
-        /*  */digester.addSetProperties("wdkModel/queryNameList/fullQueryName");
+        /*  */digester.addSetProperties("wdkModel/referenceList/twoPartName");
 
-        /*  */digester.addSetNext("wdkModel/queryNameList/fullQueryName", "addQueryName");
+        /*  */digester.addSetNext("wdkModel/referenceList/twoPartName", "addReference");
 
-        /**/digester.addSetNext("wdkModel/queryNameList", "addQueryNameList");
+        /**/digester.addSetNext("wdkModel/referenceList", "addReferenceList");
 
-        //RecordListSet
+        //SummarySet
 
-        /**/digester.addObjectCreate("wdkModel/recordListSet", RecordListSet.class);
+        /**/digester.addObjectCreate("wdkModel/summarySet", SummarySet.class);
 
-        /**/digester.addSetProperties("wdkModel/recordListSet");
+        /**/digester.addSetProperties("wdkModel/summarySet");
 
-        /*  */digester.addObjectCreate("wdkModel/recordListSet/recordList", RecordList.class);
+        /*  */digester.addObjectCreate("wdkModel/summarySet/summary", Summary.class);
 
-        /*  */digester.addSetProperties("wdkModel/recordListSet/recordList");
+        /*  */digester.addSetProperties("wdkModel/summarySet/summary");
 
-        /*  */digester.addSetNext("wdkModel/recordListSet/recordList", "addRecordList");
+        /*  */digester.addSetNext("wdkModel/summarySet/summary", "addSummary");
 
-        /**/digester.addSetNext("wdkModel/recordListSet", "addRecordListSet");
+        /**/digester.addSetNext("wdkModel/summarySet", "addSummarySet");
 
         return digester;
     }

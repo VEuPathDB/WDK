@@ -44,10 +44,6 @@ public abstract class Query {
 	return name;
     }
 
-    public void setPlatform(RDBMSPlatformI platform){
-	this.platform = platform;
-    }
-    
     public RDBMSPlatformI getPlatform(){
 	return this.platform;
     }
@@ -121,9 +117,24 @@ public abstract class Query {
 
     public abstract QueryInstance makeInstance();
 
+    public String toString() {
+       String newline = System.getProperty( "line.separator" );
+       StringBuffer buf = formatHeader();
+
+       buf.append( "--- Params ---" ).append( newline );
+       for( int i=0; i<paramsV.size(); i++ ){
+	   buf.append( paramsV.elementAt(i) ).append( newline );
+       }
+
+       return buf.toString();
+    }
+
+
     /////////////////////////////////////////////////////////////////////
     /////////////  Protected ////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////
+
+    protected void resolveReferences(WdkModel model) throws WdkModelException {}
 
     protected void validateParamValues(Map values) throws WdkUserException, WdkModelException {
 	HashMap errors = null;
@@ -133,7 +144,7 @@ public abstract class Query {
 	while (valueNames.hasNext()) {
 	    String valueName = (String)valueNames.next();
 	    if (paramsH.get(valueName) == null) {
-		throw new IllegalArgumentException("'" + valueName + "' is not a legal parameter name for query '" + name + "'"  );
+		throw new WdkUserException("'" + valueName + "' is not a legal parameter name for query '" + name + "'"  );
 	    }
 	}
 
@@ -173,17 +184,14 @@ public abstract class Query {
        return buf;
     }
 
-    public String toString() {
-       String newline = System.getProperty( "line.separator" );
-       StringBuffer buf = formatHeader();
-
-       buf.append( "--- Params ---" ).append( newline );
-       for( int i=0; i<paramsV.size(); i++ ){
-	   buf.append( paramsV.elementAt(i) ).append( newline );
-       }
-
-       return buf.toString();
+    protected void setModelResources(WdkModel model){
+	this.platform = model.getPlatform();
+	int size = paramsV.size();
+	for(int i=0; i<size; i++) {
+	    Param p = (Param)paramsV.elementAt(i);
+	    p.setModelResources(model);
+	}
     }
-
+    
 	
 }

@@ -3,7 +3,7 @@ import java.util.Map;
 import java.util.Vector;
 
 /**
- * RecordListInstance.java
+ * SummaryInstance.java
  *
  * Created: Fri June 4 13:01:30 2004 EDT
  *
@@ -11,7 +11,7 @@ import java.util.Vector;
  * @version $Revision$ $Date$ $Author$
  */
 
-public class RecordListInstance {
+public class SummaryInstance {
 
     // ------------------------------------------------------------------
     // Instance variables
@@ -25,7 +25,7 @@ public class RecordListInstance {
 
     private String listPrimaryKeyName;
 
-    private RecordList recordList;
+    private Summary summary;
 
     private int startRow;
 
@@ -35,9 +35,9 @@ public class RecordListInstance {
     // Constructor
     // ------------------------------------------------------------------
 
-    public RecordListInstance(RecordList recordList, QueryInstance queryInstance){
+    public SummaryInstance(Summary summary, QueryInstance queryInstance){
 
-	this.recordList = recordList;
+	this.summary = summary;
 	this.listIdQueryInstance = queryInstance;
 	this.currentRecordInstanceCounter = 0;
     }
@@ -53,8 +53,8 @@ public class RecordListInstance {
 	listIdQueryInstance.setValues(values);
     }
 
-    public RecordList getRecordList(){
-	return this.recordList;
+    public Summary getSummary(){
+	return this.summary;
     }
 
     public int size(){
@@ -152,7 +152,7 @@ public class RecordListInstance {
 	while (rl.next()){
 	    counter++;
 	    if (counter >= startRow && counter <= endRow){
-		RecordInstance nextRecordInstance = getRecordList().getRecord().makeInstance();
+		RecordInstance nextRecordInstance = getSummary().getRecord().makeInstance();
 		
 		Column[] columns = query.getColumns();
 		String primaryKeyName = columns[0].getName();
@@ -160,7 +160,7 @@ public class RecordListInstance {
 		String primaryKey = rl.getValue(primaryKeyName).toString();
 		nextRecordInstance.setPrimaryKey(primaryKey);
 		
-		nextRecordInstance.setRecordListInstance(this);
+		nextRecordInstance.setSummaryInstance(this);
 		tempRecordInstances.add(nextRecordInstance);
 	    }
 	}        

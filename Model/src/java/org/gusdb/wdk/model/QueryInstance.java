@@ -32,7 +32,7 @@ public abstract class QueryInstance {
 
     /**
      * Values that will be used when the QueryInstance is being run in multi-mode to join it with
-     * a table containing a list of primary keys in a RecordListInstance.
+     * a table containing a list of primary keys in a SummaryInstance.
      */
     protected String multiModeResultTableName;
 
