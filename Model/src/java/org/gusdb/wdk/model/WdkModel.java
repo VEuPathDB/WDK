@@ -29,6 +29,10 @@ public class WdkModel {
         this.name = name;
     }
 
+    public String getName(){
+	return name;
+    }
+
     //Record Sets
     public void addRecordSet(RecordSet recordSet) throws WdkModelException {
         addSet(recordSet, recordSets);
