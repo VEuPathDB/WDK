@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.Summary;
+import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.SummaryInstance;
 
 /**
@@ -32,7 +32,7 @@ public class ShowSummaryAction extends Action {
 	//Summary wdkQuestion = (Summary)request.getSession().getAttribute(CConstants.WDK_QUESTION_KEY);
 
 	QuestionForm qForm = (QuestionForm)form;
-	Summary wdkQuestion = qForm.getQuestion();
+	Question wdkQuestion = qForm.getQuestion();
 
 	Map params = new java.util.HashMap(qForm.getMyProps());
 	/*

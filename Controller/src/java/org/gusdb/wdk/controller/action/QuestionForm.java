@@ -4,7 +4,7 @@ import org.apache.struts.action.ActionForm;
 import java.util.Map;
 import java.util.HashMap;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.Summary;
+import org.gusdb.wdk.model.Question;
 
 /**
  *  form bean for showing a wdk question from a question set
@@ -16,7 +16,7 @@ public class QuestionForm extends ActionForm {
     private Map myLabels = new HashMap();
     private Map myValues = new HashMap();
 
-    private Summary question = null;
+    private Question question = null;
 
     public void reset() {
 	; //no-op
@@ -54,6 +54,6 @@ public class QuestionForm extends ActionForm {
     void setMyValues (Map vals) { myValues = vals; }
     Map getMyValues () { return myValues; }
 
-    public void setQuestion(Summary s) { question = s; }
-    public Summary getQuestion() { return question; }
+    public void setQuestion(Question s) { question = s; }
+    public Question getQuestion() { return question; }
 }
