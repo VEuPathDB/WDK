@@ -216,6 +216,17 @@ public class SummaryInstance {
 	ResultList rl = listIdQueryInstance.getResult();
 	return rl;
     }
+
+    /**
+     * @throws WdkModelException
+     * 
+     */
+    public void close() throws WdkModelException {
+        for (int i = 0; i < recordInstances.length; i++) {
+            RecordInstance ri = recordInstances[i];
+            ri.close();
+        }
+    }
     
 
 
