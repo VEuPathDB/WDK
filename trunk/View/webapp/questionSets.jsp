@@ -13,13 +13,13 @@
 
 <!-- all questionSets in model -->
 <table>
-<c:set value="${wdkModel.allSummarySets}" var="questionSets"/>
+<c:set value="${wdkModel.allQuestionSets}" var="questionSets"/>
 <c:forEach items="${questionSets}" var="qSet">
   <tr><td bgcolor="lightblue"><jsp:getProperty name="qSet" property="description"/></td></tr>
   <tr><td><!-- list of questions in a questionSet -->
           <html:form method="post" action="/showQuestion.do">
           <html:select property="questionFullName">
-            <c:set value="${qSet.summaries}" var="questions"/>
+            <c:set value="${qSet.questions}" var="questions"/>
             <c:forEach items="${questions}" var="q">
             <c:set value="${q.fullName}" var="qFullName"/>
             <c:set value="${q.query.displayName}" var="qName"/>

@@ -59,7 +59,7 @@ public class QuestionSet implements ModelSetI {
 	return questionSet.get(name);
     }
 
-    public Question[] getSummaries() {
+    public Question[] getQuestions() {
 	Question[] questions = new Question[questionSet.size()];
 	Iterator questionIterator = questionSet.values().iterator();
 	int i = 0;
