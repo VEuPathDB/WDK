@@ -10,7 +10,6 @@ import org.gusdb.gus.wdk.model.StringParam;
 import org.gusdb.gus.wdk.model.TextField;
 import org.gusdb.gus.wdk.model.WdkModel;
 import org.gusdb.gus.wdk.model.ReferenceList;
-import org.gusdb.gus.wdk.model.Reference;
 import org.gusdb.gus.wdk.model.TextColumn;
 import org.gusdb.gus.wdk.model.SummarySet;
 import org.gusdb.gus.wdk.model.Summary;
