@@ -44,14 +44,19 @@ public class ApplicationInitListener implements ServletContextListener {
         String schema = application.getInitParameter(CConstants.WDK_MODELSCHEMA_PARAM);
         String props = application.getInitParameter(CConstants.WDK_MODELPROPS_PARAM);
 	String parserClass = application.getInitParameter(CConstants.WDK_MODELPARSER_PARAM);
+	String customViewDir = application.getInitParameter(CConstants.WDK_CUSTOMVIEWDIR_PARAM);
       
-        initMemberVars(configXml, modelXml, schema, props, parserClass, application);
+        initMemberVars(configXml, modelXml, schema, props, parserClass, customViewDir, application);
         
         //Config.set(application, Config.SQL_DATA_SOURCE, dataSource);
     }
     
+    public static boolean resourceExists(String path, ServletContext servletContext) {
+	URL url = createURL(path, null, servletContext);
+	return url != null;
+    }
 
-    private URL createURL(String param, String defaultLoc, ServletContext application) {
+    private static URL createURL(String param, String defaultLoc, ServletContext application) {
 
         if (param == null) {
             param = defaultLoc;
@@ -81,16 +86,21 @@ public class ApplicationInitListener implements ServletContextListener {
     }
     
     private void initMemberVars(String configXml, String modelXml, String schema,
-				String props, String parserClass, ServletContext application) {
-
+				String props, String parserClass, String customViewDir,
+				ServletContext application) {
         URL schemaURL = null;
         if (schema != null) {
             schemaURL = createURL(schema, null, application);
-        }
+        } else {
+	    throw new RuntimeException("can not start application because schema is absent");
+	}
         
         if (parserClass == null) {
             parserClass = CConstants.DEFAULT_WDKMODELPARSER;
         }
+	if (customViewDir == null) {
+            customViewDir = CConstants.DEFAULT_WDKCUSTOMVIEWDIR;
+	}
         
         URL modelURL = createURL(modelXml, CConstants.DEFAULT_WDKMODELXML, application);
         URL configURL = createURL(configXml, CConstants.DEFAULT_WDKMODELCONFIGXML, application);
@@ -106,6 +116,7 @@ public class ApplicationInitListener implements ServletContextListener {
 
             setPlatform(wdkModelRaw.getRDBMSPlatform());
 	    application.setAttribute(CConstants.WDK_MODEL_KEY, wdkModel);         
+	    application.setAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY, customViewDir);
         } catch (Exception exp) {
 	    exp.printStackTrace();
             throw new RuntimeException(exp);
