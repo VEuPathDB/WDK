@@ -75,7 +75,7 @@ public class ViewFullRecordServlet extends HttpServlet {
           break;
       case DESTINATION_JSP:
           try {
-              req.setAttribute( "ri" , new RecordInstanceView(recordInstance, false));
+              req.setAttribute( "ri" , new RecordInstanceView(recordInstance));
               ServletContext sc = getServletContext();
               String page = getRendererForRecordRef(new Reference(recordReference));
               RequestDispatcher rd = sc.getRequestDispatcher(page);

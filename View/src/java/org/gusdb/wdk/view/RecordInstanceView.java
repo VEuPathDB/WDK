@@ -3,11 +3,11 @@ package org.gusdb.gus.wdk.view;
 import org.gusdb.gus.wdk.model.Record;
 import org.gusdb.gus.wdk.model.RecordInstance;
 import org.gusdb.gus.wdk.model.WdkModelException;
+import org.gusdb.gus.wdk.util.FixableSmallMap;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -31,19 +31,17 @@ public class RecordInstanceView implements Map {
     private static final Logger logger = Logger.getLogger("org.gusdb.gus.wdk.view.RecordInstanceView");
     
     private RecordInstance ri;
-    private HashMap map;
+    private Map map;
     private List attributeNames;
-    private boolean summary;
 
-    public RecordInstanceView(RecordInstance ri, boolean summary) {
+    public RecordInstanceView(RecordInstance ri) {
         // TODO Fix exception handling once exceptions and logging are pinned down
         // TODO Special case handling for "overview" - Is there a better way
         this.ri = ri;
-        this.summary = summary;
         
-        generateAttributeNames(summary);
+        generateAttributeNames();
  
-        map = new HashMap();
+        map = new FixableSmallMap();
         for (Iterator it = attributeNames.iterator(); it.hasNext(); ) {
             String key = (String) it.next();
             if (!"overview".equals(key)) {
@@ -64,7 +62,7 @@ public class RecordInstanceView implements Map {
         return ri.getRecord().getSummaryColumnNames();
     }
     
-    private void generateAttributeNames(boolean summary) {
+    private void generateAttributeNames() {
 //        if (summary) {
 //            //attributeNames = ri.getSummaryAttributes();
 //        } else {
