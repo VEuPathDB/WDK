@@ -1,12 +1,18 @@
 package org.gusdb.gus.wdk.view.taglibs.query;
 
 import java.io.*;
+import java.sql.SQLException;
+import java.util.Iterator;
+import java.util.Map;
+
 import javax.servlet.jsp.*;
 import javax.servlet.jsp.tagext.*;
 
 import org.gusdb.gus.wdk.model.Param;
+import org.gusdb.gus.wdk.model.ResultFactory;
 import org.gusdb.gus.wdk.model.SqlEnumParam;
 import org.gusdb.gus.wdk.model.StringParam;
+import org.gusdb.gus.wdk.view.GlobalRepository;
 
 public class DisplayParam extends SimpleTagSupport {
     
@@ -53,11 +59,24 @@ public class DisplayParam extends SimpleTagSupport {
     }
   
     private void handlePairParam(SqlEnumParam p, JspWriter out) throws IOException {
-    	String def = p.getDefault();
-    	if ( def == null) {
-    		def = "";
+    	
+    	ResultFactory rf = GlobalRepository.getInstance().getResultFactory();
+    	Map m = null;
+    	try {
+    		m = p.getKeysAndValues(rf);
     	}
-    	out.println("<input name=\""+p.getName()+"\" type=\"text\" length=\"8\" value=\""+def+"\">");
+    	catch (SQLException exp) {
+    		// TODO How are we logging?
+    	}
+    	if (m != null) {
+    		out.println("<select name=\""+p.getName()+"\">");
+    		
+    		for (Iterator it = m.entrySet().iterator(); it.hasNext(); ) {
+    			Map.Entry entry = (Map.Entry) it.next();
+    			out.print("<option value=\""+entry.getValue()+"\">"+entry.getKey());
+    		}
+    		out.println("</select>");
+    	}
     }
     
 	/**
