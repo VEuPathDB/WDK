@@ -12,7 +12,7 @@ import javax.servlet.ServletContext;
 import java.util.HashMap;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.Summary;
+import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.Param;
 import org.gusdb.wdk.model.FlatVocabParam;
 
@@ -35,7 +35,7 @@ public class ShowQuestionAction extends Action {
 	String qName = qFullName.substring(dotI+1, qFullName.length());
 
 	WdkModel wdkModel = (WdkModel)getServlet().getServletContext().getAttribute(CConstants.WDK_MODEL_KEY);
-	Summary wdkQuestion = wdkModel.getSummarySet(qSetName).getSummary(qName);
+	Question wdkQuestion = wdkModel.getQuestionSet(qSetName).getQuestion(qName);
 	request.getSession().setAttribute(CConstants.WDK_QUESTION_KEY, wdkQuestion);
 
 	QuestionForm qForm = prepareQuestionForm(wdkQuestion);
@@ -45,7 +45,7 @@ public class ShowQuestionAction extends Action {
 	return forward;
     }
 
-    private QuestionForm prepareQuestionForm (Summary wdkQuestion) throws Exception
+    private QuestionForm prepareQuestionForm (Question wdkQuestion) throws Exception
     {
 	QuestionForm qForm = new QuestionForm();
 

@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.gusdb.wdk.controller.CConstants;
 
 import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.Record;
+import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.RecordInstance;
 
 
@@ -28,7 +28,7 @@ public class ShowRecordAction extends Action {
 				 HttpServletResponse response) throws Exception {
 
 	WdkModel wdkModel = (WdkModel)getServlet().getServletContext().getAttribute(CConstants.WDK_MODEL_KEY);
-	Record wdkRecordClass = wdkModel.getRecord(request.getParameter("name"));
+	RecordClass wdkRecordClass = wdkModel.getRecordClass(request.getParameter("name"));
 	RecordInstance wdkRecord = wdkRecordClass.makeRecordInstance();
 	wdkRecord.setPrimaryKey(request.getParameter("id"));
 
