@@ -281,7 +281,10 @@ public class Record {
      * @return
      */
     public List getSummaryColumnNames() {
-        return summaryColumnNames;
+	ArrayList list = new ArrayList();
+	list.add(PRIMARY_KEY_NAME);
+	list.addAll(summaryColumnNames);
+	return list;
     }
 
     /**
