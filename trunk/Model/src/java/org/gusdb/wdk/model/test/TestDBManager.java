@@ -3,27 +3,20 @@ package org.gusdb.gus.wdk.model.test;
 import org.gusdb.gus.wdk.model.ModelConfig;
 import org.gusdb.gus.wdk.model.ModelConfigParser;
 import org.gusdb.gus.wdk.model.RDBMSPlatformI;
-import org.gusdb.gus.wdk.model.ResultFactory;
-import org.gusdb.gus.wdk.model.WdkModel;
-import org.gusdb.gus.wdk.model.implementation.ModelXmlParser;
-import org.gusdb.gus.wdk.model.Query;
 import org.gusdb.gus.wdk.model.implementation.SqlUtils;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.BufferedReader;
-import java.util.Hashtable;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
-import java.sql.PreparedStatement;
-import java.sql.Types;
 
 import javax.sql.DataSource;
 
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
