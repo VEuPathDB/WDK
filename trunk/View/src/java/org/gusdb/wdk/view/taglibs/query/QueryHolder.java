@@ -1,6 +1,5 @@
 package org.gusdb.gus.wdk.view.taglibs.query;
 
-import org.gusdb.gus.wdk.controller.WdkModelExtra;
 import org.gusdb.gus.wdk.model.Summary;
 import org.gusdb.gus.wdk.model.WdkModel;
 
@@ -81,7 +80,7 @@ public class QueryHolder extends SimpleTagSupport {
             if ( summaryName != null) {
                 WdkModel wm = (WdkModel) getJspContext().getAttribute("wdk.wdkModel", PageContext.APPLICATION_SCOPE);
 
-                summary = WdkModelExtra.getSummary(wm, summaryName);
+                summary = wm.getSummary(summaryName);
             }
         }
         
