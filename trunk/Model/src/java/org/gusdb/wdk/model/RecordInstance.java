@@ -1,5 +1,6 @@
 package org.gusdb.gus.wdk.model;
 
+
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -45,7 +46,9 @@ public class RecordInstance {
 		runAttributesQuery(query);
 	    }
 	    HashMap resultMap = (HashMap)attributesResultSetsMap.get(queryName);
-
+	    if (resultMap == null) {
+	        throw new WdkModelException("Unable to get resultMap for queryName of '"+queryName+"'");
+	    }
 	    value = resultMap.get(attributeName);
 	}
 	return value;
@@ -77,7 +80,7 @@ public class RecordInstance {
 	    new StringBuffer(record.getType() + " " + record.getIdPrefix() + primaryKey).append( newline );
 
 
-	Iterator attributeNamesIt = record.getNonTextAttributeNames().iterator();
+    Iterator attributeNamesIt = record.getNonTextAttributeNames().iterator();
 	while (attributeNamesIt.hasNext()) {
 	    String attributeName = (String) attributeNamesIt.next();
 	    buf.append(attributeName + ":   " + getAttributeValue(attributeName)).append( newline );
@@ -130,8 +133,7 @@ public class RecordInstance {
 	    ResultList rl = instance.getResult();
 	    summaryInstance.setQueryResult(rl);
 	    rl.close();
-	}
-	else{ //do it all myself
+	}	else{ //do it all myself
 	    HashMap paramHash = new HashMap();
 	    if (primaryKey == null) 
 		throw new WdkModelException("primaryKey is null");
@@ -157,7 +159,6 @@ public class RecordInstance {
 		String msg = "Attributes query '" + query.getFullName() + "' in Record '" + record.getFullName() + "' returns more than one row";
 		throw new WdkModelException(msg);
 	    }
-	    rl.close();
 	}
     }
 
