@@ -80,10 +80,12 @@
 <!-- content of current page -->
 <table border="0" cellpadding="2" cellspacing="0">
 <tr class="headerRow">
-<c:forEach items="${wdkAnswer.recordClass.attributeFields}" var="attr">
-<c:if test="${!attr.value.isInternal}">
-  <th align="left">${attr.value.displayName}</th>
-</c:if>
+
+<c:forEach items="${wdkAnswer.summaryAttributeNames}" var="recAttrName">
+  <c:set value="${wdkAnswer.question.recordClass.attributeFields[recAttrName]}" var="recAttr"/>
+  <c:if test="${!recAttr.isInternal}">
+    <th align="left">${recAttr.displayName}</th>
+  </c:if>
 </c:forEach>
 
 <c:set var="i" value="0"/>
@@ -95,12 +97,14 @@
 </c:choose>
 
   <c:set var="j" value="0"/>
-  <c:forEach items="${record.attributes}" var="recAttr">
-  <c:if test="${!recAttr.value.isInternal}">
+
+  <c:forEach items="${record.summaryAttributeNames}" var="recAttrName">
+  <c:set value="${record.attributes[recAttrName]}" var="recAttr"/>
+  <c:if test="${!recAttr.isInternal}">
  
     <td>
     <c:set var="recNam" value="${record.recordClass.fullName}"/>
-    <c:set var="fieldVal" value="${recAttr.value.value}"/>
+    <c:set var="fieldVal" value="${recAttr.value}"/>
     <c:choose>
       <c:when test="${j == 0}">
 
