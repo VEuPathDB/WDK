@@ -25,6 +25,26 @@ public class SqlUtils {
 	}
     }
 
+    /**
+     * Gets a result set using a PreparedStatement.  Since the statement is prepared, it is likely that 
+     * the user is intending to use it more than once before closing it.  It is thus up to the user to close
+     * the PreparedStatement using <code>closeStatement</code> when finished.
+     */
+    public static int getResultSet(DataSource dataSource, PreparedStatement prepStmt) throws SQLException {
+
+	int result = -1;
+	result = prepStmt.executeUpdate();
+	return result;
+    }
+
+
+
+    public static PreparedStatement getPreparedStatement(DataSource dataSource, String sql)throws SQLException{
+	    Connection connection = dataSource.getConnection();
+	    PreparedStatement prepStmt = connection.prepareStatement(sql);
+	    return prepStmt;
+    }
+
     public static void closeResultSet(ResultSet resultSet) throws SQLException {
 	if (resultSet != null) {
 	    Statement stmt = resultSet.getStatement();
