@@ -30,7 +30,7 @@ public class SanityRecord implements SanityElementI {
     /**
      * Primary key of the element that this record represents.
      */
-    protected Integer primaryKey;
+    protected String primaryKey;
 
     // ------------------------------------------------------------------
     // Constructor
@@ -50,11 +50,11 @@ public class SanityRecord implements SanityElementI {
 	return this.twoPartName;
     }
 
-    public void setPrimaryKey(Integer primaryKey){
+    public void setPrimaryKey(String primaryKey){
 	this.primaryKey = primaryKey;
     }
     
-    public Integer getPrimaryKey(){
+    public String getPrimaryKey(){
 	return this.primaryKey;
     }
 

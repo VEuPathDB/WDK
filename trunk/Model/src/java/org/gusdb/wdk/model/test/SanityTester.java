@@ -32,7 +32,7 @@ import org.apache.commons.cli.ParseException;
  * Created: Mon August 23 12:00:00 2004 EST
  *
  * @author David Barkan
- * @version $Revision$ $Date$Author: dbarkan $
+ * @version $Revision$ $Date$Author: sfischer $
  */
 public class SanityTester {
 
@@ -287,7 +287,7 @@ public class SanityTester {
 		    RecordClassSet nextRecordClassSet = queryTester.getWdkModel().getRecordClassSet(nextRecordReference.getSetName());
 		    RecordClass nextRecordClass = nextRecordClassSet.getRecordClass(nextRecordReference.getElementName());
 		    RecordInstance nextRecordInstance = nextRecordClass.makeRecordInstance();
-		    nextRecordInstance.setPrimaryKey(nextSanityRecord.getPrimaryKey().toString());
+		    nextRecordInstance.setPrimaryKey(nextSanityRecord.getPrimaryKey());
 		    
 		    String riString = nextRecordInstance.print();
 		    System.out.println("Record " + nextRecordReference.getSetName() + "." + nextRecordReference.getElementName() + " passed\n");
