@@ -13,7 +13,7 @@
 
   <define name="sanityQuery">
     <element name="sanityQuery">
-      <attribute name="twoPartName" />
+      <attribute name="ref" />
       <attribute name="minOutputLength" />
       <attribute name="maxOutputLength" />
       <zeroOrMore>
@@ -27,7 +27,7 @@
 
   <define name="sanityRecord">
     <element name="sanityRecord">
-      <attribute name="twoPartName" />
+      <attribute name="ref" />
       <attribute name="primaryKey" />
     </element>
   </define>

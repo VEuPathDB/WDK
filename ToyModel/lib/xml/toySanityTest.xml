@@ -2,29 +2,29 @@
 
 <sanityModel>
 
-      <sanityQuery twoPartName="RnaQueries.ByDbESTLib" minOutputLength="1" maxOutputLength="100">
+      <sanityQuery ref="RnaIds.ByDbESTLib" minOutputLength="1" maxOutputLength="100">
            <sanityParam name="NumEstLibs" value="6"/>
            <sanityParam name="ApiTaxon" value="Neospora caninum"/>
       </sanityQuery>
 
-      <sanityQuery twoPartName="RnaQueries.ByNumSeqs" minOutputLength="1" maxOutputLength="100">
+      <sanityQuery ref="RnaIds.ByNumSeqs" minOutputLength="1" maxOutputLength="100">
            <sanityParam name="NumSeqs" value="50"/>
            <sanityParam name="ApiTaxon" value="Neospora caninum"/>
       </sanityQuery>
 
-      <sanityQuery twoPartName="VocabQueries.ApiTaxonQuery" minOutputLength="3" maxOutputLength="3"/>
+      <sanityQuery ref="VocabQueries.ApiTaxon" minOutputLength="3" maxOutputLength="3"/>
 
-      <sanityQuery twoPartName="RnaRecordAttributeQueries.RnaSummary" minOutputLength="1" maxOutputLength="1">
+      <sanityQuery ref="RnaAttributes.GeneAttrs" minOutputLength="1" maxOutputLength="1">
            <sanityParam name="primaryKey" value="92484673"/>
       </sanityQuery>
 
-      <sanityQuery twoPartName="RnaRecordAttributeQueries.RnaFields" minOutputLength="1" maxOutputLength="1">
+      <sanityQuery ref="RnaAttributes.AssemblyAttrs" minOutputLength="1" maxOutputLength="1">
            <sanityParam name="primaryKey" value="92484673"/>
       </sanityQuery>
 
-      <sanityQuery twoPartName="RnaRecordTableQueries.ConstituentEsts" minOutputLength="1" maxOutputLength="100">
+      <sanityQuery ref="RnaTables.ConstituentEsts" minOutputLength="1" maxOutputLength="100">
            <sanityParam name="primaryKey" value="92484673"/>
       </sanityQuery>
 
-      <sanityRecord twoPartName="RnaRecordClasses.RnaRecordClass" primaryKey="92484673" />
+      <sanityRecord ref="RnaRecordClasses.RnaRecordClass" primaryKey="92484673" />
 </sanityModel>
