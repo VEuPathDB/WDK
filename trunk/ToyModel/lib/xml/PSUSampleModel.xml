@@ -5,7 +5,7 @@
   	<summarySet name="RNARecordLists">
 
      	<summary name="CDSNumExons"
-        	        recordRef="RNARecords.PSUCDSRecord"
+        	        recordRef="RNARecords.CDSRecordWithExons"
                     queryRef="RNASimpleQueries.CDSNumExons" />
 
      	<summary name="CDSByName"
@@ -28,11 +28,22 @@
 
       <textAttribute name="overview">
         <text>
-          This is the CDS $$primaryKey$$.  It has $$number_of_exons$$ exon(s).
+          This is the CDS $$primaryKey$$.
         </text>
       </textAttribute>
     </record>
 
+    <record name="CDSRecordWithExons" type="CDS" idPrefix="">
+      <attributeQuery twoPartName="RNARecordQueries.CDSFieldsWithExons"/>
+
+      <!-- <tableQuery twoPartName="RNARecordQueries.ExternalLinks"/> -->
+
+      <textAttribute name="overview">
+        <text>
+          This is the CDS $$primaryKey$$.  It has $$number_of_exons$$ exon(s).
+        </text>
+      </textAttribute>
+    </record>
   </recordSet>
 
 
@@ -64,6 +75,31 @@
 
 
    <sqlQuery name="PSUCDSFields">
+
+     <paramRef twoPartName="allparams.primaryKey"/>
+
+     <column name="na_feature_id" displayName="na_feature_id" />
+     <column name="name" displayName="Name" />
+     <column name="gene_type" displayName="Gene Type" />
+     <column name="is_pseudo" displayName="Pseudo" />
+     <column name="is_partial" displayName="Partial" />
+     <column name="product" displayName="Product/Description" />
+     <column name="modification_date" displayName="Last modified" />
+
+     <sql>
+select gf.na_feature_id, 
+       gf.name,
+       gf.gene_type,
+       gf.is_pseudo,
+       gf.is_partial,
+       gf.product, 
+       TO_CHAR(gf.modification_date, 'Mon DD, YYYY HH:MI:SSAM') as modification_date
+ from dots.GeneFeature gf
+ where gf.na_feature_id = $$primaryKey$$
+     </sql>
+  </sqlQuery>
+
+   <sqlQuery name="CDSFieldsWithExons">
 
      <paramRef twoPartName="allparams.primaryKey"/>
 
@@ -165,6 +201,7 @@ select gf.na_feature_id
     <stringParam name="ByName"
                  prompt="Name"
                  sample="SPAC1701.1c"
+                 substitute="true"
                  regex=".*" />
   
     <flatVocabParam name="Chromosome"
