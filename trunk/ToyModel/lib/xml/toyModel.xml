@@ -227,7 +227,9 @@
     </querySet>
     
 
-    <!-- a set of queries that return controlled vocabulary terms -->
+
+    <!-- queries that return controlled vocabulary terms -->
+
     <querySet name="VocabQueries">
         <!-- a query that returns a list of Apicomplexon taxons -->
         <sqlQuery name="ApiTaxon">
@@ -243,7 +245,9 @@
     </querySet>
 
 
-    <!-- a set of parameters used by queries -->
+
+    <!-- parameters used by queries -->
+
     <paramSet name="params">
 
         <stringParam name="primaryKey" 
