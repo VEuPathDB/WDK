@@ -3,7 +3,7 @@
 
 <c:set value="${sessionScope.wdkRecord}" var="wdkRecord"/>
 
-<c:set value="${wdkRecord.record.fullName}" var="recordName"/>
+<c:set value="${wdkRecord.recordClass.fullName}" var="recordName"/>
 <c:set value="${wdkRecord.primaryKey}" var="recordId"/>
 <site:header banner="${recordName} ${recordId}"/>
 

@@ -59,7 +59,7 @@ showing ${wdk_paging_start} to ${wdk_paging_end} </c:if>
     <c:choose>
       <c:when test="${i == 0}">
 
-        <a href="showRecord.do?name=${record.record.fullName}&id=${record.primaryKey}">${recAttr.value.value}</a>
+        <a href="showRecord.do?name=${record.recordClass.fullName}&id=${record.primaryKey}">${recAttr.value.value}</a>
 
       </c:when>
       <c:otherwise>
