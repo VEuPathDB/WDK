@@ -20,6 +20,7 @@ import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.AnswerBean;
 import org.gusdb.wdk.model.jspwrap.BooleanQuestionLeafBean;
+import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
 
 
 public class GrowBooleanAction extends StartBooleanAction{
@@ -33,35 +34,53 @@ public class GrowBooleanAction extends StartBooleanAction{
 	System.err.println("Grow Boolean Action: starting method");
 
 	Object currentRoot = request.getSession().getAttribute(CConstants.CURRENT_BOOLEAN_ROOT_KEY);
+
+	String operation = bqf.getNextBooleanOperation();
+	String nextQuestionName = bqf.getNextQuestionOperand();
+	System.err.println("new question to add is " + nextQuestionName);
+	QuestionBean nextQuestion = getQuestionFromModel(nextQuestionName);
+	BooleanQuestionLeafBean newLeaf = nextQuestion.makeBooleanQuestionLeaf();
+	newLeaf.setLeafId(bqf.getNextId());
+	WdkModelBean wdkModel = (WdkModelBean)getServlet().getServletContext().getAttribute(CConstants.WDK_MODEL_KEY);
 	//first time user has grown something; tree is one node consisting of leaf
 	if (currentRoot instanceof org.gusdb.wdk.model.jspwrap.BooleanQuestionLeafBean) {
 	    BooleanQuestionLeafBean currentLeafRoot = (BooleanQuestionLeafBean)currentRoot;		
-	    String operation = bqf.getNextBooleanOperation();
-	    String nextQuestionName = bqf.getNextQuestionOperand();
-	    System.err.println("new question to add is " + nextQuestionName);
-	    QuestionBean nextQuestion = getQuestionFromModel(nextQuestionName);
-	    BooleanQuestionLeafBean newLeaf = nextQuestion.makeBooleanQuestionLeaf();
-		
-	    newLeaf.setLeafId(bqf.getNextId());
-	    WdkModelBean wdkModel = (WdkModelBean)getServlet().getServletContext().getAttribute(CConstants.WDK_MODEL_KEY);
-
 	    currentLeafRoot.grow(newLeaf, operation, wdkModel);
-		
-	    //add params from incoming leaf to form
-	    addNewQuestionParams(bqf, newLeaf);
+	    currentRoot = currentLeafRoot.getParent();
 	}
 	else if (currentRoot instanceof org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean){
-	    //leafToGrow = currentRoot.find(nodeId);
+	    String  submitAction = request.getParameter("process_boolean_question");
+	    int leafId = parseLeafId(submitAction);
+	    BooleanQuestionNodeBean currentNodeRoot = (BooleanQuestionNodeBean)currentRoot;	    
+	    BooleanQuestionLeafBean leafToGrow = currentNodeRoot.findLeaf(leafId);
+	    leafToGrow.grow(newLeaf, operation, wdkModel);
 	} else {
 	    throw new RuntimeException("expect BooleanQuestion<Leaf|Node>Bean but got: " + currentRoot);
 	}
 
-	//request.getSession().setAttribute(CConstants.CURRENT_BOOLEAN_ROOT_KEY, currentRoot);
+	System.err.println("Current Root after grow: " + currentRoot);
+	//add params from incoming leaf to form
+	addNewQuestionParams(bqf, newLeaf);
+
+	request.getSession().setAttribute(CConstants.CURRENT_BOOLEAN_ROOT_KEY, currentRoot);
 
 	//recursive forward
 	ActionForward forward = mapping.findForward(CConstants.GROW_BOOLEAN_MAPKEY);
 	    
 	return forward;
+    }
+
+    private int parseLeafId (String submitAction) {
+	int startIdx = submitAction.indexOf('(');
+	int endIdx = submitAction.indexOf(')');
+	String leafIdStr = submitAction.substring(startIdx+1, endIdx);
+	int leafId;
+	try {
+	    leafId = Integer.parseInt(leafIdStr);
+	} catch (NumberFormatException e) {
+	    throw new RuntimeException (e.getMessage() + " when parsing " + submitAction + " for leafId");
+	} 
+	return leafId;
     }
 
     private QuestionBean getQuestionFromModel(String fullQuestionName){

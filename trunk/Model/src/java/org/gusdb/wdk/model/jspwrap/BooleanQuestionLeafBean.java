@@ -15,7 +15,13 @@ public class BooleanQuestionLeafBean {
 	this.bqn = bqn;
 	this.parent = parent;
     }
-    
+
+    private boolean isFirstChild() {
+	if(getParent() == null) { return true; }
+
+	return this == parent.getFirstChild();
+    } 
+
     /**
      * 
      */
@@ -23,7 +29,8 @@ public class BooleanQuestionLeafBean {
 
 	BooleanQuestionNode newBqn = bqn.grow(leaf.getBooleanQuestionNode(), operation, modelBean.getModel());
 	BooleanQuestionNodeBean tempParent = parent;
-	
+	boolean wasFirstChild = isFirstChild();
+
 	BooleanQuestionNodeBean newNodeBean = new BooleanQuestionNodeBean(newBqn, this, leaf, tempParent);
 	
 	//setting parent explicitly here; other option is to do inside node bean constructor with discovery
@@ -31,7 +38,11 @@ public class BooleanQuestionLeafBean {
 	leaf.setParent(newNodeBean);
 
 	if (tempParent != null){
-	    tempParent.setFirstChild(newNodeBean);
+	    if (wasFirstChild) {
+		tempParent.setFirstChild(newNodeBean);
+	    } else {
+		tempParent.setSecondChild(newNodeBean);
+	    }
 	}
     }
     
@@ -51,8 +62,15 @@ public class BooleanQuestionLeafBean {
 	this.leafId = id;
     }
 
+    public BooleanQuestionNodeBean getParent(){
+	return parent;
+    }
+
     protected void setParent(BooleanQuestionNodeBean parent){
 	this.parent = parent;
     }
 
+    public String toString() {
+	return getQuestion().getFullName() + " (id: " + getLeafId() + ")";
+    }
 }

@@ -7,7 +7,7 @@
 <!-- display page header with seedQuestion displayName as banner -->
 <site:header banner="Boolean Question" />
 
-<nested:form method="get" action="/growBoolean.do">
+<nested:form method="get" action="/processBooleanQuestion.do">
   <nested:root name="currentBooleanRoot">
     <jsp:include page="/WEB-INF/includes/booleanQuestionNode.jsp"/>
   </nested:root>
@@ -17,7 +17,7 @@
   <table width="100%">
   <tr><td colspan="2" align="center">
       <b>After finished growing the boolean question and setting parameters:</b></td></tr>
-  <tr><td align="right"><html:submit property="get_boolean_answer" value="Get Boolean Answer"/></td>
+  <tr><td align="right"><html:submit property="process_boolean_question" value="Get Boolean Answer"/></td>
       <td align="left"><html:reset property="reset_all_param" value="Reset All Parameters"/></td></tr>
   </table>
 </nested:form>

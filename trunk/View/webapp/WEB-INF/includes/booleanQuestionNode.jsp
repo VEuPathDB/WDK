@@ -6,23 +6,22 @@
 
 <dir>
 
+  <nested:define id="rootClassName" property="class.name"/>
   <c:choose>
-    <c:when test="${class.name eq 'org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean'}">
-
+    <c:when test="${rootClassName eq 'org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean'}">
+    <nested:write property="operation"/><br>
     <nested:nest property="firstChild">
-      First Child<br>
       <jsp:include page="/WEB-INF/includes/booleanQuestionNode.jsp"/>
     </nested:nest>
 
     <nested:nest property="secondChild">
-      Second Child<br>
       <jsp:include page="/WEB-INF/includes/booleanQuestionNode.jsp"/>
     </nested:nest>
 
     </c:when>	
     <c:otherwise>
 
-         <table>
+         <table border="1">
             <!-- Print out question -->
             <nested:define id="wdkQ" property="question"/>
             <nested:define id="leafPref" property="leafId"/>
@@ -85,7 +84,7 @@
                      <c:set value="booleanOps" var="booleanName"/>
                      <html:options property="values(${booleanName})"/>
                   </html:select>
-                  <html:submit property="grow" value="Grow Boolean (${leafPref})"/>
+                  <html:submit property="process_boolean_question" value="Grow Boolean (${leafPref})"/>
                </td></tr>
          </table>
 

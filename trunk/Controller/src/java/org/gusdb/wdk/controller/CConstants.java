@@ -24,7 +24,10 @@ public class CConstants {
     public static final String SHOW_RECORD_MAPKEY = "show_record";
     public static final String PQ_SHOW_SUMMARY_MAPKEY = "pq_show_summary";
     public static final String PQ_START_BOOLEAN_MAPKEY = "pq_start_boolean";
+    public static final String PBQ_GET_BOOLEAN_ANSWER_MAPKEY = "pbq_get_boolean_answer";
+    public static final String PBQ_GROW_BOOLEAN_MAPKEY = "pbq_grow_boolean";
     public static final String GROW_BOOLEAN_MAPKEY = "grow_boolean";
+    public static final String GET_BOOLEAN_ANSWER_MAPKEY = "get_boolean_answer";
 
     //name of webapp init params, from web.xml, used in ApplicationInitListener.java
     protected static final String WDK_MODELCONFIGXML_PARAM = "wdkModelConfigXml_param";
