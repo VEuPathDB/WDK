@@ -8,34 +8,27 @@ import java.util.Iterator;
 
 import java.util.logging.Logger;
 
-public class AttributeValueMap implements Map {
+public class RowMap implements Map {
 
-    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.view.AttributeValueMap");
+    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.view.RowMap");
     
-    private Record record;
-    private RecordInstance recordInstance;
-    private boolean isTableMap;
+    private ResultList resultList;
+    private Set columnNameSet;
 
-    /**
-     * @param recordInstance May be null to indicate this is a map to hold
-     * valueless attributes
-     */
-    public AttributeValueMap(Record record, RecordInstance recordInstance, boolean isTableMap) {
-	this.recordInstance = recordInstance;
-	this.record = record;
-	this.isTableMap = isTableMap;
+    public RowMap(ResultList resultList) {
+	this.resultList = resultList;
+	Set columnNameSet = new LinkedHashSet();
+	Column[] columns =  resultList.getColumns();
+	for (int i=0; i<columns.length; i++) {
+	    columnNameSet.add(columns[i].getName());
+	}
     }
-
-       
-    ////////////////////////////////////////////////////////////////////
-    //  implementation of Map
-    ////////////////////////////////////////////////////////////////////
 
     /**
      * @see java.util.Map#size()
      */
     public int size() {
-        return keySet().size();
+        return resultList.getColumns().length;
     }
 
     /**
@@ -49,35 +42,25 @@ public class AttributeValueMap implements Map {
      * @see java.util.Map#containsKey(java.lang.Object)
      */
     public boolean containsKey(Object key) {
-	return keySet().contains(key);
+	return columnNameSet.contains(key);
     }
 
     /**
      * @see java.util.Map#keySet()
      */
     public Set keySet() {
-	return isTableMap?
-	    record.getTableNames() :
-	    record.getAllAttributeNames();
+	return columnNameSet;
     }
 
     /**
      * @see java.util.Map#get(java.lang.Object)
      */
     public Object get(Object key) {
-	if (!containsKey(key)) throw new IllegalArgumentException("Record " + record.getFullName() + " does not have any value with key " + key);
+
+	if (!containsKey(key)) throw new IllegalArgumentException("Row does not have any value with key " + key);
 
 	try {
-	    String attrName = (String)key;
-	    Object value =  null;
-	    if (recordInstance != null) {
-		value =  isTableMap?
-		    recordInstance.getTableValue(attrName) :
-		    recordInstance.getAttributeValue(attrName);
-	    }
-	    AttributeValue attrValue = 
-		new AttributeValue(record, attrName,value);
-	    return attrValue;
+	    return resultList.getValue((String)key);
 	} catch (WdkModelException e) {
 	    throw new RuntimeException(e);
 	}
@@ -157,5 +140,4 @@ public class AttributeValueMap implements Map {
 	}
     }
  
-}   
-    
+}
