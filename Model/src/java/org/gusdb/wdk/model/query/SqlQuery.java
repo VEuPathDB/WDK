@@ -1,8 +1,9 @@
 package org.gusdb.gus.wdk.model.query;
 
-import java.util.Hashtable;
-import java.util.Vector;
-import java.util.Enumeration;
+import java.util.Map;
+import java.util.Iterator;
+import javax.sql.DataSource;
+import java.sql.SQLException;
 
 public class SqlQuery extends Query {
     
@@ -24,19 +25,26 @@ public class SqlQuery extends Query {
 	return sql;
     }
 
+    public String[] getColumnNames(DataSource dataSource, String sql) throws SQLException {
+	return SqlUtils.getColumnNames(dataSource, sql);
+    }
+
     /////////////////////////////////////////////////////////////////////
     /////////////  Protected ////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////
 
-    protected QueryInstance makeInstance() {
+    protected QueryInstance makeInstance(boolean useCache) {
 	return new SqlQueryInstance(this);
     }
 
-    protected String instantiateSql(Hashtable values) {
+    /**
+     * @param values These values are assumed to be pre-validated
+     */
+    protected String instantiateSql(Map values) {
 	String s = this.sql;
-	Enumeration e = values.keys();
-	while (e.hasMoreElements()) {
-	    String key = (String)e.nextElement();
+	Iterator keySet = values.keySet().iterator();
+	while (keySet.hasNext()) {
+	    String key = (String)keySet.next();
 	    String regex = "\\$\\$" + key  + "\\$\\$";
 	    s = s.replaceAll(regex, (String)values.get(key));
 	}

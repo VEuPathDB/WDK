@@ -1,0 +1,36 @@
+package org.gusdb.gus.wdk.model.query;
+
+import java.sql.Statement;
+import java.sql.Connection;
+import java.sql.SQLException;
+import javax.sql.DataSource;
+
+/**
+ * An implementation of RDBMSPlatformI for Oracle 8i.  
+ *
+ * @author Steve Fischer
+ * @version $Revision$ $Date$ $Author$
+ */
+public interface RDBMSPlatformI {
+    
+    public void setDataSource(DataSource dataSource);
+
+    public String getFullTableName(String schemaName, String tableName);
+
+    public String getNextId(String schemaName, String tableName) throws SQLException;
+
+    public String cleanStringValue(String val);
+
+    public String getCurrentDateFunction();
+
+    public int dropTable(String schemaName, String tableName) throws SQLException;
+    public void createSequence(String sequenceName, int start, int increment) throws SQLException;
+
+    public void dropSequence(String sequenceName) throws SQLException;
+
+    public void createTableFromQueryInstance(DataSource dataSource,
+						  String tableName, 
+						  SqlQueryInstance instance) throws SQLException ;
+}
+
+

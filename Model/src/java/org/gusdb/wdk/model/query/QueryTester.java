@@ -1,5 +1,8 @@
 package org.gusdb.gus.wdk.model.query;
 
+import org.gusdb.gus.wdk.model.ModelConfig;
+import org.gusdb.gus.wdk.model.ModelConfigParser;
+
 import java.util.Hashtable;
 import java.util.Enumeration;
 import java.io.File;
@@ -20,11 +23,11 @@ import org.apache.commons.dbcp.DriverManagerConnectionFactory;
 public class QueryTester {
 
     QuerySet querySet;
-    SqlResultSetManager resultMgr;
+    SqlResultFactory resultFactory;
 
-    public QueryTester(QuerySet querySet, DataSource dataSource) {
+    public QueryTester(QuerySet querySet, SqlResultFactory resultFactory) {
 	this.querySet = querySet;
-	this.resultMgr = new SqlResultSetManager(dataSource);
+	this.resultFactory = resultFactory;
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -35,7 +38,7 @@ public class QueryTester {
 	Query query = querySet.getQuery(queryName);
 	QueryInstance instance = query.makeInstance();
        	instance.setValues(paramHash);
-	return resultMgr.getResult((SqlQueryInstance)instance);
+	return resultFactory.getResult((SqlQueryInstance)instance);
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -44,6 +47,10 @@ public class QueryTester {
 
     void displayQuery(String queryName) throws SQLException {
 	Query query = querySet.getQuery(queryName);
+	if (query == null) 
+	    throw new IllegalArgumentException("Query set '" + querySet.getName() +
+					       "' does not include a query named '" +
+					       queryName + "'");
 
 	String newline = System.getProperty( "line.separator" );
 	System.out.println(newline + "Query: " + 
@@ -80,12 +87,8 @@ public class QueryTester {
 	} catch (SQLException e) {
 	    throw e;
 	} finally {
-	    resultMgr.closeResultSet(rs);
+	    SqlUtils.closeResultSet(rs);
 	}
-    }
-
-    void closeResultSet(ResultSet rs) throws SQLException {
-	resultMgr.closeResultSet(rs);
     }
 
     String formatParamPrompt(Param param) throws SQLException {
@@ -99,7 +102,7 @@ public class QueryTester {
 	    prompt += " (chose one";
 	    if (enumParam.getMultiPick().booleanValue()) prompt += " or more"; 
 	    prompt += "):";
-	    Hashtable hash = enumParam.getKeysAndValues(resultMgr);
+	    Hashtable hash = enumParam.getKeysAndValues(resultFactory);
 	    Enumeration keys = hash.keys();
 	    while (keys.hasMoreElements()) {
 		String key = (String)keys.nextElement();
@@ -125,28 +128,43 @@ public class QueryTester {
     /////////////   static methods   /////////////////////////////////////
     //////////////////////////////////////////////////////////////////////
 
+    static int STARTINDEX = 3; // index of first optional arg
+
     public static void main(String[] args) {
 	
-	String connectionUrl = args[0];
-	String login = args[1];
-	String password = args[2];
-	File querySetFile = new File(args[3]);
-	String queryName = args[4];
-	
+	File modelConfigXmlFile = new File(args[0]);
+	File querySetFile = new File(args[1]);
+	String queryName = args[2];
+
 	try {
+	    // read config info
+	    ModelConfig modelConfig = 
+		ModelConfigParser.parseXmlFile(modelConfigXmlFile);
+	    String connectionUrl = modelConfig.getConnectionUrl();
+	    String login = modelConfig.getLogin();
+	    String password = modelConfig.getPassword();
+	    String cacheTable = modelConfig.getQueryCacheTable();
+	    String platformClass = modelConfig.getPlatformClass();
+	    
 	    DataSource dataSource = 
 		setupDataSource(connectionUrl,login, password);
+	
+	    RDBMSPlatformI platform = 
+		(RDBMSPlatformI)Class.forName(platformClass).newInstance();
+	    platform.setDataSource(dataSource);
+       
 	    QuerySet querySet = QuerySetParser.parseXmlFile(querySetFile);
-	    QueryTester tester = new QueryTester(querySet, dataSource);
+	    SqlResultFactory resultFactory = new SqlResultFactory(dataSource, platform, login, cacheTable);
+	    QueryTester tester = new QueryTester(querySet, resultFactory);
 
 	    // if no params supplied, show the query prompts
-	    if (args.length == 5) {
+	    if (args.length == STARTINDEX) {
 		tester.displayQuery(queryName);
 	    } 
 
 	    // else, run the query with the supplied params
 	    else {
-		Hashtable paramHash = tester.parseParamArgs(args, 5);
+		Hashtable paramHash = tester.parseParamArgs(args, STARTINDEX);
 		ResultSet rs = tester.executeQuery(queryName, paramHash);
 		tester.printResultSet(rs);
 	    }
