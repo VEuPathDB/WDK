@@ -22,7 +22,6 @@ public class TextColumn extends Column implements DerivedColumnI {
 	    Column column = columns[i];
 	    if (column instanceof DerivedColumnI) continue;
 	    String columnName = column.getName();
-	    System.err.println("TextColumn.gdv " + columnName);
 	    instantiatedText = 
 		RecordInstance.instantiateText(instantiatedText, columnName, 
 				resultList.getValue(columnName).toString());
