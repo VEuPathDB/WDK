@@ -21,11 +21,7 @@
 
   <table width="100%">
   <tr><td colspan="2" align="center">
-      <em><b>Please do not use the browser's "back" button</b></em><br>
-      <i>(Your intermediate parametizations are stored at the server.<br>
-       Before we provide an "un-expand" button,<br>
-       please start over if you change mind about partial expansion. <br>
-       Sorry for the inconvenience!)<br><br></i>
+      <em><b>Please do not use the browser's "back" button. Start over from a simple question instead.</b></em><br><br>
       <b>After finished expanding the question and setting parameters:</b></td></tr>
   <tr><td align="right"><html:submit property="process_boolean_question" value="Retrieve Answer"/></td>
       <td align="left"><html:reset property="reset_all_param" value="Reset All Parameters"/></td></tr>
