@@ -39,6 +39,10 @@ public class AnswerBean {
 	}
     }
 
+    public boolean getIsBoolean(){
+	return answer.getIsBoolean();
+    }
+
     public RecordClassBean getRecordClass() {
 	return new RecordClassBean(answer.getQuestion().getRecordClass());
     }

@@ -37,6 +37,8 @@ public class Answer {
 
     private int endRow;
 
+    private boolean isBoolean = false;
+
     private Integer resultSize;   // size of total result
 
     // ------------------------------------------------------------------
@@ -50,6 +52,9 @@ public class Answer {
 
 	this.question = question;
 	this.queryInstance = queryInstance;
+	if (queryInstance instanceof org.gusdb.wdk.model.BooleanQueryInstance){
+	    this.isBoolean = true;
+	}
 	this.currentRecordInstanceCounter = 0;
 	this.startRow = startRow;
 	this.endRow = endRow;   
@@ -204,7 +209,10 @@ public class Answer {
 	recordInstances = new RecordInstance[tempRecordInstances.size()];
 	tempRecordInstances.copyInto(recordInstances);
 	rl.close();
-	
+    }
+
+    public boolean getIsBoolean(){
+	return this.isBoolean;
     }
 
     // ------------------------------------------------------------------
