@@ -154,14 +154,10 @@ public class SanityQuery implements SanityElementI {
     // ------------------------------------------------------------------
     public String getCommand(String globalArgs) throws WdkModelException{
 	
-	Reference queryReference = new Reference(twoPartName);
-	String querySetName = queryReference.getSetName();
-	String queryName = queryReference.getElementName();
-	
 	SanityParam params[] = getParams();
 	
 	StringBuffer command = new StringBuffer("wdkQuery " + globalArgs);
-	command.append(" -querySetName " + querySetName + " -queryName " + queryName);
+	command.append(" -query " + twoPartName );
 	if (params != null){
 	    command.append(" -params ");
 	    for (int i = 0; i < params.length; i++){
