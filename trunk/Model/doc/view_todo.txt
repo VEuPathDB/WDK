@@ -10,23 +10,23 @@ Ask about updating Oracle lib
 Pick up model config files from properties
 Ensure all paths are from properties not hard-coded
 Move this list to SF tracker?
-Model: better handling for null for StringParam
-
+Model: better handling for null for StringParam - work around in-place
+Add debugging custom tag to show all vars in all contexts (or restrict by attributes)
+Force discussion on branding so we can decide on directory structure
 
 Build
 -----
-Send deployment protocol to Steve
+
 
 
 Query
 -----
-Write servlet to co-operate with custom tags for building incomplete/invalid queries - done, needs testing
 Add custom tag to pick validation errors
 Make DisplayQuery pick up query set from QueryHolder? - wait for BooleanQueryModel
 Set up more param handling styles - new Interface
-[BUG] Query name not being passed properly to Param to construct it's name
-No error msg about missing params on first query expansion
-
+Shouldn't be error msg about missing params on first query expansion
+If have validation error should still be able to set values for other params.
+Write validator for query tag library. Wait until more solid
 
 Results Summary
 ---------------
@@ -58,14 +58,18 @@ Ask about organizing imports - yes
 Ask about adding version numbers to libs - yes
 Check OK to change Hashtable to Map in SqlEnumParam - Yes
 
+
 Build
 -----
+Send deployment protocol to Steve
 
 
 Query
 -----
 Make query set a parameter on query holder
 Restore deleted tag handler files
+Write servlet to co-operate with custom tags for building incomplete/invalid queries
+[BUG] Query name not being passed properly to Param to construct it's name - inproper nesting
 
 Results Summary
 ---------------
