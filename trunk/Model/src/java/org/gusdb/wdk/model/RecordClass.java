@@ -306,16 +306,24 @@ public class RecordClass {
     private LinkedHashMap sortAllAttributes() throws WdkModelException{
 	String orderedAtts[] = attributeOrdering.split(",");
 	LinkedHashMap orderedAttsMap = new LinkedHashMap();
+
+	//primaryKey first
+	String primaryKey = "primaryKey";
+	orderedAttsMap.put(primaryKey, (FieldI)attributeFieldsMap.get(primaryKey));
+
 	for (int i = 0; i < orderedAtts.length; i++){
 	    String nextAtt = orderedAtts[i];
-	    FieldI nextAttField = (FieldI)attributeFieldsMap.get(nextAtt);
+
+	    if (!primaryKey.equals(nextAtt)) {
+		FieldI nextAttField = (FieldI)attributeFieldsMap.get(nextAtt);
 	    
-	    if (nextAttField == null){
-		throw new WdkModelException("RecordClass " + getName() + " defined attribute " +
-					    nextAtt + " in its attribute ordering, but that is not a " + 
-					    "valid attribute for this RecordClass");
+		if (nextAttField == null){
+		    throw new WdkModelException("RecordClass " + getName() + " defined attribute " +
+						nextAtt + " in its attribute ordering, but that is not a " + 
+						"valid attribute for this RecordClass");
+		}
+		orderedAttsMap.put(nextAtt, nextAttField);
 	    }
-	    orderedAttsMap.put(nextAtt, nextAttField);
     	}
 	//add all attributes not in the ordering
 	Iterator allAttNames = attributeFieldsMap.keySet().iterator();
