@@ -9,7 +9,7 @@ Ask about updating Oracle lib
 Pick up model config files from properties
 Ensure all paths are from properties not hard-coded
 Move this list to SF tracker?
-Model: better handling for null for StringParam - work around in-place
+Model: better handling for null for StringParam - work around in-place (in PSU)
 Custom tag: debugging - show all vars in all contexts (or restrict by attributes)
 Custom tag: default record view - version 2 - more structured view
 Custom tag: rename Map key in x scope (with option to alias) - partially done
@@ -27,7 +27,6 @@ Add custom tag to pick validation errors
 Make DisplayQuery pick up query set from QueryHolder? - wait for BooleanQueryModel
 Set up more param handlers
 new ParamView Interface - done, not yet called
-Shouldn't be error msg about missing params on first query expansion
 If have validation error should still be able to set values for other params.
 Write validator for query tag library. Wait until more solid
 
@@ -76,6 +75,7 @@ Make query set a parameter on query holder
 Restore tag handler files I accidentally deleted
 Write servlet to co-operate with custom tags for building incomplete/invalid queries
 [BUG] Query name not being passed properly to Param to construct it's name - inproper nesting
+Shouldn't be error msg about missing params on first query expansion
 
 Results Summary
 ---------------

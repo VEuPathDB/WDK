@@ -40,6 +40,7 @@ public class DisplayQuery extends SimpleTagSupport {
     		}
     		out.println("</select>");
     		out.println("<input type=\"hidden\" name=\"defaultChoice\" value=\""+DEFAULT_OPTION+"\">");
+            out.println("<input type=\"hidden\" name=\"initialExpansion\" value=\"true\">");
     		return;
     	} else {
     		out.println("<h4>"+queryInstance.getQuery().getDisplayName()+"</h4>");
