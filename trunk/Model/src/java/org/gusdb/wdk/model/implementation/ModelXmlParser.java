@@ -445,8 +445,7 @@ public class ModelXmlParser {
         String cmdlineSyntax = 
             cmdName + 
             " -configFile config_file" +
-            " -modelXmlFile model_xml_file" +
-            " -querySetName query_set_name";
+            " -modelXmlFile model_xml_file";
         
         String header = 
             newline + "Parse and print out a WDK Model xml file." + newline + newline + "Options:" ;
