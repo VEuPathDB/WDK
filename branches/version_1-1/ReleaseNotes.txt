@@ -76,3 +76,4 @@ View - Features
 
   * boolean questions
 
+  * provides support for using customized views when displaying a record
