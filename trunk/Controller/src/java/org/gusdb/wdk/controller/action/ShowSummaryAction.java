@@ -42,8 +42,18 @@ public class ShowSummaryAction extends Action {
 	QuestionForm qForm = (QuestionForm)form;
 	QuestionBean wdkQuestion = qForm.getQuestion();
 		    
-	Map params = new java.util.HashMap(qForm.getMyProps());
+	Map params = handleMultiPickParams(new java.util.HashMap(qForm.getMyProps()));
+		
+	AnswerBean wdkAnswer = summaryPaging(request, wdkQuestion, params);
+
+	request.setAttribute(CConstants.WDK_ANSWER_KEY, wdkAnswer);
 	
+	ActionForward forward = mapping.findForward(CConstants.SHOW_SUMMARY_MAPKEY);
+	return forward;
+    }
+
+    protected Map handleMultiPickParams (Map params) 
+    {
 	java.util.Iterator newParamNames = params.keySet().iterator();
 	while (newParamNames.hasNext()) {
 	    String paramName = (String)newParamNames.next();
@@ -57,17 +67,10 @@ public class ShowSummaryAction extends Action {
 	    } else {
 		paramValStr = (paramVal == null ? null : paramVal.toString());
 	    }
-	    System.err.println("*** debug params: (k, v) = " + paramName + ", " + paramValStr);
+	    //System.err.println("*** debug params: (k, v) = " + paramName + ", " + paramValStr);
 	}
-	
-	AnswerBean wdkAnswer = summaryPaging(request, wdkQuestion, params);
-
-	request.setAttribute(CConstants.WDK_ANSWER_KEY, wdkAnswer);
-	
-	ActionForward forward = mapping.findForward(CConstants.SHOW_SUMMARY_MAPKEY);
-	return forward;
+	return params;
     }
-
     
     protected AnswerBean booleanAnswerPaging(HttpServletRequest request, Object answerMaker)
 	throws WdkModelException, WdkUserException
