@@ -246,7 +246,7 @@
     <element name="textAttribute">
       <attribute name="name" />
       <optional> 
-        <attribute name="overview" />
+        <attribute name="displayName" />
       </optional>
       <element name="text">
         <text />

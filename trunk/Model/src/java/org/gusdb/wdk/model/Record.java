@@ -19,7 +19,7 @@ public class Record {
     
     private Map attributesQueryMap = new LinkedHashMap();  // attributeName -> Query
     private Map tableQueryMap = new LinkedHashMap();   // tableName -> Query
-    private Map textAttributeMap = new LinkedHashMap();    // attributeName -> text (String)
+    private Map textAttributeMap = new LinkedHashMap();    // attributeName -> TextAttribute
     private List summaryColumnNames = new ArrayList();
     private Set tableQueryRefs = new LinkedHashSet();
     private Set attributesQueryRefs = new LinkedHashSet();
@@ -117,7 +117,7 @@ public class Record {
     
     public void addTextAttribute(TextAttribute textAttribute) throws WdkModelException {
         checkAttributeName(textAttribute.getName());
-        textAttributeMap.put(textAttribute.getName(), textAttribute.getText());
+        textAttributeMap.put(textAttribute.getName(), textAttribute);
     }
     
     public RecordInstance makeRecordInstance() {
@@ -181,11 +181,6 @@ public class Record {
 	return getAllNames().contains(name);
     }
     
-    
-//    public String[] getTextAttributeNames() {
-//        String[] s = {};
-//        return (String[])textAttributeMap.keySet().toArray(s);
-//    }
     
     ///////////////////////////////////////////////////////////////////////////////////////
     // protected
@@ -255,7 +250,9 @@ public class Record {
     }
     
     protected String getTextAttribute(String textAttributeName) throws WdkModelException {
-        String text = (String)textAttributeMap.get(textAttributeName);
+        TextAttribute textAttr = 
+	    (TextAttribute)textAttributeMap.get(textAttributeName);
+        String text = textAttr.getText();
         if (text == null) {
             throw new WdkModelException("Record " + getName() + 
                     " does not have a text attribute with name '" +
@@ -285,16 +282,26 @@ public class Record {
      * @throws 
      */
     public String getDisplayName(String attributeName) {
-	if (attributeName.equals(PRIMARY_KEY_NAME)) 
-	    return getType();
-        Query q = (Query) attributesQueryMap.get(attributeName);
-        try {
-            Column c = q.getColumn(attributeName);
-            return c.getDisplayName();
-        }
-        catch (WdkModelException exp) {
-            logger.severe("Can't get displayName for "+attributeName+" in "+q.getName());
-        }
-        return attributeName;
+	String displayName = attributeName;
+
+	if (attributeName.equals(PRIMARY_KEY_NAME)) {
+	    displayName = getType();
+
+	} else if (isTextAttribute(attributeName)) {
+	    TextAttribute textAttr = 
+		(TextAttribute)textAttributeMap.get(attributeName);
+	    displayName = textAttr.getDisplayName();
+
+	} else {
+	    Query q = (Query) attributesQueryMap.get(attributeName);
+	    try {
+		Column c = q.getColumn(attributeName);
+		displayName = c.getDisplayName();
+	    }
+	    catch (WdkModelException exp) {
+		logger.severe("Can't get displayName for "+attributeName+" in "+q.getName());
+	    }
+	}
+	return displayName;
     }
 }
