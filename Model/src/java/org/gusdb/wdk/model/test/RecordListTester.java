@@ -96,7 +96,9 @@ public class RecordListTester {
 		for (int i = 0; i < rows.length; i+=2){
 		    int nextStartRow = Integer.parseInt(rows[i]);
 		    int nextEndRow = Integer.parseInt(rows[i+1]);
+		    System.err.println("RecordListTester: have " + recordList.getTotalLength(paramValues) + " total rows");
 		    RecordListInstance rli = recordList.makeRecordListInstance();
+		    
 		    rli.setValues(paramValues, nextStartRow, nextEndRow);
 		    System.err.println("Printing Record Instances on page " + pageCount);
 		    rli.print();
