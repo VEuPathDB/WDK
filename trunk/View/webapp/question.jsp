@@ -69,7 +69,7 @@
 
   <tr><td></td>
       <td><html:submit property="questionSubmit" value="Get Answer"/></td>
-      <td><html:submit property="questionSubmit" value="Expand Query"/></td>
+      <td><html:submit property="questionSubmit" value="Expand Question"/></td>
 </table>
 </html:form>
 
