@@ -301,11 +301,13 @@ public class WdkModel {
     public String toString() {
        String newline = System.getProperty( "line.separator" );
        StringBuffer buf = new StringBuffer("WdkModel: name='" + name 
+					   + "'" + newline + 
+					   "introduction='" + introduction
 					   + "'");
        buf.append(showSet("Param", paramSets));
        buf.append(showSet("Query", querySets));
        buf.append(showSet("Record", recordSets));
-       buf.append(showSet("Summary", summarySets));
+       buf.append(showSet("Question", summarySets));
        return buf.toString();
     }
        
@@ -323,13 +325,6 @@ public class WdkModel {
             buf.append(set).append( newline );
         }
         buf.append(newline);
-        
-        buf.append( "--- Summary Sets---" );
-        buf.append( newline );
-        Iterator summarySetIterator = summarySets.values().iterator();
-        while (summarySetIterator.hasNext()) {
-            buf.append( summarySetIterator.next() ).append( newline );
-        }
         
         return buf.toString();
     }

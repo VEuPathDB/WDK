@@ -7,8 +7,6 @@ public class QuerySet implements ModelSetI {
 
     HashMap querySet;
     String name;
-    String displayName;
-    String description;
     ResultFactory resultFactory;
 
     public QuerySet() {
@@ -21,22 +19,6 @@ public class QuerySet implements ModelSetI {
 
     public String getName() {
 	return name;
-    }
-
-    public void setDisplayName(String displayName) {
-	this.displayName = displayName;
-    }
-
-    public String getDisplayName() {
-	return displayName;
-    }
-
-     public void setDescription(String description) {
-	this.description = description;
-    }
-
-    public String getDescription() {
-	return description;
     }
 
    public Query getQuery(String name) throws WdkUserException {
