@@ -13,6 +13,10 @@ import org.gusdb.gus.wdk.model.WdkModel;
 import org.gusdb.gus.wdk.model.WdkModelException;
 import org.gusdb.gus.wdk.model.WdkUserException;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Logger;
+
 
 /**
  * @author art
@@ -23,6 +27,8 @@ import org.gusdb.gus.wdk.model.WdkUserException;
 public class WdkLogManager {
 
     public static final WdkLogManager INSTANCE = new WdkLogManager();
+    
+    private List loggers = new ArrayList();
     
     private String logFilename;
     
@@ -64,6 +70,22 @@ public class WdkLogManager {
         catch (WdkUserException exp) {
             throw new RuntimeException(exp);
         }
+    }
+
+    /**
+     * @param string
+     * @return
+     */
+    public static Logger getLogger(String name) {
+        INSTANCE.addLoggerName(name);
+        return Logger.getLogger(name);
+    }
+
+    /**
+     * @param name
+     */
+    private void addLoggerName(String name) {
+        loggers.add(name);
     }
 
     

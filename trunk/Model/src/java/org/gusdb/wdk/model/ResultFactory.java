@@ -1,5 +1,6 @@
 package org.gusdb.gus.wdk.model;
 
+import org.gusdb.gus.wdk.controller.WdkLogManager;
 import org.gusdb.gus.wdk.model.implementation.SqlUtils;
 import org.gusdb.gus.wdk.model.implementation.SqlResultList;
 
@@ -54,7 +55,7 @@ import org.apache.commons.pool.impl.GenericObjectPool;
 
 public class ResultFactory {
 
-    private static final Logger logger = Logger.getLogger("org.gusdb.gus.wdk.model.ResultFactory");
+    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.gus.wdk.model.ResultFactory");
     
     DataSource dataSource;
     RDBMSPlatformI platform;

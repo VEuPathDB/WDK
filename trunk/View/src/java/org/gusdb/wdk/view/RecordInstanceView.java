@@ -1,5 +1,6 @@
 package org.gusdb.gus.wdk.view;
 
+import org.gusdb.gus.wdk.controller.WdkLogManager;
 import org.gusdb.gus.wdk.model.Record;
 import org.gusdb.gus.wdk.model.RecordInstance;
 import org.gusdb.gus.wdk.model.WdkModelException;
@@ -28,7 +29,7 @@ import java.util.logging.Logger;
  */
 public class RecordInstanceView implements Map {
 
-    private static final Logger logger = Logger.getLogger("org.gusdb.gus.wdk.view.RecordInstanceView");
+    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.gus.wdk.view.RecordInstanceView");
     
     private RecordInstance ri;
     private Map map;

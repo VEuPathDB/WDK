@@ -1,5 +1,7 @@
 package org.gusdb.gus.wdk.model.implementation;
 
+import org.gusdb.gus.wdk.controller.WdkLogManager;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -15,7 +17,7 @@ import javax.sql.DataSource;
 public class SqlUtils {
     
 
-    private static final Logger logger = Logger.getLogger("org.gusdb.gus.wdk.model.implementation.SqlUtils");
+    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.gus.wdk.model.implementation.SqlUtils");
     
     public static ResultSet getResultSet(DataSource dataSource, String sql) throws SQLException {
         try {

@@ -1,6 +1,7 @@
 package org.gusdb.gus.wdk.model;
 
 
+import org.gusdb.gus.wdk.controller.WdkLogManager;
 import org.gusdb.gus.wdk.util.FixableSmallMap;
 import org.gusdb.gus.wdk.util.FixableSmallSet;
 
@@ -13,7 +14,7 @@ import java.util.logging.Logger;
 
 public class Record {
     
-    private static final Logger logger = Logger.getLogger("org.gusdb.gus.wdk.model.Record");
+    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.gus.wdk.model.Record");
     
     private Map attributesQueryMap = new FixableSmallMap();  // attributeName -> Query
     private Map tableQueryMap = new FixableSmallMap();   // tableName -> Query

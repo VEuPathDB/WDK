@@ -1,5 +1,6 @@
 package org.gusdb.gus.wdk.view;
 
+import org.gusdb.gus.wdk.controller.WdkLogManager;
 import org.gusdb.gus.wdk.model.RecordInstance;
 import org.gusdb.gus.wdk.model.SummaryInstance;
 import org.gusdb.gus.wdk.model.WdkModelException;
@@ -25,7 +26,7 @@ import java.util.logging.Logger;
  */
 public class RIVList implements Iterator {
 
-    private static final Logger logger = Logger.getLogger("org.gusdb.gus.wdk.view.RIVList");
+    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.gus.wdk.view.RIVList");
     
     private SummaryInstance si;
     private Map displayNames = new HashMap(); 
