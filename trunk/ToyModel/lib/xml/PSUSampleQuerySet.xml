@@ -1,0 +1,112 @@
+<?xml version="1.0"?>
+ 
+<wdkModel name="RNAQueries">
+
+<pageableQuerySet name="RNAPageableQueries">
+   <pageableSqlQuery name="GeneCardName"
+		     displayName="Gene Card name"
+		     mainQueryRef="RNASimpleQueries.DTGeneCardName"
+		     pageQueryRef="RNASimpleQueries.RNAListInDetail"/>
+
+</pageableQuerySet>
+
+
+<simpleQuerySet name="RNASimpleQueries">
+
+   <simpleSqlQuery name="DTGeneCardName"
+            displayName="Gene Card name">
+
+     <stringParam
+       name="GeneName"
+       prompt="Gene Name"
+       sample="brca1"/>
+
+     <sql>
+       select distinct dbrn.na_sequence_id
+       from sres.DBRef dbr, dots.DBRefNASequence dbrn 
+       where dbr.lowercase_primary_identifier = '$$GeneName$$'
+       and dbr.external_database_release_id = 4892
+       and dbr.db_ref_id = dbrn.db_ref_id
+     </sql>
+  </simpleSqlQuery>
+
+  <simpleSqlQuery name="RNAListInDetail"
+            displayName="RNAs">
+
+       <stringParam  name="resultTable"/>
+       <stringParam  name="startRow"/>
+       <stringParam  name="endRow"/>
+    <sql>
+      <![CDATA[
+      select cd.gene_id, cd.taxon_name, cd.gene_symbol, 
+             cd.gene_description, cd.na_sequence_id, cd.assembly_length, 
+             cd.assembly_num_sequences, 
+              cd.assembly_contains_mrna
+      from allgenes.CentralDogma cd, $$resultTable$$ ids 
+      where cd.na_sequence_id = ids.na_sequence_id
+      and ids.i >= $$startRow$$
+      and ids.i <= $$endRow$$
+      order by cd.gene_id, cd.assembly_length desc
+      ]]>
+    </sql>
+  </simpleSqlQuery>
+
+  <simpleSqlQuery name="RNAByGoTerm"
+            displayName="GO functional classification (by term)">
+
+       <stringParam 
+          name="GoTerm"
+          prompt="Go Term"
+          help="You know what it is"
+          sample="GO:0001233"
+          default="GO:"
+          regex="GO:\d+"/>
+
+       <sqlEnumParam
+          name="Taxon"
+          prompt="Organism"
+          help="You know what it is"
+          multipick="yes">
+          <simpleSqlQuery>
+            <sql>
+              select name as key,
+                     taxon_id as value
+              from SRes.taxonName
+              where name in ('mouse', 'human')
+            </sql>
+          </simpleSqlQuery>
+       </sqlEnumParam>
+
+    <sql>
+      select distinct cd.na_sequence_id 
+        from dots.GOAssociation ga, @ALLGENES_DB@.CentralDogma cd 
+        where ga.go_term_id = $$GoTerm$$ 
+        and ga.table_id = 180 
+        and ga.row_id = cd.protein_id 
+        and cd.taxon_id $$Taxon$$ 
+        and ga.is_deprecated != 1 
+        and ga.is_not != 1 
+    </sql>
+
+  </simpleSqlQuery>
+
+
+   <simpleSqlQuery name="TaxonName"
+            displayName="Taxon name">
+
+     <stringParam
+       name="TaxonId"
+       prompt="Taxon Id"
+       sample="8"
+       regex="\d+"/>
+
+     <sql>
+       select name
+       from SRes.TaxonName 
+       where taxon_id = $$TaxonId$$
+     </sql>
+  </simpleSqlQuery>
+
+</simpleQuerySet>
+</wdkModel>
+
