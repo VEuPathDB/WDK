@@ -3,8 +3,6 @@ package org.gusdb.gus.wdk.view.taglibs.misc;
 import org.gusdb.gus.wdk.view.PrimaryKey;
 
 import java.io.IOException;
-import java.sql.Clob;
-import java.sql.SQLException;
 
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.JspWriter;
