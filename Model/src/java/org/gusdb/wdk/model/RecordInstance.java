@@ -1,6 +1,8 @@
 package org.gusdb.gus.wdk.model;
 
+
 import java.util.HashMap;
+import java.util.Iterator;
 
 public class RecordInstance {
     
@@ -74,21 +76,22 @@ public class RecordInstance {
 	StringBuffer buf =
 	    new StringBuffer(record.getType() + " " + record.getIdPrefix() + primaryKey).append( newline );
 
-	String[] attributeNames = record.getNonTextAttributeNames();
-	for (int i=0; i<attributeNames.length; i++) {
-	    String attributeName = attributeNames[i];
+
+    Iterator attributeNamesIt = record.getNonTextAttributeNames().iterator();
+	while (attributeNamesIt.hasNext()) {
+	    String attributeName = (String) attributeNamesIt.next();
 	    buf.append(attributeName + ":   " + getAttributeValue(attributeName)).append( newline );
 	}
 	
-	String[] textAttributeNames = record.getTextAttributeNames();
-	for (int i=0; i<textAttributeNames.length; i++){
-	    String attributeName = textAttributeNames[i];
+	Iterator textAttributeNamesIt = record.getTextAttributeNames().iterator();
+	while (textAttributeNamesIt.hasNext()) {
+	    String attributeName = (String) textAttributeNamesIt.next();
 	    buf.append(attributeName + ":   " + getAttributeValue(attributeName)).append( newline );
 	}
 	
-	String[] tableNames = record.getTableNames();
-	for (int i=0; i<tableNames.length; i++){
-	    String tableName = tableNames[i];
+	Iterator tableNamesIt = record.getTableNames().iterator();
+	while (tableNamesIt.hasNext()){
+	    String tableName = (String) tableNamesIt.next();
 	    buf.append("Table " + tableName).append( newline );
 	    ResultList resultList = getTableValue(tableName);
 	    resultList.write(buf);
@@ -169,19 +172,19 @@ public class RecordInstance {
 					   getPrimaryKey());
 	
 	// get all non-text attribute names, and see if they appear as a macro
-	String[] allNonTextAttributeNames = record.getNonTextAttributeNames();
-	for (int i=0; i<allNonTextAttributeNames.length; i++) {
-	    String attributeName = allNonTextAttributeNames[i];
+	Iterator allNonTextAttributeNamesIt = record.getNonTextAttributeNames().iterator();
+	while (allNonTextAttributeNamesIt.hasNext()) {
+	    String attributeName = (String) allNonTextAttributeNamesIt.next();
 	    if (getAttributeValue(attributeName) != null){
-		instantiatedText = instantiateText(instantiatedText, attributeName, 
+	        instantiatedText = instantiateText(instantiatedText, attributeName, 
 				getAttributeValue(attributeName).toString());
 	    }
 	}
 
 	// get all text attribute names, and see if they appear as macro
-	String[] allTextAttributeNames = record.getTextAttributeNames();
-	for (int i=0; i<allTextAttributeNames.length; i++) {
-	    String attributeName = allTextAttributeNames[i];
+	Iterator allTextAttributeNamesIt = record.getTextAttributeNames().iterator();
+    while (allTextAttributeNamesIt.hasNext()) {
+	    String attributeName = (String) allTextAttributeNamesIt.next();
 	    if (attributeName.equals(textAttributeName)) continue;
 
 	    instantiatedText = instantiateText(instantiatedText, attributeName, 
