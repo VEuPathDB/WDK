@@ -1,11 +1,11 @@
 package org.gusdb.wdk.model;
 
-
 public class PrimaryKeyField implements FieldI {
 
     private String name;
     private String displayName;
     private String help;
+    private Integer truncate;
 
     public PrimaryKeyField(String name, String displayName, String help) {
 	this.name = name;
@@ -36,6 +36,15 @@ public class PrimaryKeyField implements FieldI {
     public String toString() {
 	return getDisplayName();
     }
+
+    public void setTruncate(String truncate){
+	this.truncate = new Integer(truncate);
+    }
+
+    public Integer getTruncate(){
+	return truncate;
+    }
+
 
 }
 

@@ -118,6 +118,7 @@ public class SqlResultList extends ResultList {
 	    throw new WdkModelException(e);
 	}
     }
-    
+  
+
 }
 

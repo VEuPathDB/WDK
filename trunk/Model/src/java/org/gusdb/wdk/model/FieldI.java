@@ -8,5 +8,6 @@ public interface FieldI {
     public String getHelp();
     public String getType();
     public Boolean getIsInternal();
+    public Integer getTruncate();
 }
 

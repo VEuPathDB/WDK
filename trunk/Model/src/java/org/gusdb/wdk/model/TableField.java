@@ -36,5 +36,16 @@ public class TableField implements FieldI {
     Query getQuery() {
 	return query;
     }
+
+    /**
+     * Should never be called, but is necessary because TableField implements FieldI.
+     */
+
+    public Integer getTruncate(){
+	throw new RuntimeException("getTruncate does not apply to TableField");
+
+    }
+
+
 }
 

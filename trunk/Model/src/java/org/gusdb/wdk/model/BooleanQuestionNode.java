@@ -6,6 +6,8 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.BooleanQuery;
 import java.util.Hashtable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Represents a Question in boolean context.  A boolean Question is defined as
@@ -24,7 +26,7 @@ import java.util.Hashtable;
  * Created: Fri 22 October 12:00:00 2004 EST
  * 
  * @author David Barkan
- * @version $Revision$ $Date$Author: dbarkan $ 
+ * @version $Revision$ $Date$Author: ygan $ 
  */
 
 public class BooleanQuestionNode{
@@ -122,7 +124,7 @@ public class BooleanQuestionNode{
     }
 
     /**
-     * This method can only be performed on a leaf node and assumes that none of the noded in the tree
+     * This method can only be performed on a leaf node and assumes that none of the nodes in the tree
      * has had any parameter values set yet.
      */
 
@@ -235,6 +237,15 @@ public class BooleanQuestionNode{
 	    booleanValues.put(BooleanQuery.FIRST_ANSWER_PARAM_NAME, firstChildAnswer);
 	    booleanValues.put(BooleanQuery.SECOND_ANSWER_PARAM_NAME, secondChildAnswer);
     
+	    Map firstSummaryAtts = firstChildAnswer.getQuestion().getSummaryAttributes();
+	    Map secondSummaryAtts = secondChildAnswer.getQuestion().getSummaryAttributes();
+	    
+	    Map booleanSummaryAtts = new HashMap();
+	    booleanSummaryAtts.putAll(firstSummaryAtts);
+	    booleanSummaryAtts.putAll(secondSummaryAtts);
+
+	    booleanQuestion.setSummaryAttributes(booleanSummaryAtts);
+
 	    answer = booleanQuestion.makeAnswer(booleanValues, 0, 0);
 	}
 	return answer;

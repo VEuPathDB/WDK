@@ -11,6 +11,8 @@ import org.w3c.dom.Document;
 
 public class WdkModel {
 
+    public static final Integer TRUNCATE_DEFAULT = new Integer(100);
+
     protected RDBMSPlatformI platform;
 
     HashMap querySets = new HashMap();

@@ -159,6 +159,7 @@ public class Question {
 	this.recordClass = (RecordClass)model.resolveReference(recordClassTwoPartName, name, "question", "recordClassRef");
 
 	String[] summaryAttributeList;
+	//throw exception
 	if (summaryAttributesRef != null){
 	    String primaryKey = "primaryKey";
 	    if (!(summaryAttributesRef.equals(primaryKey)
@@ -192,6 +193,15 @@ public class Question {
 	else {
 	    return true;
 	}
+    }
+
+    Map getSummaryAttributes(){
+	return summaryAttributeMap;
+    }
+
+    
+    void setSummaryAttributes(Map summaryAtts){
+	this.summaryAttributeMap = summaryAtts;
     }
 
 
