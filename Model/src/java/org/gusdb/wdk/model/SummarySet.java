@@ -17,6 +17,8 @@ public class SummarySet implements ModelSetI {
 
     HashMap summarySet;
     String name;
+    String displayName;
+    String description;
 
     public SummarySet() {
 	summarySet = new HashMap();
@@ -28,6 +30,22 @@ public class SummarySet implements ModelSetI {
 
     public String getName() {
 	return name;
+    }
+
+    public void setDisplayName(String displayName) {
+	this.displayName = displayName;
+    }
+
+    public String getDisplayName() {
+	return displayName;
+    }
+
+     public void setDescription(String description) {
+	this.description = description;
+    }
+
+    public String getDescription() {
+	return description;
     }
 
     public Summary getSummary(String name) throws WdkUserException {
@@ -79,8 +97,10 @@ public class SummarySet implements ModelSetI {
 
     public String toString() {
        String newline = System.getProperty( "line.separator" );
-       StringBuffer buf = new StringBuffer("SummarySet: name='" + name 
-					   + "'");
+       StringBuffer buf = 
+	   new StringBuffer("QuestionSet: name='" + getName() + "'" + newline +
+			    "  displayName='" + getDisplayName() + "'" + newline +
+			    "  description='" + getDescription() + "'" + newline);
        buf.append( newline );
 
        Iterator summaryIterator = summarySet.values().iterator();

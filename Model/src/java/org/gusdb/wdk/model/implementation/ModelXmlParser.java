@@ -204,8 +204,8 @@ public class ModelXmlParser {
         
         digester.addObjectCreate( "wdkModel", WdkModel.class );
         digester.addSetProperties( "wdkModel");
-        
-        
+
+	/**/ digester.addBeanPropertySetter( "wdkModel/introduction");
         
         //RecordClassSet
         
@@ -248,7 +248,6 @@ public class ModelXmlParser {
         
         /**/ digester.addSetProperties( "wdkModel/querySet");
         
-        /**/ digester.addBeanPropertySetter( "wdkModel/querySet/description");
 
         /*  */ digester.addObjectCreate( "wdkModel/querySet/sqlQuery", SqlQuery.class );
         
@@ -321,6 +320,7 @@ public class ModelXmlParser {
         
         /**/ digester.addSetProperties("wdkModel/questionSet");
         
+        /**/ digester.addBeanPropertySetter( "wdkModel/questionSet/description");
         /*  */ digester.addObjectCreate("wdkModel/questionSet/question", Summary.class);
         
         /*  */ digester.addSetProperties("wdkModel/questionSet/question");
