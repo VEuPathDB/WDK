@@ -61,7 +61,26 @@ public abstract class ResultList {
 
     public abstract void close() throws WdkModelException;
 
+    /* depracated.  handled here
     public abstract void write(StringBuffer buf) throws WdkModelException;
+
+    */
+
+    public void write(StringBuffer buf)  throws WdkModelException {
+        String newline = System.getProperty( "line.separator" );
+	Iterator rows = getRows();
+	while (rows.hasNext()) {
+	    Map map = (Map)rows.next();
+	    Iterator colKeys = map.keySet().iterator();
+	    while (colKeys.hasNext()) {
+		Object key = colKeys.next();
+		Object val = map.get(key);
+		buf.append(val + "\t");
+	    }
+	    buf.append(newline);
+	}
+	close();
+    }
 
     public abstract void print() throws WdkModelException;
 

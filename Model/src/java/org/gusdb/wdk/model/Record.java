@@ -205,7 +205,7 @@ public class Record {
             if (column.isInSummaryAsBool()) {
                 summaryColumnNames.add(column.getName());
             }
-            attributesQueryMap.put(column.getName(), query);
+            attributesQueryMap.put(column.getName(), query);	    
         }
     }
     
