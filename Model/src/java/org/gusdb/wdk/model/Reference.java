@@ -11,9 +11,9 @@ package org.gusdb.gus.wdk.model;
 
 public class Reference {
 
-    String setName;
-    String elementName;
-    String twoPartName;
+    private String setName;
+    private String elementName;
+    private String twoPartName;
 
     public Reference() {}
 
@@ -21,33 +21,38 @@ public class Reference {
      * @param twoPartName Of the form "set.element"
      */
     public Reference(String twoPartName) throws WdkModelException{
-	setTwoPartName(twoPartName);
+        setTwoPartName(twoPartName);
     }
     
     public String getSetName(){
-	return this.setName;
+        return this.setName;
     }
 
     public String getElementName(){
-	return this.elementName;
+        return this.elementName;
     }
 
     public String getTwoPartName() {
-	return twoPartName;
+        return twoPartName;
     }
     
     /**
      * @param twoPartName Of the form "set.element"
      */
-    public void setTwoPartName(String twoPartName) throws WdkModelException{
-	
-	if (!twoPartName.matches("\\w+\\.\\w+")) {
-	    throw new WdkModelException("Error: Reference '" + twoPartName + "' is not in the form 'setName.elementName'");
-	}
+    public void setTwoPartName(String twoPartName) throws WdkModelException {
+        
+        if (!twoPartName.matches("\\w+\\.\\w+")) {
+            throw new WdkModelException("Error: Reference '" + twoPartName + "' is not in the form 'setName.elementName'");
+        }
 	    
-	String[] parts = twoPartName.split("\\.");
-	setName = parts[0];
-	elementName = parts[1];
-	this.twoPartName = twoPartName;
+        String[] parts = twoPartName.split("\\.");
+        setName = parts[0];
+        elementName = parts[1];
+        this.twoPartName = twoPartName;
     }
+
+    public String toString() {
+        return "Reference: "+twoPartName;
+    }
+    
 }
