@@ -171,4 +171,7 @@ public class ApplicationInitListener implements ServletContextListener {
         return null;
     }
 
+    protected DataSource getDataSource() {
+        return dataSource;
+    }
 }
