@@ -505,7 +505,7 @@ public class ResultFactory {
 	Options options = new Options();
 
 	// config file
-    addOption(options, "configFile", "an .xml file that specifies a ModelConfig object");
+    addOption(options, "configFile", "the model config .xml file");
 
 	// operation
 	Option newQ = new Option("new", "create a new query cache");
