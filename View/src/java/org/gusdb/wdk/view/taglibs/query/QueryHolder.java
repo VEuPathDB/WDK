@@ -10,6 +10,7 @@ import org.gusdb.gus.wdk.model.implementation.NullQueryInstance;
 import java.io.*;
 import java.util.Enumeration;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.jsp.*;
 import javax.servlet.jsp.tagext.*;
 
@@ -69,7 +70,14 @@ public class QueryHolder extends SimpleTagSupport {
     
     public void doTag() throws IOException, JspException {
         JspWriter out = getJspContext().getOut();
-        out.println("<form method=\"GET\" action=\"/sampleWDK/InteractiveRecordList\">");
+        
+        PageContext pageContext = (PageContext) getJspContext();
+        
+        HttpServletRequest request =
+            (HttpServletRequest) pageContext.getRequest();
+        String contextPath = request.getContextPath();
+
+        out.println("<form method=\"GET\" action=\""+contextPath+"/InteractiveRecordList\">");
         out.println("<input type=\"hidden\" name=\"formName\" value=\""+name+"\">");
         out.println("<input type=\"hidden\" name=\"queryRecordGroup\" value=\""+recordQueryGroup+"\">");
         
