@@ -21,7 +21,7 @@
 
 <!-- put an anchor here for linking back from help sections -->
 <A name="${fromAnchorQ}"></A>
-<html:form method="get" action="/showSummary.do">
+<html:form method="get" action="/processQuestion.do">
 <table>
 
 <!-- show error messages, if any -->
@@ -69,9 +69,11 @@
 </c:forEach>
 
   <tr><td></td>
-      <td><html:submit value="Get Answer"/></td>
-      <td></td>
+      <td><html:submit property="questionSubmit" value="Get Answer"/></td>
+      <td><html:submit property="questionSubmit" value="Booleanate"/></td>
 </table>
 </html:form>
+
+
 
 <site:footer/>
