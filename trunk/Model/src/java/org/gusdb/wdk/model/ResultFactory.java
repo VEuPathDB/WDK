@@ -482,13 +482,16 @@ public class ResultFactory {
     public static void main(String[] args) {
 
 	String cmdName = System.getProperties().getProperty("cmdName");
+        File configDir = 
+	    new File(System.getProperties().getProperty("configDir"));
 
 	// process args
 	Options options = declareOptions();
 	CommandLine cmdLine = parseOptions(cmdName, options, args);
 
-	File modelConfigXmlFile = 
-	    new File(cmdLine.getOptionValue("model"));
+	String modelName = cmdLine.getOptionValue("model");
+
+        File modelConfigXmlFile = new File(configDir, modelName+"-config.xml");
 	boolean newCache = cmdLine.hasOption("new");
 	boolean resetCache = cmdLine.hasOption("reset");
 	boolean dropCache = cmdLine.hasOption("drop");
@@ -594,7 +597,7 @@ public class ResultFactory {
 	    " -new|-reset|-drop";
 
 	String header = 
-	    newline + "Create, reset or drop a query cache. The name of the cache table is found in the configFile (the table is placed in the schema owned by login).  Resetting the cache drops all results tables and deletes all rows from the cache table.  Dropping the cache first resets it then drops the cache table and sequence." + newline + newline + "Options:" ;
+	    newline + "Create, reset or drop a query cache. The name of the cache table is found in the Model config file (the table is placed in the schema owned by login).  Resetting the cache drops all results tables and deletes all rows from the cache table.  Dropping the cache first resets it then drops the cache table and sequence." + newline + newline + "Options:" ;
 
 	String footer = "";
 
