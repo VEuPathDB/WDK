@@ -22,9 +22,11 @@ public class TextColumn extends Column implements DerivedColumnI {
 	    Column column = columns[i];
 	    if (column instanceof DerivedColumnI) continue;
 	    String columnName = column.getName();
+
+	    Object columnVal = resultList.getValue(columnName);
+	    String columnValStr = columnVal == null ? "???" : columnVal.toString();
 	    instantiatedText = 
-		RecordInstance.instantiateText(instantiatedText, columnName, 
-				resultList.getValue(columnName).toString());
+		RecordInstance.instantiateText(instantiatedText, columnName, columnValStr);
 	    
 	}
 	RecordInstance.checkInstantiatedText(instantiatedText);
