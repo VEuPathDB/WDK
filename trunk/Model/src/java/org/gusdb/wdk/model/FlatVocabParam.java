@@ -43,7 +43,6 @@ public class FlatVocabParam extends AbstractEnumParam {
     protected void initVocabMap() throws WdkModelException {
         if (vocabMap == null) {
             vocabMap = new HashMap();
-	    orderedKeySet = new Vector();
             QueryInstance instance = query.makeInstance();
             ResultList result = instance.getResult();	
             while (result.next()) {

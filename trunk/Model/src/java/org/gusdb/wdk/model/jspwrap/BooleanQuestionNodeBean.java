@@ -47,7 +47,7 @@ public class BooleanQuestionNodeBean {
 	Hashtable values = bqn.getValues();
 	Answer answer = bqn.getQuestion().makeAnswer(values, start, end);
 	System.err.println("BooleanQuestionNode Bean: made answer!!");
-	answer.printAsTable();
+	//answer.printAsTable();
 	return new AnswerBean(answer);
 	
 
