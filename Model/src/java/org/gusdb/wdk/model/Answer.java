@@ -7,7 +7,7 @@ import java.util.logging.Logger;
 import java.util.Iterator;
 
 /**
- * SummaryInstance.java
+ * Answer.java
  *
  * Created: Fri June 4 13:01:30 2004 EDT
  *
@@ -15,9 +15,9 @@ import java.util.Iterator;
  * @version $Revision$ $Date$ $Author$
  */
 
-public class SummaryInstance {
+public class Answer {
 
-    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.model.SummaryInstance");
+    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.model.Answer");
     
     // ------------------------------------------------------------------
     // Instance variables
@@ -43,7 +43,7 @@ public class SummaryInstance {
     // Constructor
     // ------------------------------------------------------------------
 
-    SummaryInstance(Question question, QueryInstance queryInstance, Map paramValues, int startRow, int endRow) throws WdkUserException, WdkModelException{
+    Answer(Question question, QueryInstance queryInstance, Map paramValues, int startRow, int endRow) throws WdkUserException, WdkModelException{
 
 	this.question = question;
 	this.queryInstance = queryInstance;
@@ -65,8 +65,9 @@ public class SummaryInstance {
 	return this.question;
     }
 
-    public Iterator getRecords() {
-	return new SummaryInstanceList(this);
+    public Iterator getRecords2() {
+	return null;
+	//	return new AnswerPage(this);
     }
 
     public int getPageSize(){
@@ -238,7 +239,7 @@ public class SummaryInstance {
 		String primaryKey = rl.getValue(primaryKeyName).toString();
 		nextRecordInstance.setPrimaryKey(primaryKey);
 		
-		nextRecordInstance.setSummaryInstance(this);
+		nextRecordInstance.setAnswer(this);
 		tempRecordInstances.add(nextRecordInstance);
 	    }
 	}        

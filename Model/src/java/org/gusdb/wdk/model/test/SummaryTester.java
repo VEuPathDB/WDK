@@ -2,7 +2,7 @@ package org.gusdb.wdk.model.test;
 
 import org.gusdb.wdk.model.Query;
 import org.gusdb.wdk.model.Question;
-import org.gusdb.wdk.model.SummaryInstance;
+import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.QuestionSet;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkUserException;
@@ -69,7 +69,7 @@ public class SummaryTester {
 		    int nextStartRow = Integer.parseInt(rows[i]);
 		    int nextEndRow = Integer.parseInt(rows[i+1]);
 
-		    SummaryInstance si = question.makeSummaryInstance(paramValues, nextStartRow, nextEndRow);
+		    Answer si = question.makeAnswer(paramValues, nextStartRow, nextEndRow);
 		    System.out.println("Printing Record Instances on page " + pageCount);
 		    si.printAsTable();
 		    //		    si.print();

@@ -2,7 +2,7 @@ package org.gusdb.wdk.model.test;
 
 import org.gusdb.wdk.model.Query;
 import org.gusdb.wdk.model.Question;
-import org.gusdb.wdk.model.SummaryInstance;
+import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.QuestionSet;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkUserException;
@@ -31,7 +31,7 @@ import org.apache.commons.cli.ParseException;
  * Created: Wed October 6 12:00:00 2004 EDT
  *
  * @author David Barkan
- * @version $Revision$ $Date$Author: dbarkan $
+ * @version $Revision$ $Date$Author: sfischer $
  *
  */
 
@@ -202,8 +202,8 @@ public class BooleanQueryTester {
 	    cmdName + 
 	    " -configFile config_file" +
 	    " -modelXmlFile model_xml_file" +
-	    " -questionSetName summary_set_name" +
-	    " -questionName summary_name";
+	    " -questionSetName question_set_name" +
+	    " -questionName question_name";
 
 	String header = 
 	    newline + "BOOLEAN QUERY TESTER.  NEED TO UPDATE USAGE";

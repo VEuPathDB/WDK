@@ -1,21 +1,21 @@
 package org.gusdb.wdk.model.jspwrap;
 
-import org.gusdb.wdk.model.SummaryInstance;
+import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.WdkModelException;
 
 import java.util.Map;
 import java.util.Iterator;
 
 /**
- * A wrapper on a {@link SummaryInstance} that provides simplified access for 
+ * A wrapper on a {@link Answer} that provides simplified access for 
  * consumption by a view
  */ 
 public class SummaryBean {
 
-    SummaryInstance summary;
+    Answer summary;
     
 
-    public SummaryBean(SummaryInstance summary) {
+    public SummaryBean(Answer summary) {
 	this.summary = summary;
     }
 
