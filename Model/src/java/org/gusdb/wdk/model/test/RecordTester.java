@@ -118,6 +118,7 @@ public class RecordTester {
 	    cmdName + 
 	    " -configFile config_file" +
 	    " -modelXmlFile model_xml_file" +
+            " -modelPropFile model_prop_file" +
 	    " -recordSetName record_set_name" +
 	    " -recordName record_name" +
 	    " -primaryKey primary_key";

@@ -174,6 +174,7 @@ public class SummaryTester {
 	    cmdName + 
 	    " -configFile config_file" +
 	    " -modelXmlFile model_xml_file" +
+            " -modelPropFile model_prop_file" +
 	    " -questionSetName summary_set_name" +
 	    " -questionName summary_name";
 
