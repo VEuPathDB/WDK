@@ -71,9 +71,7 @@ public class QueryTester {
     void displayQuery(Query query) throws WdkModelException {
         String newline = System.getProperty( "line.separator" );
         System.out.println(newline + "Query: " + 
-			   query.getDisplayName() + newline); 
-	if (query.getDescription() != null)
-	    System.out.println(query.getDescription() + newline);
+                query.getDisplayName() + newline);
         
         System.out.println("Parameters");
         
@@ -96,7 +94,6 @@ public class QueryTester {
 	    h.put(params[i], params[i+1]);
 	}
 	return h;
-
     }
     
     String formatParamPrompt(Param param) throws WdkModelException {
@@ -298,7 +295,6 @@ public class QueryTester {
             cmdName + 
             " -configFile config_file" +
             " -modelXmlFile model_xml_file" +
-            " -modelPropFile model_prop_file" +
             " -querySetName query_set_name" +
             " -queryName query_name" +
             " [-dontCache]" +

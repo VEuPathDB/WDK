@@ -97,6 +97,8 @@ public abstract class QueryInstance {
     }
 	
 
+    public abstract String getSqlForCache() throws WdkModelException;
+
     public abstract ResultList getResult() throws WdkModelException;
 
     public abstract String getResultAsTable() throws WdkModelException;

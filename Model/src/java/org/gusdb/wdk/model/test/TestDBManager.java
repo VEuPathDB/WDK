@@ -19,6 +19,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
@@ -67,9 +68,9 @@ public class TestDBManager {
 	    }
 	    for (int t = 0; t < tables.length; t++){
 		File nextTable = new File(tables[t]);
-        if ("CVS".equals(nextTable.getName())) {
-            continue;
-        }
+		if ("CVS".equals(nextTable.getName())) {
+		    continue;
+		}
 		
 		BufferedReader reader = new BufferedReader(new FileReader(nextTable));
 		String firstLine = reader.readLine();
@@ -190,11 +191,6 @@ public class TestDBManager {
 	Option createDb = new Option("createDatabase", false, "Create new test database");
 	options.addOption(createDb);
 
-	//params
-	Option params = new Option("params", true, "space delimited list of param_name param_value ....");
-	params.setArgName("params");
-	params.setArgs(Option.UNLIMITED_VALUES);
-	options.addOption(params);
 	return options;
     }
 
@@ -232,8 +228,7 @@ public class TestDBManager {
             cmdName + 
             " -configFile config_file" +
             " tables table_list " +
-            " [-dropDatabase! || -createDatabase! " +
-	    " -params param_list";
+            " [-dropDatabase! || -createDatabase! ";
         
         String header = 
             newline + "Parse flat files representing database tables and insert into database." + newline + newline + "Options:" ;
