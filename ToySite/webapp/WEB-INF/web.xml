@@ -17,13 +17,17 @@
   </context-param>
     <context-param>
     <param-name>querySetConfig</param-name>
-    <param-value>/nfs/team81/art/gus/gus_home/lib/xml/PSUSampleQuerySet.xml</param-value>
+   <!-- <param-value>/nfs/team81/art/gus/gus_home/lib/xml/PSUSampleQuerySet.xml</param-value> -->
+        <param-value>/nfs/team81/art/gus/gus_home/lib/xml/psuNew.xml</param-value>
   </context-param>
-    <context-param>
+<!--    <context-param>
     <param-name>recordSetConfig</param-name>
     <param-value>/nfs/team81/art/gus/gus_home/lib/xml/PSUSampleRecordSet.xml</param-value>
+  </context-param> -->
+  <context-param>
+    <param-name>schemaLocation</param-name>
+    <param-value>/nfs/team81/art/gus/gus_home/lib/xml/schema.rng</param-value>
   </context-param>
-  
   <listener>
     <listener-class>org.gusdb.gus.wdk.controller.ApplicationInitListener</listener-class>
   </listener>
