@@ -37,9 +37,9 @@
     </choice>
   </define>
     
-  <define name="fields">
+  <define name="attributes">
     <!-- <choice> -->
-      <ref name="textField" />
+      <ref name="textAttribute" />
     <!-- </choice> -->
   </define>
     
@@ -203,7 +203,7 @@
         </element>
       </zeroOrMore>
       <optional>
-        <ref name="fields" />
+        <ref name="attributes" />
       </optional>
     </element>
   </define>
@@ -219,9 +219,9 @@
     </element>
   </define>
     
-  <!-- Fields -->
-  <define name ="textField">
-    <element name="textField">
+  <!-- Attributes -->
+  <define name ="textAttribute">
+    <element name="textAttribute">
       <attribute name="name" />
       <optional> 
         <attribute name="overview" />
