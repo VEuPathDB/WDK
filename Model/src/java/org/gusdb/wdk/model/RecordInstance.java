@@ -2,9 +2,12 @@ package org.gusdb.wdk.model;
 
 
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.Collection;
 import java.util.Iterator;
 
-public class RecordInstance {
+public class RecordInstance implements Map {
     
     String primaryKey;
     Record record;
@@ -105,6 +108,107 @@ public class RecordInstance {
     }
 
     
+    ////////////////////////////////////////////////////////////////////
+    //  implementation of Map
+    ////////////////////////////////////////////////////////////////////
+
+    /**
+     * @see java.util.Map#size()
+     */
+    public int size() {
+        return record.getAllNames().size();
+    }
+
+    /**
+     * @see java.util.Map#isEmpty()
+     */
+    public boolean isEmpty() {
+        return false;
+    }
+
+    /**
+     * @see java.util.Map#containsKey(java.lang.Object)
+     */
+    public boolean containsKey(Object key) {
+	return record.containsName((String)key);
+    }
+
+    /**
+     * @see java.util.Map#containsValue(java.lang.Object)
+     */
+    public boolean containsValue(Object value) {
+	throw new UnsupportedOperationException("Illegal operation 'containsValue' on RecordINstance");
+    }
+
+    /**
+     * @see java.util.Map#get(java.lang.Object)
+     */
+    public Object get(Object key) {
+	Object value = null;
+	try {
+	    if (record.getNonTextAttributeNames().contains(key)
+		|| record.getNonTextAttributeNames().contains(key)) 
+		value = getAttributeValue((String)key);
+	    
+	    else if (record.getTableNames().contains(key))
+		value = getTableValue((String)key);
+
+	    else throw new IllegalArgumentException("Record " + record.getFullName() + " does not have any value with key " + key);
+
+	} catch (WdkModelException e) {
+	    throw new RuntimeException(e);
+	}
+	return value;
+    }
+    /**
+     * @see java.util.Map#put(java.lang.Object, java.lang.Object)
+     */
+    public Object put(Object key, Object value) {
+	throw new UnsupportedOperationException("Illegal operation 'put' on RecordINstance");
+    }
+
+    /**
+     * @see java.util.Map#remove(java.lang.Object)
+     */
+    public Object remove(Object key) {
+	throw new UnsupportedOperationException("Illegal operation 'remove' on RecordINstance");
+    }
+
+    /**
+     * @see java.util.Map#putAll(java.util.Map)
+     */
+    public void putAll(Map t) {
+	throw new UnsupportedOperationException("Illegal operation 'putAll' on RecordINstance");
+    }
+
+    /**
+     * @see java.util.Map#clear()
+     */
+    public void clear() {
+    }
+
+    /**
+     * @see java.util.Map#keySet()
+     */
+    public Set keySet() {
+	return record.getAllNames();
+    }
+
+    /**
+     * @see java.util.Map#values()
+     */
+    public Collection values() {
+	throw new UnsupportedOperationException("Illegal operation 'values' on RecordINstance");
+    }
+
+    /**
+     * @see java.util.Map#entrySet()
+     */
+    public Set entrySet() {
+	throw new UnsupportedOperationException("Illegal operation 'entrySet' on RecordINstance");
+    }
+ 
+
 
 
     ///////////////////////////////////////////////////////////////////////////////////////
