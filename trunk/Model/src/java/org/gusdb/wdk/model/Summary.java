@@ -65,8 +65,8 @@ public class Summary {
 
     public void resolveReferences(WdkModel model)throws WdkModelException{
 	
-	this.query = (Query)model.resolveReference(queryTwoPartName, name, "summary", "queryRef");
-	this.record = (Record)model.resolveReference(recordTwoPartName, name, "summary", "recordClassRef");
+	this.query = (Query)model.resolveReference(queryTwoPartName, name, "question", "queryRef");
+	this.record = (Record)model.resolveReference(recordTwoPartName, name, "question", "recordClassRef");
     }
 
     public String getName(){
@@ -91,8 +91,8 @@ public class Summary {
     public String toString() {
 	String newline = System.getProperty( "line.separator" );
 	StringBuffer buf =
-	    new StringBuffer("Summary: name='" + name + "'" + newline  +
-			     "  record='" + recordTwoPartName + "'" + newline +
+	    new StringBuffer("Question: name='" + name + "'" + newline  +
+			     "  recordClass='" + recordTwoPartName + "'" + newline +
 			     "  query='" + queryTwoPartName + "'" + newline
 			     );	    
 	return buf.toString();
