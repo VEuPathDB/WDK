@@ -1,4 +1,5 @@
 <%@ taglib prefix="site" tagdir="/WEB-INF/tags/site" %>
+<%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
 
@@ -20,8 +21,11 @@
 
 <!-- put an anchor here for linking back from help sections -->
 <A name="${fromAnchorQ}"></A>
-<html:form method="post" action="/showSummary.do">
+<html:form method="get" action="/showSummary.do">
 <table>
+
+<!-- show error messages, if any -->
+<wdk:errors/>
 
 <c:set value="${wdkQuestion.params}" var="qParams"/>
 <c:forEach items="${qParams}" var="qP">
@@ -34,7 +38,9 @@
   <c:choose>
     <c:when test="${qP.class.name eq 'org.gusdb.wdk.model.jspwrap.FlatVocabParamBean'}">
       <td>
-        <html:select  property="myProp(${pNam})">
+        <c:set var="mp" value="0"/>
+        <c:if test="${qP.multiPick}"><c:set var="mp" value="1"/></c:if>
+        <html:select  property="myProp(${pNam})" multiple="${mp}">
           <html:options property="values(${pNam})" labelProperty="labels(${pNam})"/>
         </html:select>
       </td>

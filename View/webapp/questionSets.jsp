@@ -20,7 +20,7 @@
 <c:forEach items="${questionSets}" var="qSet">
   <tr><td bgcolor="lightblue"><jsp:getProperty name="qSet" property="description"/></td></tr>
   <tr><td><!-- list of questions in a questionSet -->
-          <html:form method="post" action="/showQuestion.do">
+          <html:form method="get" action="/showQuestion.do">
           <html:select property="questionFullName">
             <c:set value="${qSet.name}" var="qSetName"/>
             <c:set value="${qSet.questions}" var="questions"/>
