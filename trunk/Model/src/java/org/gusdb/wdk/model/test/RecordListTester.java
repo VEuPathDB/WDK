@@ -36,31 +36,33 @@ import org.apache.commons.pool.ObjectPool;
 import org.apache.commons.pool.impl.GenericObjectPool;
 
 
-
-public class RecordTester {
-
-    //////////////////////////////////////////////////////////////////////
-    /////////////   static methods   /////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////
-
+public class RecordListTester {
+    
     public static void main(String[] args) {
 	
 	String cmdName = System.getProperties().getProperty("cmdName");
-
+	
 	// process args
 	Options options = declareOptions();
 	CommandLine cmdLine = parseOptions(cmdName, options, args);
-
+	
 	File modelConfigXmlFile = 
 	    new File(cmdLine.getOptionValue("configFile"));
 	File modelXmlFile = new File(cmdLine.getOptionValue("modelXmlFile"));
-
-	String recordSetName = cmdLine.getOptionValue("recordSetName");
-	String recordName = cmdLine.getOptionValue("recordName");
-	String primaryKey = cmdLine.getOptionValue("primaryKey");
+	
 	String recordListSetName = cmdLine.getOptionValue("recordListSetName");
 	String recordListName = cmdLine.getOptionValue("recordListName");
-
+	String[] rows = cmdLine.getOptionValues("rows");
+	int startRow = Integer.parseInt(rows[0]);
+	int endRow = Integer.parseInt(rows[1]);
+	
+	String[] params = null;
+	boolean haveParams = cmdLine.hasOption("params");
+	if (haveParams){
+	    params = cmdLine.getOptionValues("params");
+	}
+	
+	
 	try {
 	    // read config info
 	    ModelConfig modelConfig = 
@@ -73,11 +75,11 @@ public class RecordTester {
 	    
 	    DataSource dataSource = 
 		setupDataSource(connectionUrl,login, password);
-	
+	    
 	    RDBMSPlatformI platform = 
 		(RDBMSPlatformI)Class.forName(platformClass).newInstance();
 	    platform.setDataSource(dataSource);
-       
+	    
 	    WdkModel wdkModel = 
 		ModelXmlParser.parseXmlFile(modelXmlFile);
 	    ResultFactory resultFactory = wdkModel.getResultFactory();
@@ -85,39 +87,39 @@ public class RecordTester {
 		new SqlResultFactory(dataSource, platform, 
 				     login, instanceTable);
 	    resultFactory.setSqlResultFactory(sqlResultFactory);
-	    RecordSet recordSet = wdkModel.getRecordSet(recordSetName);
-	    Record record = recordSet.getRecord(recordName);
-	    RecordInstance recordInstance = record.makeInstance();
-	    recordInstance.setPrimaryKey(primaryKey);
-	    System.out.println( recordInstance.print() );
-
+	    
 	    RecordListSet recordListSet = wdkModel.getRecordListSet(recordListSetName);
 	    RecordList recordList = recordListSet.getRecordList(recordListName);
-	    //dtb - whoops should not have start and end at this point, need to take it out.
-	    //also, if cacheable, returns some weird values for rownum when doing the print...figure this out.
-	    //if this query is not cacheable, the test should still pass (because of extra logic where things aren't
-	    //cacheable but still get a result table)--need to figure out why that's not working
-	    Query query = recordList.getQuery();
-	    query.setIsCacheable(new Boolean(true));
-	    RecordListInstance rli = recordList.makeRecordListInstance();
-	    
-	    Hashtable tempValues = new Hashtable();
-	    rli.setValues(tempValues); //for now no values
-	    rli.print();
-	} catch (Exception e) {
+
+	    if (haveParams){
+		Hashtable paramValues = parseParamArgs(params);
+		Query query = recordList.getQuery();
+		query.setIsCacheable(new Boolean(true));
+		RecordListInstance rli = recordList.makeRecordListInstance();
+		
+		rli.setValues(paramValues, startRow, endRow);
+
+		rli.print();
+	    }
+	    else {
+		usage(cmdName, options);
+	    }
+	}catch (Exception e) {
 	    e.printStackTrace();
 	    System.exit(1);
-        } 
+	}
+	    
     }
+    
 
-private static void addOption(Options options, String argName, String desc) {
-    
-    Option option = new Option(argName, true, desc);
-    option.setRequired(true);
-    option.setArgName(argName);
-    
-    options.addOption(option);
-}
+    private static void addOption(Options options, String argName, String desc) {
+	
+	Option option = new Option(argName, true, desc);
+	option.setRequired(true);
+	option.setArgName(argName);
+	
+	options.addOption(option);
+    }
     
     
     static Options declareOptions() {
@@ -127,19 +129,23 @@ private static void addOption(Options options, String argName, String desc) {
 	addOption(options, "configFile", "An .xml file that specifies a ModelConfig object.");
 	// query set file
 	addOption(options, "modelXmlFile", "An .xml file that specifies a container of Query set objects.");
-	// record set name
-	addOption(options, "recordSetName", "The name of the record set in which to find the record");
-	// record name
-	addOption(options, "recordName", "The name of the record to print.");
-	// primary key
-	addOption(options, "primaryKey", "The primary key of the record to find.");
 	//recordListSetName
 	addOption(options, "recordListSetName", "The name of the recordListSet in which to find the recordList");
 	//recordListName
 	addOption(options, "recordListName", "the name of the record list to run");
-	
+	//rows to return
+	Option rows = new Option("rows", "the start and end of the Record Instance rows to return");
+	rows.setArgs(2);
+	rows.setRequired(true);
+	options.addOption(rows);
+	//params
+	Option params = new Option("params", true, "space delimited list of param_name param_value ....");
+	params.setArgName("params");
+	params.setArgs(Option.UNLIMITED_VALUES);
+	options.addOption(params);
 	return options;
     }
+
 
     static CommandLine parseOptions(String cmdName, Options options, 
 				    String[] args) {
@@ -161,6 +167,23 @@ private static void addOption(Options options, String argName, String desc) {
 	return cmdLine;
     }
 
+
+    static Hashtable parseParamArgs(String[] params) {
+
+	Hashtable h = new Hashtable();
+
+	if (params.length % 2 != 0) {
+	    throw new IllegalArgumentException("The -params option must be followed by key value pairs only");
+	}
+	for (int i=0; i<params.length; i+=2) {
+	    h.put(params[i], params[i+1]);
+	}
+	return h;
+
+    }
+
+
+
     static void usage(String cmdName, Options options) {
 
 	String newline = System.getProperty( "line.separator" );
@@ -168,12 +191,11 @@ private static void addOption(Options options, String argName, String desc) {
 	    cmdName + 
 	    " -configFile config_file" +
 	    " -modelXmlFile model_xml_file" +
-	    " -recordSetName record_set_name" +
-	    " -recordName record_name" +
-	    " -primaryKey primary_key";
+	    " -recordListSetName record_list_set_name" +
+	    " -recordListName record_list_name";
 
 	String header = 
-	    newline + "Print a record found in a WDK Model xml file. Options:" ;
+	    newline + "Print a record list found in a WDK Model xml file. Options:" ;
 
 	String footer = "";
 
@@ -182,6 +204,8 @@ private static void addOption(Options options, String argName, String desc) {
 	formatter.printHelp(75, cmdlineSyntax, header, options, footer);
 	System.exit(1);
     }
+
+
 
     static DataSource setupDataSource(String connectURI, String login, 
 				      String password)  {
@@ -222,4 +246,3 @@ private static void addOption(Options options, String argName, String desc) {
         return dataSource;
     }
 }
-    

@@ -55,5 +55,18 @@ public class SqlQuery extends Query {
        return buf;
     }
 
+    protected String addMultiModeConstraints(String resultTableName, String pkToJoinWith,
+					     int startId, int endId, String initSql){
 
+	int whereBegins = initSql.indexOf(" where");
+	String firstPartSql = initSql.substring(0, whereBegins);
+	String lastPartSql = initSql.substring(whereBegins);
+	String extraFromString = ", " + resultTableName;
+	String rowStartSql = " and " + resultTableName + ".i >= " + startId;
+	String rowEndSql = " and " + resultTableName + ".i <= " + endId;
+	String orderBySql = " order by " + resultTableName + "." + "i";
+	String finalSql = firstPartSql + extraFromString + lastPartSql + rowStartSql + rowEndSql + orderBySql;
+	
+	return finalSql;
+    }
 }

@@ -53,9 +53,9 @@ public class SqlResultFactory {
     ///////////////////////////////////////////////////////////////////////////
 
     public ResultList getResult(SqlQueryInstance instance) throws SQLException {
-	ResultSet resultSet = instance.getIsCacheable()?
+	ResultList resultList = instance.getIsCacheable()?
 	    getCachedResult(instance) : getUncachedResult(instance);
-	return new SqlResultList(instance, null, resultSet);
+	return resultList;
     }
     
     //does not restrict on whether instance is cacheable or not
@@ -173,7 +173,7 @@ public class SqlResultFactory {
     ///////////////   protected   /////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////
 
-    protected ResultSet getUncachedResult(SqlQueryInstance instance) throws SQLException {
+    protected ResultList getUncachedResult(SqlQueryInstance instance) throws SQLException {
 	ResultSet resultSet = null;
 	//populates in QueryInstanceTable if not already there
 	Integer queryInstanceId = getQueryInstanceId(instance);
@@ -189,7 +189,8 @@ public class SqlResultFactory {
 	    SqlUtils.closeResultSet(resultSet);
 	    throw e;
 	}
-	return resultSet;
+	return new SqlResultList(instance, null, resultSet);
+
     }
 
     /**
@@ -215,9 +216,10 @@ public class SqlResultFactory {
     }
 
 
-    protected ResultSet getCachedResult(SqlQueryInstance instance) throws SQLException {
+    protected ResultList getCachedResult(SqlQueryInstance instance) throws SQLException {
 	String resultTable = getCachedResultTable(instance);	
-	return fetchCachedResult(resultTable);
+	ResultSet rs = fetchCachedResult(resultTable);
+	return new SqlResultList(instance, resultTable, rs);
     }
 
     /**

@@ -30,7 +30,21 @@ public class SqlQueryInstance extends QueryInstance  {
 
     protected String getSql() {
 	SqlQuery q = (SqlQuery)query;
-	return q.instantiateSql(values);
+	String sql = null;
+	if (inMultiMode){
+
+	    String newPkJoin = multiModeResultTableName + "." + pkToJoinWith;
+	    values.put("primaryKey", newPkJoin); //will this destroy the query for later use?
+	}
+	String initSql = q.instantiateSql(values);
+	if (inMultiMode){
+	    sql = q.addMultiModeConstraints(multiModeResultTableName, pkToJoinWith,
+					    startId, endId, initSql);
+	}
+	else {
+	    sql = initSql;
+	}
+	return sql;
     }
 
     /**
@@ -47,7 +61,7 @@ public class SqlQueryInstance extends QueryInstance  {
     public ResultList getResult() throws Exception {
 	SqlQuery q = (SqlQuery)query;
 	ResultList rl = q.getResultFactory().getSqlResultFactory().getResult(this);
-	//	rl.checkQueryColumns(q, true);
+	rl.checkQueryColumns(q, true);
 	return rl;
     }
 
