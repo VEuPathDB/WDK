@@ -87,31 +87,13 @@ public class ApplicationInitListener implements ServletContextListener {
     private void initMemberVars(String loginConfigLocation, String queryConfigLocation, 
             String schemaName, String propsLocation, ServletContext application) {
         
-        if (loginConfigLocation == null) {
-            loginConfigLocation = DEFAULT_LOGIN_CONFIGURATION;
-        }
-        if (queryConfigLocation == null) {
-            queryConfigLocation = DEFAULT_MODEL_CONFIGURATION;
-        }
         if (schemaName == null) {
             schemaName = DEFAULT_SCHEMA_NAME;
         }
-        if (propsLocation == null) {
-            propsLocation = DEFAULT_PROPS_LOCATION;
-        }
         
-        URL querySetURL = null;
-        URL modelConfigXmlURL = null;
-        URL propsURL = null;
-        try {
-            querySetURL = application.getResource(queryConfigLocation);
-            modelConfigXmlURL = application.getResource(loginConfigLocation);
-            propsURL = application.getResource(propsLocation);
-        }
-        catch (MalformedURLException exp) {
-            Exception e = new RuntimeException(exp);
-            logger.throwing(this.getClass().getName(), "initMemberVars", e);
-        }
+        URL querySetURL = createURL(queryConfigLocation, DEFAULT_MODEL_CONFIGURATION, application);
+        URL modelConfigXmlURL = createURL(loginConfigLocation, DEFAULT_LOGIN_CONFIGURATION, application);
+        URL propsURL = createURL(propsLocation, DEFAULT_PROPS_LOCATION, application);
             
         // read config info
         ModelConfig dbConfig;
@@ -154,6 +136,29 @@ public class ApplicationInitListener implements ServletContextListener {
             throw new RuntimeException(e);
         }
 
+    }
+
+    private URL createURL(String param, String defaultLoc, ServletContext application) {
+
+        if (param == null) {
+            param = defaultLoc;
+        }
+        
+        URL ret = null;
+        try {
+            ret = application.getResource(param);
+            if (ret ==null) {
+                RuntimeException e = new RuntimeException("Missing resource. Unable to create URL from "+param);
+                logger.throwing(this.getClass().getName(), "createURL", e);
+                throw e;
+            }
+        }
+        catch (MalformedURLException exp) {
+            RuntimeException e = new RuntimeException(exp);
+            logger.throwing(this.getClass().getName(), "createURL", exp);
+            throw e;
+        }
+        return ret;
     }
     
     private DataSource setupDataSource(String connectURI, String login, 
