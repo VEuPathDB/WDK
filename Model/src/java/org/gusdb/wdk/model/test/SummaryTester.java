@@ -8,6 +8,7 @@ import org.gusdb.gus.wdk.model.Summary;
 import org.gusdb.gus.wdk.model.SummarySet;
 import org.gusdb.gus.wdk.model.ResultFactory;
 import org.gusdb.gus.wdk.model.WdkModel;
+import org.gusdb.gus.wdk.model.WdkUserException;
 import org.gusdb.gus.wdk.model.implementation.ModelXmlParser;
 import org.gusdb.gus.wdk.model.Query;
 
@@ -107,6 +108,9 @@ public class SummaryTester {
 	    else {
 		usage(cmdName, options);
 	    }
+        } catch (WdkUserException e) {
+            System.err.println(e.formatErrors());
+            System.exit(1);
 	}catch (Exception e) {
 	    e.printStackTrace();
 	    System.exit(1);

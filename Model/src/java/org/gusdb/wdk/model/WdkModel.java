@@ -31,13 +31,13 @@ public class WdkModel {
 	addSet(recordSet, recordSets);
     }
 
-    public RecordSet getRecordSet(String recordSetName) throws WdkModelException {
+    public RecordSet getRecordSet(String recordSetName) throws WdkUserException {
 	
 	if (!recordSets.containsKey(recordSetName)) {
 	    String err = "WDK Model " + name +
 		" does not contain a record set with name " + recordSetName;
 	    
-	    throw new WdkModelException(err);
+	    throw new WdkUserException(err);
 	}
 	return (RecordSet)recordSets.get(recordSetName);
     }
@@ -79,11 +79,11 @@ public class WdkModel {
 	addSet(summarySet, summarySets);
     }
 
-    public SummarySet getSummarySet(String setName) throws WdkModelException {
+    public SummarySet getSummarySet(String setName) throws WdkUserException {
 	if (!summarySets.containsKey(setName)) {
 	    String err = "WDK Model " + name +
 		" does not contain a Summary set with name " + setName;
-	    throw new WdkModelException(err);
+	    throw new WdkUserException(err);
 	}
 	return (SummarySet)summarySets.get(setName);
     }
@@ -98,12 +98,12 @@ public class WdkModel {
 	addSet(referenceList, referenceLists);
     }
     
-    public ReferenceList getReferenceList(String referenceListName) throws WdkModelException {
+    public ReferenceList getReferenceList(String referenceListName) throws WdkUserException {
 	
 	if (!referenceLists.containsKey(referenceListName)){
 	    String err = "WDK Model " + name +
 		" does not contain a  query set with name " + referenceListName;
-	    throw new WdkModelException(err);
+	    throw new WdkUserException(err);
 	}
 	return (ReferenceList)referenceLists.get(referenceListName);
     }
