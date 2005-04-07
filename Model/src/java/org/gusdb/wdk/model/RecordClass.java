@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,8 +32,20 @@ public class RecordClass {
     private String summaryAttributeList;
     private String attributeOrdering;
     private HashMap questions = new HashMap();
-    private HashMap nestedRecords = new LinkedHashMap();
-    private HashMap nestedRecordLists = new LinkedHashMap();
+    private List nestedRecordQuestionRefs = new ArrayList();
+    private List nestedRecordListQuestionRefs = new ArrayList();
+    
+    /**
+     * This object is not initialized until the first time the RecordClass is asked for a nestedRecordQuestion.  
+     * At that point it is given the questions in <code>nestedRecordQuestionRefs</code>;
+     */
+    private HashMap nestedRecordQuestions;
+
+    /**
+     * This object is not initialized until the first time the RecordClass is asked for a nestedRecordListQuestion.  
+     * At that point it is given the questions in <code>nestedRecordListQuestionRefs</code>;
+     */
+    private HashMap nestedRecordListQuestions;
 
     public RecordClass() {
 	// make sure these keys are at the front of the list
@@ -105,15 +118,24 @@ public class RecordClass {
     public void addQuestion(Question q){
 	questions.put(q.getFullName(), q);
     }
+    
+    public void addNestedRecordQuestion(Question q){
 
-    public void addNestedRecord(NestedRecord nr){
-	
-	nestedRecords.put(nr.getFullName(), nr);
+	nestedRecordQuestions.put(q.getFullName(), q);
     }
 
-    public void addNestedRecordList(NestedRecordList nr){
+    public void addNestedRecordListQuestion(Question q){
+	nestedRecordListQuestions.put(q.getFullName(), q);
+    }
+    
+
+    public void addNestedRecordQuestionRef(NestedRecord nr){
+	nestedRecordQuestionRefs.add(nr);
+    }
+
+    public void addNestedRecordListQuestionRef(NestedRecordList nrl){
 	
-	nestedRecordLists.put(nr.getFullName(), nr);
+  	nestedRecordListQuestionRefs.add(nrl);
     }
     
     //////////////////////////////////////////////////////////////
@@ -152,28 +174,35 @@ public class RecordClass {
 	return (FieldI) fieldsMap.get(fieldName);
     }
 
-    public NestedRecord[] getNestedRecords(){
-	Iterator it = nestedRecords.values().iterator();
-	NestedRecord[] returnedNr = new NestedRecord[nestedRecords.size()];
+    public Question[] getNestedRecordQuestions(){
+	if (nestedRecordQuestions == null){
+	    initNestedRecords();
+	}
+	Iterator it = nestedRecordQuestions.values().iterator();
+	Question[] returnedNq = new Question[nestedRecordQuestions.size()];
 	int i = 0;
 	while (it.hasNext()){
-	    NestedRecord nextNr = (NestedRecord)it.next();
-	    returnedNr[i] = nextNr;
+	    Question nextNq = (Question)it.next();
+	    returnedNq[i] = nextNq;
 	    i++;
 	}
-	return returnedNr;
+	return returnedNq;
     }
 
-    public NestedRecordList[] getNestedRecordLists(){
-	Iterator it = nestedRecordLists.values().iterator();
-	NestedRecordList[] returnedNr = new NestedRecordList[nestedRecordLists.size()];
+    public Question[] getNestedRecordListQuestions(){
+	if (nestedRecordListQuestions == null){
+	    initNestedRecords();
+	}
+
+	Iterator it = nestedRecordListQuestions.values().iterator();
+	Question[] returnedNq = new Question[nestedRecordListQuestions.size()];
 	int i = 0;
 	while (it.hasNext()){
-	    NestedRecordList nextNr = (NestedRecordList)it.next();
-	    returnedNr[i] = nextNr;
+	    Question nextNq = (Question)it.next();
+	    returnedNq[i] = nextNq;
 	    i++;
 	}
-	return returnedNr;
+	return returnedNq;
     }
     
     /**
@@ -338,25 +367,43 @@ public class RecordClass {
 	    attributeFieldsMap = orderedAttributes;
 	}
 
-	NestedRecord nr[] = getNestedRecords();
-	if (nr != null){
-	    for (int i = 0; i < nr.length; i++){
-		NestedRecord nextNr = nr[i];
-		nextNr.resolveReferences(model);
-	    }
-
+	for (int i = 0; i < nestedRecordQuestionRefs.size(); i++){
+	    NestedRecord nextNr = (NestedRecord)nestedRecordQuestionRefs.get(i);
+	    nextNr.resolveReferences(model);
+	    //	    Question q = nextNr.getQuestion();
+	    //addNestedRecordQuestion(q);
 	}
-
-	NestedRecordList nrLists[] = getNestedRecordLists();
-	if (nrLists != null){
-	    for (int i = 0; i < nrLists.length; i++){
-		NestedRecordList nextNr = nrLists[i];
-		nextNr.resolveReferences(model);
-	    }
-
+	
+	for (int i = 0; i < nestedRecordListQuestionRefs.size(); i++){
+	    NestedRecordList nextNrl = (NestedRecordList)nestedRecordListQuestionRefs.get(i);
+	    nextNrl.resolveReferences(model);
+	    //Question q = nextNrl.getQuestion();
+	    //addNestedRecordListQuestion(q);
 	}
-
     }
+    
+    /**
+     * Called when the RecordClass is asked for a NestedRecordQuestion or NestedRecordQuestionList.  Cannot
+     * be done upon RecordClass initialization because the Questions are not guaranteed to have their resources
+     * set, which throws a NullPointerException when the Question is asked for the name of its QuestionSet.
+     */ 
+
+    public void initNestedRecords() {
+	nestedRecordQuestions = new LinkedHashMap();
+	for (int i = 0; i < nestedRecordQuestionRefs.size(); i++){
+	    NestedRecord nextNr = (NestedRecord)nestedRecordQuestionRefs.get(i);
+	    Question q = nextNr.getQuestion();
+	    addNestedRecordQuestion(q);
+	}
+	
+	nestedRecordListQuestions = new LinkedHashMap();
+	for (int i = 0; i < nestedRecordListQuestionRefs.size(); i++){
+	    NestedRecordList nextNrl = (NestedRecordList)nestedRecordListQuestionRefs.get(i);
+	    Question q = nextNrl.getQuestion();
+	    addNestedRecordListQuestion(q);
+	}
+    }
+
 
     private LinkedHashMap sortAllAttributes() throws WdkModelException{
 	String orderedAtts[] = attributeOrdering.split(",");

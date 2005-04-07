@@ -79,8 +79,8 @@ public class SummaryTester {
 
 		    Answer si = question.makeAnswer(paramValues, nextStartRow, nextEndRow);
 		    System.out.println("Printing Record Instances on page " + pageCount);
-		    //si.printAsTable();
-		    si.print();
+		    System.out.println(si.printAsTable());
+		    //System.out.println(si.print());
 		    pageCount++;
 		}
 		
@@ -162,15 +162,18 @@ public class SummaryTester {
     static Hashtable parseParamArgs(String[] params) {
 
 	Hashtable h = new Hashtable();
-
-	if (params.length % 2 != 0) {
-	    throw new IllegalArgumentException("The -params option must be followed by key value pairs only");
+	if (params[0].equals("NONE")){
+	    return h;
 	}
-	for (int i=0; i<params.length; i+=2) {
-	    h.put(params[i], params[i+1]);
+	else {
+	    if (params.length % 2 != 0) {
+		throw new IllegalArgumentException("The -params option must be followed by key value pairs only");
+	    }
+	    for (int i=0; i<params.length; i+=2) {
+		h.put(params[i], params[i+1]);
+	    }
+	    return h;
 	}
-	return h;
-
     }
 
     static void usage(String cmdName, Options options) {

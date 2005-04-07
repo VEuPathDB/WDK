@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.implementation;
 
+import org.gusdb.wdk.model.ResultFactory;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.ResultList;
 import org.gusdb.wdk.model.Query;
@@ -23,6 +24,18 @@ public class SqlResultList extends ResultList {
 			 String resultTableName, ResultSet resultSet) {
         super(instance, resultTableName);
         this.resultSet = resultSet;
+    }
+
+
+    public Object getMultiModeIValue() throws WdkModelException{
+	Object o;
+	try {
+	     o = resultSet.getObject(ResultFactory.MULTI_MODE_I);
+	}
+	catch (SQLException e){
+	    throw new WdkModelException(e);
+	}
+	return o;
     }
 
     public Object getValueFromResult(String attributeName) throws WdkModelException {
@@ -80,10 +93,9 @@ public class SqlResultList extends ResultList {
 	    int rsColCount = metaData.getColumnCount();
 	    for (int i=1; i<=rsColCount; i++) {
 		String columnName = metaData.getColumnName(i).toLowerCase();
-
 		//check if sql is being retrieved from a result table that has an extra column named 'i' for 
 		//enumerating results in the table (this extra column will be ignored when doing column validation)
-		if (columnName.equals("i") && query.getIsCacheable().booleanValue() == true){
+		if (columnName.equals(ResultFactory.MULTI_MODE_I) && query.getIsCacheable().booleanValue() == true){
 		    sqlHasIcolumn = true;
 		}
 		rsCols.put(columnName, "");

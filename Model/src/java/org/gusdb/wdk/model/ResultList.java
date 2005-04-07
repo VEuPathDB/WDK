@@ -13,6 +13,8 @@ public abstract class ResultList {
     String resultTableName;
     HashMap valuesInUse;
 
+    //    public static final String MULTI_MODE_I = "MultiModeIValue";
+
     public ResultList(QueryInstance instance, String resultTableName) {
 	this.instance = instance;
 	this.query = instance.getQuery();
@@ -27,25 +29,41 @@ public abstract class ResultList {
     AttributeFieldValue getAttributeFieldValue(String attributeName) throws WdkModelException {
 	if (valuesInUse.containsKey(attributeName)) 
 	    throw new WdkModelException("Circular attempt to access attribute " + attributeName);
-	Object value;
-	try {
-	    valuesInUse.put(attributeName,attributeName);
-	    Column column = query.getColumn(attributeName);
-	    // the next line has the potential to be circular
-	    if (column instanceof DerivedColumnI) {
-		value = ((DerivedColumnI)column).getDerivedValue(this);
-	    }
 
-	    else value = getValueFromResult(attributeName);
-	    AttributeField field = new AttributeField(column);
-	    AttributeFieldValue fieldValue = 
-		new AttributeFieldValue(field, value);
-	    return fieldValue;
-	} finally {
-	    valuesInUse.remove(attributeName);
+	Object value;
+
+	
+	if (attributeName == ResultFactory.MULTI_MODE_I){
+	    //this is a mess, but for now is the only way to trick ResultList into thinking i is a valid column for this query
+	    value = getMultiModeIValue();
+	    AttributeField iField = new AttributeField(null);
+	    AttributeFieldValue iFieldValue = new AttributeFieldValue(iField, value);
+	    return iFieldValue;
+	}
+	else{
+	    
+	    try {
+		valuesInUse.put(attributeName,attributeName);
+		Column column = query.getColumn(attributeName);
+		// the next line has the potential to be circular
+		if (column instanceof DerivedColumnI) {
+		    value = ((DerivedColumnI)column).getDerivedValue(this);
+		}
+		
+		else value = getValueFromResult(attributeName);
+		AttributeField field = new AttributeField(column);
+		AttributeFieldValue fieldValue = 
+		    new AttributeFieldValue(field, value);
+		return fieldValue;
+	    } finally {
+		valuesInUse.remove(attributeName);
+	    }
 	}
     }
-    
+    public Object getMultiModeIValue() throws WdkModelException{
+	throw new WdkModelException("attempting to retrieve value for i from a ResultList that is not an SqlResultList");
+    }
+
     public Query getQuery() {
 	return query;
     }

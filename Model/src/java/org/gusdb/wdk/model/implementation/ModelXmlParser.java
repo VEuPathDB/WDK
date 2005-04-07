@@ -89,8 +89,8 @@ public class ModelXmlParser {
         
         setModelDocument(model, modelXmlURL, modelPropURL);
 	model.resolveReferences();
+
         try {
-	    
 	    model.configure(modelConfigXmlFileURL);
 	    model.setResources();
 	}
@@ -252,13 +252,13 @@ public class ModelXmlParser {
 
 	/*    */ digester.addSetProperties( "wdkModel/recordClassSet/recordClass/nestedRecord");
 
-        /*    */ digester.addSetNext( "wdkModel/recordClassSet/recordClass/nestedRecord", "addNestedRecord" );
-
+        /*    */ digester.addSetNext( "wdkModel/recordClassSet/recordClass/nestedRecord", "addNestedRecordQuestionRef" );
+	
 	/*    */ digester.addObjectCreate( "wdkModel/recordClassSet/recordClass/nestedRecordList", NestedRecordList.class );
 
 	/*    */ digester.addSetProperties( "wdkModel/recordClassSet/recordClass/nestedRecordList");
 
-        /*    */ digester.addSetNext( "wdkModel/recordClassSet/recordClass/nestedRecordList", "addNestedRecordList" );
+        /*    */ digester.addSetNext( "wdkModel/recordClassSet/recordClass/nestedRecordList", "addNestedRecordListQuestionRef" );
 
         /*  */ digester.addSetNext( "wdkModel/recordClassSet/recordClass", "addRecordClass" );
         

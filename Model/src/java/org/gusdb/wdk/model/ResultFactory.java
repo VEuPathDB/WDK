@@ -21,6 +21,7 @@ import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
+
 /**
    How the QueryInstance table works.
 
@@ -48,6 +49,10 @@ import org.apache.commons.cli.ParseException;
 public class ResultFactory {
 
     private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.model.ResultFactory");
+
+    public static final String MULTI_MODE_I = "multi_mode_i_column";
+
+
     
     RDBMSPlatformI platform;
     String schemaName;

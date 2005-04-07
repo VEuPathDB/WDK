@@ -54,7 +54,6 @@ public class SqlQueryInstance extends QueryInstance  {
         } else {
             sql = initSql;
         }
-	//	System.err.println("SqlQueryInstance.getSql:  returning " + sql + " to run query " + query.getName());
         return sql;
 
     }

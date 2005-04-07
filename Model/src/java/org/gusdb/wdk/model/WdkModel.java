@@ -239,8 +239,8 @@ public class WdkModel {
 
         Iterator modelSets = allModelSets.values().iterator();
         while (modelSets.hasNext()) {
-            ModelSetI modelSet = (ModelSetI)modelSets.next();
-            modelSet.setResources(this);
+	    ModelSetI modelSet = (ModelSetI)modelSets.next();
+	    modelSet.setResources(this);
         }
     }
 
@@ -290,6 +290,7 @@ public class WdkModel {
         String elementName = reference.getElementName();
 
         ModelSetI set = (ModelSetI)allModelSets.get(setName);
+
         if (set == null) {
             String s3 = s + " There is no set called '" + setName + "'";
             throw new WdkModelException(s3);

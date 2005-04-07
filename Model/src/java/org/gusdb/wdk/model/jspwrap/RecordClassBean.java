@@ -3,7 +3,6 @@ package org.gusdb.wdk.model.jspwrap;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.Question;
 
-
 import java.util.Map;
 
 /**
