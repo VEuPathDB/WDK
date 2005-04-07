@@ -138,6 +138,9 @@
               <text />
           </element>        
       </optional>
+      <optional>
+          <attribute name="isInternal" />
+      </optional>
       <oneOrMore>
         <ref name="question" />
       </oneOrMore>
@@ -254,6 +257,16 @@
       </zeroOrMore>
       <zeroOrMore>
         <ref name="attributes" />
+      </zeroOrMore>
+      <zeroOrMore>
+        <element name="nestedRecord">
+            <attribute name="questionRef" />
+        </element>
+      </zeroOrMore>
+      <zeroOrMore>
+        <element name="nestedRecordList">
+            <attribute name="questionRef" />
+        </element>
       </zeroOrMore>
     </element>
   </define>
