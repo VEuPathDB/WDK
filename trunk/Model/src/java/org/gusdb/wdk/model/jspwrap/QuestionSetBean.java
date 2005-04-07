@@ -39,6 +39,10 @@ public class QuestionSetBean {
 	return questionSet.getName();
     }
 
+    public Boolean getIsInternal() {
+	return questionSet.getIsInternal();
+    }
+
     public String getDisplayName() {
 	return questionSet.getDisplayName();
     }

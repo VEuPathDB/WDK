@@ -101,7 +101,7 @@ public class BooleanQuestionTester {
 		
 		Answer answer = topQuestion.makeAnswer(topNode.getValues(), nextStartRow, nextEndRow);
 		System.out.println("Printing Record Instances on page " + pageCount);
-		answer.printAsTable();
+		System.out.println(answer.printAsTable());
 		pageCount++;
 	    }
 	    

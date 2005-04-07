@@ -8,6 +8,8 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.Query;
 import org.gusdb.wdk.model.QueryInstance;
 import org.gusdb.wdk.model.RDBMSPlatformI;
+import org.gusdb.wdk.model.ResultFactory;
+import org.gusdb.wdk.model.ResultList;
 
 public class SqlQuery extends Query {
     
@@ -58,6 +60,7 @@ public class SqlQuery extends Query {
 	    String regex = "\\$\\$" + key  + "\\$\\$";
 	    s = s.replaceAll(regex, (String)values.get(key));
 	}
+
 	return s;
     }
 
@@ -69,6 +72,23 @@ public class SqlQuery extends Query {
     }
 
     protected String addMultiModeConstraints(String resultTableName, String pkValue, int startId, 
+					     int endId, String initSql){
+
+	StringBuffer initSqlBuf = new StringBuffer(initSql);
+	int selectEnds = initSqlBuf.indexOf("select") + 6;
+	if (selectEnds == -1){
+	    selectEnds = initSqlBuf.indexOf("SELECT") + 6;
+	}
+	
+	String firstPartSql = initSqlBuf.substring(0, selectEnds);
+	String lastPartSql = initSqlBuf.substring(selectEnds);
+	
+	String newSql = firstPartSql + " " + resultTableName + "." + ResultFactory.MULTI_MODE_I + ", " + lastPartSql;
+	return addWhereMultiModeConstraints(resultTableName, pkValue, startId, endId, newSql);
+    }
+
+
+    protected String addWhereMultiModeConstraints(String resultTableName, String pkValue, int startId, 
 					     int endId, String initSql){
 
 	StringBuffer initSqlBuf = new StringBuffer(initSql);
@@ -96,17 +116,17 @@ public class SqlQuery extends Query {
 	    //join result table name with row number
 	    firstPartSql = initSqlBuf.substring(0, whereBegins);	    
 	    lastPartSql = initSqlBuf.substring(whereBegins);
-	    rowStartSql = " and " + resultTableName + ".i >= " + startId;
+	    rowStartSql = " and " + resultTableName + "." + ResultFactory.MULTI_MODE_I + " >= " + startId;
 	    
 	}
 	else{  //no where clause
 	    firstPartSql = initSqlBuf.toString();
-	    rowStartSql = " where " + resultTableName + ".i >= " + startId;
+	    rowStartSql = " where " + resultTableName + "." + ResultFactory.MULTI_MODE_I + " >= " + startId;
 	}
 
 	String extraFromString = ", " + resultTableName;
-	String rowEndSql = " and " + resultTableName + ".i <= " + endId;
-	String orderBySql = " order by " + resultTableName + "." + "i";
+	String rowEndSql = " and " + resultTableName + "." + ResultFactory.MULTI_MODE_I + " <= " + endId;
+	String orderBySql = " order by " + resultTableName + "." + ResultFactory.MULTI_MODE_I;
 	String finalSql = firstPartSql + extraFromString + lastPartSql + rowStartSql + rowEndSql + orderBySql;
 	
 	return finalSql;

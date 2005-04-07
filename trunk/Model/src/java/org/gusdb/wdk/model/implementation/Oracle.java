@@ -4,6 +4,7 @@ package org.gusdb.wdk.model.implementation;
 import org.gusdb.wdk.model.RDBMSPlatformI;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkLogManager;
+import org.gusdb.wdk.model.ResultFactory;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -116,11 +117,11 @@ public class Oracle implements RDBMSPlatformI {
 	SqlUtils.execute(dataSource, newSql);
 
 	//Add "i" to the table and initialize each row in that column to be rownum
-	String alterSql = "alter table " + tableName + " add i number(12)";
+	String alterSql = "alter table " + tableName + " add " + ResultFactory.MULTI_MODE_I + " number(12)";
 
 	SqlUtils.execute(dataSource, alterSql);
 
-	String rownumSql = "update " + tableName + " set i = rownum";
+	String rownumSql = "update " + tableName + " set " + ResultFactory.MULTI_MODE_I + " = rownum";
 	
 	SqlUtils.execute(dataSource, rownumSql);
     }

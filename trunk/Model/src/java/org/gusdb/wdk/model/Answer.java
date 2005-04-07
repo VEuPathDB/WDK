@@ -145,45 +145,72 @@ public class Answer {
         return false;
     }
 
-    public void print() throws WdkModelException, WdkUserException{  
-	
+    public void resetRecordInstanceCounter(){
+	currentRecordInstanceCounter = 0;
+
+    }
+
+    public String print() throws WdkModelException, WdkUserException{  
+	StringBuffer buf = new StringBuffer();
 	if (recordInstances == null){
 	    initRecordInstances();
 	}
 	for (int i = 0; i < recordInstances.length; i++){
-	    System.out.println(recordInstances[i].print());
+	    buf.append(recordInstances[i].print());
 	}
+	return buf.toString();
     }
-
-    public void printAsTable() throws WdkModelException{
-	
+    
+    public String printAsSummary() throws WdkModelException, WdkUserException{
+	StringBuffer buf = new StringBuffer();
 	if (recordInstances == null){
 	    initRecordInstances();
 	}
+	for (int i = 0; i < recordInstances.length; i++){
+	    buf.append(recordInstances[i].printSummary());
+	}
+	return buf.toString();
+    }
+
+    public String printAsTable () throws WdkModelException, WdkUserException{
+	String newline = System.getProperty( "line.separator" );
+	StringBuffer buf = new StringBuffer();
+	if (recordInstances == null){
+	    initRecordInstances();
+	}
+		
 	if (recordInstances != null && recordInstances.length > 0){
 	    RecordClass recordClass = recordInstances[0].getRecordClass();
 	    Iterator attributeNames = 
 		recordClass.getAttributeFields().keySet().iterator();
-	    StringBuffer heading = new  StringBuffer();
+
 	    while (attributeNames.hasNext()){
-		heading.append((String)attributeNames.next() + "\t");
+		buf.append((String)attributeNames.next() + "\t");
 	    }
-	    System.out.println(heading);
+	    buf.append(newline);
 
 	    for (int i = 0; i < recordInstances.length; i++){
-		StringBuffer recordLine = new StringBuffer();
+
 		RecordInstance recordInstance = recordInstances[i];
 		attributeNames = 
 		    recordInstance.getAttributes().keySet().iterator();
+
 		while (attributeNames.hasNext()){
+		    String nextAttName = (String)attributeNames.next();
+
 		    Object value = 
-			recordInstance.getAttributeValue((String)attributeNames.next());
-		    recordLine.append(value.toString() + "\t");
+			recordInstance.getAttributeValue(nextAttName);
+		    if (value != null){
+			buf.append(value.toString() + "\t");
+		    }
 		}
-		System.out.println(recordLine);
+		buf.append(newline);
+		
 	    }
 	}
+	return buf.toString();
     }
+
 
     private void initRecordInstances() throws WdkModelException {
 	ResultList rl = getRecordInstanceIds();
@@ -221,28 +248,57 @@ public class Answer {
     void setMultiMode(QueryInstance instance) throws WdkModelException{
         
         String resultTableName = queryInstance.getResultAsTable();
-        
         instance.setMultiModeValues(resultTableName, listPrimaryKeyName, startRow, endRow);
     }
-    
     void setQueryResult(ResultList resultList) throws WdkModelException {
+    
+	Query query = resultList.getQuery();
+	Column[] columns = query.getColumns();
+        int counter = 0;
+	int oldI = startRow;
+        int i = 0;
+	while (resultList.next()){
 
-        int tempCounter = 0;
-        while (resultList.next()){
-            
-            RecordInstance nextRecordInstance = recordInstances[tempCounter];
-            Query query = resultList.getQuery();
-            Column[] columns = query.getColumns();
-            for (int j = 0; j < columns.length; j++){
-                String nextColumnName = columns[j].getName();
+            Integer iInt = new Integer(resultList.getAttributeFieldValue(ResultFactory.MULTI_MODE_I).getValue().toString());
+	    i = iInt.intValue();
+	    int counterStart = counter;
+
+	    //for all values of i that are skipped, set attributes for that record instance to null
+	    while (counter < counterStart + (i - oldI)){
+		RecordInstance nextRecordInstance = recordInstances[counter];
+		counter++;
+		for (int k = 0; k < columns.length; k++){
+		    String nextColumnName = columns[k].getName();
+		    nextRecordInstance.setAttributeValue(nextColumnName, "null");
+		}
+	    }
+	    oldI = i;
+	    //process first value of i in this loop that is not skipped
+	    RecordInstance nextRecordInstance = recordInstances[counter];
+            for (int k = 0; k < columns.length; k++){
+                String nextColumnName = columns[k].getName();
 
                 Object value = 
 		    resultList.getAttributeFieldValue(nextColumnName).getValue();
                 nextRecordInstance.setAttributeValue(nextColumnName, value);
             }
-            tempCounter++;
+	    oldI++;
+	    counter++;
         }
+	counter = i;
+	//process values of i at end of result set that did not return rows
+	//could factor this out with similar logic above
+	while (counter < recordInstances.length){
+	    RecordInstance nextRecordInstance = recordInstances[counter];
+	    counter++;
+	    for (int k = 0; k < columns.length; k++){
+		String nextColumnName = columns[k].getName();
+		nextRecordInstance.setAttributeValue(nextColumnName, "null");
+	    }
+	}
     }
+	
+	
 
     public boolean isSummaryAttribute(String attName){
 	return question.isSummaryAttribute(attName);
@@ -262,7 +318,31 @@ public class Answer {
 	return rl;
     }
     
+    /*
+      this method was expecting a query result to skip over certain values of i.  Keep here until we are sure we do not need it.
 
+      
+    void setQueryResult(ResultList resultList) throws WdkModelException {
+
+        int tempCounter = 0;
+        Query query = resultList.getQuery();
+	Column[] columns = query.getColumns();
+            
+	while (resultList.next()){
+            
+            RecordInstance nextRecordInstance = recordInstances[tempCounter];
+            for (int j = 0; j < columns.length; j++){
+                String nextColumnName = columns[j].getName();
+		
+                Object value = 
+		    resultList.getAttributeFieldValue(nextColumnName).getValue();
+                nextRecordInstance.setAttributeValue(nextColumnName, value);
+            }
+            tempCounter++;
+        }
+    }
+
+    */
 
 
 }

@@ -1,19 +1,23 @@
 package org.gusdb.wdk.model;
 
-
+import java.util.LinkedHashMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Vector;
 
 public class RecordInstance {
+
+    public static final int MAXIMUM_NESTED_RECORD_INSTANCES = 100;
     
     String primaryKey;
     RecordClass recordClass;
     HashMap attributesResultSetsMap;
     HashMap summaryAttributeMap;
     Answer answer;
+
 
     public RecordInstance(RecordClass recordClass) {
 	this.recordClass = recordClass;
@@ -102,6 +106,98 @@ public class RecordInstance {
 	return new FieldValueMap(recordClass, this, false);
 	
     }
+    
+    //change name of method?
+    public Map getNestedRecordInstances() throws WdkModelException, WdkUserException {
+
+	Map riMap = new LinkedHashMap();
+	Question nq[] = this.recordClass.getNestedRecordQuestions();
+	
+	if (nq != null){
+	    for (int i = 0; i < nq.length; i++){
+		Question nextNq = nq[i];
+		Answer a = getNestedRecordAnswer(nextNq);
+		a.resetRecordInstanceCounter();
+		RecordInstance nextRi = a.getNextRecordInstance();
+
+		if (a.getNextRecordInstance() != null){
+		    throw new WdkModelException("NestedQuestion " + nextNq.getName() +
+						" returned more than one RecordInstance when called from " + this.recordClass.getName());
+		}
+		if (nextRi != null){
+		    riMap.put(nextNq.getName(), nextRi);
+		}
+	    }
+	}
+	return riMap;
+    }
+
+    
+    public Map getNestedRecordInstanceLists() throws WdkModelException, WdkUserException {
+
+	Question nql[] = this.recordClass.getNestedRecordListQuestions();
+	Map riListMap = new LinkedHashMap();
+	
+	if (nql != null){
+	    for (int i = 0; i < nql.length; i++){
+		Question nextNql = nql[i];
+		Answer a = getNestedRecordAnswer(nextNql);
+		Vector riVector = new Vector();
+		while (a.hasMoreRecordInstances()){
+		    RecordInstance nextRi = a.getNextRecordInstance();
+		    riVector.add(nextRi);
+		}
+		RecordInstance[] riList = new RecordInstance[riVector.size()];
+		riVector.copyInto(riList);
+		if (riList != null){
+		    riListMap.put(nextNql.getName(), riList);
+		}
+	    }
+	}
+	return riListMap;
+    }
+
+    private Answer getNestedRecordAnswer(Question q) throws WdkModelException, WdkUserException {
+	
+	Param nestedQueryParams[] = q.getQuery().getParams();
+	HashMap queryValues = new HashMap();
+	for (int j = 0; j < nestedQueryParams.length; j++){
+	    Param nextParam = nestedQueryParams[j];
+	    String paramName = nextParam.getName();
+	    FieldI field = (FieldI)this.getRecordClass().getField(paramName);
+	    String value;
+	    if (field instanceof PrimaryKeyField){
+		value = this.getPrimaryKey().toString();
+	    }
+	    else if (field instanceof AttributeField){
+		value = this.getAttributeValue(paramName).toString();
+	    }
+	    else {
+		throw new WdkModelException ("Illegal to link NestedRecordList " + q.getName() + " on attribute of type " + field.getClass().getName());
+	    }
+	
+	    queryValues.put(paramName, value);
+	}
+	Answer a = q.makeAnswer(queryValues, 1, MAXIMUM_NESTED_RECORD_INSTANCES); 
+	return a;
+    }
+
+	
+
+    //maybe change this to RecordInstance[][] for jspwrap purposes?
+    /*    public Vector getNestedRecordListInstances() throws WdkModelException, WdkUserException{
+	NestedRecordList nrLists[] = this.recordClass.getNestedRecordLists();
+	Vector nrVector = new Vector();
+	if (nrLists != null){
+	    for (int i = 0; i < nrLists.length; i++){
+		NestedRecordList nextNrList = nrLists[i];
+		RecordInstance riList[] = nextNrList.getRecordInstances(this);
+		nrVector.add(riList);
+	    }
+	}
+	return nrVector;
+
+	}*/
 
     public String print() throws WdkModelException, WdkUserException {
 
@@ -135,28 +231,24 @@ public class RecordInstance {
 	}
 	
 	buf.append("Nested Records belonging to this RecordInstance:" + newline);
-	NestedRecord nr[] = this.recordClass.getNestedRecords();
-	if (nr != null){
-	    for (int i = 0; i < nr.length; i++){
-		NestedRecord nextNr = nr[i];
-		RecordInstance ri = nextNr.getRecordInstance(this);
-		buf.append(nextNr.getFullName() + newline);
-		//decide whether record instances should keep track of their nested records' record instances.
-		buf.append (ri.printSummary());
-	    }
+	Map nestedRecords = getNestedRecordInstances();
+	Iterator recordNames = nestedRecords.keySet().iterator();
+	while (recordNames.hasNext()){
+	    String nextRecordName = (String)recordNames.next();
+	    RecordInstance nextNr = (RecordInstance)nestedRecords.get(nextRecordName);
+	    buf.append ("***" + nextRecordName + "***" + newline + nextNr.printSummary() + newline);
 	}
-
+    
 	buf.append("Nested Record Lists belonging to this RecordInstance:" + newline);
-	NestedRecordList nrList[] = this.recordClass.getNestedRecordLists();
-	if (nrList != null){
-	    for (int i = 0; i < nrList.length; i++){
-		NestedRecordList nextNr = nrList[i];
-		RecordInstance riList[] = nextNr.getRecordInstances(this);
-		buf.append(nextNr.getFullName() + newline);
-		for (int j = 0; j < riList.length; j++){
 
-		    buf.append (riList[j].printSummary() + newline);
-		}
+	Map nestedRecordLists = getNestedRecordInstanceLists();
+	Iterator recordListNames = nestedRecordLists.keySet().iterator();
+	while (recordListNames.hasNext()){
+	    String nextRecordListName = (String)recordListNames.next();
+	    RecordInstance nextNrList[] = (RecordInstance[])nestedRecordLists.get(nextRecordListName);
+	    buf.append ("***" + nextRecordListName + "***" + newline);
+	    for (int i = 0; i < nextNrList.length; i++){
+		buf.append(nextNrList[i].printSummary() + newline);
 	    }
 	}
 	
@@ -222,7 +314,7 @@ public class RecordInstance {
 	}
 	resultMap.put(attributeName, attributeValue);
     }
-
+    
     /**
      * Place hash of single row result into hash keyed on query name
      */
@@ -248,22 +340,28 @@ public class RecordInstance {
 	    } catch (WdkUserException e) {
 		throw new WdkModelException(e);
 	    }
+
 	    ResultList rl = qInstance.getResult();
-	    //	rl.checkQueryColumns(query, true);
 	    
 	    Column[] columns = query.getColumns();
-	    if (!rl.next()) {
-		String msg = "Attributes query '" + query.getFullName() + "' in Record '" + recordClass.getFullName() + "' does not return any rows";
-		throw new WdkModelException(msg);
+	    //this could be factored a bit more cleanly, but it is a bit tricky, and this way works.
+	    if (!rl.next()){
+		for (int i=0; i<columns.length; i++) {
+		    String columnName = columns[i].getName();
+		    setAttributeValue(columnName, 
+				      "null");
+		}
 	    }
-	    for (int i=0; i<columns.length; i++) {
-		String columnName = columns[i].getName();
-		setAttributeValue(columnName, 
-				  rl.getAttributeFieldValue(columnName).getValue());
-	    }
-	    if (rl.next()) {
-		String msg = "Attributes query '" + query.getFullName() + "' in Record '" + recordClass.getFullName() + "' returns more than one row";
-		throw new WdkModelException(msg);
+	    else {
+		for (int i=0; i<columns.length; i++) {
+		    String columnName = columns[i].getName();
+		    setAttributeValue(columnName, 
+				      rl.getAttributeFieldValue(columnName).getValue());
+		}
+		if (rl.next()) {
+		    String msg = "Attributes query '" + query.getFullName() + "' in Record '" + recordClass.getFullName() + "' returns more than one row";
+		    throw new WdkModelException(msg);
+		}
 	    }
 	    rl.close();
 	}
@@ -329,6 +427,7 @@ public class RecordInstance {
     private void splitSummaryAttributes(Map attributeFields, Map summaryAttributes, Map nonSummaryAttributes){
 
 	Iterator fieldNames = attributeFields.keySet().iterator();
+	//	if (fieldNames
 	while (fieldNames.hasNext()) {
 	    String fieldName = (String)fieldNames.next();
 	    AttributeFieldValue field = 
