@@ -28,11 +28,121 @@
   </tr>
 </c:if>
 </c:forEach>
+</table>
+
+<!-- show all nested records for record -->
+
+<c:forEach items="${wdkRecord.nestedRecords}" var="nrEntry">
+  <br>
+  Nested Records: <br>	
+  <table>
+  <tr><td><b>${nrEntry.key}</b></td></tr>
+  <c:set var="nextNr" value="${nrEntry.value}"/>
+
+  <!-- create table heading for next nested record -->	
+  <c:forEach items="${nextNr.summaryAttributeNames}" var="recAttrName">
+     <c:set value="${nextNr.attributes[recAttrName]}" var="recAttr"/>
+     <c:if test="${!recAttr.isInternal}">
+	<tr>
+          <td><b>${recAttr.displayName}</b></td>         
+          <c:set var="fieldVal" value="${recAttr.briefValue}"/>
+          <td>
+            <!-- need to know if fieldVal should be hot linked -->
+            <c:choose>
+              <c:when test="${fieldVal.class.name eq 'org.gusdb.wdk.model.LinkValue'}">
+                 <a href="${fieldVal.url}">${fieldVal.visible}</a>
+              </c:when>
+              <c:otherwise>
+                <font class="fixed"><w:wrap size="60">${fieldVal}</w:wrap></font>
+              </c:otherwise>
+            </c:choose>
+          </td>
+        </tr>
+     </c:if>
+  </c:forEach>
+  </table>
+  
+</c:forEach>
+
+<!-- end nested records -->
+
+
+<!-- show all nested recordLists for record -->
+<c:forEach items="${wdkRecord.nestedRecordLists}" var="nrlEntry">
+  <br>
+  <table>
+  <tr><td><b>${nrlEntry.key}</b></td></tr>
+    
+  <c:set var="i" value="0"/>
+  <c:forEach items="${nrlEntry.value}" var="nextRecord">
+    <c:choose>
+    <c:when test="${i == 0}">
+      <!-- use first record instance to create table heading for nested record list -->	
+    
+      <c:forEach items="${nextRecord.summaryAttributeNames}" var="recAttrName">
+         <c:set value="${nextRecord.recordClass.attributeFields[recAttrName]}" var="recAttr"/>
+         <c:if test="${!recAttr.isInternal}">
+            <th align="left">${recAttr.displayName}</th>
+         </c:if>
+      </c:forEach>
+
+    </c:when>
+    <c:otherwise>
+      
+      <!-- fill in table with one row; possible display change later -->
+      <c:choose>
+	  <c:when test="${i % 2 == 0}"><tr class="rowLight"></c:when>
+          <c:otherwise><tr class="rowDark"></c:otherwise>
+      </c:choose>
+       
+      <c:set var="j" value="0"/>
+      <c:forEach items="${nextRecord.summaryAttributeNames}" var="recAttrName">
+        <c:set value="${nextRecord.attributes[recAttrName]}" var="recAttr"/>
+        <c:if test="${!recAttr.isInternal}">
+          <td>
+            <c:set var="recNam" value="${nextRecord.recordClass.fullName}"/>
+            <c:set var="fieldVal" value="${recAttr.briefValue}"/>
+            <c:choose>
+               <c:when test="${j == 0}">
+                  <a href="showRecord.do?name=${recNam}&id=${nextRecord.primaryKey}">${fieldVal}</a>
+               </c:when>
+               <c:otherwise>
+ 
+                 <!-- need to know if fieldVal should be hot linked -->
+                 <c:choose>
+                    <c:when test="${fieldVal.class.name eq 'org.gusdb.wdk.model.LinkValue'}">
+                       <a href="${fieldVal.url}">${fieldVal.visible}</a>
+                    </c:when>
+                    <c:otherwise>
+                     ${fieldVal}
+                    </c:otherwise>
+                 </c:choose>
+               </c:otherwise>
+            </c:choose>
+          </td>
+          <c:set var="j" value="${j+1}"/>
+        </c:if>
+      </c:forEach>
+      </tr>
+    </c:otherwise>
+   </c:choose>
+  <c:set var="i" value="${i+1}"/>
+  </c:forEach>
+  <!-- end this record instance -->
+  </table>
+</c:forEach>
+
+<!-- end nested record lists -->
+
+
 
 <!-- show all tables for record -->
+
 <c:forEach items="${wdkRecord.tables}"  var="tblEntry">
+  <br>
+  <table>
   <tr>
-    <td valign="top"><b>${tblEntry.key}</b></td>
+    <tr><td valign="top"><b>${tblEntry.key}</b></td></tr>
     <td>
       <c:set var="tbl" value="${tblEntry.value}"/>
 
@@ -82,8 +192,8 @@
       <c:set var="junk" value="close"/>
     </td>
   </tr>
+  </table>
 </c:forEach>
 
-</table>
 
 <site:footer/>

@@ -18,6 +18,7 @@
 <table width="100%">
 <c:set value="${wdkModel.questionSets}" var="questionSets"/>
 <c:forEach items="${questionSets}" var="qSet">
+  <c:if test="${qSet.isInternal == false}">
   <tr><td bgcolor="lightblue"><jsp:getProperty name="qSet" property="description"/></td></tr>
   <tr><td><!-- list of questions in a questionSet -->
           <html:form method="get" action="/showQuestion.do">
@@ -33,6 +34,7 @@
           <html:submit value="Show Question"/>
           </html:form>
        </td>
+   </c:if>
 </c:forEach>
 </table>
 
