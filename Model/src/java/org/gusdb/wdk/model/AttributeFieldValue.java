@@ -55,11 +55,11 @@ public class AttributeFieldValue {
 	}
 	int truncateInt = truncate.intValue();
 
-	if (briefValue.length() < truncateInt){
+	if (briefValue.length() <= truncateInt){
 	    return briefValue;
 	}
 	else {
-	    String returned = briefValue.substring(0, truncateInt + 1) + ". . .";
+	    String returned = briefValue.substring(0, truncateInt) + ". . .";
 	    return returned;
 	}
     }
