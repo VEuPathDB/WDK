@@ -143,7 +143,7 @@ public class TestDBManager {
 
 	String createTable = "create table " + tableName + 
 	    " (" + platformCorrectedFirstLine + ")";
-	System.err.println("creating test table with sql " + createTable);
+	// System.err.println("creating test table with sql " + createTable);
 	
 	SqlUtils.execute(dataSource, createTable);
     }
