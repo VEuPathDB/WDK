@@ -30,8 +30,7 @@ import org.apache.commons.cli.ParseException;
 
      - the query is cacheable
           - the "cached" bit is set
-          - dispose of row/resultTable when whole cache is dropped (new data)
-
+          - dispose of row/resultTable when whole cache is dropped (new 
      - the query will be in the history (even if not cacheable, to provide a 
        stable history, ie, results don't change even if the db did)
           - dispose of row/resultTable when user's history is purged
@@ -115,14 +114,16 @@ public class ResultFactory {
 	StringBuffer sqlb = new StringBuffer();
 	String tblName = schemaName + "." + instanceTableName;
 	
+	String numericType = platform.getNumberDataType();
+
 	sqlb.append("create table " + tblName + 
-		    " (query_instance_id number(12) not null, query_name varchar2(100) not null, cached number(1) not null,");
+		    " (query_instance_id " + numericType + "(12) not null, query_name varchar(100) not null, cached " + numericType + "(1) not null,");
 	
-	sqlb.append("result_table varchar2(30), start_time date not null, end_time date, dataset_name varchar2(100), session_id varchar2(50), ");
+	sqlb.append("result_table varchar(30), start_time date not null, end_time date, dataset_name varchar(100), session_id varchar(50), ");
 	for (int i=0;i < numParams -1; i++) {
-	    sqlb.append("param" + i + " varchar2(200), ");
+	    sqlb.append("param" + i + " varchar(200), ");
 	}
-	sqlb.append("param" + numParams + " varchar2(200))");
+	sqlb.append("param" + numParams + " varchar(200))");
 	
 	// Execute it
 	System.out.println(newline + "Making cache table " + nameToUse + newline);
