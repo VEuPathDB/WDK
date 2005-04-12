@@ -26,6 +26,8 @@ public interface RDBMSPlatformI {
 
     public String getCurrentDateFunction();
 
+    public String getNumberDataType(); 
+    
     public boolean checkTableExists(String tableName) throws SQLException;
 
     public int dropTable(String schemaName, String tableName) throws SQLException;

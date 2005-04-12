@@ -60,6 +60,10 @@ public class Oracle implements RDBMSPlatformI {
 	return "sysdate";
     }
     
+    public String getNumberDataType() {
+        return "number";
+    }
+    
     public boolean checkTableExists(String tableName) throws SQLException{
 	
 	String[] parts = tableName.split("\\.");

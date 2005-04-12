@@ -41,17 +41,21 @@ public class PostgreSQL implements RDBMSPlatformI {
     }
 
     public String getNextId(String schemaName, String tableName) throws SQLException  {
-        String sql = "select " + schemaName + "." + tableName + 
-        "_pkseq.nextval";
+        String sql = "select nextval(' " + schemaName + "." + tableName + 
+        "_pkseq ')";
         String nextId = SqlUtils.runStringQuery(dataSource, sql);
         logger.finest("getNextId is: "+nextId+" after running "+sql);
         return nextId;
     }
-
+    
     public String cleanStringValue(String val) {
 	return val.replaceAll("'", "''");
     }
 
+    public String getNumberDataTye() {
+        return "numeric";
+    }
+    
     public String getCurrentDateFunction() {
 	return "select LOCALTIMESTAMP(0)";
     }
