@@ -87,7 +87,7 @@ public class TestDBManager {
 		}
 		if (create){
 		    if (platform.checkTableExists(tableName) == false){
-			createTable(tableName, firstLine, platform.getDataSource());
+			createTable(tableName, firstLine, platform);
 			
 			String noReturn = "select * from " + tableName;
 			
@@ -131,11 +131,19 @@ public class TestDBManager {
 	}
     }
     
-    private static void createTable(String tableName, String firstLine, DataSource dataSource)throws Exception{
+    private static void createTable(String tableName, String firstLine, 
+				    RDBMSPlatformI platform)throws Exception{
+	DataSource dataSource = platform.getDataSource();
+	
+	// substitute plaform indpendent number types for "number(10)"
+	String platformCorrectedFirstLine = firstLine;
+	String numType = platform.getNumberDataType();
+
+	platformCorrectedFirstLine.replaceAll("number\\(", numType + "(");
 
 	String createTable = "create table " + tableName + 
-	    " (" + firstLine + ")";
-	//	System.err.println("creating table with sql " + createTable);
+	    " (" + platformCorrectedFirstLine + ")";
+	System.err.println("creating test table with sql " + createTable);
 	
 	SqlUtils.execute(dataSource, createTable);
     }
