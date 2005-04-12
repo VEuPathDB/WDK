@@ -189,7 +189,7 @@
         </c:forEach>
       </table>
       <!-- close resultList -->
-      <c:set var="junk" value="close"/>
+      <c:set var="junk" value="${tbl.close}"/>
     </td>
   </tr>
   </table>
