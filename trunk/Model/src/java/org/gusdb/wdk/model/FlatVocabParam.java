@@ -51,6 +51,7 @@ public class FlatVocabParam extends AbstractEnumParam {
 	        vocabMap.put(value,
 			     result.getAttributeFieldValue("internal").getValue());
             }
+            result.close();
         }
     }
 
