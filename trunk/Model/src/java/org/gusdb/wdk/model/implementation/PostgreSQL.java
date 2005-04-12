@@ -52,7 +52,7 @@ public class PostgreSQL implements RDBMSPlatformI {
 	return val.replaceAll("'", "''");
     }
 
-    public String getNumberDataTye() {
+    public String getNumberDataType() {
         return "numeric";
     }
     
