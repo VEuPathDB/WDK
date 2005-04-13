@@ -55,6 +55,11 @@ public class SqlResultList extends ResultList {
         } catch (SQLException e) {
             throw new WdkModelException(e);
         }
+
+	if (o == null) {
+	    o = "";
+	}
+
         return o;
     }
 
