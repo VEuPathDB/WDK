@@ -267,7 +267,11 @@ public class BooleanQueryInstance extends QueryInstance {
 
 	    h.put(BooleanQuery.FIRST_ANSWER_PARAM_NAME, firstQueryInstanceId.toString());
 	    h.put(BooleanQuery.SECOND_ANSWER_PARAM_NAME, secondQueryInstanceId.toString());
-	    
+
+	    // also set the operation so the result in the cache
+	    // for different operations on the same queryInstance pair can be distinguished 
+	    h.put(BooleanQuery.OPERATION_PARAM_NAME, this.operation);
+
 	    setOperandIds(h); 
 	}
     }
