@@ -82,14 +82,16 @@ public class BooleanQuestionForm extends QuestionForm {
 			    String val = (String)getMyProp(pKey); 
 			    pVals = new String[] {val};
 			}
-			for (int k=0; k<pVals.length; k++) {
-			    String pVal = pVals[k];
-			    String errMsg = p.validateValue(pVal);
-			    if (errMsg != null) {
-				errors.add(pKey,
-					   new ActionError("mapped.properties",
-							   p.getPrompt() + " \"" + pVal + "\"",
-							   "<br>" + errMsg));
+			if (pVals != null) {
+			    for (int k=0; k<pVals.length; k++) {
+				String pVal = pVals[k];
+				String errMsg = p.validateValue(pVal);
+				if (errMsg != null) {
+				    errors.add(pKey,
+					       new ActionError("mapped.properties",
+							       p.getPrompt() + " \"" + pVal + "\"",
+							       "<br>" + errMsg));
+				}
 			    }
 			}
 		    } catch (WdkModelException exp) {
