@@ -452,7 +452,7 @@ public class ResultFactory {
 
     private ResultSet fetchCachedResult(String resultTable) throws WdkModelException {
 	
-	String sql = "select * from " + resultTable;
+	String sql = "select * from " + resultTable + " order by " + MULTI_MODE_I + " asc";
 
  	ResultSet rs = null;
 	try {
