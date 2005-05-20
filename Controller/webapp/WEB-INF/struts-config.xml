@@ -24,6 +24,7 @@
   </global-forwards>
 
   <action-mappings>
+
     <action
       path="/showQuestion"
       type="org.gusdb.wdk.controller.action.ShowQuestionAction"
@@ -32,6 +33,7 @@
       input="/questionSets.jsp">
       <forward name="show_question" path="/question.jsp"/>
     </action>
+
     <action
        path="/processQuestion"
        type="org.gusdb.wdk.controller.action.ProcessQuestionAction"
@@ -41,6 +43,21 @@
        <forward name="pq_show_summary" path="/showSummary.do"/>
        <forward name="pq_start_boolean" path="/startBoolean.do"/>
     </action>
+
+
+
+    <action
+       path="/processQuestion2"
+       type="org.gusdb.wdk.controller.action.ProcessQuestionAction2"
+       scope="request"       
+       name="questionSetForm"
+       input="/index5.jsp">
+       <forward name="pq_show_summary" path="/showSummary.do"/>
+	<forward name="pbq_get_boolean_answer" path="/summary.jsp"/>
+    
+       <forward name="pq_start_boolean" path="/startBoolean.do"/>
+    </action>
+
     <action
       path="/showSummary"
       type="org.gusdb.wdk.controller.action.ShowSummaryAction"
