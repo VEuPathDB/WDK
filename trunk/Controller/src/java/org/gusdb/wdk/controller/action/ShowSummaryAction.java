@@ -46,7 +46,7 @@ public class ShowSummaryAction extends Action {
 		
 	AnswerBean wdkAnswer = summaryPaging(request, wdkQuestion, params);
 
-	request.setAttribute(CConstants.WDK_ANSWER_KEY, wdkAnswer);
+	request.getSession().setAttribute(CConstants.WDK_ANSWER_KEY, wdkAnswer);
 	
 	ActionForward forward = mapping.findForward(CConstants.SHOW_SUMMARY_MAPKEY);
 	return forward;

@@ -27,12 +27,13 @@
                <td valign="top" align="left">
                    ${wdkAnswer.resultSize}
                    <c:if test="${wdkAnswer.resultSize > 0}">
-                   (showing ${wdk_paging_start} to ${wdk_paging_end})</c:if></td>
-               <td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
-               <td align="right"><html:form method="get" action="/processDownload.do">
-                                 <html:submit value="Download"/>
-                                 <html:checkbox property="chooseFields"/> select attributes
-                                 </html:form></td></tr>
+                    (showing ${wdk_paging_start} to ${wdk_paging_end})
+                    <!-- allow download -->
+                    <html:form method="get" action="/processDownload.do">
+                      <html:submit value="Download"/>
+                      <html:checkbox property="chooseFields" value="off"/>
+                    </html:form>
+                   </c:if></td></tr>
     </table>
   </c:when>
   <c:otherwise>
@@ -40,9 +41,9 @@
     <c:set value="${wdkAnswer.params}" var="params"/>
     <c:set value="${wdkAnswer.question.displayName}" var="wdkQuestionName"/>
     <table><tr><td valign="top" align="left"><b>Query:</b></td>
-               <td colspan="3" valign="top" align="left">${wdkQuestionName}</td></tr>
+               <td valign="top" align="left">${wdkQuestionName}</td></tr>
            <tr><td valign="top" align="left"><b>Parameters:</b></td>
-               <td colspan="3" valign="top" align="left">
+               <td valign="top" align="left">
                  <table>
                    <c:forEach items="${params}" var="p">
                      <tr><td align="right">${p.key}:</td><td><i>${p.value}</i></td></tr> 
@@ -52,12 +53,8 @@
                <td valign="top" align="left">
                    ${wdkAnswer.resultSize}
                    <c:if test="${wdkAnswer.resultSize > 0}">
-                   (showing ${wdk_paging_start} to ${wdk_paging_end})</c:if></td>
-               <td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
-               <td align="right"><html:form method="get" action="/processDownload.do">
-                                 <html:submit value="Download"/>
-                                 <html:checkbox property="chooseFields"/> select attributes
-                                 </html:form></td></tr>
+                    (showing ${wdk_paging_start} to ${wdk_paging_end})
+                   </c:if></td></tr>
     </table>
   </c:otherwise>
 </c:choose>
@@ -71,20 +68,6 @@
   </c:when>
   <c:otherwise>
 
-<!-- pager -->
-<pg:pager isOffset="true"
-          scope="request"
-          items="${wdk_paging_total}"
-          maxItems="${wdk_paging_total}"
-          url="${wdk_paging_url}"
-          maxPageItems="${wdk_paging_pageSize}"
-          export="currentPageNumber=pageNumber">
-  <c:forEach var="paramName" items="${wdk_paging_params}">
-    <pg:param name="${paramName}" id="pager" />
-  </c:forEach>
-  <!-- pager on top -->
-  <wdk:pager /> 
-
 <!-- content of current page -->
 <table border="0" cellpadding="2" cellspacing="0">
 <tr class="headerRow">
@@ -95,59 +78,6 @@
     <th align="left">${recAttr.displayName}</th>
   </c:if>
 </c:forEach>
-
-<c:set var="i" value="0"/>
-<c:forEach items="${wdkAnswer.records}" var="record">
-
-<c:choose>
-  <c:when test="${i % 2 == 0}"><tr class="rowLight"></c:when>
-  <c:otherwise><tr class="rowDark"></c:otherwise>
-</c:choose>
-
-  <c:set var="j" value="0"/>
-
-  <c:forEach items="${record.summaryAttributeNames}" var="recAttrName">
-  <c:set value="${record.attributes[recAttrName]}" var="recAttr"/>
-  <c:if test="${!recAttr.isInternal}">
- 
-    <td>
-    <c:set var="recNam" value="${record.recordClass.fullName}"/>
-    <c:set var="fieldVal" value="${recAttr.briefValue}"/>
-    <c:choose>
-      <c:when test="${j == 0}">
-
-        <a href="showRecord.do?name=${recNam}&id=${record.primaryKey}">${fieldVal}</a>
-
-      </c:when>
-      <c:otherwise>
-
-        <!-- need to know if fieldVal should be hot linked -->
-        <c:choose>
-          <c:when test="${fieldVal.class.name eq 'org.gusdb.wdk.model.LinkValue'}">
-            <a href="${fieldVal.url}">${fieldVal.visible}</a>
-          </c:when>
-          <c:otherwise>
-            ${fieldVal}
-          </c:otherwise>
-        </c:choose>
-
-      </c:otherwise>
-    </c:choose>
-    </td>
-    <c:set var="j" value="${j+1}"/>
-
-  </c:if>
-  </c:forEach>
-</tr>
-<c:set var="i" value="${i+1}"/>
-</c:forEach>
-
-</tr>
-</table>
-
-  <!-- pager at bottom -->
-  <wdk:pager />
-</pg:pager>
 
   </c:otherwise>
 </c:choose>

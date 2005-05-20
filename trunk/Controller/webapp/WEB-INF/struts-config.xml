@@ -10,6 +10,7 @@
     <form-bean name="questionSetForm" type="org.gusdb.wdk.controller.action.QuestionSetForm"/>
     <form-bean name="questionForm" type="org.gusdb.wdk.controller.action.QuestionForm"/>
     <form-bean name="booleanQuestionForm" type="org.gusdb.wdk.controller.action.BooleanQuestionForm"/>
+    <form-bean name="downloadForm" type="org.gusdb.wdk.controller.action.DownloadForm"/>
   </form-beans>
 
   <global-exceptions>
@@ -87,6 +88,21 @@
       type="org.gusdb.wdk.controller.action.ShowRecordAction"
       scope="request">
       <forward name="show_record" path="/record.jsp"/>
+    </action>
+    <action
+      path="/processDownload"
+      type="org.gusdb.wdk.controller.action.ProcessDownloadAction"
+      name="downloadForm"
+      scope="request">
+      <forward name="pd_config_download" path="/downloadConfig.jsp"/>
+      <forward name="pd_get_download_result" path="/getDownloadResult.do"/>
+    </action>
+    <action
+      path="/getDownloadResult"
+      type="org.gusdb.wdk.controller.action.GetDownloadResultAction"
+      name="downloadForm"
+      scope="request">
+      <forward name="get_download_result" path="/downloadResult.jsp"/>
     </action>
   </action-mappings>
 

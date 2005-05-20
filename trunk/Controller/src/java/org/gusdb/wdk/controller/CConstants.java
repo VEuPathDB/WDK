@@ -18,6 +18,7 @@ public class CConstants {
     public static final String BOOLEAN_SEED_QUESTION_KEY = "booleanSeedQuestionName";
     public static final String CURRENT_BOOLEAN_ROOT_KEY = "currentBooleanRoot";
     public static final String BOOLEAN_OPERATIONS_PARAM_NAME = "booleanOps";
+    public static final String DOWNLOAD_RESULT_KEY = "downloadResult";
     
     //key for finding action forward, from struts-config.xml, used in Action classes
     public static final String SHOW_QUESTION_MAPKEY = "show_question";
@@ -29,6 +30,9 @@ public class CConstants {
     public static final String PBQ_GROW_BOOLEAN_MAPKEY = "pbq_grow_boolean";
     public static final String GROW_BOOLEAN_MAPKEY = "grow_boolean";
     public static final String GET_BOOLEAN_ANSWER_MAPKEY = "get_boolean_answer";
+    public static final String PD_CONFIG_DOWNLOAD_MAPKEY = "pd_config_download";
+    public static final String PD_GET_DOWNLOAD_RESULT_MAPKEY = "pd_get_download_result";
+    public static final String GET_DOWNLOAD_RESULT_MAPKEY = "get_download_result";
 
     //button click detectors, used in action, action forms, and jsp pages
     public static final String PQ_SUBMIT_KEY = "questionSubmit"; //match question.jsp
@@ -37,6 +41,7 @@ public class CConstants {
     public static final String PBQ_SUBMIT_KEY = "process_boolean_question"; //match booleanQuestion.jsp
     public static final String PBQ_SUBMIT_GET_BOOLEAN_ANSWER = "Retrieve Answer"; //match booleanQuestion.jsp
     public static final String PBQ_SUBMIT_GROW_BOOLEAN = "Expand"; //match WEB-INF/includes/booleanQuestionNode.jsp
+    public static final String PD_CHOOSE_KEY = "chooseFields"; //match summary.jsp 
 
     //used in action, action forms, and jsp pages
     public static final String NEXT_QUESTION_OPERAND_SUFFIX = "_nextQuestionOperand"; //match WEB-INF/includes/booleanQuestionNode.jsp
