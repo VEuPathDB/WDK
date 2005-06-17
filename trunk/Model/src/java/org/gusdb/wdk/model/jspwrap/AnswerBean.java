@@ -15,7 +15,7 @@ import java.util.Vector;
 public class AnswerBean {
 
     Answer answer;
-    
+    Map downloadConfigMap = null;
 
     public AnswerBean(Answer answer) {
 	this.answer = answer;
@@ -66,7 +66,7 @@ public class AnswerBean {
     }
 
     public int getResultSize() {
-	try {
+ 	try {
 	    return answer.getResultSize();
 	} catch (WdkModelException e) {
 	    throw new RuntimeException(e);
@@ -92,6 +92,17 @@ public class AnswerBean {
 	return new RecordBeanList();
     }
 
+    /**
+     * for controller: reset counter for download purpose
+     */
+    public void resetAnswerRowCursor() {
+	answer.resetRecordInstanceCounter();
+    }
+
+    public void setDownloadConfigMap (Map downloadConfigMap) {
+	this.downloadConfigMap = downloadConfigMap;
+    }
+
     public String[] getSummaryAttributeNames() {
 	Map attribs = answer.getQuestion().getRecordClass().getAttributeFields();
 	Iterator ai = attribs.keySet().iterator();
@@ -106,6 +117,26 @@ public class AnswerBean {
 	String[] sumAttribNames = new String[size];
 	v.copyInto(sumAttribNames);
 	return sumAttribNames;
+    }
+
+    public String[] getDownloadAttributeNames() {
+	String[] sumAttrNames = getSummaryAttributeNames();
+
+	Vector v = new Vector();
+	for (int i=0; i<sumAttrNames.length; i++) {
+	    String attrName = sumAttrNames[i];
+	    if (downloadConfigMap == null) {
+		v.add(attrName);
+	    } else {
+		Object configStatus = downloadConfigMap.get(attrName);
+		System.err.println("DEBUG AnswerBean: configStatus for " + attrName + " is " + configStatus);
+		if (configStatus != null) { v.add(attrName); }
+	    }
+	}
+	int size = v.size();
+	String[] downloadAttribNames = new String[size];
+	v.copyInto(downloadAttribNames);
+	return downloadAttribNames;
     }
 
     ////////////////////////////////////////////////////////////////////////

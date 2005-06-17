@@ -41,12 +41,28 @@ public class ShowSummaryAction extends Action {
 	
 	QuestionForm qForm = (QuestionForm)form;
 	QuestionBean wdkQuestion = qForm.getQuestion();
+
+	//TRICKY: this is for action forward from ProcessQuestionSetsFlatAction
+	java.util.Iterator it = qForm.getMyProps().keySet().iterator();
+	java.util.Vector v = new java.util.Vector();
+        while (it.hasNext()) {
+	    String key = (String)it.next();
+	    if (key.indexOf("_" + wdkQuestion.getName() + "_") > 0) {
+		v.add(key);
+	    }
+	}
+	String[] extraKeys = new String[v.size()];
+	v.copyInto(extraKeys);
+	for (int i=0; i<extraKeys.length; i++) {
+	    qForm.getMyProps().remove(extraKeys[i]);
+	}
 		    
 	Map params = handleMultiPickParams(new java.util.HashMap(qForm.getMyProps()));
 		
 	AnswerBean wdkAnswer = summaryPaging(request, wdkQuestion, params);
 
 	request.getSession().setAttribute(CConstants.WDK_ANSWER_KEY, wdkAnswer);
+	request.getSession().setAttribute(CConstants.WDK_QUESTION_PARAMS_KEY, params);
 	
 	ActionForward forward = mapping.findForward(CConstants.SHOW_SUMMARY_MAPKEY);
 	return forward;

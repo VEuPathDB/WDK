@@ -34,7 +34,6 @@ public class ProcessQuestionAction extends Action {
 				 ActionForm form,
 				 HttpServletRequest request,
 				 HttpServletResponse response) throws Exception {
-
 	ActionForward forward = null;
 	String  submitAction = request.getParameter(CConstants.PQ_SUBMIT_KEY);
 	if (submitAction.equals(CConstants.PQ_SUBMIT_GET_ANSWER)){

@@ -39,11 +39,11 @@ public class ProcessDownloadAction extends Action {
 	ActionForward forward = null;
 	String  chooseFields = request.getParameter(CConstants.PD_CHOOSE_KEY);
 	if (new String("on").equals(chooseFields)){
-	    System.err.println("*** PDA: forward to " + CConstants.PD_CONFIG_DOWNLOAD_MAPKEY);
+	    //System.err.println("*** PDA: forward to " + CConstants.PD_CONFIG_DOWNLOAD_MAPKEY);
 	    forward = mapping.findForward(CConstants.PD_CONFIG_DOWNLOAD_MAPKEY);
 	}
 	else {
-	    System.err.println("*** PDA: forward to " + CConstants.PD_GET_DOWNLOAD_RESULT_MAPKEY);
+	    //System.err.println("*** PDA: forward to " + CConstants.PD_GET_DOWNLOAD_RESULT_MAPKEY);
 	    forward = mapping.findForward(CConstants.PD_GET_DOWNLOAD_RESULT_MAPKEY);
 	}
 	return forward;
