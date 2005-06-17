@@ -72,6 +72,7 @@ public class GetBooleanAnswerAction extends ShowSummaryAction {
 	    answer = booleanAnswerPaging(request, rootNode);
 	}
 
+	answer.resetAnswerRowCursor();
 	request.setAttribute(CConstants.WDK_ANSWER_KEY, answer);
 	
 	ActionForward forward = mapping.findForward(CConstants.GET_BOOLEAN_ANSWER_MAPKEY);

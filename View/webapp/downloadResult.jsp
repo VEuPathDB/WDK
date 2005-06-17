@@ -23,17 +23,6 @@
                    <jsp:include page="/WEB-INF/includes/bqShowNode.jsp"/>
                  </nested:root>
                </td></tr>
-           <tr><td valign="top" align="left"><b>Results:</b></td>
-               <td valign="top" align="left">
-                   ${wdkAnswer.resultSize}
-                   <c:if test="${wdkAnswer.resultSize > 0}">
-                    (showing ${wdk_paging_start} to ${wdk_paging_end})
-                    <!-- allow download -->
-                    <html:form method="get" action="/processDownload.do">
-                      <html:submit value="Download"/>
-                      <html:checkbox property="chooseFields" value="off"/>
-                    </html:form>
-                   </c:if></td></tr>
     </table>
   </c:when>
   <c:otherwise>
@@ -49,12 +38,6 @@
                      <tr><td align="right">${p.key}:</td><td><i>${p.value}</i></td></tr> 
                    </c:forEach>
                  </table></td></tr>
-           <tr><td valign="top" align="left"><b>Results:</b></td>
-               <td valign="top" align="left">
-                   ${wdkAnswer.resultSize}
-                   <c:if test="${wdkAnswer.resultSize > 0}">
-                    (showing ${wdk_paging_start} to ${wdk_paging_end})
-                   </c:if></td></tr>
     </table>
   </c:otherwise>
 </c:choose>
@@ -69,17 +52,7 @@
   <c:otherwise>
 
 <!-- content of current page -->
-<table border="0" cellpadding="2" cellspacing="0">
-<tr class="headerRow">
-
-<c:forEach items="${wdkAnswer.summaryAttributeNames}" var="recAttrName">
-  <c:set value="${wdkAnswer.question.recordClass.attributeFields[recAttrName]}" var="recAttr"/>
-  <c:if test="${!recAttr.isInternal}">
-    <th align="left">${recAttr.displayName}</th>
-  </c:if>
-</c:forEach>
-
-RESULT: <b><font color="red">${requestScope.downloadResult}</font></b>
+<pre>${requestScope.downloadResult}</pre>
 
   </c:otherwise>
 </c:choose>

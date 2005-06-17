@@ -31,6 +31,19 @@ public class ShowQuestionAction extends Action {
 				 HttpServletResponse response) throws Exception {
 
 	String qFullName = ((QuestionSetForm)form).getQuestionFullName();
+	QuestionBean wdkQuestion = getQuestionByFullName(qFullName);
+
+	request.getSession().setAttribute(CConstants.WDK_QUESTION_KEY, wdkQuestion);
+
+	QuestionForm qForm = prepareQuestionForm(wdkQuestion);
+	//request.getSession().setAttribute(CConstants.QUESTIONFORM_KEY, qForm);
+	//request.getSession().setAttribute(CConstants.WDK_QUESTION_KEY, wdkQuestion);
+
+	ActionForward forward = mapping.findForward(CConstants.SHOW_QUESTION_MAPKEY);
+	return forward;
+    }
+
+    protected QuestionBean getQuestionByFullName(String qFullName) {
 	int dotI = qFullName.indexOf('.');
 	String qSetName = qFullName.substring(0, dotI);
 	String qName = qFullName.substring(dotI+1, qFullName.length());
@@ -39,14 +52,7 @@ public class ShowQuestionAction extends Action {
 	
 	QuestionSetBean wdkQuestionSet = (QuestionSetBean)wdkModel.getQuestionSetsMap().get(qSetName);
 	QuestionBean wdkQuestion = (QuestionBean)wdkQuestionSet.getQuestionsMap().get(qName);
-
-	request.getSession().setAttribute(CConstants.WDK_QUESTION_KEY, wdkQuestion);
-
-	QuestionForm qForm = prepareQuestionForm(wdkQuestion);
-	request.getSession().setAttribute(CConstants.QUESTIONFORM_KEY, qForm);
-
-	ActionForward forward = mapping.findForward(CConstants.SHOW_QUESTION_MAPKEY);
-	return forward;
+	return wdkQuestion;
     }
 
     private QuestionForm prepareQuestionForm (QuestionBean wdkQuestion) throws Exception
@@ -58,10 +64,6 @@ public class ShowQuestionAction extends Action {
 	
 	ServletContext context = servlet.getServletContext();
 	ParamBean[] params = wdkQuestion.getParams();
-
-	qForm.setMyProps(new HashMap());
-	qForm.setMyLabels(new HashMap());
-	qForm.setMyValues(new HashMap());
 
 	for (int i=0; i<params.length; i++) {
 	    ParamBean p = params[i];

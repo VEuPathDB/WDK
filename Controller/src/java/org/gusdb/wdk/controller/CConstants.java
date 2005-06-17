@@ -9,10 +9,11 @@ public class CConstants {
     public static final String WDK_MODEL_KEY = "wdkModel";
     public static final String WDK_CUSTOMVIEWDIR_KEY = "wdkCustomeViewDir";
     public static final String WDK_QUESTION_KEY = "wdkQuestion";
+    public static final String WDK_QUESTION_PARAMS_KEY = "wdkQuestionParams";
     public static final String WDK_ANSWER_KEY = "wdkAnswer";
     public static final String WDK_RECORD_KEY = "wdkRecord";
     public static final String NEXT_QUESTION_OPERAND = "nextQuestionOperand";
-    public static final String QUESTIONSETFORM_KEY = "questionSetForm";
+    //public static final String QUESTIONSETFORM_KEY = "questionSetForm";
     public static final String QUESTIONFORM_KEY = "questionForm";
     public static final String BOOLEAN_QUESTION_FORM_KEY = "booleanQuestionForm";
     public static final String BOOLEAN_SEED_QUESTION_KEY = "booleanSeedQuestionName";
@@ -22,6 +23,9 @@ public class CConstants {
     
     //key for finding action forward, from struts-config.xml, used in Action classes
     public static final String SHOW_QUESTION_MAPKEY = "show_question";
+    public static final String SHOW_QUESTIONSETS_MAPKEY = "show_questionsets";
+    public static final String SHOW_QUESTIONSETSFLAT_MAPKEY = "show_questionsetsflat";
+    public static final String PROCESS_QUESTIONSETSFLAT_MAPKEY = "process_questionsetsflat";
     public static final String SHOW_SUMMARY_MAPKEY = "show_summary";
     public static final String SHOW_RECORD_MAPKEY = "show_record";
     public static final String PQ_SHOW_SUMMARY_MAPKEY = "pq_show_summary";
@@ -31,6 +35,7 @@ public class CConstants {
     public static final String GROW_BOOLEAN_MAPKEY = "grow_boolean";
     public static final String GET_BOOLEAN_ANSWER_MAPKEY = "get_boolean_answer";
     public static final String PD_CONFIG_DOWNLOAD_MAPKEY = "pd_config_download";
+    public static final String CONFIG_DOWNLOAD_MAPKEY = "config_download";
     public static final String PD_GET_DOWNLOAD_RESULT_MAPKEY = "pd_get_download_result";
     public static final String GET_DOWNLOAD_RESULT_MAPKEY = "get_download_result";
 

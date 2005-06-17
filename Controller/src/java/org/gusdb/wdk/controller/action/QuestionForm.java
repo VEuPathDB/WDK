@@ -19,26 +19,13 @@ import org.gusdb.wdk.controller.CConstants;
  *  form bean for showing a wdk question from a question set
  */
 
-public class QuestionForm extends ActionForm {
-
-    private Map myProps = new HashMap();
-    private Map myLabels = new HashMap();
-    private Map myValues = new HashMap();
+public class QuestionForm extends QuestionSetForm {
 
     private QuestionBean question = null;
 
     public void reset() {
-	/*
-	QuestionBean wdkQuestion = getQuestion();
-	ParamBean[] params = wdkQuestion.getParams();
-	for (int i=0; i<params.length; i++) {
-	    ParamBean p = params[i];
-	    setMyProp(p.getName(), null);
-	}
-	*/
-	myProps = null;
-	myLabels = null;
-	myValues = null;
+	super.reset();
+	resetMappedProps();
     }
 
     /**
@@ -55,6 +42,8 @@ public class QuestionForm extends ActionForm {
 	}
 
 	QuestionBean wdkQuestion = getQuestion();
+	if (wdkQuestion == null) { return errors; }
+
 	ParamBean[] params = wdkQuestion.getParams();
 	for (int i=0; i<params.length; i++) {
 	    ParamBean p = params[i];
@@ -82,51 +71,6 @@ public class QuestionForm extends ActionForm {
 	}
 	return errors;
     }
-
-    public void setMyProp(String key, String val)
-    {
-	//System.err.println("*** QuestionForm.setMyProp: " + key + " = " + val + "\n");
-	myProps.put(key, val);
-    }
-
-    public void setMyMultiProp(String key, String[] vals)
-    {
-	//System.err.println("*** QuestionForm.setMyMultiProp: " + key + " with " + vals.length + " values\n");
-	myProps.put(key, vals);
-    }
-
-    public String getMyProp(String key)  throws WdkModelException
-    {
-	String res = (String)myProps.get(key);
-	return res;
-    }
-
-    public String[] getMyMultiProp(String key)  throws WdkModelException
-    {
-	String[] res = (String[])myProps.get(key);
-	return res;
-    }
-
-    /* returns a list of labels for a select box */
-    public String[] getLabels(String key) throws WdkModelException
-    {
-	return (String[])myLabels.get(key);
-    }
-
-    /* returns a list of values for a select box */
-    public String[] getValues(String key) throws WdkModelException
-    {
-	return (String[])myValues.get(key);
-    }
-
-    void setMyProps(Map props) { myProps = props; }
-    public Map getMyProps() { return myProps; }
-
-    void setMyLabels (Map lbls) { myLabels = lbls; }
-    Map getMyLabels () { return myLabels; }
-
-    void setMyValues (Map vals) { myValues = vals; }
-    Map getMyValues () { return myValues; }
 
     public void setQuestion(QuestionBean s) { question = s; }
     public QuestionBean getQuestion() { return question; }

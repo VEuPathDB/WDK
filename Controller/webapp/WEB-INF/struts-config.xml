@@ -11,6 +11,7 @@
     <form-bean name="questionForm" type="org.gusdb.wdk.controller.action.QuestionForm"/>
     <form-bean name="booleanQuestionForm" type="org.gusdb.wdk.controller.action.BooleanQuestionForm"/>
     <form-bean name="downloadForm" type="org.gusdb.wdk.controller.action.DownloadForm"/>
+    <form-bean name="downloadConfigForm" type="org.gusdb.wdk.controller.action.DownloadConfigForm"/>
   </form-beans>
 
   <global-exceptions>
@@ -32,6 +33,28 @@
       name="questionSetForm"
       input="/questionSets.jsp">
       <forward name="show_question" path="/question.jsp"/>
+    </action>
+    <action
+      path="/showQuestionSets"
+      type="org.gusdb.wdk.controller.action.ShowQuestionSetsAction"
+      scope="session"
+      name="questionSetForm">
+      <forward name="show_questionsets" path="/questionSets.jsp"/>
+    </action>
+    <action
+      path="/showQuestionSetsFlat"
+      type="org.gusdb.wdk.controller.action.ShowQuestionSetsFlatAction"
+      scope="session"
+      name="questionSetForm">
+      <forward name="show_questionsetsflat" path="/questionSetsFlat.jsp"/>
+    </action>
+    <action
+      path="/processQuestionSetsFlat"
+      type="org.gusdb.wdk.controller.action.ProcessQuestionSetsFlatAction"
+      scope="session"
+      name="questionSetForm"
+      input="/question.jsp">
+      <forward name="process_questionsetsflat" path="/processQuestion.do"/>
     </action>
     <action
        path="/processQuestion"
@@ -96,6 +119,13 @@
       scope="request">
       <forward name="pd_config_download" path="/downloadConfig.jsp"/>
       <forward name="pd_get_download_result" path="/getDownloadResult.do"/>
+    </action>
+    <action
+      path="/configDownload"
+      type="org.gusdb.wdk.controller.action.ConfigDownloadAction"
+      name="downloadConfigForm"
+      scope="request">
+      <forward name="config_download" path="/getDownloadResult.do"/>
     </action>
     <action
       path="/getDownloadResult"
