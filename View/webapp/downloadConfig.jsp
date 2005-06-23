@@ -8,9 +8,8 @@
 <!-- get wdkAnswer from requestScope -->
 <c:set value="${sessionScope.wdkAnswer}" var="wdkAnswer"/>
 
-<!-- display page header with wdkAnswer's recordClass's type as banner -->
-<c:set value="${wdkAnswer.recordClass.type}" var="wdkAnswerType"/>
-<site:header banner="${wdkAnswerType} Results" />
+<!-- display page header -->
+<site:header banner="Create and download a report" />
 
 <!-- display question and param values and result size for wdkAnswer -->
 <c:choose>
@@ -53,18 +52,23 @@
 
 <!-- content of current page -->
 <html:form method="get" action="configDownload">
-  <c:forEach items="${wdkAnswer.summaryAttributeNames}" var="recAttrName">
-    <c:set value="${wdkAnswer.question.recordClass.attributeFields[recAttrName]}" var="recAttr"/>
-    <c:if test="${!recAttr.isInternal}">
-      <html:multibox property="selectedFields">
-        ${recAttr.name}
-      </html:multibox>
-        ${recAttr.displayName}
-    </c:if>
-  </c:forEach>
-  <br><br>
-  <html:submit property="downloadConfigSubmit" value="Continue"/>
-  <html:reset property="downloadConfigReset" value="Reset"/>
+  <table>
+  <tr><td><b>Choose attributes: </b></td>
+      <td><c:forEach items="${wdkAnswer.summaryAttributeNames}" var="recAttrName">
+            <c:set value="${wdkAnswer.question.recordClass.attributeFields[recAttrName]}" var="recAttr"/>
+            <c:if test="${!recAttr.isInternal}">
+              <html:multibox property="selectedFields">
+                ${recAttr.name}
+              </html:multibox>
+              ${recAttr.displayName}
+            </c:if>
+          </c:forEach>
+        </td></tr>
+  <tr><td colspan="2">&nbsp;</td></tr>
+  <tr><td></td>
+      <td><html:submit property="downloadConfigSubmit" value="Continue"/>
+          <html:reset property="downloadConfigReset" value="Reset"/>
+      </td></tr></table>
 </html:form>
 
   </c:otherwise>
