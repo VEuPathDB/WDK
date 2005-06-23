@@ -18,7 +18,7 @@
     <!-- boolean question -->
 
     <table><tr><td valign="top" align="left"><b>Expanded Question:</b></td>
-               <td valign="top" align="left">
+               <td colspan="3" valign="top" align="left">
                  <nested:root name="wdkAnswer">
                    <jsp:include page="/WEB-INF/includes/bqShowNode.jsp"/>
                  </nested:root>
