@@ -18,7 +18,7 @@
     <!-- boolean question -->
 
     <table><tr><td valign="top" align="left"><b>Expanded Question:</b></td>
-               <td colspan="3" valign="top" align="left">
+               <td valign="top" align="left">
                  <nested:root name="wdkAnswer">
                    <jsp:include page="/WEB-INF/includes/bqShowNode.jsp"/>
                  </nested:root>
@@ -27,11 +27,11 @@
                <td valign="top" align="left">
                    ${wdkAnswer.resultSize}
                    <c:if test="${wdkAnswer.resultSize > 0}">
-                   (showing ${wdk_paging_start} to ${wdk_paging_end})</c:if></td>
-               <td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
-               <td align="right"><html:form method="get" action="/processDownload.do">
-                                 <html:submit value="Download"/>
-                                 <html:checkbox property="chooseFields"/> select attributes
+                   (showing ${wdk_paging_start} to ${wdk_paging_end})</c:if></td></tr>
+           <tr><td>&nbsp;</td>
+               <td align="left"><html:form method="get" action="/processDownload.do">
+                                 <html:submit value="Download a report of this result"/>
+                                 (<html:checkbox property="chooseFields"/>select attributes)
                                  </html:form></td></tr>
     </table>
   </c:when>
@@ -42,7 +42,7 @@
     <table><tr><td valign="top" align="left"><b>Query:</b></td>
                <td colspan="3" valign="top" align="left">${wdkQuestionName}</td></tr>
            <tr><td valign="top" align="left"><b>Parameters:</b></td>
-               <td colspan="3" valign="top" align="left">
+               <td valign="top" align="left">
                  <table>
                    <c:forEach items="${params}" var="p">
                      <tr><td align="right">${p.key}:</td><td><i>${p.value}</i></td></tr> 
@@ -52,11 +52,11 @@
                <td valign="top" align="left">
                    ${wdkAnswer.resultSize}
                    <c:if test="${wdkAnswer.resultSize > 0}">
-                   (showing ${wdk_paging_start} to ${wdk_paging_end})</c:if></td>
-               <td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
-               <td align="right"><html:form method="get" action="/processDownload.do">
-                                 <html:submit value="Download"/>
-                                 <html:checkbox property="chooseFields"/> select attributes
+                   (showing ${wdk_paging_start} to ${wdk_paging_end})</c:if></td></tr>
+           <tr><td>&nbsp;</td>
+               <td align="left"><html:form method="get" action="/processDownload.do">
+                                 <html:submit value="Download a report of this result"/>
+                                 (<html:checkbox property="chooseFields"/>select attributes)
                                  </html:form></td></tr>
     </table>
   </c:otherwise>
