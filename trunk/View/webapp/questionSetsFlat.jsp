@@ -22,6 +22,8 @@
 <!-- show all questionSets in model -->
 <table width="100%">
 <c:set value="${wdkModel.questionSets}" var="questionSets"/>
+
+<c:set var="i" value="0"/>
 <c:forEach items="${questionSets}" var="qSet">
   <c:if test="${qSet.isInternal == false}">
     <c:set value="${qSet.name}" var="qSetName"/>
@@ -30,7 +32,15 @@
     <c:forEach items="${questions}" var="q">
       <c:set value="${q.name}" var="qName"/>
       <c:set value="${q.displayName}" var="qDispName"/>
-      <tr><td><!-- display description for wdkQuestion -->
+
+      <!-- color adjacent questions differently -->
+      <c:choose>
+        <c:when test="${i % 2 == 0}"><tr class="rowLight"></c:when>
+        <c:otherwise><tr class="rowMedium"></c:otherwise>
+      </c:choose>
+      <c:set var="i" value="${i+1}"/>
+
+      <td><!-- display description for wdkQuestion -->
         <p><b><jsp:getProperty name="q" property="description"/></b></p>
 
           <html:form method="get" action="/processQuestionSetsFlat.do">
@@ -41,18 +51,19 @@
 
           <!-- put an anchor here for linking back from help sections -->
           <A name="${fromAnchorQ}"></A>
-          <table>
+          <table width="95%">
             <c:set value="${q.params}" var="qParams"/>
             <c:forEach items="${qParams}" var="qP">
-            <!-- an individual param (can not use fullName, w/ '.', for mapped props) -->
+              <!-- an individual param (can not use fullName, w/ '.', for mapped props) -->
               <c:set value="${qP.name}" var="pNam"/>
               <c:set value="${qSetName}_${qName}_${pNam}" var="pNamKey"/>           
-              <tr><td align="right"><b><jsp:getProperty name="qP" property="prompt"/></b></td>
+              <tr>
+                <td width="30%" align="right"><b><jsp:getProperty name="qP" property="prompt"/></b></td>
 
                 <!-- choose between flatVocabParam and straight text or number param -->
+                <td>
                 <c:choose>
                 <c:when test="${qP.class.name eq 'org.gusdb.wdk.model.jspwrap.FlatVocabParamBean'}">
-                  <td>
                   <c:set var="opt" value="0"/>
                   <c:choose>
                     <c:when test="${qP.multiPick}">
@@ -74,14 +85,12 @@
                       </html:select>
                     </c:otherwise>
                   </c:choose>
-                  </td>
                 </c:when>
                 <c:otherwise>
-                <td>
                   <html:text property="myProp(${pNamKey})"/>
-                </td>
                 </c:otherwise>
                 </c:choose>
+                </td>
 
                 <td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
                 <td>
@@ -94,14 +103,15 @@
             </c:forEach>
             <c:set target="${helps}" property="${fromAnchorQ}" value="${helpQ}"/>
 
-            <tr><td></td>
-               <td><html:submit property="questionSubmit" value="Get Answer"/></td>
-               <td><html:submit property="questionSubmit" value="Expand Question"/></td></tr>
+            <tr><td width="30%" align="right">&nbsp</td>
+               <td colspan="3"><html:submit property="questionSubmit" value="Get Answer"/>
+                               <html:submit property="questionSubmit" value="Expand Question"/></td>
+            </tr>
           </table>
           </html:form>
 
         </td></tr>
-        <tr bgcolor="lightblue"><td></td></tr>
+
       </c:forEach>
    </c:if>
 </c:forEach>
