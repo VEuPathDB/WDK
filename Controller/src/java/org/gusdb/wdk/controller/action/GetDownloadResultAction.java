@@ -26,7 +26,8 @@ import org.gusdb.wdk.model.jspwrap.RecordBean;
 //HACK: this class is outside of jspwrap
 //      This will not be necessary when we move the download result formatting into AnswerBean
 import org.gusdb.wdk.model.AttributeFieldValue;
-//import org.gusdb.wdk.model.jspwrap.BooleanQuestionLeafBean;
+import org.gusdb.wdk.model.jspwrap.BooleanQuestionLeafBean;
+import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
 
 /**
  * This Action is called by the ActionServlet when a download submit is made.
@@ -47,6 +48,20 @@ public class GetDownloadResultAction extends Action {
 	Map params = (Map)request.getSession().getAttribute(CConstants.WDK_QUESTION_PARAMS_KEY);
 	QuestionBean wdkQuestion = (QuestionBean)wdkAnswer.getQuestion();
 
+	Object root = request.getSession().getAttribute(CConstants.CURRENT_BOOLEAN_ROOT_KEY);
+	BooleanQuestionNodeBean rootNode = null;
+	if (root != null) {
+	    if (root instanceof BooleanQuestionLeafBean) {
+		BooleanQuestionLeafBean rootLeaf = (BooleanQuestionLeafBean)root;
+		wdkQuestion = rootLeaf.getQuestion();
+		BooleanQuestionForm bqf = (BooleanQuestionForm)request.getSession()
+		    .getAttribute(CConstants.BOOLEAN_QUESTION_FORM_KEY);
+		params = GetBooleanAnswerAction.getParamsFromForm(bqf, rootLeaf);
+	    } else {
+		rootNode = (BooleanQuestionNodeBean)root;
+	    }
+	}
+
 	String newLine = System.getProperty("line.separator");
 	String tab = "\t";
 	String[] downloadAttrs = wdkAnswer.getDownloadAttributeNames();
@@ -60,7 +75,11 @@ public class GetDownloadResultAction extends Action {
 	for (int i=1; i<=resultSize; i+=pageSize) {
 	    int j = i+pageSize;
 	    if (j>resultSize+1) { j = resultSize+1; }
-	    wdkAnswer = wdkQuestion.makeAnswer(params, i, j-1); 
+	    if (rootNode == null) {
+		wdkAnswer = wdkQuestion.makeAnswer(params, i, j-1);
+	    } else {
+		wdkAnswer = rootNode.makeAnswer(i, j-1);
+	    }
 	    Iterator records = wdkAnswer.getRecords();
 	    while (records.hasNext()) {
 		RecordBean rec = (RecordBean)records.next();

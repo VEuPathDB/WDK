@@ -72,8 +72,19 @@ public class GetBooleanAnswerAction extends ShowSummaryAction {
 	    answer = booleanAnswerPaging(request, rootNode);
 	}
 
-	answer.resetAnswerRowCursor();
-	request.setAttribute(CConstants.WDK_ANSWER_KEY, answer);
+	request.getSession().setAttribute(CConstants.WDK_ANSWER_KEY, answer);
+	request.getSession().setAttribute(CConstants.BOOLEAN_QUESTION_FORM_KEY, bqf);
+
+	/*DEBUG
+	  System.err.println("DEBUG GBAA: reset cursor on boolean answer before listing");
+	  answer.resetAnswerRowCursor();
+	  java.util.Iterator it = answer.getRecords();
+	  while (it.hasNext()) {
+	  System.err.println("DEBUG GBAA: record is: " + (org.gusdb.wdk.model.jspwrap.RecordBean)it.next());
+	  }
+	  System.err.println("DEBUG GBAA: reset cursor on boolean answer after listing");
+	  answer.resetAnswerRowCursor();
+	*/
 	
 	ActionForward forward = mapping.findForward(CConstants.GET_BOOLEAN_ANSWER_MAPKEY);
 	return forward;
@@ -89,7 +100,7 @@ public class GetBooleanAnswerAction extends ShowSummaryAction {
 	node.setValues(values);
     }
 
-    private Hashtable getParamsFromForm(BooleanQuestionForm bqf, BooleanQuestionLeafBean leaf){
+    static Hashtable getParamsFromForm(BooleanQuestionForm bqf, BooleanQuestionLeafBean leaf){
 
 	Integer leafId = leaf.getLeafId();
 	String leafPrefix = leafId.toString() + "_";

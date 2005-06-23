@@ -36,8 +36,8 @@ public class ShowQuestionAction extends Action {
 	request.getSession().setAttribute(CConstants.WDK_QUESTION_KEY, wdkQuestion);
 
 	QuestionForm qForm = prepareQuestionForm(wdkQuestion);
-	//request.getSession().setAttribute(CConstants.QUESTIONFORM_KEY, qForm);
-	//request.getSession().setAttribute(CConstants.WDK_QUESTION_KEY, wdkQuestion);
+	request.getSession().setAttribute(CConstants.QUESTIONFORM_KEY, qForm);
+	request.getSession().setAttribute(CConstants.WDK_QUESTION_KEY, wdkQuestion);
 
 	ActionForward forward = mapping.findForward(CConstants.SHOW_QUESTION_MAPKEY);
 	return forward;
