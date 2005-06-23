@@ -61,6 +61,9 @@ public class ShowSummaryAction extends Action {
 		
 	AnswerBean wdkAnswer = summaryPaging(request, wdkQuestion, params);
 
+	//clear boolean root from session to prevent interference
+	request.getSession().setAttribute(CConstants.CURRENT_BOOLEAN_ROOT_KEY, null);
+
 	request.getSession().setAttribute(CConstants.WDK_ANSWER_KEY, wdkAnswer);
 	request.getSession().setAttribute(CConstants.WDK_QUESTION_PARAMS_KEY, params);
 	
