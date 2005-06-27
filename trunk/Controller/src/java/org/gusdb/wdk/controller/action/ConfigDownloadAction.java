@@ -39,9 +39,8 @@ public class ConfigDownloadAction extends Action {
 	Map downloadConfigMap = new HashMap();
 	DownloadConfigForm downloadConfigForm = (DownloadConfigForm)form;
 	String [] selectedFields = downloadConfigForm.getSelectedFields();
-	System.err.println("DEBUG: ConfigDownloadAction: num selected fields: " + selectedFields.length);
 	for (int i=0; i<selectedFields.length; i++) {
-	    System.err.println("DEBUG: ConfigDownloadAction: selected field: " + selectedFields[i]);
+	    //System.err.println("DEBUG: ConfigDownloadAction: selected field: " + selectedFields[i]);
 	    downloadConfigMap.put(selectedFields[i], new Integer(1));
 	}
 
