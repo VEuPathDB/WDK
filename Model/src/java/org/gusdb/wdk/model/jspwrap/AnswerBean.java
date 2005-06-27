@@ -125,7 +125,7 @@ public class AnswerBean {
 	Vector v = new Vector();
 	for (int i=0; i<sumAttrNames.length; i++) {
 	    String attrName = sumAttrNames[i];
-	    if (downloadConfigMap == null) {
+	    if (downloadConfigMap == null || downloadConfigMap.size() == 0) {
 		v.add(attrName);
 	    } else {
 		Object configStatus = downloadConfigMap.get(attrName);

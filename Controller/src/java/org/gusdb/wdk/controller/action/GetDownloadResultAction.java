@@ -42,7 +42,6 @@ public class GetDownloadResultAction extends Action {
 				 HttpServletRequest request,
 				 HttpServletResponse response) throws Exception {
 
-	StringBuffer downloadResult = new StringBuffer("#");
 	AnswerBean wdkAnswer = (AnswerBean)request.getSession().getAttribute(CConstants.WDK_ANSWER_KEY);
 	int resultSize = wdkAnswer.getResultSize();
 	Map params = (Map)request.getSession().getAttribute(CConstants.WDK_QUESTION_PARAMS_KEY);
@@ -65,10 +64,18 @@ public class GetDownloadResultAction extends Action {
 	String newLine = System.getProperty("line.separator");
 	String tab = "\t";
 	String[] downloadAttrs = wdkAnswer.getDownloadAttributeNames();
-	for (int i=0; i<downloadAttrs.length; i++) {
-	    downloadResult.append(downloadAttrs[i] + tab);
+
+
+	StringBuffer downloadResult = new StringBuffer();
+	boolean incHeader = new String(CConstants.YES)
+	    .equals(request.getParameter(CConstants.DOWNLOAD_INCLUDE_HEADER));
+	if (incHeader) {
+	    downloadResult.append("#");
+	    for (int i=0; i<downloadAttrs.length; i++) {
+		downloadResult.append(downloadAttrs[i] + tab);
+	    }
+	    downloadResult.append(newLine);
 	}
-	downloadResult.append(newLine);
 
 	//wdkAnswer.resetAnswerRowCursor();
 	int pageSize = 100;

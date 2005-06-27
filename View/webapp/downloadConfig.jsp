@@ -11,6 +11,9 @@
 <!-- display page header -->
 <site:header banner="Create and download a report" />
 
+<!-- display description for page -->
+<p><b>Generate a tab delimited text report of selected attributes for the question below, with an optional header line of attribute names.</b></p>
+
 <!-- display question and param values and result size for wdkAnswer -->
 <c:choose>
   <c:when test="${wdkAnswer.isBoolean}">
@@ -54,7 +57,8 @@
 <html:form method="get" action="configDownload">
   <table>
   <tr><td><b>Choose attributes: </b></td>
-      <td><c:forEach items="${wdkAnswer.summaryAttributeNames}" var="recAttrName">
+      <td>Download all attributes or choose from the below:<br>
+            <c:forEach items="${wdkAnswer.summaryAttributeNames}" var="recAttrName">
             <c:set value="${wdkAnswer.question.recordClass.attributeFields[recAttrName]}" var="recAttr"/>
             <c:if test="${!recAttr.isInternal}">
               <html:multibox property="selectedFields">
@@ -63,6 +67,10 @@
               ${recAttr.displayName}
             </c:if>
           </c:forEach>
+        </td></tr>
+  <tr><td><b>Choose header line: </b></td>
+      <td><html:radio property="includeHeader" value="yes">include</html:radio>
+          <html:radio property="includeHeader" value="no">exclude</html:radio>
         </td></tr>
   <tr><td colspan="2">&nbsp;</td></tr>
   <tr><td></td>

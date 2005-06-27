@@ -8,10 +8,11 @@ import org.apache.struts.action.ActionForm;
 
 public class DownloadConfigForm extends ActionForm {
 
-    private String[] selectedFields = null;
+    private String[] selectedFields = new String[0];
+    private String includeHeader = "yes";
 
     public void setSelectedFields(String[] selectedFields) {
-	System.err.println("DEBUG: DownloadConfigForm: setting selectedFields with num elememnts: " + selectedFields.length);
+	//System.err.println("DEBUG: DownloadConfigForm: setting selectedFields with num elememnts: " + selectedFields.length);
 	this.selectedFields = selectedFields;
     }
 
@@ -19,5 +20,11 @@ public class DownloadConfigForm extends ActionForm {
 	return this.selectedFields;
     }
 
+    public void setIncludeHeader(String incHeader) {
+	includeHeader = incHeader;
+    }
 
+    public String getIncludeHeader() {
+	return this.includeHeader;
+    }
 }

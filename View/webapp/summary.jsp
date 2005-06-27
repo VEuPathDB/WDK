@@ -29,10 +29,8 @@
                    <c:if test="${wdkAnswer.resultSize > 0}">
                    (showing ${wdk_paging_start} to ${wdk_paging_end})</c:if></td></tr>
            <tr><td>&nbsp;</td>
-               <td align="left"><html:form method="get" action="/processDownload.do">
-                                 <html:submit value="Download a report of this result"/>
-                                 (<html:checkbox property="chooseFields"/>select attributes)
-                                 </html:form></td></tr>
+               <td align="left"><a href="downloadConfig.jsp">Download a report of this result</a>
+               </td></tr>
     </table>
   </c:when>
   <c:otherwise>
@@ -54,10 +52,8 @@
                    <c:if test="${wdkAnswer.resultSize > 0}">
                    (showing ${wdk_paging_start} to ${wdk_paging_end})</c:if></td></tr>
            <tr><td>&nbsp;</td>
-               <td align="left"><html:form method="get" action="/processDownload.do">
-                                 <html:submit value="Download a report of this result"/>
-                                 (<html:checkbox property="chooseFields"/>select attributes)
-                                 </html:form></td></tr>
+               <td align="left"><a href="downloadConfig.jsp">Download a report of this result</a>
+               </td></tr>
     </table>
   </c:otherwise>
 </c:choose>
