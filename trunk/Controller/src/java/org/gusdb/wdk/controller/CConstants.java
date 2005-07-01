@@ -47,6 +47,7 @@ public class CConstants {
     public static final String PD_CHOOSE_KEY = "chooseFields"; //match summary.jsp 
     public static final String DOWNLOAD_INCLUDE_HEADER = "includeHeader"; //match downloadConfig.jsp
     public static final String YES = "yes"; //match downloadConfig.jsp
+    public static final String ALL = "all"; //match downloadConfig.jsp
 
     //used in action, action forms, and jsp pages
     public static final String NEXT_QUESTION_OPERAND_SUFFIX = "_nextQuestionOperand"; //match WEB-INF/includes/booleanQuestionNode.jsp

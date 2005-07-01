@@ -1,6 +1,7 @@
 package org.gusdb.wdk.controller.action;
 
 import org.apache.struts.action.ActionForm;
+import org.gusdb.wdk.controller.CConstants;
 
 /**
  *  form bean for download
@@ -8,7 +9,7 @@ import org.apache.struts.action.ActionForm;
 
 public class DownloadConfigForm extends ActionForm {
 
-    private String[] selectedFields = new String[0];
+    private String[] selectedFields = new String[] { CConstants.ALL };
     private String includeHeader = "yes";
 
     public void setSelectedFields(String[] selectedFields) {

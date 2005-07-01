@@ -21,7 +21,7 @@
 
   <table width="100%">
   <tr><td colspan="2" align="center">
-      <em><b>Please do not use the browser's "back" button. Start over from a simple question instead.</b></em><br><br>
+      <em><b>Please do not use the browser's "back" button. Start over from a simple question instead </b></em> (<a href="<c:url value="/" />">click here</a>).<br><br>
       <b>After finished expanding the question and setting parameters:</b></td></tr>
   <tr><td align="right"><html:submit property="process_boolean_question" value="Retrieve Answer"/></td>
       <td align="left"><html:reset property="reset_all_param" value="Reset All Parameters"/></td></tr>

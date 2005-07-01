@@ -41,7 +41,9 @@ public class ConfigDownloadAction extends Action {
 	String [] selectedFields = downloadConfigForm.getSelectedFields();
 	for (int i=0; i<selectedFields.length; i++) {
 	    //System.err.println("DEBUG: ConfigDownloadAction: selected field: " + selectedFields[i]);
-	    downloadConfigMap.put(selectedFields[i], new Integer(1));
+	    if (!CConstants.ALL.equals(selectedFields[i])) {
+		downloadConfigMap.put(selectedFields[i], new Integer(1));
+	    }
 	}
 
 	AnswerBean wdkAnswer = (AnswerBean)request.getSession().getAttribute(CConstants.WDK_ANSWER_KEY);
