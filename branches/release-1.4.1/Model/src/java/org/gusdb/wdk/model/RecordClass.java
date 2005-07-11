@@ -47,6 +47,26 @@ public class RecordClass {
      */
     private HashMap nestedRecordListQuestions;
 
+
+    /**
+     * Added by Jerric
+     * The delimiter used by two-part primary key, ":" by default
+     */
+    private String              delimiter                    = ":";
+
+    /**
+     * Added by Jerric
+     * The PrimaryKeyField of a RecordClass
+     */
+    private PrimaryKeyField     primaryKeyField;
+
+    /**
+     * Added by Jerric
+     * The reference for a FlatVocabParam that contains project info. It can be
+     * optional
+     */
+    private Reference           projectParamRef;
+
     public RecordClass() {
 	// make sure these keys are at the front of the list
 	// (don't assume setType is called before adding attributes)
@@ -68,11 +88,28 @@ public class RecordClass {
     
     public void setType(String type) {
         this.type = type;
-	PrimaryKeyField pkField = 
-	    new PrimaryKeyField(PRIMARY_KEY_NAME, getType(),
-				"Some help here");
-	attributeFieldsMap.put(PRIMARY_KEY_NAME, pkField);	    
-	fieldsMap.put(PRIMARY_KEY_NAME, pkField);	    
+        // Modified by Jerric
+//	PrimaryKeyField pkField = 
+//	    new PrimaryKeyField(PRIMARY_KEY_NAME, getType(),
+//				"Some help here");
+//	attributeFieldsMap.put(PRIMARY_KEY_NAME, pkField);	    
+//	fieldsMap.put(PRIMARY_KEY_NAME, pkField);	    
+    }
+
+    /**
+     * Added by Jerric
+     * @param delimiter
+     */
+    public void setDelimiter(String delimiter) {
+        this.delimiter = delimiter;
+    }
+
+    /**
+     * Added by Jerric
+     * @param projectParamRef
+     */
+    public void setProjectParamRef(Reference projectParamRef) {
+        this.projectParamRef = projectParamRef;
     }
 
     /** 
@@ -233,6 +270,22 @@ public class RecordClass {
     public Reference getReference() throws WdkModelException {
         return new Reference(getFullName());
     }
+    
+    /**
+     * Added by Jerric
+     * @return returns the delimiter for separating projectID & primaryKey
+     */
+    public String getDelimiter() {
+        return delimiter;
+    }
+    
+    /**
+     * Added by Jerric
+     * @return
+     */
+    public PrimaryKeyField getPrimaryKeyField() {
+        return primaryKeyField;
+    }
 
     public RecordInstance makeRecordInstance() {
         return new RecordInstance(this);
@@ -338,7 +391,27 @@ public class RecordClass {
     }
     
     void resolveReferences(WdkModel model) throws WdkModelException {
+        // Added by Jerric
+        // resolve projectParam
+        FlatVocabParam projectParam = null;
+        if (projectParamRef != null) {
+            projectParam = (FlatVocabParam) model.resolveReference(
+                    projectParamRef.getTwoPartName(), 
+                    getName(),  
+                    this.getClass().getName(), 
+                    "projectParamRef");
+        }
         
+        // create PrimaryKeyField
+         PrimaryKeyField pkField = new PrimaryKeyField(PRIMARY_KEY_NAME, 
+                 getType(),
+                 "Some help here", 
+                 projectParam);
+         pkField.setIdPrefix(this.idPrefix);
+         pkField.setDelimiter(this.delimiter);
+         attributeFieldsMap.put(PRIMARY_KEY_NAME, pkField);
+         fieldsMap.put(PRIMARY_KEY_NAME, pkField);
+                
         Iterator fQueryRefs = attributesQueryRefs.iterator();
         while (fQueryRefs.hasNext()) {
             String queryName = (String)fQueryRefs.next();

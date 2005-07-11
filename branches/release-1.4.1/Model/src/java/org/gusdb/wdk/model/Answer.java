@@ -30,6 +30,11 @@ public class Answer {
     private RecordInstance[] recordInstances;
 
     private String listPrimaryKeyName;
+    
+    /**
+     * Added by Jerric - the column name of project 
+     */
+    private String listProjectName;
 
     private Question question;
 
@@ -222,11 +227,38 @@ public class Answer {
 	    if (counter >= startRow && counter <= endRow){
 		RecordInstance nextRecordInstance = getQuestion().getRecordClass().makeRecordInstance();
 		Column[] columns = query.getColumns();
-		String primaryKeyName = columns[0].getName();
-		this.listPrimaryKeyName = primaryKeyName;
-		String primaryKey = 
-		    rl.getAttributeFieldValue(primaryKeyName).getValue().toString();
-		nextRecordInstance.setPrimaryKey(primaryKey);
+        
+        // Modified by Jerric
+
+//		String primaryKeyName = columns[0].getName();
+//		this.listPrimaryKeyName = primaryKeyName;
+//		String primaryKey = 
+//		    rl.getAttributeFieldValue(primaryKeyName).getValue().toString();
+//		nextRecordInstance.setPrimaryKey(primaryKey);
+        // check columns for project id and primary key
+        String projectName, localPKName;
+        
+        if (columns.length == 1) {  // only present primary key
+            projectName = null;
+            localPKName = columns[0].getName();
+        } else {    
+            // having two columns, one is for primary key and one for project ID
+            projectName = columns[0].getName();
+            if (projectName.toUpperCase().indexOf("PROJECT")!= -1) {
+                localPKName = columns[1].getName();
+            } else {
+                localPKName = projectName;
+                projectName = columns[1].getName();
+            }
+        }
+        this.listPrimaryKeyName = localPKName;
+        this.listProjectName = projectName;
+        
+        String projectID = null;
+        if (projectName != null)
+            projectID = rl.getAttributeFieldValue(projectName).getValue().toString();
+        String localPK = rl.getAttributeFieldValue(localPKName).getValue().toString();
+        nextRecordInstance.setPrimaryKey(projectID, localPK);
 		
 		nextRecordInstance.setAnswer(this);
 		tempRecordInstances.add(nextRecordInstance);
@@ -248,7 +280,9 @@ public class Answer {
     void setMultiMode(QueryInstance instance) throws WdkModelException{
         
         String resultTableName = queryInstance.getResultAsTable();
-        instance.setMultiModeValues(resultTableName, listPrimaryKeyName, startRow, endRow);
+        // Modified by Jerric
+//        instance.setMultiModeValues(resultTableName, listPrimaryKeyName, startRow, endRow);
+        instance.setMultiModeValues(resultTableName, listProjectName, listPrimaryKeyName, startRow, endRow);
     }
     void setQueryResult(ResultList resultList) throws WdkModelException {
     

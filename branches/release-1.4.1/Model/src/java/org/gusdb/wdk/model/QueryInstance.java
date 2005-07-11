@@ -35,6 +35,11 @@ public abstract class QueryInstance {
 
     protected String pkToJoinWith;
     
+    /**
+     * Added by Jerric - project column name to be joined with
+     */
+    protected String projectToJoinWith;
+    
     protected int startId;
     
     protected int endId;
@@ -93,13 +98,22 @@ public abstract class QueryInstance {
 	this.queryInstanceId = queryInstanceId;
     }
 
-    void setMultiModeValues(String resultTableName, String pkToJoinWith, int startId, int endId){
+    /**
+     * Modified by Jerric - add project column to join with
+     * @param resultTableName
+     * @param projectToJoinWith
+     * @param pkToJoinWith
+     * @param startId
+     * @param endId
+     */
+    void setMultiModeValues(String resultTableName,String projectToJoinWith, String pkToJoinWith, int startId, int endId){
 
-	this.multiModeResultTableName = resultTableName;
-	this.pkToJoinWith = pkToJoinWith;
-	this.startId = startId;
-	this.endId = endId;
-	this.inMultiMode = true;
+    this.multiModeResultTableName = resultTableName;
+    this.projectToJoinWith = projectToJoinWith;
+    this.pkToJoinWith = pkToJoinWith;
+    this.startId = startId;
+    this.endId = endId;
+    this.inMultiMode = true;
     }
 
     public abstract Collection getCacheValues() throws WdkModelException;

@@ -44,7 +44,12 @@ public class RecordTester {
 	File schemaFile = new File(System.getProperty("schemaFile"));
 
 	String recordClassFullName = cmdLine.getOptionValue("record");
-	String primaryKey = cmdLine.getOptionValue("primaryKey");
+
+    // modified by Jerric, and make projectID optional
+    String projectID = null;
+    if (cmdLine.hasOption("project")) 
+        projectID = cmdLine.getOptionValue("project");
+    String primaryKey = cmdLine.getOptionValue("primaryKey");
 
 	try {
 	    
@@ -57,7 +62,8 @@ public class RecordTester {
 	    RecordClassSet recordClassSet = wdkModel.getRecordClassSet(recordClassSetName);
 	    RecordClass recordClass = recordClassSet.getRecordClass(recordClassName);
 	    RecordInstance recordInstance = recordClass.makeRecordInstance();
-	    recordInstance.setPrimaryKey(primaryKey);
+        
+	    recordInstance.setPrimaryKey(projectID, primaryKey);
 	    System.out.println( recordInstance.print() );
 
         } catch (WdkUserException e) {
@@ -88,6 +94,11 @@ public class RecordTester {
 	// record name
 	addOption(options, "record", "The full name (set.element) of the record to print.");
 
+    // by Jerric - project ID
+    // use cache
+    Option project = new Option("project",true, "The unique project ID of the GUS instance.");
+    options.addOption(project);
+
 	// primary key
 	addOption(options, "primaryKey", "The primary key of the record to find.");
 	
@@ -117,10 +128,12 @@ public class RecordTester {
     static void usage(String cmdName, Options options) {
 
 	String newline = System.getProperty( "line.separator" );
+    // modified by jerric - add projectID option
 	String cmdlineSyntax = 
 	    cmdName + 
 	    " -model model_name" +
 	    " -record full_record_name" +
+        " -project project_id" +
 	    " -primaryKey primary_key";
 
 	String header = 

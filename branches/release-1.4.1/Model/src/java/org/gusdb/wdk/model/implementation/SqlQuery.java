@@ -3,6 +3,9 @@ package org.gusdb.wdk.model.implementation;
 import java.lang.StringBuffer;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.Query;
@@ -71,31 +74,122 @@ public class SqlQuery extends Query {
        return buf;
     }
 
+    /**
+     * Added by Jerric - the method handles union queries for federation that
+     * used caching table
+     * @param resultTableName
+     * @param pkValue
+     * @param startId
+     * @param endId
+     * @param initSql
+     * @return
+     */
+    protected String addUnionMultiModeConstraints(String resultTableName,
+            String pkValue, int startId, int endId, String initSql) {
+        StringBuffer sb = new StringBuffer();
+        String subSql;
+
+        String regex = "\\b(union|except|intersect)(\\s+all)?\\b";
+        Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+        Matcher match = pattern.matcher(initSql);
+        int prev = 0;
+
+        while (match.find()) {
+            subSql = initSql.substring(prev, match.start()).trim();
+            subSql = addMultiModeConstraints(resultTableName, pkValue, startId,
+                    endId, subSql);
+            sb.append(subSql.trim());
+            sb.append(' ');
+            sb.append(match.group());
+            sb.append(' ');
+            prev = match.end();
+        }
+        // handle the last part
+        subSql = initSql.substring(prev).trim();
+        subSql = addMultiModeConstraints(resultTableName, pkValue, startId,
+                endId, subSql);
+        sb.append(subSql.trim());
+        
+        // now create an outer query that handles ORDER BY
+        String head = "SELECT * FROM ( ";
+        String nestedSql = sb.toString().trim();
+        String orderBy = " ) ORDER BY " + ResultFactory.MULTI_MODE_I;
+        return head + nestedSql + orderBy;
+    }
+
+    /**
+     * Modified by Jerric
+     * @param resultTableName
+     * @param pkValue
+     * @param startId
+     * @param endId
+     * @param initSql
+     * @return
+     */
     protected String addMultiModeConstraints(String resultTableName, String pkValue, int startId, 
 					     int endId, String initSql){
 
 	StringBuffer initSqlBuf = new StringBuffer(initSql);
-	int selectEnds = initSqlBuf.indexOf("select") + 6;
-	if (selectEnds == -1){
-	    selectEnds = initSqlBuf.indexOf("SELECT") + 6;
-	}
+
+    // check if the query is surrounded by a pair of parenthesis; if so,
+    // remove it
+    boolean hasParenthesis = false;
+    if (initSqlBuf.charAt(0) == '('
+            && initSqlBuf.charAt(initSqlBuf.length() - 1) == ')') {
+        hasParenthesis = true;
+        initSqlBuf.deleteCharAt(initSqlBuf.length() - 1);
+        initSqlBuf.deleteCharAt(0);
+    }
+
+//    int selectEnds = initSqlBuf.indexOf("select") + 6;
+//	if (selectEnds == -1){
+//	    selectEnds = initSqlBuf.indexOf("SELECT") + 6;
+//	}
+
+    // the first select may be upper case
+    // int selectEnds = initSqlBuf.indexOf("select") + 6;
+    // if (selectEnds == -1){
+    // selectEnds = initSqlBuf.indexOf("SELECT") + 6;
+    // }
+    
+    int selectEnds = initSqlBuf.toString().toLowerCase().indexOf("select") + 6;
 	
 	String firstPartSql = initSqlBuf.substring(0, selectEnds);
 	String lastPartSql = initSqlBuf.substring(selectEnds);
 	
-	String newSql = firstPartSql + " " + resultTableName + "." + ResultFactory.MULTI_MODE_I + ", " + lastPartSql;
-	return addWhereMultiModeConstraints(resultTableName, pkValue, startId, endId, newSql);
+	String newSql = firstPartSql + " " + resultTableName + "." 
+        + ResultFactory.MULTI_MODE_I + ", " + lastPartSql;
+    
+	//return addWhereMultiModeConstraints(resultTableName, pkValue, startId, endId, newSql);
+    
+    newSql = addWhereMultiModeConstraints(resultTableName, pkValue,
+            startId, endId, newSql).trim();
+
+    // add back parenthesis, if removed before
+    return (hasParenthesis) ? "(" + newSql + ")" : newSql;
     }
 
 
+    /**
+     * Modified by Jerric
+     * @param resultTableName
+     * @param pkValue
+     * @param startId
+     * @param endId
+     * @param initSql
+     * @return
+     */
     protected String addWhereMultiModeConstraints(String resultTableName, String pkValue, int startId, 
 					     int endId, String initSql){
 
 	StringBuffer initSqlBuf = new StringBuffer(initSql);
-	int whereBegins = initSqlBuf.indexOf(" where");
-	if (whereBegins == -1) {
-	    whereBegins = initSqlBuf.indexOf(" WHERE");
-	}
+
+    // modified by Jerric - find the last where
+//	int whereBegins = initSqlBuf.indexOf(" where");
+//	if (whereBegins == -1) {
+//	    whereBegins = initSqlBuf.indexOf(" WHERE");
+//	}
+    int whereBegins = initSqlBuf.toString().toLowerCase().lastIndexOf("where");
 	
 	String firstPartSql = "";
 	String lastPartSql = "";
@@ -124,10 +218,18 @@ public class SqlQuery extends Query {
 	    rowStartSql = " where " + resultTableName + "." + ResultFactory.MULTI_MODE_I + " >= " + startId;
 	}
 
-	String extraFromString = ", " + resultTableName;
-	String rowEndSql = " and " + resultTableName + "." + ResultFactory.MULTI_MODE_I + " <= " + endId;
-	String orderBySql = " order by " + resultTableName + "." + ResultFactory.MULTI_MODE_I;
-	String finalSql = firstPartSql + extraFromString + lastPartSql + rowStartSql + rowEndSql + orderBySql;
+//	String extraFromString = ", " + resultTableName;
+//	String rowEndSql = " and " + resultTableName + "." + ResultFactory.MULTI_MODE_I + " <= " + endId;
+//	String orderBySql = " order by " + resultTableName + "." + ResultFactory.MULTI_MODE_I;
+//	String finalSql = firstPartSql + extraFromString + lastPartSql + rowStartSql + rowEndSql + orderBySql;
+    // Modified by Jerric
+    String extraFromString = ", " + resultTableName + " ";
+    String rowEndSql = " and " + resultTableName + "."
+            + ResultFactory.MULTI_MODE_I + " <= " + endId;
+    // ORDER BY cannot be used within UNION queries
+    String orderBySql = "";
+    String finalSql = firstPartSql + extraFromString + lastPartSql
+            + rowStartSql + rowEndSql + orderBySql;
 	
 	return finalSql;
     }

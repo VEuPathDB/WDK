@@ -18,10 +18,15 @@ import javax.sql.DataSource;
 
 public class SqlUtils {
     
+    // Added by Jerric - debug flag
+    private static boolean debug = false;
 
     private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.model.implementation.SqlUtils");
     
     public static ResultSet getResultSet(DataSource dataSource, String sql) throws SQLException {
+
+        // TEST
+        if (debug) System.out.println("<==getResultSet==>: " + sql);
 
         try {
 	    Connection connection = dataSource.getConnection();
@@ -50,6 +55,10 @@ public class SqlUtils {
     
     
     public static PreparedStatement getPreparedStatement(DataSource dataSource, String sql)throws SQLException{
+
+        // TEST
+        if (debug) System.out.println("<==getPreparedStatement==>: " + sql);
+
         Connection connection = dataSource.getConnection();
         PreparedStatement prepStmt = connection.prepareStatement(sql);
         return prepStmt;
@@ -78,6 +87,9 @@ public class SqlUtils {
     public static String runStringQuery(DataSource dataSource, String sql) throws SQLException {
         ResultSet resultSet = null;
         String result = null;
+
+        // TEST
+        if (debug) System.out.println("<==runStringQuery==>: " + sql);
         
         try {
             resultSet = getResultSet(dataSource, sql);
@@ -102,6 +114,9 @@ public class SqlUtils {
     public static Integer runIntegerQuery(DataSource dataSource, String sql) throws SQLException {
         ResultSet resultSet = null;
         Integer result = null;
+
+        // TEST
+        if (debug) System.out.println("<==runIntegerQuery==>: " + sql);
         
         try {
             resultSet = getResultSet(dataSource, sql);
@@ -126,7 +141,10 @@ public class SqlUtils {
         Connection connection = null;
         Statement stmt = null;
         Vector v = new Vector();
-        
+
+        // TEST
+        if (debug) System.out.println("<==runStringArrayQuery==>: " + sql);
+               
         try {
             connection = dataSource.getConnection();
             stmt = connection.createStatement();
@@ -151,7 +169,10 @@ public class SqlUtils {
         Connection connection = null;
         PreparedStatement stmt = null;
         ArrayList colNames = new ArrayList();
-        
+
+        // TEST
+        if (debug) System.out.println("<==getColumnNames==>: " + sql);
+
         try {
             connection = dataSource.getConnection();
             stmt = connection.prepareStatement(sql);
@@ -176,7 +197,10 @@ public class SqlUtils {
         int result = -1;
         Connection connection = null;
         Statement stmt = null;
-        
+
+        // TEST
+        if (debug) System.out.println("<==executeUpdate==>: " + sql);
+
         try {
             connection = dataSource.getConnection();
             stmt = connection.createStatement();
@@ -201,7 +225,10 @@ public class SqlUtils {
     public static boolean execute(DataSource dataSource, String sql) throws SQLException {
         Connection connection = null;
         Statement stmt = null;
-        
+
+        // TEST
+        if (debug) System.out.println("<==execute==>: " + sql);
+       
         try {
             connection = dataSource.getConnection();
             stmt = connection.createStatement();
