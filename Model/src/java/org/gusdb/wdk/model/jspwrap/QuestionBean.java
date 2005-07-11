@@ -7,14 +7,20 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.BooleanQuestionNode;
 
+import java.io.Serializable;
 import java.util.Map;
 
 /**
  * A wrapper on a {@link Question} that provides simplified access for 
  * consumption by a view
  */ 
-public class QuestionBean {
+public class QuestionBean implements Serializable {
 
+    /**
+     * Added by Jerric - to make QuestionBean serializable
+     */
+    private static final long serialVersionUID = 6353373897551871273L;
+    
     Question question;
 
     public QuestionBean(Question question) {

@@ -287,7 +287,10 @@ public class SanityTester {
 		    RecordClassSet nextRecordClassSet = queryTester.getWdkModel().getRecordClassSet(nextRecordReference.getSetName());
 		    RecordClass nextRecordClass = nextRecordClassSet.getRecordClass(nextRecordReference.getElementName());
 		    RecordInstance nextRecordInstance = nextRecordClass.makeRecordInstance();
-		    nextRecordInstance.setPrimaryKey(nextSanityRecord.getPrimaryKey());
+            // modified by Jerric
+            //nextRecordInstance.setPrimaryKey(nextSanityRecord.getPrimaryKey());
+            nextRecordInstance.setPrimaryKey(nextSanityRecord.getProjectID(), 
+                    nextSanityRecord.getPrimaryKey());
 		    
 		    String riString = nextRecordInstance.print();
 		    System.out.println("Record " + nextRecordReference.getSetName() + "." + nextRecordReference.getElementName() + " passed\n");

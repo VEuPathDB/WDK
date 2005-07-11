@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.jspwrap;
 
+import org.gusdb.wdk.model.PrimaryKeyValue;
 import org.gusdb.wdk.model.RecordInstance;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -21,7 +22,11 @@ public class RecordBean {
 	this.recordInstance = recordInstance;
     }
 
-    public String getPrimaryKey() {
+    /**
+     * modified by Jerric
+     * @return  
+     */
+    public PrimaryKeyValue getPrimaryKey() {
 	return recordInstance.getPrimaryKey();
     }
 
@@ -117,9 +122,12 @@ public class RecordBean {
     }
 
     /**
-     * used by the controller
+     * used by the controller. Modified by Jerric
+     * @param projectID
+     * @param key
+     * @throws WdkModelException 
      */
-    public void assignPrimaryKey(String key) {
-	recordInstance.setPrimaryKey(key);
+    public void assignPrimaryKey(String projectID, String key) throws WdkModelException {
+	recordInstance.setPrimaryKey(projectID, key);
     }
 }

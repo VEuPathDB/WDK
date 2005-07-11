@@ -37,20 +37,36 @@ public class SqlQueryInstance extends QueryInstance  {
         setIsCacheable(query.getIsCacheable().booleanValue());
     }
 
+    /**
+     * Modified by Jerric - add project column to be joined with
+     * @return
+     * @throws WdkModelException
+     */
     protected String getSql() throws WdkModelException {
 
         SqlQuery q = (SqlQuery)query;
         String sql = null;
 	String newPkJoin = null;
+    
+    String newProjectJoin = null;   // by Jerric
+    
        if (inMultiMode){
             newPkJoin = multiModeResultTableName + "." + pkToJoinWith;
             values.put("primaryKey", newPkJoin); //will this destroy the query for later use?
+
+            // Modified by Jerric
+            if (projectToJoinWith != null) {
+                newProjectJoin = multiModeResultTableName + "." + projectToJoinWith;
+                values.put("projectID", newProjectJoin);
+            }
         }
         String initSql = 
             q.instantiateSql(query.getInternalParamValues(values));
         if (inMultiMode){
-            sql = q.addMultiModeConstraints(multiModeResultTableName,  newPkJoin,
-					    startId, endId, initSql);
+            // sql = q.addMultiModeConstraints(multiModeResultTableName, 
+            //           newPkJoin, startId, endId, initSql);
+            sql = q.addUnionMultiModeConstraints(multiModeResultTableName, 
+                    newPkJoin, startId, endId, initSql);
         } else {
             sql = initSql;
         }
