@@ -244,6 +244,17 @@
       <optional>
          <attribute name="attributeOrdering" />
       </optional>
+
+      <!-- the following attribute & element is used by two-part primary key -->
+      <optional>
+         <attribute name="delimiter" />
+      </optional>
+      <optional>
+         <element name="projectParamRef">
+             <attribute name="ref" />
+         </element>
+      </optional>
+
       <zeroOrMore>  
         <element name="attributeQueryRef">
           <attribute name="ref" />
