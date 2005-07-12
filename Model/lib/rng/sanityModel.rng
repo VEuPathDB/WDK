@@ -29,6 +29,9 @@
     <element name="sanityRecord">
       <attribute name="ref" />
       <attribute name="primaryKey" />
+      <optional>
+        <attribute name="projectID" />
+      </optional>
     </element>
     
   </define>
