@@ -30,6 +30,7 @@
       <attribute name="ref" />
       <attribute name="primaryKey" />
     </element>
+    
   </define>
 
 </grammar>
