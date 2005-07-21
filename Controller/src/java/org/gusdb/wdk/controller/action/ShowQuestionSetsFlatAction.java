@@ -12,7 +12,9 @@ import javax.servlet.ServletContext;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.Iterator;
+import java.io.File;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.jspwrap.QuestionSetBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
@@ -36,7 +38,17 @@ public class ShowQuestionSetsFlatAction extends Action {
 	prepareQuestionSetForm(wdkModel, qSetForm);
 	//request.getSession().setAttribute(CConstants.QUESTIONSETFORM_KEY, qSetForm);
 
-	ActionForward forward = mapping.findForward(CConstants.SHOW_QUESTIONSETSFLAT_MAPKEY);
+	ServletContext svltCtx = getServlet().getServletContext();
+	String customViewDir = (String)svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
+	String customViewFile = customViewDir + File.separator
+	    + CConstants.WDK_CUSTOM_QUESTIONSETS_FLAT_PAGE;
+
+	ActionForward forward = null;
+	if (ApplicationInitListener.resourceExists(customViewFile, svltCtx)) {
+	    forward = new ActionForward(customViewFile);
+	} else {
+	    forward = mapping.findForward(CConstants.SHOW_QUESTIONSETSFLAT_MAPKEY);
+	}
 	return forward;
     }
 

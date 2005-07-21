@@ -10,7 +10,11 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.ServletContext;
 import java.util.HashMap;
+import java.io.File;
+
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.controller.ApplicationInitListener;
+
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.jspwrap.QuestionSetBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
@@ -39,8 +43,22 @@ public class ShowQuestionAction extends Action {
 	request.getSession().setAttribute(CConstants.QUESTIONFORM_KEY, qForm);
 	request.getSession().setAttribute(CConstants.WDK_QUESTION_KEY, wdkQuestion);
 
-	ActionForward forward = mapping.findForward(CConstants.SHOW_QUESTION_MAPKEY);
+	ServletContext svltCtx = getServlet().getServletContext();
+	String customViewDir = (String)svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
+	String customViewFile1 = customViewDir + File.separator
+	    + wdkQuestion.getRecordClass().getFullName() + ".question.jsp";
+	String customViewFile2 = customViewDir + File.separator
+	    + CConstants.WDK_CUSTOM_QUESTION_PAGE;
+	ActionForward forward = null;
+	if (ApplicationInitListener.resourceExists(customViewFile1, svltCtx)) {
+	    forward = new ActionForward(customViewFile1);
+	} else if (ApplicationInitListener.resourceExists(customViewFile2, svltCtx)) {
+	    forward = new ActionForward(customViewFile2);
+	} else {
+	    forward = mapping.findForward(CConstants.SHOW_QUESTION_MAPKEY);
+	}
 	return forward;
+
     }
 
     protected QuestionBean getQuestionByFullName(String qFullName) {

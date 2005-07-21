@@ -8,6 +8,10 @@ public class CConstants {
     public static final String WDK_RESULTFACTORY_KEY = "wdkResultFactory";
     public static final String WDK_MODEL_KEY = "wdkModel";
     public static final String WDK_CUSTOMVIEWDIR_KEY = "wdkCustomeViewDir";
+    public static final String WDK_CUSTOM_QUESTIONSETS_FLAT_PAGE = "customQuestionSetsFlat.jsp";
+    public static final String WDK_CUSTOM_QUESTIONSETS_PAGE = "customQuestionSets.jsp";
+    public static final String WDK_CUSTOM_QUESTION_PAGE = "customQuestion.jsp";
+    public static final String WDK_CUSTOM_SUMMARY_PAGE = "customSummary.jsp";
     public static final String WDK_QUESTION_KEY = "wdkQuestion";
     public static final String WDK_QUESTION_PARAMS_KEY = "wdkQuestionParams";
     public static final String WDK_ANSWER_KEY = "wdkAnswer";
