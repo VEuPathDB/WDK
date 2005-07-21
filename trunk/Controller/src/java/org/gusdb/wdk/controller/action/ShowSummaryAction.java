@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.HashMap;
+import java.io.File;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForward;
@@ -14,8 +15,11 @@ import org.apache.struts.action.ActionServlet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.ServletContext;
 
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.controller.ApplicationInitListener;
+
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
@@ -66,8 +70,22 @@ public class ShowSummaryAction extends Action {
 
 	request.getSession().setAttribute(CConstants.WDK_ANSWER_KEY, wdkAnswer);
 	request.getSession().setAttribute(CConstants.WDK_QUESTION_PARAMS_KEY, params);
-	
-	ActionForward forward = mapping.findForward(CConstants.SHOW_SUMMARY_MAPKEY);
+
+
+	ServletContext svltCtx = getServlet().getServletContext();
+	String customViewDir = (String)svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
+	String customViewFile1 = customViewDir + File.separator
+	    + wdkAnswer.getRecordClass().getFullName() + ".summary.jsp";
+	String customViewFile2 = customViewDir + File.separator
+	    + CConstants.WDK_CUSTOM_SUMMARY_PAGE;
+	ActionForward forward = null;
+	if (ApplicationInitListener.resourceExists(customViewFile1, svltCtx)) {
+	    forward = new ActionForward(customViewFile1);
+	} else if (ApplicationInitListener.resourceExists(customViewFile2, svltCtx)) {
+	    forward = new ActionForward(customViewFile2);
+	} else {
+	    forward = mapping.findForward(CConstants.SHOW_SUMMARY_MAPKEY);
+	}
 	return forward;
     }
 
