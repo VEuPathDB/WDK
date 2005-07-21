@@ -10,6 +10,18 @@
 <site:header banner="${recordType}"/>
 
 <table width="100%">
+
+  <!-- Added by Jerric - Display primary key content -->
+  <c:set value="${wdkRecord.primaryKey}" var="primaryKey"/>
+  <tr>
+    <td><b>Project</b></td>
+    <td>${primaryKey.projectName}</td>
+  </tr>
+  <tr>
+    <td><b>Local PK</b></td>
+    <td>${primaryKey.localPrimaryKey}</td>
+  </tr>
+
 <c:forEach items="${wdkRecord.attributes}" var="attr">
 <c:if test="${!attr.value.isInternal}">
   <tr>
@@ -104,7 +116,10 @@
             <c:set var="fieldVal" value="${recAttr.briefValue}"/>
             <c:choose>
                <c:when test="${j == 0}">
-                  <a href="showRecord.do?name=${recNam}&id=${nextRecord.primaryKey}">${fieldVal}</a>
+                  <!-- Added by Jerric - Display primary key content -->
+                  <!-- <a href="showRecord.do?name=${recNam}&id=${nextRecord.primaryKey}">${fieldVal}</a> -->
+  		  	<c:set value="${nextRecord.primaryKey}" var="nextPK"/>
+                  <a href="showRecord.do?name=${recNam}&project_id=${nextPK.projectID}&primary_key=${nextPK.localPrimaryKey}">${fieldVal}</a>
                </c:when>
                <c:otherwise>
  

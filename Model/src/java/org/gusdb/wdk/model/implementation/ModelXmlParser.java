@@ -219,6 +219,14 @@ public class ModelXmlParser {
         /*  */ digester.addObjectCreate( "wdkModel/recordClassSet/recordClass", RecordClass.class );
         
         /*  */ digester.addSetProperties( "wdkModel/recordClassSet/recordClass");
+
+        // By Jerric - parse projectParamRef
+        /*    */ digester.addObjectCreate( "wdkModel/recordClassSet/recordClass/projectParamRef", Reference.class );
+        
+        /*    */ digester.addSetProperties( "wdkModel/recordClassSet/recordClass/projectParamRef");
+        
+        /*    */ digester.addSetNext( "wdkModel/recordClassSet/recordClass/projectParamRef", "setProjectParamRef" );
+        // end by jerric
         
         /*    */ digester.addObjectCreate( "wdkModel/recordClassSet/recordClass/attributeQueryRef", Reference.class );
         

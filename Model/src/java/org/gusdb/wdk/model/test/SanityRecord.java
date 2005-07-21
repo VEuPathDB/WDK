@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.test;
 
+import org.gusdb.wdk.model.PrimaryKeyValue;
 import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.WdkModelException;
 
@@ -28,9 +29,12 @@ public class SanityRecord implements SanityElementI {
     protected String twoPartName;
     
     /**
+     * Modified by Jerric
      * Primary key of the element that this record represents.
      */
+    protected String projectID;
     protected String primaryKey;
+    //protected PrimaryKeyValue primaryKey;
 
     // ------------------------------------------------------------------
     // Constructor
@@ -57,6 +61,15 @@ public class SanityRecord implements SanityElementI {
     public String getPrimaryKey(){
 	return this.primaryKey;
     }
+    
+    // Added by Jerric
+    public void setProjectID(String projectID) {
+    	this.projectID = projectID;
+    }
+    
+    public String getProjectID() {
+    	return this.projectID;
+    }
 
     public String toString(){
 	return "SanityRecord twoPartName = " + twoPartName + " pk = " + primaryKey;
@@ -76,11 +89,15 @@ public class SanityRecord implements SanityElementI {
 
     public String getCommand(String globalArgs) throws WdkModelException{
 
-	String pk = getPrimaryKey().toString();
+        // modified by Jerric
+        //String pk = getPrimaryKey().toString();
+        String projectID = getProjectID();
+        String pk = getPrimaryKey();
 
 	StringBuffer command = new StringBuffer ("wdkRecord " + globalArgs);
 
-	command.append(" -record " + getRef() + " -primaryKey " + pk);
+	command.append(" -record " + getRef()  + " -project " + projectID 
+            + " -primaryKey " + pk);
 	
 	return command.toString();
     }

@@ -112,8 +112,10 @@
     <c:choose>
       <c:when test="${j == 0}">
 
-        <a href="showRecord.do?name=${recNam}&id=${record.primaryKey}">${fieldVal}</a>
-
+	<!-- modified by Jerric -->
+      <!-- <a href="showRecord.do?name=${recNam}&id=${record.primaryKey}">${fieldVal}</a> -->
+	<c:set value="${record.primaryKey}" var="primaryKey"/>
+        <a href="showRecord.do?name=${recNam}&project_id=${primaryKey.projectID}&primary_key=${primaryKey.localPrimaryKey}">${fieldVal}</a>
       </c:when>
       <c:otherwise>
 

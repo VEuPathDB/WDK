@@ -12,7 +12,11 @@ public class RecordInstance {
 
     public static final int MAXIMUM_NESTED_RECORD_INSTANCES = 100;
     
-    String primaryKey;
+    /**
+     * Modified by Jerric - use an object, instead of a String
+     */
+    PrimaryKeyValue primaryKey;
+
     RecordClass recordClass;
     HashMap attributesResultSetsMap;
     HashMap summaryAttributeMap;
@@ -27,11 +31,26 @@ public class RecordInstance {
 
     public RecordClass getRecordClass() { return recordClass; }
 
-    public void setPrimaryKey(String primaryKey) {
-	this.primaryKey = primaryKey;
+    /**
+     * Modified by Jerric - Use two parts as primarykeyValue, projectID and the
+     * original localPrimaryKey String
+     * @param projectID
+     * @param localPrimaryKey
+     * @throws WdkModelException 
+     */
+    public void setPrimaryKey(String projectID, String localPrimaryKey) 
+    throws WdkModelException {
+        PrimaryKeyField field = 
+            (PrimaryKeyField) recordClass.getField(RecordClass.PRIMARY_KEY_NAME);
+        // create primary key
+        this.primaryKey = new PrimaryKeyValue(field, projectID, localPrimaryKey);
     }
 
-    public String getPrimaryKey() {
+    /**
+     * Modified by Jerric - use an object for primaryKeyValue
+     * @return
+     */
+    public PrimaryKeyValue getPrimaryKey() {
 	return primaryKey;
     }
 
@@ -42,7 +61,9 @@ public class RecordInstance {
 	Object value;
 	FieldI field = (FieldI)recordClass.getField(attributeName); 
 	if (field instanceof PrimaryKeyField) {
-	    value = recordClass.getIdPrefix() + getPrimaryKey();
+        // modified by Jerric
+	    //value = recordClass.getIdPrefix() + getPrimaryKey();
+        value = getPrimaryKey().getValue();
 
 	} else if (field instanceof TextAttributeField) {
 	    TextAttributeField taField = (TextAttributeField)field;
@@ -82,7 +103,11 @@ public class RecordInstance {
 	HashMap paramHash = new HashMap();
 	if (primaryKey == null) 
 	    throw new WdkModelException("primaryKey is null");
-	paramHash.put("primaryKey", primaryKey);
+    // Modified by jerric
+    //paramHash.put("primaryKey", primaryKey);
+    String projectID = primaryKey.getProjectID();
+    if (projectID != null) paramHash.put("projectID", projectID);
+    paramHash.put("primaryKey", primaryKey.getLocalPrimaryKey());
 	try {
 	    instance.setValues(paramHash);
 	} catch (WdkUserException e) {
@@ -164,18 +189,40 @@ public class RecordInstance {
 	for (int j = 0; j < nestedQueryParams.length; j++){
 	    Param nextParam = nestedQueryParams[j];
 	    String paramName = nextParam.getName();
-	    FieldI field = (FieldI)this.getRecordClass().getField(paramName);
-	    String value;
-	    if (field instanceof PrimaryKeyField){
-		value = this.getPrimaryKey().toString();
-	    }
-	    else if (field instanceof AttributeField){
-		value = this.getAttributeValue(paramName).toString();
-	    }
-	    else {
-		throw new WdkModelException ("Illegal to link NestedRecordList " + q.getName() + " on attribute of type " + field.getClass().getName());
-	    }
-	
+
+        // Modified by Jerric
+        // The parameters of query don't map to attributes of the record
+	    
+//        FieldI field = (FieldI)this.getRecordClass().getField(paramName);
+//	    String value;
+//	    if (field instanceof PrimaryKeyField){
+//		value = this.getPrimaryKey().toString();
+//	    }
+//	    else if (field instanceof AttributeField){
+//		value = this.getAttributeValue(paramName).toString();
+//	    }
+//	    else {
+//		throw new WdkModelException ("Illegal to link NestedRecordList " + q.getName() + " on attribute of type " + field.getClass().getName());
+//	    }
+
+        String value;
+        if (paramName.equalsIgnoreCase("projectID")) {
+            value = this.getPrimaryKey().getProjectID();
+        } else {
+            FieldI field = (FieldI)this.getRecordClass().getField(paramName);
+            if (field instanceof PrimaryKeyField){
+                value = this.getPrimaryKey().getLocalPrimaryKey();
+            }
+            else if (field instanceof AttributeField){
+                value = this.getAttributeValue(paramName).toString();
+            }
+            else {
+                throw new WdkModelException ("Illegal to link NestedRecordList " 
+                        + q.getName() + " on attribute of type " 
+                        + field.getClass().getName());
+            }
+        }
+
 	    queryValues.put(paramName, value);
 	}
 	Answer a = q.makeAnswer(queryValues, 1, MAXIMUM_NESTED_RECORD_INSTANCES); 
@@ -334,8 +381,15 @@ public class RecordInstance {
 	    HashMap paramHash = new HashMap();
 	    if (primaryKey == null) 
 		throw new WdkModelException("primaryKey is null");
-	    paramHash.put("primaryKey", primaryKey);
-	    try {
+
+        // modified by Jerric
+        // use the two field of primary key
+        //paramHash.put("primaryKey", primaryKey);
+        String projectID = primaryKey.getProjectID();
+        if (projectID != null) paramHash.put("projectID", projectID);
+        paramHash.put("primaryKey", primaryKey.getLocalPrimaryKey());
+
+        try {
 		qInstance.setValues(paramHash);
 	    } catch (WdkUserException e) {
 		throw new WdkModelException(e);
