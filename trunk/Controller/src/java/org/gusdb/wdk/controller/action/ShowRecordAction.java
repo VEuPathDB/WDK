@@ -36,8 +36,15 @@ public class ShowRecordAction extends Action {
 
 	RecordClassBean wdkRecordClass = wdkModel.findRecordClass(request.getParameter("name"));
 	RecordBean wdkRecord = wdkRecordClass.makeRecord();
-	String id = request.getParameter("id");
-	wdkRecord.assignPrimaryKey(id);
+    
+    // modified by Jerric
+    //String id = request.getParameter("id");
+    //wdkRecord.assignPrimaryKey(id);
+    String projectID = request.getParameter("project_id").trim();
+    String id = request.getParameter("primary_key");
+    if (projectID.length() == 0) projectID = null;
+    wdkRecord.assignPrimaryKey(projectID, id);
+
 
 	request.getSession().setAttribute(CConstants.WDK_RECORD_KEY, wdkRecord);
 

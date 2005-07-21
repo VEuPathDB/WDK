@@ -3,6 +3,9 @@ package org.gusdb.wdk.model.implementation;
 import java.lang.StringBuffer;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.Query;
@@ -71,10 +74,73 @@ public class SqlQuery extends Query {
        return buf;
     }
 
+    /**
+     * Added by Jerric - the method handles union queries for federation that
+     * used caching table
+     * @param resultTableName
+     * @param pkValue
+     * @param startId
+     * @param endId
+     * @param initSql
+     * @return
+     */
+    protected String addUnionMultiModeConstraints(String resultTableName,
+            String pkValue, int startId, int endId, String initSql) {
+        StringBuffer sb = new StringBuffer();
+        String subSql;
+
+        String regex = "\\b(union|except|intersect)(\\s+all)?\\b";
+        Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+        Matcher match = pattern.matcher(initSql);
+        int prev = 0;
+
+        while (match.find()) {
+            subSql = initSql.substring(prev, match.start()).trim();
+            subSql = addMultiModeConstraints(resultTableName, pkValue, startId,
+                    endId, subSql);
+            sb.append(subSql.trim());
+            sb.append(' ');
+            sb.append(match.group());
+            sb.append(' ');
+            prev = match.end();
+        }
+        // handle the last part
+        subSql = initSql.substring(prev).trim();
+        subSql = addMultiModeConstraints(resultTableName, pkValue, startId,
+                endId, subSql);
+        sb.append(subSql.trim());
+        
+        // now create an outer query that handles ORDER BY
+        String head = "SELECT * FROM ( ";
+        String nestedSql = sb.toString().trim();
+        String orderBy = " ) ORDER BY " + ResultFactory.MULTI_MODE_I;
+        return head + nestedSql + orderBy;
+    }
+
+    /**
+     * Modified by Jerric
+     * @param resultTableName
+     * @param pkValue
+     * @param startId
+     * @param endId
+     * @param initSql
+     * @return
+     */
     protected String addMultiModeConstraints(String resultTableName, String pkValue, int startId, 
 					     int endId, String initSql){
 
 	StringBuffer initSqlBuf = new StringBuffer(initSql);
+
+	// check if the query is surrounded by a pair of parenthesis; if so,
+	// remove it
+	boolean hasParenthesis = false;
+	if (initSqlBuf.charAt(0) == '('
+            && initSqlBuf.charAt(initSqlBuf.length() - 1) == ')') {
+	    hasParenthesis = true;
+	    initSqlBuf.deleteCharAt(initSqlBuf.length() - 1);
+	    initSqlBuf.deleteCharAt(0);
+	}
+
 	String sqlStr = initSqlBuf.toString().toUpperCase();
 	int selectStarts = sqlStr.indexOf("SELECT");
 	if (selectStarts < 0) {
@@ -86,10 +152,27 @@ public class SqlQuery extends Query {
 	String firstPartSql = initSqlBuf.substring(0, selectEnds);
 	String lastPartSql = initSqlBuf.substring(selectEnds);
 	
-	String newSql = firstPartSql + " " + resultTableName + "." + ResultFactory.MULTI_MODE_I + ", " + lastPartSql;
-	return addWhereMultiModeConstraints(resultTableName, pkValue, startId, endId, newSql);
+	String newSql = firstPartSql + " " + resultTableName + "." 
+        + ResultFactory.MULTI_MODE_I + ", " + lastPartSql;
+    
+	//return addWhereMultiModeConstraints(resultTableName, pkValue, startId, endId, newSql);
+    
+	newSql = addWhereMultiModeConstraints(resultTableName, pkValue,
+					      startId, endId, newSql).trim();
+
+	// add back parenthesis, if removed before
+	return (hasParenthesis) ? "(" + newSql + ")" : newSql;
     }
 
+    /**
+     * Modified by Jerric
+     * @param resultTableName
+     * @param pkValue
+     * @param startId
+     * @param endId
+     * @param initSql
+     * @return
+     */
     protected String addWhereMultiModeConstraints(String resultTableName, String pkValue, int startId, 
 					     int endId, String initSql){
 
