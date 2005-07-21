@@ -75,11 +75,14 @@ public class SqlQuery extends Query {
 					     int endId, String initSql){
 
 	StringBuffer initSqlBuf = new StringBuffer(initSql);
-	int selectEnds = initSqlBuf.indexOf("select") + 6;
-	if (selectEnds == -1){
-	    selectEnds = initSqlBuf.indexOf("SELECT") + 6;
+	String sqlStr = initSqlBuf.toString().toUpperCase();
+	int selectStarts = sqlStr.indexOf("SELECT");
+	if (selectStarts < 0) {
+	    throw new RuntimeException("did not find select in " + sqlStr); 
 	}
-	
+
+	int selectEnds = selectStarts + 6;
+
 	String firstPartSql = initSqlBuf.substring(0, selectEnds);
 	String lastPartSql = initSqlBuf.substring(selectEnds);
 	
@@ -87,15 +90,12 @@ public class SqlQuery extends Query {
 	return addWhereMultiModeConstraints(resultTableName, pkValue, startId, endId, newSql);
     }
 
-
     protected String addWhereMultiModeConstraints(String resultTableName, String pkValue, int startId, 
 					     int endId, String initSql){
 
 	StringBuffer initSqlBuf = new StringBuffer(initSql);
-	int whereBegins = initSqlBuf.indexOf(" where");
-	if (whereBegins == -1) {
-	    whereBegins = initSqlBuf.indexOf(" WHERE");
-	}
+	String sqlStr = initSqlBuf.toString().toUpperCase();
+	int whereBegins = sqlStr.lastIndexOf("WHERE");
 	
 	String firstPartSql = "";
 	String lastPartSql = "";
@@ -124,7 +124,7 @@ public class SqlQuery extends Query {
 	    rowStartSql = " where " + resultTableName + "." + ResultFactory.MULTI_MODE_I + " >= " + startId;
 	}
 
-	String extraFromString = ", " + resultTableName;
+	String extraFromString = ", " + resultTableName + " ";
 	String rowEndSql = " and " + resultTableName + "." + ResultFactory.MULTI_MODE_I + " <= " + endId;
 	String orderBySql = " order by " + resultTableName + "." + ResultFactory.MULTI_MODE_I;
 	String finalSql = firstPartSql + extraFromString + lastPartSql + rowStartSql + rowEndSql + orderBySql;
