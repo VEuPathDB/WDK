@@ -102,6 +102,10 @@ public class SqlQueryInstance extends QueryInstance  {
 	return getValues();
     }
 
+    public String getLowLevelQuery() throws WdkModelException {
+	return getSql();
+    }
+
     protected ResultList getNonpersistentResult() throws WdkModelException {
         ResultSet resultSet = null;
         RDBMSPlatformI platform = ((SqlQuery)query).getRDBMSPlatform();

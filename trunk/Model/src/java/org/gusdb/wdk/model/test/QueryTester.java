@@ -39,26 +39,24 @@ public class QueryTester {
     /////////////   public methods   /////////////////////////////////////
     //////////////////////////////////////////////////////////////////////
 
-    public ResultList getResult(String querySetName, String queryName, 
-			       Hashtable paramHash, 
-			       boolean useCache) throws WdkModelException, WdkUserException {
-	QuerySet querySet 
-	    = wdkModel.getQuerySet(querySetName);
-	Query query = querySet.getQuery(queryName);
-	QueryInstance instance = query.makeInstance();
-	instance.setIsCacheable(useCache);
-	instance.setValues(paramHash);
+    public ResultList getResult(String querySetName, String queryName, Hashtable paramHash, boolean useCache) throws WdkModelException, WdkUserException {
+	QueryInstance instance = 
+	    getInstance(querySetName, queryName, paramHash, useCache);
 	return instance.getResult();
     }
 
-    public String getResultAsTable(String querySetName, String queryName, Hashtable paramHash, boolean useCache) throws WdkModelException, WdkUserException {
-	QuerySet querySet 
-	    = wdkModel.getQuerySet(querySetName);
-	Query  query = querySet.getQuery(queryName);
-	QueryInstance instance = query.makeInstance();
-	instance.setIsCacheable(useCache);
-	instance.setValues(paramHash);
+    public String getResultAsTable(String querySetName, String queryName, 
+Hashtable paramHash, boolean useCache) throws WdkModelException, WdkUserException {
+	QueryInstance instance = 
+	    getInstance(querySetName, queryName, paramHash, useCache);
 	return ((SqlQueryInstance)instance).getResultAsTable();
+    }
+
+    public String showLowLevelQuery(String querySetName, String queryName, 
+Hashtable paramHash, boolean useCache) throws WdkModelException, WdkUserException {
+	QueryInstance instance = 
+	    getInstance(querySetName, queryName, paramHash, useCache);
+	return instance.getLowLevelQuery();
     }
 
     public WdkModel getWdkModel(){
@@ -68,6 +66,16 @@ public class QueryTester {
     //////////////////////////////////////////////////////////////////////
     /////////////   protected methods   //////////////////////////////////
     //////////////////////////////////////////////////////////////////////
+
+    QueryInstance getInstance(String querySetName, String queryName, Hashtable paramHash, boolean useCache) throws WdkModelException, WdkUserException {
+	QuerySet querySet 
+	    = wdkModel.getQuerySet(querySetName);
+	Query query = querySet.getQuery(queryName);
+	QueryInstance instance = query.makeInstance();
+	instance.setIsCacheable(useCache);
+	instance.setValues(paramHash);
+	return instance;
+    }
 
     void displayQuery(Query query) throws WdkModelException {
         String newline = System.getProperty( "line.separator" );
@@ -153,6 +161,7 @@ public class QueryTester {
 	String fullQueryName = cmdLine.getOptionValue("query");
         boolean useCache = !cmdLine.hasOption("dontCache");
         boolean returnResultAsTable = cmdLine.hasOption("returnTable");
+        boolean showQuery = cmdLine.hasOption("showQuery");
         boolean haveParams = cmdLine.hasOption("params");
         boolean paging = cmdLine.hasOption("rows");
         String[] params = null;
@@ -188,7 +197,16 @@ public class QueryTester {
             // else, run the query with the supplied params
             else {
                 Hashtable paramHash = tester.parseParamArgs(params);
-                if (returnResultAsTable) {
+                if (showQuery) {
+		    String query = tester.showLowLevelQuery(querySetName, 
+							    queryName, 
+							    paramHash,
+							    useCache);
+		    String newline = System.getProperty( "line.separator" );
+		    String newlineQuery = query.replaceAll("\\s\\s\\s+", newline);
+                    System.out.println(newline + newlineQuery + newline);
+		  }
+                else if (returnResultAsTable) {
                     String table = tester.getResultAsTable(querySetName, 
 							   queryName, 
 							   paramHash,
@@ -241,6 +259,10 @@ public class QueryTester {
 	options.addOption(useCache);
 
 	OptionGroup specialOperations = new OptionGroup();
+
+	// return only the sql
+	Option showQuery = new Option("showQuery", "Return the query as it will be run (with parameter values in place).");
+	specialOperations.addOption(showQuery);
 
 	// return table
 	Option returnTable = new Option("returnTable", "Place the result in a table and return the name of the table.");
@@ -295,8 +317,8 @@ public class QueryTester {
             " -model model_name" +
             " -query full_query_name" +
             " [-dontCache]" +
-            " [-returnTable | -returnSize | -rows start end]" +
-            " [-params param_1_name,param_1_value,...]";
+            " [-returnTable | -returnSize | -rows start end | -showQuery]" +
+            " [-params param_1_name param_1_value,...]";
         
         String header = 
             newline + "Run a query found in a WDK Model xml file.  If run without -params, displays the parameters for the specified query" + newline + newline + "Options:" ;
