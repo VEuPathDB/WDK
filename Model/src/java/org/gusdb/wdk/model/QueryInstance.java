@@ -118,6 +118,9 @@ public abstract class QueryInstance {
 
     public abstract Collection getCacheValues() throws WdkModelException;
     
+
+    public abstract String getLowLevelQuery() throws WdkModelException;
+
     // ------------------------------------------------------------------
     // Protected methods
     // ------------------------------------------------------------------
