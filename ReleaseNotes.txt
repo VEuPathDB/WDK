@@ -1,4 +1,7 @@
+
+
 WDK Version 1.5
+
 
 Model - Fixed Bugs
 
@@ -9,7 +12,10 @@ Model - Fixed Bugs
 
    * Made the SQL query replacement code to support UNION queries, as well as INTERSECT and EXCEPT
 
+
 Model - Features
+
+   * add -showQuery option to wdkQuery command to print out the SQL
 
    * Provide support for federated primary key. Now the primary key can be a combination of project_id and
      local_primary_key, where project_id is a unique name-id pair that identifies the GUS instance involved
@@ -19,11 +25,14 @@ Model - Features
    * Provide backward compatibility to the current non-federation models; that is, the federated key is
      totally options.
 
+
 Controller - Fixed Bugs
+
 
 Controller - Features
 
    * Provide support for federated primary key.
+
 
 View - Fixed Bugs
 
