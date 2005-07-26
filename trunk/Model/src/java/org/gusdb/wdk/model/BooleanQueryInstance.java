@@ -148,6 +148,10 @@ public class BooleanQueryInstance extends QueryInstance {
 	return operandIds.values();
     }
 
+    public String getLowLevelQuery() throws WdkModelException {
+	return "";
+    }
+
     protected  ResultList getNonpersistentResult() throws WdkModelException{
 	return null;
     }
