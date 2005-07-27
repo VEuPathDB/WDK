@@ -179,6 +179,9 @@ public class SqlQuery extends Query {
 	StringBuffer initSqlBuf = new StringBuffer(initSql);
 	String sqlStr = initSqlBuf.toString().toUpperCase();
 	int whereBegins = sqlStr.lastIndexOf("WHERE");
+
+	//last "where" not in a nested query
+	if (sqlStr.lastIndexOf(")") > whereBegins) { whereBegins = -1; }
 	
 	String firstPartSql = "";
 	String lastPartSql = "";
