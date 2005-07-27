@@ -13,6 +13,7 @@
 
   <!-- Added by Jerric - Display primary key content -->
   <c:set value="${wdkRecord.primaryKey}" var="primaryKey"/>
+  <c:if test="${primaryKey.projectName ne null}">
   <tr>
     <td><b>Project</b></td>
     <td>${primaryKey.projectName}</td>
@@ -21,6 +22,7 @@
     <td><b>Local PK</b></td>
     <td>${primaryKey.localPrimaryKey}</td>
   </tr>
+  </c:if>
 
 <c:forEach items="${wdkRecord.attributes}" var="attr">
 <c:if test="${!attr.value.isInternal}">
