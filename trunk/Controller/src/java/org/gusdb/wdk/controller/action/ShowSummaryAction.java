@@ -75,14 +75,18 @@ public class ShowSummaryAction extends Action {
 	ServletContext svltCtx = getServlet().getServletContext();
 	String customViewDir = (String)svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
 	String customViewFile1 = customViewDir + File.separator
-	    + wdkAnswer.getRecordClass().getFullName() + ".summary.jsp";
+	    + wdkAnswer.getQuestion().getFullName() + ".summary.jsp";
 	String customViewFile2 = customViewDir + File.separator
+	    + wdkAnswer.getRecordClass().getFullName() + ".summary.jsp";
+	String customViewFile3 = customViewDir + File.separator
 	    + CConstants.WDK_CUSTOM_SUMMARY_PAGE;
 	ActionForward forward = null;
 	if (ApplicationInitListener.resourceExists(customViewFile1, svltCtx)) {
 	    forward = new ActionForward(customViewFile1);
 	} else if (ApplicationInitListener.resourceExists(customViewFile2, svltCtx)) {
 	    forward = new ActionForward(customViewFile2);
+	} else if (ApplicationInitListener.resourceExists(customViewFile3, svltCtx)) {
+	    forward = new ActionForward(customViewFile3);
 	} else {
 	    forward = mapping.findForward(CConstants.SHOW_SUMMARY_MAPKEY);
 	}
