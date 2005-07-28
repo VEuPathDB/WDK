@@ -61,6 +61,10 @@ public abstract class QueryInstance {
 	return isCacheable;
     }
     
+    public boolean getMultiMode() {
+	return inMultiMode;
+    }
+
     public boolean getIsPersistent() {
 	//eventually this will include whether this can be put into history as well
 	return getIsCacheable();

@@ -67,7 +67,7 @@ public class SqlQueryInstance extends QueryInstance  {
             //           newPkJoin, startId, endId, initSql);
             sql = q.addUnionMultiModeConstraints(multiModeResultTableName, 
                     newPkJoin, startId, endId, initSql);
-        } else {
+	} else {
             sql = initSql;
         }
         return sql;
