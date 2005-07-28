@@ -1,3 +1,3 @@
-<jsp:forward page="/showQuestionSetsFlat.do">
+<jsp:forward page="/showQuestionSets.do">
   <jsp:param name="from" value="index.jsp"/>
 </jsp:forward>
