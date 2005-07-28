@@ -27,6 +27,8 @@ public class Answer {
 
     private QueryInstance queryInstance;
 
+    private QueryInstance multiModeQueryInstance;
+
     private RecordInstance[] recordInstances;
 
     private String listPrimaryKeyName;
@@ -213,6 +215,7 @@ public class Answer {
 		
 	    }
 	}
+
 	return buf.toString();
     }
 
@@ -273,17 +276,23 @@ public class Answer {
 	return this.isBoolean;
     }
 
+    public QueryInstance getMultiModeQueryInstance() {
+	return multiModeQueryInstance;
+    }
+
     // ------------------------------------------------------------------
     // Package Methods
     // ------------------------------------------------------------------
 
     void setMultiMode(QueryInstance instance) throws WdkModelException{
-        
+
         String resultTableName = queryInstance.getResultAsTable();
         // Modified by Jerric
 //        instance.setMultiModeValues(resultTableName, listPrimaryKeyName, startRow, endRow);
         instance.setMultiModeValues(resultTableName, listProjectName, listPrimaryKeyName, startRow, endRow);
+	multiModeQueryInstance = instance;
     }
+
     void setQueryResult(ResultList resultList) throws WdkModelException {
     
 	Query query = resultList.getQuery();
@@ -338,7 +347,7 @@ public class Answer {
 	return question.isSummaryAttribute(attName);
     }
     
-    QueryInstance getQueryInstance(){
+    public QueryInstance getQueryInstance(){
 	return queryInstance;
     }
 

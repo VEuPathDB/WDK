@@ -1,6 +1,8 @@
 package org.gusdb.wdk.model.test;
 
+import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.Query;
+import org.gusdb.wdk.model.QueryInstance;
 import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.Answer;
@@ -77,10 +79,17 @@ public class SummaryTester {
 		    int nextStartRow = Integer.parseInt(rows[i]);
 		    int nextEndRow = Integer.parseInt(rows[i+1]);
 
-		    Answer si = question.makeAnswer(paramValues, nextStartRow, nextEndRow);
+		    Answer answer = question.makeAnswer(paramValues, nextStartRow, nextEndRow);
+		    answer.printAsTable();
+
+		    if (cmdLine.hasOption("showQuery")) {
+			System.out.println(getLowLevelQuery(answer));
+			return;
+		    }
+
 		    System.out.println("Printing Record Instances on page " + pageCount);
-		    System.out.println(si.printAsTable());
-		    //System.out.println(si.print());
+		    System.out.println(answer.printAsTable());
+
 		    pageCount++;
 		}
 		
@@ -99,6 +108,15 @@ public class SummaryTester {
 	    
     }
 
+    private static String getLowLevelQuery(Answer answer) throws WdkModelException {
+	 QueryInstance instance = answer.getMultiModeQueryInstance();
+	 String query =  instance.getLowLevelQuery();
+	 String newline = System.getProperty( "line.separator" );
+	 String newlineQuery = query.replaceAll("^\\s\\s\\s", newline);
+	 newlineQuery = newlineQuery.replaceAll("(\\S)\\s\\s\\s", "$1" + newline);
+	 return newline + newlineQuery + newline;
+    }
+   
     private static void addOption(Options options, String argName, String desc) {
 	
 	Option option = new Option(argName, true, desc);
@@ -107,7 +125,6 @@ public class SummaryTester {
 	
 	options.addOption(option);
     }
-    
     
     static Options declareOptions() {
 	Options options = new Options();
@@ -119,12 +136,18 @@ public class SummaryTester {
 	addOption(options, "question", "The full name (set.element) of the question to run.");
 	
 	//rows to return
-	Option rows = new Option("rows", "the start and end pairs of the summary rows to return");
+	Option rows = new Option("rows", "The start and end pairs of the summary rows to return");
 	rows.setArgs(Option.UNLIMITED_VALUES);
 	rows.setRequired(true);
 	options.addOption(rows);
+
+	// show query
+	Option showQuery = new Option("showQuery", "Show the query as it will be run (with parameter values in place).");
+	options.addOption(showQuery);
+
+
 	//params
-	Option params = new Option("params", true, "space delimited list of param_name param_value ....");
+	Option params = new Option("params", true, "Space delimited list of param_name param_value ....");
 	params.setArgName("params");
 	params.setArgs(Option.UNLIMITED_VALUES);
 	options.addOption(params);
@@ -182,7 +205,10 @@ public class SummaryTester {
 	String cmdlineSyntax = 
 	    cmdName + 
 	    " -model model_name" +
-	    " -question full_question_name";
+	    " -question full_question_name" +
+             " -rows start end" +
+             " [-showQuery]" +
+	    " -params param_1_name param_1_value ...";
 
 	String header = 
 	    newline + "Print a summary found in a WDK Model xml file. Options:" ;

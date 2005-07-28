@@ -16,9 +16,11 @@ import org.gusdb.wdk.model.ResultList;
 
 public class SqlQuery extends Query {
     
+    static final String RESULT_TABLE_MACRO = "%%RESULT_TABLE%%";
+
     String sql;
     RDBMSPlatformI platform;
-
+    
     public SqlQuery () {
 	super();
     }
@@ -89,6 +91,7 @@ public class SqlQuery extends Query {
         StringBuffer sb = new StringBuffer();
         String subSql;
 
+
         String regex = "\\b(union|except|intersect)(\\s+all)?\\b";
         Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
         Matcher match = pattern.matcher(initSql);
@@ -98,21 +101,24 @@ public class SqlQuery extends Query {
             subSql = initSql.substring(prev, match.start()).trim();
             subSql = addMultiModeConstraints(resultTableName, pkValue, startId,
                     endId, subSql);
-            sb.append(subSql.trim());
+	    sb.append(subSql.trim());
             sb.append(' ');
             sb.append(match.group());
             sb.append(' ');
             prev = match.end();
         }
         // handle the last part
-        subSql = initSql.substring(prev).trim();
+        subSql = initSql.substring(prev);
+        subSql = initSql.substring(prev);
+        subSql = initSql.substring(prev);
+	      subSql = initSql.substring(prev).trim();
         subSql = addMultiModeConstraints(resultTableName, pkValue, startId,
                 endId, subSql);
-        sb.append(subSql.trim());
+	sb.append(subSql.trim());
         
         // now create an outer query that handles ORDER BY
         String head = "SELECT * FROM ( ";
-        String nestedSql = sb.toString().trim();
+	String nestedSql = sb.toString().trim();
         String orderBy = " ) ORDER BY " + ResultFactory.MULTI_MODE_I;
         return head + nestedSql + orderBy;
     }
@@ -128,6 +134,12 @@ public class SqlQuery extends Query {
      */
     protected String addMultiModeConstraints(String resultTableName, String pkValue, int startId, 
 					     int endId, String initSql){
+
+	String replacement = resultTableName + "." + ResultFactory.MULTI_MODE_I;
+	
+	if (initSql.indexOf(RESULT_TABLE_MACRO) > 0) {
+	    return initSql.replaceAll(RESULT_TABLE_MACRO, replacement);
+	}
 
 	StringBuffer initSqlBuf = new StringBuffer(initSql);
 
@@ -152,11 +164,11 @@ public class SqlQuery extends Query {
 	String firstPartSql = initSqlBuf.substring(0, selectEnds);
 	String lastPartSql = initSqlBuf.substring(selectEnds);
 	
-	String newSql = firstPartSql + " " + resultTableName + "." 
-        + ResultFactory.MULTI_MODE_I + ", " + lastPartSql;
+	String newSql = firstPartSql + " " + replacement + ",    " + lastPartSql;
     
 	//return addWhereMultiModeConstraints(resultTableName, pkValue, startId, endId, newSql);
     
+
 	newSql = addWhereMultiModeConstraints(resultTableName, pkValue,
 					      startId, endId, newSql).trim();
 

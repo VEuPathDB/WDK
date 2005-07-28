@@ -203,7 +203,8 @@ Hashtable paramHash, boolean useCache) throws WdkModelException, WdkUserExceptio
 							    paramHash,
 							    useCache);
 		    String newline = System.getProperty( "line.separator" );
-		    String newlineQuery = query.replaceAll("\\s\\s\\s+", newline);
+		    String newlineQuery = query.replaceAll("^\\s\\s\\s", newline);
+		    newlineQuery = newlineQuery.replaceAll("(\\S)\\s\\s\\s", "$1" + newline);
                     System.out.println(newline + newlineQuery + newline);
 		  }
                 else if (returnResultAsTable) {
@@ -261,7 +262,7 @@ Hashtable paramHash, boolean useCache) throws WdkModelException, WdkUserExceptio
 	OptionGroup specialOperations = new OptionGroup();
 
 	// return only the sql
-	Option showQuery = new Option("showQuery", "Return the query as it will be run (with parameter values in place).");
+	Option showQuery = new Option("showQuery", "Show the query as it will be run (with parameter values in place).");
 	specialOperations.addOption(showQuery);
 
 	// return table
@@ -317,8 +318,8 @@ Hashtable paramHash, boolean useCache) throws WdkModelException, WdkUserExceptio
             " -model model_name" +
             " -query full_query_name" +
             " [-dontCache]" +
-            " [-returnTable | -returnSize | -rows start end | -showQuery]" +
-            " [-params param_1_name param_1_value,...]";
+            " [-returnTable -rows start end | -returnSize | -showQuery]" +
+            " [-params param_1_name param_1_value ...]";
         
         String header = 
             newline + "Run a query found in a WDK Model xml file.  If run without -params, displays the parameters for the specified query" + newline + newline + "Options:" ;
