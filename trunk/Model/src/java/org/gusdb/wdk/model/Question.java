@@ -155,7 +155,7 @@ public class Question {
 
 
     void resolveReferences(WdkModel model)throws WdkModelException{
-	
+
 	this.query = (Query)model.resolveReference(queryTwoPartName, name, "question", "queryRef");
 	this.recordClass = (RecordClass)model.resolveReference(recordClassTwoPartName, name, "question", "recordClassRef");
 	Map attribFields = getRecordClass().getAttributeFields();
