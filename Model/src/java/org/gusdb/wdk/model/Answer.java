@@ -168,6 +168,9 @@ public class Answer {
 	return buf.toString();
     }
     
+    /**
+     * print summary attributes, one per line
+     */
     public String printAsSummary() throws WdkModelException, WdkUserException{
 	StringBuffer buf = new StringBuffer();
 	if (recordInstances == null){
@@ -179,6 +182,9 @@ public class Answer {
 	return buf.toString();
     }
 
+    /**
+     * print summary attributes in tab delimited table with header of attr. names
+     */
     public String printAsTable () throws WdkModelException, WdkUserException{
 	String newline = System.getProperty( "line.separator" );
 	StringBuffer buf = new StringBuffer();
@@ -189,7 +195,7 @@ public class Answer {
 	if (recordInstances != null && recordInstances.length > 0){
 	    RecordClass recordClass = recordInstances[0].getRecordClass();
 	    Iterator attributeNames = 
-		recordClass.getAttributeFields().keySet().iterator();
+		question.getSummaryAttributes().keySet().iterator();
 
 	    while (attributeNames.hasNext()){
 		buf.append((String)attributeNames.next() + "\t");
@@ -200,7 +206,7 @@ public class Answer {
 
 		RecordInstance recordInstance = recordInstances[i];
 		attributeNames = 
-		    recordInstance.getAttributes().keySet().iterator();
+		    question.getSummaryAttributes().keySet().iterator();
 
 		while (attributeNames.hasNext()){
 		    String nextAttName = (String)attributeNames.next();

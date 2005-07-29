@@ -51,6 +51,7 @@ public abstract class ResultList {
 		}
 		
 		else value = getValueFromResult(attributeName);
+		
 		AttributeField field = new AttributeField(column);
 		AttributeFieldValue fieldValue = 
 		    new AttributeFieldValue(field, value);
