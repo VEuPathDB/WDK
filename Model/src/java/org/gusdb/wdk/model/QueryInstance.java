@@ -66,12 +66,13 @@ public abstract class QueryInstance {
     }
 
     public boolean getIsPersistent() {
+
 	//eventually this will include whether this can be put into history as well
 	return getIsCacheable();
     }
     
     public void setIsCacheable(boolean isCacheable) {
-	this.isCacheable =query.getIsCacheable().booleanValue() && isCacheable;
+	this.isCacheable = isCacheable && query.getIsCacheable().booleanValue();
     }
 
     public Query getQuery() {

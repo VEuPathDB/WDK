@@ -89,7 +89,7 @@ public class SqlResultList extends ResultList {
 	}
     }
 
-    public void checkQueryColumns(Query query, boolean checkAll) throws WdkModelException {
+    public void checkQueryColumns(Query query, boolean checkAll, boolean has_multi_mode_i) throws WdkModelException {
 
 	try {
 	    boolean sqlHasIcolumn = false;
@@ -100,7 +100,7 @@ public class SqlResultList extends ResultList {
 		String columnName = metaData.getColumnName(i).toLowerCase();
 		//check if sql is being retrieved from a result table that has an extra column named 'i' for 
 		//enumerating results in the table (this extra column will be ignored when doing column validation)
-		if (columnName.equals(ResultFactory.MULTI_MODE_I)){
+		if (columnName.equals(ResultFactory.MULTI_MODE_I) && has_multi_mode_i) {
 		    sqlHasIcolumn = true;
 		}
 		rsCols.put(columnName, "");

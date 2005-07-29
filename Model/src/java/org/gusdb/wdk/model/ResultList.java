@@ -23,7 +23,7 @@ public abstract class ResultList {
     }
 
 
-    public abstract void checkQueryColumns(Query query, boolean checkAll) throws WdkModelException;
+    public abstract void checkQueryColumns(Query query, boolean checkAll, boolean has_multi_mode_i) throws WdkModelException;
 
 
     AttributeFieldValue getAttributeFieldValue(String attributeName) throws WdkModelException {

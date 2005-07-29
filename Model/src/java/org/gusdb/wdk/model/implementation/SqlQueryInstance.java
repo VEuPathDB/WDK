@@ -34,7 +34,6 @@ public class SqlQueryInstance extends QueryInstance  {
     public SqlQueryInstance (SqlQuery query) {
         super(query);
         logger.finest("I've got a new sqlQueryInstance being created");
-        setIsCacheable(query.getIsCacheable().booleanValue());
     }
 
     /**
@@ -88,7 +87,7 @@ public class SqlQueryInstance extends QueryInstance  {
 
 	SqlQuery q = (SqlQuery)query;
         ResultList rl = getResultFactory().getResult(this);
-        rl.checkQueryColumns(q, true);
+        rl.checkQueryColumns(q, true, getIsCacheable() || inMultiMode);
         return rl;
     }
 
