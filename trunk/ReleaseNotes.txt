@@ -13,6 +13,12 @@ Model - Fixed Bugs
      Implemented quick fix for simple cases, more robust solution proposed
      in tracker item 57.
 
+   * 82, wdkSummary throws exception on uncached attribute queries.
+     Note isCacheable attribute for attributes queries does not matter - 
+     it is intended for id queries instead. However the model does have bug
+     when it reads this value in determining whether to check for
+     the multi-mode column in the mangled attribute query.
+
    * Made the SQL query replacement code to support UNION queries, as well as INTERSECT and EXCEPT
 
 
