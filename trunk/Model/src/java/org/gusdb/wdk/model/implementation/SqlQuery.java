@@ -135,6 +135,7 @@ public class SqlQuery extends Query {
     protected String addMultiModeConstraints(String resultTableName, String pkValue, int startId, 
 					     int endId, String initSql){
 
+	
 	String replacement = resultTableName + "." + ResultFactory.MULTI_MODE_I;
 	
 	if (initSql.indexOf(RESULT_TABLE_MACRO) > 0) {
