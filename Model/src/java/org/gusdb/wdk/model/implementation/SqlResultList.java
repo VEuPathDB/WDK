@@ -100,7 +100,7 @@ public class SqlResultList extends ResultList {
 		String columnName = metaData.getColumnName(i).toLowerCase();
 		//check if sql is being retrieved from a result table that has an extra column named 'i' for 
 		//enumerating results in the table (this extra column will be ignored when doing column validation)
-		if (columnName.equals(ResultFactory.MULTI_MODE_I) && query.getIsCacheable().booleanValue() == true){
+		if (columnName.equals(ResultFactory.MULTI_MODE_I)){
 		    sqlHasIcolumn = true;
 		}
 		rsCols.put(columnName, "");
