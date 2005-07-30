@@ -71,8 +71,11 @@ public abstract class QueryInstance {
 	return getIsCacheable();
     }
     
-    public void setIsCacheable(boolean isCacheable) {
-	this.isCacheable = isCacheable && query.getIsCacheable().booleanValue();
+    public void setIsCacheable(boolean isCacheable) throws WdkModelException {
+	if (isCacheable && !query.getIsCacheable().booleanValue()) {
+	    throw new WdkModelException(query.getFullName() + " is not cacheable, but a query instance is, which is illegal");
+	}
+	this.isCacheable = isCacheable;
     }
 
     public Query getQuery() {
