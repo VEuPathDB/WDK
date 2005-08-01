@@ -25,7 +25,7 @@ public class SqlQueryInstance extends QueryInstance  {
      * The unique name of the table in a database namespace which holds the cached 
      * results for this Instance.
      */
-    String resultTable = null;
+    String resultTableName = null;
 
     // ------------------------------------------------------------------
     // Constructor
@@ -49,22 +49,20 @@ public class SqlQueryInstance extends QueryInstance  {
     
     String newProjectJoin = null;   // by Jerric
     
-       if (inMultiMode){
-            newPkJoin = multiModeResultTableName + "." + pkToJoinWith;
+       if (joinMode){
+            newPkJoin = joinTableName + "." + primaryKeyColumnName;
             values.put("primaryKey", newPkJoin); //will this destroy the query for later use?
 
             // Modified by Jerric
-            if (projectToJoinWith != null) {
-                newProjectJoin = multiModeResultTableName + "." + projectToJoinWith;
+            if (projectColumnName != null) {
+                newProjectJoin = joinTableName + "." + projectColumnName;
                 values.put("projectID", newProjectJoin);
             }
         }
         String initSql = 
             q.instantiateSql(query.getInternalParamValues(values));
-        if (inMultiMode){
-            // sql = q.addMultiModeConstraints(multiModeResultTableName, 
-            //           newPkJoin, startId, endId, initSql);
-            sql = q.addUnionMultiModeConstraints(multiModeResultTableName, 
+        if (joinMode){
+            sql = q.addUnionMultiModeConstraints(joinTableName, 
                     newPkJoin, startId, endId, initSql);
 	} else {
             sql = initSql;
@@ -76,10 +74,10 @@ public class SqlQueryInstance extends QueryInstance  {
     /**
      * @return Full name of table containing result
      */
-    public String getResultAsTable() throws WdkModelException {
-        if (resultTable == null) 
-            resultTable = getResultFactory().getResultAsTable(this);
-        return resultTable;
+    public String getResultAsTableName() throws WdkModelException {
+        if (resultTableName == null) 
+            resultTableName = getResultFactory().getResultAsTableName(this);
+        return resultTableName;
     }
     
 
@@ -87,8 +85,21 @@ public class SqlQueryInstance extends QueryInstance  {
 
 	SqlQuery q = (SqlQuery)query;
         ResultList rl = getResultFactory().getResult(this);
-        rl.checkQueryColumns(q, true, getIsCacheable() || inMultiMode);
+        rl.checkQueryColumns(q, true, getIsCacheable() || joinMode);
         return rl;
+    }
+
+    public ResultList getPersistentResultPage(int startRow, int endRow) throws WdkModelException {
+	
+	if (!getIsCacheable()) throw new WdkModelException("Attempting to get persistent result page, but query instance is not cacheable");
+
+	SqlQuery q = (SqlQuery)query;
+        ResultList rl = getResultFactory().getPersistentResultPage(this,
+								   startRow,
+								   endRow);
+        rl.checkQueryColumns(q, true, true);
+        return rl;
+	
     }
 
     public String getSqlForCache() throws WdkModelException{

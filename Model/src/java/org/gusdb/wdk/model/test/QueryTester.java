@@ -45,11 +45,11 @@ public class QueryTester {
 	return instance.getResult();
     }
 
-    public String getResultAsTable(String querySetName, String queryName, 
+    public String getResultAsTableName(String querySetName, String queryName, 
 Hashtable paramHash, boolean useCache) throws WdkModelException, WdkUserException {
 	QueryInstance instance = 
 	    getInstance(querySetName, queryName, paramHash, useCache);
-	return ((SqlQueryInstance)instance).getResultAsTable();
+	return ((SqlQueryInstance)instance).getResultAsTableName();
     }
 
     public String showLowLevelQuery(String querySetName, String queryName, 
@@ -208,10 +208,10 @@ Hashtable paramHash, boolean useCache) throws WdkModelException, WdkUserExceptio
                     System.out.println(newline + newlineQuery + newline);
 		  }
                 else if (returnResultAsTable) {
-                    String table = tester.getResultAsTable(querySetName, 
-							   queryName, 
-							   paramHash,
-							   useCache);
+                    String table = tester.getResultAsTableName(querySetName, 
+							       queryName, 
+							       paramHash,
+							       useCache);
                     System.out.println(table);
                 } 
 		else {

@@ -30,7 +30,7 @@ public class SqlResultList extends ResultList {
     public Object getMultiModeIValue() throws WdkModelException{
 	Object o;
 	try {
-	     o = resultSet.getObject(ResultFactory.MULTI_MODE_I);
+	     o = resultSet.getObject(ResultFactory.RESULT_TABLE_I);
 	}
 	catch (SQLException e){
 	    throw new WdkModelException(e);
@@ -100,7 +100,7 @@ public class SqlResultList extends ResultList {
 		String columnName = metaData.getColumnName(i).toLowerCase();
 		//check if sql is being retrieved from a result table that has an extra column named 'i' for 
 		//enumerating results in the table (this extra column will be ignored when doing column validation)
-		if (columnName.equals(ResultFactory.MULTI_MODE_I) && has_multi_mode_i) {
+		if (columnName.equals(ResultFactory.RESULT_TABLE_I) && has_multi_mode_i) {
 		    sqlHasIcolumn = true;
 		}
 		rsCols.put(columnName, "");

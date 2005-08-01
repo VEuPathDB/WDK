@@ -9,24 +9,24 @@ package org.gusdb.wdk.model;
 public class PrimaryKeyValue {
 
     private PrimaryKeyField field;
-    private String          projectID;
+    private String          projectId;
     private String          projectName;
-    private String          localPrimaryKey;
+    private String          recordId;
 
-    public PrimaryKeyValue(PrimaryKeyField field, String projectID,
-            String localPrimaryKey) throws WdkModelException {
+    public PrimaryKeyValue(PrimaryKeyField field, String projectId,
+			   String recordId) throws WdkModelException {
         this.field = field;
-        this.projectID = projectID;
-        this.localPrimaryKey = localPrimaryKey;
+        this.projectId = projectId;
+        this.recordId = recordId;
 
         // resolve project name
         this.projectName = null;
-        if (projectID != null) {
+        if (projectId != null) {
             FlatVocabParam projectParam = field.getProjectParam();
             String[] keys = projectParam.getVocab();
             for (int i = 0; i < keys.length; i++) {
                 String value = (String) projectParam.getInternalValue(keys[i]);
-                if (value.equalsIgnoreCase(projectID)) projectName = keys[i];
+                if (value.equalsIgnoreCase(projectId)) projectName = keys[i];
             }
         }
     }
@@ -38,7 +38,7 @@ public class PrimaryKeyValue {
             sb.append(field.getDelimiter());
         }
         sb.append(field.getIdPrefix());
-        sb.append(localPrimaryKey);
+        sb.append(recordId);
         return sb.toString();
     }
 
@@ -59,18 +59,18 @@ public class PrimaryKeyValue {
     }
 
     /**
-     * @return Returns the localPrimaryKey.
+     * @return Returns the recordId.
      */
-    public String getLocalPrimaryKey() {
-        return localPrimaryKey;
+    public String getRecordId() {
+        return recordId;
     }
 
     /**
-     * @return Returns the projectID.
+     * @return Returns the projectId.
      * @throws WdkModelException
      */
-    public String getProjectID() {
-        return this.projectID;
+    public String getProjectId() {
+        return this.projectId;
     }
 
     public String getProjectName() {
@@ -86,8 +86,8 @@ public class PrimaryKeyValue {
         if (obj instanceof PrimaryKeyValue) {
             PrimaryKeyValue pk = (PrimaryKeyValue) obj;
 
-            if (pk.localPrimaryKey.equalsIgnoreCase(localPrimaryKey)) {
-                if (projectID == null) return true;
+            if (pk.recordId.equalsIgnoreCase(recordId)) {
+                if (projectId == null) return true;
                 return pk.getProjectName().equalsIgnoreCase(projectName);
             }
         }

@@ -109,7 +109,7 @@ public class SummaryTester {
     }
 
     private static String getLowLevelQuery(Answer answer) throws WdkModelException {
-	 QueryInstance instance = answer.getMultiModeQueryInstance();
+	 QueryInstance instance = answer.getAttributesQueryInstance();
 	 String query =  instance.getLowLevelQuery();
 	 String newline = System.getProperty( "line.separator" );
 	 String newlineQuery = query.replaceAll("^\\s\\s\\s", newline);

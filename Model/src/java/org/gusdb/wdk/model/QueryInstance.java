@@ -28,23 +28,25 @@ public abstract class QueryInstance {
     protected HashMap values = new HashMap();
 
     /**
-     * Values that will be used when the QueryInstance is being run in multi-mode to join it with
-     * a table containing a list of primary keys in a Answer.
+     * Name of the table to join with when in join mode
      */
-    protected String multiModeResultTableName;
+    protected String joinTableName;
 
-    protected String pkToJoinWith;
+    /**
+     * In the join table.
+     */
+    protected String primaryKeyColumnName;
     
     /**
-     * Added by Jerric - project column name to be joined with
+     * In the join table
      */
-    protected String projectToJoinWith;
+    protected String projectColumnName;
     
     protected int startId;
     
     protected int endId;
 
-    protected boolean inMultiMode;
+    protected boolean joinMode;
 
 
     // ------------------------------------------------------------------
@@ -61,8 +63,8 @@ public abstract class QueryInstance {
 	return isCacheable;
     }
     
-    public boolean getMultiMode() {
-	return inMultiMode;
+    public boolean getJoinMode() {
+	return joinMode;
     }
 
     public boolean getIsPersistent() {
@@ -84,7 +86,9 @@ public abstract class QueryInstance {
 
     public abstract ResultList getResult() throws WdkModelException;
 
-    public abstract String getResultAsTable() throws WdkModelException;
+    public abstract ResultList getPersistentResultPage(int startRow, int endRow) throws WdkModelException;
+
+    public abstract String getResultAsTableName() throws WdkModelException;
 
     // ------------------------------------------------------------------
     // Package methods
@@ -109,19 +113,19 @@ public abstract class QueryInstance {
     /**
      * Modified by Jerric - add project column to join with
      * @param resultTableName
-     * @param projectToJoinWith
-     * @param pkToJoinWith
+     * @param projectColumnName
+     * @param primaryKeyColumnName
      * @param startId
      * @param endId
      */
-    void setMultiModeValues(String resultTableName,String projectToJoinWith, String pkToJoinWith, int startId, int endId){
+    void initJoinMode(String resultTableName,String projectColumnName, String primaryKeyColumnName, int startId, int endId){
 
-    this.multiModeResultTableName = resultTableName;
-    this.projectToJoinWith = projectToJoinWith;
-    this.pkToJoinWith = pkToJoinWith;
-    this.startId = startId;
-    this.endId = endId;
-    this.inMultiMode = true;
+	this.joinTableName = resultTableName;
+	this.projectColumnName = projectColumnName;
+	this.primaryKeyColumnName = primaryKeyColumnName;
+	this.startId = startId;
+	this.endId = endId;
+	this.joinMode = true;
     }
 
     public abstract Collection getCacheValues() throws WdkModelException;
@@ -138,7 +142,7 @@ public abstract class QueryInstance {
     protected QueryInstance (Query query) {
 	this.query = query;
 	this.isCacheable = query.getIsCacheable().booleanValue();
-	this.inMultiMode = false;
+	this.joinMode = false;
     }
 
     protected ResultFactory getResultFactory() {

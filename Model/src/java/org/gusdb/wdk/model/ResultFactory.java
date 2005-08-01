@@ -49,7 +49,7 @@ public class ResultFactory {
 
     private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.model.ResultFactory");
 
-    public static final String MULTI_MODE_I = "multi_mode_i_column";
+    public static final String RESULT_TABLE_I = "multi_mode_i_column";
 
 
     
@@ -77,11 +77,22 @@ public class ResultFactory {
 	return resultList;
     }
     
+    public synchronized ResultList getPersistentResultPage(QueryInstance instance, int startRow, int endRow) throws WdkModelException{
+
+	if (!instance.getIsPersistent()) {
+	    throw new WdkModelException("Attempting to get a page a from non-perstent result");
+	}
+
+	String resultTableName = getResultTableName(instance);
+	ResultSet rs = fetchCachedResultPage(resultTableName, startRow,endRow);
+	return new SqlResultList(instance, resultTableName, rs);
+    }
+    
     /**
      * @return Full name of table containing result
      */
-    public synchronized String getResultAsTable(QueryInstance instance) throws WdkModelException {
-	return getResultTable(instance);
+    public synchronized String getResultAsTableName(QueryInstance instance) throws WdkModelException {
+	return getResultTableName(instance);
     }
 
     public synchronized String getSqlForCache(QueryInstance instance) throws WdkModelException {
@@ -96,8 +107,8 @@ public class ResultFactory {
 	}
 	sqlb.append(columns[columnLength - 1].getName() + " ");
 	    
-	String resultTable = getResultTable(instance); //ensures instance is inserted into cache
-	sqlb.append("from " + resultTable);
+	String resultTableName = getResultTableName(instance); //ensures instance is inserted into cache
+	sqlb.append("from " + resultTableName);
 
 	return sqlb.toString();
     }
@@ -214,7 +225,7 @@ public class ResultFactory {
     /**
      * @return Full table name of the result table
      */
-    private String getNewResultTable(QueryInstance instance) throws WdkModelException {
+    private String getNewResultTableName(QueryInstance instance) throws WdkModelException {
 	
 	//populates cache if not already in there
 
@@ -243,10 +254,10 @@ public class ResultFactory {
     }
 
     private ResultList getPersistentResult(QueryInstance instance) throws WdkModelException {
-	String resultTable = getResultTable(instance);
+	String resultTableName = getResultTableName(instance);
 
-	ResultSet rs = fetchCachedResult(resultTable);
-	return new SqlResultList(instance, resultTable, rs);
+	ResultSet rs = fetchCachedResult(resultTableName);
+	return new SqlResultList(instance, resultTableName, rs);
     }
 
     /**
@@ -257,7 +268,7 @@ public class ResultFactory {
      *
      * @param instance  The instance of the query
      */
-    private String getResultTable(QueryInstance instance)  throws WdkModelException {
+    private String getResultTableName(QueryInstance instance)  throws WdkModelException {
 	String resultTableFullName;
 
 	// Construct SQL query to retrieve the requested table's name
@@ -278,7 +289,7 @@ public class ResultFactory {
 	}
 
 	if (resultTableName == null) {
-	    resultTableFullName = getNewResultTable(instance);
+	    resultTableFullName = getNewResultTableName(instance);
 	} else {
 	    if (instance.getQueryInstanceId() == null){ //instance result is in cache but is newly created object
 		instance.setQueryInstanceId(getQueryInstanceId(instance));
@@ -450,10 +461,29 @@ public class ResultFactory {
 	return tables.length != 0;
     }
 
-    private ResultSet fetchCachedResult(String resultTable) throws WdkModelException {
+    private ResultSet fetchCachedResult(String resultTableName) throws WdkModelException {
 	
-	String sql = "select * from " + resultTable + " order by " + MULTI_MODE_I + " asc";
+	String sql = 
+	    "select *" + 
+	    " from " + resultTableName + 
+	    " order by " + RESULT_TABLE_I + " asc";
 
+	return fetchCachedResultFromSql(sql);
+    }
+
+    private ResultSet fetchCachedResultPage(String resultTableName, int startRow, int endRow) throws WdkModelException {
+	
+	String sql = 
+	    "select * " + 
+	    " from " + resultTableName +
+	    " where " + RESULT_TABLE_I + " >= " + startRow + 
+	    " and " + RESULT_TABLE_I + " <= " + endRow + 
+	    " order by " + RESULT_TABLE_I + " asc";
+
+	return fetchCachedResultFromSql(sql);
+    }
+
+    private ResultSet fetchCachedResultFromSql(String sql) throws WdkModelException {
  	ResultSet rs = null;
 	try {
 	    rs = SqlUtils.getResultSet(platform.getDataSource(), sql);
@@ -511,7 +541,7 @@ public class ResultFactory {
 	    String login = modelConfig.getLogin();
 	    String password = modelConfig.getPassword();
 	    Integer maxQueryParams = modelConfig.getMaxQueryParams();
-	    String instanceTable = modelConfig.getQueryInstanceTable();
+	    String instanceTableName = modelConfig.getQueryInstanceTable();
 	    String platformClass = modelConfig.getPlatformClass();
 	    
 	    Integer maxIdle = modelConfig.getMaxIdle();
@@ -525,7 +555,7 @@ public class ResultFactory {
 	    platform.init(connectionUrl, login, password, minIdle, maxIdle, maxWait, maxActive, initialSize, modelConfigXmlFile.getAbsolutePath());
 
 	    ResultFactory factory =
-		new ResultFactory(platform, login, instanceTable);
+		new ResultFactory(platform, login, instanceTableName);
 
 	    if (newCache) factory.createCache(maxQueryParams.intValue(), noSchemaOutput);
 	    else if (resetCache) factory.resetCache(noSchemaOutput);
