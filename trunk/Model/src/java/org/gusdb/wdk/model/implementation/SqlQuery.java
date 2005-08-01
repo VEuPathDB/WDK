@@ -119,7 +119,7 @@ public class SqlQuery extends Query {
         // now create an outer query that handles ORDER BY
         String head = "SELECT * FROM ( ";
 	String nestedSql = sb.toString().trim();
-        String orderBy = " ) ORDER BY " + ResultFactory.MULTI_MODE_I;
+        String orderBy = " ) ORDER BY " + ResultFactory.RESULT_TABLE_I;
         return head + nestedSql + orderBy;
     }
 
@@ -136,7 +136,7 @@ public class SqlQuery extends Query {
 					     int endId, String initSql){
 
 	
-	String replacement = resultTableName + "." + ResultFactory.MULTI_MODE_I;
+	String replacement = resultTableName + "." + ResultFactory.RESULT_TABLE_I;
 	
 	if (initSql.indexOf(RESULT_TABLE_MACRO) > 0) {
 	    return initSql.replaceAll(RESULT_TABLE_MACRO, replacement);
@@ -215,17 +215,17 @@ public class SqlQuery extends Query {
 	    //join result table name with row number
 	    firstPartSql = initSqlBuf.substring(0, whereBegins);	    
 	    lastPartSql = initSqlBuf.substring(whereBegins);
-	    rowStartSql = " and " + resultTableName + "." + ResultFactory.MULTI_MODE_I + " >= " + startId;
+	    rowStartSql = " and " + resultTableName + "." + ResultFactory.RESULT_TABLE_I + " >= " + startId;
 	    
 	}
 	else{  //no where clause
 	    firstPartSql = initSqlBuf.toString();
-	    rowStartSql = " where " + resultTableName + "." + ResultFactory.MULTI_MODE_I + " >= " + startId;
+	    rowStartSql = " where " + resultTableName + "." + ResultFactory.RESULT_TABLE_I + " >= " + startId;
 	}
 
 	String extraFromString = ", " + resultTableName + " ";
-	String rowEndSql = " and " + resultTableName + "." + ResultFactory.MULTI_MODE_I + " <= " + endId;
-	String orderBySql = " order by " + resultTableName + "." + ResultFactory.MULTI_MODE_I;
+	String rowEndSql = " and " + resultTableName + "." + ResultFactory.RESULT_TABLE_I + " <= " + endId;
+	String orderBySql = " order by " + resultTableName + "." + ResultFactory.RESULT_TABLE_I;
 	String finalSql = firstPartSql + extraFromString + lastPartSql + rowStartSql + rowEndSql + orderBySql;
 	
 	return finalSql;

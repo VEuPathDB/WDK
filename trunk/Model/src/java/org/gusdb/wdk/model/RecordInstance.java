@@ -12,11 +12,7 @@ public class RecordInstance {
 
     public static final int MAXIMUM_NESTED_RECORD_INSTANCES = 100;
     
-    /**
-     * Modified by Jerric - use an object, instead of a String
-     */
     PrimaryKeyValue primaryKey;
-
     RecordClass recordClass;
     HashMap attributesResultSetsMap;
     HashMap summaryAttributeMap;
@@ -32,18 +28,18 @@ public class RecordInstance {
     public RecordClass getRecordClass() { return recordClass; }
 
     /**
-     * Modified by Jerric - Use two parts as primarykeyValue, projectID and the
-     * original localPrimaryKey String
-     * @param projectID
-     * @param localPrimaryKey
+     * Modified by Jerric - Use two parts as primarykeyValue, projectId and the
+     * original recordId String
+     * @param projectId
+     * @param recordId
      * @throws WdkModelException 
      */
-    public void setPrimaryKey(String projectID, String localPrimaryKey) 
+    public void setPrimaryKey(String projectId, String recordId) 
     throws WdkModelException {
         PrimaryKeyField field = 
             (PrimaryKeyField) recordClass.getField(RecordClass.PRIMARY_KEY_NAME);
         // create primary key
-        this.primaryKey = new PrimaryKeyValue(field, projectID, localPrimaryKey);
+        this.primaryKey = new PrimaryKeyValue(field, projectId, recordId);
     }
 
     /**
@@ -105,9 +101,9 @@ public class RecordInstance {
 	    throw new WdkModelException("primaryKey is null");
     // Modified by jerric
     //paramHash.put("primaryKey", primaryKey);
-    String projectID = primaryKey.getProjectID();
-    if (projectID != null) paramHash.put("projectID", projectID);
-    paramHash.put("primaryKey", primaryKey.getLocalPrimaryKey());
+    String projectId = primaryKey.getProjectId();
+    if (projectId != null) paramHash.put("projectId", projectId);
+    paramHash.put("primaryKey", primaryKey.getRecordId());
 	try {
 	    instance.setValues(paramHash);
 	} catch (WdkUserException e) {
@@ -206,12 +202,12 @@ public class RecordInstance {
 //	    }
 
         String value;
-        if (paramName.equalsIgnoreCase("projectID")) {
-            value = this.getPrimaryKey().getProjectID();
+        if (paramName.equalsIgnoreCase("projectId")) {
+            value = this.getPrimaryKey().getProjectId();
         } else {
             FieldI field = (FieldI)this.getRecordClass().getField(paramName);
             if (field instanceof PrimaryKeyField){
-                value = this.getPrimaryKey().getLocalPrimaryKey();
+                value = this.getPrimaryKey().getRecordId();
             }
             else if (field instanceof AttributeField){
                 value = this.getAttributeValue(paramName).toString();
@@ -372,10 +368,7 @@ public class RecordInstance {
 	// If in the context of an Answer, then we are doing a "summary"
 	// and need to be in multi mode
 	if (answer != null){
-	    answer.setMultiMode(qInstance);
-	    ResultList rl = qInstance.getResult();
-	    answer.setQueryResult(rl);
-	    rl.close();
+	    answer.integrateAttributesQueryResult(qInstance);
 	}	
 	else{ //do it all myself
 	    HashMap paramHash = new HashMap();
@@ -385,9 +378,9 @@ public class RecordInstance {
         // modified by Jerric
         // use the two field of primary key
         //paramHash.put("primaryKey", primaryKey);
-        String projectID = primaryKey.getProjectID();
-        if (projectID != null) paramHash.put("projectID", projectID);
-        paramHash.put("primaryKey", primaryKey.getLocalPrimaryKey());
+        String projectId = primaryKey.getProjectId();
+        if (projectId != null) paramHash.put("projectId", projectId);
+        paramHash.put("primaryKey", primaryKey.getRecordId());
 
         try {
 		qInstance.setValues(paramHash);

@@ -121,11 +121,11 @@ public class Oracle implements RDBMSPlatformI {
 	SqlUtils.execute(dataSource, newSql);
 
 	//Add "i" to the table and initialize each row in that column to be rownum
-	String alterSql = "alter table " + tableName + " add " + ResultFactory.MULTI_MODE_I + " number(12)";
+	String alterSql = "alter table " + tableName + " add " + ResultFactory.RESULT_TABLE_I + " number(12)";
 
 	SqlUtils.execute(dataSource, alterSql);
 
-	String rownumSql = "update " + tableName + " set " + ResultFactory.MULTI_MODE_I + " = rownum";
+	String rownumSql = "update " + tableName + " set " + ResultFactory.RESULT_TABLE_I + " = rownum";
 	
 	SqlUtils.execute(dataSource, rownumSql);
     }

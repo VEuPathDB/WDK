@@ -13,7 +13,7 @@ public abstract class ResultList {
     String resultTableName;
     HashMap valuesInUse;
 
-    //    public static final String MULTI_MODE_I = "MultiModeIValue";
+    //    public static final String RESULT_TABLE_I = "MultiModeIValue";
 
     public ResultList(QueryInstance instance, String resultTableName) {
 	this.instance = instance;
@@ -33,7 +33,7 @@ public abstract class ResultList {
 	Object value;
 
 	
-	if (attributeName == ResultFactory.MULTI_MODE_I){
+	if (attributeName == ResultFactory.RESULT_TABLE_I){
 	    //this is a mess, but for now is the only way to trick ResultList into thinking i is a valid column for this query
 	    value = getMultiModeIValue();
 	    AttributeField iField = new AttributeField(null);

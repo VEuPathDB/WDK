@@ -99,10 +99,10 @@ public class BooleanQueryInstance extends QueryInstance {
 	super.setValues(values);
 	
 	Answer firstAnswer = (Answer)values.get(BooleanQuery.FIRST_ANSWER_PARAM_NAME);
-	this.firstQueryInstance = firstAnswer.getQueryInstance();
+	this.firstQueryInstance = firstAnswer.getIdsQueryInstance();
 
 	Answer secondAnswer = (Answer)values.get(BooleanQuery.SECOND_ANSWER_PARAM_NAME);
-	this.secondQueryInstance = secondAnswer.getQueryInstance();
+	this.secondQueryInstance = secondAnswer.getIdsQueryInstance();
 
 	validateBooleanValues(firstAnswer, secondAnswer);
 	
@@ -156,6 +156,10 @@ public class BooleanQueryInstance extends QueryInstance {
 	return null;
     }
     
+    public ResultList getPersistentResultPage(int startRow, int endRow) throws WdkModelException {
+	return null;
+    }
+
     protected void writeResultToTable(String resultTableName, 
 				      ResultFactory rf) throws WdkModelException {
         RDBMSPlatformI platform = rf.getRDBMSPlatform();
@@ -169,8 +173,8 @@ public class BooleanQueryInstance extends QueryInstance {
         }
     }
 
-    public String getResultAsTable() throws WdkModelException{
-	return booleanQuery.getResultFactory().getResultAsTable(this);
+    public String getResultAsTableName() throws WdkModelException{
+	return booleanQuery.getResultFactory().getResultAsTableName(this);
 
     }
     
