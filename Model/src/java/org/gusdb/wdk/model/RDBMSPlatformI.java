@@ -27,6 +27,8 @@ public interface RDBMSPlatformI {
     public String getCurrentDateFunction();
 
     public String getNumberDataType(); 
+
+    public String getClobDataType(); 
     
     public boolean checkTableExists(String tableName) throws SQLException;
 

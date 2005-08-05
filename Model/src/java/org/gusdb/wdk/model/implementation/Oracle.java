@@ -64,6 +64,10 @@ public class Oracle implements RDBMSPlatformI {
         return "number";
     }
     
+    public String getClobDataType() {
+        return "clob";
+    }
+    
     public boolean checkTableExists(String tableName) throws SQLException{
 	
 	String[] parts = tableName.split("\\.");
@@ -138,7 +142,8 @@ public class Oracle implements RDBMSPlatformI {
 		     Integer initialSize, String fileName) throws WdkModelException {
         
 	try{
-	    DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
+	    //	    DriverManager.registerDriver(new org.postgresql.Driver());
+	    System.setProperty("jdbc.drivers","oracle.jdbc.driver.OracleDriver");
 	    this.connectionPool = new GenericObjectPool(null);
 
 	    ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(url, user, password);

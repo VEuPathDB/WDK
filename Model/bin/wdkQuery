@@ -21,6 +21,6 @@ foreach my $arg (@ARGV) {
     $args .= ($arg =~ /\-/ ? " $arg" : " \"$arg\"");
 }
 
-my $cmd = "java -Djdbc.drivers=oracle.jdbc.driver.OracleDriver -DcmdName=wdkQuery -DconfigDir=$GUS_HOME/config -DschemaFile=$GUS_HOME/lib/rng/wdkModel.rng -classpath $CLASSPATH org.gusdb.wdk.model.test.QueryTester $args";
+my $cmd = "java -DcmdName=wdkQuery -DconfigDir=$GUS_HOME/config -DschemaFile=$GUS_HOME/lib/rng/wdkModel.rng -classpath $CLASSPATH org.gusdb.wdk.model.test.QueryTester $args";
 
 system($cmd);
