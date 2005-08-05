@@ -22,7 +22,8 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 /**
- * SanityTester.java
+ * SanityTester.java	    " [-project project_id]" +
+
  *
  * Main class for running the sanity tests, which is a way to test all Queries and RecordClasss in
  * a wdk model to make sure they work as intended and their results fall within an expected range,
@@ -40,6 +41,11 @@ public class SanityTester {
     // Instance variables
     // ------------------------------------------------------------------
 
+    int queriesPassed  = 0;
+    int queriesFailed  = 0;
+    int recordsPassed  = 0;
+    int recordsFailed  = 0;
+    
     /*
      * Wdk model that contains the Queries and RecordClasss to be tested.
      */ 
@@ -119,12 +125,11 @@ public class SanityTester {
 
 	    //run tests
 	    sanityTester.runExistenceTest(queryTester, verbose);
-	    Integer queryResults[] = sanityTester.runQueryValidationTest(queryTester, verbose, cmdLine);
-	    Integer recordResults[] = sanityTester.runRecordValidationTest(queryTester, verbose, cmdLine);
+	    sanityTester.runQueryValidationTest(queryTester, verbose, cmdLine);
+	    sanityTester.runRecordValidationTest(queryTester, verbose, cmdLine);
     
 	    if (verbose) System.out.println(sanityModel.toString());
-	    boolean failedOverall = sanityTester.printSummaryLine(queryResults, recordResults);
-	    if (failedOverall){
+	    if (sanityTester.printSummaryLine()) {
 		System.exit(1);
 	    }
 	    
@@ -158,6 +163,7 @@ public class SanityTester {
 		    if (!sanityModel.hasSanityQuery(nextQuerySet.getName() + "." + nextQuery.getName())){
 			System.out.println("Sanity Test Failed!  Query " + nextQuerySet.getName() + "." + nextQuery.getName() +
 					   " is not represented in the sanity test\n");
+			queriesFailed++;
 		    }
 		    else {
 			if (verbose){
@@ -178,6 +184,7 @@ public class SanityTester {
 		    if (!sanityModel.hasSanityRecord(nextRecordClassSet.getName() + "." + nextRecordClass.getName())){
 			System.out.println("Sanity Test Failed!  RecordClass " + nextRecordClassSet.getName() + "." + nextRecordClass.getName() + 
 					   " is not represented in the sanity test\n");
+			recordsFailed++;
 		    }
 		    else {
 			if (verbose){
@@ -195,15 +202,11 @@ public class SanityTester {
      * results returned by the query to the expected range provided in the sanity model.  The test fails if the
      * result is outside the expected range or if an exception is thrown.
      *
-     * @param return a two-value array where the first entry is the number of queries that passed the test and
-     *               the second is the number of queries that failed.
      */		
-    private Integer[] runQueryValidationTest(QueryTester queryTester, boolean verbose, CommandLine cmdLine){
+    private void runQueryValidationTest(QueryTester queryTester, boolean verbose, CommandLine cmdLine){
 	System.out.println("Sanity Test:  Checking queries\n");
 	
 	Reference nextQueryReference = null;
-	int queryPass = 0;
-	int queryFail = 0;
 	SanityQuery nextSanityQuery = null;
 	SanityQuery queries[] = sanityModel.getAllSanityQueries();
 
@@ -218,7 +221,7 @@ public class SanityTester {
 		    
 		    //run query
 		    ResultList rs = queryTester.getResult(nextQueryReference.getSetName(), nextQueryReference.getElementName(),
-							  nextSanityQuery.getParamHash(), true);
+							  nextSanityQuery.getParamHash());
 		    
 		    //count results; check if sane
 		    int sanityMin = nextSanityQuery.getMinOutputLength().intValue();
@@ -235,16 +238,16 @@ public class SanityTester {
 					   " FAILED!***  It returned " + counter + " rows--not within expected range (" + sanityMin + " - " + sanityMax + ")");
 			printFailureMessage(nextSanityQuery, cmdLine);
 			System.out.println(BANNER_LINE + "\n");
-			queryFail++;
+			queriesFailed++;
 		    }
 		    else {
 			System.out.println("Query " + nextQueryReference.getSetName() + "." + nextQueryReference.getElementName() +
 					   " passed--returned " + counter + " rows, within expected range (" + sanityMin + " - " + sanityMax + ")\n");
 		    }
-		    queryPass++;
+		    queriesPassed++;
 		}
 	     	catch(Exception e){
-		    queryFail++;
+		    queriesFailed++;
 		    System.out.println(BANNER_LINE);
 		    System.out.println("***QUERY " + nextQueryReference.getSetName() + "." + nextQueryReference.getElementName() + " FAILED!***  It threw an exception.");
 		    printFailureMessage(nextSanityQuery, cmdLine);
@@ -252,25 +255,17 @@ public class SanityTester {
 		}
 	    }
 	}
-	Integer result[] = new Integer[2];
-	result[0] = new Integer(queryPass);
-	result[1] = new Integer(queryFail);
-	return result;
     }
 
     /**
      * Processes each RecordClass (by simply calling its print method, which exercises all of the queries within that recordClass)
      * provided in the sanity test.  The test fails if an exception is thrown.
      *
-     * @param return a two-value array where the first entry is the number of records that passed the test and
-     *               the second is the number of records that failed.
      */		
-    private Integer[] runRecordValidationTest(QueryTester queryTester, boolean verbose, CommandLine cmdLine){
+    private void runRecordValidationTest(QueryTester queryTester, boolean verbose, CommandLine cmdLine){
 	//DTB -- this could probably be refactored to combine with the query validation method
 	System.out.println("Sanity Test:  Checking records\n");
 
-	int recordPass = 0;
-	int recordFail = 0;
 	SanityRecord nextSanityRecord = null;
 	Reference nextRecordReference = null;
 	SanityRecord records[] = sanityModel.getAllSanityRecords();
@@ -295,10 +290,10 @@ public class SanityTester {
 		    String riString = nextRecordInstance.print();
 		    System.out.println("Record " + nextRecordReference.getSetName() + "." + nextRecordReference.getElementName() + " passed\n");
 		    if (verbose) System.out.println(riString + "\n");
-		    recordPass++;
+		    recordsPassed++;
 		}
 	    	catch (Exception wme){
-		    recordFail++;
+		    recordsFailed++;
 		    System.out.println(BANNER_LINE);
 		    System.out.println("***RECORD " + nextRecordReference.getSetName() + "." + nextRecordReference.getElementName() + " FAILED!***");
 		    printFailureMessage(nextSanityRecord, cmdLine);
@@ -306,10 +301,6 @@ public class SanityTester {
 		} 
 	    }
 	}
-	Integer result[] = new Integer[2];
-	result[0] = new Integer(recordPass);
-	result[1] = new Integer(recordFail);
-	return result;
     }
     
     /**
@@ -345,20 +336,14 @@ public class SanityTester {
      * @param return       true if one or more tests failed; false otherwise.
      */
     
-    private boolean printSummaryLine(Integer queryResult[], Integer recordResult[]){
+    private boolean printSummaryLine(){
 
-	int queryPassed = queryResult[0].intValue();
-	int queryFailed = queryResult[1].intValue();
-
-	int recordPassed = recordResult[0].intValue();
-	int recordFailed = recordResult[1].intValue();
-		
-	boolean failedOverall = (queryFailed > 0 || recordFailed > 0);
+	boolean failedOverall = (queriesFailed > 0 || recordsFailed > 0);
 	String result = failedOverall ? "FAILED" : "PASSED";
 
 	StringBuffer resultLine = new StringBuffer("***Sanity test summary***\n");
-	resultLine.append(queryPassed + " queries passed, " + queryFailed + " queries failed\n");
- 	resultLine.append(recordPassed + " records passed, " + recordFailed + " records failed\n");
+	resultLine.append(queriesPassed + " queries passed, " + queriesFailed + " queries failed\n");
+ 	resultLine.append(recordsPassed + " records passed, " + recordsFailed + " records failed\n");
 	resultLine.append("Sanity Test " + result + "\n");
 	System.out.println(resultLine.toString());
 	return failedOverall;
