@@ -49,7 +49,7 @@ public class ResultFactory {
 
     private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.model.ResultFactory");
 
-    public static final String RESULT_TABLE_I = "multi_mode_i_column";
+    public static final String RESULT_TABLE_I = "result_index_column";
 
 
     
@@ -356,9 +356,10 @@ public class ResultFactory {
 	    sqlb.append(", param" + i);
 	}
 	sqlb.append(") values (");
+	String datefunc = platform.getCurrentDateFunction();
 	sqlb.append(nextID + ", " + queryName + ", " + cached + ", " 
 		    + sessionId + ", " + 
-		    datasetName + ", sysdate" + pVals+ ")"); 
+		    datasetName + ", " + datefunc + " " + pVals+ ")"); 
 	
 	int numRows = 0;
 

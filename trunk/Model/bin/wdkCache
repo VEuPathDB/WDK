@@ -22,7 +22,7 @@ foreach my $arg (@ARGV) {
 }
 
 
-my $cmd = "java -Djdbc.drivers=oracle.jdbc.driver.OracleDriver -DconfigDir=$GUS_HOME/config -DcmdName=wdkCache -classpath $CLASSPATH org.gusdb.wdk.model.ResultFactory $args";
+my $cmd = "java -DconfigDir=$GUS_HOME/config -DcmdName=wdkCache -classpath $CLASSPATH org.gusdb.wdk.model.ResultFactory $args";
 
 system($cmd);
 

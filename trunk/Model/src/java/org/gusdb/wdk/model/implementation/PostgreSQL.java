@@ -4,6 +4,7 @@ package org.gusdb.wdk.model.implementation;
 import org.gusdb.wdk.model.RDBMSPlatformI;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkLogManager;
+import org.gusdb.wdk.model.ResultFactory;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -56,8 +57,17 @@ public class PostgreSQL implements RDBMSPlatformI {
         return "numeric";
     }
     
+    public String getClobDataType() {
+        return "text";
+    }
+    
+    public String getVarcharDataType(int length) {
+        return "varchar(" + length + ")";
+    }
+
     public String getCurrentDateFunction() {
-	return "select LOCALTIMESTAMP(0)";
+	//	return "select LOCALTIMESTAMP(0)";
+	return "LOCALTIMESTAMP(0)";
     }
     
     public boolean checkTableExists(String tableName) throws SQLException{
@@ -67,7 +77,9 @@ public class PostgreSQL implements RDBMSPlatformI {
 	String realTableName =  parts[1];
 
 	String sql = "select tableowner, tablename from pg_tables where schemaname='" + owner + 
-	    "' and tablename='" + realTableName + "'";
+	    "' and tablename='" + realTableName.toLowerCase() + "'";
+
+	System.err.println("PostgreSQL: sql " + sql);
 	
 	String result = SqlUtils.runStringQuery(dataSource, sql);
 	
@@ -77,8 +89,8 @@ public class PostgreSQL implements RDBMSPlatformI {
     
     public void createSequence(String sequenceName, int start, int increment) throws SQLException {
 
-	String sql = "create sequence " + sequenceName + " increment by " 
-	    + increment + " start with " + start ;
+	String sql = "create sequence " + sequenceName + " start " + start +
+	    " increment " + increment  ;
 	SqlUtils.execute(dataSource, sql);
     }
 
@@ -118,12 +130,12 @@ public class PostgreSQL implements RDBMSPlatformI {
 	SqlUtils.execute(dataSource, newSql);
 
 	//Add "i" to the table and initialize each row in that column to be rownum
-	String alterSql = "alter table " + tableName + " add i number(12)";
+	String alterSql = "alter table " + tableName + " add " + ResultFactory.RESULT_TABLE_I + " numeric(12)";
 
 	SqlUtils.execute(dataSource, alterSql);
 
-	String rownumSql = "update " + tableName + " set i = " 
-	  + tableName + "_sq.nextval" ;
+	String rownumSql = "update " + tableName + " set " + ResultFactory.RESULT_TABLE_I + " = nextval('" 
+	  + tableName + "_sq')" ;
 	SqlUtils.execute(dataSource, rownumSql);
 
 	// drop the temporary sequence 
@@ -139,7 +151,8 @@ public class PostgreSQL implements RDBMSPlatformI {
 		     Integer initialSize, String fileName) throws WdkModelException {
 
 	try{
-	    DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
+	    //	    DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
+	    System.setProperty("jdbc.drivers","org.postgresql.Driver");
 	    this.connectionPool = new GenericObjectPool(null);
 	    
 	    ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(url, user, password);
@@ -150,7 +163,7 @@ public class PostgreSQL implements RDBMSPlatformI {
 	    
 	    this.dataSource = dataSource;
 	}
-	catch (SQLException sqle){
+	catch (Exception sqle){
 	    throw new WdkModelException("\n\n*************ERROR***********\nCould not connect to database.\nIt is possible that you are using an incorrect url for connecting to the database or that your login or password is incorrect.\nPlease check " + fileName + " and make sure all information provided there is valid.\n(This is the most likely cause of the error; note it could be something else)\n\n", sqle);
 	    
 	}
