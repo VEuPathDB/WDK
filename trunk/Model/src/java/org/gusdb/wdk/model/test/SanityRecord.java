@@ -89,16 +89,15 @@ public class SanityRecord implements SanityElementI {
 
     public String getCommand(String globalArgs) throws WdkModelException{
 
-        // modified by Jerric
-        //String pk = getPrimaryKey().toString();
         String projectID = getProjectID();
         String pk = getPrimaryKey();
 
 	StringBuffer command = new StringBuffer ("wdkRecord " + globalArgs);
 
-	command.append(" -record " + getRef()  + " -project " + projectID 
-            + " -primaryKey " + pk);
+	command.append(" -record " + getRef()  + " -primaryKey " + pk);
 	
+	if (projectID != null) command.append(" -project " + projectID);
+ 
 	return command.toString();
     }
 
