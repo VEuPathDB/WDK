@@ -243,8 +243,8 @@ public class SanityTester {
 		    else {
 			System.out.println("Query " + nextQueryReference.getSetName() + "." + nextQueryReference.getElementName() +
 					   " passed--returned " + counter + " rows, within expected range (" + sanityMin + " - " + sanityMax + ")\n");
+			queriesPassed++;
 		    }
-		    queriesPassed++;
 		}
 	     	catch(Exception e){
 		    queriesFailed++;

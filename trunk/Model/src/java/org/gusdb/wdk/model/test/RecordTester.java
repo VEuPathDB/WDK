@@ -45,11 +45,10 @@ public class RecordTester {
 
 	String recordClassFullName = cmdLine.getOptionValue("record");
 
-    // modified by Jerric, and make projectID optional
-    String projectID = null;
-    if (cmdLine.hasOption("project")) 
-        projectID = cmdLine.getOptionValue("project");
-    String primaryKey = cmdLine.getOptionValue("primaryKey");
+	String projectID = null;
+	if (cmdLine.hasOption("project")) 
+	    projectID = cmdLine.getOptionValue("project");
+	String primaryKey = cmdLine.getOptionValue("primaryKey");
 
 	try {
 	    
@@ -96,7 +95,7 @@ public class RecordTester {
 
     // by Jerric - project ID
     // use cache
-    Option project = new Option("project",true, "The unique project ID of the GUS instance.");
+    Option project = new Option("project",true, "The project ID of the record, if project IDs are used.");
     options.addOption(project);
 
 	// primary key
@@ -128,13 +127,12 @@ public class RecordTester {
     static void usage(String cmdName, Options options) {
 
 	String newline = System.getProperty( "line.separator" );
-    // modified by jerric - add projectID option
 	String cmdlineSyntax = 
 	    cmdName + 
 	    " -model model_name" +
 	    " -record full_record_name" +
-        " -project project_id" +
-	    " -primaryKey primary_key";
+	    " -primaryKey primary_key" +
+	    " [-project project_id]";
 
 	String header = 
 	    newline + "Print a record found in a WDK Model xml file. Options:" ;

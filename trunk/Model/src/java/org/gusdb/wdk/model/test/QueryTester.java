@@ -39,23 +39,23 @@ public class QueryTester {
     /////////////   public methods   /////////////////////////////////////
     //////////////////////////////////////////////////////////////////////
 
-    public ResultList getResult(String querySetName, String queryName, Hashtable paramHash, boolean useCache) throws WdkModelException, WdkUserException {
+    public ResultList getResult(String querySetName, String queryName, Hashtable paramHash) throws WdkModelException, WdkUserException {
 	QueryInstance instance = 
-	    getInstance(querySetName, queryName, paramHash, useCache);
+	    getInstance(querySetName, queryName, paramHash);
 	return instance.getResult();
     }
 
     public String getResultAsTableName(String querySetName, String queryName, 
-Hashtable paramHash, boolean useCache) throws WdkModelException, WdkUserException {
+Hashtable paramHash) throws WdkModelException, WdkUserException {
 	QueryInstance instance = 
-	    getInstance(querySetName, queryName, paramHash, useCache);
+	    getInstance(querySetName, queryName, paramHash);
 	return ((SqlQueryInstance)instance).getResultAsTableName();
     }
 
     public String showLowLevelQuery(String querySetName, String queryName, 
-Hashtable paramHash, boolean useCache) throws WdkModelException, WdkUserException {
+Hashtable paramHash) throws WdkModelException, WdkUserException {
 	QueryInstance instance = 
-	    getInstance(querySetName, queryName, paramHash, useCache);
+	    getInstance(querySetName, queryName, paramHash);
 	return instance.getLowLevelQuery();
     }
 
@@ -67,12 +67,11 @@ Hashtable paramHash, boolean useCache) throws WdkModelException, WdkUserExceptio
     /////////////   protected methods   //////////////////////////////////
     //////////////////////////////////////////////////////////////////////
 
-    QueryInstance getInstance(String querySetName, String queryName, Hashtable paramHash, boolean useCache) throws WdkModelException, WdkUserException {
+    QueryInstance getInstance(String querySetName, String queryName, Hashtable paramHash) throws WdkModelException, WdkUserException {
 	QuerySet querySet 
 	    = wdkModel.getQuerySet(querySetName);
 	Query query = querySet.getQuery(queryName);
 	QueryInstance instance = query.makeInstance();
-	instance.setIsCacheable(useCache);
 	instance.setValues(paramHash);
 	return instance;
     }
@@ -159,7 +158,6 @@ Hashtable paramHash, boolean useCache) throws WdkModelException, WdkUserExceptio
         File modelPropFile = new File(configDir, modelName + ".prop");
         
 	String fullQueryName = cmdLine.getOptionValue("query");
-        boolean useCache = !cmdLine.hasOption("dontCache");
         boolean returnResultAsTable = cmdLine.hasOption("returnTable");
         boolean showQuery = cmdLine.hasOption("showQuery");
         boolean haveParams = cmdLine.hasOption("params");
@@ -200,8 +198,7 @@ Hashtable paramHash, boolean useCache) throws WdkModelException, WdkUserExceptio
                 if (showQuery) {
 		    String query = tester.showLowLevelQuery(querySetName, 
 							    queryName, 
-							    paramHash,
-							    useCache);
+							    paramHash);
 		    String newline = System.getProperty( "line.separator" );
 		    String newlineQuery = query.replaceAll("^\\s\\s\\s", newline);
 		    newlineQuery = newlineQuery.replaceAll("(\\S)\\s\\s\\s", "$1" + newline);
@@ -210,8 +207,7 @@ Hashtable paramHash, boolean useCache) throws WdkModelException, WdkUserExceptio
                 else if (returnResultAsTable) {
                     String table = tester.getResultAsTableName(querySetName, 
 							       queryName, 
-							       paramHash,
-							       useCache);
+							       paramHash);
                     System.out.println(table);
                 } 
 		else {
@@ -220,8 +216,7 @@ Hashtable paramHash, boolean useCache) throws WdkModelException, WdkUserExceptio
                         getQuery(queryName);
 
 		    ResultList rs = tester.getResult(querySetName, 
-						     queryName, paramHash,
-						     useCache);
+						     queryName, paramHash);
 		    rs.print();
                 }
             }
@@ -255,10 +250,6 @@ Hashtable paramHash, boolean useCache) throws WdkModelException, WdkUserExceptio
 	// query name
 	addOption(options, "query", "The full name (set.element) of the query to run.");
 	
-	// use cache
-	Option useCache = new Option("dontCache","Do not use the cache for this query (even if it is cache enabled).");
-	options.addOption(useCache);
-
 	OptionGroup specialOperations = new OptionGroup();
 
 	// return only the sql
@@ -317,7 +308,6 @@ Hashtable paramHash, boolean useCache) throws WdkModelException, WdkUserExceptio
             cmdName + 
             " -model model_name" +
             " -query full_query_name" +
-            " [-dontCache]" +
             " [-returnTable -rows start end | -returnSize | -showQuery]" +
             " [-params param_1_name param_1_value ...]";
         
