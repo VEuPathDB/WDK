@@ -166,7 +166,7 @@ Hashtable paramHash) throws WdkModelException, WdkUserException {
         if (haveParams) params = cmdLine.getOptionValues("params");
         String[] rows = null;
         if (paging) rows = cmdLine.getOptionValues("rows");
-        
+         
         try {
 	    Reference ref = new Reference(fullQueryName);
 	    String querySetName = ref.getSetName();
