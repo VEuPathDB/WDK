@@ -136,10 +136,14 @@ public class TestDBManager {
 	DataSource dataSource = platform.getDataSource();
 	
 	// substitute plaform indpendent number types for "number(10)"
-	String platformCorrectedFirstLine = firstLine;
 	String numType = platform.getNumberDataType();
+	String clobType = platform.getClobDataType();
 
-	platformCorrectedFirstLine.replaceAll("number\\(", numType + "(");
+       	String platformCorrectedFirstLine = 
+	    firstLine.replaceAll("number\\(", numType + "(");
+
+       	platformCorrectedFirstLine = 
+	    platformCorrectedFirstLine.replaceAll(" clob", " " + clobType);
 
 	String createTable = "create table " + tableName + 
 	    " (" + platformCorrectedFirstLine + ")";
