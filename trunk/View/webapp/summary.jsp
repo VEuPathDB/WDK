@@ -115,7 +115,7 @@
 	<!-- modified by Jerric -->
       <!-- <a href="showRecord.do?name=${recNam}&id=${record.primaryKey}">${fieldVal}</a> -->
 	<c:set value="${record.primaryKey}" var="primaryKey"/>
-        <a href="showRecord.do?name=${recNam}&project_id=${primaryKey.projectID}&primary_key=${primaryKey.localPrimaryKey}">${fieldVal}</a>
+        <a href="showRecord.do?name=${recNam}&project_id=${primaryKey.projectId}&primary_key=${primaryKey.recordId}">${fieldVal}</a>
       </c:when>
       <c:otherwise>
 

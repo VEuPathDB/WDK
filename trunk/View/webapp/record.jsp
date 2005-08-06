@@ -20,7 +20,7 @@
   </tr>
   <tr>
     <td><b>Local PK</b></td>
-    <td>${primaryKey.localPrimaryKey}</td>
+    <td>${primaryKey.recordId}</td>
   </tr>
   </c:if>
 
@@ -121,7 +121,7 @@
                   <!-- Added by Jerric - Display primary key content -->
                   <!-- <a href="showRecord.do?name=${recNam}&id=${nextRecord.primaryKey}">${fieldVal}</a> -->
   		  	<c:set value="${nextRecord.primaryKey}" var="nextPK"/>
-                  <a href="showRecord.do?name=${recNam}&project_id=${nextPK.projectID}&primary_key=${nextPK.localPrimaryKey}">${fieldVal}</a>
+                  <a href="showRecord.do?name=${recNam}&project_id=${nextPK.projectId}&primary_key=${nextPK.recordId}">${fieldVal}</a>
                </c:when>
                <c:otherwise>
  
