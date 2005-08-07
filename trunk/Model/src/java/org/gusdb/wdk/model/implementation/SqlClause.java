@@ -67,7 +67,7 @@ public class SqlClause {
     // also fix piece if it needs the join table added to its FROM statement
     public String getFinalClauseSql() throws WdkModelException {
 	if (pieces.size() - kids.size() != 1) {
-	    throwException("Invalid sql. There are " + pieces.size() + " pieces and " + kids.size() + " kids ", substring(origSql, open, close));   
+	    throwException("Invalid sql. There are " + pieces.size() + " pieces and " + kids.size() + " kids ", origSql.substring(open, close));   
 	}
 	
 	// initial pass to check pieces for From, PrimaryKey pair, and validate
@@ -211,9 +211,9 @@ public class SqlClause {
     }
 
     private void throwException(String msg, String sql) throws WdkModelException {
-	String newline = System.getProperty("line.seperator");
-	throwException(msg + newline + "SQL: " + newline +
-				    sql + newline)
+	String newline = System.getProperty("line.separator");
+	throw new WdkModelException(msg + newline + "SQL: " + newline +
+				    sql + newline);
     }
 
     public static void main(String[] args) {
