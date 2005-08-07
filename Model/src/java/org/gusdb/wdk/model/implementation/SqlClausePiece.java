@@ -13,8 +13,8 @@ public class SqlClausePiece {
      * clauses.  If the sql clause has no kids, then the piece is its
      * full length (exluding bounding parens)
      *
-     * @param start start of this piece (non-paren)
-     * @param end end of this piece (non-paren), ie, index of last char + 1
+     * @param start index of the start of this piece (non-paren)
+     * @param end index of end of this piece (non-paren), ie, index of last char
      */
     public SqlClausePiece(String origSql, int start, int end, String joinTableName) {
 	this.origSql = origSql;
@@ -23,7 +23,7 @@ public class SqlClausePiece {
     }
 
     String getFinalPieceSql(boolean needsFromFix) {
-	String finalSql = origSql.substring(start, end);
+	String finalSql = origSql.substring(start, end+1);
 	if (needsFromFix) finalSql = addJoinTableToFrom(finalSql);
 	return finalSql;
     }
@@ -38,13 +38,13 @@ public class SqlClausePiece {
 
     boolean containsFrom() {
 	
-	boolean b = origSql.substring(start, end).toLowerCase().indexOf("from") != -1;
+	boolean b = origSql.substring(start, end+1).toLowerCase().indexOf("from") != -1;
 	return b;
     }
 
     boolean containsPrimaryKey() {
 	
-	return origSql.substring(start, end).indexOf(SqlClause.PRIMARY_KEY) != -1;
+	return origSql.substring(start, end+1).indexOf(SqlClause.PRIMARY_KEY) != -1;
     }
 
 }
