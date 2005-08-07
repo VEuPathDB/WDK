@@ -37,10 +37,10 @@ public class SqlClause {
 
     //locations relative to original sql
     private int open;   // clause open paren
-    private int close;     // clause close paren + 1
+    private int close;     // clause close paren
 
     private String joinTableName;
-    private boolean origHadOuterParens = true;
+    private boolean hadOuterParens = true;
 
     private SqlClausePiece fromPiece = null;
     private SqlClausePiece primaryKeyPiece = null;
@@ -66,8 +66,11 @@ public class SqlClause {
     // stitch together piece, clause, ..., piece
     // also fix piece if it needs the join table added to its FROM statement
     public String getFinalClauseSql() throws WdkModelException {
+
 	if (pieces.size() - kids.size() != 1) {
-	    throwException("Invalid sql. There are " + pieces.size() + " pieces and " + kids.size() + " kids ", origSql.substring(open, close));   
+	    throwException("Invalid sql. There are " + pieces.size() + 
+			   " pieces and " + kids.size() + " kids ", 
+			   getClauseSql());   
 	}
 	
 	// initial pass to check pieces for From, PrimaryKey pair, and validate
@@ -94,8 +97,8 @@ public class SqlClause {
 	    }
 	}
 
-	return origHadOuterParens? 
-	    "(" + finalSql.toString() + ")" :
+	return hadOuterParens? 
+	    "(" + finalSql.toString() + ")":
 	    finalSql.toString();
     }
 
@@ -105,12 +108,13 @@ public class SqlClause {
 
     private int getOpen() { return open; }
     private int getClose() { return close; }
-    private String getClauseSql() { return origSql.substring(open, close); }
+    private String getClauseSql() { return origSql.substring(open, close+1); }
 	
     /**
-     * constructor if close known (leaf)
+     * constructor if close known, which means this clause is a leaf 
+     * (ie, it has no kid clauses)
      * @param open index of clause open paren
-     * @param close index of clause close paren + 1
+     * @param close index of clause close paren
      */ 
     private SqlClause(String origSql, int open, int close) {
 	this.origSql = origSql;
@@ -134,33 +138,28 @@ public class SqlClause {
     // on entry cursor points to open paren for this clause
     private void findKidsAndPieces() throws WdkModelException {
 
-	int cursor = open + 1;
+	int cursor = open;
 	SqlClause kid;
 	while ((kid = constructNextKid(cursor)) != null) {
 
-	    pieces.add(new SqlClausePiece(origSql, cursor, kid.getOpen(),
+	    pieces.add(new SqlClausePiece(origSql, cursor+1, kid.getOpen()-1,
 					  joinTableName));
 	    kids.add(kid);
 	    cursor = kid.getClose();
 	}
-	close = origSql.indexOf(CLOSE, cursor); 
-	pieces.add(new SqlClausePiece(origSql, cursor, close, joinTableName));
+	close = origSql.indexOf(CLOSE, cursor+1); 
+	pieces.add(new SqlClausePiece(origSql,cursor+1,close-1,joinTableName));
     }
 
-    // cursor points to either parent open paren or prev kid close
+    // cursor points to either this clause's open paren or prev kid close
     private SqlClause constructNextKid(int cursor) throws WdkModelException {
-
-	int firstOpen = origSql.indexOf(OPEN, cursor+1);
-	int firstClose = origSql.indexOf(CLOSE, cursor+1);
-
-	if (firstOpen == -1) return null;    // no kids
 	
-	// if no open before close, we have found a leaf
-	// otherwise, we have a open of a complex kid
-	return (firstOpen > firstClose) ?
-	    new SqlClause(origSql, firstOpen) :
-	    new SqlClause(origSql, firstOpen, firstClose+1);
+	int nextClose = origSql.indexOf(CLOSE, cursor+1);
+	int nextOpen = origSql.indexOf(OPEN, cursor+1);
 
+	if (nextOpen == -1 || nextOpen > nextClose) return null;// no more kids
+	
+	return new SqlClause(origSql, nextOpen); // start next kid to find
     }
 
     private void validateParenStructure() throws WdkModelException {
@@ -179,7 +178,7 @@ public class SqlClause {
 		} else {
 		    parenStack.pop();
 		    if (parenStack.empty() && i < chars.length-1)
-			origHadOuterParens = false;
+			hadOuterParens = false;  // orig needs bounding parens
 		}
 	    }
 	}
@@ -187,7 +186,7 @@ public class SqlClause {
 	    throwException(errMsg, origSql);
 	}
 
-	if (!origHadOuterParens) origSql = "(" + origSql + ")";
+	if (!hadOuterParens) origSql = "(" + origSql + ")";
     }
 
     private void checkForFrom(SqlClausePiece piece) throws WdkModelException {
