@@ -44,14 +44,12 @@ public class SanityTester {
     
     WdkModel wdkModel;
     boolean verbose;
-    QueryTester queryTester;
     SanityModel sanityModel;
 
     public static final String BANNER_LINE = "***********************************************************";
 
     public SanityTester(String modelName, SanityModel sanityModel, boolean verbose) throws WdkModelException {
 	this.wdkModel = WdkModel.construct(modelName);
-	this.queryTester = new QueryTester(wdkModel);
 	this.sanityModel = sanityModel;
 	this.verbose = verbose;
     }
@@ -66,9 +64,9 @@ public class SanityTester {
      * sanity test but not the model then that will be caught in the 
      * other validation tests.
      */
-    private void runExistenceTest() {
+    private void existenceTest() {
 
-	QuerySet querySets[] = queryTester.getWdkModel().getAllQuerySets();
+	QuerySet querySets[] = wdkModel.getAllQuerySets();
 	for (int i = 0; i < querySets.length; i++){
 	    QuerySet nextQuerySet = querySets[i];
 	    Query queries[] = nextQuerySet.getQueries();
@@ -85,7 +83,7 @@ public class SanityTester {
 	    }
 	}
 
-	RecordClassSet recordClassSets[] = queryTester.getWdkModel().getAllRecordClassSets();
+	RecordClassSet recordClassSets[] = wdkModel.getAllRecordClassSets();
 	for (int i = 0; i < recordClassSets.length; i++){
 	    RecordClassSet nextRecordClassSet = recordClassSets[i];
 	    RecordClass recordClasses[] = nextRecordClassSet.getRecordClasses();
@@ -106,27 +104,28 @@ public class SanityTester {
     }
 
     /**
-     * Runs each query provided in the sanity test model (which is also each query in the wdk model).  Compares the
-     * results returned by the query to the expected range provided in the sanity model.  The test fails if the
+     * Runs each query provided in the sanity test model (which is also each
+     * query in the wdk model).  Compares the results returned by the query 
+     * to the expected range provided in the sanity model.  The test fails if the
      * result is outside the expected range or if an exception is thrown.
-     *
      */		
-    private void runQueryValidationTest() {
+    private void queriesTest() {
 	System.out.println("Sanity Test:  Checking queries\n");
 	
-	Reference nextQueryReference = null;
+	Reference queryRef = null;
 	SanityQuery queries[] = sanityModel.getAllSanityQueries();
 
 	for (int i = 0; i < queries.length; i++){
 	    try{    
 		//get model query from sanity query
-		nextQueryReference = new Reference(queries[i].getRef());
-		QuerySet nextQuerySet = queryTester.getWdkModel().getQuerySet(nextQueryReference.getSetName());
-		Query nextQuery = nextQuerySet.getQuery(nextQueryReference.getElementName());
+		queryRef = new Reference(queries[i].getRef());
+		QuerySet nextQuerySet = wdkModel.getQuerySet(queryRef.getSetName());
+		Query nextQuery = nextQuerySet.getQuery(queryRef.getElementName());
 		    
 		//run query
-		ResultList rs = queryTester.getResult(nextQueryReference.getSetName(),
-						      nextQueryReference.getElementName(),
+		QueryTester queryTester = new QueryTester(wdkModel);
+		ResultList rs = queryTester.getResult(queryRef.getSetName(),
+						      queryRef.getElementName(),
 						      queries[i].getParamHash());
 		    
 		//count results; check if sane
@@ -140,8 +139,8 @@ public class SanityTester {
 		//		    rs.close();
 		if (counter < sanityMin || counter > sanityMax){
 		    System.out.println(BANNER_LINE);
-		    System.out.println("***QUERY " + nextQueryReference.getSetName() + 
-				       "." + nextQueryReference.getElementName() + 
+		    System.out.println("***QUERY " + queryRef.getSetName() + 
+				       "." + queryRef.getElementName() + 
 				       " FAILED!***  It returned " + counter + 
 				       " rows--not within expected range (" + 
 				       sanityMin + " - " + sanityMax + ")");
@@ -150,8 +149,8 @@ public class SanityTester {
 		    queriesFailed++;
 		}
 		else {
-		    System.out.println("Query " + nextQueryReference.getSetName() + 
-				       "." + nextQueryReference.getElementName() +
+		    System.out.println("Query " + queryRef.getSetName() + 
+				       "." + queryRef.getElementName() +
 				       " passed--returned " + counter + 
 				       " rows, within expected range (" + sanityMin + 
 				       " - " + sanityMax + ")\n");
@@ -161,7 +160,9 @@ public class SanityTester {
 	    catch(Exception e){
 		queriesFailed++;
 		System.out.println(BANNER_LINE);
-		System.out.println("***QUERY " + nextQueryReference.getSetName() + "." + nextQueryReference.getElementName() + " FAILED!***  It threw an exception.");
+		System.out.println("***QUERY " + queryRef.getSetName() + 
+				   "." + queryRef.getElementName() +
+				   " FAILED!***  It threw an exception.");
 		printFailureMessage(queries[i]);
 		System.out.println(BANNER_LINE + "\n");
 	    }
@@ -174,42 +175,38 @@ public class SanityTester {
      * provided in the sanity test.  The test fails if an exception is thrown.
      *
      */		
-    private void runRecordValidationTest() {
-	//DTB -- this could probably be refactored to combine with the query validation method
+    private void recordsTest() {
+
 	System.out.println("Sanity Test:  Checking records\n");
 
-	SanityRecord nextSanityRecord = null;
-	Reference nextRecordReference = null;
+	Reference recordRef = null;
 	SanityRecord records[] = sanityModel.getAllSanityRecords();
 	    
 	for (int i = 0; i < records.length; i++){
 		
 	    try {
-		WdkModel wdkModel = queryTester.getWdkModel();
-		    
-		//get model record from sanity record
-		nextSanityRecord = records[i];
-		nextRecordReference = new Reference(nextSanityRecord.getRef());
-		RecordClassSet nextRecordClassSet = queryTester.getWdkModel().getRecordClassSet(nextRecordReference.getSetName());
-		RecordClass nextRecordClass = nextRecordClassSet.getRecordClass(nextRecordReference.getElementName());
+		recordRef = new Reference(records[i].getRef());
+		RecordClassSet nextRecordClassSet = 
+		    wdkModel.getRecordClassSet(recordRef.getSetName());
+		RecordClass nextRecordClass = nextRecordClassSet.getRecordClass(recordRef.getElementName());
 		RecordInstance nextRecordInstance = nextRecordClass.makeRecordInstance();
 
-		nextRecordInstance.setPrimaryKey(nextSanityRecord.getProjectID(), 
-						 nextSanityRecord.getPrimaryKey());
+		nextRecordInstance.setPrimaryKey(records[i].getProjectID(), 
+						 records[i].getPrimaryKey());
 		    
 		String riString = nextRecordInstance.print();
-		System.out.println("Record " + nextRecordReference.getSetName() + "." 
-				   + nextRecordReference.getElementName() + " passed\n");
+		System.out.println("Record " + recordRef.getSetName() + "." 
+				   + recordRef.getElementName() + " passed\n");
 		if (verbose) System.out.println(riString + "\n");
 		recordsPassed++;
 	    }
 	    catch (Exception wme){
 		recordsFailed++;
 		System.out.println(BANNER_LINE);
-		System.out.println("***RECORD " + nextRecordReference.getSetName() + 
-				   "." + nextRecordReference.getElementName() + 
+		System.out.println("***RECORD " + recordRef.getSetName() + 
+				   "." + recordRef.getElementName() + 
 				   " FAILED!***");
-		printFailureMessage(nextSanityRecord);
+		printFailureMessage(records[i]);
 		System.out.println(BANNER_LINE + "\n");
 	    } 
 	}
@@ -348,9 +345,9 @@ public class SanityTester {
             SanityTester sanityTester = 
 		new SanityTester(modelName, sanityModel, verbose);
 
-	    sanityTester.runExistenceTest();
-	    sanityTester.runQueryValidationTest();
-	    sanityTester.runRecordValidationTest();
+	    sanityTester.existenceTest();
+	    sanityTester.queriesTest();
+	    sanityTester.recordsTest();
     
 	    if (verbose) System.out.println(sanityModel.toString());
 	    if (sanityTester.printSummaryLine()) {
