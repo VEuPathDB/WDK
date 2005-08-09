@@ -6,8 +6,11 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Iterator;
 import java.io.File;
+import java.net.MalformedURLException;
 
 import org.w3c.dom.Document;
+
+import org.gusdb.wdk.model.implementation.ModelXmlParser;  // why is this in impl?
 
 public class WdkModel {
 
@@ -28,6 +31,28 @@ public class WdkModel {
     private EnumParam booleanOps;
     private Document document;
     public static final WdkModel INSTANCE = new WdkModel();
+    
+    /**
+     * Convenience method for constructing a model from the configuration information
+     */
+    public static WdkModel construct(String modelName) throws WdkModelException {
+        File configDir = new File(System.getProperties().getProperty("configDir"));
+        
+        File modelConfigXmlFile = new File(configDir, modelName+"-config.xml");
+        File modelXmlFile = new File(configDir, modelName + ".xml");
+        File modelPropFile = new File(configDir, modelName + ".prop");
+	File schemaFile = new File(System.getProperty("schemaFile"));
+
+	try {
+	    return ModelXmlParser.parseXmlFile(modelXmlFile.toURL(), 
+					       modelPropFile.toURL(), 
+					       schemaFile.toURL(), 
+					       modelConfigXmlFile.toURL());
+	} catch (java.net.MalformedURLException e) {
+	    throw new WdkModelException(e);
+	}
+
+    }
     
     /**
      * @param initRecordClassList
