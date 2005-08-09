@@ -20,10 +20,6 @@ import org.gusdb.wdk.model.WdkUserException;
  * @version $Revision$ $Date$Author: sfischer $
  */
 
-//DTB -- Took out ability to get a SanityRecord or SanityQuery by name, as so far is 
-//not needed.  If this is put back in, the method will need to account for the fact
-//that there can be multiple SanityRecords and SanityQueries for one wdk record or query.
-
 public class SanityModel {
 
     // ------------------------------------------------------------------
@@ -39,6 +35,11 @@ public class SanityModel {
      * SanityQueries contained in this model.  
      */
     Vector sanityQueries = new Vector();
+
+    /**
+     * SanityQuestions contained in this model.  
+     */
+    Vector sanityQuestions = new Vector();
 
     /**
      * Document set by the xml parser that creates this model. (DTB -- not sure where
@@ -64,10 +65,7 @@ public class SanityModel {
     public SanityRecord[] getAllSanityRecords(){
 	    
         SanityRecord records[] = new SanityRecord[sanityRecords.size()];
-        for (int i = 0; i < sanityRecords.size(); i++){
-	    SanityRecord nextRecord = (SanityRecord)sanityRecords.elementAt(i);
-	    records[i] = nextRecord;
-	}
+	sanityRecords.copyInto(records);
 	return records;
     }
 
@@ -79,26 +77,19 @@ public class SanityModel {
 
 	for (int i = 0; i < sanityRecords.size(); i++){
 	    SanityRecord nextRecord = (SanityRecord)sanityRecords.elementAt(i);
-	    if (nextRecord.getRef().equals(recordName)){
-		return true;
-	    }
+	    if (nextRecord.getRef().equals(recordName)) return true;
 	}
 	return false;
     }
 
     //SanityQuery Sets
-    public void addSanityQuery(SanityQuery sanityQuery) throws WdkModelException {
-
+    public void addSanityQuery(SanityQueryOrQuestion sanityQuery) throws WdkModelException {
 	sanityQueries.add(sanityQuery);
     }
 
-    public SanityQuery[] getAllSanityQueries(){
-	
-        SanityQuery queries[] = new SanityQuery[sanityQueries.size()];
-        for (int i = 0; i < sanityQueries.size(); i++){
-	    SanityQuery nextQuery = (SanityQuery)sanityQueries.elementAt(i);
-	    queries[i] = nextQuery;
-	}
+    public SanityQueryOrQuestion[] getAllSanityQueries(){
+        SanityQueryOrQuestion queries[] = new SanityQueryOrQuestion[sanityQueries.size()];
+	sanityQueries.copyInto(queries);
 	return queries;
     }
 
@@ -109,20 +100,46 @@ public class SanityModel {
     public boolean hasSanityQuery(String queryName){
 
 	for (int i = 0; i < sanityQueries.size(); i++){
-	    SanityQuery nextQuery = (SanityQuery)sanityQueries.elementAt(i);
-	    if (nextQuery.getRef().equals(queryName)){
-		return true;
-	    }
+	    SanityQueryOrQuestion nextQuery = 
+		(SanityQueryOrQuestion)sanityQueries.elementAt(i);
+	    if (nextQuery.getRef().equals(queryName)) return true;
+	}
+	return false;
+    }
+
+    public void addSanityQuestion(SanityQueryOrQuestion sanityQuestion) throws WdkModelException {
+
+	sanityQuestions.add(sanityQuestion);
+    }
+
+    public SanityQueryOrQuestion[] getAllSanityQuestions(){
+	
+        SanityQueryOrQuestion questions[] = 
+	    new SanityQueryOrQuestion[sanityQuestions.size()];
+	sanityQuestions.copyInto(questions);
+	return questions;
+    }
+
+    /**
+     * @param queryName Two-part name (querySetName.queryName) of the query in question.
+     * @param return True if the model contains one or more SanityQuestions for the given queryName. 
+     */
+    public boolean hasSanityQuestion(String queryName){
+
+	for (int i = 0; i < sanityQuestions.size(); i++){
+	    SanityQueryOrQuestion nextQuery = 
+		(SanityQueryOrQuestion)sanityQuestions.elementAt(i);
+	    if (nextQuery.getRef().equals(queryName)) return true;
 	}
 	return false;
     }
 
     public String toString() {
 	StringBuffer result = new StringBuffer("SanityModel\nSanityQueries:\n");
-	SanityQuery queries[] = getAllSanityQueries();
+	SanityQueryOrQuestion queries[] = getAllSanityQueries();
 	if (queries != null){
 	    for (int i = 0; i < queries.length; i++){
-		SanityQuery nextSanityQuery = queries[i];
+		SanityQueryOrQuestion nextSanityQuery = queries[i];
 		result.append(nextSanityQuery.toString() + "\n");
 	    }
 	}
@@ -137,19 +154,14 @@ public class SanityModel {
 	return result.toString();
     }
        
-    public void validateQueries() throws WdkUserException{
-
-	for (int i = 0; i < sanityQueries.size(); i++){
-	    SanityQuery nextSanityQuery = (SanityQuery)sanityQueries.elementAt(i);
-	    if (nextSanityQuery.getMinOutputLength().intValue() < 1){
-		throw new WdkUserException("SanityQuery " + nextSanityQuery.getRef() + " must return at least 1 row.  Please set its minOutputLength attribute to reflect this");
-	    }
-	}
+    void validateQueries() throws WdkUserException{
+	validateQueriesOrQuestions(sanityQueries);
     }
 
-    // ------------------------------------------------------------------
-    // Protected Methods
-    // ------------------------------------------------------------------
+    void validateQuestions() throws WdkUserException{
+	validateQueriesOrQuestions(sanityQuestions);
+    }
+
     public Document getDocument() {
         return document;
     }
@@ -157,5 +169,21 @@ public class SanityModel {
     public void setDocument(Document document) {
         this.document = document;
     }
+
+
+    // ------------------------------------------------------------------
+    // Protected Methods
+    // ------------------------------------------------------------------
+    private void validateQueriesOrQuestions(Vector v) throws WdkUserException{
+
+	for (int i = 0; i < v.size(); i++){
+	    SanityQueryOrQuestion q = (SanityQueryOrQuestion)v.elementAt(i);
+	    if (q.getMinOutputLength().intValue() < 1){
+		throw new WdkUserException("Sanity" + q.getTypeCap() + " " + q.getRef() + 
+					   " must return at least 1 row.  Please set its minOutputLength attribute to reflect this");
+	    }
+	}
+    }
+
 }
 

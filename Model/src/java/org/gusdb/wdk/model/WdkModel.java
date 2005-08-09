@@ -160,8 +160,20 @@ public class WdkModel {
         int counter = 0;
         while (keys.hasNext()){
             String name = (String)keys.next();
-            QuerySet nextQuerySet = (QuerySet)querySets.get(name);
-            sets[counter] = nextQuerySet;
+            sets[counter] = (QuerySet)querySets.get(name);
+            counter++;
+        }
+        return sets;
+    }
+
+    public QuestionSet[] getAllQuestionSets(){
+	    
+        QuestionSet sets[] = new QuestionSet[questionSets.size()];
+        Iterator keys = questionSets.keySet().iterator();
+        int counter = 0;
+        while (keys.hasNext()){
+            String name = (String)keys.next();
+            sets[counter] = (QuestionSet)questionSets.get(name); 
             counter++;
         }
         return sets;
