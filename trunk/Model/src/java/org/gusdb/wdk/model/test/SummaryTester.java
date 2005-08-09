@@ -30,18 +30,10 @@ public class SummaryTester {
     public static void main(String[] args) {
 	
 	String cmdName = System.getProperties().getProperty("cmdName");
-        File configDir = 
-	    new File(System.getProperties().getProperty("configDir"));
 	
 	// process args
 	Options options = declareOptions();
 	CommandLine cmdLine = parseOptions(cmdName, options, args);
-
-	String modelName = cmdLine.getOptionValue("model");
-
-        File modelConfigXmlFile = new File(configDir, modelName+"-config.xml");
-        File modelXmlFile = new File(configDir, modelName + ".xml");
-        File modelPropFile = new File(configDir, modelName + ".prop");
 
 	String questionFullName = cmdLine.getOptionValue("question");
 	String[] rows = cmdLine.getOptionValues("rows");
@@ -61,8 +53,7 @@ public class SummaryTester {
 	    Reference ref = new Reference(questionFullName);
 	    String questionSetName = ref.getSetName();
 	    String questionName = ref.getElementName();
-	    WdkModel wdkModel = 
-		ModelXmlParser.parseXmlFile(modelXmlFile.toURL(), modelPropFile.toURL(), schemaFile.toURL(), modelConfigXmlFile.toURL());
+	    WdkModel wdkModel = WdkModel.construct(cmdLine.getOptionValue("model"));
 
 	    QuestionSet questionSet = wdkModel.getQuestionSet(questionSetName);
 	    Question question = questionSet.getQuestion(questionName);
