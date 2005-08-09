@@ -6,6 +6,7 @@
         <choice>
           <ref name="sanityQuery" />
           <ref name="sanityRecord" />
+          <ref name="sanityQuestion" />
         </choice>
       </oneOrMore>
     </element>
@@ -13,6 +14,20 @@
 
   <define name="sanityQuery">
     <element name="sanityQuery">
+      <attribute name="ref" />
+      <attribute name="minOutputLength" />
+      <attribute name="maxOutputLength" />
+      <zeroOrMore>
+        <element name="sanityParam">
+          <attribute name="name" />
+          <attribute name="value" />
+        </element>
+      </zeroOrMore>
+     </element>
+  </define>
+
+  <define name="sanityQuestion">
+    <element name="sanityQuestion">
       <attribute name="ref" />
       <attribute name="minOutputLength" />
       <attribute name="maxOutputLength" />
