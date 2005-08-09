@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.implementation;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.QueryInstance;
+import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.ResultList;
 import org.gusdb.wdk.model.ResultFactory;
 import org.gusdb.wdk.model.RDBMSPlatformI;
@@ -37,38 +38,37 @@ public class SqlQueryInstance extends QueryInstance  {
     }
 
     /**
-     * Modified by Jerric - add project column to be joined with
-     * @return
+     * @return Sql to run.  If join mode, it is modified for joining
      * @throws WdkModelException
      */
-    protected String getSql() throws WdkModelException {
+    public String getSql() throws WdkModelException {
+	return joinMode?
+	    getJoinSql() :
+	    ((SqlQuery)query).instantiateSql(query.getInternalParamValues(values));
 
-        SqlQuery q = (SqlQuery)query;
-        String sql = null;
-	String newPkJoin = null;
-    
-    String newProjectJoin = null;   // by Jerric
-    
-       if (joinMode){
-            newPkJoin = joinTableName + "." + primaryKeyColumnName;
-            values.put("primaryKey", newPkJoin); //will this destroy the query for later use?
+    }
 
-            // Modified by Jerric
-            if (projectColumnName != null) {
-                newProjectJoin = joinTableName + "." + projectColumnName;
-                values.put("projectID", newProjectJoin);
-            }
-        }
-        String initSql = 
-            q.instantiateSql(query.getInternalParamValues(values));
-        if (joinMode){
-            sql = q.addUnionMultiModeConstraints(joinTableName, 
-                    newPkJoin, startId, endId, initSql);
-	} else {
-            sql = initSql;
-        }
-        return sql;
 
+    private String getJoinSql()  throws WdkModelException {
+	String sql = ((SqlQuery)query).getSql();
+
+	SqlClause clause = new SqlClause(sql, joinTableName, 
+					 startIndex, endIndex);
+
+	return instantiateSqlWithJoin(clause.getModifiedSql());
+
+    }
+
+    private String instantiateSqlWithJoin(String sql) throws WdkModelException { 
+	String primaryKeyJoin = joinTableName + "." + primaryKeyColumnName;
+
+	values.put(RecordClass.PRIMARY_KEY_NAME, primaryKeyJoin); 
+	
+	if (projectColumnName != null) {
+	    String projectJoin = joinTableName + "." + projectColumnName;
+	    values.put(RecordClass.PROJECT_ID_NAME, projectJoin);
+	}
+	return ((SqlQuery)query).instantiateSql(query.getInternalParamValues(values), sql);
     }
 
     /**

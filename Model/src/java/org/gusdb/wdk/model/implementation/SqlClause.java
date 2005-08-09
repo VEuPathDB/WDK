@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.Stack;
 
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.RecordClass;
 
 /**
  * An sql clause: a section of sql bounded by a parenthesis pair that 
@@ -27,8 +28,12 @@ import org.gusdb.wdk.model.WdkModelException;
  *      - virtually assemble its pieces into a super-piece
  *      - see if the super-piece contains both:
  *          - a FROM statement
- *          - a WHERE statement that includes PRIMARY_KEY as a value
- *      - if such a pair is found add the JOIN_TABLE to the FROM statement
+ *          - a WHERE statement that includes PRIMARY_KEY_NAME as a value
+ *      - if such a pair is found, use the helper class SqlClausePiece to add:
+ *          - the join table's row index to the SELECT statement
+ *          - the JOIN_TABLE to the FROM statement
+ *          - the page constraints to the WHERE statement
+ *          - the ORDER BY statement to order by the join table's row index
  *
  */
 public class SqlClause {
@@ -43,6 +48,7 @@ public class SqlClause {
     private boolean hadOuterParens = true;
 
     private SqlClausePiece fromPiece = null;
+    private SqlClausePiece selectPiece = null;
     private SqlClausePiece primaryKeyPiece = null;
 
     private ArrayList kids = new ArrayList();
@@ -51,21 +57,28 @@ public class SqlClause {
     private static final String OPEN = "(";
     private static final String CLOSE = ")";
 
-    static final String PRIMARY_KEY = "primaryKey";
+    // used for the constraints for WHERE statement
+    private int pageStartIndex;
+    private int pageEndIndex;
 
     // public constructor 
-    public SqlClause (String origSql, String joinTableName) throws WdkModelException {
+    public SqlClause (String origSql, String joinTableName, int pageStartIndex, int pageEndIndex) throws WdkModelException {
 	this.origSql = origSql;
 	this.open = 0;
 	this.joinTableName = joinTableName;
+	this.pageStartIndex = pageStartIndex;
+	this.pageEndIndex = pageEndIndex;
 
 	validateParenStructure();
 	findKidsAndPieces();
     }
 
     // stitch together piece, clause, ..., piece
-    // also fix piece if it needs the join table added to its FROM statement
-    public String getFinalClauseSql() throws WdkModelException {
+    // also modify Sql if needed:
+    //  - RESULT_TABLE_INDEX added to select
+    //  - join table added to its FROM statement
+    //  - page constraints and order by page index added to where statement
+    public String getModifiedSql() throws WdkModelException {
 
 	if (pieces.size() - kids.size() != 1) {
 	    throwException("Invalid sql. There are " + pieces.size() + 
@@ -77,6 +90,7 @@ public class SqlClause {
 	Iterator piecesIter = pieces.iterator();
 	while (piecesIter.hasNext()) {
 	    SqlClausePiece piece = (SqlClausePiece)piecesIter.next();
+	    checkForSelect(piece);
 	    checkForFrom(piece);
 	    checkForPrimaryKey(piece);
 	}
@@ -86,14 +100,21 @@ public class SqlClause {
 	StringBuffer finalSql = new StringBuffer();
 	while (piecesIter.hasNext()) {
 	    SqlClausePiece piece = (SqlClausePiece)piecesIter.next();
+	    boolean needsSelectFix = 
+		selectPiece == piece && primaryKeyPiece != null;
 	    boolean needsFromFix = 
 		fromPiece == piece && primaryKeyPiece != null;
+	    boolean needsWhereFix = primaryKeyPiece == piece;
 
-	    finalSql.append(piece.getFinalPieceSql(needsFromFix));
+	    finalSql.append(piece.getFinalPieceSql(needsSelectFix,
+						   needsFromFix,
+						   needsWhereFix,
+						   pageStartIndex,
+						   pageEndIndex));
 
 	    if (kidsIter.hasNext()) {
 		SqlClause kid = (SqlClause)kidsIter.next();
-		finalSql.append(kid.getFinalClauseSql());
+		finalSql.append(kid.getModifiedSql());
 	    }
 	}
 
@@ -111,20 +132,7 @@ public class SqlClause {
     private String getClauseSql() { return origSql.substring(open, close+1); }
 	
     /**
-     * constructor if close known, which means this clause is a leaf 
-     * (ie, it has no kid clauses)
-     * @param open index of clause open paren
-     * @param close index of clause close paren
-     */ 
-    private SqlClause(String origSql, int open, int close) {
-	this.origSql = origSql;
-	this.open = open;
-	this.close = close;
-	pieces.add(new SqlClausePiece(origSql, open+1, close-1,joinTableName));
-    }
-
-    /**
-     * constructor if close unknown (because there is one or more kid clauses).
+     * constructor (close unknown) 
      * recursively constructs kid clauses and the pieces that surround them
      * @param open index of clause open paren
      */ 
@@ -170,6 +178,9 @@ public class SqlClause {
 	char[] chars = origSql.toCharArray();
 	Stack parenStack = new Stack();
 	Object o = new Object();
+
+	if (chars[0] != '(') hadOuterParens = false;
+
 	for (int i =0; i<chars.length; i++) {
 	    if (chars[i] == '(') parenStack.push(o);
 	    if (chars[i] == ')') {
@@ -189,6 +200,14 @@ public class SqlClause {
 	if (!hadOuterParens) origSql = "(" + origSql + ")";
     }
 
+    private void checkForSelect(SqlClausePiece piece) throws WdkModelException {
+	if (piece.containsSelect()) {
+	    if (selectPiece != null) 
+		throwException("Sql clause has too many SELECTs",getClauseSql());
+	    selectPiece = piece;
+	}
+    }
+
     private void checkForFrom(SqlClausePiece piece) throws WdkModelException {
 	if (piece.containsFrom()) {
 	    if (fromPiece != null) 
@@ -200,10 +219,13 @@ public class SqlClause {
     private void checkForPrimaryKey(SqlClausePiece piece) throws WdkModelException {
 	if (piece.containsPrimaryKey()) {
 	    if (primaryKeyPiece != null) 
-		throwException("Sql clause has too many " + PRIMARY_KEY + "s",
+		throwException("Sql clause has too many " + 
+			       RecordClass.PRIMARY_KEY_NAME + "s",
 			       getClauseSql());
-	    if (fromPiece == null) 
-		throwException("Sql clause has a "+PRIMARY_KEY+" but no FROM",
+	    if (fromPiece == null || selectPiece == null) 
+		throwException("Sql clause has a " + 
+			       RecordClass.PRIMARY_KEY_NAME + 
+			       " but no FROM or no SELECT",
 			       getClauseSql());
 	    primaryKeyPiece = piece;
 	}
@@ -215,15 +237,52 @@ public class SqlClause {
 				    sql + newline);
     }
 
+    private static String[][] testCases = 
+    {
+	{"SELECT A FROM (SELECT B FROM C WHERE $$primaryKey$$ = D)",
+	 ""
+	},
+	{"(SELECT A FROM (SELECT B FROM C WHERE $$primaryKey$$ = D))",
+	 ""
+	},
+	{"SELECT A FROM (SELECT B FROM C WHERE D) WHERE $$primaryKey$$ = E",
+	 ""
+	},
+	{"SELECT A FROM B WHERE C IN (SELECT D FROM E) AND $$primaryKey$$ = E",
+	 ""
+	},
+	{"(SELECT A FROM B WHERE C IN (SELECT D FROM E) AND $$primaryKey$$ = E)",
+	 ""
+	},
+	{"(select A from B where C = $$primaryKey$$) union (select A from D where E = $$primaryKey$$)",
+	 ""
+	},
+    };
+	
     public static void main(String[] args) {
+	if (args.length == 1) {
+	    test(args[0]);
+	} else {
+	    for (int i=0; i<testCases.length; i++) {
+		System.out.println("====================================================");
+		test(testCases[i][0]);
+	    }
+	}
+	
+    }
 
+    private static void test(String sql) {
 	try {
-	    SqlClause clause = new SqlClause(args[0], args[1]);
-	    System.out.println(clause.getFinalClauseSql());
+	    System.out.println("Testing: ");
+	    System.out.println(sql);
+	    System.out.println("");
+	    System.out.println("Result: ");
+	    SqlClause clause = new SqlClause(sql, "RESULT_TABLE", 1, 20);
+	    System.out.println(clause.getModifiedSql());
+	    System.out.println("");
 	} catch (WdkModelException e) {
 	    e.printStackTrace();
 	}
-
     }
 }
 

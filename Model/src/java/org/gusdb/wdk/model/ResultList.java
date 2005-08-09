@@ -8,10 +8,10 @@ import java.util.NoSuchElementException;
 
 public abstract class ResultList {
 
-    QueryInstance instance;
-    Query query;
-    String resultTableName;
-    HashMap valuesInUse;
+    protected QueryInstance instance;
+    protected Query query;
+    protected String resultTableName;
+    protected HashMap valuesInUse;
 
     //    public static final String RESULT_TABLE_I = "MultiModeIValue";
 
@@ -23,7 +23,7 @@ public abstract class ResultList {
     }
 
 
-    public abstract void checkQueryColumns(Query query, boolean checkAll, boolean has_multi_mode_i) throws WdkModelException;
+    public abstract void checkQueryColumns(Query query, boolean checkAll, boolean has_result_table_i) throws WdkModelException;
 
 
     AttributeFieldValue getAttributeFieldValue(String attributeName) throws WdkModelException {
@@ -35,7 +35,7 @@ public abstract class ResultList {
 	
 	if (attributeName == ResultFactory.RESULT_TABLE_I){
 	    //this is a mess, but for now is the only way to trick ResultList into thinking i is a valid column for this query
-	    value = getMultiModeIValue();
+	    value = getResultTableIndexValue();
 	    AttributeField iField = new AttributeField(null);
 	    AttributeFieldValue iFieldValue = new AttributeFieldValue(iField, value);
 	    return iFieldValue;
@@ -61,7 +61,7 @@ public abstract class ResultList {
 	    }
 	}
     }
-    public Object getMultiModeIValue() throws WdkModelException{
+    public Object getResultTableIndexValue() throws WdkModelException{
 	throw new WdkModelException("attempting to retrieve value for i from a ResultList that is not an SqlResultList");
     }
 

@@ -99,11 +99,12 @@ public class RecordInstance {
 	HashMap paramHash = new HashMap();
 	if (primaryKey == null) 
 	    throw new WdkModelException("primaryKey is null");
-    // Modified by jerric
-    //paramHash.put("primaryKey", primaryKey);
-    String projectId = primaryKey.getProjectId();
-    if (projectId != null) paramHash.put("projectId", projectId);
-    paramHash.put("primaryKey", primaryKey.getRecordId());
+
+	String projectId = primaryKey.getProjectId();
+	if (projectId != null) 
+	    paramHash.put(RecordClass.PROJECT_ID_NAME, projectId);
+	paramHash.put(RecordClass.PRIMARY_KEY_NAME, primaryKey.getRecordId());
+
 	try {
 	    instance.setValues(paramHash);
 	} catch (WdkUserException e) {
@@ -366,28 +367,29 @@ public class RecordInstance {
 	qInstance.setIsCacheable(false);
 
 	// If in the context of an Answer, then we are doing a "summary"
-	// and need to be in multi mode
+	// and need to do a join against the result table
 	if (answer != null){
 	    answer.integrateAttributesQueryResult(qInstance);
 	}	
-	else{ //do it all myself
+
+	// otherwise, set values in record directly
+	else{ 
 	    HashMap paramHash = new HashMap();
 	    if (primaryKey == null) 
 		throw new WdkModelException("primaryKey is null");
 
-        // modified by Jerric
-        // use the two field of primary key
-        //paramHash.put("primaryKey", primaryKey);
-        String projectId = primaryKey.getProjectId();
-        if (projectId != null) paramHash.put("projectId", projectId);
-        paramHash.put("primaryKey", primaryKey.getRecordId());
-
-        try {
+	    String projectId = primaryKey.getProjectId();
+	    if (projectId != null) 
+		paramHash.put(RecordClass.PROJECT_ID_NAME, projectId);
+	    paramHash.put(RecordClass.PRIMARY_KEY_NAME, 
+			  primaryKey.getRecordId());
+	    
+	    try {
 		qInstance.setValues(paramHash);
 	    } catch (WdkUserException e) {
 		throw new WdkModelException(e);
 	    }
-
+	    
 	    ResultList rl = qInstance.getResult();
 	    
 	    Column[] columns = query.getColumns();

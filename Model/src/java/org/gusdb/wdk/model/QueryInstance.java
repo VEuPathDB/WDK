@@ -42,9 +42,9 @@ public abstract class QueryInstance {
      */
     protected String projectColumnName;
     
-    protected int startId;
+    protected int startIndex;
     
-    protected int endId;
+    protected int endIndex;
 
     protected boolean joinMode;
 
@@ -111,20 +111,19 @@ public abstract class QueryInstance {
     }
 
     /**
-     * Modified by Jerric - add project column to join with
      * @param resultTableName
      * @param projectColumnName
      * @param primaryKeyColumnName
-     * @param startId
-     * @param endId
+     * @param startIndex
+     * @param endIndex
      */
-    void initJoinMode(String resultTableName,String projectColumnName, String primaryKeyColumnName, int startId, int endId){
+    void initJoinMode(String resultTableName,String projectColumnName, String primaryKeyColumnName, int startIndex, int endIndex){
 
 	this.joinTableName = resultTableName;
 	this.projectColumnName = projectColumnName;
 	this.primaryKeyColumnName = primaryKeyColumnName;
-	this.startId = startId;
-	this.endId = endId;
+	this.startIndex = startIndex;
+	this.endIndex = endIndex;
 	this.joinMode = true;
     }
 

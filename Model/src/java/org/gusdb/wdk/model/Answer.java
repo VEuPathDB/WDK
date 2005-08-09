@@ -68,7 +68,7 @@ public class Answer {
 
     private int startRecordInstanceI;
 
-    private int endRecordInstance;
+    private int endRecordInstanceI;
 
     private int recordInstanceCursor;
 
@@ -89,22 +89,21 @@ public class Answer {
      * @param idsQueryInstance  The <code>QueryInstance</code> that provides a handle on the ResultList containing all primary keys that are the result for the
      * question (not just one page worth).
      * @param startRecordInstanceI The index of the first <code>RecordInstance</code> in the page. (>=1)
-     * @param endRecordInstance The index of the last <code>RecordInstance</code> in the page, inclusive.
+     * @param endRecordInstanceI The index of the last <code>RecordInstance</code> in the page, inclusive.
      */
-    Answer(Question question, QueryInstance idsQueryInstance, int startRecordInstanceI, int endRecordInstance) throws WdkUserException, WdkModelException{
-
+    Answer(Question question, QueryInstance idsQueryInstance, int startRecordInstanceI, int endRecordInstanceI) throws WdkUserException, WdkModelException{
 	this.question = question;
 	this.idsQueryInstance = idsQueryInstance;
 	this.isBoolean = 
 	    idsQueryInstance instanceof org.gusdb.wdk.model.BooleanQueryInstance;
 	this.recordInstanceCursor = 0;
 	this.startRecordInstanceI = startRecordInstanceI;
-	this.endRecordInstance = endRecordInstance;   
+	this.endRecordInstanceI = endRecordInstanceI;   
 
 	/*
 	ResultList rl = 
 	    idsQueryInstance.getPersistentResultPage(startRecordInstanceI, 
-						     endRecordInstance);
+						     endRecordInstanceI);
 	rl.close(); // rl only needed to close connection
 	*/
     }
@@ -288,7 +287,7 @@ public class Answer {
 					     recordProjectColumnName, 
 					     recordIdColumnName, 
 					     startRecordInstanceI, 
-					     endRecordInstance);
+					     endRecordInstanceI);
 
 	ResultList attrQueryResultList = attributesQueryInstance.getResult();
 
@@ -338,14 +337,14 @@ public class Answer {
         
 	ResultList rl = 
 	    idsQueryInstance.getPersistentResultPage(startRecordInstanceI,
-						     endRecordInstance);
+						     endRecordInstanceI);
 
 	Vector tempRecordInstances = new Vector();
 
 	int counter = 0;
 	while (rl.next()){
 	    counter++;
-	    if (counter >= startRecordInstanceI && counter<=endRecordInstance){
+	    if (counter>=startRecordInstanceI && counter<=endRecordInstanceI){
 		RecordInstance nextRecordInstance = 
 		    getQuestion().getRecordClass().makeRecordInstance();
         

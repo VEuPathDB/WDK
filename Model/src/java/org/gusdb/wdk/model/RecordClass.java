@@ -13,7 +13,10 @@ import java.util.logging.Logger;
 
 public class RecordClass {
     
-    static final String PRIMARY_KEY_NAME = "primaryKey";
+    public static final String PRIMARY_KEY_NAME = "primaryKey";
+    public static final String PROJECT_ID_NAME = "projectId";
+    public static final String PRIMARY_KEY_MACRO = "\\$\\$primaryKey\\$\\$";
+    public static final String PROJECT_ID_MACRO = "\\$\\$projectId\\$\\$";
 
     private static final Logger logger = 
 	WdkLogManager.getLogger("org.gusdb.wdk.model.Record");
