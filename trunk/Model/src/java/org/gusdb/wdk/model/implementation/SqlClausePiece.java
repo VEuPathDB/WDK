@@ -29,8 +29,8 @@ public class SqlClausePiece {
 	this.joinTableName = joinTableName;
     }
 
-    String getFinalPieceSql(boolean needsFromFix, 
-			    boolean needsSelectFix,
+    String getFinalPieceSql(boolean needsSelectFix, 
+			    boolean needsFromFix,
 			    boolean needsWhereFix,
 			    int pageStartIndex,
 			    int pageEndIndex) throws WdkModelException {
@@ -95,6 +95,7 @@ public class SqlClausePiece {
     boolean containsSelect() {	
 	String regex = ".*select\\s+.*";
 	return origSql.substring(start, end+1).toLowerCase().matches(regex);
+
     }
 
     boolean containsFrom() {
