@@ -6,10 +6,9 @@ import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.RecordInstance;
 import org.gusdb.wdk.model.RecordClassSet;
 import org.gusdb.wdk.model.Reference;
-import org.gusdb.wdk.model.ResultFactory;
 import org.gusdb.wdk.model.ResultList;
 import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.implementation.ModelXmlParser;
+import org.gusdb.wdk.model.WdkModelException;
 
 import java.io.File;
 
@@ -25,9 +24,10 @@ import org.apache.commons.cli.ParseException;
  * SanityTester.java	    " [-project project_id]" +
 
  *
- * Main class for running the sanity tests, which is a way to test all Queries and RecordClasss in
- * a wdk model to make sure they work as intended and their results fall within an expected range,
- * even over the course of code base development.  See the usage() method for parameter information,
+ * Main class for running the sanity tests, which is a way to test all Queries 
+ * and RecordClasss in a wdk model to make sure they work as intended and their 
+ * results fall within an expected range, even over the course of code base 
+ * development.  See the usage() method for parameter information,
  * and see the gusDb.org wiki page for the structure and content of the sanity test.
  *
  * Created: Mon August 23 12:00:00 2004 EST
@@ -37,108 +37,23 @@ import org.apache.commons.cli.ParseException;
  */
 public class SanityTester {
 
-    // ------------------------------------------------------------------
-    // Instance variables
-    // ------------------------------------------------------------------
-
     int queriesPassed  = 0;
     int queriesFailed  = 0;
     int recordsPassed  = 0;
     int recordsFailed  = 0;
     
-    /*
-     * Wdk model that contains the Queries and RecordClasss to be tested.
-     */ 
     WdkModel wdkModel;
-
-    /**
-     * Root model object containing information about the tests to run, created from a model xml file.
-     * Every Query and RecordClass in <code>wdkModel</code> must be represented here.
-     */
+    boolean verbose;
+    QueryTester queryTester;
     SanityModel sanityModel;
 
-    /**
-     * Result Factory to be given to <code>wdkModel</code> to fetch query results.
-     */
-    ResultFactory resultFactory;
-
-    /**
-     * Line to be used in formatting messages containing information about test failures.
-     */
     public static final String BANNER_LINE = "***********************************************************";
 
-
-    // ------------------------------------------------------------------
-    // Constructor
-    // ------------------------------------------------------------------
-
-    public SanityTester(SanityModel sanityModel){
+    public SanityTester(String modelName, SanityModel sanityModel, boolean verbose) throws WdkModelException {
+	this.wdkModel = WdkModel.construct(modelName);
+	this.queryTester = new QueryTester(wdkModel);
 	this.sanityModel = sanityModel;
-    }
-
-
-    // ------------------------------------------------------------------
-    // Static Methods
-    // ------------------------------------------------------------------
-
-    /**
-     * Creates model objects using given command line arguments and XML parsers; 
-     * creates a new Sanity Tester and uses it to run the standard sanity tests.
-     */
-
-    //DTB -- this could be changed to incorporate Angel's ModelMaker class
-    public static void main(String[] args) {
-	
-        String cmdName = System.getProperties().getProperty("cmdName");
-        File configDir = 
-	    new File(System.getProperties().getProperty("configDir"));
-        
-        // process args
-        Options options = declareOptions();
-        CommandLine cmdLine = parseOptions(cmdName, options, args);
-        
-	String modelName = cmdLine.getOptionValue("model");
-
-        File modelConfigXmlFile = new File(configDir, modelName+"-config.xml");
-        File modelXmlFile = new File(configDir, modelName + ".xml");
-        File modelPropFile = new File(configDir, modelName + ".prop");
-	File sanityXmlFile = new File(configDir, modelName + "-sanity.xml");
-       
-        boolean verbose = cmdLine.hasOption("verbose");
-        	    
-	try {
-
-            File schemaFile = new File(System.getProperty("schemaFile"));
-
-	    WdkModel wdkModel = ModelXmlParser.parseXmlFile(modelXmlFile.toURL(), modelPropFile.toURL(), schemaFile.toURL(), modelConfigXmlFile.toURL());
-	    QueryTester queryTester = new QueryTester(wdkModel);
-	    
-	    //make Sanity Model
-	    File sanitySchemaFile = new File(System.getProperty("sanitySchemaFile"));
-
-            SanityModel sanityModel = 
-                SanityTestXmlParser.parseXmlFile(sanityXmlFile.toURL(), modelPropFile.toURL(), sanitySchemaFile.toURL());
-
-	    sanityModel.validateQueries();
-
-            SanityTester sanityTester = new SanityTester(sanityModel);
-
-	    //run tests
-	    sanityTester.runExistenceTest(queryTester, verbose);
-	    sanityTester.runQueryValidationTest(queryTester, verbose, cmdLine);
-	    sanityTester.runRecordValidationTest(queryTester, verbose, cmdLine);
-    
-	    if (verbose) System.out.println(sanityModel.toString());
-	    if (sanityTester.printSummaryLine()) {
-		System.exit(1);
-	    }
-	    
-	    
-        } catch (Exception e) {
-	    System.err.println(e);
-            e.printStackTrace();
-            System.exit(1);
-        } 
+	this.verbose = verbose;
     }
 
     // ------------------------------------------------------------------
@@ -146,34 +61,30 @@ public class SanityTester {
     // ------------------------------------------------------------------
     
     /**
-     * Checks to make sure every Query and RecordClass in the wdkModel is represented in the sanity test.
-     * If a query or recordClass is in the sanity test but not the model then that will be caught in the
+     * Checks to make sure every Query and RecordClass in the wdkModel is 
+     * represented in the sanity test.  If a query or recordClass is in the 
+     * sanity test but not the model then that will be caught in the 
      * other validation tests.
      */
-    private void runExistenceTest(QueryTester queryTester, boolean verbose){
-	System.out.println("Sanity Test:  Checking to make sure all Queries and RecordClasss in model " + queryTester.getWdkModel().getName() +
-			   " are represented in the test\n");
+    private void runExistenceTest() {
+
 	QuerySet querySets[] = queryTester.getWdkModel().getAllQuerySets();
-	if (querySets != null){
-	    for (int i = 0; i < querySets.length; i++){
-		QuerySet nextQuerySet = querySets[i];
-		Query queries[] = nextQuerySet.getQueries();
-		for (int j = 0; j < queries.length; j++){
-		    Query nextQuery = queries[j];
-		    if (!sanityModel.hasSanityQuery(nextQuerySet.getName() + "." + nextQuery.getName())){
-			System.out.println("Sanity Test Failed!  Query " + nextQuerySet.getName() + "." + nextQuery.getName() +
-					   " is not represented in the sanity test\n");
-			queriesFailed++;
-		    }
-		    else {
-			if (verbose){
-			    System.out.println("Query " + nextQuerySet.getName() + "." + nextQuery.getName() +
-					       " is accounted for in the sanity test\n");
-			} 
-		    }
+	for (int i = 0; i < querySets.length; i++){
+	    QuerySet nextQuerySet = querySets[i];
+	    Query queries[] = nextQuerySet.getQueries();
+	    for (int j = 0; j < queries.length; j++){
+		Query nextQuery = queries[j];
+		if (!sanityModel.hasSanityQuery(nextQuerySet.getName() + 
+						"." + nextQuery.getName())) {
+		    System.out.println("Sanity Test Failed!  Query " 
+				       + nextQuerySet.getName() + "." 
+				       + nextQuery.getName() +
+				       " is not represented in the sanity test\n");
+		    queriesFailed++;
 		}
 	    }
 	}
+
 	RecordClassSet recordClassSets[] = queryTester.getWdkModel().getAllRecordClassSets();
 	for (int i = 0; i < recordClassSets.length; i++){
 	    RecordClassSet nextRecordClassSet = recordClassSets[i];
@@ -181,16 +92,13 @@ public class SanityTester {
 	    if (recordClasses != null){
 		for (int j = 0; j < recordClasses.length; j++){
 		    RecordClass nextRecordClass = recordClasses[j];
-		    if (!sanityModel.hasSanityRecord(nextRecordClassSet.getName() + "." + nextRecordClass.getName())){
-			System.out.println("Sanity Test Failed!  RecordClass " + nextRecordClassSet.getName() + "." + nextRecordClass.getName() + 
+		    if (!sanityModel.hasSanityRecord(nextRecordClassSet.getName() 
+						     + "." + nextRecordClass.getName())) {
+			System.out.println("Sanity Test Failed!  RecordClass " 
+					   + nextRecordClassSet.getName() + "." 
+					   + nextRecordClass.getName() + 
 					   " is not represented in the sanity test\n");
 			recordsFailed++;
-		    }
-		    else {
-			if (verbose){
-			    System.out.println("RecordClass " + nextRecordClassSet.getName() + "." + nextRecordClass.getName() +
-					       " is accounted for in the sanity test\n");
-			} 
 		    }
 		}
 	    }
@@ -203,66 +111,70 @@ public class SanityTester {
      * result is outside the expected range or if an exception is thrown.
      *
      */		
-    private void runQueryValidationTest(QueryTester queryTester, boolean verbose, CommandLine cmdLine){
+    private void runQueryValidationTest() {
 	System.out.println("Sanity Test:  Checking queries\n");
 	
 	Reference nextQueryReference = null;
-	SanityQuery nextSanityQuery = null;
 	SanityQuery queries[] = sanityModel.getAllSanityQueries();
 
-	if (queries != null){
-	    for (int i = 0; i < queries.length; i++){
-		try{    
-		    //get model query from sanity query
-		    nextSanityQuery = queries[i];
-		    nextQueryReference = new Reference(nextSanityQuery.getRef());
-		    QuerySet nextQuerySet = queryTester.getWdkModel().getQuerySet(nextQueryReference.getSetName());
-		    Query nextQuery = nextQuerySet.getQuery(nextQueryReference.getElementName());
+	for (int i = 0; i < queries.length; i++){
+	    try{    
+		//get model query from sanity query
+		nextQueryReference = new Reference(queries[i].getRef());
+		QuerySet nextQuerySet = queryTester.getWdkModel().getQuerySet(nextQueryReference.getSetName());
+		Query nextQuery = nextQuerySet.getQuery(nextQueryReference.getElementName());
 		    
-		    //run query
-		    ResultList rs = queryTester.getResult(nextQueryReference.getSetName(), nextQueryReference.getElementName(),
-							  nextSanityQuery.getParamHash());
+		//run query
+		ResultList rs = queryTester.getResult(nextQueryReference.getSetName(),
+						      nextQueryReference.getElementName(),
+						      queries[i].getParamHash());
 		    
-		    //count results; check if sane
-		    int sanityMin = nextSanityQuery.getMinOutputLength().intValue();
-		    int sanityMax = nextSanityQuery.getMaxOutputLength().intValue();
-		    int counter = 0;
+		//count results; check if sane
+		int sanityMin = queries[i].getMinOutputLength().intValue();
+		int sanityMax = queries[i].getMaxOutputLength().intValue();
+		int counter = 0;
 		    
-		    while (rs.next()){
-			counter++;
-		    }
-		    //		    rs.close();
-		    if (!(sanityMin <= counter && counter <= sanityMax)){
-			System.out.println(BANNER_LINE);
-			System.out.println("***QUERY " + nextQueryReference.getSetName() + "." + nextQueryReference.getElementName() + 
-					   " FAILED!***  It returned " + counter + " rows--not within expected range (" + sanityMin + " - " + sanityMax + ")");
-			printFailureMessage(nextSanityQuery, cmdLine);
-			System.out.println(BANNER_LINE + "\n");
-			queriesFailed++;
-		    }
-		    else {
-			System.out.println("Query " + nextQueryReference.getSetName() + "." + nextQueryReference.getElementName() +
-					   " passed--returned " + counter + " rows, within expected range (" + sanityMin + " - " + sanityMax + ")\n");
-			queriesPassed++;
-		    }
+		while (rs.next()){
+		    counter++;
 		}
-	     	catch(Exception e){
-		    queriesFailed++;
+		//		    rs.close();
+		if (counter < sanityMin || counter > sanityMax){
 		    System.out.println(BANNER_LINE);
-		    System.out.println("***QUERY " + nextQueryReference.getSetName() + "." + nextQueryReference.getElementName() + " FAILED!***  It threw an exception.");
-		    printFailureMessage(nextSanityQuery, cmdLine);
+		    System.out.println("***QUERY " + nextQueryReference.getSetName() + 
+				       "." + nextQueryReference.getElementName() + 
+				       " FAILED!***  It returned " + counter + 
+				       " rows--not within expected range (" + 
+				       sanityMin + " - " + sanityMax + ")");
+		    printFailureMessage(queries[i]);
 		    System.out.println(BANNER_LINE + "\n");
+		    queriesFailed++;
 		}
+		else {
+		    System.out.println("Query " + nextQueryReference.getSetName() + 
+				       "." + nextQueryReference.getElementName() +
+				       " passed--returned " + counter + 
+				       " rows, within expected range (" + sanityMin + 
+				       " - " + sanityMax + ")\n");
+		    queriesPassed++;
+		}
+	    }
+	    catch(Exception e){
+		queriesFailed++;
+		System.out.println(BANNER_LINE);
+		System.out.println("***QUERY " + nextQueryReference.getSetName() + "." + nextQueryReference.getElementName() + " FAILED!***  It threw an exception.");
+		printFailureMessage(queries[i]);
+		System.out.println(BANNER_LINE + "\n");
 	    }
 	}
     }
 
     /**
-     * Processes each RecordClass (by simply calling its print method, which exercises all of the queries within that recordClass)
+     * Processes each RecordClass (by simply calling its print method, which 
+     * exercises all of the queries within that recordClass)
      * provided in the sanity test.  The test fails if an exception is thrown.
      *
      */		
-    private void runRecordValidationTest(QueryTester queryTester, boolean verbose, CommandLine cmdLine){
+    private void runRecordValidationTest() {
 	//DTB -- this could probably be refactored to combine with the query validation method
 	System.out.println("Sanity Test:  Checking records\n");
 
@@ -270,49 +182,47 @@ public class SanityTester {
 	Reference nextRecordReference = null;
 	SanityRecord records[] = sanityModel.getAllSanityRecords();
 	    
-	if (records != null){
-	    for (int i = 0; i < records.length; i++){
+	for (int i = 0; i < records.length; i++){
 		
-		try {
-		    WdkModel wdkModel = queryTester.getWdkModel();
+	    try {
+		WdkModel wdkModel = queryTester.getWdkModel();
 		    
-		    //get model record from sanity record
-		    nextSanityRecord = records[i];
-		    nextRecordReference = new Reference(nextSanityRecord.getRef());
-		    RecordClassSet nextRecordClassSet = queryTester.getWdkModel().getRecordClassSet(nextRecordReference.getSetName());
-		    RecordClass nextRecordClass = nextRecordClassSet.getRecordClass(nextRecordReference.getElementName());
-		    RecordInstance nextRecordInstance = nextRecordClass.makeRecordInstance();
-            // modified by Jerric
-            //nextRecordInstance.setPrimaryKey(nextSanityRecord.getPrimaryKey());
-            nextRecordInstance.setPrimaryKey(nextSanityRecord.getProjectID(), 
-                    nextSanityRecord.getPrimaryKey());
+		//get model record from sanity record
+		nextSanityRecord = records[i];
+		nextRecordReference = new Reference(nextSanityRecord.getRef());
+		RecordClassSet nextRecordClassSet = queryTester.getWdkModel().getRecordClassSet(nextRecordReference.getSetName());
+		RecordClass nextRecordClass = nextRecordClassSet.getRecordClass(nextRecordReference.getElementName());
+		RecordInstance nextRecordInstance = nextRecordClass.makeRecordInstance();
+
+		nextRecordInstance.setPrimaryKey(nextSanityRecord.getProjectID(), 
+						 nextSanityRecord.getPrimaryKey());
 		    
-		    String riString = nextRecordInstance.print();
-		    System.out.println("Record " + nextRecordReference.getSetName() + "." + nextRecordReference.getElementName() + " passed\n");
-		    if (verbose) System.out.println(riString + "\n");
-		    recordsPassed++;
-		}
-	    	catch (Exception wme){
-		    recordsFailed++;
-		    System.out.println(BANNER_LINE);
-		    System.out.println("***RECORD " + nextRecordReference.getSetName() + "." + nextRecordReference.getElementName() + " FAILED!***");
-		    printFailureMessage(nextSanityRecord, cmdLine);
-		    System.out.println(BANNER_LINE + "\n");
-		} 
+		String riString = nextRecordInstance.print();
+		System.out.println("Record " + nextRecordReference.getSetName() + "." 
+				   + nextRecordReference.getElementName() + " passed\n");
+		if (verbose) System.out.println(riString + "\n");
+		recordsPassed++;
 	    }
+	    catch (Exception wme){
+		recordsFailed++;
+		System.out.println(BANNER_LINE);
+		System.out.println("***RECORD " + nextRecordReference.getSetName() + 
+				   "." + nextRecordReference.getElementName() + 
+				   " FAILED!***");
+		printFailureMessage(nextSanityRecord);
+		System.out.println(BANNER_LINE + "\n");
+	    } 
 	}
     }
     
     /**
      * Prints out a command to run so the user can test failures outside of the sanity test.
      */
-    private void printFailureMessage(SanityElementI element, CommandLine cmdLine){
+    private void printFailureMessage(SanityElementI element){
 	try{
 	    StringBuffer message = new StringBuffer("To test " + element.getType() + " " + element.getName() + ", run the following command: \n ");
 	    
-	    String modelName = cmdLine.getOptionValue("model");
-	
-	    String globalArgs = "-model " + modelName;
+	    String globalArgs = "-model " + wdkModel.getName();
 	    String command = element.getCommand(globalArgs);
 	    message.append(command);
 
@@ -327,7 +237,7 @@ public class SanityTester {
     }
 
     /**
-     * @param queryResult a two-value array where the first entry is the number of queries that passed the test and
+     * @param queryResult a two-value array where the first entry is the number of queries that passed the test and 
      *                    the second is the number of queries that failed.
      *
      * @param recordResult a two-value array where the first entry is the number of records that passed the test and
@@ -409,6 +319,49 @@ public class SanityTester {
         HelpFormatter formatter = new HelpFormatter();
         formatter.printHelp(75, cmdlineSyntax, header, options, footer);
         System.exit(1);
+    }
+
+    public static void main(String[] args) {
+	
+        String cmdName = System.getProperties().getProperty("cmdName");
+        Options options = declareOptions();
+        CommandLine cmdLine = parseOptions(cmdName, options, args);
+        
+	String modelName = cmdLine.getOptionValue("model");
+
+        File configDir = new File(System.getProperties().getProperty("configDir"));
+	File sanityXmlFile = new File(configDir, modelName + "-sanity.xml");
+	File modelPropFile = new File(configDir, modelName + ".prop");
+       
+        boolean verbose = cmdLine.hasOption("verbose");
+        	    
+	try {
+	    File sanitySchemaFile = new File(System.getProperty("sanitySchemaFile"));
+
+            SanityModel sanityModel = 
+                SanityTestXmlParser.parseXmlFile(sanityXmlFile.toURL(), 
+						 modelPropFile.toURL(), 
+						 sanitySchemaFile.toURL());
+
+	    sanityModel.validateQueries();
+
+            SanityTester sanityTester = 
+		new SanityTester(modelName, sanityModel, verbose);
+
+	    sanityTester.runExistenceTest();
+	    sanityTester.runQueryValidationTest();
+	    sanityTester.runRecordValidationTest();
+    
+	    if (verbose) System.out.println(sanityModel.toString());
+	    if (sanityTester.printSummaryLine()) {
+		System.exit(1);
+	    }
+	    
+        } catch (Exception e) {
+	    System.err.println(e);
+            e.printStackTrace();
+            System.exit(1);
+        } 
     }
 
     
