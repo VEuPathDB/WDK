@@ -1,10 +1,5 @@
 package org.gusdb.wdk.model.test;
 
-import org.gusdb.wdk.model.test.SanityModel;
-import org.gusdb.wdk.model.test.SanityRecord;
-import org.gusdb.wdk.model.test.SanityQuery;
-import org.gusdb.wdk.model.test.SanityParam;
-
 import org.gusdb.wdk.model.WdkModelException;
 
 import java.io.BufferedReader;
@@ -202,6 +197,18 @@ public class SanityTestXmlParser {
         /*   */ digester.addSetNext("sanityModel/sanityQuery/sanityParam", "addParam");
 
 	/**/ digester.addSetNext("sanityModel/sanityQuery", "addSanityQuery");
+
+	/**/ digester.addObjectCreate( "sanityModel/sanityQuestion", SanityQuestion.class );
+
+        /**/ digester.addSetProperties("sanityModel/sanityQuestion");
+
+        /*   */ digester.addObjectCreate("sanityModel/sanityQuestion/sanityParam", SanityParam.class);
+
+        /*   */ digester.addSetProperties("sanityModel/sanityQuestion/sanityParam");
+
+        /*   */ digester.addSetNext("sanityModel/sanityQuestion/sanityParam", "addParam");
+
+	/**/ digester.addSetNext("sanityModel/sanityQuestion", "addSanityQuestion");
 
         return digester;
     }
