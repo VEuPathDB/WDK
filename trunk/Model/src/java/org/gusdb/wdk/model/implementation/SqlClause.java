@@ -63,14 +63,7 @@ public class SqlClause {
 
     // public constructor 
     public SqlClause (String origSql, String joinTableName, int pageStartIndex, int pageEndIndex) throws WdkModelException {
-	this.origSql = origSql;
-	this.open = 0;
-	this.joinTableName = joinTableName;
-	this.pageStartIndex = pageStartIndex;
-	this.pageEndIndex = pageEndIndex;
-
-	validateParenStructure();
-	findKidsAndPieces();
+	this(origSql, 0, joinTableName, pageStartIndex, pageEndIndex);
     }
 
     // stitch together piece, clause, ..., piece
@@ -136,10 +129,13 @@ public class SqlClause {
      * recursively constructs kid clauses and the pieces that surround them
      * @param open index of clause open paren
      */ 
-    private SqlClause (String origSql, int open) throws WdkModelException {
-
+    private SqlClause (String origSql, int open, String joinTableName, int pageStartIndex, int pageEndIndex) throws WdkModelException {
 	this.origSql = origSql;
 	this.open = open;
+	this.joinTableName = joinTableName;
+	this.pageStartIndex = pageStartIndex;
+	this.pageEndIndex = pageEndIndex;
+	if (open == 0) validateParenStructure();
 	findKidsAndPieces();
     }
 
@@ -167,7 +163,8 @@ public class SqlClause {
 
 	if (nextOpen == -1 || nextOpen > nextClose) return null;// no more kids
 	
-	return new SqlClause(origSql, nextOpen); // start next kid to find
+	return new SqlClause(origSql, nextOpen, joinTableName, pageStartIndex,
+			     pageEndIndex); // start next kid to find
     }
 
     private void validateParenStructure() throws WdkModelException {
@@ -237,26 +234,19 @@ public class SqlClause {
 				    sql + newline);
     }
 
-    private static String[][] testCases = 
+    private static String[] testCases = 
     {
-	{"SELECT A FROM (SELECT B FROM C WHERE $$primaryKey$$ = D)",
-	 ""
-	},
-	{"(SELECT A FROM (SELECT B FROM C WHERE $$primaryKey$$ = D))",
-	 ""
-	},
-	{"SELECT A FROM (SELECT B FROM C WHERE D) WHERE $$primaryKey$$ = E",
-	 ""
-	},
-	{"SELECT A FROM B WHERE C IN (SELECT D FROM E) AND $$primaryKey$$ = E",
-	 ""
-	},
-	{"(SELECT A FROM B WHERE C IN (SELECT D FROM E) AND $$primaryKey$$ = E)",
-	 ""
-	},
-	{"(select A from B where C = $$primaryKey$$) union (select A from D where E = $$primaryKey$$)",
-	 ""
-	},
+	"SELECT A FROM (SELECT B FROM C WHERE $$primaryKey$$ = D)",
+
+	"(SELECT A FROM (SELECT B FROM C WHERE $$primaryKey$$ = D))",
+
+	"SELECT A FROM (SELECT B FROM C WHERE D) WHERE $$primaryKey$$ = E",
+
+	"SELECT A FROM B WHERE C IN (SELECT D FROM E) AND $$primaryKey$$ = E",
+
+	"(SELECT A FROM B WHERE C IN (SELECT D FROM E) AND $$primaryKey$$ = E)",
+
+	"(select A from B where C = $$primaryKey$$) union (select A from D where E = $$primaryKey$$)",
     };
 	
     public static void main(String[] args) {
@@ -265,7 +255,7 @@ public class SqlClause {
 	} else {
 	    for (int i=0; i<testCases.length; i++) {
 		System.out.println("====================================================");
-		test(testCases[i][0]);
+		test(testCases[i]);
 	    }
 	}
 	
