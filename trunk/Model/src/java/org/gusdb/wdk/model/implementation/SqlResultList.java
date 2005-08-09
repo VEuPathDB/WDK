@@ -27,13 +27,14 @@ public class SqlResultList extends ResultList {
     }
 
 
-    public Object getMultiModeIValue() throws WdkModelException{
+    public Object getResultTableIndexValue() throws WdkModelException{
 	Object o;
 	try {
 	     o = resultSet.getObject(ResultFactory.RESULT_TABLE_I);
 	}
 	catch (SQLException e){
-	    throw new WdkModelException(e);
+	    throw new WdkModelException("Result table: " + resultTableName 
+					+ " SQLState: " + e.getSQLState(), e);
 	}
 	return o;
     }
@@ -89,23 +90,27 @@ public class SqlResultList extends ResultList {
 	}
     }
 
-    public void checkQueryColumns(Query query, boolean checkAll, boolean has_multi_mode_i) throws WdkModelException {
+    public void checkQueryColumns(Query query, boolean checkAll, boolean has_result_table_i) throws WdkModelException {
 
 	try {
+	    // get the names of all columns in the sql, and set flag
+	    // if one is RESULT_TABLE_I
 	    boolean sqlHasIcolumn = false;
 	    HashMap rsCols = new HashMap();
 	    ResultSetMetaData metaData = resultSet.getMetaData();
 	    int rsColCount = metaData.getColumnCount();
 	    for (int i=1; i<=rsColCount; i++) {
 		String columnName = metaData.getColumnName(i).toLowerCase();
-		//check if sql is being retrieved from a result table that has an extra column named 'i' for 
-		//enumerating results in the table (this extra column will be ignored when doing column validation)
-		if (columnName.equals(ResultFactory.RESULT_TABLE_I) && has_multi_mode_i) {
+		if (columnName.equals(ResultFactory.RESULT_TABLE_I) 
+		    && has_result_table_i) {
 		    sqlHasIcolumn = true;
 		}
 		rsCols.put(columnName, "");
 	    }
 	
+	    // iterate through Columns declared by Query object
+	    // make sure that each is found in the sql and than none are 
+	    // duplicated
 	    HashMap alreadySeen = new HashMap();
 	    Column[] columns = query.getColumns();
 	    String queryName = query.getFullName();
@@ -114,20 +119,39 @@ public class SqlResultList extends ResultList {
 		if (columns[i] instanceof DerivedColumnI) continue;
 		colCount++;
 		String columnName = columns[i].getName();
-		if (alreadySeen.containsKey(columnName)) 
-		    throw new WdkModelException("Query '" + queryName + "' declares duplicate columns named '" + columnName + "'");
+		if (alreadySeen.containsKey(columnName)) {
+		    String msg = 
+			"Query '" + queryName +
+			"' declares duplicate columns named '" + 
+			columnName + "'";
+		    throw new WdkModelException(msg);
+		}
 		alreadySeen.put(columnName, "");
-		if (!rsCols.containsKey(columnName)) 
-		    throw new WdkModelException("Query '" + queryName + "' declares column '" + columnName + "' but it is not in the Sql");
-
+		if (!rsCols.containsKey(columnName)) {
+		    String msg = "Query '" + queryName + 
+			"' declares column '" + columnName + 
+			"' but it is not in the Sql";
+		    throw new WdkModelException(msg);
+		}
 	    }
 
+	    // optional more rigorous test: make sure the Query includes
+	    // all columns found in sql
 	    if (checkAll) {
-		if ((rsColCount != colCount && sqlHasIcolumn == false) || (rsColCount != colCount + 1 && sqlHasIcolumn == true)) 
-		    throw new WdkModelException("Query '" + queryName + "' declares a different number of columns(" + colCount + ") than are mentioned in the Sql (" + rsColCount + ")");
+		if ((rsColCount != colCount && !sqlHasIcolumn) 
+		    || (rsColCount != colCount + 1 && sqlHasIcolumn)) {
+		    String msg = "Query '" + queryName + 
+			"' declares a different number of columns(" + 
+			colCount + ") than are mentioned in the Sql (" + 
+			rsColCount + ")";
+		    throw new WdkModelException(msg);
+		}
 	    } else {
-		if (rsColCount < colCount) 
-		    throw new WdkModelException("Query '" + queryName + "' declares too many columns (more than are mentioned in the Sql");
+		if (rsColCount < colCount) {
+		    String msg = "Query '" + queryName + 
+			"' declares more columns than are found in the Sql";
+		    throw new WdkModelException(msg);
+		}
 	    }
 	
 	} catch (SQLException e) {

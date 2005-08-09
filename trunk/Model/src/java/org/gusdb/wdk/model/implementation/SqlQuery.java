@@ -58,8 +58,16 @@ public class SqlQuery extends Query {
      * @param values These values are assumed to be pre-validated
      */
     protected String instantiateSql(Map values) {
-	String s = this.sql;
+	return instantiateSql(values, sql);
+    }
+
+    /**
+     * @param values These values are assumed to be pre-validated
+     * @param inputSql Sql to use (may be modified from this.sql)
+     */
+    protected String instantiateSql(Map values, String inputSql) {
 	Iterator keySet = values.keySet().iterator();
+	String s = inputSql;
 	while (keySet.hasNext()) {
 	    String key = (String)keySet.next();
 	    String regex = "\\$\\$" + key  + "\\$\\$";
@@ -75,159 +83,4 @@ public class SqlQuery extends Query {
        buf.append("  sql='" + sql + "'" + newline);
        return buf;
     }
-
-    /**
-     * Added by Jerric - the method handles union queries for federation that
-     * used caching table
-     * @param resultTableName
-     * @param pkValue
-     * @param startId
-     * @param endId
-     * @param initSql
-     * @return
-     */
-    protected String addUnionMultiModeConstraints(String resultTableName,
-            String pkValue, int startId, int endId, String initSql) {
-        StringBuffer sb = new StringBuffer();
-        String subSql;
-
-
-        String regex = "\\b(union|except|intersect)(\\s+all)?\\b";
-        Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
-        Matcher match = pattern.matcher(initSql);
-        int prev = 0;
-
-        while (match.find()) {
-            subSql = initSql.substring(prev, match.start()).trim();
-            subSql = addMultiModeConstraints(resultTableName, pkValue, startId,
-                    endId, subSql);
-	    sb.append(subSql.trim());
-            sb.append(' ');
-            sb.append(match.group());
-            sb.append(' ');
-            prev = match.end();
-        }
-        // handle the last part
-        subSql = initSql.substring(prev);
-        subSql = initSql.substring(prev);
-        subSql = initSql.substring(prev);
-	      subSql = initSql.substring(prev).trim();
-        subSql = addMultiModeConstraints(resultTableName, pkValue, startId,
-                endId, subSql);
-	sb.append(subSql.trim());
-        
-        // now create an outer query that handles ORDER BY
-        String head = "SELECT * FROM ( ";
-	String nestedSql = sb.toString().trim();
-        String orderBy = " ) ORDER BY " + ResultFactory.RESULT_TABLE_I;
-        return head + nestedSql + orderBy;
-    }
-
-    /**
-     * Modified by Jerric
-     * @param resultTableName
-     * @param pkValue
-     * @param startId
-     * @param endId
-     * @param initSql
-     * @return
-     */
-    protected String addMultiModeConstraints(String resultTableName, String pkValue, int startId, 
-					     int endId, String initSql){
-
-	
-	String replacement = resultTableName + "." + ResultFactory.RESULT_TABLE_I;
-	
-	if (initSql.indexOf(RESULT_TABLE_MACRO) > 0) {
-	    return initSql.replaceAll(RESULT_TABLE_MACRO, replacement);
-	}
-
-	StringBuffer initSqlBuf = new StringBuffer(initSql);
-
-	// check if the query is surrounded by a pair of parenthesis; if so,
-	// remove it
-	boolean hasParenthesis = false;
-	if (initSqlBuf.charAt(0) == '('
-            && initSqlBuf.charAt(initSqlBuf.length() - 1) == ')') {
-	    hasParenthesis = true;
-	    initSqlBuf.deleteCharAt(initSqlBuf.length() - 1);
-	    initSqlBuf.deleteCharAt(0);
-	}
-
-	String sqlStr = initSqlBuf.toString().toUpperCase();
-	int selectStarts = sqlStr.indexOf("SELECT");
-	if (selectStarts < 0) {
-	    throw new RuntimeException("did not find select in " + sqlStr); 
-	}
-
-	int selectEnds = selectStarts + 6;
-
-	String firstPartSql = initSqlBuf.substring(0, selectEnds);
-	String lastPartSql = initSqlBuf.substring(selectEnds);
-	
-	String newSql = firstPartSql + " " + replacement + ",    " + lastPartSql;
-    
-	//return addWhereMultiModeConstraints(resultTableName, pkValue, startId, endId, newSql);
-    
-
-	newSql = addWhereMultiModeConstraints(resultTableName, pkValue,
-					      startId, endId, newSql).trim();
-
-	// add back parenthesis, if removed before
-	return (hasParenthesis) ? "(" + newSql + ")" : newSql;
-    }
-
-    /**
-     * Modified by Jerric
-     * @param resultTableName
-     * @param pkValue
-     * @param startId
-     * @param endId
-     * @param initSql
-     * @return
-     */
-    protected String addWhereMultiModeConstraints(String resultTableName, String pkValue, int startId, 
-					     int endId, String initSql){
-
-	StringBuffer initSqlBuf = new StringBuffer(initSql);
-	String sqlStr = initSqlBuf.toString().toUpperCase();
-	int whereBegins = sqlStr.lastIndexOf("WHERE");
-
-	//last "where" not in a nested query
-	if (sqlStr.lastIndexOf(")") > whereBegins) { whereBegins = -1; }
-	
-	String firstPartSql = "";
-	String lastPartSql = "";
-	String rowStartSql = null;
-	
-	if (whereBegins != -1){   
-	    
-	    //trim quotes from primary key value if they are there
-	    int pkValueStart = initSqlBuf.indexOf(pkValue);
-	    int pkValueEnd = pkValueStart + pkValue.length();
-
-	    if (initSqlBuf.charAt(pkValueStart - 1) == '\''){
-		initSqlBuf = initSqlBuf.deleteCharAt(pkValueStart -1);
-		//initSqlBuf size reduced by 1; delete ' at new position
-		initSqlBuf = initSqlBuf.deleteCharAt(pkValueEnd - 1);
-	    }
-	
-	    //join result table name with row number
-	    firstPartSql = initSqlBuf.substring(0, whereBegins);	    
-	    lastPartSql = initSqlBuf.substring(whereBegins);
-	    rowStartSql = " and " + resultTableName + "." + ResultFactory.RESULT_TABLE_I + " >= " + startId;
-	    
-	}
-	else{  //no where clause
-	    firstPartSql = initSqlBuf.toString();
-	    rowStartSql = " where " + resultTableName + "." + ResultFactory.RESULT_TABLE_I + " >= " + startId;
-	}
-
-	String extraFromString = ", " + resultTableName + " ";
-	String rowEndSql = " and " + resultTableName + "." + ResultFactory.RESULT_TABLE_I + " <= " + endId;
-	String orderBySql = " order by " + resultTableName + "." + ResultFactory.RESULT_TABLE_I;
-	String finalSql = firstPartSql + extraFromString + lastPartSql + rowStartSql + rowEndSql + orderBySql;
-	
-	return finalSql;
-    }
-}
+ }

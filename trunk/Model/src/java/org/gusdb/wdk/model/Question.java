@@ -161,9 +161,10 @@ public class Question {
 	Map attribFields = getRecordClass().getAttributeFields();
 
 	String[] summaryAttributeList;
-
+	
+	String primaryKey = RecordClass.PRIMARY_KEY_NAME;
 	if (summaryAttributesRef != null){
-	    String primaryKey = "primaryKey";
+	    // ensure that the list includes primaryKey
 	    if (!(summaryAttributesRef.equals(primaryKey)
 		  || summaryAttributesRef.startsWith(primaryKey + ",")
 		  || summaryAttributesRef.endsWith("," + primaryKey)
