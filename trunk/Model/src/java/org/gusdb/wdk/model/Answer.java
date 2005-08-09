@@ -341,22 +341,18 @@ public class Answer {
 
 	Vector tempRecordInstances = new Vector();
 
-	int counter = 0;
 	while (rl.next()){
-	    counter++;
-	    if (counter>=startRecordInstanceI && counter<=endRecordInstanceI){
-		RecordInstance nextRecordInstance = 
-		    getQuestion().getRecordClass().makeRecordInstance();
-        
-		String project = null;
-		if (recordProjectColumnName != null)
-		    project = rl.getAttributeFieldValue(recordProjectColumnName).getValue().toString();
-		String id = rl.getAttributeFieldValue(recordIdColumnName).getValue().toString();
-		nextRecordInstance.setPrimaryKey(project, id);
-		
-		nextRecordInstance.setAnswer(this);
-		tempRecordInstances.add(nextRecordInstance);
-	    }
+	    RecordInstance nextRecordInstance = 
+		getQuestion().getRecordClass().makeRecordInstance();
+	    
+	    String project = null;
+	    if (recordProjectColumnName != null)
+		project = rl.getAttributeFieldValue(recordProjectColumnName).getValue().toString();
+	    String id = rl.getAttributeFieldValue(recordIdColumnName).getValue().toString();
+	    nextRecordInstance.setPrimaryKey(project, id);
+	    
+	    nextRecordInstance.setAnswer(this);
+	    tempRecordInstances.add(nextRecordInstance);
 	}        
 	pageRecordInstances = new RecordInstance[tempRecordInstances.size()];
 	tempRecordInstances.copyInto(pageRecordInstances);
