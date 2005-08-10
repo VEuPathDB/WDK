@@ -31,6 +31,8 @@
       <attribute name="ref" />
       <attribute name="minOutputLength" />
       <attribute name="maxOutputLength" />
+      <attribute name="pageStart" />
+      <attribute name="pageEnd" />
       <zeroOrMore>
         <element name="sanityParam">
           <attribute name="name" />
