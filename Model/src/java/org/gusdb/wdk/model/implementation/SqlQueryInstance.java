@@ -138,9 +138,9 @@ public class SqlQueryInstance extends QueryInstance  {
         RDBMSPlatformI platform = ((SqlQuery)query).getRDBMSPlatform();
 
         try {
-            platform.createTableFromQuerySql(platform.getDataSource(),
-                    resultTableName, 
-                    getSql());
+            platform.createResultTable(platform.getDataSource(),
+				       resultTableName, 
+				       getSql());
         } catch (SQLException e) {
             throw new WdkModelException(e);
         }
