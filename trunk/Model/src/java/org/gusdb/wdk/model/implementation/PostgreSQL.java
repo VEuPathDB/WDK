@@ -118,10 +118,7 @@ public class PostgreSQL implements RDBMSPlatformI {
 				  String tableName, 
 				  String sql) throws SQLException {
 	
-	// Create a temporary  sequence for the table
-	this.createSequence(tableName + "_sq",1,1);
 	//Initialize the table with the results of <code>sql</code>
-      
 	String newSql = "create table " + tableName + " as " + sql;
 	
 	SqlUtils.execute(dataSource, newSql);
@@ -131,12 +128,17 @@ public class PostgreSQL implements RDBMSPlatformI {
 
 	SqlUtils.execute(dataSource, alterSql);
 
-	String rownumSql = "update " + tableName + " set " + ResultFactory.RESULT_TABLE_I + " = nextval('" 
-	  + tableName + "_sq')" ;
-	SqlUtils.execute(dataSource, rownumSql);
+	// Create a temporary  sequence for the table
+	this.createSequence(tableName + "_sq",1,1);
 
-	// drop the temporary sequence 
-	this.dropSequence(tableName + "_sq");
+	try {
+	    String rownumSql = "update " + tableName + " set " 
+		+ ResultFactory.RESULT_TABLE_I + " = nextval('" + tableName + "_sq')" ;
+	    SqlUtils.execute(dataSource, rownumSql);
+	} finally {
+	    // drop the temporary sequence 
+	    this.dropSequence(tableName + "_sq");
+	}
     }
 
     
