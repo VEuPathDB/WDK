@@ -136,7 +136,7 @@ public class SanityTester {
 	System.out.println("Sanity Test:  Checking queries\n");
 	
 	Reference queryRef = null;
-	SanityQueryOrQuestion queries[] = sanityModel.getAllSanityQueries();
+	SanityQuery queries[] = sanityModel.getAllSanityQueries();
 
 	for (int i = 0; i < queries.length; i++){
 	    try{    
@@ -245,7 +245,7 @@ public class SanityTester {
 	System.out.println("Sanity Test:  Checking questions\n");
 	
 	Reference questionRef = null;
-	SanityQueryOrQuestion questions[] = sanityModel.getAllSanityQuestions();
+	SanityQuestion questions[] = sanityModel.getAllSanityQuestions();
 
 	for (int i = 0; i < questions.length; i++){
 	    try{    
@@ -255,7 +255,10 @@ public class SanityTester {
 		Question question = questionSet.getQuestion(questionRef.getElementName());
 		    
 		//run question
-		Answer answer = question.makeAnswer(questions[i].getParamHash(), 1, 20);
+		Answer answer = question.makeAnswer(questions[i].getParamHash(), 
+						    questions[i].getPageStart(),
+						    questions[i].getPageEnd());
+
 		int resultSize = answer.getResultSize();
 		    
 		//count results; check if sane

@@ -12,9 +12,19 @@ package org.gusdb.wdk.model.test;
  */
 
 public class SanityQuestion extends SanityQueryOrQuestion {
+    
+    int pageStart;
+    int pageEnd;
+
     public SanityQuestion() {
 	super("question");
     }
+
+    public void setPageStart(int pageStart) { this.pageStart = pageStart; }
+    public void setPageEnd(int pageEnd) { this.pageEnd = pageEnd; }
+    public int getPageStart() { return pageStart; }
+    public int getPageEnd() { return pageEnd; }
+
 }
 
 

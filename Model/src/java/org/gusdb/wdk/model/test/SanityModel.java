@@ -87,8 +87,8 @@ public class SanityModel {
 	sanityQueries.add(sanityQuery);
     }
 
-    public SanityQueryOrQuestion[] getAllSanityQueries(){
-        SanityQueryOrQuestion queries[] = new SanityQueryOrQuestion[sanityQueries.size()];
+    public SanityQuery[] getAllSanityQueries(){
+        SanityQuery queries[] = new SanityQuery[sanityQueries.size()];
 	sanityQueries.copyInto(queries);
 	return queries;
     }
@@ -112,10 +112,10 @@ public class SanityModel {
 	sanityQuestions.add(sanityQuestion);
     }
 
-    public SanityQueryOrQuestion[] getAllSanityQuestions(){
+    public SanityQuestion[] getAllSanityQuestions(){
 	
-        SanityQueryOrQuestion questions[] = 
-	    new SanityQueryOrQuestion[sanityQuestions.size()];
+        SanityQuestion questions[] = 
+	    new SanityQuestion[sanityQuestions.size()];
 	sanityQuestions.copyInto(questions);
 	return questions;
     }
