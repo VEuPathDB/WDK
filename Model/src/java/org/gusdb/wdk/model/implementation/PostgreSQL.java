@@ -150,7 +150,7 @@ public class PostgreSQL implements RDBMSPlatformI {
 		     Integer initialSize, String fileName) throws WdkModelException {
 
 	try{
-	    //	    DriverManager.registerDriver(new org.postgresql.Driver());
+	    DriverManager.registerDriver(new org.postgresql.Driver());
 	    System.setProperty("jdbc.drivers","org.postgresql.Driver");
 	    this.connectionPool = new GenericObjectPool(null);
 	    
