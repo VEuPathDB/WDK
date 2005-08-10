@@ -142,7 +142,7 @@ public class Oracle implements RDBMSPlatformI {
 		     Integer initialSize, String fileName) throws WdkModelException {
         
 	try{
-	    //	    DriverManager.registerDriver(oracle.jdbc.driver.Driver());
+	    //	    DriverManager.registerDriver(oracle.jdbc.driver.acleDriver());
 	    System.setProperty("jdbc.drivers","oracle.jdbc.driver.OracleDriver");
 	    this.connectionPool = new GenericObjectPool(null);
 
