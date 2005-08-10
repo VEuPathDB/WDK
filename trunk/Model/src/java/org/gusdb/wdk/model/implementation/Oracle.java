@@ -101,12 +101,12 @@ public class Oracle implements RDBMSPlatformI {
     /**
      * @return count of removed rows
      */
-    public int dropTable(String schemaName, String tableName) throws SQLException  {
-	String sql = "truncate table " + schemaName + "." + tableName;
+    public int dropTable(String fullTableName) throws SQLException  {
+	String sql = "truncate table " + fullTableName;
 
 	SqlUtils.executeUpdate(dataSource, sql);
 	
-	sql = "drop table " + schemaName + "." + tableName;
+	sql = "drop table " + fullTableName;
 	
 	return SqlUtils.executeUpdate(dataSource, sql);
     }
@@ -115,9 +115,9 @@ public class Oracle implements RDBMSPlatformI {
      * Write the output of a query into a table, to which will be added a 
      * column "i" numbering the rows.
      */
-    public void createTableFromQuerySql(DataSource dataSource,
-					     String tableName, 
-					     String sql) throws SQLException {
+    public void createResultTable(DataSource dataSource,
+				  String tableName, 
+				  String sql) throws SQLException {
 	
 	//Initialize the table with the results of <code>sql</code>
 	String newSql = "create table " + tableName + " as " + sql;

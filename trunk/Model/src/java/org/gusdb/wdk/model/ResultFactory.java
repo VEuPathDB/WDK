@@ -183,7 +183,7 @@ public class ResultFactory {
 	System.out.println("Attempting to drop " + nTables + " results tables");
 	for (int i =0;i < nTables;++i) {
 	    try {
-		platform.dropTable(schemaName, tables[i]);
+		platform.dropTable(schemaName + "." +tables[i]);
 		nDropped++;
 	    } catch (SQLException e) {}
 	}
@@ -202,11 +202,12 @@ public class ResultFactory {
      * Drop all tables and sequences associated with the cache
      */    
     public synchronized void dropCache(boolean noSchemaOutput) throws WdkModelException {
+	SQLException caught = null;
 	try {
 	    resetCache(noSchemaOutput);
 	    String nameToUse = (noSchemaOutput == true ? instanceTableName : instanceTableFullName);
 	    System.out.println("Dropping table " + nameToUse);
-	    platform.dropTable(schemaName, instanceTableName);
+	    platform.dropTable(schemaName + "." + instanceTableName);
 	    System.out.println("Dropping sequence " + nameToUse + "_pkseq");
 	    platform.dropSequence(instanceTableFullName + "_pkseq");
 	} catch (SQLException e) {
@@ -413,6 +414,7 @@ public class ResultFactory {
 	sqlb.append(" where ");
 	sqlb.append(instanceWhereClause(instance));
 	boolean ok = false;
+
 	try {
 	    ok = SqlUtils.executeUpdate(platform.getDataSource(), sqlb.toString()) == 1;
 	} catch (SQLException e) {

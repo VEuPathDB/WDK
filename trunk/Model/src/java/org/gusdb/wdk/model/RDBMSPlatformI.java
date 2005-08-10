@@ -32,14 +32,14 @@ public interface RDBMSPlatformI {
     
     public boolean checkTableExists(String tableName) throws SQLException;
 
-    public int dropTable(String schemaName, String tableName) throws SQLException;
+    public int dropTable(String fullTableName) throws SQLException;
     public void createSequence(String sequenceName, int start, int increment) throws SQLException;
 
     public void dropSequence(String sequenceName) throws SQLException;
 
-    public void createTableFromQuerySql(DataSource dataSource,
-					String tableName, 
-					String sql) throws SQLException ;
+    public void createResultTable(DataSource dataSource,
+				  String tableName, 
+				  String sql) throws SQLException ;
 
     public void close() throws WdkModelException;
 }

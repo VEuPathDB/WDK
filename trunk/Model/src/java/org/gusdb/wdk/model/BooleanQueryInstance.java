@@ -165,9 +165,9 @@ public class BooleanQueryInstance extends QueryInstance {
         RDBMSPlatformI platform = rf.getRDBMSPlatform();
 	
         try {
-            platform.createTableFromQuerySql(platform.getDataSource(),
-					     resultTableName, 
-					     getSql());
+            platform.createResultTable(platform.getDataSource(),
+				       resultTableName, 
+				       getSql());
         } catch (SQLException e) {
             throw new WdkModelException(e);
         }

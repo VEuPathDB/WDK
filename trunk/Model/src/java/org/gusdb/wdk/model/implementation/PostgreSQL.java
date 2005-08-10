@@ -79,8 +79,6 @@ public class PostgreSQL implements RDBMSPlatformI {
 	String sql = "select tableowner, tablename from pg_tables where schemaname='" + owner + 
 	    "' and tablename='" + realTableName.toLowerCase() + "'";
 
-	System.err.println("PostgreSQL: sql " + sql);
-	
 	String result = SqlUtils.runStringQuery(dataSource, sql);
 	
 	boolean tableExists = result == null? false : true;
@@ -88,7 +86,6 @@ public class PostgreSQL implements RDBMSPlatformI {
     }
     
     public void createSequence(String sequenceName, int start, int increment) throws SQLException {
-
 	String sql = "create sequence " + sequenceName + " start " + start +
 	    " increment " + increment  ;
 	SqlUtils.execute(dataSource, sql);
@@ -103,12 +100,12 @@ public class PostgreSQL implements RDBMSPlatformI {
   /**
      * @return count of removed rows
      */
-    public int dropTable(String schemaName, String tableName) throws SQLException  {
-	String sql = "truncate table " + schemaName + "." + tableName;
+    public int dropTable(String fullTableName) throws SQLException  {
+	String sql = "truncate table " + fullTableName;
 
 	SqlUtils.executeUpdate(dataSource, sql);
 	
-	sql = "drop table " + schemaName + "." + tableName;
+	sql = "drop table " + fullTableName;
 	
 	return SqlUtils.executeUpdate(dataSource, sql);
     }
@@ -117,9 +114,9 @@ public class PostgreSQL implements RDBMSPlatformI {
      * Write the output of a query into a table, to which will be added a 
      * column "i" numbering the rows.
      */
-    public void createTableFromQuerySql(DataSource dataSource,
-					     String tableName, 
-					     String sql) throws SQLException {
+    public void createResultTable(DataSource dataSource,
+				  String tableName, 
+				  String sql) throws SQLException {
 	
 	// Create a temporary  sequence for the table
 	this.createSequence(tableName + "_sq",1,1);
