@@ -34,6 +34,10 @@ import org.gusdb.wdk.model.RecordClass;
  *          - the JOIN_TABLE to the FROM statement
  *          - the page constraints to the WHERE statement
  *          - the ORDER BY statement to order by the join table's row index
+ * 
+ * Because literals never contain information we need for this analysis, and
+ * because they can confuse things by containing "select" or "from", we
+ * excise them at the beginning, and replace them at the end
  *
  */
 public class SqlClause {
@@ -56,14 +60,18 @@ public class SqlClause {
 
     private static final String OPEN = "(";
     private static final String CLOSE = ")";
+    private static final String WASLITERAL = "XX_WASLITERAL_XX";
 
     // used for the constraints for WHERE statement
     private int pageStartIndex;
     private int pageEndIndex;
 
+    private String[] splitByQuote;
+
     // public constructor 
     public SqlClause (String origSql, String joinTableName, int pageStartIndex, int pageEndIndex) throws WdkModelException {
 	this(origSql, 0, joinTableName, pageStartIndex, pageEndIndex);
+
     }
 
     // stitch together piece, clause, ..., piece
@@ -90,7 +98,7 @@ public class SqlClause {
 
 	piecesIter = pieces.iterator();
 	Iterator kidsIter = kids.iterator();
-	StringBuffer finalSql = new StringBuffer();
+	StringBuffer buf = new StringBuffer();
 	while (piecesIter.hasNext()) {
 	    SqlClausePiece piece = (SqlClausePiece)piecesIter.next();
 	    boolean needsSelectFix = 
@@ -99,46 +107,99 @@ public class SqlClause {
 		fromPiece == piece && primaryKeyPiece != null;
 	    boolean needsWhereFix = primaryKeyPiece == piece;
 
-	    finalSql.append(piece.getFinalPieceSql(needsSelectFix,
-						   needsFromFix,
-						   needsWhereFix,
-						   pageStartIndex,
-						   pageEndIndex));
+	    buf.append(piece.getFinalPieceSql(needsSelectFix,
+					      needsFromFix,
+					      needsWhereFix,
+					      pageStartIndex,
+					      pageEndIndex));
 
 	    if (kidsIter.hasNext()) {
 		SqlClause kid = (SqlClause)kidsIter.next();
-		finalSql.append(kid.getModifiedSql());
+		buf.append(kid.getModifiedSql());
 	    }
 	}
 
+	String finalSql = buf.toString();
+	if (splitByQuote != null) finalSql = restoreLiterals(finalSql);
+
 	return hadOuterParens? 
-	    "(" + finalSql.toString() + ")":
-	    finalSql.toString();
+	    "(" + finalSql + ")":
+	    finalSql;
     }
 
     ///////////////////////////////////////////////////////////////////
     /////  private methods
     ///////////////////////////////////////////////////////////////////
 
-    private int getOpen() { return open; }
-    private int getClose() { return close; }
-    private String getClauseSql() { return origSql.substring(open, close+1); }
-	
     /**
-     * constructor (close unknown) 
      * recursively constructs kid clauses and the pieces that surround them
      * @param open index of clause open paren
      */ 
     private SqlClause (String origSql, int open, String joinTableName, int pageStartIndex, int pageEndIndex) throws WdkModelException {
+	if (open == 0) {
+	    origSql = exciseLiterals(origSql);	
+	    origSql = validateParenStructure(origSql);
+	}
 	this.origSql = origSql;
 	this.open = open;
 	this.joinTableName = joinTableName;
 	this.pageStartIndex = pageStartIndex;
 	this.pageEndIndex = pageEndIndex;
-	if (open == 0) validateParenStructure();
 	findKidsAndPieces();
     }
 
+    private int getOpen() { return open; }
+    private int getClose() { return close; }
+
+    // return an sql string in which all literals are replaced
+    // by WASLITERAL.  store the original sql, split by single quote
+    // in splitByQuote
+    private String exciseLiterals(String sql) throws WdkModelException {
+	String newline = System.getProperty("line.separator");
+
+      	// strip any quotes surrounding the primary key macro
+	String regex = "'" + RecordClass.PRIMARY_KEY_MACRO + "'";
+	String newSql = sql.replaceAll(regex, RecordClass.PRIMARY_KEY_MACRO);
+
+	if (newSql.indexOf("'") != -1) { 
+	    splitByQuote = newSql.split("'");
+	    if (splitByQuote.length%2 != 1) {
+		throw new WdkModelException("Odd number of quotes in: " +
+					    newline + sql);
+	    }
+	    StringBuffer buf = new StringBuffer(splitByQuote[0]);
+	    for (int i=2; i<splitByQuote.length; i+=2) {
+		buf.append(WASLITERAL + splitByQuote[i]);
+	    }
+	    newSql = buf.toString();
+	}
+	//	System.err.println("\nExcise: " + newSql);
+	return newSql;
+    }
+
+    // restore literals to the sql that was fixed
+    private String restoreLiterals(String sql) {
+	String newSql = sql;
+	//	System.err.println("\nrestore: " + newSql);
+	if (newSql.indexOf(WASLITERAL) != -1) { 
+	    String[] splitByWasLiteral = sql.split(WASLITERAL); // no literals
+	    StringBuffer buf = new StringBuffer();
+	    
+	    // iterate through original split by quotes
+	    // replace even elements with those in splitByWasLiteral
+	    // which contains only the non-literal sections
+	    int j=0;
+	    for (int i=0; i<splitByQuote.length; i+=1) {
+		if (i%2 == 0) buf.append(splitByWasLiteral[j++]);
+		else buf.append("'" + splitByQuote[i] + "'");
+	    }
+	    newSql = buf.toString();
+	}
+	return newSql;
+    }
+
+    private String getClauseSql() { return origSql.substring(open, close+1); }
+	
     // on entry cursor points to open paren for this clause
     private void findKidsAndPieces() throws WdkModelException {
 
@@ -167,12 +228,12 @@ public class SqlClause {
 			     pageEndIndex); // start next kid to find
     }
 
-    private void validateParenStructure() throws WdkModelException {
+    private String validateParenStructure(String sql) throws WdkModelException {
 	
 	String newline = System.getProperty("line.separator");
 	String errMsg = "Sql has invalid parentheses structure";
 
-	char[] chars = origSql.toCharArray();
+	char[] chars = sql.toCharArray();
 	Stack parenStack = new Stack();
 	Object o = new Object();
 
@@ -182,7 +243,7 @@ public class SqlClause {
 	    if (chars[i] == '(') parenStack.push(o);
 	    if (chars[i] == ')') {
 		if (parenStack.empty()) {
-		    throwException(errMsg, origSql);
+		    throwException(errMsg, sql);
 		} else {
 		    parenStack.pop();
 		    if (parenStack.empty() && i < chars.length-1)
@@ -191,10 +252,11 @@ public class SqlClause {
 	    }
 	}
 	if (!parenStack.empty()) {
-	    throwException(errMsg, origSql);
+	    throwException(errMsg, sql);
 	}
 
-	if (!hadOuterParens) origSql = "(" + origSql + ")";
+	if (!hadOuterParens) sql = "(" + sql + ")";
+	return sql;
     }
 
     private void checkForSelect(SqlClausePiece piece) throws WdkModelException {
@@ -237,10 +299,12 @@ public class SqlClause {
     private static String[] testCases = 
     {
 	"SELECT A, 'select ''from''' FROM B WHERE X = 'from' and B = '$$primaryKey$$'",
-
+	
 	"SELECT A, count(X), 'select ''from''' FROM (SELECT B FROM C WHERE D), E WHERE X = 'from' and F = '$$primaryKey$$'",
 
 	"SELECT A FROM B WHERE X = 2 and B = $$primaryKey$$",
+
+	"SELECT A, ')' FROM B WHERE X = 2 and B = $$primaryKey$$",
        
 	"SELECT A FROM (SELECT B FROM C WHERE $$primaryKey$$ = D)",
 
@@ -254,7 +318,8 @@ public class SqlClause {
 
 	"(select A from B where C = $$primaryKey$$) union (select A from D where E = $$primaryKey$$)",
 
-	"SELECT SUBSTR(g.source_id, 1, 1) FROM dots.genefeature g WHERE  g.source_id = '$$primaryKey$$'"    
+	"SELECT SUBSTR(g.source_id, 1, 1) FROM dots.genefeature g WHERE  g.source_id = '$$primaryKey$$'" 
+	
     }; 
 	
     public static void main(String[] args) {

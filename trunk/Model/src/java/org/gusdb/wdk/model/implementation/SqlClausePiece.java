@@ -44,31 +44,13 @@ public class SqlClausePiece {
     }
 
     String addJoinTableIndexToSelect(String sql) {
-	// a real select must be to the left of all literals
-	String[] split = sql.split("'", 2); 
-	split[0] = split[0].replaceAll("select|SELECT", 
-				       "SELECT " + joinTableName + "." +
-				       ResultFactory.RESULT_TABLE_I + "," );
-	return split.length == 1?
-	    split[0] :
-	    split[0] + "'" + split[1];
+	return sql.replaceAll("select|SELECT", 
+			      "SELECT " + joinTableName + "." +
+			      ResultFactory.RESULT_TABLE_I + "," );
     }
 
     String addJoinTableToFrom(String sql) {
-	// because quotes always come in pairs (even escaped ones)
-	// we know that all non-literal sections must be in the 
-	// odd elements of the array (where the first is odd)
-	String[] split = sql.split("'"); 
-	StringBuffer buf = new StringBuffer();
-	for (int i = 0; i<split.length; i++) {
-	    if (i%2 == 0) 
-		split[i] = split[i].replaceAll("from|FROM", "FROM " + 
-					       joinTableName + ",");
-	    buf.append(split[i]);
-	    if (i<split.length-2) buf.append("'");
-	}
-	//	System.err.println("\nfrom: " + sql + "\n" + buf.toString());
-	return buf.toString();
+	return sql.replaceAll("from|FROM", "FROM " + joinTableName + ",");
     }
 
     String addConstraintsToWhere(String sql, int pageStartIndex, 
@@ -76,18 +58,16 @@ public class SqlClausePiece {
 
 	String macro = RecordClass.PRIMARY_KEY_MACRO; // shorter var. name
 
-	// strip any quotes surrounding the primary key macro
-	String regex = "\\S*(" + macro + ")\\S*";
-	String newSql = sql.replaceAll(regex, "$1");
-  
 	// add AND clauses for page constraints
 	String newline = System.getProperty("line.separator");
 	String resultTableIndex = 
 	    joinTableName + "." + ResultFactory.RESULT_TABLE_I;
+
 	String andClause = 
 	    newline + "AND " + resultTableIndex + " >= " + pageStartIndex +
 	    newline + "AND " + resultTableIndex + " <= " + pageEndIndex;
 	
+	String newSql = sql;
 	// case 1:  "blah = $$primaryKey$$"
 	if (newSql.matches(".*=\\s*" + macro + ".*")) {
 	    newSql = newSql.replaceAll("(" + macro + ")", 
@@ -110,20 +90,13 @@ public class SqlClausePiece {
     }
 
     boolean containsSelect() {	
-	// dodge literals by only considering the section to their left
-	String[] split = origSql.substring(start, end+1).split("'", 2); 
 	String regex = ".*select\\s+.*";
-	return split[0].toLowerCase().matches(regex);
-
+	return origSql.substring(start, end+1).toLowerCase().matches(regex);
     }
 
     boolean containsFrom() {
-	// dodge literals by considering only the odd pieces of the split
 	String regex = ".*\\s+from\\s+.*";
-	String[] split = origSql.substring(start, end+1).split("'"); 
-	for (int i = 0; i<split.length; i+=2) 
-	    if (split[i].toLowerCase().matches(regex)) return true;
-	return false;
+	return origSql.substring(start, end+1).toLowerCase().matches(regex);
     }
 
     boolean containsPrimaryKey() {
