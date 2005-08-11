@@ -236,6 +236,12 @@ public class SqlClause {
 
     private static String[] testCases = 
     {
+	"SELECT A, 'select ''from''' FROM B WHERE X = 'from' and B = '$$primaryKey$$'",
+
+	"SELECT A, count(X), 'select ''from''' FROM (SELECT B FROM C WHERE D), E WHERE X = 'from' and F = '$$primaryKey$$'",
+
+	"SELECT A FROM B WHERE X = 2 and B = $$primaryKey$$",
+       
 	"SELECT A FROM (SELECT B FROM C WHERE $$primaryKey$$ = D)",
 
 	"(SELECT A FROM (SELECT B FROM C WHERE $$primaryKey$$ = D))",
@@ -247,8 +253,9 @@ public class SqlClause {
 	"(SELECT A FROM B WHERE C IN (SELECT D FROM E) AND $$primaryKey$$ = E)",
 
 	"(select A from B where C = $$primaryKey$$) union (select A from D where E = $$primaryKey$$)",
+
 	"SELECT SUBSTR(g.source_id, 1, 1) FROM dots.genefeature g WHERE  g.source_id = '$$primaryKey$$'"    
-};
+    }; 
 	
     public static void main(String[] args) {
 	if (args.length == 1) {
