@@ -82,6 +82,8 @@ public class SqlClause {
     //  - join table added to its FROM statement
     //  - page constraints and order by page index added to where statement
     public String getModifiedSql() throws WdkModelException {
+	hadOuterParens = false;  // we put them in manually in this method
+
 	String finalSql = getModifiedSqlSub();
 
 	String newline = System.getProperty("line.separator");
@@ -89,7 +91,6 @@ public class SqlClause {
 	String resultTableIndex = 
 	    joinTableName + "." + ResultFactory.RESULT_TABLE_I;
 
-	finalSql = hadOuterParens? "(" + finalSql + ")"  :  finalSql;
 
 	finalSql = "SELECT * FROM (" + newline + 
 	    finalSql + newline +
@@ -211,6 +212,8 @@ public class SqlClause {
 
 	String finalSql = buf.toString();
 	if (splitByQuote != null) finalSql = restoreLiterals(finalSql);
+ 
+	finalSql = hadOuterParens? "(" + finalSql + ")"  :  finalSql;
 
 	return finalSql;
     }
