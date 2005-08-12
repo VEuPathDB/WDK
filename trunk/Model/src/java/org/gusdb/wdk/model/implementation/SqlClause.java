@@ -76,11 +76,11 @@ public class SqlClause {
 
     }
 
-    // stitch together piece, clause, ..., piece
-    // also modify Sql if needed:
-    //  - RESULT_TABLE_INDEX added to select
-    //  - join table added to its FROM statement
-    //  - page constraints and order by page index added to where statement
+    /**
+     * @return the improved sql
+     */ 
+    // this method wraps getModifiedSqlSub to add the order by to the
+    // outermost clause
     public String getModifiedSql() throws WdkModelException {
 	hadOuterParens = false;  // we put them in manually in this method
 
@@ -170,6 +170,11 @@ public class SqlClause {
 	return newSql;
     }
 
+    // stitch together piece, clause, ..., piece
+    // also modify Sql if needed:
+    //  - RESULT_TABLE_INDEX added to select
+    //  - join table added to its FROM statement
+    //  - page constraints and order by page index added to where statement
     private String getModifiedSqlSub() throws WdkModelException {
 
 	if (pieces.size() - kids.size() != 1) {
