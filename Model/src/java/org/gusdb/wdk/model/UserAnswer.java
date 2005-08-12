@@ -42,6 +42,10 @@ public class UserAnswer {
 	return name;
     }
 
+    public String getName(int truncateTo) {
+	return getName().substring(0, truncateTo);
+    }
+
     public void setName(String name) {
 	this.name = name;
     }
