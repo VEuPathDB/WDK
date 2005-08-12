@@ -34,6 +34,7 @@ public class SqlClausePiece {
 			    boolean needsWhereFix,
 			    int pageStartIndex,
 			    int pageEndIndex) throws WdkModelException {
+
 	String finalSql = origSql.substring(start, end+1);
 	if (needsSelectFix) finalSql = addJoinTableIndexToSelect(finalSql);
 	if (needsFromFix) finalSql = addJoinTableToFrom(finalSql);
@@ -44,13 +45,20 @@ public class SqlClausePiece {
     }
 
     String addJoinTableIndexToSelect(String sql) {
-	return sql.replaceAll("select|SELECT", 
-			      "SELECT " + joinTableName + "." +
-			      ResultFactory.RESULT_TABLE_I + "," );
+	String regex = "\\b(select)\\b";
+	int flag = Pattern.CASE_INSENSITIVE;
+	String replace = "$1 " + joinTableName + "." +
+	    ResultFactory.RESULT_TABLE_I + "," ;
+
+	return Pattern.compile(regex,flag).matcher(sql).replaceAll(replace);
     }
 
     String addJoinTableToFrom(String sql) {
-	return sql.replaceAll("from|FROM", "FROM " + joinTableName + ",");
+	String regex = "\\b(from)\\b";
+	int flag = Pattern.CASE_INSENSITIVE;
+	String replace = "$1 " + joinTableName + ",";
+
+	return Pattern.compile(regex,flag).matcher(sql).replaceAll(replace);
     }
 
     String addConstraintsToWhere(String sql, int pageStartIndex, 
@@ -90,12 +98,12 @@ public class SqlClausePiece {
     }
 
     boolean containsSelect() {	
-	String regex = ".*select\\s+.*";
+	String regex = ".*\\bselect\\b.*";
 	return origSql.substring(start, end+1).toLowerCase().matches(regex);
     }
 
     boolean containsFrom() {
-	String regex = ".*\\s+from\\s+.*";
+	String regex = ".*\\bfrom\\b.*";
 	return origSql.substring(start, end+1).toLowerCase().matches(regex);
     }
 

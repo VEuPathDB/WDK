@@ -302,7 +302,9 @@ public class SqlClause {
 	
 	"SELECT A, count(X), 'select ''from''' FROM (SELECT B FROM C WHERE D), E WHERE X = 'from' and F = '$$primaryKey$$'",
 
-	"SELECT A FROM B WHERE X = 2 and B = $$primaryKey$$",
+	"selECT A FROM B WHERE X = 2 and B = $$primaryKey$$",
+
+	"SELECT cheese AS fromage FROM B WHERE C = $$primaryKey$$",
 
 	"SELECT A, ')' FROM B WHERE X = 2 and B = $$primaryKey$$",
        
