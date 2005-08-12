@@ -6,6 +6,7 @@ import java.util.Stack;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.RecordClass;
+import org.gusdb.wdk.model.ResultFactory;
 
 /**
  * An sql clause: a section of sql bounded by a parenthesis pair that 
@@ -33,7 +34,8 @@ import org.gusdb.wdk.model.RecordClass;
  *          - the join table's row index to the SELECT statement
  *          - the JOIN_TABLE to the FROM statement
  *          - the page constraints to the WHERE statement
- *          - the ORDER BY statement to order by the join table's row index
+ *  - if the clause is the outermost one, add an ORDER BY statement to 
+ *    order by the join table's row index
  * 
  * Because literals never contain information we need for this analysis, and
  * because they can confuse things by containing "select" or "from", we
@@ -80,51 +82,20 @@ public class SqlClause {
     //  - join table added to its FROM statement
     //  - page constraints and order by page index added to where statement
     public String getModifiedSql() throws WdkModelException {
+	String finalSql = getModifiedSqlSub();
 
-	if (pieces.size() - kids.size() != 1) {
-	    throwException("Invalid sql. There are " + pieces.size() + 
-			   " pieces and " + kids.size() + " kids ", 
-			   getClauseSql());   
-	}
-	
-	// initial pass to check pieces for From, PrimaryKey pair, and validate
-	Iterator piecesIter = pieces.iterator();
-	while (piecesIter.hasNext()) {
-	    SqlClausePiece piece = (SqlClausePiece)piecesIter.next();
-	    checkForSelect(piece);
-	    checkForFrom(piece);
-	    checkForPrimaryKey(piece);
-	}
+	String newline = System.getProperty("line.separator");
 
-	piecesIter = pieces.iterator();
-	Iterator kidsIter = kids.iterator();
-	StringBuffer buf = new StringBuffer();
-	while (piecesIter.hasNext()) {
-	    SqlClausePiece piece = (SqlClausePiece)piecesIter.next();
-	    boolean needsSelectFix = 
-		selectPiece == piece && primaryKeyPiece != null;
-	    boolean needsFromFix = 
-		fromPiece == piece && primaryKeyPiece != null;
-	    boolean needsWhereFix = primaryKeyPiece == piece;
+	String resultTableIndex = 
+	    joinTableName + "." + ResultFactory.RESULT_TABLE_I;
 
-	    buf.append(piece.getFinalPieceSql(needsSelectFix,
-					      needsFromFix,
-					      needsWhereFix,
-					      pageStartIndex,
-					      pageEndIndex));
+	finalSql = hadOuterParens? "(" + finalSql + ")"  :  finalSql;
 
-	    if (kidsIter.hasNext()) {
-		SqlClause kid = (SqlClause)kidsIter.next();
-		buf.append(kid.getModifiedSql());
-	    }
-	}
-
-	String finalSql = buf.toString();
-	if (splitByQuote != null) finalSql = restoreLiterals(finalSql);
-
-	return hadOuterParens? 
-	    "(" + finalSql + ")":
-	    finalSql;
+	finalSql = "SELECT * FROM (" + newline + 
+	    finalSql + newline +
+	    ") ORDER BY " + resultTableIndex;
+ 
+	return finalSql;
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -196,6 +167,52 @@ public class SqlClause {
 	    newSql = buf.toString();
 	}
 	return newSql;
+    }
+
+    private String getModifiedSqlSub() throws WdkModelException {
+
+	if (pieces.size() - kids.size() != 1) {
+	    throwException("Invalid sql. There are " + pieces.size() + 
+			   " pieces and " + kids.size() + " kids ", 
+			   getClauseSql());   
+	}
+	
+	// initial pass to check pieces for From, PrimaryKey pair, and validate
+	Iterator piecesIter = pieces.iterator();
+	while (piecesIter.hasNext()) {
+	    SqlClausePiece piece = (SqlClausePiece)piecesIter.next();
+	    checkForSelect(piece);
+	    checkForFrom(piece);
+	    checkForPrimaryKey(piece);
+	}
+
+	piecesIter = pieces.iterator();
+	Iterator kidsIter = kids.iterator();
+	StringBuffer buf = new StringBuffer();
+	while (piecesIter.hasNext()) {
+	    SqlClausePiece piece = (SqlClausePiece)piecesIter.next();
+	    boolean needsSelectFix = 
+		selectPiece == piece && primaryKeyPiece != null;
+	    boolean needsFromFix = 
+		fromPiece == piece && primaryKeyPiece != null;
+	    boolean needsWhereFix = primaryKeyPiece == piece;
+
+	    buf.append(piece.getFinalPieceSql(needsSelectFix,
+					      needsFromFix,
+					      needsWhereFix,
+					      pageStartIndex,
+					      pageEndIndex));
+
+	    if (kidsIter.hasNext()) {
+		SqlClause kid = (SqlClause)kidsIter.next();
+		buf.append(kid.getModifiedSqlSub());
+	    }
+	}
+
+	String finalSql = buf.toString();
+	if (splitByQuote != null) finalSql = restoreLiterals(finalSql);
+
+	return finalSql;
     }
 
     private String getClauseSql() { return origSql.substring(open, close+1); }

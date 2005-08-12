@@ -91,9 +91,6 @@ public class SqlClausePiece {
 					+ newline + sql);
 	}
 
-	// add order by at the end
-	newSql = newSql + "\nORDER BY " + resultTableIndex;
-
 	return newSql;
     }
 
