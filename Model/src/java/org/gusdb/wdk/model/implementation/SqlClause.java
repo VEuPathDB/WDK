@@ -56,6 +56,7 @@ public class SqlClause {
     private SqlClausePiece fromPiece = null;
     private SqlClausePiece selectPiece = null;
     private SqlClausePiece primaryKeyPiece = null;
+    private boolean hasPrimaryKey = false;
 
     private ArrayList kids = new ArrayList();
     private ArrayList pieces = new ArrayList();
@@ -94,7 +95,7 @@ public class SqlClause {
 
 	finalSql = "SELECT * FROM (" + newline + 
 	    finalSql + newline +
-	    ") ORDER BY " + resultTableIndex;
+	    "), " + joinTableName + " ORDER BY " + resultTableIndex;
  
 	return finalSql;
     }
@@ -122,6 +123,7 @@ public class SqlClause {
 
     private int getOpen() { return open; }
     private int getClose() { return close; }
+    private boolean getHasPrimaryKey() { return hasPrimaryKey; }
 
     // return an sql string in which all literals are replaced
     // by WASLITERAL.  store the original sql, split by single quote
@@ -145,14 +147,13 @@ public class SqlClause {
 	    }
 	    newSql = buf.toString();
 	}
-	//	System.err.println("\nExcise: " + newSql);
 	return newSql;
     }
 
     // restore literals to the sql that was fixed
     private String restoreLiterals(String sql) {
 	String newSql = sql;
-	//	System.err.println("\nrestore: " + newSql);
+
 	if (newSql.indexOf(WASLITERAL) != -1) { 
 	    String[] splitByWasLiteral = sql.split(WASLITERAL); // no literals
 	    StringBuffer buf = new StringBuffer();
@@ -170,12 +171,23 @@ public class SqlClause {
 	return newSql;
     }
 
-    // stitch together piece, clause, ..., piece
-    // also modify Sql if needed:
-    //  - RESULT_TABLE_INDEX added to select
-    //  - join table added to its FROM statement
-    //  - page constraints and order by page index added to where statement
-    private String getModifiedSqlSub() throws WdkModelException {
+    private String getClauseSql() { return origSql.substring(open, close+1); }
+	
+    // on entry cursor points to open paren for this clause
+    private void findKidsAndPieces() throws WdkModelException {
+
+	int cursor = open;
+	SqlClause kid;
+	while ((kid = constructNextKid(cursor)) != null) {
+
+	    pieces.add(new SqlClausePiece(origSql, cursor+1, kid.getOpen()-1,
+					  joinTableName));
+	    kids.add(kid);
+	    hasPrimaryKey |= kid.getHasPrimaryKey();
+	    cursor = kid.getClose();
+	}
+	close = origSql.indexOf(CLOSE, cursor+1); 
+	pieces.add(new SqlClausePiece(origSql,cursor+1,close-1,joinTableName));
 
 	if (pieces.size() - kids.size() != 1) {
 	    throwException("Invalid sql. There are " + pieces.size() + 
@@ -191,54 +203,6 @@ public class SqlClause {
 	    checkForFrom(piece);
 	    checkForPrimaryKey(piece);
 	}
-
-	piecesIter = pieces.iterator();
-	Iterator kidsIter = kids.iterator();
-	StringBuffer buf = new StringBuffer();
-	while (piecesIter.hasNext()) {
-	    SqlClausePiece piece = (SqlClausePiece)piecesIter.next();
-	    boolean needsSelectFix = 
-		selectPiece == piece && primaryKeyPiece != null;
-	    boolean needsFromFix = 
-		fromPiece == piece && primaryKeyPiece != null;
-	    boolean needsWhereFix = primaryKeyPiece == piece;
-
-	    buf.append(piece.getFinalPieceSql(needsSelectFix,
-					      needsFromFix,
-					      needsWhereFix,
-					      pageStartIndex,
-					      pageEndIndex));
-
-	    if (kidsIter.hasNext()) {
-		SqlClause kid = (SqlClause)kidsIter.next();
-		buf.append(kid.getModifiedSqlSub());
-	    }
-	}
-
-	String finalSql = buf.toString();
-	if (splitByQuote != null) finalSql = restoreLiterals(finalSql);
- 
-	finalSql = hadOuterParens? "(" + finalSql + ")"  :  finalSql;
-
-	return finalSql;
-    }
-
-    private String getClauseSql() { return origSql.substring(open, close+1); }
-	
-    // on entry cursor points to open paren for this clause
-    private void findKidsAndPieces() throws WdkModelException {
-
-	int cursor = open;
-	SqlClause kid;
-	while ((kid = constructNextKid(cursor)) != null) {
-
-	    pieces.add(new SqlClausePiece(origSql, cursor+1, kid.getOpen()-1,
-					  joinTableName));
-	    kids.add(kid);
-	    cursor = kid.getClose();
-	}
-	close = origSql.indexOf(CLOSE, cursor+1); 
-	pieces.add(new SqlClausePiece(origSql,cursor+1,close-1,joinTableName));
     }
 
     // cursor points to either this clause's open paren or prev kid close
@@ -312,7 +276,44 @@ public class SqlClause {
 			       " but no FROM or no SELECT",
 			       getClauseSql());
 	    primaryKeyPiece = piece;
+	    hasPrimaryKey = true;
 	}
+    }
+
+    // stitch together piece, clause, ..., piece
+    // also modify Sql if needed:
+    //  - RESULT_TABLE_INDEX added to select
+    //  - join table added to its FROM statement
+    //  - page constraints and order by page index added to where statement
+    private String getModifiedSqlSub() throws WdkModelException {
+
+	Iterator piecesIter = pieces.iterator();
+	Iterator kidsIter = kids.iterator();
+	StringBuffer buf = new StringBuffer();
+	while (piecesIter.hasNext()) {
+	    SqlClausePiece piece = (SqlClausePiece)piecesIter.next();
+	    boolean needsSelectFix = selectPiece == piece && hasPrimaryKey;
+	    boolean needsFromFix = fromPiece == piece && hasPrimaryKey;
+	    boolean needsWhereFix = primaryKeyPiece == piece;
+	    
+	    buf.append(piece.getFinalPieceSql(needsSelectFix,
+					      needsFromFix,
+					      needsWhereFix,
+					      pageStartIndex,
+					      pageEndIndex));
+
+	    if (kidsIter.hasNext()) {
+		SqlClause kid = (SqlClause)kidsIter.next();
+		buf.append(kid.getModifiedSqlSub());
+	    }
+	}
+
+	String finalSql = buf.toString();
+	if (splitByQuote != null) finalSql = restoreLiterals(finalSql);
+ 
+	finalSql = hadOuterParens? "(" + finalSql + ")"  :  finalSql;
+
+	return finalSql;
     }
 
     private void throwException(String msg, String sql) throws WdkModelException {
@@ -323,7 +324,8 @@ public class SqlClause {
 
     private static String[] testCases = 
     {
-	"SELECT A, 'select ''from''' FROM B WHERE X = 'from' and B = '$$primaryKey$$'",
+	"SELECT name, rna_count FROM (SELECT testgene.gene_id, TestGene.name, count(*) as rna_count from TestGene, TestRna where TestGene.gene_id = $$primaryKey$$ and TestGene.gene_id = TestRna.gene_id GROUP BY TestGene.gene_id, TestGene.name)",
+ 	"SELECT A, 'select ''from''' FROM B WHERE X = 'from' and B = '$$primaryKey$$'",
 	
 	"SELECT A, count(X), 'select ''from''' FROM (SELECT B FROM C WHERE D), E WHERE X = 'from' and F = '$$primaryKey$$'",
 
@@ -346,7 +348,7 @@ public class SqlClause {
 	"(select A from B where C = $$primaryKey$$) union (select A from D where E = $$primaryKey$$)",
 
 	"SELECT SUBSTR(g.source_id, 1, 1) FROM dots.genefeature g WHERE  g.source_id = '$$primaryKey$$'" 
-	
+
     }; 
 	
     public static void main(String[] args) {
@@ -367,7 +369,7 @@ public class SqlClause {
 	    System.out.println(sql);
 	    System.out.println("");
 	    System.out.println("Result: ");
-	    SqlClause clause = new SqlClause(sql, "RESULT_TABLE", 1, 20);
+	    SqlClause clause = new SqlClause(sql, "Result_Table", 1, 20);
 	    System.out.println(clause.getModifiedSql());
 	    System.out.println("");
 	} catch (WdkModelException e) {
