@@ -44,6 +44,10 @@ public class SqlClausePiece {
 	return finalSql;
     }
 
+    String getSql() {
+	return origSql.substring(start, end+1);
+    }
+
     String addJoinTableIndexToSelect(String sql) {
 	String regex = "\\b(select)\\b";
 	int flag = Pattern.CASE_INSENSITIVE;
