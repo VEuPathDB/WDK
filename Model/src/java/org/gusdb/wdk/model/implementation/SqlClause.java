@@ -35,8 +35,11 @@ import org.gusdb.wdk.model.RDBMSPlatformI;
  *          - the join table's row index to the SELECT statement
  *          - the JOIN_TABLE to the FROM statement
  *          - the page constraints to the WHERE statement
- *  - if the clause is the outermost one, add an ORDER BY statement to 
- *    order by the join table's row index
+ *          - the join table's row index a GROUP BY statement, if present
+ *      - if any of its kid clauses get the SELECT statement modification
+ *        apply that modification as well to the parent (propagating up)
+ *  - if the clause is the outermost one, wrap it in a SELECT * FROM (...
+ *    ) ORDER BY the join table's row index
  * 
  * Because literals never contain information we need for this analysis, and
  * because they can confuse things by containing "select" or "from", we
@@ -56,6 +59,7 @@ public class SqlClause {
 
     private SqlClausePiece fromPiece = null;
     private SqlClausePiece selectPiece = null;
+    private SqlClausePiece groupByPiece = null;
     private SqlClausePiece primaryKeyPiece = null;
     private boolean hasPrimaryKey = false;
 
@@ -95,7 +99,7 @@ public class SqlClause {
 
 	finalSql = "SELECT * FROM (" + newline + 
 	    finalSql + newline +
-	    ") " + platform.getTableAliasAs() + "_wrapped_ " + newline + 
+	    ") " + platform.getTableAliasAs() + "auto_wrapped_ " + newline + 
 	    "ORDER BY " + resultTableIndex;
  
 	return finalSql;
@@ -204,6 +208,7 @@ public class SqlClause {
 	    checkForSelect(piece);
 	    checkForFrom(piece);
 	    checkForPrimaryKey(piece);
+	    checkForGroupBy(piece);
 	}
     }
 
@@ -282,7 +287,16 @@ public class SqlClause {
 	}
     }
 
-    // stitch together piece, clause, ..., piece
+    private void checkForGroupBy(SqlClausePiece piece) throws WdkModelException {
+	if (piece.containsGroupBy()) {
+	    if (groupByPiece != null) 
+		throwException("Sql clause has too many GROUP BYs",
+			       getClauseSql());
+	    groupByPiece = piece;
+	}
+    }
+
+     // stitch together piece, clause, ..., piece
     // also modify Sql if needed:
     //  - RESULT_TABLE_INDEX added to select
     //  - join table added to its FROM statement
@@ -295,12 +309,14 @@ public class SqlClause {
 	while (piecesIter.hasNext()) {
 	    SqlClausePiece piece = (SqlClausePiece)piecesIter.next();
 	    boolean needsSelectFix = selectPiece == piece && hasPrimaryKey;
-	    boolean needsFromFix = fromPiece == piece && hasPrimaryKey;
+	    boolean needsFromFix = fromPiece==piece && primaryKeyPiece==piece;
 	    boolean needsWhereFix = primaryKeyPiece == piece;
+	    boolean needsGroupByFix = groupByPiece == piece && hasPrimaryKey;
 	    
 	    buf.append(piece.getFinalPieceSql(needsSelectFix,
 					      needsFromFix,
 					      needsWhereFix,
+					      needsGroupByFix,
 					      pageStartIndex,
 					      pageEndIndex));
 
@@ -326,7 +342,8 @@ public class SqlClause {
 
     private static String[] testCases = 
     {
-	"SELECT name, rna_count FROM (SELECT testgene.gene_id, TestGene.name, count(*) as rna_count from TestGene, TestRna where TestGene.gene_id = $$primaryKey$$ and TestGene.gene_id = TestRna.gene_id GROUP BY TestGene.gene_id, TestGene.name) AS whatever",
+	"SELECT name, rna_count FROM (SELECT testgene.gene_id, TestGene.name, count(*) as rna_count FROM TestGene, TestRna WHERE TestGene.gene_id = $$primaryKey$$ AND TestGene.gene_id = TestRna.gene_id GROUP BY TestGene.gene_id, TestGene.name) AS whatever",
+
  	"SELECT A, 'select ''from''' FROM B WHERE X = 'from' and B = '$$primaryKey$$'",
 	
 	"SELECT A, count(X), 'select ''from''' FROM (SELECT B FROM C WHERE D), E WHERE X = 'from' and F = '$$primaryKey$$'",
