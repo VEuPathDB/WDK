@@ -7,6 +7,7 @@ import java.util.Stack;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.ResultFactory;
+import org.gusdb.wdk.model.RDBMSPlatformI;
 
 /**
  * An sql clause: a section of sql bounded by a parenthesis pair that 
@@ -71,10 +72,11 @@ public class SqlClause {
 
     private String[] splitByQuote;
 
-    // public constructor 
-    public SqlClause (String origSql, String joinTableName, int pageStartIndex, int pageEndIndex) throws WdkModelException {
-	this(origSql, 0, joinTableName, pageStartIndex, pageEndIndex);
+    private RDBMSPlatformI platform;
 
+    // public constructor 
+    public SqlClause (String origSql, String joinTableName, int pageStartIndex, int pageEndIndex, RDBMSPlatformI platform) throws WdkModelException {
+	this(origSql, 0, joinTableName, pageStartIndex, pageEndIndex,platform);
     }
 
     /**
@@ -89,13 +91,12 @@ public class SqlClause {
 
 	String newline = System.getProperty("line.separator");
 
-	String resultTableIndex = 
-	    joinTableName + "." + ResultFactory.RESULT_TABLE_I;
-
+	String resultTableIndex = ResultFactory.RESULT_TABLE_I;
 
 	finalSql = "SELECT * FROM (" + newline + 
 	    finalSql + newline +
-	    "), " + joinTableName + " ORDER BY " + resultTableIndex;
+	    ") " + platform.getTableAliasAs() + "_wrapped_ " + newline + 
+	    "ORDER BY " + resultTableIndex;
  
 	return finalSql;
     }
@@ -108,7 +109,7 @@ public class SqlClause {
      * recursively constructs kid clauses and the pieces that surround them
      * @param open index of clause open paren
      */ 
-    private SqlClause (String origSql, int open, String joinTableName, int pageStartIndex, int pageEndIndex) throws WdkModelException {
+    private SqlClause (String origSql, int open, String joinTableName, int pageStartIndex, int pageEndIndex, RDBMSPlatformI platform) throws WdkModelException {
 	if (open == 0) {
 	    origSql = exciseLiterals(origSql);	
 	    origSql = validateParenStructure(origSql);
@@ -118,6 +119,7 @@ public class SqlClause {
 	this.joinTableName = joinTableName;
 	this.pageStartIndex = pageStartIndex;
 	this.pageEndIndex = pageEndIndex;
+	this.platform = platform;
 	findKidsAndPieces();
     }
 
@@ -214,7 +216,7 @@ public class SqlClause {
 	if (nextOpen == -1 || nextOpen > nextClose) return null;// no more kids
 	
 	return new SqlClause(origSql, nextOpen, joinTableName, pageStartIndex,
-			     pageEndIndex); // start next kid to find
+			     pageEndIndex, platform); // start next kid to find
     }
 
     private String validateParenStructure(String sql) throws WdkModelException {
@@ -324,7 +326,7 @@ public class SqlClause {
 
     private static String[] testCases = 
     {
-	"SELECT name, rna_count FROM (SELECT testgene.gene_id, TestGene.name, count(*) as rna_count from TestGene, TestRna where TestGene.gene_id = $$primaryKey$$ and TestGene.gene_id = TestRna.gene_id GROUP BY TestGene.gene_id, TestGene.name)",
+	"SELECT name, rna_count FROM (SELECT testgene.gene_id, TestGene.name, count(*) as rna_count from TestGene, TestRna where TestGene.gene_id = $$primaryKey$$ and TestGene.gene_id = TestRna.gene_id GROUP BY TestGene.gene_id, TestGene.name) AS whatever",
  	"SELECT A, 'select ''from''' FROM B WHERE X = 'from' and B = '$$primaryKey$$'",
 	
 	"SELECT A, count(X), 'select ''from''' FROM (SELECT B FROM C WHERE D), E WHERE X = 'from' and F = '$$primaryKey$$'",
@@ -369,7 +371,9 @@ public class SqlClause {
 	    System.out.println(sql);
 	    System.out.println("");
 	    System.out.println("Result: ");
-	    SqlClause clause = new SqlClause(sql, "Result_Table", 1, 20);
+	    RDBMSPlatformI platform = new PostgreSQL();
+	    SqlClause clause = 
+		new SqlClause(sql, "Result_Table", 1, 20, platform);
 	    System.out.println(clause.getModifiedSql());
 	    System.out.println("");
 	} catch (WdkModelException e) {

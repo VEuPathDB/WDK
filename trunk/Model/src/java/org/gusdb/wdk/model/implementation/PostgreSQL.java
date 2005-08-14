@@ -41,6 +41,10 @@ public class PostgreSQL implements RDBMSPlatformI {
 	return schemaName + "." + tableName;
     }
 
+    public String getTableAliasAs() {
+	return "AS ";
+    }
+
     public String getNextId(String schemaName, String tableName) throws SQLException  {
         String sql = "select nextval(' " + schemaName + "." + tableName + 
         "_pkseq ')";
