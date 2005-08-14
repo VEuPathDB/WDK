@@ -42,6 +42,8 @@ public interface RDBMSPlatformI {
 				  String sql) throws SQLException ;
 
     public void close() throws WdkModelException;
+
+    public String getTableAliasAs();
 }
 
 

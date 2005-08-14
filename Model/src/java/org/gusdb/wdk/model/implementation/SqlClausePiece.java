@@ -51,8 +51,7 @@ public class SqlClausePiece {
     String addJoinTableIndexToSelect(String sql) {
 	String regex = "\\b(select)\\b";
 	int flag = Pattern.CASE_INSENSITIVE;
-	String replace = "$1 " + joinTableName + "." +
-	    ResultFactory.RESULT_TABLE_I + "," ;
+	String replace = "$1 " + ResultFactory.RESULT_TABLE_I + "," ;
 
 	return Pattern.compile(regex,flag).matcher(sql).replaceAll(replace);
     }
@@ -72,8 +71,7 @@ public class SqlClausePiece {
 
 	// add AND clauses for page constraints
 	String newline = System.getProperty("line.separator");
-	String resultTableIndex = 
-	    joinTableName + "." + ResultFactory.RESULT_TABLE_I;
+	String resultTableIndex = ResultFactory.RESULT_TABLE_I;
 
 	String andClause = 
 	    newline + "AND " + resultTableIndex + " >= " + pageStartIndex +

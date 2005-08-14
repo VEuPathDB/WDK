@@ -44,6 +44,10 @@ public class Oracle implements RDBMSPlatformI {
 	return schemaName + "." + tableName;
     }
 
+    public String getTableAliasAs() {
+	return "";
+    }
+
     public String getNextId(String schemaName, String tableName) throws SQLException  {
         String sql = "select " + schemaName + "." + tableName + 
         "_pkseq.nextval from dual";

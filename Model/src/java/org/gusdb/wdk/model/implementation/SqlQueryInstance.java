@@ -52,8 +52,9 @@ public class SqlQueryInstance extends QueryInstance  {
     private String getJoinSql()  throws WdkModelException {
 	String sql = ((SqlQuery)query).getSql();
 
+        RDBMSPlatformI platform = ((SqlQuery)query).getRDBMSPlatform();
 	SqlClause clause = new SqlClause(sql, joinTableName, 
-					 startIndex, endIndex);
+					 startIndex, endIndex, platform);
 
 	return instantiateSqlWithJoin(clause.getModifiedSql());
 
