@@ -32,6 +32,7 @@ public class SqlClausePiece {
     String getFinalPieceSql(boolean needsSelectFix, 
 			    boolean needsFromFix,
 			    boolean needsWhereFix,
+			    boolean needsGroupByFix,
 			    int pageStartIndex,
 			    int pageEndIndex) throws WdkModelException {
 
@@ -41,6 +42,7 @@ public class SqlClausePiece {
 	if (needsWhereFix) finalSql = addConstraintsToWhere(finalSql,
 							    pageStartIndex,
 							    pageEndIndex);
+	if (needsGroupByFix) finalSql = addJoinTableIndexToGroupBy(finalSql);
 	return finalSql;
     }
 
@@ -96,6 +98,14 @@ public class SqlClausePiece {
 	return newSql;
     }
 
+    String addJoinTableIndexToGroupBy(String sql) {
+	String regex = "\\b(group\\s+by)\\b";
+	int flag = Pattern.CASE_INSENSITIVE;
+	String replace = "$1 " + ResultFactory.RESULT_TABLE_I + "," ;
+
+	return Pattern.compile(regex,flag).matcher(sql).replaceAll(replace);
+    }
+
     boolean containsSelect() {	
 	String regex = ".*\\bselect\\b.*";
 	return origSql.substring(start, end+1).toLowerCase().matches(regex);
@@ -109,6 +119,11 @@ public class SqlClausePiece {
     boolean containsPrimaryKey() {
 	String regex = ".*" + RecordClass.PRIMARY_KEY_MACRO + ".*";
 	return origSql.substring(start, end+1).matches(regex);
+    }
+
+    boolean containsGroupBy() {
+	String regex = ".*\\bgroup\\s+by\\b.*";
+	return origSql.substring(start, end+1).toLowerCase().matches(regex);
     }
 
     ///////////////////////////////////////////////////////////////////
