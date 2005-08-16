@@ -15,8 +15,6 @@ import org.gusdb.wdk.model.TextAttributeField;
 import org.gusdb.wdk.model.TextColumn;
 import org.gusdb.wdk.model.LinkAttributeField;
 import org.gusdb.wdk.model.LinkColumn;
-import org.gusdb.wdk.model.NestedRecord;
-import org.gusdb.wdk.model.NestedRecordList;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 
@@ -89,8 +87,8 @@ public class ModelXmlParser {
         
         setModelDocument(model, modelXmlURL, modelPropURL);
 	model.resolveReferences();
-
         try {
+	    
 	    model.configure(modelConfigXmlFileURL);
 	    model.setResources();
 	}
@@ -198,7 +196,7 @@ public class ModelXmlParser {
         }
     }   
 
-    private static Digester configureDigester() {
+    protected static Digester configureDigester() {
     
         Digester digester = new Digester();
         digester.setValidating(false);
@@ -219,14 +217,6 @@ public class ModelXmlParser {
         /*  */ digester.addObjectCreate( "wdkModel/recordClassSet/recordClass", RecordClass.class );
         
         /*  */ digester.addSetProperties( "wdkModel/recordClassSet/recordClass");
-
-        // By Jerric - parse projectParamRef
-        /*    */ digester.addObjectCreate( "wdkModel/recordClassSet/recordClass/projectParamRef", Reference.class );
-        
-        /*    */ digester.addSetProperties( "wdkModel/recordClassSet/recordClass/projectParamRef");
-        
-        /*    */ digester.addSetNext( "wdkModel/recordClassSet/recordClass/projectParamRef", "setProjectParamRef" );
-        // end by jerric
         
         /*    */ digester.addObjectCreate( "wdkModel/recordClassSet/recordClass/attributeQueryRef", Reference.class );
         
@@ -246,28 +236,16 @@ public class ModelXmlParser {
 
         /*    */ digester.addBeanPropertySetter( "wdkModel/recordClassSet/recordClass/linkAttribute/url");
         
-	/*    */ digester.addSetNext( "wdkModel/recordClassSet/recordClass/linkAttribute", "addLinkAttribute" );
+         /*    */ digester.addSetNext( "wdkModel/recordClassSet/recordClass/linkAttribute", "addLinkAttribute" );
         
-	/*    */ digester.addObjectCreate( "wdkModel/recordClassSet/recordClass/textAttribute", TextAttributeField.class );
+       /*    */ digester.addObjectCreate( "wdkModel/recordClassSet/recordClass/textAttribute", TextAttributeField.class );
         
         /*    */ digester.addSetProperties( "wdkModel/recordClassSet/recordClass/textAttribute");
-	
+
         /*      */ digester.addBeanPropertySetter( "wdkModel/recordClassSet/recordClass/textAttribute/text");
         
         /*    */ digester.addSetNext( "wdkModel/recordClassSet/recordClass/textAttribute", "addTextAttribute" );
         
-	/*    */ digester.addObjectCreate( "wdkModel/recordClassSet/recordClass/nestedRecord", NestedRecord.class );
-
-	/*    */ digester.addSetProperties( "wdkModel/recordClassSet/recordClass/nestedRecord");
-
-        /*    */ digester.addSetNext( "wdkModel/recordClassSet/recordClass/nestedRecord", "addNestedRecordQuestionRef" );
-	
-	/*    */ digester.addObjectCreate( "wdkModel/recordClassSet/recordClass/nestedRecordList", NestedRecordList.class );
-
-	/*    */ digester.addSetProperties( "wdkModel/recordClassSet/recordClass/nestedRecordList");
-
-        /*    */ digester.addSetNext( "wdkModel/recordClassSet/recordClass/nestedRecordList", "addNestedRecordListQuestionRef" );
-
         /*  */ digester.addSetNext( "wdkModel/recordClassSet/recordClass", "addRecordClass" );
         
         /**/ digester.addSetNext( "wdkModel/recordClassSet", "addRecordClassSet" );
@@ -314,6 +292,36 @@ public class ModelXmlParser {
         /*    */ digester.addSetNext( "wdkModel/querySet/sqlQuery/textColumn", "addColumn" );
         
         /*  */ digester.addSetNext( "wdkModel/querySet/sqlQuery", "addQuery" );
+        
+        // STEVE: This is the parser for oql rule
+               digester.addObjectCreate( "wdkModel/querySet/oqlQuery", K2Query.class );
+        digester.addSetProperties( "wdkModel/querySet/oqlQuery");
+        
+        digester.addBeanPropertySetter( "wdkModel/querySet/oqlQuery/oql");
+        digester.addBeanPropertySetter( "wdkModel/querySet/oqlQuery/description");
+        digester.addBeanPropertySetter( "wdkModel/querySet/oqlQuery/rmiNameBinding");
+        digester.addObjectCreate( "wdkModel/querySet/oqlQuery/paramRef", Reference.class );
+        digester.addSetProperties( "wdkModel/querySet/oqlQuery/paramRef");
+        
+        digester.addSetNext( "wdkModel/querySet/oqlQuery/paramRef", "addParamRef" );
+        digester.addObjectCreate( "wdkModel/querySet/oqlQuery/column", Column.class );
+        
+        digester.addSetProperties( "wdkModel/querySet/oqlQuery/column");
+        digester.addSetNext( "wdkModel/querySet/oqlQuery/column", "addColumn" );
+        digester.addObjectCreate( "wdkModel/querySet/oqlQuery/linkColumn", LinkColumn.class );
+        digester.addSetProperties( "wdkModel/querySet/oqlQuery/linkColumn");
+        
+        digester.addBeanPropertySetter( "wdkModel/querySet/oqlQuery/linkColumn/url");
+        digester.addSetNext( "wdkModel/querySet/oqlQuery/linkColumn", "addColumn" );
+        digester.addObjectCreate( "wdkModel/querySet/oqlQuery/textColumn", TextColumn.class );
+        digester.addSetProperties( "wdkModel/querySet/oqlQuery/textColumn");
+        
+        digester.addSetNext( "wdkModel/querySet/oqlQuery/textColumn", "addColumn" );
+        digester.addSetNext( "wdkModel/querySet/oqlQuery", "addQuery" );
+        // STEVE: END OF ADDITION   
+        
+        
+        
         
         /**/ digester.addSetNext( "wdkModel/querySet", "addQuerySet" );
         
