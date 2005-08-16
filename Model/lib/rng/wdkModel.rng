@@ -13,6 +13,7 @@
         <choice>
           <ref name="questionSet" />
           <ref name="querySet" />
+          <ref name="oqlQuerySet" />
           <ref name="queryNameList" />
           <ref name="recordClassSet" />
           <ref name="paramSet" />
@@ -26,6 +27,8 @@
   <define name="queries">
     <choice>
       <ref name="sqlQuery" />
+     <ref name="oqlQuery" />
+ 
     </choice>
   </define>  
   
@@ -120,6 +123,16 @@
     </element>
   </define>
 
+  <!-- This should be nuke down later on -->
+  <define name="oqlQuerySet">
+    <element name="oqlQuerySet">
+      <attribute name="name" />
+      <oneOrMore>
+        <ref name="queries" />
+      </oneOrMore>
+    </element>
+  </define>
+  
   <define name="recordClassSet">
     <element name="recordClassSet">
       <attribute name="name" />
@@ -137,9 +150,6 @@
           <element name="description">
               <text />
           </element>        
-      </optional>
-      <optional>
-          <attribute name="isInternal" />
       </optional>
       <oneOrMore>
         <ref name="question" />
@@ -179,6 +189,17 @@
     </element>
   </define>
 
+ <define name="oqlQuery">
+    <element name="oqlQuery">
+      <ref name="QueryBaseContents" />
+      <element name="rmiNameBinding">
+        <text/>
+      </element>
+      <element name="oql">
+        <text />
+      </element>
+    </element>
+  </define>
   
   <!-- Params -->
   <define name="stringParam">
@@ -244,17 +265,6 @@
       <optional>
          <attribute name="attributeOrdering" />
       </optional>
-
-      <!-- the following attribute & element is used by two-part primary key -->
-      <optional>
-         <attribute name="delimiter" />
-      </optional>
-      <optional>
-         <element name="projectParamRef">
-             <attribute name="ref" />
-         </element>
-      </optional>
-
       <zeroOrMore>  
         <element name="attributeQueryRef">
           <attribute name="ref" />
@@ -268,16 +278,6 @@
       </zeroOrMore>
       <zeroOrMore>
         <ref name="attributes" />
-      </zeroOrMore>
-      <zeroOrMore>
-        <element name="nestedRecord">
-            <attribute name="questionRef" />
-        </element>
-      </zeroOrMore>
-      <zeroOrMore>
-        <element name="nestedRecordList">
-            <attribute name="questionRef" />
-        </element>
       </zeroOrMore>
     </element>
   </define>
