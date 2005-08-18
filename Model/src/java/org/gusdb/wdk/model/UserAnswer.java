@@ -4,53 +4,63 @@ import java.util.Map;
 import java.util.Iterator;
 
 /**
- * a non-persistent mapping of a User to an Answer.  All it adds is
- * the ability for the User to rename the Answer.
- * (future persistent subclass will add as state the UserAnswerId so
- * it can be persisted)
+ * a non-persistent mapping of a User to an Answer. All it adds is the ability
+ * for the User to rename the Answer. (future persistent subclass will add as
+ * state the UserAnswerId so it can be persisted)
  */
-public class UserAnswer { 
+public class UserAnswer {
 
-    String name;
-    Answer answer;
-    
+    private String userID;
+    private String name;
+    private int answerID;
+    private Answer answer;
 
-    public UserAnswer (Answer answer) {
-	this.answer = answer;
+    public UserAnswer(String userID, int answerID, Answer answer) {
+        this.userID = userID;
+        this.answerID = answerID;
+        this.answer = answer;
     }
 
-    /* by default this is "complete" (unique) description of the Answer, 
-     * ie, the question display name and the list of parameter values as 
-     * found in the QueryInstance table.  the view truncates it as needed 
-     * to make it fit into its display.  the user also can rename it to 
-     * some name of his/her creation
-     */
-    public String getName() {	
-	if (name == null) {
-	    StringBuffer nameBuf = 
-		new StringBuffer(answer.getQuestion().getDisplayName());
-	    
-	    Map params = answer.getParams();
-	    Iterator paramKeys = params.keySet().iterator();
+    public String getUserID() {
+        return this.userID;
+    }
 
-	    while (paramKeys.hasNext()) {
-		Object key = paramKeys.next();
-		nameBuf.append(" " + key + ":" + params.get(key));
-	    }
-	    name = nameBuf.toString();
-	}
-	return name;
+    public int getAnswerID() {
+        return this.answerID;
+    }
+
+    /*
+     * by default this is "complete" (unique) description of the Answer, ie, the
+     * question display name and the list of parameter values as found in the
+     * QueryInstance table. the view truncates it as needed to make it fit into
+     * its display. the user also can rename it to some name of his/her creation
+     */
+    public String getName() {
+        if (name == null) {
+            StringBuffer nameBuf = new StringBuffer(
+                    answer.getQuestion().getDisplayName());
+
+            Map params = answer.getParams();
+            Iterator paramKeys = params.keySet().iterator();
+
+            while (paramKeys.hasNext()) {
+                Object key = paramKeys.next();
+                nameBuf.append(" " + key + ":" + params.get(key));
+            }
+            name = nameBuf.toString();
+        }
+        return name;
     }
 
     public String getName(int truncateTo) {
-	return getName().substring(0, truncateTo);
+        return getName().substring(0, truncateTo);
     }
 
     public void setName(String name) {
-	this.name = name;
+        this.name = name;
     }
 
     public Answer getAnswer() {
-	return answer;
+        return answer;
     }
 }
