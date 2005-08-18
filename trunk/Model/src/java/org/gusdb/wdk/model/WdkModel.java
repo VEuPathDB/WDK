@@ -30,7 +30,21 @@ public class WdkModel {
     ResultFactory resultFactory;
     private EnumParam booleanOps;
     private Document document;
+    
+    
+    /**
+     * this map is used to store active users in memory
+     */
+    private Map<String, User> users;
+    
     public static final WdkModel INSTANCE = new WdkModel();
+    
+    /**
+     * Default constructor
+     */
+    public WdkModel() {
+        users = new HashMap<String, User>();
+    }
     
     /**
      * Convenience method for constructing a model from the configuration information
@@ -437,5 +451,23 @@ public class WdkModel {
 
 	this.booleanOps = booleanOpsEnum;
     }
+    
+    // =========================================================================
+    // User related operations
+    // =========================================================================
+    
+    public User createUser(String userID) {
+        User user = new User(userID);
+        users.put(userID, user);
+        return user;
+    }
+    
+    public User getUser(String userID) {
+        return users.get(userID);
+    }
+    
+    public boolean deleteUser(String userID) {
+        User user = users.remove(userID);
+        return (user != null);
+    }
 }
-
