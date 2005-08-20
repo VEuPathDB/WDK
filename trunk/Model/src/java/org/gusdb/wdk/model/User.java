@@ -26,13 +26,14 @@ public class User {
         return this.userID;
     }
 
-    public void addAnswer(Answer answer) {
+    public UserAnswer addAnswer(Answer answer) {
         UserAnswer userAnswer = new UserAnswer(userID, answerIndex, answer);
 
         // initialize userAnswers map
         if (userAnswers == null)
             userAnswers = new HashMap<Integer, UserAnswer>();
         userAnswers.put(userAnswer.getAnswerID(), userAnswer);
+        return userAnswer;
     }
 
     public boolean deleteAnswer(int answerId) {
