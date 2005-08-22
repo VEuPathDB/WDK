@@ -10,10 +10,16 @@ import java.util.Iterator;
  */
 public class UserAnswer {
 
-    private String userID;
-    private String name;
-    private int answerID;
+    protected String userID;
+    protected String name;
+    protected int answerID;
     private Answer answer;
+
+    UserAnswer(String userID, int answerID) {
+        this.userID = userID;
+        this.answerID = answerID;
+        this.answer = null;
+    }
 
     public UserAnswer(String userID, int answerID, Answer answer) {
         this.userID = userID;
@@ -56,11 +62,35 @@ public class UserAnswer {
         return getName().substring(0, truncateTo);
     }
 
-    public void setName(String name) {
+    void setName(String name) {
         this.name = name;
     }
 
     public Answer getAnswer() {
         return answer;
+    }
+
+    void setAnswer(Answer answer) {
+        this.answer = answer;
+    }
+
+    /**
+     * The Type of an answer is used in boolean combinations. Only answers of
+     * the same type can be combined together
+     * 
+     * @return returns the type of this UserAnswer
+     */
+    public String getType() {
+        Question question = answer.getQuestion();
+        // use the question set name as the type of this user answer
+        String fullName = question.getFullName().trim();
+        int pos = fullName.indexOf(".");
+        return fullName.substring(0, pos);
+    }
+
+    public UserAnswer clone(int answerID) {
+        UserAnswer ans = new UserAnswer(userID, answerID, answer);
+        if (name != null) ans.setName(name);
+        return ans;
     }
 }
