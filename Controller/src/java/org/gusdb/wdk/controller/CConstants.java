@@ -17,6 +17,7 @@ public class CConstants {
     public static final String WDK_QUESTION_PARAMS_KEY = "wdkQuestionParams";
     public static final String WDK_ANSWER_KEY = "wdkAnswer";
     public static final String WDK_RECORD_KEY = "wdkRecord";
+    public static final String WDK_USER_KEY = "wdkUser";
     public static final String NEXT_QUESTION_OPERAND = "nextQuestionOperand";
     //public static final String QUESTIONSETFORM_KEY = "questionSetForm";
     public static final String QUESTIONFORM_KEY = "questionForm";
@@ -41,6 +42,7 @@ public class CConstants {
     public static final String GET_BOOLEAN_ANSWER_MAPKEY = "get_boolean_answer";
     public static final String CONFIG_DOWNLOAD_MAPKEY = "config_download";
     public static final String GET_DOWNLOAD_RESULT_MAPKEY = "get_download_result";
+    public static final String PROCESS_BOOLEAN_EXPRESSION_MAPKEY = "process_boolean_expression";
 
     //button click detectors, used in action, action forms, and jsp pages
     public static final String PQ_SUBMIT_KEY = "questionSubmit"; //match question.jsp

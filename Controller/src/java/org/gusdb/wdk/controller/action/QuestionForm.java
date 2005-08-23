@@ -7,8 +7,10 @@ import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMapping;
 import javax.servlet.http.HttpServletRequest;
 
+import java.util.Iterator;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Vector;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
@@ -70,6 +72,22 @@ public class QuestionForm extends QuestionSetForm {
 	    }
 	}
 	return errors;
+    }
+
+    public void cleanup() {
+	Iterator it = getMyProps().keySet().iterator();
+	Vector v = new Vector();
+        while (it.hasNext()) {
+	    String key = (String)it.next();
+	    if (key.indexOf("_" + getQuestion().getName() + "_") > 0) {
+		v.add(key);
+	    }
+	}
+	String[] extraKeys = new String[v.size()];
+	v.copyInto(extraKeys);
+	for (int i=0; i<extraKeys.length; i++) {
+	    getMyProps().remove(extraKeys[i]);
+	}
     }
 
     public void setQuestion(QuestionBean s) { question = s; }

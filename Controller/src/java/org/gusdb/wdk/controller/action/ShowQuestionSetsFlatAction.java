@@ -27,7 +27,7 @@ import org.gusdb.wdk.model.jspwrap.FlatVocabParamBean;
  *    2) forwards control to a jsp page that displays all questions in all questionSets
  */
 
-public class ShowQuestionSetsFlatAction extends Action {
+public class ShowQuestionSetsFlatAction extends ShowQuestionSetsAction {
     public ActionForward execute(ActionMapping mapping,
 				 ActionForm form,
 				 HttpServletRequest request,
@@ -49,6 +49,9 @@ public class ShowQuestionSetsFlatAction extends Action {
 	} else {
 	    forward = mapping.findForward(CConstants.SHOW_QUESTIONSETSFLAT_MAPKEY);
 	}
+
+	sessionStart(request);
+
 	return forward;
     }
 

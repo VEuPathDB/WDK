@@ -27,6 +27,7 @@ import org.gusdb.wdk.model.jspwrap.EnumParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.AnswerBean;
 import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
+import org.gusdb.wdk.model.jspwrap.UserBean;
 
 /**
  * This Action is called by the ActionServlet when a WDK question is asked.
@@ -42,24 +43,11 @@ public class ShowSummaryAction extends Action {
 				 HttpServletResponse response) throws Exception {
 	//why I am not able to get back my question from the session? use the form for  now
 	//QuestionBean wdkQuestion = (QuestionBean)request.getSession().getAttribute(CConstants.WDK_QUESTION_KEY);
-	
-	QuestionForm qForm = (QuestionForm)form;
+        QuestionForm qForm = (QuestionForm)form;
 	QuestionBean wdkQuestion = qForm.getQuestion();
 
 	//TRICKY: this is for action forward from ProcessQuestionSetsFlatAction
-	java.util.Iterator it = qForm.getMyProps().keySet().iterator();
-	java.util.Vector v = new java.util.Vector();
-        while (it.hasNext()) {
-	    String key = (String)it.next();
-	    if (key.indexOf("_" + wdkQuestion.getName() + "_") > 0) {
-		v.add(key);
-	    }
-	}
-	String[] extraKeys = new String[v.size()];
-	v.copyInto(extraKeys);
-	for (int i=0; i<extraKeys.length; i++) {
-	    qForm.getMyProps().remove(extraKeys[i]);
-	}
+	qForm.cleanup();
 		    
 	Map params = handleMultiPickParams(new java.util.HashMap(qForm.getMyProps()));
 		
@@ -71,7 +59,14 @@ public class ShowSummaryAction extends Action {
 	request.getSession().setAttribute(CConstants.WDK_ANSWER_KEY, wdkAnswer);
 	request.getSession().setAttribute(CConstants.WDK_QUESTION_PARAMS_KEY, params);
 
+	//add UserAnswerBean to UserAnswer for query history
+	UserBean wdkUser = (UserBean)request.getSession().getAttribute(CConstants.WDK_USER_KEY);
+	wdkUser.addAnswer(wdkAnswer);
 
+	return getForward(wdkAnswer, mapping);
+    }
+
+    private ActionForward getForward (AnswerBean wdkAnswer, ActionMapping mapping) {
 	ServletContext svltCtx = getServlet().getServletContext();
 	String customViewDir = (String)svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
 	String customViewFile1 = customViewDir + File.separator

@@ -10,10 +10,13 @@ import org.apache.struts.action.ActionServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpSession;
 import javax.servlet.ServletContext;
 
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.ApplicationInitListener;
+import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.model.jspwrap.UserBean;
 
 /**
  * This Action is a glue action to allow display of questionSetsFlat to be handled uniformly.
@@ -38,6 +41,16 @@ public class ShowQuestionSetsAction extends Action {
 	    forward = mapping.findForward(CConstants.SHOW_QUESTIONSETS_MAPKEY);
 	}
 
+	sessionStart(request);
+
 	return forward;
+    }
+
+    protected void sessionStart (HttpServletRequest request) {
+	WdkModelBean wdkModel = (WdkModelBean)getServlet().getServletContext().getAttribute(CConstants.WDK_MODEL_KEY);
+	HttpSession session = request.getSession();
+	String sessionId = session.getId();
+	UserBean user = wdkModel.createUser(sessionId);
+	request.getSession().setAttribute(CConstants.WDK_USER_KEY, user);
     }
 }

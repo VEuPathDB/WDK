@@ -11,6 +11,7 @@
     <form-bean name="questionForm" type="org.gusdb.wdk.controller.action.QuestionForm"/>
     <form-bean name="booleanQuestionForm" type="org.gusdb.wdk.controller.action.BooleanQuestionForm"/>
     <form-bean name="downloadConfigForm" type="org.gusdb.wdk.controller.action.DownloadConfigForm"/>
+    <form-bean name="booleanExpressionForm" type="org.gusdb.wdk.controller.action.BooleanExpressionForm"/>
   </form-beans>
 
   <global-exceptions>
@@ -124,6 +125,13 @@
       name="downloadConfigForm"
       scope="request">
       <forward name="get_download_result" path="/downloadResult.jsp"/>
+    </action>
+    <action
+      path="/processBooleanExpression"
+      type="org.gusdb.wdk.controller.action.ProcessBooleanExpressionAction"
+      name="booleanExpressionForm"
+      scope="request">
+      <forward name="process_boolean_expression" path="/queryHistory.jsp"/>
     </action>
   </action-mappings>
 
