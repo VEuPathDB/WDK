@@ -50,6 +50,7 @@ public class SanityTester {
     WdkModel wdkModel;
     boolean verbose;
     SanityModel sanityModel;
+    String modelName;
 
     public static final String BANNER_LINE = "***********************************************************";
 
@@ -57,6 +58,7 @@ public class SanityTester {
 	this.wdkModel = WdkModel.construct(modelName);
 	this.sanityModel = sanityModel;
 	this.verbose = verbose;
+	this.modelName = modelName;
     }
 
     // ------------------------------------------------------------------
@@ -304,7 +306,7 @@ public class SanityTester {
 	try{
 	    StringBuffer message = new StringBuffer("To test " + element.getType() + " " + element.getName() + ", run the following command: \n ");
 	    
-	    String globalArgs = "-model " + wdkModel.getName();
+	    String globalArgs = "-model " + modelName;
 	    String command = element.getCommand(globalArgs);
 	    message.append(command);
 
