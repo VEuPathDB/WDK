@@ -451,7 +451,7 @@ public class SqlClause {
     static Options declareOptions() {
 	Options options = new Options();
 
-	addOption(options, "sqlfile", "The file containing the SQL to test. The default is '$GUS_HOME/data/WDK/Model/sqlMungeTest.sql'.  Please see that file for allowed syntax.");
+	addOption(options, "sqlfile", "The file containing the SQL to test. The default is '$GUS_HOME/data/WDK/Model/sqlMungeTest.sql', which contains the 'built-in' tests.  Please see that file for allowed syntax.  If you have an important test case, please add it to that file (in $PROJECT_HOME) and check it in.");
 	return options;
     }
 
