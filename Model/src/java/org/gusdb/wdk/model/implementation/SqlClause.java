@@ -3,11 +3,24 @@ package org.gusdb.wdk.model.implementation;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Stack;
+import java.io.FileReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.BufferedReader;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.ResultFactory;
 import org.gusdb.wdk.model.RDBMSPlatformI;
+
+import org.apache.commons.cli.BasicParser;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionGroup;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 
 /**
  * An sql clause: a section of sql bounded by a parenthesis pair that 
@@ -98,7 +111,7 @@ public class SqlClause {
 	String resultTableIndex = ResultFactory.RESULT_TABLE_I;
 
 	finalSql = "SELECT * FROM (" + newline + 
-	    finalSql + newline +
+	    finalSql.trim() + newline +
 	    ") " + platform.getTableAliasAs() + "auto_wrapped_ " + newline + 
 	    "ORDER BY " + resultTableIndex;
  
@@ -340,62 +353,152 @@ public class SqlClause {
 				    sql + newline);
     }
 
-    private static String[] testCases = 
-    {
-	"SELECT name, rna_count FROM (SELECT testgene.gene_id, TestGene.name, count(*) as rna_count FROM TestGene, TestRna WHERE TestGene.gene_id = $$primaryKey$$ AND TestGene.gene_id = TestRna.gene_id GROUP BY TestGene.gene_id, TestGene.name) AS whatever",
 
- 	"SELECT A, 'select ''from''' FROM B WHERE X = 'from' and B = '$$primaryKey$$'",
-	
-	"SELECT A, count(X), 'select ''from''' FROM (SELECT B FROM C WHERE D), E WHERE X = 'from' and F = '$$primaryKey$$'",
+    ///////////////////////////////////////////////////////////////////////////
+    //  static methods for testing
+    ///////////////////////////////////////////////////////////////////////////
 
-	"selECT A FROM B WHERE X = 2 and B = $$primaryKey$$",
-
-	"SELECT cheese AS fromage FROM B WHERE C = $$primaryKey$$",
-
-	"SELECT A, ')' FROM B WHERE X = 2 and B = $$primaryKey$$",
-       
-	"SELECT A FROM (SELECT B FROM C WHERE $$primaryKey$$ = D)",
-
-	"(SELECT A FROM (SELECT B FROM C WHERE $$primaryKey$$ = D))",
-
-	"SELECT A FROM (SELECT B FROM C WHERE D) WHERE $$primaryKey$$ = E",
-
-	"SELECT A FROM B WHERE C IN (SELECT D FROM E) AND $$primaryKey$$ = E",
-
-	"(SELECT A FROM B WHERE C IN (SELECT D FROM E) AND $$primaryKey$$ = E)",
-
-	"(select A from B where C = $$primaryKey$$) union (select A from D where E = $$primaryKey$$)",
-
-	"SELECT SUBSTR(g.source_id, 1, 1) FROM dots.genefeature g WHERE  g.source_id = '$$primaryKey$$'" 
-
-    }; 
-	
     public static void main(String[] args) {
-	if (args.length == 1) {
-	    test(args[0]);
-	} else {
-	    for (int i=0; i<testCases.length; i++) {
-		System.out.println("====================================================");
-		test(testCases[i]);
-	    }
-	}
-	
-    }
+        String cmdName = System.getProperties().getProperty("cmdName");
+        String gusHome = System.getProperties().getProperty("gusHome");
+        Options options = declareOptions();
+        CommandLine cmdLine = parseOptions(cmdName, options, args);
+        
+	String sqlFileName = cmdLine.getOptionValue("sqlFile");
 
-    private static void test(String sql) {
+	if (sqlFileName == null) 
+	    sqlFileName = gusHome + "/data/WDK/Model/sqlMungeTest.sql";
+
+	File sqlFile = new File(sqlFileName);
 	try {
-	    System.out.println("Testing: ");
-	    System.out.println(sql);
-	    System.out.println("");
-	    System.out.println("Result: ");
-	    RDBMSPlatformI platform = new PostgreSQL();
-	    SqlClause clause = 
-		new SqlClause(sql, "Result_Table", 1, 20, platform);
-	    System.out.println(clause.getModifiedSql());
-	    System.out.println("");
+	    if (!sqlFile.exists() || !sqlFile.canRead()) {
+		throw new WdkModelException("Can't open file '" + sqlFileName + 
+					    "' for reading");
+	    }
+
+	    ArrayList<String> testCases = parseSqlFile(sqlFile);
+	    for (String testCase : testCases) {
+		System.out.println("====================================================");
+		test(testCase);
+	    }
+
 	} catch (WdkModelException e) {
 	    e.printStackTrace();
 	}
+    }
+	
+    /**
+     * @return Array of sql queries to test
+     */
+    private static ArrayList<String> parseSqlFile(File sqlFile) throws WdkModelException {
+	try {
+	    BufferedReader r = new BufferedReader(new FileReader(sqlFile));
+	    
+	    String newline = System.getProperty("line.separator");
+	    ArrayList<String> queriesArray = new ArrayList();
+	    boolean withinComment = false;
+	    StringBuffer stringBuf = null;
+	    String line;
+	    while ((line = r.readLine()) != null) {
+		validateLine(line);
+		
+		// dodge comment lines (w/in ^/*  and ^*/, or starting with //)
+		if (line.matches("/\\*.*")) withinComment = true; 
+		if (withinComment) {
+		    withinComment &= !line.matches("\\*/.*");
+		    continue;
+		}
+		if (line.matches("^//.*")) continue;
+		
+		// white space line delimits an sql 
+		if (line.matches("\\s*")) {
+		    if (stringBuf != null) queriesArray.add(stringBuf.toString());
+		    stringBuf = null;
+		} else {
+		    if (stringBuf == null) stringBuf = new StringBuffer();
+		    stringBuf.append(line + newline);
+		}
+	    }
+	    if (stringBuf != null) queriesArray.add(stringBuf.toString());
+	    return queriesArray;
+	} catch(IOException e) {
+	    throw new WdkModelException(e);
+	}
+    }
+
+    private static void validateLine(String line) throws WdkModelException {
+	if (line.matches(".+/\\*.*") || line.matches(".*/\\*.+") 
+	    || line.matches(".+\\*/.*") || line.matches(".*\\*/.+"))
+	    throw new WdkModelException("/* and */ must be on their own line");
+	if (line.matches(".+//.*"))
+	    throw new WdkModelException("// must be at the start of a line");
+    }
+
+    private static void test(String sql) throws WdkModelException {
+	System.out.println("Testing: ");
+	System.out.println(sql);
+	System.out.println("");
+	System.out.println("Result: ");
+	RDBMSPlatformI platform = new PostgreSQL();
+	SqlClause clause = 
+	    new SqlClause(sql, "Result_Table", 1, 20, platform);
+	System.out.println(clause.getModifiedSql());
+	System.out.println("");
+    }
+
+    // a number of the following methods should be factored somehow.  they are
+    // duplicated across many of the main() methods found in the Model
+    static Options declareOptions() {
+	Options options = new Options();
+
+	addOption(options, "sqlfile", "The file containing the SQL to test. The default is '$GUS_HOME/data/WDK/Model/sqlMungeTest.sql'.");
+	return options;
+    }
+
+    private static void addOption(Options options, String argName, String desc) {
+        
+        Option option = new Option(argName, true, desc);
+	option.setOptionalArg(true);
+        option.setArgName(argName);
+        
+        options.addOption(option);
+    }
+    
+    
+    static CommandLine parseOptions(String cmdName, Options options, 
+				    String[] args) {
+
+        CommandLineParser parser = new BasicParser();
+        CommandLine cmdLine = null;
+        try {
+            // parse the command line arguments
+            cmdLine = parser.parse( options, args );
+        }
+        catch( ParseException exp ) {
+            // oops, something went wrong
+            System.err.println("");
+            System.err.println( "Parsing failed.  Reason: " + exp.getMessage() ); 
+            System.err.println("");
+            usage(cmdName, options);
+        }
+
+        return cmdLine;
+    }   
+
+    static void usage(String cmdName, Options options) {
+        
+        String newline = System.getProperty( "line.separator" );
+        String cmdlineSyntax = cmdName + " -sqlfile [fileName]";
+        
+        String header = 
+            newline + "Test the munging of a set of SQL Attributes Queries. " + newline + newline + "Options:" ;
+        
+        String footer = "";
+        
+        //	PrintWriter stderr = new PrintWriter(System.err);
+        HelpFormatter formatter = new HelpFormatter();
+        formatter.printHelp(75, cmdlineSyntax, header, options, footer);
+        System.exit(1);
     }
 }
 
