@@ -80,13 +80,14 @@ public class SqlClausePiece {
 	    newline + "AND " + resultTableIndex + " <= " + pageEndIndex;
 	
 	String newSql = sql;
+	int flag = Pattern.DOTALL;
 	// case 1:  "blah = $$primaryKey$$"
-	if (newSql.matches(".*=\\s*" + macro + ".*")) {
+	if (Pattern.compile(".*=\\s*" + macro + ".*", flag).matcher(newSql).matches()) {
 	    newSql = newSql.replaceAll("(" + macro + ")", 
 				       "$1" + andClause );	    
 	    
 	// case 2:  "$$primaryKey$$ = blah"
-	} else if (newSql.matches(".*" + macro + "\\s*=.*")) {
+	} else if (Pattern.compile(".*"+macro+"\\s*=.*", flag).matcher(newSql).matches()) {
 	    newSql = newSql.replaceAll("(" + macro + "\\s*=\\s*\\S+)", 
 				       "$1" + andClause );	    
 	    
@@ -107,32 +108,28 @@ public class SqlClausePiece {
     }
 
     boolean containsSelect() {	
-	String regex = ".*\\bselect\\b.*";
-	return origSql.substring(start, end+1).toLowerCase().matches(regex);
+	return contains(".*\\bselect\\b.*", Pattern.CASE_INSENSITIVE);
     }
 
     boolean containsFrom() {
-	String regex = ".*\\bfrom\\b.*";
-	return origSql.substring(start, end+1).toLowerCase().matches(regex);
+	return contains(".*\\bfrom\\b.*", Pattern.CASE_INSENSITIVE);
     }
 
     boolean containsPrimaryKey() {
 	String regex = ".*" + RecordClass.PRIMARY_KEY_MACRO + ".*";
-	return origSql.substring(start, end+1).matches(regex);
+	return contains(regex, 0);
     }
 
     boolean containsGroupBy() {
-	String regex = ".*\\bgroup\\s+by\\b.*";
-	return origSql.substring(start, end+1).toLowerCase().matches(regex);
+	return contains(".*\\bgroup\\s+by\\b.*", Pattern.CASE_INSENSITIVE);
     }
 
-    ///////////////////////////////////////////////////////////////////
-    /////  private methods
-    ///////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////
+    // private methods
+    //////////////////////////////////////////////////////////////////
 
-    private boolean contains(String regex) {
-	return origSql.substring(start, end+1).matches(regex);
-    }
-
+    private boolean contains(String regex, int caseFlag) {
+	int flag = Pattern.DOTALL | caseFlag;
+	return Pattern.compile(regex, flag).matcher(origSql.substring(start, end+1)).matches();    }
 }
 

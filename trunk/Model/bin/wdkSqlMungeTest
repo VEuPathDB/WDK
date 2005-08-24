@@ -22,7 +22,7 @@ foreach my $arg (@ARGV) {
 }
 
 
-my $cmd = "java -DconfigDir=$GUS_HOME/config -DcmdName=wdkCache -classpath $CLASSPATH org.gusdb.wdk.model.implementation/SqlClause $args";
+my $cmd = "java -DconfigDir=$GUS_HOME/config -DcmdName=wdkSqlMungeTest -DgusHome=$GUS_HOME -classpath $CLASSPATH org.gusdb.wdk.model.implementation.SqlClause $args";
 
 system($cmd);
 
