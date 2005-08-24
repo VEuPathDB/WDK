@@ -38,7 +38,7 @@ public class BooleanQuestionNode{
     /**
      * Question for which this BooleanQuestion node is a wrapper.
      */
-    private Question question;
+    private Question leafQuestion;
 
     /**
      * First operand Question; null if <code>question</code> is not a boolean
@@ -75,7 +75,7 @@ public class BooleanQuestionNode{
      * Constructor for a BooleanQuestionNode representing a boolean Question.
      */
     public BooleanQuestionNode(Question q, BooleanQuestionNode firstChild, BooleanQuestionNode secondChild, BooleanQuestionNode parent){
-	this.question = q;
+	this.leafQuestion = q;
 	this.firstChild = firstChild;
 	this.secondChild = secondChild;
 	this.parent = parent;
@@ -91,7 +91,7 @@ public class BooleanQuestionNode{
      *               a single-node tree.
      */
     public BooleanQuestionNode(Question q, BooleanQuestionNode parent){
-	this.question = q;
+	this.leafQuestion = q;
 	this.firstChild = null;
 	this.secondChild = null;
 	this.parent = parent;
@@ -102,7 +102,7 @@ public class BooleanQuestionNode{
     // ------------------------------------------------------------------
 
     public Question getQuestion(){
-	return question;
+	return leafQuestion;
     }
 
     public BooleanQuestionNode getFirstChild(){
@@ -136,7 +136,7 @@ public class BooleanQuestionNode{
 	
 	BooleanQuestionNode tempParent = parent;
 
-	RecordClass rc = this.question.getRecordClass();
+	RecordClass rc = this.leafQuestion.getRecordClass();
 	Question question = model.makeBooleanQuestion(rc);
 	boolean wasFirstChild = isFirstChild();
 	
