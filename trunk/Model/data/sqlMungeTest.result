@@ -12,7 +12,7 @@ WHERE t.E = $$primaryKey$$
 Result: 
 SELECT * FROM (
 SELECT result_index_column, X, Y, Z
-FROM ( 
+FROM Result_Table, ( 
   SELECT A 
   FROM B 
   WHERE C = D 
@@ -56,7 +56,7 @@ SELECT A, count(X), 'select ''from''' FROM (SELECT B FROM C WHERE D), E WHERE X 
 
 Result: 
 SELECT * FROM (
-SELECT result_index_column, A, count(X), 'select ''from''' FROM (SELECT B FROM C WHERE D), E WHERE X = 'from' and F = $$primaryKey$$
+SELECT result_index_column, A, count(X), 'select ''from''' FROM Result_Table, (SELECT B FROM C WHERE D), E WHERE X = 'from' and F = $$primaryKey$$
 AND result_index_column >= 1
 AND result_index_column <= 20
 ) AS auto_wrapped_ 
@@ -134,7 +134,7 @@ SELECT A FROM (SELECT B FROM C WHERE D) WHERE $$primaryKey$$ = E
 
 Result: 
 SELECT * FROM (
-SELECT result_index_column, A FROM (SELECT B FROM C WHERE D) WHERE $$primaryKey$$ = E
+SELECT result_index_column, A FROM Result_Table, (SELECT B FROM C WHERE D) WHERE $$primaryKey$$ = E
 AND result_index_column >= 1
 AND result_index_column <= 20
 ) AS auto_wrapped_ 
@@ -147,7 +147,7 @@ SELECT A FROM B WHERE C IN (SELECT D FROM E) AND $$primaryKey$$ = E
 
 Result: 
 SELECT * FROM (
-SELECT result_index_column, A FROM B WHERE C IN (SELECT D FROM E) AND $$primaryKey$$ = E
+SELECT result_index_column, A FROM Result_Table, B WHERE C IN (SELECT D FROM E) AND $$primaryKey$$ = E
 AND result_index_column >= 1
 AND result_index_column <= 20
 ) AS auto_wrapped_ 
@@ -160,7 +160,7 @@ Testing:
 
 Result: 
 SELECT * FROM (
-(SELECT result_index_column, A FROM B WHERE C IN (SELECT D FROM E) AND $$primaryKey$$ = E
+(SELECT result_index_column, A FROM Result_Table, B WHERE C IN (SELECT D FROM E) AND $$primaryKey$$ = E
 AND result_index_column >= 1
 AND result_index_column <= 20)
 ) AS auto_wrapped_ 
