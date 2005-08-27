@@ -322,7 +322,7 @@ public class SqlClause {
 	while (piecesIter.hasNext()) {
 	    SqlClausePiece piece = (SqlClausePiece)piecesIter.next();
 	    boolean needsSelectFix = selectPiece == piece && hasPrimaryKey;
-	    boolean needsFromFix = fromPiece==piece && primaryKeyPiece==piece;
+	    boolean needsFromFix = fromPiece==piece && primaryKeyPiece != null;
 	    boolean needsWhereFix = primaryKeyPiece == piece;
 	    boolean needsGroupByFix = groupByPiece == piece && hasPrimaryKey;
 	    
