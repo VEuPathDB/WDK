@@ -1,6 +1,6 @@
 /*
-Block comments are started as above and ended as below.  They must be on their
-own line.
+Block comments are started as above and ended as below.  The delimiters must 
+be on their own line.
 */
 
 // Single line comments are done like this.  The comment may not start in the middle of a line
