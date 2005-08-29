@@ -1,9 +1,10 @@
 package org.gusdb.wdk.model.jspwrap;
 
-import java.util.Map;
-
+import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.User;
 import org.gusdb.wdk.model.UserAnswer;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 
 public class UserBean {
 
@@ -13,29 +14,102 @@ public class UserBean {
         this.user = user;
     }
 
-    public UserAnswerBean addAnswer(AnswerBean answerBean) {
-        UserAnswer userAnswer = user.addAnswer(answerBean.answer);
-        return new UserAnswerBean(userAnswer);
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.User#addAnswer(org.gusdb.wdk.model.Answer)
+     */
+    public UserAnswer addAnswer(Answer answer) {
+        return this.user.addAnswer(answer);
     }
 
-    public boolean deleteAnswer(int answerId) {
-        return user.deleteAnswer(answerId);
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.User#combineAnswers(int, int, java.lang.String)
+     */
+    public UserAnswer combineAnswers(int firstAnswerID, int secondAnswerID,
+            String operation) throws WdkUserException, WdkModelException {
+        return this.user.combineAnswers(firstAnswerID, secondAnswerID,
+                operation);
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.User#combineAnswers(java.lang.String)
+     */
+    public UserAnswer combineAnswers(String expression)
+            throws WdkUserException, WdkModelException {
+        return this.user.combineAnswers(expression);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.User#deleteAnswer(int)
+     */
+    public void deleteAnswer(int answerId) throws WdkUserException {
+        this.user.deleteAnswer(answerId);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.User#getAnswerByID(int)
+     */
+    public UserAnswer getAnswerByID(int answerID) {
+        return this.user.getAnswerByID(answerID);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.User#getAnswerByName(java.lang.String)
+     */
+    public UserAnswer getAnswerByName(String name) throws WdkUserException {
+        return this.user.getAnswerByName(name);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.User#getAnswers()
+     */
     public UserAnswerBean[] getAnswers() {
-        Map<Integer, UserAnswer> answers = user.getAnswers();
-
-        UserAnswerBean[] answerBeans = new UserAnswerBean[answers.size()];
-        int i = 0;
-        for (int answerID : answers.keySet()) {
-            UserAnswer userAnswer = answers.get(answerID);
-            answerBeans[i] = new UserAnswerBean(userAnswer);
-            i++;
+        UserAnswer[] answers = user.getAnswers();
+        UserAnswerBean[] answerBeans = new UserAnswerBean[answers.length];
+        for (int i = 0; i < answers.length; i++) {
+            answerBeans[i] = new UserAnswerBean(answers[i]);
         }
         return answerBeans;
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.User#getUserID()
+     */
     public String getUserID() {
-        return user.getUserID();
+        return this.user.getUserID();
     }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.User#renameAnswer(int, java.lang.String)
+     */
+    public void renameAnswer(int answerID, String name) throws WdkUserException {
+        this.user.renameAnswer(answerID, name);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#toString()
+     */
+    public String toString() {
+        return this.user.toString();
+    }
+
 }
