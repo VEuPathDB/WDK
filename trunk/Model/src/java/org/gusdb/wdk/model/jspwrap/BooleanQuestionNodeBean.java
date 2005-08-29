@@ -38,7 +38,7 @@ public class BooleanQuestionNodeBean {
     }
 
     public void setAllValues() throws WdkModelException, WdkUserException {
-	BooleanQuestionNode.setAllValues(bqn);
+	bqn.makeAnswer();
     }
     
     //should be called only from root

@@ -1,7 +1,7 @@
 package org.gusdb.wdk.model;
 
+import java.util.Hashtable;
 import java.util.Map;
-import java.util.Iterator;
 
 /**
  * a non-persistent mapping of a User to an Answer. All it adds is the ability
@@ -47,12 +47,11 @@ public class UserAnswer {
                     answer.getQuestion().getDisplayName());
 
             Map params = answer.getParams();
-            Iterator paramKeys = params.keySet().iterator();
 
-            while (paramKeys.hasNext()) {
-                Object key = paramKeys.next();
+            for (Object key : params.keySet()) {
                 nameBuf.append(" " + key + ":" + params.get(key));
             }
+            nameBuf.append(" (" + answerID + ")");
             name = nameBuf.toString();
         }
         return name;
@@ -75,22 +74,27 @@ public class UserAnswer {
     }
 
     /**
-     * The Type of an answer is used in boolean combinations. Only answers of
-     * the same type can be combined together
+     * The Type of an answer is used in defined as the name of recordClassSet of
+     * the record in the answer
      * 
      * @return returns the type of this UserAnswer
      */
     public String getType() {
-        Question question = answer.getQuestion();
-        // use the question set name as the type of this user answer
-        String fullName = question.getFullName().trim();
+        String fullName = answer.getQuestion().getRecordClass().getFullName();
         int pos = fullName.indexOf(".");
-        return fullName.substring(0, pos);
+        return (pos < 0) ? fullName : fullName.substring(0, pos);
     }
 
-    public UserAnswer clone(int answerID) {
+    UserAnswer clone(int answerID) {
         UserAnswer ans = new UserAnswer(userID, answerID, answer);
         if (name != null) ans.setName(name);
         return ans;
+    }
+
+    BooleanQuestionNode getLeafQuestion() {
+        BooleanQuestionNode leaf = new BooleanQuestionNode(
+                answer.getQuestion(), null);
+        leaf.setValues(new Hashtable(answer.getParams()));
+        return leaf;
     }
 }

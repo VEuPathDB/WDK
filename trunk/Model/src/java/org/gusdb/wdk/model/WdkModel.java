@@ -39,7 +39,7 @@ public class WdkModel {
     
     public static final WdkModel INSTANCE = new WdkModel();
     
-    /**
+     /**
      * Default constructor
      */
     public WdkModel() {
@@ -457,7 +457,7 @@ public class WdkModel {
     // =========================================================================
     
     public User createUser(String userID) {
-        User user = new User(userID);
+        User user = new User(userID, this);
         users.put(userID, user);
         return user;
     }
