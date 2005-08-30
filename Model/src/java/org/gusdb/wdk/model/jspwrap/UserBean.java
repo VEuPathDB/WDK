@@ -56,6 +56,15 @@ public class UserBean {
     /*
      * (non-Javadoc)
      * 
+     * @see org.gusdb.wdk.model.User#clearAnswers()
+     */
+    public void clearAnswers() {
+        this.user.clearAnswers();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.User#getAnswerByID(int)
      */
     public UserAnswer getAnswerByID(int answerID) {
