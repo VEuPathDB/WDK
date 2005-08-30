@@ -1,10 +1,9 @@
 package org.gusdb.wdk.model;
 
-import java.util.Map;
-import java.util.Iterator;
-import java.util.Vector;
-import java.util.Hashtable;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Vector;
 
 /**
  * Question.java
@@ -107,6 +106,7 @@ public class Question {
     }
 
     public String getDisplayName() {
+    if (displayName == null) displayName = getFullName();
 	return displayName;
     }
 	
@@ -131,8 +131,8 @@ public class Question {
     }
 
     public String getFullName() {
-
-	return questionSet.getName() + "." + name;
+    if (questionSet == null) return name;
+    else return questionSet.getName() + "." + name;
     }
 
     public String toString() {
