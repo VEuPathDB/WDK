@@ -1,7 +1,6 @@
 package org.gusdb.wdk.model;
 
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Map;
 
 /**
@@ -53,12 +52,19 @@ public class User {
         if (answer == null)
             throw new WdkUserException(
                     "The answer specified by the given ID doesn't exist!");
+        if (userAnswers.isEmpty()) userAnswers = null;
+    }
+
+    public void clearAnswers() {
+        if (userAnswers != null) userAnswers.clear();
+        userAnswers = null;
     }
 
     public UserAnswer[] getAnswers() {
+        if (userAnswers == null || userAnswers.size() == 0)
+            return new UserAnswer[0];
         UserAnswer[] answers = new UserAnswer[userAnswers.size()];
-        if (userAnswers != null && userAnswers.size() > 0)
-            userAnswers.values().toArray(answers);
+        userAnswers.values().toArray(answers);
         return answers;
     }
 
