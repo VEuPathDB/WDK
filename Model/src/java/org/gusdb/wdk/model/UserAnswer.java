@@ -97,4 +97,29 @@ public class UserAnswer {
         leaf.setValues(new Hashtable(answer.getParams()));
         return leaf;
     }
+
+    public String toString() {
+        String newline = System.getProperty("line.separator");
+        StringBuffer sb = new StringBuffer();
+
+        // print basic information of this UserAnswer
+        sb.append("UserID=" + userID);
+        sb.append("\tAnswerID=" + answerID);
+        sb.append("\tAnswerName=" + getName());
+        sb.append("\tType=" + getType());
+        sb.append(newline);
+        try {
+            sb.append(answer.printAsTable());
+        } catch (WdkModelException ex) {
+            // TODO Auto-generated catch block
+            ex.printStackTrace();
+            // System.err.println(ex);
+        } catch (WdkUserException ex) {
+            // TODO Auto-generated catch block
+            ex.printStackTrace();
+            // System.err.println(ex);
+        }
+        sb.append(newline);
+        return sb.toString();
+    }
 }

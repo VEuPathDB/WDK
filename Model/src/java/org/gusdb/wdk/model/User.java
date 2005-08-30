@@ -69,15 +69,16 @@ public class User {
     }
 
     public UserAnswer getAnswerByID(int answerID) {
+        if (userAnswers == null) return null;
         return userAnswers.get(answerID);
     }
 
-    public UserAnswer getAnswerByName(String name) throws WdkUserException {
+    public UserAnswer getAnswerByName(String name) {
+        if (userAnswers == null) return null;
         for (UserAnswer answer : userAnswers.values()) {
             if (answer.getName().equalsIgnoreCase(name)) return answer;
         }
-        throw new WdkUserException("The answer of name " + name
-                + " doesn't exist!");
+        return null;
     }
 
     public void renameAnswer(int answerID, String name) throws WdkUserException {
@@ -120,8 +121,8 @@ public class User {
         BooleanQuestionNode secondChild = secondAnswer.getLeafQuestion();
 
         // generate new answer for the combine questions
-        BooleanQuestionNode root = firstChild.grow(secondChild, operation,
-                model);
+        BooleanQuestionNode root = BooleanQuestionNode.combine(firstChild,
+                secondChild, operation, model);
         Answer answer = root.makeAnswer();
 
         // create a new UserAnswer
@@ -184,6 +185,7 @@ public class User {
                 mark = end + 1;
             }
         }
+        if (mark < expression.length()) sb.append(expression.substring(mark));
         return sb.toString();
     }
 
@@ -198,13 +200,17 @@ public class User {
             // can't be divided further; the block must be an id or a name of
             // the Answer; id starts with '#'
             UserAnswer answer;
-            if (block.charAt(0) == '#') {
+            if (block.charAt(0) == '#') { // an answer id
                 int answerID = Integer.parseInt(block.substring(1));
                 answer = getAnswerByID(answerID);
-            } else answer = getAnswerByName(block);
+            } else { // a name of an answer, but being replaced
+                String name = replace.get(block);
+                assert (name != null) : block;
+                answer = getAnswerByName(name);
+            }
             return answer.getLeafQuestion();
         }
-
+        // otherwise, need to divide further
         // check the root operation
         int pos;
         if (block.charAt(0) == '(') {
@@ -223,18 +229,23 @@ public class User {
             pos = block.indexOf(" ");
         }
         // grab the left piece
-        String leftPiece = block.substring(1, pos - 1).trim();
+        String leftPiece = block.substring(0, pos).trim();
+        // remove parenthese is necessary
+        int bound = leftPiece.length() - 1;
+        if (leftPiece.charAt(0) == '(' && leftPiece.charAt(bound) == ')')
+            leftPiece = leftPiece.substring(1, bound).trim();
 
         // grab operation
-        int end = block.indexOf(" ", pos);
-        String operation = block.substring(pos, end).trim();
+        String remain = block.substring(pos + 1).trim();
+        int end = remain.indexOf(" ");
+        String operation = remain.substring(0, end).trim();
 
         // grab right piece
-        String rightPiece = block.substring(end).trim();
+        String rightPiece = remain.substring(end + 1).trim();
         // remove parenthese is necessary
-        if (rightPiece.charAt(0) == '('
-                && rightPiece.charAt(rightPiece.length() - 1) == ')')
-            rightPiece = rightPiece.substring(1, rightPiece.length() - 1).trim();
+        bound = rightPiece.length() - 1;
+        if (rightPiece.charAt(0) == '(' && rightPiece.charAt(bound) == ')')
+            rightPiece = rightPiece.substring(1, bound).trim();
 
         // create BooleanQuestioNode for each piece
         BooleanQuestionNode firstNode = parseBlock(leftPiece, replace);
@@ -243,5 +254,31 @@ public class User {
         // combine left & right sub-tree to form a new tree
         return BooleanQuestionNode.combine(firstNode, secondNode, operation,
                 model);
+    }
+
+    public String toString() {
+        String newline = System.getProperty("line.separator");
+        StringBuffer sb = new StringBuffer();
+
+        sb.append("==================================");
+        sb.append(newline);
+        sb.append("UserID=" + userID);
+        int size = (userAnswers != null) ? userAnswers.size() : 0;
+        sb.append("\t#Answers=" + size);
+        sb.append(newline);
+        if (userAnswers != null) {
+            sb.append("----------------------------------");
+            sb.append(newline);
+            sb.append("ID\tType\t\t\tName");
+            sb.append(newline);
+            for (UserAnswer answer : userAnswers.values()) {
+                sb.append(answer.getAnswerID());
+                sb.append("\t" + answer.getType());
+                sb.append("\t" + answer.getName());
+                sb.append(newline);
+            }
+        }
+        sb.append(newline);
+        return sb.toString();
     }
 }
