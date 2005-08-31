@@ -91,7 +91,7 @@ public class BooleanQuestionTester {
         topNode.makeAnswer();
 	    //BooleanQuestionNode.setAllValues(topNode);
 
-	    //	    runGrowTest(topNode, "01", wdkModel);
+	   //runGrowTest(topNode, "01", wdkModel);
 	   
 	    Question topQuestion = topNode.getQuestion();
 	    int pageCount = 1;
