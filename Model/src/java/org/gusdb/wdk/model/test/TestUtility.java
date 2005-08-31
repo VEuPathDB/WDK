@@ -8,6 +8,10 @@ import java.net.MalformedURLException;
 import java.util.Map;
 import java.util.Random;
 
+import junit.framework.Test;
+import junit.framework.TestResult;
+import junit.framework.TestSuite;
+
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -167,4 +171,18 @@ public class TestUtility {
         System.exit(1);
     }
 
+    public static Test suite() { 
+        // create test suite
+        TestSuite suite= new TestSuite();
+        
+        // add test suite for any unit test cases
+        suite.addTest(new TestSuite(JUnitUserTest.class));
+
+        return suite;
+    }
+
+    public static void main(String[] args) {
+        
+        junit.textui.TestRunner.run(suite());
+    }
 }

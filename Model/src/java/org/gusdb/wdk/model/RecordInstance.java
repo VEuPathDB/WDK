@@ -369,12 +369,13 @@ public class RecordInstance {
 	// If in the context of an Answer, then we are doing a "summary"
 	// and need to do a join against the result table
 	if (answer != null){
-	    answer.integrateAttributesQueryResult(qInstance);
+        answer.integrateAttributesQueryResult(qInstance);
 	}	
 
 	// otherwise, set values in record directly
 	else{ 
-	    HashMap paramHash = new HashMap();
+ 
+        HashMap paramHash = new HashMap();
 	    if (primaryKey == null) 
 		throw new WdkModelException("primaryKey is null");
 

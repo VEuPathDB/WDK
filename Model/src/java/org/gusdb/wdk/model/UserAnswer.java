@@ -43,15 +43,15 @@ public class UserAnswer {
      */
     public String getName() {
         if (name == null) {
-            StringBuffer nameBuf = new StringBuffer(
-                    answer.getQuestion().getDisplayName());
+            StringBuffer nameBuf = new StringBuffer();
+            nameBuf.append("[" + answerID + "]");
+            nameBuf.append(answer.getQuestion().getDisplayName());
 
             Map params = answer.getParams();
 
             for (Object key : params.keySet()) {
-                nameBuf.append(" " + key + ":" + params.get(key));
+                nameBuf.append(" " + key + ":(" + params.get(key) + ")");
             }
-            nameBuf.append(" (" + answerID + ")");
             name = nameBuf.toString();
         }
         return name;
@@ -103,12 +103,13 @@ public class UserAnswer {
         StringBuffer sb = new StringBuffer();
 
         // print basic information of this UserAnswer
-        sb.append("UserID=" + userID);
-        sb.append("\tAnswerID=" + answerID);
-        sb.append("\tAnswerName=" + getName());
-        sb.append("\tType=" + getType());
-        sb.append(newline);
         try {
+            sb.append("UserID=" + userID);
+            sb.append("\tAnswerID=" + answerID);
+            sb.append("\tType=" + getType());
+            sb.append("\tSize=" + answer.getResultSize());
+            sb.append("\tAnswerName=" + getName());
+            sb.append(newline);
             sb.append(answer.printAsTable());
         } catch (WdkModelException ex) {
             // TODO Auto-generated catch block

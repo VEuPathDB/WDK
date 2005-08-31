@@ -29,9 +29,10 @@ public class UserBean {
      * @see org.gusdb.wdk.model.User#combineAnswers(int, int, java.lang.String)
      */
     public UserAnswer combineAnswers(int firstAnswerID, int secondAnswerID,
-            String operation) throws WdkUserException, WdkModelException {
+            String operation, int start, int end)
+            throws WdkUserException, WdkModelException {
         return this.user.combineAnswers(firstAnswerID, secondAnswerID,
-                operation);
+                operation, start, end);
     }
 
     /*
@@ -39,9 +40,9 @@ public class UserBean {
      * 
      * @see org.gusdb.wdk.model.User#combineAnswers(java.lang.String)
      */
-    public UserAnswer combineAnswers(String expression)
+    public UserAnswer combineAnswers(String expression, int start, int end)
             throws WdkUserException, WdkModelException {
-        return this.user.combineAnswers(expression);
+        return this.user.combineAnswers(expression, start, end);
     }
 
     /*
