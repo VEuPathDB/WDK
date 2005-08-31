@@ -67,7 +67,7 @@ public class UserBean {
      * 
      * @see org.gusdb.wdk.model.User#getAnswerByID(int)
      */
-    public UserAnswer getAnswerByID(int answerID) {
+    public UserAnswer getAnswerByID(int answerID) throws WdkUserException {
         return this.user.getAnswerByID(answerID);
     }
 

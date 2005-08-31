@@ -68,17 +68,21 @@ public class User {
         return answers;
     }
 
-    public UserAnswer getAnswerByID(int answerID) {
-        if (userAnswers == null) return null;
+    public UserAnswer getAnswerByID(int answerID) throws WdkUserException {
+        if (userAnswers == null || !userAnswers.containsKey(answerID))
+            throw new WdkUserException("The answer of ID " + answerID
+                    + " does not exist!");
         return userAnswers.get(answerID);
     }
 
-    public UserAnswer getAnswerByName(String name) {
-        if (userAnswers == null) return null;
-        for (UserAnswer answer : userAnswers.values()) {
-            if (answer.getName().equalsIgnoreCase(name)) return answer;
+    public UserAnswer getAnswerByName(String name) throws WdkUserException {
+        if (userAnswers != null) {
+            for (UserAnswer answer : userAnswers.values()) {
+                if (answer.getName().equalsIgnoreCase(name)) return answer;
+            }
         }
-        return null;
+        throw new WdkUserException("The answer of name " + name
+                + " does not exist!");
     }
 
     public void renameAnswer(int answerID, String name) throws WdkUserException {

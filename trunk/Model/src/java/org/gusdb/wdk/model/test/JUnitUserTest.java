@@ -26,7 +26,7 @@ import org.gusdb.wdk.model.WdkUserException;
  */
 public class JUnitUserTest extends TestCase {
 
-    private static final int NUM_USERS = 10;
+    private static final int NUM_USERS = 1;
 
     private TestUtility utility;
     private WdkModel wdkModel;
@@ -267,8 +267,14 @@ public class JUnitUserTest extends TestCase {
                 // now test on invalid situations
                 user.clearAnswers();
                 for (int answerID : answerIDs) {
-                    UserAnswer userAnswer = user.getAnswerByID(answerID);
-                    assertNull(userAnswer);
+                    try {
+                        user.getAnswerByID(answerID);
+                        assertTrue(false);
+                    } catch (WdkUserException ex) {
+                        // TODO Auto-generated catch block
+                        // ex.printStackTrace();
+                        // System.err.println(ex);
+                    }
                 }
             }
         } catch (Exception ex) {
@@ -314,8 +320,14 @@ public class JUnitUserTest extends TestCase {
                 // now test on invalid situations
                 user.clearAnswers();
                 for (String name : answerNames) {
-                    UserAnswer userAnswer = user.getAnswerByName(name);
-                    assertNull(userAnswer);
+                    try {
+                        user.getAnswerByName(name);
+                        assertTrue(false);
+                    } catch (WdkUserException ex) {
+                        // TODO Auto-generated catch block
+                        // ex.printStackTrace();
+                        // System.err.println(ex);
+                    }
                 }
             }
         } catch (Exception ex) {
@@ -357,7 +369,12 @@ public class JUnitUserTest extends TestCase {
                 int idx = 1;
                 for (int answerID : answerIDs) {
                     String newName = "answer_" + idx;
+                    UserAnswer oldAnswer = user.getAnswerByID(answerID);
                     user.renameAnswer(answerID, newName);
+                    UserAnswer newAnswer = user.getAnswerByName(newName);
+
+                    assertEquals(oldAnswer, newAnswer);
+                    System.out.println(newAnswer);
                     idx++;
                 }
 
@@ -397,133 +414,131 @@ public class JUnitUserTest extends TestCase {
             assertTrue(false);
         }
     }
-
-    /*
-     * Test method for 'org.gusdb.wdk.model.User.combineAnswers(int, int,
-     * String)'
-     */
-    public void testCombineAnswersIntIntString() {
-        try {
-            Answer[] answers = createAnswers(sanityModel);
-
-            for (int i = 0; i < NUM_USERS; i++) {
-                // get the user
-                String userID = "user_" + i;
-                User user = wdkModel.getUser(userID);
-
-                assertNotNull(user);
-
-                // the answer list should be empty at the beginning
-                assertEquals(0, user.getAnswers().length);
-
-                // add answers into history
-                List<Integer> answerIDs = new ArrayList<Integer>();
-                for (Answer answer : answers) {
-                    UserAnswer userAnswer = user.addAnswer(answer);
-                    answerIDs.add(userAnswer.getAnswerID());
-                }
-
-                // the answer list should be full now
-                assertEquals(answers.length, user.getAnswers().length);
-
-                // try to combine answers of the same type
-                for (int firstID : answerIDs) {
-                    for (int secondID : answerIDs) {
-                        String firstType = user.getAnswerByID(firstID).getType();
-                        String secondType = user.getAnswerByID(secondID).getType();
-                        if (firstType.equalsIgnoreCase(secondType)) {
-                            // test union
-                            UserAnswer userAnswer = user.combineAnswers(
-                                    firstID, secondID, "union");
-                            assertNotNull(userAnswer);
-                            // test intersect
-                            userAnswer = user.combineAnswers(firstID, secondID,
-                                    "intersect");
-                            assertNotNull(userAnswer);
-                            // test intersect
-                            userAnswer = user.combineAnswers(firstID, secondID,
-                                    "intersect");
-                            assertNotNull(userAnswer);
-                            // test except
-                            userAnswer = user.combineAnswers(firstID, secondID,
-                                    "except");
-                            assertNotNull(userAnswer);
-                            System.out.println(userAnswer);
-                        }
-                    }
-                }
-            }
-        } catch (Exception ex) {
-            // TODO Auto-generated catch block
-            ex.printStackTrace();
-            // System.err.println(ex);
-            assertTrue(false);
-        }
-    }
-
-    /*
-     * Test method for 'org.gusdb.wdk.model.User.combineAnswers(String)'
-     */
-    public void testCombineAnswersString() {
-        try {
-            Answer[] answers = createAnswers(sanityModel);
-
-            // get the user
-            String userID = "user_0";
-            User user = wdkModel.getUser(userID);
-
-            assertNotNull(user);
-
-            // the answer list should be empty at the beginning
-            assertEquals(0, user.getAnswers().length);
-
-            // add answers into history, and also store IDs by type
-            Map<String, List<Integer>> groups = new HashMap<String, List<Integer>>();
-            for (Answer answer : answers) {
-                UserAnswer userAnswer = user.addAnswer(answer);
-
-                // store them by type
-                String type = userAnswer.getType();
-                if (!groups.containsKey(type))
-                    groups.put(type, new ArrayList<Integer>());
-                groups.get(type).add(userAnswer.getAnswerID());
-            }
-
-            // the answer list should be full now
-            assertEquals(answers.length, user.getAnswers().length);
-
-            // now get the list of largest number of answers
-            int max = 0;
-            List<Integer> answerIDs = null;
-            for (List<Integer> group : groups.values()) {
-                if (group.size() > max) {
-                    answerIDs = group;
-                    max = group.size();
-                }
-            }
-            assertTrue(max > 0);
-
-            // now change the answer name to be "ans_x", where x is the id of it
-            for (int answerID : answerIDs) {
-                String newName = "ans_" + answerID;
-                user.renameAnswer(answerID, newName);
-            }
-
-            // write the test cases for it
-            UserAnswer result;
-            if (answerIDs.size() >= 2) {
-                result = user.combineAnswers("#1 UNION #2");
-                assertNotNull(result);
-                result = user.combineAnswers("#1 UNION #2");
-                assertNotNull(result);
-            }
-        } catch (Exception ex) {
-            // TODO Auto-generated catch block
-            ex.printStackTrace();
-            // System.err.println(ex);
-            assertTrue(false);
-        }
-    }
+//
+//    /*
+//     * Test method for 'org.gusdb.wdk.model.User.combineAnswers(int, int,
+//     * String)'
+//     */
+//    public void testCombineAnswersIntIntString() {
+//        try {
+//            Answer[] answers = createAnswers(sanityModel);
+//
+//            for (int i = 0; i < NUM_USERS; i++) {
+//                // get the user
+//                String userID = "user_" + i;
+//                User user = wdkModel.getUser(userID);
+//
+//                assertNotNull(user);
+//
+//                // the answer list should be empty at the beginning
+//                assertEquals(0, user.getAnswers().length);
+//
+//                // add answers into history
+//                List<Integer> answerIDs = new ArrayList<Integer>();
+//                for (Answer answer : answers) {
+//                    UserAnswer userAnswer = user.addAnswer(answer);
+//                    answerIDs.add(userAnswer.getAnswerID());
+//                }
+//
+//                // the answer list should be full now
+//                assertEquals(answers.length, user.getAnswers().length);
+//
+//                // try to combine answers of the same type
+//                for (int firstID : answerIDs) {
+//                    for (int secondID : answerIDs) {
+//                        String firstType = user.getAnswerByID(firstID).getType();
+//                        String secondType = user.getAnswerByID(secondID).getType();
+//                        if (firstType.equalsIgnoreCase(secondType)) {
+//                            // test union
+//                            UserAnswer userAnswer = user.combineAnswers(
+//                                    firstID, secondID, "union");
+//                            assertNotNull(userAnswer);
+//                            System.out.println(userAnswer);
+//                            // test intersect
+//                            userAnswer = user.combineAnswers(firstID, secondID,
+//                                    "intersect");
+//                            assertNotNull(userAnswer);
+//                            System.out.println(userAnswer);
+//                            // test except
+//                            userAnswer = user.combineAnswers(firstID, secondID,
+//                                    "minus");
+//                            assertNotNull(userAnswer);
+//                            System.out.println(userAnswer);
+//                        }
+//                    }
+//                }
+//            }
+//        } catch (Exception ex) {
+//            // TODO Auto-generated catch block
+//            ex.printStackTrace();
+//            // System.err.println(ex);
+//            assertTrue(false);
+//        }
+//    }
+//
+//    /*
+//     * Test method for 'org.gusdb.wdk.model.User.combineAnswers(String)'
+//     */
+//    public void testCombineAnswersString() {
+//        try {
+//            Answer[] answers = createAnswers(sanityModel);
+//
+//            // get the user
+//            String userID = "user_0";
+//            User user = wdkModel.getUser(userID);
+//
+//            assertNotNull(user);
+//
+//            // the answer list should be empty at the beginning
+//            assertEquals(0, user.getAnswers().length);
+//
+//            // add answers into history, and also store IDs by type
+//            Map<String, List<Integer>> groups = new HashMap<String, List<Integer>>();
+//            for (Answer answer : answers) {
+//                UserAnswer userAnswer = user.addAnswer(answer);
+//
+//                // store them by type
+//                String type = userAnswer.getType();
+//                if (!groups.containsKey(type))
+//                    groups.put(type, new ArrayList<Integer>());
+//                groups.get(type).add(userAnswer.getAnswerID());
+//            }
+//
+//            // the answer list should be full now
+//            assertEquals(answers.length, user.getAnswers().length);
+//
+//            // now get the list of largest number of answers
+//            int max = 0;
+//            List<Integer> answerIDs = null;
+//            for (List<Integer> group : groups.values()) {
+//                if (group.size() > max) {
+//                    answerIDs = group;
+//                    max = group.size();
+//                }
+//            }
+//            assertTrue(max > 0);
+//
+//            // now change the answer name to be "ans_x", where x is the id of it
+//            for (int answerID : answerIDs) {
+//                String newName = "ans_" + answerID;
+//                user.renameAnswer(answerID, newName);
+//            }
+//
+//            // write the test cases for it
+//            UserAnswer result;
+//            if (answerIDs.size() >= 2) {
+//                result = user.combineAnswers("#1 UNION #2");
+//                assertNotNull(result);
+//                result = user.combineAnswers("#1 UNION #2");
+//                assertNotNull(result);
+//            }
+//        } catch (Exception ex) {
+//            // TODO Auto-generated catch block
+//            ex.printStackTrace();
+//            // System.err.println(ex);
+//            assertTrue(false);
+//        }
+//    }
 
     private Answer[] createAnswers(SanityModel sanityModel)
             throws WdkUserException, WdkModelException {

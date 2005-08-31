@@ -149,15 +149,18 @@ public class BooleanQueryInstance extends QueryInstance {
     }
 
     public String getLowLevelQuery() throws WdkModelException {
-	return "";
+        // return sth. meaningful
+	return getSql();
     }
 
     protected  ResultList getNonpersistentResult() throws WdkModelException{
-	return null;
+        // return the result, but don't distinguish if it's persistent or not
+	return getResult();
     }
     
     public ResultList getPersistentResultPage(int startRow, int endRow) throws WdkModelException {
-	return null;
+        // return the result, but don't distinguish if it's persistent or not
+	return getResult();
     }
 
     protected void writeResultToTable(String resultTableName, 
