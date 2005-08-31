@@ -249,6 +249,7 @@ public class Answer {
 	    Iterator attributeNames = 
 		question.getSummaryAttributes().keySet().iterator();
 
+        // only print
 	    while (attributeNames.hasNext()){
 		String nextAttName = (String)attributeNames.next();
 
@@ -260,7 +261,10 @@ public class Answer {
 		    Object value = 
 			pageRecordInstances[i].getAttributeValue(nextAttName);
 		    if (value == null) value = "";
-		    buf.append(value.toString() + "\t");
+            // only print part of the string
+            String str = value.toString().trim();
+            if (str.length()>50) str = str.substring(0, 47) + "...";
+		    buf.append(str + "\t");
 		}
 	    }
 	    buf.append(newline);
@@ -279,7 +283,7 @@ public class Answer {
      * query result includes only rows for this page.
      */
     void integrateAttributesQueryResult(QueryInstance attributesQueryInstance) throws WdkModelException {
-    
+        
 	this.attributesQueryInstance = attributesQueryInstance;
 
 	String idsTableName = idsQueryInstance.getResultAsTableName();
@@ -292,7 +296,13 @@ public class Answer {
 	ResultList attrQueryResultList = attributesQueryInstance.getResult();
 
 	Column[] columns = attrQueryResultList.getQuery().getColumns();
-	int idsResultTableI = startRecordInstanceI;
+
+    int idsResultTableI = startRecordInstanceI;
+    // if startRecordInstanceI == endRecordInstanceI == 0, we return all
+    // columns, in that case, set idsResultTableI = 1 to make sure it pass the
+    // row integration test
+//    if (startRecordInstanceI == 0 && endRecordInstanceI == 0) idsResultTableI = 1;
+    
 	int pageIndex = 0;
 	while (attrQueryResultList.next()){
 
@@ -338,7 +348,7 @@ public class Answer {
 	ResultList rl = 
 	    idsQueryInstance.getPersistentResultPage(startRecordInstanceI,
 						     endRecordInstanceI);
-
+   
 	Vector tempRecordInstances = new Vector();
 
 	while (rl.next()){
@@ -426,5 +436,15 @@ public class Answer {
 
     */
 
+    public String toString() {
+        StringBuffer sb = new StringBuffer(
+                question.getDisplayName());
 
+        Map params = getParams();
+
+        for (Object key : params.keySet()) {
+            sb.append(" " + key + ":" + params.get(key));
+        }
+        return sb.toString();
+    }
 }

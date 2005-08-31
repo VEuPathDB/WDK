@@ -183,8 +183,8 @@ public class BooleanQuestionNode {
         RecordClass rc = firstChild.question.getRecordClass();
         Question question = model.makeBooleanQuestion(rc);
 
-        BooleanQuestionNode root = new BooleanQuestionNode(question, firstChild,
-                secondChild, null);
+        BooleanQuestionNode root = new BooleanQuestionNode(question,
+                firstChild, secondChild, null);
 
         // store operation
         Hashtable values = new Hashtable();
@@ -244,7 +244,8 @@ public class BooleanQuestionNode {
      *         that should be retrieved by calling makeAnswer() on that node's
      *         Question after running this method.
      */
-    public Answer makeAnswer() throws WdkUserException, WdkModelException {
+    public Answer makeAnswer(int startIndex, int endIndex)
+            throws WdkUserException, WdkModelException {
 
         // dtb -- initially this method was in BooleanQueryTester but I figured
         // it might be needed by other classes
@@ -255,16 +256,18 @@ public class BooleanQuestionNode {
 
             Question question = getQuestion();
             Hashtable leafValues = getValues();
-            answer = question.makeAnswer(leafValues, 0, 0);
+            answer = question.makeAnswer(leafValues, startIndex, endIndex);
         } else { // bqn is boolean question
 
             Question booleanQuestion = getQuestion();
 
             BooleanQuestionNode firstChild = getFirstChild();
-            Answer firstChildAnswer = firstChild.makeAnswer();
+            Answer firstChildAnswer = firstChild.makeAnswer(startIndex,
+                    endIndex);
 
             BooleanQuestionNode secondChild = getSecondChild();
-            Answer secondChildAnswer = secondChild.makeAnswer();
+            Answer secondChildAnswer = secondChild.makeAnswer(startIndex,
+                    endIndex);
 
             Hashtable booleanValues = getValues();
 
@@ -282,7 +285,8 @@ public class BooleanQuestionNode {
 
             booleanQuestion.setSummaryAttributes(booleanSummaryAtts);
 
-            answer = booleanQuestion.makeAnswer(booleanValues, 0, 0);
+            answer = booleanQuestion.makeAnswer(booleanValues, startIndex,
+                    endIndex);
         }
         return answer;
 

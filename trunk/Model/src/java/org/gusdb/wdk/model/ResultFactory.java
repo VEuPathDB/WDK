@@ -476,12 +476,18 @@ public class ResultFactory {
 
     private ResultSet fetchCachedResultPage(String resultTableName, int startRow, int endRow) throws WdkModelException {
 	
-	String sql = 
-	    "select * " + 
-	    " from " + resultTableName +
-	    " where " + RESULT_TABLE_I + " >= " + startRow + 
-	    " and " + RESULT_TABLE_I + " <= " + endRow + 
-	    " order by " + RESULT_TABLE_I + " asc";
+	String sql;
+    // have an option to return all rows (when startRow = endRow = 0)
+//    if (startRow == 0 && endRow == 0)
+//        sql = "select * " + 
+//            " from " + resultTableName +
+//            " order by " + RESULT_TABLE_I + " asc";
+//    else
+        sql = "select * " + 
+    	    " from " + resultTableName +
+    	    " where " + RESULT_TABLE_I + " >= " + startRow + 
+    	    " and " + RESULT_TABLE_I + " <= " + endRow + 
+    	    " order by " + RESULT_TABLE_I + " asc";
 
 	return fetchCachedResultFromSql(sql);
     }

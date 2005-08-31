@@ -106,7 +106,8 @@ public class User {
     }
 
     public UserAnswer combineAnswers(int firstAnswerID, int secondAnswerID,
-            String operation) throws WdkUserException, WdkModelException {
+            String operation, int startIndex, int endIndex)
+            throws WdkUserException, WdkModelException {
         // check if the answers exist
         if (userAnswers == null || !userAnswers.containsKey(firstAnswerID)
                 || !userAnswers.containsKey(secondAnswerID))
@@ -127,14 +128,22 @@ public class User {
         // generate new answer for the combine questions
         BooleanQuestionNode root = BooleanQuestionNode.combine(firstChild,
                 secondChild, operation, model);
-        Answer answer = root.makeAnswer();
+        Answer answer = root.makeAnswer(startIndex, endIndex);
 
         // create a new UserAnswer
         return addAnswer(answer);
     }
 
-    public UserAnswer combineAnswers(String expression)
-            throws WdkUserException, WdkModelException {
+    public UserAnswer combineAnswers(String expression, int startIndex,
+            int endIndex) throws WdkUserException, WdkModelException {
+        // TEST
+        System.out.println("Expression: " + expression);
+
+        // validate the expression
+        if (!validateExpression(expression))
+            throw new WdkUserException("The expression is invalid: "
+                    + expression);
+
         // replace the literals in the expression
         Map<String, String> replace = new HashMap<String, String>();
         String exp = replaceLiterals(expression, replace).trim();
@@ -143,8 +152,25 @@ public class User {
         BooleanQuestionNode root = parseBlock(exp, replace);
 
         // make answer
-        Answer answer = root.makeAnswer();
+        Answer answer = root.makeAnswer(startIndex, endIndex);
         return addAnswer(answer);
+    }
+
+    private boolean validateExpression(String expression) {
+        int numParenthese = 0;
+        int numQuote = 0;
+        boolean leftQuote = true;
+        // count number of parenthese and number of double quotes
+        for (int i = 0; i < expression.length(); i++) {
+            if (expression.charAt(i) == '(') numParenthese++;
+            else if (expression.charAt(i) == ')') numParenthese--;
+            else if (expression.charAt(i) == '"') {
+                if (leftQuote) numQuote++;
+                else numQuote--;
+                leftQuote = !leftQuote;
+            }
+        }
+        return (numParenthese == 0 && numQuote == 0);
     }
 
     private String replaceLiterals(String expression,
@@ -166,8 +192,7 @@ public class User {
                     i++;
                     if (i >= expression.length())
                         throw new WdkUserException(
-                                "The format of boolean expression is invalid: "
-                                        + expression);
+                                "The expression is invalid: " + expression);
                     // check if it's quote
                     if (expression.charAt(i) == '"') {
                         // check if it should be escaped
@@ -183,7 +208,8 @@ public class User {
                 // now output the stub
                 stubID++;
                 String stub = STUB_PREFIX + Integer.toString(stubID) + "__";
-                String literal = expression.substring(start, end + 1);
+                // get literals without quote
+                String literal = expression.substring(start + 1, end);
                 replace.put(stub, literal);
                 sb.append(" " + stub + " ");
                 mark = end + 1;
@@ -194,8 +220,8 @@ public class User {
     }
 
     private BooleanQuestionNode parseBlock(String block,
-            Map<String, String> replace) throws WdkUserException,
-            WdkModelException {
+            Map<String, String> replace)
+            throws WdkUserException, WdkModelException {
         // check if the expression can be divided further
         // to do so, just need to check if there're spaces or parenthese
         int spaces = block.indexOf(" ");
@@ -207,10 +233,14 @@ public class User {
             if (block.charAt(0) == '#') { // an answer id
                 int answerID = Integer.parseInt(block.substring(1));
                 answer = getAnswerByID(answerID);
-            } else { // a name of an answer, but being replaced
-                String name = replace.get(block);
-                assert (name != null) : block;
-                answer = getAnswerByName(name);
+            } else { // check if the answer exit
+                try {
+                    answer = getAnswerByName(block);
+                } catch (WdkUserException ex) {
+                    // answer of name *block* not found, then, try replacement
+                    // if not exist either, throw WdkUserException
+                    answer = getAnswerByName(replace.get(block));
+                }
             }
             return answer.getLeafQuestion();
         }

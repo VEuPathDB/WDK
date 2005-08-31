@@ -88,7 +88,7 @@ public class BooleanQuestionTester {
 	    BooleanQuestionNode topNode = TestBooleanTree.getTestTree(wdkModel);
 	    System.err.println(topNode.toString());
 	    //init recursive method
-        topNode.makeAnswer();
+        topNode.makeAnswer(startRow, endRow);
 	    //BooleanQuestionNode.setAllValues(topNode);
 
 	   //runGrowTest(topNode, "01", wdkModel);
