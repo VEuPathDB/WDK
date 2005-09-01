@@ -68,7 +68,6 @@ public class GetBooleanAnswerAction extends ShowSummaryAction {
 		    processNode(bqf, nextRealNode);
 		}
 	    }
-	    rootNode.setAllValues();
 	    answer = booleanAnswerPaging(request, rootNode);
 	}
 
