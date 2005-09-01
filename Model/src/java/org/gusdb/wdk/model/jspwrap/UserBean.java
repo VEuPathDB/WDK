@@ -19,8 +19,8 @@ public class UserBean {
      * 
      * @see org.gusdb.wdk.model.User#addAnswer(org.gusdb.wdk.model.Answer)
      */
-    public UserAnswer addAnswer(Answer answer) {
-        return this.user.addAnswer(answer);
+    public UserAnswerBean addAnswer(Answer answer) {
+        return new UserAnswerBean(this.user.addAnswer(answer));
     }
 
     /*
@@ -28,11 +28,11 @@ public class UserBean {
      * 
      * @see org.gusdb.wdk.model.User#combineAnswers(int, int, java.lang.String)
      */
-    public UserAnswer combineAnswers(int firstAnswerID, int secondAnswerID,
+    public UserAnswerBean combineAnswers(int firstAnswerID, int secondAnswerID,
             String operation, int start, int end)
             throws WdkUserException, WdkModelException {
-        return this.user.combineAnswers(firstAnswerID, secondAnswerID,
-                operation, start, end);
+        return new UserAnswerBean(this.user.combineAnswers(firstAnswerID,
+                secondAnswerID, operation, start, end));
     }
 
     /*
@@ -40,9 +40,10 @@ public class UserBean {
      * 
      * @see org.gusdb.wdk.model.User#combineAnswers(java.lang.String)
      */
-    public UserAnswer combineAnswers(String expression, int start, int end)
+    public UserAnswerBean combineAnswers(String expression, int start, int end)
             throws WdkUserException, WdkModelException {
-        return this.user.combineAnswers(expression, start, end);
+        return new UserAnswerBean(this.user.combineAnswers(expression, start,
+                end));
     }
 
     /*
@@ -68,8 +69,8 @@ public class UserBean {
      * 
      * @see org.gusdb.wdk.model.User#getAnswerByID(int)
      */
-    public UserAnswer getAnswerByID(int answerID) throws WdkUserException {
-        return this.user.getAnswerByID(answerID);
+    public UserAnswerBean getAnswerByID(int answerID) throws WdkUserException {
+        return new UserAnswerBean(this.user.getAnswerByID(answerID));
     }
 
     /*
@@ -77,8 +78,8 @@ public class UserBean {
      * 
      * @see org.gusdb.wdk.model.User#getAnswerByName(java.lang.String)
      */
-    public UserAnswer getAnswerByName(String name) throws WdkUserException {
-        return this.user.getAnswerByName(name);
+    public UserAnswerBean getAnswerByName(String name) throws WdkUserException {
+        return new UserAnswerBean(this.user.getAnswerByName(name));
     }
 
     /*
