@@ -19,8 +19,8 @@ public class UserBean {
      * 
      * @see org.gusdb.wdk.model.User#addAnswer(org.gusdb.wdk.model.Answer)
      */
-    public UserAnswerBean addAnswer(Answer answer) {
-        return new UserAnswerBean(this.user.addAnswer(answer));
+    public UserAnswerBean addAnswer(AnswerBean answer) {
+        return new UserAnswerBean(this.user.addAnswer(answer.answer));
     }
 
     /*
