@@ -47,6 +47,9 @@ public class ShowQuestionSetsAction extends Action {
     }
 
     protected void sessionStart (HttpServletRequest request) {
+	if (request.getSession().getAttribute(CConstants.WDK_USER_KEY) != null) {
+	    return;
+	}
 	WdkModelBean wdkModel = (WdkModelBean)getServlet().getServletContext().getAttribute(CConstants.WDK_MODEL_KEY);
 	HttpSession session = request.getSession();
 	String sessionId = session.getId();
