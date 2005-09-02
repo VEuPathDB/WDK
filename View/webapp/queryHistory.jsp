@@ -15,15 +15,23 @@
 </table>
 
 <!-- show user answers one per line -->
+<c:set var="NAME_TRUNC" value="80"/>
 <table>
     <tr><th>ID</th> <th>Name</th> <th>Report</th> <th>Download</th> <th>&nbsp;</th></tr>
-    <tr><c:forEach items="${userAnswers}" var="ua">
-          <td>${ua.answerID}</td>
-          <td>${ua.name}</td>
-          <td><a href='<c:url value="/showAnswerFullName.jsp"/>'>View this answer</a></td>
+    <c:forEach items="${userAnswers}" var="ua">
+      <jsp:setProperty name="ua" property="nameTruncateTo" value="${NAME_TRUNC}"/>
+      <tr><td>${ua.answerID}</td>
+          <td><c:choose>
+                <c:when test="${ua.isNameTruncatable}">
+                  <a href="">${ua.truncatedName}...</a>
+                </c:when>
+                <c:otherwise>${ua.name}</c:otherwise>
+              </c:choose></td>
+          <td><a href='<c:url value="/showAnswer.jsp"/>'>View this answer</a></td>
           <td><a href='<c:url value="/downloadAnswer.jsp"/>'>Download this answer</a></td>
           <td>delete</td>
-        </c:forEach></tr>
+      </tr>
+    </c:forEach>
 </table>
 
 <html:form method="get" action="/processBooleanExpression.do">
