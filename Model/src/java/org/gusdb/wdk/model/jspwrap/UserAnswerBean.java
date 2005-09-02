@@ -1,3 +1,4 @@
+
 package org.gusdb.wdk.model.jspwrap;
 
 import org.gusdb.wdk.model.Answer;
@@ -6,6 +7,7 @@ import org.gusdb.wdk.model.UserAnswer;
 public class UserAnswerBean {
 
     UserAnswer userAnswer;
+    int nameTruncateTo;
 
     public UserAnswerBean(UserAnswer answer) {
         this.userAnswer = answer;
@@ -32,11 +34,19 @@ public class UserAnswerBean {
         return this.userAnswer.getName();
     }
 
+    public void setNameTruncateTo(int truncateTo) {
+	nameTruncateTo = truncateTo;
+    }
+
     /* (non-Javadoc)
      * @see org.gusdb.wdk.model.UserAnswer#getName(int)
      */
-    public String getName(int truncateTo) {
-        return this.userAnswer.getName(truncateTo);
+    public String getTruncatedName() {
+        return this.userAnswer.getName(nameTruncateTo);
+    }
+
+    public boolean getIsNameTruncatable() {
+	return getName().length() > nameTruncateTo ? true : false;
     }
 
     /* (non-Javadoc)
