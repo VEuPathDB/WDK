@@ -26,11 +26,12 @@ import org.gusdb.wdk.model.WdkUserException;
  */
 public class JUnitUserTest extends TestCase {
 
-    private static final int NUM_USERS = 1;
+    private static final int NUM_USERS = 2;
 
     private TestUtility utility;
     private WdkModel wdkModel;
     private SanityModel sanityModel;
+    private Answer[] answers;
 
     public static void main(String[] args) {
         junit.textui.TestRunner.run(JUnitUserTest.class);
@@ -45,6 +46,8 @@ public class JUnitUserTest extends TestCase {
         utility = TestUtility.getInstance();
         wdkModel = utility.getWdkModel();
         sanityModel = utility.getSanityModel();
+
+        answers = createAnswers(sanityModel);
 
         // test must first create some users, and then get the ID of that user;
         // assuming add user function has been tested in model junit test
@@ -80,8 +83,6 @@ public class JUnitUserTest extends TestCase {
     public void testAddAnswer() {
         // create answers for those questions
         try {
-            Answer[] answers = createAnswers(sanityModel);
-
             // now all users ask all questions
             for (int i = 0; i < NUM_USERS; i++) {
                 // get the user
@@ -89,12 +90,18 @@ public class JUnitUserTest extends TestCase {
                 User user = wdkModel.getUser(userID);
 
                 assertNotNull(user);
+                user.clearAnswers();
 
                 for (Answer answer : answers) {
                     UserAnswer userAnswer = user.addAnswer(answer);
 
                     assertNotNull(userAnswer);
                 }
+
+                // test on duplicates situation
+                UserAnswer uans = user.getAnswers()[i];
+                UserAnswer uansnew = user.addAnswer(uans.getAnswer());
+                assertEquals(uans, uansnew);
 
                 // the answer list should be full now
                 assertEquals(answers.length, user.getAnswers().length);
@@ -114,8 +121,6 @@ public class JUnitUserTest extends TestCase {
     public void testDeleteAnswer() {
         // first add answers to the user
         try {
-            Answer[] answers = createAnswers(sanityModel);
-
             // now all users ask all questions
             for (int i = 0; i < NUM_USERS; i++) {
                 // get the user
@@ -123,6 +128,7 @@ public class JUnitUserTest extends TestCase {
                 User user = wdkModel.getUser(userID);
 
                 assertNotNull(user);
+                user.clearAnswers();
 
                 List<Integer> answerIDs = new ArrayList<Integer>();
                 for (Answer answer : answers) {
@@ -170,8 +176,6 @@ public class JUnitUserTest extends TestCase {
      */
     public void testClearAnswers() {
         try {
-            Answer[] answers = createAnswers(sanityModel);
-
             // clear all answers from all users
             for (int i = 0; i < NUM_USERS; i++) {
                 // get the user
@@ -179,6 +183,7 @@ public class JUnitUserTest extends TestCase {
                 User user = wdkModel.getUser(userID);
 
                 assertNotNull(user);
+                user.clearAnswers();
 
                 // add answers into history
                 for (Answer answer : answers)
@@ -204,7 +209,6 @@ public class JUnitUserTest extends TestCase {
      */
     public void testGetAnswers() {
         try {
-            Answer[] answers = createAnswers(sanityModel);
             // since the user is newly created, the answer list should be empty
             for (int i = 0; i < NUM_USERS; i++) {
                 // get the user
@@ -212,9 +216,7 @@ public class JUnitUserTest extends TestCase {
                 User user = wdkModel.getUser(userID);
 
                 assertNotNull(user);
-
-                // the answer list should be empty at the beginning
-                assertEquals(0, user.getAnswers().length);
+                user.clearAnswers();
 
                 // add answers into history
                 for (Answer answer : answers) {
@@ -237,7 +239,6 @@ public class JUnitUserTest extends TestCase {
      */
     public void testGetAnswerByID() {
         try {
-            Answer[] answers = createAnswers(sanityModel);
             // since the user is newly created, the answer list should be empty
             for (int i = 0; i < NUM_USERS; i++) {
                 // get the user
@@ -245,9 +246,7 @@ public class JUnitUserTest extends TestCase {
                 User user = wdkModel.getUser(userID);
 
                 assertNotNull(user);
-
-                // the answer list should be empty at the beginning
-                assertEquals(0, user.getAnswers().length);
+                user.clearAnswers();
 
                 // add answers into history
                 List<Integer> answerIDs = new ArrayList<Integer>();
@@ -290,7 +289,6 @@ public class JUnitUserTest extends TestCase {
      */
     public void testGetAnswerByName() {
         try {
-            Answer[] answers = createAnswers(sanityModel);
             // since the user is newly created, the answer list should be empty
             for (int i = 0; i < NUM_USERS; i++) {
                 // get the user
@@ -298,9 +296,7 @@ public class JUnitUserTest extends TestCase {
                 User user = wdkModel.getUser(userID);
 
                 assertNotNull(user);
-
-                // the answer list should be empty at the beginning
-                assertEquals(0, user.getAnswers().length);
+                user.clearAnswers();
 
                 // add answers into history
                 List<String> answerNames = new ArrayList<String>();
@@ -343,17 +339,13 @@ public class JUnitUserTest extends TestCase {
      */
     public void testRenameAnswer() {
         try {
-            Answer[] answers = createAnswers(sanityModel);
-
             for (int i = 0; i < NUM_USERS; i++) {
                 // get the user
                 String userID = "user_" + i;
                 User user = wdkModel.getUser(userID);
 
                 assertNotNull(user);
-
-                // the answer list should be empty at the beginning
-                assertEquals(0, user.getAnswers().length);
+                user.clearAnswers();
 
                 // add answers into history
                 List<Integer> answerIDs = new ArrayList<Integer>();
@@ -421,16 +413,12 @@ public class JUnitUserTest extends TestCase {
      */
     public void testCombineAnswersIntIntString() {
         try {
-            Answer[] answers = createAnswers(sanityModel);
-
             // get the user
             String userID = "user_0";
             User user = wdkModel.getUser(userID);
 
             assertNotNull(user);
-
-            // the answer list should be empty at the beginning
-            assertEquals(0, user.getAnswers().length);
+            user.clearAnswers();
 
             // add answers into history
             List<Integer> answerIDs = new ArrayList<Integer>();
@@ -489,16 +477,12 @@ public class JUnitUserTest extends TestCase {
      */
     public void testCombineAnswersString() {
         try {
-            Answer[] answers = createAnswers(sanityModel);
-
             // get the user
             String userID = "user_0";
             User user = wdkModel.getUser(userID);
 
             assertNotNull(user);
-
-            // the answer list should be empty at the beginning
-            assertEquals(0, user.getAnswers().length);
+            user.clearAnswers();
 
             // add answers into history, and also store IDs by type
             Map<String, List<Integer>> groups = new HashMap<String, List<Integer>>();

@@ -66,9 +66,9 @@ public class Answer {
 
     private RecordInstance[] pageRecordInstances;
 
-    private int startRecordInstanceI;
+    int startRecordInstanceI;
 
-    private int endRecordInstanceI;
+    int endRecordInstanceI;
 
     private int recordInstanceCursor;
 

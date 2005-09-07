@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -34,6 +35,46 @@ public class User {
     }
 
     public UserAnswer addAnswer(Answer answer) {
+        if (userAnswers != null) {
+            // check if the answer exists or not
+            for (UserAnswer uans : userAnswers.values()) {
+                Answer ans = uans.getAnswer();
+                // check question name
+                String qname = ans.getQuestion().getFullName();
+                if (!qname.equalsIgnoreCase(answer.getQuestion().getFullName()))
+                    continue;
+
+                // check paging number
+                if (ans.startRecordInstanceI != answer.startRecordInstanceI
+                        || ans.endRecordInstanceI != answer.endRecordInstanceI)
+                    continue;
+
+                // check parameters
+                Map params = ans.getParams();
+                Map pchecks = answer.getParams();
+                Iterator it = params.keySet().iterator();
+                boolean equal = true;
+                while (it.hasNext()) {
+                    String key = (String) it.next();
+                    String value = params.get(key).toString();
+                    // check on the input answer
+                    if (pchecks.containsKey(key)) {
+                        String vcheck = pchecks.get(key).toString();
+                        if (!value.equalsIgnoreCase(vcheck)) {
+                            equal = false;
+                            break;
+                        }
+                    } else {
+                        equal = false;
+                        break;
+                    }
+                }
+                // check if two answers are the same
+                if (equal) return uans;
+
+            }
+        }
+
         answerIndex++;
         UserAnswer userAnswer = new UserAnswer(userID, answerIndex, answer);
 
@@ -134,6 +175,25 @@ public class User {
         return addAnswer(answer);
     }
 
+    /**
+     * this function accept a boolean expression that defines the combination of
+     * cached answers in current user's history. In the expression answers can
+     * be identified by their IDs or names. For example,
+     * <code>#1 UNION "ans_gene"</code>, where the answer ID starts with #,
+     * and answer name can be quoted by double quote (the double quote is
+     * required if there's space in answer name).
+     * 
+     * User can use parenthese in the boolean expression to change the order of
+     * its execution. For example,
+     * <code>#1 MINUS (ans_mRNA UNION "ans tRNA")</code>
+     * 
+     * @param expression
+     * @param startIndex
+     * @param endIndex
+     * @return
+     * @throws WdkUserException
+     * @throws WdkModelException
+     */
     public UserAnswer combineAnswers(String expression, int startIndex,
             int endIndex) throws WdkUserException, WdkModelException {
         // TEST
