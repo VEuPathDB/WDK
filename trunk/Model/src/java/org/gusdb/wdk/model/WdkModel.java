@@ -457,6 +457,9 @@ public class WdkModel {
     // =========================================================================
     
     public User createUser(String userID) {
+        // check if the user exists
+        if (users.containsKey(userID)) return users.get(userID);
+        
         User user = new User(userID, this);
         users.put(userID, user);
         return user;
