@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model;
 
-import java.util.Hashtable;
 import java.util.Map;
 
 /**
@@ -89,13 +88,6 @@ public class UserAnswer {
         UserAnswer ans = new UserAnswer(userID, answerID, answer);
         if (name != null) ans.setName(name);
         return ans;
-    }
-
-    BooleanQuestionNode getLeafQuestion() {
-        BooleanQuestionNode leaf = new BooleanQuestionNode(
-                answer.getQuestion(), null);
-        leaf.setValues(new Hashtable(answer.getParams()));
-        return leaf;
     }
 
     public String toString() {
