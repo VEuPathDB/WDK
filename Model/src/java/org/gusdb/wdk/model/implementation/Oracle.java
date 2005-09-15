@@ -146,13 +146,15 @@ public class Oracle implements RDBMSPlatformI {
 		     Integer initialSize, String fileName) throws WdkModelException {
         
 	try{
-	    //	    DriverManager.registerDriver(oracle.jdbc.driver.acleDriver());
-	    System.setProperty("jdbc.drivers","oracle.jdbc.driver.OracleDriver");
+	    //this is required for oci driver to work under tomcat
+            Class.forName("oracle.jdbc.driver.OracleDriver");
+	    //DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
+	    //System.setProperty("jdbc.drivers","oracle.jdbc.driver.OracleDriver");
 	    this.connectionPool = new GenericObjectPool(null);
 
 	    ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(url, user, password);
 	    
-	    PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(connectionFactory,connectionPool,null,null,false,true);
+	    new PoolableConnectionFactory(connectionFactory,connectionPool,null,null,false,true);
 	    
 	    PoolingDataSource dataSource = new PoolingDataSource(connectionPool);
 	    this.dataSource = dataSource;
@@ -162,6 +164,8 @@ public class Oracle implements RDBMSPlatformI {
 	catch (SQLException sqle){
 	    throw new WdkModelException("\n\n*************ERROR***********\nCould not connect to database.\nIt is possible that you are using an incorrect url for connecting to the database or that your login or password is incorrect.\nPlease check " + fileName + " and make sure all information provided there is valid.\n(This is the most likely cause of the error; note it could be something else)\n\n", sqle);
 	    
+	} catch (ClassNotFoundException cnfe) {
+	    throw new WdkModelException ("not able to find class for oracle.jdbc.driver.OracleDriver", cnfe);
 	}
 	connectionPool.setMaxWait(maxWait.intValue());
 	connectionPool.setMaxIdle(maxIdle.intValue());
