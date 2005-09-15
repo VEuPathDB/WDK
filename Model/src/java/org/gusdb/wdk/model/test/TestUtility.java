@@ -34,8 +34,19 @@ public class TestUtility {
     protected SanityModel sanityModel;
     protected Random rand;
 
-    public static TestUtility getInstance() throws WdkModelException,
-            MalformedURLException {
+    public static void main(String[] args) {
+        junit.textui.TestRunner.run(suite());
+    }
+
+    public static Test suite() {
+        TestSuite suite = new TestSuite();
+        suite.addTest(JUnitBooleanExpressionTest.suite());
+        suite.addTest(JUnitUserTest.suite());
+        return suite;
+    }
+
+    public static TestUtility getInstance()
+            throws WdkModelException, MalformedURLException {
         if (utility == null) utility = new TestUtility();
         return utility;
     }
@@ -45,7 +56,7 @@ public class TestUtility {
      * @throws MalformedURLException
      * 
      */
-    private TestUtility() throws WdkModelException, MalformedURLException {
+    public TestUtility() throws WdkModelException, MalformedURLException {
         super();
         wdkModel = loadWdkModel();
         sanityModel = loadSanityModel();
@@ -79,8 +90,8 @@ public class TestUtility {
         return WdkModel.construct(modelName);
     }
 
-    private SanityModel loadSanityModel() throws MalformedURLException,
-            WdkModelException {
+    private SanityModel loadSanityModel()
+            throws MalformedURLException, WdkModelException {
         String modelName = System.getProperty("model");
         File configDir = new File(System.getProperties().getProperty(
                 "configDir"));
@@ -169,20 +180,5 @@ public class TestUtility {
         HelpFormatter formatter = new HelpFormatter();
         formatter.printHelp(75, cmdlineSyntax, header, options, footer);
         System.exit(1);
-    }
-
-    public static Test suite() { 
-        // create test suite
-        TestSuite suite= new TestSuite();
-        
-        // add test suite for any unit test cases
-        suite.addTest(new TestSuite(JUnitUserTest.class));
-
-        return suite;
-    }
-
-    public static void main(String[] args) {
-        
-        junit.textui.TestRunner.run(suite());
     }
 }

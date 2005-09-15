@@ -11,8 +11,6 @@ import java.util.Map;
  */
 public class User {
 
-    private static final String STUB_PREFIX = "__STUB__";
-
     private String userID;
     private Map<Integer, UserAnswer> userAnswers;
     private int answerIndex;
@@ -34,45 +32,16 @@ public class User {
         return this.userID;
     }
 
-    public UserAnswer addAnswer(Answer answer) {
-        if (userAnswers != null) {
-            // check if the answer exists or not
-            for (UserAnswer uans : userAnswers.values()) {
-                Answer ans = uans.getAnswer();
-                // check question name
-                String qname = ans.getQuestion().getFullName();
-                if (!qname.equalsIgnoreCase(answer.getQuestion().getFullName()))
-                    continue;
+    public void addAnswer(Answer answer) {
 
-                // check paging number
-                if (ans.startRecordInstanceI != answer.startRecordInstanceI
-                        || ans.endRecordInstanceI != answer.endRecordInstanceI)
-                    continue;
-
-                // check parameters
-                Map params = ans.getParams();
-                Map pchecks = answer.getParams();
-                Iterator it = params.keySet().iterator();
-                boolean equal = true;
-                while (it.hasNext()) {
-                    String key = (String) it.next();
-                    String value = params.get(key).toString();
-                    // check on the input answer
-                    if (pchecks.containsKey(key)) {
-                        String vcheck = pchecks.get(key).toString();
-                        if (!value.equalsIgnoreCase(vcheck)) {
-                            equal = false;
-                            break;
-                        }
-                    } else {
-                        equal = false;
-                        break;
-                    }
-                }
-                // check if two answers are the same
-                if (equal) return uans;
-
-            }
+        try {
+            getAnswerByAnswer(answer);
+            // answer exists, return
+            return;
+        } catch (WdkUserException ex) {
+            // TODO Auto-generated catch block
+            // ex.printStackTrace();
+            // System.err.println(ex);
         }
 
         answerIndex++;
@@ -82,7 +51,6 @@ public class User {
         if (userAnswers == null)
             userAnswers = new HashMap<Integer, UserAnswer>();
         userAnswers.put(answerIndex, userAnswer);
-        return userAnswer;
     }
 
     public void deleteAnswer(int answerId) throws WdkUserException {
@@ -126,6 +94,49 @@ public class User {
                 + " does not exist!");
     }
 
+    public UserAnswer getAnswerByAnswer(Answer answer) throws WdkUserException {
+        if (userAnswers != null) {
+            // check if the answer exists or not
+            for (UserAnswer uans : userAnswers.values()) {
+                Answer ans = uans.getAnswer();
+                // check question name
+                String qname = ans.getQuestion().getFullName();
+                if (!qname.equalsIgnoreCase(answer.getQuestion().getFullName()))
+                    continue;
+
+                // check paging number
+                if (ans.startRecordInstanceI != answer.startRecordInstanceI
+                        || ans.endRecordInstanceI != answer.endRecordInstanceI)
+                    continue;
+
+                // check parameters
+                Map params = ans.getParams();
+                Map pchecks = answer.getParams();
+                Iterator it = params.keySet().iterator();
+                boolean equal = true;
+                while (it.hasNext()) {
+                    String key = (String) it.next();
+                    String value = params.get(key).toString();
+                    // check on the input answer
+                    if (pchecks.containsKey(key)) {
+                        String vcheck = pchecks.get(key).toString();
+                        if (!value.equalsIgnoreCase(vcheck)) {
+                            equal = false;
+                            break;
+                        }
+                    } else {
+                        equal = false;
+                        break;
+                    }
+                }
+                // check if two answers are the same
+                if (equal) return uans;
+            }
+        }
+        throw new WdkUserException(
+                "The UserAnswer specified by the given answer doesn't exist!");
+    }
+
     public void renameAnswer(int answerID, String name) throws WdkUserException {
         // check if the answer exists
         if (userAnswers == null || !userAnswers.containsKey(answerID))
@@ -148,206 +159,52 @@ public class User {
 
     public UserAnswer combineAnswers(int firstAnswerID, int secondAnswerID,
             String operation, int startIndex, int endIndex)
-            throws WdkUserException, WdkModelException {
-        // check if the answers exist
-        if (userAnswers == null || !userAnswers.containsKey(firstAnswerID)
-                || !userAnswers.containsKey(secondAnswerID))
-            throw new WdkUserException(
-                    "The answer specified by the given ID doesn't exist!");
+            throws  WdkModelException, WdkUserException {
+        // construct operand map
+        Map<String, Answer> operandMap = buildOperandMap();
 
-        // check if the answers have the same type
-        UserAnswer firstAnswer = userAnswers.get(firstAnswerID);
-        UserAnswer secondAnswer = userAnswers.get(secondAnswerID);
-        if (!firstAnswer.getType().equalsIgnoreCase(secondAnswer.getType()))
-            throw new WdkUserException(
-                    "The answers can't be combined with differen types");
+        // construct the expression
+        StringBuffer sb = new StringBuffer();
+        sb.append('#');
+        sb.append(firstAnswerID);
+        sb.append(' ');
+        sb.append(operation);
+        sb.append(" #");
+        sb.append(secondAnswerID);
 
-        // now combine the answers using booleanQuestionNode
-        BooleanQuestionNode firstChild = firstAnswer.getLeafQuestion();
-        BooleanQuestionNode secondChild = secondAnswer.getLeafQuestion();
-
-        // generate new answer for the combine questions
-        BooleanQuestionNode root = BooleanQuestionNode.combine(firstChild,
-                secondChild, operation, model);
-        Answer answer = root.makeAnswer(startIndex, endIndex);
+        // construct BooleanQuestionNode
+        BooleanExpression be = new BooleanExpression(model);
+        BooleanQuestionNode root = be.combineAnswers(sb.toString(), operandMap);
 
         // create a new UserAnswer
-        return addAnswer(answer);
+        Answer answer = root.makeAnswer(startIndex, endIndex);
+        addAnswer(answer);
+        return getAnswerByAnswer(answer);
     }
 
-    /**
-     * this function accept a boolean expression that defines the combination of
-     * cached answers in current user's history. In the expression answers can
-     * be identified by their IDs or names. For example,
-     * <code>#1 UNION "ans_gene"</code>, where the answer ID starts with #,
-     * and answer name can be quoted by double quote (the double quote is
-     * required if there's space in answer name).
-     * 
-     * User can use parenthese in the boolean expression to change the order of
-     * its execution. For example,
-     * <code>#1 MINUS (ans_mRNA UNION "ans tRNA")</code>
-     * 
-     * @param expression
-     * @param startIndex
-     * @param endIndex
-     * @return
-     * @throws WdkUserException
-     * @throws WdkModelException
-     */
     public UserAnswer combineAnswers(String expression, int startIndex,
             int endIndex) throws WdkUserException, WdkModelException {
-        // TEST
-        System.out.println("Expression: " + expression);
+        // construct operand map
+        Map<String, Answer> operandMap = buildOperandMap();
 
-        // validate the expression
-        if (!validateExpression(expression))
-            throw new WdkUserException("The expression is invalid: "
-                    + expression);
-
-        // replace the literals in the expression
-        Map<String, String> replace = new HashMap<String, String>();
-        String exp = replaceLiterals(expression, replace).trim();
-
-        // build the BooleanQuestionNode tree
-        BooleanQuestionNode root = parseBlock(exp, replace);
+        // construct BooleanQuestionNode
+        BooleanExpression be = new BooleanExpression(model);
+        BooleanQuestionNode root = be.combineAnswers(expression, operandMap);
 
         // make answer
         Answer answer = root.makeAnswer(startIndex, endIndex);
-        return addAnswer(answer);
+        addAnswer(answer);
+        return getAnswerByAnswer(answer);
     }
 
-    private boolean validateExpression(String expression) {
-        int numParenthese = 0;
-        int numQuote = 0;
-        boolean leftQuote = true;
-        // count number of parenthese and number of double quotes
-        for (int i = 0; i < expression.length(); i++) {
-            if (expression.charAt(i) == '(') numParenthese++;
-            else if (expression.charAt(i) == ')') numParenthese--;
-            else if (expression.charAt(i) == '"') {
-                if (leftQuote) numQuote++;
-                else numQuote--;
-                leftQuote = !leftQuote;
-            }
+    private Map<String, Answer> buildOperandMap() {
+        Map<String, Answer> operandMap = new HashMap<String, Answer>();
+        for (int answerID : userAnswers.keySet()) {
+            UserAnswer userAnswer = userAnswers.get(answerID);
+            operandMap.put("#" + answerID, userAnswer.getAnswer());
+            operandMap.put(userAnswer.getName(), userAnswer.getAnswer());
         }
-        return (numParenthese == 0 && numQuote == 0);
-    }
-
-    private String replaceLiterals(String expression,
-            Map<String, String> replace) throws WdkUserException {
-        // literals are marked by double quotes
-        StringBuffer sb = new StringBuffer();
-        int mark = 0; // the first char position of current non-literals
-        int stubID = 0;
-        for (int i = 0; i < expression.length(); i++) {
-            // check if we meet the opening double quote
-            if (expression.charAt(i) == '"') {
-                // output previous non-literal part
-                if (i != 0) sb.append(expression.substring(mark, i));
-
-                int start = i;
-                int end = start;
-                // seek for the closing double quote
-                while (start == end) {
-                    i++;
-                    if (i >= expression.length())
-                        throw new WdkUserException(
-                                "The expression is invalid: " + expression);
-                    // check if it's quote
-                    if (expression.charAt(i) == '"') {
-                        // check if it should be escaped
-                        if (i < expression.length() - 1
-                                && expression.charAt(i + 1) == '"') {
-                            // escaped
-                            i++;
-                        } else {// it's an ending of quote
-                            end = i;
-                        }
-                    }
-                }
-                // now output the stub
-                stubID++;
-                String stub = STUB_PREFIX + Integer.toString(stubID) + "__";
-                // get literals without quote
-                String literal = expression.substring(start + 1, end);
-                replace.put(stub, literal);
-                sb.append(" " + stub + " ");
-                mark = end + 1;
-            }
-        }
-        if (mark < expression.length()) sb.append(expression.substring(mark));
-        return sb.toString();
-    }
-
-    private BooleanQuestionNode parseBlock(String block,
-            Map<String, String> replace)
-            throws WdkUserException, WdkModelException {
-        // check if the expression can be divided further
-        // to do so, just need to check if there're spaces or parenthese
-        int spaces = block.indexOf(" ");
-        int parenthese = block.indexOf("(");
-        if (spaces < 0 && parenthese < 0) {
-            // can't be divided further; the block must be an id or a name of
-            // the Answer; id starts with '#'
-            UserAnswer answer;
-            if (block.charAt(0) == '#') { // an answer id
-                int answerID = Integer.parseInt(block.substring(1));
-                answer = getAnswerByID(answerID);
-            } else { // check if the answer exit
-                try {
-                    answer = getAnswerByName(block);
-                } catch (WdkUserException ex) {
-                    // answer of name *block* not found, then, try replacement
-                    // if not exist either, throw WdkUserException
-                    answer = getAnswerByName(replace.get(block));
-                }
-            }
-            return answer.getLeafQuestion();
-        }
-        // otherwise, need to divide further
-        // check the root operation
-        int pos;
-        if (block.charAt(0) == '(') {
-            int openBlock = 1;
-            pos = 1;
-            // find the paired closing parenthese
-            while (pos < block.length() && openBlock > 0) {
-                if (block.charAt(pos) == '(') openBlock++;
-                else if (block.charAt(pos) == ')') openBlock--;
-                pos++;
-            }
-            if (openBlock > 0)
-                throw new WdkUserException(
-                        "The format of boolean expression is invalid!");
-        } else { // no parenthese, then must be separated with space
-            pos = block.indexOf(" ");
-        }
-        // grab the left piece
-        String leftPiece = block.substring(0, pos).trim();
-        // remove parenthese is necessary
-        int bound = leftPiece.length() - 1;
-        if (leftPiece.charAt(0) == '(' && leftPiece.charAt(bound) == ')')
-            leftPiece = leftPiece.substring(1, bound).trim();
-
-        // grab operation
-        String remain = block.substring(pos + 1).trim();
-        int end = remain.indexOf(" ");
-        String operation = remain.substring(0, end).trim();
-
-        // grab right piece
-        String rightPiece = remain.substring(end + 1).trim();
-        // remove parenthese is necessary
-        bound = rightPiece.length() - 1;
-        if (rightPiece.charAt(0) == '(' && rightPiece.charAt(bound) == ')')
-            rightPiece = rightPiece.substring(1, bound).trim();
-
-        // create BooleanQuestioNode for each piece
-        BooleanQuestionNode firstNode = parseBlock(leftPiece, replace);
-        BooleanQuestionNode secondNode = parseBlock(rightPiece, replace);
-
-        // combine left & right sub-tree to form a new tree
-        return BooleanQuestionNode.combine(firstNode, secondNode, operation,
-                model);
+        return operandMap;
     }
 
     public String toString() {

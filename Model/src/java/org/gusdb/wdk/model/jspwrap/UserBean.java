@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.jspwrap;
 
-import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.User;
 import org.gusdb.wdk.model.UserAnswer;
 import org.gusdb.wdk.model.WdkModelException;
@@ -19,8 +18,8 @@ public class UserBean {
      * 
      * @see org.gusdb.wdk.model.User#addAnswer(org.gusdb.wdk.model.Answer)
      */
-    public UserAnswerBean addAnswer(AnswerBean answer) {
-        return new UserAnswerBean(this.user.addAnswer(answer.answer));
+    public void addAnswer(AnswerBean answer) {
+        user.addAnswer(answer.answer);
     }
 
     /*
@@ -82,6 +81,11 @@ public class UserBean {
         return new UserAnswerBean(this.user.getAnswerByName(name));
     }
 
+    public UserAnswerBean getAnswerByAnswer(AnswerBean answer)
+            throws WdkUserException {
+        return new UserAnswerBean(user.getAnswerByAnswer(answer.answer));
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -122,5 +126,4 @@ public class UserBean {
     public String toString() {
         return this.user.toString();
     }
-
 }
