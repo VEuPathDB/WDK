@@ -35,7 +35,7 @@ public class User {
     public void addAnswer(Answer answer) {
 
         try {
-            getAnswerByAnswer(answer);
+            getAnswerByAnswerFuzzy(answer);
             // answer exists, return
             return;
         } catch (WdkUserException ex) {
@@ -94,7 +94,13 @@ public class User {
                 + " does not exist!");
     }
 
+    public UserAnswer getAnswerByAnswerFuzzy(Answer answer) throws WdkUserException {
+	return getAnswerByAnswer(answer, true);
+    }
     public UserAnswer getAnswerByAnswer(Answer answer) throws WdkUserException {
+	return getAnswerByAnswer(answer, false);
+    }
+    private UserAnswer getAnswerByAnswer(Answer answer, boolean ignorePage) throws WdkUserException {
         if (userAnswers != null) {
             // check if the answer exists or not
             for (UserAnswer uans : userAnswers.values()) {
@@ -105,8 +111,8 @@ public class User {
                     continue;
 
                 // check paging number
-                if (ans.startRecordInstanceI != answer.startRecordInstanceI
-                        || ans.endRecordInstanceI != answer.endRecordInstanceI)
+                if (!ignorePage && (ans.startRecordInstanceI != answer.startRecordInstanceI
+				    || ans.endRecordInstanceI != answer.endRecordInstanceI))
                     continue;
 
                 // check parameters
