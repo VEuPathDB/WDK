@@ -3,6 +3,10 @@ package org.gusdb.wdk.model;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Vector;
+import java.util.List;
+import java.util.Collections;
+import java.util.Arrays;
 
 /**
  * A wdk model user. The WdkModel has a list of Users, and maintains unique
@@ -75,6 +79,40 @@ public class User {
         UserAnswer[] answers = new UserAnswer[userAnswers.size()];
         userAnswers.values().toArray(answers);
         return answers;
+    }
+
+    public Map getRecordAnswerMap() {
+	Map recAnsMapMap = new HashMap<String, Map>();
+	for (int ansID : userAnswers.keySet()) {
+	    UserAnswer usrAns = userAnswers.get(new Integer(ansID));
+	    String rec = usrAns.getAnswer().getQuestion().getRecordClass().getFullName();
+	    if (recAnsMapMap.get(rec) == null) {
+		recAnsMapMap.put(rec, new HashMap<Integer, UserAnswer>());
+	    }
+	    Map recAnsMapMap1 = (Map)recAnsMapMap.get(rec);
+	    recAnsMapMap1.put(new Integer(ansID), usrAns);
+	}
+
+	//wants answers in sorted arrays
+	Map recAnsMap = new HashMap<String, UserAnswer[]>();
+	for (Object r : recAnsMapMap.keySet()) {
+	    String rec = (String)r;
+	    Map recAnsMapMap1 = (Map)recAnsMapMap.get(rec);
+	    List ansIDList = Arrays.asList(recAnsMapMap1.keySet().toArray());
+	    Collections.sort(ansIDList);
+	    Collections.reverse(ansIDList);
+	    Object[] sortedAnsIDs = ansIDList.toArray();
+	    Vector v = new Vector();
+	    for (int i=0; i<sortedAnsIDs.length; i++) {
+		v.add(recAnsMapMap1.get((Integer)sortedAnsIDs[i]));
+	    }
+	    UserAnswer[] sortedUsrAns = new UserAnswer[v.size()];
+	    v.copyInto(sortedUsrAns);
+
+	    recAnsMap.put(rec, sortedUsrAns);
+	}
+
+	return recAnsMap;
     }
 
     public UserAnswer getAnswerByID(int answerID) throws WdkUserException {
