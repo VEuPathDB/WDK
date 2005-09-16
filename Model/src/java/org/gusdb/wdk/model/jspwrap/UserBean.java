@@ -5,6 +5,9 @@ import org.gusdb.wdk.model.UserAnswer;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 
+import java.util.Map;
+import java.util.HashMap;
+
 public class UserBean {
 
     User user;
@@ -98,6 +101,30 @@ public class UserBean {
             answerBeans[i] = new UserAnswerBean(answers[i]);
         }
         return answerBeans;
+    }
+
+    public int getAnswerCount() {
+	return user.getAnswers().length;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.User#getRecordAnswerMap()
+     */
+    public Map getRecordAnswerMap() {
+        Map recUsrAnsMap = user.getRecordAnswerMap();
+	Map recUsrAnsBeanMap = new HashMap<String, UserAnswerBean[]>();
+	for (Object r : recUsrAnsMap.keySet()) {
+	    String rec = (String)r;
+	    UserAnswer[] usrAns = (UserAnswer[])recUsrAnsMap.get(rec);
+	    UserAnswerBean[] answerBeans = new UserAnswerBean[usrAns.length];
+	    for (int i = 0; i < usrAns.length; i++) {
+		answerBeans[i] = new UserAnswerBean(usrAns[i]);
+	    }
+	    recUsrAnsBeanMap.put(rec, answerBeans);
+	}
+        return recUsrAnsBeanMap;
     }
 
     /*
