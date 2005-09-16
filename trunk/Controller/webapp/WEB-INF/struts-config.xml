@@ -127,12 +127,25 @@
       <forward name="get_download_result" path="/downloadResult.jsp"/>
     </action>
     <action
+      path="/downloadHistoryAnswer"
+      type="org.gusdb.wdk.controller.action.DownloadHistoryAnswerAction"
+      scope="request">
+      <forward name="download_history_answer" path="/downloadConfig.jsp"/>
+    </action>
+    <action
+      path="/deleteHistoryAnswer"
+      type="org.gusdb.wdk.controller.action.DeleteHistoryAnswerAction"
+      scope="request">
+      <forward name="delete_history_answer" path="/queryHistory.jsp"/>
+    </action>
+    <action
       path="/processBooleanExpression"
       type="org.gusdb.wdk.controller.action.ProcessBooleanExpressionAction"
       name="booleanExpressionForm"
       scope="request">
       <forward name="process_boolean_expression" path="/queryHistory.jsp"/>
     </action>
+
   </action-mappings>
 
   <message-resources parameter="org.gusdb.wdk.view.DefaultViewResources" null="false"/>

@@ -8,15 +8,17 @@
 
 <site:header banner="History" />
 
-<hr>
+<c:choose>
+  <c:when test="${userAnswers[0] == null}">
 
-<table>
-    <tr><td>Answer History (UserID = ${wdkUser.userID}</td></tr>
-</table>
+<table align="center"><tr><td> *** your history is empty *** </td></tr></table>
+
+  </c:when>
+  <c:otherwise>
 
 <!-- show user answers one per line -->
 <c:set var="NAME_TRUNC" value="80"/>
-<table>
+<table border="0" cellpadding="2">
     <tr><th>ID</th> <th>Name</th> <th>Report</th> <th>Download</th> <th>&nbsp;</th></tr>
     <c:forEach items="${userAnswers}" var="ua">
       <jsp:setProperty name="ua" property="nameTruncateTo" value="${NAME_TRUNC}"/>
@@ -27,15 +29,26 @@
                 </c:when>
                 <c:otherwise>${ua.name}</c:otherwise>
               </c:choose></td>
-          <td><a href='<c:url value="/showAnswer.jsp"/>'>View this answer</a></td>
-          <td><a href='<c:url value="/downloadAnswer.jsp"/>'>Download this answer</a></td>
-          <td>delete</td>
+          <td><a href="showSummary.do?user_answer_id=${ua.answerID}">View this answer</a></td>
+          <td><a href="downloadHistoryAnswer.do?user_answer_id=${ua.answerID}">Download this answer</a></td>
+          <td><a href="deleteHistoryAnswer.do?user_answer_id=${ua.answerID}">delete</a></td>
       </tr>
     </c:forEach>
+
+    <tr><td colspan="2" align="left">
+          <br>
+          <html:form method="get" action="/processBooleanExpression.do">
+            Combine answers in the query history:
+            <html:text property="booleanExpression" value=""/> (eg. "#1 or (#2 and #3)")
+            <br>
+            <html:reset property="reset" value="Clear Expression"/>
+            <html:submit property="submit" value="Get Combined Answer"/>
+          </html:form>
+        </td>
+        <td colspan="3"></td></tr>
 </table>
 
-<html:form method="get" action="/processBooleanExpression.do">
-    <html:text property="booleanExpression" value="#1 or (#2 and $3)"/>
-</html:form>
+  </c:otherwise>
+</c:choose>
 
 <site:footer/>

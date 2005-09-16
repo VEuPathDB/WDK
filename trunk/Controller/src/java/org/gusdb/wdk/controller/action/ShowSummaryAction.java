@@ -41,27 +41,39 @@ public class ShowSummaryAction extends Action {
 				 ActionForm form,
 				 HttpServletRequest request,
 				 HttpServletResponse response) throws Exception {
-	//why I am not able to get back my question from the session? use the form for  now
-	//QuestionBean wdkQuestion = (QuestionBean)request.getSession().getAttribute(CConstants.WDK_QUESTION_KEY);
-        QuestionForm qForm = (QuestionForm)form;
-	QuestionBean wdkQuestion = qForm.getQuestion();
 
-	//TRICKY: this is for action forward from ProcessQuestionSetsFlatAction
-	qForm.cleanup();
-		    
-	Map params = handleMultiPickParams(new java.util.HashMap(qForm.getMyProps()));
-		
-	AnswerBean wdkAnswer = summaryPaging(request, wdkQuestion, params);
+	UserBean wdkUser = null;
+	AnswerBean wdkAnswer = null;
+    
+	String ua_id_str = request.getParameter(CConstants.USER_ANSWER_ID);
+	if (ua_id_str != null) {
+	    int ua_id = Integer.parseInt(ua_id_str);
+	    wdkUser = (UserBean)request.getSession().getAttribute(CConstants.WDK_USER_KEY);
+	    wdkAnswer = wdkUser.getAnswerByID(ua_id).getAnswer();
+	    summaryPaging(request, null, null, wdkAnswer);
+	} else {
+	    //why I am not able to get back my question from the session? use the form for  now
+	    //QuestionBean wdkQuestion = (QuestionBean)request.getSession().getAttribute(CConstants.WDK_QUESTION_KEY);
+	    QuestionForm qForm = (QuestionForm)form;
+	    QuestionBean wdkQuestion = qForm.getQuestion();
+
+	    //TRICKY: this is for action forward from ProcessQuestionSetsFlatAction
+	    qForm.cleanup();
+
+	    Map params = handleMultiPickParams(new java.util.HashMap(qForm.getMyProps()));
+	    wdkAnswer = summaryPaging(request, wdkQuestion, params);
+
+	    request.getSession().setAttribute(CConstants.WDK_QUESTION_PARAMS_KEY, params);
+
+	    //add UserAnswerBean to UserAnswer for query history
+	    wdkUser = (UserBean)request.getSession().getAttribute(CConstants.WDK_USER_KEY);
+	    wdkUser.addAnswer(wdkAnswer);
+	}
 
 	//clear boolean root from session to prevent interference
 	request.getSession().setAttribute(CConstants.CURRENT_BOOLEAN_ROOT_KEY, null);
 
 	request.getSession().setAttribute(CConstants.WDK_ANSWER_KEY, wdkAnswer);
-	request.getSession().setAttribute(CConstants.WDK_QUESTION_PARAMS_KEY, params);
-
-	//add UserAnswerBean to UserAnswer for query history
-	UserBean wdkUser = (UserBean)request.getSession().getAttribute(CConstants.WDK_USER_KEY);
-	wdkUser.addAnswer(wdkAnswer);
 
 	return getForward(wdkAnswer, mapping);
     }
@@ -117,27 +129,37 @@ public class ShowSummaryAction extends Action {
     protected AnswerBean summaryPaging (HttpServletRequest request, Object answerMaker, Map params)
 	throws WdkModelException, WdkUserException
     {
+	return summaryPaging (request, answerMaker, params, null);
+    }
+
+    private AnswerBean summaryPaging (HttpServletRequest request, Object answerMaker, Map params, AnswerBean wdkAnswer)
+	throws WdkModelException, WdkUserException
+    {
 	int start = 1;
 	if (request.getParameter("pager.offset") != null) {
 	    start = Integer.parseInt(request.getParameter("pager.offset"));
-	    start++;  //following Adrian's lead on this. (find out why it is necessary)
+	    start++;
 	}
 	int pageSize = 20;
 	if (request.getParameter("pageSize") != null) {
-	    start = Integer.parseInt(request.getParameter("pageSize"));
+	    pageSize = Integer.parseInt(request.getParameter("pageSize"));
 	}
 
 	if (start <1) { start = 1; } 
 	int end = start + pageSize-1;	
 
-	AnswerBean wdkAnswer = null;
-	if (answerMaker instanceof org.gusdb.wdk.model.jspwrap.QuestionBean) {
-	    wdkAnswer = ((QuestionBean)answerMaker).makeAnswer(params, start, end);
-	} else if (answerMaker instanceof org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean) {
-	    wdkAnswer = ((BooleanQuestionNodeBean)answerMaker).makeAnswer(start, end);
+	if (wdkAnswer == null) {
+	    if (answerMaker instanceof org.gusdb.wdk.model.jspwrap.QuestionBean) {
+		wdkAnswer = ((QuestionBean)answerMaker).makeAnswer(params, start, end);
+	    } else if (answerMaker instanceof org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean) {
+		wdkAnswer = ((BooleanQuestionNodeBean)answerMaker).makeAnswer(start, end);
+	    } else {
+		throw new RuntimeException("unexpected answerMaker: " + answerMaker);
+	    }
 	} else {
-	    throw new RuntimeException("unexpected answerMaker: " + answerMaker);
+	    wdkAnswer.resetAnswerRowCursor();
 	}
+
 	int totalSize = wdkAnswer.getResultSize();
 
 	if (end > totalSize) { end = totalSize; }

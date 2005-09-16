@@ -16,8 +16,8 @@ public class UserAnswerBean {
     /* (non-Javadoc)
      * @see org.gusdb.wdk.model.UserAnswer#getAnswer()
      */
-    public Answer getAnswer() {
-        return this.userAnswer.getAnswer();
+    public AnswerBean getAnswer() {
+        return new AnswerBean(this.userAnswer.getAnswer());
     }
 
     /* (non-Javadoc)

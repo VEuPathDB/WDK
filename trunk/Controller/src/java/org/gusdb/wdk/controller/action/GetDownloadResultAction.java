@@ -77,7 +77,7 @@ public class GetDownloadResultAction extends Action {
 	    downloadResult.append(newLine);
 	}
 
-	//wdkAnswer.resetAnswerRowCursor();
+	wdkAnswer.resetAnswerRowCursor();
 	int pageSize = 100;
 	for (int i=1; i<=resultSize; i+=pageSize) {
 	    int j = i+pageSize;

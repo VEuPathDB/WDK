@@ -18,6 +18,7 @@ import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.BooleanQuestionLeafBean;
 import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
 import org.gusdb.wdk.model.BooleanQuery;
+import org.gusdb.wdk.model.jspwrap.UserBean;
 
 import java.util.Vector;
 import java.util.Map;
@@ -73,6 +74,10 @@ public class GetBooleanAnswerAction extends ShowSummaryAction {
 
 	request.getSession().setAttribute(CConstants.WDK_ANSWER_KEY, answer);
 	request.getSession().setAttribute(CConstants.BOOLEAN_QUESTION_FORM_KEY, bqf);
+
+	//add UserAnswerBean to UserAnswer for query history
+	UserBean wdkUser = (UserBean)request.getSession().getAttribute(CConstants.WDK_USER_KEY);
+	wdkUser.addAnswer(answer);
 
 	/*DEBUG
 	  System.err.println("DEBUG GBAA: reset cursor on boolean answer before listing");

@@ -42,6 +42,8 @@ public class CConstants {
     public static final String GET_BOOLEAN_ANSWER_MAPKEY = "get_boolean_answer";
     public static final String CONFIG_DOWNLOAD_MAPKEY = "config_download";
     public static final String GET_DOWNLOAD_RESULT_MAPKEY = "get_download_result";
+    public static final String DOWNLOAD_HISTORY_ANSWER_MAPKEY = "download_history_answer";
+    public static final String DELETE_HISTORY_ANSWER_MAPKEY = "delete_history_answer";
     public static final String PROCESS_BOOLEAN_EXPRESSION_MAPKEY = "process_boolean_expression";
 
     //button click detectors, used in action, action forms, and jsp pages
@@ -55,6 +57,7 @@ public class CConstants {
     public static final String DOWNLOAD_INCLUDE_HEADER = "includeHeader"; //match downloadConfig.jsp
     public static final String YES = "yes"; //match downloadConfig.jsp
     public static final String ALL = "all"; //match downloadConfig.jsp
+    public static final String USER_ANSWER_ID = "user_answer_id"; //match queryHistory.jsp
 
     //used in action, action forms, and jsp pages
     public static final String NEXT_QUESTION_OPERAND_SUFFIX = "_nextQuestionOperand"; //match WEB-INF/includes/booleanQuestionNode.jsp
