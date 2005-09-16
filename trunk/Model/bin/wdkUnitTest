@@ -16,13 +16,25 @@ while (my $nextFileName = readdir(DATADIR)){
     }
 }
 
+my $sysargs = "";
 my $args = "";
 foreach my $arg (@ARGV) {
-    $args .= ($arg =~ /\-/ ? " $arg" : " \"$arg\"");
+    # $args .= ($arg =~ /\-/ ? " $arg" : " \"$arg\"");
+
+    if ($arg =~ /\-/) {
+        $args .= " $arg";
+        $arg =~ s/\-/\-D/g;
+        $sysargs .= " $arg=";
+    } else {
+        $args .= " \"$arg\"";
+        $sysargs .= "\"$arg\"";
+    }
 }
+#print "$args\n";
 
+my $cmd = "java -DcmdName=wdkUnitTest -DconfigDir=$GUS_HOME/config -DschemaFile=$GUS_HOME/lib/rng/wdkModel.rng -DsanitySchemaFile=$GUS_HOME/lib/rng/sanityModel.rng $sysargs -cp $CLASSPATH org.gusdb.wdk.model.test.TestUtility $args";
 
-my $cmd = "java -DconfigDir=$GUS_HOME/config -DschemaFile=$GUS_HOME/lib/rng/wdkModel.rng -DsanitySchemaFile=$GUS_HOME/lib/rng/sanityModel.rng -Dmodel=toyModel -classpath $CLASSPATH org.gusdb.wdk.model.test/TestUtility";
+print "$cmd\n";
 
 system($cmd);
 
