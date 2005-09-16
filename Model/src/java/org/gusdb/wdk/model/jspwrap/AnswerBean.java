@@ -28,6 +28,10 @@ public class AnswerBean {
 	return answer.getDisplayParams();
     }
 
+    public Map getInternalParams() {
+	return answer.getParams();
+    }
+
     /**
      * @return opertation for boolean answer
      */
