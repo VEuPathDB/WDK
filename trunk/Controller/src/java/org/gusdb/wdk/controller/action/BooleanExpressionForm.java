@@ -12,7 +12,11 @@ public class BooleanExpressionForm extends ActionForm {
 
     private String booleanExpression = null;
 
-    void setBooleanExpression(String be) { booleanExpression = be; }
+    public void setBooleanExpression(String be) {
+	booleanExpression = be;
+    }
 
-    String getBooleanExpression() { return booleanExpression; }
+    public String getBooleanExpression() {
+	return booleanExpression;
+    }
 }

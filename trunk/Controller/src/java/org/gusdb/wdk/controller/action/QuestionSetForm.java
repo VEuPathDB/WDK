@@ -14,7 +14,6 @@ public class QuestionSetForm extends ActionForm {
 
     public QuestionSetForm () {
 	super();
-	System.err.println("DEBUG: making a QuestionSetForm");
     }
 
     private String qFullName = null;

@@ -46,9 +46,12 @@ public class ShowSummaryAction extends Action {
 	AnswerBean wdkAnswer = null;
     
 	String ua_id_str = request.getParameter(CConstants.USER_ANSWER_ID);
+	if (ua_id_str == null) {
+	    ua_id_str = (String)request.getAttribute(CConstants.USER_ANSWER_ID);
+	}
 	if (ua_id_str != null) {
 	    int ua_id = Integer.parseInt(ua_id_str);
-	    wdkUser = (UserBean)request.getSession().getAttribute(CConstants.WDK_USER_KEY);
+ 	    wdkUser = (UserBean)request.getSession().getAttribute(CConstants.WDK_USER_KEY);
 	    wdkAnswer = wdkUser.getAnswerByID(ua_id).getAnswer();
 	    summaryPaging(request, null, null, wdkAnswer);
 	} else {
