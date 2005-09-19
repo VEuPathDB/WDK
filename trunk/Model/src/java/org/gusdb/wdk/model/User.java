@@ -83,6 +83,9 @@ public class User {
 
     public Map getRecordAnswerMap() {
 	Map recAnsMapMap = new HashMap<String, Map>();
+	if (userAnswers == null || userAnswers.size() == 0)
+            return recAnsMapMap;
+
 	for (int ansID : userAnswers.keySet()) {
 	    UserAnswer usrAns = userAnswers.get(new Integer(ansID));
 	    String rec = usrAns.getAnswer().getQuestion().getRecordClass().getFullName();
