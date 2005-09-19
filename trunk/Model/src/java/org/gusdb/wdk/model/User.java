@@ -39,7 +39,7 @@ public class User {
     public void addAnswer(Answer answer) {
 
         try {
-            getAnswerByAnswerFuzzy(answer);
+            getAnswerByAnswer(answer, false);
             // answer exists, return
             return;
         } catch (WdkUserException ex) {
@@ -221,7 +221,7 @@ public class User {
 
         // construct BooleanQuestionNode
         BooleanExpression be = new BooleanExpression(model);
-        BooleanQuestionNode root = be.combineAnswers(sb.toString(), operandMap);
+        BooleanQuestionNode root = be.parseExpression(sb.toString(), operandMap);
 
         // create a new UserAnswer
         Answer answer = root.makeAnswer(startIndex, endIndex);
@@ -236,7 +236,7 @@ public class User {
 
         // construct BooleanQuestionNode
         BooleanExpression be = new BooleanExpression(model);
-        BooleanQuestionNode root = be.combineAnswers(expression, operandMap);
+        BooleanQuestionNode root = be.parseExpression(expression, operandMap);
 
         // make answer
         Answer answer = root.makeAnswer(startIndex, endIndex);

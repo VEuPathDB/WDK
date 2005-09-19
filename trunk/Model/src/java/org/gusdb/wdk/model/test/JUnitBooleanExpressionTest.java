@@ -3,8 +3,12 @@
  */
 package org.gusdb.wdk.model.test;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.BooleanExpression;
@@ -37,7 +41,7 @@ public class JUnitBooleanExpressionTest extends TestCase {
 
     public static Test suite() {
         TestSuite suite = new TestSuite();
-        suite.addTest(new JUnitBooleanExpressionTest("testCombineAnswers"));
+        suite.addTest(new JUnitBooleanExpressionTest("testParseExpression"));
         return suite;
     }
 
@@ -77,9 +81,35 @@ public class JUnitBooleanExpressionTest extends TestCase {
 
         assertTrue(sqs.length > 0);
 
-        operandMap = new HashMap<String, Answer>();
         int idIndex = 0;
+        // get a set of SanityQuestion with same type
+        Map<String, Set<SanityQuestion>> sqSets = new HashMap<String, Set<SanityQuestion>>();
+        Set<SanityQuestion> sqSet = null;
         for (SanityQuestion sq : sqs) {
+            // get model question from sanity question
+            Reference questionRef = new Reference(sq.getRef());
+            QuestionSet questionSet = wdkModel.getQuestionSet(questionRef.getSetName());
+            Question question = questionSet.getQuestion(questionRef.getElementName());
+            String type = question.getRecordClass().getFullName();
+
+            if (!sqSets.containsKey(type))
+                sqSets.put(type, new HashSet<SanityQuestion>());
+            sqSet = sqSets.get(type);
+            sqSet.add(sq);
+        }
+
+        // create Answer list using the biggest sanity question set
+        int max = sqSet.size();
+        for (Set<SanityQuestion> subSet : sqSets.values()) {
+            if (subSet.size() > max) {
+                sqSet = subSet;
+                max = subSet.size();
+            }
+        }
+
+        // create answers for the biggest sanity question set
+        operandMap = new HashMap<String, Answer>();
+        for (SanityQuestion sq : sqSet) {
             // get model question from sanity question
             Reference questionRef = new Reference(sq.getRef());
             QuestionSet questionSet = wdkModel.getQuestionSet(questionRef.getSetName());
@@ -91,7 +121,8 @@ public class JUnitBooleanExpressionTest extends TestCase {
             // compose answer id and name
             idIndex++;
             String answerID = "#" + idIndex;
-            String answerName = "Test_Answer_" + idIndex;
+            String answerName = ((idIndex % 2 == 1) ? "ans_" : "ans (");
+            answerName += idIndex;
             operandMap.put(answerID, answer);
             operandMap.put(answerName, answer);
         }
@@ -103,14 +134,16 @@ public class JUnitBooleanExpressionTest extends TestCase {
      * 'org.gusdb.wdk.model.BooleanExpression.combineAnswers(String, Map<String,
      * Answer>)'
      */
-    public void testCombineAnswers() {
+    public void testParseExpression() {
         BooleanExpression be = new BooleanExpression(wdkModel);
 
-        String[] testCases = { "#1 UNION #2", "#1 INTERSECT (#2 MINUS #3)" };
+        String[] valid = { "#1 UNION #2", "#1 INTERSECT (#2 MINUS #3)",
+                "(#1 INTERSECT #3)INTERSECT(#2 INTERSECT #4)",
+                "(#1) UNION (#3)", "ans_1 UNION \"ans (2\"" };
 
-        for (String expression : testCases) {
+        for (String expression : valid) {
             try {
-                BooleanQuestionNode bqn = be.combineAnswers(expression,
+                BooleanQuestionNode bqn = be.parseExpression(expression,
                         operandMap);
 
                 assertNotNull(bqn);
@@ -120,12 +153,36 @@ public class JUnitBooleanExpressionTest extends TestCase {
 
                 assertNotNull(answer);
 
-                // System.out.println(answer.printAsTable());
+                // TEST
+                //System.out.println(answer.printAsTable());
             } catch (Exception ex) {
                 // TODO Auto-generated catch block
                 ex.printStackTrace();
                 // System.err.println(ex);
                 assertTrue(false);
+            }
+        }
+
+        String[] invalid = { "#0 UNION #2", "#1 INTERSECT (#2 MINUS #3",
+                "(#1 INTERSECT) #3", "#1(UNION #2)",
+                "ans_0 UNION #1", "\"ans_1 UNION \"ans (2\"" };
+
+        for (String expression : invalid) {
+            try {
+                BooleanQuestionNode bqn = be.parseExpression(expression,
+                        operandMap);
+
+                assertNotNull(bqn);
+
+                // make answer
+                bqn.makeAnswer(1, 20);
+
+                assertTrue(false);
+            } catch (Exception ex) {
+                // TODO Auto-generated catch block
+                //ex.printStackTrace();
+                 System.err.println(ex + " - expected.");
+                assertTrue(true);
             }
         }
     }
