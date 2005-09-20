@@ -45,7 +45,7 @@
       <property name="component" value="Model"/>
     </ant>
     <echo message="." />
-    <echo message="IMPORTANT REMINDER: If you have not already done so, please copy any .jar needed for database connectivity (such as the oracle file classes12.jar) into ${targetDir}/lib/java.  The WDK does not supply these.  See the installation instructions available at www.gusdb.org/wdk for details."  />
+    <echo message="IMPORTANT REMINDER: If you have not already done so, please copy any .jar needed for database connectivity (such as the oracle file ojdbc14.jar) into ${targetDir}/lib/java/db_driver.  The WDK does not supply these.  See the installation instructions available at www.gusdb.org/wdk for details."  />
     <echo message="." />
    
   </target>  
@@ -63,6 +63,9 @@
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
   <target name="WDK-WebInstallation" depends="WebitePlusGusHome">
+    <echo message="." />
+    <echo message="IMPORTANT REMINDER: If you have not already done so, please copy any .jar needed for database connectivity (such as the oracle file ojdbc14.jar) from ${targetDir}/lib/java/db_driver into your webapp server's designated place (such as common/lib for Tomcat). See the installation instructions available at www.gusdb.org/wdk for details."  />
+    <echo message="." />
  </target>
 
   <target name="WDK/Controller-WebInstallation" depends="ProjectTree">

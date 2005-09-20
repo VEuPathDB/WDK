@@ -23,7 +23,7 @@ import java.util.Hashtable;
  * Tree is composed entirely of the RnaQuestions.ByNumSeqs Questions and
  * looks like this:
  *
- *       q1 subtract
+ *       q1 minus
  *       /     \
  *    q2union  q3union
  *    /  \     / \
@@ -75,7 +75,7 @@ public class TestBooleanTree {
 
 	//root boolean node
 	Question q1 = model.makeBooleanQuestion(q7.getRecordClass());
-	Hashtable q1values = makeBooleanValues("Subtract");
+	Hashtable q1values = makeBooleanValues("Minus");
 
 	BooleanQuestionNode bqn4 = new BooleanQuestionNode(q4, null);
 	BooleanQuestionNode bqn5 = new BooleanQuestionNode(q5, null);
