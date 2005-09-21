@@ -24,6 +24,7 @@ import org.gusdb.wdk.controller.CConstants;
 public class QuestionForm extends QuestionSetForm {
 
     private QuestionBean question = null;
+    private boolean validating = true;
 
     public void reset() {
 	super.reset();
@@ -37,6 +38,7 @@ public class QuestionForm extends QuestionSetForm {
     public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 
 	ActionErrors errors = new ActionErrors();
+	if (!validating) { return errors; }
 
 	String clicked = request.getParameter(CConstants.PQ_SUBMIT_KEY);
 	if (clicked != null && clicked.equals(CConstants.PQ_SUBMIT_EXPAND_QUERY)) {
@@ -92,4 +94,6 @@ public class QuestionForm extends QuestionSetForm {
 
     public void setQuestion(QuestionBean s) { question = s; }
     public QuestionBean getQuestion() { return question; }
+
+    public void setNonValidating() { validating = false; }
 }
