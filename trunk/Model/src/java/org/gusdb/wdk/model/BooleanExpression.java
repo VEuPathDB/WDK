@@ -41,11 +41,12 @@ public class BooleanExpression {
      * @param expression
      * @param operandMap
      * @return
+     * @throws WdkUserException
      * @throws WdkModelException
-     * @throws WdkParseException
      */
     public BooleanQuestionNode parseExpression(String expression,
-            Map<String, Answer> operandMap) throws WdkModelException {
+            Map<String, Answer> operandMap) throws WdkUserException, WdkModelException {
+	expression = internalize(expression);
         this.expression = expression;
         // TEST
         System.out.println("Expression: " + expression);
@@ -60,11 +61,14 @@ public class BooleanExpression {
             if (expression.charAt(i) == '(') count++;
             else if (expression.charAt(i) == ')') count--;
             if (count < 0)
-                throw new WdkModelException("Bad parentheses: "
+                throw new WdkUserException("Bad parentheses: "
                         + this.expression);
         }
         if (count != 0)
-            throw new WdkModelException("Bad parentheses: " + this.expression);
+            throw new WdkUserException("Bad parentheses: " + this.expression);
+
+	//disallow non upper case "and", "or" and "not" outside of literals
+	checkOperatorCases(expression);
 
         // insert a space before open parenthese; it's used when getting
         // operator
@@ -78,7 +82,7 @@ public class BooleanExpression {
     }
 
     private String replaceLiterals(String expression,
-            Map<String, String> replace) throws WdkModelException {
+            Map<String, String> replace) throws WdkUserException {
         // split the expression by quotes, and literals are the even items. If
         // the expression ends with a quote, the String.split() won't be able to
         // separate an extra part beyond the last quote. I have to append a
@@ -90,7 +94,7 @@ public class BooleanExpression {
 
         // validate the expression by number of quotes; there are odd parts
         if (parts.length % 2 == 0)
-            throw new WdkModelException("Odd number of quotes in: "
+            throw new WdkUserException("Odd number of quotes in: "
                     + this.expression);
 
         // replace literals with stub
@@ -107,7 +111,7 @@ public class BooleanExpression {
 
     private BooleanQuestionNode parseBlock(String block,
             Map<String, String> replace, Map<String, Answer> operandMap)
-            throws WdkModelException {
+            throws WdkUserException, WdkModelException {
         // check if the expression can be divided further
         // to do so, just need to check if there're spaces
         int spaces = block.indexOf(" ");
@@ -135,7 +139,7 @@ public class BooleanExpression {
 
     private BooleanQuestionNode buildLeaf(String block,
             Map<String, String> replace, Map<String, Answer> operandMap)
-            throws WdkModelException {
+            throws WdkUserException {
         // the block can be an id, a name, or a stub of the name the Answer;
         // id starts with '#', stub starts with stub_prefix
         Answer answer = operandMap.get(block);
@@ -144,13 +148,13 @@ public class BooleanExpression {
 
             // validate name
             if (name == null)
-                throw new WdkModelException("Invalid name of the answer: "
+                throw new WdkUserException("Invalid name of the answer: "
                         + block);
 
             answer = operandMap.get(name);
 
             if (answer == null)
-                throw new WdkModelException("Invalid name of the answer: "
+                throw new WdkUserException("Invalid name of the answer: "
                         + name);
         }
 
@@ -167,9 +171,9 @@ public class BooleanExpression {
      * 
      * @param block
      * @return
-     * @throws WdkModelException
+     * @throws WdkUserException
      */
-    private String[] getTriplet(String block) throws WdkModelException {
+    private String[] getTriplet(String block) throws WdkUserException {
         int pos;
 
         // get the left part
@@ -181,12 +185,12 @@ public class BooleanExpression {
                 if (block.charAt(pos) == '(') parenthese++;
                 else if (block.charAt(pos) == ')') parenthese--;
                 if (parenthese < 0)
-                    throw new WdkModelException("Bad parentheses: "
+                    throw new WdkUserException("Bad parentheses: "
                             + expression);
                 pos++;
             }
             if (parenthese != 0)
-                throw new WdkModelException("Bad parentheses: " + expression);
+                throw new WdkUserException("Bad parentheses: " + expression);
         } else { // no parenthese, then must be separated with space
             pos = block.indexOf(" ");
         }
@@ -204,7 +208,7 @@ public class BooleanExpression {
         String remain = block.substring(pos).trim();
         int end = remain.indexOf(" ");
         if (end < 0)
-            throw new WdkModelException("Incomplete expression: " + expression);
+            throw new WdkUserException("Incomplete expression: " + expression);
         String operator = remain.substring(0, end).trim();
 
         // grab right piece
@@ -215,4 +219,24 @@ public class BooleanExpression {
             right = right.substring(1, bound).trim();
         return new String[] { left, operator, right };
     }
+
+    private String internalize(String expression) {
+	String intExp = expression.replaceAll(" AND ", " INTERSECT ");
+	intExp = intExp.replaceAll(" OR ", " UNION ");
+        intExp = intExp.replaceAll(" NOT ", " MINUS ");
+	return intExp;
+    }
+
+    private void checkOperatorCases (String exp) throws WdkUserException {
+	if (exp.matches(".* (and|anD|aNd|aND|And|AnD|ANd) .*")) {
+	    throw new WdkUserException("Bad expression with non all-capital AND: " + expression);
+	}
+	if (exp.matches(".* (or|oR|Or) .*")) {
+	    throw new WdkUserException("Bad expression with non all-capital OR: " + expression);
+	}
+	if (exp.matches(".* (not|noT|nOt|nOT|Not|NoT|NOt) .*")) {
+	    throw new WdkUserException("Bad expression with non all-capital NOT: " + expression);
+	}
+    }
+
 }

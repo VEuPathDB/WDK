@@ -59,17 +59,17 @@
       <c:set var="i" value="${i+1}"/>
       </c:forEach>
 
-      <tr><td colspan="2" align="left">
+      <tr><td colspan="4" align="left">
             <br>
             <html:form method="get" action="/processBooleanExpression.do">
               Combine answers in the query history:
-              <html:text property="booleanExpression" value=""/> (eg. "#1 OR (#2 AND #3)")
-              <br>
+              <html:text property="booleanExpression" value=""/>
+                <font size="-1">(eg. "#1 OR (#4 AND #3 NOT #2)", <a href="http://www.ncbi.nlm.nih.gov/entrez/query/static/help/helpdoc.html#Boolean_Operators">see NCBI</a>)</font><br>
               <html:reset property="reset" value="Clear Expression"/>
               <html:submit property="submit" value="Get Combined Answer"/>
             </html:form>
           </td>
-          <td colspan="3"></td></tr>
+          <td colspan="1"></td></tr>
   </table>
 
 </c:forEach>
