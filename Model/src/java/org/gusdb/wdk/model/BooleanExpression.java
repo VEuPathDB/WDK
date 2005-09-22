@@ -49,7 +49,7 @@ public class BooleanExpression {
 	expression = internalize(expression);
         this.expression = expression;
         // TEST
-        System.out.println("Expression: " + expression);
+        //System.out.println("Expression: " + expression);
 
         // replace the literals in the expression
         Map<String, String> replace = new HashMap<String, String>();

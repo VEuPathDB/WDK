@@ -5,12 +5,14 @@ package org.gusdb.wdk.model.test;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
 import junit.framework.Test;
 import junit.framework.TestResult;
 import junit.framework.TestSuite;
+import junit.textui.TestRunner;
 
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
@@ -35,7 +37,28 @@ public class TestUtility {
     protected Random rand;
 
     public static void main(String[] args) {
-        junit.textui.TestRunner.run(suite());
+        String cmdName = System.getProperty("cmdName");
+
+        Options options = declareOptions();
+        CommandLine cmdLine = parseOptions(cmdName, options, args);
+
+        if (!cmdLine.hasOption("model")) {
+            usage(cmdName, options);
+        }
+
+        if (!cmdLine.hasOption("testCase")) {
+            // no test case assigned, run all tests
+            TestRunner.run(suite());
+        } else {
+            String testCase = cmdLine.getOptionValue("testCase");
+            if (testCase.equalsIgnoreCase("JUnitUserTest")) {
+                TestRunner.run(JUnitUserTest.suite());
+            } else if (testCase.equalsIgnoreCase("JUnitBooleanExpressionTest")) {
+                TestRunner.run(JUnitBooleanExpressionTest.suite());
+            } else { // unknow test cases
+                System.err.println("Unknown test case: " + testCase);
+            }
+        }
     }
 
     public static Test suite() {
@@ -163,22 +186,39 @@ public class TestUtility {
             Option option = (Option) objOption;
             if (option.isRequired()) sb.append(" -");
             else sb.append(" [-");
-            sb.append(option.getArgName());
+            sb.append(option.getOpt());
             sb.append(' ');
-            sb.append(option.getValue());
+            sb.append(option.getOpt());
             if (!option.isRequired()) sb.append(']');
         }
 
         String cmdlineSyntax = sb.toString();
 
-        String header = newline
-                + "Print a record found in a WDK Model xml file. Options:";
+        String header = "Run Unit test cases. Options:";
 
-        String footer = "";
+        String footer = " ";
 
         // PrintWriter stderr = new PrintWriter(System.err);
         HelpFormatter formatter = new HelpFormatter();
         formatter.printHelp(75, cmdlineSyntax, header, options, footer);
         System.exit(1);
+    }
+
+    private static Options declareOptions() {
+        Options options = new Options();
+
+        // model name
+        addOption(
+                options,
+                "model",
+                "the name of the model.  This is used to find the Model XML file ($GUS_HOME/config/model_name.xml) the Model property file ($GUS_HOME/config/model_name.prop) and the Model config file ($GUS_HOME/config/model_name-config.xml)");
+
+        // test case
+        Option testCase = new Option("testCase", true,
+                "(Optional) The specific test case to be executed. ");
+        testCase.setArgName("testCase");
+        options.addOption(testCase);
+
+        return options;
     }
 }
