@@ -27,7 +27,7 @@ public class SanityQuestion extends SanityQueryOrQuestion implements SanityEleme
     public int getPageEnd() { return pageEnd; }
 
     public String getCommand(String globalArgs) throws WdkModelException{
-	String firstPart = "wdkSummary -rows" + pageStart + " " + pageEnd;
+	String firstPart = "wdkSummary -rows " + pageStart + " " + pageEnd;
 	return super.getCommand(globalArgs, firstPart);
     }
 }
