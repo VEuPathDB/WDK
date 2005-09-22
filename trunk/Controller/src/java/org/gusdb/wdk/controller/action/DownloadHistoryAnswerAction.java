@@ -1,20 +1,13 @@
 package org.gusdb.wdk.controller.action;
 
-import java.io.File;
-
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionServlet; 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpSession;
-import javax.servlet.ServletContext;
 
+import org.apache.struts.action.Action;
+import org.apache.struts.action.ActionForm;
+import org.apache.struts.action.ActionForward;
+import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
-import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.model.jspwrap.AnswerBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 
@@ -33,7 +26,7 @@ public class DownloadHistoryAnswerAction extends Action {
 	if (ua_id_str != null) {
 	    int ua_id = Integer.parseInt(ua_id_str);
 	    UserBean wdkUser = (UserBean)request.getSession().getAttribute(CConstants.WDK_USER_KEY);
-	    AnswerBean wdkAnswer = wdkUser.getAnswerByID(ua_id).getAnswer();
+	    AnswerBean wdkAnswer = wdkUser.getUserAnswerByID(ua_id).getAnswer();
 	    request.getSession().setAttribute(CConstants.WDK_ANSWER_KEY, wdkAnswer);
 	    request.getSession().setAttribute(CConstants.WDK_QUESTION_PARAMS_KEY, wdkAnswer.getInternalParams());
 	} else {

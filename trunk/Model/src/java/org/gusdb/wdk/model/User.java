@@ -37,9 +37,8 @@ public class User {
     }
 
     public void addAnswer(Answer answer) {
-
         try {
-            getAnswerByAnswer(answer, false);
+            getUserAnswerByAnswer(answer, false);
             // answer exists, return
             return;
         } catch (WdkUserException ex) {
@@ -57,7 +56,27 @@ public class User {
         userAnswers.put(answerIndex, userAnswer);
     }
 
-    public void deleteAnswer(int answerId) throws WdkUserException {
+    public void addAnswerFuzzy(Answer answer) {
+        try {
+            getUserAnswerByAnswer(answer, true);
+            // answer exists, return
+            return;
+        } catch (WdkUserException ex) {
+            // TODO Auto-generated catch block
+            // ex.printStackTrace();
+            // System.err.println(ex);
+        }
+
+        answerIndex++;
+        UserAnswer userAnswer = new UserAnswer(userID, answerIndex, answer);
+
+        // initialize userAnswers map
+        if (userAnswers == null)
+            userAnswers = new HashMap<Integer, UserAnswer>();
+        userAnswers.put(answerIndex, userAnswer);
+    }
+
+    public void deleteUserAnswer(int answerId) throws WdkUserException {
         if (userAnswers == null)
             throw new WdkUserException(
                     "The answer specified by the given ID doesn't exist!");
@@ -68,12 +87,12 @@ public class User {
         if (userAnswers.isEmpty()) userAnswers = null;
     }
 
-    public void clearAnswers() {
+    public void clearUserAnswers() {
         if (userAnswers != null) userAnswers.clear();
         userAnswers = null;
     }
 
-    public UserAnswer[] getAnswers() {
+    public UserAnswer[] getUserAnswers() {
         if (userAnswers == null || userAnswers.size() == 0)
             return new UserAnswer[0];
         UserAnswer[] answers = new UserAnswer[userAnswers.size()];
@@ -82,50 +101,50 @@ public class User {
     }
 
     public Map getRecordAnswerMap() {
-	Map recAnsMapMap = new HashMap<String, Map>();
-	if (userAnswers == null || userAnswers.size() == 0)
+        Map recAnsMapMap = new HashMap<String, Map>();
+        if (userAnswers == null || userAnswers.size() == 0)
             return recAnsMapMap;
 
-	for (int ansID : userAnswers.keySet()) {
-	    UserAnswer usrAns = userAnswers.get(new Integer(ansID));
-	    String rec = usrAns.getAnswer().getQuestion().getRecordClass().getFullName();
-	    if (recAnsMapMap.get(rec) == null) {
-		recAnsMapMap.put(rec, new HashMap<Integer, UserAnswer>());
-	    }
-	    Map recAnsMapMap1 = (Map)recAnsMapMap.get(rec);
-	    recAnsMapMap1.put(new Integer(ansID), usrAns);
-	}
+        for (int ansID : userAnswers.keySet()) {
+            UserAnswer usrAns = userAnswers.get(new Integer(ansID));
+            String rec = usrAns.getAnswer().getQuestion().getRecordClass().getFullName();
+            if (recAnsMapMap.get(rec) == null) {
+                recAnsMapMap.put(rec, new HashMap<Integer, UserAnswer>());
+            }
+            Map recAnsMapMap1 = (Map) recAnsMapMap.get(rec);
+            recAnsMapMap1.put(new Integer(ansID), usrAns);
+        }
 
-	//wants answers in sorted arrays
-	Map recAnsMap = new HashMap<String, UserAnswer[]>();
-	for (Object r : recAnsMapMap.keySet()) {
-	    String rec = (String)r;
-	    Map recAnsMapMap1 = (Map)recAnsMapMap.get(rec);
-	    List ansIDList = Arrays.asList(recAnsMapMap1.keySet().toArray());
-	    Collections.sort(ansIDList);
-	    Collections.reverse(ansIDList);
-	    Object[] sortedAnsIDs = ansIDList.toArray();
-	    Vector v = new Vector();
-	    for (int i=0; i<sortedAnsIDs.length; i++) {
-		v.add(recAnsMapMap1.get((Integer)sortedAnsIDs[i]));
-	    }
-	    UserAnswer[] sortedUsrAns = new UserAnswer[v.size()];
-	    v.copyInto(sortedUsrAns);
+        // wants answers in sorted arrays
+        Map recAnsMap = new HashMap<String, UserAnswer[]>();
+        for (Object r : recAnsMapMap.keySet()) {
+            String rec = (String) r;
+            Map recAnsMapMap1 = (Map) recAnsMapMap.get(rec);
+            List ansIDList = Arrays.asList(recAnsMapMap1.keySet().toArray());
+            Collections.sort(ansIDList);
+            Collections.reverse(ansIDList);
+            Object[] sortedAnsIDs = ansIDList.toArray();
+            Vector v = new Vector();
+            for (int i = 0; i < sortedAnsIDs.length; i++) {
+                v.add(recAnsMapMap1.get((Integer) sortedAnsIDs[i]));
+            }
+            UserAnswer[] sortedUsrAns = new UserAnswer[v.size()];
+            v.copyInto(sortedUsrAns);
 
-	    recAnsMap.put(rec, sortedUsrAns);
-	}
+            recAnsMap.put(rec, sortedUsrAns);
+        }
 
-	return recAnsMap;
+        return recAnsMap;
     }
 
-    public UserAnswer getAnswerByID(int answerID) throws WdkUserException {
+    public UserAnswer getUserAnswerByID(int answerID) throws WdkUserException {
         if (userAnswers == null || !userAnswers.containsKey(answerID))
             throw new WdkUserException("The answer of ID " + answerID
                     + " does not exist!");
         return userAnswers.get(answerID);
     }
 
-    public UserAnswer getAnswerByName(String name) throws WdkUserException {
+    public UserAnswer getUserAnswerByName(String name) throws WdkUserException {
         if (userAnswers != null) {
             for (UserAnswer answer : userAnswers.values()) {
                 if (answer.getName().equalsIgnoreCase(name)) return answer;
@@ -135,13 +154,18 @@ public class User {
                 + " does not exist!");
     }
 
-    public UserAnswer getAnswerByAnswerFuzzy(Answer answer) throws WdkUserException {
-	return getAnswerByAnswer(answer, true);
+    public UserAnswer getUserAnswerByAnswerFuzzy(Answer answer)
+            throws WdkUserException {
+        return getUserAnswerByAnswer(answer, true);
     }
-    public UserAnswer getAnswerByAnswer(Answer answer) throws WdkUserException {
-	return getAnswerByAnswer(answer, false);
+
+    public UserAnswer getUserAnswerByAnswer(Answer answer)
+            throws WdkUserException {
+        return getUserAnswerByAnswer(answer, false);
     }
-    private UserAnswer getAnswerByAnswer(Answer answer, boolean ignorePage) throws WdkUserException {
+
+    private UserAnswer getUserAnswerByAnswer(Answer answer, boolean ignorePage)
+            throws WdkUserException {
         if (userAnswers != null) {
             // check if the answer exists or not
             for (UserAnswer uans : userAnswers.values()) {
@@ -152,8 +176,8 @@ public class User {
                     continue;
 
                 // check paging number
-                if (!ignorePage && (ans.startRecordInstanceI != answer.startRecordInstanceI
-				    || ans.endRecordInstanceI != answer.endRecordInstanceI))
+                if (!ignorePage
+                        && (ans.startRecordInstanceI != answer.startRecordInstanceI || ans.endRecordInstanceI != answer.endRecordInstanceI))
                     continue;
 
                 // check parameters
@@ -184,7 +208,8 @@ public class User {
                 "The UserAnswer specified by the given answer doesn't exist!");
     }
 
-    public void renameAnswer(int answerID, String name) throws WdkUserException {
+    public void renameUserAnswer(int answerID, String name)
+            throws WdkUserException {
         // check if the answer exists
         if (userAnswers == null || !userAnswers.containsKey(answerID))
             throw new WdkUserException(
@@ -204,9 +229,9 @@ public class User {
         answer.setName(name);
     }
 
-    public UserAnswer combineAnswers(int firstAnswerID, int secondAnswerID,
+    public UserAnswer combineUserAnswers(int firstAnswerID, int secondAnswerID,
             String operation, int startIndex, int endIndex)
-            throws  WdkModelException, WdkUserException {
+            throws WdkModelException, WdkUserException {
         // construct operand map
         Map<String, Answer> operandMap = buildOperandMap();
 
@@ -226,10 +251,10 @@ public class User {
         // create a new UserAnswer
         Answer answer = root.makeAnswer(startIndex, endIndex);
         addAnswer(answer);
-        return getAnswerByAnswer(answer);
+        return getUserAnswerByAnswer(answer);
     }
 
-    public UserAnswer combineAnswers(String expression, int startIndex,
+    public UserAnswer combineUserAnswers(String expression, int startIndex,
             int endIndex) throws WdkUserException, WdkModelException {
         // construct operand map
         Map<String, Answer> operandMap = buildOperandMap();
@@ -241,7 +266,7 @@ public class User {
         // make answer
         Answer answer = root.makeAnswer(startIndex, endIndex);
         addAnswer(answer);
-        return getAnswerByAnswer(answer);
+        return getUserAnswerByAnswer(answer);
     }
 
     private Map<String, Answer> buildOperandMap() {
