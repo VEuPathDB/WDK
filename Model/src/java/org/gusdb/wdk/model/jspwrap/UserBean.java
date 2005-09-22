@@ -30,10 +30,10 @@ public class UserBean {
      * 
      * @see org.gusdb.wdk.model.User#combineAnswers(int, int, java.lang.String)
      */
-    public UserAnswerBean combineAnswers(int firstAnswerID, int secondAnswerID,
-            String operation, int start, int end)
+    public UserAnswerBean combineUserAnswers(int firstAnswerID,
+            int secondAnswerID, String operation, int start, int end)
             throws WdkUserException, WdkModelException {
-        return new UserAnswerBean(this.user.combineAnswers(firstAnswerID,
+        return new UserAnswerBean(this.user.combineUserAnswers(firstAnswerID,
                 secondAnswerID, operation, start, end));
     }
 
@@ -44,8 +44,8 @@ public class UserBean {
      */
     public UserAnswerBean combineAnswers(String expression, int start, int end)
             throws WdkUserException, WdkModelException {
-        return new UserAnswerBean(this.user.combineAnswers(expression, start,
-                end));
+        return new UserAnswerBean(this.user.combineUserAnswers(expression,
+                start, end));
     }
 
     /*
@@ -53,8 +53,8 @@ public class UserBean {
      * 
      * @see org.gusdb.wdk.model.User#deleteAnswer(int)
      */
-    public void deleteAnswer(int answerId) throws WdkUserException {
-        this.user.deleteAnswer(answerId);
+    public void deleteUserAnswer(int answerId) throws WdkUserException {
+        this.user.deleteUserAnswer(answerId);
     }
 
     /*
@@ -62,8 +62,8 @@ public class UserBean {
      * 
      * @see org.gusdb.wdk.model.User#clearAnswers()
      */
-    public void clearAnswers() {
-        this.user.clearAnswers();
+    public void clearUserAnswers() {
+        this.user.clearUserAnswers();
     }
 
     /*
@@ -71,8 +71,9 @@ public class UserBean {
      * 
      * @see org.gusdb.wdk.model.User#getAnswerByID(int)
      */
-    public UserAnswerBean getAnswerByID(int answerID) throws WdkUserException {
-        return new UserAnswerBean(this.user.getAnswerByID(answerID));
+    public UserAnswerBean getUserAnswerByID(int answerID)
+            throws WdkUserException {
+        return new UserAnswerBean(this.user.getUserAnswerByID(answerID));
     }
 
     /*
@@ -80,13 +81,14 @@ public class UserBean {
      * 
      * @see org.gusdb.wdk.model.User#getAnswerByName(java.lang.String)
      */
-    public UserAnswerBean getAnswerByName(String name) throws WdkUserException {
-        return new UserAnswerBean(this.user.getAnswerByName(name));
+    public UserAnswerBean getUserAnswerByName(String name)
+            throws WdkUserException {
+        return new UserAnswerBean(this.user.getUserAnswerByName(name));
     }
 
-    public UserAnswerBean getAnswerByAnswer(AnswerBean answer)
+    public UserAnswerBean getUserAnswerByAnswer(AnswerBean answer)
             throws WdkUserException {
-        return new UserAnswerBean(user.getAnswerByAnswer(answer.answer));
+        return new UserAnswerBean(user.getUserAnswerByAnswer(answer.answer));
     }
 
     /*
@@ -94,8 +96,8 @@ public class UserBean {
      * 
      * @see org.gusdb.wdk.model.User#getAnswers()
      */
-    public UserAnswerBean[] getAnswers() {
-        UserAnswer[] answers = user.getAnswers();
+    public UserAnswerBean[] getUserAnswers() {
+        UserAnswer[] answers = user.getUserAnswers();
         UserAnswerBean[] answerBeans = new UserAnswerBean[answers.length];
         for (int i = 0; i < answers.length; i++) {
             answerBeans[i] = new UserAnswerBean(answers[i]);
@@ -104,7 +106,7 @@ public class UserBean {
     }
 
     public int getAnswerCount() {
-	return user.getAnswers().length;
+        return user.getUserAnswers().length;
     }
 
     /*
@@ -112,18 +114,18 @@ public class UserBean {
      * 
      * @see org.gusdb.wdk.model.User#getRecordAnswerMap()
      */
-    public Map getRecordAnswerMap() {
+    public Map<String, UserAnswerBean[]> getRecordAnswerMap() {
         Map recUsrAnsMap = user.getRecordAnswerMap();
-	Map recUsrAnsBeanMap = new HashMap<String, UserAnswerBean[]>();
-	for (Object r : recUsrAnsMap.keySet()) {
-	    String rec = (String)r;
-	    UserAnswer[] usrAns = (UserAnswer[])recUsrAnsMap.get(rec);
-	    UserAnswerBean[] answerBeans = new UserAnswerBean[usrAns.length];
-	    for (int i = 0; i < usrAns.length; i++) {
-		answerBeans[i] = new UserAnswerBean(usrAns[i]);
-	    }
-	    recUsrAnsBeanMap.put(rec, answerBeans);
-	}
+        Map<String, UserAnswerBean[]> recUsrAnsBeanMap = new HashMap<String, UserAnswerBean[]>();
+        for (Object r : recUsrAnsMap.keySet()) {
+            String rec = (String) r;
+            UserAnswer[] usrAns = (UserAnswer[]) recUsrAnsMap.get(rec);
+            UserAnswerBean[] answerBeans = new UserAnswerBean[usrAns.length];
+            for (int i = 0; i < usrAns.length; i++) {
+                answerBeans[i] = new UserAnswerBean(usrAns[i]);
+            }
+            recUsrAnsBeanMap.put(rec, answerBeans);
+        }
         return recUsrAnsBeanMap;
     }
 
@@ -141,8 +143,9 @@ public class UserBean {
      * 
      * @see org.gusdb.wdk.model.User#renameAnswer(int, java.lang.String)
      */
-    public void renameAnswer(int answerID, String name) throws WdkUserException {
-        this.user.renameAnswer(answerID, name);
+    public void renameUserAnswer(int answerID, String name)
+            throws WdkUserException {
+        this.user.renameUserAnswer(answerID, name);
     }
 
     /*

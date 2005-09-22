@@ -1,32 +1,26 @@
 package org.gusdb.wdk.controller.action;
 
-import java.util.Map;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.HashMap;
-import java.io.File;
+import java.util.Map;
 
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionServlet; 
-
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.ServletContext;
 
-import org.gusdb.wdk.controller.CConstants;
+import org.apache.struts.action.Action;
+import org.apache.struts.action.ActionForm;
+import org.apache.struts.action.ActionForward;
+import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.ApplicationInitListener;
-
+import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.WdkModelBean;
-import org.gusdb.wdk.model.jspwrap.EnumParamBean;
-import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.AnswerBean;
 import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
+import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 
 /**
@@ -52,7 +46,7 @@ public class ShowSummaryAction extends Action {
 	if (ua_id_str != null) {
 	    int ua_id = Integer.parseInt(ua_id_str);
  	    wdkUser = (UserBean)request.getSession().getAttribute(CConstants.WDK_USER_KEY);
-	    wdkAnswer = wdkUser.getAnswerByID(ua_id).getAnswer();
+	    wdkAnswer = wdkUser.getUserAnswerByID(ua_id).getAnswer();
 	    summaryPaging(request, null, null, wdkAnswer);
 	} else {
 	    //why I am not able to get back my question from the session? use the form for  now
