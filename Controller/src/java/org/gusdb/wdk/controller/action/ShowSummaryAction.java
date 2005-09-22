@@ -62,9 +62,9 @@ public class ShowSummaryAction extends Action {
 
 	    request.getSession().setAttribute(CConstants.WDK_QUESTION_PARAMS_KEY, params);
 
-	    //add UserAnswerBean to UserAnswer for query history
+	    //add AnswerBean to User for query history
 	    wdkUser = (UserBean)request.getSession().getAttribute(CConstants.WDK_USER_KEY);
-	    wdkUser.addAnswer(wdkAnswer);
+	    wdkUser.addAnswerFuzzy(wdkAnswer);
 	}
 
 	//clear boolean root from session to prevent interference

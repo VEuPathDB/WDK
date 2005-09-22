@@ -65,7 +65,7 @@ public class ProcessBooleanExpressionAction extends Action {
 	int aid = userAnswer.getAnswerID();
 
 	request.setAttribute(CConstants.USER_ANSWER_ID, new Integer(aid).toString());
-	wdkUser.addAnswer(wdkAnswer);
+	wdkUser.addAnswerFuzzy(wdkAnswer);
 
 	int totalSize = wdkAnswer.getResultSize();
 
