@@ -11,7 +11,11 @@ import java.util.Vector;
 import java.util.Hashtable;
 
 public class BooleanQuestionNodeBean {
-
+ 
+    public static final String INTERNAL_AND = "INTERSECT";
+    public static final String INTERNAL_OR = "UNION";
+    public static final String INTERNAL_NOT = "MINUS";
+    
     BooleanQuestionNode bqn;
     BooleanQuestionNodeBean parent;
     Object firstChild;

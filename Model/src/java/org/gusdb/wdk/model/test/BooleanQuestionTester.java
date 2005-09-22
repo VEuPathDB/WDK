@@ -12,6 +12,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.implementation.ModelXmlParser;
+import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
 import org.gusdb.wdk.model.BooleanQuery;
 import org.gusdb.wdk.model.BooleanQueryInstance;
 import org.gusdb.wdk.model.QueryInstance;
@@ -24,7 +25,9 @@ import org.gusdb.wdk.model.BooleanQuestionNode;
 import org.gusdb.wdk.model.test.TestBooleanTree;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
@@ -48,6 +51,15 @@ import org.apache.commons.cli.ParseException;
  */
 
 public class BooleanQuestionTester {
+    
+    private static Map<String, String> operatorMap;
+    
+    static {
+        operatorMap = new HashMap<String, String>();
+        operatorMap.put("and", BooleanQuestionNodeBean.INTERNAL_AND);
+        operatorMap.put("or", BooleanQuestionNodeBean.INTERNAL_OR);
+        operatorMap.put("not", BooleanQuestionNodeBean.INTERNAL_NOT);
+    }
     
     // ------------------------------------------------------------------
     // Main
@@ -126,7 +138,7 @@ public class BooleanQuestionTester {
 	BooleanQuestionNode found = topNode.find(nodeId);
 	System.out.println("BooleanQuestionTester.runGrowTest: Tree before growing\n " + topNode.toString());
 	System.out.println("BooleanQuestionTester.runGrowTest:  Found node " + found.toString());
-	found.grow(TestBooleanTree.makeNewLeafNode(model), "Union", model);
+	found.grow(TestBooleanTree.makeNewLeafNode(model), "Or", model, operatorMap);
 	System.out.println("BooleanQuestionTester.runGrowTest:  New tree after growing\n " + topNode.toString());
     }
 

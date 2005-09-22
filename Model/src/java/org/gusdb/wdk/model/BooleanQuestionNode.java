@@ -5,6 +5,8 @@ import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.BooleanQuery;
+import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
+
 import java.util.Hashtable;
 import java.util.HashMap;
 import java.util.Map;
@@ -130,10 +132,13 @@ public class BooleanQuestionNode {
     /**
      * This method can only be performed on a leaf node and assumes that none of
      * the nodes in the tree has had any parameter values set yet.
+     * 
+     * @throws WdkUserException
      */
 
     public BooleanQuestionNode grow(BooleanQuestionNode newSecondChild,
-            String operation, WdkModel model) throws WdkModelException {
+            String operator, WdkModel model, Map<String, String> operatorMap)
+            throws WdkModelException, WdkUserException {
 
         if (!isLeaf()) {
             throw new WdkModelException(
@@ -152,8 +157,10 @@ public class BooleanQuestionNode {
         BooleanQuestionNode newBooleanNode = new BooleanQuestionNode(question,
                 this, newSecondChild, parent);
 
+        operator = translateOperator(operator, operatorMap,
+                model.getRDBMSPlatform());
         Hashtable values = new Hashtable();
-        values.put(BooleanQuery.OPERATION_PARAM_NAME, operation);
+        values.put(BooleanQuery.OPERATION_PARAM_NAME, operator);
         newBooleanNode.setValues(values);
         if (tempParent != null) {
             if (wasFirstChild) {
@@ -167,8 +174,9 @@ public class BooleanQuestionNode {
     }
 
     public static BooleanQuestionNode combine(BooleanQuestionNode firstChild,
-            BooleanQuestionNode secondChild, String operation, WdkModel model)
-            throws WdkModelException {
+            BooleanQuestionNode secondChild, String operator, WdkModel model,
+            Map<String, String> operatorMap)
+            throws WdkModelException, WdkUserException {
         // check if the two nodes are of the same type
         if (!secondChild.getType().equalsIgnoreCase(firstChild.getType()))
             throw new WdkModelException(
@@ -187,10 +195,25 @@ public class BooleanQuestionNode {
                 firstChild, secondChild, null);
 
         // store operation
+        operator = translateOperator(operator, operatorMap,
+                model.getRDBMSPlatform());
         Hashtable values = new Hashtable();
-        values.put(BooleanQuery.OPERATION_PARAM_NAME, operation);
+        values.put(BooleanQuery.OPERATION_PARAM_NAME, operator);
         root.setValues(values);
         return root;
+    }
+
+    private static String translateOperator(String operator,
+            Map<String, String> operatorMap, RDBMSPlatformI platform)
+            throws WdkUserException {
+        operator = operator.toLowerCase();
+        if (!operatorMap.containsKey(operator))
+            throw new WdkUserException("Invalid operator: " + operator);
+
+        String internal = operatorMap.get(operator);
+        if (internal.equalsIgnoreCase(BooleanQuestionNodeBean.INTERNAL_NOT))
+            internal = platform.getMinus();
+        return internal;
     }
 
     /**

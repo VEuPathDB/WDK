@@ -44,6 +44,8 @@ public interface RDBMSPlatformI {
     public void close() throws WdkModelException;
 
     public String getTableAliasAs();
+    
+    public String getMinus();
 }
 
 
