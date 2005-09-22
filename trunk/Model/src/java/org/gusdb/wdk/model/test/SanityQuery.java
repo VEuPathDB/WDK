@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.test;
 
+import org.gusdb.wdk.model.WdkModelException;
+
 
 /**
  * Object used in running a sanity test; represents a query or question in a 
@@ -11,10 +13,15 @@ package org.gusdb.wdk.model.test;
  * @version $Revision$ $Date$Author: sfischer $
  */
 
-public class SanityQuery extends SanityQueryOrQuestion {
+public class SanityQuery extends SanityQueryOrQuestion implements SanityElementI {
     public SanityQuery() {
 	super("query");
     }
+
+    public String getCommand(String globalArgs) throws WdkModelException{
+	return super.getCommand(globalArgs, "wdkQuery");	
+    }
+
 }
 
 
