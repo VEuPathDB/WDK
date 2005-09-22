@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.test;
 
+import org.gusdb.wdk.model.WdkModelException;
 
 /**
  * Object used in running a sanity test; represents a query or question in a 
@@ -11,7 +12,7 @@ package org.gusdb.wdk.model.test;
  * @version $Revision: 722 $ $Date: 2004-10-28 13:46:23 -0400 (Thu, 28 Oct 2004) $Author: sfischer $
  */
 
-public class SanityQuestion extends SanityQueryOrQuestion {
+public class SanityQuestion extends SanityQueryOrQuestion implements SanityElementI {
     
     int pageStart;
     int pageEnd;
@@ -25,6 +26,10 @@ public class SanityQuestion extends SanityQueryOrQuestion {
     public int getPageStart() { return pageStart; }
     public int getPageEnd() { return pageEnd; }
 
+    public String getCommand(String globalArgs) throws WdkModelException{
+	String firstPart = "wdkSummary -rows" + pageStart + " " + pageEnd;
+	return super.getCommand(globalArgs, firstPart);
+    }
 }
 
 

@@ -17,7 +17,7 @@ import java.util.Enumeration;
  * @version $Revision: 722 $ $Date: 2004-10-28 13:46:23 -0400 (Thu, 28 Oct 2004) $Author: sfischer $
  */
 
-public class SanityQueryOrQuestion implements SanityElementI {
+public abstract class SanityQueryOrQuestion {
 
     protected String twoPartName;
     
@@ -144,11 +144,14 @@ public class SanityQueryOrQuestion implements SanityElementI {
     // ------------------------------------------------------------------
     // SanityElementI
     // ------------------------------------------------------------------
-    public String getCommand(String globalArgs) throws WdkModelException{
+
+    public abstract String getCommand(String globalArgs) throws WdkModelException;
+
+    protected String getCommand(String globalArgs, String firstPart) throws WdkModelException{
 	
 	SanityParam params[] = getParams();
 	
-	StringBuffer command = new StringBuffer("wdk" + getTypeCap() + " " + globalArgs);
+	StringBuffer command = new StringBuffer(firstPart + " " + globalArgs);
 	command.append(" -" + getType() + " " + twoPartName );
 	if (params != null){
 	    command.append(" -params ");
