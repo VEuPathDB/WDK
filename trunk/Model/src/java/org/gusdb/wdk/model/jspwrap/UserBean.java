@@ -27,6 +27,15 @@ public class UserBean {
 
     /*
      * (non-Javadoc)
+     *
+     * @see org.gusdb.wdk.model.User#addAnswerFuzzy(org.gusdb.wdk.model.Answer)
+     */
+    public void addAnswerFuzzy(AnswerBean answer) {
+        user.addAnswerFuzzy(answer.answer);
+    }
+
+    /*
+     * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.User#combineAnswers(int, int, java.lang.String)
      */
