@@ -230,7 +230,8 @@ public class User {
     }
 
     public UserAnswer combineUserAnswers(int firstAnswerID, int secondAnswerID,
-            String operation, int startIndex, int endIndex)
+            String operation, int startIndex, int endIndex,
+            Map<String, String> operatorMap)
             throws WdkModelException, WdkUserException {
         // construct operand map
         Map<String, Answer> operandMap = buildOperandMap();
@@ -246,7 +247,8 @@ public class User {
 
         // construct BooleanQuestionNode
         BooleanExpression be = new BooleanExpression(model);
-        BooleanQuestionNode root = be.parseExpression(sb.toString(), operandMap);
+        BooleanQuestionNode root = be.parseExpression(sb.toString(),
+                operandMap, operatorMap);
 
         // create a new UserAnswer
         Answer answer = root.makeAnswer(startIndex, endIndex);
@@ -255,18 +257,38 @@ public class User {
     }
 
     public UserAnswer combineUserAnswers(String expression, int startIndex,
-            int endIndex) throws WdkUserException, WdkModelException {
+            int endIndex, Map<String, String> operatorMap)
+            throws WdkUserException, WdkModelException {
         // construct operand map
         Map<String, Answer> operandMap = buildOperandMap();
 
         // construct BooleanQuestionNode
         BooleanExpression be = new BooleanExpression(model);
-        BooleanQuestionNode root = be.parseExpression(expression, operandMap);
+        BooleanQuestionNode root = be.parseExpression(expression, operandMap,
+                operatorMap);
 
         // make answer
         Answer answer = root.makeAnswer(startIndex, endIndex);
         addAnswer(answer);
         return getUserAnswerByAnswer(answer);
+    }
+
+    public boolean validateExpression(String expression, int startIndex,
+            int endIndex, Map<String, String> operatorMap) {
+        // construct operand map
+        Map<String, Answer> operandMap = buildOperandMap();
+
+        // construct BooleanQuestionNode
+        BooleanExpression be = new BooleanExpression(model);
+        try {
+            be.parseExpression(expression, operandMap, operatorMap);
+        } catch (Exception ex) {
+            // TODO Auto-generated catch block
+            // ex.printStackTrace();
+            System.err.println(ex);
+            return false;
+        }
+        return true;
     }
 
     private Map<String, Answer> buildOperandMap() {

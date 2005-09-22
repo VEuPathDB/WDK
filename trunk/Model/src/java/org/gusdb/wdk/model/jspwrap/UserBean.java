@@ -27,7 +27,7 @@ public class UserBean {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see org.gusdb.wdk.model.User#addAnswerFuzzy(org.gusdb.wdk.model.Answer)
      */
     public void addAnswerFuzzy(AnswerBean answer) {
@@ -40,10 +40,11 @@ public class UserBean {
      * @see org.gusdb.wdk.model.User#combineAnswers(int, int, java.lang.String)
      */
     public UserAnswerBean combineUserAnswers(int firstAnswerID,
-            int secondAnswerID, String operation, int start, int end)
+            int secondAnswerID, String operation, int start, int end,
+            Map<String, String> operatorMap)
             throws WdkUserException, WdkModelException {
         return new UserAnswerBean(this.user.combineUserAnswers(firstAnswerID,
-                secondAnswerID, operation, start, end));
+                secondAnswerID, operation, start, end, operatorMap));
     }
 
     /*
@@ -51,10 +52,17 @@ public class UserBean {
      * 
      * @see org.gusdb.wdk.model.User#combineAnswers(java.lang.String)
      */
-    public UserAnswerBean combineAnswers(String expression, int start, int end)
+    public UserAnswerBean combineAnswers(String expression, int start, int end,
+            Map<String, String> operatorMap)
             throws WdkUserException, WdkModelException {
         return new UserAnswerBean(this.user.combineUserAnswers(expression,
-                start, end));
+                start, end, operatorMap));
+    }
+
+    public boolean validateExpression(String expression, int startIndex,
+            int endIndex, Map<String, String> operatorMap) {
+        return this.user.validateExpression(expression, startIndex, endIndex,
+                operatorMap);
     }
 
     /*

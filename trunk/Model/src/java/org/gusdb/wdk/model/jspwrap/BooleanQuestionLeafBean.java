@@ -3,8 +3,10 @@ package org.gusdb.wdk.model.jspwrap;
 import org.gusdb.wdk.model.BooleanQuestionNode;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 
 import java.util.Hashtable;
+import java.util.Map;
 
 public class BooleanQuestionLeafBean {
     
@@ -25,11 +27,14 @@ public class BooleanQuestionLeafBean {
     } 
 
     /**
+     * @throws WdkUserException 
      * 
      */
-    public void grow(BooleanQuestionLeafBean leaf, String operation, WdkModelBean modelBean)throws WdkModelException{
+    public void grow(BooleanQuestionLeafBean leaf, String operation, WdkModelBean modelBean, 
+            Map<String, String> operatorMap)throws WdkModelException, WdkUserException{
 
-	BooleanQuestionNode newBqn = bqn.grow(leaf.getBooleanQuestionNode(), operation, modelBean.getModel());
+	BooleanQuestionNode newBqn = bqn.grow(leaf.getBooleanQuestionNode(), 
+            operation, modelBean.getModel(), operatorMap);
 	BooleanQuestionNodeBean tempParent = parent;
 	boolean wasFirstChild = isFirstChild();
 

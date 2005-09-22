@@ -21,6 +21,7 @@ import org.gusdb.wdk.model.UserAnswer;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
 
 /**
  * @author Jerric
@@ -34,6 +35,8 @@ public class JUnitUserTest extends TestCase {
     private WdkModel wdkModel;
     private SanityModel sanityModel;
     private Answer[] answers;
+    
+    private Map<String, String> operatorMap;
 
     public static void main(String[] args) {
         junit.textui.TestRunner.run(JUnitUserTest.class);
@@ -76,6 +79,11 @@ public class JUnitUserTest extends TestCase {
      */
     protected void setUp() throws Exception {
         super.setUp();
+        
+        operatorMap = new HashMap<String, String>();
+        operatorMap.put("and", BooleanQuestionNodeBean.INTERNAL_AND);
+        operatorMap.put("or", BooleanQuestionNodeBean.INTERNAL_OR);
+        operatorMap.put("not", BooleanQuestionNodeBean.INTERNAL_NOT);
 
         utility = TestUtility.getInstance();
         wdkModel = utility.getWdkModel();
@@ -527,23 +535,23 @@ public class JUnitUserTest extends TestCase {
                     if (firstType.equalsIgnoreCase(secondType)) {
                         // test union
                         UserAnswer userAnswer = user.combineUserAnswers(
-                                firstID, secondID, "union", 1, 20);
+                                firstID, secondID, "OR", 1, 20, operatorMap);
                         assertNotNull(userAnswer);
                         // System.out.println(userAnswer);
                         // test intersect
                         userAnswer = user.combineUserAnswers(firstID, secondID,
-                                "intersect", 1, 20);
+                                "AND", 1, 20, operatorMap);
                         assertNotNull(userAnswer);
                         // System.out.println(userAnswer);
                         // test except
                         userAnswer = user.combineUserAnswers(firstID, secondID,
-                                "minus", 1, 20);
+                                "NOT", 1, 20, operatorMap);
                         assertNotNull(userAnswer);
                         // System.out.println(userAnswer);
                     } else { // test on invalid combinations
                         try {
-                            user.combineUserAnswers(firstID, secondID, "union",
-                                    1, 20);
+                            user.combineUserAnswers(firstID, secondID, "OR",
+                                    1, 20, operatorMap);
                             assertTrue(false);
                         } catch (WdkUserException ex) {
                             // ex.printStackTrace();
@@ -616,55 +624,66 @@ public class JUnitUserTest extends TestCase {
             // write the test cases for it
             UserAnswer result;
             if (answerIDs.size() >= 2) {
-                result = user.combineUserAnswers(id[0] + " UNION " + id[1], 1,
-                        20);
+                result = user.combineUserAnswers(id[0] + " OR " + id[1], 1,
+                        20, operatorMap);
                 assertNotNull(result);
                 // System.out.println(result);
 
-                result = user.combineUserAnswers("\"" + name[0] + "\" UNION \""
-                        + name[1] + "\"", 1, 20);
+                result = user.combineUserAnswers("\"" + name[0] + "\" OR \""
+                        + name[1] + "\"", 1, 20, operatorMap);
                 assertNotNull(result);
                 // System.out.println(result);
 
-                result = user.combineUserAnswers("\"" + name[0] + "\" UNION "
-                        + id[1], 1, 20);
+                result = user.combineUserAnswers("\"" + name[0] + "\" OR "
+                        + id[1], 1, 20, operatorMap);
                 assertNotNull(result);
                 // System.out.println(result);
 
-                result = user.combineUserAnswers(name[0] + " UNION " + name[1],
-                        1, 20);
+                result = user.combineUserAnswers(name[0] + " OR " + name[1],
+                        1, 20, operatorMap);
                 assertNotNull(result);
                 // System.out.println(result);
             }
             if (answerIDs.size() >= 3) {
-                result = user.combineUserAnswers(id[0] + " UNION " + id[1]
-                        + " INTERSECT " + id[2], 1, 20);
+                result = user.combineUserAnswers(id[0] + " OR " + id[1]
+                        + " AND " + id[2], 1, 20, operatorMap);
                 assertNotNull(result);
                 // System.out.println(result);
 
-                result = user.combineUserAnswers(id[0] + " MINUS (\"" + name[1]
-                        + "\" INTERSECT " + id[2] + ")", 1, 20);
+                result = user.combineUserAnswers(id[0] + " NOT (\"" + name[1]
+                        + "\" AND " + id[2] + ")", 1, 20, operatorMap);
                 assertNotNull(result);
                 // System.out.println(result);
             }
             if (answerIDs.size() >= 4) {
-                result = user.combineUserAnswers("(" + id[0] + " INTERSECT "
-                        + id[1] + ") INTERSECT (" + id[2] + " INTERSECT "
-                        + id[3] + ")", 1, 20);
+                result = user.combineUserAnswers("(" + id[0] + " AND "
+                        + id[1] + ") AND (" + id[2] + " AND "
+                        + id[3] + ")", 1, 20, operatorMap);
                 assertNotNull(result);
                 // System.out.println(result);
 
-                result = user.combineUserAnswers("((" + id[0] + " INTERSECT "
-                        + id[1] + ") INTERSECT " + id[2] + ") INTERSECT "
-                        + id[3], 1, 20);
+                result = user.combineUserAnswers("((" + id[0] + " AND "
+                        + id[1] + ") AND " + id[2] + ") AND "
+                        + id[3], 1, 20, operatorMap);
                 assertNotNull(result);
                 // System.out.println(result);
             }
 
             // now test some of invalid expressions
+            try { // wrong operators
+                result = user.combineUserAnswers("#1 BAD #2", 1,
+                        20, operatorMap);
+                assertTrue(false);
+            } catch (WdkUserException ex) {
+                // ex.printStackTrace();
+                // System.err.println(ex);
+            } catch (WdkModelException ex) {
+                // ex.printStackTrace();
+                // System.err.println(ex);
+            }
             try { // miss the other part of parenthese
-                result = user.combineUserAnswers("(#1 UNION #2) MINUS #3)", 1,
-                        20);
+                result = user.combineUserAnswers("(#1 OR #2) NOT #3)", 1,
+                        20, operatorMap);
                 assertTrue(false);
             } catch (WdkUserException ex) {
                 // ex.printStackTrace();
@@ -674,8 +693,8 @@ public class JUnitUserTest extends TestCase {
                 // System.err.println(ex);
             }
             try { // miss the other part of double quote
-                result = user.combineUserAnswers("\"ans_1\" UNION \"ans_2", 1,
-                        20);
+                result = user.combineUserAnswers("\"ans_1\" OR \"ans_2", 1,
+                        20, operatorMap);
                 assertTrue(false);
             } catch (WdkUserException ex) {
                 // ex.printStackTrace();
@@ -685,8 +704,8 @@ public class JUnitUserTest extends TestCase {
                 // System.err.println(ex);
             }
             try { // question not found
-                result = user.combineUserAnswers("\"invalid_ans\" UNION ans_2",
-                        1, 20);
+                result = user.combineUserAnswers("\"invalid_ans\" OR ans_2",
+                        1, 20, operatorMap);
                 assertTrue(false);
             } catch (WdkUserException ex) {
                 // ex.printStackTrace();

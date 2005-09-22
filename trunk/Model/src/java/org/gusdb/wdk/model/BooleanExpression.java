@@ -45,11 +45,12 @@ public class BooleanExpression {
      * @throws WdkModelException
      */
     public BooleanQuestionNode parseExpression(String expression,
-            Map<String, Answer> operandMap) throws WdkUserException, WdkModelException {
-	expression = internalize(expression);
+            Map<String, Answer> operandMap, Map<String, String> operatorMap)
+            throws WdkUserException, WdkModelException {
+        //expression = internalize(expression);
         this.expression = expression;
         // TEST
-        //System.out.println("Expression: " + expression);
+        // System.out.println("Expression: " + expression);
 
         // replace the literals in the expression
         Map<String, String> replace = new HashMap<String, String>();
@@ -67,8 +68,8 @@ public class BooleanExpression {
         if (count != 0)
             throw new WdkUserException("Bad parentheses: " + this.expression);
 
-	//disallow non upper case "and", "or" and "not" outside of literals
-	checkOperatorCases(expression);
+//        // disallow non upper case "and", "or" and "not" outside of literals
+//        checkOperatorCases(expression);
 
         // insert a space before open parenthese; it's used when getting
         // operator
@@ -77,7 +78,8 @@ public class BooleanExpression {
         expression = expression.replaceAll("\\s", " ").trim();
 
         // build the BooleanQuestionNode tree
-        BooleanQuestionNode root = parseBlock(expression, replace, operandMap);
+        BooleanQuestionNode root = parseBlock(expression, replace, operandMap,
+                operatorMap);
         return root;
     }
 
@@ -110,7 +112,8 @@ public class BooleanExpression {
     }
 
     private BooleanQuestionNode parseBlock(String block,
-            Map<String, String> replace, Map<String, Answer> operandMap)
+            Map<String, String> replace, Map<String, Answer> operandMap,
+            Map<String, String> operatorMap)
             throws WdkUserException, WdkModelException {
         // check if the expression can be divided further
         // to do so, just need to check if there're spaces
@@ -124,16 +127,17 @@ public class BooleanExpression {
         String[] triplet = getTriplet(block);
 
         if (triplet.length == 1) { // only remove one pair of parentheses
-            return parseBlock(triplet[0], replace, operandMap);
+            return parseBlock(triplet[0], replace, operandMap, operatorMap);
         } else { // a triplet
             // create BooleanQuestioNode for each piece
             BooleanQuestionNode left = parseBlock(triplet[0], replace,
-                    operandMap);
+                    operandMap, operatorMap);
             BooleanQuestionNode right = parseBlock(triplet[2], replace,
-                    operandMap);
+                    operandMap, operatorMap);
 
             // combine left & right sub-tree to form a new tree
-            return BooleanQuestionNode.combine(left, right, triplet[1], model);
+            return BooleanQuestionNode.combine(left, right, triplet[1], model,
+                    operatorMap);
         }
     }
 
@@ -185,8 +189,7 @@ public class BooleanExpression {
                 if (block.charAt(pos) == '(') parenthese++;
                 else if (block.charAt(pos) == ')') parenthese--;
                 if (parenthese < 0)
-                    throw new WdkUserException("Bad parentheses: "
-                            + expression);
+                    throw new WdkUserException("Bad parentheses: " + expression);
                 pos++;
             }
             if (parenthese != 0)
@@ -219,24 +222,27 @@ public class BooleanExpression {
             right = right.substring(1, bound).trim();
         return new String[] { left, operator, right };
     }
-
-    private String internalize(String expression) {
-	String intExp = expression.replaceAll(" AND ", " INTERSECT ");
-	intExp = intExp.replaceAll(" OR ", " UNION ");
-        intExp = intExp.replaceAll(" NOT ", " MINUS ");
-	return intExp;
-    }
-
-    private void checkOperatorCases (String exp) throws WdkUserException {
-	if (exp.matches(".* (and|anD|aNd|aND|And|AnD|ANd) .*")) {
-	    throw new WdkUserException("Bad expression with non all-capital AND: " + expression);
-	}
-	if (exp.matches(".* (or|oR|Or) .*")) {
-	    throw new WdkUserException("Bad expression with non all-capital OR: " + expression);
-	}
-	if (exp.matches(".* (not|noT|nOt|nOT|Not|NoT|NOt) .*")) {
-	    throw new WdkUserException("Bad expression with non all-capital NOT: " + expression);
-	}
-    }
-
+//
+//    private String internalize(String expression) {
+//        String intExp = expression.replaceAll(" AND ", " INTERSECT ");
+//        intExp = intExp.replaceAll(" OR ", " UNION ");
+//        intExp = intExp.replaceAll(" NOT ", " MINUS ");
+//        return intExp;
+//    }
+//
+//    private void checkOperatorCases(String exp) throws WdkUserException {
+//        if (exp.matches(".* (and|anD|aNd|aND|And|AnD|ANd) .*")) {
+//            throw new WdkUserException(
+//                    "Bad expression with non all-capital AND: " + expression);
+//        }
+//        if (exp.matches(".* (or|oR|Or) .*")) {
+//            throw new WdkUserException(
+//                    "Bad expression with non all-capital OR: " + expression);
+//        }
+//        if (exp.matches(".* (not|noT|nOt|nOT|Not|NoT|NOt) .*")) {
+//            throw new WdkUserException(
+//                    "Bad expression with non all-capital NOT: " + expression);
+//        }
+//    }
+//
 }

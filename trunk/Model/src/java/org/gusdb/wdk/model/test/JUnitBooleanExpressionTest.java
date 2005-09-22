@@ -19,6 +19,7 @@ import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -33,7 +34,8 @@ public class JUnitBooleanExpressionTest extends TestCase {
     private TestUtility utility;
     private WdkModel wdkModel;
     private SanityModel sanityModel;
-    Map<String, Answer> operandMap;
+    private Map<String, Answer> operandMap;
+    private Map<String, String> operatorMap;
 
     public static void main(String[] args) {
         junit.textui.TestRunner.run(JUnitBooleanExpressionTest.class);
@@ -72,6 +74,11 @@ public class JUnitBooleanExpressionTest extends TestCase {
         sanityModel = utility.getSanityModel();
 
         operandMap = buildOperandMap(sanityModel);
+        
+        operatorMap = new HashMap<String, String>();
+        operatorMap.put("and", BooleanQuestionNodeBean.INTERNAL_AND);
+        operatorMap.put("or", BooleanQuestionNodeBean.INTERNAL_OR);
+        operatorMap.put("not", BooleanQuestionNodeBean.INTERNAL_NOT);
     }
 
     private Map<String, Answer> buildOperandMap(SanityModel sanityModel)
@@ -137,14 +144,14 @@ public class JUnitBooleanExpressionTest extends TestCase {
     public void testParseExpression() {
         BooleanExpression be = new BooleanExpression(wdkModel);
 
-        String[] valid = { "#1 UNION #2", "#1 INTERSECT (#2 MINUS #3)",
-                "(#1 INTERSECT #3)INTERSECT(#2 INTERSECT #4)",
-                "(#1) UNION (#3)", "ans_1 UNION \"ans (2\"" };
+        String[] valid = { "#1 OR #2", "#1 AND (#2 NOT #3)",
+                "(#1 AND #3)AND(#2 AND #4)",
+                "(#1) OR (#3)", "ans_1 OR \"ans (2\"" };
 
         for (String expression : valid) {
             try {
                 BooleanQuestionNode bqn = be.parseExpression(expression,
-                        operandMap);
+                        operandMap, operatorMap);
 
                 assertNotNull(bqn);
 
@@ -163,14 +170,14 @@ public class JUnitBooleanExpressionTest extends TestCase {
             }
         }
 
-        String[] invalid = { "#0 UNION #2", "#1 INTERSECT (#2 MINUS #3",
-                "(#1 INTERSECT) #3", "#1(UNION #2)",
-                "ans_0 UNION #1", "\"ans_1 UNION \"ans (2\"" };
+        String[] invalid = { "#0 OR #2", "#1 AND (#2 NOT #3",
+                "(#1 AND) #3", "#1(OR #2)", "#1 BAD #2",
+                "ans_0 OR #1", "\"ans_1 OR \"ans (2\"" };
 
         for (String expression : invalid) {
             try {
                 BooleanQuestionNode bqn = be.parseExpression(expression,
-                        operandMap);
+                        operandMap, operatorMap);
 
                 assertNotNull(bqn);
 

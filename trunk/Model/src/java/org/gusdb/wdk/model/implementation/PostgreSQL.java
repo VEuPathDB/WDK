@@ -189,6 +189,14 @@ public class PostgreSQL implements RDBMSPlatformI {
             throw new WdkModelException(exp);
         }
     }
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.RDBMSPlatformI#getMinus()
+     */
+    public String getMinus() {
+        // TODO Auto-generated method stub
+        return "EXCEPT";
+    }
     
     
 }
