@@ -253,7 +253,11 @@ public class User {
         // create a new UserAnswer
         Answer answer = root.makeAnswer(startIndex, endIndex);
         addAnswer(answer);
-        return getUserAnswerByAnswer(answer);
+        // set user answer as combined
+        UserAnswer userAnswer = getUserAnswerByAnswer(answer);
+        userAnswer.setCombinedAnswer(true);
+        userAnswer.setName(sb.toString());
+        return userAnswer;
     }
 
     public UserAnswer combineUserAnswers(String expression, int startIndex,
@@ -270,7 +274,11 @@ public class User {
         // make answer
         Answer answer = root.makeAnswer(startIndex, endIndex);
         addAnswer(answer);
-        return getUserAnswerByAnswer(answer);
+        // set user answer as combined
+        UserAnswer userAnswer = getUserAnswerByAnswer(answer);
+        userAnswer.setCombinedAnswer(true);
+        userAnswer.setName(expression);
+        return userAnswer;
     }
 
     public boolean validateExpression(String expression, int startIndex,

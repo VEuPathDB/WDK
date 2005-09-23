@@ -1,7 +1,5 @@
-
 package org.gusdb.wdk.model.jspwrap;
 
-import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.UserAnswer;
 
 public class UserAnswerBean {
@@ -13,21 +11,27 @@ public class UserAnswerBean {
         this.userAnswer = answer;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.UserAnswer#getAnswer()
      */
     public AnswerBean getAnswer() {
         return new AnswerBean(this.userAnswer.getAnswer());
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.UserAnswer#getAnswerID()
      */
     public int getAnswerID() {
         return this.userAnswer.getAnswerID();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.UserAnswer#getName()
      */
     public String getName() {
@@ -35,10 +39,12 @@ public class UserAnswerBean {
     }
 
     public void setNameTruncateTo(int truncateTo) {
-	nameTruncateTo = truncateTo;
+        nameTruncateTo = truncateTo;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.UserAnswer#getName(int)
      */
     public String getTruncatedName() {
@@ -46,27 +52,37 @@ public class UserAnswerBean {
     }
 
     public boolean getIsNameTruncatable() {
-	return getName().length() > nameTruncateTo ? true : false;
+        return getName().length() > nameTruncateTo ? true : false;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.UserAnswer#getType()
      */
     public String getType() {
         return this.userAnswer.getType();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.UserAnswer#getUserID()
      */
     public String getUserID() {
         return this.userAnswer.getUserID();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Object#toString()
      */
     public String toString() {
         return this.userAnswer.toString();
+    }
+
+    public boolean isCombinedAnswer() {
+        return this.userAnswer.isCombinedAnswer();
     }
 }
