@@ -9,10 +9,11 @@ import java.util.Map;
  */
 public class UserAnswer {
 
-    protected String userID;
-    protected String name;
-    protected int answerID;
+    private String userID;
+    private String name;
+    private int answerID;
     private Answer answer;
+    private boolean combinedAnswer = false;
 
     UserAnswer(String userID, int answerID) {
         this.userID = userID;
@@ -43,13 +44,13 @@ public class UserAnswer {
     public String getName() {
         if (name == null) {
             StringBuffer nameBuf = new StringBuffer();
-            nameBuf.append("[" + answerID + "]");
+            // nameBuf.append("[" + answerID + "]");
             nameBuf.append(answer.getQuestion().getDisplayName());
 
             Map params = answer.getParams();
 
             for (Object key : params.keySet()) {
-                nameBuf.append(" " + key + ":(" + params.get(key) + ")");
+                nameBuf.append(" " + key + ":" + params.get(key));
             }
             name = nameBuf.toString();
         }
@@ -70,6 +71,14 @@ public class UserAnswer {
 
     void setAnswer(Answer answer) {
         this.answer = answer;
+    }
+
+    public boolean isCombinedAnswer() {
+        return this.combinedAnswer;
+    }
+
+    void setCombinedAnswer(boolean combinedAnswer) {
+        this.combinedAnswer = combinedAnswer;
     }
 
     /**
