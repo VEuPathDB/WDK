@@ -127,6 +127,12 @@
       <forward name="get_download_result" path="/downloadResult.jsp"/>
     </action>
     <action
+      path="/showQueryHistory"
+      type="org.gusdb.wdk.controller.action.ShowQueryHistoryAction"
+      scope="request">
+      <forward name="show_query_history" path="/queryHistory.jsp"/>
+    </action>
+    <action
       path="/downloadHistoryAnswer"
       type="org.gusdb.wdk.controller.action.DownloadHistoryAnswerAction"
       scope="request">
@@ -136,7 +142,7 @@
       path="/deleteHistoryAnswer"
       type="org.gusdb.wdk.controller.action.DeleteHistoryAnswerAction"
       scope="request">
-      <forward name="delete_history_answer" path="/queryHistory.jsp"/>
+      <forward name="delete_history_answer" path="/showQueryHistory.do"/>
     </action>
     <action
       path="/processBooleanExpression"

@@ -13,6 +13,7 @@ public class CConstants {
     public static final String WDK_CUSTOM_QUESTION_PAGE = "customQuestion.jsp";
     public static final String WDK_CUSTOM_SUMMARY_PAGE = "customSummary.jsp";
     public static final String WDK_CUSTOM_RECORD_PAGE = "customRecord.jsp";
+    public static final String WDK_CUSTOM_HISTORY_PAGE = "customQueryHistory.jsp";
     public static final String WDK_QUESTION_KEY = "wdkQuestion";
     public static final String WDK_QUESTION_PARAMS_KEY = "wdkQuestionParams";
     public static final String WDK_ANSWER_KEY = "wdkAnswer";
@@ -42,6 +43,7 @@ public class CConstants {
     public static final String GET_BOOLEAN_ANSWER_MAPKEY = "get_boolean_answer";
     public static final String CONFIG_DOWNLOAD_MAPKEY = "config_download";
     public static final String GET_DOWNLOAD_RESULT_MAPKEY = "get_download_result";
+    public static final String SHOW_QUERY_HISTORY_MAPKEY = "show_query_history";
     public static final String DOWNLOAD_HISTORY_ANSWER_MAPKEY = "download_history_answer";
     public static final String DELETE_HISTORY_ANSWER_MAPKEY = "delete_history_answer";
     public static final String PROCESS_BOOLEAN_EXPRESSION_MAPKEY = "process_boolean_expression";
