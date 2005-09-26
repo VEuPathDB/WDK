@@ -18,6 +18,7 @@ import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.jspwrap.UserAnswerBean;
 import org.gusdb.wdk.model.jspwrap.AnswerBean;
 import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
@@ -46,7 +47,12 @@ public class ShowSummaryAction extends Action {
 	if (ua_id_str != null) {
 	    int ua_id = Integer.parseInt(ua_id_str);
  	    wdkUser = (UserBean)request.getSession().getAttribute(CConstants.WDK_USER_KEY);
-	    wdkAnswer = wdkUser.getUserAnswerByID(ua_id).getAnswer();
+	    UserAnswerBean userAnswer = wdkUser.getUserAnswerByID(ua_id);
+	    wdkAnswer = userAnswer.getAnswer();
+	    if (userAnswer.isCombinedAnswer()) {
+		wdkAnswer.setIsCombinedAnswer(true);
+		wdkAnswer.setUserAnswerName(userAnswer.getName());
+	    }
 	    summaryPaging(request, null, null, wdkAnswer);
 	} else {
 	    //why I am not able to get back my question from the session? use the form for  now

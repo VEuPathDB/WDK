@@ -281,8 +281,8 @@ public class User {
         return userAnswer;
     }
 
-    public boolean validateExpression(String expression, int startIndex,
-            int endIndex, Map<String, String> operatorMap) {
+    public String validateExpression(String expression, int startIndex,
+            int endIndex, Map<String, String> operatorMap) throws WdkModelException {
         // construct operand map
         Map<String, Answer> operandMap = buildOperandMap();
 
@@ -290,13 +290,10 @@ public class User {
         BooleanExpression be = new BooleanExpression(model);
         try {
             be.parseExpression(expression, operandMap, operatorMap);
-        } catch (Exception ex) {
-            // TODO Auto-generated catch block
-            // ex.printStackTrace();
-            System.err.println(ex);
-            return false;
-        }
-        return true;
+        } catch (WdkUserException ue) {
+	    return ue.getMessage();
+	}
+        return null;
     }
 
     private Map<String, Answer> buildOperandMap() {
