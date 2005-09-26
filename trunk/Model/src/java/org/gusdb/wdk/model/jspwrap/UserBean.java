@@ -59,10 +59,11 @@ public class UserBean {
                 start, end, operatorMap));
     }
 
-    public boolean validateExpression(String expression, int startIndex,
-            int endIndex, Map<String, String> operatorMap) {
-        return this.user.validateExpression(expression, startIndex, endIndex,
-                operatorMap);
+    public String validateExpression(String expression, int startIndex,
+            int endIndex, Map<String, String> operatorMap) throws WdkModelException
+    {
+	return this.user.validateExpression(expression, startIndex, endIndex,
+					    operatorMap);
     }
 
     /*

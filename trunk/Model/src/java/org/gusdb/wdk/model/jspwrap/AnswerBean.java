@@ -17,6 +17,9 @@ public class AnswerBean {
     Answer answer;
     Map downloadConfigMap = null;
 
+    boolean isCombinedAnswer = false;
+    String userAnswerName = null;
+
     public AnswerBean(Answer answer) {
 	this.answer = answer;
     }
@@ -141,6 +144,20 @@ public class AnswerBean {
 	String[] downloadAttribNames = new String[size];
 	v.copyInto(downloadAttribNames);
 	return downloadAttribNames;
+    }
+
+    public void setIsCombinedAnswer(boolean isComAns) {
+	isCombinedAnswer = isComAns;
+    }
+    public boolean getIsCombinedAnswer() {
+	return isCombinedAnswer;
+    }
+
+    public void setUserAnswerName(String ua) {
+	userAnswerName = ua;
+    }
+    public String getUserAnswerName() {
+	return userAnswerName;
     }
 
     ////////////////////////////////////////////////////////////////////////

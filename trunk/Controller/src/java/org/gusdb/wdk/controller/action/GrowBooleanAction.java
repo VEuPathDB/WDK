@@ -47,13 +47,13 @@ public class GrowBooleanAction extends StartBooleanAction{
 	//first time user has grown something; tree is one node consisting of leaf
 	if (currentRoot instanceof org.gusdb.wdk.model.jspwrap.BooleanQuestionLeafBean) {
 	    BooleanQuestionLeafBean currentLeafRoot = (BooleanQuestionLeafBean)currentRoot;		
-	    currentLeafRoot.grow(newLeaf, operation, wdkModel);
+	    currentLeafRoot.grow(newLeaf, operation, wdkModel, BooleanQuestionForm.booleanOperatorMap);
 	    currentRoot = currentLeafRoot.getParent();
 	}
 	else if (currentRoot instanceof org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean){
 	    BooleanQuestionNodeBean currentNodeRoot = (BooleanQuestionNodeBean)currentRoot;	    
 	    BooleanQuestionLeafBean leafToGrow = currentNodeRoot.findLeaf(clickedLeafId);
-	    leafToGrow.grow(newLeaf, operation, wdkModel);
+	    leafToGrow.grow(newLeaf, operation, wdkModel, BooleanQuestionForm.booleanOperatorMap);
 	} else {
 	    throw new RuntimeException("expect BooleanQuestion<Leaf|Node>Bean but got: " + currentRoot);
 	}

@@ -33,6 +33,13 @@ public class BooleanQuestionForm extends QuestionForm {
     private String nextBooleanOperation;
     private String nextQuestionOperand;
 
+    public static Map booleanOperatorMap = new HashMap<String, String>();
+    {
+	booleanOperatorMap.put("union", BooleanQuestionNodeBean.INTERNAL_OR);
+	booleanOperatorMap.put("intersect", BooleanQuestionNodeBean.INTERNAL_AND);
+	booleanOperatorMap.put("minus", BooleanQuestionNodeBean.INTERNAL_NOT);
+    }
+
     public void reset() {
 	//TODO: implement reset to handle the cases
 	// where session scope formbean being used by multiple jsp pages

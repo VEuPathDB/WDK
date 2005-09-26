@@ -142,6 +142,7 @@
       path="/processBooleanExpression"
       type="org.gusdb.wdk.controller.action.ProcessBooleanExpressionAction"
       name="booleanExpressionForm"
+      input="/queryHistory.jsp"
       scope="request">
       <forward name="process_boolean_expression" path="/showSummary.do"/>
     </action>

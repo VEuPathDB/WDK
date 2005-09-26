@@ -1,5 +1,47 @@
 
 ------------------------------------------------------------------------------
+ooooooooooooooooooooooooooo  WDK Version 1.7  oooooooooooooooooooooooooooooooo
+------------------------------------------------------------------------------
+
+====================  Model - Fixed Bugs ========================
+
+* 112, wdkSummary: get model name from command line args when reporting errors
+
+* 57, attribute query can not be an aggregate query: reopened and fixed
+
+===================== Model - Features ==========================
+
+* 64, initial history implementation: this includes the addition of User, UserAnswer,
+  BooleanExpression concepts; the relevant jspwrappers for the view; wdkUnitTest
+  focused on unit testing for query history.
+
+* introduced Model/lib/java/db_driver to hold database drivers so that they can be
+  manually copied to the common/lib dir of Tomcat (or other webservers) to avoid
+  problems of multiple webapps interfering with each other under the same server.
+
+* refacted the command line tools by introducing WDK::Model::CommandHelper to 
+  handler Java CLASSPATH and args for all tools needing them.
+
+===================== Controller - Fixed Bugs ===================
+
+
+===================== Controller - Features =====================
+
+* 65, initial history implementation - view: this includes form beans, actions,
+  and struts configurations to allow history entry display, report, download,
+  boolean operation and delete. Note the history is session based so it will
+  expire after extended inactivity. Also note that boolean operation currently
+  only operates on answers with exactly the same record type.
+
+===================== View - Fixed Bugs =========================
+
+===================== View - Features ===========================
+
+* 65, initial history implementation - view: displaying of answers in history,
+  organized by the record types of answers and ordered by answer IDs
+  in descending order.
+
+------------------------------------------------------------------------------
 ooooooooooooooooooooooooooo  WDK Version 1.6  oooooooooooooooooooooooooooooooo
 ------------------------------------------------------------------------------
 

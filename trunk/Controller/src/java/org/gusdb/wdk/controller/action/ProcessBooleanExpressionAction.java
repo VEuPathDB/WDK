@@ -38,6 +38,7 @@ public class ProcessBooleanExpressionAction extends Action {
 	BooleanExpressionForm beForm = (BooleanExpressionForm)form;
 	booleanExpressionPaging(request, beForm);
 
+	request.setAttribute(CConstants.HISTORY_SECTION_ID, beForm.getHistorySectionId());
 	ActionForward forward = mapping.findForward(CConstants.PROCESS_BOOLEAN_EXPRESSION_MAPKEY);
 
 	return forward;
@@ -60,7 +61,7 @@ public class ProcessBooleanExpressionAction extends Action {
 	int end = start + pageSize-1;	
 
 	UserBean wdkUser = (UserBean)request.getSession().getAttribute(CConstants.WDK_USER_KEY);
-	UserAnswerBean userAnswer = wdkUser.combineAnswers(beForm.getBooleanExpression(), start, end);
+	UserAnswerBean userAnswer = wdkUser.combineAnswers(beForm.getBooleanExpression(), start, end, BooleanExpressionForm.booleanOperatorMap);
 	AnswerBean wdkAnswer = userAnswer.getAnswer();
 	int aid = userAnswer.getAnswerID();
 

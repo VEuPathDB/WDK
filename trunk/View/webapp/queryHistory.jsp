@@ -8,6 +8,10 @@
 
 <site:header banner="History" />
 
+<!-- show error messages, if any -->
+<wdk:errors/>
+
+<!-- decide whether history is empty -->
 <c:choose>
   <c:when test="${wdkUser.answerCount == 0}">
 
@@ -23,6 +27,13 @@
 <c:set var="rec" value="${recAnsEntry.key}"/>
 <c:set var="recAns" value="${recAnsEntry.value}"/>
 <c:set var="recDispName" value="${recAns[0].answer.question.recordClass.type}"/>
+
+  <!-- deciding whether to show only selected sections of history -->
+  <c:choose>
+    <c:when test="${section_id != null && section_id != rec}">
+    </c:when>
+    <c:otherwise>
+
 <c:set var="typeC" value="${typeC+1}"/>
 <c:choose><c:when test="${typeC != 1}"><hr></c:when></c:choose>
 
@@ -65,6 +76,7 @@
               Combine answers in the query history:
               <html:text property="booleanExpression" value=""/>
                 <font size="-1">(eg. "#1 OR (#4 AND #3 NOT #2)", <a href="http://www.ncbi.nlm.nih.gov/entrez/query/static/help/helpdoc.html#Boolean_Operators">see NCBI</a>)</font><br>
+              <html:hidden property="historySectionId" value="${rec}"/>
               <html:reset property="reset" value="Clear Expression"/>
               <html:submit property="submit" value="Get Combined Answer"/>
             </html:form>
@@ -72,9 +84,12 @@
           <td colspan="1"></td></tr>
   </table>
 
+    </c:otherwise>
+  </c:choose> <!-- end of deciding sections to show -->
+
 </c:forEach>
 
   </c:otherwise>
-</c:choose>
+</c:choose> <!-- end of deciding history emptiness -->
 
 <site:footer/>
