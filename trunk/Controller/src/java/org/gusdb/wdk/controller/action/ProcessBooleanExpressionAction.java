@@ -38,9 +38,7 @@ public class ProcessBooleanExpressionAction extends Action {
 	BooleanExpressionForm beForm = (BooleanExpressionForm)form;
 	booleanExpressionPaging(request, beForm);
 
-	ActionForward forward = mapping.findForward(CConstants.PROCESS_BOOLEAN_EXPRESSION_MAPKEY);
-
-	return forward;
+	return mapping.findForward(CConstants.PROCESS_BOOLEAN_EXPRESSION_MAPKEY);
     }
 
     private void booleanExpressionPaging (HttpServletRequest request, BooleanExpressionForm beForm)
