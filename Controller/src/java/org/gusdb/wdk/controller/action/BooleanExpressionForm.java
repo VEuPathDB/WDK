@@ -54,15 +54,16 @@ public class BooleanExpressionForm extends ActionForm {
 
 
 	UserBean wdkUser = (UserBean)request.getSession().getAttribute(CConstants.WDK_USER_KEY);
+	String errMsg = null;
 	try {
-	    String errMsg = wdkUser.validateExpression(getBooleanExpression(), 1, 20, booleanOperatorMap);
+	    errMsg = wdkUser.validateExpression(getBooleanExpression(), 1, 20, booleanOperatorMap);
 	    if (errMsg != null) {
 		errors.add(ActionErrors.GLOBAL_ERROR,
 			   new ActionError("mapped.properties", "booleanExpression", errMsg));
 	    }
 	} catch (WdkModelException exp) {
-	    errors.add(ActionErrors.GLOBAL_ERROR,
-		       new ActionError("mapped.properties", "booleanExpression", exp.getMessage()));
+	    errMsg = exp.getMessage();
+	    errors.add(ActionErrors.GLOBAL_ERROR, new ActionError("mapped.properties", "booleanExpression", errMsg));
 	}
 
 	return errors;

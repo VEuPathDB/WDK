@@ -38,7 +38,6 @@ public class ProcessBooleanExpressionAction extends Action {
 	BooleanExpressionForm beForm = (BooleanExpressionForm)form;
 	booleanExpressionPaging(request, beForm);
 
-	request.setAttribute(CConstants.HISTORY_SECTION_ID, beForm.getHistorySectionId());
 	ActionForward forward = mapping.findForward(CConstants.PROCESS_BOOLEAN_EXPRESSION_MAPKEY);
 
 	return forward;
