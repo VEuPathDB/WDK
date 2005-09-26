@@ -1,3 +1,4 @@
+<%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
 <%@ taglib prefix="site" tagdir="/WEB-INF/tags/site" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
@@ -30,7 +31,7 @@
 
   <!-- deciding whether to show only selected sections of history -->
   <c:choose>
-    <c:when test="${section_id != null && section_id != rec}">
+    <c:when test="${param.historySectionId != null && param.historySectionId != rec}">
     </c:when>
     <c:otherwise>
 

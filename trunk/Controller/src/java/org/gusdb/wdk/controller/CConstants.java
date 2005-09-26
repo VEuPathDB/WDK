@@ -58,7 +58,6 @@ public class CConstants {
     public static final String YES = "yes"; //match downloadConfig.jsp
     public static final String ALL = "all"; //match downloadConfig.jsp
     public static final String USER_ANSWER_ID = "user_answer_id"; //match queryHistory.jsp
-    public static final String HISTORY_SECTION_ID = "section_id"; //match queryHistory.jsp
 
     //used in action, action forms, and jsp pages
     public static final String NEXT_QUESTION_OPERAND_SUFFIX = "_nextQuestionOperand"; //match WEB-INF/includes/booleanQuestionNode.jsp
