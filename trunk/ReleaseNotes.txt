@@ -5,6 +5,10 @@ ooooooooooooooooooooooooooo  WDK Version 1.7  oooooooooooooooooooooooooooooooo
 
 ====================  Model - Fixed Bugs ========================
 
+* 161, Question reference cannot be resolved properly by Model
+  (Solution: force the model to resolve sets in this order:
+   QuerySets, ParamSets, RecordSets, QuestionSets)
+
 * 112, wdkSummary: get model name from command line args when reporting errors
 
 * 57, attribute query can not be an aggregate query: reopened and fixed
@@ -181,3 +185,5 @@ View - Features
            2) there is no .record in <RecordClassSet>.<RecordClass>.jsp
            3) more specific customization take precedence when more than one
               levels of customization exist for the same default view. 
+
+
