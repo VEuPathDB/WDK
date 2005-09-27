@@ -41,6 +41,11 @@ ooooooooooooooooooooooooooo  WDK Version 1.7  oooooooooooooooooooooooooooooooo
   organized by the record types of answers and ordered by answer IDs
   in descending order.
 
+* download configuration now allows all attribute fields of the underlying
+  record of an answer to be included in downloads, even if they are not
+  specified as one of the summary attributes by the question
+  that returned the answer
+
 ------------------------------------------------------------------------------
 ooooooooooooooooooooooooooo  WDK Version 1.6  oooooooooooooooooooooooooooooooo
 ------------------------------------------------------------------------------

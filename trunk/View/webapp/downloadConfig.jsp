@@ -57,8 +57,12 @@
 <html:form method="get" action="configDownload">
   <table>
   <tr><td><b>Choose attributes: </b></td>
-      <td><html:multibox property="selectedFields">all</html:multibox> All, or select from:
-          <c:forEach items="${wdkAnswer.summaryAttributeNames}" var="recAttrName">
+      <td><html:multibox property="selectedFields">all</html:multibox>
+          All <I><B>Answer</B></I> summary fields, or select from <I><B>Record</B></I> fields:<br>
+          <!--c:forEach items="${wdkAnswer.summaryAttributeNames}" var="recAttrName"-->
+          <c:forEach items="${wdkAnswer.question.recordClass.attributeFields}" var="recAttr">
+          <c:set value="${recAttr.key}" var="recAttrName"/>
+
             <c:set value="${wdkAnswer.question.recordClass.attributeFields[recAttrName]}" var="recAttr"/>
             <c:if test="${!recAttr.isInternal}">
               <html:multibox property="selectedFields">
