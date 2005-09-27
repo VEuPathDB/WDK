@@ -360,11 +360,39 @@ public class WdkModel {
      * references into real object references.
      */ 
     public void resolveReferences() throws WdkModelException {
-       
-        Iterator modelSets = allModelSets.values().iterator();
-        while (modelSets.hasNext()) {
-            ModelSetI modelSet = (ModelSetI) modelSets.next();
-            modelSet.resolveReferences(this);
+        // Since we use Map here, the order of the sets in allModelSets are 
+        // random. However, if QuestionSet is resolved before a RecordSet, and
+        // it goes down to resolve: QuestionSet -> Question -> RecordClass, and
+        // when we try to resolve the RecordClass, a copy of it has been put
+        // into RecordSet yet not being resolved. That means the attribute won't
+        // be compatible since one contains nothing.
+//        Iterator modelSets = allModelSets.values().iterator();
+//        while (modelSets.hasNext()) {
+//            ModelSetI modelSet = (ModelSetI) modelSets.next();
+//            modelSet.resolveReferences(this);
+//        }
+        
+        // instead, we first resolve querySets, then recordSets, and then 
+        // paramSets, and last on questionSets
+        Iterator itQuerySets = querySets.values().iterator();
+        while (itQuerySets.hasNext()){
+            QuerySet querySet = (QuerySet)itQuerySets.next();
+            querySet.resolveReferences(this);
+        }
+        Iterator itParamSets = paramSets.values().iterator();
+        while (itParamSets.hasNext()){
+            ParamSet paramSet = (ParamSet)itParamSets.next();
+            paramSet.resolveReferences(this);
+        }
+        Iterator itRecordSets = recordClassSets.values().iterator();
+        while (itRecordSets.hasNext()){
+            RecordClassSet recordClassSet = (RecordClassSet)itRecordSets.next();
+            recordClassSet.resolveReferences(this);
+        }
+        Iterator itQuestionSets = questionSets.values().iterator();
+        while (itQuestionSets.hasNext()){
+            QuestionSet questionSet = (QuestionSet)itQuestionSets.next();
+            questionSet.resolveReferences(this);
         }
     }
     
