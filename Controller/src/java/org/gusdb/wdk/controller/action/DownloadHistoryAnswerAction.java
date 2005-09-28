@@ -9,6 +9,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.jspwrap.AnswerBean;
+import org.gusdb.wdk.model.jspwrap.UserAnswerBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 
 /**
@@ -26,7 +27,14 @@ public class DownloadHistoryAnswerAction extends Action {
 	if (ua_id_str != null) {
 	    int ua_id = Integer.parseInt(ua_id_str);
 	    UserBean wdkUser = (UserBean)request.getSession().getAttribute(CConstants.WDK_USER_KEY);
-	    AnswerBean wdkAnswer = wdkUser.getUserAnswerByID(ua_id).getAnswer();
+
+	    UserAnswerBean userAnswer = wdkUser.getUserAnswerByID(ua_id);
+	    AnswerBean wdkAnswer = userAnswer.getAnswer();
+	    if (userAnswer.isCombinedAnswer()) {
+		wdkAnswer.setIsCombinedAnswer(true);
+		wdkAnswer.setUserAnswerName(userAnswer.getName());
+	    }
+
 	    request.getSession().setAttribute(CConstants.WDK_ANSWER_KEY, wdkAnswer);
 	    request.getSession().setAttribute(CConstants.WDK_QUESTION_PARAMS_KEY, wdkAnswer.getInternalParams());
 	} else {
