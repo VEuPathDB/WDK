@@ -15,34 +15,46 @@
 <p><b>Generate a tab delimited text report of selected attributes for the question below, with an optional header line of attribute names.</b></p>
 
 <!-- display question and param values and result size for wdkAnswer -->
-<c:choose>
-  <c:when test="${wdkAnswer.isBoolean}">
-    <!-- boolean question -->
+<table>
 
-    <table><tr><td valign="top" align="left"><b>Expanded Question:</b></td>
-               <td valign="top" align="left">
-                 <nested:root name="wdkAnswer">
-                   <jsp:include page="/WEB-INF/includes/bqShowNode.jsp"/>
-                 </nested:root>
-               </td></tr>
-    </table>
+<c:choose>
+  <c:when test="${wdkAnswer.isCombinedAnswer}">
+    <!-- combined answer from history boolean expression -->
+    <tr><td valign="top" align="left"><b>Combined Answer:</b></td>
+        <td valign="top" align="left">${wdkAnswer.userAnswerName}</td></tr>
   </c:when>
   <c:otherwise>
-    <!-- simple question -->
-    <c:set value="${wdkAnswer.params}" var="params"/>
-    <c:set value="${wdkAnswer.question.displayName}" var="wdkQuestionName"/>
-    <table><tr><td valign="top" align="left"><b>Query:</b></td>
-               <td valign="top" align="left">${wdkQuestionName}</td></tr>
-           <tr><td valign="top" align="left"><b>Parameters:</b></td>
-               <td valign="top" align="left">
-                 <table>
-                   <c:forEach items="${params}" var="p">
-                     <tr><td align="right">${p.key}:</td><td><i>${p.value}</i></td></tr> 
-                   </c:forEach>
-                 </table></td></tr>
-    </table>
+
+    <c:choose>
+      <c:when test="${wdkAnswer.isBoolean}">
+        <!-- boolean question -->
+
+        <tr><td valign="top" align="left"><b>Expanded Question:</b></td>
+                   <td valign="top" align="left">
+                     <nested:root name="wdkAnswer">
+                       <jsp:include page="/WEB-INF/includes/bqShowNode.jsp"/>
+                     </nested:root>
+                   </td></tr>
+      </c:when>
+      <c:otherwise>
+        <!-- simple question -->
+        <c:set value="${wdkAnswer.params}" var="params"/>
+        <c:set value="${wdkAnswer.question.displayName}" var="wdkQuestionName"/>
+        <tr><td valign="top" align="left"><b>Query:</b></td>
+                   <td valign="top" align="left">${wdkQuestionName}</td></tr>
+               <tr><td valign="top" align="left"><b>Parameters:</b></td>
+                   <td valign="top" align="left">
+                     <table>
+                       <c:forEach items="${params}" var="p">
+                         <tr><td align="right">${p.key}:</td><td><i>${p.value}</i></td></tr> 
+                       </c:forEach>
+                     </table></td></tr>
+      </c:otherwise>
+    </c:choose>
+
   </c:otherwise>
 </c:choose>
+</table>
 
 <hr>
 
