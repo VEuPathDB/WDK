@@ -314,8 +314,62 @@ public class RecordInstance {
 	printAtts_Aux(buf, "Summary Attributes: " + newline, summaryAttributes);
 	return buf.toString();
     }
-	
 
+    public String toXML() throws WdkModelException, WdkUserException { return toXML(""); }
+
+    public String toXML(String ident) throws WdkModelException, WdkUserException {
+	String newline = System.getProperty( "line.separator" );
+	StringBuffer buf = new StringBuffer();
+
+	String rootStart = ident + "<" + getRecordClass().getType() + ">" + newline;
+	String rootEnd = ident + "</" + getRecordClass().getType() + ">" + newline;
+	ident = ident + "    ";
+	buf.append(rootStart);
+	
+	Map attributeFields = getAttributes();
+	Iterator fieldNames = attributeFields.keySet().iterator();
+	while (fieldNames.hasNext()) {
+	    String fieldName = (String)fieldNames.next();
+	    AttributeFieldValue field = 
+		(AttributeFieldValue)attributeFields.get(fieldName);
+	    buf.append(ident + "<" + field.getName() + ">" + newline);
+	    buf.append(ident + "    " + field.getValue() + newline);
+	    buf.append(ident + "</" + field.getName() + ">" + newline);
+	}
+
+	Map tableFields = getTables();
+	fieldNames = tableFields.keySet().iterator();
+	while (fieldNames.hasNext()) {
+	    String fieldName = (String)fieldNames.next();
+	    buf.append(ident + "<" + fieldName + ">" + newline);
+	    ResultList resultList = getTableValue(fieldName);
+	    resultList.toXML(buf, "li", ident);
+	    resultList.close();
+	    buf.append(ident + "<" + fieldName + ">" + newline);
+	}
+	
+	Map nestedRecords = getNestedRecordInstances();
+	Iterator recordNames = nestedRecords.keySet().iterator();
+	while (recordNames.hasNext()){
+	    String nextRecordName = (String)recordNames.next();
+	    RecordInstance nextNr = (RecordInstance)nestedRecords.get(nextRecordName);
+	    buf.append (nextNr.toXML(ident));
+	}
+    
+	Map nestedRecordLists = getNestedRecordInstanceLists();
+	Iterator recordListNames = nestedRecordLists.keySet().iterator();
+	while (recordListNames.hasNext()){
+	    String nextRecordListName = (String)recordListNames.next();
+	    RecordInstance nextNrList[] = (RecordInstance[])nestedRecordLists.get(nextRecordListName);
+	    for (int i = 0; i < nextNrList.length; i++){
+		buf.append(nextNrList[i].toXML(ident) + newline);
+	    }
+	}
+	
+	buf.append(rootEnd);
+
+	return buf.toString();
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     // package methods
