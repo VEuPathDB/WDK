@@ -97,6 +97,28 @@ public abstract class ResultList {
 	close();
     }
 
+    public void toXML(StringBuffer buf, String rowTag, String ident)  throws WdkModelException {
+        String newline = System.getProperty( "line.separator" );
+	Iterator rows = getRows();
+	while (rows.hasNext()) {
+	    buf.append(ident + "<" + rowTag + ">");
+	    Map rowMap = (Map)rows.next();
+	    Iterator colNames = rowMap.keySet().iterator();
+	    while (colNames.hasNext()) {
+		Object colName = colNames.next();
+		AttributeFieldValue fVal = 
+		    (AttributeFieldValue)rowMap.get(colName);
+		if (!fVal.getIsInternal().booleanValue()) {
+		    buf.append(ident + "    " + "<" + colName + ">" + newline);
+		    buf.append(ident + "        " + fVal.getValue() + newline);
+		    buf.append(ident + "    " + "</" + colName + ">" + newline);
+		}
+	    }
+	    buf.append(ident + "</" + rowTag + ">" + newline);
+	}
+	close();
+    }
+
     public abstract void print() throws WdkModelException;
 
     public String getResultTableName() throws WdkModelException {
