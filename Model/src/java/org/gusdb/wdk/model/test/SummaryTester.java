@@ -8,12 +8,15 @@ import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.RecordClassSet;
+import org.gusdb.wdk.model.RecordInstance;
 import org.gusdb.wdk.model.QuestionSet;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.implementation.ModelXmlParser;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Hashtable;
 
 import org.apache.commons.cli.BasicParser;
@@ -45,7 +48,10 @@ public class SummaryTester {
 	if (haveParams){
 	    params = cmdLine.getOptionValues("params");
 	}
-	
+
+	boolean toXml = cmdLine.hasOption("toXml");
+	String xmlFileName = cmdLine.getOptionValue("toXml");
+	if (xmlFileName == null || xmlFileName.equals("")) usage(cmdName, options);
 	
 	try {
         
@@ -58,37 +64,38 @@ public class SummaryTester {
 	    QuestionSet questionSet = wdkModel.getQuestionSet(questionSetName);
 	    Question question = questionSet.getQuestion(questionName);
 
+	    Hashtable paramValues = new Hashtable();
 	    if (haveParams){
-		Hashtable paramValues = parseParamArgs(params);
+		paramValues = parseParamArgs(params); 
+	    }
 
-		// this is suspicious
-		//Query query = question.getQuery();
-		//query.setIsCacheable(new Boolean(true));
-		int pageCount = 1;
+	    // this is suspicious
+	    //Query query = question.getQuery();
+	    //query.setIsCacheable(new Boolean(true));
+	    int pageCount = 1;
+
+	    if (toXml) {
+		writeSummaryAsXml(question, paramValues, xmlFileName);
+		return;
+	    } 
 		
-		for (int i = 0; i < rows.length; i+=2){
-		    int nextStartRow = Integer.parseInt(rows[i]);
-		    int nextEndRow = Integer.parseInt(rows[i+1]);
+	    for (int i = 0; i < rows.length; i+=2){
+		int nextStartRow = Integer.parseInt(rows[i]);
+		int nextEndRow = Integer.parseInt(rows[i+1]);
 
-		    Answer answer = question.makeAnswer(paramValues, nextStartRow, nextEndRow);
-		    answer.printAsTable();
+		Answer answer = question.makeAnswer(paramValues, nextStartRow, nextEndRow);
+		answer.printAsTable();
 
-		    if (cmdLine.hasOption("showQuery")) {
-			System.out.println(getLowLevelQuery(answer));
-			return;
-		    }
-
-		    System.out.println("Printing Record Instances on page " + pageCount);
-		    System.out.println(answer.printAsTable());
-
-		    pageCount++;
+		if (cmdLine.hasOption("showQuery")) {
+		    System.out.println(getLowLevelQuery(answer));
+		    return;
 		}
-		
-		
-	    }
-	    else {
-		usage(cmdName, options);
-	    }
+
+		System.out.println("Printing Record Instances on page " + pageCount);
+		System.out.println(answer.printAsTable());
+
+		pageCount++;
+	    }		
         } catch (WdkUserException e) {
             System.err.println(e.formatErrors());
             System.exit(1);
@@ -97,6 +104,27 @@ public class SummaryTester {
 	    System.exit(1);
 	}
 	    
+    }
+
+    private static void writeSummaryAsXml (Question question, Hashtable paramValues, String xmlFile)
+	throws WdkModelException, WdkUserException, IOException {
+	Answer answer = question.makeAnswer(paramValues, 1, 10);
+	int resultSize = answer.getResultSize();
+	answer = question.makeAnswer(paramValues, 1, resultSize);
+
+	String newline = System.getProperty("line.separator");
+	StringBuffer sb = new StringBuffer();
+        String ident = "    ";
+
+	sb.append("<" + question.getFullName() + ">" + newline);
+	while (answer.hasMoreRecordInstances()) {
+	    RecordInstance ri = answer.getNextRecordInstance();
+	    sb.append(ri.toXML(ident) + newline);
+	}
+	sb.append("</" + question.getFullName() + ">" + newline);
+
+	FileWriter fw = new FileWriter(new File(xmlFile));
+	fw.write(sb.toString());
     }
 
     private static String getLowLevelQuery(Answer answer) throws WdkModelException {
@@ -127,7 +155,7 @@ public class SummaryTester {
 	addOption(options, "question", "The full name (set.element) of the question to run.");
 	
 	//rows to return
-	Option rows = new Option("rows", "The start and end pairs of the summary rows to return");
+	Option rows = new Option("rows", "The start and end pairs of the summary rows to return. Ignored when toXml is turned on");
 	rows.setArgs(Option.UNLIMITED_VALUES);
 	rows.setRequired(true);
 	options.addOption(rows);
@@ -136,6 +164,8 @@ public class SummaryTester {
 	Option showQuery = new Option("showQuery", "Show the query as it will be run (with parameter values in place).");
 	options.addOption(showQuery);
 
+	// output XML
+	addOption(options, "toXml", "output summary in XML format to given file");
 
 	//params
 	Option params = new Option("params", true, "Space delimited list of param_name param_value ....");
@@ -197,8 +227,9 @@ public class SummaryTester {
 	    cmdName + 
 	    " -model model_name" +
 	    " -question full_question_name" +
-             " -rows start end" +
-             " [-showQuery]" +
+            " -rows start end" +
+            " [-showQuery]" +
+            " [-toXml <xmlFile>]" +
 	    " -params param_1_name param_1_value ...";
 
 	String header = 
