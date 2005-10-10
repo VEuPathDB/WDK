@@ -332,9 +332,7 @@ public class RecordInstance {
 	    String fieldName = (String)fieldNames.next();
 	    AttributeFieldValue field = 
 		(AttributeFieldValue)attributeFields.get(fieldName);
-	    buf.append(ident + "<" + field.getName() + ">" + newline);
-	    buf.append(ident + "    " + field.getValue() + newline);
-	    buf.append(ident + "</" + field.getName() + ">" + newline);
+	    buf.append(ident + "<" + field.getName() + ">" + field.getValue() + "</" + field.getName() + ">" + newline);
 	}
 
 	Map tableFields = getTables();
