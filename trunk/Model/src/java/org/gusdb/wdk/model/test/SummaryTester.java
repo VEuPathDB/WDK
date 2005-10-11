@@ -39,9 +39,6 @@ public class SummaryTester {
 	CommandLine cmdLine = parseOptions(cmdName, options, args);
 
 	String questionFullName = cmdLine.getOptionValue("question");
-	String[] rows = cmdLine.getOptionValues("rows");
-
-	validateRowCount(rows);
 	
 	String[] params = null;
 	boolean haveParams = cmdLine.hasOption("params");
@@ -51,8 +48,15 @@ public class SummaryTester {
 
 	boolean toXml = cmdLine.hasOption("toXml");
 	String xmlFileName = cmdLine.getOptionValue("toXml");
-	if (xmlFileName == null || xmlFileName.equals("")) usage(cmdName, options);
-	
+	String[] rows = cmdLine.getOptionValues("rows");
+
+	if (toXml) {
+	    if (xmlFileName == null || xmlFileName.equals("")) usage(cmdName, options);
+	} else {
+	    if (rows == null || rows.length == 0) usage(cmdName, options);
+	    validateRowCount(rows);
+	}
+
 	try {
         
 	    File schemaFile = new File(System.getProperty("schemaFile"));
@@ -111,20 +115,20 @@ public class SummaryTester {
 	Answer answer = question.makeAnswer(paramValues, 1, 10);
 	int resultSize = answer.getResultSize();
 	answer = question.makeAnswer(paramValues, 1, resultSize);
+	FileWriter fw = new FileWriter(new File(xmlFile), false);
 
 	String newline = System.getProperty("line.separator");
-	StringBuffer sb = new StringBuffer();
         String ident = "    ";
 
-	sb.append("<" + question.getFullName() + ">" + newline);
+	fw.write("<" + question.getFullName() + ">" + newline);
+	fw.close();
+	fw = new  FileWriter(new File(xmlFile), true);
 	while (answer.hasMoreRecordInstances()) {
 	    RecordInstance ri = answer.getNextRecordInstance();
-	    sb.append(ri.toXML(ident) + newline);
+	    fw.write(ri.toXML(ident) + newline);
 	}
-	sb.append("</" + question.getFullName() + ">" + newline);
-
-	FileWriter fw = new FileWriter(new File(xmlFile));
-	fw.write(sb.toString());
+	fw.write("</" + question.getFullName() + ">" + newline);
+	fw.close();
     }
 
     private static String getLowLevelQuery(Answer answer) throws WdkModelException {
@@ -155,9 +159,8 @@ public class SummaryTester {
 	addOption(options, "question", "The full name (set.element) of the question to run.");
 	
 	//rows to return
-	Option rows = new Option("rows", "The start and end pairs of the summary rows to return. Ignored when toXml is turned on");
+	Option rows = new Option("rows", "The start and end pairs of the summary rows to return. Ignored when toXml is turned on, but required otherwise.");
 	rows.setArgs(Option.UNLIMITED_VALUES);
-	rows.setRequired(true);
 	options.addOption(rows);
 
 	// show query
@@ -165,7 +168,8 @@ public class SummaryTester {
 	options.addOption(showQuery);
 
 	// output XML
-	addOption(options, "toXml", "output summary in XML format to given file");
+	Option toXml = new Option("toXml", true, "output summary in XML format to given file");
+	options.addOption(toXml);
 
 	//params
 	Option params = new Option("params", true, "Space delimited list of param_name param_value ....");
@@ -227,7 +231,7 @@ public class SummaryTester {
 	    cmdName + 
 	    " -model model_name" +
 	    " -question full_question_name" +
-            " -rows start end" +
+            " [-rows start end]" +
             " [-showQuery]" +
             " [-toXml <xmlFile>]" +
 	    " -params param_1_name param_1_value ...";
