@@ -321,8 +321,10 @@ public class RecordInstance {
 	String newline = System.getProperty( "line.separator" );
 	StringBuffer buf = new StringBuffer();
 
-	String rootStart = ident + "<" + getRecordClass().getFullName() + ">" + newline;
-	String rootEnd = ident + "</" + getRecordClass().getFullName() + ">" + newline;
+	String rootStart = ident + "<" + getRecordClass().getFullName() + ">" + newline
+	    + ident + "<li>" + newline;
+	String rootEnd = ident + "</li>" + newline
+	    + ident + "</" + getRecordClass().getFullName() + ">" + newline;
 	ident = ident + "    ";
 	buf.append(rootStart);
 	
@@ -343,7 +345,7 @@ public class RecordInstance {
 	    ResultList resultList = getTableValue(fieldName);
 	    resultList.toXML(buf, "li", ident);
 	    resultList.close();
-	    buf.append(ident + "<" + fieldName + ">" + newline);
+	    buf.append(ident + "</" + fieldName + ">" + newline);
 	}
 	
 	Map nestedRecords = getNestedRecordInstances();
