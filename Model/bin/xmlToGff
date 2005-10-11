@@ -1,0 +1,9 @@
+#!/usr/bin/perl
+
+use lib "$ENV{GUS_HOME}/lib/perl";
+use WDK::Model::XmlToGff3;
+
+my $xmlFile = shift;
+die "\nmust provide xml file to convert\n\n" unless $xmlFile;
+&WDK::Model::XmlToGff3::convert($xmlFile);
+
