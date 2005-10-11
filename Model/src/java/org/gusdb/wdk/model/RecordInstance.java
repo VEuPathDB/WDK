@@ -321,8 +321,8 @@ public class RecordInstance {
 	String newline = System.getProperty( "line.separator" );
 	StringBuffer buf = new StringBuffer();
 
-	String rootStart = ident + "<" + getRecordClass().getType() + ">" + newline;
-	String rootEnd = ident + "</" + getRecordClass().getType() + ">" + newline;
+	String rootStart = ident + "<" + getRecordClass().getFullName() + ">" + newline;
+	String rootEnd = ident + "</" + getRecordClass().getFullName() + ">" + newline;
 	ident = ident + "    ";
 	buf.append(rootStart);
 	
