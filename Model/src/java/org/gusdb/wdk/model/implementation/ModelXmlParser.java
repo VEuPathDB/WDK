@@ -19,6 +19,12 @@ import org.gusdb.wdk.model.NestedRecord;
 import org.gusdb.wdk.model.NestedRecordList;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.xml.XmlAttributeField;
+import org.gusdb.wdk.model.xml.XmlQuestion;
+import org.gusdb.wdk.model.xml.XmlQuestionSet;
+import org.gusdb.wdk.model.xml.XmlRecordClass;
+import org.gusdb.wdk.model.xml.XmlRecordClassSet;
+import org.gusdb.wdk.model.xml.XmlTableField;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -27,6 +33,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.Properties;
@@ -57,52 +65,73 @@ import com.thaiopensource.validate.ValidationDriver;
 import com.thaiopensource.xml.sax.ErrorHandlerImpl;
 
 public class ModelXmlParser {
-    
+
     private static final String DEFAULT_SCHEMA_NAME = "wdkModel.rng";
-    
-    public static WdkModel parseXmlFile(URL modelXmlURL, URL modelPropURL, URL schemaURL, URL modelConfigXmlFileURL)
-    throws WdkModelException {
-        
-        if (schemaURL == null) {
-            schemaURL = WdkModel.class.getResource(DEFAULT_SCHEMA_NAME);   
+
+    private static final String DEFAULT_XML_SCHEMA = "xmlAnswer.rng";
+
+    public static WdkModel parseXmlFile(URL modelXmlURL, URL modelPropURL,
+            URL schemaURL, URL modelConfigXmlFileURL) throws WdkModelException {
+        // assume the schema for xml is put into the same place as the schema
+        // for model
+        try {
+            File schemaFile = new File(schemaURL.toURI());
+            File xmlSchemaFile = new File(schemaFile.getParentFile(),
+                    DEFAULT_XML_SCHEMA);
+            return parseXmlFile(modelXmlURL, modelPropURL, schemaURL,
+                    xmlSchemaFile.toURL(), modelConfigXmlFileURL);
+        } catch (MalformedURLException ex) {
+            throw new WdkModelException(ex);
+        } catch (URISyntaxException ex) {
+            throw new WdkModelException(ex);
         }
-        
+    }
+
+    public static WdkModel parseXmlFile(URL modelXmlURL, URL modelPropURL,
+            URL schemaURL, URL xmlSchemaURL, URL modelConfigXmlFileURL)
+            throws WdkModelException {
+
+        if (schemaURL == null) {
+            schemaURL = WdkModel.class.getResource(DEFAULT_SCHEMA_NAME);
+        }
+
         // NOTE: we are validating before we substitute in the properties
         // so that the validator will operate on a file instead of a stream.
         // this way the validator spits out line numbers for errors
         if (!validModelFile(modelXmlURL, schemaURL)) {
             throw new WdkModelException("Model validation failed");
         }
-        
+
         Digester digester = configureDigester();
         WdkModel model = null;
-        
+
         try {
-            InputStream modelXmlStream = 
-                makeModelXmlStream(modelXmlURL, modelPropURL);
-            model = (WdkModel)digester.parse(modelXmlStream);
+            InputStream modelXmlStream = makeModelXmlStream(modelXmlURL,
+                    modelPropURL);
+            model = (WdkModel) digester.parse(modelXmlStream);
         } catch (SAXException e) {
             throw new WdkModelException(e);
         } catch (IOException e) {
             throw new WdkModelException(e);
         }
-        
+
         setModelDocument(model, modelXmlURL, modelPropURL);
-	model.resolveReferences();
+        model.resolveReferences();
+        model.setXmlSchema(xmlSchemaURL); // set schema for xml data source
 
         try {
-	    model.configure(modelConfigXmlFileURL);
-	    model.setResources();
-	}
-	catch (Exception e){
-	    throw new WdkModelException(e);
-	}
+            model.configure(modelConfigXmlFileURL);
+            model.setResources();
+        } catch (Exception e) {
+            throw new WdkModelException(e);
+        }
         return model;
     }
-    
-    private static InputStream makeModelXmlStream(URL modelXmlURL, URL modelPropURL) throws WdkModelException {
+
+    private static InputStream makeModelXmlStream(URL modelXmlURL,
+            URL modelPropURL) throws WdkModelException {
         InputStream modelXmlStream;
-        
+
         if (modelPropURL != null) {
             modelXmlStream = configureModelFile(modelXmlURL, modelPropURL);
         } else {
@@ -116,11 +145,12 @@ public class ModelXmlParser {
         }
         return modelXmlStream;
     }
-    
-    private static void setModelDocument(WdkModel model, URL modelXmlURL, URL modelPropURL) throws WdkModelException {
+
+    private static void setModelDocument(WdkModel model, URL modelXmlURL,
+            URL modelPropURL) throws WdkModelException {
         try {
-            InputStream modelXmlStream = 
-                makeModelXmlStream(modelXmlURL, modelPropURL);
+            InputStream modelXmlStream = makeModelXmlStream(modelXmlURL,
+                    modelPropURL);
             model.setDocument(buildDocument(modelXmlStream));
         } catch (SAXException e) {
             throw new WdkModelException(e);
@@ -130,269 +160,374 @@ public class ModelXmlParser {
             throw new WdkModelException(e);
         }
     }
-    
-    public static Document buildDocument(InputStream modelXMLStream) throws ParserConfigurationException, SAXException, IOException {
-        
+
+    public static Document buildDocument(InputStream modelXMLStream)
+            throws ParserConfigurationException, SAXException, IOException {
+
         Document doc = null;
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         // Turn on validation, and turn off namespaces
         factory.setValidating(false);
         factory.setNamespaceAware(false);
         DocumentBuilder builder = factory.newDocumentBuilder();
-        ErrorHandler errorHandler = new ErrorHandlerImpl(System.err);
-        //builder.setErrorHandler(errorHandler);
-        builder.setErrorHandler(
-                new org.xml.sax.ErrorHandler() {
-                    // ignore fatal errors (an exception is guaranteed)
-                    public void fatalError(SAXParseException exception)
+        // ErrorHandler errorHandler = new ErrorHandlerImpl(System.err);
+        // builder.setErrorHandler(errorHandler);
+        builder.setErrorHandler(new org.xml.sax.ErrorHandler() {
+            // ignore fatal errors (an exception is guaranteed)
+            public void fatalError(SAXParseException exception)
                     throws SAXException {
-                        exception.printStackTrace(System.err);
-                    }
-                    // treat validation errors as fatal
-                    public void error(SAXParseException e)
-                    throws SAXParseException
-                    {
-                        e.printStackTrace(System.err);
-                        throw e;
-                    }
-                    
-                    // dump warnings too
-                    public void warning(SAXParseException err)
-                    throws SAXParseException
-                    {
-                        System.err.println("** Warning"
-                                + ", line " + err.getLineNumber()
-                                + ", uri " + err.getSystemId());
-                        System.err.println("   " + err.getMessage());
-                    }
-                }
-        );  
-        
+                exception.printStackTrace(System.err);
+            }
+
+            // treat validation errors as fatal
+            public void error(SAXParseException e) throws SAXParseException {
+                e.printStackTrace(System.err);
+                throw e;
+            }
+
+            // dump warnings too
+            public void warning(SAXParseException err) throws SAXParseException {
+                System.err.println("** Warning" + ", line "
+                        + err.getLineNumber() + ", uri " + err.getSystemId());
+                System.err.println("   " + err.getMessage());
+            }
+        });
+
         doc = builder.parse(modelXMLStream);
         return doc;
     }
-    
-    
-    private static boolean validModelFile(URL modelXmlURL, URL schemaURL) throws WdkModelException {
-    
-        System.setProperty("org.apache.xerces.xni.parser.XMLParserConfiguration", "org.apache.xerces.parsers.XIncludeParserConfiguration"); 
-    
+
+    private static boolean validModelFile(URL modelXmlURL, URL schemaURL)
+            throws WdkModelException {
+
+        System.setProperty(
+                "org.apache.xerces.xni.parser.XMLParserConfiguration",
+                "org.apache.xerces.parsers.XIncludeParserConfiguration");
+
         try {
-            
+
             ErrorHandler errorHandler = new ErrorHandlerImpl(System.err);
-            PropertyMap schemaProperties = new SinglePropertyMap(ValidateProperty.ERROR_HANDLER, errorHandler);
-            ValidationDriver vd = new ValidationDriver(schemaProperties, PropertyMap.EMPTY, null);
-        
+            PropertyMap schemaProperties = new SinglePropertyMap(
+                    ValidateProperty.ERROR_HANDLER, errorHandler);
+            ValidationDriver vd = new ValidationDriver(schemaProperties,
+                    PropertyMap.EMPTY, null);
+
             vd.loadSchema(ValidationDriver.uriOrFileInputSource(schemaURL.toExternalForm()));
- 
-            //System.err.println("modelXMLURL is  "+modelXmlURL);
-            
+
+            // System.err.println("modelXMLURL is "+modelXmlURL);
+
             InputSource is = ValidationDriver.uriOrFileInputSource(modelXmlURL.toExternalForm());
-            //            return vd.validate(new InputSource(modelXMLStream));
+            // return vd.validate(new InputSource(modelXMLStream));
             return vd.validate(is);
-        
+
         } catch (SAXException e) {
             throw new WdkModelException(e);
         } catch (IOException e) {
             throw new WdkModelException(e);
         }
-    }   
+    }
 
     private static Digester configureDigester() {
-    
+
         Digester digester = new Digester();
         digester.setValidating(false);
-        
-        //Root -- WDK Model
-        
-        digester.addObjectCreate( "wdkModel", WdkModel.class );
-        digester.addSetProperties( "wdkModel");
 
-	/**/ digester.addBeanPropertySetter( "wdkModel/introduction");
-        
-        //RecordClassSet
-        
-        /**/ digester.addObjectCreate( "wdkModel/recordClassSet", RecordClassSet.class );
-        
-        /**/ digester.addSetProperties( "wdkModel/recordClassSet");
-        
-        /*  */ digester.addObjectCreate( "wdkModel/recordClassSet/recordClass", RecordClass.class );
-        
-        /*  */ digester.addSetProperties( "wdkModel/recordClassSet/recordClass");
+        // Root -- WDK Model
+
+        digester.addObjectCreate("wdkModel", WdkModel.class);
+        digester.addSetProperties("wdkModel");
+
+        /**/digester.addBeanPropertySetter("wdkModel/introduction");
+
+        // RecordClassSet
+
+        /**/digester.addObjectCreate("wdkModel/recordClassSet",
+                RecordClassSet.class);
+
+        /**/digester.addSetProperties("wdkModel/recordClassSet");
+
+        /*  */digester.addObjectCreate("wdkModel/recordClassSet/recordClass",
+                RecordClass.class);
+
+        /*  */digester.addSetProperties("wdkModel/recordClassSet/recordClass");
 
         // By Jerric - parse projectParamRef
-        /*    */ digester.addObjectCreate( "wdkModel/recordClassSet/recordClass/projectParamRef", Reference.class );
-        
-        /*    */ digester.addSetProperties( "wdkModel/recordClassSet/recordClass/projectParamRef");
-        
-        /*    */ digester.addSetNext( "wdkModel/recordClassSet/recordClass/projectParamRef", "setProjectParamRef" );
+        /*    */digester.addObjectCreate(
+                "wdkModel/recordClassSet/recordClass/projectParamRef",
+                Reference.class);
+
+        /*    */digester.addSetProperties("wdkModel/recordClassSet/recordClass/projectParamRef");
+
+        /*    */digester.addSetNext(
+                "wdkModel/recordClassSet/recordClass/projectParamRef",
+                "setProjectParamRef");
         // end by jerric
-        
-        /*    */ digester.addObjectCreate( "wdkModel/recordClassSet/recordClass/attributeQueryRef", Reference.class );
-        
-        /*    */ digester.addSetProperties( "wdkModel/recordClassSet/recordClass/attributeQueryRef");
-        
-        /*    */ digester.addSetNext( "wdkModel/recordClassSet/recordClass/attributeQueryRef", "addAttributesQueryRef" );
-        
-        /*    */ digester.addObjectCreate( "wdkModel/recordClassSet/recordClass/tableQueryRef", Reference.class );
-        
-        /*    */ digester.addSetProperties( "wdkModel/recordClassSet/recordClass/tableQueryRef");
-        
-        /*    */ digester.addSetNext( "wdkModel/recordClassSet/recordClass/tableQueryRef", "addTableQueryRef" );
-        
-        /*    */ digester.addObjectCreate( "wdkModel/recordClassSet/recordClass/linkAttribute", LinkAttributeField.class );
-        
-        /*    */ digester.addSetProperties( "wdkModel/recordClassSet/recordClass/linkAttribute");
 
-        /*    */ digester.addBeanPropertySetter( "wdkModel/recordClassSet/recordClass/linkAttribute/url");
-        
-	/*    */ digester.addSetNext( "wdkModel/recordClassSet/recordClass/linkAttribute", "addLinkAttribute" );
-        
-	/*    */ digester.addObjectCreate( "wdkModel/recordClassSet/recordClass/textAttribute", TextAttributeField.class );
-        
-        /*    */ digester.addSetProperties( "wdkModel/recordClassSet/recordClass/textAttribute");
-	
-        /*      */ digester.addBeanPropertySetter( "wdkModel/recordClassSet/recordClass/textAttribute/text");
-        
-        /*    */ digester.addSetNext( "wdkModel/recordClassSet/recordClass/textAttribute", "addTextAttribute" );
-        
-	/*    */ digester.addObjectCreate( "wdkModel/recordClassSet/recordClass/nestedRecord", NestedRecord.class );
+        /*    */digester.addObjectCreate(
+                "wdkModel/recordClassSet/recordClass/attributeQueryRef",
+                Reference.class);
 
-	/*    */ digester.addSetProperties( "wdkModel/recordClassSet/recordClass/nestedRecord");
+        /*    */digester.addSetProperties("wdkModel/recordClassSet/recordClass/attributeQueryRef");
 
-        /*    */ digester.addSetNext( "wdkModel/recordClassSet/recordClass/nestedRecord", "addNestedRecordQuestionRef" );
-	
-	/*    */ digester.addObjectCreate( "wdkModel/recordClassSet/recordClass/nestedRecordList", NestedRecordList.class );
+        /*    */digester.addSetNext(
+                "wdkModel/recordClassSet/recordClass/attributeQueryRef",
+                "addAttributesQueryRef");
 
-	/*    */ digester.addSetProperties( "wdkModel/recordClassSet/recordClass/nestedRecordList");
+        /*    */digester.addObjectCreate(
+                "wdkModel/recordClassSet/recordClass/tableQueryRef",
+                Reference.class);
 
-        /*    */ digester.addSetNext( "wdkModel/recordClassSet/recordClass/nestedRecordList", "addNestedRecordListQuestionRef" );
+        /*    */digester.addSetProperties("wdkModel/recordClassSet/recordClass/tableQueryRef");
 
-        /*  */ digester.addSetNext( "wdkModel/recordClassSet/recordClass", "addRecordClass" );
-        
-        /**/ digester.addSetNext( "wdkModel/recordClassSet", "addRecordClassSet" );
-        
-        
-        //QuerySet
-        
-        /**/ digester.addObjectCreate( "wdkModel/querySet", QuerySet.class );
-        
-        /**/ digester.addSetProperties( "wdkModel/querySet");
-        
+        /*    */digester.addSetNext(
+                "wdkModel/recordClassSet/recordClass/tableQueryRef",
+                "addTableQueryRef");
 
-        /*  */ digester.addObjectCreate( "wdkModel/querySet/sqlQuery", SqlQuery.class );
-        
-        /*  */ digester.addSetProperties( "wdkModel/querySet/sqlQuery");
-        
-        /*  */ digester.addBeanPropertySetter( "wdkModel/querySet/sqlQuery/sql");
-	/*  */ digester.addBeanPropertySetter( "wdkModel/querySet/sqlQuery/description");
-        
-        /*    */ digester.addObjectCreate( "wdkModel/querySet/sqlQuery/paramRef", Reference.class );
-        
-        /*    */ digester.addSetProperties( "wdkModel/querySet/sqlQuery/paramRef");
-        
-        /*    */ digester.addSetNext( "wdkModel/querySet/sqlQuery/paramRef", "addParamRef" );
-        
-        /*    */ digester.addObjectCreate( "wdkModel/querySet/sqlQuery/column", Column.class );
-        
-        /*    */ digester.addSetProperties( "wdkModel/querySet/sqlQuery/column");
-        
-        /*    */ digester.addSetNext( "wdkModel/querySet/sqlQuery/column", "addColumn" );
-        
-        /*    */ digester.addObjectCreate( "wdkModel/querySet/sqlQuery/linkColumn", LinkColumn.class );
-        
-        /*    */ digester.addSetProperties( "wdkModel/querySet/sqlQuery/linkColumn");
-        
-        /*    */ digester.addBeanPropertySetter( "wdkModel/querySet/sqlQuery/linkColumn/url");
+        /*    */digester.addObjectCreate(
+                "wdkModel/recordClassSet/recordClass/linkAttribute",
+                LinkAttributeField.class);
 
-        /*    */ digester.addSetNext( "wdkModel/querySet/sqlQuery/linkColumn", "addColumn" );
-        
-        /*    */ digester.addObjectCreate( "wdkModel/querySet/sqlQuery/textColumn", TextColumn.class );
-        
-        /*    */ digester.addSetProperties( "wdkModel/querySet/sqlQuery/textColumn");
-        
-        /*    */ digester.addSetNext( "wdkModel/querySet/sqlQuery/textColumn", "addColumn" );
-        
-        /*  */ digester.addSetNext( "wdkModel/querySet/sqlQuery", "addQuery" );
-        
-        /**/ digester.addSetNext( "wdkModel/querySet", "addQuerySet" );
-        
-        
-        //ParamSet
-        
-        /**/ digester.addObjectCreate( "wdkModel/paramSet", ParamSet.class );
-        
-        /**/ digester.addSetProperties( "wdkModel/paramSet");
-        
-        /*  */ digester.addObjectCreate( "wdkModel/paramSet/stringParam", StringParam.class );
-        
-        /*  */ digester.addSetProperties( "wdkModel/paramSet/stringParam");
-        
-        /*  */ digester.addSetNext( "wdkModel/paramSet/stringParam", "addParam" );
-        
-        /*  */ digester.addObjectCreate( "wdkModel/paramSet/flatVocabParam", FlatVocabParam.class );
-        
-        /*  */ digester.addSetProperties( "wdkModel/paramSet/flatVocabParam");
-        
-        /*  */ digester.addSetNext( "wdkModel/paramSet/flatVocabParam", "addParam" );
-        
-        /**/ digester.addSetNext( "wdkModel/paramSet", "addParamSet" );
-        
-        
-        //ReferenceList
-        
-        /**/ digester.addObjectCreate("wdkModel/referenceList", ReferenceList.class);
-        
-        /**/ digester.addSetProperties("wdkModel/referenceList");
-        
-        /*  */ digester.addObjectCreate("wdkModel/referenceList/reference", Reference.class);
-        
-        /*  */ digester.addSetProperties("wdkModel/referenceList/reference");
-        
-        /*  */ digester.addSetNext("wdkModel/referenceList/reference", "addReference");
-        
-        /**/ digester.addSetNext("wdkModel/referenceList", "addReferenceList");
-        
-        //QuestionSet
-        
-        /**/ digester.addObjectCreate("wdkModel/questionSet", QuestionSet.class);
-        
-        /**/ digester.addSetProperties("wdkModel/questionSet");
-        
-        /**/ digester.addBeanPropertySetter( "wdkModel/questionSet/description");
-        /*  */ digester.addObjectCreate("wdkModel/questionSet/question", Question.class);
-        
-        /*  */ digester.addSetProperties("wdkModel/questionSet/question");
-        
-	/*  */ digester.addBeanPropertySetter("wdkModel/questionSet/question/description");
+        /*    */digester.addSetProperties("wdkModel/recordClassSet/recordClass/linkAttribute");
 
-	/*  */ digester.addBeanPropertySetter("wdkModel/questionSet/question/help");
-        
-        /*  */ digester.addSetNext("wdkModel/questionSet/question", "addQuestion");
-        
-        /**/ digester.addSetNext("wdkModel/questionSet", "addQuestionSet");
-        
+        /*    */digester.addBeanPropertySetter("wdkModel/recordClassSet/recordClass/linkAttribute/url");
+
+        /*    */digester.addSetNext(
+                "wdkModel/recordClassSet/recordClass/linkAttribute",
+                "addLinkAttribute");
+
+        /*    */digester.addObjectCreate(
+                "wdkModel/recordClassSet/recordClass/textAttribute",
+                TextAttributeField.class);
+
+        /*    */digester.addSetProperties("wdkModel/recordClassSet/recordClass/textAttribute");
+
+        /*      */digester.addBeanPropertySetter("wdkModel/recordClassSet/recordClass/textAttribute/text");
+
+        /*    */digester.addSetNext(
+                "wdkModel/recordClassSet/recordClass/textAttribute",
+                "addTextAttribute");
+
+        /*    */digester.addObjectCreate(
+                "wdkModel/recordClassSet/recordClass/nestedRecord",
+                NestedRecord.class);
+
+        /*    */digester.addSetProperties("wdkModel/recordClassSet/recordClass/nestedRecord");
+
+        /*    */digester.addSetNext(
+                "wdkModel/recordClassSet/recordClass/nestedRecord",
+                "addNestedRecordQuestionRef");
+
+        /*    */digester.addObjectCreate(
+                "wdkModel/recordClassSet/recordClass/nestedRecordList",
+                NestedRecordList.class);
+
+        /*    */digester.addSetProperties("wdkModel/recordClassSet/recordClass/nestedRecordList");
+
+        /*    */digester.addSetNext(
+                "wdkModel/recordClassSet/recordClass/nestedRecordList",
+                "addNestedRecordListQuestionRef");
+
+        /*  */digester.addSetNext("wdkModel/recordClassSet/recordClass",
+                "addRecordClass");
+
+        /**/digester.addSetNext("wdkModel/recordClassSet", "addRecordClassSet");
+
+        // QuerySet
+
+        /**/digester.addObjectCreate("wdkModel/querySet", QuerySet.class);
+
+        /**/digester.addSetProperties("wdkModel/querySet");
+
+        /*  */digester.addObjectCreate("wdkModel/querySet/sqlQuery",
+                SqlQuery.class);
+
+        /*  */digester.addSetProperties("wdkModel/querySet/sqlQuery");
+
+        /*  */digester.addBeanPropertySetter("wdkModel/querySet/sqlQuery/sql");
+        /*  */digester.addBeanPropertySetter("wdkModel/querySet/sqlQuery/description");
+
+        /*    */digester.addObjectCreate(
+                "wdkModel/querySet/sqlQuery/paramRef", Reference.class);
+
+        /*    */digester.addSetProperties("wdkModel/querySet/sqlQuery/paramRef");
+
+        /*    */digester.addSetNext("wdkModel/querySet/sqlQuery/paramRef",
+                "addParamRef");
+
+        /*    */digester.addObjectCreate("wdkModel/querySet/sqlQuery/column",
+                Column.class);
+
+        /*    */digester.addSetProperties("wdkModel/querySet/sqlQuery/column");
+
+        /*    */digester.addSetNext("wdkModel/querySet/sqlQuery/column",
+                "addColumn");
+
+        /*    */digester.addObjectCreate(
+                "wdkModel/querySet/sqlQuery/linkColumn", LinkColumn.class);
+
+        /*    */digester.addSetProperties("wdkModel/querySet/sqlQuery/linkColumn");
+
+        /*    */digester.addBeanPropertySetter("wdkModel/querySet/sqlQuery/linkColumn/url");
+
+        /*    */digester.addSetNext("wdkModel/querySet/sqlQuery/linkColumn",
+                "addColumn");
+
+        /*    */digester.addObjectCreate(
+                "wdkModel/querySet/sqlQuery/textColumn", TextColumn.class);
+
+        /*    */digester.addSetProperties("wdkModel/querySet/sqlQuery/textColumn");
+
+        /*    */digester.addSetNext("wdkModel/querySet/sqlQuery/textColumn",
+                "addColumn");
+
+        /*  */digester.addSetNext("wdkModel/querySet/sqlQuery", "addQuery");
+
+        /**/digester.addSetNext("wdkModel/querySet", "addQuerySet");
+
+        // ParamSet
+
+        /**/digester.addObjectCreate("wdkModel/paramSet", ParamSet.class);
+
+        /**/digester.addSetProperties("wdkModel/paramSet");
+
+        /*  */digester.addObjectCreate("wdkModel/paramSet/stringParam",
+                StringParam.class);
+
+        /*  */digester.addSetProperties("wdkModel/paramSet/stringParam");
+
+        /*  */digester.addSetNext("wdkModel/paramSet/stringParam", "addParam");
+
+        /*  */digester.addObjectCreate("wdkModel/paramSet/flatVocabParam",
+                FlatVocabParam.class);
+
+        /*  */digester.addSetProperties("wdkModel/paramSet/flatVocabParam");
+
+        /*  */digester.addSetNext("wdkModel/paramSet/flatVocabParam",
+                "addParam");
+
+        /**/digester.addSetNext("wdkModel/paramSet", "addParamSet");
+
+        // ReferenceList
+
+        /**/digester.addObjectCreate("wdkModel/referenceList",
+                ReferenceList.class);
+
+        /**/digester.addSetProperties("wdkModel/referenceList");
+
+        /*  */digester.addObjectCreate("wdkModel/referenceList/reference",
+                Reference.class);
+
+        /*  */digester.addSetProperties("wdkModel/referenceList/reference");
+
+        /*  */digester.addSetNext("wdkModel/referenceList/reference",
+                "addReference");
+
+        /**/digester.addSetNext("wdkModel/referenceList", "addReferenceList");
+
+        // QuestionSet
+
+        /**/digester.addObjectCreate("wdkModel/questionSet", QuestionSet.class);
+
+        /**/digester.addSetProperties("wdkModel/questionSet");
+
+        /**/digester.addBeanPropertySetter("wdkModel/questionSet/description");
+        /*  */digester.addObjectCreate("wdkModel/questionSet/question",
+                Question.class);
+
+        /*  */digester.addSetProperties("wdkModel/questionSet/question");
+
+        /*  */digester.addBeanPropertySetter("wdkModel/questionSet/question/description");
+
+        /*  */digester.addBeanPropertySetter("wdkModel/questionSet/question/help");
+
+        /*  */digester.addSetNext("wdkModel/questionSet/question",
+                "addQuestion");
+
+        /**/digester.addSetNext("wdkModel/questionSet", "addQuestionSet");
+
+        // load XmlQuestionSet
+        digester.addObjectCreate("wdkModel/xmlQuestionSet",
+                XmlQuestionSet.class);
+        digester.addSetProperties("wdkModel/xmlQuestionSet");
+        digester.addBeanPropertySetter("wdkModel/xmlQuestionSet/description");
+
+        // load XmlQuestion
+        digester.addObjectCreate("wdkModel/xmlQuestionSet/xmlQuestion",
+                XmlQuestion.class);
+        digester.addSetProperties("wdkModel/xmlQuestionSet/xmlQuestion");
+        digester.addBeanPropertySetter("wdkModel/xmlQuestionSet/xmlQuestion/description");
+        digester.addBeanPropertySetter("wdkModel/xmlQuestionSet/xmlQuestion/help");
+        digester.addSetNext("wdkModel/xmlQuestionSet/xmlQuestion",
+                "addQuestion");
+
+        digester.addSetNext("wdkModel/xmlQuestionSet", "addXmlQuestionSet");
+
+        // load XmlRecordClassSet
+        digester.addObjectCreate("wdkModel/xmlRecordClassSet",
+                XmlRecordClassSet.class);
+        digester.addSetProperties("wdkModel/xmlRecordClassSet");
+
+        // load XmlRecordClass
+        digester.addObjectCreate("wdkModel/xmlRecordClassSet/xmlRecordClass",
+                XmlRecordClass.class);
+        digester.addSetProperties("wdkModel/xmlRecordClassSet/xmlRecordClass");
+
+        // load XmlAttributeField
+        digester.addObjectCreate(
+                "wdkModel/xmlRecordClassSet/xmlRecordClass/xmlAttributeField",
+                XmlAttributeField.class);
+        digester.addSetProperties("wdkModel/xmlRecordClassSet/xmlRecordClass/xmlAttributeField");
+        digester.addSetNext(
+                "wdkModel/xmlRecordClassSet/xmlRecordClass/xmlAttributeField",
+                "addAttributeField");
+
+        // load XmlTableField
+        digester.addObjectCreate(
+                "wdkModel/xmlRecordClassSet/xmlRecordClass/xmlTableField",
+                XmlTableField.class);
+        digester.addSetProperties("wdkModel/xmlRecordClassSet/xmlRecordClass/xmlTableField");
+
+        // load XmlAttributeField within table
+        digester.addObjectCreate(
+                "wdkModel/xmlRecordClassSet/xmlRecordClass/xmlTableField/xmlAttributeField",
+                XmlAttributeField.class);
+        digester.addSetProperties("wdkModel/xmlRecordClassSet/xmlRecordClass/xmlTableField/xmlAttributeField");
+        digester.addSetNext(
+                "wdkModel/xmlRecordClassSet/xmlRecordClass/xmlTableField/xmlAttributeField",
+                "addColumn");
+
+        digester.addSetNext(
+                "wdkModel/xmlRecordClassSet/xmlRecordClass/xmlTableField",
+                "addTableField");
+
+        digester.addSetNext("wdkModel/xmlRecordClassSet/xmlRecordClass",
+                "addRecordClass");
+
+        digester.addSetNext("wdkModel/xmlRecordClassSet",
+                "addXmlRecordClassSet");
+
         return digester;
-        
+
     }
-    
+
     /**
      * Substitute property values into model xml
      */
-    public static InputStream configureModelFile(URL modelXmlURL, URL modelPropURL) throws WdkModelException {
-        
+    public static InputStream configureModelFile(URL modelXmlURL,
+            URL modelPropURL) throws WdkModelException {
+
         try {
             StringBuffer substituted = new StringBuffer();
             Properties properties = new Properties();
             properties.load(modelPropURL.openStream());
-            BufferedReader reader = 
-                new BufferedReader(new InputStreamReader(modelXmlURL.openStream()));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(
+                    modelXmlURL.openStream()));
             while (reader.ready()) {
                 String line = reader.readLine();
                 line = substituteProps(line, properties);
                 substituted.append(line);
             }
-            
+
             return new ByteArrayInputStream(substituted.toString().getBytes());
         } catch (FileNotFoundException e) {
             throw new WdkModelException(e);
@@ -400,42 +535,48 @@ public class ModelXmlParser {
             throw new WdkModelException(e);
         }
     }
-    
+
     static String substituteProps(String string, Properties properties) {
         Enumeration propNames = properties.propertyNames();
         String newString = string;
         while (propNames.hasMoreElements()) {
-            String propName = (String)propNames.nextElement();
+            String propName = (String) propNames.nextElement();
             String value = properties.getProperty(propName);
             newString = newString.replaceAll("\\@" + propName + "\\@", value);
         }
         return newString;
     }
-    
-    public static void main( String[] args ) {
-        try {
-	    
-	    String cmdName = System.getProperties().getProperty("cmdName");
-	    File configDir = 
-		new File(System.getProperties().getProperty("configDir"));
-	    
-	    // process args
-	    Options options = declareOptions();
-	    CommandLine cmdLine = parseOptions(cmdName, options, args);
-	    
-	    String modelName = cmdLine.getOptionValue("model");
 
-	    File modelConfigXmlFile = 
-		new File(configDir, modelName+"-config.xml");
-	    File modelXmlFile = new File(configDir, modelName + ".xml");
-	    File modelPropFile = new File(configDir, modelName + ".prop");
+    public static void main(String[] args) {
+        try {
+
+            String cmdName = System.getProperties().getProperty("cmdName");
+            File configDir = new File(System.getProperties().getProperty(
+                    "configDir"));
+
+            // process args
+            Options options = declareOptions();
+            CommandLine cmdLine = parseOptions(cmdName, options, args);
+
+            String modelName = cmdLine.getOptionValue("model");
+
+            File modelConfigXmlFile = new File(configDir, modelName
+                    + "-config.xml");
+            File modelXmlFile = new File(configDir, modelName + ".xml");
+            File modelPropFile = new File(configDir, modelName + ".prop");
 
             File schemaFile = new File(System.getProperty("schemaFile"));
-            WdkModel wdkModel = parseXmlFile(modelXmlFile.toURL(), modelPropFile.toURL(), schemaFile.toURL(), modelConfigXmlFile.toURL());
-            
-            System.out.println( wdkModel.toString() );
-            
-        } catch( Exception e ) {
+
+            // load schema for xml data source
+            File xmlSchemaFile = new File(System.getProperty("xmlSchemaFile"));
+
+            WdkModel wdkModel = parseXmlFile(modelXmlFile.toURL(),
+                    modelPropFile.toURL(), schemaFile.toURL(),
+                    xmlSchemaFile.toURL(), modelConfigXmlFile.toURL());
+
+            System.out.println(wdkModel.toString());
+
+        } catch (Exception e) {
             System.err.println(e.getMessage());
             System.err.println("");
             e.printStackTrace();
@@ -444,61 +585,59 @@ public class ModelXmlParser {
     }
 
     private static void addOption(Options options, String argName, String desc) {
-        
+
         Option option = new Option(argName, true, desc);
         option.setRequired(true);
         option.setArgName(argName);
-        
+
         options.addOption(option);
     }
-    
-    
+
     static Options declareOptions() {
-	Options options = new Options();
+        Options options = new Options();
 
-	// config file
-	addOption(options, "model", "the name of the model.  This is used to find the Model XML file ($GUS_HOME/config/model_name.xml) the Model property file ($GUS_HOME/config/model_name.prop) and the Model config file ($GUS_HOME/config/model_name-config.xml)");
+        // config file
+        addOption(
+                options,
+                "model",
+                "the name of the model.  This is used to find the Model XML file ($GUS_HOME/config/model_name.xml) the Model property file ($GUS_HOME/config/model_name.prop) and the Model config file ($GUS_HOME/config/model_name-config.xml)");
 
-	return options;
+        return options;
     }
 
-    static CommandLine parseOptions(String cmdName, Options options, 
-				    String[] args) {
+    static CommandLine parseOptions(String cmdName, Options options,
+            String[] args) {
 
         CommandLineParser parser = new BasicParser();
         CommandLine cmdLine = null;
         try {
             // parse the command line arguments
-            cmdLine = parser.parse( options, args );
-        }
-        catch( ParseException exp ) {
+            cmdLine = parser.parse(options, args);
+        } catch (ParseException exp) {
             // oops, something went wrong
             System.err.println("");
-            System.err.println( "Parsing failed.  Reason: " + exp.getMessage() ); 
+            System.err.println("Parsing failed.  Reason: " + exp.getMessage());
             System.err.println("");
             usage(cmdName, options);
         }
 
         return cmdLine;
-    }   
+    }
 
-        static void usage(String cmdName, Options options) {
-        
-        String newline = System.getProperty( "line.separator" );
-        String cmdlineSyntax = 
-            cmdName + 
-            " -model model_name";
-        
-        String header = 
-            newline + "Parse and print out a WDK Model xml file." + newline + newline + "Options:" ;
-        
+    static void usage(String cmdName, Options options) {
+
+        String newline = System.getProperty("line.separator");
+        String cmdlineSyntax = cmdName + " -model model_name";
+
+        String header = newline + "Parse and print out a WDK Model xml file."
+                + newline + newline + "Options:";
+
         String footer = "";
-        
-        //	PrintWriter stderr = new PrintWriter(System.err);
+
+        // PrintWriter stderr = new PrintWriter(System.err);
         HelpFormatter formatter = new HelpFormatter();
         formatter.printHelp(75, cmdlineSyntax, header, options, footer);
         System.exit(1);
     }
-
 
 }

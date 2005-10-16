@@ -31,47 +31,47 @@ import com.thaiopensource.validate.ValidationDriver;
 import com.thaiopensource.xml.sax.ErrorHandlerImpl;
 
 public class SanityTestXmlParser {
-    
+
     private static final String DEFAULT_SCHEMA_NAME = "sanityModel.rng";
-    
-    public static SanityModel parseXmlFile(URL modelXmlURL, URL modelPropURL, URL schemaURL)
-    throws WdkModelException {
-        
-	if (schemaURL == null) {
-            schemaURL = SanityModel.INSTANCE.getClass().getResource(DEFAULT_SCHEMA_NAME);   
+
+    public static SanityModel parseXmlFile(URL modelXmlURL, URL modelPropURL,
+            URL schemaURL) throws WdkModelException {
+
+        if (schemaURL == null) {
+            schemaURL = SanityModel.INSTANCE.getClass().getResource(
+                    DEFAULT_SCHEMA_NAME);
         }
 
-
-	// NOTE: we are validating before we substitute in the properties
+        // NOTE: we are validating before we substitute in the properties
         // so that the validator will operate on a file instead of a stream.
         // this way the validator spits out line numbers for errors
 
-	if (!validModelFile(modelXmlURL, schemaURL)) {
+        if (!validModelFile(modelXmlURL, schemaURL)) {
             throw new WdkModelException("Model validation failed");
         }
 
-
         Digester digester = configureDigester();
         SanityModel model = null;
-        
+
         try {
-            InputStream modelXmlStream = 
-                makeModelXmlStream(modelXmlURL, modelPropURL);
-            model = (SanityModel)digester.parse(modelXmlStream);
+            InputStream modelXmlStream = makeModelXmlStream(modelXmlURL,
+                    modelPropURL);
+            model = (SanityModel) digester.parse(modelXmlStream);
         } catch (SAXException e) {
             throw new WdkModelException(e);
         } catch (IOException e) {
             throw new WdkModelException(e);
         }
-        
+
         setModelDocument(model, modelXmlURL, modelPropURL);
-        
+
         return model;
     }
-    
-    private static InputStream makeModelXmlStream(URL modelXmlURL, URL modelPropURL) throws WdkModelException {
+
+    private static InputStream makeModelXmlStream(URL modelXmlURL,
+            URL modelPropURL) throws WdkModelException {
         InputStream modelXmlStream;
-        
+
         if (modelPropURL != null) {
             modelXmlStream = configureModelFile(modelXmlURL, modelPropURL);
         } else {
@@ -85,11 +85,12 @@ public class SanityTestXmlParser {
         }
         return modelXmlStream;
     }
-    
-    private static void setModelDocument(SanityModel model, URL modelXmlURL, URL modelPropURL) throws WdkModelException {
+
+    private static void setModelDocument(SanityModel model, URL modelXmlURL,
+            URL modelPropURL) throws WdkModelException {
         try {
-            InputStream modelXmlStream = 
-                makeModelXmlStream(modelXmlURL, modelPropURL);
+            InputStream modelXmlStream = makeModelXmlStream(modelXmlURL,
+                    modelPropURL);
             model.setDocument(buildDocument(modelXmlStream));
         } catch (SAXException e) {
             throw new WdkModelException(e);
@@ -99,9 +100,10 @@ public class SanityTestXmlParser {
             throw new WdkModelException(e);
         }
     }
-    
-    public static Document buildDocument(InputStream modelXMLStream) throws ParserConfigurationException, SAXException, IOException {
-        
+
+    public static Document buildDocument(InputStream modelXMLStream)
+            throws ParserConfigurationException, SAXException, IOException {
+
         Document doc = null;
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         // Turn on validation, and turn off namespaces
@@ -109,127 +111,142 @@ public class SanityTestXmlParser {
         factory.setNamespaceAware(false);
         DocumentBuilder builder = factory.newDocumentBuilder();
         ErrorHandler errorHandler = new ErrorHandlerImpl(System.err);
-        //builder.setErrorHandler(errorHandler);
-        builder.setErrorHandler(
-                new org.xml.sax.ErrorHandler() {
-                    // ignore fatal errors (an exception is guaranteed)
-                    public void fatalError(SAXParseException exception)
+        // builder.setErrorHandler(errorHandler);
+        builder.setErrorHandler(new org.xml.sax.ErrorHandler() {
+            // ignore fatal errors (an exception is guaranteed)
+            public void fatalError(SAXParseException exception)
                     throws SAXException {
-                        exception.printStackTrace(System.err);
-                    }
-                    // treat validation errors as fatal
-                    public void error(SAXParseException e)
-                    throws SAXParseException
-                    {
-                        e.printStackTrace(System.err);
-                        throw e;
-                    }
-                    
-                    // dump warnings too
-                    public void warning(SAXParseException err)
-                    throws SAXParseException
-                    {
-                        System.err.println("** Warning"
-                                + ", line " + err.getLineNumber()
-                                + ", uri " + err.getSystemId());
-                        System.err.println("   " + err.getMessage());
-                    }
-                }
-        );  
-        
+                exception.printStackTrace(System.err);
+            }
+
+            // treat validation errors as fatal
+            public void error(SAXParseException e) throws SAXParseException {
+                e.printStackTrace(System.err);
+                throw e;
+            }
+
+            // dump warnings too
+            public void warning(SAXParseException err) throws SAXParseException {
+                System.err.println("** Warning" + ", line "
+                        + err.getLineNumber() + ", uri " + err.getSystemId());
+                System.err.println("   " + err.getMessage());
+            }
+        });
+
         doc = builder.parse(modelXMLStream);
         return doc;
     }
-    
 
-    private static boolean validModelFile(URL modelXmlURL, URL schemaURL) throws WdkModelException {
-    
-        System.setProperty("org.apache.xerces.xni.parser.XMLParserConfiguration", "org.apache.xerces.parsers.XIncludeParserConfiguration"); 
-    
+    private static boolean validModelFile(URL modelXmlURL, URL schemaURL)
+            throws WdkModelException {
+
+        System.setProperty(
+                "org.apache.xerces.xni.parser.XMLParserConfiguration",
+                "org.apache.xerces.parsers.XIncludeParserConfiguration");
+
         try {
-            
+
             ErrorHandler errorHandler = new ErrorHandlerImpl(System.err);
-            PropertyMap schemaProperties = new SinglePropertyMap(ValidateProperty.ERROR_HANDLER, errorHandler);
-            ValidationDriver vd = new ValidationDriver(schemaProperties, PropertyMap.EMPTY, null);
-        
+            PropertyMap schemaProperties = new SinglePropertyMap(
+                    ValidateProperty.ERROR_HANDLER, errorHandler);
+            ValidationDriver vd = new ValidationDriver(schemaProperties,
+                    PropertyMap.EMPTY, null);
+
             vd.loadSchema(ValidationDriver.uriOrFileInputSource(schemaURL.toExternalForm()));
- 
-            //System.err.println("modelXMLURL is  "+modelXmlURL);
-            
+
+            // System.err.println("modelXMLURL is "+modelXmlURL);
+
             InputSource is = ValidationDriver.uriOrFileInputSource(modelXmlURL.toExternalForm());
-            //            return vd.validate(new InputSource(modelXMLStream));
+            // return vd.validate(new InputSource(modelXMLStream));
             return vd.validate(is);
-        
+
         } catch (SAXException e) {
             throw new WdkModelException(e);
         } catch (IOException e) {
             throw new WdkModelException(e);
         }
-    }   
-
+    }
 
     private static Digester configureDigester() {
-    
+
         Digester digester = new Digester();
         digester.setValidating(false);
-        
-        //Root -- Sanity Model
-        
-        digester.addObjectCreate( "sanityModel", SanityModel.class );
-        digester.addSetProperties( "sanityModel");
-        
-	//SanityRecord
-        
-        /**/ digester.addObjectCreate( "sanityModel/sanityRecord", SanityRecord.class );
 
-        /**/ digester.addSetProperties("sanityModel/sanityRecord");
+        // Root -- Sanity Model
 
-	/**/ digester.addSetNext("sanityModel/sanityRecord", "addSanityRecord");
+        digester.addObjectCreate("sanityModel", SanityModel.class);
+        digester.addSetProperties("sanityModel");
 
-	/**/ digester.addObjectCreate( "sanityModel/sanityQuery", SanityQuery.class );
+        // SanityRecord
 
-        /**/ digester.addSetProperties("sanityModel/sanityQuery");
+        /**/digester.addObjectCreate("sanityModel/sanityRecord",
+                SanityRecord.class);
 
-        /*   */ digester.addObjectCreate("sanityModel/sanityQuery/sanityParam", SanityParam.class);
+        /**/digester.addSetProperties("sanityModel/sanityRecord");
 
-        /*   */ digester.addSetProperties("sanityModel/sanityQuery/sanityParam");
+        /**/digester.addSetNext("sanityModel/sanityRecord", "addSanityRecord");
 
-        /*   */ digester.addSetNext("sanityModel/sanityQuery/sanityParam", "addParam");
+        /**/digester.addObjectCreate("sanityModel/sanityQuery",
+                SanityQuery.class);
 
-	/**/ digester.addSetNext("sanityModel/sanityQuery", "addSanityQuery");
+        /**/digester.addSetProperties("sanityModel/sanityQuery");
 
-	/**/ digester.addObjectCreate( "sanityModel/sanityQuestion", SanityQuestion.class );
+        /*   */digester.addObjectCreate("sanityModel/sanityQuery/sanityParam",
+                SanityParam.class);
 
-        /**/ digester.addSetProperties("sanityModel/sanityQuestion");
+        /*   */digester.addSetProperties("sanityModel/sanityQuery/sanityParam");
 
-        /*   */ digester.addObjectCreate("sanityModel/sanityQuestion/sanityParam", SanityParam.class);
+        /*   */digester.addSetNext("sanityModel/sanityQuery/sanityParam",
+                "addParam");
 
-        /*   */ digester.addSetProperties("sanityModel/sanityQuestion/sanityParam");
+        /**/digester.addSetNext("sanityModel/sanityQuery", "addSanityQuery");
 
-        /*   */ digester.addSetNext("sanityModel/sanityQuestion/sanityParam", "addParam");
+        /**/digester.addObjectCreate("sanityModel/sanityQuestion",
+                SanityQuestion.class);
 
-	/**/ digester.addSetNext("sanityModel/sanityQuestion", "addSanityQuestion");
+        /**/digester.addSetProperties("sanityModel/sanityQuestion");
+
+        /*   */digester.addObjectCreate(
+                "sanityModel/sanityQuestion/sanityParam", SanityParam.class);
+
+        /*   */digester.addSetProperties("sanityModel/sanityQuestion/sanityParam");
+
+        /*   */digester.addSetNext("sanityModel/sanityQuestion/sanityParam",
+                "addParam");
+
+        /**/digester.addSetNext("sanityModel/sanityQuestion",
+                "addSanityQuestion");
+
+        // Add XmlQuestion Tests
+        /**/digester.addObjectCreate("sanityModel/sanityXmlQuestion",
+                SanityXmlQuestion.class);
+
+        /**/digester.addSetProperties("sanityModel/sanityXmlQuestion");
+
+        /**/digester.addSetNext("sanityModel/sanityXmlQuestion",
+                "addSanityXmlQuestion");
 
         return digester;
     }
-    
+
     /**
      * Substitute property values into model xml
      */
-    public static InputStream configureModelFile(URL modelXmlURL, URL modelPropURL) throws WdkModelException {
-        
+    public static InputStream configureModelFile(URL modelXmlURL,
+            URL modelPropURL) throws WdkModelException {
+
         try {
             StringBuffer substituted = new StringBuffer();
             Properties properties = new Properties();
             properties.load(modelPropURL.openStream());
-            BufferedReader reader = 
-                new BufferedReader(new InputStreamReader(modelXmlURL.openStream()));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(
+                    modelXmlURL.openStream()));
             while (reader.ready()) {
                 String line = reader.readLine();
                 line = substituteProps(line, properties);
                 substituted.append(line);
             }
-            
+
             return new ByteArrayInputStream(substituted.toString().getBytes());
         } catch (FileNotFoundException e) {
             throw new WdkModelException(e);
@@ -237,31 +254,32 @@ public class SanityTestXmlParser {
             throw new WdkModelException(e);
         }
     }
-    
+
     static String substituteProps(String string, Properties properties) {
         Enumeration propNames = properties.propertyNames();
         String newString = string;
         while (propNames.hasMoreElements()) {
-            String propName = (String)propNames.nextElement();
+            String propName = (String) propNames.nextElement();
             String value = properties.getProperty(propName);
             newString = newString.replaceAll("\\@" + propName + "\\@", value);
         }
         return newString;
     }
-    
-    public static void main( String[] args ) {
+
+    public static void main(String[] args) {
         try {
             File modelXmlFile = new File(args[0]);
             File modelPropFile = null;
-            if (args.length > 1) { 
+            if (args.length > 1) {
                 modelPropFile = new File(args[1]);
-            } 
-	    File schemaFile = new File(System.getProperty("schemaFile"));
-            SanityModel sanityModel = parseXmlFile(modelXmlFile.toURL(), modelPropFile.toURL(), schemaFile.toURL());
-            
-            System.out.println( sanityModel.toString() );
-            
-        } catch( Exception e ) {
+            }
+            File schemaFile = new File(System.getProperty("schemaFile"));
+            SanityModel sanityModel = parseXmlFile(modelXmlFile.toURL(),
+                    modelPropFile.toURL(), schemaFile.toURL());
+
+            System.out.println(sanityModel.toString());
+
+        } catch (Exception e) {
             System.err.println(e.getMessage());
             System.err.println("");
             e.printStackTrace();
@@ -269,5 +287,3 @@ public class SanityTestXmlParser {
         }
     }
 }
-
-

@@ -37,16 +37,17 @@ public class CommandHelper {
     }
 
     static Options declareOptions(String[] names, String[] descs,
-            boolean[] required) {
+            boolean[] required, int[] args) {
         Options options = new Options();
 
         // get the minimal size
         int min = (names.length < descs.length) ? names.length : descs.length;
         if (min > required.length) min = required.length;
+        if (min > args.length) min = args.length;
 
         // model name
         for (int i = 0; i < min; i++) {
-            addOption(options, required[i], names[i], descs[i]);
+            addOption(options, required[i], names[i], descs[i], args[i]);
         }
 
         // verbose
@@ -58,11 +59,12 @@ public class CommandHelper {
     }
 
     public static void addOption(Options options, boolean required,
-            String argName, String desc) {
+            String argName, String desc, int arg) {
 
         Option option = new Option(argName, true, desc);
         option.setRequired(required);
         option.setArgName(argName);
+        if (arg != 0) option.setArgs(arg);
         options.addOption(option);
     }
 
