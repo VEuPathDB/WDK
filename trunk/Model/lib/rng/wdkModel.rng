@@ -16,6 +16,8 @@
           <ref name="queryNameList" />
           <ref name="recordClassSet" />
           <ref name="paramSet" />
+          <ref name="xmlQuestionSet" />
+          <ref name="xmlRecordClassSet" />
         </choice>
       </oneOrMore>
     </element>
@@ -334,5 +336,113 @@
       </element>
     </element>
   </define>
-  
+
+  <!-- Set for xmlAnswers -->
+
+  <define name="xmlRecordClassSet">
+    <element name="xmlRecordClassSet">
+      <attribute name="name" />
+      <oneOrMore>
+        <ref name="xmlRecordClass" />
+      </oneOrMore>
+    </element>
+  </define>
+
+  <define name="xmlQuestionSet">
+    <element name="xmlQuestionSet">
+      <attribute name="name" />
+      <attribute name="displayName" />
+      <optional>
+          <element name="description">
+              <text />
+          </element>        
+      </optional>
+      <optional>
+          <attribute name="isInternal" />
+      </optional>
+      <oneOrMore>
+        <ref name="xmlQuestion" />
+      </oneOrMore>
+    </element>
+  </define>
+
+  <define name="xmlQuestion">
+     <element name="xmlQuestion">
+        <attribute name="name" />
+        <attribute name="displayName" />
+        <attribute name="recordClassRef" />
+        <attribute name="xmlDataURL" />
+        <optional>
+           <attribute name="summaryAttributesRef" />
+        </optional>
+        <element name="description">
+           <text />
+        </element>        
+        <optional>          
+           <element name="help">
+              <text />
+           </element>        
+        </optional>
+     </element>
+  </define>
+
+  <define name="xmlRecordClass">
+     <element name="xmlRecordClass">
+        <attribute name="name" />
+        <attribute name="type" />
+        <attribute name="idPrefix" />
+        <optional>
+           <attribute name="delimiter" />
+        </optional>
+        <optional>
+           <attribute name="attributeOrdering" />
+        </optional>
+        <zeroOrMore>  
+           <ref name="xmlAttributeField" />
+        </zeroOrMore>
+        <zeroOrMore>
+           <ref name="xmlTableField" />
+        </zeroOrMore>
+     </element>
+  </define>
+
+  <define name ="xmlTableField">
+     <element name="xmlTableField">
+        <attribute name="name" />
+        <optional>
+           <attribute name="displayName" />
+        </optional>
+        <optional> 
+           <attribute name="help" />
+        </optional>
+        <optional> 
+           <attribute name="isInternal" />
+        </optional>
+        <optional> 
+           <attribute name="type" />
+        </optional>
+        <oneOrMore>
+           <ref name="xmlAttributeField" />
+        </oneOrMore>
+     </element>
+  </define>
+
+  <define name ="xmlAttributeField">
+     <element name="xmlAttributeField">
+        <attribute name="name" />
+        <optional> 
+           <attribute name="displayName" />
+        </optional>
+        <optional> 
+           <attribute name="help" />
+        </optional>
+        <optional> 
+           <attribute name="isInternal" />
+        </optional>
+        <optional> 
+           <attribute name="type" />
+        </optional>
+     </element>
+  </define>
+ 
 </grammar>

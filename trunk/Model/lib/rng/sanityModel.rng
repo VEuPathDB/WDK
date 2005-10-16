@@ -7,6 +7,7 @@
           <ref name="sanityQuery" />
           <ref name="sanityRecord" />
           <ref name="sanityQuestion" />
+          <ref name="sanityXmlQuestion" />
         </choice>
       </oneOrMore>
     </element>
@@ -51,6 +52,19 @@
       </optional>
     </element>
     
+  </define>
+
+  <define name="sanityXmlQuestion">
+    <element name="sanityXmlQuestion">
+      <attribute name="ref" />
+      <attribute name="minOutputLength" />
+      <attribute name="maxOutputLength" />
+      <attribute name="pageStart" />
+      <attribute name="pageEnd" />
+      <zeroOrMore>
+        <attribute name="xmlData" />
+      </zeroOrMore>
+     </element>
   </define>
 
 </grammar>

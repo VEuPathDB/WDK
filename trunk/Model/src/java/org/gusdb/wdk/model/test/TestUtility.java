@@ -126,8 +126,10 @@ public class TestUtility {
                 "the name of the model.  This is used to find the Model XML file ($GUS_HOME/config/model_name.xml) the Model property file ($GUS_HOME/config/model_name.prop) and the Model config file ($GUS_HOME/config/model_name-config.xml)",
                 "(Optional) The specific test case to be executed." };
         boolean[] required = { true, false };
+        int[] args = { 0, 0 };
 
-        Options options = CommandHelper.declareOptions(names, descs, required);
+        Options options = CommandHelper.declareOptions(names, descs, required,
+                args);
 
         return options;
     }
