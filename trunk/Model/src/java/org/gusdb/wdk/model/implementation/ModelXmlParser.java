@@ -70,22 +70,22 @@ public class ModelXmlParser {
 
     private static final String DEFAULT_XML_SCHEMA = "xmlAnswer.rng";
 
-    public static WdkModel parseXmlFile(URL modelXmlURL, URL modelPropURL,
-            URL schemaURL, URL modelConfigXmlFileURL) throws WdkModelException {
-        // assume the schema for xml is put into the same place as the schema
-        // for model
-        try {
-            File schemaFile = new File(schemaURL.toURI());
-            File xmlSchemaFile = new File(schemaFile.getParentFile(),
-                    DEFAULT_XML_SCHEMA);
-            return parseXmlFile(modelXmlURL, modelPropURL, schemaURL,
-                    xmlSchemaFile.toURL(), modelConfigXmlFileURL);
-        } catch (MalformedURLException ex) {
-            throw new WdkModelException(ex);
-        } catch (URISyntaxException ex) {
-            throw new WdkModelException(ex);
-        }
-    }
+//    public static WdkModel parseXmlFile(URL modelXmlURL, URL modelPropURL,
+//            URL schemaURL, URL modelConfigXmlFileURL) throws WdkModelException {
+//        // assume the schema for xml is put into the same place as the schema
+//        // for model
+//        try {
+//            File schemaFile = new File(schemaURL.);
+//            File xmlSchemaFile = new File(schemaFile.getParentFile(),
+//                    DEFAULT_XML_SCHEMA);
+//            return parseXmlFile(modelXmlURL, modelPropURL, schemaURL,
+//                    xmlSchemaFile.toURL(), modelConfigXmlFileURL);
+//        } catch (MalformedURLException ex) {
+//            throw new WdkModelException(ex);
+//        } catch (URISyntaxException ex) {
+//            throw new WdkModelException(ex);
+//        }
+//    }
 
     public static WdkModel parseXmlFile(URL modelXmlURL, URL modelPropURL,
             URL schemaURL, URL xmlSchemaURL, URL modelConfigXmlFileURL)
@@ -474,30 +474,30 @@ public class ModelXmlParser {
 
         // load XmlAttributeField
         digester.addObjectCreate(
-                "wdkModel/xmlRecordClassSet/xmlRecordClass/xmlAttributeField",
+                "wdkModel/xmlRecordClassSet/xmlRecordClass/attributeField",
                 XmlAttributeField.class);
-        digester.addSetProperties("wdkModel/xmlRecordClassSet/xmlRecordClass/xmlAttributeField");
+        digester.addSetProperties("wdkModel/xmlRecordClassSet/xmlRecordClass/attributeField");
         digester.addSetNext(
-                "wdkModel/xmlRecordClassSet/xmlRecordClass/xmlAttributeField",
+                "wdkModel/xmlRecordClassSet/xmlRecordClass/attributeField",
                 "addAttributeField");
 
         // load XmlTableField
         digester.addObjectCreate(
-                "wdkModel/xmlRecordClassSet/xmlRecordClass/xmlTableField",
+                "wdkModel/xmlRecordClassSet/xmlRecordClass/tableField",
                 XmlTableField.class);
-        digester.addSetProperties("wdkModel/xmlRecordClassSet/xmlRecordClass/xmlTableField");
+        digester.addSetProperties("wdkModel/xmlRecordClassSet/xmlRecordClass/tableField");
 
         // load XmlAttributeField within table
         digester.addObjectCreate(
-                "wdkModel/xmlRecordClassSet/xmlRecordClass/xmlTableField/xmlAttributeField",
+                "wdkModel/xmlRecordClassSet/xmlRecordClass/tableField/attributeField",
                 XmlAttributeField.class);
-        digester.addSetProperties("wdkModel/xmlRecordClassSet/xmlRecordClass/xmlTableField/xmlAttributeField");
+        digester.addSetProperties("wdkModel/xmlRecordClassSet/xmlRecordClass/tableField/attributeField");
         digester.addSetNext(
-                "wdkModel/xmlRecordClassSet/xmlRecordClass/xmlTableField/xmlAttributeField",
+                "wdkModel/xmlRecordClassSet/xmlRecordClass/tableField/attributeField",
                 "addColumn");
 
         digester.addSetNext(
-                "wdkModel/xmlRecordClassSet/xmlRecordClass/xmlTableField",
+                "wdkModel/xmlRecordClassSet/xmlRecordClass/tableField",
                 "addTableField");
 
         digester.addSetNext("wdkModel/xmlRecordClassSet/xmlRecordClass",

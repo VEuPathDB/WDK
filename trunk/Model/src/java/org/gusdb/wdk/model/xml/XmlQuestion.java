@@ -3,6 +3,7 @@
  */
 package org.gusdb.wdk.model.xml;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
@@ -117,7 +118,7 @@ public class XmlQuestion {
         this.xmlData = xmlData;
         this.answer = null; // reset the cache
     }
-    
+
     public String getXmlDataURL() {
         return xmlData;
     }
@@ -180,7 +181,11 @@ public class XmlQuestion {
         if (answer == null) { // parse xml and create an answer
             URL xmlDataURL;
             try {
-                xmlDataURL = new URL(xmlData);
+                if (xmlData.startsWith("http://")) xmlDataURL = new URL(xmlData);
+                else {
+                    File xmlDataFile = new File(xmlData);
+                    xmlDataURL = xmlDataFile.toURL();
+                }
                 answer = loader.parseDataFile(xmlDataURL);
             } catch (MalformedURLException ex) {
                 throw new WdkModelException(ex);

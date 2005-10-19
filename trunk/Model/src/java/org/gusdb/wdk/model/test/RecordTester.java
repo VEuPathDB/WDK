@@ -42,6 +42,7 @@ public class RecordTester {
         File modelPropFile = new File(configDir, modelName + ".prop");
 
 	File schemaFile = new File(System.getProperty("schemaFile"));
+    File xmlSchemaFile = new File(System.getProperty("xmlSchemaFile"));
 
 	String recordClassFullName = cmdLine.getOptionValue("record");
 
@@ -56,7 +57,7 @@ public class RecordTester {
 	    String recordClassSetName = ref.getSetName();
 	    String recordClassName = ref.getElementName();
 	    WdkModel wdkModel = 
-		ModelXmlParser.parseXmlFile(modelXmlFile.toURL(), modelPropFile.toURL(), schemaFile.toURL(), modelConfigXmlFile.toURL()) ;
+		ModelXmlParser.parseXmlFile(modelXmlFile.toURL(), modelPropFile.toURL(), schemaFile.toURL(), xmlSchemaFile.toURL(), modelConfigXmlFile.toURL()) ;
 
 	    RecordClassSet recordClassSet = wdkModel.getRecordClassSet(recordClassSetName);
 	    RecordClass recordClass = recordClassSet.getRecordClass(recordClassName);

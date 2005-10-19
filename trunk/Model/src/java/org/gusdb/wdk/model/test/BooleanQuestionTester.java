@@ -80,6 +80,7 @@ public class BooleanQuestionTester {
 	File modelConfigXmlFile = new File(configDir, modelName+"-config.xml");
         File modelXmlFile = new File(configDir, modelName + ".xml");
         File modelPropFile = new File(configDir, modelName + ".prop");
+        File xmlSchemaFile = new File(System.getProperty("xmlSchemaFile"));
 
 	String[] rows = cmdLine.getOptionValues("rows");
 		
@@ -91,7 +92,7 @@ public class BooleanQuestionTester {
 
 	    //create model
 	    WdkModel wdkModel = 
-		ModelXmlParser.parseXmlFile(modelXmlFile.toURL(), modelPropFile.toURL(), schemaFile.toURL(), modelConfigXmlFile.toURL());
+		ModelXmlParser.parseXmlFile(modelXmlFile.toURL(), modelPropFile.toURL(), schemaFile.toURL(), xmlSchemaFile.toURL(), modelConfigXmlFile.toURL());
 	    
 	    int startRow = Integer.parseInt(rows[0]);
 	    int endRow = Integer.parseInt(rows[1]);

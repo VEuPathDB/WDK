@@ -398,16 +398,19 @@
            <attribute name="attributeOrdering" />
         </optional>
         <zeroOrMore>  
-           <ref name="xmlAttributeField" />
+           <ref name="attributeField" />
         </zeroOrMore>
         <zeroOrMore>
-           <ref name="xmlTableField" />
+           <ref name="tableField" />
+        </zeroOrMore>
+        <zeroOrMore>
+           <ref name="xmlRecordClass" />
         </zeroOrMore>
      </element>
   </define>
 
-  <define name ="xmlTableField">
-     <element name="xmlTableField">
+  <define name ="tableField">
+     <element name="tableField">
         <attribute name="name" />
         <optional>
            <attribute name="displayName" />
@@ -422,13 +425,13 @@
            <attribute name="type" />
         </optional>
         <oneOrMore>
-           <ref name="xmlAttributeField" />
+           <ref name="attributeField" />
         </oneOrMore>
      </element>
   </define>
 
-  <define name ="xmlAttributeField">
-     <element name="xmlAttributeField">
+  <define name ="attributeField">
+     <element name="attributeField">
         <attribute name="name" />
         <optional> 
            <attribute name="displayName" />

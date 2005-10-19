@@ -66,11 +66,12 @@ public class WdkModel {
         File modelXmlFile = new File(configDir, modelName + ".xml");
         File modelPropFile = new File(configDir, modelName + ".prop");
         File schemaFile = new File(System.getProperty("schemaFile"));
+        File xmlSchemaFile = new File(System.getProperty("xmlSchemaFile"));
 
         try {
             return ModelXmlParser.parseXmlFile(modelXmlFile.toURL(),
                     modelPropFile.toURL(), schemaFile.toURL(),
-                    modelConfigXmlFile.toURL());
+                    xmlSchemaFile.toURL(), modelConfigXmlFile.toURL());
         } catch (java.net.MalformedURLException e) {
             throw new WdkModelException(e);
         }
