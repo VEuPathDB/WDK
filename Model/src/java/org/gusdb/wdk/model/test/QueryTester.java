@@ -174,8 +174,9 @@ Hashtable paramHash) throws WdkModelException, WdkUserException {
 
             // read config info
 	    File schemaFile = new File(System.getProperty("schemaFile"));
-            WdkModel wdkModel = 
-                ModelXmlParser.parseXmlFile(modelXmlFile.toURL(), modelPropFile.toURL(), schemaFile.toURL(), modelConfigXmlFile.toURL());
+        File xmlSchemaFile = new File(System.getProperty("xmlSchemaFile"));
+           WdkModel wdkModel = 
+                ModelXmlParser.parseXmlFile(modelXmlFile.toURL(), modelPropFile.toURL(), schemaFile.toURL(),xmlSchemaFile.toURL(), modelConfigXmlFile.toURL());
 
 	    QueryTester tester = new QueryTester(wdkModel);
             

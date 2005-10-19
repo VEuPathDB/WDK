@@ -3,38 +3,41 @@
    <start>
       <element name="xmlAnswer">
          <oneOrMore>
-            <ref name="xmlRecord" />
+            <ref name="record" />
          </oneOrMore>
       </element>
    </start>
 
-   <define name="xmlRecord">
-      <element name="xmlRecord">
+   <define name="record">
+      <element name="record">
          <attribute name="recordID" />
          <zeroOrMore>  
-            <ref name="xmlAttribute" />
+            <ref name="attribute" />
          </zeroOrMore>
          <zeroOrMore>
-            <ref name="xmlTable" />
+            <ref name="table" />
+         </zeroOrMore>
+         <zeroOrMore>
+            <ref name="record" />
          </zeroOrMore>
       </element>
    </define>
 
-   <define name="xmlTable">
-      <element name="xmlTable">
+   <define name="table">
+      <element name="table">
          <attribute name="tableFieldRef" />
          <oneOrMore>
-            <element name="xmlRow">
+            <element name="row">
 	       <oneOrMore>
-                  <ref name="xmlAttribute" />
+                  <ref name="attribute" />
                </oneOrMore>
 	    </element>
          </oneOrMore>
       </element>
    </define>
 
-   <define name="xmlAttribute">
-      <element name="xmlAttribute">
+   <define name="attribute">
+      <element name="attribute">
          <attribute name="attributeFieldRef" />
          <attribute name="value" />
       </element>

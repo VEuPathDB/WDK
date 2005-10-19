@@ -91,38 +91,35 @@ public class XmlDataLoader {
         digester.addSetProperties("xmlAnswer");
 
         // xmlRecord
-        digester.addObjectCreate("xmlAnswer/xmlRecord", XmlRecordInstance.class);
-        digester.addSetProperties("xmlAnswer/xmlRecord");
+        digester.addObjectCreate("xmlAnswer/record", XmlRecordInstance.class);
+        digester.addSetProperties("xmlAnswer/record");
 
         // xmlAttribute
-        digester.addObjectCreate("xmlAnswer/xmlRecord/xmlAttribute",
+        digester.addObjectCreate("xmlAnswer/record/attribute",
                 XmlAttributeValue.class);
-        digester.addSetProperties("xmlAnswer/xmlRecord/xmlAttribute");
-        digester.addSetNext("xmlAnswer/xmlRecord/xmlAttribute", "addAttribute");
+        digester.addSetProperties("xmlAnswer/record/attribute");
+        digester.addSetNext("xmlAnswer/record/attribute", "addAttribute");
 
         // xmlTable
-        digester.addObjectCreate("xmlAnswer/xmlRecord/xmlTable",
-                XmlTableValue.class);
-        digester.addSetProperties("xmlAnswer/xmlRecord/xmlTable");
+        digester.addObjectCreate("xmlAnswer/record/table", XmlTableValue.class);
+        digester.addSetProperties("xmlAnswer/record/table");
 
         // xmlRow
-        digester.addObjectCreate("xmlAnswer/xmlRecord/xmlTable/xmlRow",
+        digester.addObjectCreate("xmlAnswer/record/table/row",
                 XmlRowValue.class);
-        digester.addSetProperties("xmlAnswer/xmlRecord/xmlTable/xmlRow");
+        digester.addSetProperties("xmlAnswer/record/table/row");
 
         // xmlAttribute - columns
-        digester.addObjectCreate(
-                "xmlAnswer/xmlRecord/xmlTable/xmlRow/xmlAttribute",
+        digester.addObjectCreate("xmlAnswer/record/table/row/attribute",
                 XmlAttributeValue.class);
-        digester.addSetProperties("xmlAnswer/xmlRecord/xmlTable/xmlRow/xmlAttribute");
-        digester.addSetNext("xmlAnswer/xmlRecord/xmlTable/xmlRow/xmlAttribute",
-                "addColumn");
+        digester.addSetProperties("xmlAnswer/record/table/row/attribute");
+        digester.addSetNext("xmlAnswer/record/table/row/attribute", "addColumn");
 
-        digester.addSetNext("xmlAnswer/xmlRecord/xmlTable/xmlRow", "addRow");
+        digester.addSetNext("xmlAnswer/record/table/row", "addRow");
 
-        digester.addSetNext("xmlAnswer/xmlRecord/xmlTable", "addTable");
+        digester.addSetNext("xmlAnswer/record/table", "addTable");
 
-        digester.addSetNext("xmlAnswer/xmlRecord", "addRecordInstance");
+        digester.addSetNext("xmlAnswer/record", "addRecordInstance");
 
         return digester;
     }
