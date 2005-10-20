@@ -7,6 +7,8 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.RecordClassSet;
 import org.gusdb.wdk.model.RecordClass;
+import org.gusdb.wdk.model.xml.XmlQuestionSet;
+import org.gusdb.wdk.model.xml.XmlRecordClassSet;
 
 import java.util.Map;
 import java.util.Vector;
@@ -120,5 +122,23 @@ public class WdkModelBean {
 
     public boolean deleteUser(String userID) {
         return model.deleteUser(userID);
+    }
+
+    public XmlQuestionSetBean[] getXmlQuestionSets() {
+        XmlQuestionSet[] qsets = model.getXmlQuestionSets();
+        XmlQuestionSetBean[] qsetBeans = new XmlQuestionSetBean[qsets.length];
+        for (int i = 0; i < qsets.length; i++) {
+            qsetBeans[i] = new XmlQuestionSetBean(qsets[i]);
+        }
+        return qsetBeans;
+    }
+
+    public XmlRecordClassSetBean[] getXmlRecordClassSets() {
+        XmlRecordClassSet[] rcs = model.getXmlRecordClassSets();
+        XmlRecordClassSetBean[] rcBeans = new XmlRecordClassSetBean[rcs.length];
+        for (int i = 0; i < rcs.length; i++) {
+            rcBeans[i] = new XmlRecordClassSetBean(rcs[i]);
+        }
+        return rcBeans;
     }
 }
