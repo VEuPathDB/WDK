@@ -183,8 +183,11 @@ public class XmlQuestion {
         if (answer == null) { // parse xml and create an answertaPa
             URL xmlDataURL;
             try {
-                if (xmlData.startsWith("http://")) xmlDataURL = new URL(xmlData);
-                else {
+                if (xmlData.startsWith("http://")
+                        || xmlData.startsWith("ftp://")
+                        || xmlData.startsWith("https://")) {
+                    xmlDataURL = new URL(xmlData);
+                } else {
                     File xmlDataPath = model.getXmlDataPath();
                     File xmlDataFile = new File(xmlDataPath, xmlData);
                     xmlDataURL = xmlDataFile.toURL();

@@ -574,6 +574,10 @@ public class ModelXmlParser {
                     modelPropFile.toURL(), schemaFile.toURL(),
                     xmlSchemaFile.toURL(), modelConfigXmlFile.toURL());
 
+            // load the xml data path
+            File xmlDataPath = new File(System.getProperty("xmlDataPath"));
+            wdkModel.setXmlDataPath(xmlDataPath);
+            
             System.out.println(wdkModel.toString());
 
         } catch (Exception e) {

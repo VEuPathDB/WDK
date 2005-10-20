@@ -43,7 +43,9 @@ public class ApplicationInitListener implements ServletContextListener {
         String customViewDir = application.getInitParameter(CConstants.WDK_CUSTOMVIEWDIR_PARAM);
         String xmlSchema = application.getInitParameter(CConstants.WDK_XMLSCHEMA_PARAM);
         String xmlDataPath =application.getInitParameter(CConstants.WDK_XMLDATA_PATH_PARAM);
-
+        
+        xmlDataPath = application.getRealPath(xmlDataPath);
+        
         initMemberVars(configXml, modelXml, schema, props, parserClass,
                 customViewDir, xmlSchema, xmlDataPath, application);
 

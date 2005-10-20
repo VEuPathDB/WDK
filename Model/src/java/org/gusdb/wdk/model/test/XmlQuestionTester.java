@@ -57,7 +57,8 @@ public class XmlQuestionTester {
                     modelConfigXmlFile.toURL());
             
             // use the config dir as Xml data path
-            wdkModel.setXmlDataPath(configDir);
+            File xmlDataPath = new File(System.getProperty("xmlDataDir"));
+            wdkModel.setXmlDataPath(xmlDataPath);
 
             XmlQuestionSet questionSet = wdkModel.getXmlQuestionSet(questionSetName);
             XmlQuestion question = questionSet.getQuestion(questionName);
