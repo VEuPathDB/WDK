@@ -10,7 +10,9 @@
 
    <define name="record">
       <element name="record">
-         <attribute name="recordID" />
+         <optional>
+            <attribute name="recordID" />
+         </optional>
          <zeroOrMore>  
             <ref name="attribute" />
          </zeroOrMore>
