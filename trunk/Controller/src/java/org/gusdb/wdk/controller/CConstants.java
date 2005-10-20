@@ -74,7 +74,7 @@ public class CConstants {
     protected static final String WDK_MODELPARSER_PARAM = "wdkModelParser_param";
     protected static final String WDK_CUSTOMVIEWDIR_PARAM = "wdkCustomViewDir_param";
     protected static final String WDK_XMLSCHEMA_PARAM = "wdkXmlSchema_param";   // the schema for xml data source
-    protected static final String WDK_XMLDATA_PATH_PARAM = "wdkXmlDatapath";
+    protected static final String WDK_XMLDATA_PATH_PARAM = "wdkXmlDataDir_param";
     
 
     //default value of webapp init params, from web.xml, used in ApplicationInitListener.java
