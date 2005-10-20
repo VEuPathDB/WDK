@@ -188,8 +188,8 @@ public class XmlQuestion {
                         || xmlData.startsWith("https://")) {
                     xmlDataURL = new URL(xmlData);
                 } else {
-                    File xmlDataPath = model.getXmlDataPath();
-                    File xmlDataFile = new File(xmlDataPath, xmlData);
+                    File xmlDataDir = model.getXmlDataDir();
+                    File xmlDataFile = new File(xmlDataDir, xmlData);
                     xmlDataURL = xmlDataFile.toURL();
                 }
                 answer = loader.parseDataFile(xmlDataURL);
