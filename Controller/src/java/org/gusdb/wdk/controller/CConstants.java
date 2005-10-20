@@ -20,13 +20,13 @@ public class CConstants {
     public static final String WDK_RECORD_KEY = "wdkRecord";
     public static final String WDK_USER_KEY = "wdkUser";
     public static final String NEXT_QUESTION_OPERAND = "nextQuestionOperand";
-    //public static final String QUESTIONSETFORM_KEY = "questionSetForm";
     public static final String QUESTIONFORM_KEY = "questionForm";
     public static final String BOOLEAN_QUESTION_FORM_KEY = "booleanQuestionForm";
     public static final String BOOLEAN_SEED_QUESTION_KEY = "booleanSedQuestionName";
     public static final String CURRENT_BOOLEAN_ROOT_KEY = "currentBooleanRoot";
     public static final String BOOLEAN_OPERATIONS_PARAM_NAME = "booleanOps";
     public static final String DOWNLOAD_RESULT_KEY = "downloadResult";
+    public static final String WDK_XMLQUESTIONSETS_KEY = "wdkXmlQuestionSets";
     
     //key for finding action forward, from struts-config.xml, used in Action classes
     public static final String SHOW_QUESTION_MAPKEY = "show_question";
@@ -47,6 +47,7 @@ public class CConstants {
     public static final String DOWNLOAD_HISTORY_ANSWER_MAPKEY = "download_history_answer";
     public static final String DELETE_HISTORY_ANSWER_MAPKEY = "delete_history_answer";
     public static final String PROCESS_BOOLEAN_EXPRESSION_MAPKEY = "process_boolean_expression";
+    public static final String SHOW_XMLDATA_LIST_MAPKEY = "show_xmldata_list";
 
     //button click detectors, used in action, action forms, and jsp pages
     public static final String PQ_SUBMIT_KEY = "questionSubmit"; //match question.jsp

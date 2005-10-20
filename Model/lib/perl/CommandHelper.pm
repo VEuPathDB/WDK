@@ -72,7 +72,7 @@ sub getSystemProps {
   my $sysProps = "-DconfigDir=$GUS_HOME/config -DcmdName=$cmdName"
     . " -DschemaFile=$GUS_HOME/lib/rng/wdkModel.rng"
     . " -DxmlSchemaFile=$GUS_HOME/lib/rng/xmlAnswer.rng"
-    . " -DxmlDataDir=$GUS_HOME/data/"
+    . " -DxmlDataDir=$GUS_HOME/lib/xml/"
     . " -DsanitySchemaFile=$GUS_HOME/lib/rng/sanityModel.rng"
     . " -DgusHome=$GUS_HOME";
   return $sysProps;
