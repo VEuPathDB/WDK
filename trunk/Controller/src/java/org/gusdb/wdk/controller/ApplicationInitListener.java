@@ -42,12 +42,12 @@ public class ApplicationInitListener implements ServletContextListener {
         String parserClass = application.getInitParameter(CConstants.WDK_MODELPARSER_PARAM);
         String customViewDir = application.getInitParameter(CConstants.WDK_CUSTOMVIEWDIR_PARAM);
         String xmlSchema = application.getInitParameter(CConstants.WDK_XMLSCHEMA_PARAM);
-        String xmlDataPath =application.getInitParameter(CConstants.WDK_XMLDATA_PATH_PARAM);
+        String xmlDataDir =application.getInitParameter(CConstants.WDK_XMLDATA_DIR_PARAM);
         
-        xmlDataPath = application.getRealPath(xmlDataPath);
+        xmlDataDir = application.getRealPath(xmlDataDir);
         
         initMemberVars(configXml, modelXml, schema, props, parserClass,
-                customViewDir, xmlSchema, xmlDataPath, application);
+                customViewDir, xmlSchema, xmlDataDir, application);
 
         // Config.set(application, Config.SQL_DATA_SOURCE, dataSource);
     }
@@ -95,7 +95,7 @@ public class ApplicationInitListener implements ServletContextListener {
 
     private void initMemberVars(String configXml, String modelXml,
             String schema, String props, String parserClass,
-            String customViewDir, String xmlschema, String xmlDataPath, ServletContext application) {
+            String customViewDir, String xmlschema, String xmlDataDir, ServletContext application) {
         URL schemaURL = null;
         if (schema != null) {
             schemaURL = createURL(schema, null, application);
@@ -109,6 +109,9 @@ public class ApplicationInitListener implements ServletContextListener {
         }
         if (customViewDir == null) {
             customViewDir = CConstants.DEFAULT_WDKCUSTOMVIEWDIR;
+        }
+        if (xmlDataDir == null) {
+            xmlDataDir = CConstants.DEFAULT_XMLDATA_DIR;
         }
 
         URL modelURL = createURL(modelXml, CConstants.DEFAULT_WDKMODELXML,
@@ -132,7 +135,7 @@ public class ApplicationInitListener implements ServletContextListener {
             wdkModelRaw.setXmlSchema(xmlSchemaURL);
             
             // set the path for xml data files, this must be absolute path
-            wdkModelRaw.setXmlDataPath(new File(xmlDataPath));
+            wdkModelRaw.setXmlDataDir(new File(xmlDataDir));
 
             WdkModelBean wdkModel = new WdkModelBean(wdkModelRaw);
 

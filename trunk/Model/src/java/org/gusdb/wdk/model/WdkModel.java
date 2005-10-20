@@ -49,7 +49,7 @@ public class WdkModel {
 
     private Map<String, XmlRecordClassSet> xmlRecordClassSets;
 
-    private File xmlDataPath;
+    private File xmlDataDir;
     /**
      * Default constructor
      */
@@ -588,11 +588,11 @@ public class WdkModel {
         return xmlSchemaURL;
     }
     
-    public void setXmlDataPath(File path) {
-        this.xmlDataPath = path;
+    public void setXmlDataDir(File path) {
+        this.xmlDataDir = path;
     }
     
-    public File getXmlDataPath() {
-        return xmlDataPath;
+    public File getXmlDataDir() {
+        return xmlDataDir;
     }
 }
