@@ -16,6 +16,7 @@ my ($dropDb, $createDb, $modelName);
 
 my $GUS_HOME = $ENV{GUS_HOME};
 my $CLASSPATH = &WDK::Model::CommandHelper::getJavaClasspath($GUS_HOME);
+my $sysProps = &WDK::Model::CommandHelper::getSystemProps($GUS_HOME, 'wdkTestDb');
 
 my $args = "-model $modelName ";
 
@@ -46,7 +47,7 @@ foreach my $tableName (@tables){
 
 $args .= "-tables $tableArg";
 
-my $cmd = "java  -DconfigDir=$GUS_HOME/config -DcmdName=wdkTestDb -classpath $CLASSPATH org.gusdb.wdk.model.test.TestDBManager $args";
+my $cmd = "java $sysProps -classpath $CLASSPATH org.gusdb.wdk.model.test.TestDBManager $args";
 
 #print STDERR "wdkTestDb: running command $cmd\n";
 
