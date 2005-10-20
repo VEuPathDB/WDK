@@ -152,6 +152,12 @@
       scope="session">
       <forward name="process_boolean_expression" path="/showSummary.do"/>
     </action>
+    <action
+      path="/showXmlDataList"
+      type="org.gusdb.wdk.controller.action.ShowXmlDataListAction"
+      scope="request">
+      <forward name="show_xmldata_list" path="/xmlDataList.jsp"/>
+    </action>
 
   </action-mappings>
 
