@@ -1,6 +1,10 @@
 package org.gusdb.wdk.model.test;
 
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
@@ -51,6 +55,9 @@ public class XmlQuestionTester {
                     modelXmlFile.toURL(), modelPropFile.toURL(),
                     schemaFile.toURL(), xmlSchemaFile.toURL(),
                     modelConfigXmlFile.toURL());
+            
+            // use the config dir as Xml data path
+            wdkModel.setXmlDataPath(configDir);
 
             XmlQuestionSet questionSet = wdkModel.getXmlQuestionSet(questionSetName);
             XmlQuestion question = questionSet.getQuestion(questionName);
