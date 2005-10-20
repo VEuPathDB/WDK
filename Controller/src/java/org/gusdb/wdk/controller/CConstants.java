@@ -74,15 +74,16 @@ public class CConstants {
     protected static final String WDK_MODELPARSER_PARAM = "wdkModelParser_param";
     protected static final String WDK_CUSTOMVIEWDIR_PARAM = "wdkCustomViewDir_param";
     protected static final String WDK_XMLSCHEMA_PARAM = "wdkXmlSchema_param";   // the schema for xml data source
-    protected static final String WDK_XMLDATA_PATH_PARAM = "wdkXmlDataDir_param";
+    protected static final String WDK_XMLDATA_DIR_PARAM = "wdkXmlDataDir_param";
     
 
     //default value of webapp init params, from web.xml, used in ApplicationInitListener.java
     protected static final String DEFAULT_WDKMODELCONFIGXML = "/WEB-INF/wdk-model/config/toyModel-config.xml";
     protected static final String DEFAULT_WDKMODELXML = "/WEB-INF/wdk-model/config/toyModel.xml";
     protected static final String DEFAULT_WDKMODELSCHEMA = "/WEB-INF/wdk-model/lib/rng/wdkModel.rng";
-    protected static final String DEFAULT_WDKMODELPROPS = "/WEB-INF/wdk-config/toyModel.props";
+    protected static final String DEFAULT_WDKMODELPROPS = "/WEB-INF/wdk-model/config/toyModel.props";
     protected static final String DEFAULT_WDKMODELPARSER = "org.gusdb.wdk.model.implementation.ModelXmlParser";
     protected static final String DEFAULT_WDKCUSTOMVIEWDIR = "/customPages/";
     protected static final String DEFAULT_XMLSCHEMA = "/WEB-INF/wdk-model/lib/rng/xmlAnswer.rng";
+    protected static final String DEFAULT_XMLDATA_DIR = "/WEB-INF/wdk-model/lib/xml";
 }

@@ -67,5 +67,16 @@ sub getSystemArgs {
   return $sysargs;
 }
 
+sub getSystemProps {
+  my ($GUS_HOME, $cmdName) = @_;
+  my $sysProps = "-DconfigDir=$GUS_HOME/config -DcmdName=$cmdName"
+    . " -DschemaFile=$GUS_HOME/lib/rng/wdkModel.rng"
+    . " -DxmlSchemaFile=$GUS_HOME/lib/rng/xmlAnswer.rng"
+    . " -DxmlDataDir=$GUS_HOME/data/"
+    . " -DsanitySchemaFile=$GUS_HOME/lib/rng/sanityModel.rng"
+    . " -DgusHome=$GUS_HOME";
+  return $sysProps;
+}
+
 1;
 
