@@ -39,12 +39,17 @@ public class WdkModel {
      */
     private Map<String, User> users;
 
+    
+    /**
+     * xmlSchemaURL is used by the XmlQuestions. This is the only place where XmlQuestion can find it.
+     */
     private URL xmlSchemaURL;
 
     private Map<String, XmlQuestionSet> xmlQuestionSets;
 
     private Map<String, XmlRecordClassSet> xmlRecordClassSets;
 
+    private File xmlDataPath;
     /**
      * Default constructor
      */
@@ -581,5 +586,13 @@ public class WdkModel {
 
     public URL getXmlSchemaURL() {
         return xmlSchemaURL;
+    }
+    
+    public void setXmlDataPath(File path) {
+        this.xmlDataPath = path;
+    }
+    
+    public File getXmlDataPath() {
+        return xmlDataPath;
     }
 }

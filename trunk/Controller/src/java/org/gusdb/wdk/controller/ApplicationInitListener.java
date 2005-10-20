@@ -1,5 +1,6 @@
 package org.gusdb.wdk.controller;
 
+import java.io.File;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -41,9 +42,10 @@ public class ApplicationInitListener implements ServletContextListener {
         String parserClass = application.getInitParameter(CConstants.WDK_MODELPARSER_PARAM);
         String customViewDir = application.getInitParameter(CConstants.WDK_CUSTOMVIEWDIR_PARAM);
         String xmlSchema = application.getInitParameter(CConstants.WDK_XMLSCHEMA_PARAM);
+        String xmlDataPath =application.getInitParameter(CConstants.WDK_XMLDATA_PATH_PARAM);
 
         initMemberVars(configXml, modelXml, schema, props, parserClass,
-                customViewDir, xmlSchema, application);
+                customViewDir, xmlSchema, xmlDataPath, application);
 
         // Config.set(application, Config.SQL_DATA_SOURCE, dataSource);
     }
@@ -91,7 +93,7 @@ public class ApplicationInitListener implements ServletContextListener {
 
     private void initMemberVars(String configXml, String modelXml,
             String schema, String props, String parserClass,
-            String customViewDir, String xmlschema, ServletContext application) {
+            String customViewDir, String xmlschema, String xmlDataPath, ServletContext application) {
         URL schemaURL = null;
         if (schema != null) {
             schemaURL = createURL(schema, null, application);
@@ -126,6 +128,9 @@ public class ApplicationInitListener implements ServletContextListener {
             
             // set schema for xml data source to the model
             wdkModelRaw.setXmlSchema(xmlSchemaURL);
+            
+            // set the path for xml data files, this must be absolute path
+            wdkModelRaw.setXmlDataPath(new File(xmlDataPath));
 
             WdkModelBean wdkModel = new WdkModelBean(wdkModelRaw);
 

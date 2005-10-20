@@ -31,6 +31,7 @@ public class XmlQuestion {
     private XmlRecordClass recordClass;
     private XmlAnswer answer;
     private XmlDataLoader loader;
+    private WdkModel model;
 
     /**
      * 
@@ -174,16 +175,18 @@ public class XmlQuestion {
     public void setResources(WdkModel model) {
         // initialize data loader
         loader = new XmlDataLoader(model.getXmlSchemaURL());
+        this.model = model;
     }
 
     public XmlAnswer makeAnswer(Map<String, String> params, int startIndex,
             int endIndex) throws WdkModelException {
-        if (answer == null) { // parse xml and create an answer
+        if (answer == null) { // parse xml and create an answertaPa
             URL xmlDataURL;
             try {
                 if (xmlData.startsWith("http://")) xmlDataURL = new URL(xmlData);
                 else {
-                    File xmlDataFile = new File(xmlData);
+                    File xmlDataPath = model.getXmlDataPath();
+                    File xmlDataFile = new File(xmlDataPath, xmlData);
                     xmlDataURL = xmlDataFile.toURL();
                 }
                 answer = loader.parseDataFile(xmlDataURL);
