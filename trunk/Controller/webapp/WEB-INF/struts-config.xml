@@ -158,7 +158,12 @@
       scope="request">
       <forward name="show_xmldata_list" path="/xmlDataList.jsp"/>
     </action>
-
+    <action
+      path="/showXmlDataContent"
+      type="org.gusdb.wdk.controller.action.ShowXmlDataContentAction"
+      scope="request">
+      <forward name="show_xmldata_content" path="/xmlDataContent.jsp"/>
+    </action>
   </action-mappings>
 
   <message-resources parameter="org.gusdb.wdk.view.DefaultViewResources" null="false"/>
