@@ -134,6 +134,18 @@ public class WdkModelBean {
         return qsetBeans;
     }
 
+    /**
+     * @return Map of questionSetName --> {@link XmlQuestionSetBean}
+     */
+    public Map getXmlQuestionSetsMap() {
+	XmlQuestionSetBean[] qSets = getXmlQuestionSets();
+        Map qSetsMap = new LinkedHashMap();
+        for (int i=0; i<qSets.length; i++) {
+	    qSetsMap.put(qSets[i].getName(), qSets[i]);
+        }
+        return qSetsMap;
+    }
+
     public XmlRecordClassSetBean[] getXmlRecordClassSets() {
         XmlRecordClassSet[] rcs = model.getXmlRecordClassSets();
         XmlRecordClassSetBean[] rcBeans = new XmlRecordClassSetBean[rcs.length];

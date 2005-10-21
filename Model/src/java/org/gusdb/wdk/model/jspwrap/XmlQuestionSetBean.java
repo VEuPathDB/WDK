@@ -3,6 +3,9 @@
  */
 package org.gusdb.wdk.model.jspwrap;
 
+import java.util.Map;
+import java.util.LinkedHashMap;
+
 import org.gusdb.wdk.model.xml.XmlQuestion;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
 
@@ -57,6 +60,18 @@ public class XmlQuestionSetBean {
             questionBeans[i] = new XmlQuestionBean(questions[i]);
         }
         return questionBeans;
+    }
+
+    /**
+     * @return Map of questionName --> {@link XmlQuestionBean}
+     */
+    public Map getQuestionsMap() {
+	XmlQuestionBean[] qs = getQuestions();
+        Map qsMap = new LinkedHashMap();
+        for (int i=0; i<qs.length; i++) {
+	    qsMap.put(qs[i].getName(), qs[i]);
+        }
+        return qsMap;
     }
 
     /*
