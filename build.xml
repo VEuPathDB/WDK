@@ -82,12 +82,13 @@
     </ant>
   </target>  
 
-  <target name="WebitePlusGusHome" depends="WDK-Installation,WDK/Controller-WebInstallation,WDK/View-WebInstallation,checkLinks,libLink,configLink,rngLink"/>
+  <target name="WebitePlusGusHome" depends="WDK-Installation,WDK/Controller-WebInstallation,WDK/View-WebInstallation,checkLinks,libLink,configLink,rngLink,xmlLink"/>
 
   <target name="checkLinks">
      <available file="${webappTargetDir}/WEB-INF/lib" property="libLinkExists"/>
      <available file="${webappTargetDir}/WEB-INF/wdk-model/config" property="configLinkExists"/>
      <available file="${webappTargetDir}/WEB-INF/wdk-model/lib/rng" property="rngLinkExists"/>
+     <available file="${webappTargetDir}/WEB-INF/wdk-model/lib/xml" property="xmlLinkExists"/>
   </target>
 
   <target name="libLink" unless="libLinkExists">
@@ -103,7 +104,11 @@
     <mkdir dir="${webappTargetDir}/WEB-INF/wdk-model/lib"/>    
     <symlink link="${webappTargetDir}/WEB-INF/wdk-model/lib/rng" resource="${targetDir}/lib/rng"/>
   </target>
-  
+
+  <target name="xmlLink" unless="xmlLinkExists">
+    <symlink link="${webappTargetDir}/WEB-INF/wdk-model/lib/xml" resource="${targetDir}/lib/rng"/>
+  </target>
+
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooo  Release  ooooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
