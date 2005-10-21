@@ -106,7 +106,7 @@
   </target>
 
   <target name="xmlLink" unless="xmlLinkExists">
-    <symlink link="${webappTargetDir}/WEB-INF/wdk-model/lib/xml" resource="${targetDir}/lib/rng"/>
+    <symlink link="${webappTargetDir}/WEB-INF/wdk-model/lib/xml" resource="${targetDir}/lib/xml"/>
   </target>
 
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
