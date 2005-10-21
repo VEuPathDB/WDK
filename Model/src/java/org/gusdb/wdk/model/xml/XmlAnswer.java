@@ -86,7 +86,7 @@ public class XmlAnswer {
         int pageSize = getPageSize();
         XmlRecordInstance[] records = new XmlRecordInstance[pageSize];
         for (int i = 0; i < pageSize; i++) {
-            records[i] = recordInstances.get(i + startIndex);
+            records[i] = recordInstances.get(i + startIndex - 1);
         }
         return records;
     }
