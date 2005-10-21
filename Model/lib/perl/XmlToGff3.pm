@@ -10,7 +10,7 @@ my @GFFCols = ('seqid','source','type','fstart','fend','score','strand','phase')
 my $debug = 0;
 
 sub convert {
-  my ($inFile, $outFile) = @_;
+  my ($inFile, $outFile, $hasSeq) = @_;
 
   if (!$outFile) {
     $outFile = $inFile;
@@ -21,16 +21,26 @@ sub convert {
   my $conv = new XML::Simple(ForceArray => 1, KeepRoot => 1);
   my $in = $conv->XMLin($inFile);
 
-  open OUT, ">$outFile" or &confess("could not open $outFile for write: $!");
+  open OUT, ($hasSeq ? '>>' : '>') . $outFile
+    or &confess("could not open $outFile for write: $!");
   select OUT;
-  &_processNode($in);
+
+  if ($hasSeq) {
+    &_processNode($in, 1, 0); # first pass for GFF lines
+    &_processNode($in, 1, 1); # second pass for FASTA section
+  } else {
+    print "##gff-version 3\n";
+    &_processNode($in, 0);
+  }
+
   select STDOUT;
   close OUT;
 }
 
 
 sub _processNode {
-  my $nodeRef = shift;
+  my ($nodeRef, $hasSeq, $onlySeq) = @_;
+
   if (ref($nodeRef) ne 'HASH') { return; }
 
   foreach my $cn (keys %$nodeRef) {
@@ -43,9 +53,11 @@ sub _processNode {
 	foreach (@GFFCols) {
 	  my $col = $childNode->{$_}->[0];
 	  print "DEBUG $_ = $col\n" if $debug;
-	  print "$col\t";
+	  print "$col\t" unless $onlySeq;
 	}
-	print 'ID=' . $childNode->{'attr_id'}->[0];
+
+	print 'ID=' . $childNode->{'attr_id'}->[0] if !$onlySeq;
+	my $lastSeqId = $childNode->{$GFFCols[0]}->[0];
 
 	my @nestedLis;
 	foreach my $gcn (keys %$childNode) {
@@ -55,15 +67,17 @@ sub _processNode {
 	    push @nestedLis, $grandChild;
 	  } elsif ($gcn =~ /^attr\_(\S+)$/) {
 	    my $attr = &_normalizeAttr($1);
-	    print ';' . $attr . '=' . $grandChild unless $attr eq 'ID';
+	    print ';' . $attr . '=' . $grandChild unless ($attr eq 'ID' or $onlySeq);
+	  } elsif ($gcn =~ /^sequence$/) {
+	    if ($onlySeq) { print ">$lastSeqId\n" . &_formatSeq($grandChild, 80) . "\n"; }
 	  } else {
 	    print "DEBUG ignored tag $gcn\n" if $debug;
 	  }
 	}
 	print "\n";
-	foreach (@nestedLis) { &_processNode($_); }
+	foreach (@nestedLis) { &_processNode($_, $hasSeq, $onlySeq); }
       } else {
-	&_processNode($childNode);
+	&_processNode($childNode, $hasSeq, $onlySeq);
       }
     }
   }
@@ -82,6 +96,20 @@ sub _normalizeAttr {
   $attr = 'Dbxref' if $attr eq 'dbxref';
   $attr = 'Ontology_term' if $attr eq 'ontology_term';
   return $attr;
+}
+
+sub _formatSeq {
+  my ($seq, $width) = @_;
+  $width = 80 unless $width;
+  $seq =~ s/\s+//gm;
+  my $len = length $seq;
+  my $num_lines = 1+ $len/$width;
+  my $fmtSeq = "";
+  for (my $i=0; $i<$num_lines; $i++) {
+    my $offset = $width * $i;
+    $fmtSeq .= substr($seq, $offset, $width) . "\n";
+  }
+  return $fmtSeq;
 }
 
 1;
