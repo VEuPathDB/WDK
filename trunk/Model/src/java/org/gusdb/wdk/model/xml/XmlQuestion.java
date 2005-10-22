@@ -3,7 +3,7 @@
  */
 package org.gusdb.wdk.model.xml;
 
-import java.io.File;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
@@ -11,6 +11,7 @@ import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.implementation.XmlConverter;
 
 /**
  * @author Jerric
@@ -22,6 +23,7 @@ public class XmlQuestion {
     private String displayName;
     private String recordClassRef;
     private String xmlData;
+    private String xsl;
     private String summaryAttributesRef;
     private XmlAttributeField[] summaryAttributes;
     private String description;
@@ -124,6 +126,14 @@ public class XmlQuestion {
         return xmlData;
     }
 
+    public String getXslURL() {
+        return xsl;
+    }
+
+    public void setXslURL(String xsl) {
+        this.xsl = xsl;
+    }
+
     public XmlQuestionSet getQuestionSet() {
         return questionSet;
     }
@@ -180,20 +190,32 @@ public class XmlQuestion {
 
     public XmlAnswer makeAnswer(Map<String, String> params, int startIndex,
             int endIndex) throws WdkModelException {
-        if (answer == null) { // parse xml and create an answertaPa
-            URL xmlDataURL;
+        if (answer == null) { // parse xml and create an answer
             try {
-                if (xmlData.startsWith("http://")
-                        || xmlData.startsWith("ftp://")
-                        || xmlData.startsWith("https://")) {
-                    xmlDataURL = new URL(xmlData);
-                } else {
-                    File xmlDataDir = model.getXmlDataDir();
-                    File xmlDataFile = new File(xmlDataDir, xmlData);
-                    xmlDataURL = xmlDataFile.toURL();
+                URL xmlDataURL = createURL(xmlData);
+
+                // check if we have the XSL assigned
+                if (xsl != null && xsl.length() != 0) {
+                    // yes, convert the xml first
+                    URL xslURL = createURL(xsl);
+                    InputStream inXmlStream = xmlDataURL.openStream();
+                    InputStream inXslStream = xslURL.openStream();
+
+                    ByteArrayOutputStream outXmlStream = new ByteArrayOutputStream();
+
+                    XmlConverter.convert(inXmlStream, inXslStream, outXmlStream);
+
+                    byte[] buffer = outXmlStream.toByteArray();
+                    InputStream convertedStream = new ByteArrayInputStream(
+                            buffer);
+
+                    answer = loader.parseDataStream(convertedStream);
+                } else { // no, just parse the xml directly
+                    answer = loader.parseDataFile(xmlDataURL);
                 }
-                answer = loader.parseDataFile(xmlDataURL);
             } catch (MalformedURLException ex) {
+                throw new WdkModelException(ex);
+            } catch (IOException ex) {
                 throw new WdkModelException(ex);
             }
         }
@@ -205,6 +227,17 @@ public class XmlQuestion {
         answer.setResources(WdkModel.INSTANCE);
 
         return answer;
+    }
+
+    private URL createURL(String data) throws MalformedURLException {
+        if (data.startsWith("http://") || data.startsWith("ftp://")
+                || data.startsWith("https://")) {
+            return new URL(data);
+        } else {
+            File xmlDataDir = model.getXmlDataDir();
+            File xmlDataFile = new File(xmlDataDir, data);
+            return xmlDataFile.toURL();
+        }
     }
 
     /*

@@ -373,6 +373,9 @@
         <attribute name="recordClassRef" />
         <attribute name="xmlDataURL" />
         <optional>
+           <attribute name="xslURL" />
+        </optional>
+        <optional>
            <attribute name="summaryAttributesRef" />
         </optional>
         <element name="description">
