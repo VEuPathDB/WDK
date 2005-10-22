@@ -132,7 +132,7 @@ public class XmlAnswer {
         sb.append(question.getDisplayName());
         sb.append(":\r\n\tdescription = ");
         sb.append(question.getDescription());
-        sb.append(":\r\n\tdate url = ");
+        sb.append(":\r\n\tdata url = ");
         sb.append(question.getXmlDataURL());
         sb.append("\r\n");
 

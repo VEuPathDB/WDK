@@ -34,19 +34,32 @@ public class XmlDataLoader {
         this.schemaURL = schemaURL;
     }
 
-    public XmlAnswer parseDataFile(URL dataXmlURL) throws WdkModelException {
+    public XmlAnswer parseDataFile(URL xmlDataURL) throws WdkModelException {
         // validate the xml data file
-        if (!validDataFile(dataXmlURL, schemaURL))
+        if (!validDataFile(xmlDataURL, schemaURL))
             throw new WdkModelException("Validation to data xml file failed: "
-                    + dataXmlURL.toExternalForm());
+                    + xmlDataURL.toExternalForm());
+
+        // Create the InputStream of xmlData
+        try {
+            InputStream xmlDataStream = xmlDataURL.openStream();
+            return parseDataStream(xmlDataStream);
+        } catch (IOException ex) {
+            throw new WdkModelException(ex);
+        }
+    }
+
+    public XmlAnswer parseDataStream(InputStream xmlDataStream)
+            throws WdkModelException {
+        // I have to bypass the validation part for stream source, since the
+        // validator need to use a String or File to validate it
 
         // configure the digester
         Digester digester = configureDigester();
 
         try {
             // load and parse the data source
-            InputStream dataXmlStream = dataXmlURL.openStream();
-            XmlAnswer answer = (XmlAnswer) digester.parse(dataXmlStream);
+            XmlAnswer answer = (XmlAnswer) digester.parse(xmlDataStream);
 
             return answer;
         } catch (IOException ex) {
@@ -123,5 +136,4 @@ public class XmlDataLoader {
 
         return digester;
     }
-
 }
