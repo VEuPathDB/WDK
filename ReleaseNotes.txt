@@ -1,5 +1,45 @@
 
 ------------------------------------------------------------------------------
+ooooooooooooooooooooooooooo  WDK Version 1.8  oooooooooooooooooooooooooooooooo
+------------------------------------------------------------------------------
+
+====================  Model - Fixed Bugs ========================
+
+===================== Model - Features ==========================
+
+* Added XML output support (-toXml option of wdkSummary command)
+
+* Added facilities to convert appropriate XML output into BRC's
+  IOWG compliant GFF3 format 
+
+* Added XmlQuestion, XmlAnswer, XmlRecordClass, XmlRecordInstance and
+  associated facilities to take XML documents as input content
+
+* Added XSLT support for converting XML documents prior to consumption
+  by WDK Model or on the fly in the Model
+
+* Added xmlAnswer.rng schema to specify XML documents suitable for WDK
+
+* Made Model/lib/xml accessible from webinstall for access of XML contents
+
+===================== Controller - Fixed Bugs ===================
+
+
+===================== Controller - Features =====================
+
+* Added configration and actions to support the discovery of XML data dir,
+  the listing of all data content names for website, and the display of
+  the actual data content for each item on the list
+
+===================== View - Fixed Bugs =========================
+
+===================== View - Features ===========================
+
+* Added default pages for listing data content names and
+  displaying data content
+
+
+------------------------------------------------------------------------------
 ooooooooooooooooooooooooooo  WDK Version 1.7  oooooooooooooooooooooooooooooooo
 ------------------------------------------------------------------------------
 
