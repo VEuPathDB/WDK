@@ -5,9 +5,14 @@ package WDK::Model::XmlToGff3;
 use strict;
 use Carp;
 use XML::Simple;
+use CGI;
 
 my @GFFCols = ('seqid','source','type','fstart','fend','score','strand','phase');
 my $debug = 0;
+
+# my $str = 'test; cgi';
+# my $esc_str = CGI->escape($str);
+# print "\n\"$str\" escaped into \"$esc_str\"\n\n";
 
 sub convert {
   my ($inFile, $outFile, $hasSeq) = @_;
@@ -27,6 +32,7 @@ sub convert {
 
   if ($hasSeq) {
     &_processNode($in, 1, 0); # first pass for GFF lines
+    print "\n##FASTA\n";
     &_processNode($in, 1, 1); # second pass for FASTA section
   } else {
     print "##gff-version 3\n";
@@ -50,6 +56,14 @@ sub _processNode {
     foreach my $childNode (@$childNodes) {
       if ($cn eq 'li') {
 	print "DEBUG found li tag\n" if $debug;
+
+        my $fstart = $childNode->{$GFFCols[3]}->[0];
+        my $fend = $childNode->{$GFFCols[4]}->[0];
+        if ($fstart > $fend) {
+            $childNode->{$GFFCols[3]}->[0] = $fend;
+            $childNode->{$GFFCols[4]}->[0] = $fstart;
+        }
+
 	foreach (@GFFCols) {
 	  my $col = $childNode->{$_}->[0];
 	  print "DEBUG $_ = $col\n" if $debug;
@@ -67,6 +81,7 @@ sub _processNode {
 	    push @nestedLis, $grandChild;
 	  } elsif ($gcn =~ /^attr\_(\S+)$/) {
 	    my $attr = &_normalizeAttr($1);
+	    $grandChild = CGI->escape($grandChild) if $1 =~ /^(description|name)$/;
 	    print ';' . $attr . '=' . $grandChild unless ($attr eq 'ID' or $onlySeq);
 	  } elsif ($gcn =~ /^sequence$/) {
 	    if ($onlySeq) { print ">$lastSeqId\n" . &_formatSeq($grandChild, 80) . "\n"; }
