@@ -22,20 +22,20 @@ cd $TARGET_DIR/$VERSION
 echo
 echo tagging WDK and WDKToySite ...
 svn copy -m "tagging WDK for release $VERSION" \
-    https://www.cbil.upenn.edu/svn/gus/WDK/trunk \
-    https://www.cbil.upenn.edu/svn/gus/WDK/tags/$VERSION
+    https://svn.cbil.upenn.edu/gus/WDK/trunk \
+    https://svn.cbil.upenn.edu/gus/WDK/tags/$VERSION
 svn copy -m "tagging WDKToySite for release $VERSION" \
-    https://www.cbil.upenn.edu/svn/gus/WDKToySite/trunk \
-    https://www.cbil.upenn.edu/svn/gus/WDKToySite/tags/$VERSION
+    https://svn.cbil.upenn.edu/gus/WDKToySite/trunk \
+    https://svn.cbil.upenn.edu/gus/WDKToySite/tags/$VERSION
 
 echo
 echo getting WDK and WDKToySite from tagged copy ...
-svn co -q https://www.cbil.upenn.edu/svn/gus/WDK/tags/$VERSION WDK
+svn co -q https://svn.cbil.upenn.edu/gus/WDK/tags/$VERSION WDK
 if ($status != 0) then
   echo could not svn checkout $status
   exit(-1)
 endif
-svn co -q https://www.cbil.upenn.edu/svn/gus/WDKToySite/tags/$VERSION WDKToySite
+svn co -q https://svn.cbil.upenn.edu/gus/WDKToySite/tags/$VERSION WDKToySite
 if ($status != 0) then
   echo could not svn checkout $status
   exit(-1)
@@ -43,7 +43,7 @@ endif
 
 echo
 echo getting install ...
-svn co -q https://www.cbil.upenn.edu/svn/gus/install/trunk install
+svn co -q https://svn.cbil.upenn.edu/gus/install/trunk install
 if ($status != 0) then
   echo could not svn checkout $status
   exit(-1)
