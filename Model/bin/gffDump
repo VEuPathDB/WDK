@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
-my ($wdkModel, $annotQuestion, $seqQuestion, $outputFile) = @ARGV;
-die "\ngffDump <wdkModel> <AnnotationFullQuestion> <SequenceFullQuestion> <OutputFile>\n\n"
+my ($wdkModel, $annotQuestion, $seqQuestion, $outputFile, $keepStepFiles) = @ARGV;
+die "\ngffDump <wdkModel> <AnnotationFullQuestion> <SequenceFullQuestion> <OutputFile> [keepStepFiles]\n\n"
   unless $wdkModel && $annotQuestion && $seqQuestion && $outputFile;
 
 my $annotXmlFile = $outputFile . '.annotation.xml';
@@ -24,6 +24,8 @@ $cmd = "xmlToGff $seqXmlFile $outputFile 1";
 print "running $cmd ...\n";
 system("$cmd"); # or die "could not convert sequence xml into GFF";
 
-$cmd = "/bin/rm $annotXmlFile $seqXmlFile";
-print "running $cmd ...\n";
-system("$cmd");
+if (!$keepStepFiles) {
+    $cmd = "/bin/rm $annotXmlFile $seqXmlFile";
+    print "running $cmd ...\n";
+    system("$cmd");
+}
