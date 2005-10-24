@@ -1,0 +1,8 @@
+#!/usr/bin/perl
+
+use lib "$ENV{GUS_HOME}/lib/perl";
+use WDK::Model::XmlToGff3;
+
+my ($xmlFile, $gffFile, $hasSeq) = @ARGV;
+die "\nxmlToGff <xmlFile> <outFile> [hasSeq]\n\n" unless $xmlFile && $gffFile;
+&WDK::Model::XmlToGff3::convert($xmlFile, $gffFile, $hasSeq);

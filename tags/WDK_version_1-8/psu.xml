@@ -1,0 +1,272 @@
+<project name="WDK temp build" default="package" basedir=".">
+
+  <!--<taskdef name="jing" classname="com.thaiopensource.relaxng.util.JingTask"/>-->
+	
+  <property name="build.home"    value="${basedir}/ant-build"/>
+  <property name="src.home"      value="/src/java"/>
+  <property name="srcController.home"      value="${basedir}/Controller/src/java"/>
+  <property name="srcModel.home"      value="${basedir}/Model/src/java"/>
+  <property name="srcView.home"      value="${basedir}/View/src/java"/>
+  <property name="jar_resources_controller.home"      value="${basedir}/Controller/lib/java"/>
+  <property name="jar_resources_model.home"      value="${basedir}/Model/lib/java"/>
+  <property name="jar_resources_view.home"      value="${basedir}/View/lib/java"/>
+  <property name="jar_resources.home"      value="${basedir}/View/webinf"/>
+	
+  <property name="compile.debug"       value="true"/>
+  <property name="compile.deprecation" value="false"/>
+  <property name="compile.optimize"    value="true"/>
+
+  <property name="webapp.dir" value="/nfs/team81/art/genedb/webapps/sampleWDK/" />
+
+  <path id="compile.classpath">
+
+    <!-- <pathelement location="${catalina.home}/common/classes"/> -->
+    <fileset dir="${basedir}/Controller/lib/java">
+      <include name="*.jar"/>
+    </fileset>
+	<fileset dir="${basedir}/Model/lib/java">
+      <include name="*.jar"/>
+    </fileset>
+    <fileset dir="${basedir}/View/lib/java">
+      <include name="*.jar"/>
+    </fileset>
+  </path>
+
+
+
+  <target name="deploy" depends="package"
+   description="Deploy to webapp directory">
+
+    <!-- Compile Java classes as necessary -->
+    <mkdir dir="${build.home}/webapp"/>
+    <mkdir dir="${build.home}/WEB-INF/"/>  
+    <mkdir dir="${build.home}/WEB-INF/lib/"/>
+    <mkdir dir="${build.home}/webapp/WEB-INF/wdk-config" /> 	
+  	
+    <!-- Copy application resources -->
+    <copy todir="${build.home}/webapp/WEB-INF">
+      <fileset dir="ToySite/webinf" />
+    </copy>
+
+    <copy todir="${build.home}/webapp/">
+      <fileset dir="ToySite/docroot" />
+    </copy>
+
+    <copy tofile="${build.home}/webapp/WEB-INF/wdk-config/macro.props" 
+	      file="ToyModel/config/toyModel.prop"/>
+      
+    <copy tofile="${build.home}/webapp/WEB-INF/wdk-config/login.xml" 
+	      file="ToyModel/lib/xml/login.xml.d1pat"/>
+      
+        	<copy tofile="${build.home}/webapp/WEB-INF/wdk-config/model.xml" 
+  		  file="ToyModel/lib/xml/toyModel.xml"/>
+      
+      <copy todir="${build.home}/webapp/WEB-INF/classes">
+      <fileset dir="${build.home}/classes/"/>
+      </copy>
+<!--    <copy todir="${build.home}/webapp/WEB-INF/lib">
+    	<fileset dir="${basedir}/lib/java" />
+    </copy>
+-->
+<!--  	<copy todir="${build.home}/webapp/WEB-INF/lib" 
+  		  file="${build.home}/GUS-WebDevKit.jar"/> -->
+  	
+  	
+  	
+ <!--   <copy todir="${gus.home}/lib/xml"> 
+      <fileset dir="lib/xml" includes="*.xml" />
+  	</copy> -->
+  	
+
+  	
+<!--  	<mkdir dir="${build.home}/webapp/WEB-INF/classes" />
+  	<copy todir="${build.home}/webapp/WEB-INF/classes">
+  	  	<fileset dir="${build.home}/classes" />
+  	  		</copy> -->
+  	
+  	   <!-- <copy  todir="${build.home}/webapp/WEB-INF/lib">
+      <fileset dir="${jar_resources_controller.home}" />
+    </copy> -->
+    <copy  todir="${build.home}/webapp/WEB-INF/lib">
+      <fileset dir="${jar_resources_model.home}" />
+    </copy>
+    <copy  todir="${build.home}/webapp/WEB-INF/lib">
+      <fileset dir="${jar_resources_view.home}"
+               includes="jstl.jar,
+                         pager-taglib.jar,
+                         standard.jar" />
+    </copy>
+    
+    
+    <copy  todir="${build.home}/webapp/WEB-INF/wdk-config" 
+       file="Model/lib/rng/wdkModel.rng" />
+    
+<!--  	<copy todir="${build.home}/webapp/WEB-INF/lib">
+      <fileset dir="../WebDevKit/lib/java" 
+               includes="commons-digester-1.5.jar,
+                         ojdbc14.jar,
+                         commons-beanutils.jar,
+                         commons-cli-1.0.jar
+                         jstl.jar,
+                         pager-taglib.jar,
+                         standard.jar,
+                         jing-20030619.jar,
+                         commons-dbcp-1.1.jar,
+                         commons-pool-1.1.jar" />
+    </copy> -->
+  	
+  	<mkdir dir="${webapp.dir}"/>
+    <copy todir="${webapp.dir}">
+      <fileset dir="${build.home}/webapp" />
+    </copy>	
+  	
+  </target>
+
+
+
+
+  <target name="clean"
+   description="BROKEN Delete old build and dist directories">
+    <delete dir="${build.home}"/>
+    <delete dir="${dist.home}"/>
+  </target>
+
+
+  <target name="compile" depends="prepare"
+   description="Compile Java sources">
+
+	<mkdir dir="${build.home}/classes"/>
+    <javac srcdir="${srcModel.home}"
+          destdir="${build.home}/classes"
+            debug="${compile.debug}"
+      deprecation="${compile.deprecation}"
+         optimize="${compile.optimize}">
+        <classpath refid="compile.classpath"/>
+    </javac>
+
+    <!-- Compile Java classes as necessary -->
+    <mkdir dir="${build.home}/classes"/>
+    <javac srcdir="${srcController.home}"
+          destdir="${build.home}/classes"
+            debug="${compile.debug}"
+      deprecation="${compile.deprecation}"
+         optimize="${compile.optimize}">
+        <classpath refid="compile.classpath"/>
+    </javac>
+
+	
+    
+    <mkdir dir="${build.home}/classes"/>
+    <javac srcdir="${srcView.home}"
+          destdir="${build.home}/classes"
+            debug="${compile.debug}"
+      deprecation="${compile.deprecation}"
+         optimize="${compile.optimize}">
+        <classpath refid="compile.classpath"/>
+    </javac>
+
+    <!-- Copy application resources -->
+    <!--
+    <copy  todir="${build.home}/classes">
+      <fileset dir="${jar_resources_controller.home}" />
+    </copy>
+    <copy  todir="${build.home}/classes">
+      <fileset dir="${jar_resources_model.home}" />
+    </copy>
+    <copy  todir="${build.home}/classes">
+      <fileset dir="${jar_resources_view.home}" />
+    </copy>
+    <copy  todir="${build.home}/classes">
+      <fileset dir="${jar_resources.home}" />
+    </copy>
+    -->
+    <copy todir="${build.home}/classes/org/gusdb/wdk/model" file="${basedir}/Model/lib/rng/wdkModel.rng" />
+
+  </target>
+
+
+
+  <target name="package" depends="compile"
+   description="Create JAR file">
+
+    <copy todir="${build.home}/classes/META-INF">
+      <fileset dir="View/webinf/META-INF" />
+    </copy>	
+  		
+
+    <!-- Create application JAR file -->
+    <jar jarfile="${build.home}/GUS-WebDevKit.jar"
+         basedir="${build.home}/classes/"/>
+
+    <!-- Copy additional files to ${dist.home} as necessary -->
+
+  </target>
+
+
+
+  <target name="javadoc" depends="compile"
+   description="Create Javadoc API documentation">
+
+    <mkdir dir="${build.home}/docs/api"/>
+    <javadoc sourcepath="${src.home}"
+                destdir="${build.home}/docs/api"
+           packagenames="*">
+      <classpath refid="compile.classpath"/>
+    </javadoc>
+
+  </target>
+
+
+  <target name="javadoc-pdf" depends="compile"
+   description="Create Javadoc PDF API documentation">
+
+    <mkdir dir="${build.home}/docs/api"/>
+
+    <javadoc sourcepath="${src.home}"
+	access="private"
+	packagenames="*">
+   <doclet name="com.aurigalogic.doclet.core.Doclet"
+              path="./lib/java/AurigaDoclet.jar">
+        <param name="-out" value="api.pdf" />
+        <param name="-format" value="pdf" />
+      </doclet>
+      <classpath refid="compile.classpath"/>
+    </javadoc>
+
+  </target>
+
+  <target name="prepare">
+
+    <!-- Create build directories as needed -->
+    <mkdir  dir="${build.home}"/>
+    <mkdir  dir="${build.home}/WEB-INF"/>
+    <mkdir  dir="${build.home}/WEB-INF/classes"/>
+
+
+    <!-- Copy static content of this web application -->
+<!--
+    <copy todir="${build.home}">
+      <fileset dir="${web.home}"/>
+    </copy>
+-->
+    <!-- Copy external dependencies as required -->
+    <!-- *** CUSTOMIZE HERE AS REQUIRED BY YOUR APPLICATION *** -->
+    <mkdir  dir="${build.home}/WEB-INF/lib"/>
+<!--
+    <copy todir="${build.home}/WEB-INF/lib" file="${foo.jar}"/>
+-->
+
+    <!-- Copy static files from external dependencies as needed -->
+    <!-- *** CUSTOMIZE HERE AS REQUIRED BY YOUR APPLICATION *** -->
+
+  </target>
+
+  <target name="validateCBIL">
+    <jing file="../WDKTestSite/lib/xml/sampleModelRNG.xml" rngfile="webinf/org.gusdb/wdk/wdkModel.rng" />
+  </target>
+	
+  <target name="validatePSU">
+	 <jing file="../WDKTestSite/lib/xml/PSUSampleModel.xml" rngfile="webinf/org.gusdb/wdk/wdkModel.rng" />
+  </target>
+
+</project>
