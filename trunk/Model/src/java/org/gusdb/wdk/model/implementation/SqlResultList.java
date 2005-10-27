@@ -46,9 +46,11 @@ public class SqlResultList extends ResultList {
 	    int columnIndex = resultSet.findColumn(attributeName);
 	    int columnType = rsmd.getColumnType(columnIndex);
 	    if (columnType == Types.CLOB){
-		Clob clob = resultSet.getClob(attributeName);
-		Long length = new Long(clob.length());
-		o = clob.getSubString(1, length.intValue());
+	        Clob clob = resultSet.getClob(attributeName);
+	        if (clob != null) {
+	            Long length = new Long(clob.length());
+	            o = clob.getSubString(1, length.intValue());
+	        }
 	    }
 	    else{
 		o = resultSet.getObject(attributeName);
