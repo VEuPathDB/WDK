@@ -364,7 +364,7 @@ public class SqlClause {
         Options options = declareOptions();
         CommandLine cmdLine = parseOptions(cmdName, options, args);
         
-	String sqlFileName = cmdLine.getOptionValue("sqlFile");
+	String sqlFileName = cmdLine.getOptionValue("sqlfile");
 
 	if (sqlFileName == null) 
 	    sqlFileName = gusHome + "/data/WDK/Model/sqlMungeTest.sql";
