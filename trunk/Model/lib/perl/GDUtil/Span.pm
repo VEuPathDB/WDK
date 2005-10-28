@@ -14,12 +14,12 @@
 # $Revision$ $Date$ $Author$
 #------------------------------------------------------------------------
 
-package GUS::WebDevKit::GDUtil::Span;
+package WDK::Model::GDUtil::Span;
 
 use strict;
 
 use GD;
-use GUS::WebDevKit::GDUtil::Packer;
+use WDK::Model::GDUtil::Packer;
 
 #-------------------------------------------------
 # Defaults
@@ -27,7 +27,7 @@ use GUS::WebDevKit::GDUtil::Packer;
 
 my $DFLT_Y = 0;
 my $DFLT_HEIGHT = 10;
-my $DFLT_PACKER = GUS::WebDevKit::GDUtil::Packer::simplePacker(5);
+my $DFLT_PACKER = WDK::Model::GDUtil::Packer::simplePacker(5);
 my $DFLT_SHAPE = 'rect';
 my $DFLT_FILLED = 1;
 my $DFLT_BORDER = 0;

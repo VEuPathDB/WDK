@@ -11,17 +11,17 @@
 # $Revision$ $Date$ $Author$
 #------------------------------------------------------------------------
 
-package GUS::WebDevKit::GDUtil::Transducer::GUSPlasmoMapTransducer;
+package WDK::Model::GDUtil::Transducer::GUSPlasmoMapTransducer;
 
 use strict;
 
 use DBI;
 
-use GUS::WebDevKit::GDUtil::GDCanvas;
-use GUS::WebDevKit::GDUtil::Span;
-use GUS::WebDevKit::GDUtil::StripeSpan;
-use GUS::WebDevKit::GDUtil::AxisSpan;
-use GUS::WebDevKit::GDUtil::Packer;
+use WDK::Model::GDUtil::GDCanvas;
+use WDK::Model::GDUtil::Span;
+use WDK::Model::GDUtil::StripeSpan;
+use WDK::Model::GDUtil::AxisSpan;
+use WDK::Model::GDUtil::Packer;
 
 #-------------------------------------------------
 # Defaults
@@ -323,7 +323,7 @@ sub buildMicrosatelliteMapImage {
     my $adjMaxCm = undef;
 
     my $canvas = 
-	GUS::WebDevKit::GDUtil::GDCanvas->new($self->{width}, $self->{height},
+	WDK::Model::GDUtil::GDCanvas->new($self->{width}, $self->{height},
 			      {x1 => 100, x2 => $self->{width} - 30},
 			      {x1 => $self->{minCm}, x2 => $self->{maxCm}});
 
@@ -548,7 +548,7 @@ sub buildMicrosatelliteMapImage {
 	    $mx1 = $x1 if ($mx1 < $x1);	    
 	    $mx2 = $x2 if ($mx2 > $x2);
 
-	    push(@$mSpans, GUS::WebDevKit::GDUtil::Span->new({
+	    push(@$mSpans, WDK::Model::GDUtil::Span->new({
 		x1 => $mx1,
 		x2 => $mx2,
 		height => 3,
@@ -560,12 +560,12 @@ sub buildMicrosatelliteMapImage {
 	    }));
 	}
 
-	my $contigSpan = GUS::WebDevKit::GDUtil::Span->new({
+	my $contigSpan = WDK::Model::GDUtil::Span->new({
 	    x1 => $x1,
 	    x2 => $x2,
 	    height => 7,
 	    imagemapLabel => $descr,
-	    packer => &GUS::WebDevKit::GDUtil::Packer::constantPacker(0),
+	    packer => &WDK::Model::GDUtil::Packer::constantPacker(0),
 	    shape => $shape,
 	    color => $contigColor, 
 	    filled => !$error,
@@ -576,12 +576,12 @@ sub buildMicrosatelliteMapImage {
 
 	unshift(@$mSpans, $contigSpan);
 
-	my $span = GUS::WebDevKit::GDUtil::Span->new({
+	my $span = WDK::Model::GDUtil::Span->new({
 	    x1 => $x1,
 	    x2 => $x2,
 	    height => 0,
 	    kids => $mSpans,
-	    packer => &GUS::WebDevKit::GDUtil::Packer::constantPacker(0),
+	    packer => &WDK::Model::GDUtil::Packer::constantPacker(0),
 	    shape => 'none',
 	    
 	});
@@ -630,7 +630,7 @@ sub buildMicrosatelliteMapImage {
 	     "document.forms['${name}_form']['microsat_${name}_defline'].value='$descr';" .
 	     "return true;");
 
-	push(@$markerSpans, GUS::WebDevKit::GDUtil::Span->new({
+	push(@$markerSpans, WDK::Model::GDUtil::Span->new({
 	    x1 => $x1,
 	    x2 => $x2,
 	    height => 8,
@@ -640,7 +640,7 @@ sub buildMicrosatelliteMapImage {
 	    color => $mcolor
 	}));
     }
-    push(@$stripeSpans, &makeStripeSpan("Markers", $markerSpans, &GUS::WebDevKit::GDUtil::Packer::constantPacker(0)));
+    push(@$stripeSpans, &makeStripeSpan("Markers", $markerSpans, &WDK::Model::GDUtil::Packer::constantPacker(0)));
 
     # Group contigs by source chromosome, putting those for _this_ chromosome
     # closest to the axis.  Then sort by number of markers (those with more
@@ -674,13 +674,13 @@ sub buildMicrosatelliteMapImage {
     $self->{maxCm} = $adjMaxCm if ($adjMaxCm > $self->{maxCm});
 
     $self->{microsat_rootSpan} = 
-      GUS::WebDevKit::GDUtil::AxisSpan->new({
+      WDK::Model::GDUtil::AxisSpan->new({
 	  x1 => $self->{minCm}, 
 	  x2 => $self->{maxCm}, 
 	  y1 => $self->{height} - 5, 
 	  height => 6, tickHeight => 4, tickWidth => 1,
 	  kids => $stripeSpans,
-	  packer => GUS::WebDevKit::GDUtil::Packer::simplePacker(5),
+	  packer => WDK::Model::GDUtil::Packer::simplePacker(5),
 	  ticks => [0, $oldMaxCm],
 	  tickLabel => 'cM',
 	  label => $self->{seqLabel},
@@ -695,7 +695,7 @@ sub buildMicrosatelliteMapImage {
 	$self->{height} = $self->{microsat_rootSpan}->getHeight() + 5;
 
 	my $canvas = 
-	  GUS::WebDevKit::GDUtil::GDCanvas->new($self->{width}, $self->{height},
+	  WDK::Model::GDUtil::GDCanvas->new($self->{width}, $self->{height},
 				{x1 => 100, x2 => $self->{width} - 30},
 				{x1 => $self->{minCm}, x2 => $self->{maxCm}});
 
@@ -788,7 +788,7 @@ sub buildOpticalMapImage {
     $self->{"${enzyme}_height"} = $self->{height};
 
     my $canvas = 
-	GUS::WebDevKit::GDUtil::GDCanvas->new($self->{"${enzyme}_width"}, $self->{"${enzyme}_height"},
+	WDK::Model::GDUtil::GDCanvas->new($self->{"${enzyme}_width"}, $self->{"${enzyme}_height"},
 			      {x1 => 100, x2 => $self->{"${enzyme}_width"} - 30},
 			      {x1 => 0, x2 => $mapLen});
 
@@ -807,7 +807,7 @@ sub buildOpticalMapImage {
     #
     my $first = 1;
 
-#    push(@$fragSpans, GUS::WebDevKit::GDUtil::Span->new({
+#    push(@$fragSpans, WDK::Model::GDUtil::Span->new({
 #	x1 => 1,
 #	x2 => $mapLen,
 #	height => 8,
@@ -820,7 +820,7 @@ sub buildOpticalMapImage {
 	my $end = $frag->[3];
 	push(@$fragPosns, {'start' => $start, 'end' => $end});
 
-	push(@$fragSpans, GUS::WebDevKit::GDUtil::Span->new({
+	push(@$fragSpans, WDK::Model::GDUtil::Span->new({
 	    x1 => $start,
 	    x2 => $end,
 	    height => 8,
@@ -829,10 +829,10 @@ sub buildOpticalMapImage {
 	    }));
     }
 
-    my $optMapSpan = GUS::WebDevKit::GDUtil::Span->new({
+    my $optMapSpan = WDK::Model::GDUtil::Span->new({
 	x1 => 0,
 	x2 => $mapLen,
-	packer => &GUS::WebDevKit::GDUtil::Packer::constantPacker(0),
+	packer => &WDK::Model::GDUtil::Packer::constantPacker(0),
 	kids => $fragSpans,
 	height => 0,
 	shape => 'none'
@@ -868,7 +868,7 @@ sub buildOpticalMapImage {
 	    $chromSpans->{$chrom} = $sl;
 	}
 
-	push(@$sl, GUS::WebDevKit::GDUtil::Span->new({
+	push(@$sl, WDK::Model::GDUtil::Span->new({
 	    x1 => $start,
 	    x2 => $end,
 	    height => 6,
@@ -896,13 +896,13 @@ sub buildOpticalMapImage {
     }
 
     $self->{"${enzyme}_rootSpan"} = 
-      GUS::WebDevKit::GDUtil::AxisSpan->new({
+      WDK::Model::GDUtil::AxisSpan->new({
 	  x1 => 0, 
 	  x2 => $mapLen, 
 	  y1 => 150, 
 	  height => 6, tickHeight => 4, tickWidth => 1,
 	  kids => [&makeStripeSpan($enzyme . " (" . scalar(@$fragPosns) . ")", [$optMapSpan]), @$stripeSpans],
-	  packer => GUS::WebDevKit::GDUtil::Packer::simplePacker(5),
+	  packer => WDK::Model::GDUtil::Packer::simplePacker(5),
 	  ticks => [0, $mapLen],
 	  tickLabel => 'kb',
 	  label => $self->{seqLabel},
@@ -917,7 +917,7 @@ sub buildOpticalMapImage {
 	$self->{"${enzyme}_height"} = $self->{"${enzyme}_rootSpan"}->getHeight() + 5;
 
 	my $canvas = 
-	  GUS::WebDevKit::GDUtil::GDCanvas->new($self->{"${enzyme}_width"}, $self->{"${enzyme}_height"},
+	  WDK::Model::GDUtil::GDCanvas->new($self->{"${enzyme}_width"}, $self->{"${enzyme}_height"},
 				{x1 => 100, x2 => $self->{"${enzyme}_width"} - 30},
 				{x1 => 0, x2 => $mapLen});
 
@@ -930,7 +930,7 @@ sub buildOpticalMapImage {
     $self->{"${enzyme}_rootSpan"}->draw($self->{"${enzyme}_canvas"});
 }
 
-my $sPacker2 = &GUS::WebDevKit::GDUtil::Packer::simplePacker(2);
+my $sPacker2 = &WDK::Model::GDUtil::Packer::simplePacker(2);
 
 # Create a StripeSpan containing all the contigs for a given 
 # chromosome.
@@ -938,7 +938,7 @@ my $sPacker2 = &GUS::WebDevKit::GDUtil::Packer::simplePacker(2);
 sub makeStripeSpan {
     my($label, $contigs, $packer) = @_;
 
-    return GUS::WebDevKit::GDUtil::StripeSpan->new({
+    return WDK::Model::GDUtil::StripeSpan->new({
 	kids => $contigs,
 	packer => defined($packer) ? $packer : $sPacker2,
 	label => $label,

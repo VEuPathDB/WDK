@@ -11,7 +11,7 @@
 # $Revision$ $Date$ $Author$
 #------------------------------------------------------------------------
 
-package GUS::WebDevKit::GDUtil::Transducer::DEBUG;
+package WDK::Model::GDUtil::Transducer::DEBUG;
 
 sub logTS {
     my ($msg, $lastcall, $spacer, $file) = @_;

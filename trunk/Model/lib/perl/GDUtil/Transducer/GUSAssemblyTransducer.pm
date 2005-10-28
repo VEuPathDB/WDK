@@ -12,19 +12,19 @@
 # $Revision$ $Date$ $Author$
 #---------------------------------------------------------------------
 
-package GUS::WebDevKit::GDUtil::Transducer::GUSAssemblyTransducer;
+package WDK::Model::GDUtil::Transducer::GUSAssemblyTransducer;
 
 use strict;
 
 use DBI;
 
-use GUS::WebDevKit::GDUtil::GDCanvas;
-use GUS::WebDevKit::GDUtil::Span;
-use GUS::WebDevKit::GDUtil::StripeSpan;
-use GUS::WebDevKit::GDUtil::AxisSpan;
-use GUS::WebDevKit::GDUtil::PercentATSpan;
-use GUS::WebDevKit::GDUtil::ColoredSequenceSpan;
-use GUS::WebDevKit::GDUtil::Packer;
+use WDK::Model::GDUtil::GDCanvas;
+use WDK::Model::GDUtil::Span;
+use WDK::Model::GDUtil::StripeSpan;
+use WDK::Model::GDUtil::AxisSpan;
+use WDK::Model::GDUtil::PercentATSpan;
+use WDK::Model::GDUtil::ColoredSequenceSpan;
+use WDK::Model::GDUtil::Packer;
 
 #-------------------------------------------------
 # Defaults
@@ -211,7 +211,7 @@ sub getRootSpanAndCanvas {
     my $naSeqLen = $self->{'naSeqLen'};
     
     my $canvas =  
-      GUS::WebDevKit::GDUtil::GDCanvas->new($self->{width}, $self->{height},
+      WDK::Model::GDUtil::GDCanvas->new($self->{width}, $self->{height},
 			    {x1 => 150, x2 => $self->{width} - 25},
 			    {x1 => 0, x2 => $naSeqLen });
 
@@ -241,7 +241,7 @@ sub getRootSpanAndCanvas {
 	    $args->{imagemapOnMouseOver} = $mOver;
 	}
 	
-	my $css = GUS::WebDevKit::GDUtil::ColoredSequenceSpan->new($args);
+	my $css = WDK::Model::GDUtil::ColoredSequenceSpan->new($args);
 	push(@$topLevelSpans, $css);
     }
 
@@ -264,7 +264,7 @@ sub getRootSpanAndCanvas {
 	$args->{imagemapOnMouseOver} = $mOver;
 	}
 	
-    my $at20 = GUS::WebDevKit::GDUtil::PercentATSpan->new($args);
+    my $at20 = WDK::Model::GDUtil::PercentATSpan->new($args);
     push(@$topLevelSpans, $at20);
     push(@$topLevelSpans, &makeSpacerSpan(3));
 
@@ -299,13 +299,13 @@ sub getRootSpanAndCanvas {
     # Root span
     #
     my $rootSpan = 
-      GUS::WebDevKit::GDUtil::AxisSpan->new({
+      WDK::Model::GDUtil::AxisSpan->new({
 	  x1 => 0, 
 	  x2 => $naSeqLen, 
 	  y1 => $self->{height} - 5,
 	  height => 6, tickHeight => 4, tickWidth => 1,
 	  kids => $topLevelSpans,
-	  packer => GUS::WebDevKit::GDUtil::Packer::simplePacker(2),
+	  packer => WDK::Model::GDUtil::Packer::simplePacker(2),
 	  tickLabel => 'bp',
 	  label => $slbl,
 	  labelVAlign => 'bottom'
@@ -319,7 +319,7 @@ sub getRootSpanAndCanvas {
 	$self->{height} = $rootSpan->getHeight() + 5;
 	
 	$canvas = 
-	  GUS::WebDevKit::GDUtil::GDCanvas->new($self->{width}, $self->{height},
+	  WDK::Model::GDUtil::GDCanvas->new($self->{width}, $self->{height},
 				{x1 => 150, x2 => $self->{width} - 25},
 				{x1 => 0, x2 => $naSeqLen});
 	
@@ -356,9 +356,9 @@ sub getSequence {
     return $self->{$seqType};
 }
 
-my $cp0 = &GUS::WebDevKit::GDUtil::Packer::constantPacker(0);
-my $lrp1 = &GUS::WebDevKit::GDUtil::Packer::leftToRightPacker(1);
-my $lrp2 = &GUS::WebDevKit::GDUtil::Packer::leftToRightPacker(2);
+my $cp0 = &WDK::Model::GDUtil::Packer::constantPacker(0);
+my $lrp1 = &WDK::Model::GDUtil::Packer::leftToRightPacker(1);
+my $lrp2 = &WDK::Model::GDUtil::Packer::leftToRightPacker(2);
 
 # Generate spans corresponding to the entries in GeneTrapAssembly
 #
@@ -450,9 +450,9 @@ sub getGeneTrapSpans {
 	    $args->{imagemapOnMouseOver} = $mOver;
 	}
 
-	my $span = GUS::WebDevKit::GDUtil::Span->new($args);
+	my $span = WDK::Model::GDUtil::Span->new($args);
 
-	my $ss = GUS::WebDevKit::GDUtil::StripeSpan->new({
+	my $ss = WDK::Model::GDUtil::StripeSpan->new({
 	    kids => [$span],
 	    packer => $cp0,
 	    label => $spanDescr,
@@ -528,9 +528,9 @@ sub getRHMapSpans {
 	    $args->{imagemapOnMouseOver} = $mOver;
 	}
 
-	my $span = GUS::WebDevKit::GDUtil::Span->new($args);
+	my $span = WDK::Model::GDUtil::Span->new($args);
 
-	my $ss = GUS::WebDevKit::GDUtil::StripeSpan->new({
+	my $ss = WDK::Model::GDUtil::StripeSpan->new({
 	    kids => [$span],
 	    packer => $cp0,
 	    label => "RH map: chr. $chrom",
@@ -645,12 +645,12 @@ sub getInputSeqSpans {
 	    $args->{imagemapOnMouseOver} = $mOver;
 	}
 
-	my $span = GUS::WebDevKit::GDUtil::Span->new($args);
+	my $span = WDK::Model::GDUtil::Span->new($args);
 	push(@$spans, $span);
     }	       
 
     if (scalar(@$spans) > 0) {
-	my $ss = GUS::WebDevKit::GDUtil::StripeSpan->new({
+	my $ss = WDK::Model::GDUtil::StripeSpan->new({
 	    kids => $spans,
 	    packer => $lrp2,
 	    label => 'ESTs + mRNAs',
@@ -723,7 +723,7 @@ sub getTranslatedAAFeatureSpans {
 	    $args->{imagemapOnMouseOver} = $mOver;
 	}
 
-	my $span = GUS::WebDevKit::GDUtil::Span->new($args);
+	my $span = WDK::Model::GDUtil::Span->new($args);
 	push(@$spans, $span);
 	++$n;
 
@@ -735,7 +735,7 @@ sub getTranslatedAAFeatureSpans {
 	$numSegs = $nsegs;
     }
 
-    my $ss1 = GUS::WebDevKit::GDUtil::StripeSpan->new({
+    my $ss1 = WDK::Model::GDUtil::StripeSpan->new({
 	kids => $spans,
 	packer => $cp0,
 	label => 'Framefinder segment(s)',
@@ -754,7 +754,7 @@ sub getTranslatedAAFeatureSpans {
 	borderColor => $black,
     };
 
-    my $tfSpan = GUS::WebDevKit::GDUtil::Span->new($tfArgs);
+    my $tfSpan = WDK::Model::GDUtil::Span->new($tfArgs);
     my $tfOver = undef;
 
     if ($self->{javascript}) {
@@ -762,9 +762,9 @@ sub getTranslatedAAFeatureSpans {
 	$tfOver = "show${fnName}Info('$sh', '$transStart-$transStop', '$numSegs segment(s)', 'score=$transScore'); return true;";
     }
     
-    my $tfSpan = GUS::WebDevKit::GDUtil::Span->new($tfArgs);
+    my $tfSpan = WDK::Model::GDUtil::Span->new($tfArgs);
 
-    my $ss2 = GUS::WebDevKit::GDUtil::StripeSpan->new({
+    my $ss2 = WDK::Model::GDUtil::StripeSpan->new({
 	kids => [$tfSpan],
 	packer => $cp0,
 	label => 'Framefinder protein',
@@ -792,9 +792,9 @@ sub getTranslatedAAFeatureSpans {
 	$mOver = "show${fnName}Info('$sh', '$dianaPos', '', 'score=$dianaScore'); return true;";
     }
 
-    my $dianaSpan = GUS::WebDevKit::GDUtil::Span->new($dArgs);
+    my $dianaSpan = WDK::Model::GDUtil::Span->new($dArgs);
 
-    my $ss3 = GUS::WebDevKit::GDUtil::StripeSpan->new({
+    my $ss3 = WDK::Model::GDUtil::StripeSpan->new({
 	kids => [$dianaSpan],
 	packer => $cp0,
 	label => 'DIANA_ATG',
@@ -821,7 +821,7 @@ sub safeHtml {
 sub makeSpacerSpan {
     my($height) = @_;
 
-    return GUS::WebDevKit::GDUtil::Span->new({
+    return WDK::Model::GDUtil::Span->new({
 	height => $height,
 	shape => 'none',
     });

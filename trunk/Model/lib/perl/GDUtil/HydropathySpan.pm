@@ -11,14 +11,14 @@
 # $Revision$ $Date$ $Author$
 #------------------------------------------------------------------------
 
-package GUS::WebDevKit::GDUtil::HydropathySpan;
+package WDK::Model::GDUtil::HydropathySpan;
 
 use strict;
 
 use GD;
-use GUS::WebDevKit::GDUtil::StripeSpan;
+use WDK::Model::GDUtil::StripeSpan;
 
-@GUS::WebDevKit::GDUtil::HydropathySpan::ISA = ('GUS::WebDevKit::GDUtil::StripeSpan');
+@WDK::Model::GDUtil::HydropathySpan::ISA = ('WDK::Model::GDUtil::StripeSpan');
 
 #-------------------------------------------------
 # Defaults

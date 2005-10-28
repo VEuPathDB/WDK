@@ -16,17 +16,17 @@
 #  add ALT tag to IMG
 #  use only as much vertical space as is needed
 
-package GUS::WebDevKit::GDUtil::Transducer::GUSSimilarityTransducer;
+package WDK::Model::GDUtil::Transducer::GUSSimilarityTransducer;
 
 use strict;
 
 use DBI;
 
-use GUS::WebDevKit::GDUtil::GDCanvas;
-use GUS::WebDevKit::GDUtil::Span;
-use GUS::WebDevKit::GDUtil::StripeSpan;
-use GUS::WebDevKit::GDUtil::AxisSpan;
-use GUS::WebDevKit::GDUtil::Packer;
+use WDK::Model::GDUtil::GDCanvas;
+use WDK::Model::GDUtil::Span;
+use WDK::Model::GDUtil::StripeSpan;
+use WDK::Model::GDUtil::AxisSpan;
+use WDK::Model::GDUtil::Packer;
 
 #-------------------------------------------------
 # Defaults
@@ -234,7 +234,7 @@ sub processSimilarityRows {
     my $nSubjs = 0;
     
     my $canvas = 
-	GUS::WebDevKit::GDUtil::GDCanvas->new($self->{width}, $self->{height},
+	WDK::Model::GDUtil::GDCanvas->new($self->{width}, $self->{height},
 			      {x1 => 250, x2 => $self->{width} - 20},
 			      {x1 => $self->{queryStart}, x2 => $self->{queryEnd} });
 
@@ -310,7 +310,7 @@ sub processSimilarityRows {
 	$hspArgs->{imagemapHref} = &$hrefFn($srcId, $extDbId) if (defined($hrefFn));
 	$hspArgs->{imagemapTarget} = $hrefTarget if (defined($hrefTarget));
 
-	push(@$hspSpans, GUS::WebDevKit::GDUtil::Span->new($hspArgs));
+	push(@$hspSpans, WDK::Model::GDUtil::Span->new($hspArgs));
 	$lastRow = $row;
     }
 
@@ -322,13 +322,13 @@ sub processSimilarityRows {
     my $tLabel = ($self->{queryTable} =~ /aasequence/i) ? 'aa' : 'bp';
 
     $self->{rootSpan} = 
-      GUS::WebDevKit::GDUtil::AxisSpan->new({
+      WDK::Model::GDUtil::AxisSpan->new({
 	  x1 => $self->{queryStart}, 
 	  x2 => $self->{queryEnd}, 
 	  y1 => $self->{height} - 5, 
 	  height => 6, tickHeight => 4, tickWidth => 1,
 	  kids => $sbjSpans,
-	  packer => GUS::WebDevKit::GDUtil::Packer::simplePacker(2),
+	  packer => WDK::Model::GDUtil::Packer::simplePacker(2),
 	  tickInterval => $self->{tickInterval},
 	  tickLabel => $tLabel,
 	  label => defined($seqLabel) ? $seqLabel : ($self->{queryTable} . " " . $self->{queryId}),
@@ -343,7 +343,7 @@ sub processSimilarityRows {
 	$self->{height} = $self->{rootSpan}->getHeight() + 5;
 
 	my $canvas = 
-	  GUS::WebDevKit::GDUtil::GDCanvas->new($self->{width}, $self->{height},
+	  WDK::Model::GDUtil::GDCanvas->new($self->{width}, $self->{height},
 				{x1 => 250, x2 => $self->{width} - 20},
 				{x1 => $self->{queryStart}, x2 => $self->{queryEnd}});
 
@@ -356,7 +356,7 @@ sub processSimilarityRows {
     $self->{rootSpan}->draw($self->{canvas});
 }
 
-my $cPacker = &GUS::WebDevKit::GDUtil::Packer::constantPacker(0);
+my $cPacker = &WDK::Model::GDUtil::Packer::constantPacker(0);
 
 sub makeSubjectSpan {
     my($self, $hspSpans, $row) = @_;
@@ -388,7 +388,7 @@ sub makeSubjectSpan {
     $args->{imagemapHref} = &$hrefFn($srcId, $extDbId) if (defined($hrefFn));
     $args->{imagemapTarget} = $hrefTarget if (defined($hrefTarget));
 
-    my $ss = GUS::WebDevKit::GDUtil::StripeSpan->new($args);
+    my $ss = WDK::Model::GDUtil::StripeSpan->new($args);
     return $ss;
 }
 

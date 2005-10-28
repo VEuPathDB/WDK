@@ -11,14 +11,14 @@
 # $Revision$ $Date$ $Author$
 #------------------------------------------------------------------------
 
-package GUS::WebDevKit::GDUtil::ColoredSequenceSpan;
+package WDK::Model::GDUtil::ColoredSequenceSpan;
 
 use strict;
 
 use GD;
-use GUS::WebDevKit::GDUtil::StripeSpan;
+use WDK::Model::GDUtil::StripeSpan;
 
-@GUS::WebDevKit::GDUtil::ColoredSequenceSpan::ISA = ('GUS::WebDevKit::GDUtil::StripeSpan');
+@WDK::Model::GDUtil::ColoredSequenceSpan::ISA = ('WDK::Model::GDUtil::StripeSpan');
 
 #-------------------------------------------------
 # Defaults

@@ -10,12 +10,12 @@
 # $Revision$ $Date$ $Author$
 #---------------------------------------------------------------------
 
-package GUS::WebDevKit::GDUtil::Transducer::GUSSimilarityQueryBuilder;
+package WDK::Model::GDUtil::Transducer::GUSSimilarityQueryBuilder;
 
 use strict;
 use DBI;
 
-use GUS::WebDevKit::GDUtil::Transducer::DEBUG;
+use WDK::Model::GDUtil::Transducer::DEBUG;
 
 #-------------------------------------------------
 # GUSSimilarityQueryBuilder
@@ -214,14 +214,14 @@ sub getSimilaritySpanArray {
     return unless $rs;
 
     my $simRows = [];
-    my $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSSimilarityQueryBuilder::getSimilaritySpanArray::looping through ResultSet",
-                                 -1, "\t") if $GUS::WebDevKit::GDUtil::DEBUG::debug;
+    my $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSSimilarityQueryBuilder::getSimilaritySpanArray::looping through ResultSet",
+                                 -1, "\t") if $WDK::Model::GDUtil::DEBUG::debug;
     while (my @row = $rs->fetchrow_array()) {
         push(@$simRows, \@row);
     }
     $rs->finish();
-    $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSSimilarityQueryBuilder::getSimilaritySpanArray::done",
-                              $lastcall, "\t") if $GUS::WebDevKit::GDUtil::DEBUG::debug;
+    $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSSimilarityQueryBuilder::getSimilaritySpanArray::done",
+                              $lastcall, "\t") if $WDK::Model::GDUtil::DEBUG::debug;
     return $simRows;
 }
 
@@ -258,11 +258,11 @@ sub getSimilaritySpanResultSet {
 
 #    print STDERR "GUSSimilarityQueryBuilder.getSimilaritySpanResultSet: sql = \n$sql \n";
 
-    my $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSSimilarityQueryBuilder::getSimilaritySpanResultSet::sql=\n$sql",
+    my $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSSimilarityQueryBuilder::getSimilaritySpanResultSet::sql=\n$sql",
                                  -1, "\t") if $debug;
     my $rs = $dbh->prepare($sql);
     $rs->execute();
-    $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSSimilarityQueryBuilder::getSimilaritySpanResultSet::executed",
+    $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSSimilarityQueryBuilder::getSimilaritySpanResultSet::executed",
                               $lastcall, "\t") if $debug;
    
     # expect caller to close result set

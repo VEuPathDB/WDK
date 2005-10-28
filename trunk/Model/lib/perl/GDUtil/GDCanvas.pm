@@ -14,7 +14,7 @@
 # $Revision$ $Date$ $Author$
 #------------------------------------------------------------------------
 
-package GUS::WebDevKit::GDUtil::GDCanvas;
+package WDK::Model::GDUtil::GDCanvas;
 
 use strict;
 use GD;
