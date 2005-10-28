@@ -10,19 +10,19 @@
 # $Revision$ $Date$ $Author$
 #------------------------------------------------------------------------
 
-package GUS::WebDevKit::GDUtil::Transducer::GUSAASequenceTransducer;
+package WDK::Model::GDUtil::Transducer::GUSAASequenceTransducer;
 
 use strict;
 
 use DBI;
 
-use GUS::WebDevKit::GDUtil::GDCanvas;
-use GUS::WebDevKit::GDUtil::Span;
-use GUS::WebDevKit::GDUtil::StripeSpan;
-use GUS::WebDevKit::GDUtil::AxisSpan;
-use GUS::WebDevKit::GDUtil::HydropathySpan;
-use GUS::WebDevKit::GDUtil::ColoredSequenceSpan;
-use GUS::WebDevKit::GDUtil::Packer;
+use WDK::Model::GDUtil::GDCanvas;
+use WDK::Model::GDUtil::Span;
+use WDK::Model::GDUtil::StripeSpan;
+use WDK::Model::GDUtil::AxisSpan;
+use WDK::Model::GDUtil::HydropathySpan;
+use WDK::Model::GDUtil::ColoredSequenceSpan;
+use WDK::Model::GDUtil::Packer;
 
 #-------------------------------------------------
 # Defaults
@@ -213,7 +213,7 @@ sub getRootSpanAndCanvas {
     my $aaSeqLen = $self->{'aaSeqLen'};
     
     my $canvas =  
-      GUS::WebDevKit::GDUtil::GDCanvas->new($self->{width}, $self->{height},
+      WDK::Model::GDUtil::GDCanvas->new($self->{width}, $self->{height},
 			    {x1 => 150, x2 => $self->{width} - 25},
 			    {x1 => 0, x2 => $aaSeqLen });
 
@@ -239,7 +239,7 @@ sub getRootSpanAndCanvas {
 	$args->{imagemapOnMouseOver} = $mOver;
     }
 
-    my $css = GUS::WebDevKit::GDUtil::ColoredSequenceSpan->new($args);
+    my $css = WDK::Model::GDUtil::ColoredSequenceSpan->new($args);
     push(@$topLevelSpans, $css);
 
     # Hydropathy, window size = 9
@@ -257,7 +257,7 @@ sub getRootSpanAndCanvas {
 	$args->{imagemapOnMouseOver} = $mOver;
     }
 
-    my $hs9 = GUS::WebDevKit::GDUtil::HydropathySpan->new($args);
+    my $hs9 = WDK::Model::GDUtil::HydropathySpan->new($args);
     push(@$topLevelSpans, $hs9);
 
     # Mass spec. (proteomics) features
@@ -291,13 +291,13 @@ sub getRootSpanAndCanvas {
 
     my $slbl = defined($self->{seqLabel}) ? $self->{seqLabel} : "AASequence " . $self->{aaSeqId};
     my $rootSpan = 
-      GUS::WebDevKit::GDUtil::AxisSpan->new({
+      WDK::Model::GDUtil::AxisSpan->new({
 	  x1 => 0, 
 	  x2 => $aaSeqLen, 
 	  y1 => $self->{height} - 5,
 	  height => 6, tickHeight => 4, tickWidth => 1,
 	  kids => $topLevelSpans,
-	  packer => GUS::WebDevKit::GDUtil::Packer::simplePacker(2),
+	  packer => WDK::Model::GDUtil::Packer::simplePacker(2),
 	  tickLabel => 'aa',
 	  label => $slbl,
 	  labelVAlign => 'bottom'
@@ -311,7 +311,7 @@ sub getRootSpanAndCanvas {
 	$self->{height} = $rootSpan->getHeight() + 5;
 	
 	$canvas = 
-	  GUS::WebDevKit::GDUtil::GDCanvas->new($self->{width}, $self->{height},
+	  WDK::Model::GDUtil::GDCanvas->new($self->{width}, $self->{height},
 				{x1 => 150, x2 => $self->{width} - 25},
 				{x1 => 0, x2 => $aaSeqLen});
 	
@@ -347,8 +347,8 @@ sub getSequence {
     return $self->{'sequence'};
 }
 
-my $cp0 = &GUS::WebDevKit::GDUtil::Packer::constantPacker(0);
-my $lrp1 = &GUS::WebDevKit::GDUtil::Packer::leftToRightPacker(1);
+my $cp0 = &WDK::Model::GDUtil::Packer::constantPacker(0);
+my $lrp1 = &WDK::Model::GDUtil::Packer::leftToRightPacker(1);
 
 sub getPredictedProteinFeatureSpans {
     my($self, $canvas) = @_;
@@ -462,7 +462,7 @@ sub getPredictedProteinFeatureSpans {
 	    $args->{imagemapOnMouseOver} = $mOver;
 	}
 
-	my $span = GUS::WebDevKit::GDUtil::Span->new($args);
+	my $span = WDK::Model::GDUtil::Span->new($args);
 
 	# Add to list of spans for this algorithm type
 	#
@@ -495,7 +495,7 @@ sub getPredictedProteinFeatureSpans {
 
 	# Determine packer - one line or many
 	#
-	my $ss = GUS::WebDevKit::GDUtil::StripeSpan->new({
+	my $ss = WDK::Model::GDUtil::StripeSpan->new({
 	    kids => $spans,
 	    packer => $packer,
 	    label => $key,
@@ -559,12 +559,12 @@ sub getSignalPeptideFeatureSpans {
 	    $args->{imagemapOnMouseOver} = $mOver;
 	}
 
-	push(@$spans, GUS::WebDevKit::GDUtil::Span->new($args));
+	push(@$spans, WDK::Model::GDUtil::Span->new($args));
     }
     $sth->finish();
 
     if (scalar(@$spans) > 0) {
-	my $ss = GUS::WebDevKit::GDUtil::StripeSpan->new({
+	my $ss = WDK::Model::GDUtil::StripeSpan->new({
 	    kids => $spans,
 	    packer => $cp0,
 	    label => 'signal peptide',
@@ -645,14 +645,14 @@ sub getMassSpecFeatureSpans {
 		$args->{imagemapOnMouseOver} = $mOver;
 	    }
 
-	    push(@$stageSpans, GUS::WebDevKit::GDUtil::Span->new($args));
+	    push(@$stageSpans, WDK::Model::GDUtil::Span->new($args));
 	}
 
 	$stage =~ tr/A-Z/a-z/;
 	my $ssDescr = "MS $stage";
 	$ssDescr =~ tr/a-z/A-Z/;
 
-	my $ss = GUS::WebDevKit::GDUtil::StripeSpan->new({
+	my $ss = WDK::Model::GDUtil::StripeSpan->new({
 	    kids => $stageSpans,
 	    packer => $cp0,
 	    label => $ssDescr,
@@ -709,12 +709,12 @@ sub getEpitopeFeatureSpans {
 	    my $mOver = "show${fnName}Info('$sh', '$start-$end', '$hap $type', '$score/$max'); return true;";
 	    $args->{imagemapOnMouseOver} = $mOver;
 	}
-	push(@$spans, GUS::WebDevKit::GDUtil::Span->new($args));
+	push(@$spans, WDK::Model::GDUtil::Span->new($args));
     }
 
     $sth->finish();
     
-    my $ss = GUS::WebDevKit::GDUtil::StripeSpan->new({
+    my $ss = WDK::Model::GDUtil::StripeSpan->new({
 	kids => $spans,
 	packer => $cp0,
 	label => 'predicted epitopes',
@@ -769,12 +769,12 @@ sub getLowComplexityFeatureSpans {
 	    my $mOver = "show${fnName}Info('$sh', '$start-$end', 'low complexity ($alg)', 'length=$sl'); return true;";
 	    $args->{imagemapOnMouseOver} = $mOver;
 	}
-	push(@$spans, GUS::WebDevKit::GDUtil::Span->new($args));
+	push(@$spans, WDK::Model::GDUtil::Span->new($args));
     }
 
     $sth->finish();
     
-    my $ss = GUS::WebDevKit::GDUtil::StripeSpan->new({
+    my $ss = WDK::Model::GDUtil::StripeSpan->new({
 	kids => $spans,
 	packer => $cp0,
 	label => 'low complexity seq.',
@@ -864,11 +864,11 @@ sub getSNPFeatureSpansFromAASeqVariation {
 	    my $mOver = "show${fnName}Info('$sh', '$aaLocn-$aaLocn', 'SNP', ''); return true;";
 	    $args->{imagemapOnMouseOver} = $mOver;
 	}
-	push(@$snpSpans, GUS::WebDevKit::GDUtil::Span->new($args));
+	push(@$snpSpans, WDK::Model::GDUtil::Span->new($args));
     }
 
     if (scalar(@$snpSpans) > 0) {
-	my $ss = GUS::WebDevKit::GDUtil::StripeSpan->new({
+	my $ss = WDK::Model::GDUtil::StripeSpan->new({
 	    kids => $snpSpans,
 	    packer => $cp0,
 	    label => 'SNPs',
@@ -1012,13 +1012,13 @@ sub getSNPFeatureSpansFromSeqVariation {
 		    $args->{imagemapOnMouseOver} = $mOver;
 		}
 
-		push(@$snpSpans, GUS::WebDevKit::GDUtil::Span->new($args));
+		push(@$snpSpans, WDK::Model::GDUtil::Span->new($args));
 	    } else {
 		print STDERR "GUSAASequenceTransducer: unable to determine location for SNP at $locn\n";
 	    }
 	}
 	
-	my $ss = GUS::WebDevKit::GDUtil::StripeSpan->new({
+	my $ss = WDK::Model::GDUtil::StripeSpan->new({
 	    kids => $snpSpans,
 	    packer => $lrp1,
 	    label => 'SNPs',

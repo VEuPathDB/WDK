@@ -11,7 +11,7 @@
 
 use strict;
 
-package GUS::WebDevKit::GDUtil::Transducer::MyEscape;
+package WDK::Model::GDUtil::Transducer::MyEscape;
 
 =head1 NAME
 

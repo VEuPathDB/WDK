@@ -14,7 +14,7 @@
 # $Revision$ $Date$ $Author$
 #------------------------------------------------------------------------
 
-package GUS::WebDevKit::GDUtil::TickParams;
+package WDK::Model::GDUtil::TickParams;
 
 use strict;
 
@@ -107,7 +107,7 @@ sub computeTickParams {
     my $unitStringSize = length($precomp->getUnitString()) * $charWidth;
 
     my $distancePixels = $charWidth * $totalDigits + $unitStringSize + $minGapPix;
-    my $tickParams = GUS::WebDevKit::GDUtil::TickParams->new($distancePixels / $pixelsPerUnit, $precomp);
+    my $tickParams = WDK::Model::GDUtil::TickParams->new($distancePixels / $pixelsPerUnit, $precomp);
 	
     # .......... 2 .......... 
     # choose better number of right digits

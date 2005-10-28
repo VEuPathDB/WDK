@@ -14,13 +14,13 @@
 # $Revision$ $Date$ $Author$
 #------------------------------------------------------------------------
 
-package GUS::WebDevKit::GDUtil::VertLineSpan;
+package WDK::Model::GDUtil::VertLineSpan;
 
 use strict;
 
 use GD;
-use GUS::WebDevKit::GDUtil::Span;
-@GUS::WebDevKit::GDUtil::VertLineSpan::ISA = ('GUS::WebDevKit::GDUtil::Span');
+use WDK::Model::GDUtil::Span;
+@WDK::Model::GDUtil::VertLineSpan::ISA = ('WDK::Model::GDUtil::Span');
 
 #-------------------------------------------------
 # Defaults

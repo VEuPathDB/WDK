@@ -13,13 +13,13 @@
 # $Revision$ $Date$ $Author$
 #------------------------------------------------------------------------
 
-package GUS::WebDevKit::GDUtil::StripeSpan;
+package WDK::Model::GDUtil::StripeSpan;
 
 use strict;
 
 use GD;
-use GUS::WebDevKit::GDUtil::Span;
-@GUS::WebDevKit::GDUtil::StripeSpan::ISA = ('GUS::WebDevKit::GDUtil::Span');
+use WDK::Model::GDUtil::Span;
+@WDK::Model::GDUtil::StripeSpan::ISA = ('WDK::Model::GDUtil::Span');
 
 #-------------------------------------------------
 # Configuration
@@ -62,7 +62,7 @@ sub new {
 
 sub getHeight {
     my($self) = @_;
-    my $sh = &GUS::WebDevKit::GDUtil::Span::getHeight($self);
+    my $sh = &WDK::Model::GDUtil::Span::getHeight($self);
     my $font = $self->{labelFont};
     my $fh = $font->height;
     return ($fh > $sh) ? $fh : $sh;

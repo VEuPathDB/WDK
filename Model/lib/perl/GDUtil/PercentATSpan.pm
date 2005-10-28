@@ -13,14 +13,14 @@
 # $Revision$ $Date$ $Author$
 #------------------------------------------------------------------------
 
-package GUS::WebDevKit::GDUtil::PercentATSpan;
+package WDK::Model::GDUtil::PercentATSpan;
 
 use strict;
 
 use GD;
-use GUS::WebDevKit::GDUtil::StripeSpan;
+use WDK::Model::GDUtil::StripeSpan;
 
-@GUS::WebDevKit::GDUtil::PercentATSpan::ISA = ('GUS::WebDevKit::GDUtil::StripeSpan');
+@WDK::Model::GDUtil::PercentATSpan::ISA = ('WDK::Model::GDUtil::StripeSpan');
 
 #-------------------------------------------------
 # Defaults

@@ -17,7 +17,7 @@
 #  add some dynamic options (?)
 #  allow BLAST file to be in a separate linked window
 
-package GUS::WebDevKit::GDUtil::Transducer::BlastTransducer;
+package WDK::Model::GDUtil::Transducer::BlastTransducer;
 
 use strict;
 
@@ -25,10 +25,10 @@ use BLAST2::BLAST2;
 use BLAST2::SBJCT;
 use BLAST2::HSP;
 
-use GUS::WebDevKit::GDUtil::GDCanvas;
-use GUS::WebDevKit::GDUtil::Span;
-use GUS::WebDevKit::GDUtil::AxisSpan;
-use GUS::WebDevKit::GDUtil::StripeSpan;
+use WDK::Model::GDUtil::GDCanvas;
+use WDK::Model::GDUtil::Span;
+use WDK::Model::GDUtil::AxisSpan;
+use WDK::Model::GDUtil::StripeSpan;
 
 #-------------------------------------------------
 # Defaults
@@ -73,7 +73,7 @@ sub parseBlastFile {
 	$self->{blastObj} = $b;
 
 	my $canvas = 
-	  GUS::WebDevKit::GDUtil::GDCanvas->new($self->{width}, $self->{height},
+	  WDK::Model::GDUtil::GDCanvas->new($self->{width}, $self->{height},
 				{x1 => 250, x2 => $self->{width} - 25},
 				{x1=>0, x2 => $b->{'query_size'}});
 	$canvas->allocateWebSafePalette();
@@ -150,15 +150,15 @@ sub parseBlastFile {
 		    $args->{imagemapOnMouseOver} = $mOver;
 		}
 
-		push(@$hspSpans, GUS::WebDevKit::GDUtil::Span->new($args));
+		push(@$hspSpans, WDK::Model::GDUtil::Span->new($args));
 	    }
 
 	    my $coords = sprintf("[%.7s-%.7s]", $minss, $maxse);
 	    my $slabel = sprintf("%-15.15s %-8.1e %-.17s", $descr, $bestPval, $coords);
 
 	    push(@$subjSpans, 
-	       GUS::WebDevKit::GDUtil::StripeSpan->new({kids => $hspSpans,
-					packer => &GUS::WebDevKit::GDUtil::Packer::constantPacker(0),
+	       WDK::Model::GDUtil::StripeSpan->new({kids => $hspSpans,
+					packer => &WDK::Model::GDUtil::Packer::constantPacker(0),
 					label => $slabel
 					}));
 	}
@@ -167,12 +167,12 @@ sub parseBlastFile {
 	my $tl = ($prog =~ /blastp/i) ? 'aa' : 'bp';
 
 	$self->{rootSpan} = 
-	  GUS::WebDevKit::GDUtil::AxisSpan->new({
+	  WDK::Model::GDUtil::AxisSpan->new({
 	      x1 => 0, x2 => $b->{'query_size'}, 
 	      y1 => $self->{height} - 10, 
 	      height=>6, tickHeight=>4, tickWidth=>1,
 	      kids => $subjSpans,
-	      packer => GUS::WebDevKit::GDUtil::Packer::simplePacker(4),
+	      packer => WDK::Model::GDUtil::Packer::simplePacker(4),
 	      tickLabel => $tl,
 	      label => sprintf("%30.30s", $b->{query}),
 	      labelVAlign => 'bottom'

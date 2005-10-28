@@ -13,15 +13,15 @@
 # $Revision$ $Date$ $Author$
 #------------------------------------------------------------------------
 
-package GUS::WebDevKit::GDUtil::AxisSpan;
+package WDK::Model::GDUtil::AxisSpan;
 
 use strict;
 
 use GD;
-use GUS::WebDevKit::GDUtil::Span;
-use GUS::WebDevKit::GDUtil::PrecomputedTickParams;
+use WDK::Model::GDUtil::Span;
+use WDK::Model::GDUtil::PrecomputedTickParams;
 
-@GUS::WebDevKit::GDUtil::AxisSpan::ISA = ('GUS::WebDevKit::GDUtil::StripeSpan');
+@WDK::Model::GDUtil::AxisSpan::ISA = ('WDK::Model::GDUtil::StripeSpan');
 
 #-------------------------------------------------
 # Configuration
@@ -193,9 +193,9 @@ sub autocomputeTicks {
     my $ptp = undef;
 
     if ($tickL eq 'aa') {
-	$ptp = GUS::WebDevKit::GDUtil::PrecomputedTickParams->new($absMax, ['aa', 'k aa', 'M aa'], [], $hasNegUnits);
+	$ptp = WDK::Model::GDUtil::PrecomputedTickParams->new($absMax, ['aa', 'k aa', 'M aa'], [], $hasNegUnits);
     } else {
-	$ptp = GUS::WebDevKit::GDUtil::PrecomputedTickParams->new($absMax, ['bp', 'kb', 'Mb'], [], $hasNegUnits);
+	$ptp = WDK::Model::GDUtil::PrecomputedTickParams->new($absMax, ['bp', 'kb', 'Mb'], [], $hasNegUnits);
     }
 
     if ($DEBUG) {
@@ -208,7 +208,7 @@ sub autocomputeTicks {
     my $fw = $font->width;
     my $minGapPix = $fw * $minGapChars;
 
-    my $params = &GUS::WebDevKit::GDUtil::TickParams::computeTickParams($ptp, $pixelsPerUnit, $fw, $minGapPix);
+    my $params = &WDK::Model::GDUtil::TickParams::computeTickParams($ptp, $pixelsPerUnit, $fw, $minGapPix);
 
     if ($DEBUG) {
 	print STDERR "AxisSpan: minGapPix=$minGapPix fontWidth=$fw pixelsPerUnit=$pixelsPerUnit\n";

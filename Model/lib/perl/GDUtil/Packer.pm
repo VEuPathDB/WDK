@@ -12,7 +12,7 @@
 # $Revision$ $Date$ $Author$
 #------------------------------------------------------------------------
 
-package GUS::WebDevKit::GDUtil::Packer;
+package WDK::Model::GDUtil::Packer;
 
 use strict;
 

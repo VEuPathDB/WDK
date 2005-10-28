@@ -22,7 +22,7 @@
 # $Revision$ $Date$ $Author$
 #------------------------------------------------------------------------
 
-package GUS::WebDevKit::GDUtil::Transducer::ExpressionGraph;
+package WDK::Model::GDUtil::Transducer::ExpressionGraph;
 
 use strict;
 use GD;

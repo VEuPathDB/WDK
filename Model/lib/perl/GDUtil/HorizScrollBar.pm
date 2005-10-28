@@ -14,7 +14,7 @@
 # $Revision$ $Date$ $Author$
 #------------------------------------------------------------------------
 
-package GUS::WebDevKit::GDUtil::HorizScrollBar;
+package WDK::Model::GDUtil::HorizScrollBar;
 
 use strict;
 use GD;
@@ -171,7 +171,7 @@ sub draw {
     $w->addPt($wLeft, $wTop);
     $image->filledPolygon($w, $windowColor);
 
-#    my $ptp = GUS::WebDevKit::GDUtil::PrecomputedTickParams->new($absMax, ['bp', 'kb', 'Mb'], [], $hasNegUnits);
+#    my $ptp = WDK::Model::GDUtil::PrecomputedTickParams->new($absMax, ['bp', 'kb', 'Mb'], [], $hasNegUnits);
 
 }
 

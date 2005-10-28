@@ -13,13 +13,13 @@
 # $Revision$ $Date$ $Author$
 #------------------------------------------------------------------------
 
-package GUS::WebDevKit::GDUtil::HorizLineSpan;
+package WDK::Model::GDUtil::HorizLineSpan;
 
 use strict;
 
 use GD;
-use GUS::WebDevKit::GDUtil::Span;
-@GUS::WebDevKit::GDUtil::HorizLineSpan::ISA = ('GUS::WebDevKit::GDUtil::Span');
+use WDK::Model::GDUtil::Span;
+@WDK::Model::GDUtil::HorizLineSpan::ISA = ('WDK::Model::GDUtil::Span');
 
 #-------------------------------------------------
 # HorizLineSpan

@@ -13,11 +13,11 @@
 # $Revision$ $Date$ $Author$ 
 #------------------------------------------------------------------------
 
-package GUS::WebDevKit::GDUtil::PrecomputedTickParams;
+package WDK::Model::GDUtil::PrecomputedTickParams;
 
 use strict;
 
-use GUS::WebDevKit::GDUtil::TickParams;
+use WDK::Model::GDUtil::TickParams;
 
 #-------------------------------------------------
 # PrecomputedTickParams
@@ -44,7 +44,7 @@ sub new {
     my $nNeg = scalar(@$negUnits);
     my $nPos = scalar(@$posUnits);
 
-    my $rangeOrderOfMag = &GUS::WebDevKit::GDUtil::TickParams::_integerLog($absRangeMax);
+    my $rangeOrderOfMag = &WDK::Model::GDUtil::TickParams::_integerLog($absRangeMax);
     my $leftDigits = $rangeOrderOfMag + 1;
 
     my $unitsIndex;

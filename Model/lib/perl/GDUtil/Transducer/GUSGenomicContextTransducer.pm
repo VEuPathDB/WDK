@@ -12,20 +12,20 @@
 # $Revision$ $Date$ $Author$
 #------------------------------------------------------------------------
 
-package GUS::WebDevKit::GDUtil::Transducer::GUSGenomicContextTransducer;
+package WDK::Model::GDUtil::Transducer::GUSGenomicContextTransducer;
 
 use strict;
 
 use DBI;
 
-use GUS::WebDevKit::GDUtil::GDCanvas;
-use GUS::WebDevKit::GDUtil::Span;
-use GUS::WebDevKit::GDUtil::StripeSpan;
-use GUS::WebDevKit::GDUtil::HorizLineSpan;
-use GUS::WebDevKit::GDUtil::VertLineSpan;
-use GUS::WebDevKit::GDUtil::PercentATSpan;
-use GUS::WebDevKit::GDUtil::AxisSpan;
-use GUS::WebDevKit::GDUtil::Packer;
+use WDK::Model::GDUtil::GDCanvas;
+use WDK::Model::GDUtil::Span;
+use WDK::Model::GDUtil::StripeSpan;
+use WDK::Model::GDUtil::HorizLineSpan;
+use WDK::Model::GDUtil::VertLineSpan;
+use WDK::Model::GDUtil::PercentATSpan;
+use WDK::Model::GDUtil::AxisSpan;
+use WDK::Model::GDUtil::Packer;
 
 #-------------------------------------------------
 # Defaults
@@ -41,8 +41,8 @@ my $DFLT_TICK_INTERVAL = 'ends';
 # GUSGenomicContextTransducer
 #-------------------------------------------------
 
-my $cp0 = &GUS::WebDevKit::GDUtil::Packer::constantPacker(0);
-my $lrp1 = &GUS::WebDevKit::GDUtil::Packer::leftToRightPacker(2);
+my $cp0 = &WDK::Model::GDUtil::Packer::constantPacker(0);
+my $lrp1 = &WDK::Model::GDUtil::Packer::leftToRightPacker(2);
 
 sub new {
     my($class, $args) = @_;
@@ -148,7 +148,7 @@ sub getRootSpanAndCanvas {
     my $mapName = $self->{name};
     
     my $canvas =  
-      GUS::WebDevKit::GDUtil::GDCanvas->new($self->{width}, $self->{height},
+      WDK::Model::GDUtil::GDCanvas->new($self->{width}, $self->{height},
 			    {x1 => 150, x2 => $self->{width} - 25},
 			    {x1 => $x1, x2 => $x2 });
     $canvas->allocateWebSafePalette();
@@ -177,7 +177,7 @@ sub getRootSpanAndCanvas {
 	my $revSpans = $gSpans->{$alg}->{rev};
 
 	push(@$topLevelSpans, $self->makeStripeSpan($revSpans, "$alg (-)"));
-	push(@$topLevelSpans, GUS::WebDevKit::GDUtil::HorizLineSpan->new({height => 1, color => $grey}));
+	push(@$topLevelSpans, WDK::Model::GDUtil::HorizLineSpan->new({height => 1, color => $grey}));
 	push(@$topLevelSpans, $self->makeStripeSpan($fwdSpans, "$alg (+)"));
 #	push(@$topLevelSpans, $self->makeSpacer());
     }
@@ -188,7 +188,7 @@ sub getRootSpanAndCanvas {
     #
     my $estSpans = $self->getESTAlignmentSpans($x1, $x2, $canvas);
     push(@$topLevelSpans, $self->makeStripeSpan($estSpans->{rev}, "Pf EST/GSS (-)", $cp0));
-    push(@$topLevelSpans, GUS::WebDevKit::GDUtil::HorizLineSpan->new({height => 1, color => $grey}));
+    push(@$topLevelSpans, WDK::Model::GDUtil::HorizLineSpan->new({height => 1, color => $grey}));
     push(@$topLevelSpans, $self->makeStripeSpan($estSpans->{fwd}, "Pf EST/GSS (+)", $cp0));
     
     # Hexamer predictions stored in HexamerFeature
@@ -196,7 +196,7 @@ sub getRootSpanAndCanvas {
     my $hs = $self->getHexamerSpans($x1, $x2, $canvas);
 	
     push(@$topLevelSpans, $self->makeStripeSpan($hs->{rev}, "Hexamer (-)", $cp0));
-    push(@$topLevelSpans, GUS::WebDevKit::GDUtil::HorizLineSpan->new({height => 1, color => $grey}));
+    push(@$topLevelSpans, WDK::Model::GDUtil::HorizLineSpan->new({height => 1, color => $grey}));
     push(@$topLevelSpans, $self->makeStripeSpan($hs->{fwd}, "Hexamer (+)", $cp0));
     push(@$topLevelSpans, $self->makeSpacer());
 
@@ -226,7 +226,7 @@ sub getRootSpanAndCanvas {
 	    $args->{imagemapOnMouseOver} = $mOver;
 	}
 	
-	my $at100 = GUS::WebDevKit::GDUtil::PercentATSpan->new($args);
+	my $at100 = WDK::Model::GDUtil::PercentATSpan->new($args);
 	push(@$topLevelSpans, $at100);
     }
     push(@$topLevelSpans, $self->makeSpacer());
@@ -252,13 +252,13 @@ sub getRootSpanAndCanvas {
     $ti = 'ends' if ($self->{seqLen} == $x2);
 
     my $rootSpan = 
-      GUS::WebDevKit::GDUtil::AxisSpan->new({
+      WDK::Model::GDUtil::AxisSpan->new({
 	  x1 => $x1, 
 	  x2 => $x2,
 	  y1 => $self->{height} - 5,
 	  height => 6, tickHeight => 4, tickWidth => 1,
 	  kids => $topLevelSpans,
-	  packer => GUS::WebDevKit::GDUtil::Packer::simplePacker(2),
+	  packer => WDK::Model::GDUtil::Packer::simplePacker(2),
 	  tickInterval => $ti,
 	  tickLabel => 'bp',
 	  label => $self->{seqSrcId},
@@ -273,7 +273,7 @@ sub getRootSpanAndCanvas {
 	$self->{height} = $rootSpan->getHeight() + 5;
 	
 	$canvas = 
-	  GUS::WebDevKit::GDUtil::GDCanvas->new($self->{width}, $self->{height},
+	  WDK::Model::GDUtil::GDCanvas->new($self->{width}, $self->{height},
 				{x1 => 150, x2 => $self->{width} - 25},
 				{x1 => $x1, x2 => $x2});
 	
@@ -547,7 +547,7 @@ sub getGenePredictionSpans {
 	    $gArgs->{imagemapTarget} = $hrefTarget if (defined($hrefTarget));
 	}
 
-	my $gene = GUS::WebDevKit::GDUtil::Span->new($gArgs);
+	my $gene = WDK::Model::GDUtil::Span->new($gArgs);
 
 	# Group by official annotator or gene prediction method
 	#
@@ -677,7 +677,7 @@ sub getESTAlignmentSpans {
 
 	# TO DO - provide link to detailed BLAT alignment
 
-	my $align = GUS::WebDevKit::GDUtil::Span->new($args);
+	my $align = WDK::Model::GDUtil::Span->new($args);
 
 	if ($isrev) {
 	    push(@$revSpans, $align);
@@ -745,7 +745,7 @@ sub getLowComplexitySpans {
 	    $args->{imagemapOnMouseOver} = $mOver;
 	}
 
-	push(@$spans, GUS::WebDevKit::GDUtil::Span->new($args));
+	push(@$spans, WDK::Model::GDUtil::Span->new($args));
     }
     $sth->finish();
 
@@ -827,9 +827,9 @@ sub getHexamerSpans {
                               .  "&hilite_so=$start_offset&hilite_eo=$end_offset";
 
 	if ($isrev) {
-	    push(@$revSpans, GUS::WebDevKit::GDUtil::Span->new($args));
+	    push(@$revSpans, WDK::Model::GDUtil::Span->new($args));
 	} else {
-	    push(@$fwdSpans, GUS::WebDevKit::GDUtil::Span->new($args));
+	    push(@$fwdSpans, WDK::Model::GDUtil::Span->new($args));
 	}
     }
     $sth->finish();
@@ -888,7 +888,7 @@ sub getCentromereTelomereSpans {
 	    $args->{imagemapOnMouseOver} = $mOver;
 	}
 
-	push(@$spans, GUS::WebDevKit::GDUtil::Span->new($args));
+	push(@$spans, WDK::Model::GDUtil::Span->new($args));
     }
     $sth->finish();
     return $spans;
@@ -924,7 +924,7 @@ sub getScaffoldGapFeatureSpans {
     $sth->execute();
 
     while(my($x1, $x2) = $sth->fetchrow_array()) {
-	push(@$spans, GUS::WebDevKit::GDUtil::VertLineSpan->new({
+	push(@$spans, WDK::Model::GDUtil::VertLineSpan->new({
 	    x1 => $x1,
 	    x2 => $x2,
 	    color => $color,
@@ -951,7 +951,7 @@ sub makeStripeSpan {
 	@sorted = @$spans;
     }
 
-    return GUS::WebDevKit::GDUtil::StripeSpan->new({kids => \@sorted,
+    return WDK::Model::GDUtil::StripeSpan->new({kids => \@sorted,
 				    packer => defined($packer) ? $packer : $cp0, 
 				    label => $caption,
 				    labelVAlign => 'center',
@@ -961,7 +961,7 @@ sub makeStripeSpan {
 
 sub makeSpacer {
     my($self) = @_;
-    return GUS::WebDevKit::GDUtil::Span->new({height => 1,
+    return WDK::Model::GDUtil::Span->new({height => 1,
 			      shape => 'none'
 			      });
 }
@@ -978,7 +978,7 @@ sub makeExon {
 	};
 
     $args->{border} = 1 if ($border);
-    return GUS::WebDevKit::GDUtil::Span->new($args);
+    return WDK::Model::GDUtil::Span->new($args);
 }
 
 sub makeIntron {
@@ -993,7 +993,7 @@ sub makeIntron {
 	filled => 1,
 	};
     
-    return GUS::WebDevKit::GDUtil::Span->new($args);
+    return WDK::Model::GDUtil::Span->new($args);
 }
 
 #-------------------------------------------------

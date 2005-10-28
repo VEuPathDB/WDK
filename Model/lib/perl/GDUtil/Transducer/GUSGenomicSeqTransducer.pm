@@ -11,24 +11,24 @@
 # $Revision$ $Date$ $Author$
 #------------------------------------------------------------------------
 
-package GUS::WebDevKit::GDUtil::Transducer::GUSGenomicSeqTransducer;
+package WDK::Model::GDUtil::Transducer::GUSGenomicSeqTransducer;
 
 use strict;
 use DBI;
 
-use GUS::WebDevKit::GDUtil::GDCanvas;
-use GUS::WebDevKit::GDUtil::Span;
-use GUS::WebDevKit::GDUtil::StripeSpan;
-use GUS::WebDevKit::GDUtil::HorizLineSpan;
-use GUS::WebDevKit::GDUtil::VertLineSpan;
-use GUS::WebDevKit::GDUtil::PercentATSpan;
-use GUS::WebDevKit::GDUtil::AxisSpan;
-use GUS::WebDevKit::GDUtil::Packer;
+use WDK::Model::GDUtil::GDCanvas;
+use WDK::Model::GDUtil::Span;
+use WDK::Model::GDUtil::StripeSpan;
+use WDK::Model::GDUtil::HorizLineSpan;
+use WDK::Model::GDUtil::VertLineSpan;
+use WDK::Model::GDUtil::PercentATSpan;
+use WDK::Model::GDUtil::AxisSpan;
+use WDK::Model::GDUtil::Packer;
 
-use GUS::WebDevKit::GDUtil::Transducer::GUSSimilarityTransducer;
-use GUS::WebDevKit::GDUtil::Transducer::GUSSimilarityQueryBuilder;
-use GUS::WebDevKit::GDUtil::Transducer::DEBUG;
-use GUS::WebDevKit::GDUtil::Transducer::MyEscape;
+use WDK::Model::GDUtil::Transducer::GUSSimilarityTransducer;
+use WDK::Model::GDUtil::Transducer::GUSSimilarityQueryBuilder;
+use WDK::Model::GDUtil::Transducer::DEBUG;
+use WDK::Model::GDUtil::Transducer::MyEscape;
 
 #-------------------------------------------------
 # Defaults
@@ -242,7 +242,7 @@ sub getSeqOrganism {
     my $dbh = $self->{dbh};
     my $naSeqId = $self->{naSeqId};
  
-    my $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getSeqOrganism::starting...",
+    my $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getSeqOrganism::starting...",
                                  -1, "\t\t") if $debug;
    
     my $sth = $dbh->prepare("select tn.name as scientific_name " .
@@ -254,7 +254,7 @@ sub getSeqOrganism {
     my($name) = $sth->fetchrow_array();
     $sth->finish();
 
-    $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getSeqOrganism::end.",
+    $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getSeqOrganism::end.",
                               $lastcall, "\t\t") if $debug;
 
     $self->{organism} = $name;
@@ -386,9 +386,9 @@ sub getJpeg {
     return $img->jpeg();
 }
 
-my $cp0 = &GUS::WebDevKit::GDUtil::Packer::constantPacker(0);
+my $cp0 = &WDK::Model::GDUtil::Packer::constantPacker(0);
 
-# Return a GUS::WebDevKit::GDUtil::Canvas with the desired region rendered on it.
+# Return a WDK::Model::GDUtil::Canvas with the desired region rendered on it.
 #
 sub getRootSpanAndCanvas {
     my($self, $x1, $x2) = @_;
@@ -402,7 +402,7 @@ sub getRootSpanAndCanvas {
     my $mapName = $self->{name};
     return @$cacheval if ($cacheval);
 
-    my $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getRootSpanAndCanvas::starting...",
+    my $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getRootSpanAndCanvas::starting...",
                                   -1, "\t") if $debug;
 
     $self->startTimer('getRootSpan');
@@ -418,11 +418,11 @@ sub getRootSpanAndCanvas {
     my $showSeqPairs = 0;
     my $showOligos = 0;
 
-    my $sp1 = GUS::WebDevKit::GDUtil::Packer::simplePacker(2);
-    my $lrp1 = GUS::WebDevKit::GDUtil::Packer::leftToRightPacker(2);
+    my $sp1 = WDK::Model::GDUtil::Packer::simplePacker(2);
+    my $lrp1 = WDK::Model::GDUtil::Packer::leftToRightPacker(2);
 
     my $canvas =  
-      GUS::WebDevKit::GDUtil::GDCanvas->new($self->{width}, $self->{height},
+      WDK::Model::GDUtil::GDCanvas->new($self->{width}, $self->{height},
 			    {x1 => 150, x2 => $self->{width} - 25},
 			    {x1 => $x1, x2 => $x2 });
 
@@ -491,7 +491,7 @@ sub getRootSpanAndCanvas {
 	my $revSpans = $gSpans->{$alg}->{rev};
 
 	push(@$topLevelSpans, $self->makeStripeSpan($revSpans, "$alg (-)"));
-	push(@$topLevelSpans, GUS::WebDevKit::GDUtil::HorizLineSpan->new({height => 1, color => $grey}));
+	push(@$topLevelSpans, WDK::Model::GDUtil::HorizLineSpan->new({height => 1, color => $grey}));
 	push(@$topLevelSpans, $self->makeStripeSpan($fwdSpans, "$alg (+)"));
 	push(@$topLevelSpans, $self->makeSpacer());
     }
@@ -505,7 +505,7 @@ sub getRootSpanAndCanvas {
 	if ($show ne 'none') {
 	    my $estSpans = $self->getESTAlignmentSpans($x1, $x2, $canvas);
 	    push(@$topLevelSpans, $self->makeStripeSpan($estSpans->{rev}, "Pf EST/GSS (-)", $p2));
-	    push(@$topLevelSpans, GUS::WebDevKit::GDUtil::HorizLineSpan->new({height => 1, color => $grey}));
+	    push(@$topLevelSpans, WDK::Model::GDUtil::HorizLineSpan->new({height => 1, color => $grey}));
 	    push(@$topLevelSpans, $self->makeStripeSpan($estSpans->{fwd}, "Pf EST/GSS (+)", $p1));
 	}
     }
@@ -518,7 +518,7 @@ sub getRootSpanAndCanvas {
     if ($gpShow =~ /all|one/) {
 	    my $geneSpans = $self->getGeneAlignmentSpans($x1, $x2, $canvas);
 	    push(@$topLevelSpans, $self->makeStripeSpan($geneSpans->{rev}, "v3.3 genes (-)", $gpp2));
-	    push(@$topLevelSpans, GUS::WebDevKit::GDUtil::HorizLineSpan->new({height => 1, color => $grey}));
+	    push(@$topLevelSpans, WDK::Model::GDUtil::HorizLineSpan->new({height => 1, color => $grey}));
 	    push(@$topLevelSpans, $self->makeStripeSpan($geneSpans->{fwd}, "v3.3 genes (+)", $gpp1));
     }
 
@@ -531,7 +531,7 @@ sub getRootSpanAndCanvas {
 	my $hs = $self->getHexamerSpans($x1, $x2, $canvas);
 	
 	push(@$topLevelSpans, $self->makeStripeSpan($hs->{rev}, "Hexamer (-)", $hp2));
-	push(@$topLevelSpans, GUS::WebDevKit::GDUtil::HorizLineSpan->new({height => 1, color => $grey}));
+	push(@$topLevelSpans, WDK::Model::GDUtil::HorizLineSpan->new({height => 1, color => $grey}));
 	push(@$topLevelSpans, $self->makeStripeSpan($hs->{fwd}, "Hexamer (+)", $hp1));
 	push(@$topLevelSpans, $self->makeSpacer());
     }
@@ -545,7 +545,7 @@ sub getRootSpanAndCanvas {
     #
     my $dbh = $self->{dbh};
     my $naSeqId = $self->{naSeqId};
-    my $ssbuilder = GUS::WebDevKit::GDUtil::Transducer::GUSSimilarityQueryBuilder->new(
+    my $ssbuilder = WDK::Model::GDUtil::Transducer::GUSSimilarityQueryBuilder->new(
         {dbh => $dbh, coreDb => $coreDb, dotsDb => $dotsDb, naSeqId => $naSeqId, start => $x1, end => $x2});
 
     # Non-falciparum searches against P. falciparum
@@ -633,7 +633,7 @@ sub getRootSpanAndCanvas {
     if ($self->{showDotsRnas}) {
 	my ($rSpans, $html) = $self->getTranscriptSpans($x1, $x2, $canvas, 1);
 	push(@$topLevelSpans, $self->makeStripeSpan($rSpans->{rev}, "DoTS RNAs (-)", $sp1));
-	push(@$topLevelSpans, GUS::WebDevKit::GDUtil::HorizLineSpan->new({height => 1, color => $grey}));
+	push(@$topLevelSpans, WDK::Model::GDUtil::HorizLineSpan->new({height => 1, color => $grey}));
 	push(@$topLevelSpans, $self->makeStripeSpan($rSpans->{fwd}, "DoTS RNAs (+)", $sp1));
 	push(@$topLevelSpans, $self->makeSpacer());
     }
@@ -676,7 +676,7 @@ sub getRootSpanAndCanvas {
 	if ($show ne 'none') {
 	    my ($rSpans, $html) = $self->getSAGETagSpans($x1, $x2, $canvas);
 	    push(@$topLevelSpans, $self->makeStripeSpan($rSpans->{rev}, "SAGE tags (-)", $p2));
-	    push(@$topLevelSpans, GUS::WebDevKit::GDUtil::HorizLineSpan->new({height => 1, color => $grey}));
+	    push(@$topLevelSpans, WDK::Model::GDUtil::HorizLineSpan->new({height => 1, color => $grey}));
 	    push(@$topLevelSpans, $self->makeStripeSpan($rSpans->{fwd}, "SAGE tags (+)", $p1));
 	    push(@$topLevelSpans, $self->makeSpacer());
 	}
@@ -737,7 +737,7 @@ sub getRootSpanAndCanvas {
 	    $args->{imagemapOnMouseOver} = $mOver;
 	}
 
-	my $at100 = GUS::WebDevKit::GDUtil::PercentATSpan->new($args);
+	my $at100 = WDK::Model::GDUtil::PercentATSpan->new($args);
 	push(@$topLevelSpans, $at100);
     }
     push(@$topLevelSpans, $self->makeSpacer());
@@ -761,13 +761,13 @@ sub getRootSpanAndCanvas {
 	$self->{seqLabel} : "NASequence " . $self->{naSeqId};
 
     my $rootSpan = 
-      GUS::WebDevKit::GDUtil::AxisSpan->new({
+      WDK::Model::GDUtil::AxisSpan->new({
 	  x1 => $x1, 
 	  x2 => $x2, 
 	  y1 => $self->{height} - 5,
 	  height => 6, tickHeight => 4, tickWidth => 1,
 	  kids => $topLevelSpans,
-	  packer => GUS::WebDevKit::GDUtil::Packer::simplePacker(4),
+	  packer => WDK::Model::GDUtil::Packer::simplePacker(4),
 	  tickInterval => $ti,
 	  tickLabel => 'bp',
 	  label => $slbl,
@@ -784,7 +784,7 @@ sub getRootSpanAndCanvas {
 	$self->{height} = $rootSpan->getHeight() + 5;
 
 	$canvas = 
-	  GUS::WebDevKit::GDUtil::GDCanvas->new($self->{width}, $self->{height},
+	  WDK::Model::GDUtil::GDCanvas->new($self->{width}, $self->{height},
 				{x1 => 150, x2 => $self->{width} - 25},
 				{x1 => $x1, x2 => $x2});
 
@@ -804,7 +804,7 @@ sub getRootSpanAndCanvas {
     $self->stopTimer('getRootSpan');
 #    $self->printTimers();
 
-    $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getRootSpanAndCanvas::end...",
+    $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getRootSpanAndCanvas::end...",
                                $lastcall, "\t") if $debug;
 
     my @result = ($rootSpan, $canvas);
@@ -850,7 +850,7 @@ sub makeStripeSpan {
 	@sorted = @$spans;
     }
 
-    return GUS::WebDevKit::GDUtil::StripeSpan->new({kids => \@sorted,
+    return WDK::Model::GDUtil::StripeSpan->new({kids => \@sorted,
 				    packer => defined($packer) ? $packer : $cp0, 
 				    label => $caption,
 				    labelVAlign => 'center',
@@ -860,7 +860,7 @@ sub makeStripeSpan {
 
 sub makeSpacer {
     my($self) = @_;
-    return GUS::WebDevKit::GDUtil::Span->new({height => 1,
+    return WDK::Model::GDUtil::Span->new({height => 1,
 			      shape => 'none'
 			      });
 }
@@ -897,7 +897,7 @@ sub getESTAlignmentSpans {
 	       "and ba.target_end >= $start " .
 	       "and ena.sequence_type_id = st.sequence_type_id ");
 
-    my $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getESTAlignmentSpans::\nsql=$sql ....",
+    my $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getESTAlignmentSpans::\nsql=$sql ....",
                                  -1, "\t\t") if $debug;
 
     my $sth = $dbh->prepare($sql);
@@ -975,7 +975,7 @@ sub getESTAlignmentSpans {
 
 	# TO DO - provide link to detailed BLAT alignment
 
-	my $align = GUS::WebDevKit::GDUtil::Span->new($args);
+	my $align = WDK::Model::GDUtil::Span->new($args);
 
 	if ($isrev) {
 	    push(@$revSpans, $align);
@@ -986,7 +986,7 @@ sub getESTAlignmentSpans {
 
     $sth->finish();
 
-    $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getESTAlignmentSpans::end.",
+    $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getESTAlignmentSpans::end.",
                               $lastcall, "\t\t") if $debug;
 
     return {fwd => $fwdSpans, rev => $revSpans};
@@ -1024,7 +1024,7 @@ sub getGeneAlignmentSpans {
 	       "and ba.target_start <= $end " .
 	       "and ba.target_end >= $start ");
 
-    my $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getGeneAlignmentSpans::\nsql=$sql ...",
+    my $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getGeneAlignmentSpans::\nsql=$sql ...",
                                  -1, "\t\t") if $debug;
 
     my $sth = $dbh->prepare($sql);
@@ -1100,7 +1100,7 @@ sub getGeneAlignmentSpans {
 
 	# TO DO - provide link to detailed BLAT alignment
 
-	my $align = GUS::WebDevKit::GDUtil::Span->new($args);
+	my $align = WDK::Model::GDUtil::Span->new($args);
 
 	if ($isrev) {
 	    push(@$revSpans, $align);
@@ -1109,7 +1109,7 @@ sub getGeneAlignmentSpans {
 	}
     }
 
-    $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getGeneAlignmentSpans::end.",
+    $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getGeneAlignmentSpans::end.",
                               $lastcall, "\t\t") if $debug;
 
     $sth->finish();
@@ -1134,7 +1134,7 @@ sub getLowComplexitySpans {
 
     # TO DO - dots.LowComplexityNAFeature is missing
 
-    my $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getLowComplexitySpans::starting...",
+    my $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getLowComplexitySpans::starting...",
                                  -1, "\t\t") if $debug;
 
     my $sql = ("select nal.start_min, nal.end_max, a.name " .
@@ -1174,11 +1174,11 @@ sub getLowComplexitySpans {
 	    $args->{imagemapOnMouseOver} = $mOver;
 	}
 
-	push(@$spans, GUS::WebDevKit::GDUtil::Span->new($args));
+	push(@$spans, WDK::Model::GDUtil::Span->new($args));
     }
     $sth->finish();
 
-    $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getLowComplexitySpans::end.",
+    $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getLowComplexitySpans::end.",
                               $lastcall, "\t\t") if $debug;
 
     return $spans;
@@ -1214,13 +1214,13 @@ sub getHexamerSpans {
     
     $self->startTimer('hexamer');
 
-    my $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getHexamerSpans::\nsql=$sql ...",
+    my $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getHexamerSpans::\nsql=$sql ...",
                                  -1, "\t\t") if $debug;
 
     my $sth = $dbh->prepare($sql);
     $sth->execute();
 
-    $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getHexamerSpans::sql executed...",
+    $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getHexamerSpans::sql executed...",
                               $lastcall, "\t\t") if $debug;
 
     while (my ($score, $x1, $x2, $isrev) = $sth->fetchrow_array()) { 
@@ -1266,14 +1266,14 @@ sub getHexamerSpans {
                               .  "&hilite_so=$start_offset&hilite_eo=$end_offset";
 
 	if ($isrev) {
-	    push(@$revSpans, GUS::WebDevKit::GDUtil::Span->new($args));
+	    push(@$revSpans, WDK::Model::GDUtil::Span->new($args));
 	} else {
-	    push(@$fwdSpans, GUS::WebDevKit::GDUtil::Span->new($args));
+	    push(@$fwdSpans, WDK::Model::GDUtil::Span->new($args));
 	}
     }
     $sth->finish();
 
-    $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getHexamerSpans::end.",
+    $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getHexamerSpans::end.",
                               $lastcall, "\t\t") if $debug;
 
     $self->stopTimer('hexamer');
@@ -1332,7 +1332,7 @@ sub getCentromereTelomereSpans {
 	    $args->{imagemapOnMouseOver} = $mOver;
 	}
 
-	push(@$spans, GUS::WebDevKit::GDUtil::Span->new($args));
+	push(@$spans, WDK::Model::GDUtil::Span->new($args));
     }
     $sth->finish();
     return $spans;
@@ -1369,7 +1369,7 @@ sub getScaffoldGapFeatureSpans {
     $sth->execute();
 
     while(my($x1, $x2) = $sth->fetchrow_array()) {
-	push(@$spans, GUS::WebDevKit::GDUtil::VertLineSpan->new({
+	push(@$spans, WDK::Model::GDUtil::VertLineSpan->new({
 	    x1 => $x1,
 	    x2 => $x2,
 	    color => $color,
@@ -1439,13 +1439,13 @@ sub getTandemRepeatSpans {
     
     $self->startTimer('trf');
 
-    my $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getTandemRepeatSpans::\nsql = $sql ...",
+    my $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getTandemRepeatSpans::\nsql = $sql ...",
                                  -1, "\t\t") if $debug;
 
     my $sth = $dbh->prepare($sql);
     $sth->execute();
 
-    $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getTandemRepeatSpans::sql executed ...",
+    $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getTandemRepeatSpans::sql executed ...",
                               $lastcall, "\t\t") if $debug;
 
     while (my ($period, $copynum, $score, $entropy, $consensus, $x1, $x2) = $sth->fetchrow_array()) { 
@@ -1492,11 +1492,11 @@ sub getTandemRepeatSpans {
         $args->{imagemapHref} .= "&start=$sub_start&end=" . ($x2 + 500) 
                               .  "&hilite_so=$start_offset&hilite_eo=$end_offset";
 
-	push(@$spans, GUS::WebDevKit::GDUtil::Span->new($args));
+	push(@$spans, WDK::Model::GDUtil::Span->new($args));
     }
     $sth->finish();
  
-    $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getTandemRepeatSpans::end",
+    $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getTandemRepeatSpans::end",
                               $lastcall, "\t\t") if $debug;
 
     $self->stopTimer('trf');
@@ -1584,19 +1584,19 @@ sub getGenePredictionSpans {
 	       "order by nal.start_min, a.name ");
 
     $self->startTimer('genes');
-    my $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getGenePredictionSpans::\nsql = $sql ...",
+    my $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getGenePredictionSpans::\nsql = $sql ...",
                                  -1, "\t\t") if $debug;
 
     my $sth = $dbh->prepare($sql);
     $sth->execute();
 
-    $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getGenePredictionSpans::sql executed ...",
+    $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getGenePredictionSpans::sql executed ...",
                               $lastcall, "\t\t") if $debug;
    
     while (my @row = $sth->fetchrow_array()) { push(@$geneRows, \@row); }
     $sth->finish();
 
-    $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getGenePredictionSpans::looping throu",
+    $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getGenePredictionSpans::looping throu",
                               $lastcall, "\t\t") if $debug;
 
     # Hashref indexed by GeneFeature.na_feature_id
@@ -1616,13 +1616,13 @@ sub getGenePredictionSpans {
 		   "and el.na_feature_id = ef.na_feature_id " .
 		   "order by gf.na_feature_id, el.start_min asc ");
 
-    $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getGenePredictionSpans::\nsub sql = $exonSql ...",
+    $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getGenePredictionSpans::\nsub sql = $exonSql ...",
 			      $lastcall, "\t\t\t") if $debug;
 
     my $sth = $dbh->prepare($exonSql);
     $sth->execute();
 
-    $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getGenePredictionSpans::executed",
+    $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getGenePredictionSpans::executed",
 			      $lastcall, "\t\t\t") if $debug;
 
     while (my @row = $sth->fetchrow_array()) {
@@ -1778,7 +1778,7 @@ sub getGenePredictionSpans {
 	$gArgs->{imagemapHref} = &$hrefFn($sourceId) if (defined($hrefFn));
 	$gArgs->{imagemapTarget} = $hrefTarget if (defined($hrefTarget));
 
-	my $gene = GUS::WebDevKit::GDUtil::Span->new($gArgs);
+	my $gene = WDK::Model::GDUtil::Span->new($gArgs);
 
 	# Group by official annotator or gene prediction method
 	#
@@ -1801,7 +1801,7 @@ sub getGenePredictionSpans {
 	}
     }
  
-    $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getGenePredictionSpans::end",
+    $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getGenePredictionSpans::end",
                               $lastcall, "\t\t") if $debug;
    
     $self->stopTimer('genes');
@@ -1837,13 +1837,13 @@ sub getEPCRSpans {
 	       "and epcr.map_id = espm.end_sequence_pair_map_id " .
 	       "order by espm.external_database_release_id, epcr.start_pos, epcr.stop_pos ");
 
-    my $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getEPCRSpans::\nsql = $sql ...",
+    my $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getEPCRSpans::\nsql = $sql ...",
                                  -1, "\t\t") if $debug;
 
     my $sth = $dbh->prepare($sql);
     $sth->execute();
 
-    $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getEPCRSpans::sql executed ...",
+    $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getEPCRSpans::sql executed ...",
                               $lastcall, "\t\t") if $debug;
 
     while (my($edb, $srcId, $x1, $x2, $nmm, $isRev) = $sth->fetchrow_array()) { 
@@ -1877,7 +1877,7 @@ sub getEPCRSpans {
         $args->{imagemapHref} .= "&start=$sub_start&end=" . ($x2 + 500) 
                               .  "&hilite_so=$start_offset&hilite_eo=$end_offset";
 
-	my $span = GUS::WebDevKit::GDUtil::Span->new($args);
+	my $span = WDK::Model::GDUtil::Span->new($args);
 
 	# Add span to appropriate list
 	#
@@ -1893,7 +1893,7 @@ sub getEPCRSpans {
     $sth->finish();
 
 
-    $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getEPCRSpans::end ...",
+    $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getEPCRSpans::end ...",
                               $lastcall, "\t\t") if $debug;
 
     return $dbHash;
@@ -1937,14 +1937,14 @@ sub getSAGETagSpans {
 
     $self->startTimer('sage');
 
-    my $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getSAGETagSpans::\nsql = $sql ...",
+    my $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getSAGETagSpans::\nsql = $sql ...",
                                   -1, "\t\t") if $debug;
 
     my $sth = $dbh->prepare($sql);
 
     $sth->execute();
 
-    $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getEPCRSpans::sql executed...",
+    $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getEPCRSpans::sql executed...",
                               $lastcall, "\t\t") if $debug;
 
     my $tagRows = [];
@@ -1977,15 +1977,15 @@ sub getSAGETagSpans {
                               .  "&hilite_so=$start_offset&hilite_eo=$end_offset";
 
 	if ($isrev) {
-	    push(@$revSpans, GUS::WebDevKit::GDUtil::Span->new($args));
+	    push(@$revSpans, WDK::Model::GDUtil::Span->new($args));
 	} else {
-	    push(@$fwdSpans, GUS::WebDevKit::GDUtil::Span->new($args));
+	    push(@$fwdSpans, WDK::Model::GDUtil::Span->new($args));
 	}
     }
     $sth->finish();
     $self->stopTimer('sage');
 
-    $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getEPCRSpans::end",
+    $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getEPCRSpans::end",
                               $lastcall, "\t\t") if $debug;
 
     return {fwd => $fwdSpans, rev => $revSpans};
@@ -2024,7 +2024,7 @@ sub getTranscriptSpans {
 	$hrefTarget = $self->{alignHrefTarget};
     }
 
-    my $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getTranscriptSpans::starting...",
+    my $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getTranscriptSpans::starting...",
                                  -1, "\t\t") if $debug;
 
     my $sql = "select " . (($dotsRnas) ? 
@@ -2050,14 +2050,14 @@ sub getTranscriptSpans {
 
     $self->startTimer('transcripts');
 
-    my $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getTranscriptSpans::\nsql = $sql ...",
+    my $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getTranscriptSpans::\nsql = $sql ...",
                                  -1, "\t\t") if $debug;
 
     my $sth = $dbh->prepare($sql);
 
     $sth->execute();
 
-    $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getTranscriptionSpans::sql executed ...",
+    $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getTranscriptionSpans::sql executed ...",
                               $lastcall, "\t\t") if $debug;
 
     my $simRows = [];
@@ -2067,7 +2067,7 @@ sub getTranscriptSpans {
     }
     $sth->finish();
 
-    $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getTranscriptSpans::end.",
+    $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getTranscriptSpans::end.",
                               $lastcall, "\t\t") if $debug;
 
     # Group rows by source ID (column 0)
@@ -2146,13 +2146,13 @@ sub getTranscriptSpans {
 	    $args->{imagemapOnMouseOver} = $mOver;
 	}
 
-	my $aSpan = GUS::WebDevKit::GDUtil::Span->new($args);
+	my $aSpan = WDK::Model::GDUtil::Span->new($args);
 	if ($reversed) { push(@$revSpans, $aSpan); } else { push(@$fwdSpans, $aSpan); }
     }
 
     $self->stopTimer('transcripts');
 
-    $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getTranscriptionSpans::end",
+    $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getTranscriptionSpans::end",
                               $lastcall, "\t\t") if $debug;
 
     return {fwd => $fwdSpans, rev => $revSpans};
@@ -2165,7 +2165,7 @@ sub getSimilarityTrackHash {
 
     my $rs = $ssbuilder->getSimilaritySpanResultSet;
 
-    my $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer::getSimilarityTrackHash::looping through ResultSet",
+    my $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer::getSimilarityTrackHash::looping through ResultSet",
                                  -1, "\t") if $debug;
     my $tracks = {};
     my ($trackName, $trackProps, $trackRows);
@@ -2205,7 +2205,7 @@ sub getSimilarityTrackHash {
 	}
     }
     $rs->finish();
-    $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer::getSimilarityTrackHash::done",
+    $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer::getSimilarityTrackHash::done",
                               $lastcall, "\t") if $debug;
     return $tracks;
 }
@@ -2234,7 +2234,7 @@ sub addSimilaritySpanTrack {
 #             "(x1=$span->{x1}, x2=$span->{x2}, y1=$span->{y1}, imagemapLabel=$span->{imagemapLabel})\n";
 #}
 	push(@$topLevelSpans, $self->makeStripeSpan($ss->{rev}, "$tn (-)", $p2, 1));
-	push(@$topLevelSpans, GUS::WebDevKit::GDUtil::HorizLineSpan->new({height => 1, color => $grey}));
+	push(@$topLevelSpans, WDK::Model::GDUtil::HorizLineSpan->new({height => 1, color => $grey}));
 	push(@$topLevelSpans, $self->makeStripeSpan($ss->{fwd}, "$tn (+)", $p1, 1));
 	push(@$topLevelSpans, $self->makeSpacer());
     }
@@ -2324,7 +2324,7 @@ sub getSimilaritySpans {
 	    $se = $end if ($se > $end);
 
 	    my $pval = sprintf("%fe%f", $mant, $exp);
-	    my($color, $fill) = &GUS::WebDevKit::GDUtil::Transducer::GUSSimilarityTransducer::getHspColorAndFill($canvas, $pval);
+	    my($color, $fill) = &WDK::Model::GDUtil::Transducer::GUSSimilarityTransducer::getHspColorAndFill($canvas, $pval);
 
 	    if (!defined($min)) {
 		$min = $ss;
@@ -2398,7 +2398,7 @@ sub getSimilaritySpans {
 	};
 
 	$args->{imagemapHref} = &$hrefFn($similarityId) if defined($hrefFn);
-        $args->{imagemapHref} .= "&url=" . &GUS::WebDevKit::GDUtil::Transducer::MyEscape::uri_escape(&$hrefFn2($sourceId)) if $hrefFn2;
+        $args->{imagemapHref} .= "&url=" . &WDK::Model::GDUtil::Transducer::MyEscape::uri_escape(&$hrefFn2($sourceId)) if $hrefFn2;
         $args->{imagemapHref} .= "&target=$hrefTarget2" if $hrefTarget2;
         $args->{imagemapHref} .= "&linkQuery=1" if $linkQuery;
 
@@ -2412,7 +2412,7 @@ sub getSimilaritySpans {
 	    $args->{imagemapOnMouseOver} = $mOver;
 	}
 
-	my $span = GUS::WebDevKit::GDUtil::Span->new($args);
+	my $span = WDK::Model::GDUtil::Span->new($args);
 	$span->{sortScore} = $sortScore;
 
 	if ($reversed) { push(@$revSpans, $span); } else { push(@$fwdSpans, $span); }
@@ -2449,13 +2449,13 @@ sub getMarkerSpans {
 
     $self->startTimer('markers');
 
-    my $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getMarkerSpans::\nsql = $sql ...",
+    my $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getMarkerSpans::\nsql = $sql ...",
                                  -1, "\t\t") if $debug;
 
     my $sth = $dbh->prepare($sql);
     $sth->execute();
 
-    $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getMarkerSpans::sql executed ...",
+    $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getMarkerSpans::sql executed ...",
                               $lastcall, "\t\t") if $debug;
 
     while (my @row = $sth->fetchrow_array()) { push(@$mRows, \@row); }
@@ -2491,11 +2491,11 @@ sub getMarkerSpans {
         $args->{imagemapHref} .= "&start=$sub_start&end=" . ($x2 + 500) 
                               .  "&hilite_so=$start_offset&hilite_eo=$end_offset";
 
-	push(@$markerSpans, GUS::WebDevKit::GDUtil::Span->new($args));
+	push(@$markerSpans, WDK::Model::GDUtil::Span->new($args));
     }
     $self->stopTimer('markers');
 
-    $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getMarkerSpans::end",
+    $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getMarkerSpans::end",
                               $lastcall, "\t\t") if $debug;
 
     return $markerSpans;
@@ -2525,13 +2525,13 @@ sub getRestrictionSiteSpans {
 
     $self->startTimer('reSites');
 
-    my $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getRestrictionSiteSpans::\nsql = $sql ...",
+    my $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getRestrictionSiteSpans::\nsql = $sql ...",
                                  -1, "\t\t") if $debug;
 
     my $sth = $dbh->prepare($sql);
     $sth->execute();
 
-    $lastcall = &GUS::WebDevKit::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getRestrictionSiteSpans::sql executed ...",
+    $lastcall = &WDK::Model::GDUtil::Transducer::DEBUG::logTS("GUSGenomicSeqTransducer.pm::getRestrictionSiteSpans::sql executed ...",
                               $lastcall, "\t\t") if $debug;
 
     while (my($en, $x1, $x2) = $sth->fetchrow_array()) { 
@@ -2560,7 +2560,7 @@ sub getRestrictionSiteSpans {
         $args->{imagemapHref} .= "&start=$sub_start&end=" . ($x2 + 500) 
                               .  "&hilite_so=$start_offset&hilite_eo=$end_offset";
 
-	push(@$spans, GUS::WebDevKit::GDUtil::Span->new($args));
+	push(@$spans, WDK::Model::GDUtil::Span->new($args));
     }
 
     $sth->finish();
@@ -2702,8 +2702,8 @@ sub getPackers {
     my ($show) = @_;
     my ($p1, $p2);
     if ($show =~ /all/) {
-        $p1 = GUS::WebDevKit::GDUtil::Packer::linePacker(2, 50);
-        $p2 = GUS::WebDevKit::GDUtil::Packer::linePacker(2, 50, 1);
+        $p1 = WDK::Model::GDUtil::Packer::linePacker(2, 50);
+        $p2 = WDK::Model::GDUtil::Packer::linePacker(2, 50, 1);
     } else {
         $p1 = $p2 = $cp0;
     }
@@ -2729,7 +2729,7 @@ sub makeExon {
 	};
 
     $args->{border} = 1 if ($border);
-    return GUS::WebDevKit::GDUtil::Span->new($args);
+    return WDK::Model::GDUtil::Span->new($args);
 }
 
 sub makeIntron {
@@ -2744,6 +2744,6 @@ sub makeIntron {
 	filled => 1,
 	};
     
-    return GUS::WebDevKit::GDUtil::Span->new($args);
+    return WDK::Model::GDUtil::Span->new($args);
 }
 
