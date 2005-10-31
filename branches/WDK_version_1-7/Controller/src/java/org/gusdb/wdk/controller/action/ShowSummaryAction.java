@@ -49,11 +49,11 @@ public class ShowSummaryAction extends Action {
  	    wdkUser = (UserBean)request.getSession().getAttribute(CConstants.WDK_USER_KEY);
 	    UserAnswerBean userAnswer = wdkUser.getUserAnswerByID(ua_id);
 	    wdkAnswer = userAnswer.getAnswer();
+	    wdkAnswer = summaryPaging(request, null, null, wdkAnswer);
 	    if (userAnswer.isCombinedAnswer()) {
 		wdkAnswer.setIsCombinedAnswer(true);
 		wdkAnswer.setUserAnswerName(userAnswer.getName());
 	    }
-	    wdkAnswer = summaryPaging(request, null, null, wdkAnswer);
 	} else {
 	    //why I am not able to get back my question from the session? use the form for  now
 	    //QuestionBean wdkQuestion = (QuestionBean)request.getSession().getAttribute(CConstants.WDK_QUESTION_KEY);
@@ -126,7 +126,7 @@ public class ShowSummaryAction extends Action {
     protected AnswerBean booleanAnswerPaging(HttpServletRequest request, Object answerMaker)
 	throws WdkModelException, WdkUserException
     {
-	return summaryPaging(request, answerMaker, null);
+	return summaryPaging(request, answerMaker, null, null);
     }
 
     protected AnswerBean summaryPaging (HttpServletRequest request, Object answerMaker, Map params)
@@ -168,7 +168,6 @@ public class ShowSummaryAction extends Action {
 
 	if (end > totalSize) { end = totalSize; }
 	
-	String uriString = request.getRequestURI();
 	List editedParamNames = new ArrayList();
 	for (Enumeration en = request.getParameterNames(); en.hasMoreElements();) {
 	    String key = (String) en.nextElement();
@@ -176,7 +175,8 @@ public class ShowSummaryAction extends Action {
 		editedParamNames.add(key);
 	    }
 	}
-	
+
+	String uriString = request.getRequestURI();
 	request.setAttribute("wdk_paging_total", new Integer(totalSize));
 	request.setAttribute("wdk_paging_pageSize", new Integer(pageSize));
 	request.setAttribute("wdk_paging_start", new Integer(start));
