@@ -53,7 +53,7 @@ public class ShowSummaryAction extends Action {
 		wdkAnswer.setIsCombinedAnswer(true);
 		wdkAnswer.setUserAnswerName(userAnswer.getName());
 	    }
-	    summaryPaging(request, null, null, wdkAnswer);
+	    wdkAnswer = summaryPaging(request, null, null, wdkAnswer);
 	} else {
 	    //why I am not able to get back my question from the session? use the form for  now
 	    //QuestionBean wdkQuestion = (QuestionBean)request.getSession().getAttribute(CConstants.WDK_QUESTION_KEY);
@@ -151,16 +151,17 @@ public class ShowSummaryAction extends Action {
 	if (start <1) { start = 1; } 
 	int end = start + pageSize-1;	
 
-	if (wdkAnswer == null) {
-	    if (answerMaker instanceof org.gusdb.wdk.model.jspwrap.QuestionBean) {
-		wdkAnswer = ((QuestionBean)answerMaker).makeAnswer(params, start, end);
-	    } else if (answerMaker instanceof org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean) {
-		wdkAnswer = ((BooleanQuestionNodeBean)answerMaker).makeAnswer(start, end);
-	    } else {
-		throw new RuntimeException("unexpected answerMaker: " + answerMaker);
-	    }
+	if (wdkAnswer != null) {
+	    answerMaker = wdkAnswer.getQuestion();
+	    params = wdkAnswer.getInternalParams();
+	}
+
+	if (answerMaker instanceof org.gusdb.wdk.model.jspwrap.QuestionBean) {
+	    wdkAnswer = ((QuestionBean)answerMaker).makeAnswer(params, start, end);
+	} else if (answerMaker instanceof org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean) {
+	    wdkAnswer = ((BooleanQuestionNodeBean)answerMaker).makeAnswer(start, end);
 	} else {
-	    wdkAnswer.resetAnswerRowCursor();
+	    throw new RuntimeException("unexpected answerMaker: " + answerMaker);
 	}
 
 	int totalSize = wdkAnswer.getResultSize();
