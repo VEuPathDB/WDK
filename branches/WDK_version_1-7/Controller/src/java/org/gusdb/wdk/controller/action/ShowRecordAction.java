@@ -40,9 +40,18 @@ public class ShowRecordAction extends Action {
     // modified by Jerric
     //String id = request.getParameter("id");
     //wdkRecord.assignPrimaryKey(id);
-    String projectID = request.getParameter("project_id").trim();
-    String id = request.getParameter("primary_key");
-    if (projectID.length() == 0) projectID = null;
+    
+//* modified by mheiges to make backward compatible with older url
+//* formats which only had an 'id' parameter (which was renamed 
+//* 'primary_key' as part of the federation code integration).
+    String id = (request.getParameter("id") != null) ? 
+           request.getParameter("id") :
+           request.getParameter("primary_key");
+    String projectID = null;
+    if (request.getParameter("project_id") != null) {
+        projectID = request.getParameter("project_id").trim();
+        if (projectID.length() == 0) projectID = null;
+    }
     wdkRecord.assignPrimaryKey(projectID, id);
 
 
