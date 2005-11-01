@@ -81,7 +81,8 @@ public class QuestionForm extends QuestionSetForm {
 	Vector v = new Vector();
         while (it.hasNext()) {
 	    String key = (String)it.next();
-	    if (key.indexOf("_" + getQuestion().getName() + "_") > 0) {
+	    if (getQuestion()!= null &&
+		key.indexOf("_" + getQuestion().getName() + "_") > 0) {
 		v.add(key);
 	    }
 	}
