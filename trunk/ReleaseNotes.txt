@@ -1,3 +1,29 @@
+------------------------------------------------------------------------------
+ooooooooooooooooooooooooooo  WDK Version 1.9  oooooooooooooooooooooooooooooooo
+------------------------------------------------------------------------------
+
+====================  Model - Fixed Bugs ========================
+
+* fixed bug 184: failed question block access to query history
+
+* fixed bug 192: paging in summary page does not work when 
+  viewing result from query history page (page index advances
+  but page content stay at page 1)
+
+* fixed bug 199: combined answer in query history links initially
+  to a paging/download page that corresponds to a different question
+  in query history
+
+===================== Model - Features ==========================
+
+===================== Controller - Fixed Bugs ===================
+
+===================== Controller - Features =====================
+
+===================== View - Fixed Bugs =========================
+
+===================== View - Features ===========================
+
 
 ------------------------------------------------------------------------------
 ooooooooooooooooooooooooooo  WDK Version 1.8  oooooooooooooooooooooooooooooooo
