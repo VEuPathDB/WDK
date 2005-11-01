@@ -89,4 +89,11 @@ public class XmlQuestionBean {
         XmlAnswer answer = question.makeAnswer(params, startIndex, endIndex);
         return new XmlAnswerBean(answer);
     }
+
+    public XmlAnswerBean getFullAnswer() throws WdkModelException {
+	
+	XmlAnswerBean a = makeAnswer(null, 1, 3);
+	int c = a.getResultSize();
+	return makeAnswer(null, 1, c);
+    }
 }

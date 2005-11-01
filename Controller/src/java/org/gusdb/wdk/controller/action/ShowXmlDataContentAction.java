@@ -32,7 +32,7 @@ public class ShowXmlDataContentAction extends Action {
 				 HttpServletResponse response) throws Exception {
 	String xmlQName = request.getParameter(CConstants.NAME);
 	XmlQuestionBean xmlQuestion = getXmlQuestionByFullName(xmlQName);
-	XmlAnswerBean xmlAnswer = getXmlAnswer(xmlQuestion);
+	XmlAnswerBean xmlAnswer = xmlQuestion.getFullAnswer();
 	request.setAttribute(CConstants.WDK_XMLANSWER_KEY, xmlAnswer);
 	return getForward(xmlAnswer, mapping);
     }
@@ -47,13 +47,6 @@ public class ShowXmlDataContentAction extends Action {
 	XmlQuestionSetBean wdkQuestionSet = (XmlQuestionSetBean)wdkModel.getXmlQuestionSetsMap().get(qSetName);
 	XmlQuestionBean wdkQuestion = (XmlQuestionBean)wdkQuestionSet.getQuestionsMap().get(qName);
 	return wdkQuestion;
-    }
-
-    private XmlAnswerBean getXmlAnswer(XmlQuestionBean q) throws WdkModelException {
-	XmlAnswerBean a = q.makeAnswer(null, 1, 3);
-	int c = a.getResultSize();
-	a = q.makeAnswer(null, 1, c);
-	return a;
     }
 
     private ActionForward getForward (XmlAnswerBean xmlAnswer, ActionMapping mapping) {
