@@ -30,6 +30,9 @@ public class ShowQueryHistoryAction extends Action {
 				 ActionForm form,
 				 HttpServletRequest request,
 				 HttpServletResponse response) throws Exception {
+	request.getSession().removeValue(CConstants.QUESTIONFORM_KEY);
+	request.getSession().removeValue(CConstants.WDK_QUESTION_PARAMS_KEY);
+
 	return getForward(mapping);
     }
 
