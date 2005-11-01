@@ -7,6 +7,9 @@ import org.gusdb.wdk.model.xml.XmlAttributeValue;
 import org.gusdb.wdk.model.xml.XmlRecordInstance;
 import org.gusdb.wdk.model.xml.XmlTableValue;
 
+import java.util.Map;
+import java.util.HashMap;
+
 /**
  * @author Jerric
  * @created Oct 19, 2005
@@ -34,6 +37,16 @@ public class XmlRecordBean {
             attrBeans[i] = new XmlAttributeValueBean(attrs[i]);
         }
         return attrBeans;
+    }
+
+    public Map getAttributesMap() {
+	XmlAttributeValueBean[] attrs = getAttributes();
+	Map attMap = new HashMap();
+	for (int i=0; i<attrs.length; i++) {
+	    XmlAttributeValueBean att = attrs[i];
+	    attMap.put(att.getName(), att.getValue());
+	}
+	return attMap;
     }
 
     /*
