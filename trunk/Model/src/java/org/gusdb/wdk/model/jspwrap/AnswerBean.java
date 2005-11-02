@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model.jspwrap;
 
 import org.gusdb.wdk.model.Answer;
+import org.gusdb.wdk.model.FieldI;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.BooleanQuery;
 
@@ -110,15 +111,28 @@ public class AnswerBean {
 	this.downloadConfigMap = downloadConfigMap;
     }
 
-    public String[] getSummaryAttributeNames() {
+    public AttributeFieldBean[] getSummaryAttributes() {
 	Map attribs = answer.getQuestion().getRecordClass().getAttributeFields();
 	Iterator ai = attribs.keySet().iterator();
 	Vector v = new Vector();
 	while (ai.hasNext()) {
 	    String attribName = (String)ai.next();
 	    if (answer.isSummaryAttribute(attribName)) {
-		v.add(attribName);
+		v.add(new AttributeFieldBean((FieldI)attribs.get(attribName)));
 	    }
+	}
+	int size = v.size();
+	AttributeFieldBean[] sumAttribs = new AttributeFieldBean[size];
+	v.copyInto(sumAttribs);
+	return sumAttribs;
+    }
+
+    public String[] getSummaryAttributeNames() {
+	AttributeFieldBean[] sumAttribs = getSummaryAttributes();
+	Vector v = new Vector();
+	for (int i=0; i<sumAttribs.length; i++) {
+	    String attribName = sumAttribs[i].getName();
+	    v.add(attribName);
 	}
 	int size = v.size();
 	String[] sumAttribNames = new String[size];
@@ -126,19 +140,26 @@ public class AnswerBean {
 	return sumAttribNames;
     }
 
-    public String[] getDownloadAttributeNames() {
-	String[] sumAttrNames = getSummaryAttributeNames();
-
+    public AttributeFieldBean[] getDownloadAttributes() {
+	AttributeFieldBean[] sumAttribs = getSummaryAttributes();
 	Vector v = new Vector();
-	for (int i=0; i<sumAttrNames.length; i++) {
-	    String attrName = sumAttrNames[i];
-	    if (downloadConfigMap == null || downloadConfigMap.size() == 0) {
-		v.add(attrName);
-	    } else {
-		Object configStatus = downloadConfigMap.get(attrName);
-		System.err.println("DEBUG AnswerBean: configStatus for " + attrName + " is " + configStatus);
-		if (configStatus != null) { v.add(attrName); }
+	for (int i=0; i<sumAttribs.length; i++) {
+	    String attribName = sumAttribs[i].getName();
+	    if (answer.isSummaryAttribute(attribName)) {
+		v.add(sumAttribs[i]);
 	    }
+	}
+	int size = v.size();
+	AttributeFieldBean[] downloadAttribs = new AttributeFieldBean[size];
+	v.copyInto(downloadAttribs);
+	return downloadAttribs;
+    }
+
+    public String[] getDownloadAttributeNames() {
+	AttributeFieldBean[] downloadAttribs = getDownloadAttributes();
+	Vector v = new Vector();
+	for (int i=0; i<downloadAttribs.length; i++) {
+	    v.add(downloadAttribs[i].getName());
 	}
 	int size = v.size();
 	String[] downloadAttribNames = new String[size];
