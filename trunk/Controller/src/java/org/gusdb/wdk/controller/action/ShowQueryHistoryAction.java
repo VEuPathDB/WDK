@@ -18,7 +18,7 @@ import javax.servlet.ServletContext;
 
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.ApplicationInitListener;
-
+import org.gusdb.wdk.model.jspwrap.UserBean;
 
 /**
  * This Action shows the queryHistory page.
@@ -32,6 +32,11 @@ public class ShowQueryHistoryAction extends Action {
 				 HttpServletResponse response) throws Exception {
 	request.getSession().removeValue(CConstants.QUESTIONFORM_KEY);
 	request.getSession().removeValue(CConstants.WDK_QUESTION_PARAMS_KEY);
+
+	UserBean wdkUser = (UserBean)request.getSession().getAttribute(CConstants.WDK_USER_KEY);
+	if (wdkUser == null) { 
+	    ShowQuestionSetsAction.sessionStart(request, getServlet());
+	}
 
 	return getForward(mapping);
     }
