@@ -50,7 +50,7 @@ public class ShowQuestionSetsFlatAction extends ShowQuestionSetsAction {
 	    forward = mapping.findForward(CConstants.SHOW_QUESTIONSETSFLAT_MAPKEY);
 	}
 
-	sessionStart(request);
+	sessionStart(request, getServlet());
 
 	return forward;
     }

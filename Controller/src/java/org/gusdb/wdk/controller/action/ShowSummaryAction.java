@@ -70,6 +70,10 @@ public class ShowSummaryAction extends Action {
 
 	    //add AnswerBean to User for query history
 	    wdkUser = (UserBean)request.getSession().getAttribute(CConstants.WDK_USER_KEY);
+	    if (wdkUser == null) { 
+		ShowQuestionSetsAction.sessionStart(request, getServlet());
+		wdkUser = (UserBean)request.getSession().getAttribute(CConstants.WDK_USER_KEY);
+	    }
 	    wdkUser.addAnswerFuzzy(wdkAnswer);
 	}
 
