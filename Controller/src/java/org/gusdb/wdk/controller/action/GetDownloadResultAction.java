@@ -23,6 +23,7 @@ import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.AnswerBean;
 import org.gusdb.wdk.model.jspwrap.RecordBean;
+import org.gusdb.wdk.model.jspwrap.AttributeFieldBean;
 //HACK: this class is outside of jspwrap
 //      This will not be necessary when we move the download result formatting into AnswerBean
 import org.gusdb.wdk.model.AttributeFieldValue;
@@ -63,8 +64,8 @@ public class GetDownloadResultAction extends Action {
 
 	String newLine = System.getProperty("line.separator");
 	String tab = "\t";
-	String[] downloadAttrs = wdkAnswer.getDownloadAttributeNames();
 
+	AttributeFieldBean[] downloadAttrs = wdkAnswer.getDownloadAttributes();
 
 	StringBuffer downloadResult = new StringBuffer();
 	boolean incHeader = new String(CConstants.YES)
@@ -72,7 +73,7 @@ public class GetDownloadResultAction extends Action {
 	if (incHeader) {
 	    downloadResult.append("#");
 	    for (int i=0; i<downloadAttrs.length; i++) {
-		downloadResult.append(downloadAttrs[i] + tab);
+		downloadResult.append(downloadAttrs[i].getDisplayName() + tab);
 	    }
 	    downloadResult.append(newLine);
 	}
@@ -92,7 +93,7 @@ public class GetDownloadResultAction extends Action {
 		RecordBean rec = (RecordBean)records.next();
 		Map attribs = rec.getAttributes();
 		for (int k=0; k<downloadAttrs.length; k++) {
-		    downloadResult.append(((AttributeFieldValue)attribs.get(downloadAttrs[k])).getValue() + tab);
+		    downloadResult.append(((AttributeFieldValue)attribs.get(downloadAttrs[k].getName())).getValue() + tab);
 		}
 		downloadResult.append(newLine);
 	    }
