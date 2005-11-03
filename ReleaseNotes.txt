@@ -3,6 +3,9 @@
 ooooooooooooooooooooooooooo  WDK Version 1.7  oooooooooooooooooooooooooooooooo
 ------------------------------------------------------------------------------
 
+View specification code integrated in to the Controller.
+
+
 ====================  Model - Fixed Bugs ========================
 
 * 161, Question reference cannot be resolved properly by Model
