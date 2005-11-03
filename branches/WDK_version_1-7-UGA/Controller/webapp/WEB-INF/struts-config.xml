@@ -152,6 +152,15 @@
       scope="session">
       <forward name="process_boolean_expression" path="/showSummary.do"/>
     </action>
+   <action
+       path="/nextPage"
+       type="org.gusdb.wdk.controller.action.NextPageAction"
+       scope="session"
+       name="questionForm"
+       input="/index6-1.jsp">
+       <forward name="pq_page2" path="/index6-1Page2.jsp"/>
+    </action>
+
 
   </action-mappings>
 

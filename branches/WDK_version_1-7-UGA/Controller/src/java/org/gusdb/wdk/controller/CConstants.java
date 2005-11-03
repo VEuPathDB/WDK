@@ -1,5 +1,7 @@
 package org.gusdb.wdk.controller;
 
+/**Modified to handle custom specifications **/
+
 public class CConstants {
     private CConstants() {
 	; // no-op
@@ -7,6 +9,9 @@ public class CConstants {
     //key for objects in cache, used in Action/ActionForm classes and maybe jsp pages
     public static final String WDK_RESULTFACTORY_KEY = "wdkResultFactory";
     public static final String WDK_MODEL_KEY = "wdkModel";
+    //added here 
+    public static final String SPEC_MODEL_KEY = "contactRaw";
+    //adding from original WDK1.7 CConstants file.
     public static final String WDK_CUSTOMVIEWDIR_KEY = "wdkCustomeViewDir";
     public static final String WDK_CUSTOM_QUESTIONSETS_FLAT_PAGE = "customQuestionSetsFlat.jsp";
     public static final String WDK_CUSTOM_QUESTIONSETS_PAGE = "customQuestionSets.jsp";
@@ -14,16 +19,16 @@ public class CConstants {
     public static final String WDK_CUSTOM_SUMMARY_PAGE = "customSummary.jsp";
     public static final String WDK_CUSTOM_RECORD_PAGE = "customRecord.jsp";
     public static final String WDK_CUSTOM_HISTORY_PAGE = "customQueryHistory.jsp";
+
     public static final String WDK_QUESTION_KEY = "wdkQuestion";
     public static final String WDK_QUESTION_PARAMS_KEY = "wdkQuestionParams";
     public static final String WDK_ANSWER_KEY = "wdkAnswer";
     public static final String WDK_RECORD_KEY = "wdkRecord";
-    public static final String WDK_USER_KEY = "wdkUser";
     public static final String NEXT_QUESTION_OPERAND = "nextQuestionOperand";
     //public static final String QUESTIONSETFORM_KEY = "questionSetForm";
     public static final String QUESTIONFORM_KEY = "questionForm";
     public static final String BOOLEAN_QUESTION_FORM_KEY = "booleanQuestionForm";
-    public static final String BOOLEAN_SEED_QUESTION_KEY = "booleanSedQuestionName";
+    public static final String BOOLEAN_SEED_QUESTION_KEY = "booleanSeedQuestionName";
     public static final String CURRENT_BOOLEAN_ROOT_KEY = "currentBooleanRoot";
     public static final String BOOLEAN_OPERATIONS_PARAM_NAME = "booleanOps";
     public static final String DOWNLOAD_RESULT_KEY = "downloadResult";
@@ -43,10 +48,26 @@ public class CConstants {
     public static final String GET_BOOLEAN_ANSWER_MAPKEY = "get_boolean_answer";
     public static final String CONFIG_DOWNLOAD_MAPKEY = "config_download";
     public static final String GET_DOWNLOAD_RESULT_MAPKEY = "get_download_result";
-    public static final String SHOW_QUERY_HISTORY_MAPKEY = "show_query_history";
-    public static final String DOWNLOAD_HISTORY_ANSWER_MAPKEY = "download_history_answer";
-    public static final String DELETE_HISTORY_ANSWER_MAPKEY = "delete_history_answer";
-    public static final String PROCESS_BOOLEAN_EXPRESSION_MAPKEY = "process_boolean_expression";
+   // Added from original WDK1.7 CConstants file. 
+  public static final String SHOW_QUERY_HISTORY_MAPKEY = "show_query_history"; 
+  public static final String DOWNLOAD_HISTORY_ANSWER_MAPKEY = "download_history_answer";    
+  public static final String DELETE_HISTORY_ANSWER_MAPKEY = "delete_history_answer";    
+  public static final String PROCESS_BOOLEAN_EXPRESSION_MAPKEY = "process_boolean_expression";
+
+
+    /* Adding here for multi page display */
+
+    public static final String PQ_NEXT_PAGE_MAPKEY = "pq_next_page";
+    public static final String PQ_PAGE2_MAPKEY = "pq_page2";
+    public static final String PQ_PAGE3_MAPKEY = "pq_page3";
+   
+    public static final String PQ_NEXT_PAGE_KEY = "nextPage";
+    public static final String PQ_NEXT_PAGE = "Next Page";
+ 
+    public static final String PQ_PAGE2 = "Page 2";
+    public static final String PQ_PAGE3 = "Page 3";
+
+    /* End additional stmts for multi page display */
 
     //button click detectors, used in action, action forms, and jsp pages
     public static final String PQ_SUBMIT_KEY = "questionSubmit"; //match question.jsp
@@ -59,7 +80,8 @@ public class CConstants {
     public static final String DOWNLOAD_INCLUDE_HEADER = "includeHeader"; //match downloadConfig.jsp
     public static final String YES = "yes"; //match downloadConfig.jsp
     public static final String ALL = "all"; //match downloadConfig.jsp
-    public static final String USER_ANSWER_ID = "user_answer_id"; //match queryHistory.jsp
+    //Adding from original WDK1.7 CConstants.
+     public static final String USER_ANSWER_ID = "user_answer_id"; //match queryHistory.jsp
 
     //used in action, action forms, and jsp pages
     public static final String NEXT_QUESTION_OPERAND_SUFFIX = "_nextQuestionOperand"; //match WEB-INF/includes/booleanQuestionNode.jsp
@@ -68,11 +90,21 @@ public class CConstants {
     //name of webapp init params, from web.xml, used in ApplicationInitListener.java
     protected static final String WDK_MODELCONFIGXML_PARAM = "wdkModelConfigXml_param";
     protected static final String WDK_MODELXML_PARAM = "wdkModelXml_param";
+    //added here
+      protected static final String WDK_SPECXML_PARAM = "wdkSpecXml_param";
     protected static final String WDK_MODELSCHEMA_PARAM = "wdkModelSchema_param";
+    //added for spec schema
+    protected static final String WDK_SPECSCHEMA_PARAM = "wdkSpecSchema_param";
+
     protected static final String WDK_MODELPROPS_PARAM = "wdkModelProps_param";
     protected static final String WDK_LOGFILE_PARAM = "wdkLogFile_param";
     protected static final String WDK_MODELPARSER_PARAM = "wdkModelParser_param";
+    //added here
+    protected static final String WDK_SPECPARSER_PARAM = "wdkSpecParser_param";
+
     protected static final String WDK_CUSTOMVIEWDIR_PARAM = "wdkCustomViewDir_param";
+
+   //  public static final String WDK_CUSTOM_QUESTIONSETS_FLAT_PAGE = "customQuestionSetsFlat.jsp"; //already defined above.
 
     //default value of webapp init params, from web.xml, used in ApplicationInitListener.java
     protected static final String DEFAULT_WDKMODELCONFIGXML = "/WEB-INF/wdk-config/wdkModelConfig.xml";
@@ -80,5 +112,8 @@ public class CConstants {
     protected static final String DEFAULT_WDKMODELSCHEMA = "/WEB-INF/wdk-config/wdkModel.rng";
     protected static final String DEFAULT_WDKMODELPROPS = "/WEB-INF/wdk-config/wdkModel.props";
     protected static final String DEFAULT_WDKMODELPARSER = "org.gusdb.wdk.model.implementation.ModelXmlParser";
-    protected static final String DEFAULT_WDKCUSTOMVIEWDIR = "/customPages/";
+  //added here
+ protected static final String DEFAULT_SPECMODELXML = "/WEB-INF/wdk-config/addressBook.xml";  
+ protected static final String DEFAULT_SPECMODELPARSER = "org.gusdb.model.implementation.AddressBookParser";
+   protected static final String DEFAULT_WDKCUSTOMVIEWDIR = "/customPages/";
 }
