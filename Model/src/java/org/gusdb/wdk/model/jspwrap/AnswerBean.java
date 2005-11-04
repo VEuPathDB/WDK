@@ -145,9 +145,14 @@ public class AnswerBean {
 	Vector v = new Vector();
 	for (int i=0; i<sumAttribs.length; i++) {
 	    String attribName = sumAttribs[i].getName();
-	    if (answer.isSummaryAttribute(attribName)) {
+
+	    if (downloadConfigMap == null || downloadConfigMap.size() == 0) {
 		v.add(sumAttribs[i]);
-	    }
+	    } else {
+		Object configStatus = downloadConfigMap.get(attribName);
+		//System.err.println("DEBUG AnswerBean: configStatus for " + attrName + " is " + configStatus);
+		if (configStatus != null) { v.add(sumAttribs[i]); }
+            }
 	}
 	int size = v.size();
 	AttributeFieldBean[] downloadAttribs = new AttributeFieldBean[size];
