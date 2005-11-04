@@ -24,6 +24,7 @@ public class CConstants {
     public static final String WDK_QUESTION_PARAMS_KEY = "wdkQuestionParams";
     public static final String WDK_ANSWER_KEY = "wdkAnswer";
     public static final String WDK_RECORD_KEY = "wdkRecord";
+    public static final String WDK_USER_KEY = "wdkUser";
     public static final String NEXT_QUESTION_OPERAND = "nextQuestionOperand";
     //public static final String QUESTIONSETFORM_KEY = "questionSetForm";
     public static final String QUESTIONFORM_KEY = "questionForm";
