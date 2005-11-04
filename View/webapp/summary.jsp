@@ -8,6 +8,8 @@
 <!-- get wdkAnswer from requestScope -->
 <c:set value="${sessionScope.wdkAnswer}" var="wdkAnswer"/>
 
+<c:set value="${param['user_answer_id']}" var="uaId"/>
+
 <!-- display page header with wdkAnswer's recordClass's type as banner -->
 <c:set value="${wdkAnswer.recordClass.type}" var="wdkAnswerType"/>
 <site:header banner="${wdkAnswerType} Results" />
@@ -59,7 +61,16 @@
                <c:if test="${wdkAnswer.resultSize > 0}">
                (showing ${wdk_paging_start} to ${wdk_paging_end})</c:if></td></tr>
        <tr><td>&nbsp;</td>
-           <td align="left"><a href="downloadConfig.jsp">Download a report of this result</a>
+           <td align="left">
+               <c:choose>
+                   <c:when test="${uaId == null}">
+                       <a href="downloadConfig.jsp">
+                   </c:when>
+                   <c:otherwise>
+                       <a href="downloadHistoryAnswer.do?user_answer_id=${uaId}">
+                   </c:otherwise>
+               </c:choose>
+               Download a report of this result</a>
            </td></tr>
 </table>
 
