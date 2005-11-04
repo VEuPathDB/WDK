@@ -78,10 +78,11 @@ public class ShowSummaryAction extends Action {
 
 	request.getSession().setAttribute(CConstants.WDK_ANSWER_KEY, wdkAnswer);
 
-	return getForward(wdkAnswer, mapping);
+	return getForward(wdkAnswer, mapping, ua_id_str);
     }
 
-    private ActionForward getForward (AnswerBean wdkAnswer, ActionMapping mapping) {
+    private ActionForward getForward (AnswerBean wdkAnswer,
+				      ActionMapping mapping, String userAnswerIdStr) {
 	ServletContext svltCtx = getServlet().getServletContext();
 	String customViewDir = (String)svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
 	String customViewFile1 = customViewDir + File.separator
@@ -100,7 +101,19 @@ public class ShowSummaryAction extends Action {
 	} else {
 	    forward = mapping.findForward(CConstants.SHOW_SUMMARY_MAPKEY);
 	}
-	return forward;
+
+	if (userAnswerIdStr == null) { return forward; }
+
+	String path = forward.getPath();
+	if(path.indexOf("?") > 0 ) {
+	    if(path.indexOf(CConstants.USER_ANSWER_ID) < 0) {
+		path += "&" + CConstants.USER_ANSWER_ID + "=" + userAnswerIdStr; 
+	    }
+	} else {
+	    path += "?" + CConstants.USER_ANSWER_ID + "=" + userAnswerIdStr; 
+	}
+
+	return new ActionForward(path);
     }
 
     protected Map handleMultiPickParams (Map params) 
