@@ -39,6 +39,9 @@ public class RecordInstance {
         PrimaryKeyField field = 
             (PrimaryKeyField) recordClass.getField(RecordClass.PRIMARY_KEY_NAME);
         // create primary key
+	if (recordId == null || "".equals(recordId)) {
+	    throw new WdkModelException(getRecordClass().getFullName() + " encountered empty primaryKey value");
+	}
         this.primaryKey = new PrimaryKeyValue(field, projectId, recordId);
     }
 
@@ -83,7 +86,7 @@ public class RecordInstance {
 	    }
 	    HashMap resultMap = (HashMap)attributesResultSetsMap.get(queryName);
 	    if (resultMap == null) {
-	        throw new WdkModelException("Unable to get resultMap for queryName of '"+queryName+"'");
+	        throw new WdkModelException("Attempting to find a value for attribute '" + attributeName + "' in recordClass '" + recordClass.getName() + "'.  It is claiming to come from query named '"+queryName+"' but there is no resultMap for that name.");
 	    }
 	    value = resultMap.get(attributeName);
 	} else {
