@@ -205,13 +205,13 @@ public class SanityModel {
 
         for (int i = 0; i < v.size(); i++) {
             SanityQueryOrQuestion q = (SanityQueryOrQuestion) v.elementAt(i);
-            if (q.getMinOutputLength().intValue() < 1) {
+            if (q.getMinOutputLength().intValue() < 0) {
                 throw new WdkUserException(
                         "Sanity"
                                 + q.getTypeCap()
                                 + " "
                                 + q.getRef()
-                                + " must return at least 1 row.  Please set its minOutputLength attribute to reflect this");
+                                + " must return at least 0 rows.  Please set its minOutputLength attribute to reflect this");
             }
         }
     }
