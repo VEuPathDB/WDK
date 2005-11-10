@@ -6,28 +6,13 @@ public class PrimaryKeyField implements FieldI {
     private String displayName;
     private String help;
     private Integer truncate;
-    
-    // Added by Jerric
     private String         idPrefix;
     private String         delimiter;
     private FlatVocabParam projectParam;
 
-    /**
-     * Modified by Jerric
-     * @param name
-     * @param displayName
-     * @param help
-     * @param projectParam	this is a part of combined PK for federation
-     */
-    public PrimaryKeyField(String name, String displayName, String help, 
-            FlatVocabParam projectParam) {
-	this.name = name;
-	this.displayName = displayName;
-	this.help = help;
-    this.projectParam = projectParam;
-    this.idPrefix = "G.";	// default value;
-    this.delimiter = ":";	// default value;
-    }
+    //////////////////////////////////////////////////////////
+    //   FieldI
+    //////////////////////////////////////////////////////////
 
     public String getName() {
 	return name;
@@ -53,21 +38,39 @@ public class PrimaryKeyField implements FieldI {
 	return getDisplayName();
     }
 
-    public void setTruncate(String truncate){
-	this.truncate = new Integer(truncate);
-    }
-
     public Integer getTruncate(){
 	return truncate;
     }
 
+    ////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
 
-    // =======================================================================
-    // Following methods are added by Jerric
+    public void setTruncate(String truncate){
+	this.truncate = new Integer(truncate);
+    }
+
+    /**
+     * Modified by Jerric
+     * @param name
+     * @param displayName
+     * @param help
+     * @param projectParam	this is a part of combined PK for federation
+     */
+    public PrimaryKeyField(String name, String displayName, String help, 
+            FlatVocabParam projectParam) {
+	this.name = name;
+	this.displayName = displayName;
+	this.help = help;
+    this.projectParam = projectParam;
+    this.idPrefix = "G.";	// default value;
+    this.delimiter = ":";	// default value;
+    }
+
+
     /**
      * @return Returns the delimiter.
      */
-    public String getDelimiter() {
+    String getDelimiter() {
         return delimiter;
     }
 
@@ -81,7 +84,7 @@ public class PrimaryKeyField implements FieldI {
     /**
      * @return Returns the idPrefix.
      */
-    public String getIdPrefix() {
+    String getIdPrefix() {
         return idPrefix;
     }
 
@@ -95,7 +98,7 @@ public class PrimaryKeyField implements FieldI {
     /**
      * @return Returns the project.
      */
-    public FlatVocabParam getProjectParam() {
+    FlatVocabParam getProjectParam() {
         return projectParam;
     }
 

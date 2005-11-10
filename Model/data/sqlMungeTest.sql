@@ -5,6 +5,16 @@ be on their own line.
 
 // Single line comments are done like this.  The comment may not start in the middle of a line
 
+/*
+SELECT sequence as translation
+FROM dots.translatedaasequence tas,
+     dots.translatedaafeature taf,
+     dots.transcript t
+WHERE taf.aa_sequence_id = tas.aa_sequence_id
+AND taf.na_feature_id = t.na_feature_id
+AND UPPER(t.source_id) = UPPER('$$primaryKey$$')
+*/
+
 SELECT X, Y, Z
 FROM ( 
   SELECT A 

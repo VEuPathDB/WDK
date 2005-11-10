@@ -8,71 +8,81 @@ public class LinkAttributeField implements FieldI {
     String visible;
     String url;
     String help;
-    String truncateToRef;
     Integer truncateTo;
 
+    ////////////////////////////////////////////////////////////////
+    //       FieldI
+    ////////////////////////////////////////////////////////////////
 
-    public void setName(String name) {
-	this.name = name;
-    }
-    
     public String getName() {
 	return name;
     }
    
-    public void setHelp(String help) {
-	this.help = help;
+    public String getDisplayName() {
+	return (displayName != null)? displayName : name;
     }
     
     public String getHelp() {
 	return help;
     }
-   
+
+    public String getType() {
+	return null;
+    }
+
+    public Boolean getIsInternal() {
+	return new Boolean(false);
+    }
+    
+    public Integer getTruncate(){
+	return truncateTo;
+    }   
+    
+    public String toString() {
+	return getDisplayName();
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    //    setters
+    ////////////////////////////////////////////////////////////
+
+
+    public void setTruncateTo(String truncateTo){
+	this.truncateTo = new Integer(truncateTo);
+    }
+
+    public void setName(String name) {
+	this.name = name;
+    }
+    
+    public void setHelp(String help) {
+	this.help = help;
+    }
+    
     public void setDisplayName(String displayName) {
 	this.displayName = displayName;
     }
     
-    public String getDisplayName() {
-	return (displayName != null)? displayName : name;
-    }
-    
-    public Boolean getIsInternal() {
-	return new Boolean(false);
-    }
-
     public void setVisible(String visible) {
 	this.visible = visible;
-    }
-
-    public String getVisible() {
-	return visible;
     }
 
     public void setUrl(String url) {
 	this.url = url;
     }
 
-    public String getUrl() {
+
+    ////////////////////////////////////////////////////////////
+    //      package
+    ////////////////////////////////////////////////////////////
+
+    String getUrl() {
 	return url;
     }
 
-   public String getType() {
-	return null;
+    String getVisible() {
+	return visible;
     }
 
-    public String toString() {
-	return getDisplayName();
-    }
-
-    public void setTruncateToRef(String truncateToRef){
-	this.truncateToRef = truncateToRef;
-	
-	this.truncateTo = new Integer(truncateToRef);
-    }
-
-    public Integer getTruncate(){
-	return truncateTo;
-    }
-
-    
 }

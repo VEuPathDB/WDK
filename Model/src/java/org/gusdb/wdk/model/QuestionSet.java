@@ -105,6 +105,7 @@ public class QuestionSet implements ModelSetI {
 	    question.setQuestionSet(this);
 	    RecordClass rc = question.getRecordClass();
 	    rc.addQuestion(question);
+	    question.setResources(model);
 	}
 	
     }

@@ -48,6 +48,12 @@ public abstract class QueryInstance {
 
     protected boolean joinMode;
 
+    /**
+     * the attributes query has an additional parameter, which is the
+     * name of the result table
+     */
+    protected boolean isDynamic;
+
 
     // ------------------------------------------------------------------
     // Public Methods
@@ -117,7 +123,7 @@ public abstract class QueryInstance {
      * @param startIndex
      * @param endIndex
      */
-    void initJoinMode(String resultTableName,String projectColumnName, String primaryKeyColumnName, int startIndex, int endIndex){
+    void initJoinMode(String resultTableName,String projectColumnName, String primaryKeyColumnName, int startIndex, int endIndex, boolean isDynamic){
 
 	this.joinTableName = resultTableName;
 	this.projectColumnName = projectColumnName;
@@ -125,6 +131,7 @@ public abstract class QueryInstance {
 	this.startIndex = startIndex;
 	this.endIndex = endIndex;
 	this.joinMode = true;
+	this.isDynamic = isDynamic;
     }
 
     public abstract Collection getCacheValues() throws WdkModelException;

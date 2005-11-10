@@ -7,66 +7,74 @@ public class TextAttributeField implements FieldI {
     String text;
     String help;
     Boolean isInternal = new Boolean(false);
-    String truncateToRef;
     Integer truncateTo;
 
+    ////////////////////////////////////////////////////////////////
+    //       FieldI
+    ////////////////////////////////////////////////////////////////
 
-    public void setName(String name) {
-	this.name = name;
-    }
-    
     public String getName() {
 	return name;
     }
    
-    public void setHelp(String help) {
-	this.help = help;
+    public String getDisplayName() {
+	return (displayName != null)? displayName : name;
     }
     
     public String getHelp() {
 	return help;
     }
    
-    public void setIsInternal(Boolean isInternal) {
-	this.isInternal = isInternal;
+    public String getType() {
+	return null;
     }
-    
+
     public Boolean getIsInternal() {
 	return isInternal;
     }
    
-    public void setDisplayName(String displayName) {
-	this.displayName = displayName;
-    }
-    
-    public String getDisplayName() {
-	return (displayName != null)? displayName : name;
-    }
-    
-     public void setText(String text) {
-	this.text = text;
-    }
-
-    public String getText() {
-	return text;
-    }
-
-    public String getType() {
-	return null;
+    public Integer getTruncate(){
+	return truncateTo;
     }
 
     public String toString() {
 	return getDisplayName();
     }
     
-    public void setTruncateToRef(String truncateToRef){
-	this.truncateToRef = truncateToRef;
-	
-	this.truncateTo = new Integer(truncateToRef);
+    /////////////////////////////////////////////////////////
+    //    settters
+    /////////////////////////////////////////////////////////
+
+    public void setName(String name) {
+	this.name = name;
+    }
+    
+    public void setHelp(String help) {
+	this.help = help;
+    }
+    
+    public void setIsInternal(Boolean isInternal) {
+	this.isInternal = isInternal;
+    }
+    
+    public void setDisplayName(String displayName) {
+	this.displayName = displayName;
+    }
+    
+    public void setText(String text) {
+	this.text = text;
     }
 
-    public Integer getTruncate(){
-	return truncateTo;
+    public void setTruncateTo(String truncateTo){
+	this.truncateTo = new Integer(truncateTo);
+    }
+
+    /////////////////////////////////////////////////////////////////
+    //             package
+    /////////////////////////////////////////////////////////////////
+
+    String getText() {
+	return text;
     }
 
     

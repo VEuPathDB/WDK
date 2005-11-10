@@ -37,7 +37,7 @@ public class RecordInstance {
     public void setPrimaryKey(String projectId, String recordId) 
     throws WdkModelException {
         PrimaryKeyField field = 
-            (PrimaryKeyField) recordClass.getField(RecordClass.PRIMARY_KEY_NAME);
+            (PrimaryKeyField) recordClass.getAttributeField(RecordClass.PRIMARY_KEY_NAME);
         // create primary key
 	if (recordId == null || "".equals(recordId)) {
 	    throw new WdkModelException(getRecordClass().getFullName() + " encountered empty primaryKey value");
@@ -57,8 +57,15 @@ public class RecordInstance {
      * Get the value for a attribute or a text attribute
      */
     public Object getAttributeValue(String attributeName) throws WdkModelException {
-	Object value;
-	FieldI field = (FieldI)recordClass.getField(attributeName); 
+
+	return getAttributeValue((FieldI)recordClass.getAttributeField(attributeName)); 
+    }
+
+    /**
+     * Get the value for a attribute or a text attribute
+     */
+    public Object getAttributeValue(FieldI field) throws WdkModelException {
+	Object value;	
 	if (field instanceof PrimaryKeyField) {
         // modified by Jerric
 	    //value = recordClass.getIdPrefix() + getPrimaryKey();
@@ -66,13 +73,13 @@ public class RecordInstance {
 
 	} else if (field instanceof TextAttributeField) {
 	    TextAttributeField taField = (TextAttributeField)field;
-	    value = instantiateTextAttribute(attributeName, 
-					     taField, 
+	    value = instantiateTextAttribute(taField.getName(), 
+					     taField,
 					     new HashMap());
 
 	} else if (field instanceof LinkAttributeField) {
 	    LinkAttributeField laField = (LinkAttributeField)field;
-	    value = instantiateLinkAttribute(attributeName, 
+	    value = instantiateLinkAttribute(laField.getName(), 
 					     laField, 
 					     new HashMap());
 
@@ -80,13 +87,14 @@ public class RecordInstance {
 	    AttributeField aField = (AttributeField)field;
 	    Query query = aField.getQuery();
 	    String queryName = query.getName();
+	    String attributeName = field.getName();
 
 	    if (!attributesResultSetsMap.containsKey(queryName)) {
 		runAttributesQuery(query);
 	    }
 	    HashMap resultMap = (HashMap)attributesResultSetsMap.get(queryName);
 	    if (resultMap == null) {
-	        throw new WdkModelException("Attempting to find a value for attribute '" + attributeName + "' in recordClass '" + recordClass.getName() + "'.  It is claiming to come from query named '"+queryName+"' but there is no resultMap for that name.");
+	        throw new WdkModelException("Attempting to find a value for attribute '" + attributeName + "' in recordClass '" + recordClass.getName() + "'.  It is claiming to come from query amed '"+queryName+"' but there is no resultMap for that name." );
 	    }
 	    value = resultMap.get(attributeName);
 	} else {
@@ -190,26 +198,11 @@ public class RecordInstance {
 	    Param nextParam = nestedQueryParams[j];
 	    String paramName = nextParam.getName();
 
-        // Modified by Jerric
-        // The parameters of query don't map to attributes of the record
-	    
-//        FieldI field = (FieldI)this.getRecordClass().getField(paramName);
-//	    String value;
-//	    if (field instanceof PrimaryKeyField){
-//		value = this.getPrimaryKey().toString();
-//	    }
-//	    else if (field instanceof AttributeField){
-//		value = this.getAttributeValue(paramName).toString();
-//	    }
-//	    else {
-//		throw new WdkModelException ("Illegal to link NestedRecordList " + q.getName() + " on attribute of type " + field.getClass().getName());
-//	    }
-
         String value;
         if (paramName.equalsIgnoreCase("projectId")) {
             value = this.getPrimaryKey().getProjectId();
         } else {
-            FieldI field = (FieldI)this.getRecordClass().getField(paramName);
+            FieldI field = (FieldI)this.getRecordClass().getAttributeField(paramName);
             if (field instanceof PrimaryKeyField){
                 value = this.getPrimaryKey().getRecordId();
             }
@@ -403,17 +396,22 @@ public class RecordInstance {
     // protected methods
     ///////////////////////////////////////////////////////////////////////////
 
-    protected void setAttributeValue(String attributeName, Object attributeValue) throws WdkModelException{
+    protected void setAttributeValue(String attributeName, Object attributeValue, Query query) throws WdkModelException{
 	
-	AttributeField field 
-	    = (AttributeField)recordClass.getField(attributeName);
-	String queryName = field.getQuery().getName();
+	String queryName = query.getName();
 	HashMap resultMap = (HashMap)attributesResultSetsMap.get(queryName);
 	if (resultMap == null){
 	    resultMap = new HashMap();
 	    attributesResultSetsMap.put(queryName, resultMap);
 	}
 	resultMap.put(attributeName, attributeValue);
+    }
+    
+    protected void setAttributeValue(String attributeName, Object attributeValue) throws WdkModelException{
+	
+	AttributeField field 
+	    = (AttributeField)recordClass.getAttributeField(attributeName);
+	setAttributeValue(attributeName, attributeValue, field.getQuery());
     }
     
     /**
@@ -426,7 +424,7 @@ public class RecordInstance {
 	// If in the context of an Answer, then we are doing a "summary"
 	// and need to do a join against the result table
 	if (answer != null){
-        answer.integrateAttributesQueryResult(qInstance);
+	    answer.integrateAttributesQueryResult(qInstance);
 	}	
 
 	// otherwise, set values in record directly
@@ -439,6 +437,7 @@ public class RecordInstance {
 	    String projectId = primaryKey.getProjectId();
 	    if (projectId != null) 
 		paramHash.put(RecordClass.PROJECT_ID_NAME, projectId);
+	    
 	    paramHash.put(RecordClass.PRIMARY_KEY_NAME, 
 			  primaryKey.getRecordId());
 	    

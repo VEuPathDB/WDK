@@ -67,12 +67,13 @@ public class FieldValueMap implements Map {
 
 	try {
 	    String fieldName = (String)key;
-	    FieldI field = recordClass.getField(fieldName);
 	    Object fieldValue;
 	    if (isTableMap) {
+	        FieldI field = recordClass.getTableField(fieldName);
 		ResultList value = recordInstance.getTableValue(fieldName);
 		fieldValue = new TableFieldValue(field, value);
 	    } else {
+	        FieldI field = recordClass.getAttributeField(fieldName);
 		Object value = recordInstance.getAttributeValue(fieldName);
 		AttributeFieldValue temp = new AttributeFieldValue(field, value);
 

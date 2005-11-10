@@ -8,6 +8,7 @@ import org.gusdb.wdk.model.ResultList;
 import org.gusdb.wdk.model.ResultFactory;
 import org.gusdb.wdk.model.RDBMSPlatformI;
 import org.gusdb.wdk.model.WdkLogManager;
+import org.gusdb.wdk.model.DynamicAttributeSet;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -69,6 +70,11 @@ public class SqlQueryInstance extends QueryInstance  {
 	    String projectJoin = joinTableName + "." + projectColumnName;
 	    values.put(RecordClass.PROJECT_ID_NAME, projectJoin);
 	}
+
+	if (isDynamic) {
+	    values.put(DynamicAttributeSet.RESULT_TABLE, joinTableName);
+	}
+
 	return ((SqlQuery)query).instantiateSql(query.getInternalParamValues(values), sql);
     }
 

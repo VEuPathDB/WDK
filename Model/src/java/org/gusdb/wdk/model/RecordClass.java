@@ -25,9 +25,6 @@ public class RecordClass {
     private Set attributesQueryRefs = new LinkedHashSet();
     private Map attributeFieldsMap = new LinkedHashMap(); 
     private Map tableFieldsMap = new LinkedHashMap();  
-    private Map fieldsMap = new LinkedHashMap();  
-    private Set allNames;
-    private List summaryColumnNames = new ArrayList();
     private String name;
     private String type;
     private String idPrefix;
@@ -72,9 +69,7 @@ public class RecordClass {
 
     public RecordClass() {
 	// make sure these keys are at the front of the list
-	// (don't assume setType is called before adding attributes)
 	attributeFieldsMap.put(PRIMARY_KEY_NAME, null);	    
-	fieldsMap.put(PRIMARY_KEY_NAME, null);	    
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -91,12 +86,6 @@ public class RecordClass {
     
     public void setType(String type) {
         this.type = type;
-        // Modified by Jerric
-//	PrimaryKeyField pkField = 
-//	    new PrimaryKeyField(PRIMARY_KEY_NAME, getType(),
-//				"Some help here");
-//	attributeFieldsMap.put(PRIMARY_KEY_NAME, pkField);	    
-//	fieldsMap.put(PRIMARY_KEY_NAME, pkField);	    
     }
 
     /**
@@ -145,14 +134,12 @@ public class RecordClass {
         checkAttributeName(textAttributeField.getName());
 	attributeFieldsMap.put(textAttributeField.getName(), 
 			       textAttributeField);	    
-	fieldsMap.put(textAttributeField.getName(), textAttributeField);	    
     }
     
     public void addLinkAttribute(LinkAttributeField linkAttributeField) throws WdkModelException {
         checkAttributeName(linkAttributeField.getName());
 	attributeFieldsMap.put(linkAttributeField.getName(), 
 			       linkAttributeField);	    
-	fieldsMap.put(linkAttributeField.getName(), linkAttributeField);	    
     }
 
     public void addQuestion(Question q){
@@ -202,18 +189,6 @@ public class RecordClass {
         return new LinkedHashMap(tableFieldsMap);
     }
 
-    public Map getAttributeFields() {
-        return new LinkedHashMap(attributeFieldsMap);
-    }
-
-    public Map getFields() {
-        return new LinkedHashMap(fieldsMap);
-    }
-
-    public FieldI getField(String fieldName) {
-	return (FieldI) fieldsMap.get(fieldName);
-    }
-
     public Question[] getNestedRecordQuestions(){
 	if (nestedRecordQuestions == null){
 	    initNestedRecords();
@@ -260,15 +235,6 @@ public class RecordClass {
 	}
 	return returnedQuestions;
     }    
-    /**
-     * @return
-     */
-    public List getSummaryColumnNames() {
-	ArrayList list = new ArrayList();
-	list.add(PRIMARY_KEY_NAME);
-	list.addAll(summaryColumnNames);
-	return list;
-    }
 
     public Reference getReference() throws WdkModelException {
         return new Reference(getFullName());
@@ -313,6 +279,10 @@ public class RecordClass {
         return buf.toString();
     }
     
+    public Map getAttributeFields() {
+        return new LinkedHashMap(attributeFieldsMap);
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     // package scope methods
     ///////////////////////////////////////////////////////////////////////////
@@ -332,12 +302,8 @@ public class RecordClass {
         for (int i=0; i<columns.length;i++) {
             Column column = columns[i];
             checkAttributeName(column.getName());
-            if (column.isInSummaryAsBool()) {
-                summaryColumnNames.add(column.getName());
-            }
 	    AttributeField field = new AttributeField(column);
             attributeFieldsMap.put(field.getName(), field);	    
-            fieldsMap.put(field.getName(), field);	    
         }
     }
     
@@ -352,12 +318,10 @@ public class RecordClass {
         }    
 	TableField field = new TableField(query);
 	tableFieldsMap.put(field.getName(), field);	    
-	fieldsMap.put(field.getName(), field);	    
     }
     
-    AttributeField getAttributeField(String attributeName) throws WdkModelException {
-        AttributeField field= 
-	    (AttributeField)attributeFieldsMap.get(attributeName);
+    FieldI getAttributeField(String attributeName) throws WdkModelException {
+        FieldI field = (FieldI)attributeFieldsMap.get(attributeName);
         if (field == null) {
             throw new WdkModelException("RecordClass " + getName() + 
                     " doesn't have an attribute with name '" +
@@ -376,6 +340,9 @@ public class RecordClass {
         return field;
     }
 
+    Map getAttributeFieldsMap() {
+	return attributeFieldsMap;
+    }
     
     void checkAttributeName(String name) throws WdkModelException {
         if (attributeFieldsMap.containsKey(name)) {
@@ -413,7 +380,6 @@ public class RecordClass {
          pkField.setIdPrefix(this.idPrefix);
          pkField.setDelimiter(this.delimiter);
          attributeFieldsMap.put(PRIMARY_KEY_NAME, pkField);
-         fieldsMap.put(PRIMARY_KEY_NAME, pkField);
                 
         Iterator fQueryRefs = attributesQueryRefs.iterator();
         while (fQueryRefs.hasNext()) {

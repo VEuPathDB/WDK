@@ -80,7 +80,7 @@ public abstract class Query {
     }
 
     public String getFullName() {
-	return fullName;
+	return fullName == null? name : fullName;
     }
     
     public String getDisplayName() {
@@ -174,6 +174,10 @@ public abstract class Query {
     protected void addParam(Param param) {
 	paramsV.add(param);
 	paramsH.put(param.getName(), param);
+    }
+
+    Param getParam(String paramName) {
+	return (Param)paramsH.get(paramName);
     }
 
     protected void resolveReferences(WdkModel model) throws WdkModelException {

@@ -8,7 +8,6 @@ public class Column {
 
     private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.model.Column");
     
-    String truncateToRef;
     Integer truncateTo;
     String displayName;
     String name;
@@ -40,10 +39,8 @@ public class Column {
 	return isInternal;
     }
 
-    public void setTruncateToRef(String truncateToRef){
-	this.truncateToRef = truncateToRef;
-	
-	this.truncateTo = new Integer(truncateToRef);
+    public void setTruncateTo(String truncateTo){
+	this.truncateTo = new Integer(truncateTo);
     }
 
     public Integer getTruncate(){

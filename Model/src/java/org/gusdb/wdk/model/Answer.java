@@ -164,12 +164,20 @@ public class Answer {
 	return this.isBoolean;
     }
 
+    // this method is wrong.  it should be plural, and return
+    // all the attributes query instances.  this returns only the last
+    // one made, which is bogus.  it is used by wdkSummary --showQuery
+    // which itself should be --showQueries
     public QueryInstance getAttributesQueryInstance() {
 	return attributesQueryInstance;
     }
 
     public QueryInstance getIdsQueryInstance(){
 	return idsQueryInstance;
+    }
+
+    public Map getAttributeFields() {
+	return question.getAttributeFields();
     }
 
     public boolean isSummaryAttribute(String attName){
@@ -258,8 +266,9 @@ public class Answer {
 
 		// make data row
 		else {
+		    FieldI field = (FieldI)getAttributeFields().get(nextAttName);
 		    Object value = 
-			pageRecordInstances[i].getAttributeValue(nextAttName);
+			pageRecordInstances[i].getAttributeValue(field);
 		    if (value == null) value = "";
             // only print part of the string
             String str = value.toString().trim();
@@ -286,12 +295,16 @@ public class Answer {
         
 	this.attributesQueryInstance = attributesQueryInstance;
 
+	boolean isDynamic = 
+	    attributesQueryInstance.getQuery().getParam(DynamicAttributeSet.RESULT_TABLE) != null;
+
 	String idsTableName = idsQueryInstance.getResultAsTableName();
         attributesQueryInstance.initJoinMode(idsTableName,
 					     recordProjectColumnName, 
 					     recordIdColumnName, 
 					     startRecordInstanceI, 
-					     endRecordInstanceI);
+					     endRecordInstanceI,
+					     isDynamic);
 
 	ResultList attrQueryResultList = attributesQueryInstance.getResult();
 
@@ -323,7 +336,11 @@ public class Answer {
             for (int i = 0; i < columns.length; i++){
                 String nextColumnName = columns[i].getName();
                 Object value = attrQueryResultList.getAttributeFieldValue(nextColumnName).getValue();
-                recordInstance.setAttributeValue(nextColumnName, value);
+		if (isDynamic) 
+		    recordInstance.setAttributeValue(nextColumnName, value,
+						     attributesQueryInstance.getQuery());
+		else
+		    recordInstance.setAttributeValue(nextColumnName, value);
             }
         }
 	attrQueryResultList.close();
@@ -369,29 +386,37 @@ public class Answer {
 	rl.close();
     }
 
+    private void findPrimaryKeyColumnNames() {
+        String[] names =findPrimaryKeyColumnNames(idsQueryInstance.getQuery());
+	recordIdColumnName = names[0];
+	recordProjectColumnName = names[1];	
+    }
+
     /**
      * Given a set of columns, find the id and project column names
      * The project column is optional.  
      * Assumption:  the id and project columns are the first two
      * columns, but, they may be (id, project) or (project, id)
-     */
-    private void findPrimaryKeyColumnNames() {
-        
-	Column[] columns = idsQueryInstance.getQuery().getColumns();
+     * @return array where first element is pk col name, second is project
+    */
+    static String[] findPrimaryKeyColumnNames(Query query) {
+	Column[] columns = query.getColumns();
+	String[] names = new String[2];
 
 	// assume id is in first column and no project column
-	recordIdColumnName = columns[0].getName();
-	recordProjectColumnName = null;
+	names[0] = columns[0].getName();
+	names[1] = null;
 
 	// having two columns, one is for Id and one for project
 	if (columns.length > 1) {
 	    if (columns[0].getName().toUpperCase().indexOf("PROJECT")!= -1) {
-		recordIdColumnName = columns[1].getName();
-		recordProjectColumnName = columns[0].getName();
-	    } else {
-		recordProjectColumnName = columns[1].getName();
+		names[0] = columns[1].getName();
+		names[1] = columns[0].getName();
+	    } else if (columns[1].getName().toUpperCase().indexOf("PROJECT")!= -1){
+		names[1] = columns[1].getName();
 	    }
 	}
+	return names;
     }
 
     /**
