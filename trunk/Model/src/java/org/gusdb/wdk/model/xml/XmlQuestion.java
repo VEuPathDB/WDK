@@ -24,7 +24,7 @@ public class XmlQuestion {
     private String recordClassRef;
     private String xmlData;
     private String xsl;
-    private String summaryAttributesRef;
+    private String summaryAttributeNames;
     private XmlAttributeField[] summaryAttributes;
     private String description;
     private String help;
@@ -106,8 +106,8 @@ public class XmlQuestion {
     /**
      * @param summaryAttributesRef The summaryAttributesRef to set.
      */
-    public void setSummaryAttributesRef(String summaryAttributesRef) {
-        this.summaryAttributesRef = summaryAttributesRef;
+    public void setSummaryAttributes(String summaryAttributeNames) {
+        this.summaryAttributeNames = summaryAttributeNames;
     }
 
     public XmlAttributeField[] getSummaryAttributes() {
@@ -162,11 +162,11 @@ public class XmlQuestion {
                 name, "question", "recordClassRef");
 
         // resolve the references to summary attributes
-        if (summaryAttributesRef == null) { // default use all attribute fields
+        if (summaryAttributeNames == null) { // default use all attribute fields
             summaryAttributes = recordClass.getAttributeFields();
         } else { // use a subset of attribute fields
             Map<String, XmlAttributeField> summaries = new HashMap<String, XmlAttributeField>();
-            String[] names = summaryAttributesRef.split(",");
+            String[] names = summaryAttributeNames.split(",");
             for (String name : names) {
                 try {
                     XmlAttributeField field = recordClass.getAttributeField(name);

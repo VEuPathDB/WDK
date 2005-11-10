@@ -90,6 +90,9 @@ public class SummaryTester {
 		Answer answer = question.makeAnswer(paramValues, nextStartRow, nextEndRow);
 		answer.printAsTable();
 
+		// this is wrong.  it only shows one attribute query, not
+		// all.  Fix this in Answer by saving a list of attribute
+		// queries, not just one.
 		if (cmdLine.hasOption("showQuery")) {
 		    System.out.println(getLowLevelQuery(answer));
 		    return;

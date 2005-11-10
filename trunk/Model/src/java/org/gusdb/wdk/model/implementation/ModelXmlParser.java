@@ -15,6 +15,7 @@ import org.gusdb.wdk.model.TextAttributeField;
 import org.gusdb.wdk.model.TextColumn;
 import org.gusdb.wdk.model.LinkAttributeField;
 import org.gusdb.wdk.model.LinkColumn;
+import org.gusdb.wdk.model.DynamicAttributeSet;
 import org.gusdb.wdk.model.NestedRecord;
 import org.gusdb.wdk.model.NestedRecordList;
 import org.gusdb.wdk.model.WdkModel;
@@ -412,7 +413,7 @@ public class ModelXmlParser {
         /**/digester.addObjectCreate("wdkModel/referenceList",
                 ReferenceList.class);
 
-        /**/digester.addSetProperties("wdkModel/referenceList");
+        /*  */digester.addSetProperties("wdkModel/referenceList");
 
         /*  */digester.addObjectCreate("wdkModel/referenceList/reference",
                 Reference.class);
@@ -428,17 +429,54 @@ public class ModelXmlParser {
 
         /**/digester.addObjectCreate("wdkModel/questionSet", QuestionSet.class);
 
-        /**/digester.addSetProperties("wdkModel/questionSet");
+        /*  */digester.addSetProperties("wdkModel/questionSet");
 
-        /**/digester.addBeanPropertySetter("wdkModel/questionSet/description");
+        /*  */digester.addBeanPropertySetter("wdkModel/questionSet/description");
         /*  */digester.addObjectCreate("wdkModel/questionSet/question",
                 Question.class);
 
-        /*  */digester.addSetProperties("wdkModel/questionSet/question");
+        /*    */digester.addSetProperties("wdkModel/questionSet/question");
 
-        /*  */digester.addBeanPropertySetter("wdkModel/questionSet/question/description");
+        /*    */digester.addBeanPropertySetter("wdkModel/questionSet/question/description");
 
-        /*  */digester.addBeanPropertySetter("wdkModel/questionSet/question/help");
+        /*    */digester.addBeanPropertySetter("wdkModel/questionSet/question/help");
+
+        /*    */digester.addObjectCreate(
+                "wdkModel/questionSet/question/dynamicAttributes",
+                DynamicAttributeSet.class);
+
+        /*      */digester.addSetProperties("wdkModel/questionSet/question/dynamicAttributes");
+
+	/*      */digester.addObjectCreate("wdkModel/questionSet/question/dynamicAttributes/attribute", Column.class);
+
+	/*        */digester.addSetProperties("wdkModel/questionSet/question/dynamicAttributes/attribute");
+
+	/*      */digester.addSetNext("wdkModel/questionSet/question/dynamicAttributes/attribute", "addAttribute");
+        /*      */digester.addObjectCreate(
+                    "wdkModel/questionSet/question/dynamicAttributes/linkAttribute",
+                    LinkAttributeField.class);
+
+        /*        */digester.addSetProperties("wdkModel/questionSet/question/dynamicAttributes/linkAttribute");
+
+        /*        */digester.addBeanPropertySetter("wdkModel/questionSet/question/dynamicAttributes/linkAttribute/url");
+
+        /*      */digester.addSetNext(
+                  "wdkModel/questionSet/question/dynamicAttributes/linkAttribute",
+                  "addLinkAttribute");
+
+        /*      */digester.addObjectCreate(
+                  "wdkModel/questionSet/question/dynamicAttributes/textAttribute",
+                  TextAttributeField.class);
+
+        /*        */digester.addSetProperties("wdkModel/questionSet/question/dynamicAttributes/textAttribute");
+
+        /*        */digester.addBeanPropertySetter("wdkModel/questionSet/question/dynamicAttributes/textAttribute/text");
+
+        /*      */digester.addSetNext(
+                  "wdkModel/questionSet/question/dynamicAttributes/textAttribute",
+                  "addTextAttribute");
+
+        /*    */digester.addSetNext("wdkModel/questionSet/question/dynamicAttributes", "setDynamicAttributeSet");
 
         /*  */digester.addSetNext("wdkModel/questionSet/question",
                 "addQuestion");

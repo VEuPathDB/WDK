@@ -37,7 +37,6 @@ public class AttributeField implements FieldI {
 	return column.getTruncate();
     }
     
- 
     Query getQuery() {
 	return column.getQuery();
     }

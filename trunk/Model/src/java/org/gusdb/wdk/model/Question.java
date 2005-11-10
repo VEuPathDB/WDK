@@ -36,9 +36,11 @@ public class Question {
     
     protected RecordClass recordClass;
 
-    private String summaryAttributesRef;
+    private String[] summaryAttributeNames;
 
     private Map summaryAttributeMap;
+
+    private DynamicAttributeSet dynamicAttributes;
 
     ///////////////////////////////////////////////////////////////////////
     // setters called at initialization
@@ -75,8 +77,21 @@ public class Question {
 	this.displayName = displayName;
     }
 
-    public void setSummaryAttributesRef(String summaryAttributesRef){
-	this.summaryAttributesRef = summaryAttributesRef;
+    public void setSummaryAttributes(String summaryAttributesString){
+
+       	// ensure that the list includes primaryKey
+	String primaryKey = RecordClass.PRIMARY_KEY_NAME;
+	if (!(summaryAttributesString.equals(primaryKey)
+	      || summaryAttributesString.startsWith(primaryKey + ",")
+	      || summaryAttributesString.endsWith("," + primaryKey)
+	      || summaryAttributesString.indexOf("," + primaryKey + ",") > 0)) {
+	    summaryAttributesString = primaryKey + "," + summaryAttributesString;
+	}
+	this.summaryAttributeNames = summaryAttributesString.split(",\\s*");
+    }
+
+    public void setDynamicAttributeSet(DynamicAttributeSet dynamicAttributes) {
+	this.dynamicAttributes = dynamicAttributes;
     }
 
 
@@ -137,14 +152,24 @@ public class Question {
 
     public String toString() {
 	String newline = System.getProperty( "line.separator" );
+
+	StringBuffer saNames = new StringBuffer();
+	if (summaryAttributeNames != null) {
+	    for (String saName : summaryAttributeNames) 
+		saNames.append(saName + ", ");
+	}
 	StringBuffer buf =
 	    new StringBuffer("Question: name='" + name + "'" + newline  +
 			     "  recordClass='" + recordClassTwoPartName + "'" + newline +
 			     "  query='" + queryTwoPartName + "'" + newline +
 			    "  displayName='" + getDisplayName() + "'" + newline +
 			    "  description='" + getDescription() + "'" + newline +
+			    "  summaryAttributes='" + saNames + "'" + newline + 
 			    "  help='" + getHelp() + "'" + newline 
 			     );	    
+	if (dynamicAttributes != null) {
+	    buf.append(dynamicAttributes.toString());
+	}
 	return buf.toString();
     }
     
@@ -153,57 +178,30 @@ public class Question {
     // package methods
     ///////////////////////////////////////////////////////////////////////
 
+    void setResources(WdkModel model) throws WdkModelException {
+	if (dynamicAttributes != null) dynamicAttributes.setResources(model);
+    }
+
+    Map getAttributeFields() {
+	Map attributeFields = new HashMap(recordClass.getAttributeFields());
+	if (dynamicAttributes != null) {
+	    attributeFields.putAll(dynamicAttributes.getAttributeFields());
+	}
+	return attributeFields;
+    }
+
 
     void resolveReferences(WdkModel model)throws WdkModelException{
 
-	this.query = (Query)model.resolveReference(queryTwoPartName, name, "question", "queryRef");
-	this.recordClass = (RecordClass)model.resolveReference(recordClassTwoPartName, name, "question", "recordClassRef");
-	Map attribFields = getRecordClass().getAttributeFields();
-
-	String[] summaryAttributeList;
-	
-	String primaryKey = RecordClass.PRIMARY_KEY_NAME;
-	if (summaryAttributesRef != null){
-	    // ensure that the list includes primaryKey
-	    if (!(summaryAttributesRef.equals(primaryKey)
-		  || summaryAttributesRef.startsWith(primaryKey + ",")
-		  || summaryAttributesRef.endsWith("," + primaryKey)
-		  || summaryAttributesRef.indexOf("," + primaryKey + ",") > 0)) {
-		summaryAttributesRef = primaryKey + "," + summaryAttributesRef;
-	    }
-	    summaryAttributeList = summaryAttributesRef.split(",");
-
-	    for (int i = 0; i< summaryAttributeList.length; i++){
-		String nextAtt = summaryAttributeList[i];
-		if (attribFields.get(nextAtt) == null){
-		    throw new WdkModelException("Question " + getName() + " defined attribute " +
-						nextAtt + " as a summary attribute, but that is not a " + 
-						"valid attribute for this Question");
-		}
-	    }
-	} else {
-	    Iterator ai = attribFields.keySet().iterator();
-	    Vector v = new Vector();
-	    while (ai.hasNext()) {
-		v.add((String)ai.next());
-	    }
-	    summaryAttributeList = new String[v.size()];
-	    v.copyInto(summaryAttributeList);
-	}
-	for (int i = 0; i < summaryAttributeList.length; i++){
-	    String nextSummaryAtt = summaryAttributeList[i];
-	    summaryAttributeMap.put(nextSummaryAtt, new Integer(1));
-	}
+	this.query = (Query)model.resolveReference(queryTwoPartName, name, 
+						   "question", "queryRef");
+	Object rc = model.resolveReference(recordClassTwoPartName, name, 
+					   "question", "recordClassRef");
+       	setRecordClass((RecordClass)rc);
     }
 
     boolean isSummaryAttribute(String attName){
-	Object isSummaryAtt = summaryAttributeMap.get(attName);
-	if (isSummaryAtt == null){
-	    return false;
-	}
-	else {
-	    return true;
-	}
+	return summaryAttributeMap.get(attName) != null;
     }
 
     Map getSummaryAttributes(){
@@ -215,16 +213,34 @@ public class Question {
 	this.summaryAttributeMap = summaryAtts;
     }
 
-
     ///////////////////////////////////////////////////////////////////////
     // Protected Methods
     ///////////////////////////////////////////////////////////////////////
         
-    
-
-    protected void setQuestionSet(QuestionSet questionSet) {
-	
+    protected void setQuestionSet(QuestionSet questionSet) throws WdkModelException {
 	this.questionSet = questionSet;
+	if (dynamicAttributes != null) {
+	    dynamicAttributes.setQuestion(this);
+	}
+	initSummaryAttributes();
     }
 
+    private void initSummaryAttributes () throws WdkModelException {
+	
+	if (summaryAttributeNames != null) {
+	    summaryAttributeMap = new HashMap();
+	    Map attMap = getAttributeFields();
+	    
+ 	    for (String name : summaryAttributeNames) {
+		if (attMap.get(name) == null) {
+		    throw new WdkModelException("Question " + getName() + 
+						" has unknown summary attribute: '" + 
+						name + "'");
+		}
+		summaryAttributeMap.put(name, attMap.get(name));
+	    }
+	} else {
+	    summaryAttributeMap =  getRecordClass().getAttributeFields();
+	}
+    }
 }
