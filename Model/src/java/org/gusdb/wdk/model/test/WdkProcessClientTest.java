@@ -13,7 +13,9 @@ import javax.xml.rpc.ServiceException;
 
 import org.gusdb.wdk.model.process.WdkProcessClient;
 
+import junit.framework.Test;
 import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 /**
  * @author Jerric
@@ -26,6 +28,24 @@ public class WdkProcessClientTest extends TestCase {
      */
     protected void setUp() throws Exception {
         super.setUp();
+    }
+
+    public WdkProcessClientTest() {
+        super();
+    }
+
+    public WdkProcessClientTest(String name) {
+        super(name);
+    }
+
+    public static void main(String[] args) {
+        junit.textui.TestRunner.run(JUnitUserTest.class);
+    }
+
+    public static Test suite() {
+        TestSuite suite = new TestSuite();
+        suite.addTest(new WdkProcessClientTest("testInvoke"));
+        return suite;
     }
 
     /*
@@ -67,7 +87,7 @@ public class WdkProcessClientTest extends TestCase {
             // URL url = new URL(
             // "http://localhost:8080/axis/services/WdkProcessService");
             URL url = new URL(
-                    "http://lime.ctegd.uga.edu:8888/axis/services/WdkProcessService");
+                    "http://delphi.pcbi.upenn.edu:8080/axis/services/WdkProcessService");
             WdkProcessClient client = new WdkProcessClient(url);
             String[][] result = client.invoke(params, values, columns);
 
