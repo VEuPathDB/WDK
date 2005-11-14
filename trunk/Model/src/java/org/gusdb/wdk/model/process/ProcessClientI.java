@@ -33,6 +33,6 @@ public interface ProcessClientI {
      *         empty.
      * @throws RemoteException
      */
-    public String[][] invoke(String[] params, String[] values, String[] columns)
+    public String[][] invoke(String processName, String[] params, String[] values, String[] columns)
             throws RemoteException;
 }

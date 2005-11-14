@@ -35,9 +35,9 @@ public class WdkProcessClient implements ProcessClientI {
      * @see org.gusdb.wdk.model.process.ProcessClientI#invoke(java.lang.String[],
      *      java.lang.String[], java.lang.String[])
      */
-    public String[][] invoke(String[] params, String[] values, String[] columns)
+    public String[][] invoke(String processName, String[] params, String[] values, String[] columns)
             throws RemoteException {
-        return service.invoke(params, values, columns);
+        return service.invoke(processName, params, values, columns);
     }
 
 }
