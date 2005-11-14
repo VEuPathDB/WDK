@@ -8,5 +8,5 @@
 package org.gusdb.wdk.service;
 
 public interface WdkProcessService extends java.rmi.Remote {
-    public java.lang.String[][] invoke(java.lang.String[] params, java.lang.String[] values, java.lang.String[] cols) throws java.rmi.RemoteException, org.gusdb.wdk.service.WdkServiceException;
+    public java.lang.String[][] invoke(java.lang.String processName, java.lang.String[] params, java.lang.String[] values, java.lang.String[] cols) throws java.rmi.RemoteException, org.gusdb.wdk.service.WdkServiceException;
 }

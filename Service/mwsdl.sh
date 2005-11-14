@@ -1,6 +1,6 @@
 rm -rf deploy/*
 
-java -cp classes:$CLASSPATH org.apache.axis.wsdl.Java2WSDL -o WdkProcessService.wsdl -l"http://lime.ctegd.uga.edu:8888/axis/WdkProcessService" -n "service.wdk.gusdb.org" -p"org.gusdb.wdk.service" "urn:service.wdk.gusdb.org" org.gusdb.wdk.service.WdkProcessService
+java -Dcatalina.home=/usr/local/tomcat/tomcat/ -cp classes:$CLASSPATH org.apache.axis.wsdl.Java2WSDL -o WdkProcessService.wsdl -l"http://lime.ctegd.uga.edu:8888/axis/WdkProcessService" -n "service.wdk.gusdb.org" -p"org.gusdb.wdk.service" "urn:service.wdk.gusdb.org" org.gusdb.wdk.service.WdkProcessService
 
 
 mv *.wsdl deploy/

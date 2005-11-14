@@ -30,7 +30,11 @@ public class WdkProcessServiceTest extends TestCase {
      */
     public void testInvoke() {
         // prepare parameters
-        String[] params = { "Application", "Sequence", "-d" };
+        // String processName = "NcbiBlastProcessor";
+        String processName = "WuBlastProcessor";
+        // prepare parameters
+        // String[] params = { "Application", "Sequence", "-d" };
+        String[] params = { "Application", "Sequence", "Database" };
         String[] values = {
                 "blastn",
                 "AGCTTTTCATTCTGACTGCAACGGGCAATATGTCTCTGTGTGGATTAAAAAAAGAGTGTCTG"
@@ -43,7 +47,8 @@ public class WdkProcessServiceTest extends TestCase {
                         + "TGCAGAACGTTTTCTGCGTGTTGCCGATATTCTGGAAAGCAATGCCAGGCAG"
                         + "GGGCAGGTGGCCACCGTCCTCTCTGCCCCCGCCAAAATCACCAACCACCTGG"
                         + "TGGCGATGATTGAAAAAACCATTAGCGGCCAGGATGCTTTACCCAATATCAG"
-                        + "CGATGCCGAACGTATTTTTGCCGAACTTTT", "c.parvum.nt" };
+                        + "CGATGCCGAACGTATTTTTGCCGAACTTTT", "Cparvum_nt.fsa" };
+        // + "CGATGCCGAACGTATTTTTGCCGAACTTTT", "c.parvum.nt" };
 
         // prepare the columns
         String[] columns = { "Id", "TabularRow", "Alignment", "Header",
@@ -55,7 +60,8 @@ public class WdkProcessServiceTest extends TestCase {
 
         WdkProcessService service = new WdkProcessService();
         try {
-            String[][] result = service.invoke(params, values, columns);
+            String[][] result = service.invoke(processName, params, values,
+                    columns);
 
             // print out the result
             System.out.println("");
