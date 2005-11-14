@@ -3,16 +3,12 @@ package org.gusdb.wdk.model.implementation;
 import java.lang.StringBuffer;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.Query;
 import org.gusdb.wdk.model.QueryInstance;
 import org.gusdb.wdk.model.RDBMSPlatformI;
-import org.gusdb.wdk.model.ResultFactory;
-import org.gusdb.wdk.model.ResultList;
 
 public class SqlQuery extends Query {
     
@@ -29,20 +25,12 @@ public class SqlQuery extends Query {
     /////////////  Public properties ////////////////////////////////////
     /////////////////////////////////////////////////////////////////////
 
-    public void setSql(String sql) {
-	this.sql = sql;
-    }
-
-    public String getSql() {
-	return sql;
-    }
-
     public QueryInstance makeInstance() {
 	return new SqlQueryInstance(this);
     }
 
-    public RDBMSPlatformI getRDBMSPlatform() {
-	return platform;
+    public void setSql(String sql) {
+	this.sql = sql;
     }
 
     /////////////////////////////////////////////////////////////////////
@@ -82,5 +70,13 @@ public class SqlQuery extends Query {
        StringBuffer buf = super.formatHeader();
        buf.append("  sql='" + sql + "'" + newline);
        return buf;
+    }
+
+    String getSql() {
+	return sql;
+    }
+
+    RDBMSPlatformI getRDBMSPlatform() {
+	return platform;
     }
  }
