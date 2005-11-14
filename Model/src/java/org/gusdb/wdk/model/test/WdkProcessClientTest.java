@@ -56,8 +56,11 @@ public class WdkProcessClientTest extends TestCase {
     public void testInvoke() {
         // currently, the test case will be defined here; later the test cases
         // will be defined in sanityModel
+        // String processName = "NcbiBlastProcessor";
+        String processName = "WuBlastProcessor";
         // prepare parameters
-        String[] params = { "Application", "Sequence", "-d" };
+        // String[] params = { "Application", "Sequence", "-d" };
+        String[] params = { "Application", "Sequence", "Database" };
         String[] values = {
                 "blastn",
                 "AGCTTTTCATTCTGACTGCAACGGGCAATATGTCTCTGTGTGGATTAAAAAAAGAGTGTCTG"
@@ -70,7 +73,8 @@ public class WdkProcessClientTest extends TestCase {
                         + "TGCAGAACGTTTTCTGCGTGTTGCCGATATTCTGGAAAGCAATGCCAGGCAG"
                         + "GGGCAGGTGGCCACCGTCCTCTCTGCCCCCGCCAAAATCACCAACCACCTGG"
                         + "TGGCGATGATTGAAAAAACCATTAGCGGCCAGGATGCTTTACCCAATATCAG"
-                        + "CGATGCCGAACGTATTTTTGCCGAACTTTT", "c.parvum.nt" };
+                        + "CGATGCCGAACGTATTTTTGCCGAACTTTT", "Cparvum_nt.fsa" };
+        // + "CGATGCCGAACGTATTTTTGCCGAACTTTT", "c.parvum.nt" };
 
         // // no hit
         // String[] values = { "blastn", "QQQQQ", "c.parvum.nt" };
@@ -89,7 +93,8 @@ public class WdkProcessClientTest extends TestCase {
             URL url = new URL(
                     "http://delphi.pcbi.upenn.edu:8080/axis/services/WdkProcessService");
             WdkProcessClient client = new WdkProcessClient(url);
-            String[][] result = client.invoke(params, values, columns);
+            String[][] result = client.invoke(processName, params, values,
+                    columns);
 
             // print out the result
             System.out.println("");
@@ -118,7 +123,5 @@ public class WdkProcessClientTest extends TestCase {
             // System.err.println(ex);
             assertTrue(false);
         }
-
     }
-
 }
