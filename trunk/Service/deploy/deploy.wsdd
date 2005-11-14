@@ -17,10 +17,11 @@
       <parameter name="wsdlServiceElement" value="WdkProcessServiceService"/>
       <parameter name="schemaUnqualified" value="service.wdk.gusdb.org"/>
       <parameter name="wsdlServicePort" value="WdkProcessService"/>
-      <parameter name="className" value="org.gusdb.wdk.service.WdkProcessServiceImp"/>
+      <parameter name="className" value="org.gusdb.wdk.service.WdkProcessService"/>
       <parameter name="wsdlPortType" value="WdkProcessService"/>
       <parameter name="typeMappingVersion" value="1.2"/>
       <operation name="invoke" qname="operNS:invoke" xmlns:operNS="service.wdk.gusdb.org" returnQName="invokeReturn" returnType="rtns:ArrayOfArrayOf_soapenc_string" xmlns:rtns="service.wdk.gusdb.org" returnItemType="tns2:string" xmlns:tns2="http://schemas.xmlsoap.org/soap/encoding/" soapAction="" >
+        <parameter qname="processName" type="tns:string" xmlns:tns="http://schemas.xmlsoap.org/soap/encoding/"/>
         <parameter qname="params" type="tns:ArrayOf_soapenc_string" xmlns:tns="service.wdk.gusdb.org"/>
         <parameter qname="values" type="tns:ArrayOf_soapenc_string" xmlns:tns="service.wdk.gusdb.org"/>
         <parameter qname="cols" type="tns:ArrayOf_soapenc_string" xmlns:tns="service.wdk.gusdb.org"/>

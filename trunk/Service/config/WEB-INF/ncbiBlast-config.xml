@@ -2,5 +2,8 @@
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
 <comment>The configuration file for NCBI-BLAST Processor.</comment>
-<entry key="Processor">blast.ncbi.NcbiProcessor</entry>
+<entry key="AppPath">C:\blast\ncbi-blast\windows\bin\</entry>
+<entry key="TempDir">temp/</entry>
+<entry key="DataPath">C:\blast\ncbi-blast\windows\data\</entry>
+<entry key="MaxTime">300000</entry>
 </properties>

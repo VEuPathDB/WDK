@@ -25,6 +25,8 @@ public class WdkProcessServiceSoapBindingStub extends org.apache.axis.client.Stu
         org.apache.axis.description.ParameterDesc param;
         oper = new org.apache.axis.description.OperationDesc();
         oper.setName("invoke");
+        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "processName"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://schemas.xmlsoap.org/soap/encoding/", "string"), java.lang.String.class, false, false);
+        oper.addParameter(param);
         param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "params"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("service.wdk.gusdb.org", "ArrayOf_soapenc_string"), java.lang.String[].class, false, false);
         oper.addParameter(param);
         param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("", "values"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("service.wdk.gusdb.org", "ArrayOf_soapenc_string"), java.lang.String[].class, false, false);
@@ -167,7 +169,7 @@ public class WdkProcessServiceSoapBindingStub extends org.apache.axis.client.Stu
         }
     }
 
-    public java.lang.String[][] invoke(java.lang.String[] params, java.lang.String[] values, java.lang.String[] cols) throws java.rmi.RemoteException, org.gusdb.wdk.service.WdkServiceException {
+    public java.lang.String[][] invoke(java.lang.String processName, java.lang.String[] params, java.lang.String[] values, java.lang.String[] cols) throws java.rmi.RemoteException, org.gusdb.wdk.service.WdkServiceException {
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
@@ -180,7 +182,7 @@ public class WdkProcessServiceSoapBindingStub extends org.apache.axis.client.Stu
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {params, values, cols});
+ try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {processName, params, values, cols});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
