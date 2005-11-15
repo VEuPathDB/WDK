@@ -160,6 +160,8 @@ public class JUnitBooleanExpressionTest extends TestCase {
 
                 assertNotNull(answer);
 
+                assertTrue(answer.getResultSize() > 0);
+
                 // TEST
                 //System.out.println(answer.printAsTable());
             } catch (Exception ex) {
