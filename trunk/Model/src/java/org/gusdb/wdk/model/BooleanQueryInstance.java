@@ -206,8 +206,8 @@ public class BooleanQueryInstance extends QueryInstance {
     private void validateBooleanValues(Answer firstAnswer, Answer secondAnswer)
             throws WdkModelException {
 
-        Column firstColumns[] = firstAnswer.getQuestion().getQuery().getColumns();
-        Column secondColumns[] = secondAnswer.getQuestion().getQuery().getColumns();
+        String firstColumns[] = firstAnswer.findPrimaryKeyColumnNames();
+        String secondColumns[] = secondAnswer.findPrimaryKeyColumnNames();
 
         int firstColumnCount = firstColumns.length;
         int secondColumnCount = secondColumns.length;
@@ -223,8 +223,8 @@ public class BooleanQueryInstance extends QueryInstance {
         }
 
         for (int i = 0; i < firstColumnCount; i++) {
-            Column nextColumn = firstColumns[i];
-            String nextColumnName = nextColumn.getName();
+            String nextColumnName = firstColumns[i];
+            if (i == 1 && nextColumnName == null) { continue; }
             try {
                 secondAnswer.getQuestion().getQuery().getColumn(nextColumnName);
             } catch (WdkModelException ec) {

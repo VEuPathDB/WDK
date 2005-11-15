@@ -386,10 +386,11 @@ public class Answer {
 	rl.close();
     }
 
-    private void findPrimaryKeyColumnNames() {
+    String[] findPrimaryKeyColumnNames() {
         String[] names =findPrimaryKeyColumnNames(idsQueryInstance.getQuery());
 	recordIdColumnName = names[0];
 	recordProjectColumnName = names[1];	
+	return names;
     }
 
     /**
