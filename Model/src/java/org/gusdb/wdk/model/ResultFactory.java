@@ -95,22 +95,14 @@ public class ResultFactory {
 	return getResultTableName(instance);
     }
 
-    public synchronized String getSqlForCache(QueryInstance instance) throws WdkModelException {
-	Column columns[] = instance.getQuery().getColumns();
-	StringBuffer sqlb = new StringBuffer("select ");
+    public synchronized String getSqlForBooleanOp(QueryInstance instance, String[] columnNames) throws WdkModelException {
+	StringBuffer selectb = new StringBuffer("select ");
 	
-	int columnLength = columns.length;
-
-	for (int i = 0; i < columnLength - 1; i++){
-	    Column nextColumn = columns[i];
-	    sqlb.append(nextColumn.getName() + ", ");
-	}
-	sqlb.append(columns[columnLength - 1].getName() + " ");
+	for (String name : columnNames) selectb.append(name + ", ");
 	    
 	String resultTableName = getResultTableName(instance); //ensures instance is inserted into cache
-	sqlb.append("from " + resultTableName);
 
-	return sqlb.toString();
+	return selectb.substring(0, selectb.length()-2) + "from " + resultTableName;
     }
 
     /**
