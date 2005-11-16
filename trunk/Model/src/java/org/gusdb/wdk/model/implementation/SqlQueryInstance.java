@@ -23,11 +23,6 @@ public class SqlQueryInstance extends QueryInstance  {
     // Instance Variables
     // ------------------------------------------------------------------
 
-    /**
-     * The unique name of the table in a database namespace which holds the cached 
-     * results for this Instance.
-     */
-    String resultTableName = null;
 
     // ------------------------------------------------------------------
     // Constructor
@@ -36,64 +31,6 @@ public class SqlQueryInstance extends QueryInstance  {
     public SqlQueryInstance (SqlQuery query) {
         super(query);
         logger.finest("I've got a new sqlQueryInstance being created");
-    }
-
-    /**
-     * @return Sql to run.  If join mode, it is modified for joining
-     * @throws WdkModelException
-     */
-    public String getSql() throws WdkModelException {
-	return joinMode?
-	    getJoinSql() :
-	    ((SqlQuery)query).instantiateSql(query.getInternalParamValues(values));
-
-    }
-
-
-    private String getJoinSql()  throws WdkModelException {
-	String sql = ((SqlQuery)query).getSql();
-
-        RDBMSPlatformI platform = ((SqlQuery)query).getRDBMSPlatform();
-	SqlClause clause = new SqlClause(sql, joinTableName, 
-					 startIndex, endIndex, platform);
-
-	return instantiateSqlWithJoin(clause.getModifiedSql());
-
-    }
-
-    private String instantiateSqlWithJoin(String sql) throws WdkModelException { 
-	String primaryKeyJoin = joinTableName + "." + primaryKeyColumnName;
-
-	values.put(RecordClass.PRIMARY_KEY_NAME, primaryKeyJoin); 
-	
-	if (projectColumnName != null) {
-	    String projectJoin = joinTableName + "." + projectColumnName;
-	    values.put(RecordClass.PROJECT_ID_NAME, projectJoin);
-	}
-
-	if (isDynamic) {
-	    values.put(DynamicAttributeSet.RESULT_TABLE, joinTableName);
-	}
-
-	return ((SqlQuery)query).instantiateSql(query.getInternalParamValues(values), sql);
-    }
-
-    /**
-     * @return Full name of table containing result
-     */
-    public String getResultAsTableName() throws WdkModelException {
-        if (resultTableName == null) 
-            resultTableName = getResultFactory().getResultAsTableName(this);
-        return resultTableName;
-    }
-    
-
-    public ResultList getResult() throws WdkModelException {
-
-	SqlQuery q = (SqlQuery)query;
-        ResultList rl = getResultFactory().getResult(this);
-        rl.checkQueryColumns(q, true, getIsCacheable() || joinMode);
-        return rl;
     }
 
     public ResultList getPersistentResultPage(int startRow, int endRow) throws WdkModelException {
@@ -107,16 +44,6 @@ public class SqlQueryInstance extends QueryInstance  {
         rl.checkQueryColumns(q, true, true);
         return rl;
 	
-    }
-
-    public String getSqlForCache() throws WdkModelException{
-	SqlQuery q = (SqlQuery)query;
-	String cacheSql = q.getResultFactory().getSqlForCache(this);
-	return cacheSql;
-    }
-
-    public Collection getCacheValues() throws WdkModelException{
-	return getValues();
     }
 
     public String getLowLevelQuery() throws WdkModelException {
@@ -151,6 +78,46 @@ public class SqlQueryInstance extends QueryInstance  {
         } catch (SQLException e) {
             throw new WdkModelException(e);
         }
+    }
+
+    /**
+     * @return Sql to run.  If join mode, it is modified for joining
+     * @throws WdkModelException
+     */
+    private String getSql() throws WdkModelException {
+	return joinMode?
+	    getJoinSql() :
+	    ((SqlQuery)query).instantiateSql(query.getInternalParamValues(values));
+
+    }
+
+
+    private String getJoinSql()  throws WdkModelException {
+	String sql = ((SqlQuery)query).getSql();
+
+        RDBMSPlatformI platform = ((SqlQuery)query).getRDBMSPlatform();
+	SqlClause clause = new SqlClause(sql, joinTableName, 
+					 startIndex, endIndex, platform);
+
+	return instantiateSqlWithJoin(clause.getModifiedSql());
+
+    }
+
+    private String instantiateSqlWithJoin(String sql) throws WdkModelException { 
+	String primaryKeyJoin = joinTableName + "." + primaryKeyColumnName;
+
+	values.put(RecordClass.PRIMARY_KEY_NAME, primaryKeyJoin); 
+	
+	if (projectColumnName != null) {
+	    String projectJoin = joinTableName + "." + projectColumnName;
+	    values.put(RecordClass.PROJECT_ID_NAME, projectJoin);
+	}
+
+	if (isDynamic) {
+	    values.put(DynamicAttributeSet.RESULT_TABLE, joinTableName);
+	}
+
+	return ((SqlQuery)query).instantiateSql(query.getInternalParamValues(values), sql);
     }
 
 }

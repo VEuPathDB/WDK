@@ -346,6 +346,13 @@ public class Answer {
 	attrQueryResultList.close();
     }
 
+    String[] findPrimaryKeyColumnNames() {
+        String[] names =findPrimaryKeyColumnNames(idsQueryInstance.getQuery());
+	recordIdColumnName = names[0];
+	recordProjectColumnName = names[1];	
+	return names;
+    }
+
     // ------------------------------------------------------------------
     // Private Methods
     // ------------------------------------------------------------------
@@ -384,13 +391,6 @@ public class Answer {
 	pageRecordInstances = new RecordInstance[tempRecordInstances.size()];
 	tempRecordInstances.copyInto(pageRecordInstances);
 	rl.close();
-    }
-
-    String[] findPrimaryKeyColumnNames() {
-        String[] names =findPrimaryKeyColumnNames(idsQueryInstance.getQuery());
-	recordIdColumnName = names[0];
-	recordProjectColumnName = names[1];	
-	return names;
     }
 
     /**

@@ -3,6 +3,7 @@ package org.gusdb.wdk.model;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Vector;
 import java.util.Hashtable;
 import java.util.Map;
 
@@ -125,12 +126,6 @@ public class BooleanQueryInstance extends QueryInstance {
         return resultList;
     }
 
-    public String getSqlForCache() throws WdkModelException {
-        String cacheSql = booleanQuery.getResultFactory().getSqlForCache(this);
-
-        return cacheSql;
-    }
-
     public Collection getCacheValues() throws WdkModelException {
         initOperandIds();
         return operandIds.values();
@@ -188,8 +183,13 @@ public class BooleanQueryInstance extends QueryInstance {
      */
     protected String getSql() throws WdkModelException {
 
-        String sql = firstQueryInstance.getSqlForCache() + " " + operation
-                + " " + secondQueryInstance.getSqlForCache();
+	String[] commonColumns = findCommonColumnNames();
+
+        String sql = getResultFactory().getSqlForBooleanOp(firstQueryInstance, 
+							   commonColumns) + 
+	    " " + operation + " " + 
+	    getResultFactory().getSqlForBooleanOp(secondQueryInstance,
+						  commonColumns);
 
         return sql;
     }
@@ -200,47 +200,28 @@ public class BooleanQueryInstance extends QueryInstance {
 
     /**
      * Checks to make sure that the Queries in the Questions for the given
-     * Answers have the same Columns and that the Questions' RecordClasses are
-     * the same.
+     * Answers have the same primary key Columns and that the Questions' 
+     * RecordClasses are the same.
      */
     private void validateBooleanValues(Answer firstAnswer, Answer secondAnswer)
             throws WdkModelException {
 
-        String firstColumns[] = firstAnswer.findPrimaryKeyColumnNames();
-        String secondColumns[] = secondAnswer.findPrimaryKeyColumnNames();
+	String[] cols1 = firstAnswer.findPrimaryKeyColumnNames();
+	String[] cols2 = secondAnswer.findPrimaryKeyColumnNames();
 
-        int firstColumnCount = firstColumns.length;
-        int secondColumnCount = secondColumns.length;
+	// compare nulls and strings
+	if ((cols1[0] != cols2[0] && !cols1[0].equals(cols2[0]))
+	    || (cols1[1] != cols2[1] && !cols1[1].equals(cols2[1]))) {
 
-        if (firstColumnCount != secondColumnCount) {
-
-            StringBuffer e = new StringBuffer(
-                    "Must have the same number of columns when making a BooleanQuery\n");
-            e.append("ID Queries in Questions "
-                    + firstAnswer.getQuestion().getName() + " and "
-                    + secondAnswer.getQuestion().getName() + " do not");
-            throw new WdkModelException(e.toString());
-        }
-
-        for (int i = 0; i < firstColumnCount; i++) {
-            String nextColumnName = firstColumns[i];
-            if (i == 1 && nextColumnName == null) { continue; }
-            try {
-                secondAnswer.getQuestion().getQuery().getColumn(nextColumnName);
-            } catch (WdkModelException ec) {
-                StringBuffer sb = new StringBuffer(
-                        "Columns in Boolean Query Operands do not match\n");
-                sb.append("Column " + nextColumnName
-                        + " was in Query for Question "
-                        + firstAnswer.getQuestion().getName());
-                sb.append(" but not in " + secondAnswer.getQuestion().getName());
-                throw new WdkModelException(sb.toString());
-            }
-        }
+	    String errMsg = 
+		"Primary key columns don't match in Boolean Query for " +
+		firstAnswer.getQuestion().getFullName() + " and " +
+		secondAnswer.getQuestion().getName();
+	    throw new WdkModelException(errMsg);
+	} 
 
         RecordClass firstRecordClass = firstAnswer.getQuestion().getRecordClass();
         RecordClass secondRecordClass = secondAnswer.getQuestion().getRecordClass();
-
         if (firstRecordClass != secondRecordClass) {
             StringBuffer rc = new StringBuffer(
                     "RecordClasses in two AnswerParams in a BooleanQuery must be the same,\n");
@@ -249,6 +230,17 @@ public class BooleanQueryInstance extends QueryInstance {
                     + secondAnswer.getQuestion().getName() + " are not");
             throw new WdkModelException(rc.toString());
         }
+    }
+
+    private String[] findCommonColumnNames() {
+	Column[] cols1 = firstQueryInstance.getQuery().getColumns();
+	Column[] cols2 = secondQueryInstance.getQuery().getColumns();
+	HashMap <String, String> cols1Map = new HashMap();
+	for (Column col : cols1) cols1Map.put(col.getName(), col.getName());
+	Vector <String> answer = new Vector();
+	for (Column col : cols2) 
+	    if (cols1Map.get(col.getName()) != null) answer.add(col.getName());
+	return answer.toArray(new String[1]);
     }
 
     private void setOperandIds(Map values) {

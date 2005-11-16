@@ -54,6 +54,12 @@ public abstract class QueryInstance {
      */
     protected boolean isDynamic;
 
+    /**
+     * The unique name of the table in a database namespace which holds the cached 
+     * results for this Instance.
+     */
+    String resultTableName = null;
+
 
     // ------------------------------------------------------------------
     // Public Methods
@@ -90,11 +96,31 @@ public abstract class QueryInstance {
 	return this.query;
     }
 
-    public abstract ResultList getResult() throws WdkModelException;
+    public ResultList getResult() throws WdkModelException {
+        ResultList rl = getResultFactory().getResult(this);
+        rl.checkQueryColumns(query, true, getIsCacheable() || joinMode);
+        return rl;
+    }
 
-    public abstract ResultList getPersistentResultPage(int startRow, int endRow) throws WdkModelException;
+    public ResultList getPersistentResultPage(int startRow, int endRow) throws WdkModelException {
+	
+	if (!getIsCacheable()) throw new WdkModelException("Attempting to get persistent result page, but query instance is not cacheable");
 
-    public abstract String getResultAsTableName() throws WdkModelException;
+        ResultList rl = getResultFactory().getPersistentResultPage(this,
+								   startRow,
+								   endRow);
+        rl.checkQueryColumns(query, true, true);
+        return rl;	
+    }
+
+    /**
+     * @return Full name of table containing result
+     */
+    public String getResultAsTableName() throws WdkModelException {
+        if (resultTableName == null) 
+            resultTableName = getResultFactory().getResultAsTableName(this);
+        return resultTableName;
+    }
 
     // ------------------------------------------------------------------
     // Package methods
@@ -134,16 +160,15 @@ public abstract class QueryInstance {
 	this.isDynamic = isDynamic;
     }
 
-    public abstract Collection getCacheValues() throws WdkModelException;
-    
+    public Collection getCacheValues() throws WdkModelException{
+	return getValues();
+    }
 
     public abstract String getLowLevelQuery() throws WdkModelException;
 
     // ------------------------------------------------------------------
     // Protected methods
     // ------------------------------------------------------------------
-
-    protected abstract String getSqlForCache() throws WdkModelException;
 
     protected QueryInstance (Query query) {
 	this.query = query;
