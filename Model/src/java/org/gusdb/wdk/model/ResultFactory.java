@@ -102,7 +102,7 @@ public class ResultFactory {
 	    
 	String resultTableName = getResultTableName(instance); //ensures instance is inserted into cache
 
-	return selectb.substring(0, selectb.length()-2) + "from " + resultTableName;
+	return selectb.substring(0, selectb.length()-2) + " from " + resultTableName;
     }
 
     /**
