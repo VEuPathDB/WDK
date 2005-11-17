@@ -49,7 +49,7 @@ public class QueryTester {
 Hashtable paramHash) throws WdkModelException, WdkUserException {
 	QueryInstance instance = 
 	    getInstance(querySetName, queryName, paramHash);
-	return ((SqlQueryInstance)instance).getResultAsTableName();
+	return instance.getResultAsTableName();
     }
 
     public String showLowLevelQuery(String querySetName, String queryName, 

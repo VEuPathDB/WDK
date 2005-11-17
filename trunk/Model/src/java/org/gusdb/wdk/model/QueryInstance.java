@@ -130,10 +130,6 @@ public abstract class QueryInstance {
 	return values.values();
     }
     
-    Map getValuesMap() {
-	return values;
-    }
-
     Integer getQueryInstanceId() {
 	return queryInstanceId;
     }
@@ -169,6 +165,10 @@ public abstract class QueryInstance {
     // ------------------------------------------------------------------
     // Protected methods
     // ------------------------------------------------------------------
+
+    protected Map getValuesMap() {
+	return values;
+    }
 
     protected QueryInstance (Query query) {
 	this.query = query;
