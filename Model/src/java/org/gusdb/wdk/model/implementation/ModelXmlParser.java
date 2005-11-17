@@ -338,7 +338,6 @@ public class ModelXmlParser {
         /**/digester.addObjectCreate("wdkModel/querySet", QuerySet.class);
 
         /**/digester.addSetProperties("wdkModel/querySet");
-
         /*  */digester.addObjectCreate("wdkModel/querySet/sqlQuery",
                 SqlQuery.class);
 
@@ -382,6 +381,50 @@ public class ModelXmlParser {
                 "addColumn");
 
         /*  */digester.addSetNext("wdkModel/querySet/sqlQuery", "addQuery");
+
+        /*  */digester.addObjectCreate("wdkModel/querySet/wsQuery",
+                WSQuery.class);
+
+        /*  */digester.addSetProperties("wdkModel/querySet/wsQuery");
+
+        /*  */digester.addBeanPropertySetter("wdkModel/querySet/wsQuery/description");
+
+        /*    */digester.addObjectCreate(
+                "wdkModel/querySet/wsQuery/paramRef", Reference.class);
+
+        /*    */digester.addSetProperties("wdkModel/querySet/wsQuery/paramRef");
+
+        /*    */digester.addSetNext("wdkModel/querySet/wsQuery/paramRef",
+                "addParamRef");
+
+        /*    */digester.addObjectCreate("wdkModel/querySet/wsQuery/column",
+                Column.class);
+
+        /*    */digester.addSetProperties("wdkModel/querySet/wsQuery/column");
+
+        /*    */digester.addSetNext("wdkModel/querySet/wsQuery/column",
+                "addColumn");
+
+        /*    */digester.addObjectCreate(
+                "wdkModel/querySet/wsQuery/linkColumn", LinkColumn.class);
+
+        /*    */digester.addSetProperties("wdkModel/querySet/wsQuery/linkColumn");
+
+        /*    */digester.addBeanPropertySetter("wdkModel/querySet/wsQuery/linkColumn/url");
+
+        /*    */digester.addSetNext("wdkModel/querySet/wsQuery/linkColumn",
+                "addColumn");
+
+        /*    */digester.addObjectCreate(
+                "wdkModel/querySet/wsQuery/textColumn", TextColumn.class);
+
+        /*    */digester.addSetProperties("wdkModel/querySet/wsQuery/textColumn");
+
+        /*    */digester.addSetNext("wdkModel/querySet/wsQuery/textColumn",
+                "addColumn");
+
+        /*  */digester.addSetNext("wdkModel/querySet/wsQuery", "addQuery");
+
 
         /**/digester.addSetNext("wdkModel/querySet", "addQuerySet");
 

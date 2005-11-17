@@ -28,6 +28,7 @@
   <define name="queries">
     <choice>
       <ref name="sqlQuery" />
+      <ref name="wsQuery" />
     </choice>
   </define>  
   
@@ -178,6 +179,15 @@
       <element name="sql">
         <text />
       </element>
+    </element>
+  </define>
+
+  
+  <define name="wsQuery">
+    <element name="wsQuery">
+      <ref name="QueryBaseContents" />
+      <attribute name="serviceUrl"/>
+      <attribute name="processName"/>
     </element>
   </define>
 
