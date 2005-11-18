@@ -11,8 +11,7 @@
   <target name="WDK-Installation" depends="WDK/Model-Installation,
                                            WDK/Controller-Installation,
                                            WDK/View-Installation,
-                                           WDK/Service-Installation,
-                                           WDK/NcbiBlast-Installation" >
+                                           WDK/Service-Installation">
 
     <ant target="defaultProjectInstall"/>
   </target>  
@@ -65,14 +64,6 @@
       <property name="component" value="Service"/>
     </ant>
   </target>
-
-  <target name="WDK/NcbiBlast-Installation" depends="ProjectTree">
-    <ant target="defaultComponentInstall">
-      <property name="project" value="WDK"/>
-      <property name="component" value="NcbiBlast"/>
-    </ant>
-  </target>
-
 
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooo  Web Installation  oooooooooooooooooooooooo -->
