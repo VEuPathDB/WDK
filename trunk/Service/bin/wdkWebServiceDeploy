@@ -13,6 +13,13 @@ if (!($deployTempDir && $serverURL && $serverHome)) {
 my $GUS_HOME = $ENV{GUS_HOME};
 my $cp = &WDK::Model::CommandHelper::getJavaClasspath($GUS_HOME);
 
+my $cmd;
+my $cfg = "$serverHome/WEB-INF/wdkService-config.xml";
+if (! -f $cfg) {
+  $cmd="cp -f $GUS_HOME/config/WEB-INF/wdkService-config.xml.sample $cfg";
+  system("$cmd"); die ("ERROR: $!\nfailed running $cmd\n\n") if $?;
+}
+
 if (-d $deployTempDir) {
   system("rm -rf $deployTempDir/*; mkdir $deployTempDir/classes");
 } else {
@@ -22,7 +29,7 @@ if (-d $deployTempDir) {
 # stage 1
 #
 print "generating webservice description from java ... \n";
-my $cmd = "java -cp $cp org.apache.axis.wsdl.Java2WSDL " .
+$cmd = "java -Dwebservice.home=$serverHome -cp $cp org.apache.axis.wsdl.Java2WSDL " .
   "-o $deployTempDir/wdkProcessService.wsdl -l\"$serverURL/WdkProcessService\" " .
   "-n service.wdk.gusdb.org -p\"org.gusdb.wdk.service\" \"urn:service.wdk.gusdb.org\" " .
   "org.gusdb.wdk.service.WdkProcessService";
@@ -48,6 +55,8 @@ $cmd="jar -cf WDK-Service-stub.jar org";
 system($cmd); die ("ERROR: $!\nfailed running $cmd\n\n") if $?;
 chdir $pwd;
 
+system("cp $deployTempDir/classes/*.jar $GUS_HOME/lib/java/");
+
 $cmd="replace WdkProcessServiceImp WdkProcessService -- $deployTempDir/*.wsdd";
 system($cmd); die ("ERROR: $!\nfailed running $cmd\n\n") if $?;
 
@@ -55,8 +64,6 @@ system($cmd); die ("ERROR: $!\nfailed running $cmd\n\n") if $?;
 #
 print("deploying jar files and config files on the server ...\n");
 $cmd="cp -f $GUS_HOME/lib/java/*.jar $deployTempDir/classes/*.jar $serverHome/WEB-INF/lib/";
-system($cmd);
-$cmd="cp -f $GUS_HOME/config/WEB-INF/wdkService-config.xml.sample $serverHome/WEB-INF/";
 system($cmd);
 $cmd="cp -f $deployTempDir/*.wsdd $serverHome/WEB-INF/";
 system($cmd);
