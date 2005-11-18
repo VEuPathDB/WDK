@@ -1,0 +1,74 @@
+#!/usr/bin/perl
+
+use lib "$ENV{GUS_HOME}/lib/perl";
+use WDK::Model::CommandHelper;
+use strict;
+
+my ($serverHome, $serverURL, $deployTempDir) = @ARGV;
+if (!($deployTempDir && $serverURL && $serverHome)) {
+  print "\nusage: wdkWebServiceDeploy <serverHome> <serverURL> <deployTempDir>\n\n";
+  exit(1);
+}
+
+my $GUS_HOME = $ENV{GUS_HOME};
+my $cp = &WDK::Model::CommandHelper::getJavaClasspath($GUS_HOME);
+
+if (-d $deployTempDir) {
+  system("rm -rf $deployTempDir/*; mkdir $deployTempDir/classes");
+} else {
+  system("mkdir -p $deployTempDir/classes");
+}
+
+# stage 1
+#
+print "generating webservice description from java ... \n";
+my $cmd = "java -cp $cp org.apache.axis.wsdl.Java2WSDL " .
+  "-o $deployTempDir/wdkProcessService.wsdl -l\"$serverURL/WdkProcessService\" " .
+  "-n service.wdk.gusdb.org -p\"org.gusdb.wdk.service\" \"urn:service.wdk.gusdb.org\" " .
+  "org.gusdb.wdk.service.WdkProcessService";
+system($cmd); die ("ERROR: $!\nfailed running $cmd\n\n") if $?;
+
+# stage 2
+#
+print("generating webservice client code and deployment descriptor ...\n");
+$cmd = "java -cp $cp org.apache.axis.wsdl.WSDL2Java " .
+  "-o $deployTempDir -d Session -c org.gusdb.wdk.service.WdkProcessServiceImp " .
+  "-s $deployTempDir/wdkProcessService.wsdl";
+system($cmd); die ("ERROR: $!\nfailed running $cmd\n\n") if $?;
+
+system("mv $deployTempDir/org/gusdb/wdk/service/*.wsdd $deployTempDir/");
+system("rm -f $deployTempDir/org/gusdb/wdk/service/WdkProcessServiceImp.java");
+
+$cmd="javac -cp $cp -d $deployTempDir/classes $deployTempDir/org/gusdb/wdk/service/*.java";
+system($cmd); die ("ERROR: $!\nfailed running $cmd\n\n") if $?;
+
+my $pwd = `pwd`; chomp $pwd;
+chdir "$deployTempDir/classes";
+$cmd="jar -cf WDK-Service-stub.jar org";
+system($cmd); die ("ERROR: $!\nfailed running $cmd\n\n") if $?;
+chdir $pwd;
+
+$cmd="replace WdkProcessServiceImp WdkProcessService -- $deployTempDir/*.wsdd";
+system($cmd); die ("ERROR: $!\nfailed running $cmd\n\n") if $?;
+
+# stage 3
+#
+print("deploying jar files and config files on the server ...\n");
+$cmd="cp -f $GUS_HOME/lib/java/*.jar $deployTempDir/classes/*.jar $serverHome/WEB-INF/lib/";
+system($cmd);
+$cmd="cp -f $GUS_HOME/config/WEB-INF/wdkService-config.xml.sample $serverHome/WEB-INF/";
+system($cmd);
+$cmd="cp -f $deployTempDir/*.wsdd $serverHome/WEB-INF/";
+system($cmd);
+system("rm -rf $deployTempDir");
+
+# stage 4
+#
+# install individual services such as NcbiBlast and WuBlast
+# edit wdkService config and individual service configs
+# and register service with server
+#
+print("\nNOTE: follow these steps to complete the WDK WebService deployment:\n");
+print("1) install individual services eg NcbiBlast, WuBlast\n");
+print("2) edit wdkService-config.xml and config files for individual services under $serverHome/WEB-INF\n");
+print("3) run \"wdkWebServiceRegister.sh $serverHome/WEB-INF/lib $serverURL $serverHome/WEB-INF/deploy.wsdd\"\n");
