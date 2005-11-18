@@ -12,3 +12,4 @@ cp -f ncbiBlast-config.xml $TOMCAT_HOME/webapps/axis/WEB-INF/
 cp -f wdkService-config.xml $TOMCAT_HOME/webapps/axis/WEB-INF/
 cp -f wuBlast-config.xml $TOMCAT_HOME/webapps/axis/WEB-INF/
 
+java -cp $cp org.apache.axis.client.AdminClient -lhttp://delphi:8080/axis/services/AdminService ../deploy.wsdd
