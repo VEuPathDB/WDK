@@ -39,9 +39,17 @@
     </choice>
   </define>
   
-  <define name="columns">
+  <define name="sqlColumns">
     <choice>
-      <ref name="column" />
+      <ref name="sqlColumn" />
+      <ref name="textColumn" />
+      <ref name="linkColumn" />
+    </choice>
+  </define>
+    
+  <define name="wsColumns">
+    <choice>
+      <ref name="wsColumn" />
       <ref name="textColumn" />
       <ref name="linkColumn" />
     </choice>
@@ -108,11 +116,8 @@
         <attribute name="ref" />
       </element>
     </zeroOrMore>
-    <oneOrMore>
-      <ref name="columns" />
-    </oneOrMore>
   </define>
-  
+
   <!-- Instance grouping elements -->
   <define name="querySet">
     <element name="querySet">
@@ -176,6 +181,9 @@
   <define name="sqlQuery">
     <element name="sqlQuery">
       <ref name="QueryBaseContents" />
+      <oneOrMore>
+        <ref name="sqlColumns" />
+      </oneOrMore>
       <element name="sql">
         <text />
       </element>
@@ -186,7 +194,9 @@
   <define name="wsQuery">
     <element name="wsQuery">
       <ref name="QueryBaseContents" />
-      <attribute name="serviceUrl"/>
+      <oneOrMore>
+        <ref name="wsColumns" />
+      </oneOrMore>
       <attribute name="processName"/>
     </element>
   </define>
@@ -222,11 +232,18 @@
   </define>
    
   <!-- Columns -->
-  <define name="column">
+  <define name="sqlColumn">
     <element name="column">
       <ref name="ColumnBaseContents" />
     </element>
   </define>
+    
+  <define name="wsColumn">
+    <element name="wsColumn">
+      <ref name="ColumnBaseContents" />
+      <attribute name="width" />
+   </element>
+   </define>
     
   <define name="textColumn">
     <element name="textColumn">
