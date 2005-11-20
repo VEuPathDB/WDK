@@ -9,6 +9,7 @@ import java.rmi.RemoteException;
 import javax.xml.rpc.ServiceException;
 
 import org.gusdb.wdk.service.WdkProcessService;
+import org.gusdb.wdk.service.WdkServiceException;
 import org.gusdb.wdk.service.WdkProcessServiceServiceLocator;
 
 /**
@@ -37,7 +38,11 @@ public class WdkProcessClient implements ProcessClientI {
      */
     public String[][] invoke(String processName, String[] params, String[] values, String[] columns)
             throws RemoteException {
-        return service.invoke(processName, params, values, columns);
+	try {
+	    return service.invoke(processName, params, values, columns);
+	} catch (WdkServiceException e) {
+	    throw new RuntimeException(e);
+	}
     }
 
 }
