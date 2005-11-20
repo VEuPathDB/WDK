@@ -1,0 +1,56 @@
+#!/usr/bin/perl
+
+use lib "$ENV{GUS_HOME}/lib/perl";
+use WDK::Model::CommandHelper;
+use strict;
+
+my ($serverURL) = @ARGV;
+$serverURL = "http://localhost:8080/axis/WdkProcessService" unless $serverURL;
+my $tmpDir = "wdkWSMakeStubTmp";
+
+my $GUS_HOME = $ENV{GUS_HOME};
+my $cp = &WDK::Model::CommandHelper::getJavaClasspath($GUS_HOME);
+
+my $cmd;
+my $cfg = "$GUS_HOME/config/WEB-INF/wdkService-config.xml";
+if (! -f $cfg) {
+  $cmd="cp -f $GUS_HOME/config/WEB-INF/wdkService-config.xml.sample $cfg";
+  system("$cmd"); die ("ERROR: $!\nfailed running $cmd\n\n") if $?;
+}
+
+if (-d $tmpDir) {
+  system("rm -rf $tmpDir/*; mkdir $tmpDir/classes");
+} else {
+  system("mkdir -p $tmpDir/classes");
+}
+
+# stage 1
+#
+print "generating webservice description from java ... \n";
+$cmd = "java -Dwebservice.home=$GUS_HOME/config -cp $cp org.apache.axis.wsdl.Java2WSDL " .
+  "-o $tmpDir/wdkProcessService.wsdl -l\"$serverURL/WdkProcessService\" " .
+  "-n service.wdk.gusdb.org -p\"org.gusdb.wdk.service\" \"urn:service.wdk.gusdb.org\" " .
+  "org.gusdb.wdk.service.WdkProcessService";
+system($cmd); die ("ERROR: $!\nfailed running $cmd\n\n") if $?;
+
+# stage 2
+#
+print("generating webservice client code and deployment descriptor ...\n");
+$cmd = "java -cp $cp org.apache.axis.wsdl.WSDL2Java " .
+  "-o $tmpDir -d Session -c org.gusdb.wdk.service.WdkProcessServiceImp " .
+  "-s $tmpDir/wdkProcessService.wsdl";
+system($cmd); die ("ERROR: $!\nfailed running $cmd\n\n") if $?;
+
+system("rm -f $tmpDir/org/gusdb/wdk/service/WdkProcessServiceImp.java");
+
+$cmd="javac -cp $cp -d $tmpDir/classes $tmpDir/org/gusdb/wdk/service/*.java";
+system($cmd); die ("ERROR: $!\nfailed running $cmd\n\n") if $?;
+
+my $pwd = `pwd`; chomp $pwd;
+chdir "$tmpDir/classes";
+$cmd="jar -cf WDK-ServiceStub.jar org";
+system($cmd); die ("ERROR: $!\nfailed running $cmd\n\n") if $?;
+chdir $pwd;
+
+system("cp $tmpDir/classes/WDK-ServiceStub.jar $GUS_HOME/lib/java/");
+system("rm -rf $tmpDir");
