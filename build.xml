@@ -8,10 +8,10 @@
   <!-- oooooooooooooooooooooooooo  Installation  oooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
-  <target name="WDK-Installation" depends="WDK/Model-Installation,
+  <target name="WDK-Installation" depends="WDK/Service-Installation,
+                                           WDK/Model-Installation,
                                            WDK/Controller-Installation,
-                                           WDK/View-Installation,
-                                           WDK/Service-Installation">
+                                           WDK/View-Installation">
 
     <ant target="defaultProjectInstall"/>
   </target>  
@@ -40,7 +40,7 @@
     </ant>
   </target>  
 
-  <target name="WDK/Model-Installation" depends="ProjectTree">
+  <target name="WDK/Model-Installation" depends="ProjectTree,CheckWdkServiceStub">
     <ant target="defaultComponentInstall">
       <property name="project" value="WDK"/>
       <property name="component" value="Model"/>
@@ -48,8 +48,14 @@
     <echo message="." />
     <echo message="IMPORTANT REMINDER: If you have not already done so, please copy any .jar needed for database connectivity (such as the oracle file ojdbc14.jar) into ${targetDir}/lib/java/db_driver.  The WDK does not supply these.  See the installation instructions available at www.gusdb.org/wdk for details."  />
     <echo message="." />
-   
   </target>  
+
+  <target name="CheckWdkServiceStub" depends="MakeWdkServiceStub">
+    <available file="${targetDir}/lib/java/WDK-ServiceStub.jar" property="stubExists"/>
+  </target>
+  <target name="MakeWdkServiceStub" unless="stubExists">
+    <exec command="wdkWebServiceMakeStub"/>
+  </target>
 
   <target name="WDK/View-Installation" depends="ProjectTree">
     <ant target="defaultComponentInstall">
