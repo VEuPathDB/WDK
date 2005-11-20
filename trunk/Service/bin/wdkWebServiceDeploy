@@ -51,11 +51,11 @@ system($cmd); die ("ERROR: $!\nfailed running $cmd\n\n") if $?;
 
 my $pwd = `pwd`; chomp $pwd;
 chdir "$deployTempDir/classes";
-$cmd="jar -cf WDK-Service-stub.jar org";
+$cmd="jar -cf WDK-ServiceStub.jar org";
 system($cmd); die ("ERROR: $!\nfailed running $cmd\n\n") if $?;
 chdir $pwd;
 
-system("cp $deployTempDir/classes/*.jar $GUS_HOME/lib/java/");
+system("cp $deployTempDir/classes/WDK-ServiceStub.jar $GUS_HOME/lib/java/");
 
 $cmd="replace WdkProcessServiceImp WdkProcessService -- $deployTempDir/*.wsdd";
 system($cmd); die ("ERROR: $!\nfailed running $cmd\n\n") if $?;
@@ -63,7 +63,7 @@ system($cmd); die ("ERROR: $!\nfailed running $cmd\n\n") if $?;
 # stage 3
 #
 print("deploying jar files and config files on the server ...\n");
-$cmd="cp -f $GUS_HOME/lib/java/*.jar $deployTempDir/classes/*.jar $serverHome/WEB-INF/lib/";
+$cmd="cp -f $GUS_HOME/lib/java/*.jar $serverHome/WEB-INF/lib/";
 system($cmd);
 $cmd="cp -f $deployTempDir/*.wsdd $serverHome/WEB-INF/";
 system($cmd);
