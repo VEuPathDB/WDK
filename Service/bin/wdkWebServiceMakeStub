@@ -56,4 +56,4 @@ chdir $pwd;
 
 system("cp $tmpDir/classes/WDK-ServiceStub.jar $GUS_HOME/lib/java/");
 system("rm -rf $tmpDir");
-system("rm my $cfg") if $rmCfg;
+system("rm $cfg") if $rmCfg;
