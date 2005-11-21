@@ -5,10 +5,11 @@ use WDK::Model::CommandHelper;
 use strict;
 
 my ($serverHome, $serverURL, $deployTempDir) = @ARGV;
-if (!($deployTempDir && $serverURL && $serverHome)) {
-  print "\nusage: wdkWebServiceDeploy <serverHome> <serverURL> <deployTempDir>\n\n";
+if (!($serverHome && $serverURL)) {
+  print "\nusage: wdkWebServiceDeploy <serverHome> <serverURL> [deployTempDir]\n\n";
   exit(1);
 }
+$deployTempDir = "deployTmpDir" unless $deployTempDir;
 
 my $GUS_HOME = $ENV{GUS_HOME};
 my $cp = &WDK::Model::CommandHelper::getJavaClasspath($GUS_HOME);
@@ -24,13 +25,19 @@ if (-d $deployTempDir) {
 print "\nREMINDER: build specific services (eg ApiComplexa/NcbiBlast) before running this deploy command!\n\n";
 
 print "deploying config files ...\n";
-my $cmd = "cp -f $GUS_HOME/config/WEB-INF/* cp -f $GUS_HOME/config/WEB-INF/";
+my $cmd = "cp -f $GUS_HOME/config/WEB-INF/* $serverHome/WEB-INF/";
 system("$cmd"); die ("ERROR: $!\nfailed running $cmd\n\n") if $?;
 
-my $cfg = "$serverHome/WEB-INF/wdkService-config.xml";
-if (! -f $cfg) {
-  $cmd="cp -f $GUS_HOME/config/WEB-INF/wdkService-config.xml.sample $cfg";
-  system("$cmd"); die ("ERROR: $!\nfailed running $cmd\n\n") if $?;
+my $cnfDir = "$serverHome/WEB-INF/";
+opendir(CNF_DIR, $cnfDir) or die "could not open dir $cnfDir: $!";
+my @sampleCnfs = grep { /\.sample/ && -f "$cnfDir/$_" } readdir(CNF_DIR);
+foreach my $sampleCnf (@sampleCnfs) {
+    chomp $sampleCnf;
+    my $cnf = $1 if $sampleCnf =~ /(.+)\.sample$/;
+    if (! -f "$cnfDir/$cnf") { 
+	$cmd = "cp -f $cnfDir/$sampleCnf $cnfDir/$cnf";
+	system("$cmd"); die ("ERROR: $!\nfailed running $cmd\n\n") if $?;
+    }
 }
 
 # stage 1
