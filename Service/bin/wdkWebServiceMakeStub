@@ -13,9 +13,11 @@ my $cp = &WDK::Model::CommandHelper::getJavaClasspath($GUS_HOME);
 
 my $cmd;
 my $cfg = "$GUS_HOME/config/WEB-INF/wdkService-config.xml";
+my $rmCfg = 0;
 if (! -f $cfg) {
   $cmd="cp -f $GUS_HOME/config/WEB-INF/wdkService-config.xml.sample $cfg";
   system("$cmd"); die ("ERROR: $!\nfailed running $cmd\n\n") if $?;
+  $rmCfg = 1;
 }
 
 if (-d $tmpDir) {
@@ -54,3 +56,4 @@ chdir $pwd;
 
 system("cp $tmpDir/classes/WDK-ServiceStub.jar $GUS_HOME/lib/java/");
 system("rm -rf $tmpDir");
+system("rm my $cfg") if $rmCfg;
