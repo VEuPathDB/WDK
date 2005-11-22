@@ -59,7 +59,7 @@ public class TestUtility {
         TestSuite suite = new TestSuite();
         suite.addTest(JUnitBooleanExpressionTest.suite());
         suite.addTest(JUnitUserTest.suite());
-        suite.addTest(WdkProcessClientTest.suite());
+        // suite.addTest(WdkProcessClientTest.suite());
         return suite;
     }
 

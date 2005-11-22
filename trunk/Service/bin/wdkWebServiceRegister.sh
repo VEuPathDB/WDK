@@ -11,7 +11,7 @@ set pwd=`pwd`
 cd $1
 set cp = ""
 foreach f (*.jar)
-  set cp = ${f}:${cp}
+  set cp = ${1}/${f}:${cp}
 end
 cd $pwd
 

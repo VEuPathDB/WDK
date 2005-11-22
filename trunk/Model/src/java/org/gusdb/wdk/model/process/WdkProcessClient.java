@@ -16,7 +16,7 @@ import org.gusdb.wdk.service.WdkProcessServiceServiceLocator;
  * @author Jerric
  * @created Nov 2, 2005
  */
-public class WdkProcessClient implements ProcessClientI {
+public class WdkProcessClient implements WdkProcessService {
 
     private WdkProcessService service;
 

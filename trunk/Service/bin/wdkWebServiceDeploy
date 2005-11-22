@@ -12,7 +12,17 @@ if (!($serverHome && $serverURL)) {
 $deployTempDir = "deployTmpDir" unless $deployTempDir;
 
 my $GUS_HOME = $ENV{GUS_HOME};
-my $cp = &WDK::Model::CommandHelper::getJavaClasspath($GUS_HOME);
+# my $cp = &WDK::Model::CommandHelper::getJavaClasspath($GUS_HOME);
+
+# enumerate jar files one by one to avoid class version conflicts
+#
+my $libDir="$GUS_HOME/lib/java";
+my $cp="";
+$cp="${cp}:$libDir/axis.jar:$libDir/saaj.jar:$libDir/jaxrpc.jar:$libDir/wsdl4j-1.5.1.jar";
+$cp="${cp}:$libDir/commons-discovery-0.2.jar:$libDir/commons-logging-api.jar";
+$cp="${cp}:$libDir/log4j-1.2.8.jar:$libDir/WDK-Service.jar";
+# print "\nCLASSPATH: " . join("\n", split(/:/, $cp)) . "\n\n";
+
 
 if (-d $deployTempDir) {
   system("rm -rf $deployTempDir/*; mkdir $deployTempDir/classes");
@@ -25,7 +35,7 @@ if (-d $deployTempDir) {
 print "\nREMINDER: build specific services (eg ApiComplexa/NcbiBlast) before running this deploy command!\n\n";
 
 print "deploying config files ...\n";
-my $cmd = "cp -f $GUS_HOME/config/WEB-INF/* $serverHome/WEB-INF/";
+my $cmd = "cp -f $GUS_HOME/config/WEB-INF/*.sample $serverHome/WEB-INF/";
 system("$cmd"); die ("ERROR: $!\nfailed running $cmd\n\n") if $?;
 
 my $cnfDir = "$serverHome/WEB-INF/";
@@ -78,8 +88,10 @@ system($cmd); die ("ERROR: $!\nfailed running $cmd\n\n") if $?;
 # stage 3
 #
 print("deploying jar files and config files on the server ...\n");
-$cmd="cp -f $GUS_HOME/lib/java/*.jar $serverHome/WEB-INF/lib/";
-system($cmd);
+foreach (split(/:/, $cp)) {
+  $cmd="cp -f $_ $serverHome/WEB-INF/lib/";
+  system($cmd);
+}
 $cmd="cp -f $deployTempDir/*.wsdd $serverHome/WEB-INF/";
 system($cmd);
 system("rm -rf $deployTempDir");
@@ -90,5 +102,6 @@ system("rm -rf $deployTempDir");
 # and register service with server
 #
 print("\nNOTE: follow these steps to complete the WDK WebService deployment:\n");
-print("1) edit wdkService-config.xml and config files for individual services under $serverHome/WEB-INF\n");
-print("2) run \"wdkWebServiceRegister.sh $serverHome/WEB-INF/lib $serverURL $serverHome/WEB-INF/deploy.wsdd\"\n\n");
+print("1) cp jar files for individual services under $serverHome/WEB-INF/lib");
+print("2) edit wdkService-config.xml and config files for individual services under $serverHome/WEB-INF\n");
+print("3) run \"wdkWebServiceRegister.sh $serverHome/WEB-INF/lib $serverURL $serverHome/WEB-INF/deploy.wsdd\"\n\n");

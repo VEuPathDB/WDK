@@ -30,11 +30,12 @@ public class WdkProcessServiceTest extends TestCase {
      */
     public void testInvoke() {
         // prepare parameters
-        // String processName = "NcbiBlastProcessor";
-        String processName = "WuBlastProcessor";
-        // prepare parameters
-        // String[] params = { "Application", "Sequence", "-d" };
+	String processName = System.getProperty("process.name");
+        if (processName == null) processName = "WuBlastProcessor";
+	String db = System.getProperty("database.name");
+        if (db == null) db = "Cparvum_nt.fsa"; 
         String[] params = { "Application", "Sequence", "Database" };
+	if (processName.equals("NcbiBlastProcessor")) params[2] = "-d";
         String[] values = {
                 "blastn",
                 "AGCTTTTCATTCTGACTGCAACGGGCAATATGTCTCTGTGTGGATTAAAAAAAGAGTGTCTG"
@@ -47,7 +48,7 @@ public class WdkProcessServiceTest extends TestCase {
                         + "TGCAGAACGTTTTCTGCGTGTTGCCGATATTCTGGAAAGCAATGCCAGGCAG"
                         + "GGGCAGGTGGCCACCGTCCTCTCTGCCCCCGCCAAAATCACCAACCACCTGG"
                         + "TGGCGATGATTGAAAAAACCATTAGCGGCCAGGATGCTTTACCCAATATCAG"
-                        + "CGATGCCGAACGTATTTTTGCCGAACTTTT", "Cparvum_nt.fsa" };
+                        + "CGATGCCGAACGTATTTTTGCCGAACTTTT", db};
         // + "CGATGCCGAACGTATTTTTGCCGAACTTTT", "c.parvum.nt" };
 
         // prepare the columns
