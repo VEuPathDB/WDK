@@ -397,12 +397,12 @@ public class ModelXmlParser {
         /*    */digester.addSetNext("wdkModel/querySet/wsQuery/paramRef",
                 "addParamRef");
 
-        /*    */digester.addObjectCreate("wdkModel/querySet/wsQuery/column",
+        /*    */digester.addObjectCreate("wdkModel/querySet/wsQuery/wsColumn",
                 Column.class);
 
-        /*    */digester.addSetProperties("wdkModel/querySet/wsQuery/column");
+        /*    */digester.addSetProperties("wdkModel/querySet/wsQuery/wsColumn");
 
-        /*    */digester.addSetNext("wdkModel/querySet/wsQuery/column",
+        /*    */digester.addSetNext("wdkModel/querySet/wsQuery/wsColumn",
                 "addColumn");
 
         /*    */digester.addObjectCreate(
