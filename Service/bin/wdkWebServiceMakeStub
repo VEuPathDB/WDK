@@ -9,7 +9,17 @@ $serverURL = "http://localhost:8080/axis/WdkProcessService" unless $serverURL;
 my $tmpDir = "wdkWSMakeStubTmp";
 
 my $GUS_HOME = $ENV{GUS_HOME};
-my $cp = &WDK::Model::CommandHelper::getJavaClasspath($GUS_HOME);
+
+# my $cp = &WDK::Model::CommandHelper::getJavaClasspath($GUS_HOME);
+
+# enumerate jar files one by one to avoid class version conflicts
+#
+my $libDir="$GUS_HOME/lib/java";
+my $cp="";
+$cp="${cp}:$libDir/axis.jar:$libDir/saaj.jar:$libDir/jaxrpc.jar:$libDir/wsdl4j-1.5.1.jar";
+$cp="${cp}:$libDir/commons-discovery-0.2.jar:$libDir/commons-logging-api.jar";
+$cp="${cp}:$libDir/WDK-Service.jar";
+# print "\nCLASSPATH: " . join("\n", split(/:/, $cp)) . "\n\n";
 
 my $cmd;
 my $cfg = "$GUS_HOME/config/WEB-INF/wdkService-config.xml";
@@ -45,15 +55,22 @@ system($cmd); die ("ERROR: $!\nfailed running $cmd\n\n") if $?;
 
 system("rm -f $tmpDir/org/gusdb/wdk/service/WdkProcessServiceImp.java");
 
-$cmd="javac -cp $cp -d $tmpDir/classes $tmpDir/org/gusdb/wdk/service/*.java";
+# compiling stub code separately from WDK/Model code causes mysterious IncompatibleClassChangeError,
+# generate stub source code in WDK/Model/src/java instead for single compile of client code
+#
+# $cmd="javac -cp $cp -d $tmpDir/classes $tmpDir/org/gusdb/wdk/service/*.java";
+# system($cmd); die ("ERROR: $!\nfailed running $cmd\n\n") if $?;
+#
+# my $pwd = `pwd`; chomp $pwd;
+# chdir "$tmpDir/classes";
+# $cmd="jar -cf WDK-ServiceStub.jar org";
+# system($cmd); die ("ERROR: $!\nfailed running $cmd\n\n") if $?;
+# chdir $pwd;
+# system("cp $tmpDir/classes/WDK-ServiceStub.jar $GUS_HOME/lib/java/");
+my $srcDir = "$ENV{PROJECT_HOME}/WDK/Model/src/java/org/gusdb/wdk/service";
+if (! -d $srcDir) { system("mkdir $srcDir"); }
+$cmd = "cp $tmpDir/org/gusdb/wdk/service/*.java $srcDir";
 system($cmd); die ("ERROR: $!\nfailed running $cmd\n\n") if $?;
 
-my $pwd = `pwd`; chomp $pwd;
-chdir "$tmpDir/classes";
-$cmd="jar -cf WDK-ServiceStub.jar org";
-system($cmd); die ("ERROR: $!\nfailed running $cmd\n\n") if $?;
-chdir $pwd;
-
-system("cp $tmpDir/classes/WDK-ServiceStub.jar $GUS_HOME/lib/java/");
 system("rm -rf $tmpDir");
 system("rm $cfg") if $rmCfg;

@@ -39,7 +39,8 @@ public class WdkProcessClientTest extends TestCase {
     }
 
     public static void main(String[] args) {
-        junit.textui.TestRunner.run(JUnitUserTest.class);
+	testInvoke();
+        //junit.textui.TestRunner.run(JUnitUserTest.class);
     }
 
     public static Test suite() {
@@ -50,17 +51,18 @@ public class WdkProcessClientTest extends TestCase {
 
     /*
      * Test method for
-     * 'org.gusdb.wdk.model.process.WdkProcessClient.invoke(String[], String[],
+     * 'org.gusdb.wdk.model.process.WdkProcessClient.invokeString[], String[],
      * String[])'
      */
-    public void testInvoke() {
+    public static void testInvoke() {
         // currently, the test case will be defined here; later the test cases
         // will be defined in sanityModel
-        // String processName = "NcbiBlastProcessor";
-        String processName = "WuBlastProcessor";
-        // prepare parameters
-        // String[] params = { "Application", "Sequence", "-d" };
+	String processName = System.getProperty("process.name");
+        if (processName == null) processName = "WuBlastProcessor";
+	String db = System.getProperty("database.name");
+        if (db == null) db = "Cparvum_nt.fsa"; 
         String[] params = { "Application", "Sequence", "Database" };
+	if (processName.equals("NcbiBlastProcessor")) params[2] = "-d";
         String[] values = {
                 "blastn",
                 "AGCTTTTCATTCTGACTGCAACGGGCAATATGTCTCTGTGTGGATTAAAAAAAGAGTGTCTG"
@@ -72,9 +74,9 @@ public class WdkProcessClientTest extends TestCase {
                         + "ACGAGGTAACAACCATGCGAGTGTTGAAGTTCGGCGGTACATCAGTGGCAAA"
                         + "TGCAGAACGTTTTCTGCGTGTTGCCGATATTCTGGAAAGCAATGCCAGGCAG"
                         + "GGGCAGGTGGCCACCGTCCTCTCTGCCCCCGCCAAAATCACCAACCACCTGG"
-                        + "TGGCGATGATTGAAAAAACCATTAGCGGCCAGGATGCTTTACCCAATATCAG"
-                        + "CGATGCCGAACGTATTTTTGCCGAACTTTT", "Cparvum_nt.fsa" };
-        // + "CGATGCCGAACGTATTTTTGCCGAACTTTT", "c.parvum.nt" };
+		        + "TGGCGATGATTGAAAAAACCATTAGCGGCCAGGATGCTTTACCCAATATCAG"
+		        + "CGATGCCGAACGTATTTTTGCCGAACTTTT", db };
+		//                + "CGATGCCGAACGTATTTTTGCCGAACTTTT", "Cparvum_nt.fsa" };
 
         // // no hit
         // String[] values = { "blastn", "QQQQQ", "c.parvum.nt" };
@@ -88,11 +90,11 @@ public class WdkProcessClientTest extends TestCase {
         }
 
         try {
-            // URL url = new URL(
-            // "http://localhost:8080/axis/services/WdkProcessService");
-            URL url = new URL(
-                    "http://delphi.pcbi.upenn.edu:8080/axis/services/WdkProcessService");
+            String urlStr = System.getProperty("service.url");
+	    if (urlStr == null) urlStr = "http://localhost:8080/axis/services/WdkProcessService";
+            URL url = new URL(urlStr);
             WdkProcessClient client = new WdkProcessClient(url);
+
             String[][] result = client.invoke(processName, params, values,
                     columns);
 
