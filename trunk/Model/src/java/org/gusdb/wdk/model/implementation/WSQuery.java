@@ -35,7 +35,7 @@ public class WSQuery extends Query {
     }
 
     public QueryInstance makeInstance() {
-	return null;
+	return new WSQueryInstance(this);
     }
 
     /////////////////////////////////////////////////////////////////////
