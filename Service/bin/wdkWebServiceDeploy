@@ -20,7 +20,7 @@ my $libDir="$GUS_HOME/lib/java";
 my $cp="";
 $cp="${cp}:$libDir/axis.jar:$libDir/saaj.jar:$libDir/jaxrpc.jar:$libDir/wsdl4j-1.5.1.jar";
 $cp="${cp}:$libDir/commons-discovery-0.2.jar:$libDir/commons-logging-api.jar";
-$cp="${cp}:$libDir/log4j-1.2.8.jar:$libDir/WDK-Service.jar";
+$cp="${cp}:$libDir/log4j-1.2.8.jar:$libDir/activation.jar:$libDir/WDK-Service.jar";
 # print "\nCLASSPATH: " . join("\n", split(/:/, $cp)) . "\n\n";
 
 
