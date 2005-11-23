@@ -36,7 +36,14 @@ public class WSResultList extends ResultList {
 					attributeName + " requested for " +
 					instance.getQuery().getFullName());
 	}
-	return resultArray[currentRow][index.intValue()];
+	
+	if(currentRow > resultArray.length ||
+	   index.intValue() >= resultArray[0].length) {
+	    System.err.println("Could not get result at (" + currentRow + ", " +
+			       index + "), the full ResultList is:");
+	    print();
+	}
+	return resultArray[currentRow-1][index.intValue()];
     }
 
     public boolean next() throws WdkModelException {

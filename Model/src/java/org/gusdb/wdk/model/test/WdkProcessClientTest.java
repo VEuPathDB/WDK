@@ -62,7 +62,6 @@ public class WdkProcessClientTest extends TestCase {
 	String db = System.getProperty("database.name");
         if (db == null) db = "Cparvum_nt.fsa"; 
         String[] params = { "Application", "Sequence", "Database" };
-	if (processName.equals("NcbiBlastProcessor")) params[2] = "-d";
         String[] values = {
                 "blastn",
                 "AGCTTTTCATTCTGACTGCAACGGGCAATATGTCTCTGTGTGGATTAAAAAAAGAGTGTCTG"
@@ -91,7 +90,7 @@ public class WdkProcessClientTest extends TestCase {
 
         try {
             String urlStr = System.getProperty("service.url");
-	    if (urlStr == null) urlStr = "http://localhost:8080/axis/services/WdkProcessService";
+	    if (urlStr == null) urlStr = "http://localhost:8090/axis/services/WdkProcessService";
             URL url = new URL(urlStr);
             WdkProcessClient client = new WdkProcessClient(url);
 

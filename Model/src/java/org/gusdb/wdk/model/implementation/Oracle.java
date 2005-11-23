@@ -133,14 +133,12 @@ public class Oracle implements RDBMSPlatformI {
     }
 
     public void addIndexColumn(DataSource dataSource, String tableName) throws SQLException {
-
 	//Add "i" to the table and initialize each row in that column to be rownum
 	String alterSql = "alter table " + tableName + " add " + ResultFactory.RESULT_TABLE_I + " number(12)";
 
 	SqlUtils.execute(dataSource, alterSql);
 
 	String rownumSql = "update " + tableName + " set " + ResultFactory.RESULT_TABLE_I + " = rownum";
-	
 	SqlUtils.execute(dataSource, rownumSql);
     }
 
