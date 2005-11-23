@@ -47,7 +47,7 @@ public interface RDBMSPlatformI {
     
     public String getMinus();
 
-    public String addIndexColumn(DataSource dataSource, String tableName) throws SQLException;
+    public void addIndexColumn(DataSource dataSource, String tableName) throws SQLException;
 
 }
 
