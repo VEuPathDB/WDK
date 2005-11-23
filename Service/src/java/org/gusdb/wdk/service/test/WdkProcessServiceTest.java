@@ -35,7 +35,6 @@ public class WdkProcessServiceTest extends TestCase {
 	String db = System.getProperty("database.name");
         if (db == null) db = "Cparvum_nt.fsa"; 
         String[] params = { "Application", "Sequence", "Database" };
-	if (processName.equals("NcbiBlastProcessor")) params[2] = "-d";
         String[] values = {
                 "blastn",
                 "AGCTTTTCATTCTGACTGCAACGGGCAATATGTCTCTGTGTGGATTAAAAAAAGAGTGTCTG"
