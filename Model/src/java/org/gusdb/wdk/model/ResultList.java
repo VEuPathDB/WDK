@@ -127,6 +127,8 @@ public abstract class ResultList {
     public boolean hasResultTable() {
 	return resultTableName != null;
     }
+	
+    public abstract Object getValueFromResult(String attributeName) throws WdkModelException;
 
     //////////////////////////////////////////////////////////////////
     //  protected
@@ -156,8 +158,6 @@ public abstract class ResultList {
 	}
 	return row;
     }
-
-    protected abstract Object getValueFromResult(String attributeName) throws WdkModelException;
 
     public QueryInstance getInstance() {
         return instance;

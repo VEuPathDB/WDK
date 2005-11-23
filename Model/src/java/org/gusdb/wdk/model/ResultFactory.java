@@ -207,13 +207,13 @@ public class ResultFactory {
 	}
     }
 
+    public RDBMSPlatformI getRDBMSPlatform() {
+	return platform;
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     ///////////////   protected   /////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////
-
-    RDBMSPlatformI getRDBMSPlatform() {
-	return platform;
-    }
 
     /**
      * @return Full table name of the result table
@@ -262,6 +262,7 @@ public class ResultFactory {
      * @param instance  The instance of the query
      */
     private String getResultTableName(QueryInstance instance)  throws WdkModelException {
+
 	String resultTableFullName;
 
 	// Construct SQL query to retrieve the requested table's name

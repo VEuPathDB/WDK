@@ -13,6 +13,7 @@ public class ModelConfig {
     Integer maxActive;
     Integer minIdle;
     Integer initialSize;
+    String webServiceUrl;
 
     public ModelConfig() {}
     
@@ -98,4 +99,13 @@ public class ModelConfig {
     public void setMaxActive(Integer maxActive){
 	this.maxActive = maxActive;
     }
+    
+    public String getWebServiceUrl() {
+	return webServiceUrl;
+    }
+
+    public void setWebServiceUrl(String urlString) {
+	webServiceUrl = urlString;
+    }
+
 }

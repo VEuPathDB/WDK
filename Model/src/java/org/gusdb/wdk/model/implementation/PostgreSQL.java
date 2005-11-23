@@ -127,6 +127,12 @@ public class PostgreSQL implements RDBMSPlatformI {
 	
 	SqlUtils.execute(dataSource, newSql);
 
+	addIndexColumn(dataSource, tableName);
+
+    }
+
+    public  void addIndexColumn(DataSource dataSource, String tableName) throws SQLException {
+
 	//Add "i" to the table and initialize each row in that column to be rownum
 	String alterSql = "alter table " + tableName + " add " + ResultFactory.RESULT_TABLE_I + " numeric(12)";
 
