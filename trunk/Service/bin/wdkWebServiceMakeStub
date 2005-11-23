@@ -5,7 +5,7 @@ use WDK::Model::CommandHelper;
 use strict;
 
 my ($serverURL) = @ARGV;
-$serverURL = "http://localhost:8080/axis/WdkProcessService" unless $serverURL;
+$serverURL = "http://localhost:8090/axis/WdkProcessService" unless $serverURL;
 my $tmpDir = "wdkWSMakeStubTmp";
 
 my $GUS_HOME = $ENV{GUS_HOME};
@@ -69,7 +69,8 @@ system("rm -f $tmpDir/org/gusdb/wdk/service/WdkProcessServiceImp.java");
 # system("cp $tmpDir/classes/WDK-ServiceStub.jar $GUS_HOME/lib/java/");
 my $srcDir = "$ENV{PROJECT_HOME}/WDK/Model/src/java/org/gusdb/wdk/service";
 if (! -d $srcDir) { system("mkdir $srcDir"); }
-$cmd = "cp $tmpDir/org/gusdb/wdk/service/*.java $srcDir";
+$cmd = "cp $tmpDir/org/gusdb/wdk/service/*.java $srcDir; "
+     . "touch $GUS_HOME/lib/java/WDK-ServiceStub.jar.made; rm $GUS_HOME/lib/java/WDK-Service.jar";
 system($cmd); die ("ERROR: $!\nfailed running $cmd\n\n") if $?;
 
 system("rm -rf $tmpDir");

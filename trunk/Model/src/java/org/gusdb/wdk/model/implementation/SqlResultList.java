@@ -107,7 +107,7 @@ public class SqlResultList extends ResultList {
 		    && has_result_table_i) {
 		    sqlHasIcolumn = true;
 		}
-		rsCols.put(columnName, "");
+		rsCols.put(columnName.toLowerCase(), "");
 	    }
 	
 	    // iterate through Columns declared by Query object
@@ -129,10 +129,11 @@ public class SqlResultList extends ResultList {
 		    throw new WdkModelException(msg);
 		}
 		alreadySeen.put(columnName, "");
-		if (!rsCols.containsKey(columnName)) {
+		if (!rsCols.containsKey(columnName.toLowerCase())) {
 		    String msg = "Query '" + queryName + 
 			"' declares column '" + columnName + 
 			"' but it is not in the Sql";
+
 		    throw new WdkModelException(msg);
 		}
 	    }

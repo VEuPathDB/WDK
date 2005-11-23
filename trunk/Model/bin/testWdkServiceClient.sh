@@ -9,4 +9,4 @@ set cp=${cp}:$libDir/WDK-ServiceStub.jar.x:$libDir/WDK-Model.jar:$libDir/junit.j
 
 echo $cp
 
-java -Dprocess.name=NcbiBlastProcessor -Ddatabase.name=c.parvum.nt -Dservice.url="http://delphi.pcbi.upenn.edu:8080/axis/services/WdkProcessService" -cp $cp org.gusdb.wdk.model.test.WdkProcessClientTest
+java -Dprocess.name=NcbiBlastProcessor -Ddatabase.name=c.parvum.nt -Dservice.url="http://delphi.pcbi.upenn.edu:8090/axis/services/WdkProcessService" -cp $cp org.gusdb.wdk.model.test.WdkProcessClientTest
