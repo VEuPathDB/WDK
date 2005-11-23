@@ -6,13 +6,10 @@ import org.gusdb.wdk.model.Query;
 import org.gusdb.wdk.model.QueryInstance;
 import org.gusdb.wdk.model.ResultList;
 
-import java.net.URL;
-import java.net.MalformedURLException;
-
 public class WSQuery extends Query {
     
-    URL serviceUrl;
     String processName;
+    String webServiceUrl;
 
     public WSQuery () {
 	super();
@@ -21,14 +18,6 @@ public class WSQuery extends Query {
     /////////////////////////////////////////////////////////////////////
     /////////////  Public properties ////////////////////////////////////
     /////////////////////////////////////////////////////////////////////
-
-    public void setServiceUrl(String name) throws WdkModelException {
-	try {
-	    serviceUrl = new URL(name);
-	} catch (MalformedURLException e) {
-	    throw new WdkModelException(e);
-	}
-    }
 
     public void setProcessName(String name) {
 	processName = name;
@@ -44,20 +33,20 @@ public class WSQuery extends Query {
 
     protected void setResources(WdkModel model) throws WdkModelException {
 	super.setResources(model);
-    }
-
-    URL getServiceUrl() {
-	return serviceUrl;
+	this.webServiceUrl = model.getWebServiceUrl();
     }
 
     String getProcessName() {
 	return processName;
     }
 
+    String getWebServiceUrl() {
+	return webServiceUrl;
+    }
+
     protected StringBuffer formatHeader() {
        String newline = System.getProperty( "line.separator" );
        StringBuffer buf = super.formatHeader();
-       buf.append("  serviceUrl='" + serviceUrl + "'" + newline);
        buf.append("  processName='" + processName + "'" + newline);
        return buf;
     }

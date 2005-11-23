@@ -15,6 +15,7 @@ public class Column {
     String help;
     String dataTypeName;
     Boolean isInternal = new Boolean(false);
+    Integer width;  // for wsColumns (width of datatype)
 
     private boolean inSummary = true;
 
@@ -59,6 +60,10 @@ public class Column {
         this.query = query;
     }
 
+    public void setWidth(Integer width) {
+	this.width = width;
+    }
+
     public Query getQuery() {
         return query;
     }
@@ -77,6 +82,10 @@ public class Column {
 
     public String getDisplayName() {
 	return (displayName != null)? displayName : name;
+    }
+
+    public Integer getWidth() {
+	return width;
     }
 
     public String toString() {

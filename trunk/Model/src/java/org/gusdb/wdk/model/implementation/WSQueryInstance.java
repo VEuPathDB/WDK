@@ -5,11 +5,16 @@ import org.gusdb.wdk.model.QueryInstance;
 import org.gusdb.wdk.model.ResultList;
 import org.gusdb.wdk.model.ResultFactory;
 import org.gusdb.wdk.model.Column;
+import org.gusdb.wdk.model.RDBMSPlatformI;
 
 import org.gusdb.wdk.model.process.WdkProcessClient;
 
 import java.rmi.RemoteException;
 import javax.xml.rpc.ServiceException;
+import javax.sql.DataSource;
+import java.sql.SQLException;
+import java.net.URL;
+import java.net.MalformedURLException;
 
 import java.util.Map;
 import java.util.Set;
@@ -29,8 +34,7 @@ public class WSQueryInstance extends QueryInstance  {
 	WSQuery wsQuery = (WSQuery)query;
 
 	try {
-	    WdkProcessClient client = 
-		new WdkProcessClient(wsQuery.getServiceUrl());
+	    WdkProcessClient client = new WdkProcessClient(getServiceUrl());
 
 	    Map valMap = getValuesMap();
 	    Set keys = valMap.keySet();
@@ -41,7 +45,9 @@ public class WSQueryInstance extends QueryInstance  {
 	    while (iter.hasNext()) {
 		String key = (String)iter.next();
 		paramNames[i] = key;
-		paramVals[i++] = (String)valMap.get(key);
+		paramVals[i] = (String)valMap.get(key);
+		System.err.println(paramNames[i] + ": " + paramVals[i]);
+		i++;
 	    }
 
 
@@ -49,14 +55,16 @@ public class WSQueryInstance extends QueryInstance  {
 	    String[] columnNames = new String[columns.length];
 	    i=0;
 	    for (Column column : columns) {
-		columnNames[i++] = column.getName();
+		columnNames[i] = column.getName();
+		System.err.println(columnNames[i]);
+		i++;
 	    }
 	
+	    System.err.println("WSQI invoking " + wsQuery.getProcessName());
 	    String[][] result = client.invoke(wsQuery.getProcessName(), 
 					      paramNames, 
 					      paramVals, 
 					      columnNames);
-
 	    return new WSResultList(this, result);
 
 	} catch (RemoteException e) {
@@ -68,6 +76,57 @@ public class WSQueryInstance extends QueryInstance  {
 
     protected void writeResultToTable(String resultTableName, 
             ResultFactory rf) throws WdkModelException {
+
+	RDBMSPlatformI platform = rf.getRDBMSPlatform();
+	DataSource dataSource = platform.getDataSource();
+
+	Column[] columns = query.getColumns();
+	StringBuffer createSqlB = new StringBuffer("create table " +
+						   resultTableName + "(");
+
+	for (Column column : columns) {
+	    createSqlB.append(column.getName() + " varchar(" + 
+		       column.getWidth() + "),");
+
+	}
+
+	String createSql = 
+	    createSqlB.substring(0, createSqlB.length()-1);  // lose last comma
+	createSql += ")";
+
+	String insertSql = "insert into " + resultTableName + " values (";
+
+	ResultList resultList = getNonpersistentResult();
+
+	try {
+	
+	    SqlUtils.execute(dataSource, createSql);
+
+	    platform.addIndexColumn(dataSource, resultTableName);
+	    
+	    while(resultList.next()) {
+		StringBuffer insertSqlB = new StringBuffer(insertSql);
+		for (Column column : columns) {
+		    String val = 
+			(String)resultList.getValueFromResult(column.getName());
+		    insertSqlB.append(val + ",");
+		}
+		String s = 
+		    insertSqlB.substring(0, insertSqlB.length()-1) + ")"; 
+		SqlUtils.execute(dataSource, s);
+	    }
+
+	} catch (SQLException e) {
+	    throw new WdkModelException(e);
+	}
     }
+
+    private URL getServiceUrl() throws WdkModelException {
+	try {
+	    return new URL(((WSQuery)query).getWebServiceUrl());
+	} catch (MalformedURLException e) {
+	    throw new WdkModelException(e);
+	}
+     }
 
 }

@@ -33,6 +33,7 @@ public class WdkModel {
     ResultFactory resultFactory;
     private EnumParam booleanOps;
     private Document document;
+    String webServiceUrl;
 
     /**
      * this map is used to store active users in memory
@@ -339,6 +340,7 @@ public class WdkModel {
         ResultFactory resultFactory = new ResultFactory(platform, login,
                 instanceTable);
         this.platform = platform;
+	this.webServiceUrl = modelConfig.getWebServiceUrl();
         this.resultFactory = resultFactory;
     }
 
@@ -348,6 +350,10 @@ public class WdkModel {
 
     public RDBMSPlatformI getRDBMSPlatform() {
         return platform;
+    }
+
+    public String getWebServiceUrl() {
+	return webServiceUrl;
     }
 
     public Object resolveReference(String twoPartName, String refererName,
