@@ -100,7 +100,7 @@ public class XmlRecordInstance {
     }
 
     public void addAttribute(XmlAttributeValue attribute) {
-        this.attributes.put(attribute.getAttributeFieldRef(), attribute);
+        this.attributes.put(attribute.getName(), attribute);
     }
 
     public XmlTableValue[] getTables() {
@@ -118,7 +118,7 @@ public class XmlRecordInstance {
     }
 
     public void addTable(XmlTableValue table) {
-        tables.put(table.getTableFieldRef(), table);
+        tables.put(table.getName(), table);
     }
 
     public XmlAttributeValue[] getSummaryAttributes() {
@@ -144,21 +144,21 @@ public class XmlRecordInstance {
     public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
         // resolve attribute fields
         for (XmlAttributeValue attribute : attributes.values()) {
-            String ref = attribute.getAttributeFieldRef();
-            XmlAttributeField field = recordClass.getAttributeField(ref);
+            XmlAttributeField field = 
+		recordClass.getAttributeField(attribute.getName());
             attribute.setAttributeField(field);
         }
         // resolve table fields
         for (XmlTableValue table : tables.values()) {
-            String ref = table.getTableFieldRef();
-            XmlTableField tableField = recordClass.getTableField(ref);
+            XmlTableField tableField = 
+		recordClass.getTableField(table.getName());
             table.setTableField(tableField);
 
             // resolve column fields
             for (XmlRowValue row : table.getRows()) {
                 for (XmlAttributeValue column : row.getColumns()) {
-                    ref = column.getAttributeFieldRef();
-                    XmlAttributeField colField = tableField.getColumn(ref);
+                    XmlAttributeField colField = 
+			tableField.getColumn(column.getName());
                     column.setAttributeField(colField);
                 }
             }
@@ -167,14 +167,14 @@ public class XmlRecordInstance {
         // reverse consistent check
         for (XmlAttributeField field : recordClass.getAttributeFields()) {
             if (!attributes.containsKey(field.getName()))
-                throw new WdkModelException("Attribute Field "
+                throw new WdkModelException("Attribute "
                         + field.getName()
                         + " defined in the Record Class, but not found "
                         + "in the record " + recordID);
         }
         for (XmlTableField field : recordClass.getTableFields()) {
             if (!tables.containsKey(field.getName()))
-                throw new WdkModelException("Table Field " + field.getName()
+                throw new WdkModelException("Table " + field.getName()
                         + " defined in the Record Class, but not found "
                         + " in the record " + recordID);
 

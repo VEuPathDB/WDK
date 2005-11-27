@@ -11,7 +11,7 @@ import org.gusdb.wdk.model.WdkModel;
  */
 public class XmlAttributeValue {
 
-    private String attributeFieldRef;
+    private String name;
     private XmlAttributeField attributeField;
     private String value;
     private boolean isSummary;
@@ -62,18 +62,8 @@ public class XmlAttributeValue {
         this.attributeField = attributeField;
     }
 
-    /**
-     * @return Returns the attributeFieldRef.
-     */
-    public String getAttributeFieldRef() {
-        return this.attributeFieldRef;
-    }
-
-    /**
-     * @param attributeFieldRef The attributeFieldRef to set.
-     */
-    public void setAttributeFieldRef(String attributeFieldRef) {
-        this.attributeFieldRef = attributeFieldRef;
+    public void setName(String name) {
+        this.name = name;
     }
 
     /*
@@ -109,7 +99,7 @@ public class XmlAttributeValue {
      * @see org.gusdb.wdk.model.xml.XmlAttributeField#getName()
      */
     public String getName() {
-        if (attributeField == null) return attributeFieldRef;
+        if (attributeField == null) return name;
         else return attributeField.getName();
     }
 

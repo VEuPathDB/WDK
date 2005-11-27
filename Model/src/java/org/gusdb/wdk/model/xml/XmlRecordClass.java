@@ -85,7 +85,7 @@ public class XmlRecordClass {
 
     public String getFullName() {
         if (recordClassSet == null) return getName();
-        else return recordClassSet + "." + getName();
+        else return recordClassSet.getName() + "." + getName();
     }
 
     /**
@@ -117,8 +117,9 @@ public class XmlRecordClass {
             throws WdkModelException {
         XmlAttributeField field = attributeFields.get(name);
         if (field == null)
-            throw new WdkModelException("Attribute field " + name
-                    + " not found in " + getName());
+            throw new WdkModelException("Attempting to access an attribute '" +
+					name + "' of XmlRecordClass " + 
+					getFullName() + " but it has none.");
         return field;
     }
 

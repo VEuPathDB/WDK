@@ -24,7 +24,7 @@ public class XmlRowValue {
     }
 
     public void addColumn(XmlAttributeValue column) {
-        columns.put(column.getAttributeFieldRef(), column);
+        columns.put(column.getName(), column);
     }
 
     public XmlAttributeValue[] getColumns() {
