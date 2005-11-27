@@ -164,19 +164,8 @@ public class XmlRecordInstance {
             }
         }
 
-        // reverse consistent check
-        for (XmlAttributeField field : recordClass.getAttributeFields()) {
-            if (!attributes.containsKey(field.getName()))
-                throw new WdkModelException("Attribute "
-                        + field.getName()
-                        + " defined in the Record Class, but not found "
-                        + "in the record " + recordID);
-        }
         for (XmlTableField field : recordClass.getTableFields()) {
-            if (!tables.containsKey(field.getName()))
-                throw new WdkModelException("Table " + field.getName()
-                        + " defined in the Record Class, but not found "
-                        + " in the record " + recordID);
+            if (!tables.containsKey(field.getName())) continue;
 
             // check column consistency
             XmlTableValue table = tables.get(field.getName());
