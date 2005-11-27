@@ -16,9 +16,18 @@ import org.gusdb.wdk.model.xml.XmlAnswer;
 import org.gusdb.wdk.model.xml.XmlQuestion;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
 
+import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
+import org.apache.log4j.BasicConfigurator;
+
 public class XmlQuestionTester {
 
+    static Logger logger = Logger.getRootLogger();
+
     public static void main(String[] args) {
+
+	BasicConfigurator.configure(); // logger
+	logger.setLevel(Level.ERROR);
 
         String cmdName = System.getProperties().getProperty("cmdName");
 

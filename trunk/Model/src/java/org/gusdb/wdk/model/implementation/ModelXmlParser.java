@@ -65,7 +65,13 @@ import com.thaiopensource.validate.ValidateProperty;
 import com.thaiopensource.validate.ValidationDriver;
 import com.thaiopensource.xml.sax.ErrorHandlerImpl;
 
+import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
+import org.apache.log4j.BasicConfigurator;
+
 public class ModelXmlParser {
+
+    static Logger logger = Logger.getRootLogger();
 
     private static final String DEFAULT_SCHEMA_NAME = "wdkModel.rng";
 
@@ -104,12 +110,15 @@ public class ModelXmlParser {
         }
 
         Digester digester = configureDigester();
+
         WdkModel model = null;
 
         try {
             InputStream modelXmlStream = makeModelXmlStream(modelXmlURL,
                     modelPropURL);
+
             model = (WdkModel) digester.parse(modelXmlStream);
+
         } catch (SAXException e) {
             throw new WdkModelException(e);
         } catch (IOException e) {
@@ -555,30 +564,30 @@ public class ModelXmlParser {
 
         // load XmlAttributeField
         digester.addObjectCreate(
-                "wdkModel/xmlRecordClassSet/xmlRecordClass/attributeField",
+                "wdkModel/xmlRecordClassSet/xmlRecordClass/attribute",
                 XmlAttributeField.class);
-        digester.addSetProperties("wdkModel/xmlRecordClassSet/xmlRecordClass/attributeField");
+        digester.addSetProperties("wdkModel/xmlRecordClassSet/xmlRecordClass/attribute");
         digester.addSetNext(
-                "wdkModel/xmlRecordClassSet/xmlRecordClass/attributeField",
+                "wdkModel/xmlRecordClassSet/xmlRecordClass/attribute",
                 "addAttributeField");
 
         // load XmlTableField
         digester.addObjectCreate(
-                "wdkModel/xmlRecordClassSet/xmlRecordClass/tableField",
+                "wdkModel/xmlRecordClassSet/xmlRecordClass/table",
                 XmlTableField.class);
-        digester.addSetProperties("wdkModel/xmlRecordClassSet/xmlRecordClass/tableField");
+        digester.addSetProperties("wdkModel/xmlRecordClassSet/xmlRecordClass/table");
 
         // load XmlAttributeField within table
         digester.addObjectCreate(
-                "wdkModel/xmlRecordClassSet/xmlRecordClass/tableField/attributeField",
+                "wdkModel/xmlRecordClassSet/xmlRecordClass/table/column",
                 XmlAttributeField.class);
-        digester.addSetProperties("wdkModel/xmlRecordClassSet/xmlRecordClass/tableField/attributeField");
+        digester.addSetProperties("wdkModel/xmlRecordClassSet/xmlRecordClass/table/column");
         digester.addSetNext(
-                "wdkModel/xmlRecordClassSet/xmlRecordClass/tableField/attributeField",
+                "wdkModel/xmlRecordClassSet/xmlRecordClass/table/column",
                 "addColumn");
 
         digester.addSetNext(
-                "wdkModel/xmlRecordClassSet/xmlRecordClass/tableField",
+                "wdkModel/xmlRecordClassSet/xmlRecordClass/table",
                 "addTableField");
 
         digester.addSetNext("wdkModel/xmlRecordClassSet/xmlRecordClass",
@@ -629,6 +638,9 @@ public class ModelXmlParser {
     }
 
     public static void main(String[] args) {
+	BasicConfigurator.configure(); // logger
+	logger.setLevel(Level.ERROR);
+
         try {
 
             String cmdName = System.getProperties().getProperty("cmdName");

@@ -27,21 +27,21 @@
 
    <define name="table">
       <element name="table">
-         <attribute name="tableFieldRef" />
-         <oneOrMore>
+         <attribute name="name" />
+         <zeroOrMore>
             <element name="row">
 	       <oneOrMore>
                   <ref name="attribute" />
                </oneOrMore>
 	    </element>
-         </oneOrMore>
+         </zeroOrMore>
       </element>
    </define>
 
    <define name="attribute">
       <element name="attribute">
-         <attribute name="attributeFieldRef" />
-         <attribute name="value" />
+         <attribute name="name" />
+         <text />
       </element>
    </define>
 

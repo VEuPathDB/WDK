@@ -238,6 +238,12 @@
     </element>
   </define>
     
+  <define name="xmlTableColumn">
+    <element name="column">
+      <ref name="ColumnBaseContents" />
+    </element>
+  </define>
+    
   <define name="wsColumn">
     <element name="wsColumn">
       <ref name="ColumnBaseContents" />
@@ -443,10 +449,10 @@
            <attribute name="attributeOrdering" />
         </optional>
         <zeroOrMore>  
-           <ref name="attributeField" />
+           <ref name="xmlAttribute" />
         </zeroOrMore>
         <zeroOrMore>
-           <ref name="tableField" />
+           <ref name="xmlTable" />
         </zeroOrMore>
         <zeroOrMore>
            <ref name="xmlRecordClass" />
@@ -454,11 +460,11 @@
      </element>
   </define>
 
-  <define name ="tableField">
-     <element name="tableField">
+  <define name="xmlTable">
+     <element name="table">
         <attribute name="name" />
         <optional>
-           <attribute name="displayName" />
+           <attribute name="displayName"/>
         </optional>
         <optional> 
            <attribute name="help" />
@@ -470,13 +476,13 @@
            <attribute name="type" />
         </optional>
         <oneOrMore>
-           <ref name="attributeField" />
+           <ref name="xmlTableColumn" />
         </oneOrMore>
      </element>
   </define>
 
-  <define name ="attributeField">
-     <element name="attributeField">
+  <define name ="xmlAttribute">
+     <element name="attribute">
         <attribute name="name" />
         <optional> 
            <attribute name="displayName" />

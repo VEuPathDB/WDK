@@ -13,7 +13,7 @@ import java.util.List;
 public class XmlTableValue {
 
     private XmlTableField tableField;
-    private String tableFieldRef;
+    private String name;
     private List<XmlRowValue> rows;
 
     /**
@@ -40,18 +40,8 @@ public class XmlTableValue {
         this.tableField = tableField;
     }
 
-    /**
-     * @return Returns the tableFieldRef.
-     */
-    public String getTableFieldRef() {
-        return this.tableFieldRef;
-    }
-
-    /**
-     * @param tableFieldRef The tableFieldRef to set.
-     */
-    public void setTableFieldRef(String tableFieldRef) {
-        this.tableFieldRef = tableFieldRef;
+    public void setName(String name) {
+        this.name = name;
     }
 
     /*
@@ -96,7 +86,7 @@ public class XmlTableValue {
      * @see org.gusdb.wdk.model.xml.XmlTableField#getName()
      */
     public String getName() {
-        if (tableField == null) return tableFieldRef;
+        if (tableField == null) return name;
         else return tableField.getName();
     }
 

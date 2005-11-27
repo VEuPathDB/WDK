@@ -108,11 +108,14 @@ public class XmlDataLoader {
         digester.addSetProperties("xmlAnswer/record");
 
         // xmlAttribute
-        digester.addObjectCreate("xmlAnswer/record/attribute",
-                XmlAttributeValue.class);
-        digester.addSetProperties("xmlAnswer/record/attribute");
-        digester.addSetNext("xmlAnswer/record/attribute", "addAttribute");
-
+	digester.addObjectCreate("xmlAnswer/record/attribute",
+				 XmlAttributeValue.class);
+	digester.addSetProperties("xmlAnswer/record/attribute");
+	digester.addCallMethod("xmlAnswer/record/attribute",
+			       "setValue", 1);
+	digester.addCallParam("xmlAnswer/record/attribute", 0);
+	digester.addSetNext("xmlAnswer/record/attribute", "addAttribute");
+	
         // xmlTable
         digester.addObjectCreate("xmlAnswer/record/table", XmlTableValue.class);
         digester.addSetProperties("xmlAnswer/record/table");
@@ -124,8 +127,11 @@ public class XmlDataLoader {
 
         // xmlAttribute - columns
         digester.addObjectCreate("xmlAnswer/record/table/row/attribute",
-                XmlAttributeValue.class);
+				 XmlAttributeValue.class);
         digester.addSetProperties("xmlAnswer/record/table/row/attribute");
+	digester.addCallMethod("xmlAnswer/record/table/row/attribute",
+			       "setValue", 1);
+	digester.addCallParam("xmlAnswer/record/table/row/attribute", 0);
         digester.addSetNext("xmlAnswer/record/table/row/attribute", "addColumn");
 
         digester.addSetNext("xmlAnswer/record/table/row", "addRow");
