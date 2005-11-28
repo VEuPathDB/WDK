@@ -112,14 +112,12 @@ public class AnswerBean {
     }
 
     public AttributeFieldBean[] getSummaryAttributes() {
-	Map attribs = answer.getQuestion().getRecordClass().getAttributeFields();
+	Map attribs = answer.getQuestion().getSummaryAttributes();
 	Iterator ai = attribs.keySet().iterator();
 	Vector v = new Vector();
 	while (ai.hasNext()) {
 	    String attribName = (String)ai.next();
-	    if (answer.isSummaryAttribute(attribName)) {
-		v.add(new AttributeFieldBean((FieldI)attribs.get(attribName)));
-	    }
+	    v.add(new AttributeFieldBean((FieldI)attribs.get(attribName)));
 	}
 	int size = v.size();
 	AttributeFieldBean[] sumAttribs = new AttributeFieldBean[size];
