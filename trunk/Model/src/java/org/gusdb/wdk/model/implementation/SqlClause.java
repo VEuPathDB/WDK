@@ -154,11 +154,14 @@ public class SqlClause {
 	String regex = "'" + RecordClass.PRIMARY_KEY_MACRO + "'";
 	String newSql = sql.replaceAll(regex, RecordClass.PRIMARY_KEY_MACRO);
 
-	if (newSql.indexOf("'") != -1) { 
+	if (newSql.indexOf("'") != -1) {
+            boolean endsInQuote = newSql.lastIndexOf("'") == (newSql.length() -1);
+	    if (endsInQuote) { newSql += " "; }
 	    splitByQuote = newSql.split("'");
+
 	    if (splitByQuote.length%2 != 1) {
-		throw new WdkModelException("Odd number of quotes in: " +
-					    newline + sql);
+		throw new WdkModelException("Hello Odd number of quotes in: " +
+					    newline + newSql);
 	    }
 	    StringBuffer buf = new StringBuffer(splitByQuote[0]);
 	    for (int i=2; i<splitByQuote.length; i+=2) {
