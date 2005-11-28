@@ -17,7 +17,7 @@ public class RecordInstance {
     HashMap attributesResultSetsMap;
     HashMap summaryAttributeMap;
     Answer answer;
-
+    Map<String, FieldI> dynamicAttributeFields;
 
     public RecordInstance(RecordClass recordClass) {
 	this.recordClass = recordClass;
@@ -128,16 +128,25 @@ public class RecordInstance {
      * @return Map of tableName -> TableFieldValue
      */
     public Map getTables() {
-	return new FieldValueMap(recordClass, this, true);
+	return new FieldValueMap(recordClass, this, FieldValueMap.TABLE_MAP, null);
     }
 
     /**
-     * @return Map of tableName -> AttributeFieldValue
+     * @return Map of attributeName -> AttributeFieldValue
      */
 
     public Map getAttributes() {
-	return new FieldValueMap(recordClass, this, false);
+	return new FieldValueMap(recordClass, this, FieldValueMap.ATTRIBUTE_MAP, null);
 	
+    }
+
+    /**
+     * This will include dynamic attributes if they appear in the summaryAttributeList
+     * @return Map of summaryAttributeName -> AttributeFieldValue
+     */
+
+    public Map getSummaryAttributes() {
+	return new FieldValueMap(recordClass, this, FieldValueMap.SUMMARY_ATTRIBUTE_MAP, dynamicAttributeFields);	
     }
     
     //change name of method?
@@ -371,6 +380,10 @@ public class RecordInstance {
     // package methods
     ///////////////////////////////////////////////////////////////////////////
 
+    void setDynamicAttributeFields(Map<String, FieldI> dynaAttribs) {
+	dynamicAttributeFields = dynaAttribs;
+    }
+
     void setAnswer(Answer answer){
 	this.answer = answer;
     }
@@ -381,6 +394,10 @@ public class RecordInstance {
 		summaryAttributeMap.put(summaryAttributeList[i], new Integer(1));
 	    }
 	}
+    }
+
+    Map getSummaryAttributesMap() {
+	return summaryAttributeMap;
     }
 
     public boolean isSummaryAttribute(String attName){

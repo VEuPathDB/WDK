@@ -102,12 +102,9 @@
 <table border="0" cellpadding="2" cellspacing="0">
 <tr class="headerRow">
 
-<c:forEach items="${wdkAnswer.summaryAttributeNames}" var="recAttrName">
-  <c:set value="${wdkAnswer.question.recordClass.attributeFields[recAttrName]}" var="recAttr"/>
-  <c:if test="${!recAttr.isInternal}">
-    <th align="left">${recAttr.displayName}</th>
-  </c:if>
-</c:forEach>
+<c:forEach items="${wdkAnswer.summaryAttributes}" var="sumAttrib">
+    <th align="left">${sumAttrib.displayName}</th>
+ </c:forEach>
 
 <c:set var="i" value="0"/>
 <c:forEach items="${wdkAnswer.records}" var="record">
@@ -119,9 +116,8 @@
 
   <c:set var="j" value="0"/>
 
-  <c:forEach items="${record.summaryAttributeNames}" var="recAttrName">
-  <c:set value="${record.attributes[recAttrName]}" var="recAttr"/>
-  <c:if test="${!recAttr.isInternal}">
+  <c:forEach items="${wdkAnswer.summaryAttributeNames}" var="sumAttrName">
+  <c:set value="${record.summaryAttributes[sumAttrName]}" var="recAttr"/>
  
     <td>
     <c:set var="recNam" value="${record.recordClass.fullName}"/>
@@ -151,7 +147,6 @@
     </td>
     <c:set var="j" value="${j+1}"/>
 
-  </c:if>
   </c:forEach>
 </tr>
 <c:set var="i" value="${i+1}"/>
