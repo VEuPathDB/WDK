@@ -378,7 +378,7 @@ public class Answer {
 	while (rl.next()){
 	    RecordInstance nextRecordInstance = 
 		getQuestion().getRecordClass().makeRecordInstance();
-	    
+	    nextRecordInstance.setDynamicAttributeFields(question.getDynamicAttributeFields());
 	    String project = null;
 	    if (recordProjectColumnName != null)
 		project = rl.getAttributeFieldValue(recordProjectColumnName).getValue().toString();

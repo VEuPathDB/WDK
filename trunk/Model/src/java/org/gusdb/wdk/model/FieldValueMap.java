@@ -14,12 +14,18 @@ public class FieldValueMap implements Map {
     
     private RecordClass recordClass;
     private RecordInstance recordInstance;
-    private boolean isTableMap;
+    private String mapType;
+    private Map<String, FieldI> dynamicAttributeFields;
+    static final String TABLE_MAP = "table_map";
+    static final String ATTRIBUTE_MAP = "attribute_map";
+    static final String SUMMARY_ATTRIBUTE_MAP = "summary_attribute_map";
 
-    public FieldValueMap(RecordClass recordClass, RecordInstance recordInstance, boolean isTableMap) {
+    public FieldValueMap(RecordClass recordClass, RecordInstance recordInstance,
+			 String mapType, Map<String, FieldI> dynamicAttributeFields) {
 	this.recordInstance = recordInstance;
 	this.recordClass = recordClass;
-	this.isTableMap = isTableMap;
+	this.mapType = mapType;
+	this.dynamicAttributeFields = dynamicAttributeFields;
     }
 
        
@@ -52,9 +58,21 @@ public class FieldValueMap implements Map {
      * @see java.util.Map#keySet()
      */
     public Set keySet() {
-	return isTableMap?
-	    recordClass.getTableFields().keySet() :
-	    recordClass.getAttributeFields().keySet();
+	Set keySet = null;
+	if (TABLE_MAP.equals(mapType)) {
+	    keySet = recordClass.getTableFields().keySet();
+	} else {
+	    keySet = new LinkedHashSet(recordClass.getAttributeFields().keySet());
+	    System.out.println("DEBUG: in keySet, mapType is " + mapType + ", dynaAttrib: " + dynamicAttributeFields);
+	    if (SUMMARY_ATTRIBUTE_MAP.equals(mapType) && dynamicAttributeFields != null) {
+		System.out.println("DEBUG: in keySet()");
+		System.out.println("DEBUG: in size of dyna attrib " + dynamicAttributeFields.keySet().size());
+
+		keySet.addAll(dynamicAttributeFields.keySet());
+	    }
+	}
+
+	return keySet;
     }
 
     /**
@@ -68,13 +86,21 @@ public class FieldValueMap implements Map {
 	try {
 	    String fieldName = (String)key;
 	    Object fieldValue;
-	    if (isTableMap) {
+	    if (TABLE_MAP.equals(mapType)) {
 	        FieldI field = recordClass.getTableField(fieldName);
 		ResultList value = recordInstance.getTableValue(fieldName);
 		fieldValue = new TableFieldValue(field, value);
 	    } else {
-	        FieldI field = recordClass.getAttributeField(fieldName);
-		Object value = recordInstance.getAttributeValue(fieldName);
+	        FieldI field = null;
+
+		if (SUMMARY_ATTRIBUTE_MAP.equals(mapType) && dynamicAttributeFields != null) {
+		    field = dynamicAttributeFields.get(fieldName);
+		}
+		if (field == null) {
+		    field = recordClass.getAttributeField(fieldName);
+		}
+
+		Object value = recordInstance.getAttributeValue(field);
 		AttributeFieldValue temp = new AttributeFieldValue(field, value);
 
 		temp.setIsSummary(recordInstance.isSummaryAttribute(fieldName));

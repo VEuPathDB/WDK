@@ -115,6 +115,13 @@ public class RecordBean {
     }
 
     /**
+     * @return Map of attributeName --> {@link org.gusdb.wdk.model.AttributeFieldValue}
+     */
+    public Map getSummaryAttributes() {
+	return recordInstance.getSummaryAttributes();
+    }
+
+    /**
      * @return Map of tableName --> {@link org.gusdb.wdk.model.TableFieldValue}
      */
     public Map getTables() {

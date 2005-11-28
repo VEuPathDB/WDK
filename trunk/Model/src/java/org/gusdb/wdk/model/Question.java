@@ -1,6 +1,6 @@
 package org.gusdb.wdk.model;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
@@ -47,7 +47,7 @@ public class Question {
     ///////////////////////////////////////////////////////////////////////
     
     public Question(){
-	summaryAttributeMap = new HashMap();
+	summaryAttributeMap = new LinkedHashMap();
     }
 
 
@@ -179,12 +179,16 @@ public class Question {
     // package methods
     ///////////////////////////////////////////////////////////////////////
 
+    Map <String, FieldI> getDynamicAttributeFields() {
+	return dynamicAttributes == null ? null: dynamicAttributes.getAttributeFields();
+    }
+
     void setResources(WdkModel model) throws WdkModelException {
 	if (dynamicAttributes != null) dynamicAttributes.setResources(model);
     }
 
     Map getAttributeFields() {
-	Map attributeFields = new HashMap(recordClass.getAttributeFields());
+	Map attributeFields = new LinkedHashMap(recordClass.getAttributeFields());
 	if (dynamicAttributes != null) {
 	    attributeFields.putAll(dynamicAttributes.getAttributeFields());
 	}
@@ -223,7 +227,7 @@ public class Question {
 
     private void initSummaryAttributes () throws WdkModelException {
 	if (summaryAttributeNames != null) {
-	    summaryAttributeMap = new HashMap();
+	    summaryAttributeMap = new LinkedHashMap();
 	    Map attMap = getAttributeFields();
 	    
  	    for (String name : summaryAttributeNames) {
@@ -236,6 +240,14 @@ public class Question {
 	    }
 	} else {
 	    summaryAttributeMap =  getRecordClass().getAttributeFields();
+	    Iterator samI = summaryAttributeMap.keySet().iterator();
+	    while (samI.hasNext()) {
+		String attribName = (String)samI.next();
+		FieldI attr = (FieldI)summaryAttributeMap.get(attribName);
+		if (attr.getIsInternal()) {
+		    summaryAttributeMap.remove(attribName);
+		}
+	    }
 	}
     }
 }
