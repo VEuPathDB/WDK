@@ -306,7 +306,7 @@ public class BooleanQuestionNode {
             booleanSummaryAtts.putAll(firstSummaryAtts);
             booleanSummaryAtts.putAll(secondSummaryAtts);
 
-            booleanQuestion.setSummaryAttributes(booleanSummaryAtts);
+            booleanQuestion.setSummaryAttributesMap(booleanSummaryAtts);
 
             answer = booleanQuestion.makeAnswer(booleanValues, startIndex,
                     endIndex);

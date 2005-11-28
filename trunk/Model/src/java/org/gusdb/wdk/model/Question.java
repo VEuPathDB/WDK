@@ -69,7 +69,6 @@ public class Question {
     }
 
     public void setQueryRef(String queryTwoPartName){
-
 	this.queryTwoPartName = queryTwoPartName;
     }
 
@@ -77,8 +76,7 @@ public class Question {
 	this.displayName = displayName;
     }
 
-    public void setSummaryAttributes(String summaryAttributesString){
-
+    public void setSummaryAttributesList(String summaryAttributesString){
        	// ensure that the list includes primaryKey
 	String primaryKey = RecordClass.PRIMARY_KEY_NAME;
 	if (!(summaryAttributesString.equals(primaryKey)
@@ -94,6 +92,9 @@ public class Question {
 	this.dynamicAttributes = dynamicAttributes;
     }
 
+    public Map getSummaryAttributes(){
+	return summaryAttributeMap;
+    }
 
     ///////////////////////////////////////////////////////////////////////
 
@@ -203,13 +204,8 @@ public class Question {
     boolean isSummaryAttribute(String attName){
 	return summaryAttributeMap.get(attName) != null;
     }
-
-    Map getSummaryAttributes(){
-	return summaryAttributeMap;
-    }
-
     
-    void setSummaryAttributes(Map summaryAtts){
+    void setSummaryAttributesMap(Map summaryAtts){
 	this.summaryAttributeMap = summaryAtts;
     }
 
@@ -226,7 +222,6 @@ public class Question {
     }
 
     private void initSummaryAttributes () throws WdkModelException {
-	
 	if (summaryAttributeNames != null) {
 	    summaryAttributeMap = new HashMap();
 	    Map attMap = getAttributeFields();
