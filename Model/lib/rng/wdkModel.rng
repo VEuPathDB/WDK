@@ -328,7 +328,7 @@
       <attribute name="recordClassRef" />
       <attribute name="queryRef" />
       <optional>
-           <attribute name="summaryAttributes" />
+           <attribute name="summaryAttributesList" />
       </optional>
       <element name="description">
           <text />
@@ -424,7 +424,7 @@
            <attribute name="xslURL" />
         </optional>
         <optional>
-           <attribute name="summaryAttributes" />
+           <attribute name="summaryAttributesList" />
         </optional>
         <element name="description">
            <text />
