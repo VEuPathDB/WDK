@@ -38,7 +38,7 @@ public class WSQueryInstance extends QueryInstance  {
 	try {
 	    WdkProcessClient client = new WdkProcessClient(getServiceUrl());
 
-	    Map valMap = getValuesMap();
+	    Map valMap = query.getInternalParamValues(values);
 	    Set keys = valMap.keySet();
 	    String[] paramNames = new String[keys.size()];
 	    String[] paramVals = new String[keys.size()];
