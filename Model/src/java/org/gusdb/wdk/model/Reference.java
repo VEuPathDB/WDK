@@ -44,7 +44,7 @@ public class Reference {
         if (twoPartName == null) {
             throw new WdkModelException("Error: twoPartName is null");
         }
-        if (!twoPartName.matches("\\w+\\.\\w+")) {
+        if (!twoPartName.matches("\\S+\\.\\S+")) {
             throw new WdkModelException("Error: Reference '" + twoPartName + "' is not in the form 'setName.elementName'");
         }
 	    
