@@ -107,6 +107,14 @@ public class AnswerBean {
 	answer.resetRecordInstanceCounter();
     }
 
+    /**
+     * for controller: reset counter for download purpose
+     */
+    public boolean getResetAnswerRowCursor() {
+	answer.resetRecordInstanceCounter();
+	return true;
+    }
+
     public void setDownloadConfigMap (Map downloadConfigMap) {
 	this.downloadConfigMap = downloadConfigMap;
     }
