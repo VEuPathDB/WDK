@@ -72,6 +72,7 @@
       name="questionForm"
       input="/question.jsp">
       <forward name="show_summary" path="/summary.jsp"/>
+      <forward name="skip_to_record" path="/showRecord.do"/>
     </action>
     <action
       path="/startBoolean"

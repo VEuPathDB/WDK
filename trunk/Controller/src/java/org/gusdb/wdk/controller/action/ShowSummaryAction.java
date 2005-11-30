@@ -22,6 +22,7 @@ import org.gusdb.wdk.model.jspwrap.UserAnswerBean;
 import org.gusdb.wdk.model.jspwrap.AnswerBean;
 import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
+import org.gusdb.wdk.model.jspwrap.RecordBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 
 /**
@@ -96,6 +97,18 @@ public class ShowSummaryAction extends Action {
 	String customViewFile3 = customViewDir + File.separator
 	    + CConstants.WDK_CUSTOM_SUMMARY_PAGE;
 	ActionForward forward = null;
+
+	if(wdkAnswer.getResultSize() == 1) {
+	    RecordBean rec = (RecordBean)wdkAnswer.getRecords().next();
+	    forward = mapping.findForward(CConstants.SKIPTO_RECORD_MAPKEY);
+	    String path = forward.getPath() + "?name=" + rec.getRecordClass().getFullName()
+		+ "&primary_key=" + rec.getPrimaryKey().getRecordId();
+	    if (rec.getPrimaryKey().getProjectId() != null) {
+		path += "&project_id=" + rec.getPrimaryKey().getProjectId();
+	    }
+	    return new ActionForward(path);
+	}
+
 	if (ApplicationInitListener.resourceExists(customViewFile1, svltCtx)) {
 	    forward = new ActionForward(customViewFile1);
 	} else if (ApplicationInitListener.resourceExists(customViewFile2, svltCtx)) {
