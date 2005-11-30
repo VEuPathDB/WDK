@@ -40,7 +40,7 @@
     </ant>
   </target>  
 
-  <target name="WDK/Model-Installation" depends="ProjectTree,CheckWdkServiceStub,MakeWdkServiceStub">
+  <target name="WDK/Model-Installation" depends="ProjectTree,CheckWdkServiceStub,MakeWdkServiceStub,DeleteWdkService">
     <ant target="defaultComponentInstall">
       <property name="project" value="WDK"/>
       <property name="component" value="Model"/>
@@ -52,9 +52,13 @@
 
   <target name="CheckWdkServiceStub">
     <available file="${targetDir}/lib/java/WDK-ServiceStub.jar.made" property="stubExists"/>
+    <available file="${targetDir}/lib/java/WDK-Service.jar" property="serviceExists"/>
   </target>
   <target name="MakeWdkServiceStub" unless="stubExists">
     <exec command="wdkWebServiceMakeStub"/>
+  </target>
+  <target name="DeleteWdkService" if="serviceExists">
+    <delete file="${targetDir}/lib/java/WDK-Service.jar"/>
   </target>
 
   <target name="WDK/View-Installation" depends="ProjectTree">
