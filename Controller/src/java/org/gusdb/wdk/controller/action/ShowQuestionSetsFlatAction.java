@@ -82,11 +82,9 @@ public class ShowQuestionSetsFlatAction extends ShowQuestionSetsAction {
 		    if (p instanceof FlatVocabParamBean) {
 			//not assuming fixed order, so call once, use twice.
 			String[] flatVocab = ((FlatVocabParamBean)p).getVocab();
-			qSetForm.getMyLabels().put(key, flatVocab);
 			qSetForm.getMyValues().put(key, flatVocab);
-
-			System.out.println("DEBUG: ShowQuestionSetsFlatAction:prepareQuestionSetForm: " + key + " = " + flatVocab[0] + " ...");
-
+			qSetForm.getMyLabels().put(key, ShowQuestionAction.getLengthBoundedLabels(flatVocab));
+			//System.out.println("DEBUG: ShowQuestionSetsFlatAction:prepareQuestionSetForm: " + key + " = " + flatVocab[0] + " ...");
 		    }
 		    qSetForm.getMyProps().put(key, p.getDefault());
 		}

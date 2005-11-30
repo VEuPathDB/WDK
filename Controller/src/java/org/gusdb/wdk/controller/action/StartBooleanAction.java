@@ -71,8 +71,8 @@ public class StartBooleanAction extends Action{
 	    if (p instanceof FlatVocabParamBean) {
 		//not assuming fixed order, so call once, use twice.
 		String[] flatVocab = ((FlatVocabParamBean)p).getVocab();
-		bqf.getMyLabels().put(leafPrefix +  p.getName(), flatVocab);
 		bqf.getMyValues().put(leafPrefix + p.getName(), flatVocab);
+		bqf.getMyLabels().put(leafPrefix +  p.getName(), ShowQuestionAction.getLengthBoundedLabels(flatVocab));
 	    }
 	    bqf.getMyProps().put(leafPrefix + p.getName(), p.getDefault());
 	}
