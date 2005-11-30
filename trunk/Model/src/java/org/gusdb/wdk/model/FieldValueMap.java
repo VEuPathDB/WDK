@@ -63,11 +63,7 @@ public class FieldValueMap implements Map {
 	    keySet = recordClass.getTableFields().keySet();
 	} else {
 	    keySet = new LinkedHashSet(recordClass.getAttributeFields().keySet());
-	    System.out.println("DEBUG: in keySet, mapType is " + mapType + ", dynaAttrib: " + dynamicAttributeFields);
 	    if (SUMMARY_ATTRIBUTE_MAP.equals(mapType) && dynamicAttributeFields != null) {
-		System.out.println("DEBUG: in keySet()");
-		System.out.println("DEBUG: in size of dyna attrib " + dynamicAttributeFields.keySet().size());
-
 		keySet.addAll(dynamicAttributeFields.keySet());
 	    }
 	}
