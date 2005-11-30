@@ -211,6 +211,10 @@ public class Answer {
 	recordInstanceCursor = 0;
     }
 
+    public Integer getDatasetId() {
+	return idsQueryInstance.getQueryInstanceId();
+    }
+
     /////////////////////////////////////////////////////////////////////
     //   print methods
     /////////////////////////////////////////////////////////////////////

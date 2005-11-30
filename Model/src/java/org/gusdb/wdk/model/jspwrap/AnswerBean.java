@@ -36,6 +36,10 @@ public class AnswerBean {
 	return answer.getParams();
     }
 
+    public Integer getDatasetId() {
+	return answer.getDatasetId();
+    }
+
     /**
      * @return opertation for boolean answer
      */
