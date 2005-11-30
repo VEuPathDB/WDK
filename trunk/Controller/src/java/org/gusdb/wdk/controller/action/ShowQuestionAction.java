@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.ServletContext;
 import java.util.HashMap;
+import java.util.Vector;
 import java.io.File;
 
 import org.gusdb.wdk.controller.CConstants;
@@ -92,12 +93,31 @@ public class ShowQuestionAction extends Action {
 	    if (p instanceof FlatVocabParamBean) {
 		//not assuming fixed order, so call once, use twice.
 		String[] flatVocab = ((FlatVocabParamBean)p).getVocab();
-		qForm.getMyLabels().put(p.getName(), flatVocab);
 		qForm.getMyValues().put(p.getName(), flatVocab);
+		qForm.getMyLabels().put(p.getName(), getLengthBoundedLabels(flatVocab));
 	    }
 	    qForm.getMyProps().put(p.getName(), p.getDefault());
 	}
 	qForm.setQuestion(wdkQuestion);
 	return qForm;
+    }
+
+
+    static String[] getLengthBoundedLabels(String[] labels) {
+	return getLengthBoundedLabels(labels, 99);
+    }
+
+    static String[] getLengthBoundedLabels(String[] labels, int maxLength) {
+	Vector v = new Vector();
+	for (String l : labels) {
+	    int len = l.length();
+	    if (len > 99) {
+		l = l.substring(0, 48) + "..." + l.substring(len - 48, len);
+	    }
+	    v.add(l);
+	}
+	String[] newLabels = new String[v.size()];
+	v.copyInto(newLabels);
+	return newLabels;
     }
 }
