@@ -34,7 +34,7 @@ public class WdkProcessServiceTest extends TestCase {
         if (processName == null) processName = "WuBlastProcessor";
 	String db = System.getProperty("database.name");
         if (db == null) db = "Cparvum_nt.fsa"; 
-        String[] params = { "Application", "Sequence", "Database" };
+        String[] params = { "BlastProgram", "BlastQuerySequence", "BlastDatabase" };
         String[] values = {
                 "blastn",
                 "AGCTTTTCATTCTGACTGCAACGGGCAATATGTCTCTGTGTGGATTAAAAAAAGAGTGTCTG"
