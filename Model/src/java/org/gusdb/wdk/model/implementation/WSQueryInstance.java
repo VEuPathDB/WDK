@@ -18,6 +18,7 @@ import java.net.URL;
 import java.net.MalformedURLException;
 
 import java.util.Map;
+import java.util.HashMap;
 import java.util.Set;
 import java.util.Iterator;
 import java.util.Vector;
@@ -86,24 +87,16 @@ public class WSQueryInstance extends QueryInstance  {
 	StringBuffer createSqlB = new StringBuffer("create table " +
 						   resultTableName + "(");
 
+	Map colIsClob = new HashMap();
 	for (Column column : columns) {
-	    createSqlB.append(column.getName() + " varchar(" + 
-		       column.getWidth() + "),");
-
+	    int cw = column.getWidth();
+	    createSqlB.append(column.getName() + (cw > 2000 ? " clob, " : " varchar(" + cw + "), "));
+	    if (cw > 2000) { colIsClob.put(column.getName(), new Integer(1)); }
 	}
+	String createSql = createSqlB.toString() + 
+	    (ResultFactory.RESULT_TABLE_I + " " + platform.getNumberDataType() + " (12))");
 
-	String createSql = 
-	    createSqlB.substring(0, createSqlB.length()-1);  // lose last comma
-	createSql += ")";
-
-	String insertSql = "insert into " + resultTableName;
-	/*	StringBuffer colsB = new StringBuffer();
-		for (Column column : columns) {
-		colsB.append(column.getName() + ",");
-		}
-		insertSql += " (" + colsB.substring(0, colsB.length()-1) + ")";
-	*/
-	insertSql +=  " values (";
+	String insertSql = "insert into " + resultTableName + " values (";
 
 	ResultList resultList = getNonpersistentResult();
 
@@ -111,6 +104,7 @@ public class WSQueryInstance extends QueryInstance  {
 	
 	    SqlUtils.execute(dataSource, createSql);
 	    
+	    int idx = 0;
 	    while(resultList.next()) {
 		StringBuffer insertSqlB = new StringBuffer(insertSql);
 		Vector v = new Vector();
@@ -123,21 +117,17 @@ public class WSQueryInstance extends QueryInstance  {
 		String[] vals = new String[v.size()];
 		v.copyInto(vals);
 								       
-		String s = 
-		    insertSqlB.substring(0, insertSqlB.length()-1) + ")"; 
+		String s = insertSqlB.toString() + "?)"; 
 		PreparedStatement pstmt = SqlUtils.getPreparedStatement(dataSource, s);
 
-		//System.err.println("*** DEBUG: sql=" + s);
 		for (int i=0; i<vals.length; i++) {
+		    //todo: may need to handle large strings for clob columns?
 		    pstmt.setString(i+1, vals[i]);
-		    //System.err.println("*** DEBUG: setString at " + (i+1) + " to " + vals[i]);
 		}
+                pstmt.setInt(vals.length+1, ++idx);
 		boolean inserted = pstmt.execute();
 		SqlUtils.closeStatement(pstmt);
 	    }
-
-	    platform.addIndexColumn(dataSource, resultTableName);
-
 	} catch (SQLException e) {
 	    throw new WdkModelException(e);
 	}
