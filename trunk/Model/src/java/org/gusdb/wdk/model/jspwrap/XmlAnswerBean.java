@@ -6,6 +6,8 @@ package org.gusdb.wdk.model.jspwrap;
 import org.gusdb.wdk.model.xml.XmlAnswer;
 import org.gusdb.wdk.model.xml.XmlRecordInstance;
 
+import java.util.Map;
+
 /**
  * @author Jerric
  * @created Oct 19, 2005
@@ -60,6 +62,10 @@ public class XmlAnswerBean {
             recordBeans[i] = new XmlRecordBean(records[i]);
         }
         return recordBeans;
+    }
+
+    public Map getRecordInstanceMap() {
+	return answer.getRecordInstanceMap();
     }
 
     /*

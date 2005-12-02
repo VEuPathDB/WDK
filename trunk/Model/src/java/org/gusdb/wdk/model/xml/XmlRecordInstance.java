@@ -55,14 +55,14 @@ public class XmlRecordInstance {
     /**
      * @return Returns the recordID.
      */
-    public String getRecordID() {
+    public String getId() {
         return this.recordID;
     }
 
     /**
      * @param recordID The recordID to set.
      */
-    public void setRecordID(String recordID) {
+    public void setId(String recordID) {
         this.recordID = recordID;
     }
 
