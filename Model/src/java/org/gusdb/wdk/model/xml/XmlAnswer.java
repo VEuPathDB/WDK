@@ -4,8 +4,9 @@
 package org.gusdb.wdk.model.xml;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModel;
@@ -20,6 +21,7 @@ public class XmlAnswer {
     private int startIndex;
     private int endIndex;
     private XmlQuestion question;
+    private LinkedHashMap<String, XmlRecordInstance> recordInstanceMap;
     private List<XmlRecordInstance> recordInstances;
 
     /**
@@ -27,6 +29,7 @@ public class XmlAnswer {
      */
     public XmlAnswer() {
         recordInstances = new ArrayList<XmlRecordInstance>();
+        recordInstanceMap = new LinkedHashMap<String, XmlRecordInstance>();
     }
 
     /**
@@ -79,6 +82,7 @@ public class XmlAnswer {
 
     public void addRecordInstance(XmlRecordInstance record) {
         this.recordInstances.add(record);
+        this.recordInstanceMap.put(record.getId(), record);
     }
 
     public XmlRecordInstance[] getRecordInstances() {
@@ -89,6 +93,10 @@ public class XmlAnswer {
             records[i] = recordInstances.get(i + startIndex - 1);
         }
         return records;
+    }
+
+    public Map<String, XmlRecordInstance> getRecordInstanceMap() {
+	return recordInstanceMap;
     }
 
     public void resolveReferences(WdkModel model) throws WdkModelException {
@@ -139,7 +147,7 @@ public class XmlAnswer {
         // print out records
         for (XmlRecordInstance record : recordInstances) {
             sb.append("\r\n ------- Record ");
-            sb.append(record.getRecordID());
+            sb.append(record.getId());
             sb.append(" -------\r\n");
             sb.append(record.print());
         }

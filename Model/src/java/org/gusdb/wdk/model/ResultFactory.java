@@ -50,7 +50,7 @@ public class ResultFactory {
     private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.model.ResultFactory");
 
     public static final String RESULT_TABLE_I = "result_index_column";
-
+    static final String CACHE_TABLE_PREFIX = "query_result_";
 
     
     RDBMSPlatformI platform;
@@ -228,7 +228,7 @@ public class ResultFactory {
 	    queryInstanceId = insertQueryInstance(instance);
 	}	    
 	
-	String resultTableName = "query_result_" + queryInstanceId;
+	String resultTableName = CACHE_TABLE_PREFIX + queryInstanceId;
 	StringBuffer sql = new StringBuffer();
 	sql.append("update " + instanceTableFullName + " set result_table = '" + resultTableName + "'");
 	sql.append(" where query_instance_id = " + queryInstanceId.toString());
