@@ -104,15 +104,16 @@ public class ShowQuestionAction extends Action {
 
 
     static String[] getLengthBoundedLabels(String[] labels) {
-	return getLengthBoundedLabels(labels, 99);
+	return getLengthBoundedLabels(labels, CConstants.MAX_PARAM_LABEL_LEN);
     }
 
     static String[] getLengthBoundedLabels(String[] labels, int maxLength) {
 	Vector v = new Vector();
+	int halfLen = maxLength/2;
 	for (String l : labels) {
 	    int len = l.length();
-	    if (len > 99) {
-		l = l.substring(0, 48) + "..." + l.substring(len - 48, len);
+	    if (len > CConstants.MAX_PARAM_LABEL_LEN) {
+		l = l.substring(0, halfLen) + "..." + l.substring(len - halfLen, len);
 	    }
 	    v.add(l);
 	}

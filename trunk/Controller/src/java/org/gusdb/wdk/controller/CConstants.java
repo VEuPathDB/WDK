@@ -65,6 +65,7 @@ public class CConstants {
     public static final String ALL = "all"; //match downloadConfig.jsp
     public static final String USER_ANSWER_ID = "user_answer_id"; //match queryHistory.jsp
     public static final String NAME = "name"; //match xmlDataList.jsp
+    public static final int MAX_PARAM_LABEL_LEN = 69;
 
     //used in action, action forms, and jsp pages
     public static final String NEXT_QUESTION_OPERAND_SUFFIX = "_nextQuestionOperand"; //match WEB-INF/includes/booleanQuestionNode.jsp
