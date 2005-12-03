@@ -32,9 +32,9 @@ public class ProcessQuestionSetsFlatAction extends ShowQuestionAction {
 				 HttpServletResponse response) throws Exception {
 
 	QuestionSetForm qSetForm = (QuestionSetForm)form;
-	System.err.println("DEBUG: PQSFA: qFullName from form: " + qSetForm.getQuestionFullName());
+	//System.err.println("DEBUG: PQSFA: qFullName from form: " + qSetForm.getQuestionFullName());
 	QuestionBean wdkQuestion = getQuestionByFullName(qSetForm.getQuestionFullName());
-	System.err.println("DEBUG: PQSFA: qFullName from question: " + wdkQuestion.getFullName());
+	//System.err.println("DEBUG: PQSFA: qFullName from question: " + wdkQuestion.getFullName());
 	QuestionForm qForm = prepareQuestionForm(wdkQuestion, qSetForm);
 
 	request.getSession().setAttribute(CConstants.QUESTIONFORM_KEY, qForm);
@@ -72,7 +72,7 @@ public class ProcessQuestionSetsFlatAction extends ShowQuestionAction {
 	java.util.Iterator it = qForm.getMyProps().keySet().iterator();
         while (it.hasNext()) {
 	    String key = (String)it.next();
-            System.err.println("DEBUG: PQSFA: qForm myProp(" + key + ") = " + qForm.getMyPropObject(key));
+            //System.err.println("DEBUG: PQSFA: qForm myProp(" + key + ") = " + qForm.getMyPropObject(key));
 	}
 
 	return qForm;
