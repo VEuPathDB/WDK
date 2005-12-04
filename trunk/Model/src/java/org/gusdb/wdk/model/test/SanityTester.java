@@ -168,7 +168,7 @@ public class SanityTester {
                 while (rs.next()) {
                     counter++;
                 }
-                // rs.close();
+                rs.close();
                 if (counter < sanityMin || counter > sanityMax) {
                     System.out.println(BANNER_LINE);
                     System.out.println("***QUERY " + queryRef.getSetName()
