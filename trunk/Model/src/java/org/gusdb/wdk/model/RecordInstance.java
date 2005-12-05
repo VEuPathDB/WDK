@@ -18,6 +18,7 @@ public class RecordInstance {
     HashMap summaryAttributeMap;
     Answer answer;
     Map<String, FieldI> dynamicAttributeFields;
+    boolean timeAttributeQueries = false;
 
     public RecordInstance(RecordClass recordClass) {
 	this.recordClass = recordClass;
@@ -199,6 +200,14 @@ public class RecordInstance {
 	return riListMap;
     }
 
+    public void setTimeAttributeQueries(boolean doTiming) {
+	timeAttributeQueries = doTiming;
+    }
+
+    public boolean getTimeAttributeQueries() {
+	return timeAttributeQueries;
+    }
+
     private Answer getNestedRecordAnswer(Question q) throws WdkModelException, WdkUserException {
 	
 	Param nestedQueryParams[] = q.getQuery().getParams();
@@ -269,6 +278,9 @@ public class RecordInstance {
 	while (fieldNames.hasNext()) {
 	    
 	    String fieldName = (String)fieldNames.next();
+
+	    long startTime = System.currentTimeMillis();
+
 	    TableFieldValue field = 
 		(TableFieldValue)tableFields.get(fieldName);
 	    buf.append("Table " + field.getDisplayName()).append( newline );
@@ -277,6 +289,12 @@ public class RecordInstance {
 	    resultList.close();
 	    field.closeResult();
 	    buf.append(newline);
+
+	    if(getTimeAttributeQueries()) {
+		buf.append("TIME INFO: " + fieldName + " took " +
+			   (System.currentTimeMillis() - startTime)/1000 + " seconds to retrieve.\n");
+	    }
+
 	}
 	
 	buf.append("Nested Records belonging to this RecordInstance:" + newline);
@@ -575,8 +593,13 @@ public class RecordInstance {
 
 	    AttributeFieldValue field = 
 		(AttributeFieldValue)attributeFields.get(fieldName);
+	    long startTime = System.currentTimeMillis();
 	    buf.append(field.getDisplayName() + ":   " + 
 		       field.getBriefValue()).append( newline );
+	    if(getTimeAttributeQueries()) {
+		buf.append("TIME INFO: " + fieldName + " took " +
+			   (System.currentTimeMillis() - startTime)/1000 + " seconds to retrieve.\n");
+	    }
 	}
 	buf.append(newline);
     }
