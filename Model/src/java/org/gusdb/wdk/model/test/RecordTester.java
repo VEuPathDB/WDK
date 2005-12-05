@@ -16,6 +16,7 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
+import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.ParseException;
 
 
@@ -50,6 +51,7 @@ public class RecordTester {
 	if (cmdLine.hasOption("project")) 
 	    projectID = cmdLine.getOptionValue("project");
 	String primaryKey = cmdLine.getOptionValue("primaryKey");
+        boolean timeQueries = cmdLine.hasOption("timeQueries");
 
 	try {
 	    
@@ -64,6 +66,9 @@ public class RecordTester {
 	    RecordInstance recordInstance = recordClass.makeRecordInstance();
         
 	    recordInstance.setPrimaryKey(projectID, primaryKey);
+	    if (timeQueries) {
+		recordInstance.setTimeAttributeQueries(true);
+	    }
 	    System.out.println( recordInstance.print() );
 
         } catch (WdkUserException e) {
@@ -101,6 +106,11 @@ public class RecordTester {
 
 	// primary key
 	addOption(options, "primaryKey", "The primary key of the record to find.");
+
+	OptionGroup specialOperations = new OptionGroup();
+	Option timeQueries = new Option("timeQueries", "print how long it takes for queries to return.");
+	specialOperations.addOption(timeQueries);
+	options.addOptionGroup(specialOperations);
 	
 	return options;
     }
@@ -132,6 +142,7 @@ public class RecordTester {
 	    cmdName + 
 	    " -model model_name" +
 	    " -record full_record_name" +
+            " -timeQueries " +
 	    " -primaryKey primary_key" +
 	    " [-project project_id]";
 
