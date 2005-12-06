@@ -25,6 +25,10 @@ public class XmlRecordBean {
         this.record = record;
     }
 
+    public String getId() {
+	return record.getId();
+    }
+
     /*
      * (non-Javadoc)
      * 
