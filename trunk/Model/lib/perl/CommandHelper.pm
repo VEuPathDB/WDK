@@ -48,7 +48,7 @@ sub getJavaArgs {
   my @args = @_;
   my $args = "";
   foreach my $arg (@args) {
-    $args .= ($arg =~ /\-/ ? " $arg" : " \"$arg\"");
+    $args .= ($arg =~ /^\-/ ? " $arg" : " \"$arg\"");
   }
   return $args;
 }
