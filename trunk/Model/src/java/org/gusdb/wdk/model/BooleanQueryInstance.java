@@ -210,13 +210,15 @@ public class BooleanQueryInstance extends QueryInstance {
 	String[] cols2 = secondAnswer.findPrimaryKeyColumnNames();
 
 	// compare nulls and strings
-	if ((cols1[0] != cols2[0] && !cols1[0].equals(cols2[0]))
-	    || (cols1[1] != cols2[1] && !cols1[1].equals(cols2[1]))) {
-
+	boolean recIdMisMatch = cols1[0] != cols2[0] && !cols1[0].equals(cols2[0]);
+	boolean prjIdMisMatch = cols1[1] != cols2[1] && !cols1[1].equals(cols2[1]);
+	if (recIdMisMatch || prjIdMisMatch) {
 	    String errMsg = 
 		"Primary key columns don't match in Boolean Query for " +
-		firstAnswer.getQuestion().getFullName() + " and " +
-		secondAnswer.getQuestion().getName();
+		firstAnswer.getQuestion().getFullName() +
+		" (" + cols1[0] + ", " + cols1[1] + ") and " +
+		secondAnswer.getQuestion().getFullName() + 
+		" (" + cols2[0] + ", " + cols2[1] + ")";
 	    throw new WdkModelException(errMsg);
 	} 
 

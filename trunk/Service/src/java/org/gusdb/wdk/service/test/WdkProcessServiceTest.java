@@ -51,7 +51,7 @@ public class WdkProcessServiceTest extends TestCase {
         // + "CGATGCCGAACGTATTTTTGCCGAACTTTT", "c.parvum.nt" };
 
         // prepare the columns
-        String[] columns = { "Id", "TabularRow", "Alignment", "Header",
+        String[] columns = { "source_id", "TabularRow", "Alignment", "Header",
                 "Footer" };
         Map<String, Integer> map = new HashMap<String, Integer>();
         for (int i = 0; i < columns.length; i++) {

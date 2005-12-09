@@ -61,7 +61,7 @@ public class WdkProcessClientTest extends TestCase {
         if (processName == null) processName = "WuBlastProcessor";
 	String db = System.getProperty("database.name");
         if (db == null) db = "Cparvum_nt.fsa"; 
-        String[] params = { "Application", "Sequence", "Database" };
+        String[] params = { "BlastProgram", "BlastQuerySequence", "BlastDatabase" };
         String[] values = {
                 "blastn",
                 "AGCTTTTCATTCTGACTGCAACGGGCAATATGTCTCTGTGTGGATTAAAAAAAGAGTGTCTG"
@@ -81,7 +81,7 @@ public class WdkProcessClientTest extends TestCase {
         // String[] values = { "blastn", "QQQQQ", "c.parvum.nt" };
 
         // prepare the columns
-        String[] columns = { "Id", "TabularRow", "Alignment", "Header",
+        String[] columns = { "source_id", "TabularRow", "Alignment", "Header",
                 "Footer" };
         Map<String, Integer> map = new HashMap<String, Integer>();
         for (int i = 0; i < columns.length; i++) {
@@ -93,6 +93,11 @@ public class WdkProcessClientTest extends TestCase {
 	    if (urlStr == null) urlStr = "http://localhost:8090/axis/services/WdkProcessService";
             URL url = new URL(urlStr);
             WdkProcessClient client = new WdkProcessClient(url);
+
+	    System.out.println("DEBUG: calling webservice at " + urlStr);
+	    System.out.println("DEBUG: processName = " + processName);
+	    System.out.println("DEBUG: params = " + arrayToString(params));
+	    System.out.println("DEBUG: columns = " + arrayToString(columns));
 
             String[][] result = client.invoke(processName, params, values,
                     columns);
@@ -124,5 +129,13 @@ public class WdkProcessClientTest extends TestCase {
             // System.err.println(ex);
             assertTrue(false);
         }
+    }
+
+    static private String arrayToString(String[] vals) {
+        StringBuffer b = new StringBuffer();
+        for (String val : vals) {
+            b.append(val + ";");
+        }
+        return b.toString();
     }
 }
