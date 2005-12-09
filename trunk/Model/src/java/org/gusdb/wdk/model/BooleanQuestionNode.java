@@ -10,6 +10,7 @@ import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
 import java.util.Hashtable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Iterator;
 
 /**
  * Represents a Question in boolean context. A boolean Question is defined as
@@ -306,6 +307,11 @@ public class BooleanQuestionNode {
             booleanSummaryAtts.putAll(firstSummaryAtts);
             booleanSummaryAtts.putAll(secondSummaryAtts);
 
+	    Map firstDynaAtts = firstChildAnswer.getQuestion().getDynamicAttributeFields();
+	    if (firstDynaAtts != null) removeDynamicAtributes(booleanSummaryAtts, firstDynaAtts);
+	    Map secondDynaAtts = secondChildAnswer.getQuestion().getDynamicAttributeFields();
+	    if (secondDynaAtts != null) removeDynamicAtributes(booleanSummaryAtts, secondDynaAtts);
+
             booleanQuestion.setSummaryAttributesMap(booleanSummaryAtts);
 
             answer = booleanQuestion.makeAnswer(booleanValues, startIndex,
@@ -384,4 +390,11 @@ public class BooleanQuestionNode {
         this.parent = p;
     }
 
+    private void removeDynamicAtributes(Map booleanSummaryAtts, Map dynaAtts) {
+	Iterator dynaI = dynaAtts.keySet().iterator();
+	while (dynaI.hasNext()) {
+	    String attribName = (String)dynaI.next();
+	    booleanSummaryAtts.remove(attribName);
+	}
+    }
 }
