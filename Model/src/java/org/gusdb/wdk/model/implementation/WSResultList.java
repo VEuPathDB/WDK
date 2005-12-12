@@ -48,7 +48,7 @@ public class WSResultList extends ResultList {
 
     public boolean next() throws WdkModelException {
 	checkIfClosed();
-	if (currentRow == resultArray.length) {
+	if (resultArray == null || currentRow == resultArray.length) {
 	    return false;
 	} else {
 	    currentRow++;
