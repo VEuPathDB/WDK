@@ -1,6 +1,13 @@
+
 ------------------------------------------------------------------------------
 ooooooooooooooooooooooooooo  WDK Version 1.9  oooooooooooooooooooooooooooooooo
 ------------------------------------------------------------------------------
+
+Summary: this is a version that supports PlasmoDB 5.0 Beta release
+         (http://v5-0.plasmodb.org/). Main features are dynamic attributes
+         to support process queries and blast process queries.
+         Sections below will be filled in as we recover from 
+         the big deadline (12/8/05) push and reflect.
 
 ====================  Model - Fixed Bugs ========================
 
@@ -21,6 +28,8 @@ ooooooooooooooooooooooooooo  WDK Version 1.9  oooooooooooooooooooooooooooooooo
   (this bug is revealed as bug 184 was fixed)
 
 ===================== Model - Features ==========================
+
+* dynamic attributes for questions are now supported
 
 ===================== Controller - Fixed Bugs ===================
 
