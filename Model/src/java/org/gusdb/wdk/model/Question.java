@@ -239,11 +239,13 @@ public class Question {
 		summaryAttributeMap.put(name, attMap.get(name));
 	    }
 	} else {
-	    summaryAttributeMap =  getRecordClass().getAttributeFields();
-	    Iterator samI = summaryAttributeMap.keySet().iterator();
-	    while (samI.hasNext()) {
-		String attribName = (String)samI.next();
-		FieldI attr = (FieldI)summaryAttributeMap.get(attribName);
+	    Map recAttrsMap = getRecordClass().getAttributeFields();
+	    summaryAttributeMap =  new LinkedHashMap(recAttrsMap);
+	    Iterator ramI = recAttrsMap.keySet().iterator();
+	    String attribName = null;
+	    while (ramI.hasNext()) {
+		attribName = (String)ramI.next();
+		FieldI attr = (FieldI)recAttrsMap.get(attribName);
 		if (attr.getIsInternal()) {
 		    summaryAttributeMap.remove(attribName);
 		}
