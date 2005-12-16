@@ -9,6 +9,11 @@
               <text />
           </element>
       </optional>
+      <optional>
+          <element name="datasetUrl">
+              <text />
+          </element>
+      </optional>
       <oneOrMore>
         <choice>
           <ref name="questionSet" />

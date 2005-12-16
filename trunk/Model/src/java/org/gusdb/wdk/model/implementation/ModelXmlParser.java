@@ -249,6 +249,8 @@ public class ModelXmlParser {
 
         /**/digester.addBeanPropertySetter("wdkModel/introduction");
 
+        /**/digester.addBeanPropertySetter("wdkModel/datasetUrl");
+
         // RecordClassSet
 
         /**/digester.addObjectCreate("wdkModel/recordClassSet",

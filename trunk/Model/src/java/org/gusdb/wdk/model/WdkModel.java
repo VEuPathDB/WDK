@@ -30,6 +30,7 @@ public class WdkModel {
     String name;
     String displayName;
     String introduction;
+    String datasetUrl;
     ResultFactory resultFactory;
     private EnumParam booleanOps;
     private Document document;
@@ -133,6 +134,14 @@ public class WdkModel {
 
     public String getIntroduction() {
         return introduction;
+    }
+
+    public void setDatasetUrl(String datasetUrl) {
+	this.datasetUrl = datasetUrl;
+    }
+
+    public String getDatasetUrl() {
+	return datasetUrl;
     }
 
     // RecordClass Sets
