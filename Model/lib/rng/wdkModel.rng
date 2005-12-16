@@ -5,12 +5,15 @@
       <attribute name="name" />
       <attribute name="displayName" />
       <optional>
+          <attribute name="historyDatasetColumnName"/>
+      </optional>
+      <optional>
           <element name="introduction">
               <text />
           </element>
       </optional>
       <optional>
-          <element name="datasetUrl">
+          <attribute name="historyDatasetLink">
               <text />
           </element>
       </optional>
