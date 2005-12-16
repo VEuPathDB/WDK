@@ -30,7 +30,8 @@ public class WdkModel {
     String name;
     String displayName;
     String introduction;
-    String datasetUrl;
+    String historyDatasetLink;
+    String historyDatasetColumnName;
     ResultFactory resultFactory;
     private EnumParam booleanOps;
     private Document document;
@@ -136,12 +137,20 @@ public class WdkModel {
         return introduction;
     }
 
-    public void setDatasetUrl(String datasetUrl) {
-	this.datasetUrl = datasetUrl;
+    public void setHistoryDataset(String historyDatasetLink) {
+	this.historyDatasetLink = historyDatasetLink;
     }
 
-    public String getDatasetUrl() {
-	return datasetUrl;
+    public String getHistoryDatasetLink() {
+	return historyDatasetLink;
+    }
+
+    public void setHistoryDatasetColumnName(String historyDatasetColumnName) {
+	this.historyDatasetColumnName = historyDatasetColumnName;
+    }
+
+    public String getHistoryDatasetColumnName() {
+	return historyDatasetColumnName;
     }
 
     // RecordClass Sets
