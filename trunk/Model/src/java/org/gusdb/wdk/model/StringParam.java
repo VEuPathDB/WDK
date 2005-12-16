@@ -12,6 +12,7 @@ public class StringParam extends Param {
     private String sample;
     private String regex;
     private Boolean substitute = Boolean.FALSE;
+    private Integer length;
 
     public StringParam () {}
 
@@ -35,6 +36,14 @@ public class StringParam extends Param {
         return regex;
     }
 
+    public void setLength(String length) {
+        this.length = new Integer(length);
+    }
+
+    public Integer getLength() {
+        return length;
+    }
+
     public void setSubstitute(String subst) {
         substitute = Boolean.valueOf(subst);
     }
@@ -45,23 +54,25 @@ public class StringParam extends Param {
 	   new StringBuffer(super.toString() +
 			    "  sample='" + sample + "'" + newline +
 			    "  regex='" + regex + "'" + newline +
-                "  substitute='" + substitute + "'"
+			    "  length='" + length + "'" + newline +
+			    "  substitute='" + substitute + "'"
 			    );
        return buf.toString();
     }
 
     public String validateValue(Object value) throws WdkModelException {
-        if (!(value instanceof String)) {
+        if (!(value instanceof String)) 
             throw new WdkModelException("Value must be a String " + value) ;
-        }
-	    String svalue = (String)value;
-        if (regex == null) {
-            // TODO - Correct? Assuming no regex means we don't care about value
-            return null;
-        }
-        if ( svalue == null || !svalue.matches(regex)) {
-            return "Value '" + svalue + "'does not match regex '" + regex + "' or is null";
-        }
+
+	String svalue = (String)value;
+	int len = length.intValue();
+
+	if (svalue == null) return "Value is null";
+        if (regex != null && !svalue.matches(regex)) 
+            return "Value '" + svalue + "'does not match regex '" + regex +"'";
+        if (length != null && svalue.length() > len) 
+            return "Value may be no longer than " + len + " characters.  (It is " + svalue.length() + ".)";
+
         return null;
     }
 
