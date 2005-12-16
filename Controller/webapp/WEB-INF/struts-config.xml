@@ -15,10 +15,14 @@
   </form-beans>
 
   <global-exceptions>
-    <exception key="global.error.user" path="/error.user.jsp" scope="request"
+    <exception key="global.error.user" path="/showErrorPage.do?type=user" scope="request"
                type="org.gusdb.wdk.model.WdkUserException"/>
-    <exception key="global.error.model" path="/error.jsp" scope="request"
+    <exception key="global.error.model" path="/showErrorPage.do?type=model" scope="request"
                type="org.gusdb.wdk.model.WdkModelException"/>
+    <exception key="global.error.runtime" path="/showErrorPage.do?type=runtime" scope="request"
+               type="java.lang.RuntimeException"/>
+    <exception key="global.error.other" path="/showErrorPage.do?type=other" scope="request"
+               type="java.lang.Exception"/>
   </global-exceptions>
 
   <global-forwards type="org.apache.struts.action.ActionForward">
@@ -164,6 +168,13 @@
       type="org.gusdb.wdk.controller.action.ShowXmlDataContentAction"
       scope="request">
       <forward name="show_xmldata_content" path="/xmlDataContent.jsp"/>
+    </action>
+    <action
+      path="/showErrorPage"
+      type="org.gusdb.wdk.controller.action.ShowErrorPageAction"
+      scope="request">
+      <forward name="show_error_page_user" path="/error.user.jsp"/>
+      <forward name="show_error_page_model" path="/error.jsp"/>
     </action>
   </action-mappings>
 

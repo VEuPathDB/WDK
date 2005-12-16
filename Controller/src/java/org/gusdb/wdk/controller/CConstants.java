@@ -51,6 +51,8 @@ public class CConstants {
     public static final String PROCESS_BOOLEAN_EXPRESSION_MAPKEY = "process_boolean_expression";
     public static final String SHOW_XMLDATA_LIST_MAPKEY = "show_xmldata_list";
     public static final String SHOW_XMLDATA_CONTENT_MAPKEY = "show_xmldata_content";
+    public static final String SHOW_ERRORPAGE_USER_MAPKEY = "show_error_page_user";
+    public static final String SHOW_ERRORPAGE_MODEL_MAPKEY = "show_error_page_model";
 
     //button click detectors, used in action, action forms, and jsp pages
     public static final String PQ_SUBMIT_KEY = "questionSubmit"; //match question.jsp
@@ -66,6 +68,9 @@ public class CConstants {
     public static final String USER_ANSWER_ID = "user_answer_id"; //match queryHistory.jsp
     public static final String NAME = "name"; //match xmlDataList.jsp
     public static final int MAX_PARAM_LABEL_LEN = 69;
+    public static final String ERROR_TYPE_PARAM = "type"; //match struts-config.xml
+    public static final String ERROR_TYPE_MODEL = "model"; 
+    public static final String ERROR_TYPE_USER = "user";
 
     //used in action, action forms, and jsp pages
     public static final String NEXT_QUESTION_OPERAND_SUFFIX = "_nextQuestionOperand"; //match WEB-INF/includes/booleanQuestionNode.jsp
