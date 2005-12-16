@@ -218,6 +218,9 @@
         <attribute name="regex" />
       </optional>
       <optional>
+        <attribute name="length" />
+      </optional>
+      <optional>
         <attribute name="sample" />
       </optional>
             <optional>
