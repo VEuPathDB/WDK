@@ -40,7 +40,7 @@ public class ShowQuestionAction extends Action {
 
 	request.getSession().setAttribute(CConstants.WDK_QUESTION_KEY, wdkQuestion);
 
-	QuestionForm qForm = prepareQuestionForm(wdkQuestion);
+	QuestionForm qForm = prepareQuestionForm(wdkQuestion, request);
 	request.getSession().setAttribute(CConstants.QUESTIONFORM_KEY, qForm);
 	request.getSession().setAttribute(CConstants.WDK_QUESTION_KEY, wdkQuestion);
 
@@ -78,8 +78,8 @@ public class ShowQuestionAction extends Action {
 	return wdkQuestion;
     }
 
-    private QuestionForm prepareQuestionForm (QuestionBean wdkQuestion) throws Exception
-    {
+    private QuestionForm prepareQuestionForm (QuestionBean wdkQuestion, HttpServletRequest request)
+	throws Exception {
 	QuestionForm qForm = new QuestionForm();
 
 	ActionServlet servlet = getServlet();
@@ -96,9 +96,16 @@ public class ShowQuestionAction extends Action {
 		qForm.getMyValues().put(p.getName(), flatVocab);
 		qForm.getMyLabels().put(p.getName(), getLengthBoundedLabels(flatVocab));
 	    }
-	    qForm.getMyProps().put(p.getName(), p.getDefault());
+	    String pVal = request.getParameter(p.getName());
+	    if (pVal == null) { pVal = p.getDefault(); }
+	    qForm.getMyProps().put(p.getName(), pVal);
 	}
 	qForm.setQuestion(wdkQuestion);
+
+	if (request.getParameter(CConstants.VALIDATE_PARAM) == "0") {
+	    qForm.setNonValidating();
+	}
+
 	return qForm;
     }
 
