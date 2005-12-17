@@ -71,6 +71,7 @@ public class CConstants {
     public static final String ERROR_TYPE_PARAM = "type"; //match struts-config.xml
     public static final String ERROR_TYPE_MODEL = "model"; 
     public static final String ERROR_TYPE_USER = "user";
+    public static final String VALIDATE_PARAM = "validate";
 
     //used in action, action forms, and jsp pages
     public static final String NEXT_QUESTION_OPERAND_SUFFIX = "_nextQuestionOperand"; //match WEB-INF/includes/booleanQuestionNode.jsp
