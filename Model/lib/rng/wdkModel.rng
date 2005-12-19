@@ -13,9 +13,7 @@
           </element>
       </optional>
       <optional>
-          <attribute name="historyDatasetLink">
-              <text />
-          </element>
+          <attribute name="historyDatasetLink"/>
       </optional>
       <oneOrMore>
         <choice>
