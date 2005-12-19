@@ -82,7 +82,7 @@ public class QuestionSetForm extends ActionForm {
     /* returns a list of values for a select box */
     public String[] getValues(String key) throws WdkModelException
     {
-	System.out.println("DEBUG: QuestionSetForm:getValues for: " + key + ": " + getMyValues().get(key));
+	//System.out.println("DEBUG: QuestionSetForm:getValues for: " + key + ": " + getMyValues().get(key));
 
 	return (String[])getMyValues().get(key);
     }
