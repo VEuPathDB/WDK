@@ -65,7 +65,7 @@ public class StringParam extends Param {
             throw new WdkModelException("Value must be a String " + value) ;
 
 	String svalue = (String)value;
-	int len = length.intValue();
+	int len = (length == null ? -1 : length.intValue());
 
 	if (svalue == null) return "Value is null";
         if (regex != null && !svalue.matches(regex)) 
