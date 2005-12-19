@@ -25,6 +25,7 @@ public class QuestionForm extends QuestionSetForm {
 
     private QuestionBean question = null;
     private boolean validating = true;
+    private boolean paramsFilled = false;
 
     public void reset() {
 	super.reset();
@@ -97,4 +98,9 @@ public class QuestionForm extends QuestionSetForm {
     public QuestionBean getQuestion() { return question; }
 
     public void setNonValidating() { validating = false; }
+
+    public void setParamsFilled(boolean paramsFilled) {
+	this.paramsFilled = paramsFilled;
+    }
+    public boolean getParamsFilled() { return paramsFilled; }
 }

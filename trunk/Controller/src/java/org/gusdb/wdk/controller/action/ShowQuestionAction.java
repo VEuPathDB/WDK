@@ -62,6 +62,11 @@ public class ShowQuestionAction extends Action {
 	} else {
 	    forward = mapping.findForward(CConstants.SHOW_QUESTION_MAPKEY);
 	}
+	if (qForm.getParamsFilled()) {
+            forward = mapping.findForward(CConstants.SKIPTO_SUMMARY_MAPKEY);
+	    //System.out.println("SQA: form has all param vals, go to summary page " + forward.getPath() + " directly");
+	}
+
 	return forward;
 
     }
@@ -88,19 +93,30 @@ public class ShowQuestionAction extends Action {
 	ServletContext context = servlet.getServletContext();
 	ParamBean[] params = wdkQuestion.getParams();
 
+	boolean hasAllParams = true;
 	for (int i=0; i<params.length; i++) {
 	    ParamBean p = params[i];
+	    String cgiParamVal = request.getParameter(p.getName());
+	    Object pVal = null;
 	    if (p instanceof FlatVocabParamBean) {
 		//not assuming fixed order, so call once, use twice.
 		String[] flatVocab = ((FlatVocabParamBean)p).getVocab();
 		qForm.getMyValues().put(p.getName(), flatVocab);
 		qForm.getMyLabels().put(p.getName(), getLengthBoundedLabels(flatVocab));
+		if (cgiParamVal != null) pVal = new String[] {cgiParamVal};
+	    } else {
+		pVal = cgiParamVal;
 	    }
-	    String pVal = request.getParameter(p.getName());
-	    if (pVal == null) { pVal = p.getDefault(); }
+
+	    //System.out.println("DEBUG: param " + p.getName() + " = '" + pVal + "'");
+	    if (pVal == null) {
+		hasAllParams = false;
+		pVal = p.getDefault();
+	    }
 	    qForm.getMyProps().put(p.getName(), pVal);
 	}
 	qForm.setQuestion(wdkQuestion);
+	qForm.setParamsFilled(hasAllParams);
 
 	if (request.getParameter(CConstants.VALIDATE_PARAM) == "0") {
 	    qForm.setNonValidating();

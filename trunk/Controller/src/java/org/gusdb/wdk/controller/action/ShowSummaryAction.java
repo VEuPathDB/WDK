@@ -37,7 +37,6 @@ public class ShowSummaryAction extends Action {
 				 ActionForm form,
 				 HttpServletRequest request,
 				 HttpServletResponse response) throws Exception {
-
 	UserBean wdkUser = null;
 	AnswerBean wdkAnswer = null;
     
@@ -83,7 +82,9 @@ public class ShowSummaryAction extends Action {
 
 	request.getSession().setAttribute(CConstants.WDK_ANSWER_KEY, wdkAnswer);
 
-	return getForward(wdkAnswer, mapping, ua_id_str);
+	ActionForward forward = getForward(wdkAnswer, mapping, ua_id_str);
+	//System.out.println("SSA: control going to " + forward.getPath());
+	return forward;
     }
 
     private ActionForward getForward (AnswerBean wdkAnswer,
@@ -129,7 +130,6 @@ public class ShowSummaryAction extends Action {
 	} else {
 	    path += "?" + CConstants.USER_ANSWER_ID + "=" + userAnswerIdStr; 
 	}
-
 	return new ActionForward(path);
     }
 
@@ -216,6 +216,3 @@ public class ShowSummaryAction extends Action {
 	return wdkAnswer;
     }
 }
-
-
-

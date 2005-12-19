@@ -31,6 +31,7 @@ public class CConstants {
     
     //key for finding action forward, from struts-config.xml, used in Action classes
     public static final String SHOW_QUESTION_MAPKEY = "show_question";
+    public static final String SKIPTO_SUMMARY_MAPKEY = "skip_to_summary";
     public static final String SHOW_QUESTIONSETS_MAPKEY = "show_questionsets";
     public static final String SHOW_QUESTIONSETSFLAT_MAPKEY = "show_questionsetsflat";
     public static final String PROCESS_QUESTIONSETSFLAT_MAPKEY = "process_questionsetsflat";

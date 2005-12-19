@@ -37,6 +37,7 @@
       name="questionSetForm"
       input="/questionSets.jsp">
       <forward name="show_question" path="/question.jsp"/>
+      <forward name="skip_to_summary" path="/showSummary.do"/>
     </action>
     <action
       path="/showQuestionSets"
