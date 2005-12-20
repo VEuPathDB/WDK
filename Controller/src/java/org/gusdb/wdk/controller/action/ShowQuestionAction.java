@@ -62,7 +62,9 @@ public class ShowQuestionAction extends Action {
 	} else {
 	    forward = mapping.findForward(CConstants.SHOW_QUESTION_MAPKEY);
 	}
-	if (qForm.getParamsFilled()) {
+
+	String gotoSum = request.getParameter(CConstants.GOTO_SUMMARY_PARAM);
+	if (qForm.getParamsFilled() && "1".equals(gotoSum)) {
             forward = mapping.findForward(CConstants.SKIPTO_SUMMARY_MAPKEY);
 	    //System.out.println("SQA: form has all param vals, go to summary page " + forward.getPath() + " directly");
 	}
