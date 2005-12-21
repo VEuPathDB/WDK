@@ -32,23 +32,24 @@ public class WdkProcessServiceTest extends TestCase {
         // prepare parameters
 	String processName = System.getProperty("process.name");
         if (processName == null) processName = "WuBlastProcessor";
-	String db = System.getProperty("database.name");
-        if (db == null) db = "Cparvum_nt.fsa"; 
-        String[] params = { "BlastProgram", "BlastQuerySequence", "BlastDatabase" };
+
+	String[] params = { "BlastQueryType", "BlastDatabaseType",
+			    "BlastDatabaseOrganism", "BlastQuerySequence",
+			    "-e", "-v", "-b" };
         String[] values = {
-                "blastn",
-                "AGCTTTTCATTCTGACTGCAACGGGCAATATGTCTCTGTGTGGATTAAAAAAAGAGTGTCTG"
-                        + "ATAGCAGCTTCTGAACTGGTTACCTGCCGTGAGTAAATTAAAATTTTATTGA"
-                        + "CTTAGGTCACTAAATACTTTAACCAATATAGGCATAGCGCACAGACAGATAA"
-                        + "AAATTACAGAGTACACAACATCCATGAAACGCATTAGCACCACCATTACCAC"
-                        + "CACCATCACCATTACCACAGGTAACGGTGCGGGCTGACGCGTACAGGAAACA"
-                        + "CAGAAAAAAGCCCGCACCTGACAGTGCGGGCTTTTTTTTTCGACCAAAGGTA"
-                        + "ACGAGGTAACAACCATGCGAGTGTTGAAGTTCGGCGGTACATCAGTGGCAAA"
-                        + "TGCAGAACGTTTTCTGCGTGTTGCCGATATTCTGGAAAGCAATGCCAGGCAG"
-                        + "GGGCAGGTGGCCACCGTCCTCTCTGCCCCCGCCAAAATCACCAACCACCTGG"
-                        + "TGGCGATGATTGAAAAAACCATTAGCGGCCAGGATGCTTTACCCAATATCAG"
-                        + "CGATGCCGAACGTATTTTTGCCGAACTTTT", db};
-        // + "CGATGCCGAACGTATTTTTGCCGAACTTTT", "c.parvum.nt" };
+	    "dna", "dna", "test",
+	    "AGCTTTTCATTCTGACTGCAACGGGCAATATGTCTCTGTGTGGATTAAAAAAAGAGTGTCTG"
+	    + "ATAGCAGCTTCTGAACTGGTTACCTGCCGTGAGTAAATTAAAATTTTATTGA"
+	    + "CTTAGGTCACTAAATACTTTAACCAATATAGGCATAGCGCACAGACAGATAA"
+	    + "AAATTACAGAGTACACAACATCCATGAAACGCATTAGCACCACCATTACCAC"
+	    + "CACCATCACCATTACCACAGGTAACGGTGCGGGCTGACGCGTACAGGAAACA"
+	    + "CAGAAAAAAGCCCGCACCTGACAGTGCGGGCTTTTTTTTTCGACCAAAGGTA"
+	    + "ACGAGGTAACAACCATGCGAGTGTTGAAGTTCGGCGGTACATCAGTGGCAAA"
+	    + "TGCAGAACGTTTTCTGCGTGTTGCCGATATTCTGGAAAGCAATGCCAGGCAG"
+	    + "GGGCAGGTGGCCACCGTCCTCTCTGCCCCCGCCAAAATCACCAACCACCTGG"
+	    + "TGGCGATGATTGAAAAAACCATTAGCGGCCAGGATGCTTTACCCAATATCAG"
+	    + "CGATGCCGAACGTATTTTTGCCGAACTTTT",
+	    "0.5", "5", "5" };
 
         // prepare the columns
         String[] columns = { "source_id", "TabularRow", "Alignment", "Header",
