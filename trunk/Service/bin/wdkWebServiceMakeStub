@@ -1,7 +1,6 @@
 #!/usr/bin/perl
 
 use lib "$ENV{GUS_HOME}/lib/perl";
-use WDK::Model::CommandHelper;
 use strict;
 
 my ($serverURL) = @ARGV;
@@ -9,8 +8,6 @@ $serverURL = "http://localhost:8090/axis/WdkProcessService" unless $serverURL;
 my $tmpDir = "wdkWSMakeStubTmp";
 
 my $GUS_HOME = $ENV{GUS_HOME};
-
-# my $cp = &WDK::Model::CommandHelper::getJavaClasspath($GUS_HOME);
 
 # enumerate jar files one by one to avoid class version conflicts
 #
