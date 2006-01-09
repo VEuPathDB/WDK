@@ -47,7 +47,7 @@ public class TestUtility {
                 TestRunner.run(JUnitUserTest.suite());
             } else if (testCase.equalsIgnoreCase("JUnitBooleanExpressionTest")) {
                 TestRunner.run(JUnitBooleanExpressionTest.suite());
-	    } else if (testCase.equalsIgnoreCase("WdkProcessClientTest")) {
+            } else if (testCase.equalsIgnoreCase("WdkProcessClientTest")) {
                 TestRunner.run(WdkProcessClientTest.suite());
             } else { // unknow test cases
                 System.err.println("Unknown test case: " + testCase);
@@ -111,8 +111,7 @@ public class TestUtility {
     private SanityModel loadSanityModel()
             throws MalformedURLException, WdkModelException {
         String modelName = System.getProperty("model");
-        File configDir = new File(System.getProperties().getProperty(
-                "configDir"));
+        File configDir = new File(System.getProperty("configDir"));
         File sanityXmlFile = new File(configDir, modelName + "-sanity.xml");
         File modelPropFile = new File(configDir, modelName + ".prop");
         File sanitySchemaFile = new File(System.getProperty("sanitySchemaFile"));

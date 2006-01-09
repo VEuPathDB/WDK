@@ -46,6 +46,9 @@ public class SqlUtils {
      * the PreparedStatement using <code>closeStatement</code> when finished.
      */
     public static int getResultSet(DataSource dataSource, PreparedStatement prepStmt) throws SQLException {
+
+        // TEST
+        if (debug) System.out.println("<==getResultSetPrepared==>: " + prepStmt);
         
         int result = -1;
         result = prepStmt.executeUpdate();
@@ -73,6 +76,9 @@ public class SqlUtils {
     }
     
     public static void closeStatement(Statement stmt) throws SQLException{
+        // TEST
+        if (debug) System.out.println("<== CloseConnection ==>");
+        
         if (stmt != null){
             Connection connection = stmt.getConnection();
             try { stmt.close(); } catch(Exception e) { }

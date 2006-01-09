@@ -21,7 +21,7 @@ public class UserBean {
      * 
      * @see org.gusdb.wdk.model.User#addAnswer(org.gusdb.wdk.model.Answer)
      */
-    public void addAnswer(AnswerBean answer) {
+    public void addAnswer(AnswerBean answer) throws WdkUserException {
         user.addAnswer(answer.answer);
     }
 
@@ -30,7 +30,7 @@ public class UserBean {
      * 
      * @see org.gusdb.wdk.model.User#addAnswerFuzzy(org.gusdb.wdk.model.Answer)
      */
-    public void addAnswerFuzzy(AnswerBean answer) {
+    public void addAnswerFuzzy(AnswerBean answer) throws WdkUserException {
         user.addAnswerFuzzy(answer.answer);
     }
 
@@ -80,7 +80,7 @@ public class UserBean {
      * 
      * @see org.gusdb.wdk.model.User#clearAnswers()
      */
-    public void clearUserAnswers() {
+    public void clearUserAnswers() throws WdkUserException {
         this.user.clearUserAnswers();
     }
 

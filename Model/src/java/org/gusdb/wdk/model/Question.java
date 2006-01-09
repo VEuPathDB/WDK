@@ -1,9 +1,9 @@
 package org.gusdb.wdk.model;
 
-import java.util.LinkedHashMap;
+import java.io.Serializable;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Vector;
 
 /**
  * Question.java
@@ -16,7 +16,12 @@ import java.util.Vector;
  * @version $Revision$ $Date$ $Author$
  */
 
-public class Question {
+public class Question implements Serializable {
+
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -446811404645317117L;
 
     private String recordClassTwoPartName;
 

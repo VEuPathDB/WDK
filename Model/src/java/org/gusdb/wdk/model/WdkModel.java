@@ -14,6 +14,11 @@ import org.w3c.dom.Document;
 
 // why is this in impl?
 
+/**
+ * @author  
+ * @modified Jan 6, 2006 - Jerric
+ *  Add a historyFactory in the model
+ */
 public class WdkModel {
 
     public static final Integer TRUNCATE_DEFAULT = new Integer(100);
@@ -33,6 +38,7 @@ public class WdkModel {
     String historyDatasetLink;
     String historyDatasetColumnName;
     ResultFactory resultFactory;
+   
     private EnumParam booleanOps;
     private Document document;
     String webServiceUrl;
@@ -42,9 +48,9 @@ public class WdkModel {
      */
     private Map<String, User> users;
 
-    
     /**
-     * xmlSchemaURL is used by the XmlQuestions. This is the only place where XmlQuestion can find it.
+     * xmlSchemaURL is used by the XmlQuestions. This is the only place where
+     * XmlQuestion can find it.
      */
     private URL xmlSchemaURL;
 
@@ -53,6 +59,7 @@ public class WdkModel {
     private Map<String, XmlRecordClassSet> xmlRecordClassSets;
 
     private File xmlDataDir;
+
     /**
      * Default constructor
      */
@@ -138,19 +145,19 @@ public class WdkModel {
     }
 
     public void setHistoryDataset(String historyDatasetLink) {
-	this.historyDatasetLink = historyDatasetLink;
+        this.historyDatasetLink = historyDatasetLink;
     }
 
     public String getHistoryDatasetLink() {
-	return historyDatasetLink;
+        return historyDatasetLink;
     }
 
     public void setHistoryDatasetColumnName(String historyDatasetColumnName) {
-	this.historyDatasetColumnName = historyDatasetColumnName;
+        this.historyDatasetColumnName = historyDatasetColumnName;
     }
 
     public String getHistoryDatasetColumnName() {
-	return historyDatasetColumnName;
+        return historyDatasetColumnName;
     }
 
     // RecordClass Sets
@@ -344,6 +351,7 @@ public class WdkModel {
         String login = modelConfig.getLogin();
         String password = modelConfig.getPassword();
         String instanceTable = modelConfig.getQueryInstanceTable();
+        String historyTable = modelConfig.getQueryHistoryTable();
         String platformClass = modelConfig.getPlatformClass();
         Integer maxIdle = modelConfig.getMaxIdle();
         Integer minIdle = modelConfig.getMinIdle();
@@ -358,7 +366,7 @@ public class WdkModel {
         ResultFactory resultFactory = new ResultFactory(platform, login,
                 instanceTable);
         this.platform = platform;
-	this.webServiceUrl = modelConfig.getWebServiceUrl();
+        this.webServiceUrl = modelConfig.getWebServiceUrl();
         this.resultFactory = resultFactory;
     }
 
@@ -371,7 +379,7 @@ public class WdkModel {
     }
 
     public String getWebServiceUrl() {
-	return webServiceUrl;
+        return webServiceUrl;
     }
 
     public Object resolveReference(String twoPartName, String refererName,
@@ -614,11 +622,11 @@ public class WdkModel {
     public URL getXmlSchemaURL() {
         return xmlSchemaURL;
     }
-    
+
     public void setXmlDataDir(File path) {
         this.xmlDataDir = path;
     }
-    
+
     public File getXmlDataDir() {
         return xmlDataDir;
     }
