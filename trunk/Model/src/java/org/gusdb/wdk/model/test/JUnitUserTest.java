@@ -35,7 +35,7 @@ public class JUnitUserTest extends TestCase {
     private WdkModel wdkModel;
     private SanityModel sanityModel;
     private Answer[] answers;
-    
+
     private Map<String, String> operatorMap;
 
     public static void main(String[] args) {
@@ -79,7 +79,7 @@ public class JUnitUserTest extends TestCase {
      */
     protected void setUp() throws Exception {
         super.setUp();
-        
+
         operatorMap = new HashMap<String, String>();
         operatorMap.put("and", BooleanQuestionNodeBean.INTERNAL_AND);
         operatorMap.put("or", BooleanQuestionNodeBean.INTERNAL_OR);
@@ -550,8 +550,8 @@ public class JUnitUserTest extends TestCase {
                         // System.out.println(userAnswer);
                     } else { // test on invalid combinations
                         try {
-                            user.combineUserAnswers(firstID, secondID, "OR",
-                                    1, 20, operatorMap);
+                            user.combineUserAnswers(firstID, secondID, "OR", 1,
+                                    20, operatorMap);
                             assertTrue(false);
                         } catch (WdkUserException ex) {
                             // ex.printStackTrace();
@@ -624,8 +624,8 @@ public class JUnitUserTest extends TestCase {
             // write the test cases for it
             UserAnswer result;
             if (answerIDs.size() >= 2) {
-                result = user.combineUserAnswers(id[0] + " OR " + id[1], 1,
-                        20, operatorMap);
+                result = user.combineUserAnswers(id[0] + " OR " + id[1], 1, 20,
+                        operatorMap);
                 assertNotNull(result);
                 // System.out.println(result);
 
@@ -639,8 +639,8 @@ public class JUnitUserTest extends TestCase {
                 assertNotNull(result);
                 // System.out.println(result);
 
-                result = user.combineUserAnswers(name[0] + " OR " + name[1],
-                        1, 20, operatorMap);
+                result = user.combineUserAnswers(name[0] + " OR " + name[1], 1,
+                        20, operatorMap);
                 assertNotNull(result);
                 // System.out.println(result);
             }
@@ -656,23 +656,23 @@ public class JUnitUserTest extends TestCase {
                 // System.out.println(result);
             }
             if (answerIDs.size() >= 4) {
-                result = user.combineUserAnswers("(" + id[0] + " AND "
-                        + id[1] + ") AND (" + id[2] + " AND "
-                        + id[3] + ")", 1, 20, operatorMap);
+                result = user.combineUserAnswers("(" + id[0] + " AND " + id[1]
+                        + ") AND (" + id[2] + " AND " + id[3] + ")", 1, 20,
+                        operatorMap);
                 assertNotNull(result);
                 // System.out.println(result);
 
-                result = user.combineUserAnswers("((" + id[0] + " AND "
-                        + id[1] + ") AND " + id[2] + ") AND "
-                        + id[3], 1, 20, operatorMap);
+                result = user.combineUserAnswers("((" + id[0] + " AND " + id[1]
+                        + ") AND " + id[2] + ") AND " + id[3], 1, 20,
+                        operatorMap);
                 assertNotNull(result);
                 // System.out.println(result);
             }
 
             // now test some of invalid expressions
             try { // wrong operators
-                result = user.combineUserAnswers("#1 BAD #2", 1,
-                        20, operatorMap);
+                result = user.combineUserAnswers("#1 BAD #2", 1, 20,
+                        operatorMap);
                 assertTrue(false);
             } catch (WdkUserException ex) {
                 // ex.printStackTrace();
@@ -682,8 +682,8 @@ public class JUnitUserTest extends TestCase {
                 // System.err.println(ex);
             }
             try { // miss the other part of parenthese
-                result = user.combineUserAnswers("(#1 OR #2) NOT #3)", 1,
-                        20, operatorMap);
+                result = user.combineUserAnswers("(#1 OR #2) NOT #3)", 1, 20,
+                        operatorMap);
                 assertTrue(false);
             } catch (WdkUserException ex) {
                 // ex.printStackTrace();
@@ -693,8 +693,8 @@ public class JUnitUserTest extends TestCase {
                 // System.err.println(ex);
             }
             try { // miss the other part of double quote
-                result = user.combineUserAnswers("\"ans_1\" OR \"ans_2", 1,
-                        20, operatorMap);
+                result = user.combineUserAnswers("\"ans_1\" OR \"ans_2", 1, 20,
+                        operatorMap);
                 assertTrue(false);
             } catch (WdkUserException ex) {
                 // ex.printStackTrace();
@@ -704,8 +704,8 @@ public class JUnitUserTest extends TestCase {
                 // System.err.println(ex);
             }
             try { // question not found
-                result = user.combineUserAnswers("\"invalid_ans\" OR ans_2",
-                        1, 20, operatorMap);
+                result = user.combineUserAnswers("\"invalid_ans\" OR ans_2", 1,
+                        20, operatorMap);
                 assertTrue(false);
             } catch (WdkUserException ex) {
                 // ex.printStackTrace();

@@ -1,7 +1,12 @@
 package org.gusdb.wdk.model;
 
+/**
+ * @author  
+ * @modified Jan 6, 2006 - Jerric
+ * add a property for the name of query history table
+ */
 public class ModelConfig {
-    
+
     String connectionUrl;
     String login;
     String password;
@@ -14,98 +19,124 @@ public class ModelConfig {
     Integer minIdle;
     Integer initialSize;
     String webServiceUrl;
+    /**
+     * The name for the query history table
+     */
+    String historyTable;
 
     public ModelConfig() {}
-    
+
     public void setPlatformClass(String platformClass) {
-	this.platformClass = platformClass;
+        this.platformClass = platformClass;
     }
 
     public String getPlatformClass() {
-	return platformClass;
+        return platformClass;
     }
-    
+
     public void setConnectionUrl(String connectionUrl) {
-	this.connectionUrl = connectionUrl;
+        this.connectionUrl = connectionUrl;
     }
 
     public String getConnectionUrl() {
-	return connectionUrl;
+        return connectionUrl;
     }
-    
+
     public void setLogin(String login) {
-	this.login = login;
+        this.login = login;
     }
 
     public String getLogin() {
-	return login;
+        return login;
     }
-    
+
     public void setPassword(String password) {
-	this.password = password;
+        this.password = password;
     }
 
     public String getPassword() {
-	return password;
+        return password;
     }
-    
+
     public void setQueryInstanceTable(String instanceTable) {
-	this.instanceTable = instanceTable;
+        this.instanceTable = instanceTable;
     }
 
     public String getQueryInstanceTable() {
-	return instanceTable;
+        return instanceTable;
+    }
+
+    /**
+     * Sets the name for the QueryHistory table. It's called by the ModelConfig
+     * loader
+     * 
+     * @param historyTable
+     */
+    public void setQueryHistoryTable(String historyTable) {
+        this.historyTable = historyTable;
+    }
+
+    /**
+     * @return gets the name for QueryHistory table.
+     */
+    public String getQueryHistoryTable() {
+        return historyTable;
     }
 
     public void setMaxQueryParams(Integer maxQueryParams) {
-	this.maxQueryParams = maxQueryParams;
+        this.maxQueryParams = maxQueryParams;
     }
 
     public Integer getMaxQueryParams() {
-	return maxQueryParams;
-    }
-    
-    public Integer getInitialSize(){
-	return initialSize;
-    }
-    public void setInitialSize(Integer initialSize){
-	this.initialSize = initialSize;
+        return maxQueryParams;
     }
 
-    public Integer getMinIdle(){
-	return minIdle;
-    }
-    public void setMinIdle(Integer minIdle){
-	this.minIdle = minIdle;
+    public Integer getInitialSize() {
+        return initialSize;
     }
 
-    public Integer getMaxIdle(){
-	return maxIdle;
-    }
-    public void setMaxIdle(Integer maxIdle){
-	this.maxIdle = maxIdle;
+    public void setInitialSize(Integer initialSize) {
+        this.initialSize = initialSize;
     }
 
-    public Integer getMaxWait(){
-     return maxWait;
-    }
-    public void setMaxWait(Integer maxWait){
-	this.maxWait = maxWait;
+    public Integer getMinIdle() {
+        return minIdle;
     }
 
-    public Integer getMaxActive(){
-	return maxActive;
+    public void setMinIdle(Integer minIdle) {
+        this.minIdle = minIdle;
     }
-    public void setMaxActive(Integer maxActive){
-	this.maxActive = maxActive;
+
+    public Integer getMaxIdle() {
+        return maxIdle;
     }
-    
+
+    public void setMaxIdle(Integer maxIdle) {
+        this.maxIdle = maxIdle;
+    }
+
+    public Integer getMaxWait() {
+        return maxWait;
+    }
+
+    public void setMaxWait(Integer maxWait) {
+        this.maxWait = maxWait;
+    }
+
+    public Integer getMaxActive() {
+        return maxActive;
+    }
+
+    public void setMaxActive(Integer maxActive) {
+        this.maxActive = maxActive;
+    }
+
     public String getWebServiceUrl() {
-	return webServiceUrl;
+        return webServiceUrl;
     }
 
     public void setWebServiceUrl(String urlString) {
-	webServiceUrl = urlString;
+        webServiceUrl = urlString;
     }
 
 }
