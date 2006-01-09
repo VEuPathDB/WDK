@@ -40,7 +40,7 @@ public class ParamBean {
      * 
      * @see org.gusdb.wdk.model.Param#isReadonly()
      */
-    public boolean isReadonly() {
+    public boolean getIsReadonly() {
         return this.param.isReadonly();
     }
 
@@ -49,7 +49,7 @@ public class ParamBean {
      * 
      * @see org.gusdb.wdk.model.Param#isVisible()
      */
-    public boolean isVisible() {
+    public boolean getIsVisible() {
         return this.param.isVisible();
     }
     
