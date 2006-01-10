@@ -51,7 +51,7 @@ public class QuestionBean implements Serializable {
 	Map pMap = new HashMap();
 	for (int i=0; i<paramBeans.length; i++) {
 	    ParamBean p = paramBeans[i];
-	    pMap.put(p.getFullName(), p);
+	    pMap.put(p.getName(), p);
 	}
 	return pMap;
     }
