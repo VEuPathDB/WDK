@@ -111,8 +111,7 @@ public class User {
         sb.append(historyTableName);
         sb.append(" WHERE ");
         sb.append(ResultFactory.FIELD_USER_ID);
-        sb.append("='");
-        sb.append(userID);
+        sb.append("='" + userID + "'");
         sb.append(" AND ");
         sb.append(ResultFactory.FIELD_HISTORY_ID);
         sb.append("=");
