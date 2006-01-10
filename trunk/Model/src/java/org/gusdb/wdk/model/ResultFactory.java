@@ -267,7 +267,13 @@ public class ResultFactory {
             throw new WdkModelException(e);
         }
         // now reset the history cache
-        resetHistoryCache(noSchemaOutput);
+        try {
+            resetHistoryCache(noSchemaOutput);
+        } catch (SQLException ex) {
+            // TODO Auto-generated catch block
+            // ex.printStackTrace();
+            System.err.println(ex);
+        }
     }
 
     /**
@@ -295,18 +301,14 @@ public class ResultFactory {
     }
 
     private synchronized void resetHistoryCache(boolean noSchemaOutput)
-            throws WdkModelException {
+            throws  SQLException {
         String nameToUse = (noSchemaOutput == true ? historyTableName
                 : historyTableFullName);
 
         System.out.println("Deleting all rows from " + nameToUse);
 
-        try {
             SqlUtils.executeUpdate(platform.getDataSource(), "delete from "
                     + historyTableFullName);
-        } catch (SQLException e) {
-            throw new WdkModelException(e);
-        }
     }
 
     public RDBMSPlatformI getRDBMSPlatform() {
