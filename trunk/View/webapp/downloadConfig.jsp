@@ -68,23 +68,41 @@
 <!-- content of current page -->
 <html:form method="get" action="configDownload">
   <table>
-  <tr><td><b>Choose attributes: </b></td>
-      <td><html:multibox property="selectedFields">all</html:multibox>
-          All <I><B>Answer</B></I> summary fields, or select from <I><B>Record</B></I> fields:<br>
+  <tr><td valign="top"><b>Attributes:</b></td>
+      <td><table>
+          <c:set var="numPerLine" value="2"/>
+          <c:set var="i" value="0"/>
+
+          <tr><td colspan="${numPerLine}">
+          <html:multibox property="selectedFields">all</html:multibox>All, or...</td></tr>
+          <tr><td colspan="${numPerLine}">&nbsp;</td></tr>
+
+          <tr>
           <!--c:forEach items="${wdkAnswer.summaryAttributeNames}" var="recAttrName"-->
           <c:forEach items="${wdkAnswer.question.recordClass.attributeFields}" var="recAttr">
           <c:set value="${recAttr.key}" var="recAttrName"/>
-
             <c:set value="${wdkAnswer.question.recordClass.attributeFields[recAttrName]}" var="recAttr"/>
             <c:if test="${!recAttr.isInternal}">
-              <html:multibox property="selectedFields">
-                ${recAttr.name}
-              </html:multibox>
-              ${recAttr.displayName}
+              <c:set var="i" value="${i+1}"/>
+              <c:set var="br" value=""/>
+              <c:if test="${i % numPerLine == 0}"><c:set var="br" value="</tr><tr>"/></c:if>
+              <td><html:multibox property="selectedFields">
+                    ${recAttr.name}
+                  </html:multibox>
+                  ${recAttr.displayName}</td>${br}
             </c:if>
           </c:forEach>
+          <c:if test="${i % numPerLine != 0 }">
+              <c:set var="j" value="${i}"/>
+              <c:forEach begin="${i+1}" end="${i+numPerLine}" step="1">
+                  <c:set var="j" value="${j+1}"/>
+                  <c:if test="${j % numPerLine != 0}"><td></td></c:if>
+              </c:forEach>
+              </tr>
+          </c:if>
+          </table>
         </td></tr>
-  <tr><td><b>Choose header line: </b></td>
+  <tr><td valign="top"><b>Header line: </b></td>
       <td><html:radio property="includeHeader" value="yes">include</html:radio>
           <html:radio property="includeHeader" value="no">exclude</html:radio>
         </td></tr>
