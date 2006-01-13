@@ -32,17 +32,17 @@ public class SanityModel {
     /**
      * SanityRecords contained in this model.
      */
-    Vector sanityRecords = new Vector();
+    Vector<SanityRecord> sanityRecords = new Vector<SanityRecord>();
 
     /**
      * SanityQueries contained in this model.
      */
-    Vector sanityQueries = new Vector();
+    Vector<SanityQueryOrQuestion> sanityQueries = new Vector<SanityQueryOrQuestion>();
 
     /**
      * SanityQuestions contained in this model.
      */
-    Vector sanityQuestions = new Vector();
+    Vector<SanityQueryOrQuestion> sanityQuestions = new Vector<SanityQueryOrQuestion>();
 
     List<SanityXmlQuestion> sanityXmlQuestions = new ArrayList<SanityXmlQuestion>();
 

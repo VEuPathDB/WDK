@@ -166,7 +166,9 @@ public class PostgreSQL implements RDBMSPlatformI {
 	    
 	    ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(url, user, password);
 	    
-	    PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(connectionFactory,connectionPool,null,null,false,true);
+        // variable never used
+	    // PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(connectionFactory,connectionPool,null,null,false,true);
+        new PoolableConnectionFactory(connectionFactory,connectionPool,null,null,false,true);
 	    
 	    PoolingDataSource dataSource = new PoolingDataSource(connectionPool);
 	    

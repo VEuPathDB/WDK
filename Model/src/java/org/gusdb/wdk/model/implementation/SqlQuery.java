@@ -45,7 +45,7 @@ public class SqlQuery extends Query {
     /**
      * @param values These values are assumed to be pre-validated
      */
-    protected String instantiateSql(Map values) {
+    protected String instantiateSql(Map<String, String> values) {
 	return instantiateSql(values, sql);
     }
 
@@ -53,13 +53,13 @@ public class SqlQuery extends Query {
      * @param values These values are assumed to be pre-validated
      * @param inputSql Sql to use (may be modified from this.sql)
      */
-    protected String instantiateSql(Map values, String inputSql) {
-	Iterator keySet = values.keySet().iterator();
+    protected String instantiateSql(Map<String, String> values, String inputSql) {
+	Iterator<String> keySet = values.keySet().iterator();
 	String s = inputSql;
 	while (keySet.hasNext()) {
-	    String key = (String)keySet.next();
+	    String key = keySet.next();
 	    String regex = "\\$\\$" + key  + "\\$\\$";
-	    s = s.replaceAll(regex, (String)values.get(key));
+	    s = s.replaceAll(regex, values.get(key));
 	}
 
 	return s;

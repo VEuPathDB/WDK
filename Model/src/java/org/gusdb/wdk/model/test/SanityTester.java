@@ -153,7 +153,9 @@ public class SanityTester {
                 // get model query from sanity query
                 queryRef = new Reference(queries[i].getRef());
                 QuerySet nextQuerySet = wdkModel.getQuerySet(queryRef.getSetName());
-                Query nextQuery = nextQuerySet.getQuery(queryRef.getElementName());
+                // variable never used
+                //Query nextQuery = nextQuerySet.getQuery(queryRef.getElementName());
+                nextQuerySet.getQuery(queryRef.getElementName());
 
                 // run query
                 QueryTester queryTester = new QueryTester(wdkModel);

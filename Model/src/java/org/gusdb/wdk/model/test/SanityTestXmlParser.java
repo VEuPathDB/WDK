@@ -110,7 +110,9 @@ public class SanityTestXmlParser {
         factory.setValidating(false);
         factory.setNamespaceAware(false);
         DocumentBuilder builder = factory.newDocumentBuilder();
-        ErrorHandler errorHandler = new ErrorHandlerImpl(System.err);
+        // variable never used
+        //ErrorHandler errorHandler = new ErrorHandlerImpl(System.err);
+        new ErrorHandlerImpl(System.err);
         // builder.setErrorHandler(errorHandler);
         builder.setErrorHandler(new org.xml.sax.ErrorHandler() {
             // ignore fatal errors (an exception is guaranteed)

@@ -25,7 +25,7 @@ public abstract class QueryInstance {
     /**
      * Values that define this QueryInstance relative to others pointing to <code>query</code>
      */
-    protected HashMap values = new HashMap();
+    protected Map<String, String> values = new HashMap<String, String>();
 
     /**
      * Name of the table to join with when in join mode
@@ -65,8 +65,8 @@ public abstract class QueryInstance {
     // Public Methods
     // ------------------------------------------------------------------
 
-    public void setValues(Map values) throws WdkUserException, WdkModelException {
-	this.values = new HashMap(values);
+    public void setValues(Map<String, String> values) throws WdkUserException, WdkModelException {
+	this.values = new HashMap<String, String>(values);
 	query.applyDefaults(values);
 	query.validateParamValues(values);
     }

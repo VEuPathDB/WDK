@@ -1,19 +1,5 @@
 package org.gusdb.wdk.model.test;
 
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.Query;
-import org.gusdb.wdk.model.QueryInstance;
-import org.gusdb.wdk.model.Reference;
-import org.gusdb.wdk.model.Question;
-import org.gusdb.wdk.model.Answer;
-import org.gusdb.wdk.model.RecordClass;
-import org.gusdb.wdk.model.RecordClassSet;
-import org.gusdb.wdk.model.RecordInstance;
-import org.gusdb.wdk.model.QuestionSet;
-import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.implementation.ModelXmlParser;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -26,6 +12,15 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.gusdb.wdk.model.Answer;
+import org.gusdb.wdk.model.QueryInstance;
+import org.gusdb.wdk.model.Question;
+import org.gusdb.wdk.model.QuestionSet;
+import org.gusdb.wdk.model.RecordInstance;
+import org.gusdb.wdk.model.Reference;
+import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 
 
 public class SummaryTester {
@@ -58,8 +53,8 @@ public class SummaryTester {
 	}
 
 	try {
-        
-	    File schemaFile = new File(System.getProperty("schemaFile"));
+        // variable never used
+	    //File schemaFile = new File(System.getProperty("schemaFile"));
 	    Reference ref = new Reference(questionFullName);
 	    String questionSetName = ref.getSetName();
 	    String questionName = ref.getElementName();
@@ -210,9 +205,9 @@ public class SummaryTester {
     }
 
 
-    static Hashtable parseParamArgs(String[] params) {
+    static Hashtable<String, String> parseParamArgs(String[] params) {
 
-	Hashtable h = new Hashtable();
+	Hashtable<String, String> h = new Hashtable<String, String>();
 	if (params[0].equals("NONE")){
 	    return h;
 	}

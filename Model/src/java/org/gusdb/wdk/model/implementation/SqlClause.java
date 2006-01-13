@@ -1,26 +1,25 @@
 package org.gusdb.wdk.model.implementation;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Stack;
-import java.io.FileReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.BufferedReader;
-
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.RecordClass;
-import org.gusdb.wdk.model.ResultFactory;
-import org.gusdb.wdk.model.RDBMSPlatformI;
 
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.gusdb.wdk.model.RDBMSPlatformI;
+import org.gusdb.wdk.model.RecordClass;
+import org.gusdb.wdk.model.ResultFactory;
+import org.gusdb.wdk.model.WdkModelException;
 
 /**
  * An sql clause: a section of sql bounded by a parenthesis pair that 
@@ -76,8 +75,8 @@ public class SqlClause {
     private SqlClausePiece primaryKeyPiece = null;
     private boolean hasPrimaryKey = false;
 
-    private ArrayList kids = new ArrayList();
-    private ArrayList pieces = new ArrayList();
+    private List<SqlClause> kids = new ArrayList<SqlClause>();
+    private List<SqlClausePiece> pieces = new ArrayList<SqlClausePiece>();
 
     private static final String OPEN = "(";
     private static final String CLOSE = ")";
@@ -218,9 +217,7 @@ public class SqlClause {
 	}
 	
 	// initial pass to check pieces for From, PrimaryKey pair, and validate
-	Iterator piecesIter = pieces.iterator();
-	while (piecesIter.hasNext()) {
-	    SqlClausePiece piece = (SqlClausePiece)piecesIter.next();
+	for (SqlClausePiece piece: pieces) {
 	    checkForSelect(piece);
 	    checkForFrom(piece);
 	    checkForPrimaryKey(piece);
@@ -242,11 +239,12 @@ public class SqlClause {
 
     private String validateParenStructure(String sql) throws WdkModelException {
 	
-	String newline = System.getProperty("line.separator");
+        // never used
+	    // String newline = System.getProperty("line.separator");
 	String errMsg = "Sql has invalid parentheses structure";
 
 	char[] chars = sql.toCharArray();
-	Stack parenStack = new Stack();
+	Stack<Object> parenStack = new Stack<Object>();
 	Object o = new Object();
 
 	if (chars[0] != '(') hadOuterParens = false;
@@ -319,11 +317,9 @@ public class SqlClause {
     //  - page constraints and order by page index added to where statement
     private String getModifiedSqlSub() throws WdkModelException {
 
-	Iterator piecesIter = pieces.iterator();
-	Iterator kidsIter = kids.iterator();
+	Iterator<SqlClause> kidsIter = kids.iterator();
 	StringBuffer buf = new StringBuffer();
-	while (piecesIter.hasNext()) {
-	    SqlClausePiece piece = (SqlClausePiece)piecesIter.next();
+	for (SqlClausePiece piece : pieces) {
 	    boolean needsSelectFix = selectPiece == piece && hasPrimaryKey;
 	    boolean needsFromFix = fromPiece==piece && primaryKeyPiece != null;
 	    boolean needsWhereFix = primaryKeyPiece == piece;
@@ -337,7 +333,7 @@ public class SqlClause {
 					      pageEndIndex));
 
 	    if (kidsIter.hasNext()) {
-		SqlClause kid = (SqlClause)kidsIter.next();
+		SqlClause kid = kidsIter.next();
 		buf.append(kid.getModifiedSqlSub());
 	    }
 	}
@@ -398,7 +394,7 @@ public class SqlClause {
 	    BufferedReader r = new BufferedReader(new FileReader(sqlFile));
 	    
 	    String newline = System.getProperty("line.separator");
-	    ArrayList<String> queriesArray = new ArrayList();
+	    ArrayList<String> queriesArray = new ArrayList<String>();
 	    boolean withinComment = false;
 	    StringBuffer stringBuf = null;
 	    String line;

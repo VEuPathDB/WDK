@@ -1,23 +1,21 @@
 package org.gusdb.wdk.model.implementation;
 
 
-import org.gusdb.wdk.model.RDBMSPlatformI;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkLogManager;
-import org.gusdb.wdk.model.ResultFactory;
-
-import java.sql.DriverManager;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.logging.Logger;
-import java.sql.Connection;
+
+import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.ConnectionFactory;
 import org.apache.commons.dbcp.DriverManagerConnectionFactory;
 import org.apache.commons.dbcp.PoolableConnectionFactory;
 import org.apache.commons.dbcp.PoolingDataSource;
 import org.apache.commons.pool.impl.GenericObjectPool;
-
-import javax.sql.DataSource;
+import org.gusdb.wdk.model.RDBMSPlatformI;
+import org.gusdb.wdk.model.ResultFactory;
+import org.gusdb.wdk.model.WdkLogManager;
+import org.gusdb.wdk.model.WdkModelException;
 
 /**
  * An implementation of RDBMSPlatformI for Oracle 8i.  

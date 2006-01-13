@@ -43,7 +43,7 @@ public class Question implements Serializable {
 
     private String[] summaryAttributeNames;
 
-    private Map summaryAttributeMap;
+    private Map<String, FieldI> summaryAttributeMap;
 
     private DynamicAttributeSet dynamicAttributes;
 
@@ -97,7 +97,7 @@ public class Question implements Serializable {
 	this.dynamicAttributes = dynamicAttributes;
     }
 
-    public Map getSummaryAttributes(){
+    public Map<String, FieldI> getSummaryAttributes(){
 	return summaryAttributeMap;
     }
 
@@ -232,8 +232,8 @@ public class Question implements Serializable {
 
     private void initSummaryAttributes () throws WdkModelException {
 	if (summaryAttributeNames != null) {
-	    summaryAttributeMap = new LinkedHashMap();
-	    Map attMap = getAttributeFields();
+	    summaryAttributeMap = new LinkedHashMap<String, FieldI>();
+	    Map<String, FieldI> attMap = getAttributeFields();
 	    
  	    for (String name : summaryAttributeNames) {
 		if (attMap.get(name) == null) {

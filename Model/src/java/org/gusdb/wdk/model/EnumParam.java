@@ -1,7 +1,6 @@
 package org.gusdb.wdk.model;
 
 import java.util.HashMap;
-import java.util.Vector;
 
 public class EnumParam extends AbstractEnumParam {
     
