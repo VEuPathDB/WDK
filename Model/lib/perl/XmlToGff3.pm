@@ -90,7 +90,7 @@ sub _processNode {
 	  }
 	}
 	print "\n";
-	foreach (@nestedLis) { &_processNode($_, $hasSeq, $onlySeq); }
+	foreach (reverse @nestedLis) { &_processNode($_, $hasSeq, $onlySeq); }
       } else {
 	&_processNode($childNode, $hasSeq, $onlySeq);
       }
