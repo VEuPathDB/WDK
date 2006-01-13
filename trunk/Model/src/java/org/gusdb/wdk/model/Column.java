@@ -2,11 +2,11 @@ package org.gusdb.wdk.model;
 
 
 
-import java.util.logging.Logger;
 
 public class Column {
 
-    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.model.Column");
+    // never used locally
+    //private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.model.Column");
     
     Integer truncateTo;
     String displayName;
@@ -49,7 +49,7 @@ public class Column {
     }
 
     public void setSpecialType(String specialType) {
-        this.dataTypeName = dataTypeName;
+        this.dataTypeName = specialType;
     }
 
     public String getSpecialType() {

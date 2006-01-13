@@ -1,29 +1,5 @@
 package org.gusdb.wdk.model.test;
 
-import org.gusdb.wdk.model.RecordClass;
-import org.gusdb.wdk.model.RecordClassSet;
-
-import org.gusdb.wdk.model.Query;
-import org.gusdb.wdk.model.Question;
-import org.gusdb.wdk.model.Answer;
-import org.gusdb.wdk.model.QuestionSet;
-import org.gusdb.wdk.model.RecordClass;
-import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.implementation.ModelXmlParser;
-import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
-import org.gusdb.wdk.model.BooleanQuery;
-import org.gusdb.wdk.model.BooleanQueryInstance;
-import org.gusdb.wdk.model.QueryInstance;
-import org.gusdb.wdk.model.Reference;
-import org.gusdb.wdk.model.ResultList;
-import org.gusdb.wdk.model.QuerySet;
-import org.gusdb.wdk.model.ResultFactory;
-import org.gusdb.wdk.model.BooleanQuestionNode;
-
-import org.gusdb.wdk.model.test.TestBooleanTree;
-
 import java.io.File;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -36,6 +12,13 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.gusdb.wdk.model.Answer;
+import org.gusdb.wdk.model.BooleanQuestionNode;
+import org.gusdb.wdk.model.Question;
+import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.implementation.ModelXmlParser;
+import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
 
 /**
  * BooleanQuestionTester.java
@@ -134,14 +117,15 @@ public class BooleanQuestionTester {
     // Private Methods
     // ------------------------------------------------------------------
 
-    private static void runGrowTest(BooleanQuestionNode topNode, String nodeId, WdkModel model) throws WdkModelException, WdkUserException{
-	
-	BooleanQuestionNode found = topNode.find(nodeId);
-	System.out.println("BooleanQuestionTester.runGrowTest: Tree before growing\n " + topNode.toString());
-	System.out.println("BooleanQuestionTester.runGrowTest:  Found node " + found.toString());
-	found.grow(TestBooleanTree.makeNewLeafNode(model), "Or", model, operatorMap);
-	System.out.println("BooleanQuestionTester.runGrowTest:  New tree after growing\n " + topNode.toString());
-    }
+    // this method is never used locally
+//    private static void runGrowTest(BooleanQuestionNode topNode, String nodeId, WdkModel model) throws WdkModelException, WdkUserException{
+//	
+//	BooleanQuestionNode found = topNode.find(nodeId);
+//	System.out.println("BooleanQuestionTester.runGrowTest: Tree before growing\n " + topNode.toString());
+//	System.out.println("BooleanQuestionTester.runGrowTest:  Found node " + found.toString());
+//	found.grow(TestBooleanTree.makeNewLeafNode(model), "Or", model, operatorMap);
+//	System.out.println("BooleanQuestionTester.runGrowTest:  New tree after growing\n " + topNode.toString());
+//    }
 
 
 
@@ -197,9 +181,9 @@ public class BooleanQuestionTester {
     }
 
 
-    static Hashtable parseParamArgs(String[] params) {
+    static Hashtable<String, String> parseParamArgs(String[] params) {
 
-	Hashtable h = new Hashtable();
+	Hashtable<String, String> h = new Hashtable<String, String>();
 
 	if (params.length % 2 != 0) {
 	    throw new IllegalArgumentException("The -params option must be followed by key value pairs only");

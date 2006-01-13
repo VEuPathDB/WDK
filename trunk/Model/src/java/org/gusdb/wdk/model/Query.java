@@ -20,19 +20,19 @@ public abstract class Query {
     protected String description;
     protected String help;
     protected Boolean isCacheable = new Boolean(true);
-    protected LinkedHashSet paramRefs;
-    protected HashMap paramsH;
-    protected Vector paramsV;
-    protected HashMap columnsH;
-    protected Vector columnsV;
+    protected LinkedHashSet<Reference> paramRefs;
+    protected HashMap<String, Param> paramsH;
+    protected Vector<Param> paramsV;
+    protected HashMap<String, Column> columnsH;
+    protected Vector<Column> columnsV;
     protected ResultFactory resultFactory;
    
     public Query () {
-	paramRefs = new LinkedHashSet();
-	paramsH = new HashMap();
-	paramsV = new Vector();
-	columnsH = new HashMap();
-	columnsV = new Vector();
+	paramRefs = new LinkedHashSet<Reference>();
+	paramsH = new HashMap<String, Param>();
+	paramsV = new Vector<Param>();
+	columnsH = new HashMap<String, Column>();
+	columnsV = new Vector<Column>();
     }
 
     /////////////////////////////////////////////////////////////////////
@@ -111,7 +111,7 @@ public abstract class Query {
 	return columnA;
     }
 
-    public Map getColumnMap() {
+    public Map<String, Column> getColumnMap() {
 	return columnsH;
     }
 
@@ -128,13 +128,13 @@ public abstract class Query {
     /**
      * transform a set of param values to internal param values
      */
-    public Map getInternalParamValues(Map values) throws WdkModelException {
+    public Map<String, String> getInternalParamValues(Map<String, String> values) throws WdkModelException {
 
-	HashMap internalValues = new HashMap();
-	Iterator paramNames = values.keySet().iterator();
+	Map<String, String> internalValues = new HashMap<String, String>();
+	Iterator<String> paramNames = values.keySet().iterator();
 	while (paramNames.hasNext()) {
-	    String paramName = (String)paramNames.next();
-	    Param param = (Param)paramsH.get(paramName);
+	    String paramName = paramNames.next();
+	    Param param = paramsH.get(paramName);
 	    internalValues.put(paramName, 
 			       param.getInternalValue(values.get(paramName)));
 	}
@@ -177,7 +177,7 @@ public abstract class Query {
     }
 
     Param getParam(String paramName) {
-	return (Param)paramsH.get(paramName);
+	return paramsH.get(paramName);
     }
 
     protected void resolveReferences(WdkModel model) throws WdkModelException {
@@ -205,8 +205,8 @@ public abstract class Query {
 	}
     }
 
-    protected void validateParamValues(Map values) throws WdkUserException, WdkModelException {
-	HashMap errors = null;
+    protected void validateParamValues(Map<String, String> values) throws WdkUserException, WdkModelException {
+	HashMap<Param, String[]> errors = null;
 	
 	// first confirm that all supplied values have legal names
 	Iterator valueNames = values.keySet().iterator();
@@ -220,7 +220,7 @@ public abstract class Query {
 	// then check that all params have supplied values
 	int size = paramsV.size();
 	for(int i=0; i<size; i++) {
-	    Param p = (Param)paramsV.elementAt(i);
+	    Param p = paramsV.elementAt(i);
 	    Object value = values.get(p.getName());
 	    String errMsg;
 	    if (value == null) {
@@ -229,7 +229,7 @@ public abstract class Query {
 		errMsg = p.validateValue(value);
 	    }
 	    if (errMsg != null) {
-		if (errors == null) errors = new HashMap();
+		if (errors == null) errors = new HashMap<Param, String[]>();
 		String booBoo[] = {value.toString(), errMsg};
 		errors.put(p, booBoo);
 	    }
@@ -239,10 +239,10 @@ public abstract class Query {
 	}
     }
 
-    protected void applyDefaults(Map values) {
+    protected void applyDefaults(Map<String, String> values) {
 	int size = paramsV.size();
 	for(int i=0; i<size; i++) {
-	    Param p = (Param)paramsV.elementAt(i);
+	    Param p = paramsV.elementAt(i);
 	    if (values.get(p.getName()) == null && p.getDefault() != null) 
 		values.put(p.getName(), p.getDefault());
 	}

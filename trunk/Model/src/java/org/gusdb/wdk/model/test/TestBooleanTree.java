@@ -1,16 +1,14 @@
 package org.gusdb.wdk.model.test;
 
-import org.gusdb.wdk.model.Question;
-import org.gusdb.wdk.model.RecordClass;
-import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.Reference;
-import org.gusdb.wdk.model.BooleanQuery;
-
-import org.gusdb.wdk.model.BooleanQuestionNode;
-
 import java.util.Hashtable;
+
+import org.gusdb.wdk.model.BooleanQuery;
+import org.gusdb.wdk.model.BooleanQuestionNode;
+import org.gusdb.wdk.model.Question;
+import org.gusdb.wdk.model.Reference;
+import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 
 
 /**
@@ -111,22 +109,23 @@ public class TestBooleanTree {
     // Private Methods
     // ------------------------------------------------------------------
 
-    private static Hashtable makeBooleanValues(String operation){
-	Hashtable h = new Hashtable();
+    private static Hashtable<String, String> makeBooleanValues(String operation){
+	Hashtable<String, String> h = new Hashtable<String, String>();
 	h.put(BooleanQuery.OPERATION_PARAM_NAME, operation);
 	return h;
     }
 
-    private static Question makeBooleanQuestion(WdkModel model, RecordClass rc){
-	
-	Question q = new Question();
-	q.setName("BooleanQuestion");
-	q.setRecordClass(rc);
-	BooleanQuery bq = model.makeBooleanQuery();
-	
-	q.setQuery(bq);
-	return q;
-    }
+    // this method is never used locally
+//    private static Question makeBooleanQuestion(WdkModel model, RecordClass rc){
+//	
+//	Question q = new Question();
+//	q.setName("BooleanQuestion");
+//	q.setRecordClass(rc);
+//	BooleanQuery bq = model.makeBooleanQuery();
+//	
+//	q.setQuery(bq);
+//	return q;
+//    }
 
     private static Question makeNumSeqsQuestion(WdkModel model) throws WdkUserException, WdkModelException{
 
@@ -135,8 +134,8 @@ public class TestBooleanTree {
 	return q;	
     }
     
-    private static Hashtable makeNumSeqsValues(String numSeqs, String taxonName){
-	Hashtable values = new Hashtable();
+    private static Hashtable<String,String> makeNumSeqsValues(String numSeqs, String taxonName){
+	Hashtable<String,String> values = new Hashtable<String,String>();
 	values.put("NumSeqs", numSeqs);
 	values.put("ApiTaxon", taxonName);
 	return values;

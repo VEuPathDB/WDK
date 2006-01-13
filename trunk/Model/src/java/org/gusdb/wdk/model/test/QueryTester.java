@@ -1,18 +1,4 @@
 package org.gusdb.wdk.model.test;
-import org.gusdb.wdk.model.FlatVocabParam;
-import org.gusdb.wdk.model.Reference;
-import org.gusdb.wdk.model.Param;
-import org.gusdb.wdk.model.Query;
-import org.gusdb.wdk.model.QueryInstance;
-import org.gusdb.wdk.model.QuerySet;
-import org.gusdb.wdk.model.ResultList;
-import org.gusdb.wdk.model.StringParam;
-import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.implementation.ModelXmlParser;
-import org.gusdb.wdk.model.implementation.SqlQueryInstance;
-
 import java.io.File;
 import java.util.Hashtable;
 
@@ -24,6 +10,8 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.gusdb.wdk.model.*;
+import org.gusdb.wdk.model.implementation.ModelXmlParser;
 
 
 public class QueryTester {
@@ -91,9 +79,9 @@ Hashtable paramHash) throws WdkModelException, WdkUserException {
         System.out.println("");
     }
     
-    Hashtable parseParamArgs(String[] params) {
+    Hashtable<String,String> parseParamArgs(String[] params) {
 
-	Hashtable h = new Hashtable();
+	Hashtable<String, String> h = new Hashtable<String, String>();
 
 	if (params.length % 2 != 0) {
 	    throw new IllegalArgumentException("The -params option must be followed by key value pairs only");
@@ -164,8 +152,9 @@ Hashtable paramHash) throws WdkModelException, WdkUserException {
         boolean paging = cmdLine.hasOption("rows");
         String[] params = null;
         if (haveParams) params = cmdLine.getOptionValues("params");
-        String[] rows = null;
-        if (paging) rows = cmdLine.getOptionValues("rows");
+        // This variable is never used
+//        String[] rows = null;
+//        if (paging) rows = cmdLine.getOptionValues("rows");
          
         try {
 	    Reference ref = new Reference(fullQueryName);
@@ -212,7 +201,8 @@ Hashtable paramHash) throws WdkModelException, WdkUserException {
                     System.out.println(table);
                 } 
 		else {
-		    Query temp = 
+            // this variable is never read
+		    //Query temp = 
                         wdkModel.getQuerySet(querySetName).
                         getQuery(queryName);
 

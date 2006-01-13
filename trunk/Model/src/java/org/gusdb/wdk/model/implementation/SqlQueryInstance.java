@@ -1,19 +1,18 @@
 package org.gusdb.wdk.model.implementation;
 
 
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.QueryInstance;
-import org.gusdb.wdk.model.RecordClass;
-import org.gusdb.wdk.model.ResultList;
-import org.gusdb.wdk.model.ResultFactory;
-import org.gusdb.wdk.model.RDBMSPlatformI;
-import org.gusdb.wdk.model.WdkLogManager;
-import org.gusdb.wdk.model.DynamicAttributeSet;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Logger;
-import java.util.Collection;
+
+import org.gusdb.wdk.model.DynamicAttributeSet;
+import org.gusdb.wdk.model.QueryInstance;
+import org.gusdb.wdk.model.RDBMSPlatformI;
+import org.gusdb.wdk.model.RecordClass;
+import org.gusdb.wdk.model.ResultFactory;
+import org.gusdb.wdk.model.ResultList;
+import org.gusdb.wdk.model.WdkLogManager;
+import org.gusdb.wdk.model.WdkModelException;
 
 public class SqlQueryInstance extends QueryInstance  {
 

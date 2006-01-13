@@ -1,11 +1,11 @@
 package org.gusdb.wdk.model.test;
 
-import org.gusdb.wdk.model.Reference;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.Enumeration;
+
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 
 /**
  * Object used in running a sanity test; represents a query or question in a 
@@ -26,7 +26,7 @@ public abstract class SanityQueryOrQuestion {
      * of the hashtable are the names of the parameters and the values are
      * SanityParams representing the parameter itself.
      */
-    protected Hashtable params = new Hashtable();
+    protected Hashtable<String, SanityParam> params = new Hashtable<String, SanityParam>();
 
     /**
      * Minimum number of rows expected when the test is run.
@@ -100,8 +100,8 @@ public abstract class SanityQueryOrQuestion {
      *               the values are the actual values of the parameter. 
      */
 
-    public Hashtable getParamHash(){
-	Hashtable paramHash = new Hashtable();
+    public Hashtable<String, String> getParamHash(){
+	Hashtable<String, String> paramHash = new Hashtable<String, String>();
 	Enumeration keys = params.keys();
 	while (keys.hasMoreElements()){
 	    String nextName = (String)keys.nextElement();

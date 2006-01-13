@@ -147,7 +147,7 @@ public class Answer {
     /**
      * @return Map where key is param display name and value is param value
      */
-    public Map getDisplayParams() {
+    public Map<String, Object> getDisplayParams() {
 	LinkedHashMap displayParamsMap = new LinkedHashMap();
 	Map paramsMap = getParams();
 	Param[] params = question.getParams();

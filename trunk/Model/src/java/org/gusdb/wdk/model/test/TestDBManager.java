@@ -1,10 +1,5 @@
 package org.gusdb.wdk.model.test;
 
-import org.gusdb.wdk.model.ModelConfig;
-import org.gusdb.wdk.model.ModelConfigParser;
-import org.gusdb.wdk.model.RDBMSPlatformI;
-import org.gusdb.wdk.model.implementation.SqlUtils;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -19,9 +14,12 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.gusdb.wdk.model.ModelConfig;
+import org.gusdb.wdk.model.ModelConfigParser;
+import org.gusdb.wdk.model.RDBMSPlatformI;
+import org.gusdb.wdk.model.implementation.SqlUtils;
 
 
 public class TestDBManager {
@@ -47,7 +45,9 @@ public class TestDBManager {
 	    String connectionUrl = modelConfig.getConnectionUrl();
 	    String login = modelConfig.getLogin();
 	    String password = modelConfig.getPassword();
-	    String instanceTable = modelConfig.getQueryInstanceTable();
+        // variable never used
+	    //String instanceTable = modelConfig.getQueryInstanceTable();
+        modelConfig.getQueryInstanceTable();
 	    String platformClass = modelConfig.getPlatformClass();
 
 	    Integer maxIdle = modelConfig.getMaxIdle();

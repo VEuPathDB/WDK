@@ -16,7 +16,7 @@ import java.util.Vector;
 public class AnswerBean {
 
     Answer answer;
-    Map downloadConfigMap = null;
+    Map<Object, Object> downloadConfigMap = null;
 
     boolean isCombinedAnswer = false;
     String userAnswerName = null;
@@ -28,11 +28,11 @@ public class AnswerBean {
     /**
      * @return A Map of param displayName --> param value.
      */
-    public Map getParams() {
+    public Map<String, Object> getParams() {
 	return answer.getDisplayParams();
     }
 
-    public Map getInternalParams() {
+    public Map<Object, Object> getInternalParams() {
 	return answer.getParams();
     }
 
@@ -124,12 +124,12 @@ public class AnswerBean {
     }
 
     public AttributeFieldBean[] getSummaryAttributes() {
-	Map attribs = answer.getQuestion().getSummaryAttributes();
-	Iterator ai = attribs.keySet().iterator();
-	Vector v = new Vector();
+	Map<String, FieldI> attribs = answer.getQuestion().getSummaryAttributes();
+	Iterator<String> ai = attribs.keySet().iterator();
+	Vector<AttributeFieldBean> v = new Vector<AttributeFieldBean>();
 	while (ai.hasNext()) {
-	    String attribName = (String)ai.next();
-	    v.add(new AttributeFieldBean((FieldI)attribs.get(attribName)));
+	    String attribName = ai.next();
+	    v.add(new AttributeFieldBean(attribs.get(attribName)));
 	}
 	int size = v.size();
 	AttributeFieldBean[] sumAttribs = new AttributeFieldBean[size];
@@ -139,7 +139,7 @@ public class AnswerBean {
 
     public String[] getSummaryAttributeNames() {
 	AttributeFieldBean[] sumAttribs = getSummaryAttributes();
-	Vector v = new Vector();
+	Vector<String> v = new Vector<String>();
 	for (int i=0; i<sumAttribs.length; i++) {
 	    String attribName = sumAttribs[i].getName();
 	    v.add(attribName);
@@ -152,7 +152,7 @@ public class AnswerBean {
 
     public AttributeFieldBean[] getDownloadAttributes() {
 	AttributeFieldBean[] sumAttribs = getSummaryAttributes();
-	Vector v = new Vector();
+	Vector<AttributeFieldBean> v = new Vector<AttributeFieldBean>();
 	for (int i=0; i<sumAttribs.length; i++) {
 	    String attribName = sumAttribs[i].getName();
 
@@ -172,7 +172,7 @@ public class AnswerBean {
 
     public String[] getDownloadAttributeNames() {
 	AttributeFieldBean[] downloadAttribs = getDownloadAttributes();
-	Vector v = new Vector();
+	Vector<String> v = new Vector<String>();
 	for (int i=0; i<downloadAttribs.length; i++) {
 	    v.add(downloadAttribs[i].getName());
 	}

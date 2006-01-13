@@ -1,32 +1,5 @@
 package org.gusdb.wdk.model.implementation;
 
-import org.gusdb.wdk.model.Column;
-import org.gusdb.wdk.model.FlatVocabParam;
-import org.gusdb.wdk.model.ParamSet;
-import org.gusdb.wdk.model.QuerySet;
-import org.gusdb.wdk.model.RecordClass;
-import org.gusdb.wdk.model.RecordClassSet;
-import org.gusdb.wdk.model.Reference;
-import org.gusdb.wdk.model.ReferenceList;
-import org.gusdb.wdk.model.StringParam;
-import org.gusdb.wdk.model.Question;
-import org.gusdb.wdk.model.QuestionSet;
-import org.gusdb.wdk.model.TextAttributeField;
-import org.gusdb.wdk.model.TextColumn;
-import org.gusdb.wdk.model.LinkAttributeField;
-import org.gusdb.wdk.model.LinkColumn;
-import org.gusdb.wdk.model.DynamicAttributeSet;
-import org.gusdb.wdk.model.NestedRecord;
-import org.gusdb.wdk.model.NestedRecordList;
-import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.xml.XmlAttributeField;
-import org.gusdb.wdk.model.xml.XmlQuestion;
-import org.gusdb.wdk.model.xml.XmlQuestionSet;
-import org.gusdb.wdk.model.xml.XmlRecordClass;
-import org.gusdb.wdk.model.xml.XmlRecordClassSet;
-import org.gusdb.wdk.model.xml.XmlTableField;
-
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -34,8 +7,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.Properties;
@@ -44,13 +15,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.commons.digester.Digester;
-import org.w3c.dom.Document;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -58,6 +22,22 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.digester.Digester;
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.*;
+import org.gusdb.wdk.model.xml.XmlAttributeField;
+import org.gusdb.wdk.model.xml.XmlQuestion;
+import org.gusdb.wdk.model.xml.XmlQuestionSet;
+import org.gusdb.wdk.model.xml.XmlRecordClass;
+import org.gusdb.wdk.model.xml.XmlRecordClassSet;
+import org.gusdb.wdk.model.xml.XmlTableField;
+import org.w3c.dom.Document;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 import com.thaiopensource.util.PropertyMap;
 import com.thaiopensource.util.SinglePropertyMap;
@@ -65,17 +45,14 @@ import com.thaiopensource.validate.ValidateProperty;
 import com.thaiopensource.validate.ValidationDriver;
 import com.thaiopensource.xml.sax.ErrorHandlerImpl;
 
-import org.apache.log4j.Logger;
-import org.apache.log4j.Level;
-import org.apache.log4j.BasicConfigurator;
-
 public class ModelXmlParser {
 
     static Logger logger = Logger.getRootLogger();
 
     private static final String DEFAULT_SCHEMA_NAME = "wdkModel.rng";
 
-    private static final String DEFAULT_XML_SCHEMA = "xmlAnswer.rng";
+    // constant never used
+    //private static final String DEFAULT_XML_SCHEMA = "xmlAnswer.rng";
 
 //    public static WdkModel parseXmlFile(URL modelXmlURL, URL modelPropURL,
 //            URL schemaURL, URL modelConfigXmlFileURL) throws WdkModelException {

@@ -116,7 +116,7 @@ public abstract class Param {
      * Transforms external value into internal value if needed By default
      * returns provided value
      */
-    protected Object getInternalValue(Object value) throws WdkModelException {
+    protected String getInternalValue(String value) throws WdkModelException {
         return value;
     }
 

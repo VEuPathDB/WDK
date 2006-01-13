@@ -1,7 +1,5 @@
 package org.gusdb.wdk.model.test;
 
-import org.gusdb.wdk.model.PrimaryKeyValue;
-import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.WdkModelException;
 
 /**
