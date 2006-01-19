@@ -33,8 +33,8 @@ public class XmlQuestionTester {
         String questionFullName = cmdLine.getOptionValue("question");
         String[] rows = cmdLine.getOptionValues("rows");
         String xmlData = null;
-        if (cmdLine.hasOption("xmlData"))
-            xmlData = cmdLine.getOptionValue("xmlData");
+        if (cmdLine.hasOption("basename"))
+            xmlData = cmdLine.getOptionValue("basename");
 
         validateRowCount(rows);
 
@@ -91,7 +91,7 @@ public class XmlQuestionTester {
     }
 
     private static Options declareOptions() {
-        String[] names = { "model", "question", "rows", "xmlData" };
+        String[] names = { "model", "question", "rows", "basename" };
         String[] descs = {
                 "the name of the model.  This is used to find the Model XML file ($GUS_HOME/config/model_name.xml) the Model property file ($GUS_HOME/config/model_name.prop) and the Model config file ($GUS_HOME/config/model_name-config.xml)",
                 "The full name (set.element) of the question to run.",
