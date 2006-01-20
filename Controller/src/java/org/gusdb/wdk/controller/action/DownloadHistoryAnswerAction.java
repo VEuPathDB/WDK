@@ -37,6 +37,7 @@ public class DownloadHistoryAnswerAction extends Action {
 
 	    request.getSession().setAttribute(CConstants.WDK_ANSWER_KEY, wdkAnswer);
 	    request.getSession().setAttribute(CConstants.WDK_QUESTION_PARAMS_KEY, wdkAnswer.getInternalParams());
+	    request.setAttribute(CConstants.USER_ANSWER_ID_KEY, ua_id);
 	} else {
 	    throw new Exception ("no user answer id is given for which to download the result");
 	}

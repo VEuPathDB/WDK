@@ -69,18 +69,22 @@ public class ShowSummaryAction extends Action {
 	    request.getSession().setAttribute(CConstants.WDK_QUESTION_PARAMS_KEY, params);
 
 	    //add AnswerBean to User for query history
-	    wdkUser = (UserBean)request.getSession().getAttribute(CConstants.WDK_USER_KEY);
+ 	    wdkUser = (UserBean)request.getSession().getAttribute(CConstants.WDK_USER_KEY);
 	    if (wdkUser == null) { 
 		ShowQuestionSetsAction.sessionStart(request, getServlet());
 		wdkUser = (UserBean)request.getSession().getAttribute(CConstants.WDK_USER_KEY);
 	    }
 	    wdkUser.addAnswerFuzzy(wdkAnswer);
+
+	    ua_id_str = new Integer(wdkUser.getUserAnswerIdByAnswer(wdkAnswer)).toString();
 	}
 
 	//clear boolean root from session to prevent interference
 	request.getSession().setAttribute(CConstants.CURRENT_BOOLEAN_ROOT_KEY, null);
 
 	request.getSession().setAttribute(CConstants.WDK_ANSWER_KEY, wdkAnswer);
+
+	request.setAttribute(CConstants.USER_ANSWER_ID_KEY, ua_id_str);
 
 	ActionForward forward = getForward(wdkAnswer, mapping, ua_id_str);
 	//System.out.println("SSA: control going to " + forward.getPath());

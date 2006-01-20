@@ -19,6 +19,7 @@ public class CConstants {
     public static final String WDK_ANSWER_KEY = "wdkAnswer";
     public static final String WDK_RECORD_KEY = "wdkRecord";
     public static final String WDK_USER_KEY = "wdkUser";
+    public static final String USER_ANSWER_ID_KEY = "userAnswerId";
     public static final String NEXT_QUESTION_OPERAND = "nextQuestionOperand";
     public static final String QUESTIONFORM_KEY = "questionForm";
     public static final String BOOLEAN_QUESTION_FORM_KEY = "booleanQuestionForm";

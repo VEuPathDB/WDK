@@ -104,6 +104,11 @@ public class UserBean {
         return new UserAnswerBean(this.user.getUserAnswerByName(name));
     }
 
+    public int getUserAnswerIdByAnswer(AnswerBean answer)
+            throws WdkUserException {
+	return getUserAnswerByAnswer(answer).getAnswerID();
+    }
+
     public UserAnswerBean getUserAnswerByAnswer(AnswerBean answer)
             throws WdkUserException {
         return new UserAnswerBean(user.getUserAnswerByAnswer(answer.answer));
