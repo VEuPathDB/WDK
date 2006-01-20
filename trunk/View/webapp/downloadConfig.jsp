@@ -6,7 +6,9 @@
 <%@ taglib prefix="nested" uri="http://jakarta.apache.org/struts/tags-nested" %>
 
 <!-- get wdkAnswer from requestScope -->
+<jsp:useBean id="wdkUser" scope="session" type="org.gusdb.wdk.model.jspwrap.UserBean"/>
 <c:set value="${sessionScope.wdkAnswer}" var="wdkAnswer"/>
+<c:set var="ua_id" value="${requestScope.userAnswerId}"/>
 
 <!-- display page header -->
 <site:header banner="Create and download a report" />
@@ -74,7 +76,9 @@
           <c:set var="i" value="0"/>
 
           <tr><td colspan="${numPerLine}">
-          <html:multibox property="selectedFields">all</html:multibox>All, or...</td></tr>
+          <html:multibox property="selectedFields">all</html:multibox>
+          Default (same as in <a href="showSummary.do?user_answer_id=${ua_id}">result</a>), or...
+          </td></tr>
           <tr><td colspan="${numPerLine}">&nbsp;</td></tr>
 
           <tr>
