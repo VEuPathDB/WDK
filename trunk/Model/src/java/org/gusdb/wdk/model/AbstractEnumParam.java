@@ -49,13 +49,13 @@ public abstract class AbstractEnumParam extends Param {
 	return err;
     }
 
-    public Object getInternalValue(Object value) throws WdkModelException {
+    public String getInternalValue(String value) throws WdkModelException {
 	initVocabMap();
 	String internalValue;
 	if (multiPick) {
 	    StringBuffer buf = new StringBuffer();
 	    
-	    String [] values = value.toString().split(",");
+	    String [] values = value.split(",");
 	    for (int i=0; i<values.length; i++) {
 		String v = vocabMap.get(values[i]).toString();
 		if (i > 0) buf.append(",");
