@@ -59,6 +59,7 @@
          <optional>
            <attribute name="isInternal" />
          </optional>
+         <text/>
       </element>
    </define>
 
