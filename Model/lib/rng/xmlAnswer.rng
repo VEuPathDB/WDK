@@ -28,15 +28,6 @@
    <define name="table">
       <element name="table">
          <attribute name="name" />
-         <optional>
-           <attribute name="displayName" />
-         </optional>
-         <optional>
-           <attribute name="type" />
-         </optional>
-         <optional>
-           <attribute name="isInternal" />
-         </optional>
          <zeroOrMore>
             <element name="row">
 	       <oneOrMore>
@@ -50,15 +41,6 @@
    <define name="attribute">
       <element name="attribute">
          <attribute name="name" />
-         <optional>
-           <attribute name="displayName" />
-         </optional>
-         <optional>
-           <attribute name="type" />
-         </optional>
-         <optional>
-           <attribute name="isInternal" />
-         </optional>
          <text/>
       </element>
    </define>
