@@ -114,6 +114,7 @@ public class XmlDataLoader {
 	digester.addCallMethod("xmlAnswer/record/attribute",
 			       "setValue", 1);
 	digester.addCallParam("xmlAnswer/record/attribute", 0);
+
 	digester.addSetNext("xmlAnswer/record/attribute", "addAttribute");
 	
         // xmlTable
