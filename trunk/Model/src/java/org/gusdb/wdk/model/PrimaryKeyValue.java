@@ -44,16 +44,15 @@ public class PrimaryKeyValue {
 
     public String getBriefValue() throws WdkModelException {
         String value = getValue();
-        Integer truncate = field.getTruncate();
-        if (truncate == null) {
+        int truncate = field.getTruncateTo();
+        if (truncate == 0) {
             truncate = WdkModel.TRUNCATE_DEFAULT;
         }
-        int truncateInt = truncate.intValue();
 
-        if (value.length() < truncateInt) {
+        if (value.length() < truncate) {
             return value;
         } else {
-            String returned = value.substring(0, truncateInt + 1) + ". . .";
+            String returned = value.substring(0, truncate + 1) + ". . .";
             return returned;
         }
     }

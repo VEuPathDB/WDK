@@ -43,7 +43,7 @@ public class Question implements Serializable {
 
     private String[] summaryAttributeNames;
 
-    private Map<String, FieldI> summaryAttributeMap;
+    private Map<String, AttributeField> summaryAttributeMap;
 
     private DynamicAttributeSet dynamicAttributes;
 
@@ -52,7 +52,7 @@ public class Question implements Serializable {
     ///////////////////////////////////////////////////////////////////////
     
     public Question(){
-	summaryAttributeMap = new LinkedHashMap();
+	summaryAttributeMap = new LinkedHashMap<String, AttributeField>();
     }
 
 
@@ -97,21 +97,20 @@ public class Question implements Serializable {
 	this.dynamicAttributes = dynamicAttributes;
     }
 
-    public Map<String, FieldI> getSummaryAttributes(){
+    public Map<String, AttributeField> getSummaryAttributes(){
 	return summaryAttributeMap;
     }
 
     ///////////////////////////////////////////////////////////////////////
 
 
-    public Answer makeAnswer(Map paramValues, int i, int j) throws WdkUserException, WdkModelException{
-	
-	QueryInstance qi = query.makeInstance();
-	qi.setValues(paramValues);
-	Answer answer = 
-	    new Answer(this, qi, i, j);
-	
-	return answer;
+    public Answer makeAnswer(Map<String, String> paramValues, int i, int j)
+            throws WdkUserException, WdkModelException {
+        QueryInstance qi = query.makeInstance();
+        qi.setValues(paramValues);
+        Answer answer = new Answer(this, qi, i, j);
+
+        return answer;
     }
 
     public Param[] getParams() {
@@ -184,7 +183,7 @@ public class Question implements Serializable {
     // package methods
     ///////////////////////////////////////////////////////////////////////
 
-    Map <String, FieldI> getDynamicAttributeFields() {
+    Map<String, AttributeField> getDynamicAttributeFields() {
 	return dynamicAttributes == null ? null: dynamicAttributes.getAttributeFields();
     }
 
@@ -192,12 +191,13 @@ public class Question implements Serializable {
 	if (dynamicAttributes != null) dynamicAttributes.setResources(model);
     }
 
-    Map getAttributeFields() {
-	Map attributeFields = new LinkedHashMap(recordClass.getAttributeFields());
-	if (dynamicAttributes != null) {
-	    attributeFields.putAll(dynamicAttributes.getAttributeFields());
-	}
-	return attributeFields;
+    Map<String, AttributeField> getAttributeFields() {
+        Map<String, AttributeField> attributeFields = new LinkedHashMap<String, AttributeField>(
+                recordClass.getAttributeFieldMap());
+        if (dynamicAttributes != null) {
+            attributeFields.putAll(dynamicAttributes.getAttributeFields());
+        }
+        return attributeFields;
     }
 
 
@@ -214,7 +214,7 @@ public class Question implements Serializable {
 	return summaryAttributeMap.get(attName) != null;
     }
     
-    void setSummaryAttributesMap(Map summaryAtts){
+    void setSummaryAttributesMap(Map<String, AttributeField> summaryAtts){
 	this.summaryAttributeMap = summaryAtts;
     }
 
@@ -230,31 +230,31 @@ public class Question implements Serializable {
 	initSummaryAttributes();
     }
 
-    private void initSummaryAttributes () throws WdkModelException {
-	if (summaryAttributeNames != null) {
-	    summaryAttributeMap = new LinkedHashMap<String, FieldI>();
-	    Map<String, FieldI> attMap = getAttributeFields();
-	    
- 	    for (String name : summaryAttributeNames) {
-		if (attMap.get(name) == null) {
-		    throw new WdkModelException("Question " + getName() + 
-						" has unknown summary attribute: '" + 
-						name + "'");
-		}
-		summaryAttributeMap.put(name, attMap.get(name));
-	    }
-	} else {
-	    Map recAttrsMap = getRecordClass().getAttributeFields();
-	    summaryAttributeMap =  new LinkedHashMap(recAttrsMap);
-	    Iterator ramI = recAttrsMap.keySet().iterator();
-	    String attribName = null;
-	    while (ramI.hasNext()) {
-		attribName = (String)ramI.next();
-		FieldI attr = (FieldI)recAttrsMap.get(attribName);
-		if (attr.getIsInternal()) {
-		    summaryAttributeMap.remove(attribName);
-		}
-	    }
-	}
+    private void initSummaryAttributes() throws WdkModelException {
+        if (summaryAttributeNames != null) {
+            summaryAttributeMap = new LinkedHashMap<String, AttributeField>();
+            Map<String, AttributeField> attMap = getAttributeFields();
+
+            for (String name : summaryAttributeNames) {
+                if (attMap.get(name) == null) {
+                    throw new WdkModelException("Question " + getName()
+                            + " has unknown summary attribute: '" + name + "'");
+                }
+                summaryAttributeMap.put(name, attMap.get(name));
+            }
+        } else {
+            Map<String, AttributeField> recAttrsMap = getRecordClass().getAttributeFieldMap();
+            summaryAttributeMap = new LinkedHashMap<String, AttributeField>(
+                    recAttrsMap);
+            Iterator<String> ramI = recAttrsMap.keySet().iterator();
+            String attribName = null;
+            while (ramI.hasNext()) {
+                attribName = ramI.next();
+                AttributeField attr = recAttrsMap.get(attribName);
+                if (attr.getInternal()) {
+                    summaryAttributeMap.remove(attribName);
+                }
+            }
+        }
     }
 }

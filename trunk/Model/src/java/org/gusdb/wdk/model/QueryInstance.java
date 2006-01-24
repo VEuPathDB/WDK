@@ -166,7 +166,7 @@ public abstract class QueryInstance {
     // Protected methods
     // ------------------------------------------------------------------
 
-    protected Map getValuesMap() {
+    protected Map<String, String> getValuesMap() {
 	return values;
     }
 

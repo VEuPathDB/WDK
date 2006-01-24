@@ -6,127 +6,43 @@ package org.gusdb.wdk.model.xml;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.gusdb.wdk.model.FieldI;
+import org.gusdb.wdk.model.Field;
 import org.gusdb.wdk.model.WdkModelException;
 
 /**
  * @author Jerric
  * @created Oct 11, 2005
  */
-public class XmlTableField implements FieldI {
+public class XmlTableField extends Field {
 
-    private String name;
-    private String displayName;
-    private String help;
-    private String type;
-    private boolean isInternal;
-    private int truncate;
-
-    private Map<String, XmlAttributeField> columns;
+    private Map<String, XmlAttributeField> attributeFields;
 
     public XmlTableField() {
-        isInternal = false;
-        columns = new HashMap<String, XmlAttributeField>();
+        super();
+        internal = false;
+        attributeFields = new HashMap<String, XmlAttributeField>();
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.FieldI#getName()
-     */
-    public String getName() {
-        return name;
+    public void addAttributeField(XmlAttributeField attributeField) {
+        attributeFields.put(attributeField.getName(), attributeField);
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public XmlAttributeField getAttributeField(String name) throws WdkModelException {
+        XmlAttributeField attributeField = attributeFields.get(name);
+        if (attributeField == null)
+            throw new WdkModelException("The AttributeField '" + name
+                    + "' does not exist!");
+        return attributeField;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.FieldI#getDisplayName()
-     */
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.FieldI#getHelp()
-     */
-    public String getHelp() {
-        return help;
-    }
-
-    public void setHelp(String help) {
-        this.help = help;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.FieldI#getType()
-     */
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.FieldI#getIsInternal()
-     */
-    public Boolean getIsInternal() {
-        return isInternal;
-    }
-
-    public void setIsInternal(Boolean internal) {
-        this.isInternal = internal;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.FieldI#getTruncate()
-     */
-    public Integer getTruncate() {
-        return truncate;
-    }
-
-    public void setTruncate(Integer truncate) {
-        this.truncate = truncate;
-    }
-
-    public void addColumn(XmlAttributeField column) {
-        columns.put(column.getName(), column);
-    }
-
-    public XmlAttributeField getColumn(String name) throws WdkModelException {
-        XmlAttributeField column = columns.get(name);
-        if (column == null)
-            throw new WdkModelException("The column of name " + name
-                    + " not exists!");
-        return column;
-    }
-
-    public XmlAttributeField[] getColumns() {
-        XmlAttributeField[] cols = new XmlAttributeField[columns.size()];
-        columns.values().toArray(cols);
-        return cols;
+    public XmlAttributeField[] getAttributeFields() {
+        XmlAttributeField[] fields = new XmlAttributeField[attributeFields.size()];
+        attributeFields.values().toArray(fields);
+        return fields;
     }
 
     public int size() {
-        return columns.size();
+        return attributeFields.size();
     }
 
     /*
@@ -139,8 +55,8 @@ public class XmlTableField implements FieldI {
         StringBuffer sb = new StringBuffer();
         sb.append(getName());
         sb.append(" : ");
-        for (XmlAttributeField column : columns.values()) {
-            sb.append(column.getName());
+        for (XmlAttributeField field : attributeFields.values()) {
+            sb.append(field.getName());
             sb.append(", ");
         }
         if (sb.toString().endsWith(", "))

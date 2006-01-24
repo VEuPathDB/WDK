@@ -1,13 +1,13 @@
 package org.gusdb.wdk.model.jspwrap;
 
-import org.gusdb.wdk.model.Answer;
-import org.gusdb.wdk.model.FieldI;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.BooleanQuery;
-
-import java.util.Map;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Vector;
+
+import org.gusdb.wdk.model.Answer;
+import org.gusdb.wdk.model.AttributeField;
+import org.gusdb.wdk.model.BooleanQuery;
+import org.gusdb.wdk.model.WdkModelException;
 
 /**
  * A wrapper on a {@link Answer} that provides simplified access for 
@@ -16,7 +16,7 @@ import java.util.Vector;
 public class AnswerBean {
 
     Answer answer;
-    Map<Object, Object> downloadConfigMap = null;
+    Map downloadConfigMap = null;
 
     boolean isCombinedAnswer = false;
     String userAnswerName = null;
@@ -28,11 +28,11 @@ public class AnswerBean {
     /**
      * @return A Map of param displayName --> param value.
      */
-    public Map<String, Object> getParams() {
+    public Map<String, String> getParams() {
 	return answer.getDisplayParams();
     }
 
-    public Map<Object, Object> getInternalParams() {
+    public Map<String, String> getInternalParams() {
 	return answer.getParams();
     }
 
@@ -124,7 +124,7 @@ public class AnswerBean {
     }
 
     public AttributeFieldBean[] getSummaryAttributes() {
-	Map<String, FieldI> attribs = answer.getQuestion().getSummaryAttributes();
+	Map<String, AttributeField> attribs = answer.getQuestion().getSummaryAttributes();
 	Iterator<String> ai = attribs.keySet().iterator();
 	Vector<AttributeFieldBean> v = new Vector<AttributeFieldBean>();
 	while (ai.hasNext()) {

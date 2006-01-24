@@ -209,9 +209,9 @@ public abstract class Query {
 	HashMap<Param, String[]> errors = null;
 	
 	// first confirm that all supplied values have legal names
-	Iterator valueNames = values.keySet().iterator();
+	Iterator<String> valueNames = values.keySet().iterator();
 	while (valueNames.hasNext()) {
-	    String valueName = (String)valueNames.next();
+	    String valueName = valueNames.next();
 	    if (paramsH.get(valueName) == null) {
 		throw new WdkUserException("'" + valueName + "' is not a legal parameter name for query '" + getFullName() + "'"  );
 	    }

@@ -43,8 +43,8 @@ public class XmlAttributeFieldBean {
      * 
      * @see org.gusdb.wdk.model.xml.XmlAttributeField#getIsInternal()
      */
-    public Boolean getIsInternal() {
-        return this.field.getIsInternal();
+    public Boolean getInternal() {
+        return this.field.getInternal();
     }
 
     /*
@@ -61,8 +61,8 @@ public class XmlAttributeFieldBean {
      * 
      * @see org.gusdb.wdk.model.xml.XmlAttributeField#getTruncate()
      */
-    public Integer getTruncate() {
-        return this.field.getTruncate();
+    public Integer getTruncateTo() {
+        return this.field.getTruncateTo();
     }
 
     /*

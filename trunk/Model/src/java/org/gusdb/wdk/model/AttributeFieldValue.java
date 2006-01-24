@@ -1,18 +1,17 @@
 package org.gusdb.wdk.model;
 
-import org.gusdb.wdk.model.implementation.SqlResultList;
 import java.util.logging.Logger;
 
 public class AttributeFieldValue {
 
     private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.model.FieldValue");
     
-    FieldI field;
+    AttributeField field;
     Object value;
     boolean isSummary;
     boolean needsTruncate;
 
-    public AttributeFieldValue(FieldI field, Object value) {
+    public AttributeFieldValue(AttributeField field, Object value) {
 	this.field = field;
 	this.value = value;
 	this.isSummary = false;
@@ -22,8 +21,8 @@ public class AttributeFieldValue {
         return field.getName();
     }
 
-    public Boolean getIsInternal() {
-        return field.getIsInternal();
+    public Boolean getInternal() {
+        return field.getInternal();
     }
 
     public String getHelp() {
@@ -49,17 +48,16 @@ public class AttributeFieldValue {
 
 	String briefValue = value.toString();
 	
-	Integer truncate = field.getTruncate();
-	if (truncate == null){
+	int truncate = field.getTruncateTo();
+	if (truncate == 0){
 	    truncate = WdkModel.TRUNCATE_DEFAULT;
 	}
-	int truncateInt = truncate.intValue();
 
-	if (briefValue.length() <= truncateInt){
+	if (briefValue.length() <= truncate){
 	    return briefValue;
 	}
 	else {
-	    String returned = briefValue.substring(0, truncateInt) + ". . .";
+	    String returned = briefValue.substring(0, truncate) + ". . .";
 	    return returned;
 	}
     }
@@ -74,7 +72,7 @@ public class AttributeFieldValue {
        StringBuffer buf = 
 	   new StringBuffer(classnm + ": name='" + getName() + "'" + newline +
 			    "  displayName='" + getDisplayName() + "'" + newline +
-			    "  help='" + getHelp() + "'" + newline + "isSummary? = '" + isSummary() + "'" + newline
+			    "  help='" + getHelp() + "'" + newline + "  isSummary? = '" + isSummary() + "'" + newline
 			    );
 
        return buf.toString();

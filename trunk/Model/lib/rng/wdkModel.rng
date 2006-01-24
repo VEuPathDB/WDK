@@ -48,21 +48,18 @@
   <define name="sqlColumns">
     <choice>
       <ref name="sqlColumn" />
-      <ref name="textColumn" />
-      <ref name="linkColumn" />
     </choice>
   </define>
     
   <define name="wsColumns">
     <choice>
       <ref name="wsColumn" />
-      <ref name="textColumn" />
-      <ref name="linkColumn" />
     </choice>
   </define>
     
   <define name="attributes">
     <choice>
+      <ref name="columnAttribute" />
       <ref name="textAttribute" />
       <ref name="linkAttribute" />
     </choice>
@@ -73,22 +70,10 @@
   <define name="ColumnBaseContents">
     <attribute name="name" />
     <optional>
-      <attribute name="inSummary" />
-    </optional>
-    <optional>
-      <attribute name="truncateTo" />
-    </optional>
-    <optional>
-      <attribute name="displayName" />
-    </optional>
-    <optional>
-      <attribute name="help" />
-    </optional>
-    <optional>
       <attribute name="specialType" />
     </optional>
     <optional>
-      <attribute name="isInternal" />
+      <attribute name="width" />
     </optional>
   </define>
 
@@ -159,7 +144,7 @@
           </element>        
       </optional>
       <optional>
-          <attribute name="isInternal" />
+          <attribute name="internal" />
       </optional>
       <oneOrMore>
         <ref name="question" />
@@ -253,37 +238,12 @@
     </element>
   </define>
     
-  <define name="xmlTableColumn">
-    <element name="column">
-      <ref name="ColumnBaseContents" />
-    </element>
-  </define>
-    
   <define name="wsColumn">
-    <element name="wsColumn">
-      <ref name="ColumnBaseContents" />
-      <attribute name="width" />
-   </element>
-   </define>
-    
-  <define name="textColumn">
-    <element name="textColumn">
-      <ref name="ColumnBaseContents" />
-      <attribute name="text" />
-    </element>
+     <element name="wsColumn">
+        <ref name="ColumnBaseContents" />
+     </element>
   </define>
-  
-  
-  <define name="linkColumn">
-    <element name="linkColumn">
-      <ref name="ColumnBaseContents" />
-      <attribute name="visible" />
-      <element name="url">
-        <text />
-      </element>
-    </element>
-  </define>
-  
+
   
   <!-- RecordClass -->
   <define name="recordClass">
@@ -307,19 +267,26 @@
       </optional>
 
       <zeroOrMore>  
-        <element name="attributeQueryRef">
-          <attribute name="ref" />
-        </element>
+          <element name="attributeQueryRef">
+              <attribute name="ref" />
+              <zeroOrMore>
+                  <ref name="attributes" />
+              </zeroOrMore>
+          </element>
       </zeroOrMore>
    
       <zeroOrMore>
-        <element name="tableQueryRef">
-          <attribute name="ref" />
-        </element>
+          <ref name="table" />
       </zeroOrMore>
+      
       <zeroOrMore>
-        <ref name="attributes" />
+        <ref name="linkAttribute" />
       </zeroOrMore>
+
+      <zeroOrMore>
+        <ref name="textAttribute" />
+      </zeroOrMore>
+
       <zeroOrMore>
         <element name="nestedRecord">
             <attribute name="questionRef" />
@@ -351,13 +318,13 @@
       <optional>
          <element name="dynamicAttributes">
            <oneOrMore>
-             <element name="attribute">
-               <attribute name="name" />
-               <attribute name="displayName" />
-             </element>
+             <ref name="columnAttribute" />
            </oneOrMore>
            <zeroOrMore>
-             <ref name="attributes" />
+             <ref name="linkAttribute" />
+           </zeroOrMore>
+           <zeroOrMore>
+             <ref name="textAttribute" />
            </zeroOrMore>
          </element>
       </optional>
@@ -371,15 +338,49 @@
   </define>
     
   <!-- Attributes -->
+  
+  <!-- Schema subtype shared elements -->
+  <define name="FieldBaseContents">
+    <attribute name="name" />
+    <optional>
+      <attribute name="truncateTo" />
+    </optional>
+    <optional>
+      <attribute name="displayName" />
+    </optional>
+    <optional>
+      <attribute name="help" />
+    </optional>
+    <optional>
+      <attribute name="type" />
+    </optional>
+    <optional>
+      <attribute name="internal" />
+    </optional>
+    <optional>
+      <attribute name="inReportMaker" />
+    </optional>
+  </define>
+
+  <define name="columnAttribute">
+      <element name="columnAttribute">
+          <ref name="FieldBaseContents" />
+      </element>
+  </define>
+  
+  <define name="table">
+    <element name="table">
+      <attribute name="queryRef" />
+      <ref name="FieldBaseContents" />
+      <oneOrMore>
+         <ref name="attributes" />
+      </oneOrMore>
+    </element>
+  </define>
+  
   <define name ="textAttribute">
     <element name="textAttribute">
-      <attribute name="name" />
-      <optional> 
-        <attribute name="displayName" />
-      </optional>
-      <optional> 
-        <attribute name="truncateTo" />
-      </optional>
+      <ref name="FieldBaseContents" />
       <element name="text">
         <text />
       </element>
@@ -388,10 +389,7 @@
 
   <define name ="linkAttribute">
     <element name="linkAttribute">
-      <attribute name="name" />
-      <optional> 
-        <attribute name="displayName" />
-      </optional>
+      <ref name="FieldBaseContents" />
       <attribute name="visible" />
       <element name="url">
         <text />
@@ -476,41 +474,17 @@
   </define>
 
   <define name="xmlTable">
-     <element name="table">
-        <attribute name="name" />
-        <optional>
-           <attribute name="displayName"/>
-        </optional>
-        <optional> 
-           <attribute name="help" />
-        </optional>
-        <optional> 
-           <attribute name="isInternal" />
-        </optional>
-        <optional> 
-           <attribute name="type" />
-        </optional>
+     <element name="xmlTable">
+        <ref name="FieldBaseContents" />
         <oneOrMore>
-           <ref name="xmlTableColumn" />
+           <ref name="xmlAttribute" />
         </oneOrMore>
      </element>
   </define>
 
   <define name ="xmlAttribute">
-     <element name="attribute">
-        <attribute name="name" />
-        <optional> 
-           <attribute name="displayName" />
-        </optional>
-        <optional> 
-           <attribute name="help" />
-        </optional>
-        <optional> 
-           <attribute name="isInternal" />
-        </optional>
-        <optional> 
-           <attribute name="type" />
-        </optional>
+     <element name="xmlAttribute">
+         <ref name="FieldBaseContents" />
      </element>
   </define>
  

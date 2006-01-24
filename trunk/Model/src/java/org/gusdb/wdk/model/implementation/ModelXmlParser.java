@@ -51,26 +51,6 @@ public class ModelXmlParser {
 
     private static final String DEFAULT_SCHEMA_NAME = "wdkModel.rng";
 
-    // constant never used
-    //private static final String DEFAULT_XML_SCHEMA = "xmlAnswer.rng";
-
-//    public static WdkModel parseXmlFile(URL modelXmlURL, URL modelPropURL,
-//            URL schemaURL, URL modelConfigXmlFileURL) throws WdkModelException {
-//        // assume the schema for xml is put into the same place as the schema
-//        // for model
-//        try {
-//            File schemaFile = new File(schemaURL.);
-//            File xmlSchemaFile = new File(schemaFile.getParentFile(),
-//                    DEFAULT_XML_SCHEMA);
-//            return parseXmlFile(modelXmlURL, modelPropURL, schemaURL,
-//                    xmlSchemaFile.toURL(), modelConfigXmlFileURL);
-//        } catch (MalformedURLException ex) {
-//            throw new WdkModelException(ex);
-//        } catch (URISyntaxException ex) {
-//            throw new WdkModelException(ex);
-//        }
-//    }
-
     public static WdkModel parseXmlFile(URL modelXmlURL, URL modelPropURL,
             URL schemaURL, URL xmlSchemaURL, URL modelConfigXmlFileURL)
             throws WdkModelException {
@@ -252,25 +232,113 @@ public class ModelXmlParser {
                 "setProjectParamRef");
         // end by jerric
 
+
+        // load attributeQueryRef along with the attributes associated with it
+        
         /*    */digester.addObjectCreate(
                 "wdkModel/recordClassSet/recordClass/attributeQueryRef",
-                Reference.class);
+                AttributeQueryReference.class);
 
-        /*    */digester.addSetProperties("wdkModel/recordClassSet/recordClass/attributeQueryRef");
+        /*    */digester.addSetProperties(
+                "wdkModel/recordClassSet/recordClass/attributeQueryRef");
 
+
+        /*      */digester.addObjectCreate(
+                "wdkModel/recordClassSet/recordClass/attributeQueryRef/columnAttribute",
+                ColumnAttributeField.class);
+
+        /*      */digester.addSetProperties(
+                "wdkModel/recordClassSet/recordClass/attributeQueryRef/columnAttribute");
+
+        /*      */digester.addSetNext(
+                "wdkModel/recordClassSet/recordClass/attributeQueryRef/columnAttribute",
+                "addAttributeField");
+
+        /*    */digester.addObjectCreate(
+                "wdkModel/recordClassSet/recordClass/attributeQueryRef/linkAttribute",
+                LinkAttributeField.class);
+
+        /*    */digester.addSetProperties(
+                "wdkModel/recordClassSet/recordClass/attributeQueryRef/linkAttribute");
+
+        /*    */digester.addBeanPropertySetter(
+                "wdkModel/recordClassSet/recordClass/attributeQueryRef/linkAttribute/url");
+
+        /*    */digester.addSetNext(
+                "wdkModel/recordClassSet/recordClass/attributeQueryRef/linkAttribute",
+                "addAttributeField");
+
+        /*    */digester.addObjectCreate(
+                "wdkModel/recordClassSet/recordClass/attributeQueryRef/textAttribute",
+                TextAttributeField.class);
+
+        /*    */digester.addSetProperties(
+                "wdkModel/recordClassSet/recordClass/attributeQueryRef/textAttribute");
+
+        /*      */digester.addBeanPropertySetter(
+                "wdkModel/recordClassSet/recordClass/attributeQueryRef/textAttribute/text");
+
+        /*    */digester.addSetNext(
+                "wdkModel/recordClassSet/recordClass/attributeQueryRef/textAttribute",
+                "addAttributeField");
+        
+       
         /*    */digester.addSetNext(
                 "wdkModel/recordClassSet/recordClass/attributeQueryRef",
                 "addAttributesQueryRef");
+        
+        
+        // load the table field along with the attribute associated with it
+        /*    */digester.addObjectCreate( "wdkModel/recordClassSet/recordClass/table",
+                TableField.class);
+
+        /*    */digester.addSetProperties("wdkModel/recordClassSet/recordClass/table");
+        
+        
+        /*      */digester.addObjectCreate(
+                "wdkModel/recordClassSet/recordClass/table/columnAttribute",
+                ColumnAttributeField.class);
+
+        /*      */digester.addSetProperties(
+                "wdkModel/recordClassSet/recordClass/table/columnAttribute");
+
+        /*      */digester.addSetNext(
+                "wdkModel/recordClassSet/recordClass/table/columnAttribute",
+                "addAttributeField");
 
         /*    */digester.addObjectCreate(
-                "wdkModel/recordClassSet/recordClass/tableQueryRef",
-                Reference.class);
+                "wdkModel/recordClassSet/recordClass/table/linkAttribute",
+                LinkAttributeField.class);
 
-        /*    */digester.addSetProperties("wdkModel/recordClassSet/recordClass/tableQueryRef");
+        /*    */digester.addSetProperties(
+                "wdkModel/recordClassSet/recordClass/table/linkAttribute");
+
+        /*    */digester.addBeanPropertySetter(
+                "wdkModel/recordClassSet/recordClass/table/linkAttribute/url");
 
         /*    */digester.addSetNext(
-                "wdkModel/recordClassSet/recordClass/tableQueryRef",
-                "addTableQueryRef");
+                "wdkModel/recordClassSet/recordClass/table/linkAttribute",
+                "addAttributeField");
+
+        /*    */digester.addObjectCreate(
+                "wdkModel/recordClassSet/recordClass/table/textAttribute",
+                TextAttributeField.class);
+
+        /*    */digester.addSetProperties(
+                "wdkModel/recordClassSet/recordClass/table/textAttribute");
+
+        /*      */digester.addBeanPropertySetter(
+                "wdkModel/recordClassSet/recordClass/table/textAttribute/text");
+
+        /*    */digester.addSetNext(
+                "wdkModel/recordClassSet/recordClass/table/textAttribute",
+                "addAttributeField");
+        
+
+        /*    */digester.addSetNext("wdkModel/recordClassSet/recordClass/table",
+                "addTableField");
+        
+        // load link attribute & text attribute directly belong to RecordClass
 
         /*    */digester.addObjectCreate(
                 "wdkModel/recordClassSet/recordClass/linkAttribute",
@@ -282,7 +350,7 @@ public class ModelXmlParser {
 
         /*    */digester.addSetNext(
                 "wdkModel/recordClassSet/recordClass/linkAttribute",
-                "addLinkAttribute");
+                "addAttributeField");
 
         /*    */digester.addObjectCreate(
                 "wdkModel/recordClassSet/recordClass/textAttribute",
@@ -294,7 +362,7 @@ public class ModelXmlParser {
 
         /*    */digester.addSetNext(
                 "wdkModel/recordClassSet/recordClass/textAttribute",
-                "addTextAttribute");
+                "addAttributeField");
 
         /*    */digester.addObjectCreate(
                 "wdkModel/recordClassSet/recordClass/nestedRecord",
@@ -350,24 +418,6 @@ public class ModelXmlParser {
         /*    */digester.addSetNext("wdkModel/querySet/sqlQuery/column",
                 "addColumn");
 
-        /*    */digester.addObjectCreate(
-                "wdkModel/querySet/sqlQuery/linkColumn", LinkColumn.class);
-
-        /*    */digester.addSetProperties("wdkModel/querySet/sqlQuery/linkColumn");
-
-        /*    */digester.addBeanPropertySetter("wdkModel/querySet/sqlQuery/linkColumn/url");
-
-        /*    */digester.addSetNext("wdkModel/querySet/sqlQuery/linkColumn",
-                "addColumn");
-
-        /*    */digester.addObjectCreate(
-                "wdkModel/querySet/sqlQuery/textColumn", TextColumn.class);
-
-        /*    */digester.addSetProperties("wdkModel/querySet/sqlQuery/textColumn");
-
-        /*    */digester.addSetNext("wdkModel/querySet/sqlQuery/textColumn",
-                "addColumn");
-
         /*  */digester.addSetNext("wdkModel/querySet/sqlQuery", "addQuery");
 
         /*  */digester.addObjectCreate("wdkModel/querySet/wsQuery",
@@ -391,24 +441,6 @@ public class ModelXmlParser {
         /*    */digester.addSetProperties("wdkModel/querySet/wsQuery/wsColumn");
 
         /*    */digester.addSetNext("wdkModel/querySet/wsQuery/wsColumn",
-                "addColumn");
-
-        /*    */digester.addObjectCreate(
-                "wdkModel/querySet/wsQuery/linkColumn", LinkColumn.class);
-
-        /*    */digester.addSetProperties("wdkModel/querySet/wsQuery/linkColumn");
-
-        /*    */digester.addBeanPropertySetter("wdkModel/querySet/wsQuery/linkColumn/url");
-
-        /*    */digester.addSetNext("wdkModel/querySet/wsQuery/linkColumn",
-                "addColumn");
-
-        /*    */digester.addObjectCreate(
-                "wdkModel/querySet/wsQuery/textColumn", TextColumn.class);
-
-        /*    */digester.addSetProperties("wdkModel/querySet/wsQuery/textColumn");
-
-        /*    */digester.addSetNext("wdkModel/querySet/wsQuery/textColumn",
                 "addColumn");
 
         /*  */digester.addSetNext("wdkModel/querySet/wsQuery", "addQuery");
@@ -476,36 +508,47 @@ public class ModelXmlParser {
                 "wdkModel/questionSet/question/dynamicAttributes",
                 DynamicAttributeSet.class);
 
-        /*      */digester.addSetProperties("wdkModel/questionSet/question/dynamicAttributes");
+        /*      */digester.addSetProperties(
+                "wdkModel/questionSet/question/dynamicAttributes");
 
-	/*      */digester.addObjectCreate("wdkModel/questionSet/question/dynamicAttributes/attribute", Column.class);
+        /*      */digester.addObjectCreate(
+                "wdkModel/questionSet/question/dynamicAttributes/columnAttribute", 
+                ColumnAttributeField.class);
 
-	/*        */digester.addSetProperties("wdkModel/questionSet/question/dynamicAttributes/attribute");
+        /*        */digester.addSetProperties(
+                "wdkModel/questionSet/question/dynamicAttributes/columnAttribute");
 
-	/*      */digester.addSetNext("wdkModel/questionSet/question/dynamicAttributes/attribute", "addAttribute");
+        /*      */digester.addSetNext(
+                "wdkModel/questionSet/question/dynamicAttributes/columnAttribute", 
+                "addAttributeField");
+        
         /*      */digester.addObjectCreate(
                     "wdkModel/questionSet/question/dynamicAttributes/linkAttribute",
                     LinkAttributeField.class);
 
-        /*        */digester.addSetProperties("wdkModel/questionSet/question/dynamicAttributes/linkAttribute");
+        /*        */digester.addSetProperties(
+                "wdkModel/questionSet/question/dynamicAttributes/linkAttribute");
 
-        /*        */digester.addBeanPropertySetter("wdkModel/questionSet/question/dynamicAttributes/linkAttribute/url");
+        /*        */digester.addBeanPropertySetter(
+                "wdkModel/questionSet/question/dynamicAttributes/linkAttribute/url");
 
         /*      */digester.addSetNext(
                   "wdkModel/questionSet/question/dynamicAttributes/linkAttribute",
-                  "addLinkAttribute");
+                  "addAttributeField");
 
         /*      */digester.addObjectCreate(
                   "wdkModel/questionSet/question/dynamicAttributes/textAttribute",
                   TextAttributeField.class);
 
-        /*        */digester.addSetProperties("wdkModel/questionSet/question/dynamicAttributes/textAttribute");
+        /*        */digester.addSetProperties(
+                "wdkModel/questionSet/question/dynamicAttributes/textAttribute");
 
-        /*        */digester.addBeanPropertySetter("wdkModel/questionSet/question/dynamicAttributes/textAttribute/text");
+        /*        */digester.addBeanPropertySetter(
+                "wdkModel/questionSet/question/dynamicAttributes/textAttribute/text");
 
         /*      */digester.addSetNext(
                   "wdkModel/questionSet/question/dynamicAttributes/textAttribute",
-                  "addTextAttribute");
+                  "addAttributeField");
 
         /*    */digester.addSetNext("wdkModel/questionSet/question/dynamicAttributes", "setDynamicAttributeSet");
 
@@ -543,30 +586,33 @@ public class ModelXmlParser {
 
         // load XmlAttributeField
         digester.addObjectCreate(
-                "wdkModel/xmlRecordClassSet/xmlRecordClass/attribute",
+                "wdkModel/xmlRecordClassSet/xmlRecordClass/xmlAttribute",
                 XmlAttributeField.class);
-        digester.addSetProperties("wdkModel/xmlRecordClassSet/xmlRecordClass/attribute");
+        digester.addSetProperties(
+                "wdkModel/xmlRecordClassSet/xmlRecordClass/xmlAttribute");
         digester.addSetNext(
-                "wdkModel/xmlRecordClassSet/xmlRecordClass/attribute",
+                "wdkModel/xmlRecordClassSet/xmlRecordClass/xmlAttribute",
                 "addAttributeField");
 
         // load XmlTableField
         digester.addObjectCreate(
-                "wdkModel/xmlRecordClassSet/xmlRecordClass/table",
+                "wdkModel/xmlRecordClassSet/xmlRecordClass/xmlTable",
                 XmlTableField.class);
-        digester.addSetProperties("wdkModel/xmlRecordClassSet/xmlRecordClass/table");
+        digester.addSetProperties(
+                "wdkModel/xmlRecordClassSet/xmlRecordClass/xmlTable");
 
         // load XmlAttributeField within table
         digester.addObjectCreate(
-                "wdkModel/xmlRecordClassSet/xmlRecordClass/table/column",
+                "wdkModel/xmlRecordClassSet/xmlRecordClass/xmlTable/xmlAttribute",
                 XmlAttributeField.class);
-        digester.addSetProperties("wdkModel/xmlRecordClassSet/xmlRecordClass/table/column");
+        digester.addSetProperties(
+                "wdkModel/xmlRecordClassSet/xmlRecordClass/xmlTable/xmlAttribute");
         digester.addSetNext(
-                "wdkModel/xmlRecordClassSet/xmlRecordClass/table/column",
-                "addColumn");
+                "wdkModel/xmlRecordClassSet/xmlRecordClass/xmlTable/xmlAttribute",
+                "addAttributeField");
 
         digester.addSetNext(
-                "wdkModel/xmlRecordClassSet/xmlRecordClass/table",
+                "wdkModel/xmlRecordClassSet/xmlRecordClass/xmlTable",
                 "addTableField");
 
         digester.addSetNext("wdkModel/xmlRecordClassSet/xmlRecordClass",

@@ -158,7 +158,7 @@ public class XmlRecordInstance {
             for (XmlRowValue row : table.getRows()) {
                 for (XmlAttributeValue column : row.getColumns()) {
                     XmlAttributeField colField = 
-			tableField.getColumn(column.getName());
+			tableField.getAttributeField(column.getName());
                     column.setAttributeField(colField);
                 }
             }
@@ -169,7 +169,8 @@ public class XmlRecordInstance {
 
             // check column consistency
             XmlTableValue table = tables.get(field.getName());
-            for (XmlAttributeField column : field.getColumns()) {
+            XmlAttributeField[] columns = field.getAttributeFields();
+            for (XmlAttributeField column : columns) {
                 for (XmlRowValue row : table.getRows()) {
                     if (!row.hasColumn(column.getName()))
                         throw new WdkModelException("Column "

@@ -357,7 +357,7 @@ public class SanityTester {
                     questionsPassed++;
                 }
             } catch (Exception e) {
-                queriesFailed++;
+                questionsFailed++;
                 System.out.println(BANNER_LINE);
                 System.out.println("***QUESTION " + questionRef.getSetName()
                         + "." + questionRef.getElementName()

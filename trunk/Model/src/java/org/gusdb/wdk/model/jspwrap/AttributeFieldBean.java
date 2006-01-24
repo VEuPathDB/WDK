@@ -3,70 +3,66 @@
  */
 package org.gusdb.wdk.model.jspwrap;
 
-import org.gusdb.wdk.model.FieldI;
+import org.gusdb.wdk.model.AttributeField;
 
 public class AttributeFieldBean {
 
-    private FieldI field;
+    private AttributeField field;
 
     /**
      * 
      */
-    public AttributeFieldBean(FieldI field) {
+    public AttributeFieldBean(AttributeField field) {
         this.field = field;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.xml.XmlAttributeField#getDisplayName()
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.Field#getDisplayName()
      */
     public String getDisplayName() {
         return this.field.getDisplayName();
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.xml.XmlAttributeField#getHelp()
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.Field#getHelp()
      */
     public String getHelp() {
         return this.field.getHelp();
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.xml.XmlAttributeField#getIsInternal()
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.Field#getInReportMaker()
      */
-    public Boolean getIsInternal() {
-        return this.field.getIsInternal();
+    public boolean getInReportMaker() {
+        return this.field.getInReportMaker();
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.xml.XmlAttributeField#getName()
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.Field#getInternal()
+     */
+    public boolean getInternal() {
+        return this.field.getInternal();
+    }
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.Field#getName()
      */
     public String getName() {
         return this.field.getName();
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.xml.XmlAttributeField#getTruncate()
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.Field#getTruncateTo()
      */
-    public Integer getTruncate() {
-        return this.field.getTruncate();
+    public int getTruncateTo() {
+        return this.field.getTruncateTo();
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.xml.XmlAttributeField#getType()
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.Field#getType()
      */
     public String getType() {
         return this.field.getType();
     }
+
 }

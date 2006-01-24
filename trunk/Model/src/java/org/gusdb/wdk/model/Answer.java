@@ -140,16 +140,16 @@ public class Answer {
     /**
      * @return Map where key is param name and value is param value
      */
-    public Map getParams() {
+    public Map<String, String> getParams() {
 	return idsQueryInstance.getValuesMap();
     }
 
     /**
      * @return Map where key is param display name and value is param value
      */
-    public Map<String, Object> getDisplayParams() {
-	LinkedHashMap displayParamsMap = new LinkedHashMap();
-	Map paramsMap = getParams();
+    public Map<String, String> getDisplayParams() {
+	Map<String, String> displayParamsMap = new LinkedHashMap<String, String>();
+	Map<String, String> paramsMap = getParams();
 	Param[] params = question.getParams();
 	for (int i=0; i<params.length; i++) {
 	    Param param = params[i];
@@ -176,7 +176,7 @@ public class Answer {
 	return idsQueryInstance;
     }
 
-    public Map getAttributeFields() {
+    public Map<String , AttributeField> getAttributeFields() {
 	return question.getAttributeFields();
     }
 
@@ -270,7 +270,7 @@ public class Answer {
 
 		// make data row
 		else {
-		    FieldI field = (FieldI)getAttributeFields().get(nextAttName);
+		    AttributeField field = getAttributeFields().get(nextAttName);
 		    Object value = 
 			pageRecordInstances[i].getAttributeValue(field);
 		    if (value == null) value = "";
