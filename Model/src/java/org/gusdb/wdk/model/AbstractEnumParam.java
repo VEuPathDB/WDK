@@ -49,6 +49,9 @@ public abstract class AbstractEnumParam extends Param {
 	return err;
     }
 
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.Param#getInternalValue(java.lang.String)
+     */
     public String getInternalValue(String value) throws WdkModelException {
 	initVocabMap();
 	String internalValue;
