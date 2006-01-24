@@ -32,7 +32,7 @@ public class XmlAttributeValue {
 
     public String getBriefValue() {
         // prepare truncation length
-        int truncate = attributeField.getTruncate();
+        int truncate = attributeField.getTruncateTo();
         if (truncate == 0) truncate = WdkModel.TRUNCATE_DEFAULT;
 
         if (value == null || truncate >= value.length()) return value;
@@ -90,7 +90,7 @@ public class XmlAttributeValue {
      * @see org.gusdb.wdk.model.xml.XmlAttributeField#getIsInternal()
      */
     public Boolean getIsInternal() {
-        return this.attributeField.getIsInternal();
+        return this.attributeField.getInternal();
     }
 
     /*

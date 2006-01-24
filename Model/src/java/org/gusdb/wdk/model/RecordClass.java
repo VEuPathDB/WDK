@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.HashMap;
@@ -12,84 +13,81 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 public class RecordClass {
-    
+
     public static final String PRIMARY_KEY_NAME = "primaryKey";
     public static final String PROJECT_ID_NAME = "projectId";
     public static final String PRIMARY_KEY_MACRO = "\\$\\$primaryKey\\$\\$";
     public static final String PROJECT_ID_MACRO = "\\$\\$projectId\\$\\$";
 
-    private static final Logger logger = 
-	WdkLogManager.getLogger("org.gusdb.wdk.model.Record");
-    
-    private Set tableQueryRefs = new LinkedHashSet();
-    private Set attributesQueryRefs = new LinkedHashSet();
-    private Map attributeFieldsMap = new LinkedHashMap(); 
-    private Map tableFieldsMap = new LinkedHashMap();  
+    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.model.RecordClass");
+
+    private Set<AttributeQueryReference> attributesQueryRefs = new LinkedHashSet<AttributeQueryReference>();
+    private Map<String, AttributeField> attributeFieldsMap = new LinkedHashMap<String, AttributeField>();
+    private Map<String, TableField> tableFieldsMap = new LinkedHashMap<String, TableField>();
     private String name;
     private String type;
     private String idPrefix;
     private String fullName;
-    private String summaryAttributeList;
     private String attributeOrdering;
-    private HashMap questions = new HashMap();
-    private List nestedRecordQuestionRefs = new ArrayList();
-    private List nestedRecordListQuestionRefs = new ArrayList();
-    
+    private HashMap<String, Question> questions = new HashMap<String, Question>();
+    private List<NestedRecord> nestedRecordQuestionRefs = new ArrayList<NestedRecord>();
+    private List<NestedRecordList> nestedRecordListQuestionRefs = new ArrayList<NestedRecordList>();
+
     /**
-     * This object is not initialized until the first time the RecordClass is asked for a nestedRecordQuestion.  
-     * At that point it is given the questions in <code>nestedRecordQuestionRefs</code>;
+     * This object is not initialized until the first time the RecordClass is
+     * asked for a nestedRecordQuestion. At that point it is given the questions
+     * in <code>nestedRecordQuestionRefs</code>;
      */
-    private HashMap nestedRecordQuestions;
+    private HashMap<String, Question> nestedRecordQuestions;
 
     /**
-     * This object is not initialized until the first time the RecordClass is asked for a nestedRecordListQuestion.  
-     * At that point it is given the questions in <code>nestedRecordListQuestionRefs</code>;
+     * This object is not initialized until the first time the RecordClass is
+     * asked for a nestedRecordListQuestion. At that point it is given the
+     * questions in <code>nestedRecordListQuestionRefs</code>;
      */
-    private HashMap nestedRecordListQuestions;
-
+    private HashMap<String, Question> nestedRecordListQuestions;
 
     /**
-     * Added by Jerric
      * The delimiter used by two-part primary key, ":" by default
      */
-    private String              delimiter                    = ":";
+    private String delimiter = ":";
 
     /**
-     * Added by Jerric
      * The PrimaryKeyField of a RecordClass
      */
-    private PrimaryKeyField     primaryKeyField;
+    private PrimaryKeyField primaryKeyField;
 
     /**
-     * Added by Jerric
      * The reference for a FlatVocabParam that contains project info. It can be
      * optional
      */
-    private Reference           projectParamRef;
+    private Reference projectParamRef;
 
     public RecordClass() {
-	// make sure these keys are at the front of the list
-	attributeFieldsMap.put(PRIMARY_KEY_NAME, null);	    
+        // make sure these keys are at the front of the list
+        // it doesn't make sense, since you can't guarantee the order in a map
+        attributeFieldsMap.put(PRIMARY_KEY_NAME, null);
     }
 
-    //////////////////////////////////////////////////////////////////////
+    // ////////////////////////////////////////////////////////////////////
     // Called at model creation time
-    //////////////////////////////////////////////////////////////////////
+    // ////////////////////////////////////////////////////////////////////
 
     public void setName(String name) {
         this.name = name;
     }
-    
+
     public void setIdPrefix(String idPrefix) {
         this.idPrefix = idPrefix;
     }
-    
+
     public void setType(String type) {
         this.type = type;
     }
 
     /**
      * Added by Jerric
+     * 
      * @param delimiter
      */
     public void setDelimiter(String delimiter) {
@@ -98,158 +96,174 @@ public class RecordClass {
 
     /**
      * Added by Jerric
+     * 
      * @param projectParamRef
      */
     public void setProjectParamRef(Reference projectParamRef) {
         this.projectParamRef = projectParamRef;
     }
 
-    /** 
+    /**
      * @param attList comma separated list of attributes in a summary containing
-     * this recordClass.
+     *        this recordClass.
      */
-    /*public void setSummaryAttributeList (String attList){
-	this.summaryAttributeList = attList;
-	}*/
+    /*
+     * public void setSummaryAttributeList (String attList){
+     * this.summaryAttributeList = attList; }
+     */
 
-    public void setAttributeOrdering (String attOrder) {
-	this.attributeOrdering = attOrder;
+    public void setAttributeOrdering(String attOrder) {
+        this.attributeOrdering = attOrder;
     }
 
     /**
      * @param attributesQueryRef two part query name (set.name)
      */
-    public void addAttributesQueryRef(Reference attributesQueryRef) {
-        attributesQueryRefs.add(attributesQueryRef.getTwoPartName());
-    }
-    
-    /**
-     * @param tableQueryRef two part query name (set.name)
-     */
-    public void addTableQueryRef(Reference tableQueryRef) {
-        tableQueryRefs.add(tableQueryRef.getTwoPartName());
-    }
-    
-    public void addTextAttribute(TextAttributeField textAttributeField) throws WdkModelException {
-        checkAttributeName(textAttributeField.getName());
-	attributeFieldsMap.put(textAttributeField.getName(), 
-			       textAttributeField);	    
-    }
-    
-    public void addLinkAttribute(LinkAttributeField linkAttributeField) throws WdkModelException {
-        checkAttributeName(linkAttributeField.getName());
-	attributeFieldsMap.put(linkAttributeField.getName(), 
-			       linkAttributeField);	    
+    public void addAttributesQueryRef(AttributeQueryReference attributesQueryRef) {
+        attributesQueryRefs.add(attributesQueryRef);
     }
 
-    public void addQuestion(Question q){
-	questions.put(q.getFullName(), q);
-    }
-    
-    public void addNestedRecordQuestion(Question q){
-
-	nestedRecordQuestions.put(q.getFullName(), q);
-    }
-
-    public void addNestedRecordListQuestion(Question q){
-	nestedRecordListQuestions.put(q.getFullName(), q);
-    }
-    
-
-    public void addNestedRecordQuestionRef(NestedRecord nr){
-	nestedRecordQuestionRefs.add(nr);
+    public void addAttributeField(AttributeField attributeField)
+            throws WdkModelException {
+        // check if the name duplicates
+        String name = attributeField.getName();
+        if (attributeFieldsMap.containsKey(name)) {
+            String message = "Duplicates in name of AttributeField: " + name;
+            logger.finest(message);
+            throw new WdkModelException(message);
+        }
+        attributeFieldsMap.put(name, attributeField);
     }
 
-    public void addNestedRecordListQuestionRef(NestedRecordList nrl){
-	
-  	nestedRecordListQuestionRefs.add(nrl);
+    public void addTableField(TableField tableField) throws WdkModelException {
+        // check if the name duplicates
+        String name = tableField.getName();
+        if (tableFieldsMap.containsKey(name)) {
+            String message = "Duplicates in name of TableField: " + name;
+            logger.finest(message);
+            throw new WdkModelException(message);
+        }
+        tableFieldsMap.put(name, tableField);
     }
-    
-    //////////////////////////////////////////////////////////////
+
+    public void addQuestion(Question q) {
+        questions.put(q.getFullName(), q);
+    }
+
+    public void addNestedRecordQuestion(Question q) {
+
+        nestedRecordQuestions.put(q.getFullName(), q);
+    }
+
+    public void addNestedRecordListQuestion(Question q) {
+        nestedRecordListQuestions.put(q.getFullName(), q);
+    }
+
+    public void addNestedRecordQuestionRef(NestedRecord nr) {
+        nestedRecordQuestionRefs.add(nr);
+    }
+
+    public void addNestedRecordListQuestionRef(NestedRecordList nrl) {
+
+        nestedRecordListQuestionRefs.add(nrl);
+    }
+
+    // ////////////////////////////////////////////////////////////
     // public getters
-    //////////////////////////////////////////////////////////////
+    // ////////////////////////////////////////////////////////////
 
     public String getName() {
         return name;
     }
-    
+
     public String getFullName() {
-	return fullName;
+        return fullName;
     }
 
     public String getIdPrefix() {
         return idPrefix;
     }
-    
+
     public String getType() {
         return type;
     }
-    
-    public Map getTableFields() {
-        return new LinkedHashMap(tableFieldsMap);
+
+    public Map<String, TableField> getTableFieldMap() {
+        return new HashMap<String, TableField>(tableFieldsMap);
     }
 
-    public Question[] getNestedRecordQuestions(){
-	if (nestedRecordQuestions == null){
-	    initNestedRecords();
-	}
-	Iterator it = nestedRecordQuestions.values().iterator();
-	Question[] returnedNq = new Question[nestedRecordQuestions.size()];
-	int i = 0;
-	while (it.hasNext()){
-	    Question nextNq = (Question)it.next();
-	    returnedNq[i] = nextNq;
-	    i++;
-	}
-	return returnedNq;
+    public TableField[] getTableFields() {
+        TableField[] tableFields = new TableField[tableFieldsMap.size()];
+        tableFieldsMap.values().toArray(tableFields);
+        return tableFields;
     }
 
-    public Question[] getNestedRecordListQuestions(){
-	if (nestedRecordListQuestions == null){
-	    initNestedRecords();
-	}
-
-	Iterator it = nestedRecordListQuestions.values().iterator();
-	Question[] returnedNq = new Question[nestedRecordListQuestions.size()];
-	int i = 0;
-	while (it.hasNext()){
-	    Question nextNq = (Question)it.next();
-	    returnedNq[i] = nextNq;
-	    i++;
-	}
-	return returnedNq;
+    public Map<String, AttributeField> getAttributeFieldMap() {
+        return new HashMap<String, AttributeField>(attributeFieldsMap);
     }
-    
+
+    public AttributeField[] getAttributeFields() {
+        AttributeField[] attributeFields = new AttributeField[attributeFieldsMap.size()];
+        attributeFieldsMap.values().toArray(attributeFields);
+        return attributeFields;
+    }
+
+    public Field[] getFields() {
+        int attributeCount = attributeFieldsMap.size();
+        int tableCount = tableFieldsMap.size();
+        Field[] fields = new Field[attributeCount + tableCount];
+        // copy attribute fields
+        attributeFieldsMap.values().toArray(fields);
+        // copy table fields
+        TableField[] tableFields = getTableFields();
+        System.arraycopy(tableFields, 0, fields, attributeCount, tableCount);
+        return fields;
+    }
+
+    public Question[] getNestedRecordQuestions() {
+        if (nestedRecordQuestions == null) {
+            initNestedRecords();
+        }
+        Question[] returnedNq = new Question[nestedRecordQuestions.size()];
+        nestedRecordQuestions.values().toArray(returnedNq);
+        return returnedNq;
+    }
+
+    public Question[] getNestedRecordListQuestions() {
+        if (nestedRecordListQuestions == null) {
+            initNestedRecords();
+        }
+        Question[] returnedNq = new Question[nestedRecordListQuestions.size()];
+        nestedRecordListQuestions.values().toArray(returnedNq);
+        return returnedNq;
+    }
+
     /**
-     * @return all Questions in the current model that are using this record class as their return type.
+     * @return all Questions in the current model that are using this record
+     *         class as their return type.
      */
-    public Question[] getQuestions(){
-	Iterator it = questions.values().iterator();
-	
-	Question[] returnedQuestions = new Question[questions.size()];
-	int i = 0;
-	while (it.hasNext()){
-	    Question nextQuestion = (Question)it.next();
-	    returnedQuestions[i] = nextQuestion;
-	    i++;
-	}
-	return returnedQuestions;
-    }    
+    public Question[] getQuestions() {
+        Question[] returnedQuestions = new Question[questions.size()];
+        questions.values().toArray(returnedQuestions);
+        return returnedQuestions;
+    }
 
     public Reference getReference() throws WdkModelException {
         return new Reference(getFullName());
     }
-    
+
     /**
      * Added by Jerric
+     * 
      * @return returns the delimiter for separating projectID & primaryKey
      */
     public String getDelimiter() {
         return delimiter;
     }
-    
+
     /**
      * Added by Jerric
+     * 
      * @return
      */
     public PrimaryKeyField getPrimaryKeyField() {
@@ -259,232 +273,184 @@ public class RecordClass {
     public RecordInstance makeRecordInstance() {
         return new RecordInstance(this);
     }
-    
+
     public String toString() {
-        String newline = System.getProperty( "line.separator" );
-        StringBuffer buf =
-            new StringBuffer("Record: name='" + name + "'").append( newline );
-        
-        buf.append( "--- Attributes ---" ).append( newline );
+        String newline = System.getProperty("line.separator");
+        StringBuffer buf = new StringBuffer("Record: name='" + name + "'").append(newline);
+
+        buf.append("--- Attributes ---").append(newline);
         Iterator attributes = attributeFieldsMap.values().iterator();
         while (attributes.hasNext()) {
-            buf.append(attributes.next()).append( newline );
+            buf.append(attributes.next()).append(newline);
         }
-        
-        buf.append( "--- Tables ---" ).append( newline );
+
+        buf.append("--- Tables ---").append(newline);
         Iterator tables = tableFieldsMap.values().iterator();
         while (tables.hasNext()) {
-            buf.append(tables.next()).append( newline );
-	}
+            buf.append(tables.next()).append(newline);
+        }
         return buf.toString();
     }
-    
-    public Map getAttributeFields() {
-        return new LinkedHashMap(attributeFieldsMap);
-    }
 
-    ///////////////////////////////////////////////////////////////////////////
+    // /////////////////////////////////////////////////////////////////////////
     // package scope methods
-    ///////////////////////////////////////////////////////////////////////////
-    
+    // /////////////////////////////////////////////////////////////////////////
+
     /**
      * @param recordSetName name of the recordSet to which this record belongs.
      */
-    void setFullName(String recordSetName){
-	this.fullName = recordSetName + "." + name;
+    void setFullName(String recordSetName) {
+        this.fullName = recordSetName + "." + name;
     }
 
-    /**
-     * Add a attributes query. Map it by all of its column names
-     */
-    void addAttributesQuery(Query query) throws WdkModelException {
-        Column[] columns = query.getColumns();
-        for (int i=0; i<columns.length;i++) {
-            Column column = columns[i];
-            checkAttributeName(column.getName());
-	    AttributeField field = new AttributeField(column);
-            attributeFieldsMap.put(field.getName(), field);	    
+    AttributeField getAttributeField(String attributeName)
+            throws WdkModelException {
+        AttributeField attributeField = attributeFieldsMap.get(attributeName);
+        if (attributeField == null) {
+            String message = "RecordClass " + getName()
+                    + " doesn't have an attribute field with name '"
+                    + attributeName + "'.";
+            logger.finest(message);
+            throw new WdkModelException(message);
         }
-    }
-    
-    /**
-     * Add a table query. Map it by its query name
-     */
-    void addTableQuery(Query query) throws WdkModelException {
-        if (tableFieldsMap.containsKey(query.getName())) {
-            throw new WdkModelException("Record " + getName() + 
-					" already has table query named " + 
-					query.getName());
-        }    
-	TableField field = new TableField(query);
-	tableFieldsMap.put(field.getName(), field);	    
-    }
-    
-    FieldI getAttributeField(String attributeName) throws WdkModelException {
-        FieldI field = (FieldI)attributeFieldsMap.get(attributeName);
-        if (field == null) {
-            throw new WdkModelException("RecordClass " + getName() + 
-                    " doesn't have an attribute with name '" +
-                    attributeName + "'");
-        }
-        return field;
-    }
-    
-    TableField getTableField (String tableName) throws WdkModelException {
-        TableField field = (TableField)tableFieldsMap.get(tableName);
-        if (field == null) {
-            throw new WdkModelException("Record " + getName() + 
-                    " does not have a table field with name '" +
-                    tableName + "'");
-        }
-        return field;
+        return attributeField;
     }
 
-    Map getAttributeFieldsMap() {
-	return attributeFieldsMap;
-    }
-    
-    void checkAttributeName(String name) throws WdkModelException {
-        if (attributeFieldsMap.containsKey(name)) {
-            throw new WdkModelException("Record " + getName() + 
-                    " already has a attribute named " + name);
+    TableField getTableField(String tableName) throws WdkModelException {
+        TableField tableField = tableFieldsMap.get(tableName);
+        if (tableField == null) {
+            String message = "Record " + getName()
+                    + " does not have a table field with name '" + tableName
+                    + "'.";
+            logger.finest(message);
+            throw new WdkModelException(message);
         }
+        return tableField;
     }
-    
-    void checkQueryParams(Query query, String queryType) throws WdkModelException {
-        
-        String s = "The " + queryType + " " + query.getName() + 
-        " contained in Record " + getName();
-        Param[] params = query.getParams();
-        if (params.length != 1 || !params[0].getName().equals("primaryKey")) 
-            throw new WdkModelException(s + " must have only one param, and it must be named 'primaryKey'");
-    }
-    
+
     void resolveReferences(WdkModel model) throws WdkModelException {
         // Added by Jerric
         // resolve projectParam
         FlatVocabParam projectParam = null;
         if (projectParamRef != null) {
             projectParam = (FlatVocabParam) model.resolveReference(
-                    projectParamRef.getTwoPartName(), 
-                    getName(),  
-                    this.getClass().getName(), 
-                    "projectParamRef");
+                    projectParamRef.getTwoPartName(), getName(),
+                    this.getClass().getName(), "projectParamRef");
         }
-        
-        // create PrimaryKeyField
-         PrimaryKeyField pkField = new PrimaryKeyField(PRIMARY_KEY_NAME, 
-                 getType(),
-                 "Some help here", 
-                 projectParam);
-         pkField.setIdPrefix(this.idPrefix);
-         pkField.setDelimiter(this.delimiter);
-         attributeFieldsMap.put(PRIMARY_KEY_NAME, pkField);
-                
-        Iterator fQueryRefs = attributesQueryRefs.iterator();
-        while (fQueryRefs.hasNext()) {
-            String queryName = (String)fQueryRefs.next();
-            Query query = 
-                (Query)model.resolveReference(queryName,
-					      getName(), 
-					      this.getClass().getName(),
-					      "attributesQueryRef");
-            addAttributesQuery(query);
-        }
-        attributesQueryRefs = null;
-        
-        Iterator tQueryRefs = tableQueryRefs.iterator();
-        while (tQueryRefs.hasNext()) {
-            String queryName = (String)tQueryRefs.next();
-            Query query = 
-                (Query)model.resolveReference(queryName,
-                        getName(), 
-                        "record",
-                "tableQueryRef");
-            addTableQuery(query);
-        }
-        tableQueryRefs = null;
-	if (attributeOrdering != null){
-	    LinkedHashMap orderedAttributes = sortAllAttributes();
-	    attributeFieldsMap = orderedAttributes;
-	}
 
-	for (int i = 0; i < nestedRecordQuestionRefs.size(); i++){
-	    NestedRecord nextNr = (NestedRecord)nestedRecordQuestionRefs.get(i);
-	    nextNr.resolveReferences(model);
-	    //	    Question q = nextNr.getQuestion();
-	    //addNestedRecordQuestion(q);
-	}
-	
-	for (int i = 0; i < nestedRecordListQuestionRefs.size(); i++){
-	    NestedRecordList nextNrl = (NestedRecordList)nestedRecordListQuestionRefs.get(i);
-	    nextNrl.resolveReferences(model);
-	    //Question q = nextNrl.getQuestion();
-	    //addNestedRecordListQuestion(q);
-	}
+        // create PrimaryKeyField
+        PrimaryKeyField pkField = new PrimaryKeyField(PRIMARY_KEY_NAME,
+                getType(), "Some help here", projectParam);
+        pkField.setIdPrefix(this.idPrefix);
+        pkField.setDelimiter(this.delimiter);
+        attributeFieldsMap.put(PRIMARY_KEY_NAME, pkField);
+
+        // resolve the references for attribute queries
+        for (AttributeQueryReference reference : attributesQueryRefs) {
+            // add attributes to the record class. it must be performed before
+            // next step.
+            Map<String, AttributeField> fieldMap = reference.getAttributeFieldMap();
+            Collection<AttributeField> fields = fieldMap.values();
+            for (AttributeField field : fields) {
+                addAttributeField(field);
+            }
+
+            // resolve Query and associate columns with the attribute fields
+            Query query = (Query) model.resolveReference(
+                    reference.getTwoPartName(), getName(),
+                    this.getClass().getName(), "attributesQueryRef");
+            Column[] columns = query.getColumns();
+            for (Column column : columns) {
+                AttributeField field = fieldMap.get(column.getName());
+                if (field != null && field instanceof ColumnAttributeField) {
+                    ((ColumnAttributeField) field).setColumn(column);
+                } else {
+                    String message = "The Column of name '" + column.getName()
+                            + "' doesn't match with any ColumnAttributeField.";
+                    logger.finest(message);
+                    throw new WdkModelException(message);
+                }
+            }
+        }
+
+        // resolve the references for table queries
+        Collection<TableField> tableFields = tableFieldsMap.values();
+        for (TableField tableField : tableFields) {
+            tableField.resolveReferences(model);
+        }
+
+        if (attributeOrdering != null) {
+            Map<String, AttributeField> orderedAttributes = sortAllAttributes();
+            attributeFieldsMap = orderedAttributes;
+        }
+
+        for (NestedRecord nestedRecord : nestedRecordQuestionRefs) {
+            nestedRecord.resolveReferences(model);
+        }
+
+        for (NestedRecordList nestedRecordList : nestedRecordListQuestionRefs) {
+            nestedRecordList.resolveReferences(model);
+        }
     }
-    
+
     /**
-     * Called when the RecordClass is asked for a NestedRecordQuestion or NestedRecordQuestionList.  Cannot
-     * be done upon RecordClass initialization because the Questions are not guaranteed to have their resources
-     * set, which throws a NullPointerException when the Question is asked for the name of its QuestionSet.
-     */ 
+     * Called when the RecordClass is asked for a NestedRecordQuestion or
+     * NestedRecordQuestionList. Cannot be done upon RecordClass initialization
+     * because the Questions are not guaranteed to have their resources set,
+     * which throws a NullPointerException when the Question is asked for the
+     * name of its QuestionSet.
+     */
 
     public void initNestedRecords() {
-	nestedRecordQuestions = new LinkedHashMap();
-	for (int i = 0; i < nestedRecordQuestionRefs.size(); i++){
-	    NestedRecord nextNr = (NestedRecord)nestedRecordQuestionRefs.get(i);
-	    Question q = nextNr.getQuestion();
-	    addNestedRecordQuestion(q);
-	}
-	
-	nestedRecordListQuestions = new LinkedHashMap();
-	for (int i = 0; i < nestedRecordListQuestionRefs.size(); i++){
-	    NestedRecordList nextNrl = (NestedRecordList)nestedRecordListQuestionRefs.get(i);
-	    Question q = nextNrl.getQuestion();
-	    addNestedRecordListQuestion(q);
-	}
+        nestedRecordQuestions = new LinkedHashMap<String, Question>();
+        for (int i = 0; i < nestedRecordQuestionRefs.size(); i++) {
+            NestedRecord nextNr = nestedRecordQuestionRefs.get(i);
+            Question q = nextNr.getQuestion();
+            addNestedRecordQuestion(q);
+        }
+
+        nestedRecordListQuestions = new LinkedHashMap<String, Question>();
+        for (int i = 0; i < nestedRecordListQuestionRefs.size(); i++) {
+            NestedRecordList nextNrl = nestedRecordListQuestionRefs.get(i);
+            Question q = nextNrl.getQuestion();
+            addNestedRecordListQuestion(q);
+        }
     }
 
+    private Map<String, AttributeField> sortAllAttributes()
+            throws WdkModelException {
+        String orderedAtts[] = attributeOrdering.split(",");
+        Map<String, AttributeField> orderedAttsMap = new LinkedHashMap<String, AttributeField>();
 
-    private LinkedHashMap sortAllAttributes() throws WdkModelException{
-	String orderedAtts[] = attributeOrdering.split(",");
-	LinkedHashMap orderedAttsMap = new LinkedHashMap();
+        // primaryKey first
+        String primaryKey = "primaryKey";
+        orderedAttsMap.put(primaryKey, attributeFieldsMap.get(primaryKey));
 
-	//primaryKey first
-	String primaryKey = "primaryKey";
-	orderedAttsMap.put(primaryKey, (FieldI)attributeFieldsMap.get(primaryKey));
+        for (String nextAtt : orderedAtts) {
+            nextAtt = nextAtt.trim();
+            if (!primaryKey.equals(nextAtt)) {
+                AttributeField nextAttField = attributeFieldsMap.get(nextAtt);
 
-	for (int i = 0; i < orderedAtts.length; i++){
-	    String nextAtt = orderedAtts[i];
-
-	    if (!primaryKey.equals(nextAtt)) {
-		FieldI nextAttField = (FieldI)attributeFieldsMap.get(nextAtt);
-	    
-		if (nextAttField == null){
-		    throw new WdkModelException("RecordClass " + getName() + " defined attribute " +
-						nextAtt + " in its attribute ordering, but that is not a " + 
-						"valid attribute for this RecordClass");
-		}
-		orderedAttsMap.put(nextAtt, nextAttField);
-	    }
-    	}
-	//add all attributes not in the ordering
-	Iterator allAttNames = attributeFieldsMap.keySet().iterator();
-	while (allAttNames.hasNext()){
-	    String nextAtt = (String)allAttNames.next();
-	    if (!orderedAttsMap.containsKey(nextAtt)){
-		
-		FieldI nextField = (FieldI)attributeFieldsMap.get(nextAtt);
-		orderedAttsMap.put(nextAtt, nextField);
-	    }
-	}
-	return orderedAttsMap;
+                if (nextAttField == null) {
+                    String message = "RecordClass " + getName()
+                            + " defined attribute " + nextAtt
+                            + " in its attribute ordering, but that is not a "
+                            + "valid attribute for this RecordClass";
+                    logger.finest(message);
+                    throw new WdkModelException(message);
+                }
+                orderedAttsMap.put(nextAtt, nextAttField);
+            }
+        }
+        // add all attributes not in the ordering
+        Iterator<String> allAttNames = attributeFieldsMap.keySet().iterator();
+        while (allAttNames.hasNext()) {
+            String nextAtt = allAttNames.next();
+            if (!orderedAttsMap.containsKey(nextAtt)) {
+                AttributeField nextField = attributeFieldsMap.get(nextAtt);
+                orderedAttsMap.put(nextAtt, nextField);
+            }
+        }
+        return orderedAttsMap;
     }
-    
-
-
-
-
-
 }

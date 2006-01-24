@@ -1,45 +1,18 @@
+/**
+ * 
+ */
 package org.gusdb.wdk.model;
 
+/**
+ * @author  Jerric
+ * @created Jan 19, 2006
+ */
+public abstract class AttributeField extends Field {
 
-public class AttributeField implements FieldI {
-
-    private Column column;
-
-    public AttributeField(Column column) {
-	this.column = column;
+    /**
+     * 
+     */
+    public AttributeField() {
+        super();
     }
-
-    public String getName() {
-	return column.getName();
-    }
-	
-    public String getDisplayName() {
-	return column.getDisplayName();
-    }
-	
-    public String getHelp() {
-	return column.getHelp();
-    }
-	
-    public String getType() {
-	return column.getSpecialType();
-    }
-	
-    public Boolean getIsInternal() {
-	return column.getIsInternal();
-    }
-	
-    public String toString() {
-	return getDisplayName();
-    }
-
-    public Integer getTruncate() {
-	return column.getTruncate();
-    }
-    
-    Query getQuery() {
-	return column.getQuery();
-    }
-
 }
-

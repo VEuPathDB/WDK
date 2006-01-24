@@ -2,14 +2,15 @@ package org.gusdb.wdk.model;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 public class RecordClassSet implements ModelSetI {
 
-    HashMap recordClassSet;
+    Map<String, RecordClass> recordClassSet;
     String name;
 
     public RecordClassSet() {
-	recordClassSet = new HashMap();
+	recordClassSet = new HashMap<String, RecordClass>();
     }
 
     public void setName(String name) {
@@ -23,7 +24,7 @@ public class RecordClassSet implements ModelSetI {
 
     public RecordClass getRecordClass(String name) throws WdkUserException {
 
-	RecordClass s = (RecordClass)recordClassSet.get(name);
+	RecordClass s = recordClassSet.get(name);
 	if (s == null) throw new WdkUserException("RecordClass Set " + getName() + " does not include recordClass " + name);
 	return s;
     }
@@ -33,13 +34,9 @@ public class RecordClassSet implements ModelSetI {
     }
 
     public RecordClass[] getRecordClasses() {
-	RecordClass[] recordClasses = new RecordClass[recordClassSet.size()];
-	Iterator recordClassIterator = recordClassSet.values().iterator();
-	int i = 0;
-	while (recordClassIterator.hasNext()) {
-	    recordClasses[i++] = (RecordClass)recordClassIterator.next();
-	}
-	return recordClasses;
+        RecordClass[] recordClasses = new RecordClass[recordClassSet.size()];
+        recordClassSet.values().toArray(recordClasses);
+        return recordClasses;
     }
 
     boolean hasRecordClass(RecordClass recordClass){
@@ -47,7 +44,7 @@ public class RecordClassSet implements ModelSetI {
     }
 
     public void addRecordClass(RecordClass recordClass) throws WdkModelException {
-        if (recordClassSet.get(recordClass.getName()) != null) 
+        if (recordClassSet.containsKey(recordClass.getName())) 
             throw new WdkModelException("RecordClass named " 
                     + recordClass.getName() 
                     + " already exists in recordClass set "
@@ -60,7 +57,7 @@ public class RecordClassSet implements ModelSetI {
        StringBuffer buf = new StringBuffer("RecordClassSet: name='" + name 
 					   + "'");
        buf.append( newline );
-       Iterator recordClassIterator = recordClassSet.values().iterator();
+       Iterator<RecordClass> recordClassIterator = recordClassSet.values().iterator();
        while (recordClassIterator.hasNext()) {
 	    buf.append( newline );
 	    buf.append( ":::::::::::::::::::::::::::::::::::::::::::::" );
@@ -72,21 +69,18 @@ public class RecordClassSet implements ModelSetI {
     }
 
     public void resolveReferences(WdkModel model) throws WdkModelException {
-       Iterator recordClassIterator = recordClassSet.values().iterator();
-       while (recordClassIterator.hasNext()) {
-	   RecordClass recordClass = (RecordClass)recordClassIterator.next();
-	   recordClass.resolveReferences(model);
-       }
+        Iterator<RecordClass> recordClassIterator = recordClassSet.values().iterator();
+        while (recordClassIterator.hasNext()) {
+            RecordClass recordClass = recordClassIterator.next();
+            recordClass.resolveReferences(model);
+        }
     }
-    
-    public void setResources(WdkModel model) throws WdkModelException {
-	Iterator recordClassIterator = recordClassSet.values().iterator();
-	while (recordClassIterator.hasNext()) {
-	   RecordClass recordClass = (RecordClass)recordClassIterator.next();
-	   recordClass.setFullName(this.getName());
-	}
-    }
- 
-	   
 
+    public void setResources(WdkModel model) throws WdkModelException {
+        Iterator<RecordClass> recordClassIterator = recordClassSet.values().iterator();
+        while (recordClassIterator.hasNext()) {
+            RecordClass recordClass = recordClassIterator.next();
+            recordClass.setFullName(this.getName());
+        }
+    }
 }

@@ -26,6 +26,9 @@ public class LinkColumn extends Column implements DerivedColumnI {
 	this.url = url;
     }
 
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.DerivedColumnI#getDerivedValue(org.gusdb.wdk.model.ResultList)
+     */
     public Object getDerivedValue(ResultList resultList) throws WdkModelException {
 	String instantiatedVisible = instantiateText(visible, resultList);
 	String instantiatedUrl = instantiateText(url, resultList);

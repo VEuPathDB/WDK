@@ -21,7 +21,7 @@ import org.w3c.dom.Document;
  */
 public class WdkModel {
 
-    public static final Integer TRUNCATE_DEFAULT = new Integer(100);
+    public static final int TRUNCATE_DEFAULT = 100;
     public static final WdkModel INSTANCE = new WdkModel();
 
     protected RDBMSPlatformI platform;

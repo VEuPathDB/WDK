@@ -206,6 +206,10 @@ public class XmlQuestion {
                     XmlConverter.convert(inXmlStream, inXslStream, outXmlStream);
 
                     byte[] buffer = outXmlStream.toByteArray();
+                    
+                    // TEST
+                   System.out.println(new String(buffer));
+                    
 
                     InputStream convertedStream = new ByteArrayInputStream(
                             buffer);

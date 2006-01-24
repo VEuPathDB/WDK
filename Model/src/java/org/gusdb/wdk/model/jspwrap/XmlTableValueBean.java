@@ -30,9 +30,9 @@ public class XmlTableValueBean {
      * 
      * @see org.gusdb.wdk.model.xml.XmlTableValue#getColumns()
      */
-    public XmlAttributeFieldBean[] getColumns() {
+    public XmlAttributeFieldBean[] getAttributeFields() {
         XmlTableFieldBean field = new XmlTableFieldBean(table.getTableField());
-        return field.getColumns();
+        return field.getAttributeFields();
     }
 
     /*
@@ -58,8 +58,8 @@ public class XmlTableValueBean {
      * 
      * @see org.gusdb.wdk.model.xml.XmlTableValue#getIsInternal()
      */
-    public Boolean getIsInternal() {
-        return this.table.getIsInternal();
+    public Boolean getInternal() {
+        return this.table.getInternal();
     }
 
     /*

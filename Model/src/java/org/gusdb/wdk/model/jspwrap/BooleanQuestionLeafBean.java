@@ -1,12 +1,11 @@
 package org.gusdb.wdk.model.jspwrap;
 
-import org.gusdb.wdk.model.BooleanQuestionNode;
-import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
-
 import java.util.Hashtable;
 import java.util.Map;
+
+import org.gusdb.wdk.model.BooleanQuestionNode;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 
 public class BooleanQuestionLeafBean {
     

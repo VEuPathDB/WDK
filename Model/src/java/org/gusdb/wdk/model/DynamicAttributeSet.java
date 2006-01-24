@@ -1,151 +1,172 @@
 package org.gusdb.wdk.model;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Vector;
+import java.util.Set;
+
 import org.gusdb.wdk.model.implementation.SqlQuery;
 
 public class DynamicAttributeSet {
 
-    HashMap <String, FieldI> attributesFieldMap;
-    RecordClass recordClass;
-    List <Column> columns;
-    Query attributesQuery;
-    Vector <FieldI> tempFieldsList = new Vector();
     public final static String RESULT_TABLE = "RESULTTABLE";
-    //    public final static String RESULT_TABLE = "_RESULT_TABLE_";
+
+    private Map<String, AttributeField> attributesFieldMap;
+    private RecordClass recordClass;
+    private Query attributesQuery;
+    private Set<String> columnAttributeFieldNames;
 
     public DynamicAttributeSet() {
-	attributesFieldMap = new HashMap();
-	columns = new Vector();
+        attributesFieldMap = new HashMap<String, AttributeField>();
+        columnAttributeFieldNames = new HashSet<String>();
     }
 
-    public void addAttribute(Column column) throws WdkModelException {
-	columns.add(column);
+    public void addAttributeField(AttributeField attributeField)
+            throws WdkModelException {
+        String name = attributeField.getName();
+        // the attribute name must be unique
+        if (attributesFieldMap.containsKey(name))
+            throw new WdkModelException(
+                    "DynamicAttributes contain a duplicate attribute '" + name
+                            + "'");
+
+        attributesFieldMap.put(name, attributeField);
+
+        // check if it's a column attribute. this kind of attribute must be
+        // matched with a column
+        if (attributeField instanceof ColumnAttributeField)
+            columnAttributeFieldNames.add(name);
     }
 
-    public void addTextAttribute(TextAttributeField textAttributeField) throws WdkModelException {
-	tempFieldsList.add(textAttributeField);
-    }
-    
-    public void addLinkAttribute(LinkAttributeField linkAttributeField) throws WdkModelException {
-	tempFieldsList.add(linkAttributeField);
-    }
-    
     public String toString() {
-	String newline = System.getProperty( "line.separator" );
-	StringBuffer buf = new StringBuffer();
-	buf.append("  dynamicAttributes:" + newline);
+        String newline = System.getProperty("line.separator");
+        StringBuffer buf = new StringBuffer();
+        buf.append("  dynamicAttributes:" + newline);
 
         for (String attrName : attributesFieldMap.keySet()) {
-	    buf.append("    " + attrName + newline);
-	}
-	return buf.toString();
+            buf.append("    " + attrName + newline);
+        }
+        return buf.toString();
     }
 
-    ///////////////////////////////////////////////////////////////////
-    //             package methods                                   //
-    ///////////////////////////////////////////////////////////////////
+    // /////////////////////////////////////////////////////////////////
+    // package methods //
+    // /////////////////////////////////////////////////////////////////
 
     void setResources(WdkModel model) throws WdkModelException {
-	attributesQuery.setResources(model);
+        attributesQuery.setResources(model);
     }
 
     void setQuestion(Question question) throws WdkModelException {
-	this.recordClass = question.getRecordClass();
-	initAttributesQuery(question);
-	for (FieldI field : tempFieldsList) {
-	    checkAttributeName(field.getName(), question, false);	    
-            attributesFieldMap.put(field.getName(), field);	    
-	}
-    }
+        this.recordClass = question.getRecordClass();
 
-    Map <String, FieldI> getAttributeFields() {
-	return new HashMap(attributesFieldMap);
-    }
-
-    Query getAttributesQuery() {
-	return attributesQuery;
-    }
-
-    ///////////////////////////////////////////////////////////////////
-    //             private methods                                   //
-    ///////////////////////////////////////////////////////////////////
-
-    private void initAttributesQuery(Question question) throws WdkModelException {
-	attributesQuery = new SqlQuery();
-	attributesQuery.setName(question.getFullName() + ".DynAttrs");
-	StringParam param = new StringParam();
-	param.setName(RecordClass.PRIMARY_KEY_NAME);
-	attributesQuery.addParam(param);
-	param = new StringParam();
-	param.setName(RESULT_TABLE);
-	attributesQuery.addParam(param);
-
-	String[] pkColNames =
-	    Answer.findPrimaryKeyColumnNames(question.getQuery());
-
-	StringBuffer sqlSelectBuf = new StringBuffer();
-	String resultTableMacro = "$$" + RESULT_TABLE + "$$";
-
-	Column col = question.getQuery().getColumn(pkColNames[0]);  // pk
-	//	addColumn(col, sqlSelectBuf, RESULT_TABLE, attributesQuery);
-
-	if (pkColNames[1] != null) {  // project id
-	    col = question.getQuery().getColumn(pkColNames[1]);
-	    //	    addColumn(col, sqlSelectBuf, RESULT_TABLE, attributesQuery);
-	}
-
-        for (Column column : columns) {
-	    checkAttributeName(column.getName(), question, true);
-	    column.setQuery(getAttributesQuery());
-	    addColumn(column, sqlSelectBuf, RESULT_TABLE, attributesQuery);
+        // validate attributeFields
+        String message = "dynamicAttributes of question "
+                + question.getFullName();
+        Map<String, AttributeField> rsAttributeFields = recordClass.getAttributeFieldMap();
+        for (String attributeName : attributesFieldMap.keySet()) {
+            // check the uniqueness of attributeFields in the RecordClass level
+            if (rsAttributeFields.containsKey(attributeName))
+                throw new WdkModelException(message
+                        + " introduces an attribute '" + attributeName
+                        + "' that recordClass " + recordClass.getName()
+                        + " already has");
         }
 
-	String sqlSelect = 
-	    sqlSelectBuf.substring(0, sqlSelectBuf.length()-2); // last comma
-	
-	String sqlWhere = 
-	    " WHERE " + resultTableMacro + "." + pkColNames[0] + " = " + 
-	    "$$" + RecordClass.PRIMARY_KEY_NAME + "$$";
-	if (pkColNames[1] != null) 
-	    sqlWhere += 
-		" AND " + resultTableMacro + "." +  pkColNames[1] + " = " + 
-		"$$" + RecordClass.PROJECT_ID_NAME + "$$";
-				    
-	String sql = 
-	    "SELECT " + sqlSelect + 
-	    " FROM dual" + 
-	    sqlWhere;
-	    
-	((SqlQuery)attributesQuery).setSql(sql);
+        // create and validate the attribute query
+        initAttributesQuery(question);
+    }
+
+    Map<String, AttributeField> getAttributeFields() {
+        return new HashMap<String, AttributeField>(attributesFieldMap);
+    }
+
+    private Query getAttributesQuery() {
+        return attributesQuery;
+    }
+
+    // /////////////////////////////////////////////////////////////////
+    // private methods //
+    // /////////////////////////////////////////////////////////////////
+
+    private void initAttributesQuery(Question question)
+            throws WdkModelException {
+        attributesQuery = new SqlQuery();
+        attributesQuery.setName(question.getFullName() + ".DynAttrs");
+        StringParam param = new StringParam();
+        param.setName(RecordClass.PRIMARY_KEY_NAME);
+        attributesQuery.addParam(param);
+        param = new StringParam();
+        param.setName(RESULT_TABLE);
+        attributesQuery.addParam(param);
+
+        // get columns from Question.Query, and check the paired Column
+        String message = "dynamicAttributes of question "
+                + question.getFullName();
+        Map<String, Column> columnMap = question.getQuery().getColumnMap();
+        // check if all column names appear in column attributes
+        Set<String> names = columnMap.keySet();
+        for (String name : names) {
+            if (!columnAttributeFieldNames.contains(name))
+                throw new WdkModelException(message
+                        + " doesn't contain an attribute '" + name
+                        + "' that appears in query "
+                        + question.getQuery().getFullName());
+        }
+        // check if all column attribute names appear in columns
+        for (String name : columnAttributeFieldNames) {
+            if (!columnMap.containsKey(name))
+                throw new WdkModelException(message
+                        + " contains an attribute '" + name
+                        + "' that does not appear in query "
+                        + question.getQuery().getFullName());
+
+            // associate columns with column attribute fields
+            Column column = columnMap.get(name);
+            ColumnAttributeField field = (ColumnAttributeField) attributesFieldMap.get(name);
+            field.setColumn(column);
+        }
+
+        StringBuffer sqlSelectBuf = new StringBuffer();
+        String resultTableMacro = "$$" + RESULT_TABLE + "$$";
+
+        // Never used?
+        // Column col = question.getQuery().getColumn(pkColNames[0]); // pk
+        //
+        // if (pkColNames[1] != null) { // project id
+        // col = question.getQuery().getColumn(pkColNames[1]);
+        // }
+        //
+
+        Collection<Column> columns = columnMap.values();
+        for (Column column : columns) {
+            column.setQuery(getAttributesQuery());
+            addColumn(column, sqlSelectBuf, RESULT_TABLE, attributesQuery);
+        }
+
+        String[] pkColNames = Answer.findPrimaryKeyColumnNames(question.getQuery());
+
+        // last comma
+        String sqlSelect = sqlSelectBuf.substring(0, sqlSelectBuf.length() - 2);
+
+        String sqlWhere = " WHERE " + resultTableMacro + "." + pkColNames[0]
+                + " = " + "$$" + RecordClass.PRIMARY_KEY_NAME + "$$";
+        if (pkColNames[1] != null)
+            sqlWhere += " AND " + resultTableMacro + "." + pkColNames[1]
+                    + " = " + "$$" + RecordClass.PROJECT_ID_NAME + "$$";
+
+        String sql = "SELECT " + sqlSelect + " FROM dual" + sqlWhere;
+
+        ((SqlQuery) attributesQuery).setSql(sql);
     }
 
     private void addColumn(Column column, StringBuffer sqlSelectBuf,
-			   String resultTable, Query attributesQuery) {
-	attributesQuery.addColumn(column);
-	sqlSelectBuf.append(column.getName() + ", ");
-	AttributeField field = new AttributeField(column);
-	attributesFieldMap.put(field.getName(), field);	    
-    }
-
-    private void checkAttributeName(String name, Question question, boolean checkAgainstQuery) throws WdkModelException {
-	String da = "dynamicAttributes of question " + question.getFullName();
-	
-        if (recordClass.getAttributeFieldsMap().containsKey(name)) 
-            throw new WdkModelException(da + " introduces an attribute '" +
-					name + "' that recordClass " + 
-					recordClass.getName() +" already has");
-
-
-        if (attributesFieldMap.containsKey(name)) 
-            throw new WdkModelException(da + " contains a duplicate attribute '" + name + "'");
-
-	if (checkAgainstQuery
-	    && !question.getQuery().getColumnMap().containsKey(name)) 
-            throw new WdkModelException(da + " contains an attribute '" + name + "' that does not appear in query " + question.getQuery().getFullName());
-
+            String resultTable, Query attributesQuery) {
+        attributesQuery.addColumn(column);
+        sqlSelectBuf.append(column.getName() + ", ");
+        ColumnAttributeField field = new ColumnAttributeField();
+        field.setColumn(column);
+        attributesFieldMap.put(field.getName(), field);
     }
 }

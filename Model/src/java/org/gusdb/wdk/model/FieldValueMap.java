@@ -15,13 +15,13 @@ public class FieldValueMap implements Map {
     private RecordClass recordClass;
     private RecordInstance recordInstance;
     private String mapType;
-    private Map<String, FieldI> dynamicAttributeFields;
+    private Map<String, AttributeField> dynamicAttributeFields;
     static final String TABLE_MAP = "table_map";
     static final String ATTRIBUTE_MAP = "attribute_map";
     static final String SUMMARY_ATTRIBUTE_MAP = "summary_attribute_map";
 
     public FieldValueMap(RecordClass recordClass, RecordInstance recordInstance,
-			 String mapType, Map<String, FieldI> dynamicAttributeFields) {
+			 String mapType, Map<String, AttributeField> dynamicAttributeFields) {
 	this.recordInstance = recordInstance;
 	this.recordClass = recordClass;
 	this.mapType = mapType;
@@ -58,11 +58,11 @@ public class FieldValueMap implements Map {
      * @see java.util.Map#keySet()
      */
     public Set keySet() {
-	Set keySet = null;
+	Set<String> keySet = null;
 	if (TABLE_MAP.equals(mapType)) {
-	    keySet = recordClass.getTableFields().keySet();
+	    keySet = recordClass.getTableFieldMap().keySet();
 	} else {
-	    keySet = new LinkedHashSet(recordClass.getAttributeFields().keySet());
+	    keySet = new LinkedHashSet<String>(recordClass.getAttributeFieldMap().keySet());
 	    if (SUMMARY_ATTRIBUTE_MAP.equals(mapType) && dynamicAttributeFields != null) {
 		keySet.addAll(dynamicAttributeFields.keySet());
 	    }
@@ -83,11 +83,11 @@ public class FieldValueMap implements Map {
 	    String fieldName = (String)key;
 	    Object fieldValue;
 	    if (TABLE_MAP.equals(mapType)) {
-	        FieldI field = recordClass.getTableField(fieldName);
+	        TableField field = recordClass.getTableField(fieldName);
 		ResultList value = recordInstance.getTableValue(fieldName);
 		fieldValue = new TableFieldValue(field, value);
 	    } else {
-	        FieldI field = null;
+	        AttributeField field = null;
 
 		if (SUMMARY_ATTRIBUTE_MAP.equals(mapType) && dynamicAttributeFields != null) {
 		    field = dynamicAttributeFields.get(fieldName);

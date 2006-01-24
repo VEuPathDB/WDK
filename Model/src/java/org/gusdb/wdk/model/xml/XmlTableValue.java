@@ -49,8 +49,8 @@ public class XmlTableValue {
      * 
      * @see org.gusdb.wdk.model.xml.XmlTableField#getColumns()
      */
-    public XmlAttributeField[] getColumns() {
-        return this.tableField.getColumns();
+    public XmlAttributeField[] getAttributeFields() {
+        return this.tableField.getAttributeFields();
     }
 
     /*
@@ -76,8 +76,8 @@ public class XmlTableValue {
      * 
      * @see org.gusdb.wdk.model.xml.XmlTableField#getIsInternal()
      */
-    public Boolean getIsInternal() {
-        return this.tableField.getIsInternal();
+    public Boolean getInternal() {
+        return this.tableField.getInternal();
     }
 
     /*
@@ -96,7 +96,6 @@ public class XmlTableValue {
      * 
      * @return
      */
-    @SuppressWarnings("unchecked")
     public XmlRowValue[] getRows() {
         XmlRowValue[] rowArray = new XmlRowValue[rows.size()];
         rows.toArray(rowArray);
@@ -137,7 +136,7 @@ public class XmlTableValue {
     public String toString() {
         StringBuffer sb = new StringBuffer();
         // print out field names
-        XmlAttributeField[] fields = getColumns();
+        XmlAttributeField[] fields = getAttributeFields();
         for (XmlAttributeField field : fields) {
             sb.append(field.getName());
             sb.append("\t");

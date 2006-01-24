@@ -7,43 +7,36 @@ public class TableFieldValue {
 
     private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.model.FieldValue");
     
-    FieldI field;
+    TableField tableField;
     ResultList resultList;
-    FieldI[] columnFields = null;
+    AttributeField[] columnFields = null;
 
-    public TableFieldValue(FieldI field, ResultList resultList) {
-	this.field = field;
+    public TableFieldValue(TableField field, ResultList resultList) {
+	this.tableField = field;
 	this.resultList = resultList;
     } 
 
     public String getName() {
-        return field.getName();
+        return tableField.getName();
     }
 
     public String getHelp() {
-        return field.getHelp();
+        return tableField.getHelp();
     }
 
     public String getDisplayName() {
-        return field.getDisplayName();
+        return tableField.getDisplayName();
     }
 
-    public Boolean getIsInternal() {
-        return field.getIsInternal();
+    public Boolean getInternal() {
+        return tableField.getInternal();
     }
 
     /**
      * @return A list of fields, one describing each column.
      */
-    public FieldI[] getFields() {
-	if (columnFields == null) {
-	    Column[] columns = resultList.getColumns();
-	    columnFields = new FieldI[columns.length];
-	    for (int i=0; i< columns.length; i++) {
-		columnFields[i] = new AttributeField(columns[i]);
-	    }
-	}
-	return columnFields;
+    public AttributeField[] getAttributeFields() {
+        return tableField.getAttributeFields();
     }
 
     /**
