@@ -162,7 +162,8 @@ public class XmlQuestion {
                 name, "question", "recordClassRef");
 
         // resolve the references to summary attributes
-        if (summaryAttributeNames == null) { // default use all attribute fields
+        if (summaryAttributeNames == null) { // default use all attribute
+                                                // fields
             summaryAttributes = recordClass.getAttributeFields();
         } else { // use a subset of attribute fields
             Map<String, XmlAttributeField> summaries = new HashMap<String, XmlAttributeField>();
@@ -206,10 +207,9 @@ public class XmlQuestion {
                     XmlConverter.convert(inXmlStream, inXslStream, outXmlStream);
 
                     byte[] buffer = outXmlStream.toByteArray();
-                    
+
                     // TEST
-                   System.out.println(new String(buffer));
-                    
+                    // System.out.println(new String(buffer));
 
                     InputStream convertedStream = new ByteArrayInputStream(
                             buffer);
