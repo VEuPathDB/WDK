@@ -199,6 +199,13 @@ public class Question implements Serializable {
         }
         return attributeFields;
     }
+    
+    Map<String, AttributeField> getReportMakerAttributeFields() {
+        Map<String, AttributeField> rmfields = recordClass.getReportMakerAttributeFieldMap();
+        if (dynamicAttributes != null)
+            rmfields.putAll(dynamicAttributes.getReportMakerAttributeFieldMap());
+        return rmfields;
+    }
 
 
     void resolveReferences(WdkModel model)throws WdkModelException{

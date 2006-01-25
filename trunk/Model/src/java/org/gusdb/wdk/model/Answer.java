@@ -179,6 +179,10 @@ public class Answer {
     public Map<String , AttributeField> getAttributeFields() {
 	return question.getAttributeFields();
     }
+    
+    public Map<String, AttributeField> getReportMakerAttributeFields() {
+        return question.getReportMakerAttributeFields();
+    }
 
     public boolean isSummaryAttribute(String attName){
 	return question.isSummaryAttribute(attName);
