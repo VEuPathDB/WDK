@@ -394,6 +394,7 @@ public class User {
             throws WdkModelException, WdkUserException {
         int historyID = userAnswer.getAnswerID();
         Integer tempID = userAnswer.getAnswer().getDatasetId();
+	StringBuffer sb = new StringBuffer("SELECT * FROM ");
         try {
             if (tempID == null) {
                 // read the record to make sure the id is initialized
@@ -408,7 +409,6 @@ public class User {
             // check if the same history ID has been used; if so, replace the
             // old
             // one; otherwise, insert a new record
-            StringBuffer sb = new StringBuffer("SELECT * FROM ");
             sb.append(historyTableName);
             sb.append(" WHERE ");
             sb.append(ResultFactory.FIELD_USER_ID);
@@ -457,7 +457,7 @@ public class User {
             SqlUtils.executeUpdate(dataSource, sb.toString());
         } catch (SQLException ex) {
             logger.finest("Got an SQLException: " + ex.toString());
-            throw new WdkUserException(ex);
+            throw new WdkUserException(ex.getMessage()+ ": " + sb);
         }
     }
 
