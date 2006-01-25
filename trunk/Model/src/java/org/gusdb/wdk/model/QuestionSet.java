@@ -20,7 +20,7 @@ public class QuestionSet implements ModelSetI {
     String displayName;
     String description;
 
-    Boolean isInternal = new Boolean(false);
+    Boolean internal = new Boolean(false);
 
     public QuestionSet() {
 	questionSet = new LinkedHashMap();
@@ -50,12 +50,12 @@ public class QuestionSet implements ModelSetI {
 	return description;
     }
 
-    public Boolean getIsInternal(){
-	return this.isInternal;
+    public Boolean getInternal(){
+	return this.internal;
     }
     
-    public void setIsInternal(Boolean isInternal){
-	this.isInternal = isInternal;
+    public void setInternal(Boolean internal){
+	this.internal = internal;
     }
 
     public Question getQuestion(String name) throws WdkUserException {
@@ -116,7 +116,7 @@ public class QuestionSet implements ModelSetI {
 	   new StringBuffer("QuestionSet: name='" + getName() + "'" + newline +
 			    "  displayName='" + getDisplayName() + "'" + newline +
 			    "  description='" + getDescription() + "'" + newline +
-			    "  isInternal='" + getIsInternal() + "'" + newline);
+			    "  isInternal='" + getInternal() + "'" + newline);
        buf.append( newline );
 
        Iterator questionIterator = questionSet.values().iterator();
