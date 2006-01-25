@@ -86,7 +86,7 @@
           <c:forEach items="${wdkAnswer.question.recordClass.attributeFields}" var="recAttr">
           <c:set value="${recAttr.key}" var="recAttrName"/>
             <c:set value="${wdkAnswer.question.recordClass.attributeFields[recAttrName]}" var="recAttr"/>
-            <c:if test="${!recAttr.isInternal}">
+            <c:if test="${!recAttr.internal}">
               <c:set var="i" value="${i+1}"/>
               <c:set var="br" value=""/>
               <c:if test="${i % numPerLine == 0}"><c:set var="br" value="</tr><tr>"/></c:if>

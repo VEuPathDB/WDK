@@ -116,7 +116,7 @@ public class QuestionSet implements ModelSetI {
 	   new StringBuffer("QuestionSet: name='" + getName() + "'" + newline +
 			    "  displayName='" + getDisplayName() + "'" + newline +
 			    "  description='" + getDescription() + "'" + newline +
-			    "  isInternal='" + getInternal() + "'" + newline);
+			    "  internal='" + getInternal() + "'" + newline);
        buf.append( newline );
 
        Iterator questionIterator = questionSet.values().iterator();

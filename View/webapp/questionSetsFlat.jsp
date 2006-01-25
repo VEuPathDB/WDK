@@ -25,7 +25,7 @@
 
 <c:set var="i" value="0"/>
 <c:forEach items="${questionSets}" var="qSet">
-  <c:if test="${qSet.isInternal == false}">
+  <c:if test="${qSet.internal == false}">
     <c:set value="${qSet.name}" var="qSetName"/>
     <c:set value="${qSet.questions}" var="questions"/>
     <!-- list of questions in a questionSet -->
