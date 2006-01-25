@@ -82,6 +82,16 @@ public class DynamicAttributeSet {
         return new HashMap<String, AttributeField>(attributesFieldMap);
     }
 
+    Map<String, AttributeField> getReportMakerAttributeFieldMap() {
+        Map<String, AttributeField> rmfields = new HashMap<String, AttributeField>();
+        Set<String> names = attributesFieldMap.keySet();
+        for (String name : names) {
+            AttributeField field = attributesFieldMap.get(name);
+            if (field.getInReportMaker()) rmfields.put(name, field);
+        }
+        return rmfields;
+    }
+
     private Query getAttributesQuery() {
         return attributesQuery;
     }

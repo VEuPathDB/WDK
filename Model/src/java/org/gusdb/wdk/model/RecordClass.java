@@ -208,6 +208,16 @@ public class RecordClass {
         return attributeFields;
     }
 
+    public Map<String, AttributeField> getReportMakerAttributeFieldMap() {
+        Map<String, AttributeField> rmfields = new HashMap<String, AttributeField>();
+        Set<String> names = attributeFieldsMap.keySet();
+        for (String name : names) {
+            AttributeField field = attributeFieldsMap.get(name);
+            if (field.getInReportMaker()) rmfields.put(name, field);
+        }
+        return rmfields;
+    }
+
     public Field[] getFields() {
         int attributeCount = attributeFieldsMap.size();
         int tableCount = tableFieldsMap.size();
