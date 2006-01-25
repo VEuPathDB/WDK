@@ -100,8 +100,8 @@ public abstract class SanityQueryOrQuestion {
      *               the values are the actual values of the parameter. 
      */
 
-    public Hashtable<String, String> getParamHash(){
-	Hashtable<String, String> paramHash = new Hashtable<String, String>();
+    public Hashtable<String, Object> getParamHash(){
+	Hashtable<String, Object> paramHash = new Hashtable<String, Object>();
 	Enumeration keys = params.keys();
 	while (keys.hasMoreElements()){
 	    String nextName = (String)keys.nextElement();

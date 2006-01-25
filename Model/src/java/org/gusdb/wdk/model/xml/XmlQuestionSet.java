@@ -3,7 +3,7 @@
  */
 package org.gusdb.wdk.model.xml;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.gusdb.wdk.model.ModelSetI;
@@ -26,7 +26,7 @@ public class XmlQuestionSet implements ModelSetI {
      * 
      */
     public XmlQuestionSet() {
-        questions = new HashMap<String, XmlQuestion>();
+        questions = new LinkedHashMap<String, XmlQuestion>();
     }
 
     /*

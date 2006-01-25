@@ -3,7 +3,7 @@
  */
 package org.gusdb.wdk.model.jspwrap;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.gusdb.wdk.model.AttributeField;
@@ -30,7 +30,7 @@ public class TableFieldBean {
     public Map<String, AttributeFieldBean> getAttributeFieldMap() {
         AttributeField[] fields = field.getAttributeFields();
         Map<String, AttributeFieldBean> fieldBeans = 
-            new HashMap<String, AttributeFieldBean>(fields.length);
+            new LinkedHashMap<String, AttributeFieldBean>(fields.length);
         for (AttributeField attributeField : fields) {
             fieldBeans.put(field.getName(), new AttributeFieldBean(attributeField));
         }

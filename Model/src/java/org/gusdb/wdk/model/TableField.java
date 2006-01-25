@@ -1,6 +1,6 @@
 package org.gusdb.wdk.model;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -14,7 +14,7 @@ public class TableField extends Field {
 
     public TableField() {
         super();
-        attributeFields = new HashMap<String, AttributeField>();
+        attributeFields = new LinkedHashMap<String, AttributeField>();
     }
 
     Query getQuery() {
@@ -44,7 +44,7 @@ public class TableField extends Field {
     }
 
     public Map<String, AttributeField> getAttributeFieldMap() {
-        return new HashMap<String, AttributeField>(attributeFields);
+        return new LinkedHashMap<String, AttributeField>(attributeFields);
     }
 
     /*

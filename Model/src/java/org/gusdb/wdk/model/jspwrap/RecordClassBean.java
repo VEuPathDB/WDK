@@ -1,6 +1,6 @@
 package org.gusdb.wdk.model.jspwrap;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.gusdb.wdk.model.AttributeField;
@@ -34,7 +34,7 @@ public class RecordClassBean {
     public Map<String, AttributeFieldBean> getAttributeFields() {
         AttributeField[] fields = recordClass.getAttributeFields();
         Map<String, AttributeFieldBean> fieldBeans = 
-            new HashMap<String, AttributeFieldBean>(fields.length);
+            new LinkedHashMap<String, AttributeFieldBean>(fields.length);
         for (AttributeField field : fields) {
             fieldBeans.put(field.getName(), new AttributeFieldBean(field));
         }
@@ -47,7 +47,7 @@ public class RecordClassBean {
     public Map<String, TableFieldBean> getTableFields() {
         TableField[] fields = recordClass.getTableFields();
         Map<String, TableFieldBean> fieldBeans = 
-            new HashMap<String, TableFieldBean>(fields.length);
+            new LinkedHashMap<String, TableFieldBean>(fields.length);
         for (TableField field : fields) {
             fieldBeans.put(field.getName(), new TableFieldBean(field));
         }

@@ -104,7 +104,7 @@ public class Question implements Serializable {
     ///////////////////////////////////////////////////////////////////////
 
 
-    public Answer makeAnswer(Map<String, String> paramValues, int i, int j)
+    public Answer makeAnswer(Map<String, Object> paramValues, int i, int j)
             throws WdkUserException, WdkModelException {
         QueryInstance qi = query.makeInstance();
         qi.setValues(paramValues);

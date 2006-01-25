@@ -3,7 +3,7 @@
  */
 package org.gusdb.wdk.model.xml;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
@@ -20,7 +20,7 @@ public class XmlRowValue {
      * 
      */
     public XmlRowValue() {
-        columns = new HashMap<String, XmlAttributeValue>();
+        columns = new LinkedHashMap<String, XmlAttributeValue>();
     }
 
     public void addColumn(XmlAttributeValue column) {

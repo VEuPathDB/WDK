@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 
 import java.util.List;
@@ -29,7 +28,7 @@ public class RecordClass {
     private String idPrefix;
     private String fullName;
     private String attributeOrdering;
-    private HashMap<String, Question> questions = new HashMap<String, Question>();
+    private Map<String, Question> questions = new LinkedHashMap<String, Question>();
     private List<NestedRecord> nestedRecordQuestionRefs = new ArrayList<NestedRecord>();
     private List<NestedRecordList> nestedRecordListQuestionRefs = new ArrayList<NestedRecordList>();
 
@@ -38,14 +37,14 @@ public class RecordClass {
      * asked for a nestedRecordQuestion. At that point it is given the questions
      * in <code>nestedRecordQuestionRefs</code>;
      */
-    private HashMap<String, Question> nestedRecordQuestions;
+    private Map<String, Question> nestedRecordQuestions;
 
     /**
      * This object is not initialized until the first time the RecordClass is
      * asked for a nestedRecordListQuestion. At that point it is given the
      * questions in <code>nestedRecordListQuestionRefs</code>;
      */
-    private HashMap<String, Question> nestedRecordListQuestions;
+    private Map<String, Question> nestedRecordListQuestions;
 
     /**
      * The delimiter used by two-part primary key, ":" by default
@@ -189,7 +188,7 @@ public class RecordClass {
     }
 
     public Map<String, TableField> getTableFieldMap() {
-        return new HashMap<String, TableField>(tableFieldsMap);
+        return new LinkedHashMap<String, TableField>(tableFieldsMap);
     }
 
     public TableField[] getTableFields() {
@@ -199,7 +198,7 @@ public class RecordClass {
     }
 
     public Map<String, AttributeField> getAttributeFieldMap() {
-        return new HashMap<String, AttributeField>(attributeFieldsMap);
+        return new LinkedHashMap<String, AttributeField>(attributeFieldsMap);
     }
 
     public AttributeField[] getAttributeFields() {
@@ -209,7 +208,7 @@ public class RecordClass {
     }
 
     public Map<String, AttributeField> getReportMakerAttributeFieldMap() {
-        Map<String, AttributeField> rmfields = new HashMap<String, AttributeField>();
+        Map<String, AttributeField> rmfields = new LinkedHashMap<String, AttributeField>();
         Set<String> names = attributeFieldsMap.keySet();
         for (String name : names) {
             AttributeField field = attributeFieldsMap.get(name);

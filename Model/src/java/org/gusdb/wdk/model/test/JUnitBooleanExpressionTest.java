@@ -3,8 +3,8 @@
  */
 package org.gusdb.wdk.model.test;
 
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -73,7 +73,7 @@ public class JUnitBooleanExpressionTest extends TestCase {
 
         operandMap = buildOperandMap(sanityModel);
         
-        operatorMap = new HashMap<String, String>();
+        operatorMap = new LinkedHashMap<String, String>();
         operatorMap.put("and", BooleanQuestionNodeBean.INTERNAL_AND);
         operatorMap.put("or", BooleanQuestionNodeBean.INTERNAL_OR);
         operatorMap.put("not", BooleanQuestionNodeBean.INTERNAL_NOT);
@@ -88,7 +88,7 @@ public class JUnitBooleanExpressionTest extends TestCase {
 
         int idIndex = 0;
         // get a set of SanityQuestion with same type
-        Map<String, Set<SanityQuestion>> sqSets = new HashMap<String, Set<SanityQuestion>>();
+        Map<String, Set<SanityQuestion>> sqSets = new LinkedHashMap<String, Set<SanityQuestion>>();
         Set<SanityQuestion> sqSet = null;
         for (SanityQuestion sq : sqs) {
             // get model question from sanity question
@@ -113,7 +113,7 @@ public class JUnitBooleanExpressionTest extends TestCase {
         }
 
         // create answers for the biggest sanity question set
-        operandMap = new HashMap<String, Answer>();
+        operandMap = new LinkedHashMap<String, Answer>();
         for (SanityQuestion sq : sqSet) {
             // get model question from sanity question
             Reference questionRef = new Reference(sq.getRef());

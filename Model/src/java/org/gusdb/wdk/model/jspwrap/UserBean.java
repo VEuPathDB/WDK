@@ -5,8 +5,8 @@ import org.gusdb.wdk.model.UserAnswer;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.HashMap;
 
 public class UserBean {
 
@@ -139,7 +139,7 @@ public class UserBean {
      */
     public Map<String, UserAnswerBean[]> getRecordAnswerMap() {
         Map recUsrAnsMap = user.getRecordAnswerMap();
-        Map<String, UserAnswerBean[]> recUsrAnsBeanMap = new HashMap<String, UserAnswerBean[]>();
+        Map<String, UserAnswerBean[]> recUsrAnsBeanMap = new LinkedHashMap<String, UserAnswerBean[]>();
         for (Object r : recUsrAnsMap.keySet()) {
             String rec = (String) r;
             UserAnswer[] usrAns = (UserAnswer[]) recUsrAnsMap.get(rec);

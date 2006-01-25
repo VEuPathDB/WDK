@@ -1,12 +1,12 @@
 package org.gusdb.wdk.model;
 
-import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 public abstract class AbstractEnumParam extends Param {
     
     boolean multiPick = false;
-    HashMap vocabMap;
+    Map vocabMap;
     Vector orderedKeySet = new Vector();
     boolean quoteInternalValue;
 

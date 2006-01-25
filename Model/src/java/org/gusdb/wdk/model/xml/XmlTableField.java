@@ -3,7 +3,7 @@
  */
 package org.gusdb.wdk.model.xml;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.gusdb.wdk.model.Field;
@@ -20,7 +20,7 @@ public class XmlTableField extends Field {
     public XmlTableField() {
         super();
         internal = false;
-        attributeFields = new HashMap<String, XmlAttributeField>();
+        attributeFields = new LinkedHashMap<String, XmlAttributeField>();
     }
 
     public void addAttributeField(XmlAttributeField attributeField) {

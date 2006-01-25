@@ -1,16 +1,17 @@
 package org.gusdb.wdk.model;
 
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class QuerySet implements ModelSetI {
 
-    HashMap querySet;
+    Map<String, Query> querySet;
     String name;
     ResultFactory resultFactory;
 
     public QuerySet() {
-	querySet = new HashMap();
+	querySet = new LinkedHashMap<String, Query>();
     }
 
     public void setName(String name) {
@@ -22,7 +23,7 @@ public class QuerySet implements ModelSetI {
     }
 
    public Query getQuery(String name) throws WdkUserException {
-	Query q = (Query)querySet.get(name);
+	Query q = querySet.get(name);
 	if (q == null) throw new WdkUserException("Query Set " + getName() + " does not include query " + name);
 	return q;
     }
@@ -33,10 +34,10 @@ public class QuerySet implements ModelSetI {
 
     public Query[] getQueries() {
 	Query[] queries = new Query[querySet.size()];
-	Iterator queryIterator = querySet.values().iterator();
+	Iterator<Query> queryIterator = querySet.values().iterator();
 	int i = 0;
 	while (queryIterator.hasNext()) {
-	    queries[i++] = (Query)queryIterator.next();
+	    queries[i++] = queryIterator.next();
 	}
 	return queries;
     }
@@ -51,17 +52,17 @@ public class QuerySet implements ModelSetI {
     }
 
     public void resolveReferences(WdkModel model) throws WdkModelException {
-	Iterator queryIterator = querySet.values().iterator();
+	Iterator<Query> queryIterator = querySet.values().iterator();
 	while (queryIterator.hasNext()) {
-	    Query query = (Query)queryIterator.next();
+	    Query query = queryIterator.next();
 	    query.resolveReferences(model);
 	}
     }
 
     public void setResources(WdkModel model) throws WdkModelException {
-	Iterator queryIterator = querySet.values().iterator();
+	Iterator<Query> queryIterator = querySet.values().iterator();
 	while (queryIterator.hasNext()) {
-	    Query query = (Query)queryIterator.next();
+	    Query query = queryIterator.next();
 	    query.setResources(model);
 	    query.setSetName(this.getName());
 	}
@@ -72,7 +73,7 @@ public class QuerySet implements ModelSetI {
 	StringBuffer buf = new StringBuffer("QuerySet: name='" + name 
 					   + "'");
 	buf.append( newline );
-	Iterator queryIterator = querySet.values().iterator();
+	Iterator<Query> queryIterator = querySet.values().iterator();
 	while (queryIterator.hasNext()) {
 	    buf.append( newline );
 	    buf.append( ":::::::::::::::::::::::::::::::::::::::::::::" );

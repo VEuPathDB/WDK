@@ -8,8 +8,8 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.BooleanQuestionNode;
 
 import java.io.Serializable;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.HashMap;
 
 /**
  * A wrapper on a {@link Question} that provides simplified access for 
@@ -48,7 +48,7 @@ public class QuestionBean implements Serializable {
 
     public Map getParamsMap() {
 	ParamBean[] paramBeans = getParams();
-	Map pMap = new HashMap();
+	Map<String, ParamBean> pMap = new LinkedHashMap<String, ParamBean>();
 	for (int i=0; i<paramBeans.length; i++) {
 	    ParamBean p = paramBeans[i];
 	    pMap.put(p.getName(), p);

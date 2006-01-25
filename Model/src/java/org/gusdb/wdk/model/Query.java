@@ -1,7 +1,7 @@
 package org.gusdb.wdk.model;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Vector;
 import java.util.Iterator;
@@ -21,17 +21,17 @@ public abstract class Query {
     protected String help;
     protected Boolean isCacheable = new Boolean(true);
     protected LinkedHashSet<Reference> paramRefs;
-    protected HashMap<String, Param> paramsH;
+    protected Map<String, Param> paramsH;
     protected Vector<Param> paramsV;
-    protected HashMap<String, Column> columnsH;
+    protected Map<String, Column> columnsH;
     protected Vector<Column> columnsV;
     protected ResultFactory resultFactory;
    
     public Query () {
 	paramRefs = new LinkedHashSet<Reference>();
-	paramsH = new HashMap<String, Param>();
+	paramsH = new LinkedHashMap<String, Param>();
 	paramsV = new Vector<Param>();
-	columnsH = new HashMap<String, Column>();
+	columnsH = new LinkedHashMap<String, Column>();
 	columnsV = new Vector<Column>();
     }
 
@@ -128,15 +128,15 @@ public abstract class Query {
     /**
      * transform a set of param values to internal param values
      */
-    public Map<String, String> getInternalParamValues(Map<String, String> values) throws WdkModelException {
+    public Map<String, String> getInternalParamValues(Map<String, Object> values) throws WdkModelException {
 
-	Map<String, String> internalValues = new HashMap<String, String>();
+	Map<String, String> internalValues = new LinkedHashMap<String, String>();
 	Iterator<String> paramNames = values.keySet().iterator();
 	while (paramNames.hasNext()) {
 	    String paramName = paramNames.next();
 	    Param param = paramsH.get(paramName);
 	    internalValues.put(paramName, 
-			       param.getInternalValue(values.get(paramName)));
+			       param.getInternalValue(values.get(paramName).toString()));
 	}
 	return internalValues;
     }
@@ -205,8 +205,8 @@ public abstract class Query {
 	}
     }
 
-    protected void validateParamValues(Map<String, String> values) throws WdkUserException, WdkModelException {
-	HashMap<Param, String[]> errors = null;
+    protected void validateParamValues(Map<String, Object> values) throws WdkUserException, WdkModelException {
+	LinkedHashMap<Param, String[]> errors = null;
 	
 	// first confirm that all supplied values have legal names
 	Iterator<String> valueNames = values.keySet().iterator();
@@ -229,7 +229,7 @@ public abstract class Query {
 		errMsg = p.validateValue(value);
 	    }
 	    if (errMsg != null) {
-		if (errors == null) errors = new HashMap<Param, String[]>();
+		if (errors == null) errors = new LinkedHashMap<Param, String[]>();
 		String booBoo[] = {value.toString(), errMsg};
 		errors.put(p, booBoo);
 	    }
@@ -239,7 +239,7 @@ public abstract class Query {
 	}
     }
 
-    protected void applyDefaults(Map<String, String> values) {
+    protected void applyDefaults(Map<String, Object> values) {
 	int size = paramsV.size();
 	for(int i=0; i<size; i++) {
 	    Param p = paramsV.elementAt(i);

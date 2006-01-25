@@ -1,16 +1,5 @@
 package org.gusdb.wdk.model;
 
-import org.gusdb.wdk.model.RDBMSPlatformI;
-import org.gusdb.wdk.model.ResultFactory;
-import org.gusdb.wdk.model.AnswerParam;
-
-import java.util.Hashtable;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.sql.ResultSet;
-import java.util.Collection;
-import java.util.Map;
-import java.util.TreeMap;
 
 
 /**

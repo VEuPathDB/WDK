@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Iterator;
@@ -11,7 +10,7 @@ public abstract class ResultList {
     protected QueryInstance instance;
     protected Query query;
     protected String resultTableName;
-    protected HashMap valuesInUse;
+    protected Map<String, String> valuesInUse;
 
     // public static final String RESULT_TABLE_I = "MultiModeIValue";
 
@@ -19,7 +18,7 @@ public abstract class ResultList {
         this.instance = instance;
         this.query = instance.getQuery();
         this.resultTableName = resultTableName;
-        this.valuesInUse = new HashMap();
+        this.valuesInUse = new LinkedHashMap<String, String>();
     }
 
     public abstract void checkQueryColumns(Query query, boolean checkAll,

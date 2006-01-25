@@ -3,8 +3,8 @@
  */
 package org.gusdb.wdk.model;
 
-import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -53,7 +53,7 @@ public class BooleanExpression {
         // System.out.println("Expression: " + expression);
 
         // replace the literals in the expression
-        Map<String, String> replace = new HashMap<String, String>();
+        Map<String, String> replace = new LinkedHashMap<String, String>();
         expression = replaceLiterals(expression, replace).trim();
 
         // validate the expression by number of parentheses
@@ -165,7 +165,7 @@ public class BooleanExpression {
         // create a leaf BooleanQuestionNode from the answer
         BooleanQuestionNode leaf = new BooleanQuestionNode(
                 answer.getQuestion(), null);
-        leaf.setValues(new Hashtable(answer.getParams()));
+        leaf.setValues(new Hashtable<String, Object>(answer.getParams()));
         return leaf;
     }
 

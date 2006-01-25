@@ -6,7 +6,7 @@ package org.gusdb.wdk.model.xml;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModel;
@@ -166,7 +166,7 @@ public class XmlQuestion {
                                                 // fields
             summaryAttributes = recordClass.getAttributeFields();
         } else { // use a subset of attribute fields
-            Map<String, XmlAttributeField> summaries = new HashMap<String, XmlAttributeField>();
+            Map<String, XmlAttributeField> summaries = new LinkedHashMap<String, XmlAttributeField>();
             String[] names = summaryAttributeNames.split(",");
             for (String name : names) {
                 try {

@@ -1,8 +1,8 @@
 package org.gusdb.wdk.model.test;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.commons.cli.BasicParser;
@@ -38,7 +38,7 @@ public class BooleanQuestionTester {
     private static Map<String, String> operatorMap;
     
     static {
-        operatorMap = new HashMap<String, String>();
+        operatorMap = new LinkedHashMap<String, String>();
         operatorMap.put("and", BooleanQuestionNodeBean.INTERNAL_AND);
         operatorMap.put("or", BooleanQuestionNodeBean.INTERNAL_OR);
         operatorMap.put("not", BooleanQuestionNodeBean.INTERNAL_NOT);

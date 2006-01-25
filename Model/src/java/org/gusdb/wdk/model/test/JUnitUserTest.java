@@ -4,7 +4,7 @@
 package org.gusdb.wdk.model.test;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -80,7 +80,7 @@ public class JUnitUserTest extends TestCase {
     protected void setUp() throws Exception {
         super.setUp();
 
-        operatorMap = new HashMap<String, String>();
+        operatorMap = new LinkedHashMap<String, String>();
         operatorMap.put("and", BooleanQuestionNodeBean.INTERNAL_AND);
         operatorMap.put("or", BooleanQuestionNodeBean.INTERNAL_OR);
         operatorMap.put("not", BooleanQuestionNodeBean.INTERNAL_NOT);
@@ -582,7 +582,7 @@ public class JUnitUserTest extends TestCase {
             user.clearUserAnswers();
 
             // add answers into history, and also store IDs by type
-            Map<String, List<Integer>> groups = new HashMap<String, List<Integer>>();
+            Map<String, List<Integer>> groups = new LinkedHashMap<String, List<Integer>>();
             for (Answer answer : answers) {
                 user.addAnswer(answer);
                 UserAnswer userAnswer = user.getUserAnswerByAnswer(answer);
