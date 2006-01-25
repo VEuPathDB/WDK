@@ -17,8 +17,8 @@ import java.sql.PreparedStatement;
 import java.net.URL;
 import java.net.MalformedURLException;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.Set;
 import java.util.Iterator;
 import java.util.Vector;
@@ -87,7 +87,7 @@ public class WSQueryInstance extends QueryInstance  {
 	StringBuffer createSqlB = new StringBuffer("create table " +
 						   resultTableName + "(");
 
-	Map colIsClob = new HashMap();
+	Map<String, Integer> colIsClob = new LinkedHashMap<String, Integer>();
 	for (Column column : columns) {
 	    int cw = column.getWidth();
 	    createSqlB.append(column.getName() + (cw > 2000 ? " clob, " : " varchar(" + cw + "), "));

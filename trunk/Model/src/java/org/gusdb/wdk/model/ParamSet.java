@@ -1,16 +1,17 @@
 package org.gusdb.wdk.model;
 
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class ParamSet implements ModelSetI {
 
-    HashMap paramSet;
+    Map<String, Param> paramSet;
     String name;
     ResultFactory resultFactory;
 
     public ParamSet() {
-	paramSet = new HashMap();
+	paramSet = new LinkedHashMap<String, Param>();
     }
 
     public void setName(String name) {
@@ -22,7 +23,7 @@ public class ParamSet implements ModelSetI {
     }
 
     public Param getParam(String name) throws WdkUserException {
-	Param q = (Param)paramSet.get(name);
+	Param q = paramSet.get(name);
 	if (q == null) throw new WdkUserException("Param Set " + getName() + " does not include param " + name);
 	return q;
     }
@@ -33,10 +34,10 @@ public class ParamSet implements ModelSetI {
 
     public Param[] getParams() {
 	Param[] queries = new Param[paramSet.size()];
-	Iterator paramIterator = paramSet.values().iterator();
+	Iterator<Param> paramIterator = paramSet.values().iterator();
 	int i = 0;
 	while (paramIterator.hasNext()) {
-	    queries[i++] = (Param)paramIterator.next();
+	    queries[i++] = paramIterator.next();
 	}
 	return queries;
     }
@@ -51,17 +52,17 @@ public class ParamSet implements ModelSetI {
     }
 
     public void resolveReferences(WdkModel model) throws WdkModelException {
-	Iterator paramIterator = paramSet.values().iterator();
+	Iterator<Param> paramIterator = paramSet.values().iterator();
 	while (paramIterator.hasNext()) {
-	    Param param = (Param)paramIterator.next();
+	    Param param = paramIterator.next();
 	    param.resolveReferences(model);
 	}
     }
 
     public void setResources(WdkModel model) throws WdkModelException {
-	Iterator paramIterator = paramSet.values().iterator();
+	Iterator<Param> paramIterator = paramSet.values().iterator();
 	while (paramIterator.hasNext()) {
-	    Param param = (Param)paramIterator.next();
+	    Param param = paramIterator.next();
 	    param.setResources(model);
 	    param.setFullName(this.getName());
 	}

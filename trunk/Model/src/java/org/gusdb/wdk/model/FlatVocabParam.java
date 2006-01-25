@@ -1,7 +1,6 @@
 package org.gusdb.wdk.model;
 
-import java.util.HashMap;
-import java.util.Vector;
+import java.util.LinkedHashMap;
 
 public class FlatVocabParam extends AbstractEnumParam {
     
@@ -42,7 +41,7 @@ public class FlatVocabParam extends AbstractEnumParam {
     
     protected void initVocabMap() throws WdkModelException {
         if (vocabMap == null) {
-            vocabMap = new HashMap();
+            vocabMap = new LinkedHashMap();
             QueryInstance instance = query.makeInstance();
             ResultList result = instance.getResult();	
             while (result.next()) {

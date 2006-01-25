@@ -4,7 +4,7 @@
 package org.gusdb.wdk.model.xml;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -32,8 +32,8 @@ public class XmlRecordInstance {
     public XmlRecordInstance() {
         // initialize a unique ID for this record
         recordID = Long.toString(++recordCount);
-        attributes = new HashMap<String, XmlAttributeValue>();
-        tables = new HashMap<String, XmlTableValue>();
+        attributes = new LinkedHashMap<String, XmlAttributeValue>();
+        tables = new LinkedHashMap<String, XmlTableValue>();
     }
 
     /**

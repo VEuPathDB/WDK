@@ -11,7 +11,6 @@ import org.gusdb.wdk.model.xml.XmlQuestionSet;
 import org.gusdb.wdk.model.xml.XmlRecordClassSet;
 
 import java.util.Map;
-import java.util.HashMap;
 import java.util.Vector;
 import java.util.LinkedHashMap;
 import java.util.Iterator;

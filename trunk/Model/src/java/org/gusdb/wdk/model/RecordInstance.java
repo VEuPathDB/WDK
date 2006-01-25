@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -12,7 +11,7 @@ public class RecordInstance {
     
     PrimaryKeyValue primaryKey;
     RecordClass recordClass;
-    HashMap attributesResultSetsMap;
+    Map<String, Map> attributesResultSetsMap;
     Map<String, Integer> summaryAttributeMap;
     Answer answer;
     Map<String, AttributeField> dynamicAttributeFields;
@@ -20,8 +19,8 @@ public class RecordInstance {
 
     public RecordInstance(RecordClass recordClass) {
 	this.recordClass = recordClass;
-	attributesResultSetsMap = new HashMap();
-	summaryAttributeMap = new HashMap();
+	attributesResultSetsMap = new LinkedHashMap<String, Map>();
+	summaryAttributeMap = new LinkedHashMap<String, Integer>();
     }
 
     public RecordClass getRecordClass() { return recordClass; }
@@ -74,13 +73,13 @@ public class RecordInstance {
 	    TextAttributeField taField = (TextAttributeField)field;
 	    value = instantiateTextAttribute(taField.getName(), 
 					     taField,
-					     new HashMap());
+					     new LinkedHashMap<String, String>());
 
 	} else if (field instanceof LinkAttributeField) {
 	    LinkAttributeField laField = (LinkAttributeField)field;
 	    value = instantiateLinkAttribute(laField.getName(), 
 					     laField, 
-					     new HashMap());
+					     new LinkedHashMap<String, String>());
 
 	} else if (field instanceof ColumnAttributeField){
 	    ColumnAttributeField aField = (ColumnAttributeField)field;
@@ -91,7 +90,7 @@ public class RecordInstance {
 	    if (!attributesResultSetsMap.containsKey(queryName)) {
 		runAttributesQuery(query);
 	    }
-	    HashMap resultMap = (HashMap)attributesResultSetsMap.get(queryName);
+	    Map resultMap = attributesResultSetsMap.get(queryName);
 	    if (resultMap == null) {
 	        throw new WdkModelException("Attempting to find a value for attribute '" + attributeName + "' in recordClass '" + recordClass.getName() + "'.  It is claiming to come from query amed '"+queryName+"' but there is no resultMap for that name." );
 	    }
@@ -106,7 +105,7 @@ public class RecordInstance {
         Query query = recordClass.getTableField(tableName).getQuery();
         QueryInstance instance = query.makeInstance();
         instance.setIsCacheable(false);
-        Map<String, String> paramHash = new HashMap<String, String>();
+        Map<String, Object> paramHash = new LinkedHashMap<String, Object>();
         if (primaryKey == null)
             throw new WdkModelException("primaryKey is null");
 
@@ -214,7 +213,7 @@ public class RecordInstance {
     private Answer getNestedRecordAnswer(Question q) throws WdkModelException, WdkUserException {
 	
 	Param nestedQueryParams[] = q.getQuery().getParams();
-	HashMap<String, String> queryValues = new HashMap<String, String>();
+	Map<String, Object> queryValues = new LinkedHashMap<String, Object>();
 	for (int j = 0; j < nestedQueryParams.length; j++){
 	    Param nextParam = nestedQueryParams[j];
 	    String paramName = nextParam.getName();
@@ -267,8 +266,8 @@ public class RecordInstance {
 	
 	Map<String, AttributeFieldValue> attributeFields = getAttributes();
 	
-	HashMap<String, AttributeFieldValue> summaryAttributes = new HashMap<String, AttributeFieldValue>();
-	HashMap<String, AttributeFieldValue> nonSummaryAttributes = new HashMap<String, AttributeFieldValue>();
+	Map<String, AttributeFieldValue> summaryAttributes = new LinkedHashMap<String, AttributeFieldValue>();
+	Map<String, AttributeFieldValue> nonSummaryAttributes = new LinkedHashMap<String, AttributeFieldValue>();
 	
 	splitSummaryAttributes(attributeFields, summaryAttributes, nonSummaryAttributes);
 
@@ -332,8 +331,8 @@ public class RecordInstance {
 	
 	Map<String, AttributeFieldValue> attributeFields = getAttributes();
 	
-	HashMap<String, AttributeFieldValue> summaryAttributes = new HashMap<String, AttributeFieldValue>();
-	HashMap<String, AttributeFieldValue> nonSummaryAttributes = new HashMap<String, AttributeFieldValue>();
+	Map<String, AttributeFieldValue> summaryAttributes = new LinkedHashMap<String, AttributeFieldValue>();
+	Map<String, AttributeFieldValue> nonSummaryAttributes = new LinkedHashMap<String, AttributeFieldValue>();
 	
 	splitSummaryAttributes(attributeFields, summaryAttributes, nonSummaryAttributes);
 
@@ -437,9 +436,9 @@ public class RecordInstance {
     protected void setAttributeValue(String attributeName, Object attributeValue, Query query) throws WdkModelException{
 	
 	String queryName = query.getName();
-	HashMap resultMap = (HashMap)attributesResultSetsMap.get(queryName);
+	Map resultMap = attributesResultSetsMap.get(queryName);
 	if (resultMap == null){
-	    resultMap = new HashMap();
+	    resultMap = new LinkedHashMap();
 	    attributesResultSetsMap.put(queryName, resultMap);
 	}
 	resultMap.put(attributeName, attributeValue);
@@ -467,7 +466,7 @@ public class RecordInstance {
 	// otherwise, set values in record directly
 	else{ 
  
-        HashMap<String, String> paramHash = new HashMap<String, String>();
+        Map<String, Object> paramHash = new LinkedHashMap<String, Object>();
 	    if (primaryKey == null) 
 		throw new WdkModelException("primaryKey is null");
 
@@ -512,7 +511,7 @@ public class RecordInstance {
 
     protected String instantiateTextAttribute(String textAttributeName, 
 					      TextAttributeField field, 
-					      HashMap alreadyVisited) throws WdkModelException {
+					      Map<String, String> alreadyVisited) throws WdkModelException {
 
 	if (alreadyVisited.containsKey(textAttributeName)) {
 	    throw new WdkModelException("Circular text attribute subsitution involving text attribute '" 
@@ -525,7 +524,7 @@ public class RecordInstance {
 
     protected LinkValue instantiateLinkAttribute(String linkAttributeName, 
 						 LinkAttributeField field, 
-						 HashMap alreadyVisited) throws WdkModelException {
+						 Map<String, String> alreadyVisited) throws WdkModelException {
 
 	if (alreadyVisited.containsKey(linkAttributeName)) {
 	    throw new WdkModelException("Circular link attribute subsitution involving text attribute '" 

@@ -2,7 +2,6 @@ package org.gusdb.wdk.model;
 
 import java.io.File;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -26,12 +25,12 @@ public class WdkModel {
 
     protected RDBMSPlatformI platform;
 
-    HashMap querySets = new HashMap();
-    HashMap paramSets = new HashMap();
-    HashMap recordClassSets = new HashMap();
-    HashMap referenceLists = new HashMap();
-    LinkedHashMap questionSets = new LinkedHashMap();
-    HashMap allModelSets = new HashMap();
+    Map<String, QuerySet> querySets = new LinkedHashMap<String, QuerySet>();
+    Map<String, ParamSet> paramSets = new LinkedHashMap<String, ParamSet>();
+    Map<String, RecordClassSet> recordClassSets = new LinkedHashMap<String, RecordClassSet>();
+    Map<String, ReferenceList> referenceLists = new LinkedHashMap<String, ReferenceList>();
+    Map<String,QuestionSet> questionSets = new LinkedHashMap<String, QuestionSet>();
+    Map<String, ModelSetI> allModelSets = new LinkedHashMap<String, ModelSetI>();
     String name;
     String displayName;
     String introduction;
@@ -64,9 +63,9 @@ public class WdkModel {
      * Default constructor
      */
     public WdkModel() {
-        users = new HashMap<String, User>();
-        xmlQuestionSets = new HashMap<String, XmlQuestionSet>();
-        xmlRecordClassSets = new HashMap<String, XmlRecordClassSet>();
+        users = new LinkedHashMap<String, User>();
+        xmlQuestionSets = new LinkedHashMap<String, XmlQuestionSet>();
+        xmlRecordClassSets = new LinkedHashMap<String, XmlRecordClassSet>();
     }
 
     /**
@@ -256,8 +255,8 @@ public class WdkModel {
         return questionSets.containsKey(setName);
     }
 
-    public Map getQuestionSets() {
-        return new LinkedHashMap(questionSets);
+    public Map<String, QuestionSet> getQuestionSets() {
+        return new LinkedHashMap<String, QuestionSet>(questionSets);
     }
 
     // ReferenceLists

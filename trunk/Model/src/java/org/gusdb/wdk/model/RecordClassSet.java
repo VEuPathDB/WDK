@@ -1,7 +1,7 @@
 package org.gusdb.wdk.model;
 
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class RecordClassSet implements ModelSetI {
@@ -10,7 +10,7 @@ public class RecordClassSet implements ModelSetI {
     String name;
 
     public RecordClassSet() {
-	recordClassSet = new HashMap<String, RecordClass>();
+	recordClassSet = new LinkedHashMap<String, RecordClass>();
     }
 
     public void setName(String name) {

@@ -3,7 +3,7 @@
  */
 package org.gusdb.wdk.model;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -19,7 +19,7 @@ public class AttributeQueryReference extends Reference {
      */
     public AttributeQueryReference() {
         super();
-        attributeFields = new HashMap<String, AttributeField>();
+        attributeFields = new LinkedHashMap<String, AttributeField>();
     }
 
     /**
@@ -28,7 +28,7 @@ public class AttributeQueryReference extends Reference {
      */
     public AttributeQueryReference(String twoPartName) throws WdkModelException {
         super(twoPartName);
-        attributeFields = new HashMap<String, AttributeField>();
+        attributeFields = new LinkedHashMap<String, AttributeField>();
     }
 
     public void addAttributeField(AttributeField attributeField) {
@@ -36,7 +36,7 @@ public class AttributeQueryReference extends Reference {
     }
 
     public Map<String, AttributeField> getAttributeFieldMap() {
-        return new HashMap<String, AttributeField>(attributeFields);
+        return new LinkedHashMap<String, AttributeField>(attributeFields);
     }
 
     public AttributeField[] getAttributeFields() {

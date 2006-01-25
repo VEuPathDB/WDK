@@ -2,12 +2,10 @@ package org.gusdb.wdk.model;
 
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Vector;
 import java.util.Hashtable;
+import java.util.LinkedHashMap;
 import java.util.Map;
-
-import org.gusdb.wdk.model.implementation.SqlQuery;
+import java.util.Vector;
 
 /**
  * BooleanQueryInstance.java
@@ -52,7 +50,7 @@ public class BooleanQueryInstance extends QueryInstance {
      * IDs of the respective QueryInstances. The ResultFactory uses these in its
      * logic to return a result for the BooleanQueryInstance.
      */
-    protected HashMap operandIds = new HashMap();
+    protected Map operandIds = new LinkedHashMap();
 
     /**
      * Query that created this BooleanQueryInstance; BooleanQueryInstances and
@@ -82,7 +80,7 @@ public class BooleanQueryInstance extends QueryInstance {
      *        StringParam). Columns are set at this time for the BooleanQuery
      *        this instance points to.
      */
-    public void setValues(Map values) throws WdkUserException,
+    public void setValues(Map<String, Object> values) throws WdkUserException,
             WdkModelException {
 
         super.setValues(values);
@@ -237,16 +235,16 @@ public class BooleanQueryInstance extends QueryInstance {
     private String[] findCommonColumnNames() {
 	Column[] cols1 = firstQueryInstance.getQuery().getColumns();
 	Column[] cols2 = secondQueryInstance.getQuery().getColumns();
-	HashMap <String, String> cols1Map = new HashMap();
+	Map<String, String> cols1Map = new LinkedHashMap<String, String>();
 	for (Column col : cols1) cols1Map.put(col.getName(), col.getName());
-	Vector <String> answer = new Vector();
+	Vector<String> answer = new Vector<String>();
 	for (Column col : cols2) 
 	    if (cols1Map.get(col.getName()) != null) answer.add(col.getName());
 	return answer.toArray(new String[1]);
     }
 
     private void setOperandIds(Map values) {
-        this.operandIds = new HashMap(values);
+        this.operandIds = new LinkedHashMap(values);
     }
 
     /**
@@ -277,7 +275,7 @@ public class BooleanQueryInstance extends QueryInstance {
                 rl2.close(); // rl2 is only needed to close connection
                 secondQueryInstanceId = secondQueryInstance.getQueryInstanceId();
             }
-            Hashtable h = new Hashtable();
+            Hashtable<String, String> h = new Hashtable<String, String>();
 
             h.put(BooleanQuery.FIRST_ANSWER_PARAM_NAME,
                     firstQueryInstanceId.toString());

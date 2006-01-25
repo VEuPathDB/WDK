@@ -8,7 +8,7 @@ import org.gusdb.wdk.model.BooleanQuery;
 import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
 
 import java.util.Hashtable;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Iterator;
 
@@ -303,7 +303,7 @@ public class BooleanQuestionNode {
             Map firstSummaryAtts = firstChildAnswer.getQuestion().getSummaryAttributes();
             Map secondSummaryAtts = secondChildAnswer.getQuestion().getSummaryAttributes();
 
-            Map booleanSummaryAtts = new HashMap();
+            Map booleanSummaryAtts = new LinkedHashMap();
             booleanSummaryAtts.putAll(firstSummaryAtts);
             booleanSummaryAtts.putAll(secondSummaryAtts);
 

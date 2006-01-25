@@ -6,7 +6,6 @@ package org.gusdb.wdk.model.xml;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.LinkedHashMap;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModel;
@@ -21,7 +20,7 @@ public class XmlAnswer {
     private int startIndex;
     private int endIndex;
     private XmlQuestion question;
-    private LinkedHashMap<String, XmlRecordInstance> recordInstanceMap;
+    private Map<String, XmlRecordInstance> recordInstanceMap;
     private List<XmlRecordInstance> recordInstances;
 
     /**
@@ -112,7 +111,7 @@ public class XmlAnswer {
     public void setResources(WdkModel model) throws WdkModelException {
         // create summary attribute index
         XmlAttributeField[] sumArray = question.getSummaryAttributes();
-        Map<String, XmlAttributeField> summaries = new HashMap<String, XmlAttributeField>();
+        Map<String, XmlAttributeField> summaries = new LinkedHashMap<String, XmlAttributeField>();
         for (XmlAttributeField field : sumArray) {
             summaries.put(field.getName(), field);
         }

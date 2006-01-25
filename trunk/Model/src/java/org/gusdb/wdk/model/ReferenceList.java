@@ -1,7 +1,8 @@
 package org.gusdb.wdk.model;
 
 import java.util.Iterator;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Created: Mon May 10 12:34:30 2004
@@ -19,7 +20,7 @@ public class ReferenceList implements ModelSetI {
     /**
      * The data structure that will hold the actual list.
      */
-    private HashMap referenceMap;
+    private Map referenceMap;
 
     /**
      * The name of this ReferenceList.
@@ -33,7 +34,7 @@ public class ReferenceList implements ModelSetI {
 
 
     public ReferenceList(){
-       	this.referenceMap = new HashMap();
+       	this.referenceMap = new LinkedHashMap();
     }
     
     // ------------------------------------------------------------------

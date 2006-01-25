@@ -1,8 +1,8 @@
 package org.gusdb.wdk.model;
  
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.HashMap;
 
 /**
  * Simple implementation of QueryInstanceI; generally expects its subclasses
@@ -25,7 +25,7 @@ public abstract class QueryInstance {
     /**
      * Values that define this QueryInstance relative to others pointing to <code>query</code>
      */
-    protected Map<String, String> values = new HashMap<String, String>();
+    protected Map<String, Object> values = new LinkedHashMap<String, Object>();
 
     /**
      * Name of the table to join with when in join mode
@@ -65,8 +65,8 @@ public abstract class QueryInstance {
     // Public Methods
     // ------------------------------------------------------------------
 
-    public void setValues(Map<String, String> values) throws WdkUserException, WdkModelException {
-	this.values = new HashMap<String, String>(values);
+    public void setValues(Map<String, Object> values) throws WdkUserException, WdkModelException {
+	this.values = new LinkedHashMap<String, Object>(values);
 	query.applyDefaults(values);
 	query.validateParamValues(values);
     }
@@ -166,7 +166,7 @@ public abstract class QueryInstance {
     // Protected methods
     // ------------------------------------------------------------------
 
-    protected Map<String, String> getValuesMap() {
+    protected Map<String, Object> getValuesMap() {
 	return values;
     }
 

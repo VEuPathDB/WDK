@@ -1,8 +1,8 @@
 package org.gusdb.wdk.model;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -18,7 +18,7 @@ public class DynamicAttributeSet {
     private Set<String> columnAttributeFieldNames;
 
     public DynamicAttributeSet() {
-        attributesFieldMap = new HashMap<String, AttributeField>();
+        attributesFieldMap = new LinkedHashMap<String, AttributeField>();
         columnAttributeFieldNames = new HashSet<String>();
     }
 
@@ -79,11 +79,11 @@ public class DynamicAttributeSet {
     }
 
     Map<String, AttributeField> getAttributeFields() {
-        return new HashMap<String, AttributeField>(attributesFieldMap);
+        return new LinkedHashMap<String, AttributeField>(attributesFieldMap);
     }
 
     Map<String, AttributeField> getReportMakerAttributeFieldMap() {
-        Map<String, AttributeField> rmfields = new HashMap<String, AttributeField>();
+        Map<String, AttributeField> rmfields = new LinkedHashMap<String, AttributeField>();
         Set<String> names = attributesFieldMap.keySet();
         for (String name : names) {
             AttributeField field = attributesFieldMap.get(name);

@@ -7,8 +7,8 @@ import org.gusdb.wdk.model.xml.XmlAttributeValue;
 import org.gusdb.wdk.model.xml.XmlRecordInstance;
 import org.gusdb.wdk.model.xml.XmlTableValue;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.HashMap;
 
 /**
  * @author Jerric
@@ -43,9 +43,9 @@ public class XmlRecordBean {
         return attrBeans;
     }
 
-    public Map getAttributesMap() {
+    public Map<String, String> getAttributesMap() {
 	XmlAttributeValueBean[] attrs = getAttributes();
-	Map attMap = new HashMap();
+	Map<String, String> attMap = new LinkedHashMap<String, String>();
 	for (int i=0; i<attrs.length; i++) {
 	    XmlAttributeValueBean att = attrs[i];
 	    attMap.put(att.getName(), att.getValue());

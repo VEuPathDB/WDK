@@ -140,16 +140,16 @@ public class Answer {
     /**
      * @return Map where key is param name and value is param value
      */
-    public Map<String, String> getParams() {
+    public Map<String, Object> getParams() {
 	return idsQueryInstance.getValuesMap();
     }
 
     /**
      * @return Map where key is param display name and value is param value
      */
-    public Map<String, String> getDisplayParams() {
-	Map<String, String> displayParamsMap = new LinkedHashMap<String, String>();
-	Map<String, String> paramsMap = getParams();
+    public Map<String, Object> getDisplayParams() {
+	Map<String, Object> displayParamsMap = new LinkedHashMap<String, Object>();
+	Map<String, Object> paramsMap = getParams();
 	Param[] params = question.getParams();
 	for (int i=0; i<params.length; i++) {
 	    Param param = params[i];

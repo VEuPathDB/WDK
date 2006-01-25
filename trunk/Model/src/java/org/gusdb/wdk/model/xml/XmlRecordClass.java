@@ -3,7 +3,7 @@
  */
 package org.gusdb.wdk.model.xml;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModel;
@@ -30,8 +30,8 @@ public class XmlRecordClass {
      * 
      */
     public XmlRecordClass() {
-        attributeFields = new HashMap<String, XmlAttributeField>();
-        tableFields = new HashMap<String, XmlTableField>();
+        attributeFields = new LinkedHashMap<String, XmlAttributeField>();
+        tableFields = new LinkedHashMap<String, XmlTableField>();
     }
 
     /**

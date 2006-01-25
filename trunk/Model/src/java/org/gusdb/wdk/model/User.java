@@ -2,8 +2,8 @@ package org.gusdb.wdk.model;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Vector;
 import java.util.List;
@@ -77,7 +77,7 @@ public class User {
 
         // initialize userAnswers map
         if (userAnswers == null)
-            userAnswers = new HashMap<Integer, UserAnswer>();
+            userAnswers = new LinkedHashMap<Integer, UserAnswer>();
         userAnswers.put(answerIndex, userAnswer);
 
         // cache the history
@@ -158,7 +158,7 @@ public class User {
     }
 
     public Map getRecordAnswerMap() {
-        Map<String, Map<Integer, UserAnswer>> recAnsMapMap = new HashMap<String, Map<Integer, UserAnswer>>();
+        Map<String, Map<Integer, UserAnswer>> recAnsMapMap = new LinkedHashMap<String, Map<Integer, UserAnswer>>();
         if (userAnswers == null || userAnswers.size() == 0)
             return recAnsMapMap;
 
@@ -166,14 +166,14 @@ public class User {
             UserAnswer usrAns = userAnswers.get(new Integer(ansID));
             String rec = usrAns.getAnswer().getQuestion().getRecordClass().getFullName();
             if (recAnsMapMap.get(rec) == null) {
-                recAnsMapMap.put(rec, new HashMap<Integer, UserAnswer>());
+                recAnsMapMap.put(rec, new LinkedHashMap<Integer, UserAnswer>());
             }
             Map<Integer, UserAnswer> recAnsMapMap1 = recAnsMapMap.get(rec);
             recAnsMapMap1.put(new Integer(ansID), usrAns);
         }
 
         // wants answers in sorted arrays
-        Map recAnsMap = new HashMap<String, UserAnswer[]>();
+        Map<String, UserAnswer[]> recAnsMap = new LinkedHashMap<String, UserAnswer[]>();
         for (Object r : recAnsMapMap.keySet()) {
             String rec = (String) r;
             Map<Integer, UserAnswer> recAnsMapMap1 = recAnsMapMap.get(rec);
@@ -355,7 +355,7 @@ public class User {
     }
 
     private Map<String, Answer> buildOperandMap() {
-        Map<String, Answer> operandMap = new HashMap<String, Answer>();
+        Map<String, Answer> operandMap = new LinkedHashMap<String, Answer>();
         for (int answerID : userAnswers.keySet()) {
             UserAnswer userAnswer = userAnswers.get(answerID);
             operandMap.put("#" + answerID, userAnswer.getAnswer());

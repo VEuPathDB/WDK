@@ -28,11 +28,11 @@ public class AnswerBean {
     /**
      * @return A Map of param displayName --> param value.
      */
-    public Map<String, String> getParams() {
+    public Map<String, Object> getParams() {
 	return answer.getDisplayParams();
     }
 
-    public Map<String, String> getInternalParams() {
+    public Map<String, Object> getInternalParams() {
 	return answer.getParams();
     }
 

@@ -8,13 +8,13 @@ import org.gusdb.wdk.model.Column;
 import org.gusdb.wdk.model.DerivedColumnI;
 import org.gusdb.wdk.model.QueryInstance;
 
-import java.util.HashMap;
-
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.sql.Clob;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class SqlResultList extends ResultList {
 
@@ -98,7 +98,7 @@ public class SqlResultList extends ResultList {
 	    // get the names of all columns in the sql, and set flag
 	    // if one is RESULT_TABLE_I
 	    boolean sqlHasIcolumn = false;
-	    HashMap rsCols = new HashMap();
+	    Map<String, String> rsCols = new LinkedHashMap<String, String>();
 	    ResultSetMetaData metaData = resultSet.getMetaData();
 	    int rsColCount = metaData.getColumnCount();
 	    for (int i=1; i<=rsColCount; i++) {
@@ -113,7 +113,7 @@ public class SqlResultList extends ResultList {
 	    // iterate through Columns declared by Query object
 	    // make sure that each is found in the sql and than none are 
 	    // duplicated
-	    HashMap alreadySeen = new HashMap();
+	    Map<String, String> alreadySeen = new LinkedHashMap<String, String>();
 	    Column[] columns = query.getColumns();
 	    String queryName = query.getFullName();
 	    int colCount = 0;

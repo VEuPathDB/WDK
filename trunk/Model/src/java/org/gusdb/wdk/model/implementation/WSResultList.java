@@ -1,20 +1,20 @@
 package org.gusdb.wdk.model.implementation;
 
-import org.gusdb.wdk.model.ResultFactory;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.ResultList;
-import org.gusdb.wdk.model.Query;
-import org.gusdb.wdk.model.Column;
-import org.gusdb.wdk.model.DerivedColumnI;
-import org.gusdb.wdk.model.QueryInstance;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
-import java.util.HashMap;
+import org.gusdb.wdk.model.Column;
+import org.gusdb.wdk.model.Query;
+import org.gusdb.wdk.model.QueryInstance;
+import org.gusdb.wdk.model.ResultList;
+import org.gusdb.wdk.model.WdkModelException;
+
 
 public class WSResultList extends ResultList {
 
     String[][] resultArray;
     int currentRow = 0;
-    HashMap <String, Integer> columnName2Index;
+    Map<String, Integer> columnName2Index;
     boolean closed = false;
 
     public WSResultList(QueryInstance instance, String[][] resultArray) {
@@ -91,7 +91,7 @@ public class WSResultList extends ResultList {
     // private methods
     ////////////////////////////////////////////////////////////////////
     private void makeColumnsHash() {
-	columnName2Index = new HashMap();
+	columnName2Index = new LinkedHashMap<String, Integer>();
 	Column[] columns = query.getColumns();
 	int i=0;
 	for (Column column : columns) {

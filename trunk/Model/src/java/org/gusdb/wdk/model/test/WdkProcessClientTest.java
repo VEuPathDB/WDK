@@ -6,7 +6,7 @@ package org.gusdb.wdk.model.test;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.rmi.RemoteException;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.xml.rpc.ServiceException;
@@ -83,7 +83,7 @@ public class WdkProcessClientTest extends TestCase {
         // prepare the columns
         String[] columns = { "source_id", "TabularRow", "Alignment", "Header",
                 "Footer" };
-        Map<String, Integer> map = new HashMap<String, Integer>();
+        Map<String, Integer> map = new LinkedHashMap<String, Integer>();
         for (int i = 0; i < columns.length; i++) {
             map.put(columns[i], i);
         }

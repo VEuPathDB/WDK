@@ -3,7 +3,7 @@
  */
 package org.gusdb.wdk.model.xml;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.gusdb.wdk.model.ModelSetI;
@@ -23,7 +23,7 @@ public class XmlRecordClassSet implements ModelSetI {
      * 
      */
     public XmlRecordClassSet() {
-        recordClasses = new HashMap<String, XmlRecordClass>();
+        recordClasses = new LinkedHashMap<String, XmlRecordClass>();
     }
 
     /*
