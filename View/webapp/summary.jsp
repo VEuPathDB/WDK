@@ -112,7 +112,7 @@
 
 <c:choose>
   <c:when test="${i % 2 == 0}"><tr class="rowLight"></c:when>
-  <c:otherwise><tr class="rowDark"></c:otherwise>
+  <c:otherwise><tr class="rowMedium"></c:otherwise>
 </c:choose>
 
   <c:set var="j" value="0"/>
