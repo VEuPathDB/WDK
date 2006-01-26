@@ -14,7 +14,7 @@ import org.gusdb.wdk.model.WdkModelException;
  */
 public class XmlRowValue {
 
-    private Map<String, XmlAttributeValue> columns;
+    Map<String, XmlAttributeValue> columns;
 
     /**
      * 

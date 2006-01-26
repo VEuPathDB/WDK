@@ -142,30 +142,57 @@ public class XmlRecordInstance {
     }
 
     public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
-        // resolve attribute fields
-        for (XmlAttributeValue attribute : attributes.values()) {
-            XmlAttributeField field = 
-		recordClass.getAttributeField(attribute.getName());
-            attribute.setAttributeField(field);
+        // resolve attribute fields, and reorder it
+        Map<String, XmlAttributeValue> orderedAttributes = new LinkedHashMap<String, XmlAttributeValue>();
+        XmlAttributeField[] attributeFields = recordClass.getAttributeFields();
+        for (XmlAttributeField attributeField : attributeFields) {
+            String name = attributeField.getName();
+            XmlAttributeValue attributeValue = attributes.get(name);
+            attributeValue.setAttributeField(attributeField);
+            orderedAttributes.put(name, attributeValue);
         }
-        // resolve table fields
-        for (XmlTableValue table : tables.values()) {
-            XmlTableField tableField = 
-		recordClass.getTableField(table.getName());
-            table.setTableField(tableField);
+        attributes.clear();
+        attributes = orderedAttributes;
 
-            // resolve column fields
-            for (XmlRowValue row : table.getRows()) {
-                for (XmlAttributeValue column : row.getColumns()) {
-                    XmlAttributeField colField = 
-			tableField.getAttributeField(column.getName());
-                    column.setAttributeField(colField);
+        // resolve table fields, and reorder it
+        Map<String, XmlTableValue> orderedTables = new LinkedHashMap<String, XmlTableValue>();
+        XmlTableField[] tableFields = recordClass.getTableFields();
+        for (XmlTableField tableField : tableFields) {
+            String tableName = tableField.getName();
+            XmlTableValue tableValue = tables.get(tableName);
+            // check if the table exist, if not, create a empty table with no rows
+            if (tableValue == null) {
+                tableValue = new XmlTableValue();
+                tableValue.setName(tableName);
+            }
+            tableValue.setTableField(tableField);
+            orderedTables.put(tableName, tableValue);
+
+            // resolve the column fields, and re-order it
+            XmlAttributeField[] columnFields = tableField.getAttributeFields();
+            XmlRowValue[] rows = tableValue.getRows();
+            for (XmlRowValue row : rows) {
+                Map<String, XmlAttributeValue> orderedRow = new LinkedHashMap<String, XmlAttributeValue>();
+                for (XmlAttributeField columnField : columnFields) {
+                    String columnName = columnField.getName();
+                    XmlAttributeValue columnValue = row.columns.get(columnName);
+                    columnValue.setAttributeField(columnField);
+                    orderedRow.put(columnName, columnValue);
                 }
+                row.columns.clear();
+                row.columns = orderedRow;
             }
         }
+        tables.clear();
+        tables = orderedTables;
 
-        for (XmlTableField field : recordClass.getTableFields()) {
-            if (!tables.containsKey(field.getName())) continue;
+        // validate the table names & column names
+        for (XmlTableField field : tableFields) {
+            if (!tables.containsKey(field.getName()))
+                throw new WdkModelException("Table " + field.getName()
+                        + " defined in the Record Class "
+                        + recordClass.getName() + ", but "
+                        + "not found in the record " + recordID);
 
             // check column consistency
             XmlTableValue table = tables.get(field.getName());
