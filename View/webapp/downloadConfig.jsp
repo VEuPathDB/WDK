@@ -82,19 +82,14 @@
           <tr><td colspan="${numPerLine}">&nbsp;</td></tr>
 
           <tr>
-          <!--c:forEach items="${wdkAnswer.summaryAttributeNames}" var="recAttrName"-->
-          <c:forEach items="${wdkAnswer.question.recordClass.attributeFields}" var="recAttr">
-          <c:set value="${recAttr.key}" var="recAttrName"/>
-            <c:set value="${wdkAnswer.question.recordClass.attributeFields[recAttrName]}" var="recAttr"/>
-            <c:if test="${!recAttr.internal}">
-              <c:set var="i" value="${i+1}"/>
-              <c:set var="br" value=""/>
-              <c:if test="${i % numPerLine == 0}"><c:set var="br" value="</tr><tr>"/></c:if>
-              <td><html:multibox property="selectedFields">
-                    ${recAttr.name}
-                  </html:multibox>
-                  ${recAttr.displayName}</td>${br}
-            </c:if>
+          <c:forEach items="${wdkAnswer.allReportMakerAttributes}" var="rmAttr">
+            <c:set var="i" value="${i+1}"/>
+            <c:set var="br" value=""/>
+            <c:if test="${i % numPerLine == 0}"><c:set var="br" value="</tr><tr>"/></c:if>
+            <td><html:multibox property="selectedFields">
+                  ${rmAttr.name}
+                </html:multibox>
+                  ${rmAttr.displayName}</td>${br}
           </c:forEach>
           <c:if test="${i % numPerLine != 0 }">
               <c:set var="j" value="${i}"/>

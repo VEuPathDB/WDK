@@ -101,6 +101,13 @@ public class Question implements Serializable {
 	return summaryAttributeMap;
     }
 
+    public Map<String, AttributeField> getReportMakerAttributeFields() {
+        Map<String, AttributeField> rmfields = recordClass.getReportMakerAttributeFieldMap();
+        if (dynamicAttributes != null)
+            rmfields.putAll(dynamicAttributes.getReportMakerAttributeFieldMap());
+        return rmfields;
+    }
+
     ///////////////////////////////////////////////////////////////////////
 
 
@@ -178,7 +185,6 @@ public class Question implements Serializable {
 	return buf.toString();
     }
     
-
     ///////////////////////////////////////////////////////////////////////
     // package methods
     ///////////////////////////////////////////////////////////////////////
@@ -200,14 +206,6 @@ public class Question implements Serializable {
         return attributeFields;
     }
     
-    Map<String, AttributeField> getReportMakerAttributeFields() {
-        Map<String, AttributeField> rmfields = recordClass.getReportMakerAttributeFieldMap();
-        if (dynamicAttributes != null)
-            rmfields.putAll(dynamicAttributes.getReportMakerAttributeFieldMap());
-        return rmfields;
-    }
-
-
     void resolveReferences(WdkModel model)throws WdkModelException{
 
 	this.query = (Query)model.resolveReference(queryTwoPartName, name, 
