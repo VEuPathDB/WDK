@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Vector;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -54,10 +55,34 @@ public class TableFieldValue {
     }
 
     /**
+     * @return A list of fields, one describing each column.
+     */
+    public AttributeField[] getVisibleAttributeFields() {
+	Vector v = new Vector();
+	for (AttributeField field : tableField.getAttributeFields()) {
+	    if (!field.getInternal()) {
+		v.add(field);
+	    } 
+	}
+	AttributeField[] a = new AttributeField[v.size()];
+	v.toArray(a);
+	return a;
+    }
+
+
+    /**
      * @return A list of rows where each row is a Map of columnName --> {@link AttributeFieldValue}
      */
     public Iterator getRows() {
-        return new TableFieldValueIterator(resultList.getRows());
+        return new TableFieldValueIterator(resultList.getRows(), false);
+    }
+
+    /**
+     * @return A list of rows where each row is a Map of columnName --> {@link AttributeFieldValue}
+     *         for noninternal columns
+     */
+    public Iterator getVisibleRows() {
+        return new TableFieldValueIterator(resultList.getRows(), true);
     }
 
     /**
@@ -160,9 +185,11 @@ public class TableFieldValue {
     public class TableFieldValueIterator implements Iterator {
 
         Iterator<Map<String, Object>> resultListRows;
+	boolean visibleOnly ;
 
-        TableFieldValueIterator(Iterator<Map<String, Object>> resultListRows) {
+        TableFieldValueIterator(Iterator<Map<String, Object>> resultListRows, boolean visibleOnly) {
             this.resultListRows = resultListRows;
+	    this.visibleOnly = visibleOnly;
         }
 
         public boolean hasNext() {
@@ -179,6 +206,9 @@ public class TableFieldValue {
             AttributeField[] attributeFields = tableField.getAttributeFields();
             try {
                 for (AttributeField attributeField : attributeFields) {
+		    if (visibleOnly) {
+			if (attributeField.getInternal()) { continue; } 
+		    }
                     String name = attributeField.getName();
                     Object fieldValue = null;
                     if (attributeField instanceof ColumnAttributeField) {
@@ -194,7 +224,7 @@ public class TableFieldValue {
                         String instantiatedUrl = instantiateText(
                                 linkField.getUrl(), resultListRow, columnNames);
                         fieldValue = new LinkValue(instantiatedVisible,
-                                instantiatedUrl);
+                                instantiatedUrl, linkField);
                     } else if (attributeField instanceof TextAttributeField) {
                         TextAttributeField textField = (TextAttributeField) attributeField;
                         // resolve the macro too
