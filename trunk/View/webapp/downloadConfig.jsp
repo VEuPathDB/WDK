@@ -76,7 +76,7 @@
           <c:set var="i" value="0"/>
 
           <tr><td colspan="${numPerLine}">
-          <html:multibox property="selectedFields">all</html:multibox>
+          <html:multibox property="selectedFields" onclick="uncheck(1);">all</html:multibox>
           Default (same as in <a href="showSummary.do?user_answer_id=${ua_id}">result</a>), or...
           </td></tr>
           <tr><td colspan="${numPerLine}">&nbsp;</td></tr>
@@ -86,7 +86,7 @@
             <c:set var="i" value="${i+1}"/>
             <c:set var="br" value=""/>
             <c:if test="${i % numPerLine == 0}"><c:set var="br" value="</tr><tr>"/></c:if>
-            <td><html:multibox property="selectedFields">
+            <td><html:multibox property="selectedFields" onclick="uncheck(0);">
                   ${rmAttr.name}
                 </html:multibox>
                   ${rmAttr.displayName}</td>${br}
