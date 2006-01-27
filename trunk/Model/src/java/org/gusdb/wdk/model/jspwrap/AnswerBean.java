@@ -170,6 +170,20 @@ public class AnswerBean {
 	return downloadAttribs;
     }
 
+    public AttributeFieldBean[] getAllReportMakerAttributes() {
+	Map<String, AttributeField> attribs = answer.getQuestion().getReportMakerAttributeFields();
+	Iterator<String> ai = attribs.keySet().iterator();
+	Vector<AttributeFieldBean> v = new Vector<AttributeFieldBean>();
+	while (ai.hasNext()) {
+	    String attribName = ai.next();
+	    v.add(new AttributeFieldBean(attribs.get(attribName)));
+	}
+	int size = v.size();
+	AttributeFieldBean[] rmAttribs = new AttributeFieldBean[size];
+	v.toArray(rmAttribs);
+	return rmAttribs;	
+    }
+
     public String[] getDownloadAttributeNames() {
 	AttributeFieldBean[] downloadAttribs = getDownloadAttributes();
 	Vector<String> v = new Vector<String>();
