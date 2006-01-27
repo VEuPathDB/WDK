@@ -93,7 +93,9 @@ public class GetDownloadResultAction extends Action {
 		RecordBean rec = (RecordBean)records.next();
 		Map attribs = rec.getAttributes();
 		for (int k=0; k<downloadAttrs.length; k++) {
-		    downloadResult.append(((AttributeFieldValue)attribs.get(downloadAttrs[k].getName())).getValue() + tab);
+		    String da = downloadAttrs[k].getName();
+		    Object val = ((AttributeFieldValue)attribs.get(da)).getValue();
+		    downloadResult.append(val + tab);
 		}
 		downloadResult.append(newLine);
 	    }

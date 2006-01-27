@@ -152,17 +152,17 @@ public class AnswerBean {
 
     public AttributeFieldBean[] getDownloadAttributes() {
 	AttributeFieldBean[] sumAttribs = getSummaryAttributes();
-	Vector<AttributeFieldBean> v = new Vector<AttributeFieldBean>();
-	for (int i=0; i<sumAttribs.length; i++) {
-	    String attribName = sumAttribs[i].getName();
+	if (downloadConfigMap == null || downloadConfigMap.size() == 0) {
+	    return sumAttribs;
+	}
 
-	    if (downloadConfigMap == null || downloadConfigMap.size() == 0) {
-		v.add(sumAttribs[i]);
-	    } else {
-		Object configStatus = downloadConfigMap.get(attribName);
-		//System.err.println("DEBUG AnswerBean: configStatus for " + attrName + " is " + configStatus);
-		if (configStatus != null) { v.add(sumAttribs[i]); }
-            }
+	AttributeFieldBean[] rmAttribs = getAllReportMakerAttributes();
+	Vector<AttributeFieldBean> v = new Vector<AttributeFieldBean>();
+	for (int i=0; i<rmAttribs.length; i++) {
+	    String attribName = rmAttribs[i].getName();
+	    Object configStatus = downloadConfigMap.get(attribName);
+	    //System.err.println("DEBUG AnswerBean: configStatus for " + attrName + " is " + configStatus);
+	    if (configStatus != null) { v.add(rmAttribs[i]); }
 	}
 	int size = v.size();
 	AttributeFieldBean[] downloadAttribs = new AttributeFieldBean[size];
