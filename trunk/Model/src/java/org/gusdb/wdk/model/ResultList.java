@@ -1,8 +1,8 @@
 package org.gusdb.wdk.model;
 
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 public abstract class ResultList {
@@ -10,7 +10,14 @@ public abstract class ResultList {
     protected QueryInstance instance;
     protected Query query;
     protected String resultTableName;
-    protected Map<String, String> valuesInUse;
+    
+    /**
+     * It stores the field information of a TableField. This is not a good idea
+     * to have ResultList know the information of higher level objects. But this
+     * is the way the ResultList works, should refactor it later.
+     * -- Jerric
+     */
+    protected Map<String, AttributeField> attributeFields = null;
 
     // public static final String RESULT_TABLE_I = "MultiModeIValue";
 
@@ -18,7 +25,6 @@ public abstract class ResultList {
         this.instance = instance;
         this.query = instance.getQuery();
         this.resultTableName = resultTableName;
-        this.valuesInUse = new LinkedHashMap<String, String>();
     }
 
     public abstract void checkQueryColumns(Query query, boolean checkAll,
@@ -29,42 +35,11 @@ public abstract class ResultList {
      * @return
      * @throws WdkModelException
      */
-    AttributeFieldValue getAttributeFieldValue(String attributeName)
-            throws WdkModelException {
-        if (valuesInUse.containsKey(attributeName))
-            throw new WdkModelException("Circular attempt to access attribute "
-                    + attributeName);
-
-        Object value;
-
-        if (attributeName == ResultFactory.RESULT_TABLE_I) {
-            // this is a mess, but for now is the only way to trick ResultList
-            // into thinking i is a valid column for this query
-            value = getResultTableIndexValue();
-            AttributeField iField = new ColumnAttributeField();
-            AttributeFieldValue iFieldValue = new AttributeFieldValue(iField,
-                    value);
-            return iFieldValue;
+    Object getValue(String columnName) throws WdkModelException {
+        if (columnName == ResultFactory.RESULT_TABLE_I) {
+            return getResultTableIndexValue();
         } else {
-
-            try {
-                valuesInUse.put(attributeName, attributeName);
-                Column column = query.getColumn(attributeName);
-                // the next line has the potential to be circular
-                if (column instanceof DerivedColumnI) {
-                    value = ((DerivedColumnI) column).getDerivedValue(this);
-                }
-
-                else value = getValueFromResult(attributeName);
-
-                ColumnAttributeField field = new ColumnAttributeField();
-                field.setColumn(column);
-                AttributeFieldValue fieldValue = new AttributeFieldValue(field,
-                        value);
-                return fieldValue;
-            } finally {
-                valuesInUse.remove(attributeName);
-            }
+            return getValueFromResult(columnName);
         }
     }
 
@@ -80,6 +55,10 @@ public abstract class ResultList {
     public Column[] getColumns() {
         return query.getColumns();
     }
+    
+    void setAttributeFields(Map<String, AttributeField> attributeFields) {
+        this.attributeFields = attributeFields;
+    }
 
     public abstract boolean next() throws WdkModelException;
 
@@ -93,34 +72,11 @@ public abstract class ResultList {
             Iterator colNames = rowMap.keySet().iterator();
             while (colNames.hasNext()) {
                 Object colName = colNames.next();
-                AttributeFieldValue fVal = (AttributeFieldValue) rowMap.get(colName);
-                if (fVal.getInternal().booleanValue()) buf.append("[");
-                buf.append(fVal.getValue());
-                if (fVal.getInternal().booleanValue()) buf.append("]");
+                Object fVal = rowMap.get(colName);
+                buf.append(fVal);
                 buf.append("\t");
             }
             buf.append(newline);
-        }
-        close();
-    }
-
-    public void toXML(StringBuffer buf, String rowTag, String ident)
-            throws WdkModelException {
-        String newline = System.getProperty("line.separator");
-        Iterator rows = getRows();
-        while (rows.hasNext()) {
-            buf.append(ident + "<" + rowTag + ">" + newline);
-            Map rowMap = (Map) rows.next();
-            Iterator colNames = rowMap.keySet().iterator();
-            while (colNames.hasNext()) {
-                Object colName = colNames.next();
-                AttributeFieldValue fVal = (AttributeFieldValue) rowMap.get(colName);
-                if (!fVal.getInternal().booleanValue()) {
-                    buf.append(ident + "    " + "<" + colName + ">"
-                            + fVal.getValue() + "</" + colName + ">" + newline);
-                }
-            }
-            buf.append(ident + "</" + rowTag + ">" + newline);
         }
         close();
     }
@@ -152,16 +108,16 @@ public abstract class ResultList {
     }
 
     /**
-     * @return Map of columnName -> AttributeFieldValue
+     * @return Map of <columnName, RawObject>
      */
-    Map getRow() {
+    Map<String, Object> getRow() {
         // return new RowMap(this);
-        LinkedHashMap row = new LinkedHashMap();
+        Map<String, Object> row = new LinkedHashMap<String, Object>();
         Column[] cols = getColumns();
         for (int i = 0; i < cols.length; i++) {
             String colName = cols[i].getName();
             try {
-                row.put(colName, getAttributeFieldValue(colName));
+                row.put(colName, getValue(colName));
             } catch (WdkModelException e) {
                 throw new RuntimeException(e);
             }

@@ -101,8 +101,10 @@ public class RecordInstance {
 	return value;
     }
 
-    public ResultList getTableValue(String tableName) throws WdkModelException {
-        Query query = recordClass.getTableField(tableName).getQuery();
+    public TableFieldValue getTableValue(String tableName) throws WdkModelException {
+        // get the table field
+        TableField tableField = recordClass.getTableField(tableName);
+        Query query = tableField.getQuery();
         QueryInstance instance = query.makeInstance();
         instance.setIsCacheable(false);
         Map<String, Object> paramHash = new LinkedHashMap<String, Object>();
@@ -119,7 +121,7 @@ public class RecordInstance {
         } catch (WdkUserException e) {
             throw new WdkModelException(e);
         }
-        return instance.getResult();
+        return new TableFieldValue(tableField, instance.getResult());
     }
 
     /**
@@ -286,9 +288,8 @@ public class RecordInstance {
 	    TableFieldValue field = 
 		(TableFieldValue)tableFields.get(fieldName);
 	    buf.append("Table " + field.getDisplayName()).append( newline );
-	    ResultList resultList = getTableValue(fieldName);
-	    resultList.write(buf);
-	    resultList.close();
+        TableFieldValue tableValue = getTableValue(fieldName);
+	    tableValue.write(buf);
 	    field.closeResult();
 	    buf.append(newline);
 
@@ -326,18 +327,21 @@ public class RecordInstance {
     
     public String printSummary() throws WdkModelException {
 
-	String newline = System.getProperty( "line.separator" );
-	StringBuffer buf = new StringBuffer();
-	
-	Map<String, AttributeFieldValue> attributeFields = getAttributes();
-	
-	Map<String, AttributeFieldValue> summaryAttributes = new LinkedHashMap<String, AttributeFieldValue>();
-	Map<String, AttributeFieldValue> nonSummaryAttributes = new LinkedHashMap<String, AttributeFieldValue>();
-	
-	splitSummaryAttributes(attributeFields, summaryAttributes, nonSummaryAttributes);
+        String newline = System.getProperty("line.separator");
+        StringBuffer buf = new StringBuffer();
 
-	printAtts_Aux(buf, "Summary Attributes: " + newline, summaryAttributes);
-	return buf.toString();
+        Map<String, AttributeFieldValue> attributeFields = getAttributes();
+
+        Map<String, AttributeFieldValue> summaryAttributes = 
+            new LinkedHashMap<String, AttributeFieldValue>();
+        Map<String, AttributeFieldValue> nonSummaryAttributes = 
+            new LinkedHashMap<String, AttributeFieldValue>();
+
+        splitSummaryAttributes(attributeFields, summaryAttributes,
+                nonSummaryAttributes);
+
+        printAtts_Aux(buf, "Summary Attributes: " + newline, summaryAttributes);
+        return buf.toString();
     }
 
     public String toXML() throws WdkModelException, WdkUserException { return toXML(""); }
@@ -367,9 +371,9 @@ public class RecordInstance {
 	while (fieldNames.hasNext()) {
 	    String fieldName = (String)fieldNames.next();
 	    buf.append(ident + "<" + fieldName + ">" + newline);
-	    ResultList resultList = getTableValue(fieldName);
-	    resultList.toXML(buf, "li", ident);
-	    resultList.close();
+        
+        TableFieldValue tableValue = getTableValue(fieldName);
+        tableValue.toXML(buf, "li", ident);
 	    buf.append(ident + "</" + fieldName + ">" + newline);
 	}
 	
@@ -495,11 +499,10 @@ public class RecordInstance {
 		}
 	    }
 	    else {
-		for (int i=0; i<columns.length; i++) {
-		    String columnName = columns[i].getName();
-		    setAttributeValue(columnName, 
-				      rl.getAttributeFieldValue(columnName).getValue());
-		}
+	        for (int i = 0; i < columns.length; i++) {
+                    String columnName = columns[i].getName();
+                    setAttributeValue(columnName, rl.getValue(columnName));
+            }
 		if (rl.next()) {
 		    String msg = "Attributes query '" + query.getFullName() + "' in Record '" + recordClass.getFullName() + "' returns more than one row";
 		    throw new WdkModelException(msg);
