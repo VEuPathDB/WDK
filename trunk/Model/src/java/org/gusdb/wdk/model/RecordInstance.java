@@ -539,7 +539,8 @@ public class RecordInstance {
 	return new LinkValue(instantiateAttr(field.getVisible(), 
 					     linkAttributeName),
 			     instantiateAttr(field.getUrl(), 
-					     linkAttributeName));
+					     linkAttributeName),
+			     field);
     }
 
     private String instantiateAttr(String rawText, String targetAttrName) throws WdkModelException { 
