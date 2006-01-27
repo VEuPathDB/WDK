@@ -115,15 +115,16 @@ public class DynamicAttributeSet {
         String message = "dynamicAttributes of question "
                 + question.getFullName();
         Map<String, Column> columnMap = question.getQuery().getColumnMap();
-        // check if all column names appear in column attributes
-        Set<String> names = columnMap.keySet();
-        for (String name : names) {
-            if (!columnAttributeFieldNames.contains(name))
-                throw new WdkModelException(message
-                        + " doesn't contain an attribute '" + name
-                        + "' that appears in query "
-                        + question.getQuery().getFullName());
-        }
+        // // check if all column names appear in column attributes
+        // The column may contain pk_column, which may not appear in attributes
+        // Set<String> names = columnMap.keySet();
+        // for (String name : names) {
+        // if (!columnAttributeFieldNames.contains(name))
+        // throw new WdkModelException(message
+        // + " doesn't contain an attribute '" + name
+        // + "' that appears in query "
+        // + question.getQuery().getFullName());
+        // }
         // check if all column attribute names appear in columns
         for (String name : columnAttributeFieldNames) {
             if (!columnMap.containsKey(name))
