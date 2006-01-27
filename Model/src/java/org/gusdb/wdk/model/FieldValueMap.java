@@ -83,9 +83,7 @@ public class FieldValueMap implements Map {
 	    String fieldName = (String)key;
 	    Object fieldValue;
 	    if (TABLE_MAP.equals(mapType)) {
-	        TableField field = recordClass.getTableField(fieldName);
-		ResultList value = recordInstance.getTableValue(fieldName);
-		fieldValue = new TableFieldValue(field, value);
+		    fieldValue = recordInstance.getTableValue(fieldName);
 	    } else {
 	        AttributeField field = null;
 

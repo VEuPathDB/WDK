@@ -327,7 +327,7 @@ public class Answer {
 	int pageIndex = 0;
 	while (attrQueryResultList.next()){
 
-            int attrResultTableI = new Integer(attrQueryResultList.getAttributeFieldValue(ResultFactory.RESULT_TABLE_I).getValue().toString()).intValue();
+            int attrResultTableI = new Integer(attrQueryResultList.getValue(ResultFactory.RESULT_TABLE_I).toString()).intValue();
 	    
 	    if (attrResultTableI != idsResultTableI++) {
 		String msg = 
@@ -343,7 +343,7 @@ public class Answer {
 	    RecordInstance recordInstance = pageRecordInstances[pageIndex++];
             for (int i = 0; i < columns.length; i++){
                 String nextColumnName = columns[i].getName();
-                Object value = attrQueryResultList.getAttributeFieldValue(nextColumnName).getValue();
+                Object value = attrQueryResultList.getValue(nextColumnName);
 		if (isDynamic) 
 		    recordInstance.setAttributeValue(nextColumnName, value,
 						     attributesQueryInstance.getQuery());
@@ -389,8 +389,8 @@ public class Answer {
 	    nextRecordInstance.setDynamicAttributeFields(question.getDynamicAttributeFields());
 	    String project = null;
 	    if (recordProjectColumnName != null)
-		project = rl.getAttributeFieldValue(recordProjectColumnName).getValue().toString();
-	    String id = rl.getAttributeFieldValue(recordIdColumnName).getValue().toString();
+		project = rl.getValue(recordProjectColumnName).toString();
+	    String id = rl.getValue(recordIdColumnName).toString();
 	    nextRecordInstance.setPrimaryKey(project, id);
 	    
 	    nextRecordInstance.setAnswer(this);

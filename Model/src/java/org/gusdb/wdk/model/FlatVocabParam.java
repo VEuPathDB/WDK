@@ -43,12 +43,11 @@ public class FlatVocabParam extends AbstractEnumParam {
         if (vocabMap == null) {
             vocabMap = new LinkedHashMap();
             QueryInstance instance = query.makeInstance();
-            ResultList result = instance.getResult();	
+            ResultList result = instance.getResult();
             while (result.next()) {
-		Object value = result.getAttributeFieldValue("term").getValue();
-		orderedKeySet.add(value);
-	        vocabMap.put(value,
-			     result.getAttributeFieldValue("internal").getValue());
+                Object value = result.getValue("term");
+                orderedKeySet.add(value);
+                vocabMap.put(value, result.getValue("internal"));
             }
             result.close();
         }

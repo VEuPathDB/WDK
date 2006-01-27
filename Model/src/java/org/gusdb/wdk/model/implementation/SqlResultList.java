@@ -5,7 +5,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.ResultList;
 import org.gusdb.wdk.model.Query;
 import org.gusdb.wdk.model.Column;
-import org.gusdb.wdk.model.DerivedColumnI;
+//import org.gusdb.wdk.model.DerivedColumnI;
 import org.gusdb.wdk.model.QueryInstance;
 
 import java.sql.ResultSet;
@@ -114,11 +114,11 @@ public class SqlResultList extends ResultList {
 	    // make sure that each is found in the sql and than none are 
 	    // duplicated
 	    Map<String, String> alreadySeen = new LinkedHashMap<String, String>();
-	    Column[] columns = query.getColumns();
+	    Column[] columns = getColumns();
 	    String queryName = query.getFullName();
 	    int colCount = 0;
 	    for (int i=0; i<columns.length; i++) {
-		if (columns[i] instanceof DerivedColumnI) continue;
+//		if (columns[i] instanceof DerivedColumnI) continue;
 		colCount++;
 		String columnName = columns[i].getName();
 		if (alreadySeen.containsKey(columnName)) {
