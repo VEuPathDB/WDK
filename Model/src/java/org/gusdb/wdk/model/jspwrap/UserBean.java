@@ -106,12 +106,17 @@ public class UserBean {
 
     public int getUserAnswerIdByAnswer(AnswerBean answer)
             throws WdkUserException {
-	return getUserAnswerByAnswer(answer).getAnswerID();
+	return getUserAnswerByAnswerFuzzy(answer).getAnswerID();
     }
 
     public UserAnswerBean getUserAnswerByAnswer(AnswerBean answer)
             throws WdkUserException {
         return new UserAnswerBean(user.getUserAnswerByAnswer(answer.answer));
+    }
+
+    public UserAnswerBean getUserAnswerByAnswerFuzzy(AnswerBean answer)
+            throws WdkUserException {
+        return new UserAnswerBean(user.getUserAnswerByAnswerFuzzy(answer.answer));
     }
 
     /*
