@@ -107,8 +107,7 @@
         </td></tr>
   <tr><td colspan="2">&nbsp;</td></tr>
   <tr><td></td>
-      <td><html:submit property="downloadConfigSubmit" value="Continue"/>
-          <html:reset property="downloadConfigReset" value="Reset"/>
+      <td><html:submit property="downloadConfigSubmit" value="Get Report"/>
       </td></tr></table>
 </html:form>
 
