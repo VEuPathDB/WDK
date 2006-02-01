@@ -136,7 +136,7 @@ public class RecordInstance {
      */
 
     public Map<String, AttributeFieldValue> getAttributes() {
-	return new FieldValueMap(recordClass, this, FieldValueMap.ATTRIBUTE_MAP, null);
+	return new FieldValueMap(recordClass, this, FieldValueMap.ATTRIBUTE_MAP, dynamicAttributeFields);
 	
     }
 
