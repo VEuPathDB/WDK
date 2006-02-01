@@ -83,14 +83,31 @@
 
           <tr>
           <c:forEach items="${wdkAnswer.allReportMakerAttributes}" var="rmAttr">
+            <%-- this is a hack, why some reportMakerAttributes have no name? --%>
+            <c:choose>
+            <c:when test="${rmAttr.name != null && rmAttr.name != ''}">
             <c:set var="i" value="${i+1}"/>
             <c:set var="br" value=""/>
             <c:if test="${i % numPerLine == 0}"><c:set var="br" value="</tr><tr>"/></c:if>
             <td><html:multibox property="selectedFields" onclick="uncheck(0);">
                   ${rmAttr.name}
                 </html:multibox>
-                  ${rmAttr.displayName}</td>${br}
+                  <c:choose>
+                    <c:when test="${rmAttr.displayName == null || rmAttr.displayName == ''}">
+                      ${rmAttr.name}
+                    </c:when>
+                    <c:otherwise>
+                      ${rmAttr.displayName}
+                    </c:otherwise>
+                  </c:choose>
+            </td>${br}
+            </c:when>
+            <c:otherwise>
+              <!-- <td><html:multibox property="selectedFields">junk</html:multibox>junk</td>${br} -->
+            </c:otherwise>
+            </c:choose>
           </c:forEach>
+
           <c:if test="${i % numPerLine != 0 }">
               <c:set var="j" value="${i}"/>
               <c:forEach begin="${i+1}" end="${i+numPerLine}" step="1">
