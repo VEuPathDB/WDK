@@ -184,6 +184,10 @@ public class Question implements Serializable {
 	}
 	return buf.toString();
     }
+
+    public boolean isDynamic() {
+	return dynamicAttributes != null;
+    }
     
     ///////////////////////////////////////////////////////////////////////
     // package methods

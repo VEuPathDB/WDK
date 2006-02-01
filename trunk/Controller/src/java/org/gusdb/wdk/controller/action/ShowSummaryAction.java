@@ -103,7 +103,7 @@ public class ShowSummaryAction extends Action {
 	    + CConstants.WDK_CUSTOM_SUMMARY_PAGE;
 	ActionForward forward = null;
 
-	if(wdkAnswer.getResultSize() == 1) {
+	if(wdkAnswer.getResultSize() == 1 && !wdkAnswer.getIsDynamic()) {
 	    RecordBean rec = (RecordBean)wdkAnswer.getRecords().next();
 	    forward = mapping.findForward(CConstants.SKIPTO_RECORD_MAPKEY);
 	    String path = forward.getPath() + "?name=" + rec.getRecordClass().getFullName()
