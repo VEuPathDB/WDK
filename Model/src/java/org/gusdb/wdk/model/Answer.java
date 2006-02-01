@@ -137,6 +137,10 @@ public class Answer {
 	return resultSize.intValue();
     }
 
+    public boolean isDynamic() {
+	return getQuestion().isDynamic();
+    }
+
     /**
      * @return Map where key is param name and value is param value
      */
