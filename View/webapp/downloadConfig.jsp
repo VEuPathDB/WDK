@@ -118,6 +118,12 @@
           </c:if>
           </table>
         </td></tr>
+
+  <tr><td valign="top">&nbsp;</td>
+      <td align="center"><input type="radio" name="selectAll" onclick="check(1)">select all
+          <input type="radio" name="selectAll" selected="yes" onclick="check(0)">clear all
+        </td></tr>
+
   <tr><td valign="top"><b>Header line: </b></td>
       <td><html:radio property="includeHeader" value="yes">include</html:radio>
           <html:radio property="includeHeader" value="no">exclude</html:radio>
