@@ -171,7 +171,7 @@ public class AnswerBean {
     }
 
     public AttributeFieldBean[] getAllReportMakerAttributes() {
-	Map<String, AttributeField> attribs = answer.getQuestion().getReportMakerAttributeFields();
+	Map<String, AttributeField> attribs = answer.getReportMakerAttributeFields();
 	Iterator<String> ai = attribs.keySet().iterator();
 	Vector<AttributeFieldBean> v = new Vector<AttributeFieldBean>();
 	while (ai.hasNext()) {

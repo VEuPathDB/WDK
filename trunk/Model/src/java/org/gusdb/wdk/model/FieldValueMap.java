@@ -66,6 +66,9 @@ public class FieldValueMap implements Map {
 	    if (SUMMARY_ATTRIBUTE_MAP.equals(mapType) && dynamicAttributeFields != null) {
 		keySet.addAll(dynamicAttributeFields.keySet());
 	    }
+	    if (ATTRIBUTE_MAP.equals(mapType) && dynamicAttributeFields != null) {
+		keySet.addAll(dynamicAttributeFields.keySet());
+	    }
 	}
 
 	return keySet;
@@ -90,6 +93,11 @@ public class FieldValueMap implements Map {
 		if (SUMMARY_ATTRIBUTE_MAP.equals(mapType) && dynamicAttributeFields != null) {
 		    field = dynamicAttributeFields.get(fieldName);
 		}
+
+		if (ATTRIBUTE_MAP.equals(mapType) && dynamicAttributeFields != null) {
+		    field = dynamicAttributeFields.get(fieldName);
+		}
+
 		if (field == null) {
 		    field = recordClass.getAttributeField(fieldName);
 		}
