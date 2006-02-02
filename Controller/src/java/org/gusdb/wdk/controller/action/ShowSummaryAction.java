@@ -55,13 +55,16 @@ public class ShowSummaryAction extends Action {
 		wdkAnswer.setUserAnswerName(userAnswer.getName());
 	    }
 	} else {
-	    //why I am not able to get back my question from the session? use the form for  now
-	    //QuestionBean wdkQuestion = (QuestionBean)request.getSession().getAttribute(CConstants.WDK_QUESTION_KEY);
 	    QuestionForm qForm = (QuestionForm)form;
-	    QuestionBean wdkQuestion = qForm.getQuestion();
-
 	    //TRICKY: this is for action forward from ProcessQuestionSetsFlatAction
 	    qForm.cleanup();
+
+	    //why I am not able to get back my question from the session? use the form for  now
+	    QuestionBean wdkQuestion = (QuestionBean)request.getSession().getAttribute(CConstants.WDK_QUESTION_KEY);
+	    if(wdkQuestion == null) { wdkQuestion = qForm.getQuestion(); }
+            if(wdkQuestion == null) {
+  	        throw new RuntimeException("Unexpected error: wdkAnswer is null");
+	    }
 
 	    Map params = handleMultiPickParams(new java.util.HashMap(qForm.getMyProps()));
 	    wdkAnswer = summaryPaging(request, wdkQuestion, params);

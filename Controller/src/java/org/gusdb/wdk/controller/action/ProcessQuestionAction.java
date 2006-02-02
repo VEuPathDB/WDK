@@ -29,7 +29,7 @@ import org.gusdb.wdk.model.jspwrap.BooleanQuestionLeafBean;
  *    3) forwards control to a jsp page that displays a summary
  */
 
-public class ProcessQuestionAction extends Action {
+public class ProcessQuestionAction extends ShowQuestionAction {
     public ActionForward execute(ActionMapping mapping,
 				 ActionForm form,
 				 HttpServletRequest request,
@@ -37,6 +37,13 @@ public class ProcessQuestionAction extends Action {
 	ActionForward forward = null;
 	String  submitAction = request.getParameter(CConstants.PQ_SUBMIT_KEY);
 	if (submitAction.equals(CConstants.PQ_SUBMIT_GET_ANSWER)){
+	    if(request.getSession().getAttribute(CConstants.QUESTIONFORM_KEY) == null) {
+		String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
+		QuestionBean wdkQuestion = getQuestionByFullName(qFullName);
+		prepareQuestionForm(wdkQuestion, request);
+		System.out.println("DEBUG: PQA, mended the session");
+	    }
+
 	    forward = mapping.findForward(CConstants.PQ_SHOW_SUMMARY_MAPKEY);
 	}
 	else {
