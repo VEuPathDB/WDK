@@ -38,11 +38,7 @@ public class ShowQuestionAction extends Action {
 	String qFullName = ((QuestionSetForm)form).getQuestionFullName();
 	QuestionBean wdkQuestion = getQuestionByFullName(qFullName);
 
-	request.getSession().setAttribute(CConstants.WDK_QUESTION_KEY, wdkQuestion);
-
-	QuestionForm qForm = prepareQuestionForm(wdkQuestion, request);
-	request.getSession().setAttribute(CConstants.QUESTIONFORM_KEY, qForm);
-	request.getSession().setAttribute(CConstants.WDK_QUESTION_KEY, wdkQuestion);
+        QuestionForm qForm = prepareQuestionForm(wdkQuestion, request);
 
 	ServletContext svltCtx = getServlet().getServletContext();
 	String customViewDir = (String)svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
@@ -85,7 +81,7 @@ public class ShowQuestionAction extends Action {
 	return wdkQuestion;
     }
 
-    private QuestionForm prepareQuestionForm (QuestionBean wdkQuestion, HttpServletRequest request)
+    protected QuestionForm prepareQuestionForm (QuestionBean wdkQuestion, HttpServletRequest request)
 	throws Exception {
 	QuestionForm qForm = new QuestionForm();
 
@@ -123,6 +119,9 @@ public class ShowQuestionAction extends Action {
 	if (request.getParameter(CConstants.VALIDATE_PARAM) == "0") {
 	    qForm.setNonValidating();
 	}
+
+	request.getSession().setAttribute(CConstants.QUESTIONFORM_KEY, qForm);
+	request.getSession().setAttribute(CConstants.WDK_QUESTION_KEY, wdkQuestion);
 
 	return qForm;
     }

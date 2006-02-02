@@ -22,6 +22,7 @@
 <!-- put an anchor here for linking back from help sections -->
 <A name="${fromAnchorQ}"></A>
 <html:form method="get" action="/processQuestion.do">
+<input type="hidden" name="questionFullName" value="${wdkQuestion.fullName}"/>
 <table>
 
 <!-- show error messages, if any -->

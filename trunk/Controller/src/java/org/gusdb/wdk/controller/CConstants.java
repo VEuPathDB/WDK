@@ -75,6 +75,7 @@ public class CConstants {
     public static final String ERROR_TYPE_USER = "user";
     public static final String VALIDATE_PARAM = "validate";
     public static final String GOTO_SUMMARY_PARAM = "goto_summary";
+    public static final String QUESTION_FULLNAME_PARAM = "questionFullName";
 
     //used in action, action forms, and jsp pages
     public static final String NEXT_QUESTION_OPERAND_SUFFIX = "_nextQuestionOperand"; //match WEB-INF/includes/booleanQuestionNode.jsp
