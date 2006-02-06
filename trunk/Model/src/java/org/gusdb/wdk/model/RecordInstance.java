@@ -285,12 +285,11 @@ public class RecordInstance {
 
 	    long startTime = System.currentTimeMillis();
 
-	    TableFieldValue field = 
+	    TableFieldValue fieldValue = 
 		(TableFieldValue)tableFields.get(fieldName);
-	    buf.append("Table " + field.getDisplayName()).append( newline );
-        TableFieldValue tableValue = getTableValue(fieldName);
-	    tableValue.write(buf);
-	    field.closeResult();
+	    buf.append("Table " + fieldValue.getDisplayName()).append( newline );
+        fieldValue.write(buf);
+        fieldValue.closeResult();
 	    buf.append(newline);
 
 	    if(getTimeAttributeQueries()) {
