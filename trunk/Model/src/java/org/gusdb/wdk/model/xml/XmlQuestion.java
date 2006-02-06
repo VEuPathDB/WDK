@@ -31,7 +31,6 @@ public class XmlQuestion {
 
     private XmlQuestionSet questionSet;
     private XmlRecordClass recordClass;
-    private XmlAnswer answer;
     private XmlDataLoader loader;
     private WdkModel model;
 
@@ -119,7 +118,6 @@ public class XmlQuestion {
      */
     public void setXmlDataURL(String xmlData) {
         this.xmlData = xmlData;
-        this.answer = null; // reset the cache
     }
 
     public String getXmlDataURL() {
@@ -163,7 +161,7 @@ public class XmlQuestion {
 
         // resolve the references to summary attributes
         if (summaryAttributeNames == null) { // default use all attribute
-                                                // fields
+            // fields
             summaryAttributes = recordClass.getAttributeFields();
         } else { // use a subset of attribute fields
             Map<String, XmlAttributeField> summaries = new LinkedHashMap<String, XmlAttributeField>();
@@ -191,38 +189,36 @@ public class XmlQuestion {
 
     public XmlAnswer makeAnswer(Map<String, String> params, int startIndex,
             int endIndex) throws WdkModelException {
-        if (answer == null) { // parse xml and create an answer
-            try {
-                URL xmlDataURL = createURL(xmlData);
+        XmlAnswer answer;
+        try {
+            URL xmlDataURL = createURL(xmlData);
 
-                // check if we have the XSL assigned
-                if (xsl != null && xsl.length() != 0) {
-                    // yes, convert the xml first
-                    URL xslURL = createURL(xsl);
-                    InputStream inXmlStream = xmlDataURL.openStream();
-                    InputStream inXslStream = xslURL.openStream();
+            // check if we have the XSL assigned
+            if (xsl != null && xsl.length() != 0) {
+                // yes, convert the xml first
+                URL xslURL = createURL(xsl);
+                InputStream inXmlStream = xmlDataURL.openStream();
+                InputStream inXslStream = xslURL.openStream();
 
-                    ByteArrayOutputStream outXmlStream = new ByteArrayOutputStream();
+                ByteArrayOutputStream outXmlStream = new ByteArrayOutputStream();
 
-                    XmlConverter.convert(inXmlStream, inXslStream, outXmlStream);
+                XmlConverter.convert(inXmlStream, inXslStream, outXmlStream);
 
-                    byte[] buffer = outXmlStream.toByteArray();
+                byte[] buffer = outXmlStream.toByteArray();
 
-                    // TEST
-                    // System.out.println(new String(buffer));
+                // TEST
+                // System.out.println(new String(buffer));
 
-                    InputStream convertedStream = new ByteArrayInputStream(
-                            buffer);
+                InputStream convertedStream = new ByteArrayInputStream(buffer);
 
-                    answer = loader.parseDataStream(convertedStream);
-                } else { // no, just parse the xml directly
-                    answer = loader.parseDataFile(xmlDataURL);
-                }
-            } catch (MalformedURLException ex) {
-                throw new WdkModelException(ex);
-            } catch (IOException ex) {
-                throw new WdkModelException(ex);
+                answer = loader.parseDataStream(convertedStream);
+            } else { // no, just parse the xml directly
+                answer = loader.parseDataFile(xmlDataURL);
             }
+        } catch (MalformedURLException ex) {
+            throw new WdkModelException(ex);
+        } catch (IOException ex) {
+            throw new WdkModelException(ex);
         }
         // assign start & end index
         answer.setStartIndex((startIndex <= endIndex) ? startIndex : endIndex);
