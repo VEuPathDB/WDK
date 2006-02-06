@@ -67,15 +67,13 @@ public class AttributeFieldValue {
     }
 
     public String toString() {
-       String newline = System.getProperty( "line.separator" );
-       String classnm = this.getClass().getName();
-       StringBuffer buf = 
-	   new StringBuffer(classnm + ": name='" + getName() + "'" + newline +
-			    "  displayName='" + getDisplayName() + "'" + newline +
-			    "  help='" + getHelp() + "'" + newline + "  isSummary? = '" + isSummary() + "'" + newline
-			    );
-
-       return buf.toString();
+        String newline = System.getProperty("line.separator");
+        String classnm = this.getClass().getName();
+        StringBuffer buf = new StringBuffer(classnm + ": name = '" + getName()
+                + "'" + newline + "  displayName = '" + getDisplayName() + "'"
+                + newline + "  help = '" + getHelp() + "'" + newline
+                + "  inSummary? = '" + isSummary() + "'" + newline);
+        return buf.toString();
     }
 
     void setIsSummary(boolean isSummary){
