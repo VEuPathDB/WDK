@@ -111,13 +111,9 @@ public class UserAnswer {
             sb.append("\tSize=" + answer.getResultSize());
             sb.append("\tAnswerName=" + getName());
             sb.append(newline);
-            sb.append(answer.printAsTable());
+            // do not load record info
+            sb.append(answer.toString());
         } catch (WdkModelException ex) {
-            // TODO Auto-generated catch block
-            ex.printStackTrace();
-            // System.err.println(ex);
-        } catch (WdkUserException ex) {
-            // TODO Auto-generated catch block
             ex.printStackTrace();
             // System.err.println(ex);
         }

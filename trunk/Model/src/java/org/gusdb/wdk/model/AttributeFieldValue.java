@@ -72,7 +72,8 @@ public class AttributeFieldValue {
         StringBuffer buf = new StringBuffer(classnm + ": name = '" + getName()
                 + "'" + newline + "  displayName = '" + getDisplayName() + "'"
                 + newline + "  help = '" + getHelp() + "'" + newline
-                + "  inSummary? = '" + isSummary() + "'" + newline);
+                + "  inSummary? = '" + isSummary() + "'" + newline
+                + "  value = '" + getValue() + "'" + newline);
         return buf.toString();
     }
 

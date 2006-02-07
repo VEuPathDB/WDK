@@ -111,6 +111,15 @@ public class TableFieldValue {
     
     public void write(StringBuffer buf) throws WdkModelException {
         String newline = System.getProperty("line.separator");
+        // display the headers of the table
+        AttributeField[] fields = tableField.getAttributeFields();
+        for (AttributeField attributeField : fields) {
+            buf.append('[');
+            buf.append(attributeField.getDisplayName());
+            buf.append("]\t");
+        }
+        buf.append(newline);
+        // print rows
         Iterator rows = getRows();
         while (rows.hasNext()) {
             Map rowMap = (Map) rows.next();
@@ -118,8 +127,16 @@ public class TableFieldValue {
             while (colNames.hasNext()) {
                 String colName = (String)colNames.next();
                 Object fVal = rowMap.get(colName);
-                buf.append(fVal);
-                buf.append("\t");
+                buf.append("'");
+                // depending on the types of the object, print out the value of it
+                if (fVal instanceof AttributeFieldValue) {
+                    buf.append(((AttributeFieldValue)fVal).getValue());
+                } else if (fVal instanceof LinkValue) {
+                    buf.append(((LinkValue)fVal).getVisible());
+                } else {    // any other types of the values, use default
+                    buf.append(fVal.toString());
+                }
+                buf.append("'\t");
             }
             buf.append(newline);
         }
