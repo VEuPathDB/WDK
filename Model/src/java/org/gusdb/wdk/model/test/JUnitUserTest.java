@@ -136,7 +136,7 @@ public class JUnitUserTest extends TestCase {
 
                 for (Answer answer : answers) {
                     user.addAnswer(answer);
-                    UserAnswer userAnswer = user.getUserAnswerByAnswer(answer);
+                    UserAnswer userAnswer = user.getUserAnswerByAnswerFuzzy(answer);
                     assertNotNull(userAnswer);
                 }
 
