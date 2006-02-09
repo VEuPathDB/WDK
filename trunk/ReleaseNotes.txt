@@ -1,3 +1,71 @@
+------------------------------------------------------------------------------
+ooooooooooooooooooooooooooo  WDK Version 1.10  ooooooooooooooooooooooooooooooo
+------------------------------------------------------------------------------
+
+Summary: this is a version that supports PlasmoDB 5.0 Beta release
+         (http://v5-0.plasmodb.org/). Main features are dynamic attributes
+         to support process queries and blast process queries.
+         There has been numerous fixes and enhancements since Version 1.9.
+
+====================  Model - Fixed Bugs ========================
+
+* fixed bug 266: dynamic attributes not handled properly in reportMaker (aka download)
+
+===================== Model - Features ==========================
+
+* definition of record attributes are moved up from attribute queries to record itself
+
+* added flags in attributes to indicate whether they should be included in reportMaker
+
+* include all attributes not excluded from reportMaker available for download
+
+* added displayName, internal, help to tables and attributes
+
+* added support of readonly and hidden (visible=false) params
+
+* persisted user history into database 
+
+===================== Controller - Fixed Bugs ===================
+
+* handle session correctly when a question is re-accessed via browser back button
+
+* when answer has dynamic attributes, do not skip summary page 
+  even if there is only one result
+
+
+===================== Controller - Features =====================
+
+* make all record attributes not excluded for report maker to be available
+  for selection in report maker config page
+
+* allow download config page to refer to summary page for default downloadable
+  attributes
+
+* question by url w/ prefilled params goto summary only if goto_summary=1 is
+  included in url
+
+* allow summary page to load directly when a question is asked with all params
+  prefilled
+
+* allow question page to be linked to with prefilled values
+
+* added hooks for custom error page, config more types of global errors to handle
+
+===================== View - Fixed Bugs =========================
+
+* handle session correctly when a question is re-accessed via browser back button
+
+===================== View - Features ===========================
+
+* added select all and clear all buttons to reportMaker page
+
+* remove reset button and say Get Report instead of Continue
+
+* added javascript to auto uncheck attribute selections between default and custom
+
+* report maker config page no longer use all record atrributes for selection
+
+* download config page to refer to summary page for default downloadable attributes
 
 ------------------------------------------------------------------------------
 ooooooooooooooooooooooooooo  WDK Version 1.9  oooooooooooooooooooooooooooooooo
