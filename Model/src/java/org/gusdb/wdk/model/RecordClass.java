@@ -374,12 +374,7 @@ public class RecordClass {
                 AttributeField field = fieldMap.get(column.getName());
                 if (field != null && field instanceof ColumnAttributeField) {
                     ((ColumnAttributeField) field).setColumn(column);
-                } else {
-                    String message = "The Column of name '" + column.getName()
-                            + "' doesn't match with any ColumnAttributeField.";
-                    logger.finest(message);
-		    //    throw new WdkModelException(message);
-                }
+                } 
             }
         }
 
