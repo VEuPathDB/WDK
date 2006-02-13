@@ -348,11 +348,12 @@ public class RecordClass {
         }
 
         // create PrimaryKeyField
-        PrimaryKeyField pkField = new PrimaryKeyField(PRIMARY_KEY_NAME,
-                getType(), "Some help here", projectParam);
-        pkField.setIdPrefix(this.idPrefix);
-        pkField.setDelimiter(this.delimiter);
-        attributeFieldsMap.put(PRIMARY_KEY_NAME, pkField);
+        primaryKeyField = 
+	    new PrimaryKeyField(PRIMARY_KEY_NAME,
+				getType(), "Some help here", projectParam);
+        primaryKeyField.setIdPrefix(this.idPrefix);
+        primaryKeyField.setDelimiter(this.delimiter);
+        attributeFieldsMap.put(PRIMARY_KEY_NAME, primaryKeyField);
 
         // resolve the references for attribute queries
         for (AttributeQueryReference reference : attributesQueryRefs) {
@@ -377,7 +378,7 @@ public class RecordClass {
                     String message = "The Column of name '" + column.getName()
                             + "' doesn't match with any ColumnAttributeField.";
                     logger.finest(message);
-                    throw new WdkModelException(message);
+		    //    throw new WdkModelException(message);
                 }
             }
         }

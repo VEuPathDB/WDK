@@ -1,6 +1,9 @@
 package org.gusdb.wdk.model;
 
 import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Vector;
 import java.util.logging.Logger;
@@ -304,7 +307,7 @@ public class Answer {
      * query result includes only rows for this page.
      */
     void integrateAttributesQueryResult(QueryInstance attributesQueryInstance) throws WdkModelException {
-        
+
 	this.attributesQueryInstance = attributesQueryInstance;
 
 	boolean isDynamic = 
@@ -318,44 +321,77 @@ public class Answer {
 					     endRecordInstanceI,
 					     isDynamic);
 
-	ResultList attrQueryResultList = attributesQueryInstance.getResult();
+	// Initialize with nulls (handle missing attribute rows)
+	Map <PrimaryKeyValue, RecordInstance> recordInstanceMap =
+	    new HashMap <PrimaryKeyValue, RecordInstance>();
+	for (RecordInstance recordInstance : pageRecordInstances){
+	    setColumnValues(recordInstance, attributesQueryInstance, 
+			    isDynamic, recordIdColumnName, 
+			    recordProjectColumnName, null); 
+	    PrimaryKeyValue primaryKey = recordInstance.getPrimaryKey();
+	    recordInstanceMap.put(primaryKey, recordInstance);	    
+	}
 
-	Column[] columns = attrQueryResultList.getQuery().getColumns();
-
-    int idsResultTableI = startRecordInstanceI;
-    // if startRecordInstanceI == endRecordInstanceI == 0, we return all
-    // columns, in that case, set idsResultTableI = 1 to make sure it pass the
-    // row integration test
-//    if (startRecordInstanceI == 0 && endRecordInstanceI == 0) idsResultTableI = 1;
-    
 	int pageIndex = 0;
+	int idsResultTableI = startRecordInstanceI;
+	Set<PrimaryKeyValue> primaryKeySet = new HashSet<PrimaryKeyValue>(); 
+	ResultList attrQueryResultList = attributesQueryInstance.getResult();
 	while (attrQueryResultList.next()){
-
-            int attrResultTableI = new Integer(attrQueryResultList.getValue(ResultFactory.RESULT_TABLE_I).toString()).intValue();
 	    
-	    if (attrResultTableI != idsResultTableI++) {
-		String msg = 
-		    "Attribute query " +
-		    attributesQueryInstance.getQuery().getFullName() + " " +
-		    "did not return exactly one row per record. Row " +
-		    attrResultTableI + " " +
-		    "is attempting to integrate into row " +
-		    idsResultTableI + " " + "from result table " +idsTableName;
-		throw new WdkModelException(msg);
+	    String id = attrQueryResultList.getValue(recordIdColumnName).toString();
+	    String project = null;
+	    if (recordProjectColumnName != null) {
+		project = 
+		    attrQueryResultList.getValue(recordProjectColumnName).toString();
 	    }
 
-	    RecordInstance recordInstance = pageRecordInstances[pageIndex++];
-            for (int i = 0; i < columns.length; i++){
-                String nextColumnName = columns[i].getName();
-                Object value = attrQueryResultList.getValue(nextColumnName);
-		if (isDynamic) 
-		    recordInstance.setAttributeValue(nextColumnName, value,
-						     attributesQueryInstance.getQuery());
-		else
-		    recordInstance.setAttributeValue(nextColumnName, value);
-            }
+	    PrimaryKeyValue attrPrimaryKey = 
+		new PrimaryKeyValue(getQuestion().getRecordClass().getPrimaryKeyField(), project, id.toString());
+
+	    if (primaryKeySet.contains(attrPrimaryKey)) {
+		String msg = 
+		    "Result Table " + idsTableName + " for Attribute query " +
+		    attributesQueryInstance.getQuery().getFullName() + " " +
+		    " has more than one row for " + attrPrimaryKey; 
+		throw new WdkModelException(msg);
+	    } else {
+		primaryKeySet.add(attrPrimaryKey);
+	    }
+
+	    
+	    RecordInstance recordInstance = 
+		recordInstanceMap.get(attrPrimaryKey);
+	    setColumnValues(recordInstance, attributesQueryInstance,
+			    isDynamic, recordIdColumnName,
+			    recordProjectColumnName,
+			    attrQueryResultList);
         }
 	attrQueryResultList.close();
+    }
+
+    void setColumnValues(RecordInstance recordInstance,
+			 QueryInstance attributesQueryInstance, 
+			 boolean isDynamic,
+			 String recordIdColumnName,
+			 String recordProjectColumnName,
+			 ResultList attrQueryResultList) throws WdkModelException {
+
+	Column[] columns = attributesQueryInstance.getQuery().getColumns();
+
+	for (int i = 0; i < columns.length; i++) {
+	    String colName = columns[i].getName();
+	    if (colName.equalsIgnoreCase(recordIdColumnName)) continue;
+	    if (colName.equalsIgnoreCase(recordProjectColumnName)) continue;
+	    Object value = null;
+	    if (attrQueryResultList != null) 
+		value = attrQueryResultList.getValue(colName);
+		    
+	    if (isDynamic) 
+		recordInstance.setAttributeValue(colName, value,
+						 attributesQueryInstance.getQuery());
+	    else
+		recordInstance.setAttributeValue(colName, value);
+	}
     }
 
     String[] findPrimaryKeyColumnNames() {
