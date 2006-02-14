@@ -3,6 +3,20 @@
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooo  Dependencies  oooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
+  
+  
+  <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
+  <!-- oooooooooooooooooooooooooo    Checkout    oooooooooooooooooooooooooo -->
+  <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
+
+  <target name="WDK-ChildCheckout" />
+  
+  
+  <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
+  <!-- oooooooooooooooooooooooooo    Update    oooooooooooooooooooooooooo -->
+  <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
+
+  <target name="WDK-ChildUpdate" />
 
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooo  Installation  oooooooooooooooooooooooooo -->
@@ -33,14 +47,14 @@
 
   <!-- ooooooooooooooooooooooo  Install Components  ooooooooooooooooooooooo -->
 
-  <target name="WDK/Controller-Installation" depends="ProjectTree">
+  <target name="WDK/Controller-Installation">
     <ant target="defaultComponentInstall">
       <property name="project" value="WDK"/>
       <property name="component" value="Controller"/>
     </ant>
   </target>  
 
-  <target name="WDK/Model-Installation" depends="ProjectTree,CheckWdkServiceStub,MakeWdkServiceStub,DeleteWdkService">
+  <target name="WDK/Model-Installation" depends="CheckWdkServiceStub,MakeWdkServiceStub,DeleteWdkService">
     <ant target="defaultComponentInstall">
       <property name="project" value="WDK"/>
       <property name="component" value="Model"/>
@@ -61,14 +75,14 @@
     <delete file="${targetDir}/lib/java/WDK-Service.jar"/>
   </target>
 
-  <target name="WDK/View-Installation" depends="ProjectTree">
+  <target name="WDK/View-Installation">
     <ant target="defaultComponentInstall">
       <property name="project" value="WDK"/>
       <property name="component" value="View"/>
     </ant>
   </target>  
 
-  <target name="WDK/Service-Installation" depends="ProjectTree">
+  <target name="WDK/Service-Installation">
     <ant target="defaultComponentInstall">
       <property name="project" value="WDK"/>
       <property name="component" value="Service"/>
@@ -85,21 +99,28 @@
     <echo message="." />
  </target>
 
-  <target name="WDK/Controller-WebInstallation" depends="ProjectTree">
+  <target name="WDK/Controller-WebInstallation">
     <ant target="defaultWebComponentInstall">
       <property name="project" value="WDK"/>
       <property name="component" value="Controller"/>
     </ant>
   </target>
 
-  <target name="WDK/View-WebInstallation" depends="ProjectTree">
+  <target name="WDK/View-WebInstallation">
     <ant target="defaultWebComponentInstall">
       <property name="project" value="WDK"/>
       <property name="component" value="View"/>
     </ant>
   </target>  
 
-  <target name="WebitePlusGusHome" depends="WDK-Installation,WDK/Controller-WebInstallation,WDK/View-WebInstallation,checkLinks,libLink,configLink,rngLink,xmlLink"/>
+  <target name="WebitePlusGusHome" depends="WDK-Installation,
+                                            WDK/Controller-WebInstallation,
+                                            WDK/View-WebInstallation,
+                                            checkLinks,
+                                            libLink,
+                                            configLink,
+                                            rngLink,
+                                            xmlLink"/>
 
   <target name="checkLinks">
      <available file="${webappTargetDir}/WEB-INF/lib" property="libLinkExists"/>
@@ -141,7 +162,7 @@
   <!-- oooooooooooooooooooooooooo  Distributable  ooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
-  <target name="WDK-Distributable" depends="ProjectTree">
+  <target name="WDK-Distributable">
 
     <copy todir="${targetDir}">
       <fileset dir="${projectsDir}" >
@@ -149,30 +170,6 @@
       </fileset>
     </copy>  
   </target>  
-
-
-
-  <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
-  <!-- oooooooooooooooooooooooooo  ProjectTree  ooooooooooooooooooooooooooo -->
-  <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
-
-  <target name="ProjectTree" if="${checkout}">
-    <ant target="projectCheckOut"/>
-  </target>  
-  
-  
-  <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
-  <!-- oooooooooooooooooooooooooo    Checkout    oooooooooooooooooooooooooo -->
-  <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
-
-  <target name="WDK-Checkout" />
-  
-  
-  <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
-  <!-- oooooooooooooooooooooooooo    Update    oooooooooooooooooooooooooo -->
-  <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
-
-  <target name="WDK-Update" />
 
 </project>
 
