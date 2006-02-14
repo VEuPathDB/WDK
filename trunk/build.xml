@@ -166,6 +166,13 @@
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
   <target name="WDK-Checkout" />
+  
+  
+  <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
+  <!-- oooooooooooooooooooooooooo    Update    oooooooooooooooooooooooooo -->
+  <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
+
+  <target name="WDK-Update" />
 
 </project>
 
