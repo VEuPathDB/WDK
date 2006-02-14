@@ -159,6 +159,13 @@
   <target name="ProjectTree" if="${checkout}">
     <ant target="projectCheckOut"/>
   </target>  
+  
+  
+  <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
+  <!-- oooooooooooooooooooooooooo    Checkout    oooooooooooooooooooooooooo -->
+  <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
+
+  <target name="WDK-Checkout" />
 
 </project>
 
