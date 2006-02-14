@@ -488,25 +488,22 @@ public class RecordInstance {
 	    
 	    ResultList rl = qInstance.getResult();
 	    
+	    boolean haveRow = rl.next();
+
 	    Column[] columns = query.getColumns();
-	    //this could be factored a bit more cleanly, but it is a bit tricky, and this way works.
-	    if (!rl.next()){
-		for (int i=0; i<columns.length; i++) {
-		    String columnName = columns[i].getName();
-		    setAttributeValue(columnName, 
-				      "null");
-		}
+	    for (int i=0; i<columns.length; i++) {
+		String columnName = columns[i].getName();
+		if (recordClass.getAttributeFieldMap().get(columnName) == null)
+		    continue;
+		Object val = haveRow?  rl.getValue(columnName) : "null";
+		setAttributeValue(columnName, val);
 	    }
-	    else {
-	        for (int i = 0; i < columns.length; i++) {
-                    String columnName = columns[i].getName();
-                    setAttributeValue(columnName, rl.getValue(columnName));
-            }
-		if (rl.next()) {
-		    String msg = "Attributes query '" + query.getFullName() + "' in Record '" + recordClass.getFullName() + "' returns more than one row";
-		    throw new WdkModelException(msg);
-		}
+
+	    if (rl.next()) {
+		String msg = "Attributes query '" + query.getFullName() + "' in Record '" + recordClass.getFullName() + "' returns more than one row";
+		throw new WdkModelException(msg);
 	    }
+
 	    rl.close();
 	}
     }
