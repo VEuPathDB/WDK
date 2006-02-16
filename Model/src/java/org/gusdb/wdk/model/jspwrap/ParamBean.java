@@ -32,7 +32,7 @@ public class ParamBean {
     }
 
     public String getDefault() {
-        return param.getDefault();
+        return param.getDefaultValue();
     }
 
     /*

@@ -223,7 +223,7 @@ public class ModelXmlParser {
         // By Jerric - parse projectParamRef
         /*    */digester.addObjectCreate(
                 "wdkModel/recordClassSet/recordClass/projectParamRef",
-                Reference.class);
+                ParamReference.class);
 
         /*    */digester.addSetProperties("wdkModel/recordClassSet/recordClass/projectParamRef");
 
@@ -403,7 +403,7 @@ public class ModelXmlParser {
         /*  */digester.addBeanPropertySetter("wdkModel/querySet/sqlQuery/description");
 
         /*    */digester.addObjectCreate(
-                "wdkModel/querySet/sqlQuery/paramRef", Reference.class);
+                "wdkModel/querySet/sqlQuery/paramRef", ParamReference.class);
 
         /*    */digester.addSetProperties("wdkModel/querySet/sqlQuery/paramRef");
 
@@ -428,7 +428,7 @@ public class ModelXmlParser {
         /*  */digester.addBeanPropertySetter("wdkModel/querySet/wsQuery/description");
 
         /*    */digester.addObjectCreate(
-                "wdkModel/querySet/wsQuery/paramRef", Reference.class);
+                "wdkModel/querySet/wsQuery/paramRef", ParamReference.class);
 
         /*    */digester.addSetProperties("wdkModel/querySet/wsQuery/paramRef");
 

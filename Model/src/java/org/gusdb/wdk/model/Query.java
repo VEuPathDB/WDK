@@ -20,7 +20,7 @@ public abstract class Query {
     protected String description;
     protected String help;
     protected Boolean isCacheable = new Boolean(true);
-    protected LinkedHashSet<Reference> paramRefs;
+    protected LinkedHashSet<ParamReference> paramRefs;
     protected Map<String, Param> paramsH;
     protected Vector<Param> paramsV;
     protected Map<String, Column> columnsH;
@@ -28,7 +28,7 @@ public abstract class Query {
     protected ResultFactory resultFactory;
    
     public Query () {
-	paramRefs = new LinkedHashSet<Reference>();
+	paramRefs = new LinkedHashSet<ParamReference>();
 	paramsH = new LinkedHashMap<String, Param>();
 	paramsV = new Vector<Param>();
 	columnsH = new LinkedHashMap<String, Column>();
@@ -51,7 +51,7 @@ public abstract class Query {
 	this.description = description;
     }
 
-    public void addParamRef(Reference paramRef) {
+    public void addParamRef(ParamReference paramRef) {
 	paramRefs.add(paramRef);
     }
 
@@ -181,14 +181,17 @@ public abstract class Query {
     }
 
     protected void resolveReferences(WdkModel model) throws WdkModelException {
-	Iterator paramRefsIter = paramRefs.iterator();
+	Iterator<ParamReference> paramRefsIter = paramRefs.iterator();
 	while (paramRefsIter.hasNext()) {
-	    Reference paramRef = (Reference)paramRefsIter.next();
+        ParamReference paramRef = paramRefsIter.next();
 	    String twoPartName = paramRef.getTwoPartName();
 	    Param param = (Param)model.resolveReference(twoPartName, 
 							this.name, 
 							"Query", 
 							"paramRef");
+        // clone the param to have different default values
+        param = param.clone();
+        param.setDefaultValue(paramRef.getDefaultValue());
 	    addParam(param);
 	    param.resolveReferences(model);
 	}
@@ -243,8 +246,8 @@ public abstract class Query {
 	int size = paramsV.size();
 	for(int i=0; i<size; i++) {
 	    Param p = paramsV.elementAt(i);
-	    if (values.get(p.getName()) == null && p.getDefault() != null) 
-		values.put(p.getName(), p.getDefault());
+	    if (values.get(p.getName()) == null && p.getDefaultValue() != null) 
+		values.put(p.getName(), p.getDefaultValue());
 	}
     }
 

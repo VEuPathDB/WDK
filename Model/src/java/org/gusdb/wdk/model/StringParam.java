@@ -22,6 +22,7 @@ public class StringParam extends Param {
 
     public void setSample(String sample) {
         this.sample = sample;
+        this.defaultValue = sample; // also set default value with the sample
     }
 
     public String getSample() {
@@ -99,4 +100,16 @@ public class StringParam extends Param {
         return ret.toString();
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#clone()
+     */
+    public Param clone() {
+        StringParam param = new StringParam();
+        super.clone(param);
+        param.sample = sample;
+        param.regex = regex;
+        param.substitute = substitute;
+        param.length = length;
+        return param;
+    }
 }

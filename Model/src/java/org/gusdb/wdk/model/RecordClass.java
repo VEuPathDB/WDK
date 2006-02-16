@@ -60,7 +60,7 @@ public class RecordClass {
      * The reference for a FlatVocabParam that contains project info. It can be
      * optional
      */
-    private Reference projectParamRef;
+    private ParamReference projectParamRef;
 
     public RecordClass() {
         // make sure these keys are at the front of the list
@@ -98,7 +98,7 @@ public class RecordClass {
      * 
      * @param projectParamRef
      */
-    public void setProjectParamRef(Reference projectParamRef) {
+    public void setProjectParamRef(ParamReference projectParamRef) {
         this.projectParamRef = projectParamRef;
     }
 
@@ -345,6 +345,8 @@ public class RecordClass {
             projectParam = (FlatVocabParam) model.resolveReference(
                     projectParamRef.getTwoPartName(), getName(),
                     this.getClass().getName(), "projectParamRef");
+            projectParam = (FlatVocabParam)projectParam.clone();
+            projectParam.setDefaultValue(projectParamRef.getDefaultValue());
         }
 
         // create PrimaryKeyField

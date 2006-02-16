@@ -30,4 +30,14 @@ public class EnumParam extends AbstractEnumParam {
     protected void initVocabMap() throws WdkModelException {
 	
     }
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.Param#clone()
+     */
+    @Override
+    public Param clone() {
+        EnumParam param = new EnumParam();
+        super.clone(param);
+        return param;
+    }
 }
