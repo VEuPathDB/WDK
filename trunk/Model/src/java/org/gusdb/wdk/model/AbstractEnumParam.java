@@ -1,14 +1,15 @@
 package org.gusdb.wdk.model;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Vector;
 
 public abstract class AbstractEnumParam extends Param {
     
-    boolean multiPick = false;
-    Map vocabMap;
-    Vector orderedKeySet = new Vector();
-    boolean quoteInternalValue;
+    protected boolean multiPick = false;
+    protected Map vocabMap;
+    protected Vector orderedKeySet = new Vector();
+    protected boolean quoteInternalValue;
 
     public AbstractEnumParam () {
 	super();
@@ -109,5 +110,14 @@ public abstract class AbstractEnumParam extends Param {
         return "Invalid value '" + value + "' for parameter '" + name +"'";
     }
 
-
+    protected void clone(AbstractEnumParam param) {
+        super.clone(param);
+        param.multiPick = multiPick;
+        if (vocabMap != null) {
+            if (param.vocabMap == null) param.vocabMap = new LinkedHashMap();
+            param.vocabMap.putAll(vocabMap);
+        }
+        param.orderedKeySet.addAll(orderedKeySet);
+        param.quoteInternalValue = quoteInternalValue;
+    }
 }

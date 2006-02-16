@@ -26,5 +26,6 @@
 	<classpathentry kind="lib" path="lib/java/log4j-1.2.8.jar"/>
 	<classpathentry sourcepath="ECLIPSE_HOME/plugins/org.eclipse.jdt.source_3.1.1/src/org.junit_3.8.1/junitsrc.zip" kind="var" path="JUNIT_HOME/junit.jar"/>
 	<classpathentry kind="lib" path="lib/java/db_driver/ojdbc14.jar"/>
+	<classpathentry kind="lib" path="lib/java/process-client.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>

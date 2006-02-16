@@ -24,4 +24,14 @@ public class AnswerParam extends Param {
         }
 	return null;
     }
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.Param#clone()
+     */
+    @Override
+    public Param clone() {
+        AnswerParam param = new AnswerParam();
+        super.clone(param);
+        return param;
+    }
 }

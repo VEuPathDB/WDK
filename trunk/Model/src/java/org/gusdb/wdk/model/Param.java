@@ -2,11 +2,11 @@ package org.gusdb.wdk.model;
 
 public abstract class Param {
 
-    String name;
-    String prompt;
-    String help;
-    String dfault;
-    String fullName;
+    protected String name;
+    protected String prompt;
+    protected String help;
+    protected String defaultValue;
+    protected String fullName;
 
     private boolean visible;
     private boolean readonly;
@@ -55,12 +55,13 @@ public abstract class Param {
         return help;
     }
 
-    public void setDefault(String dfault) {
-        this.dfault = dfault;
+    public void setDefaultValue(String defaultValue) {
+        if (defaultValue == null) return;   // use the current one
+        this.defaultValue = defaultValue;
     }
 
-    public String getDefault() {
-        return dfault;
+    public String getDefaultValue() {
+        return defaultValue;
     }
 
     /**
@@ -96,9 +97,9 @@ public abstract class Param {
         String classnm = this.getClass().getName();
         StringBuffer buf = new StringBuffer(classnm + ": name='" + name + "'"
                 + newline + "  prompt='" + prompt + "'" + newline + "  help='"
-                + help + "'" + newline + "  default='" + dfault + "'" + newline
-                + "  readonly=" + readonly + newline + "  visible=" + visible
-                + newline);
+                + help + "'" + newline + "  default='" + defaultValue + "'"
+                + newline + "  readonly=" + readonly + newline + "  visible="
+                + visible + newline);
 
         return buf.toString();
     }
@@ -124,4 +125,16 @@ public abstract class Param {
             throws WdkModelException;
 
     protected void setResources(WdkModel model) throws WdkModelException {}
+    
+    protected void clone(Param param) {
+        param.name = name;
+        param.prompt = prompt;
+        param.help = help;
+        param.defaultValue = defaultValue;
+        param.fullName = fullName;
+        param.visible = visible;
+        param.readonly = readonly;
+    }
+    
+    public abstract Param clone();
 }

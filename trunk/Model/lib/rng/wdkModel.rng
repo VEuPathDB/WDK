@@ -91,6 +91,9 @@
     <optional>
       <attribute name="readonly" />
     </optional>
+    <optional>
+      <attribute name="defaultValue" />
+    </optional>
   </define>
 
   <define name="QueryBaseContents">
@@ -111,6 +114,9 @@
     <zeroOrMore>
       <element name="paramRef">
         <attribute name="ref" />
+    <optional>
+      <attribute name="defaultValue" />
+    </optional>
       </element>
     </zeroOrMore>
   </define>

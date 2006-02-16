@@ -4,8 +4,8 @@ import java.util.LinkedHashMap;
 
 public class FlatVocabParam extends AbstractEnumParam {
     
-    Query query;
-    String queryTwoPartName;
+    protected Query query;
+    protected String queryTwoPartName;
 
     public FlatVocabParam () {
 	super();
@@ -51,6 +51,18 @@ public class FlatVocabParam extends AbstractEnumParam {
             }
             result.close();
         }
+    }
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.Param#clone()
+     */
+    @Override
+    public Param clone() {
+        FlatVocabParam param = new FlatVocabParam();
+        super.clone(param);
+        param.query = query;
+        param.queryTwoPartName = queryTwoPartName;
+        return param;
     }
 
 }

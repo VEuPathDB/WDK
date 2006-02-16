@@ -137,14 +137,14 @@ public class BooleanQuery extends Query {
     /**
      * Helper method for the constructor.
      */
-    private AnswerParam makeAnswerParam(String name, String prompt, String help, String dfault){
+    private AnswerParam makeAnswerParam(String name, String prompt, String help, String defaultValue){
 	
 	AnswerParam qp = new AnswerParam();
 	qp.setName(name);
 	qp.setFullName(BOOLEAN_PARAM_SET_NAME);
 	qp.setPrompt(prompt);
 	qp.setHelp(help);
-	qp.setDefault(dfault);
+	qp.setDefaultValue(defaultValue);
 	return qp;
     }
 
