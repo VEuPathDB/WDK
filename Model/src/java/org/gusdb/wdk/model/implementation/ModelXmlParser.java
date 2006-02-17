@@ -10,6 +10,8 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.Properties;
+import java.util.Map;
+import java.util.HashMap;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -89,6 +91,7 @@ public class ModelXmlParser {
         try {
             model.configure(modelConfigXmlFileURL);
             model.setResources();
+	    model.setProperties(getPropMap(modelPropURL));
         } catch (Exception e) {
             throw new WdkModelException(e);
         }
@@ -660,6 +663,23 @@ public class ModelXmlParser {
             newString = newString.replaceAll("\\@" + propName + "\\@", value);
         }
         return newString;
+    }
+
+    static Map<String, String> getPropMap(URL modelPropURL)  throws WdkModelException {
+	Map<String, String> propMap = new HashMap<String, String>();
+        try {
+	    Properties properties = new Properties();
+	    properties.load(modelPropURL.openStream());
+	    Enumeration propNames = properties.propertyNames();
+	    while (propNames.hasMoreElements()) {
+		String propName = (String) propNames.nextElement();
+		String value = properties.getProperty(propName);
+		propMap.put(propName, value);
+	    }
+	} catch (IOException e) {
+            throw new WdkModelException(e);
+        }
+	return propMap;
     }
 
     public static void main(String[] args) {
