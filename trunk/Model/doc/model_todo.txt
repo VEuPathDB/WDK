@@ -1,6 +1,5 @@
 To Do
 
-test of windows emacs
 
 -move jdbc driver class name into config file so that it is not hard-coded into command line tools
 
