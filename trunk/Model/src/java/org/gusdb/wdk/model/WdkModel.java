@@ -37,6 +37,7 @@ public class WdkModel {
     String historyDatasetLink;
     String historyDatasetColumnName;
     ResultFactory resultFactory;
+    Map<String, String> properties;
    
     private EnumParam booleanOps;
     private Document document;
@@ -143,6 +144,14 @@ public class WdkModel {
         return introduction;
     }
 
+    public Map getProperties() {
+	return properties;
+    }
+
+    public void setProperties(Map<String, String> properties) {
+	this.properties = properties;
+    }
+
     public void setHistoryDataset(String historyDatasetLink) {
         this.historyDatasetLink = historyDatasetLink;
     }
@@ -158,6 +167,7 @@ public class WdkModel {
     public String getHistoryDatasetColumnName() {
         return historyDatasetColumnName;
     }
+
 
     // RecordClass Sets
     public void addRecordClassSet(RecordClassSet recordClassSet)
