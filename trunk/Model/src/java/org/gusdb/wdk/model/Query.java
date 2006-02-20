@@ -191,7 +191,7 @@ public abstract class Query {
 							"paramRef");
         // clone the param to have different default values
         param = param.clone();
-        param.setDefaultValue(paramRef.getDefaultValue());
+        param.setDefault(paramRef.getDefault());
 	    addParam(param);
 	    param.resolveReferences(model);
 	}
@@ -243,12 +243,12 @@ public abstract class Query {
     }
 
     protected void applyDefaults(Map<String, Object> values) {
-	int size = paramsV.size();
-	for(int i=0; i<size; i++) {
-	    Param p = paramsV.elementAt(i);
-	    if (values.get(p.getName()) == null && p.getDefaultValue() != null) 
-		values.put(p.getName(), p.getDefaultValue());
-	}
+        int size = paramsV.size();
+        for (int i = 0; i < size; i++) {
+            Param p = paramsV.elementAt(i);
+            if (values.get(p.getName()) == null && p.getDefault() != null)
+                values.put(p.getName(), p.getDefault());
+        }
     }
 
     protected StringBuffer formatHeader() {

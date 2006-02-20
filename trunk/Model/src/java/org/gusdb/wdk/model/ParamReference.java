@@ -31,14 +31,14 @@ public class ParamReference extends Reference {
     /**
      * @return Returns the defaultValue.
      */
-    public String getDefaultValue() {
+    public String getDefault() {
         return this.defaultValue;
     }
 
     /**
      * @param defaultValue The defaultValue to set.
      */
-    public void setDefaultValue(String defaultValue) {
+    public void setDefault(String defaultValue) {
         this.defaultValue = defaultValue;
     }
 

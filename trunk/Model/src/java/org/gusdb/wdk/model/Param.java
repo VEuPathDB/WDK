@@ -55,12 +55,12 @@ public abstract class Param {
         return help;
     }
 
-    public void setDefaultValue(String defaultValue) {
+    public void setDefault(String defaultValue) {
         if (defaultValue == null) return;   // use the current one
         this.defaultValue = defaultValue;
     }
 
-    public String getDefaultValue() {
+    public String getDefault() {
         return defaultValue;
     }
 
