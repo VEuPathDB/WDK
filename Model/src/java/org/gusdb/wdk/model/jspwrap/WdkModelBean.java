@@ -27,6 +27,10 @@ public class WdkModelBean {
         this.model = model;
     }
 
+    public Map getProperties() {
+	return model.getProperties();
+    }
+
     public String getName() {
         return model.getName();
     }
