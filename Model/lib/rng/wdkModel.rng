@@ -92,7 +92,7 @@
       <attribute name="readonly" />
     </optional>
     <optional>
-      <attribute name="defaultValue" />
+      <attribute name="default" />
     </optional>
   </define>
 
@@ -115,7 +115,7 @@
       <element name="paramRef">
         <attribute name="ref" />
     <optional>
-      <attribute name="defaultValue" />
+      <attribute name="default" />
     </optional>
       </element>
     </zeroOrMore>

@@ -144,7 +144,7 @@ public class BooleanQuery extends Query {
 	qp.setFullName(BOOLEAN_PARAM_SET_NAME);
 	qp.setPrompt(prompt);
 	qp.setHelp(help);
-	qp.setDefaultValue(defaultValue);
+	qp.setDefault(defaultValue);
 	return qp;
     }
 

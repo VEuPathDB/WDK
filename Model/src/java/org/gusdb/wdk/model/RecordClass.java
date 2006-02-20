@@ -346,7 +346,7 @@ public class RecordClass {
                     projectParamRef.getTwoPartName(), getName(),
                     this.getClass().getName(), "projectParamRef");
             projectParam = (FlatVocabParam)projectParam.clone();
-            projectParam.setDefaultValue(projectParamRef.getDefaultValue());
+            projectParam.setDefault(projectParamRef.getDefault());
         }
 
         // create PrimaryKeyField
