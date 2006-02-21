@@ -18,14 +18,16 @@
 	<classpathentry kind="lib" path="lib/java/axis.jar"/>
 	<classpathentry kind="lib" path="lib/java/jaxrpc.jar"/>
 	<classpathentry kind="lib" path="lib/java/commons-discovery-0.2.jar"/>
-	<classpathentry kind="lib" path="lib/java/wsdl4j-1.5.1.jar"/>
 	<classpathentry kind="lib" path="lib/java/saaj.jar"/>
 	<classpathentry kind="lib" path="lib/java/activation.jar"/>
 	<classpathentry kind="lib" path="lib/java/mail.jar"/>
-	<classpathentry kind="lib" path="lib/java/commons-logging-1.0.4.jar"/>
-	<classpathentry kind="lib" path="lib/java/log4j-1.2.8.jar"/>
 	<classpathentry sourcepath="ECLIPSE_HOME/plugins/org.eclipse.jdt.source_3.1.1/src/org.junit_3.8.1/junitsrc.zip" kind="var" path="JUNIT_HOME/junit.jar"/>
 	<classpathentry kind="lib" path="lib/java/db_driver/ojdbc14.jar"/>
-	<classpathentry kind="lib" path="lib/java/process-client.jar"/>
+	<classpathentry kind="lib" path="lib/java/commons-discovery.jar"/>
+	<classpathentry kind="lib" path="lib/java/commons-logging.jar"/>
+	<classpathentry kind="lib" path="lib/java/commons-logging-api.jar"/>
+	<classpathentry kind="lib" path="lib/java/log4j.jar"/>
+	<classpathentry kind="lib" path="lib/java/wsdl4j.jar"/>
+	<classpathentry kind="lib" path="lib/java/WSF-Client.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>
