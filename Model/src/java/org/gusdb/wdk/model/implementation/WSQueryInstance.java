@@ -1,27 +1,26 @@
 package org.gusdb.wdk.model.implementation;
 
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.QueryInstance;
-import org.gusdb.wdk.model.ResultList;
-import org.gusdb.wdk.model.ResultFactory;
-import org.gusdb.wdk.model.Column;
-import org.gusdb.wdk.model.RDBMSPlatformI;
-
-import org.gusdb.wdk.model.process.WdkProcessClient;
-
-import java.rmi.RemoteException;
-import javax.xml.rpc.ServiceException;
-import javax.sql.DataSource;
-import java.sql.SQLException;
-import java.sql.PreparedStatement;
-import java.net.URL;
 import java.net.MalformedURLException;
-
+import java.net.URL;
+import java.rmi.RemoteException;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.Iterator;
 import java.util.Vector;
+
+import javax.sql.DataSource;
+import javax.xml.rpc.ServiceException;
+
+import org.gusdb.wdk.model.Column;
+import org.gusdb.wdk.model.QueryInstance;
+import org.gusdb.wdk.model.RDBMSPlatformI;
+import org.gusdb.wdk.model.ResultFactory;
+import org.gusdb.wdk.model.ResultList;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wsf.service.WsfService;
+import org.gusdb.wsf.service.WsfServiceServiceLocator;
 
 public class WSQueryInstance extends QueryInstance  {
 
@@ -34,47 +33,35 @@ public class WSQueryInstance extends QueryInstance  {
     }
 
     protected ResultList getNonpersistentResult() throws WdkModelException {
-	WSQuery wsQuery = (WSQuery)query;
+        WSQuery wsQuery = (WSQuery) query;
 
-	try {
-	    WdkProcessClient client = new WdkProcessClient(getServiceUrl());
+        try {
+            // get a WSF Service client stub
+            WsfServiceServiceLocator locator = new WsfServiceServiceLocator();
+            WsfService client = locator.getWsfService(getServiceUrl());
 
-	    Map valMap = query.getInternalParamValues(values);
-	    Set keys = valMap.keySet();
-	    String[] paramNames = new String[keys.size()];
-	    String[] paramVals = new String[keys.size()];
-	    Iterator iter = keys.iterator();
-	    int i=0;
-	    while (iter.hasNext()) {
-		String key = (String)iter.next();
-		paramNames[i] = key;
-		paramVals[i] = (String)valMap.get(key);
-		System.err.println(paramNames[i] + ": " + paramVals[i]);
-		i++;
-	    }
+            // prepare parameters and columns
+            Map<String, String> paramMap = query.getInternalParamValues(values);
+            HashMap<String, String> params = new HashMap<String, String>(
+                    paramMap);
 
+            Column[] columns = query.getColumns();
+            String[] columnNames = new String[columns.length];
+            for (int i = 0; i < columns.length; i++) {
+                columnNames[i] = columns[i].getName();
+            }
 
-	    Column[] columns = query.getColumns();
-	    String[] columnNames = new String[columns.length];
-	    i=0;
-	    for (Column column : columns) {
-		columnNames[i] = column.getName();
-		System.err.println(columnNames[i]);
-		i++;
-	    }
-	
-	    System.err.println("WSQI invoking " + wsQuery.getProcessName());
-	    String[][] result = client.invoke(wsQuery.getProcessName(), 
-					      paramNames, 
-					      paramVals, 
-					      columnNames);
-	    return new WSResultList(this, result);
+            System.err.println("WSQI invoking " + wsQuery.getProcessName());
+            // get
+            String[][] result = client.invoke(wsQuery.getProcessName(), params,
+                    columnNames);
+            return new WSResultList(this, result);
 
-	} catch (RemoteException e) {
-	    throw new WdkModelException(e);
-	} catch (ServiceException e) {
-	    throw new WdkModelException(e);
-	}
+        } catch (RemoteException e) {
+            throw new WdkModelException(e);
+        } catch (ServiceException e) {
+            throw new WdkModelException(e);
+        }
     }
 
     protected void writeResultToTable(String resultTableName, 
@@ -107,7 +94,7 @@ public class WSQueryInstance extends QueryInstance  {
 	    int idx = 0;
 	    while(resultList.next()) {
 		StringBuffer insertSqlB = new StringBuffer(insertSql);
-		Vector v = new Vector();
+		Vector<String> v = new Vector<String>();
 		for (Column column : columns) {
 		    String val = 
 			(String)resultList.getValueFromResult(column.getName());
@@ -125,7 +112,7 @@ public class WSQueryInstance extends QueryInstance  {
 		    pstmt.setString(i+1, vals[i]);
 		}
                 pstmt.setInt(vals.length+1, ++idx);
-		boolean inserted = pstmt.execute();
+		pstmt.execute();
 		SqlUtils.closeStatement(pstmt);
 	    }
 	} catch (SQLException e) {
