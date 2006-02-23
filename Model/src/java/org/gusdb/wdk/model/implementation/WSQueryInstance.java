@@ -42,8 +42,12 @@ public class WSQueryInstance extends QueryInstance  {
 
             // prepare parameters and columns
             Map<String, String> paramMap = query.getInternalParamValues(values);
-            HashMap<String, String> params = new HashMap<String, String>(
-                    paramMap);
+            String[] params = new String[paramMap.size()];
+            int idx = 0;
+            for (String param : paramMap.keySet()) {
+                String value = paramMap.get(param);
+                params[idx] = param + "=" + value;
+            }
 
             Column[] columns = query.getColumns();
             String[] columnNames = new String[columns.length];
