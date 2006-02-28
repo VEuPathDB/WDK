@@ -89,8 +89,8 @@
     
   <c:set var="i" value="0"/>
   <c:forEach items="${nrlEntry.value}" var="nextRecord">
-    <c:choose>
-    <c:when test="${i == 0}">
+
+    <c:if test="${i == 0}">
       <!-- use first record instance to create table heading for nested record list -->	
     
       <c:forEach items="${nextRecord.summaryAttributeNames}" var="recAttrName">
@@ -99,9 +99,8 @@
             <th align="left">${recAttr.displayName}</th>
          </c:if>
       </c:forEach>
-
-    </c:when>
-    <c:otherwise>
+    </c:if>
+  
       
       <!-- fill in table with one row; possible display change later -->
       <c:choose>
@@ -141,8 +140,8 @@
         </c:if>
       </c:forEach>
       </tr>
-    </c:otherwise>
-   </c:choose>
+ 
+ 
   <c:set var="i" value="${i+1}"/>
   </c:forEach>
   <!-- end this record instance -->
