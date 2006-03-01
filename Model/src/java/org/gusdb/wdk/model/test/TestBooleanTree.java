@@ -66,14 +66,14 @@ public class TestBooleanTree {
 
 	//boolean nodes
 	Question q2 = model.makeBooleanQuestion(q7.getRecordClass());
-	Hashtable q2values = makeBooleanValues("Union");
+	Hashtable q2values = makeBooleanValues("Union", model);
 
 	Question q3 = model.makeBooleanQuestion(q7.getRecordClass());
-	Hashtable q3values = makeBooleanValues("Union");
+	Hashtable q3values = makeBooleanValues("Union", model);
 
 	//root boolean node
 	Question q1 = model.makeBooleanQuestion(q7.getRecordClass());
-	Hashtable q1values = makeBooleanValues("Minus");
+	Hashtable q1values = makeBooleanValues("Minus", model);
 
 	BooleanQuestionNode bqn4 = new BooleanQuestionNode(q4, null);
 	BooleanQuestionNode bqn5 = new BooleanQuestionNode(q5, null);
@@ -109,10 +109,15 @@ public class TestBooleanTree {
     // Private Methods
     // ------------------------------------------------------------------
 
-    private static Hashtable<String, String> makeBooleanValues(String operation){
-	Hashtable<String, String> h = new Hashtable<String, String>();
-	h.put(BooleanQuery.OPERATION_PARAM_NAME, operation);
-	return h;
+    private static Hashtable<String, String> makeBooleanValues(
+            String operation, WdkModel model) {
+        // need to translate the operators
+        if (operation.equalsIgnoreCase("Minus")
+                || operation.equalsIgnoreCase("Except"))
+            operation = model.getRDBMSPlatform().getMinus();
+        Hashtable<String, String> h = new Hashtable<String, String>();
+        h.put(BooleanQuery.OPERATION_PARAM_NAME, operation);
+        return h;
     }
 
     // this method is never used locally

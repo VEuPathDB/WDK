@@ -80,7 +80,7 @@ public class BooleanQuestionNode {
      */
     public BooleanQuestionNode(Question q, BooleanQuestionNode firstChild,
             BooleanQuestionNode secondChild, BooleanQuestionNode parent) {
-        this.question = q;
+        this.question = (q == null) ? q : q.getBaseQuestion();
         this.firstChild = firstChild;
         this.secondChild = secondChild;
         this.parent = parent;
@@ -96,7 +96,7 @@ public class BooleanQuestionNode {
      *        represents a single-node tree.
      */
     public BooleanQuestionNode(Question q, BooleanQuestionNode parent) {
-        this.question = q;
+        this.question = (q == null) ? q : q.getBaseQuestion();
         this.firstChild = null;
         this.secondChild = null;
         this.parent = parent;
@@ -136,7 +136,6 @@ public class BooleanQuestionNode {
      * 
      * @throws WdkUserException
      */
-
     public BooleanQuestionNode grow(BooleanQuestionNode newSecondChild,
             String operator, WdkModel model, Map<String, String> operatorMap)
             throws WdkModelException, WdkUserException {
