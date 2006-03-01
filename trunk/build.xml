@@ -3,56 +3,25 @@
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooo  Dependencies  oooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
-
-  <target name="WSF-Installation">
-    <ant antfile="../WSF/build.xml" target="WSF-Installation">
-      <property name="project" value="WSF"/>
-      <property name="version" value="??"/>
-    </ant>
-  </target>  
-
-  <target name="WSF-WebInstallation">
-    <ant antfile="../WSF/build.xml" target="WSF-WebInstallation">
-      <property name="project" value="WSF"/>
-      <property name="version" value="??"/>
-    </ant>
-  </target>  
-    
-  <target name="WSF-Checkout" unless="WSF.present"> 
-    <ant target="defaultProjectCheckout" inheritAll="false">
-      <property name="svnurl" value="https://www.cbil.upenn.edu/svn/gus/WSF"/>
-      <property name="project" value="WSF"/>
-      <property name="version" value="??"/>
-    </ant>
-  </target>
-  
   
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooo    Checkout    oooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
-  <target name="WDK-ChildCheckout" >
-    <available file="../WSF" type="dir"  property="WSF.present" />
-    <antcall target="WSF-Checkout"/>
-  </target>
+  <target name="WDK-ChildCheckout" />
   
   
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooo    Update    oooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
-  <target name="WDK-ChildUpdate">
-    <ant target="defaultProjectUpdate">
-      <property name="project" value="WSF"/>
-    </ant>
-  </target>
+  <target name="WDK-ChildUpdate" />
 
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooo  Installation  oooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
-  <target name="WDK-Installation" depends="WSF-Installation,
-                                           WDK/Model-Installation,
+  <target name="WDK-Installation" depends="WDK/Model-Installation,
                                            WDK/Controller-Installation,
                                            WDK/View-Installation">
 
@@ -99,13 +68,6 @@
       <property name="component" value="View"/>
     </ant>
   </target>  
-
-  <target name="WDK/Service-Installation">
-    <ant target="defaultComponentInstall">
-      <property name="project" value="WDK"/>
-      <property name="component" value="Service"/>
-    </ant>
-  </target>
 
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooo  Web Installation  oooooooooooooooooooooooo -->

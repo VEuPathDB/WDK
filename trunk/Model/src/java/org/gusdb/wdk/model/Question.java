@@ -266,4 +266,24 @@ public class Question implements Serializable {
             }
         }
     }
+    
+    /**
+     * This method is use to clone the question, excluding dynamic attributes
+     * @return
+     */
+    public Question getBaseQuestion() {
+        Question question = new Question();
+        question.description = this.description;
+        question.displayName = this.displayName;
+        question.help = this.help;
+        question.name = this.name;
+        question.query = this.query;
+        question.queryTwoPartName = this.queryTwoPartName;
+        question.questionSet = this.questionSet;
+        question.recordClass = this.recordClass;
+        question.recordClassTwoPartName = this.recordClassTwoPartName;
+        question.summaryAttributeMap = this.summaryAttributeMap;
+        question.summaryAttributeNames = this.summaryAttributeNames;
+        return question;
+    }
 }
