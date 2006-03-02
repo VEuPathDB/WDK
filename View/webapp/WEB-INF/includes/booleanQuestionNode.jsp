@@ -10,7 +10,7 @@
   <c:choose>
     <c:when test="${rootClassName eq 'org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean'}">
 
-    <img alt="spacer" width="12" height="16" src="<c:url value="/images/booleanBlue.gif" />">
+    <img alt="spacer" width="12" height="16" src="<c:url value="/images/booleanBullet.gif" />">
     <nested:write property="operation"/><br>
 
     <nested:nest property="firstChild">
@@ -39,7 +39,7 @@
             <!-- Print out question -->
             <!-- display description -->
             <tr><td colspan="2">
-                <img alt="spacer" width="12" height="16" src="<c:url value="/images/booleanBlue.gif" />">
+                <img alt="spacer" width="12" height="16" src="<c:url value="/images/booleanBullet.gif" />">
                 <b><jsp:getProperty name="wdkQ" property="description"/></b></td></tr>
 
             <!-- display params -->
