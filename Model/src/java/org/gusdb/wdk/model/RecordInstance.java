@@ -542,7 +542,8 @@ public class RecordInstance {
     private String instantiateAttr(String rawText, String targetAttrName) throws WdkModelException { 
 	String instantiatedText = rawText;
 
-	Iterator attributeNames = getAttributes().keySet().iterator();
+    Map<String, AttributeFieldValue> attributes = getAttributes();
+	Iterator attributeNames = attributes.keySet().iterator();
 	while (attributeNames.hasNext()) {
 	    String attrName = (String)attributeNames.next();
 	    if (attrName.equals(targetAttrName)) continue;

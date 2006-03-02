@@ -19,7 +19,7 @@ import javax.sql.DataSource;
 public class SqlUtils {
     
     // Added by Jerric - debug flag
-    private static boolean debug = false;
+    private static boolean debug = true;
 
     private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.model.implementation.SqlUtils");
     
