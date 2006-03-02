@@ -167,6 +167,7 @@ public class DynamicAttributeSet {
             sqlWhere += " AND " + resultTableMacro + "." + pkColNames[1]
                     + " = " + "$$" + RecordClass.PROJECT_ID_NAME + "$$";
 
+        // the use of "dual" causes trouble on PostgreSQL
         String sql = "SELECT " + sqlSelect + " FROM dual" + sqlWhere;
 
         ((SqlQuery) attributesQuery).setSql(sql);
@@ -176,8 +177,11 @@ public class DynamicAttributeSet {
             String resultTable, Query attributesQuery) {
         attributesQuery.addColumn(column);
         sqlSelectBuf.append(column.getName() + ", ");
-        ColumnAttributeField field = new ColumnAttributeField();
-        field.setColumn(column);
-        attributesFieldMap.put(field.getName(), field);
+        
+        // commented by Jerric
+        // The fields has already been in the field map, no need to add it again?
+        // ColumnAttributeField field = new ColumnAttributeField();
+        // field.setColumn(column);
+        // attributesFieldMap.put(field.getName(), field);
     }
 }
