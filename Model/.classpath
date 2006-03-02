@@ -26,5 +26,7 @@
 	<classpathentry kind="lib" path="lib/java/junit.jar"/>
 	<classpathentry kind="lib" path="lib/java/saaj.jar"/>
 	<classpathentry kind="lib" path="lib/java/wsdl4j-1.5.1.jar"/>
+	<classpathentry kind="lib" path="lib/java/mail.jar"/>
+	<classpathentry kind="lib" path="lib/java/activation.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>
