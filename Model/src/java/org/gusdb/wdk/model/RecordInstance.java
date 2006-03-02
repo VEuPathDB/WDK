@@ -7,7 +7,7 @@ import java.util.Vector;
 
 public class RecordInstance {
 
-    public static final int MAXIMUM_NESTED_RECORD_INSTANCES = 100;
+    public static final int MAXIMUM_NESTED_RECORD_INSTANCES = 1000;
     
     PrimaryKeyValue primaryKey;
     RecordClass recordClass;
