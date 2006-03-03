@@ -142,10 +142,10 @@ public class JUnitBooleanExpressionTest extends TestCase {
     public void testParseExpression() {
         BooleanExpression be = new BooleanExpression(wdkModel);
 
-//        String[] valid = { "#1 OR #2", "#1 AND (#2 NOT #3)",
-//                "(#1 AND #3)AND(#2 AND #4)",
-//                "(#1) OR (#3)", "ans_1 OR \"ans (2\"" };
-        String[] valid = { "#1 OR #2"};
+        String[] valid = { "#1 OR #2", "#1 AND (#2 NOT #3)",
+                "(#1 AND #3)AND(#2 AND #4)",
+                "(#1) OR (#3)", "ans_1 OR \"ans (2\"" };
+//        String[] valid = { "#1 OR #2"};
 
         for (String expression : valid) {
             try {
