@@ -57,9 +57,6 @@
       <property name="project" value="WDK"/>
       <property name="component" value="Model"/>
     </ant>
-    <echo message="." />
-    <echo message="IMPORTANT REMINDER: If you have not already done so, please copy any .jar needed for database connectivity (such as the oracle file ojdbc14.jar) into ${targetDir}/lib/java/db_driver.  The WDK does not supply these.  See the installation instructions available at www.gusdb.org/wdk for details."  />
-    <echo message="." />
   </target>  
 
   <target name="WDK/View-Installation">
@@ -97,16 +94,22 @@
                                             WDK/Controller-WebInstallation,
                                             WDK/View-WebInstallation,
                                             checkLinks,
+                                            webInfDir,
                                             libLink,
                                             configLink,
                                             rngLink,
                                             xmlLink"/>
 
   <target name="checkLinks">
-     <available file="${webappTargetDir}/WEB-INF/lib" property="libLinkExists"/>
+     <available file="${webappTargetDir}/WEB-INF" property="webInfDirExists"/>
+     <available file="${webappTargetDir}/WEB-INF/lib/java" property="libLinkExists"/>
      <available file="${webappTargetDir}/WEB-INF/wdk-model/config" property="configLinkExists"/>
      <available file="${webappTargetDir}/WEB-INF/wdk-model/lib/rng" property="rngLinkExists"/>
      <available file="${webappTargetDir}/WEB-INF/wdk-model/lib/xml" property="xmlLinkExists"/>
+  </target>
+
+  <target name="webInfDir" unless="webInfDirExists">
+    <mkdir dir="${webappTargetDir}/WEB-INF"/>
   </target>
 
   <target name="libLink" unless="libLinkExists">
