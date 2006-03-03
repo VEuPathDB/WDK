@@ -102,7 +102,7 @@
 
   <target name="checkLinks">
      <available file="${webappTargetDir}/WEB-INF" property="webInfDirExists"/>
-     <available file="${webappTargetDir}/WEB-INF/lib/java" property="libLinkExists"/>
+     <available file="${webappTargetDir}/WEB-INF/lib" property="libLinkExists"/>
      <available file="${webappTargetDir}/WEB-INF/wdk-model/config" property="configLinkExists"/>
      <available file="${webappTargetDir}/WEB-INF/wdk-model/lib/rng" property="rngLinkExists"/>
      <available file="${webappTargetDir}/WEB-INF/wdk-model/lib/xml" property="xmlLinkExists"/>
