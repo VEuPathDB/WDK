@@ -73,8 +73,8 @@ public class TestBooleanTree {
 
 	//root boolean node
 	Question q1 = model.makeBooleanQuestion(q7.getRecordClass());
-	//Hashtable q1values = makeBooleanValues("Minus", model);
-    Hashtable q1values = makeBooleanValues("Union", model);
+	Hashtable q1values = makeBooleanValues("Minus", model);
+    //Hashtable q1values = makeBooleanValues("Union", model);
 
 	BooleanQuestionNode bqn4 = new BooleanQuestionNode(q4, null);
 	BooleanQuestionNode bqn5 = new BooleanQuestionNode(q5, null);
