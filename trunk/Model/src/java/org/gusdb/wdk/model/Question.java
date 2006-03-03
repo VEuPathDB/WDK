@@ -282,8 +282,16 @@ public class Question implements Serializable {
         question.questionSet = this.questionSet;
         question.recordClass = this.recordClass;
         question.recordClassTwoPartName = this.recordClassTwoPartName;
-        question.summaryAttributeMap = this.summaryAttributeMap;
-        question.summaryAttributeNames = this.summaryAttributeNames;
+        
+        // needs to clone thie summary attribute as well
+        Map<String, AttributeField> sumAttributes = new LinkedHashMap<String, AttributeField>();
+        Map<String, AttributeField> attributes = recordClass.getAttributeFieldMap();
+        for (String attrName : summaryAttributeMap.keySet()) {
+            if (attributes.containsKey(attrName))
+                sumAttributes.put(attrName, summaryAttributeMap.get(attrName));
+        }
+        question.summaryAttributeMap = sumAttributes;
+        //question.summaryAttributeNames = this.summaryAttributeNames;
         return question;
     }
 }

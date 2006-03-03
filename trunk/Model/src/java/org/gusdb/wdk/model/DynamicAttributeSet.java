@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -8,7 +9,12 @@ import java.util.Set;
 
 import org.gusdb.wdk.model.implementation.SqlQuery;
 
-public class DynamicAttributeSet {
+public class DynamicAttributeSet implements Serializable {
+
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -1373806354317917813L;
 
     public final static String RESULT_TABLE = "RESULTTABLE";
 
