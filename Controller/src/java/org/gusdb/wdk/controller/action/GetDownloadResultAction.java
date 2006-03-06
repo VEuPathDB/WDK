@@ -73,7 +73,9 @@ public class GetDownloadResultAction extends Action {
 	if (incHeader) {
 	    downloadResult.append("#");
 	    for (int i=0; i<downloadAttrs.length; i++) {
-		downloadResult.append(downloadAttrs[i].getDisplayName() + tab);
+		downloadResult.append(downloadAttrs[i].getDisplayName()
+				      + ("primaryKey".equals(downloadAttrs[i].getName()) ? " ID" : "")
+				      + tab);
 	    }
 	    downloadResult.append(newLine);
 	}
