@@ -100,6 +100,7 @@
                       ${rmAttr.displayName}
                     </c:otherwise>
                   </c:choose>
+                  <c:if test="${rmAttr.name == 'primaryKey'}">ID</c:if>
             </td>${br}
             </c:when>
             <c:otherwise>
