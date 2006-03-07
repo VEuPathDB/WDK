@@ -32,17 +32,23 @@ public class SqlQueryInstance extends QueryInstance  {
         logger.finest("I've got a new sqlQueryInstance being created");
     }
 
-    public ResultList getPersistentResultPage(int startRow, int endRow) throws WdkModelException {
-	
-	if (!getIsCacheable()) throw new WdkModelException("Attempting to get persistent result page, but query instance is not cacheable");
+    public ResultList getPersistentResultPage(int startRow, int endRow)
+            throws WdkModelException {
 
-	SqlQuery q = (SqlQuery)query;
+        if (!getIsCacheable())
+            throw new WdkModelException(
+                    "Attempting to get persistent result page, but query " +
+                    "instance is not cacheable");
+
+        SqlQuery q = (SqlQuery) query;
         ResultList rl = getResultFactory().getPersistentResultPage(this,
-								   startRow,
-								   endRow);
-        rl.checkQueryColumns(q, true, true);
+                startRow, endRow);
+        // modified by Jerric - do not check if SQL has more columns than
+        // declared in the Query. This modification is required by boolean
+        // operation + dynamic attributes
+        // rl.checkQueryColumns(q, true, true);
+        rl.checkQueryColumns(q, false, true);
         return rl;
-	
     }
 
     public String getLowLevelQuery() throws WdkModelException {

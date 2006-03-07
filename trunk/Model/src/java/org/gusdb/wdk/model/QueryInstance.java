@@ -98,19 +98,30 @@ public abstract class QueryInstance {
 
     public ResultList getResult() throws WdkModelException {
         ResultList rl = getResultFactory().getResult(this);
-        rl.checkQueryColumns(query, true, getIsCacheable() || joinMode);
+        // modified by Jerric - do not check if SQL has more columns than
+        // declared in the Query. This modification is required by boolean
+        // operation + dynamic attributes
+        // rl.checkQueryColumns(query, true, getIsCacheable() || joinMode);
+        rl.checkQueryColumns(query, false, getIsCacheable() || joinMode);
         return rl;
     }
 
-    public ResultList getPersistentResultPage(int startRow, int endRow) throws WdkModelException {
-	
-	if (!getIsCacheable()) throw new WdkModelException("Attempting to get persistent result page, but query instance is not cacheable");
+    public ResultList getPersistentResultPage(int startRow, int endRow)
+            throws WdkModelException {
+
+        if (!getIsCacheable())
+            throw new WdkModelException(
+                    "Attempting to get persistent result page, but query " +
+                    "instance is not cacheable");
 
         ResultList rl = getResultFactory().getPersistentResultPage(this,
-								   startRow,
-								   endRow);
-        rl.checkQueryColumns(query, true, true);
-        return rl;	
+                startRow, endRow);
+        // modified by Jerric - do not check if SQL has more columns than
+        // declared in the Query. This modification is required by boolean
+        // operation + dynamic attributes
+        // rl.checkQueryColumns(query, true, true);
+        rl.checkQueryColumns(query, false, true);
+        return rl;
     }
 
     /**

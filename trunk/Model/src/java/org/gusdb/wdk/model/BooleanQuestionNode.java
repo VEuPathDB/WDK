@@ -306,10 +306,12 @@ public class BooleanQuestionNode {
             booleanSummaryAtts.putAll(firstSummaryAtts);
             booleanSummaryAtts.putAll(secondSummaryAtts);
 
-	    Map firstDynaAtts = firstChildAnswer.getQuestion().getDynamicAttributeFields();
-	    if (firstDynaAtts != null) removeDynamicAtributes(booleanSummaryAtts, firstDynaAtts);
-	    Map secondDynaAtts = secondChildAnswer.getQuestion().getDynamicAttributeFields();
-	    if (secondDynaAtts != null) removeDynamicAtributes(booleanSummaryAtts, secondDynaAtts);
+            Map firstDynaAtts = firstChildAnswer.getQuestion().getDynamicAttributeFields();
+            if (firstDynaAtts != null)
+                removeDynamicAtributes(booleanSummaryAtts, firstDynaAtts);
+            Map secondDynaAtts = secondChildAnswer.getQuestion().getDynamicAttributeFields();
+            if (secondDynaAtts != null)
+                removeDynamicAtributes(booleanSummaryAtts, secondDynaAtts);
 
             booleanQuestion.setSummaryAttributesMap(booleanSummaryAtts);
 

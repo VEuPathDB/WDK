@@ -1,5 +1,8 @@
 package org.gusdb.wdk.model;
 
+import org.apache.log4j.Logger;
+
+
 
 
 
@@ -7,11 +10,12 @@ public class Column {
 
     // never used locally
     //private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.model.Column");
+    private static Logger logger = Logger.getLogger(Column.class);
     
-    String name;
-    Query query;
-    String dataTypeName;
-    int width;  // for wsColumns (width of datatype)
+    private String name;
+    private Query query;
+    private String dataTypeName;
+    private int width;  // for wsColumns (width of datatype)
 
     public Column() {} 
 
@@ -32,6 +36,10 @@ public class Column {
     }
 
     public void setQuery(Query query) {
+        // TEST
+//        if (name != null && name.equalsIgnoreCase("score"))
+//            logger.debug("Columns Query is set to: " + query.getFullName());
+
         this.query = query;
     }
 
@@ -55,6 +63,15 @@ public class Column {
 			    "  dataTypeName='" + dataTypeName + "'" + newline);
 
        return buf.toString();
+    }
+    
+    public Column clone() {
+        Column column = new Column();
+        column.dataTypeName = this.dataTypeName;
+        column.name = this.name;
+        column.query = this.query;
+        column.width = this.width;
+        return column;
     }
 }
 

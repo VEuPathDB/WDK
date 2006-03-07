@@ -1,14 +1,14 @@
 package org.gusdb.wdk.model.implementation;
 
-import java.lang.StringBuffer;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
-import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.Query;
 import org.gusdb.wdk.model.QueryInstance;
 import org.gusdb.wdk.model.RDBMSPlatformI;
+import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelException;
 
 public class SqlQuery extends Query {
     
@@ -78,5 +78,19 @@ public class SqlQuery extends Query {
 
     RDBMSPlatformI getRDBMSPlatform() {
 	return platform;
+    }
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.Query#getBaseQuery(java.util.Set)
+     */
+    @Override
+    public Query getBaseQuery(Set<String> excludedColumns) {
+        SqlQuery query = new SqlQuery();
+        // clone the base query
+        clone(query, excludedColumns);
+        // clone the members belongs to the child
+        query.platform = this.platform;
+        query.sql = this.sql;
+        return query;
     }
  }
