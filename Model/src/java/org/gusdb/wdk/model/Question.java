@@ -3,7 +3,9 @@ package org.gusdb.wdk.model;
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Question.java
@@ -277,21 +279,35 @@ public class Question implements Serializable {
         question.displayName = this.displayName;
         question.help = this.help;
         question.name = this.name;
-        question.query = this.query;
         question.queryTwoPartName = this.queryTwoPartName;
         question.questionSet = this.questionSet;
         question.recordClass = this.recordClass;
         question.recordClassTwoPartName = this.recordClassTwoPartName;
-        
+
         // needs to clone thie summary attribute as well
-        Map<String, AttributeField> sumAttributes = new LinkedHashMap<String, AttributeField>();
+        Map<String, AttributeField> sumAttributes = 
+            new LinkedHashMap<String, AttributeField>();
         Map<String, AttributeField> attributes = recordClass.getAttributeFieldMap();
         for (String attrName : summaryAttributeMap.keySet()) {
             if (attributes.containsKey(attrName))
                 sumAttributes.put(attrName, summaryAttributeMap.get(attrName));
         }
         question.summaryAttributeMap = sumAttributes;
-        //question.summaryAttributeNames = this.summaryAttributeNames;
+
+        // clone the query too, but only includes the columns in dynamic attribute
+        Set<String> excludedColumns= new LinkedHashSet<String>();
+        if (this.dynamicAttributes!= null) {
+            attributes = dynamicAttributes.getAttributeFields();
+            for (AttributeField field : attributes.values()) {
+                if (field instanceof ColumnAttributeField) {
+                    ColumnAttributeField cfield = (ColumnAttributeField) field;
+                    excludedColumns.add(cfield.getColumn().getName());
+                }
+            }
+        }
+        Query newQuery = this.query.getBaseQuery(excludedColumns);
+        question.query = newQuery;
+        
         return question;
     }
 }

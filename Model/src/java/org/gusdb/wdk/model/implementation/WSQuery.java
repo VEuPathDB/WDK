@@ -1,10 +1,11 @@
 package org.gusdb.wdk.model.implementation;
 
-import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkModelException;
+import java.util.Set;
+
 import org.gusdb.wdk.model.Query;
 import org.gusdb.wdk.model.QueryInstance;
-import org.gusdb.wdk.model.ResultList;
+import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelException;
 
 public class WSQuery extends Query {
     
@@ -49,5 +50,19 @@ public class WSQuery extends Query {
        StringBuffer buf = super.formatHeader();
        buf.append("  processName='" + processName + "'" + newline);
        return buf;
+    }
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.Query#getBaseQuery(java.util.Set)
+     */
+    @Override
+    public Query getBaseQuery(Set<String> excludedColumns) {
+        WSQuery query = new WSQuery();
+        // clone the base part
+        clone(query, excludedColumns);
+        // clone the members belongs to itself
+        query.processName = this.processName;
+        query.webServiceUrl = this.webServiceUrl;
+        return query;
     }
  }

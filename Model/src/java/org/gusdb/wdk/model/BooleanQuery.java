@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model;
 
+import java.util.Set;
+
 
 
 /**
@@ -146,6 +148,20 @@ public class BooleanQuery extends Query {
 	qp.setHelp(help);
 	qp.setDefault(defaultValue);
 	return qp;
+    }
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.Query#getBaseQuery(java.util.Set)
+     */
+    @Override
+    public Query getBaseQuery(Set<String> excludedColumns) {
+        BooleanQuery query = new BooleanQuery();
+        // clone the base part
+        clone(query, excludedColumns);
+        // clone the members belonging to the child
+        query.platform = this.platform;
+        query.resultFactory = this.resultFactory;
+        return query;
     }
 
 }
