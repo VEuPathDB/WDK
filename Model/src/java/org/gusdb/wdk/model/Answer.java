@@ -6,8 +6,9 @@ import java.util.HashSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Vector;
-import java.util.logging.Logger;
 import java.util.Iterator;
+
+import org.apache.log4j.Logger;
 
 /**
  * Answer.java
@@ -55,7 +56,7 @@ import java.util.Iterator;
  */
 public class Answer {
 
-    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.model.Answer");
+    private static final Logger logger = Logger.getLogger(Answer.class);
     
     // ------------------------------------------------------------------
     // Instance variables
@@ -197,7 +198,6 @@ public class Answer {
     
     //Returns null if we have already returned the last instance
     public RecordInstance getNextRecordInstance() throws WdkModelException{
-	
 	initPageRecordInstances();
 
 	RecordInstance nextInstance = null;
@@ -213,7 +213,7 @@ public class Answer {
 	initPageRecordInstances();
 
         if (pageRecordInstances == null){
-            logger.finer("pageRecordInstances is still null");
+            logger.warn("pageRecordInstances is still null");
         }
         return recordInstanceCursor < pageRecordInstances.length;
     }
@@ -306,31 +306,35 @@ public class Answer {
      * values from a particular attributes query.  The attributes
      * query result includes only rows for this page.
      */
-    void integrateAttributesQueryResult(QueryInstance attributesQueryInstance) throws WdkModelException {
+    void integrateAttributesQueryResult(QueryInstance attributesQueryInstance)
+            throws WdkModelException {
+        // TEST
+//        logger.debug("Question is: " + question.hashCode());
+//        logger.debug("#Summary Attributes: "
+//                + question.getSummaryAttributes().size());
 
-	this.attributesQueryInstance = attributesQueryInstance;
+        this.attributesQueryInstance = attributesQueryInstance;
 
-	boolean isDynamic = 
-	    attributesQueryInstance.getQuery().getParam(DynamicAttributeSet.RESULT_TABLE) != null;
+        boolean isDynamic = attributesQueryInstance.getQuery().getParam(
+                DynamicAttributeSet.RESULT_TABLE) != null;
+        
+//        logger.debug("AttributeQuery is: " + attributesQueryInstance.getQuery().getFullName());
+//        logger.debug("isDynamic=" + isDynamic);
 
-	String idsTableName = idsQueryInstance.getResultAsTableName();
+        String idsTableName = idsQueryInstance.getResultAsTableName();
         attributesQueryInstance.initJoinMode(idsTableName,
-					     recordProjectColumnName, 
-					     recordIdColumnName, 
-					     startRecordInstanceI, 
-					     endRecordInstanceI,
-					     isDynamic);
+                recordProjectColumnName, recordIdColumnName,
+                startRecordInstanceI, endRecordInstanceI, isDynamic);
 
-	// Initialize with nulls (handle missing attribute rows)
-	Map <PrimaryKeyValue, RecordInstance> recordInstanceMap =
-	    new HashMap <PrimaryKeyValue, RecordInstance>();
-	for (RecordInstance recordInstance : pageRecordInstances){
-	    setColumnValues(recordInstance, attributesQueryInstance, 
-			    isDynamic, recordIdColumnName, 
-			    recordProjectColumnName, null); 
-	    PrimaryKeyValue primaryKey = recordInstance.getPrimaryKey();
-	    recordInstanceMap.put(primaryKey, recordInstance);	    
-	}
+        // Initialize with nulls (handle missing attribute rows)
+        Map<PrimaryKeyValue, RecordInstance> recordInstanceMap = 
+            new HashMap<PrimaryKeyValue, RecordInstance>();
+        for (RecordInstance recordInstance : pageRecordInstances) {
+            setColumnValues(recordInstance, attributesQueryInstance, isDynamic,
+                    recordIdColumnName, recordProjectColumnName, null);
+            PrimaryKeyValue primaryKey = recordInstance.getPrimaryKey();
+            recordInstanceMap.put(primaryKey, recordInstance);
+        }
 
 	int pageIndex = 0;
 	int idsResultTableI = startRecordInstanceI;
@@ -511,8 +515,7 @@ public class Answer {
     */
 
     public String toString() {
-        StringBuffer sb = new StringBuffer(
-                question.getDisplayName());
+        StringBuffer sb = new StringBuffer(question.getDisplayName());
 
         Map params = getParams();
 

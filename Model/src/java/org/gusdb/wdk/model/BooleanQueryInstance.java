@@ -7,6 +7,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Vector;
 
+import org.apache.log4j.Logger;
+
 /**
  * BooleanQueryInstance.java
  * 
@@ -21,6 +23,8 @@ import java.util.Vector;
  */
 
 public class BooleanQueryInstance extends QueryInstance {
+    
+    private static Logger logger =Logger.getLogger(BooleanQueryInstance.class);
 
     // ------------------------------------------------------------------
     // Instance Variables
@@ -98,11 +102,15 @@ public class BooleanQueryInstance extends QueryInstance {
         setIsCacheable(firstQueryInstance.getIsCacheable()
                 && secondQueryInstance.getIsCacheable());
 
-        Column columns[] = firstQueryInstance.getQuery().getColumns();
+        Column columns[] = secondQueryInstance.getQuery().getColumns();
 
         for (int i = 0; i < columns.length; i++) {
 
             if (booleanQuery.getColumnMap().get(columns[i].getName()) == null) {
+                // TEST
+                if (columns[i].getName().equalsIgnoreCase("score")) {
+                    logger.debug("Column ID: " + columns[i].hashCode());
+                }
                 booleanQuery.addColumn(columns[i]);
             }
         }

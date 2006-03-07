@@ -3,11 +3,14 @@ package org.gusdb.wdk.model.jspwrap;
 import java.util.Hashtable;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.BooleanQuestionNode;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 
 public class BooleanQuestionLeafBean {
+    
+    private static Logger logger = Logger.getLogger(BooleanQuestionLeafBean.class);
     
     BooleanQuestionNode bqn;
     BooleanQuestionNodeBean parent;
@@ -52,8 +55,11 @@ public class BooleanQuestionLeafBean {
 	}
     }
     
-    public QuestionBean getQuestion(){
-	return new QuestionBean(bqn.getQuestion());
+    public QuestionBean getQuestion() {
+        // TEST
+        logger.debug("Question Name: " + bqn.getType());
+
+        return new QuestionBean(bqn.getQuestion());
     }
     
     private BooleanQuestionNode getBooleanQuestionNode(){

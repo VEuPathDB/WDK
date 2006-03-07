@@ -5,9 +5,14 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Vector;
 
+import org.apache.log4j.Logger;
+import sun.security.krb5.internal.af;
+
 public class RecordInstance {
 
     public static final int MAXIMUM_NESTED_RECORD_INSTANCES = 1000;
+    
+    private static Logger logger = Logger.getLogger(RecordInstance.class);
     
     PrimaryKeyValue primaryKey;
     RecordClass recordClass;
@@ -84,6 +89,11 @@ public class RecordInstance {
 	} else if (field instanceof ColumnAttributeField){
 	    ColumnAttributeField aField = (ColumnAttributeField)field;
 	    Query query = aField.getQuery();
+        
+        // TEST
+        //logger.debug("Field: " + aField.name);
+        //logger.debug("Query: " + query.getFullName());
+        
 	    String queryName = query.getName();
 	    String attributeName = field.getName();
 
@@ -457,55 +467,60 @@ public class RecordInstance {
      * Place hash of single row result into hash keyed on query name
      */
     protected void runAttributesQuery(Query query) throws WdkModelException {
- 	QueryInstance qInstance = query.makeInstance();
-	qInstance.setIsCacheable(false);
+        // TEST
+//        logger.debug("runAttributeQuery: " + query.getFullName());
 
-	// If in the context of an Answer, then we are doing a "summary"
-	// and need to do a join against the result table
-	if (answer != null){
-	    answer.integrateAttributesQueryResult(qInstance);
-	}	
+        QueryInstance qInstance = query.makeInstance();
+        qInstance.setIsCacheable(false);
 
-	// otherwise, set values in record directly
-	else{ 
- 
-        Map<String, Object> paramHash = new LinkedHashMap<String, Object>();
-	    if (primaryKey == null) 
-		throw new WdkModelException("primaryKey is null");
+        // If in the context of an Answer, then we are doing a "summary"
+        // and need to do a join against the result table
+        if (answer != null) {
+            answer.integrateAttributesQueryResult(qInstance);
+        }
 
-	    String projectId = primaryKey.getProjectId();
-	    if (projectId != null) 
-		paramHash.put(RecordClass.PROJECT_ID_NAME, projectId);
-	    
-	    paramHash.put(RecordClass.PRIMARY_KEY_NAME, 
-			  primaryKey.getRecordId());
-	    
-	    try {
-		qInstance.setValues(paramHash);
-	    } catch (WdkUserException e) {
-		throw new WdkModelException(e);
-	    }
-	    
-	    ResultList rl = qInstance.getResult();
-	    
-	    boolean haveRow = rl.next();
+        // otherwise, set values in record directly
+        else {
 
-	    Column[] columns = query.getColumns();
-	    for (int i=0; i<columns.length; i++) {
-		String columnName = columns[i].getName();
-		if (recordClass.getAttributeFieldMap().get(columnName) == null)
-		    continue;
-		Object val = haveRow?  rl.getValue(columnName) : "null";
-		setAttributeValue(columnName, val);
-	    }
+            Map<String, Object> paramHash = new LinkedHashMap<String, Object>();
+            if (primaryKey == null)
+                throw new WdkModelException("primaryKey is null");
 
-	    if (rl.next()) {
-		String msg = "Attributes query '" + query.getFullName() + "' in Record '" + recordClass.getFullName() + "' returns more than one row";
-		throw new WdkModelException(msg);
-	    }
+            String projectId = primaryKey.getProjectId();
+            if (projectId != null)
+                paramHash.put(RecordClass.PROJECT_ID_NAME, projectId);
 
-	    rl.close();
-	}
+            paramHash.put(RecordClass.PRIMARY_KEY_NAME,
+                    primaryKey.getRecordId());
+
+            try {
+                qInstance.setValues(paramHash);
+            } catch (WdkUserException e) {
+                throw new WdkModelException(e);
+            }
+
+            ResultList rl = qInstance.getResult();
+
+            boolean haveRow = rl.next();
+
+            Column[] columns = query.getColumns();
+            for (int i = 0; i < columns.length; i++) {
+                String columnName = columns[i].getName();
+                if (recordClass.getAttributeFieldMap().get(columnName) == null)
+                    continue;
+                Object val = haveRow ? rl.getValue(columnName) : "null";
+                setAttributeValue(columnName, val);
+            }
+
+            if (rl.next()) {
+                String msg = "Attributes query '" + query.getFullName()
+                        + "' in Record '" + recordClass.getFullName()
+                        + "' returns more than one row";
+                throw new WdkModelException(msg);
+            }
+
+            rl.close();
+        }
     }
 
     protected String instantiateTextAttribute(String textAttributeName, 

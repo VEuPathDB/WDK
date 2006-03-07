@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.implementation.SqlQuery;
 
 public class DynamicAttributeSet implements Serializable {
@@ -15,6 +16,7 @@ public class DynamicAttributeSet implements Serializable {
      * 
      */
     private static final long serialVersionUID = -1373806354317917813L;
+    private static Logger logger = Logger.getLogger(DynamicAttributeSet.class);
 
     public final static String RESULT_TABLE = "RESULTTABLE";
 
@@ -30,6 +32,8 @@ public class DynamicAttributeSet implements Serializable {
 
     public void addAttributeField(AttributeField attributeField)
             throws WdkModelException {
+        //logger.debug("AttributeField: " + attributeField.getName());
+        
         String name = attributeField.getName();
         // the attribute name must be unique
         if (attributesFieldMap.containsKey(name))
@@ -142,6 +146,11 @@ public class DynamicAttributeSet implements Serializable {
             // associate columns with column attribute fields
             Column column = columnMap.get(name);
             ColumnAttributeField field = (ColumnAttributeField) attributesFieldMap.get(name);
+
+            // TEST
+//            logger.debug("Dyna Column '" + column.getName() + "' from Query: "
+//                    + column.getQuery().getFullName());
+            
             field.setColumn(column);
         }
 
@@ -158,6 +167,11 @@ public class DynamicAttributeSet implements Serializable {
 
         Collection<Column> columns = columnMap.values();
         for (Column column : columns) {
+            // TEST
+//            if (column.getName().equalsIgnoreCase("score"))
+//                logger.debug("DynamicAttributeSet '" + this.hashCode()
+//                        + "' is setting column.");
+            
             column.setQuery(getAttributesQuery());
             addColumn(column, sqlSelectBuf, RESULT_TABLE, attributesQuery);
         }
