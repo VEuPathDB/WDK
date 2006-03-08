@@ -563,8 +563,9 @@ public class RecordInstance {
 	    String attrName = (String)attributeNames.next();
 	    if (attrName.equals(targetAttrName)) continue;
 	    if (containsMacro(instantiatedText, attrName)) {
+           
 		String valString =  
-		    getAttributeValue(attrName.toString()).toString();
+		    getAttributeValue(attrName).toString();
 		instantiatedText = instantiateText(instantiatedText, 
 						   attrName, 
 						   valString);

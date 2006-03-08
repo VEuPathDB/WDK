@@ -20,9 +20,6 @@ import java.util.Set;
 
 public class Question implements Serializable {
 
-    /**
-     * 
-     */
     private static final long serialVersionUID = -446811404645317117L;
 
     private String recordClassTwoPartName;
