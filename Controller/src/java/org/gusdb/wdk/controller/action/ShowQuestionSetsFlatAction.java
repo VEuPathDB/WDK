@@ -31,11 +31,9 @@ public class ShowQuestionSetsFlatAction extends ShowQuestionSetsAction {
     public ActionForward execute(ActionMapping mapping,
 				 ActionForm form,
 				 HttpServletRequest request,
-				 HttpServletResponse response) throws Exception {
-	WdkModelBean wdkModel = (WdkModelBean)getServlet().getServletContext().getAttribute(CConstants.WDK_MODEL_KEY);
-	
+				 HttpServletResponse response) throws Exception {	
 	QuestionSetForm qSetForm = (QuestionSetForm)form;
-	prepareQuestionSetForm(wdkModel, qSetForm);
+	prepareQuestionSetForm(getServlet(), qSetForm);
 	//request.getSession().setAttribute(CConstants.QUESTIONSETFORM_KEY, qSetForm);
 
 	ServletContext svltCtx = getServlet().getServletContext();
@@ -55,13 +53,11 @@ public class ShowQuestionSetsFlatAction extends ShowQuestionSetsAction {
 	return forward;
     }
 
-    private void prepareQuestionSetForm (WdkModelBean wdkModel, QuestionSetForm qSetForm) throws Exception
+    protected void prepareQuestionSetForm (ActionServlet servlet, QuestionSetForm qSetForm) throws Exception
     {
-	ActionServlet servlet = getServlet();
-	//qSetForm.setServlet(servlet);
-	
 	ServletContext context = servlet.getServletContext();
 
+	WdkModelBean wdkModel = (WdkModelBean)getServlet().getServletContext().getAttribute(CConstants.WDK_MODEL_KEY);
 	Set qSets = wdkModel.getQuestionSetsMap().keySet();
 	Iterator qSetsI = qSets.iterator();
 	while (qSetsI.hasNext()) {

@@ -29,7 +29,7 @@ import org.gusdb.wdk.model.jspwrap.FlatVocabParamBean;
  *    3) forwards control to a jsp page that displays a question form
  */
 
-public class ShowQuestionAction extends Action {
+public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
     public ActionForward execute(ActionMapping mapping,
 				 ActionForm form,
 				 HttpServletRequest request,
@@ -39,6 +39,15 @@ public class ShowQuestionAction extends Action {
 	QuestionBean wdkQuestion = getQuestionByFullName(qFullName);
 
         QuestionForm qForm = prepareQuestionForm(wdkQuestion, request);
+
+	QuestionSetForm qSetForm = (QuestionSetForm)request.getSession()
+	    .getAttribute(CConstants.QUESTIONSETFORM_KEY);
+	if(null == qSetForm) {
+	    qSetForm = new QuestionSetForm();
+	    request.getSession().setAttribute(CConstants.QUESTIONSETFORM_KEY, qSetForm);
+	}
+	qSetForm.setQuestionFullName(qFullName);
+	prepareQuestionSetForm(getServlet(), qSetForm);
 
 	ServletContext svltCtx = getServlet().getServletContext();
 	String customViewDir = (String)svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
@@ -125,7 +134,6 @@ public class ShowQuestionAction extends Action {
 
 	return qForm;
     }
-
 
     static String[] getLengthBoundedLabels(String[] labels) {
 	return getLengthBoundedLabels(labels, CConstants.MAX_PARAM_LABEL_LEN);
