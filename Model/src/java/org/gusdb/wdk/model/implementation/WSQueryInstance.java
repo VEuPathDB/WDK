@@ -5,7 +5,6 @@ import java.net.URL;
 import java.rmi.RemoteException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Vector;
@@ -13,6 +12,7 @@ import java.util.Vector;
 import javax.sql.DataSource;
 import javax.xml.rpc.ServiceException;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Column;
 import org.gusdb.wdk.model.QueryInstance;
 import org.gusdb.wdk.model.RDBMSPlatformI;
@@ -24,6 +24,8 @@ import org.gusdb.wsf.service.WsfServiceServiceLocator;
 
 public class WSQueryInstance extends QueryInstance  {
 
+    private static final Logger logger = Logger.getLogger(WSQueryInstance.class);
+    
     public WSQueryInstance (WSQuery query) {
         super(query);
     }
@@ -46,16 +48,21 @@ public class WSQueryInstance extends QueryInstance  {
             int idx = 0;
             for (String param : paramMap.keySet()) {
                 String value = paramMap.get(param);
-                params[idx] = param + "=" + value;
+                params[idx++] = param + "=" + value;
             }
 
             Column[] columns = query.getColumns();
             String[] columnNames = new String[columns.length];
             for (int i = 0; i < columns.length; i++) {
                 columnNames[i] = columns[i].getName();
+                // if the wsName is defined, reassign it to the columns
+                if (columns[i].getWsName() != null) 
+                    columnNames[i] = columns[i].getWsName();
             }
 
-            System.err.println("WSQI invoking " + wsQuery.getProcessName());
+            // TEST
+            logger.info("Invoking " + wsQuery.getProcessName() + " at " + getServiceUrl());
+            
             // get
             String[][] result = client.invoke(wsQuery.getProcessName(), params,
                     columnNames);
@@ -68,60 +75,72 @@ public class WSQueryInstance extends QueryInstance  {
         }
     }
 
-    protected void writeResultToTable(String resultTableName, 
-            ResultFactory rf) throws WdkModelException {
+    protected void writeResultToTable(String resultTableName, ResultFactory rf)
+            throws WdkModelException {
+        // TEST
+        logger.info("Caching the result from "
+                + ((WSQuery) query).getProcessName());
 
-	RDBMSPlatformI platform = rf.getRDBMSPlatform();
-	DataSource dataSource = platform.getDataSource();
+        RDBMSPlatformI platform = rf.getRDBMSPlatform();
+        DataSource dataSource = platform.getDataSource();
 
-	Column[] columns = query.getColumns();
-	StringBuffer createSqlB = new StringBuffer("create table " +
-						   resultTableName + "(");
+        Column[] columns = query.getColumns();
+        StringBuffer createSqlB = new StringBuffer("create table "
+                + resultTableName + "(");
 
-	Map<String, Integer> colIsClob = new LinkedHashMap<String, Integer>();
-	for (Column column : columns) {
-	    int cw = column.getWidth();
-	    createSqlB.append(column.getName() + (cw > 2000 ? " clob, " : " varchar(" + cw + "), "));
-	    if (cw > 2000) { colIsClob.put(column.getName(), new Integer(1)); }
-	}
-	String createSql = createSqlB.toString() + 
-	    (ResultFactory.RESULT_TABLE_I + " " + platform.getNumberDataType() + " (12))");
+        Map<String, Integer> colIsClob = new LinkedHashMap<String, Integer>();
+        for (Column column : columns) {
+            int cw = column.getWidth();
+            // the clob datatype is DBMS specific
+            String clob = platform.getClobDataType();
 
-	String insertSql = "insert into " + resultTableName + " values (";
+             createSqlB.append(column.getName()
+                    + ((cw > 2000) ? (" " + clob + ", ")
+                            : (" varchar(" + cw + "), ")));
+            
+            if (cw > 2000) {
+                colIsClob.put(column.getName(), new Integer(1));
+            }
+        }
+        String createSql = createSqlB.toString()
+                + (ResultFactory.RESULT_TABLE_I + " "
+                        + platform.getNumberDataType() + " (12))");
 
-	ResultList resultList = getNonpersistentResult();
+        String insertSql = "insert into " + resultTableName + " values (";
 
-	try {
-	
-	    SqlUtils.execute(dataSource, createSql);
-	    
-	    int idx = 0;
-	    while(resultList.next()) {
-		StringBuffer insertSqlB = new StringBuffer(insertSql);
-		Vector<String> v = new Vector<String>();
-		for (Column column : columns) {
-		    String val = 
-			(String)resultList.getValueFromResult(column.getName());
-		    insertSqlB.append("?,");
-		    v.add(val);
-		}
-		String[] vals = new String[v.size()];
-		v.copyInto(vals);
-								       
-		String s = insertSqlB.toString() + "?)"; 
-		PreparedStatement pstmt = SqlUtils.getPreparedStatement(dataSource, s);
+        ResultList resultList = getNonpersistentResult();
 
-		for (int i=0; i<vals.length; i++) {
-		    //todo: may need to handle large strings for clob columns?
-		    pstmt.setString(i+1, vals[i]);
-		}
-                pstmt.setInt(vals.length+1, ++idx);
-		pstmt.execute();
-		SqlUtils.closeStatement(pstmt);
-	    }
-	} catch (SQLException e) {
-	    throw new WdkModelException(e);
-	}
+        try {
+
+            SqlUtils.execute(dataSource, createSql);
+
+            int idx = 0;
+            while (resultList.next()) {
+                StringBuffer insertSqlB = new StringBuffer(insertSql);
+                Vector<String> v = new Vector<String>();
+                for (Column column : columns) {
+                    String val = (String) resultList.getValueFromResult(column.getName());
+                    insertSqlB.append("?,");
+                    v.add(val);
+                }
+                String[] vals = new String[v.size()];
+                v.copyInto(vals);
+
+                String s = insertSqlB.toString() + "?)";
+                PreparedStatement pstmt = SqlUtils.getPreparedStatement(
+                        dataSource, s);
+
+                for (int i = 0; i < vals.length; i++) {
+                    //todo: may need to handle large strings for clob columns?
+                    pstmt.setString(i + 1, vals[i]);
+                }
+                pstmt.setInt(vals.length + 1, ++idx);
+                pstmt.execute();
+                SqlUtils.closeStatement(pstmt);
+            }
+        } catch (SQLException e) {
+            throw new WdkModelException(e);
+        }
     }
 
     private URL getServiceUrl() throws WdkModelException {

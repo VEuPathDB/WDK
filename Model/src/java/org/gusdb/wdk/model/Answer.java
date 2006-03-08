@@ -318,8 +318,8 @@ public class Answer {
         boolean isDynamic = attributesQueryInstance.getQuery().getParam(
                 DynamicAttributeSet.RESULT_TABLE) != null;
         
-//        logger.debug("AttributeQuery is: " + attributesQueryInstance.getQuery().getFullName());
-//        logger.debug("isDynamic=" + isDynamic);
+        logger.debug("AttributeQuery is: " + attributesQueryInstance.getQuery().getFullName());
+        logger.debug("isDynamic=" + isDynamic);
 
         String idsTableName = idsQueryInstance.getResultAsTableName();
         attributesQueryInstance.initJoinMode(idsTableName,

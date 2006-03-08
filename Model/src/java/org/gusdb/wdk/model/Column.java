@@ -17,6 +17,11 @@ public class Column {
     private String dataTypeName;
     private int width;  // for wsColumns (width of datatype)
 
+    /**
+     * The name is used by WSF service.
+     */
+    private String wsName;
+    
     public Column() {} 
 
     public void setName(String name) {
@@ -53,6 +58,20 @@ public class Column {
 
     public int getWidth() {
 	return width;
+    }
+    
+    /**
+     * @return Returns the wsName.
+     */
+    public String getWsName() {
+        return this.wsName;
+    }
+
+    /**
+     * @param wsName The wsName to set.
+     */
+    public void setWsName(String wsName) {
+        this.wsName = wsName;
     }
 
     public String toString() {
