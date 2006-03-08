@@ -6,9 +6,6 @@ import org.apache.log4j.Logger;
 
 public class ColumnAttributeField extends AttributeField implements Serializable {
 
-    /**
-     * 
-     */
     private static final long serialVersionUID = 6599899173932240144L;
     private static Logger logger = Logger.getLogger(ColumnAttributeField.class);
     

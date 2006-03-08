@@ -244,6 +244,9 @@
   <define name="wsColumn">
      <element name="wsColumn">
         <ref name="ColumnBaseContents" />
+        <optional>
+          <attribute name="wsName" />
+        </optional>
      </element>
   </define>
 
