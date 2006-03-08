@@ -29,7 +29,8 @@ public class CConstants {
     public static final String DOWNLOAD_RESULT_KEY = "downloadResult";
     public static final String WDK_XMLQUESTIONSETS_KEY = "wdkXmlQuestionSets";
     public static final String WDK_XMLANSWER_KEY = "wdkXmlAnswer";
-    
+    public static final String QUESTIONSETFORM_KEY = "questionSetForm"; 
+   
     //key for finding action forward, from struts-config.xml, used in Action classes
     public static final String SHOW_QUESTION_MAPKEY = "show_question";
     public static final String SKIPTO_SUMMARY_MAPKEY = "skip_to_summary";
