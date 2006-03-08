@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
-import sun.security.krb5.internal.af;
 
 public class RecordInstance {
 
