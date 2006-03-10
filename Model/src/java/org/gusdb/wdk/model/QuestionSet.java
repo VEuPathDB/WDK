@@ -2,6 +2,9 @@ package org.gusdb.wdk.model;
 
 import java.util.LinkedHashMap;
 import java.util.Iterator;
+import java.util.Vector;
+import java.util.Map;
+
 
 /**
  * QuestionSet.java
@@ -77,6 +80,29 @@ public class QuestionSet implements ModelSetI {
 	    questions[i++] = (Question)questionIterator.next();
 	}
 	return questions;
+    }
+
+    public Map<String, Question[]> getQuestionsByCategory() {
+	Question[] allQuestions = getQuestions();
+	Map<String, Vector<Question>> questionVectorsByCategory = new LinkedHashMap();
+	for (Question question : allQuestions) {
+	    String category = question.getCategory();
+	    if (null == category) { category = ""; }
+	    if (null == questionVectorsByCategory.get(category)) {
+		questionVectorsByCategory.put(category, new Vector()); }
+	    questionVectorsByCategory.get(category).add(question);
+	}
+
+	Map<String, Question[]> questionArraysByCategory = new LinkedHashMap();
+	Iterator categoryIterator = questionVectorsByCategory.keySet().iterator();
+	while(categoryIterator.hasNext()) {
+	    String category = (String)categoryIterator.next();
+	    Vector<Question> questionVector = questionVectorsByCategory.get(category);
+	    Question[] questions = new Question[questionVector.size()];
+	    questionVector.toArray(questions);
+	    questionArraysByCategory.put(category, questions);
+	}
+	return questionArraysByCategory;
     }
 
     public void addQuestion(Question question) throws WdkModelException {

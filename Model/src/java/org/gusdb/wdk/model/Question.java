@@ -40,6 +40,8 @@ public class Question implements Serializable {
     
     protected RecordClass recordClass;
 
+    private String category;
+
     private String[] summaryAttributeNames;
 
     private Map<String, AttributeField> summaryAttributeMap;
@@ -78,6 +80,10 @@ public class Question implements Serializable {
 
     public void setDisplayName(String displayName) {
 	this.displayName = displayName;
+    }
+
+    public void setCategory(String category) {
+	this.category = category;
     }
 
     public void setSummaryAttributesList(String summaryAttributesString){
@@ -136,6 +142,10 @@ public class Question implements Serializable {
 	return displayName;
     }
 	
+    public String getCategory() {
+	return category;
+    }
+
     public RecordClass getRecordClass(){
 	return this.recordClass;
     }
