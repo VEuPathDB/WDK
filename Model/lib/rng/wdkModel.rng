@@ -316,6 +316,9 @@
       <attribute name="recordClassRef" />
       <attribute name="queryRef" />
       <optional>
+           <attribute name="category" />
+      </optional>
+      <optional>
            <attribute name="summaryAttributesList" />
       </optional>
       <element name="description">
