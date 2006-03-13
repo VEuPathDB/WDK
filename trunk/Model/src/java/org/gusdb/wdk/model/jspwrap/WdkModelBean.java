@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.jspwrap;
 
 import org.gusdb.wdk.model.User;
 import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.WdkModelException;
@@ -11,6 +12,7 @@ import org.gusdb.wdk.model.xml.XmlQuestionSet;
 import org.gusdb.wdk.model.xml.XmlRecordClassSet;
 
 import java.util.Map;
+import java.util.HashMap;
 import java.util.Vector;
 import java.util.LinkedHashMap;
 import java.util.Iterator;
@@ -59,6 +61,39 @@ public class WdkModelBean {
             throws WdkUserException, WdkModelException {
         return new RecordClassBean(model.getRecordClass(recClassRef));
     }
+
+    /**
+     * @return Map of recordClassFullName --> Map of question category --> {array of @link QuestionBean}
+     */
+    public Map getQuestionsByCategory() {
+	Map<String, Map<String, Question[]>> qByCat = model.getQuestionsByCategory();
+
+	Map<String, Map<String, QuestionBean[]>> qBeanByCat = new LinkedHashMap();
+	Iterator recI = qByCat.keySet().iterator();
+	while(recI.hasNext()) {
+	    String recType = (String)recI.next();
+	    Map<String, Question[]> recMap = qByCat.get(recType);
+	    Iterator catI = recMap.keySet().iterator();
+	    while (catI.hasNext()) {
+		String cat = (String)catI.next();
+		Question[] questions = recMap.get(cat);
+
+		QuestionBean[] qBeans = new QuestionBean[questions.length];
+		for (int i=0; i<questions.length; i++) {
+		    qBeans[i] = new QuestionBean(questions[i]);
+		}
+
+		if(null == qBeanByCat.get(recType)) {
+		    qBeanByCat.put(recType, new LinkedHashMap());
+		}
+
+		qBeanByCat.get(recType).put(cat, qBeans);
+	    }
+	}
+
+	return qBeanByCat;
+    }
+
 
     /**
      * @return Map of questionSetName --> {@link QuestionSetBean}
@@ -112,6 +147,15 @@ public class WdkModelBean {
             returnedBeans[i] = nextReturnedBean;
         }
         return returnedBeans;
+    }
+
+    public Map<String, String> getRecordClassTypes() {
+	RecordClassBean[] recClasses = getRecordClasses();
+	Map<String, String> types = new HashMap();
+	for(RecordClassBean r : recClasses) {
+	    types.put(r.getFullName(), r.getType());
+	}
+	return types;
     }
 
     public UserBean createUser(String userID) {
