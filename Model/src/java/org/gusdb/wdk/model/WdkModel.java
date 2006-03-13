@@ -5,6 +5,7 @@ import java.net.URL;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Vector;
 
 import org.gusdb.wdk.model.implementation.ModelXmlParser;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
@@ -267,6 +268,53 @@ public class WdkModel {
 
     public Map<String, QuestionSet> getQuestionSets() {
         return new LinkedHashMap<String, QuestionSet>(questionSets);
+    }
+
+    public Map<String, Map<String, Question[]>>getQuestionsByCategory() {
+	QuestionSet[] qSets = getAllQuestionSets();
+
+	Map<String, Map<String, Vector<Question>>> qVecByCat = new LinkedHashMap();
+	for (QuestionSet qSet : qSets) {
+	    if (true == qSet.getInternal()) continue;
+	    Question[] questions = qSet.getQuestions();
+	    for (Question q : questions) {
+		String recType = q.getRecordClass().getFullName();
+		String cat = q.getCategory();
+		if (null == cat) cat = "";
+
+		if(null == qVecByCat.get(recType)) {
+		    qVecByCat.put(recType, new LinkedHashMap());
+		}
+		
+		if(null == qVecByCat.get(recType).get(cat)) {
+		    qVecByCat.get(recType).put(cat, new Vector());
+		}
+
+		qVecByCat.get(recType).get(cat).add(q);
+	    }
+	}
+
+	Map<String, Map<String, Question[]>> qArrayByCat = new LinkedHashMap();
+	Iterator recI = qVecByCat.keySet().iterator();
+	while(recI.hasNext()) {
+	    String recType = (String)recI.next();
+	    Map<String, Vector<Question>> recMap = qVecByCat.get(recType);
+	    Iterator catI = recMap.keySet().iterator();
+	    while (catI.hasNext()) {
+		String cat = (String)catI.next();
+		Vector<Question> qVec = recMap.get(cat);
+		Question[] qArray = new Question[qVec.size()];
+		qVec.toArray(qArray);
+
+		if(null == qArrayByCat.get(recType)) {
+		    qArrayByCat.put(recType, new LinkedHashMap());
+		}
+
+		qArrayByCat.get(recType).put(cat, qArray);
+	    }
+	}
+
+	return qArrayByCat;
     }
 
     // ReferenceLists
