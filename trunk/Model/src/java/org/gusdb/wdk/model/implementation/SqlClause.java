@@ -153,6 +153,10 @@ public class SqlClause {
 	String regex = "'" + RecordClass.PRIMARY_KEY_MACRO + "'";
 	String newSql = sql.replaceAll(regex, RecordClass.PRIMARY_KEY_MACRO);
 
+        // strip any quotes surrounding the project ID macro
+        regex = "'" + RecordClass.PROJECT_ID_MACRO + "'";
+        newSql = newSql.replaceAll(regex, RecordClass.PROJECT_ID_MACRO);
+
 	if (newSql.indexOf("'") != -1) {
             boolean endsInQuote = newSql.lastIndexOf("'") == (newSql.length() -1);
 	    if (endsInQuote) { newSql += " "; }
