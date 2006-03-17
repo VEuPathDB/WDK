@@ -312,7 +312,7 @@ public class SanityTester {
         System.out.println("Sanity Test:  Checking XML questions\n");
 
         Reference questionRef = null;
-        SanityXmlQuestion questions[] = sanityModel.getSanityQuestions();
+        SanityXmlQuestion questions[] = sanityModel.getSanityXmlQuestions();
 
         for (int i = 0; i < questions.length; i++) {
             try {

@@ -17,7 +17,7 @@ import org.apache.commons.cli.ParseException;
  */
 public class CommandHelper {
 
-    static CommandLine parseOptions(String cmdName, Options options,
+    public static CommandLine parseOptions(String cmdName, Options options,
             String[] args) {
 
         CommandLineParser parser = new BasicParser();
@@ -36,7 +36,7 @@ public class CommandHelper {
         return cmdLine;
     }
 
-    static Options declareOptions(String[] names, String[] descs,
+    public static Options declareOptions(String[] names, String[] descs,
             boolean[] required, int[] args) {
         Options options = new Options();
 
@@ -68,7 +68,7 @@ public class CommandHelper {
         options.addOption(option);
     }
 
-    static void usage(String cmdName, Options options) {
+    public static void usage(String cmdName, Options options) {
 
         String newline = System.getProperty("line.separator");
 

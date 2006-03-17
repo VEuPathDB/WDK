@@ -128,6 +128,10 @@ public class Question implements Serializable {
     public Param[] getParams() {
 	return query.getParams();
     }
+    
+    public Map<String, Param> getParamMap() {
+        return query.getParamMap();
+    }
 
     public String getDescription() {
 	return description;

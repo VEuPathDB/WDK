@@ -149,7 +149,7 @@ public class SanityModel {
         sanityXmlQuestions.add(question);
     }
 
-    public SanityXmlQuestion[] getSanityQuestions() {
+    public SanityXmlQuestion[] getSanityXmlQuestions() {
         SanityXmlQuestion[] questions = new SanityXmlQuestion[sanityXmlQuestions.size()];
         sanityXmlQuestions.toArray(questions);
         return questions;
