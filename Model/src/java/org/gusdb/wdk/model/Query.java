@@ -94,6 +94,10 @@ public abstract class Query {
         paramsV.copyInto(paramA);
         return paramA;
     }
+    
+    public Map<String, Param> getParamMap() {
+        return new LinkedHashMap<String, Param>(paramsH);
+    }
 
     public Boolean getIsCacheable() {
         return isCacheable;
