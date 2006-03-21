@@ -3,7 +3,6 @@
  */
 package org.gusdb.wdk.model.test.stress;
 
-import java.net.URL;
 
 /**
  * @author: Jerric
@@ -25,8 +24,7 @@ public class StressTestTask {
     private static long taskIdSeed = 0;
 
     private long taskId;
-    private URL testUrl;
-    private String testUrlType;
+    private UrlItem testUrl;
 
     private TaskState state;
     private long startTime;
@@ -40,10 +38,9 @@ public class StressTestTask {
     /**
      * 
      */
-    public StressTestTask(URL testUrl, String testUrlType) {
+    public StressTestTask(UrlItem testUrl) {
         taskId = taskIdSeed++;
         this.testUrl = testUrl;
-        this.testUrlType = testUrlType;
         state = TaskState.Pending;
         resultType = ResultType.Unknown;
         resultMessage = "Unknown";
@@ -59,15 +56,8 @@ public class StressTestTask {
     /**
      * @return Returns the testUrl.
      */
-    public URL getTestUrl() {
+    public UrlItem getTestUrl() {
         return testUrl;
-    }
-
-    /**
-     * @return Returns the testUrlType.
-     */
-    public String getTestUrlType() {
-        return testUrlType;
     }
 
     /**

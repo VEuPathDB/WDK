@@ -1,12 +1,19 @@
 package org.gusdb.wdk.model;
 
+import java.io.Serializable;
+
 import org.apache.log4j.Logger;
 
 
 
 
 
-public class Column {
+public class Column implements Serializable {
+
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -1895749085919850028L;
 
     // never used locally
     //private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.model.Column");

@@ -49,6 +49,9 @@ public interface RDBMSPlatformI {
 
     public void addIndexColumn(DataSource dataSource, String tableName) throws SQLException;
 
+    public int getActiveCount();
+    
+    public int getIdleCount();
 }
 
 

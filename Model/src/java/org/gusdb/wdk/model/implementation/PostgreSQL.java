@@ -6,6 +6,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkLogManager;
 import org.gusdb.wdk.model.ResultFactory;
 
+import java.io.Serializable;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.logging.Logger;
@@ -24,8 +25,13 @@ import javax.sql.DataSource;
  * @author Angel Pizarro
  * @version $Revision$ $Date$ $Author$
  */
-public class PostgreSQL implements RDBMSPlatformI {
+public class PostgreSQL implements RDBMSPlatformI, Serializable {
     
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 8999951914815274776L;
+
     private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.model.implementation.PostgreSQL");
     
     private DataSource dataSource;
@@ -206,7 +212,13 @@ public class PostgreSQL implements RDBMSPlatformI {
         return "EXCEPT";
     }
     
-    
+    public int getActiveCount() {
+        return connectionPool.getNumActive();
+    }
+ 
+    public int getIdleCount() {
+        return connectionPool.getNumIdle();
+    }
 }
 
 

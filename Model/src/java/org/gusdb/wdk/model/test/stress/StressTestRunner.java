@@ -6,7 +6,6 @@ package org.gusdb.wdk.model.test.stress;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -89,7 +88,7 @@ public class StressTestRunner implements Runnable {
             // no new task, wait
             if (state == RunnerState.Finished || state == RunnerState.Idle) {
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(500);
                 } catch (InterruptedException ex) {}
                 continue;
             }
@@ -113,25 +112,23 @@ public class StressTestRunner implements Runnable {
     }
 
     private String retrievePage() {
-        URL url = task.getTestUrl();
         try {
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestProperty("User-Agent",
-                    "Mozilla/4.0 (compatible; MSIE 5.5; Windows NT 5.0)");
+            UrlItem urlItem = task.getTestUrl();
+            HttpURLConnection connection = urlItem.getConnection();
             BufferedInputStream in = new BufferedInputStream(
-                    conn.getInputStream());
+                    connection.getInputStream());
 
             // check the http response
-            int httpCode = conn.getResponseCode();
-            String message = conn.getResponseMessage();
+            int httpCode = connection.getResponseCode();
+            String message = connection.getResponseMessage();
             if (httpCode != HttpURLConnection.HTTP_OK) {
                 task.finishTask(ResultType.HttpError, message);
                 return null;
             }
-            String contentType = conn.getContentType().toLowerCase();
+            String contentType = connection.getContentType().toLowerCase();
 
             // read content into a buffer of byte array
-            int length = conn.getContentLength();
+            int length = connection.getContentLength();
             byte[] bytContent;
             // always use first method in SSL
             length = -1;
@@ -156,7 +153,7 @@ public class StressTestRunner implements Runnable {
                 }
             }
             in.close();
-            conn.disconnect();
+            connection.disconnect();
 
             // determine the content type
             if (contentType.startsWith("text")) {
