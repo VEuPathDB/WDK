@@ -30,7 +30,8 @@ public class StressTestAnalyzer {
     public int getTaskCount(String taskType) {
         int count = 0;
         for (StressTestTask task : tasks) {
-            if (task.getTestUrlType().equalsIgnoreCase(taskType)) count++;
+            UrlItem urlItem = task.getTestUrl();
+            if (urlItem.getUrlType().equalsIgnoreCase(taskType)) count++;
         }
         return count;
     }
@@ -46,8 +47,9 @@ public class StressTestAnalyzer {
     public int getSucceededTaskCount(String taskType) {
         int count = 0;
         for (StressTestTask task : tasks) {
+            UrlItem urlItem = task.getTestUrl();
             if (task.getResultType() == ResultType.Succeeded
-                    && task.getTestUrlType().equalsIgnoreCase(taskType))
+                    && urlItem.getUrlType().equalsIgnoreCase(taskType))
                 count++;
         }
         return count;
@@ -64,8 +66,9 @@ public class StressTestAnalyzer {
     public int getFailedTaskCount(String taskType) {
         int count = 0;
         for (StressTestTask task : tasks) {
+            UrlItem urlItem = task.getTestUrl();
             if (task.getResultType() != ResultType.Succeeded
-                    && task.getTestUrlType().equalsIgnoreCase(taskType))
+                    && urlItem.getUrlType().equalsIgnoreCase(taskType))
                 count++;
         }
         return count;
@@ -82,8 +85,9 @@ public class StressTestAnalyzer {
     public int getFailedTaskCount(ResultType resultType, String taskType) {
         int count = 0;
         for (StressTestTask task : tasks) {
+            UrlItem urlItem = task.getTestUrl();
             if (task.getResultType() == resultType
-                    && task.getTestUrlType().equalsIgnoreCase(taskType))
+                    && urlItem.getUrlType().equalsIgnoreCase(taskType))
                 count++;
         }
         return count;
@@ -111,7 +115,8 @@ public class StressTestAnalyzer {
     public float getTotalResponseTime(String taskType) {
         long sum = 0;
         for (StressTestTask task : tasks) {
-            if (task.getTestUrlType().equalsIgnoreCase(taskType))
+            UrlItem urlItem = task.getTestUrl();
+            if (urlItem.getUrlType().equalsIgnoreCase(taskType))
                 sum += task.getDuration();
         }
         return (sum / 1000F);
@@ -141,8 +146,9 @@ public class StressTestAnalyzer {
     public float getTotalSucceededResponseTime(String taskType) {
         long sum = 0;
         for (StressTestTask task : tasks) {
+            UrlItem urlItem = task.getTestUrl();
             if (task.getResultType() == ResultType.Succeeded
-                    && task.getTestUrlType().equalsIgnoreCase(taskType))
+                    && urlItem.getUrlType().equalsIgnoreCase(taskType))
                 sum += task.getDuration();
         }
         return (sum / 1000F);

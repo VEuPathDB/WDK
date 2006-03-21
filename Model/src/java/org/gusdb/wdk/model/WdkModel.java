@@ -22,7 +22,8 @@ import org.w3c.dom.Document;
 public class WdkModel {
 
     public static final int TRUNCATE_DEFAULT = 100;
-    public static final WdkModel INSTANCE = new WdkModel();
+    //public static final WdkModel INSTANCE = new WdkModel();
+    public static WdkModel INSTANCE = new WdkModel();
 
     protected RDBMSPlatformI platform;
 
@@ -65,6 +66,7 @@ public class WdkModel {
      * Default constructor
      */
     public WdkModel() {
+        INSTANCE = this;
         users = new LinkedHashMap<String, User>();
         xmlQuestionSets = new LinkedHashMap<String, XmlQuestionSet>();
         xmlRecordClassSets = new LinkedHashMap<String, XmlRecordClassSet>();
@@ -686,5 +688,9 @@ public class WdkModel {
 
     public File getXmlDataDir() {
         return xmlDataDir;
+    }
+    
+    public RDBMSPlatformI getPlatform() {
+        return platform;
     }
 }

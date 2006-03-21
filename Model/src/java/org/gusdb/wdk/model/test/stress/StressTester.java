@@ -7,13 +7,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.HashMap;
+import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.InvalidPropertiesFormatException;
-import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
@@ -51,6 +52,7 @@ public class StressTester {
     public static final String FIELD_RECORD_URL = "RecordUrl";
     public static final String FIELD_HOME_URL = "HomeUrl";
     public static final String FIELD_MAX_DELAY_TIME = "MaxDelayTime";
+    public static final String FIELD_URL_PREFIX = "url";
 
     public static final String TYPE_HOME_URL = "HomeUrl";
     public static final String TYPE_QUESTION_URL = "QuestionUrl";
@@ -59,12 +61,14 @@ public class StressTester {
 
     private static Logger logger = Logger.getLogger(StressTester.class);
 
-    private Map<URL, String> urlPool;
+    private List<UrlItem> urlPool;
 
     private String questionUrlPattern;
     private String xmlQuestionUrlPattern;
     private String recordUrlPattern;
     private String homeUrlPattern;
+    private Map<String, String> otherUrls;
+
     private int maxDelayTime;
 
     private Random rand;
@@ -82,7 +86,8 @@ public class StressTester {
             WdkModelException, URISyntaxException, WdkUserException {
         logger.info("Initializing stress test on " + modelName);
 
-        urlPool = new HashMap<URL, String>();
+        urlPool = new ArrayList<UrlItem>();
+        otherUrls = new LinkedHashMap<String, String>();
         rand = new Random(System.currentTimeMillis());
 
         File configDir = new File(System.getProperty("configDir"));
@@ -112,6 +117,14 @@ public class StressTester {
         homeUrlPattern = properties.getProperty(FIELD_HOME_URL);
         String delay = properties.getProperty(FIELD_MAX_DELAY_TIME);
         maxDelayTime = Integer.parseInt(delay);
+
+        // load other urls
+        for (Object key : properties.keySet()) {
+            String urlKey = (String) key;
+            if (!urlKey.startsWith(FIELD_URL_PREFIX)) continue;
+            String urlValue = properties.getProperty(urlKey);
+            otherUrls.put(urlValue, urlKey);
+        }
     }
 
     private SanityModel loadSanityModel(File configDir, String modelName)
@@ -128,75 +141,94 @@ public class StressTester {
     }
 
     private void composeUrls(String modelName, SanityModel sanityModel)
-            throws URISyntaxException, MalformedURLException, WdkUserException,
-            WdkModelException {
+            throws WdkUserException, WdkModelException, MalformedURLException,
+            UnsupportedEncodingException, URISyntaxException {
         logger.debug("Composing test urls...");
 
         // load the model
         WdkModel wdkModel = WdkModel.construct(modelName);
 
         // add home url into the pool
-        URL homeUrl = new URL(homeUrlPattern);
-        urlPool.put(homeUrl, TYPE_HOME_URL);
+        if (homeUrlPattern != null) {
+            UrlItem homeUrl = new UrlItem(homeUrlPattern, TYPE_HOME_URL);
+            urlPool.add(homeUrl);
+        }
 
         // get sanity questions from the sanity model
-        SanityQuestion[] questions = sanityModel.getAllSanityQuestions();
-        for (SanityQuestion question : questions) {
-            // get question full name
-            String fullName = question.getName();
-            // get parameters
-            Map<String, Object> params = question.getParamHash();//
-            // get original parameters
-            Reference questionRef = new Reference(question.getRef());
-            QuestionSet questionSet = wdkModel.getQuestionSet(questionRef.getSetName());
-            Question q = questionSet.getQuestion(questionRef.getElementName());
-            Map<String, Param> originalParams = q.getParamMap();
+        if (questionUrlPattern != null) {
+            SanityQuestion[] questions = sanityModel.getAllSanityQuestions();
+            for (SanityQuestion question : questions) {
+                // get question full name
+                String fullName = question.getName();
+                // get parameters
+                Map<String, Object> params = question.getParamHash();//
+                // get original parameters
+                Reference questionRef = new Reference(question.getRef());
+                QuestionSet questionSet = wdkModel.getQuestionSet(questionRef.getSetName());
+                Question q = questionSet.getQuestion(questionRef.getElementName());
+                Map<String, Param> originalParams = q.getParamMap();
 
-            // compose question url
-            StringBuffer sb = new StringBuffer(questionUrlPattern);
-            sb.append(fullName);
-            Set<String> paramKeys = params.keySet();
-            for (String paramName : paramKeys) {
-                String value = params.get(paramName).toString();
-                value = value.replaceAll(" ", "+");
-
-                // check if the parameter is a flatvocab parameter
-                Param param = originalParams.get(paramName);
-                if (param instanceof FlatVocabParam) sb.append("&myMultiProp");
-                else sb.append("&myProp");
-                sb.append("%28" + paramName + "%29=" + value);
+                // compose question url
+                UrlItem questionUrl = new UrlItem(questionUrlPattern,
+                        TYPE_QUESTION_URL);
+                questionUrl.addParameter("questionFullName", fullName);
+                Set<String> paramKeys = params.keySet();
+                for (String paramName : paramKeys) {
+                    String value = params.get(paramName).toString();
+                    // check if the parameter is a flatvocab parameter
+                    Param param = originalParams.get(paramName);
+                    if (param instanceof FlatVocabParam) {
+                        paramName = "myMultiProp(" + paramName + ")";
+                    } else {
+                        paramName = "myProp(" + paramName + ")";
+                    }
+                    questionUrl.addParameter(paramName, value);
+                }
+                questionUrl.addParameter("questionSubmit", "Get Answer");
+                urlPool.add(questionUrl);
             }
-            sb.append("&questionSubmit=Get+Answer");
-            URI questionUri = new URI(sb.toString());
-            urlPool.put(questionUri.toURL(), TYPE_QUESTION_URL);
         }
 
         // get sanity xml questions from the sanity model
-        SanityXmlQuestion[] xmlQuestions = sanityModel.getSanityXmlQuestions();
-        for (SanityXmlQuestion xmlQuestion : xmlQuestions) {
-            // get question full name
-            String fullName = xmlQuestion.getName();
-            StringBuffer sb = new StringBuffer(xmlQuestionUrlPattern);
-            sb.append(fullName);
-            URI xmlQuestionUri = new URI(sb.toString());
-            urlPool.put(xmlQuestionUri.toURL(), TYPE_XML_QUESTION_URL);
+        if (xmlQuestionUrlPattern != null) {
+            SanityXmlQuestion[] xmlQuestions = sanityModel.getSanityXmlQuestions();
+            for (SanityXmlQuestion xmlQuestion : xmlQuestions) {
+                // get question full name
+                String fullName = xmlQuestion.getName();
+                StringBuffer sb = new StringBuffer(xmlQuestionUrlPattern);
+                sb.append("?name=" + fullName);
+                UrlItem xmlQuestionUrl = new UrlItem(sb.toString(),
+                        TYPE_XML_QUESTION_URL);
+                urlPool.add(xmlQuestionUrl);
+            }
         }
 
-        // get sanit records from the sanity model
-        SanityRecord[] records = sanityModel.getAllSanityRecords();
-        for (SanityRecord record : records) {
-            // get record full name
-            String fullName = record.getName();
-            String projectID = record.getProjectID();
-            String primaryKey = record.getPrimaryKey();
-            // compose url
-            StringBuffer sb = new StringBuffer(recordUrlPattern);
-            sb.append(fullName);
-            if (projectID != null && projectID.length() != 0)
-                sb.append("&project_id=" + projectID);
-            sb.append("&primary_key=" + primaryKey);
-            URI recordUri = new URI(sb.toString());
-            urlPool.put(recordUri.toURL(), TYPE_RECORD_URL);
+        // get sanity records from the sanity model
+        if (recordUrlPattern != null) {
+            SanityRecord[] records = sanityModel.getAllSanityRecords();
+            for (SanityRecord record : records) {
+                // get record full name
+                String fullName = record.getName();
+                String projectID = record.getProjectID();
+                String primaryKey = record.getPrimaryKey();
+                // compose url
+                StringBuffer sb = new StringBuffer(recordUrlPattern);
+                sb.append("?name=" + fullName);
+                if (projectID != null && projectID.length() != 0)
+                    sb.append("&project_id="
+                            + URLEncoder.encode(projectID, "UTF-8"));
+                sb.append("&primary_key="
+                        + URLEncoder.encode(primaryKey, "UTF-8"));
+                UrlItem recordUrl = new UrlItem(sb.toString(), TYPE_RECORD_URL);
+                urlPool.add(recordUrl);
+            }
+        }
+
+        // get other urls
+        for (String urlKey : otherUrls.keySet()) {
+            String urlValue = otherUrls.get(urlKey);
+            UrlItem urlItem = new UrlItem(urlKey, urlValue);
+            urlPool.add(urlItem);
         }
     }
 
@@ -206,10 +238,10 @@ public class StressTester {
         StressTestScheduler scheduler = createScheduler(numThreads, numReuqests);
         // start test
         Thread thread = new Thread(scheduler);
+        thread.setName("Scheduler Thread");
         thread.start();
 
         // wait till all tasks are executed
-        boolean stopping = false;
         while (!scheduler.isFinished()) {
             try {
                 Thread.sleep(1000);
@@ -220,9 +252,8 @@ public class StressTester {
                     + "\t Finished: " + scheduler.getFinishedTaskCount());
 
             if (!scheduler.hasPendingTask()
-                    && scheduler.getExecutingTaskCount() == 0 && !stopping) {
+                    && scheduler.getExecutingTaskCount() == 0) {
                 scheduler.stop();
-                stopping = true;
             }
         }
         return scheduler.getFinishedTasks();
@@ -234,21 +265,14 @@ public class StressTester {
         StressTestScheduler scheduler = new StressTestScheduler(numThreads,
                 maxDelayTime);
         // create test requests
+        int index = 0;
         for (int i = 0; i < numRequests; i++) {
-            int index = rand.nextInt(urlPool.size());
-            URL url = null;
-            String urlType = null;
-            Iterator<URL> urls = urlPool.keySet().iterator();
-            int idx = 0;
-            while (urls.hasNext()) {
-                url = urls.next();
-                if (idx == index) {
-                    urlType = urlPool.get(url);
-                    break;
-                }
-                idx++;
-            }
-            StressTestTask task = new StressTestTask(url, urlType);
+            //index = rand.nextInt(urlPool.size());
+            index++;
+            if (index >= urlPool.size()) index %= urlPool.size();
+            
+            UrlItem urlItem = urlPool.get(index);
+            StressTestTask task = new StressTestTask(urlItem);
             scheduler.addTestTask(task);
         }
         return scheduler;
@@ -257,7 +281,11 @@ public class StressTester {
     private static Options declareOptions() {
         String[] names = { "model", "threads", "tasks" };
         String[] descs = {
-                "the name of the model.  This is used to find the Model XML file ($GUS_HOME/config/model_name.xml) the Model property file ($GUS_HOME/config/model_name.prop) and the Model config file ($GUS_HOME/config/model_name-config.xml)",
+                "the name of the model.  This is used to find the Model XML "
+                        + "file ($GUS_HOME/config/model_name.xml) the Model "
+                        + "property file ($GUS_HOME/config/model_name.prop) "
+                        + "and the Model config file "
+                        + "($GUS_HOME/config/model_name-config.xml)",
                 "The number of threads used to run the tasks.",
                 "The number of tasks to be executed" };
         boolean[] required = { true, true, true };

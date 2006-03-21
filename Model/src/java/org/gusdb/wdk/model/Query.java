@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model;
 
+import java.io.Serializable;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -9,7 +10,7 @@ import java.util.Vector;
 
 import org.apache.log4j.Logger;
 
-public abstract class Query {
+public abstract class Query implements Serializable {
 
     private static Logger logger = Logger.getLogger(Query.class);
 

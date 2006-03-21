@@ -57,6 +57,7 @@ public class StressTestScheduler implements Runnable {
         for (int i = 1; i <= runnerNum; i++) {
             StressTestRunner runner = new StressTestRunner(i);
             Thread thread = new Thread(runner);
+            thread.setName("Runner Thread #" + runner.getRunnerId());
             thread.start();
             runners.add(runner);
         }
