@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.implementation;
 
+import java.io.Serializable;
 import java.util.Set;
 
 import org.gusdb.wdk.model.Query;
@@ -7,8 +8,12 @@ import org.gusdb.wdk.model.QueryInstance;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 
-public class WSQuery extends Query {
+public class WSQuery extends Query implements Serializable {
     
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -3057750262476024684L;
     String processName;
     String webServiceUrl;
 

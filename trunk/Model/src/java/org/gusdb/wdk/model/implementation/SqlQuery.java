@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.implementation;
 
+import java.io.Serializable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -10,8 +11,13 @@ import org.gusdb.wdk.model.RDBMSPlatformI;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 
-public class SqlQuery extends Query {
+public class SqlQuery extends Query implements Serializable {
     
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -3356832112831465261L;
+
     static final String RESULT_TABLE_MACRO = "%%RESULT_TABLE%%";
 
     String sql;

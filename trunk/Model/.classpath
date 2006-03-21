@@ -16,7 +16,6 @@
 	<classpathentry kind="lib" path="lib/java/xsltc.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry sourcepath="ECLIPSE_HOME/plugins/org.eclipse.jdt.source_3.1.1/src/org.junit_3.8.1/junitsrc.zip" kind="var" path="JUNIT_HOME/junit.jar"/>
-	<classpathentry kind="lib" path="lib/java/db_driver/ojdbc14.jar"/>
 	<classpathentry kind="lib" path="lib/java/commons-logging-api.jar"/>
 	<classpathentry kind="lib" path="lib/java/WSF-Client.jar"/>
 	<classpathentry kind="lib" path="lib/java/axis.jar"/>
@@ -27,6 +26,7 @@
 	<classpathentry kind="lib" path="lib/java/wsdl4j-1.5.1.jar"/>
 	<classpathentry kind="lib" path="lib/java/mail.jar"/>
 	<classpathentry kind="lib" path="lib/java/activation.jar"/>
+	<classpathentry kind="lib" path="lib/java/db_driver/ojdbc14.jar"/>
 	<classpathentry kind="lib" path="lib/java/log4j-1.2.13.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>

@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model.implementation;
 
 
+import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.logging.Logger;
@@ -23,8 +24,13 @@ import org.gusdb.wdk.model.WdkModelException;
  * @author Steve Fischer
  * @version $Revision$ $Date$ $Author$
  */
-public class Oracle implements RDBMSPlatformI {
+public class Oracle implements RDBMSPlatformI, Serializable {
     
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1097981172046682268L;
+
     private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.model.implementation.Oracle");
     
     private DataSource dataSource;
@@ -196,6 +202,14 @@ public class Oracle implements RDBMSPlatformI {
     public String getMinus() {
         // TODO Auto-generated method stub
         return "MINUS";
+    }
+    
+    public int getActiveCount() {
+        return connectionPool.getNumActive();
+    }
+ 
+    public int getIdleCount() {
+        return connectionPool.getNumIdle();
     }
 }
 

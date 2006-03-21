@@ -10,10 +10,12 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Vector;
-import java.util.logging.Logger;
-import org.gusdb.wdk.model.WdkLogManager;
 
 import javax.sql.DataSource;
+
+import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.RDBMSPlatformI;
+import org.gusdb.wdk.model.WdkModel;
 
 
 public class SqlUtils {
@@ -21,7 +23,8 @@ public class SqlUtils {
     // Added by Jerric - debug flag
     private static boolean debug = false;
 
-    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.model.implementation.SqlUtils");
+    //private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.model.implementation.SqlUtils");
+    private static final Logger logger = Logger.getLogger(SqlUtils.class);
     
     public static ResultSet getResultSet(DataSource dataSource, String sql) throws SQLException {
 
@@ -30,12 +33,14 @@ public class SqlUtils {
 
         try {
 	    Connection connection = dataSource.getConnection();
-	    Statement stmt = connection.createStatement();
+        logger.debug("Opening connection: " + getConnectionCount());
+
+        Statement stmt = connection.createStatement();
             ResultSet rs = stmt.executeQuery(sql);
-            logger.finest("Success in executing sql in getResultSet: '" + sql + "'");
+            //logger.debug("Success in executing sql in getResultSet: '" + sql + "'");
             return rs;
         } catch (SQLException sqlE) {
-            logger.finer("Failed attempting to execute sql in getResultSet: '" + sql + "'");
+            logger.debug("Failed attempting to execute sql in getResultSet: '" + sql + "'");
             throw sqlE;
         }
     }
@@ -63,6 +68,7 @@ public class SqlUtils {
         if (debug) System.out.println("<==getPreparedStatement==>: " + sql);
 
         Connection connection = dataSource.getConnection();
+        logger.debug("Opening connection: " + getConnectionCount());
         PreparedStatement prepStmt = connection.prepareStatement(sql);
         return prepStmt;
     }
@@ -82,7 +88,10 @@ public class SqlUtils {
         if (stmt != null){
             Connection connection = stmt.getConnection();
             try { stmt.close(); } catch(Exception e) { }
-            try { connection.close(); } catch(Exception e) { }
+            try {  
+            logger.debug("Closing connection: " + getConnectionCount());
+            connection.close();
+            } catch(Exception e) { }
         }
     }
     
@@ -153,6 +162,7 @@ public class SqlUtils {
                
         try {
             connection = dataSource.getConnection();
+            logger.debug("Closing connection: " + getConnectionCount());
             stmt = connection.createStatement();
             resultSet = stmt.executeQuery(sql);
             while (resultSet.next()) v.addElement(resultSet.getString(1));
@@ -181,6 +191,7 @@ public class SqlUtils {
 
         try {
             connection = dataSource.getConnection();
+            logger.debug("Closing connection: " + getConnectionCount());
             stmt = connection.prepareStatement(sql);
             ResultSetMetaData metaData = stmt.getMetaData();
             int colCount = metaData.getColumnCount();
@@ -209,6 +220,7 @@ public class SqlUtils {
 
         try {
             connection = dataSource.getConnection();
+            logger.debug("Closing connection: " + getConnectionCount());
             stmt = connection.createStatement();
             result = stmt.executeUpdate(sql);
         } catch (SQLException e) {
@@ -237,6 +249,7 @@ public class SqlUtils {
        
         try {
             connection = dataSource.getConnection();
+            logger.debug("Closing connection: " + getConnectionCount());
             stmt = connection.createStatement();
             return stmt.execute(sql);
         } catch (SQLException e) {
@@ -284,4 +297,12 @@ public class SqlUtils {
         }
     }
 
+    public static String getConnectionCount() {
+        WdkModel model = WdkModel.INSTANCE;
+        if (model == null) return "(Not available)";
+        RDBMSPlatformI platform = model.getPlatform();
+        if (platform == null) return "(Not available)";
+        return "(" + platform.getActiveCount() + ", " + platform.getIdleCount()
+                + ")";
+    }
 }
