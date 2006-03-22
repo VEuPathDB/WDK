@@ -89,8 +89,8 @@ public class SqlUtils {
             Connection connection = stmt.getConnection();
             try { stmt.close(); } catch(Exception e) { }
             try {  
-            logger.debug("Closing connection: " + getConnectionCount());
             connection.close();
+            logger.debug("Closing connection: " + getConnectionCount());
             } catch(Exception e) { }
         }
     }
@@ -220,13 +220,12 @@ public class SqlUtils {
 
         try {
             connection = dataSource.getConnection();
-            logger.debug("Closing connection: " + getConnectionCount());
+            logger.debug("Opening connection: " + getConnectionCount());
             stmt = connection.createStatement();
             result = stmt.executeUpdate(sql);
         } catch (SQLException e) {
-            System.err.println("Failed executing sql:");
-            System.err.println(sql);
-            System.err.println("");
+            System.err.println("Failed executing sql:\n" + sql);
+            logger.error(e);
             throw e;
         } finally {
             closeStatement(stmt);

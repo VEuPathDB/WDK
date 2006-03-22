@@ -453,6 +453,7 @@ public class User {
                 sb.append(datasetID);
                 sb.append(")");
             }
+            SqlUtils.closeResultSet(rs);
             // execute update/insert
             SqlUtils.executeUpdate(dataSource, sb.toString());
         } catch (SQLException ex) {
