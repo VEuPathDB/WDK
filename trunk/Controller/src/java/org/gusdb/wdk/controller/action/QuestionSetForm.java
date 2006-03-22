@@ -12,6 +12,11 @@ import java.util.HashMap;
 
 public class QuestionSetForm extends ActionForm {
 
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 9205598895135808021L;
+
     public QuestionSetForm () {
 	super();
     }

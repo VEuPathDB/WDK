@@ -1,12 +1,11 @@
 package org.gusdb.wdk.model;
 
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.HashSet;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Vector;
-import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 
@@ -98,8 +97,7 @@ public class Answer {
     Answer(Question question, QueryInstance idsQueryInstance, int startRecordInstanceI, int endRecordInstanceI) throws WdkUserException, WdkModelException{
 	this.question = question;
 	this.idsQueryInstance = idsQueryInstance;
-	this.isBoolean = 
-	    idsQueryInstance instanceof org.gusdb.wdk.model.BooleanQueryInstance;
+	this.isBoolean = (idsQueryInstance instanceof BooleanQueryInstance);
 	this.recordInstanceCursor = 0;
 	this.startRecordInstanceI = startRecordInstanceI;
 	this.endRecordInstanceI = endRecordInstanceI;   
@@ -328,7 +326,7 @@ public class Answer {
 
         // Initialize with nulls (handle missing attribute rows)
         Map<PrimaryKeyValue, RecordInstance> recordInstanceMap = 
-            new HashMap<PrimaryKeyValue, RecordInstance>();
+            new LinkedHashMap<PrimaryKeyValue, RecordInstance>();
         for (RecordInstance recordInstance : pageRecordInstances) {
             setColumnValues(recordInstance, attributesQueryInstance, isDynamic,
                     recordIdColumnName, recordProjectColumnName, null);
@@ -336,9 +334,9 @@ public class Answer {
             recordInstanceMap.put(primaryKey, recordInstance);
         }
 
-	int pageIndex = 0;
-	int idsResultTableI = startRecordInstanceI;
-	Set<PrimaryKeyValue> primaryKeySet = new HashSet<PrimaryKeyValue>(); 
+//	int pageIndex = 0;
+//	int idsResultTableI = startRecordInstanceI;
+	Set<PrimaryKeyValue> primaryKeySet = new LinkedHashSet<PrimaryKeyValue>(); 
 	ResultList attrQueryResultList = attributesQueryInstance.getResult();
 	while (attrQueryResultList.next()){
 	    
@@ -373,7 +371,7 @@ public class Answer {
 	attrQueryResultList.close();
     }
 
-    void setColumnValues(RecordInstance recordInstance,
+    private void setColumnValues(RecordInstance recordInstance,
 			 QueryInstance attributesQueryInstance, 
 			 boolean isDynamic,
 			 String recordIdColumnName,
@@ -425,7 +423,7 @@ public class Answer {
 	    idsQueryInstance.getPersistentResultPage(startRecordInstanceI,
 						     endRecordInstanceI);
    
-	Vector tempRecordInstances = new Vector();
+	Vector<RecordInstance> tempRecordInstances = new Vector<RecordInstance>();
 
 	while (rl.next()){
 	    RecordInstance nextRecordInstance = 
@@ -471,13 +469,13 @@ public class Answer {
 	}
 	return names;
     }
-
-    /**
-     * Initialize a query instance to run an attributes query.
-     */
-    private void initAttributesQueryInstance(QueryInstance attributesQueryInstance) throws WdkModelException{
-
-    }
+//
+//    /**
+//     * Initialize a query instance to run an attributes query.
+//     */
+//    private void initAttributesQueryInstance(QueryInstance attributesQueryInstance) throws WdkModelException{
+//
+//    }
 
     ////////////////////// Deprecated Methods  /////////////////////////////
 
