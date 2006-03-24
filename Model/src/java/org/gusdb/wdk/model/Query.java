@@ -234,14 +234,14 @@ public abstract class Query implements Serializable {
             Object value = values.get(p.getName());
             String errMsg;
             if (value == null) {
-                errMsg = "No value supplied";
+                errMsg = "No value supplied for param " + p.getName();
             } else {
                 errMsg = p.validateValue(value);
             }
             if (errMsg != null) {
                 if (errors == null)
                     errors = new LinkedHashMap<Param, String[]>();
-                String booBoo[] = { value.toString(), errMsg };
+                String booBoo[] = { value == null ? "" : value.toString(), errMsg };
                 errors.put(p, booBoo);
             }
         }
