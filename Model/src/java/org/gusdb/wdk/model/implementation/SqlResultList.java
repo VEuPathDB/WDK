@@ -56,7 +56,8 @@ public class SqlResultList extends ResultList {
 		o = resultSet.getObject(attributeName);
 	    }
         } catch (SQLException e) {
-            throw new WdkModelException(e);
+            throw new WdkModelException(attributeName + " not found in resultSet of "
+					+ instance.getQuery().getFullName(), e);
         }
 
 	if (o == null) {
