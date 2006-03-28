@@ -11,7 +11,7 @@
    <define name="record">
       <element name="record">
          <optional>
-            <attribute name="recordID" />
+            <attribute name="id" />
          </optional>
          <zeroOrMore>  
             <ref name="attribute" />
