@@ -32,6 +32,7 @@ public class StressTestRunner implements Runnable {
     private RunnerState state;
     private boolean running;
     private int delay;
+    private boolean active;
 
     /**
      * 
@@ -40,6 +41,7 @@ public class StressTestRunner implements Runnable {
         this.runnerId = runnerId;
         state = RunnerState.Idle;
         running = false;
+        active = false;
     }
 
     public int getRunnerId() {
@@ -48,6 +50,10 @@ public class StressTestRunner implements Runnable {
 
     public RunnerState getState() {
         return this.state;
+    }
+    
+    public boolean isActive() {
+        return active;
     }
 
     public void setClientTask(StressTestTask task, int delay)
@@ -99,6 +105,7 @@ public class StressTestRunner implements Runnable {
             } catch (InterruptedException ex) {}
 
             // run the task and get the content of the requested page
+            active = true;
             task.startTask();
             String content = retrievePage();
             if (content != null) checkException(content);
@@ -107,6 +114,7 @@ public class StressTestRunner implements Runnable {
             if (task.getResultType() != ResultType.Succeeded)
                 logger.error(task.getResultType().name() + "\t"
                         + task.getResultMessage() + "\t" + task.getTestUrl());
+            active = false;
             state = RunnerState.Finished;
         }
     }
