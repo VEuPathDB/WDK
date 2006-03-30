@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model;
 
 import java.io.File;
+import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
@@ -36,7 +37,12 @@ import org.gusdb.wdk.model.implementation.SqlUtils;
  * We can think of "cacheability" as "shared for all users."
  */
 
-public class ResultFactory {
+public class ResultFactory implements Serializable {
+
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -494603755802202030L;
 
     private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.model.ResultFactory");
 
@@ -281,7 +287,6 @@ public class ResultFactory {
      */
     public synchronized void dropCache(boolean noSchemaOutput)
             throws WdkModelException {
-        SQLException caught = null;
         try {
             resetCache(noSchemaOutput);
             String nameToUse = (noSchemaOutput == true ? instanceTableName
@@ -338,9 +343,9 @@ public class ResultFactory {
         sql.append("update " + instanceTableFullName + " set result_table = '"
                 + resultTableName + "'");
         sql.append(" where query_instance_id = " + queryInstanceId.toString());
-        int numRows = 0;
         try {
-            numRows = SqlUtils.executeUpdate(platform.getDataSource(),
+            //int numRows = 
+                SqlUtils.executeUpdate(platform.getDataSource(),
                     sql.toString());
         } catch (SQLException e) {
             throw new WdkModelException(e);
@@ -472,10 +477,10 @@ public class ResultFactory {
                 + sessionId + ", " + datasetName + ", " + datefunc + " "
                 + pVals + ")");
 
-        int numRows = 0;
 
         try {
-            numRows = SqlUtils.executeUpdate(platform.getDataSource(),
+            //int numRows = 
+            SqlUtils.executeUpdate(platform.getDataSource(),
                     sqlb.toString());
         } catch (SQLException e) {
             throw new WdkModelException(e);
@@ -484,9 +489,10 @@ public class ResultFactory {
         // This may happen because a parameter value is too large
         // to fit in the corresponding column of the Queries table.
         //
-        if (numRows != 1) {
-            String err = "insert failed: '" + sqlb.toString() + "'";
-        }
+        // Commented by Jerric - never used
+        // if (numRows != 1) {
+        // String err = "insert failed: '" + sqlb.toString() + "'";
+        // }
         Integer finalId = new Integer(nextID);
         instance.setQueryInstanceId(finalId);
         return finalId;
@@ -560,24 +566,27 @@ public class ResultFactory {
     }
 
     /**
+     * Commented by Jerric - never used
+     * 
      * @return true if dataset name is in use for this session id
      */
-    private boolean checkIfDatasetNameInUse(String sessionId, String datasetName)
-            throws WdkModelException {
-        StringBuffer s = new StringBuffer();
-        s.append("select result_table from " + instanceTableFullName
-                + " where " + "dataset_name = '" + datasetName + "' and "
-                + "session_id = '" + sessionId + "'");
-
-        String tables[] = null;
-        try {
-            tables = SqlUtils.runStringArrayQuery(platform.getDataSource(),
-                    s.toString());
-        } catch (SQLException e) {
-            throw new WdkModelException(e);
-        }
-        return tables.length != 0;
-    }
+    // private boolean checkIfDatasetNameInUse(String sessionId, String
+    // datasetName)
+    // throws WdkModelException {
+    // StringBuffer s = new StringBuffer();
+    // s.append("select result_table from " + instanceTableFullName
+    // + " where " + "dataset_name = '" + datasetName + "' and "
+    // + "session_id = '" + sessionId + "'");
+    //
+    // String tables[] = null;
+    // try {
+    // tables = SqlUtils.runStringArrayQuery(platform.getDataSource(),
+    // s.toString());
+    // } catch (SQLException e) {
+    // throw new WdkModelException(e);
+    // }
+    //        return tables.length != 0;
+    // }
 
     private ResultSet fetchCachedResult(String resultTableName)
             throws WdkModelException {

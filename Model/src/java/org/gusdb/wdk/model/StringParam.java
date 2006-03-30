@@ -2,11 +2,17 @@ package org.gusdb.wdk.model;
 
 
 
+import java.io.Serializable;
 import java.util.logging.Logger;
 
 
-public class StringParam extends Param {
+public class StringParam extends Param implements Serializable {
     
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 7561711069245980824L;
+
     private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.model.StringParam"); 
     
     private String sample;
