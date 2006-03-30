@@ -149,10 +149,18 @@ public class StressTestScheduler implements Runnable {
         return finishedTasks.size();
     }
     
-    public int getExecutingTaskCount() {
+    public int getAssignedTaskCount() {
         int count = 0;
         for (StressTestRunner runner : runners) {
             if (runner.getState() == RunnerState.Executing) count++;
+        }
+        return count;
+    }
+    
+    public int getExecutingTaskCount() {
+        int count = 0;
+        for (StressTestRunner runner : runners) {
+            if (runner.isActive()) count++;
         }
         return count;
     }

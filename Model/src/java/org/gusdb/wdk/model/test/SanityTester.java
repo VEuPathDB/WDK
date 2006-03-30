@@ -146,7 +146,10 @@ public class SanityTester {
         SanityQuery queries[] = sanityModel.getAllSanityQueries();
 
         for (int i = 0; i < queries.length; i++) {
+            // logging time
+            long start = System.currentTimeMillis();
             try {
+                
                 // get model query from sanity query
                 queryRef = new Reference(queries[i].getRef());
                 QuerySet nextQuerySet = wdkModel.getQuerySet(queryRef.getSetName());
@@ -168,10 +171,15 @@ public class SanityTester {
                     counter++;
                 }
                 rs.close();
+                
+                // logging time
+                long end = System.currentTimeMillis();
+                
                 if (counter < sanityMin || counter > sanityMax) {
                     System.out.println(BANNER_LINE);
-                    System.out.println("***QUERY " + queryRef.getSetName()
-                            + "." + queryRef.getElementName()
+                    System.out.println("*** " + ((end -start)/1000F) + " QUERY "
+                            + queryRef.getSetName() + "."
+                            + queryRef.getElementName()
                             + " FAILED!***  It returned " + counter
                             + " rows--not within expected range (" + sanityMin
                             + " - " + sanityMax + ")");
@@ -179,7 +187,8 @@ public class SanityTester {
                     System.out.println(BANNER_LINE + "\n");
                     queriesFailed++;
                 } else {
-                    System.out.println("Query " + queryRef.getSetName() + "."
+                    System.out.println(((end -start)/1000F) + " Query "
+                            + queryRef.getSetName() + "."
                             + queryRef.getElementName() + " passed--returned "
                             + counter + " rows, within expected range ("
                             + sanityMin + " - " + sanityMax + ")\n");
@@ -187,8 +196,13 @@ public class SanityTester {
                 }
             } catch (Exception e) {
                 queriesFailed++;
+                
+                // logging time
+                long end = System.currentTimeMillis();
+
                 System.out.println(BANNER_LINE);
-                System.out.println("***QUERY " + queryRef.getSetName() + "."
+                System.out.println("*** " + ((end -start)/1000F) + " QUERY "
+                        + queryRef.getSetName() + "."
                         + queryRef.getElementName()
                         + " FAILED!***  It threw an exception.");
                 printFailureMessage(queries[i]);
@@ -211,6 +225,8 @@ public class SanityTester {
         SanityRecord records[] = sanityModel.getAllSanityRecords();
 
         for (int i = 0; i < records.length; i++) {
+            // logging time
+            long start = System.currentTimeMillis();
 
             try {
                 recordRef = new Reference(records[i].getRef());
@@ -222,14 +238,24 @@ public class SanityTester {
                         records[i].getPrimaryKey());
 
                 String riString = nextRecordInstance.print();
-                System.out.println("Record " + recordRef.getSetName() + "."
+                
+                // logging time
+                long end = System.currentTimeMillis();
+                
+                System.out.println(((end -start)/1000F) + " Record "
+                        + recordRef.getSetName() + "."
                         + recordRef.getElementName() + " passed\n");
                 if (verbose) System.out.println(riString + "\n");
                 recordsPassed++;
             } catch (Exception wme) {
                 recordsFailed++;
+                
+                // logging time
+                long end = System.currentTimeMillis();
+
                 System.out.println(BANNER_LINE);
-                System.out.println("***RECORD " + recordRef.getSetName() + "."
+                System.out.println("*** " + ((end -start)/1000F) + " RECORD "
+                        + recordRef.getSetName() + "."
                         + recordRef.getElementName() + " FAILED!***");
                 printFailureMessage(records[i]);
                 System.out.println(BANNER_LINE + "\n");
@@ -250,6 +276,8 @@ public class SanityTester {
         SanityQuestion questions[] = sanityModel.getAllSanityQuestions();
 
         for (int i = 0; i < questions.length; i++) {
+            // logging time
+            long start = System.currentTimeMillis();
             try {
                 // get model question from sanity question
                 questionRef = new Reference(questions[i].getRef());
@@ -266,10 +294,13 @@ public class SanityTester {
                 // count results; check if sane
                 int sanityMin = questions[i].getMinOutputLength().intValue();
                 int sanityMax = questions[i].getMaxOutputLength().intValue();
+                
+                // logging time
+                long end = System.currentTimeMillis();
 
                 if (resultSize < sanityMin || resultSize > sanityMax) {
                     System.out.println(BANNER_LINE);
-                    System.out.println("***QUESTION "
+                    System.out.println("*** " + ((end -start)/1000F) + " QUESTION "
                             + questionRef.getSetName() + "."
                             + questionRef.getElementName()
                             + " FAILED!***  It returned " + resultSize
@@ -279,8 +310,9 @@ public class SanityTester {
                     System.out.println(BANNER_LINE + "\n");
                     questionsFailed++;
                 } else {
-                    System.out.println("Question " + questionRef.getSetName()
-                            + "." + questionRef.getElementName()
+                    System.out.println(((end -start)/1000F) + " Question "
+                            + questionRef.getSetName() + "."
+                            + questionRef.getElementName()
                             + " passed--returned " + resultSize
                             + " rows, within expected range (" + sanityMin
                             + " - " + sanityMax + ")\n");
@@ -289,9 +321,14 @@ public class SanityTester {
             } catch (Exception e) {
                 questionsFailed++;
                 e.printStackTrace();
+                
+                // logging time
+                long end = System.currentTimeMillis();
+
                 System.out.println(BANNER_LINE);
-                System.out.println("***QUESTION " + questionRef.getSetName()
-                        + "." + questionRef.getElementName()
+                System.out.println("*** " + ((end -start)/1000F) + " QUESTION "
+                        + questionRef.getSetName() + "."
+                        + questionRef.getElementName()
                         + " FAILED!***  It threw an exception.");
                 printFailureMessage(questions[i]);
                 System.out.println(BANNER_LINE + "\n");
@@ -312,6 +349,8 @@ public class SanityTester {
         SanityXmlQuestion questions[] = sanityModel.getSanityXmlQuestions();
 
         for (int i = 0; i < questions.length; i++) {
+            // logging time
+            long start = System.currentTimeMillis();
             try {
                 // get model question from sanity question
                 questionRef = new Reference(questions[i].getRef());
@@ -332,10 +371,13 @@ public class SanityTester {
                 // count results; check if sane
                 int sanityMin = questions[i].getMinOutputLength();
                 int sanityMax = questions[i].getMaxOutputLength();
+                
+                // logging time
+                long end = System.currentTimeMillis();
 
                 if (resultSize < sanityMin || resultSize > sanityMax) {
                     System.out.println(BANNER_LINE);
-                    System.out.println("***XML QUESTION "
+                    System.out.println("*** " + ((end -start)/1000F) + " XML QUESTION "
                             + questionRef.getSetName() + "."
                             + questionRef.getElementName()
                             + " FAILED!***  It returned " + resultSize
@@ -345,7 +387,7 @@ public class SanityTester {
                     System.out.println(BANNER_LINE + "\n");
                     questionsFailed++;
                 } else {
-                    System.out.println("XmlQuestion "
+                    System.out.println(((end -start)/1000F) + " XmlQuestion "
                             + questionRef.getSetName() + "."
                             + questionRef.getElementName()
                             + " passed--returned " + resultSize
@@ -355,9 +397,14 @@ public class SanityTester {
                 }
             } catch (Exception e) {
                 questionsFailed++;
+                
+                // logging time
+                long end = System.currentTimeMillis();
+
                 System.out.println(BANNER_LINE);
-                System.out.println("***QUESTION " + questionRef.getSetName()
-                        + "." + questionRef.getElementName()
+                System.out.println("*** " + ((end -start)/1000F) + " XML QUESTION "
+                        + questionRef.getSetName() + "."
+                        + questionRef.getElementName()
                         + " FAILED!***  It threw an exception.");
                 printFailureMessage(questions[i]);
                 System.out.println(BANNER_LINE + "\n");

@@ -26,7 +26,7 @@
 	<classpathentry kind="lib" path="lib/java/wsdl4j-1.5.1.jar"/>
 	<classpathentry kind="lib" path="lib/java/mail.jar"/>
 	<classpathentry kind="lib" path="lib/java/activation.jar"/>
-	<classpathentry kind="lib" path="lib/java/db_driver/ojdbc14.jar"/>
 	<classpathentry kind="lib" path="lib/java/log4j-1.2.13.jar"/>
+	<classpathentry kind="lib" path="lib/java/db_driver/ojdbc14.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>

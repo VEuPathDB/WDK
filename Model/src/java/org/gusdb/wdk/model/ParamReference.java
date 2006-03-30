@@ -3,12 +3,18 @@
  */
 package org.gusdb.wdk.model;
 
+import java.io.Serializable;
+
 /**
  * @author  Jerric
  * @created Feb 16, 2006
  */
-public class ParamReference extends Reference {
+public class ParamReference extends Reference implements Serializable {
 
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -7829729638618781482L;
     private String defaultValue;
     
     /**

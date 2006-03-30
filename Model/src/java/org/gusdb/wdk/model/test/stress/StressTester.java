@@ -248,6 +248,7 @@ public class StressTester {
             } catch (InterruptedException ex) {}
             // print out current progress
             logger.info("Pending: " + scheduler.getPendingTaskCount()
+                    + "\t Assigned: " + scheduler.getAssignedTaskCount()
                     + "\t Executing: " + scheduler.getExecutingTaskCount()
                     + "\t Finished: " + scheduler.getFinishedTaskCount());
 
@@ -267,9 +268,9 @@ public class StressTester {
         // create test requests
         int index = 0;
         for (int i = 0; i < numRequests; i++) {
-            //index = rand.nextInt(urlPool.size());
-            index++;
-            if (index >= urlPool.size()) index %= urlPool.size();
+            index = rand.nextInt(urlPool.size());
+//            index++;
+//            if (index >= urlPool.size()) index %= urlPool.size();
             
             UrlItem urlItem = urlPool.get(index);
             StressTestTask task = new StressTestTask(urlItem);
