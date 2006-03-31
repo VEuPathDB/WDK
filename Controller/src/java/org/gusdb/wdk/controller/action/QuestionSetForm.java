@@ -3,7 +3,7 @@ package org.gusdb.wdk.controller.action;
 import org.apache.struts.action.ActionForm;
 import org.gusdb.wdk.model.WdkModelException;
 import java.util.Map;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 
 /**
@@ -22,9 +22,9 @@ public class QuestionSetForm extends ActionForm {
     }
 
     private String qFullName = null;
-    private Map myProps = new HashMap();
-    private Map myLabels = new HashMap();
-    private Map myValues = new HashMap();
+    private Map myProps = new LinkedHashMap();
+    private Map myLabels = new LinkedHashMap();
+    private Map myValues = new LinkedHashMap();
 
     public void setQuestionFullName(String qFN) {
 	this.qFullName = qFN;
