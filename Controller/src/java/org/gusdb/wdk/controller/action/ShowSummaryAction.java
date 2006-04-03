@@ -89,13 +89,21 @@ public class ShowSummaryAction extends Action {
 
 	request.setAttribute(CConstants.USER_ANSWER_ID_KEY, ua_id_str);
 
-	ActionForward forward = getForward(wdkAnswer, mapping, ua_id_str);
+        boolean alwaysGoToSummary = false;
+        if (CConstants.YES.equalsIgnoreCase((String)getServlet().getServletContext().getAttribute(CConstants.WDK_ALWAYSGOTOSUMMARY_KEY))
+            || CConstants.YES.equalsIgnoreCase(request.getParameter(CConstants.ALWAYS_GOTO_SUMMARY_PARAM))) {
+            alwaysGoToSummary = true;
+        }
+        if (CConstants.NO.equalsIgnoreCase(request.getParameter(CConstants.ALWAYS_GOTO_SUMMARY_PARAM))) {
+            alwaysGoToSummary = false;
+        }
+	ActionForward forward = getForward(wdkAnswer, mapping, ua_id_str, alwaysGoToSummary);
 	//System.out.println("SSA: control going to " + forward.getPath());
 	return forward;
     }
 
-    private ActionForward getForward (AnswerBean wdkAnswer,
-				      ActionMapping mapping, String userAnswerIdStr) {
+    private ActionForward getForward (AnswerBean wdkAnswer, ActionMapping mapping,
+                                      String userAnswerIdStr, boolean alwaysGoToSummary) {
 	ServletContext svltCtx = getServlet().getServletContext();
 	String customViewDir = (String)svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
 	String customViewFile1 = customViewDir + File.separator
@@ -106,7 +114,7 @@ public class ShowSummaryAction extends Action {
 	    + CConstants.WDK_CUSTOM_SUMMARY_PAGE;
 	ActionForward forward = null;
 
-	if(wdkAnswer.getResultSize() == 1 && !wdkAnswer.getIsDynamic()) {
+	if(wdkAnswer.getResultSize() == 1 && !wdkAnswer.getIsDynamic() && !alwaysGoToSummary) {
 	    RecordBean rec = (RecordBean)wdkAnswer.getRecords().next();
 	    forward = mapping.findForward(CConstants.SKIPTO_RECORD_MAPKEY);
 	    String path = forward.getPath() + "?name=" + rec.getRecordClass().getFullName()
