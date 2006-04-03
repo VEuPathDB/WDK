@@ -41,13 +41,14 @@ public class ApplicationInitListener implements ServletContextListener {
         String props = application.getInitParameter(CConstants.WDK_MODELPROPS_PARAM);
         String parserClass = application.getInitParameter(CConstants.WDK_MODELPARSER_PARAM);
         String customViewDir = application.getInitParameter(CConstants.WDK_CUSTOMVIEWDIR_PARAM);
+        String alwaysGoToSummary = application.getInitParameter(CConstants.WDK_ALWAYSGOTOSUMMARY_PARAM);
         String xmlSchema = application.getInitParameter(CConstants.WDK_XMLSCHEMA_PARAM);
         String xmlDataDir =application.getInitParameter(CConstants.WDK_XMLDATA_DIR_PARAM);
         
         xmlDataDir = application.getRealPath(xmlDataDir);
         
         initMemberVars(configXml, modelXml, schema, props, parserClass,
-                customViewDir, xmlSchema, xmlDataDir, application);
+                customViewDir, alwaysGoToSummary, xmlSchema, xmlDataDir, application);
 
         // Config.set(application, Config.SQL_DATA_SOURCE, dataSource);
     }
@@ -95,7 +96,7 @@ public class ApplicationInitListener implements ServletContextListener {
 
     private void initMemberVars(String configXml, String modelXml,
             String schema, String props, String parserClass,
-            String customViewDir, String xmlschema, String xmlDataDir, ServletContext application) {
+            String customViewDir, String alwaysGoToSummary, String xmlschema, String xmlDataDir, ServletContext application) {
         URL schemaURL = null;
         if (schema != null) {
             schemaURL = createURL(schema, null, application);
@@ -143,6 +144,9 @@ public class ApplicationInitListener implements ServletContextListener {
             application.setAttribute(CConstants.WDK_MODEL_KEY, wdkModel);
             application.setAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY,
                     customViewDir);
+            application.setAttribute(CConstants.WDK_ALWAYSGOTOSUMMARY_KEY,
+                    alwaysGoToSummary);
+
         } catch (Exception exp) {
             exp.printStackTrace();
             throw new RuntimeException(exp);
