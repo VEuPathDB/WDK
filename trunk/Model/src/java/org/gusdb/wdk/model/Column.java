@@ -97,6 +97,7 @@ public class Column implements Serializable {
         column.name = this.name;
         column.query = this.query;
         column.width = this.width;
+        column.wsName = this.wsName;
         return column;
     }
 }
