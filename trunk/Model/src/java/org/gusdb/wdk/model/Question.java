@@ -7,6 +7,8 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
+
 /**
  * Question.java
  *
@@ -21,6 +23,7 @@ import java.util.Set;
 public class Question implements Serializable {
 
     private static final long serialVersionUID = -446811404645317117L;
+    private Logger logger = Logger.getLogger(Question.class);
 
     private String recordClassTwoPartName;
 
@@ -305,17 +308,24 @@ public class Question implements Serializable {
         }
         question.summaryAttributeMap = sumAttributes;
 
-        // clone the query too, but only includes the columns in dynamic attribute
+        // clone the query too, but excludes the columns in dynamic attribute
         Set<String> excludedColumns= new LinkedHashSet<String>();
+        // TEST
+        StringBuffer sb = new StringBuffer();
+        
         if (this.dynamicAttributes!= null) {
             attributes = dynamicAttributes.getAttributeFields();
             for (AttributeField field : attributes.values()) {
                 if (field instanceof ColumnAttributeField) {
                     ColumnAttributeField cfield = (ColumnAttributeField) field;
                     excludedColumns.add(cfield.getColumn().getName());
+                    // TEST
+                    sb.append(cfield.getColumn().getName() + ", ");
                 }
             }
         }
+        logger.debug("Excluded fields: " + sb.toString());
+        
         Query newQuery = this.query.getBaseQuery(excludedColumns);
         question.query = newQuery;
         
