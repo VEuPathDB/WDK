@@ -14,7 +14,7 @@
 <site:header banner="Create and download a report" />
 
 <!-- display description for page -->
-<p><b>Generate a tab delimited text report of selected attributes for the question below, with an optional header line of attribute names.</b></p>
+<p><b>Generate a tab delimited report of a query result.  Select columns to include in the report.  Optionally include a first line with column names</b></p>
 
 <!-- display question and param values and result size for wdkAnswer -->
 <table>
@@ -70,7 +70,7 @@
 <!-- content of current page -->
 <html:form method="get" action="configDownload">
   <table>
-  <tr><td valign="top"><b>Attributes:</b></td>
+  <tr><td valign="top"><b>Columns:</b></td>
       <td><table>
           <c:set var="numPerLine" value="2"/>
           <c:set var="i" value="0"/>
@@ -125,7 +125,7 @@
           <input type="radio" name="selectAll" selected="yes" onclick="check(0)">clear all
         </td></tr>
 
-  <tr><td valign="top"><b>Header line: </b></td>
+  <tr><td valign="top"><b>Column names: </b></td>
       <td><html:radio property="includeHeader" value="yes">include</html:radio>
           <html:radio property="includeHeader" value="no">exclude</html:radio>
         </td></tr>
