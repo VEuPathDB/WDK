@@ -28,6 +28,7 @@ public class WSQueryInstance extends QueryInstance  {
     
     public WSQueryInstance (WSQuery query) {
         super(query);
+        this.isCacheable = true;
     }
 
     public String getLowLevelQuery() throws WdkModelException {
