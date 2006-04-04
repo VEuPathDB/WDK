@@ -165,7 +165,7 @@ public class BooleanExpression {
         // create a leaf BooleanQuestionNode from the answer
         BooleanQuestionNode leaf = new BooleanQuestionNode(
                 answer.getQuestion(), null);
-        leaf.setValues(new Hashtable<String, Object>(answer.getParams()));
+        leaf.setValues(new LinkedHashMap<String, Object>(answer.getParams()));
         return leaf;
     }
 

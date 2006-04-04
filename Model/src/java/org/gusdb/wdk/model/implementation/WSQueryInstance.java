@@ -37,6 +37,14 @@ public class WSQueryInstance extends QueryInstance  {
 
     protected ResultList getNonpersistentResult() throws WdkModelException {
         WSQuery wsQuery = (WSQuery) query;
+        
+        // HACK
+        try {
+			throw new Exception("Testing");
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 
         try {
             // get a WSF Service client stub

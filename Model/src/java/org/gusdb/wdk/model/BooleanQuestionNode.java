@@ -63,7 +63,7 @@ public class BooleanQuestionNode {
      * <code>setAllValues</code> is called, the exception being any values for
      * Answer parameters.
      */
-    private Hashtable values;
+    private LinkedHashMap values;
 
     /**
      * Back-pointer to parent of this BooleanQuestionNode; null if this node is
@@ -159,7 +159,7 @@ public class BooleanQuestionNode {
 
         operator = translateOperator(operator, operatorMap,
                 model.getRDBMSPlatform());
-        Hashtable values = new Hashtable();
+        LinkedHashMap values = new LinkedHashMap();
         values.put(BooleanQuery.OPERATION_PARAM_NAME, operator);
         newBooleanNode.setValues(values);
         if (tempParent != null) {
@@ -197,7 +197,7 @@ public class BooleanQuestionNode {
         // store operation
         operator = translateOperator(operator, operatorMap,
                 model.getRDBMSPlatform());
-        Hashtable values = new Hashtable();
+        LinkedHashMap values = new LinkedHashMap();
         values.put(BooleanQuery.OPERATION_PARAM_NAME, operator);
         root.setValues(values);
         return root;
@@ -278,7 +278,7 @@ public class BooleanQuestionNode {
         if (isLeaf()) {
 
             Question question = getQuestion();
-            Hashtable leafValues = getValues();
+            LinkedHashMap leafValues = getValues();
             answer = question.makeAnswer(leafValues, startIndex, endIndex);
         } else { // bqn is boolean question
 
@@ -292,7 +292,7 @@ public class BooleanQuestionNode {
             Answer secondChildAnswer = secondChild.makeAnswer(startIndex,
                     endIndex);
 
-            Hashtable booleanValues = getValues();
+            LinkedHashMap booleanValues = getValues();
 
             booleanValues.put(BooleanQuery.FIRST_ANSWER_PARAM_NAME,
                     firstChildAnswer);
@@ -334,11 +334,11 @@ public class BooleanQuestionNode {
         return false;
     }
 
-    public void setValues(Hashtable values) {
+    public void setValues(LinkedHashMap values) {
         this.values = values;
     }
 
-    public Hashtable getValues() {
+    public LinkedHashMap getValues() {
         return values;
     }
 
