@@ -29,6 +29,7 @@ public class CConstants {
     public static final String WDK_RESULTFACTORY_KEY = "wdkResultFactory";
     public static final String WDK_MODEL_KEY = "wdkModel";
     public static final String WDK_CUSTOMVIEWDIR_KEY = "wdkCustomeViewDir";
+public static final String WDK_ALWAYSGOTOSUMMARY_KEY = "wdkAlwaysGoToSummary";
     public static final String WDK_CUSTOM_QUESTIONSETS_FLAT_PAGE = "customQuestionSetsFlat.jsp";
     public static final String WDK_CUSTOM_QUESTIONSETS_PAGE = "customQuestionSets.jsp";
     public static final String WDK_CUSTOM_QUESTION_PAGE = "customQuestion.jsp";
@@ -87,6 +88,7 @@ public static final String USER_ANSWER_ID_KEY = "userAnswerId";
     public static final String PBQ_SUBMIT_GROW_BOOLEAN = "Expand"; //match WEB-INF/includes/booleanQuestionNode.jsp
     public static final String PD_CHOOSE_KEY = "chooseFields"; //match summary.jsp 
     public static final String DOWNLOAD_INCLUDE_HEADER = "includeHeader"; //match downloadConfig.jsp
+public static final String NO = "no"; 
     public static final String YES = "yes"; //match downloadConfig.jsp
     public static final String ALL = "all"; //match downloadConfig.jsp
     public static final String USER_ANSWER_ID = "user_answer_id"; //match queryHistory.jsp
@@ -100,6 +102,7 @@ public static final String USER_ANSWER_ID_KEY = "userAnswerId";
 
     //added after wdk19
  public static final String QUESTION_FULLNAME_PARAM = "questionFullName";
+public static final String ALWAYS_GOTO_SUMMARY_PARAM = "always_goto_summary";
 
     //used in action, action forms, and jsp pages
     public static final String NEXT_QUESTION_OPERAND_SUFFIX = "_nextQuestionOperand"; //match WEB-INF/includes/booleanQuestionNode.jsp
@@ -113,6 +116,7 @@ public static final String USER_ANSWER_ID_KEY = "userAnswerId";
     protected static final String WDK_LOGFILE_PARAM = "wdkLogFile_param";
     protected static final String WDK_MODELPARSER_PARAM = "wdkModelParser_param";
     protected static final String WDK_CUSTOMVIEWDIR_PARAM = "wdkCustomViewDir_param";
+protected static final String WDK_ALWAYSGOTOSUMMARY_PARAM = "wdkAlwaysGoToSummary_param"; 
     protected static final String WDK_XMLSCHEMA_PARAM = "wdkXmlSchema_param";   // the schema for xml data source
     protected static final String WDK_XMLDATA_DIR_PARAM = "wdkXmlDataDir_param";
     
