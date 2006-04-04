@@ -6,7 +6,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.logging.Logger;
 
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
@@ -16,6 +15,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.implementation.SqlResultList;
 import org.gusdb.wdk.model.implementation.SqlUtils;
 
@@ -44,7 +44,8 @@ public class ResultFactory implements Serializable {
      */
     private static final long serialVersionUID = -494603755802202030L;
 
-    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.model.ResultFactory");
+    //private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.model.ResultFactory");
+    private static Logger logger = Logger.getLogger(ResultFactory.class);
 
     // the following constants are used by persistent query history
     /**
@@ -85,6 +86,8 @@ public class ResultFactory implements Serializable {
 
     public synchronized ResultList getResult(QueryInstance instance)
             throws WdkModelException {
+    	logger.debug("QueryInstance " + instance.getQuery().getFullName() + " persistent: " + instance.getIsPersistent());
+    	
         ResultList resultList = instance.getIsPersistent() ? getPersistentResult(instance)
                 : instance.getNonpersistentResult();
         return resultList;
@@ -96,7 +99,7 @@ public class ResultFactory implements Serializable {
 
         if (!instance.getIsPersistent()) {
             throw new WdkModelException(
-                    "Attempting to get a page a from non-perstent result");
+                    "Attempting to get a page a fgetNonpersistentResultrom non-perstent result");
         }
 
         String resultTableName = getResultTableName(instance);
@@ -163,10 +166,10 @@ public class ResultFactory implements Serializable {
         System.out.println(newline + "Making cache table " + nameToUse
                 + newline);
 
-        logger.fine("Using sql: " + sqlb.toString());
+        logger.debug("Using sql: " + sqlb.toString());
         try {
             SqlUtils.execute(platform.getDataSource(), sqlb.toString());
-            logger.fine("Done" + newline);
+            logger.debug("Done" + newline);
 
             // Create sequence
             platform.createSequence(tblName + "_pkseq", 1, 1);
@@ -216,10 +219,10 @@ public class ResultFactory implements Serializable {
         System.out.println(newline + "Making history table " + nameToUse
                 + newline);
 
-        logger.fine("Using sql: " + sqlb.toString());
+        logger.debug("Using sql: " + sqlb.toString());
         try {
             SqlUtils.execute(platform.getDataSource(), sqlb.toString());
-            logger.fine("Done" + newline);
+            logger.debug("Done" + newline);
             System.out.println("Done" + newline);
         } catch (SQLException e) {
             throw new WdkModelException(e);
@@ -447,7 +450,7 @@ public class ResultFactory implements Serializable {
             nextID = platform.getNextId(schemaName, instanceTableName);
 
         } catch (SQLException e) {
-            logger.finest("Got an SQLException");
+            logger.error("Got an SQLException");
             throw new WdkModelException(e);
         }
         if (nextID == null) {

@@ -299,7 +299,18 @@ public abstract class Query implements Serializable {
         query.isCacheable = this.isCacheable;
         query.name = this.name;
         query.paramRefs.addAll(this.paramRefs);
+        
+        // TEST
+        System.out.print("Original Params: ");
+        for (String paramName : this.paramsH.keySet()) System.out.println(paramName);
+        
         query.paramsH.putAll(this.paramsH);
+
+        
+        // TEST
+        System.out.print("Cloned Params: ");
+        for (String paramName : query.paramsH.keySet()) System.out.println(paramName);
+
         query.paramsV.addAll(this.paramsV);
         query.resultFactory = this.resultFactory;
     }
