@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model.test;
 
 import java.util.Hashtable;
+import java.util.LinkedHashMap;
 
 import org.gusdb.wdk.model.BooleanQuery;
 import org.gusdb.wdk.model.BooleanQuestionNode;
@@ -52,28 +53,28 @@ public class TestBooleanTree {
 
 	//leaf nodes
 	Question q4 = makeNumSeqsQuestion(model);
-	Hashtable q4values = makeNumSeqsValues("5", "Eimeria tenella");
+    LinkedHashMap q4values = makeNumSeqsValues("5", "Eimeria tenella");
 	
 	Question q5 = makeNumSeqsQuestion(model);
-	Hashtable q5values = makeNumSeqsValues("5", "Neospora caninum");
+    LinkedHashMap q5values = makeNumSeqsValues("5", "Neospora caninum");
 
 	Question q6 = makeNumSeqsQuestion(model);
-	Hashtable q6values = makeNumSeqsValues("25", "Eimeria tenella");
+    LinkedHashMap q6values = makeNumSeqsValues("25", "Eimeria tenella");
 
 	Question q7 = makeNumSeqsQuestion(model);
-	Hashtable q7values = makeNumSeqsValues("25", "Neospora caninum");
+    LinkedHashMap q7values = makeNumSeqsValues("25", "Neospora caninum");
 	
 
 	//boolean nodes
 	Question q2 = model.makeBooleanQuestion(q7.getRecordClass());
-	Hashtable q2values = makeBooleanValues("Union", model);
+    LinkedHashMap q2values = makeBooleanValues("Union", model);
 
 	Question q3 = model.makeBooleanQuestion(q7.getRecordClass());
-	Hashtable q3values = makeBooleanValues("Union", model);
+    LinkedHashMap q3values = makeBooleanValues("Union", model);
 
 	//root boolean node
 	Question q1 = model.makeBooleanQuestion(q7.getRecordClass());
-	Hashtable q1values = makeBooleanValues("Minus", model);
+    LinkedHashMap q1values = makeBooleanValues("Minus", model);
     //Hashtable q1values = makeBooleanValues("Union", model);
 
 	BooleanQuestionNode bqn4 = new BooleanQuestionNode(q4, null);
@@ -99,7 +100,7 @@ public class TestBooleanTree {
     public static BooleanQuestionNode makeNewLeafNode(WdkModel model) throws WdkUserException, WdkModelException{
 
 	Question q4 = makeNumSeqsQuestion(model);
-	Hashtable q4values = makeNumSeqsValues("7", "Eimeria tenella");
+    LinkedHashMap q4values = makeNumSeqsValues("7", "Eimeria tenella");
 	BooleanQuestionNode bqn = new BooleanQuestionNode(q4, null);
 	bqn.setValues(q4values);
 	return bqn;
@@ -110,13 +111,13 @@ public class TestBooleanTree {
     // Private Methods
     // ------------------------------------------------------------------
 
-    private static Hashtable<String, String> makeBooleanValues(
+    private static LinkedHashMap<String, String> makeBooleanValues(
             String operation, WdkModel model) {
         // need to translate the operators
         if (operation.equalsIgnoreCase("Minus")
                 || operation.equalsIgnoreCase("Except"))
             operation = model.getRDBMSPlatform().getMinus();
-        Hashtable<String, String> h = new Hashtable<String, String>();
+        LinkedHashMap<String, String> h = new LinkedHashMap<String, String>();
         h.put(BooleanQuery.OPERATION_PARAM_NAME, operation);
         return h;
     }
@@ -140,17 +141,11 @@ public class TestBooleanTree {
 	return q;	
     }
     
-    private static Hashtable<String,String> makeNumSeqsValues(String numSeqs, String taxonName){
-	Hashtable<String,String> values = new Hashtable<String,String>();
+    private static LinkedHashMap<String,String> makeNumSeqsValues(String numSeqs, String taxonName){
+        LinkedHashMap<String,String> values = new LinkedHashMap<String,String>();
 	values.put("NumSeqs", numSeqs);
 	values.put("ApiTaxon", taxonName);
 	return values;
     }
-    
-
-
-
-
-
 }
 

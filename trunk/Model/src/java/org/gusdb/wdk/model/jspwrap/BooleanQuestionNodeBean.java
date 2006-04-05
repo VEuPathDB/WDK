@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model.jspwrap;
 
 import java.util.Hashtable;
+import java.util.LinkedHashMap;
 import java.util.Vector;
 
 import org.gusdb.wdk.model.BooleanQuery;
@@ -66,7 +67,7 @@ public class BooleanQuestionNodeBean {
 
     public String getOperation() {
         // change this when we make EnumParams.
-        Hashtable values = this.bqn.getValues();
+        LinkedHashMap values = this.bqn.getValues();
         String op = (String) values.get(BooleanQuery.OPERATION_PARAM_NAME);
         return op;
     }
@@ -123,7 +124,7 @@ public class BooleanQuestionNodeBean {
         this.secondChild = secondChild;
     }
 
-    public void setValues(Hashtable values) {
+    public void setValues(LinkedHashMap values) {
         bqn.setValues(values);
     }
 
