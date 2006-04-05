@@ -149,7 +149,9 @@ public class XmlRecordInstance {
             String name = attributeField.getName();
             XmlAttributeValue attributeValue = attributes.get(name);
             if (attributeValue == null) 
-            	throw new WdkModelException("The defined XML Attribute is missing in the xml source.");
+            	throw new WdkModelException("The defined XML Attribute "
+					    + name + " is missing in the xml source for xml record "
+					    + recordClass.getName() + " .");
             attributeValue.setAttributeField(attributeField);
             orderedAttributes.put(name, attributeValue);
         }
