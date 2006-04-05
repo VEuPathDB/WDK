@@ -20,6 +20,7 @@ import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
 import org.gusdb.wdk.model.BooleanQuery;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 
+import java.util.LinkedHashMap;
 import java.util.Vector;
 import java.util.Map;
 import java.util.Hashtable;
@@ -61,7 +62,7 @@ public class GetBooleanAnswerAction extends ShowSummaryAction {
 		if (nextNode instanceof BooleanQuestionLeafBean){
 		
 		    BooleanQuestionLeafBean nextLeaf = (BooleanQuestionLeafBean)nextNode;
-		    Hashtable values = getParamsFromForm(bqf, nextLeaf);
+            LinkedHashMap values = getParamsFromForm(bqf, nextLeaf);
 		    nextLeaf.setValues(values);
 		}
 		else { //node bean
@@ -100,7 +101,7 @@ public class GetBooleanAnswerAction extends ShowSummaryAction {
 
 
     private void processNode(BooleanQuestionForm bqf, BooleanQuestionNodeBean node){
-	Hashtable values = new Hashtable();
+        LinkedHashMap values = new LinkedHashMap();
 	String opInternalName = node.getOperation();
 	
 	//	String value = (String)bqf.getMyProps().get(opDisplayName);
@@ -108,13 +109,13 @@ public class GetBooleanAnswerAction extends ShowSummaryAction {
 	node.setValues(values);
     }
 
-    static Hashtable getParamsFromForm(BooleanQuestionForm bqf, BooleanQuestionLeafBean leaf){
+    static LinkedHashMap getParamsFromForm(BooleanQuestionForm bqf, BooleanQuestionLeafBean leaf){
 
 	Integer leafId = leaf.getLeafId();
 	String leafPrefix = leafId.toString() + "_";
 	QuestionBean question = leaf.getQuestion();
 	ParamBean params[] = question.getParams();
-	Hashtable values = new Hashtable();
+    LinkedHashMap values = new LinkedHashMap();
 	for (int i = 0; i < params.length; i++){
 	    ParamBean nextParam = params[i];
 	    String formParamName = leafPrefix + nextParam.getName();
