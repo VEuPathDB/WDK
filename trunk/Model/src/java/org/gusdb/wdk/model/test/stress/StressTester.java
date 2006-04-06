@@ -3,8 +3,10 @@
  */
 package org.gusdb.wdk.model.test.stress;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -12,6 +14,7 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.InvalidPropertiesFormatException;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -37,6 +40,7 @@ import org.gusdb.wdk.model.test.SanityQuestion;
 import org.gusdb.wdk.model.test.SanityRecord;
 import org.gusdb.wdk.model.test.SanityTestXmlParser;
 import org.gusdb.wdk.model.test.SanityXmlQuestion;
+import org.gusdb.wdk.model.test.stress.StressTestRunner.RunnerState;
 
 /**
  * @author: Jerric
@@ -69,6 +73,13 @@ public class StressTester {
     private String homeUrlPattern;
     private Map<String, String> otherUrls;
 
+    private List<StressTestRunner> runners;
+
+    private List<StressTestTask> finishedTasks;
+
+    private String modelName;
+    private File configDir;
+
     private int maxDelayTime;
 
     private Random rand;
@@ -88,18 +99,24 @@ public class StressTester {
 
         urlPool = new ArrayList<UrlItem>();
         otherUrls = new LinkedHashMap<String, String>();
+        runners = new ArrayList<StressTestRunner>();
+        finishedTasks = new ArrayList<StressTestTask>();
         rand = new Random(System.currentTimeMillis());
 
-        File configDir = new File(System.getProperty("configDir"));
+        this.modelName = modelName;
+        configDir = new File(System.getProperty("configDir"));
+
+
+        // load the model
+        WdkModel wdkModel = WdkModel.construct(modelName);
+
         // load configurations
-        loadProperties(configDir, modelName);
-        // load sanity model
-        SanityModel sanityModel = loadSanityModel(configDir, modelName);
+        loadProperties(wdkModel);
         // compose the testing urls
-        composeUrls(modelName, sanityModel);
+        composeUrls(wdkModel);
     }
 
-    private void loadProperties(File configDir, String modelName)
+    private void loadProperties(WdkModel wdkModel)
             throws InvalidPropertiesFormatException, IOException {
         logger.debug("Loading stress test configurations...");
 
@@ -127,8 +144,34 @@ public class StressTester {
         }
     }
 
-    private SanityModel loadSanityModel(File configDir, String modelName)
-            throws MalformedURLException, WdkModelException {
+    private void composeUrls(WdkModel wdkModel)
+            throws WdkUserException, WdkModelException, URISyntaxException,
+            IOException {
+        logger.debug("Composing test urls...");
+
+        // add home url into the pool
+        if (homeUrlPattern != null) {
+            UrlItem homeUrl = new UrlItem(homeUrlPattern, TYPE_HOME_URL);
+            urlPool.add(homeUrl);
+        }
+
+        // get other urls
+        for (String urlKey : otherUrls.keySet()) {
+            String urlValue = otherUrls.get(urlKey);
+            UrlItem urlItem = new UrlItem(urlKey, urlValue);
+            urlPool.add(urlItem);
+        }
+
+        // compose urls from sanity model
+        composeFromSanityModel(wdkModel);
+
+        // compose urls from stress test template
+        composeFromTemplate(wdkModel);
+    }
+
+    private void composeFromSanityModel(WdkModel wdkModel)
+            throws MalformedURLException, WdkModelException, WdkUserException,
+            UnsupportedEncodingException {
         logger.debug("Loading sanity model...");
 
         File sanityXmlFile = new File(configDir, modelName + "-sanity.xml");
@@ -137,22 +180,6 @@ public class StressTester {
         SanityModel sanityModel = SanityTestXmlParser.parseXmlFile(
                 sanityXmlFile.toURL(), modelPropFile.toURL(),
                 sanitySchemaFile.toURL());
-        return sanityModel;
-    }
-
-    private void composeUrls(String modelName, SanityModel sanityModel)
-            throws WdkUserException, WdkModelException, MalformedURLException,
-            UnsupportedEncodingException, URISyntaxException {
-        logger.debug("Composing test urls...");
-
-        // load the model
-        WdkModel wdkModel = WdkModel.construct(modelName);
-
-        // add home url into the pool
-        if (homeUrlPattern != null) {
-            UrlItem homeUrl = new UrlItem(homeUrlPattern, TYPE_HOME_URL);
-            urlPool.add(homeUrl);
-        }
 
         // get sanity questions from the sanity model
         if (questionUrlPattern != null) {
@@ -223,72 +250,213 @@ public class StressTester {
                 urlPool.add(recordUrl);
             }
         }
+    }
 
-        // get other urls
-        for (String urlKey : otherUrls.keySet()) {
-            String urlValue = otherUrls.get(urlKey);
-            UrlItem urlItem = new UrlItem(urlKey, urlValue);
-            urlPool.add(urlItem);
+    private void composeFromTemplate(WdkModel wdkModel)
+            throws IOException, WdkUserException {
+        File templateFile = new File(configDir, modelName + "-stress.template");
+        BufferedReader in = new BufferedReader(new FileReader(templateFile));
+        String line;
+        while ((line = in.readLine()) != null) {
+            line = line.trim();
+            if (line.length() == 0 || line.equals("//")) continue;
+
+            // a start of an item
+            if (line.toLowerCase().startsWith("question")) {
+                // read question name
+                int pos = line.indexOf(":");
+                String fullName = line.substring(pos + 1).trim();
+                
+                // get question and the parameter map
+                pos = fullName.indexOf(".");
+                String qsetName = fullName.substring(0, pos);
+                String qName = fullName.substring(pos+1);
+                QuestionSet qset = wdkModel.getQuestionSet(qsetName);
+                Question question = qset.getQuestion(qName);
+                Map<String, Param> originalParams = question.getParamMap();
+                
+                // store all permutations
+                List<Map<String, String>> permutations = new ArrayList<Map<String, String>>();
+                permutations.add(new HashMap<String, String>());
+
+                // read parameters
+                while ((line = in.readLine()) != null) {
+                    line = line.trim();
+                    if (line.equalsIgnoreCase("//")) break;
+                    if (line.toLowerCase().startsWith("param")) {
+                        pos = line.indexOf(":");
+                        String parts = line.substring(pos + 1);
+                        pos = parts.indexOf("=");
+                        
+                        // prepare parameter name
+                        String paramName = parts.substring(0, pos).trim();
+                        Param param = originalParams.get(paramName);
+                        if (param instanceof FlatVocabParam) {
+                            paramName = "myMultiProp(" + paramName + ")";
+                        } else {
+                            paramName = "myProp(" + paramName + ")";
+                        }
+                        
+                        String[] values = parts.substring(pos + 1).split(",");
+                        List<Map<String, String>> newPermus = new ArrayList<Map<String, String>>();
+                        for (String value : values) {
+                            value = value.trim();
+                            if (value.length() == 0) continue;
+                            for (Map<String, String> permu : permutations) {
+                                Map<String, String> newPermu = new HashMap<String, String>(
+                                        permu);
+                                newPermu.put(paramName, value);
+                                newPermus.add(newPermu);
+                            }
+                        }
+                        permutations = newPermus;
+                    }
+                }
+                // compose UrlItems
+                for (Map<String, String> permu : permutations) {
+                    UrlItem urlItem = new UrlItem(questionUrlPattern,
+                            TYPE_QUESTION_URL);
+                    urlItem.addParameter("questionFullName", fullName);
+                    for (String param : permu.keySet()) {
+                        String value = permu.get(param);
+                        urlItem.addParameter(param, value);
+                    }
+                    urlItem.addParameter("questionSubmit", "Get Answer");
+                    urlPool.add(urlItem);
+                }
+            } else if (line.toLowerCase().startsWith("record")) {
+                // get record class name
+                int pos = line.indexOf(":");
+                String parts = line.substring(pos + 1).trim();
+                pos = parts.indexOf("=");
+                String rcName = parts.substring(0, pos).trim();
+                String[] primaryKeys = parts.substring(pos + 1).split(",");
+                // compose UrlItem
+                for (String primaryKey : primaryKeys) {
+                    primaryKey = primaryKey.trim();
+                    if (primaryKey.length() == 0) continue;
+                    StringBuffer sb = new StringBuffer(recordUrlPattern);
+                    sb.append("?name=" + rcName);
+                    sb.append("&primary_key="
+                            + URLEncoder.encode(primaryKey, "UTF-8"));
+                    UrlItem recordUrl = new UrlItem(sb.toString(),
+                            TYPE_RECORD_URL);
+                    urlPool.add(recordUrl);
+                }
+            } else if (line.toLowerCase().startsWith("xmlquestion")) {
+                // get xml question class name
+                int pos = line.indexOf(":");
+                String xmlqname = line.substring(pos + 1).trim();
+                // compose UrlItem
+                StringBuffer sb = new StringBuffer(xmlQuestionUrlPattern);
+                sb.append("?name=" + xmlqname);
+                UrlItem xmlQuestionUrl = new UrlItem(sb.toString(),
+                        TYPE_XML_QUESTION_URL);
+                urlPool.add(xmlQuestionUrl);
+            }
         }
     }
 
-    public StressTestTask[] runTest(int numThreads, int numReuqests) {
+    public void runTest(int numThreads) {
         logger.info("Running stress test...");
-        // create a scheduler
-        StressTestScheduler scheduler = createScheduler(numThreads, numReuqests);
-        // start test
-        Thread thread = new Thread(scheduler);
-        thread.setName("Scheduler Thread");
-        thread.start();
+
+        // create stress test runners
+        for (int i = 0; i < numThreads; i++) {
+            StressTestRunner runner = new StressTestRunner();
+            Thread thread = new Thread(runner);
+            thread.start();
+            runners.add(runner);
+        }
 
         // wait till all tasks are executed
-        while (!scheduler.isFinished()) {
+        while (!isStopping()) {
+            // get the finished tasks and release runner
+            for (StressTestRunner runner : runners) {
+                if (runner.getState() == RunnerState.Finished)
+                    finishedTasks.add(runner.popFinishedTask());
+                // randomly pick a task to the idling runners;
+                if (runner.getState() == RunnerState.Idle) {
+                    UrlItem urlItem = urlPool.get(rand.nextInt(urlPool.size()));
+                    StressTestTask task = new StressTestTask(urlItem);
+                    int delay = rand.nextInt(maxDelayTime) + 1;
+                    try {
+                        runner.assignTask(task, delay);
+                    } catch (InvalidStatusException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+
+            // print out the current statistics
+            logger.info("Idle: " + getIdleCount() + "\t Busy: "
+                    + getBusyCount() + "\t Finished: " + finishedTasks.size());
+
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException ex) {}
             // print out current progress
-            logger.info("Pending: " + scheduler.getPendingTaskCount()
-                    + "\t Assigned: " + scheduler.getAssignedTaskCount()
-                    + "\t Executing: " + scheduler.getExecutingTaskCount()
-                    + "\t Finished: " + scheduler.getFinishedTaskCount());
-
-            if (!scheduler.hasPendingTask()
-                    && scheduler.getExecutingTaskCount() == 0) {
-                scheduler.stop();
+        }
+        // stop runners
+        for (StressTestRunner runner : runners) {
+            runner.stop();
+        }
+        // wait until all runners are stopped
+        boolean stopped = false;
+        while (!stopped) {
+            stopped = true;
+            for (StressTestRunner runner : runners) {
+                if (!runner.isStopped()) {
+                    stopped = false;
+                    break;
+                }
+            }
+            if (!stopped) {
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ex) {}
             }
         }
-        return scheduler.getFinishedTasks();
+        logger.info("Stress Test is finished.");
     }
 
-    private StressTestScheduler createScheduler(int numThreads, int numRequests) {
-        logger.debug("Creating stress test scheduler...");
+    private boolean isStopping() {
+        // check if the exit condition is met; that is, if a "model-stress.stop"
+        // file is present
+        File stopFile = new File(configDir, modelName + "-stress.stop");
+        return (stopFile.exists());
+    }
 
-        StressTestScheduler scheduler = new StressTestScheduler(numThreads,
-                maxDelayTime);
-        // create test requests
-        int index = 0;
-        for (int i = 0; i < numRequests; i++) {
-            index = rand.nextInt(urlPool.size());
-//            index++;
-//            if (index >= urlPool.size()) index %= urlPool.size();
-            
-            UrlItem urlItem = urlPool.get(index);
-            StressTestTask task = new StressTestTask(urlItem);
-            scheduler.addTestTask(task);
+    private int getIdleCount() {
+        int idle = 0;
+        for (StressTestRunner runner : runners) {
+            if (runner.getState() != RunnerState.Executing) idle++;
         }
-        return scheduler;
+        return idle;
+    }
+
+    private int getBusyCount() {
+        int busy = 0;
+        for (StressTestRunner runner : runners) {
+            if (runner.getState() == RunnerState.Executing) busy++;
+        }
+        return busy;
+    }
+
+    public StressTestTask[] getFinishedTasks() {
+        StressTestTask[] tasks = new StressTestTask[finishedTasks.size()];
+        finishedTasks.toArray(tasks);
+        return tasks;
     }
 
     private static Options declareOptions() {
-        String[] names = { "model", "threads", "tasks" };
+        String[] names = { "model", "threads" };
         String[] descs = {
                 "the name of the model.  This is used to find the Model XML "
                         + "file ($GUS_HOME/config/model_name.xml) the Model "
                         + "property file ($GUS_HOME/config/model_name.prop) "
                         + "and the Model config file "
                         + "($GUS_HOME/config/model_name-config.xml)",
-                "The number of threads used to run the tasks.",
-                "The number of tasks to be executed" };
+                "The number of threads used to run the tasks." };
         boolean[] required = { true, true, true };
         int[] args = { 0, 0, 0 };
 
@@ -316,15 +484,14 @@ public class StressTester {
         String modelName = cmdLine.getOptionValue("model");
         String strThreads = cmdLine.getOptionValue("threads");
         int numThreads = Integer.parseInt(strThreads);
-        String strTasks = cmdLine.getOptionValue("tasks");
-        int numTasks = Integer.parseInt(strTasks);
 
         // create tester
         StressTester tester = new StressTester(modelName);
         // run tester
-        StressTestTask[] tasks = tester.runTest(numThreads, numTasks);
+        tester.runTest(numThreads);
         // analyze the result
-        StressTestAnalyzer analyzer = new StressTestAnalyzer(tasks);
+        StressTestAnalyzer analyzer = new StressTestAnalyzer(
+                tester.getFinishedTasks());
         analyzer.print();
     }
 }
