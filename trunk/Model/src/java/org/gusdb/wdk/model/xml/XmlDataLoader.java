@@ -44,7 +44,7 @@ public class XmlDataLoader {
         try {
             InputStream xmlDataStream = xmlDataURL.openStream();
             return parseDataStream(xmlDataStream);
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             throw new WdkModelException("Could not parse data file at " + xmlDataURL, ex);
         }
     }
