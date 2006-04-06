@@ -9,6 +9,8 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.*;
 import org.gusdb.wdk.model.xml.XmlAnswer;
@@ -406,6 +408,7 @@ public class SanityTester {
                         + questionRef.getSetName() + "."
                         + questionRef.getElementName()
                         + " FAILED!***  It threw an exception.");
+		e.printStackTrace();
                 printFailureMessage(questions[i]);
                 System.out.println(BANNER_LINE + "\n");
             }
@@ -530,7 +533,10 @@ public class SanityTester {
 
     public static void main(String[] args) {
 
-        String cmdName = System.getProperties().getProperty("cmdName");
+	BasicConfigurator.configure(); // logger
+	logger.setLevel(Level.ERROR);
+
+         String cmdName = System.getProperties().getProperty("cmdName");
         Options options = declareOptions();
         CommandLine cmdLine = parseOptions(cmdName, options, args);
 
