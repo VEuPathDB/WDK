@@ -30,7 +30,7 @@ public class StressTestAnalyzer {
     public int getTaskCount(String taskType) {
         int count = 0;
         for (StressTestTask task : tasks) {
-            UrlItem urlItem = task.getTestUrl();
+            UrlItem urlItem = task.getUrlItem();
             if (urlItem.getUrlType().equalsIgnoreCase(taskType)) count++;
         }
         return count;
@@ -47,7 +47,7 @@ public class StressTestAnalyzer {
     public int getSucceededTaskCount(String taskType) {
         int count = 0;
         for (StressTestTask task : tasks) {
-            UrlItem urlItem = task.getTestUrl();
+            UrlItem urlItem = task.getUrlItem();
             if (task.getResultType() == ResultType.Succeeded
                     && urlItem.getUrlType().equalsIgnoreCase(taskType))
                 count++;
@@ -66,7 +66,7 @@ public class StressTestAnalyzer {
     public int getFailedTaskCount(String taskType) {
         int count = 0;
         for (StressTestTask task : tasks) {
-            UrlItem urlItem = task.getTestUrl();
+            UrlItem urlItem = task.getUrlItem();
             if (task.getResultType() != ResultType.Succeeded
                     && urlItem.getUrlType().equalsIgnoreCase(taskType))
                 count++;
@@ -85,7 +85,7 @@ public class StressTestAnalyzer {
     public int getFailedTaskCount(ResultType resultType, String taskType) {
         int count = 0;
         for (StressTestTask task : tasks) {
-            UrlItem urlItem = task.getTestUrl();
+            UrlItem urlItem = task.getUrlItem();
             if (task.getResultType() == resultType
                     && urlItem.getUrlType().equalsIgnoreCase(taskType))
                 count++;
@@ -115,7 +115,7 @@ public class StressTestAnalyzer {
     public float getTotalResponseTime(String taskType) {
         long sum = 0;
         for (StressTestTask task : tasks) {
-            UrlItem urlItem = task.getTestUrl();
+            UrlItem urlItem = task.getUrlItem();
             if (urlItem.getUrlType().equalsIgnoreCase(taskType))
                 sum += task.getDuration();
         }
@@ -146,7 +146,7 @@ public class StressTestAnalyzer {
     public float getTotalSucceededResponseTime(String taskType) {
         long sum = 0;
         for (StressTestTask task : tasks) {
-            UrlItem urlItem = task.getTestUrl();
+            UrlItem urlItem = task.getUrlItem();
             if (task.getResultType() == ResultType.Succeeded
                     && urlItem.getUrlType().equalsIgnoreCase(taskType))
                 sum += task.getDuration();

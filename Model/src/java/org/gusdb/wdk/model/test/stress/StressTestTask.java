@@ -8,14 +8,10 @@ package org.gusdb.wdk.model.test.stress;
  * @author: Jerric
  * @created: Mar 14, 2006
  * @modified by: Jerric
- * @modified at: Mar 14, 2006
+ * @modified at: Mar 31, 2006
  * 
  */
 public class StressTestTask {
-
-    public static enum TaskState {
-        Pending, Executing, Finished,
-    }
 
     public static enum ResultType {
         Unknown, Succeeded, HttpError, ConnectionError, ApplicationException,
@@ -24,9 +20,8 @@ public class StressTestTask {
     private static long taskIdSeed = 0;
 
     private long taskId;
-    private UrlItem testUrl;
+    private UrlItem urlItem;
 
-    private TaskState state;
     private long startTime;
     private long finishTime;
 
@@ -38,10 +33,9 @@ public class StressTestTask {
     /**
      * 
      */
-    public StressTestTask(UrlItem testUrl) {
+    public StressTestTask(UrlItem urlItem) {
         taskId = taskIdSeed++;
-        this.testUrl = testUrl;
-        state = TaskState.Pending;
+        this.urlItem = urlItem;
         resultType = ResultType.Unknown;
         resultMessage = "Unknown";
     }
@@ -54,17 +48,10 @@ public class StressTestTask {
     }
 
     /**
-     * @return Returns the testUrl.
+     * @return
      */
-    public UrlItem getTestUrl() {
-        return testUrl;
-    }
-
-    /**
-     * @return Returns the state.
-     */
-    public TaskState getState() {
-        return state;
+    public UrlItem getUrlItem() {
+        return urlItem;
     }
 
     /**
@@ -75,6 +62,13 @@ public class StressTestTask {
     }
 
     /**
+     * @param resultType The resultType to set.
+     */
+    public void setResultType(ResultType resultType) {
+        this.resultType = resultType;
+    }
+
+    /**
      * @return Returns the resultMessage.
      */
     public String getResultMessage() {
@@ -82,10 +76,10 @@ public class StressTestTask {
     }
 
     /**
-     * @return Returns the running time of the task, in millisecond
+     * @param resultMessage The resultMessage to set.
      */
-    public long getDuration() {
-        return (finishTime - startTime);
+    public void setResultMessage(String resultMessage) {
+        this.resultMessage = resultMessage;
     }
 
     /**
@@ -102,15 +96,38 @@ public class StressTestTask {
         this.runnerId = runnerId;
     }
 
-    public void startTask() {
-        state = TaskState.Executing;
-        startTime = System.currentTimeMillis();
+    /**
+     * @return Returns the startTime.
+     */
+    public long getStartTime() {
+        return startTime;
     }
 
-    public void finishTask(ResultType resultType, String resultMessage) {
-        finishTime = System.currentTimeMillis();
-        state = TaskState.Finished;
-        this.resultType = resultType;
-        this.resultMessage = resultMessage;
+    /**
+     * @param startTime The startTime to set.
+     */
+    public void setStartTime(long startTime) {
+        this.startTime = startTime;
+    }
+
+    /**
+     * @return Returns the finishTime.
+     */
+    public long getFinishTime() {
+        return finishTime;
+    }
+
+    /**
+     * @param finishTime The finishTime to set.
+     */
+    public void setFinishTime(long finishTime) {
+        this.finishTime = finishTime;
+    }
+
+    /**
+     * @return Returns the running time of the task, in millisecond
+     */
+    public long getDuration() {
+        return (finishTime - startTime);
     }
 }
