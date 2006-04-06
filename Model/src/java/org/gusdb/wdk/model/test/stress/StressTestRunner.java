@@ -22,26 +22,27 @@ import org.gusdb.wdk.model.test.stress.StressTestTask.ResultType;
 public class StressTestRunner implements Runnable {
 
     public static enum RunnerState {
-        Idle, Finished, Executing,
+        Idle, Waiting, Finished, Executing,
     }
 
     private static Logger logger = Logger.getLogger(StressTestRunner.class);
+    private static int runnerIdSeed = 0;
 
     private int runnerId;
     private StressTestTask task;
     private RunnerState state;
     private boolean running;
     private int delay;
-    private boolean active;
+    private boolean stopped;
 
     /**
      * 
      */
-    public StressTestRunner(int runnerId) {
-        this.runnerId = runnerId;
+    public StressTestRunner() {
+        this.runnerId = runnerIdSeed++;
         state = RunnerState.Idle;
         running = false;
-        active = false;
+        stopped = true;
     }
 
     public int getRunnerId() {
@@ -51,12 +52,13 @@ public class StressTestRunner implements Runnable {
     public RunnerState getState() {
         return this.state;
     }
-    
-    public boolean isActive() {
-        return active;
-    }
 
-    public void setClientTask(StressTestTask task, int delay)
+    /**
+     * @param task
+     * @param delay delay in seconds before starting the task
+     * @throws InvalidStatusException
+     */
+    public synchronized void assignTask(StressTestTask task, int delay)
             throws InvalidStatusException {
         if (state != RunnerState.Idle)
             throw new InvalidStatusException(
@@ -67,11 +69,11 @@ public class StressTestRunner implements Runnable {
         this.task = task;
         // convert seconds into milliseconds
         this.delay = delay * 1000;
-        this.state = RunnerState.Executing;
+        this.state = RunnerState.Waiting;
         this.task.setRunnerId(runnerId);
     }
 
-    public StressTestTask getFinishedTask() {
+    public synchronized StressTestTask popFinishedTask() {
         if (state != RunnerState.Finished) return null;
         StressTestTask finishedTask = task;
         task = null;
@@ -79,8 +81,13 @@ public class StressTestRunner implements Runnable {
         return finishedTask;
     }
 
-    public void stop() {
+    public synchronized void stop() {
+        logger.info("Stopping runner #" + runnerId + "...");
         running = false;
+    }
+    
+    public synchronized boolean isStopped() {
+        return stopped;
     }
 
     /*
@@ -90,6 +97,7 @@ public class StressTestRunner implements Runnable {
      */
     public void run() {
         running = true;
+        stopped = false;
         while (running) {
             // no new task, wait
             if (state == RunnerState.Finished || state == RunnerState.Idle) {
@@ -98,30 +106,32 @@ public class StressTestRunner implements Runnable {
                 } catch (InterruptedException ex) {}
                 continue;
             }
-            logger.debug("Executing task: " + task.getTaskId());
             // wait a period of the delay
             try {
                 Thread.sleep(delay);
             } catch (InterruptedException ex) {}
 
+            logger.debug("Executing task: " + task.getTaskId());
+            state = RunnerState.Executing;
             // run the task and get the content of the requested page
-            active = true;
-            task.startTask();
+            task.setStartTime(System.currentTimeMillis());
             String content = retrievePage();
             if (content != null) checkException(content);
 
             logger.debug("Finished task: " + task.getTaskId());
             if (task.getResultType() != ResultType.Succeeded)
                 logger.error(task.getResultType().name() + "\t"
-                        + task.getResultMessage() + "\t" + task.getTestUrl());
-            active = false;
+                        + task.getResultMessage() + "\t" + task.getUrlItem());
+
+            task.setFinishTime(System.currentTimeMillis());
             state = RunnerState.Finished;
         }
+        stopped = true;
     }
 
     private String retrievePage() {
         try {
-            UrlItem urlItem = task.getTestUrl();
+            UrlItem urlItem = task.getUrlItem();
             HttpURLConnection connection = urlItem.getConnection();
             BufferedInputStream in = new BufferedInputStream(
                     connection.getInputStream());
@@ -130,7 +140,8 @@ public class StressTestRunner implements Runnable {
             int httpCode = connection.getResponseCode();
             String message = connection.getResponseMessage();
             if (httpCode != HttpURLConnection.HTTP_OK) {
-                task.finishTask(ResultType.HttpError, message);
+                task.setResultType(ResultType.HttpError);
+                task.setResultMessage(message);
                 return null;
             }
             String contentType = connection.getContentType().toLowerCase();
@@ -167,13 +178,14 @@ public class StressTestRunner implements Runnable {
             if (contentType.startsWith("text")) {
                 return new String(bytContent);
             } else {
-                task.finishTask(ResultType.Succeeded,
-                        "Retrieved non-text content");
+                task.setResultType(ResultType.Succeeded);
+                task.setResultMessage("Retrieved non-text content");
                 return null;
             }
         } catch (IOException ex) {
             // ex.printStackTrace();
-            task.finishTask(ResultType.ConnectionError, ex.getMessage());
+            task.setResultType(ResultType.ConnectionError);
+            task.setResultMessage(ex.getMessage());
             return null;
         }
     }
@@ -184,10 +196,11 @@ public class StressTestRunner implements Runnable {
         content = content.toLowerCase();
         if (content.indexOf("unexpected error") >= 0
                 || content.indexOf("exception") >= 0) {
-            task.finishTask(ResultType.ApplicationException,
-                    "Web application throws out an exception");
+            task.setResultType(ResultType.ApplicationException);
+            task.setResultMessage("Web application throws out an exception");
         } else {
-            task.finishTask(ResultType.Succeeded, "Retrieved text content");
+            task.setResultType(ResultType.Succeeded);
+            task.setResultMessage("Retrieved text content");
         }
     }
 }
