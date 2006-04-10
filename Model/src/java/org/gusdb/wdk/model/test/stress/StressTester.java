@@ -13,15 +13,12 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.InvalidPropertiesFormatException;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Random;
-import java.util.Set;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.*;
+
+import javax.sql.DataSource;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
@@ -30,10 +27,12 @@ import org.gusdb.wdk.model.FlatVocabParam;
 import org.gusdb.wdk.model.Param;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
+import org.gusdb.wdk.model.RDBMSPlatformI;
 import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.implementation.SqlUtils;
 import org.gusdb.wdk.model.test.CommandHelper;
 import org.gusdb.wdk.model.test.SanityModel;
 import org.gusdb.wdk.model.test.SanityQuestion;
@@ -41,6 +40,7 @@ import org.gusdb.wdk.model.test.SanityRecord;
 import org.gusdb.wdk.model.test.SanityTestXmlParser;
 import org.gusdb.wdk.model.test.SanityXmlQuestion;
 import org.gusdb.wdk.model.test.stress.StressTestRunner.RunnerState;
+import org.gusdb.wdk.model.test.stress.StressTestTask.ResultType;
 
 /**
  * @author: Jerric
@@ -63,9 +63,12 @@ public class StressTester {
     public static final String TYPE_XML_QUESTION_URL = "XmlQuestionUrl";
     public static final String TYPE_RECORD_URL = "RecordUrl";
 
+    public static final String TABLE_STRESS_RESULT = "stress_result";
+
     private static Logger logger = Logger.getLogger(StressTester.class);
 
     private List<UrlItem> urlPool;
+    private Map<String, Map<String, Set<String>>> questionCache;
 
     private String questionUrlPattern;
     private String xmlQuestionUrlPattern;
@@ -75,14 +78,19 @@ public class StressTester {
 
     private List<StressTestRunner> runners;
 
-    private List<StressTestTask> finishedTasks;
-
     private String modelName;
     private File configDir;
 
     private int maxDelayTime;
 
     private Random rand;
+
+    private long testTag;
+    private DataSource dataSource;
+    private PreparedStatement preparedStatement;
+
+    private long finishedCount;
+    private long succeededCount;
 
     /**
      * @throws IOException
@@ -99,21 +107,80 @@ public class StressTester {
 
         urlPool = new ArrayList<UrlItem>();
         otherUrls = new LinkedHashMap<String, String>();
+        questionCache = new LinkedHashMap<String, Map<String, Set<String>>>();
         runners = new ArrayList<StressTestRunner>();
-        finishedTasks = new ArrayList<StressTestTask>();
         rand = new Random(System.currentTimeMillis());
+        finishedCount = succeededCount = 0;
 
         this.modelName = modelName;
         configDir = new File(System.getProperty("configDir"));
 
-
         // load the model
         WdkModel wdkModel = WdkModel.construct(modelName);
+        dataSource = wdkModel.getPlatform().getDataSource();
+
+        // initialize the stress-test result table
+        try {
+            initializeResultTable(wdkModel);
+            // get a new test_tag
+            testTag = getNewTestTag();
+            System.out.println("The curent test tag is: " + testTag);
+        } catch (SQLException ex) {
+            throw new WdkModelException(ex);
+        }
 
         // load configurations
         loadProperties(wdkModel);
         // compose the testing urls
         composeUrls(wdkModel);
+    }
+
+    private void initializeResultTable(WdkModel wdkModel) throws SQLException {
+        // check if result table exists
+        try {
+            ResultSet rs = SqlUtils.getResultSet(dataSource, "SELECT * FROM "
+                    + TABLE_STRESS_RESULT);
+            SqlUtils.closeResultSet(rs);
+        } catch (SQLException e) {
+            // table doesn't exist, create it
+            RDBMSPlatformI platform = wdkModel.getPlatform();
+            String numericType = platform.getNumberDataType();
+            String textType = platform.getClobDataType();
+
+            StringBuffer sb = new StringBuffer();
+            sb.append("CREATE TABLE " + TABLE_STRESS_RESULT + " (");
+            sb.append("test_tag " + numericType + "(20) not null, ");
+            sb.append("task_id " + numericType + "(20) not null, ");
+            sb.append("runner_id " + numericType + "(20) not null, ");
+            sb.append("task_type varchar(100) not null, ");
+            sb.append("start_time " + numericType + "(20) not null, ");
+            sb.append("end_time " + numericType + "(20) not null, ");
+            sb.append("result_type varchar(100) not null, ");
+            sb.append("result_message " + textType + ", ");
+            sb.append(" PRIMARY KEY(test_tag, task_id))");
+
+            // create the result table
+            SqlUtils.executeUpdate(dataSource, sb.toString());
+        }
+        // initialize update prepared statement
+        StringBuffer sb = new StringBuffer();
+        sb.append("INSERT INTO " + TABLE_STRESS_RESULT);
+        sb
+                .append(" (test_tag, task_id, runner_id, task_type, start_time, end_time, result_type, result_message)");
+        sb.append(" VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        preparedStatement = SqlUtils.getPreparedStatement(dataSource, sb
+                .toString());
+    }
+
+    private long getNewTestTag() throws SQLException {
+        ResultSet rs = SqlUtils.getResultSet(dataSource,
+                "SELECT count(0), max(test_tag) FROM " + TABLE_STRESS_RESULT);
+        long testTag = 0;
+        rs.next();
+        int count = rs.getInt(1);
+        if (count > 0) testTag = rs.getLong(2);
+        SqlUtils.closeResultSet(rs);
+        return (testTag + 1);
     }
 
     private void loadProperties(WdkModel wdkModel)
@@ -144,11 +211,9 @@ public class StressTester {
         }
     }
 
-    private void composeUrls(WdkModel wdkModel)
-            throws WdkUserException, WdkModelException, URISyntaxException,
-            IOException {
+    private void composeUrls(WdkModel wdkModel) throws WdkUserException,
+            WdkModelException, URISyntaxException, IOException {
         logger.debug("Composing test urls...");
-
         // add home url into the pool
         if (homeUrlPattern != null) {
             UrlItem homeUrl = new UrlItem(homeUrlPattern, TYPE_HOME_URL);
@@ -163,7 +228,7 @@ public class StressTester {
         }
 
         // compose urls from sanity model
-        composeFromSanityModel(wdkModel);
+        //composeFromSanityModel(wdkModel);
 
         // compose urls from stress test template
         composeFromTemplate(wdkModel);
@@ -178,8 +243,8 @@ public class StressTester {
         File modelPropFile = new File(configDir, modelName + ".prop");
         File sanitySchemaFile = new File(System.getProperty("sanitySchemaFile"));
         SanityModel sanityModel = SanityTestXmlParser.parseXmlFile(
-                sanityXmlFile.toURL(), modelPropFile.toURL(),
-                sanitySchemaFile.toURL());
+                sanityXmlFile.toURL(), modelPropFile.toURL(), sanitySchemaFile
+                        .toURL());
 
         // get sanity questions from the sanity model
         if (questionUrlPattern != null) {
@@ -191,14 +256,30 @@ public class StressTester {
                 Map<String, Object> params = question.getParamHash();//
                 // get original parameters
                 Reference questionRef = new Reference(question.getRef());
-                QuestionSet questionSet = wdkModel.getQuestionSet(questionRef.getSetName());
-                Question q = questionSet.getQuestion(questionRef.getElementName());
+                QuestionSet questionSet = wdkModel.getQuestionSet(questionRef
+                        .getSetName());
+                Question q = questionSet.getQuestion(questionRef
+                        .getElementName());
                 Map<String, Param> originalParams = q.getParamMap();
 
-                // compose question url
-                UrlItem questionUrl = new UrlItem(questionUrlPattern,
-                        TYPE_QUESTION_URL);
-                questionUrl.addParameter("questionFullName", fullName);
+                // cache the question with all possible param combinations
+                Map<String, Set<String>> paramMap = questionCache.get(fullName);
+                if (paramMap == null) {
+                    paramMap = new LinkedHashMap<String, Set<String>>();
+                    questionCache.put(fullName, paramMap);
+
+                    // add questionFullName parameter
+                    Set<String> paramValues = new LinkedHashSet<String>();
+                    paramValues.add(fullName);
+                    paramMap.put("questionFullName", paramValues);
+
+                    // add questionSubmit parameter
+                    paramValues = new LinkedHashSet<String>();
+                    paramValues.add("Get Answer");
+                    paramMap.put("questionSubmit", paramValues);
+                }
+
+                // iterate all other parameters
                 Set<String> paramKeys = params.keySet();
                 for (String paramName : paramKeys) {
                     String value = params.get(paramName).toString();
@@ -209,16 +290,21 @@ public class StressTester {
                     } else {
                         paramName = "myProp(" + paramName + ")";
                     }
-                    questionUrl.addParameter(paramName, value);
+                    // get the parameter cache
+                    Set<String> paramValues = paramMap.get(paramName);
+                    if (paramValues == null) {
+                        paramValues = new LinkedHashSet<String>();
+                        paramMap.put(paramName, paramValues);
+                    }
+                    paramValues.add(value);
                 }
-                questionUrl.addParameter("questionSubmit", "Get Answer");
-                urlPool.add(questionUrl);
             }
         }
 
         // get sanity xml questions from the sanity model
         if (xmlQuestionUrlPattern != null) {
-            SanityXmlQuestion[] xmlQuestions = sanityModel.getSanityXmlQuestions();
+            SanityXmlQuestion[] xmlQuestions = sanityModel
+                    .getSanityXmlQuestions();
             for (SanityXmlQuestion xmlQuestion : xmlQuestions) {
                 // get question full name
                 String fullName = xmlQuestion.getName();
@@ -252,8 +338,9 @@ public class StressTester {
         }
     }
 
-    private void composeFromTemplate(WdkModel wdkModel)
-            throws IOException, WdkUserException {
+    private void composeFromTemplate(WdkModel wdkModel) throws IOException,
+            WdkUserException {
+        logger.debug("Loading test cases from template files");
         File templateFile = new File(configDir, modelName + "-stress.template");
         BufferedReader in = new BufferedReader(new FileReader(templateFile));
         String line;
@@ -261,23 +348,38 @@ public class StressTester {
             line = line.trim();
             if (line.length() == 0 || line.equals("//")) continue;
 
+            logger.debug("Processing: " + line);
+
             // a start of an item
             if (line.toLowerCase().startsWith("question")) {
                 // read question name
                 int pos = line.indexOf(":");
                 String fullName = line.substring(pos + 1).trim();
-                
+
                 // get question and the parameter map
                 pos = fullName.indexOf(".");
                 String qsetName = fullName.substring(0, pos);
-                String qName = fullName.substring(pos+1);
+                String qName = fullName.substring(pos + 1);
                 QuestionSet qset = wdkModel.getQuestionSet(qsetName);
                 Question question = qset.getQuestion(qName);
                 Map<String, Param> originalParams = question.getParamMap();
-                
-                // store all permutations
-                List<Map<String, String>> permutations = new ArrayList<Map<String, String>>();
-                permutations.add(new HashMap<String, String>());
+
+                // cache the question with all possible param combinations
+                Map<String, Set<String>> paramMap = questionCache.get(fullName);
+                if (paramMap == null) {
+                    paramMap = new LinkedHashMap<String, Set<String>>();
+                    questionCache.put(fullName, paramMap);
+
+                    // add questionFullName parameter
+                    Set<String> paramValues = new LinkedHashSet<String>();
+                    paramValues.add(fullName);
+                    paramMap.put("questionFullName", paramValues);
+
+                    // add questionSubmit parameter
+                    paramValues = new LinkedHashSet<String>();
+                    paramValues.add("Get Answer");
+                    paramMap.put("questionSubmit", paramValues);
+                }
 
                 // read parameters
                 while ((line = in.readLine()) != null) {
@@ -287,7 +389,7 @@ public class StressTester {
                         pos = line.indexOf(":");
                         String parts = line.substring(pos + 1);
                         pos = parts.indexOf("=");
-                        
+
                         // prepare parameter name
                         String paramName = parts.substring(0, pos).trim();
                         Param param = originalParams.get(paramName);
@@ -296,33 +398,19 @@ public class StressTester {
                         } else {
                             paramName = "myProp(" + paramName + ")";
                         }
-                        
-                        String[] values = parts.substring(pos + 1).split(",");
-                        List<Map<String, String>> newPermus = new ArrayList<Map<String, String>>();
-                        for (String value : values) {
-                            value = value.trim();
-                            if (value.length() == 0) continue;
-                            for (Map<String, String> permu : permutations) {
-                                Map<String, String> newPermu = new HashMap<String, String>(
-                                        permu);
-                                newPermu.put(paramName, value);
-                                newPermus.add(newPermu);
-                            }
+
+                        // get the parameter cache
+                        Set<String> paramValues = paramMap.get(paramName);
+                        if (paramValues == null) {
+                            paramValues = new LinkedHashSet<String>();
+                            paramMap.put(paramName, paramValues);
                         }
-                        permutations = newPermus;
+
+                        String[] values = parts.substring(pos + 1).split(",");
+                        for (String value : values) {
+                            paramValues.add(value.trim());
+                        }
                     }
-                }
-                // compose UrlItems
-                for (Map<String, String> permu : permutations) {
-                    UrlItem urlItem = new UrlItem(questionUrlPattern,
-                            TYPE_QUESTION_URL);
-                    urlItem.addParameter("questionFullName", fullName);
-                    for (String param : permu.keySet()) {
-                        String value = permu.get(param);
-                        urlItem.addParameter(param, value);
-                    }
-                    urlItem.addParameter("questionSubmit", "Get Answer");
-                    urlPool.add(urlItem);
                 }
             } else if (line.toLowerCase().startsWith("record")) {
                 // get record class name
@@ -357,7 +445,7 @@ public class StressTester {
         }
     }
 
-    public void runTest(int numThreads) {
+    public void runTest(int numThreads) throws SQLException {
         logger.info("Running stress test...");
 
         // create stress test runners
@@ -372,24 +460,30 @@ public class StressTester {
         while (!isStopping()) {
             // get the finished tasks and release runner
             for (StressTestRunner runner : runners) {
-                if (runner.getState() == RunnerState.Finished)
-                    finishedTasks.add(runner.popFinishedTask());
+                if (runner.getState() == RunnerState.Finished) {
+                    try {
+                        saveFinishedTask(runner.popFinishedTask());
+                    } catch (SQLException ex) {
+                        logger.error(ex);
+                        ex.printStackTrace();
+                    }
+                }
                 // randomly pick a task to the idling runners;
                 if (runner.getState() == RunnerState.Idle) {
-                    UrlItem urlItem = urlPool.get(rand.nextInt(urlPool.size()));
-                    StressTestTask task = new StressTestTask(urlItem);
+                    StressTestTask task = createTask();
                     int delay = rand.nextInt(maxDelayTime) + 1;
                     try {
                         runner.assignTask(task, delay);
                     } catch (InvalidStatusException ex) {
+                        logger.error(ex);
                         ex.printStackTrace();
                     }
                 }
             }
 
             // print out the current statistics
-            logger.info("Idle: " + getIdleCount() + "\t Busy: "
-                    + getBusyCount() + "\t Finished: " + finishedTasks.size());
+            logger.info("Idle: " + getIdleCount() + "\tBusy: " + getBusyCount()
+                    + "\tFinished: " + finishedCount + "/" + succeededCount);
 
             try {
                 Thread.sleep(1000);
@@ -416,7 +510,10 @@ public class StressTester {
                 } catch (InterruptedException ex) {}
             }
         }
+        SqlUtils.closeStatement(preparedStatement);
         logger.info("Stress Test is finished.");
+        System.out.println("Stress Test is finished. The test tag is: "
+                + testTag);
     }
 
     private boolean isStopping() {
@@ -424,6 +521,59 @@ public class StressTester {
         // file is present
         File stopFile = new File(configDir, modelName + "-stress.stop");
         return (stopFile.exists());
+    }
+
+    private StressTestTask createTask() {
+        // choose from urlPool or question cache
+        UrlItem urlItem;
+        // HACK
+//        if (rand.nextBoolean()) { // get from question cache
+            if (false) { // get from question cache
+            // choose question
+            int index = rand.nextInt(questionCache.size());
+            int i = 0;
+            Iterator<Map<String, Set<String>>> itQuestion = questionCache
+                    .values().iterator();
+            while (i < index) {
+                i++;
+                itQuestion.next();
+            }
+            Map<String, Set<String>> paramMap = itQuestion.next();
+
+            // create UrlItem. and pick parameters
+            urlItem = new UrlItem(questionUrlPattern, TYPE_QUESTION_URL);
+            for (String paramName : paramMap.keySet()) {
+                Set<String> values = paramMap.get(paramName);
+                // choose value
+                index = rand.nextInt(values.size());
+                i = 0;
+                Iterator<String> itValue = values.iterator();
+                while (i < index) {
+                    i++;
+                    itValue.next();
+                }
+                if (itValue.hasNext())
+                    urlItem.addParameter(paramName, itValue.next());
+            }
+        } else { // get from url pool
+            urlItem = urlPool.get(rand.nextInt(urlPool.size()));
+        }
+        return new StressTestTask(urlItem);
+    }
+
+    private void saveFinishedTask(StressTestTask task) throws SQLException {
+        preparedStatement.setLong(1, testTag);
+        preparedStatement.setLong(2, task.getTaskId());
+        preparedStatement.setInt(3, task.getRunnerId());
+        preparedStatement.setString(4, task.getUrlItem().getUrlType());
+        preparedStatement.setLong(5, task.getStartTime());
+        preparedStatement.setLong(6, task.getFinishTime());
+        preparedStatement.setString(7, task.getResultType().name());
+        preparedStatement.setString(8, task.getResultMessage());
+
+        preparedStatement.execute();
+        finishedCount++;
+        if (task.getResultType() == ResultType.Succeeded) succeededCount++;
     }
 
     private int getIdleCount() {
@@ -442,12 +592,6 @@ public class StressTester {
         return busy;
     }
 
-    public StressTestTask[] getFinishedTasks() {
-        StressTestTask[] tasks = new StressTestTask[finishedTasks.size()];
-        finishedTasks.toArray(tasks);
-        return tasks;
-    }
-
     private static Options declareOptions() {
         String[] names = { "model", "threads" };
         String[] descs = {
@@ -457,8 +601,8 @@ public class StressTester {
                         + "and the Model config file "
                         + "($GUS_HOME/config/model_name-config.xml)",
                 "The number of threads used to run the tasks." };
-        boolean[] required = { true, true, true };
-        int[] args = { 0, 0, 0 };
+        boolean[] required = { true, true };
+        int[] args = { 0, 0 };
 
         return CommandHelper.declareOptions(names, descs, required, args);
     }
@@ -479,7 +623,8 @@ public class StressTester {
 
         // process args
         Options options = declareOptions();
-        CommandLine cmdLine = CommandHelper.parseOptions(cmdName, options, args);
+        CommandLine cmdLine = CommandHelper
+                .parseOptions(cmdName, options, args);
 
         String modelName = cmdLine.getOptionValue("model");
         String strThreads = cmdLine.getOptionValue("threads");
@@ -488,10 +633,10 @@ public class StressTester {
         // create tester
         StressTester tester = new StressTester(modelName);
         // run tester
-        tester.runTest(numThreads);
-        // analyze the result
-        StressTestAnalyzer analyzer = new StressTestAnalyzer(
-                tester.getFinishedTasks());
-        analyzer.print();
+        try {
+            tester.runTest(numThreads);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
     }
 }
