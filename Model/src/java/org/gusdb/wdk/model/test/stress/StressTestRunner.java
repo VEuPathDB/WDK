@@ -197,7 +197,7 @@ public class StressTestRunner implements Runnable {
         if (content.indexOf("unexpected error") >= 0
                 || content.indexOf("exception") >= 0) {
             task.setResultType(ResultType.ApplicationException);
-            task.setResultMessage("Web application throws out an exception");
+            task.setResultMessage("Web application throws out an exception.\n" + content);
         } else {
             task.setResultType(ResultType.Succeeded);
             task.setResultMessage("Retrieved text content");
