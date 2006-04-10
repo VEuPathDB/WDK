@@ -82,6 +82,8 @@ public class Answer {
     private boolean isBoolean = false;
 
     private Integer resultSize;   // size of total result
+    
+    private Map<String, Integer> resultSizesByProject = null;
 
     // ------------------------------------------------------------------
     // Constructor
@@ -89,7 +91,7 @@ public class Answer {
 
     /**
      * @param question The <code>Question</code> to which this is the <code>Answer</code>.
-     * @param idsQueryInstance  The <code>QueryInstance</code> that provides a handle on the ResultList containing all primary keys that are the result for the
+     * @param idsQueryInstance  The <co de>QueryInstance</code> that provides a handle on the ResultList containing all primary keys that are the result for the
      * question (not just one page worth).
      * @param startRecordInstanceI The index of the first <code>RecordInstance</code> in the page. (>=1)
      * @param endRecordInstanceI The index of the last <code>RecordInstance</code> in the page, inclusive.
@@ -105,7 +107,7 @@ public class Answer {
 	/*
 	ResultList rl = 
 	    idsQueryInstance.getPersistentResultPage(startRecordInstanceI, 
-						     endRecordInstanceI);
+						     endRecordI   nstanceI);
 	rl.close(); // rl only needed to close connection
 	*/
     }
@@ -125,18 +127,36 @@ public class Answer {
 	return pageRecordInstances == null? 0 : pageRecordInstances.length;
     }
     
-    public int getResultSize() throws WdkModelException{
-
-	if (resultSize == null) {
-	    ResultList rl = idsQueryInstance.getResult();
-	    int counter = 0;
-	    while (rl.next()){
-		counter++;
-	    }
-	    rl.close();
-	    resultSize = new Integer(counter);
-	}
-	return resultSize.intValue();
+    public int getResultSize() throws WdkModelException {
+        if (resultSize == null || resultSizesByProject == null) {
+            resultSizesByProject = new LinkedHashMap<String, Integer>();
+            // fill the project column name
+            findPrimaryKeyColumnNames();
+            
+            ResultList rl = idsQueryInstance.getResult();
+            int counter = 0;
+            while (rl.next()) {
+                counter++;
+                // get the project id
+                if (recordProjectColumnName != null) {
+                    String project = 
+                        rl.getValue(recordProjectColumnName).toString();
+                    int subCounter = 0;
+                    if (resultSizesByProject.containsKey(project)) 
+                        subCounter = resultSizesByProject.get(project);
+                    resultSizesByProject.put(project, ++subCounter);
+                }
+            }
+            rl.close();
+            resultSize = new Integer(counter);
+        }
+        return resultSize.intValue();
+    }
+    
+    public Map<String, Integer> getResultSizesByProject() throws WdkModelException {
+        // fill the result size map grouped by project id
+        if (resultSizesByProject == null) getResultSize();
+        return resultSizesByProject;
     }
 
     public boolean isDynamic() {

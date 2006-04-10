@@ -84,6 +84,15 @@ public class AnswerBean {
 	    throw new RuntimeException(e);
 	}
     }
+    
+    public Map<String, Integer> getResultSizesByProject() {
+        try {
+            return answer.getResultSizesByProject();
+        } catch (WdkModelException ex) {
+            ex.printStackTrace();
+            throw new RuntimeException(ex);
+        }
+    }
 
     public boolean getIsBoolean(){
 	return answer.getIsBoolean();
