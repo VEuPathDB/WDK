@@ -55,7 +55,7 @@ public class ShowRecordAction extends Action {
     wdkRecord.assignPrimaryKey(projectID, id);
 
 
-	request.getSession().setAttribute(CConstants.WDK_RECORD_KEY, wdkRecord);
+	request.setAttribute(CConstants.WDK_RECORD_KEY, wdkRecord);
 
 	String customViewFile1 = customViewDir + File.separator
 	    + wdkRecordClass.getFullName() + ".jsp";
