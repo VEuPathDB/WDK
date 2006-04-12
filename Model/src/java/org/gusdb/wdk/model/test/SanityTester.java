@@ -189,11 +189,14 @@ public class SanityTester {
                     System.out.println(BANNER_LINE + "\n");
                     queriesFailed++;
                 } else {
-                    System.out.println(((end -start)/1000F) + " Query "
+		    String globalArgs = "-model " + modelName;
+		    String command = queries[i].getCommand(globalArgs);
+                   System.out.println(((end -start)/1000F) + " Query "
                             + queryRef.getSetName() + "."
                             + queryRef.getElementName() + " passed--returned "
-                            + counter + " rows, within expected range ("
-                            + sanityMin + " - " + sanityMax + ")\n");
+                            + counter + " rows, expected ("
+                            + sanityMin + " - " + sanityMax + ") [" 
+			    + command + "]\n");
                     queriesPassed++;
                 }
             } catch (Exception e) {
