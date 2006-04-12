@@ -9,6 +9,8 @@ import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.BooleanQuery;
 import org.gusdb.wdk.model.WdkModelException;
 
+import sun.security.krb5.internal.an;
+
 /**
  * A wrapper on a {@link Answer} that provides simplified access for 
  * consumption by a view
@@ -34,6 +36,16 @@ public class AnswerBean {
 
     public Map<String, Object> getInternalParams() {
 	return answer.getParams();
+    }
+    
+    public String getQuestionUrlParams() {
+        StringBuffer sb = new StringBuffer();
+        Map<String, Object> params = getInternalParams();
+        for (String paramName : params.keySet()) {
+            String paramValue = params.get(paramName).toString();
+            sb.append("&" + paramName + "=" + paramValue);
+        }
+        return sb.toString();
     }
 
     public Integer getDatasetId() {
