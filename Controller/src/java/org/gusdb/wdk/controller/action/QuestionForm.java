@@ -1,21 +1,18 @@
 package org.gusdb.wdk.controller.action;
 
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionError;
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionMessage;
-import org.apache.struts.action.ActionMapping;
+import java.util.Iterator;
+import java.util.Vector;
+
 import javax.servlet.http.HttpServletRequest;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Vector;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.jspwrap.QuestionBean;
-import org.gusdb.wdk.model.jspwrap.ParamBean;
-import org.gusdb.wdk.model.jspwrap.FlatVocabParamBean;
+import org.apache.struts.action.ActionError;
+import org.apache.struts.action.ActionErrors;
+import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.jspwrap.FlatVocabParamBean;
+import org.gusdb.wdk.model.jspwrap.ParamBean;
+import org.gusdb.wdk.model.jspwrap.QuestionBean;
 
 /**
  *  form bean for showing a wdk question from a question set
@@ -23,6 +20,10 @@ import org.gusdb.wdk.controller.CConstants;
 
 public class QuestionForm extends QuestionSetForm {
 
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -7848685794514383434L;
     private QuestionBean question = null;
     private boolean validating = true;
     private boolean paramsFilled = false;
@@ -79,7 +80,7 @@ public class QuestionForm extends QuestionSetForm {
 
     public void cleanup() {
 	Iterator it = getMyProps().keySet().iterator();
-	Vector v = new Vector();
+	Vector<String> v = new Vector<String>();
         while (it.hasNext()) {
 	    String key = (String)it.next();
 	    if (getQuestion()!= null &&
@@ -88,7 +89,7 @@ public class QuestionForm extends QuestionSetForm {
 	    }
 	}
 	String[] extraKeys = new String[v.size()];
-	v.copyInto(extraKeys);
+	v.toArray(extraKeys);
 	for (int i=0; i<extraKeys.length; i++) {
 	    getMyProps().remove(extraKeys[i]);
 	}

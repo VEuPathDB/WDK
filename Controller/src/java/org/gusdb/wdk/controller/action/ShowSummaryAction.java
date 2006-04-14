@@ -3,6 +3,7 @@ package org.gusdb.wdk.controller.action;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -18,11 +19,11 @@ import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.UserAnswerBean;
 import org.gusdb.wdk.model.jspwrap.AnswerBean;
 import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.RecordBean;
+import org.gusdb.wdk.model.jspwrap.UserAnswerBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 
 /**
@@ -66,7 +67,7 @@ public class ShowSummaryAction extends Action {
   	        throw new RuntimeException("Unexpected error: wdkAnswer is null");
 	    }
 
-	    Map params = handleMultiPickParams(new java.util.HashMap(qForm.getMyProps()));
+	    Map params = handleMultiPickParams(new LinkedHashMap(qForm.getMyProps()));
 	    wdkAnswer = summaryPaging(request, wdkQuestion, params);
 
 	    request.getSession().setAttribute(CConstants.WDK_QUESTION_PARAMS_KEY, params);

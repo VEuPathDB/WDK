@@ -1,23 +1,16 @@
 package org.gusdb.wdk.controller.action;
 
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionServlet; 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.ServletContext;
-import java.util.HashMap;
-import java.util.Set;
-import java.util.Iterator;
+
+import org.apache.struts.action.ActionForm;
+import org.apache.struts.action.ActionForward;
+import org.apache.struts.action.ActionMapping;
+import org.apache.struts.action.ActionServlet;
 import org.gusdb.wdk.controller.CConstants;
-import org.gusdb.wdk.model.jspwrap.WdkModelBean;
-import org.gusdb.wdk.model.jspwrap.QuestionSetBean;
-import org.gusdb.wdk.model.jspwrap.QuestionBean;
-import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.FlatVocabParamBean;
+import org.gusdb.wdk.model.jspwrap.ParamBean;
+import org.gusdb.wdk.model.jspwrap.QuestionBean;
 
 /**
  * This Action is called by the ActionServlet when a flat display of QuestionSets is needed.
