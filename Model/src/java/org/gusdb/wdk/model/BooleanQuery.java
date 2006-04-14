@@ -43,6 +43,11 @@ public class BooleanQuery extends Query {
     // ------------------------------------------------------------------
 
     /**
+     * 
+     */
+    private static final long serialVersionUID = -8139624051192148234L;
+
+    /**
      * Name of the AnswerParam whose value is the first Answer operand in the BooleanQuery.
      */
     public static final String FIRST_ANSWER_PARAM_NAME = "firstAnswer";

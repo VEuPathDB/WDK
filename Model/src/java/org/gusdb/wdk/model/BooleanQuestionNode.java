@@ -1,16 +1,10 @@
 package org.gusdb.wdk.model;
 
-import org.gusdb.wdk.model.Question;
-import org.gusdb.wdk.model.Answer;
-import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.BooleanQuery;
-import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
-
-import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Iterator;
+
+import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
 
 /**
  * Represents a Question in boolean context. A boolean Question is defined as

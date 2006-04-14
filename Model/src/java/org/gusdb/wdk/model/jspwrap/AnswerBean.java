@@ -11,8 +11,6 @@ import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.BooleanQuery;
 import org.gusdb.wdk.model.WdkModelException;
 
-import sun.security.krb5.internal.an;
-
 /**
  * A wrapper on a {@link Answer} that provides simplified access for 
  * consumption by a view
