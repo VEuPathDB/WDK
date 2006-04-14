@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.jspwrap;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
@@ -38,12 +40,18 @@ public class AnswerBean {
 	return answer.getParams();
     }
     
-    public String getQuestionUrlParams() {
+    public String getQuestionUrlParams() throws WdkModelException {
         StringBuffer sb = new StringBuffer();
         Map<String, Object> params = getInternalParams();
         for (String paramName : params.keySet()) {
             String paramValue = params.get(paramName).toString();
-            sb.append("&" + paramName + "=" + paramValue);
+            // URL encode the values
+            try {
+                sb.append("&" + paramName + "="
+                        + URLEncoder.encode(paramValue, "UTF-8"));
+            } catch (UnsupportedEncodingException ex) {
+                throw new WdkModelException(ex);
+            }
         }
         return sb.toString();
     }
