@@ -1,22 +1,21 @@
 package org.gusdb.wdk.controller.action;
 
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionError;
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionMessage;
-import org.apache.struts.action.ActionMapping;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Vector;
+
 import javax.servlet.http.HttpServletRequest;
 
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Vector;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.jspwrap.QuestionBean;
-import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
-import org.gusdb.wdk.model.jspwrap.BooleanQuestionLeafBean;
-import org.gusdb.wdk.model.jspwrap.ParamBean;
-import org.gusdb.wdk.model.jspwrap.FlatVocabParamBean;
+import org.apache.struts.action.ActionError;
+import org.apache.struts.action.ActionErrors;
+import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.jspwrap.BooleanQuestionLeafBean;
+import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
+import org.gusdb.wdk.model.jspwrap.FlatVocabParamBean;
+import org.gusdb.wdk.model.jspwrap.ParamBean;
+import org.gusdb.wdk.model.jspwrap.QuestionBean;
 
 /**
  *  form bean for setting up a boolean question
@@ -24,6 +23,10 @@ import org.gusdb.wdk.controller.CConstants;
 
 public class BooleanQuestionForm extends QuestionForm {
 
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -8789225262580772238L;
     private BooleanQuestionNodeBean rootNode = null;
     private BooleanQuestionLeafBean seedLeaf = null;
     private int currentNodeId = 0;

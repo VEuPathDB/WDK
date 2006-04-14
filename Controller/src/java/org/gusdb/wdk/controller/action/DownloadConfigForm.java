@@ -9,6 +9,10 @@ import org.gusdb.wdk.controller.CConstants;
 
 public class DownloadConfigForm extends ActionForm {
 
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -5135214285985578539L;
     private String[] selectedFields = new String[] { CConstants.ALL };
     private String includeHeader = "yes";
 

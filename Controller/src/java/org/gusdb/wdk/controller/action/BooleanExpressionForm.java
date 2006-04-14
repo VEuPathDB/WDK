@@ -1,19 +1,18 @@
 package org.gusdb.wdk.controller.action;
 
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionError;
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionMessage;
-import org.apache.struts.action.ActionMapping;
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
 
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.jspwrap.UserBean;
-import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
+import org.apache.struts.action.ActionError;
+import org.apache.struts.action.ActionErrors;
+import org.apache.struts.action.ActionForm;
+import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
-
-import java.util.Map;
-import java.util.HashMap;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
+import org.gusdb.wdk.model.jspwrap.UserBean;
 
 /**
  *  form bean for holding the boolean expression string fro queryHistory.jsp page
@@ -21,6 +20,10 @@ import java.util.HashMap;
 
 public class BooleanExpressionForm extends ActionForm {
 
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -6371621860440022826L;
     private String booleanExpression = null;
     private String historySectionId = null;
     public static Map booleanOperatorMap = new HashMap<String, String>();

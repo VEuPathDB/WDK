@@ -1,25 +1,16 @@
 package org.gusdb.wdk.controller.action;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
-//import java.util.ArrayList;
-//import java.util.Enumeration;
-//import java.util.List;
-import java.util.HashMap;
-
-
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionServlet; 
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.struts.action.Action;
+import org.apache.struts.action.ActionForm;
+import org.apache.struts.action.ActionForward;
+import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
-//import org.gusdb.wdk.model.jspwrap.WdkModelBean;
-//import org.gusdb.wdk.model.jspwrap.EnumParamBean;
-//import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.AnswerBean;
 //import org.gusdb.wdk.model.jspwrap.BooleanQuestionLeafBean;
 
@@ -37,13 +28,13 @@ public class ConfigDownloadAction extends Action {
 				 HttpServletRequest request,
 				 HttpServletResponse response) throws Exception {
 
-	Map downloadConfigMap = new HashMap();
+	Map<String, Integer> downloadConfigMap = new LinkedHashMap<String, Integer>();
 	DownloadConfigForm downloadConfigForm = (DownloadConfigForm)form;
 	String [] selectedFields = downloadConfigForm.getSelectedFields();
 	for (int i=0; i<selectedFields.length; i++) {
 	    //System.err.println("DEBUG: ConfigDownloadAction: selected field: " + selectedFields[i]);
 	    if (!CConstants.ALL.equals(selectedFields[i])) {
-		downloadConfigMap.put(selectedFields[i], new Integer(1));
+		downloadConfigMap.put(selectedFields[i], 1);
 	    }
 	}
 

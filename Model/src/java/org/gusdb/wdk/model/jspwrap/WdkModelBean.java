@@ -68,7 +68,8 @@ public class WdkModelBean {
     public Map getQuestionsByCategory() {
 	Map<String, Map<String, Question[]>> qByCat = model.getQuestionsByCategory();
 
-	Map<String, Map<String, QuestionBean[]>> qBeanByCat = new LinkedHashMap();
+	Map<String, Map<String, QuestionBean[]>> qBeanByCat = 
+        new LinkedHashMap<String, Map<String, QuestionBean[]>>();
 	Iterator recI = qByCat.keySet().iterator();
 	while(recI.hasNext()) {
 	    String recType = (String)recI.next();
@@ -84,7 +85,7 @@ public class WdkModelBean {
 		}
 
 		if(null == qBeanByCat.get(recType)) {
-		    qBeanByCat.put(recType, new LinkedHashMap());
+		    qBeanByCat.put(recType, new LinkedHashMap<String, QuestionBean[]>());
 		}
 
 		qBeanByCat.get(recType).put(cat, qBeans);
@@ -102,9 +103,10 @@ public class WdkModelBean {
         Map qSets = model.getQuestionSets();
         Iterator it = qSets.keySet().iterator();
 
-        Map qSetBeans = new LinkedHashMap();
+        Map<String, QuestionSetBean> qSetBeans = 
+            new LinkedHashMap<String, QuestionSetBean>();
         while (it.hasNext()) {
-            Object qSetKey = it.next();
+            String qSetKey = (String)it.next();
             QuestionSetBean qSetBean = new QuestionSetBean(
                     (QuestionSet) qSets.get(qSetKey));
             qSetBeans.put(qSetKey, qSetBean);
@@ -129,7 +131,7 @@ public class WdkModelBean {
 
     public RecordClassBean[] getRecordClasses() {
 
-        Vector recordClassBeans = new Vector();
+        Vector<RecordClassBean> recordClassBeans = new Vector<RecordClassBean>();
         RecordClassSet sets[] = model.getAllRecordClassSets();
         for (int i = 0; i < sets.length; i++) {
             RecordClassSet nextSet = sets[i];
@@ -141,21 +143,22 @@ public class WdkModelBean {
             }
         }
 
-        RecordClassBean[] returnedBeans = new RecordClassBean[recordClassBeans.size()];
+        RecordClassBean[] returnedBeans = 
+            new RecordClassBean[recordClassBeans.size()];
         for (int i = 0; i < recordClassBeans.size(); i++) {
-            RecordClassBean nextReturnedBean = (RecordClassBean) recordClassBeans.elementAt(i);
+            RecordClassBean nextReturnedBean = recordClassBeans.elementAt(i);
             returnedBeans[i] = nextReturnedBean;
         }
         return returnedBeans;
     }
 
     public Map<String, String> getRecordClassTypes() {
-	RecordClassBean[] recClasses = getRecordClasses();
-	Map<String, String> types = new HashMap();
-	for(RecordClassBean r : recClasses) {
-	    types.put(r.getFullName(), r.getType());
-	}
-	return types;
+        RecordClassBean[] recClasses = getRecordClasses();
+        Map<String, String> types = new HashMap<String, String>();
+        for (RecordClassBean r : recClasses) {
+            types.put(r.getFullName(), r.getType());
+        }
+        return types;
     }
 
     public UserBean createUser(String userID) {
@@ -185,10 +188,11 @@ public class WdkModelBean {
      * @return Map of questionSetName --> {@link XmlQuestionSetBean}
      */
     public Map getXmlQuestionSetsMap() {
-	XmlQuestionSetBean[] qSets = getXmlQuestionSets();
-        Map qSetsMap = new LinkedHashMap();
-        for (int i=0; i<qSets.length; i++) {
-	    qSetsMap.put(qSets[i].getName(), qSets[i]);
+        XmlQuestionSetBean[] qSets = getXmlQuestionSets();
+        Map<String, XmlQuestionSetBean> qSetsMap = 
+            new LinkedHashMap<String, XmlQuestionSetBean>();
+        for (int i = 0; i < qSets.length; i++) {
+            qSetsMap.put(qSets[i].getName(), qSets[i]);
         }
         return qSetsMap;
     }
