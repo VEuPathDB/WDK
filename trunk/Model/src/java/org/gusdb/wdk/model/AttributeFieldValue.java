@@ -1,10 +1,9 @@
 package org.gusdb.wdk.model;
 
-import java.util.logging.Logger;
 
 public class AttributeFieldValue {
 
-    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.model.FieldValue");
+    //private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.model.FieldValue");
     
     AttributeField field;
     Object value;

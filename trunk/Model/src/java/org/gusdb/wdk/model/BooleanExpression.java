@@ -3,7 +3,6 @@
  */
 package org.gusdb.wdk.model;
 
-import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
