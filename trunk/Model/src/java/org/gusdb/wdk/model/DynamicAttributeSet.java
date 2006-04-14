@@ -120,6 +120,13 @@ public class DynamicAttributeSet implements Serializable {
         param = new StringParam();
         param.setName(RESULT_TABLE);
         attributesQuery.addParam(param);
+        
+        // also add project_id into the attribute query
+        if (recordClass.getPrimaryKeyField().getProjectParam() != null) {
+            param = new StringParam();
+            param.setName(RecordClass.PROJECT_ID_NAME);
+            attributesQuery.addParam(param);
+        }
 
         // get columns from Question.Query, and check the paired Column
         String message = "dynamicAttributes of question "
