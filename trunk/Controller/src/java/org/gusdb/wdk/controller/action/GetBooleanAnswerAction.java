@@ -1,32 +1,23 @@
 package org.gusdb.wdk.controller.action;
 
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionServlet; 
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.struts.action.ActionForm;
+import org.apache.struts.action.ActionForward;
+import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
-import org.gusdb.wdk.model.jspwrap.WdkModelBean;
-import org.gusdb.wdk.model.jspwrap.EnumParamBean;
-import org.gusdb.wdk.model.jspwrap.QuestionBean;
+import org.gusdb.wdk.model.BooleanQuery;
 import org.gusdb.wdk.model.jspwrap.AnswerBean;
-import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.BooleanQuestionLeafBean;
 import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
-import org.gusdb.wdk.model.BooleanQuery;
+import org.gusdb.wdk.model.jspwrap.ParamBean;
+import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
-
-import java.util.LinkedHashMap;
-import java.util.Vector;
-import java.util.Map;
-import java.util.Hashtable;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
 
 
 /**
@@ -101,7 +92,7 @@ public class GetBooleanAnswerAction extends ShowSummaryAction {
 
 
     private void processNode(BooleanQuestionForm bqf, BooleanQuestionNodeBean node){
-        LinkedHashMap values = new LinkedHashMap();
+        LinkedHashMap<String, String> values = new LinkedHashMap<String, String>();
 	String opInternalName = node.getOperation();
 	
 	//	String value = (String)bqf.getMyProps().get(opDisplayName);
@@ -109,30 +100,30 @@ public class GetBooleanAnswerAction extends ShowSummaryAction {
 	node.setValues(values);
     }
 
-    static LinkedHashMap getParamsFromForm(BooleanQuestionForm bqf, BooleanQuestionLeafBean leaf){
+    static LinkedHashMap getParamsFromForm(BooleanQuestionForm bqf,
+            BooleanQuestionLeafBean leaf) {
 
-	Integer leafId = leaf.getLeafId();
-	String leafPrefix = leafId.toString() + "_";
-	QuestionBean question = leaf.getQuestion();
-	ParamBean params[] = question.getParams();
-    LinkedHashMap values = new LinkedHashMap();
-	for (int i = 0; i < params.length; i++){
-	    ParamBean nextParam = params[i];
-	    String formParamName = leafPrefix + nextParam.getName();
-	    Object nextValObj = bqf.getMyProps().get(formParamName);
-	    String nextValue;
-	    if (nextValObj instanceof String[]) {
-		String[] vals = (String[])nextValObj;
-		nextValue = vals[0];
-		for (int j=1; j<vals.length; j++) { nextValue += "," + vals[j]; }
-	    } else {
-		nextValue = (String)nextValObj;
-	    }
-	    values.put(nextParam.getName(), nextValue);
-	}
-	return values;
+        Integer leafId = leaf.getLeafId();
+        String leafPrefix = leafId.toString() + "_";
+        QuestionBean question = leaf.getQuestion();
+        ParamBean params[] = question.getParams();
+        LinkedHashMap<String, String> values = new LinkedHashMap<String, String>();
+        for (int i = 0; i < params.length; i++) {
+            ParamBean nextParam = params[i];
+            String formParamName = leafPrefix + nextParam.getName();
+            Object nextValObj = bqf.getMyProps().get(formParamName);
+            String nextValue;
+            if (nextValObj instanceof String[]) {
+                String[] vals = (String[]) nextValObj;
+                nextValue = vals[0];
+                for (int j = 1; j < vals.length; j++) {
+                    nextValue += "," + vals[j];
+                }
+            } else {
+                nextValue = (String) nextValObj;
+            }
+            values.put(nextParam.getName(), nextValue);
+        }
+        return values;
     }
 }
-
-
-

@@ -1,34 +1,23 @@
 package org.gusdb.wdk.controller.action;
 
-import java.util.Map;
-//import java.util.ArrayList;
-//import java.util.Enumeration;
 import java.util.Iterator;
-
-//import java.util.HashMap;
-
-
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionServlet; 
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.struts.action.Action;
+import org.apache.struts.action.ActionForm;
+import org.apache.struts.action.ActionForward;
+import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
-//import org.gusdb.wdk.model.jspwrap.WdkModelBean;
-//import org.gusdb.wdk.model.jspwrap.EnumParamBean;
-import org.gusdb.wdk.model.jspwrap.QuestionBean;
-import org.gusdb.wdk.model.jspwrap.AnswerBean;
-import org.gusdb.wdk.model.jspwrap.RecordBean;
-import org.gusdb.wdk.model.jspwrap.AttributeFieldBean;
-//HACK: this class is outside of jspwrap
-//      This will not be necessary when we move the download result formatting into AnswerBean
 import org.gusdb.wdk.model.AttributeFieldValue;
+import org.gusdb.wdk.model.jspwrap.AnswerBean;
+import org.gusdb.wdk.model.jspwrap.AttributeFieldBean;
 import org.gusdb.wdk.model.jspwrap.BooleanQuestionLeafBean;
 import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
+import org.gusdb.wdk.model.jspwrap.QuestionBean;
+import org.gusdb.wdk.model.jspwrap.RecordBean;
 
 /**
  * This Action is called by the ActionServlet when a download submit is made.

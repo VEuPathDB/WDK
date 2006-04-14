@@ -1,28 +1,18 @@
 package org.gusdb.wdk.controller.action;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionServlet; 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpSession;
-import javax.servlet.ServletContext;
 
+import org.apache.struts.action.Action;
+import org.apache.struts.action.ActionForm;
+import org.apache.struts.action.ActionForward;
+import org.apache.struts.action.ActionMapping;
+import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.controller.CConstants;
-import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.model.jspwrap.AnswerBean;
-import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.UserAnswerBean;
+import org.gusdb.wdk.model.jspwrap.UserBean;
 
 
 /**
@@ -51,13 +41,16 @@ public class ProcessBooleanExpressionAction extends Action {
 	return new ActionForward(path);
     }
 
-    private String processBooleanExpression(HttpServletRequest request, BooleanExpressionForm beForm)
-	throws WdkModelException, WdkUserException
+    private String processBooleanExpression(HttpServletRequest request, 
+            BooleanExpressionForm beForm)
+	    throws WdkModelException, WdkUserException
     {
 	int start = 1;
 	int end = 3;
 	UserBean wdkUser = (UserBean)request.getSession().getAttribute(CConstants.WDK_USER_KEY);
-	UserAnswerBean userAnswer = wdkUser.combineAnswers(beForm.getBooleanExpression(), start, end, BooleanExpressionForm.booleanOperatorMap);
+	UserAnswerBean userAnswer = 
+        wdkUser.combineAnswers(beForm.getBooleanExpression(), start, end, 
+                BooleanExpressionForm.booleanOperatorMap);
 	AnswerBean wdkAnswer = userAnswer.getAnswer();
 	int aid = userAnswer.getAnswerID();
 
