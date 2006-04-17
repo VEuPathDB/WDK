@@ -1,4 +1,14 @@
 ------------------------------------------------------------------------------
+ooooooooooooooooooooooooooo  WDK Version 1.11  ooooooooooooooooooooooooooooooo
+------------------------------------------------------------------------------
+
+Summary: this is a version that supports PlasmoDB 5.0 Beta general release
+         (http://v5-0.plasmodb.org/). In addition to fixes of issues and bugs
+         revealed by extensive QA of the above site, the process queries component
+         of WDK is factored out into a companion project WSF (short for Web Service Framework).
+
+
+------------------------------------------------------------------------------
 ooooooooooooooooooooooooooo  WDK Version 1.10  ooooooooooooooooooooooooooooooo
 ------------------------------------------------------------------------------
 
