@@ -20,38 +20,38 @@ mkdir -p $TARGET_DIR/$VERSION
 cd $TARGET_DIR/$VERSION
 
 echo
-echo tagging WSF, WSFToy, WDK, and WDKToySite ...
-svn copy -m "tagging WSF for release $VERSION" \
+echo branching WSF, WSFToy, WDK, and WDKToySite ...
+svn copy -m "branching WSF for release $VERSION" \
     https://www.cbil.upenn.edu/svn/gus/WSF/trunk \
-    https://www.cbil.upenn.edu/svn/gus/WSF/tags/$VERSION
-svn copy -m "tagging WSFToySite for release $VERSION" \
+    https://www.cbil.upenn.edu/svn/gus/WSF/branches/$VERSION
+svn copy -m "branching WSFToySite for release $VERSION" \
     https://www.cbil.upenn.edu/svn/gus/WSFToy/trunk \
-    https://www.cbil.upenn.edu/svn/gus/WSFToy/tags/$VERSION
-svn copy -m "tagging WDK for release $VERSION" \
+    https://www.cbil.upenn.edu/svn/gus/WSFToy/branches/$VERSION
+svn copy -m "branching WDK for release $VERSION" \
     https://www.cbil.upenn.edu/svn/gus/WDK/trunk \
-    https://www.cbil.upenn.edu/svn/gus/WDK/tags/$VERSION
-svn copy -m "tagging WDKToySite for release $VERSION" \
+    https://www.cbil.upenn.edu/svn/gus/WDK/branches/$VERSION
+svn copy -m "branching WDKToySite for release $VERSION" \
     https://www.cbil.upenn.edu/svn/gus/WDKToySite/trunk \
-    https://www.cbil.upenn.edu/svn/gus/WDKToySite/tags/$VERSION
+    https://www.cbil.upenn.edu/svn/gus/WDKToySite/branches/$VERSION
 
 echo
-echo getting WSF, WSFToy, WDK, and WDKToySite from tagged copy ...
-svn co -q https://www.cbil.upenn.edu/svn/gus/WSF/tags/$VERSION WSF
+echo getting WSF, WSFToy, WDK, and WDKToySite from branched copy ...
+svn co -q https://www.cbil.upenn.edu/svn/gus/WSF/branches/$VERSION WSF
 if ($status != 0) then
   echo could not svn checkout $status
   exit(-1)
 endif
-svn co -q https://www.cbil.upenn.edu/svn/gus/WSFToy/tags/$VERSION WSFToy
+svn co -q https://www.cbil.upenn.edu/svn/gus/WSFToy/branches/$VERSION WSFToy
 if ($status != 0) then
   echo could not svn checkout $status
   exit(-1)
 endif
-svn co -q https://www.cbil.upenn.edu/svn/gus/WDK/tags/$VERSION WDK
+svn co -q https://www.cbil.upenn.edu/svn/gus/WDK/branches/$VERSION WDK
 if ($status != 0) then
   echo could not svn checkout $status
   exit(-1)
 endif
-svn co -q https://www.cbil.upenn.edu/svn/gus/WDKToySite/tags/$VERSION WDKToySite
+svn co -q https://www.cbil.upenn.edu/svn/gus/WDKToySite/branches/$VERSION WDKToySite
 if ($status != 0) then
   echo could not svn checkout $status
   exit(-1)
