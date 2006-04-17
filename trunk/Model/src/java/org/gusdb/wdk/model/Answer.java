@@ -127,6 +127,12 @@ public class Answer {
 	return pageRecordInstances == null? 0 : pageRecordInstances.length;
     }
     
+    public int getPageCount() throws WdkModelException {
+        int total = (resultSize == null)? getResultSize() : resultSize;
+        int page = getPageSize();
+        return (int)Math.round(Math.ceil((float)total /page));
+    }
+    
     public int getResultSize() throws WdkModelException {
         if (resultSize == null || resultSizesByProject == null) {
             resultSizesByProject = new LinkedHashMap<String, Integer>();

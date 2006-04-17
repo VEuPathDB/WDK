@@ -118,6 +118,8 @@ public abstract class Param {
      * returns provided value
      */
     protected String getInternalValue(String value) throws WdkModelException {
+        // check if the param is StringParam, then replace the escape character
+        if (this instanceof StringParam) return value.replaceAll("'", "''");
         return value;
     }
 
