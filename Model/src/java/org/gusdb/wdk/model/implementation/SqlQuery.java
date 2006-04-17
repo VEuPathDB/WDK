@@ -66,7 +66,7 @@ public class SqlQuery extends Query implements Serializable {
 	    String key = keySet.next();
 	    String regex = "\\$\\$" + key  + "\\$\\$";
         // also escape all single quotes in the value
-	    s = s.replaceAll(regex, values.get(key).replaceAll("'", "''"));
+	    s = s.replaceAll(regex, values.get(key));
 	}
 
 	return s;
