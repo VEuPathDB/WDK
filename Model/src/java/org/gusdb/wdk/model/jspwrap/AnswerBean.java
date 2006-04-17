@@ -94,6 +94,14 @@ public class AnswerBean {
     public int getPageSize() {
 	return answer.getPageSize();
     }
+    
+    public int getPageCount() {
+        try {
+            return answer.getPageCount();
+        } catch (WdkModelException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
 
     public int getResultSize() {
  	try {
