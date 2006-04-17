@@ -74,6 +74,7 @@ echo
 echo pbckaging things up ...
 rm -rf `find . -name '.svn'`
 cp ReleaseNotes.txt ..
+cp wsfReleaseNotes.txt ..
 cd ..
 tar -cvzf ${VERSION}.tar.gz $VERSION
 
