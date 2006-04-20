@@ -255,12 +255,14 @@ public class Answer {
     /////////////////////////////////////////////////////////////////////
 
     public String printAsRecords() throws WdkModelException, WdkUserException{  
+	String newline = System.getProperty( "line.separator" );
 	StringBuffer buf = new StringBuffer();
 
 	initPageRecordInstances();
 
 	for (int i = 0; i < pageRecordInstances.length; i++){
 	    buf.append(pageRecordInstances[i].print());
+	    buf.append("---------------------" + newline);
 	}
 	return buf.toString();
     }
