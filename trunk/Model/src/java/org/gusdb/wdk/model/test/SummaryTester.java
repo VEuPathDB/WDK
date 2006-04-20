@@ -83,18 +83,22 @@ public class SummaryTester {
 		int nextEndRow = Integer.parseInt(rows[i+1]);
 
 		Answer answer = question.makeAnswer(paramValues, nextStartRow, nextEndRow);
-		answer.printAsTable();
 
 		// this is wrong.  it only shows one attribute query, not
 		// all.  Fix this in Answer by saving a list of attribute
 		// queries, not just one.
 		if (cmdLine.hasOption("showQuery")) {
+		    answer.printAsTable();
 		    System.out.println(getLowLevelQuery(answer));
 		    return;
 		}
 
-		System.out.println("Printing Record Instances on page " + pageCount);
-		System.out.println(answer.printAsTable());
+		if (rows.length != 2) System.out.println("page " + pageCount);
+
+		if (cmdLine.hasOption("fullRecords")) 
+		    System.out.println(answer.printAsRecords());
+		else
+		    System.out.println(answer.printAsTable());
 
 		pageCount++;
 	    }		
@@ -169,6 +173,10 @@ public class SummaryTester {
 	Option toXml = new Option("toXml", true, "output summary in XML format to given file");
 	options.addOption(toXml);
 
+	// output XML
+	Option fullRecords = new Option("fullRecords", "output full records");
+	options.addOption(fullRecords);
+
 	//params
 	Option params = new Option("params", true, "Space delimited list of param_name param_value ....");
 	params.setArgName("params");
@@ -231,7 +239,7 @@ public class SummaryTester {
 	    " -question full_question_name" +
             " [-rows start end]" +
             " [-showQuery]" +
-            " [-toXml <xmlFile>]" +
+            " [-toXml <xmlFile>|-fullRecords]" +
 	    " -params param_1_name param_1_value ...";
 
 	String header = 
