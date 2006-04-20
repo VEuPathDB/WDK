@@ -41,9 +41,11 @@ public class AttributeFieldValue {
 	if (value == null){
 	    return null;
 	}
-	if (value instanceof LinkValue || value instanceof LinkAttributeField){
-	    return value;
-	}
+	if (value instanceof LinkAttributeField) 
+	    return ((LinkAttributeField)value).getUrl();
+
+	if (value instanceof LinkValue) 
+	    return ((LinkValue)value).getUrl();
 
 	String briefValue = value.toString();
 	
