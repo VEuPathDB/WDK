@@ -128,9 +128,12 @@ public class Answer {
     }
     
     public int getPageCount() throws WdkModelException {
-        int total = (resultSize == null)? getResultSize() : resultSize;
-        int page = getPageSize();
-        return (int)Math.round(Math.ceil((float)total /page));
+        int total = (resultSize == null) ? getResultSize() : resultSize;
+        int pageSize = endRecordInstanceI - startRecordInstanceI + 1;
+        int pageCount = (int) Math.round(Math.ceil((float) total / pageSize));
+        logger.debug("#Pages: " + pageCount + ",\t#Total: " + total
+                + ",\t#PerPage: " + pageSize);
+        return pageCount;
     }
     
     public int getResultSize() throws WdkModelException {
@@ -290,6 +293,11 @@ public class Answer {
 	StringBuffer buf = new StringBuffer();
 
 	initPageRecordInstances();
+    
+    // print summary info
+    buf.append("# of Records: " + getResultSize() + ",\t# of Pages: "
+                + getPageCount() + ",\t# Records per Page: " + getPageSize()
+                + newline);
 		
 	if (pageRecordInstances.length == 0) return buf.toString();
 
