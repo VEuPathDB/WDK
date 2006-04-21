@@ -161,8 +161,9 @@ public class Oracle implements RDBMSPlatformI, Serializable {
 	    this.connectionPool = new GenericObjectPool(null);
 
 	    ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(url, user, password);
-	    
-	    new PoolableConnectionFactory(connectionFactory,connectionPool,null,null,false,true);
+
+        // create abandoned configuration
+        new PoolableConnectionFactory(connectionFactory,connectionPool,null,null,false,true);
 	    
 	    PoolingDataSource dataSource = new PoolingDataSource(connectionPool);
 	    this.dataSource = dataSource;

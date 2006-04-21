@@ -26,21 +26,27 @@ public class SqlUtils {
     //private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.model.implementation.SqlUtils");
     private static final Logger logger = Logger.getLogger(SqlUtils.class);
     
+    // set this variable to true will start a separate thread to monitor the
+    // connection usage
+    private static boolean createShowThread = false;
+    
     public static ResultSet getResultSet(DataSource dataSource, String sql) throws SQLException {
 
         // TEST
         if (debug) System.out.println("<==getResultSet==>: " + sql);
 
+        Statement stmt = null;
         try {
 	    Connection connection = dataSource.getConnection();
-        logger.debug("Opening connection: " + getConnectionCount());
+        showConnectionCount();
 
-        Statement stmt = connection.createStatement();
+        stmt = connection.createStatement();
             ResultSet rs = stmt.executeQuery(sql);
             //logger.debug("Success in executing sql in getResultSet: '" + sql + "'");
             return rs;
         } catch (SQLException sqlE) {
             logger.debug("Failed attempting to execute sql in getResultSet: '" + sql + "'");
+            closeStatement(stmt);
             throw sqlE;
         }
     }
@@ -68,7 +74,7 @@ public class SqlUtils {
         if (debug) System.out.println("<==getPreparedStatement==>: " + sql);
 
         Connection connection = dataSource.getConnection();
-        logger.debug("Opening connection: " + getConnectionCount());
+        showConnectionCount();
         PreparedStatement prepStmt = connection.prepareStatement(sql);
         return prepStmt;
     }
@@ -81,17 +87,19 @@ public class SqlUtils {
         }
     }
     
-    public static void closeStatement(Statement stmt) throws SQLException{
+    public static void closeStatement(Statement stmt) throws SQLException {
         // TEST
         if (debug) System.out.println("<== CloseConnection ==>");
-        
-        if (stmt != null){
+
+        if (stmt != null) {
             Connection connection = stmt.getConnection();
-            try { stmt.close(); } catch(Exception e) { }
-            try {  
-            connection.close();
-            logger.debug("Closing connection: " + getConnectionCount());
-            } catch(Exception e) { }
+            try {
+                stmt.close();
+            } catch (Exception e) {}
+            try {
+                connection.close();
+                showConnectionCount();
+            } catch (Exception e) {}
         }
     }
     
@@ -112,7 +120,7 @@ public class SqlUtils {
                 result = resultSet.getString(1);
             }
         } catch (SQLException e) {
-            System.err.println("Failed attempting to execute sql in runStringQuery: '" + sql + "'");
+            // System.err.println("Failed attempting to execute sql in runStringQuery: '" + sql + "'");
             e.printStackTrace(System.err);
             throw e;
         } finally {
@@ -155,14 +163,14 @@ public class SqlUtils {
         ResultSet resultSet = null;
         Connection connection = null;
         Statement stmt = null;
-        Vector v = new Vector();
+        Vector<String> v = new Vector<String>();
 
         // TEST
         if (debug) System.out.println("<==runStringArrayQuery==>: " + sql);
                
         try {
             connection = dataSource.getConnection();
-            logger.debug("Closing connection: " + getConnectionCount());
+            showConnectionCount();
             stmt = connection.createStatement();
             resultSet = stmt.executeQuery(sql);
             while (resultSet.next()) v.addElement(resultSet.getString(1));
@@ -171,10 +179,11 @@ public class SqlUtils {
             throw e;
         } finally {
             closeResultSet(resultSet);
+            closeStatement(stmt);
         }
         
         String result[] = new String[v.size()];
-        v.copyInto(result);
+        v.toArray(result);
         return result;
     }
     
@@ -184,14 +193,14 @@ public class SqlUtils {
     public static String[] getColumnNames(DataSource dataSource, String sql) throws SQLException {
         Connection connection = null;
         PreparedStatement stmt = null;
-        ArrayList colNames = new ArrayList();
+        ArrayList<String> colNames = new ArrayList<String>();
 
         // TEST
         if (debug) System.out.println("<==getColumnNames==>: " + sql);
 
         try {
             connection = dataSource.getConnection();
-            logger.debug("Closing connection: " + getConnectionCount());
+            showConnectionCount();
             stmt = connection.prepareStatement(sql);
             ResultSetMetaData metaData = stmt.getMetaData();
             int colCount = metaData.getColumnCount();
@@ -220,7 +229,7 @@ public class SqlUtils {
 
         try {
             connection = dataSource.getConnection();
-            logger.debug("Opening connection: " + getConnectionCount());
+            showConnectionCount();
             stmt = connection.createStatement();
             result = stmt.executeUpdate(sql);
         } catch (SQLException e) {
@@ -248,7 +257,7 @@ public class SqlUtils {
        
         try {
             connection = dataSource.getConnection();
-            logger.debug("Closing connection: " + getConnectionCount());
+            showConnectionCount();
             stmt = connection.createStatement();
             return stmt.execute(sql);
         } catch (SQLException e) {
@@ -296,12 +305,32 @@ public class SqlUtils {
         }
     }
 
-    public static String getConnectionCount() {
-        WdkModel model = WdkModel.INSTANCE;
-        if (model == null) return "(Not available)";
-        RDBMSPlatformI platform = model.getPlatform();
-        if (platform == null) return "(Not available)";
-        return "(" + platform.getActiveCount() + ", " + platform.getIdleCount()
-                + ")";
+    public static synchronized void showConnectionCount() {
+        if (createShowThread) {
+            createShowThread = false;
+            Thread t = new Thread() {
+
+                public void run() {
+                    logger.debug("Logging connections.");
+                    while (true) {
+                        WdkModel model = WdkModel.INSTANCE;
+                        if (model != null) {
+                            RDBMSPlatformI platform = model.getPlatform();
+                            if (platform != null)
+                                logger.debug("Connections: ("
+                                        + platform.getActiveCount() + ", "
+                                        + platform.getIdleCount() + ")");
+                        }
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException ex) {
+                            // TODO Auto-generated catch block
+                            ex.printStackTrace();
+                        }
+                    }
+                }
+            };
+            t.start();
+        }
     }
 }
