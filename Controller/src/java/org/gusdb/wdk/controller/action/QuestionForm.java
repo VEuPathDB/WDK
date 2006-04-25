@@ -62,12 +62,12 @@ public class QuestionForm extends QuestionSetForm {
 		    pVals = new String[] { getMyProp(p.getName()) }; 
 		}
 		
-		String errMsg = null;
+		String errMsg = "";
 		for (int j=0; j<pVals.length; j++) {
 		    String oneMsg = p.validateValue(pVals[j]);
 		    if (oneMsg != null) { errMsg += oneMsg; } 
 		}
-		if (errMsg != null) {
+		if (!errMsg.equals("")) {
 		    errors.add(ActionErrors.GLOBAL_ERROR,
 			       new ActionError("mapped.properties", p.getPrompt(), errMsg));
 		}
