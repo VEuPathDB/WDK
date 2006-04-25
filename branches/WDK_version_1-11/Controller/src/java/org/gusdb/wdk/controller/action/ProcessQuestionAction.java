@@ -27,12 +27,9 @@ public class ProcessQuestionAction extends ShowQuestionAction {
         String submitAction = request.getParameter(CConstants.PQ_SUBMIT_KEY);
         logger.debug("submitAction=" + submitAction);
         if (submitAction.equals(CConstants.PQ_SUBMIT_GET_ANSWER)) {
-            if (request.getSession().getAttribute(CConstants.QUESTIONFORM_KEY) == null) {
-                String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
-                QuestionBean wdkQuestion = getQuestionByFullName(qFullName);
-                prepareQuestionForm(wdkQuestion, request);
-                logger.debug("DEBUG: PQA, mended the session");
-            }
+	    String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
+	    QuestionBean wdkQuestion = getQuestionByFullName(qFullName);
+	    prepareQuestionForm(wdkQuestion, request);
             forward = mapping.findForward(CConstants.PQ_SHOW_SUMMARY_MAPKEY);
         } else if (submitAction.equals(CConstants.PQ_SUBMIT_EXPAND_QUERY)) {
             forward = mapping.findForward(CConstants.PQ_START_BOOLEAN_MAPKEY);
