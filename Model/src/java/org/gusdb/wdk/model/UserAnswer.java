@@ -45,12 +45,18 @@ public class UserAnswer {
         if (name == null) {
             StringBuffer nameBuf = new StringBuffer();
             // nameBuf.append("[" + answerID + "]");
-            nameBuf.append(answer.getQuestion().getDisplayName());
+            nameBuf.append(answer.getQuestion().getDisplayName() + ": ");
 
-            Map params = answer.getParams();
+            Map<String, Param> params = answer.getQuestion().getParamMap();
+            Map<String, Object> paramValues = answer.getParams();
 
-            for (Object key : params.keySet()) {
-                nameBuf.append(" " + key + ":" + params.get(key));
+            boolean first = true;
+            for (String paramName : paramValues.keySet()) {
+                Param param = params.get(paramName);
+                Object value = paramValues.get(paramName);
+                if (first) first = false;
+                else nameBuf.append(", ");
+                nameBuf.append("<b>" + param.getPrompt() + "</b>=" + value);
             }
             name = nameBuf.toString();
         }

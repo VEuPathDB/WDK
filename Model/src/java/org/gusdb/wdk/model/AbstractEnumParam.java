@@ -113,7 +113,10 @@ public abstract class AbstractEnumParam extends Param {
         if (vocabMap.containsKey(value)) {
             return null;
         }
-        return "Invalid value '" + value + "' for parameter '" + name +"'";
+        if (value == null || value.toString().trim().length()== 0)
+            return " - Please choose value(s) for parameter '" + name +"'";
+        else 
+            return " - Invalid value '" + value + "' for parameter '" + name +"'";
     }
 
     protected void clone(AbstractEnumParam param) {
