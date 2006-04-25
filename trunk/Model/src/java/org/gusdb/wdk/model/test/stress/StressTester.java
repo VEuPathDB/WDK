@@ -56,6 +56,7 @@ public class StressTester {
     public static final String FIELD_RECORD_URL = "RecordUrl";
     public static final String FIELD_HOME_URL = "HomeUrl";
     public static final String FIELD_MAX_DELAY_TIME = "MaxDelayTime";
+    public static final String FIELD_MIN_DELAY_TIME = "MinDelayTime";
     public static final String FIELD_URL_PREFIX = "url";
 
     public static final String TYPE_HOME_URL = "HomeUrl";
@@ -82,6 +83,7 @@ public class StressTester {
     private File configDir;
 
     private int maxDelayTime;
+    private int minDelayTime;
 
     private Random rand;
 
@@ -199,8 +201,10 @@ public class StressTester {
         xmlQuestionUrlPattern = properties.getProperty(FIELD_XML_QUESTION_URL);
         recordUrlPattern = properties.getProperty(FIELD_RECORD_URL);
         homeUrlPattern = properties.getProperty(FIELD_HOME_URL);
-        String delay = properties.getProperty(FIELD_MAX_DELAY_TIME);
-        maxDelayTime = Integer.parseInt(delay);
+        String maxDelay = properties.getProperty(FIELD_MAX_DELAY_TIME);
+        maxDelayTime = Integer.parseInt(maxDelay);
+        String minDelay = properties.getProperty(FIELD_MIN_DELAY_TIME);
+        minDelayTime = Integer.parseInt(minDelay);
 
         // load other urls
         for (Object key : properties.keySet()) {
@@ -228,7 +232,7 @@ public class StressTester {
         }
 
         // compose urls from sanity model
-        //composeFromSanityModel(wdkModel);
+        // composeFromSanityModel(wdkModel);
 
         // compose urls from stress test template
         composeFromTemplate(wdkModel);
@@ -471,7 +475,8 @@ public class StressTester {
                 // randomly pick a task to the idling runners;
                 if (runner.getState() == RunnerState.Idle) {
                     StressTestTask task = createTask();
-                    int delay = rand.nextInt(maxDelayTime) + 1;
+                    int delay = rand.nextInt(maxDelayTime - minDelayTime)
+                            + minDelayTime;
                     try {
                         runner.assignTask(task, delay);
                     } catch (InvalidStatusException ex) {
@@ -526,9 +531,7 @@ public class StressTester {
     private StressTestTask createTask() {
         // choose from urlPool or question cache
         UrlItem urlItem;
-        // HACK
-//        if (rand.nextBoolean()) { // get from question cache
-            if (false) { // get from question cache
+        if (rand.nextBoolean()) { // get from question cache
             // choose question
             int index = rand.nextInt(questionCache.size());
             int i = 0;
