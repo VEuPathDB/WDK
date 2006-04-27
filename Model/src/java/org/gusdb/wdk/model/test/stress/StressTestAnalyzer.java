@@ -97,19 +97,19 @@ public class StressTestAnalyzer {
         return SqlUtils.runIntegerQuery(dataSource, sb.toString());
     }
 
-    public int getFailedTaskCount(ResultType resultType) throws SQLException {
+    public int getTaskCount(ResultType resultType) throws SQLException {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT count(*) FROM " + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
-        sb.append(" AND result_type != '" + resultType.name() + "'");
+        sb.append(" AND result_type = '" + resultType.name() + "'");
         return SqlUtils.runIntegerQuery(dataSource, sb.toString());
     }
 
-    public int getFailedTaskCount(ResultType resultType, String taskType) throws SQLException {
+    public int getTaskCount(ResultType resultType, String taskType) throws SQLException {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT count(*) FROM " + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
-        sb.append(" AND result_type != '" + resultType.name() + "'");
+        sb.append(" AND result_type = '" + resultType.name() + "'");
         sb.append(" AND task_type = '" + taskType + "'");
         return SqlUtils.runIntegerQuery(dataSource, sb.toString());
     }
@@ -219,12 +219,12 @@ public class StressTestAnalyzer {
         System.out.print("# of Succeeded Tasks: " + getSucceededTaskCount());
         System.out.println("\t (" + (getTaskSuccessRatio() * 100) + "%)");
         System.out.println("# of Failed Tasks: " + getFailedTaskCount());
-        System.out.println("# of Connection Error: "
-                + getFailedTaskCount(ResultType.ConnectionError));
+        System.out.println("# of IO Connection Error: "
+                + getTaskCount(ResultType.ConnectionError));
         System.out.println("# of HTTP Error: "
-                + getFailedTaskCount(ResultType.HttpError));
+                + getTaskCount(ResultType.HttpError));
         System.out.println("# of Application Error: "
-                + getFailedTaskCount(ResultType.ApplicationException));
+                + getTaskCount(ResultType.ApplicationException));
         System.out.print("Response Time - Total: " + getTotalResponseTime());
         System.out.println("\tAverage: " + getAverageResponseTime());
         System.out.print("SucceededResponse Time - Total: " + getTotalSucceededResponseTime());
@@ -246,11 +246,11 @@ public class StressTestAnalyzer {
                     + "%)");
             System.out.println("# of Failed Tasks: " + getFailedTaskCount(type));
             System.out.println("# of Connection Error: "
-                    + getFailedTaskCount(ResultType.ConnectionError, type));
+                    + getTaskCount(ResultType.ConnectionError, type));
             System.out.println("# of HTTP Error: "
-                    + getFailedTaskCount(ResultType.HttpError, type));
+                    + getTaskCount(ResultType.HttpError, type));
             System.out.println("# of Application Error: "
-                    + getFailedTaskCount(ResultType.ApplicationException, type));
+                    + getTaskCount(ResultType.ApplicationException, type));
             System.out.print("Response Time - Total: " + getTotalResponseTime(type));
             System.out.println("\tAverage: " + getAverageResponseTime(type));
             System.out.print("SucceededResponse Time - Total: " + getTotalSucceededResponseTime(type));
@@ -281,10 +281,11 @@ public class StressTestAnalyzer {
      * @throws InvalidPropertiesFormatException
      * @throws URISyntaxException
      * @throws WdkUserException
+     * @throws SQLException 
      */
     public static void main(String[] args)
             throws InvalidPropertiesFormatException, IOException,
-            WdkModelException, URISyntaxException, WdkUserException {
+            WdkModelException, URISyntaxException, WdkUserException, SQLException {
 
         String cmdName = System.getProperties().getProperty("cmdName");
 
@@ -300,10 +301,7 @@ public class StressTestAnalyzer {
         // create tester
         StressTestAnalyzer analyzer = new StressTestAnalyzer(testTag, modelName);
         // run tester
-        try {
             analyzer.print();
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
+            System.exit(0);
     }
 }
