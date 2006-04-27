@@ -111,6 +111,10 @@ public class WSQueryInstance extends QueryInstance  {
 
         ResultList resultList = getNonpersistentResult();
 
+        // Since each row has same number/type of fields, the PreparedStatement
+        // should be constructed outside of the while loop, to make it really
+        // "prepared". Consider refactoring the code later
+        PreparedStatement pstmt = null;
         try {
 
             SqlUtils.execute(dataSource, createSql);
@@ -128,8 +132,7 @@ public class WSQueryInstance extends QueryInstance  {
                 v.copyInto(vals);
 
                 String s = insertSqlB.toString() + "?)";
-                PreparedStatement pstmt = SqlUtils.getPreparedStatement(
-                        dataSource, s);
+                pstmt = SqlUtils.getPreparedStatement(dataSource, s);
 
                 for (int i = 0; i < vals.length; i++) {
                     //todo: may need to handle large strings for clob columns?
@@ -138,8 +141,14 @@ public class WSQueryInstance extends QueryInstance  {
                 pstmt.setInt(vals.length + 1, ++idx);
                 pstmt.execute();
                 SqlUtils.closeStatement(pstmt);
+                pstmt = null;
             }
         } catch (SQLException e) {
+            try {
+                SqlUtils.closeStatement(pstmt);
+            } catch (SQLException ex) {
+                throw new WdkModelException("Failed closing the PreparedStatement.",  ex);
+            }
             throw new WdkModelException(e);
         }
     }

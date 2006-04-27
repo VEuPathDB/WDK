@@ -707,6 +707,7 @@ public class ResultFactory implements Serializable {
             e.printStackTrace();
             System.exit(1);
         }
+        System.exit(0);
     }
 
     static Options declareOptions() {

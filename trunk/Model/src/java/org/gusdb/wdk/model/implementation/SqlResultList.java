@@ -33,36 +33,41 @@ public class SqlResultList extends ResultList {
 	     o = resultSet.getObject(ResultFactory.RESULT_TABLE_I);
 	}
 	catch (SQLException e){
+        // close the resultSet, assuming it won't be used as longer
+        close();
 	    throw new WdkModelException("Result table: " + resultTableName 
 					+ " SQLState: " + e.getSQLState(), e);
 	}
 	return o;
     }
 
-    public Object getValueFromResult(String attributeName) throws WdkModelException {
+    public Object getValueFromResult(String attributeName)
+            throws WdkModelException {
         Object o = null;
         try {
-	    ResultSetMetaData rsmd = resultSet.getMetaData();
-	    int columnIndex = resultSet.findColumn(attributeName);
-	    int columnType = rsmd.getColumnType(columnIndex);
-	    if (columnType == Types.CLOB){
-	        Clob clob = resultSet.getClob(attributeName);
-	        if (clob != null) {
-	            Long length = new Long(clob.length());
-	            o = clob.getSubString(1, length.intValue());
-	        }
-	    }
-	    else{
-		o = resultSet.getObject(attributeName);
-	    }
+            ResultSetMetaData rsmd = resultSet.getMetaData();
+            int columnIndex = resultSet.findColumn(attributeName);
+            int columnType = rsmd.getColumnType(columnIndex);
+            if (columnType == Types.CLOB) {
+                Clob clob = resultSet.getClob(attributeName);
+                if (clob != null) {
+                    Long length = new Long(clob.length());
+                    o = clob.getSubString(1, length.intValue());
+                }
+            } else {
+                o = resultSet.getObject(attributeName);
+            }
         } catch (SQLException e) {
-            throw new WdkModelException(attributeName + " not found in resultSet of "
-					+ instance.getQuery().getFullName(), e);
+            // close the connection, assuming the resultSet won't be used later.
+            close();
+            throw new WdkModelException(attributeName
+                    + " not found in resultSet of "
+                    + instance.getQuery().getFullName(), e);
         }
 
-	if (o == null) {
-	    o = "";
-	}
+        if (o == null) {
+            o = "";
+        }
 
         return o;
     }
@@ -72,6 +77,8 @@ public class SqlResultList extends ResultList {
         try {
             b = resultSet.next();
         } catch (SQLException e) {
+            // close the resultSet, assuming it won't be used any longer
+            close();
             throw new WdkModelException(e);
         }
         return b;
@@ -81,6 +88,8 @@ public class SqlResultList extends ResultList {
 	try {
 	    SqlUtils.printResultSet(resultSet);
 	} catch (SQLException e) {
+        // close the resultSet, assuming it won't be used any longer
+        close();
 	    throw new WdkModelException(e);
 	}
     }
@@ -159,6 +168,8 @@ public class SqlResultList extends ResultList {
             }
 
         } catch (SQLException e) {
+            // close the resultSet, assuming it won't used any longer
+            close();
             throw new WdkModelException(e);
         }
     }

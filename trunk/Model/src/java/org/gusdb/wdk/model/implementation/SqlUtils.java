@@ -45,7 +45,7 @@ public class SqlUtils {
             //logger.debug("Success in executing sql in getResultSet: '" + sql + "'");
             return rs;
         } catch (SQLException sqlE) {
-            logger.debug("Failed attempting to execute sql in getResultSet: '" + sql + "'");
+            logger.error("Failed attempting to execute sql in getResultSet: '" + sql + "'");
             closeStatement(stmt);
             throw sqlE;
         }
@@ -121,6 +121,7 @@ public class SqlUtils {
             }
         } catch (SQLException e) {
             // System.err.println("Failed attempting to execute sql in runStringQuery: '" + sql + "'");
+            logger.error("Failed attempting to execute sql in runStringQuery: '" + sql + "'");
             e.printStackTrace(System.err);
             throw e;
         } finally {
@@ -145,7 +146,8 @@ public class SqlUtils {
             resultSet = getResultSet(dataSource, sql);
             if (resultSet.next()) result = new Integer(resultSet.getInt(1));
         } catch (SQLException e) {
-            System.err.println("Failed attempting to execute sql in runIntegerQuery: '" + sql + "'");
+            // System.err.println("Failed attempting to execute sql in runIntegerQuery: '" + sql + "'");
+            logger.error("Failed attempting to execute sql in runIntegerQuery: '" + sql + "'");
             e.printStackTrace(System.err);
             throw e;
         } finally {
@@ -175,11 +177,11 @@ public class SqlUtils {
             resultSet = stmt.executeQuery(sql);
             while (resultSet.next()) v.addElement(resultSet.getString(1));
         } catch (SQLException e) {
-            System.err.println("Failed attempting to execute sql in runStringArrayQuery: '" + sql + "'");
+            // System.err.println("Failed attempting to execute sql in runStringArrayQuery: '" + sql + "'");
+            logger.error("Failed attempting to execute sql in runStringArrayQuery: '" + sql + "'");
             throw e;
         } finally {
             closeResultSet(resultSet);
-            closeStatement(stmt);
         }
         
         String result[] = new String[v.size()];
@@ -234,7 +236,7 @@ public class SqlUtils {
             result = stmt.executeUpdate(sql);
         } catch (SQLException e) {
             System.err.println("Failed executing sql:\n" + sql);
-            logger.error(e);
+            logger.error("Failed attempting to execute sql in executeUpdate: '" + sql + "'");
             throw e;
         } finally {
             closeStatement(stmt);
@@ -264,6 +266,7 @@ public class SqlUtils {
             System.err.println("Failed executing sql:");
             System.err.println(sql);
             System.err.println("");
+            logger.error("Failed attempting to execute sql in executeUpdate: '" + sql + "'");
             throw e;
         } finally {
             closeStatement(stmt);
@@ -322,7 +325,7 @@ public class SqlUtils {
                                         + platform.getIdleCount() + ")");
                         }
                         try {
-                            Thread.sleep(1000);
+                            Thread.sleep(10000);
                         } catch (InterruptedException ex) {
                             // TODO Auto-generated catch block
                             ex.printStackTrace();

@@ -232,7 +232,7 @@ public class StressTester {
         }
 
         // compose urls from sanity model
-        // composeFromSanityModel(wdkModel);
+        composeFromSanityModel(wdkModel);
 
         // compose urls from stress test template
         composeFromTemplate(wdkModel);
@@ -251,94 +251,87 @@ public class StressTester {
                         .toURL());
 
         // get sanity questions from the sanity model
-        if (questionUrlPattern != null) {
-            SanityQuestion[] questions = sanityModel.getAllSanityQuestions();
-            for (SanityQuestion question : questions) {
-                // get question full name
-                String fullName = question.getName();
-                // get parameters
-                Map<String, Object> params = question.getParamHash();//
-                // get original parameters
-                Reference questionRef = new Reference(question.getRef());
-                QuestionSet questionSet = wdkModel.getQuestionSet(questionRef
-                        .getSetName());
-                Question q = questionSet.getQuestion(questionRef
-                        .getElementName());
-                Map<String, Param> originalParams = q.getParamMap();
+        SanityQuestion[] questions = sanityModel.getAllSanityQuestions();
+        for (SanityQuestion question : questions) {
+            // get question full name
+            String fullName = question.getName();
 
-                // cache the question with all possible param combinations
-                Map<String, Set<String>> paramMap = questionCache.get(fullName);
-                if (paramMap == null) {
-                    paramMap = new LinkedHashMap<String, Set<String>>();
-                    questionCache.put(fullName, paramMap);
+            // get parameters
+            Map<String, Object> params = question.getParamHash();//
+            // get original parameters
+            Reference questionRef = new Reference(question.getRef());
+            QuestionSet questionSet = wdkModel.getQuestionSet(questionRef
+                    .getSetName());
+            Question q = questionSet.getQuestion(questionRef.getElementName());
+            Map<String, Param> originalParams = q.getParamMap();
 
-                    // add questionFullName parameter
-                    Set<String> paramValues = new LinkedHashSet<String>();
-                    paramValues.add(fullName);
-                    paramMap.put("questionFullName", paramValues);
+            // cache the question with all possible param combinations
+            Map<String, Set<String>> paramMap = questionCache.get(fullName);
+            if (paramMap == null) {
+                paramMap = new LinkedHashMap<String, Set<String>>();
+                questionCache.put(fullName, paramMap);
 
-                    // add questionSubmit parameter
+                // add questionFullName parameter
+                Set<String> paramValues = new LinkedHashSet<String>();
+                paramValues.add(fullName);
+                paramMap.put("questionFullName", paramValues);
+
+                // add questionSubmit parameter
+                paramValues = new LinkedHashSet<String>();
+                paramValues.add("Get Answer");
+                paramMap.put("questionSubmit", paramValues);
+            }
+
+            // iterate all other parameters
+            Set<String> paramKeys = params.keySet();
+            for (String paramName : paramKeys) {
+                String value = params.get(paramName).toString();
+                // check if the parameter is a flatvocab parameter
+                Param param = originalParams.get(paramName);
+                if (param instanceof FlatVocabParam) {
+                    paramName = "myMultiProp(" + paramName + ")";
+                } else {
+                    paramName = "myProp(" + paramName + ")";
+                }
+                // get the parameter cache
+                Set<String> paramValues = paramMap.get(paramName);
+                if (paramValues == null) {
                     paramValues = new LinkedHashSet<String>();
-                    paramValues.add("Get Answer");
-                    paramMap.put("questionSubmit", paramValues);
+                    paramMap.put(paramName, paramValues);
                 }
-
-                // iterate all other parameters
-                Set<String> paramKeys = params.keySet();
-                for (String paramName : paramKeys) {
-                    String value = params.get(paramName).toString();
-                    // check if the parameter is a flatvocab parameter
-                    Param param = originalParams.get(paramName);
-                    if (param instanceof FlatVocabParam) {
-                        paramName = "myMultiProp(" + paramName + ")";
-                    } else {
-                        paramName = "myProp(" + paramName + ")";
-                    }
-                    // get the parameter cache
-                    Set<String> paramValues = paramMap.get(paramName);
-                    if (paramValues == null) {
-                        paramValues = new LinkedHashSet<String>();
-                        paramMap.put(paramName, paramValues);
-                    }
-                    paramValues.add(value);
-                }
+                paramValues.add(value);
             }
         }
 
         // get sanity xml questions from the sanity model
-        if (xmlQuestionUrlPattern != null) {
-            SanityXmlQuestion[] xmlQuestions = sanityModel
-                    .getSanityXmlQuestions();
-            for (SanityXmlQuestion xmlQuestion : xmlQuestions) {
-                // get question full name
-                String fullName = xmlQuestion.getName();
-                StringBuffer sb = new StringBuffer(xmlQuestionUrlPattern);
-                sb.append("?name=" + fullName);
-                UrlItem xmlQuestionUrl = new UrlItem(sb.toString(),
-                        TYPE_XML_QUESTION_URL);
-                urlPool.add(xmlQuestionUrl);
-            }
+        SanityXmlQuestion[] xmlQuestions = sanityModel.getSanityXmlQuestions();
+        for (SanityXmlQuestion xmlQuestion : xmlQuestions) {
+            // get question full name
+            String fullName = xmlQuestion.getName();
+            StringBuffer sb = new StringBuffer(xmlQuestionUrlPattern);
+            sb.append("?name=" + fullName);
+            UrlItem xmlQuestionUrl = new UrlItem(sb.toString(),
+                    TYPE_XML_QUESTION_URL);
+            urlPool.add(xmlQuestionUrl);
         }
 
         // get sanity records from the sanity model
-        if (recordUrlPattern != null) {
-            SanityRecord[] records = sanityModel.getAllSanityRecords();
-            for (SanityRecord record : records) {
-                // get record full name
-                String fullName = record.getName();
-                String projectID = record.getProjectID();
-                String primaryKey = record.getPrimaryKey();
-                // compose url
-                StringBuffer sb = new StringBuffer(recordUrlPattern);
-                sb.append("?name=" + fullName);
-                if (projectID != null && projectID.length() != 0)
-                    sb.append("&project_id="
-                            + URLEncoder.encode(projectID, "UTF-8"));
-                sb.append("&primary_key="
-                        + URLEncoder.encode(primaryKey, "UTF-8"));
-                UrlItem recordUrl = new UrlItem(sb.toString(), TYPE_RECORD_URL);
-                urlPool.add(recordUrl);
-            }
+        SanityRecord[] records = sanityModel.getAllSanityRecords();
+        for (SanityRecord record : records) {
+            // get record full name
+            String fullName = record.getName();
+
+            String projectID = record.getProjectID();
+            String primaryKey = record.getPrimaryKey();
+            // compose url
+            StringBuffer sb = new StringBuffer(recordUrlPattern);
+            sb.append("?name=" + fullName);
+            if (projectID != null && projectID.length() != 0)
+                sb.append("&project_id="
+                        + URLEncoder.encode(projectID, "UTF-8"));
+            sb.append("&primary_key=" + URLEncoder.encode(primaryKey, "UTF-8"));
+            UrlItem recordUrl = new UrlItem(sb.toString(), TYPE_RECORD_URL);
+            urlPool.add(recordUrl);
         }
     }
 
@@ -350,9 +343,8 @@ public class StressTester {
         String line;
         while ((line = in.readLine()) != null) {
             line = line.trim();
-            if (line.length() == 0 || line.equals("//")) continue;
-
-            logger.debug("Processing: " + line);
+            if (line.length() == 0 || line.equals("//") || line.startsWith("#"))
+                continue;
 
             // a start of an item
             if (line.toLowerCase().startsWith("question")) {
@@ -388,6 +380,7 @@ public class StressTester {
                 // read parameters
                 while ((line = in.readLine()) != null) {
                     line = line.trim();
+                    if (line.startsWith("#")) continue;
                     if (line.equalsIgnoreCase("//")) break;
                     if (line.toLowerCase().startsWith("param")) {
                         pos = line.indexOf(":");
@@ -617,10 +610,12 @@ public class StressTester {
      * @throws InvalidPropertiesFormatException
      * @throws URISyntaxException
      * @throws WdkUserException
+     * @throws SQLException
      */
     public static void main(String[] args)
             throws InvalidPropertiesFormatException, IOException,
-            WdkModelException, URISyntaxException, WdkUserException {
+            WdkModelException, URISyntaxException, WdkUserException,
+            SQLException {
 
         String cmdName = System.getProperties().getProperty("cmdName");
 
@@ -636,10 +631,7 @@ public class StressTester {
         // create tester
         StressTester tester = new StressTester(modelName);
         // run tester
-        try {
-            tester.runTest(numThreads);
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
+        tester.runTest(numThreads);
+        System.exit(0);
     }
 }

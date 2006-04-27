@@ -36,8 +36,9 @@ public class StressTemplater {
     public WdkModel getWdkModel() {
         return this.wdkModel;
     }
-    
-    public void createTemplate(File outFile) throws IOException, WdkModelException {
+
+    public void createTemplate(File outFile) throws IOException,
+            WdkModelException {
         PrintWriter out = new PrintWriter(new FileWriter(outFile));
         // save question template
         QuestionSet[] qsets = wdkModel.getAllQuestionSets();
@@ -53,8 +54,7 @@ public class StressTemplater {
                     if (param instanceof FlatVocabParam) {
                         FlatVocabParam fparam = (FlatVocabParam) param;
                         String[] vocab = fparam.getVocab();
-                        if (vocab.length > 0)
-                        out.print(vocab[0]);
+                        if (vocab.length > 0) out.print(vocab[0]);
                         for (int i = 1; i < vocab.length; i++) {
                             out.print(", " + vocab[i]);
                         }
@@ -66,7 +66,7 @@ public class StressTemplater {
                 out.println("//");
             }
         }
-        
+
         // save records
         RecordClassSet[] rsets = wdkModel.getAllRecordClassSets();
         for (RecordClassSet rset : rsets) {
@@ -77,7 +77,7 @@ public class StressTemplater {
                 out.println("//");
             }
         }
-        
+
         // save xml questions
         XmlQuestionSet[] xmlqsets = wdkModel.getXmlQuestionSets();
         for (XmlQuestionSet xmlqset : xmlqsets) {
@@ -96,7 +96,7 @@ public class StressTemplater {
     // /////////// static methods /////////////////////////////////////
     // ////////////////////////////////////////////////////////////////////
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException, WdkModelException {
 
         String cmdName = System.getProperties().getProperty("cmdName");
         File configDir = new File(System.getProperties().getProperty(
@@ -112,28 +112,22 @@ public class StressTemplater {
         File modelXmlFile = new File(configDir, modelName + ".xml");
         File modelPropFile = new File(configDir, modelName + ".prop");
 
-        try {
             // read config info
             File schemaFile = new File(System.getProperty("schemaFile"));
             File xmlSchemaFile = new File(System.getProperty("xmlSchemaFile"));
-            WdkModel wdkModel = ModelXmlParser.parseXmlFile(
-                    modelXmlFile.toURL(), modelPropFile.toURL(),
-                    schemaFile.toURL(), xmlSchemaFile.toURL(),
-                    modelConfigXmlFile.toURL());
+            WdkModel wdkModel = ModelXmlParser.parseXmlFile(modelXmlFile
+                    .toURL(), modelPropFile.toURL(), schemaFile.toURL(),
+                    xmlSchemaFile.toURL(), modelConfigXmlFile.toURL());
 
             StressTemplater tester = new StressTemplater(wdkModel);
-            
+
             // open the output file
             File outFile = new File(configDir, modelName + "-stress.template");
             tester.createTemplate(outFile);
-            
-         } catch (MalformedURLException ex) {
-            ex.printStackTrace();
-        } catch (WdkModelException ex) {
-            ex.printStackTrace();
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
+
+            System.out.println("The template file for " + modelName
+                    + " has been created at " + outFile.getAbsolutePath());
+            System.exit(0);
     }
 
     private static void addOption(Options options, String argName, String desc) {
@@ -180,9 +174,8 @@ public class StressTemplater {
 
         String newline = System.getProperty("line.separator");
         String cmdlineSyntax = cmdName + " -model model_name";
- 
-        String header = newline
-                + "Preparing the template file for stress test"
+
+        String header = newline + "Preparing the template file for stress test"
                 + newline + newline + "Options:";
 
         String footer = "";

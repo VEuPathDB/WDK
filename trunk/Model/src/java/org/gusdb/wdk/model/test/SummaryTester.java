@@ -109,7 +109,7 @@ public class SummaryTester {
 	    e.printStackTrace();
 	    System.exit(1);
 	}
-	    
+	    System.exit(0);
     }
 
     private static void writeSummaryAsXml (Question question, Hashtable paramValues, String xmlFile)
