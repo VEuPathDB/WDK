@@ -130,7 +130,10 @@ public class StressTestAnalyzer {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT sum(end_time - start_time) FROM " + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
-        long sum = SqlUtils.runIntegerQuery(dataSource, sb.toString());
+        ResultSet rs = SqlUtils.getResultSet(dataSource, sb.toString());
+        rs.next();
+        long sum = rs.getLong(1);
+        SqlUtils.closeResultSet(rs);
         return (sum / 1000F);
     }
 
@@ -139,7 +142,10 @@ public class StressTestAnalyzer {
         sb.append("SELECT sum(end_time - start_time) FROM " + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
         sb.append(" AND task_type = '" + taskType + "'");
-        long sum = SqlUtils.runIntegerQuery(dataSource, sb.toString());
+        ResultSet rs = SqlUtils.getResultSet(dataSource, sb.toString());
+        rs.next();
+        long sum = rs.getLong(1);
+        SqlUtils.closeResultSet(rs);
         return (sum / 1000F);
     }
 
@@ -171,7 +177,10 @@ public class StressTestAnalyzer {
         sb.append("SELECT sum(end_time - start_time) FROM " + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
         sb.append(" AND result_type = '" + ResultType.Succeeded.name() + "'");
-        long sum = SqlUtils.runIntegerQuery(dataSource, sb.toString());
+        ResultSet rs = SqlUtils.getResultSet(dataSource, sb.toString());
+        rs.next();
+        long sum = rs.getLong(1);
+        SqlUtils.closeResultSet(rs);
         return (sum / 1000F);
     }
 
@@ -181,7 +190,10 @@ public class StressTestAnalyzer {
         sb.append(" WHERE test_tag = " + testTag);
         sb.append(" AND result_type = '" + ResultType.Succeeded.name() + "'");
         sb.append(" AND task_type = '" + taskType + "'");
-        long sum = SqlUtils.runIntegerQuery(dataSource, sb.toString());
+        ResultSet rs = SqlUtils.getResultSet(dataSource, sb.toString());
+        rs.next();
+        long sum = rs.getLong(1);
+        SqlUtils.closeResultSet(rs);
         return (sum / 1000F);
     }
 

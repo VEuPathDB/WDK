@@ -315,12 +315,14 @@ public class SanityTester {
                     System.out.println(BANNER_LINE + "\n");
                     questionsFailed++;
                 } else {
+                    String globalArgs = "-model " + modelName;
+                    String command = questions[i].getCommand(globalArgs);
                     System.out.println(((end -start)/1000F) + " Question "
                             + questionRef.getSetName() + "."
                             + questionRef.getElementName()
                             + " passed--returned " + resultSize
                             + " rows, within expected range (" + sanityMin
-                            + " - " + sanityMax + ")\n");
+                            + " - " + sanityMax + ") ["+command+"]\n");
                     questionsPassed++;
                 }
             } catch (Exception e) {
@@ -337,6 +339,17 @@ public class SanityTester {
                         + " FAILED!***  It threw an exception.");
                 printFailureMessage(questions[i]);
                 System.out.println(BANNER_LINE + "\n");
+            }
+            // check the connection usage
+            RDBMSPlatformI platform = wdkModel.getPlatform();
+//            System.out.println("Connection: " + platform.getActiveCount() + "/" 
+//                    + platform.getIdleCount());
+            if (platform.getActiveCount() > 0) {
+                System.err.println("Connection leak ("
+                        + platform.getActiveCount()
+                        + ") for question: " + questionRef.getSetName() + "."
+                        + questionRef.getElementName());
+                printFailureMessage(questions[i]);
             }
         }
     }
@@ -532,7 +545,7 @@ public class SanityTester {
         System.exit(1);
     }
 
-    static Logger logger = Logger.getRootLogger();
+    private static Logger logger = Logger.getLogger(SanityTester.class);
 
     public static void main(String[] args) {
 
