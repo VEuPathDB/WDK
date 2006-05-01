@@ -50,7 +50,6 @@ public class ProcessQuestionSetsFlatAction extends ShowQuestionAction {
 	String qSetName = qFullName.substring(0, dotI);
 	String qName = qFullName.substring(dotI+1, qFullName.length());
 	String pref = qSetName + "_" + qName + "_";
-	
 	ParamBean[] params = wdkQuestion.getParams();
 	for (int i=0; i<params.length; i++) {
 	    ParamBean p = params[i];
@@ -62,11 +61,14 @@ public class ProcessQuestionSetsFlatAction extends ShowQuestionAction {
 	}
 	qForm.setQuestion(wdkQuestion);
 
+	/*
 	java.util.Iterator it = qForm.getMyProps().keySet().iterator();
         while (it.hasNext()) {
 	    String key = (String)it.next();
-            //System.err.println("DEBUG: PQSFA: qForm myProp(" + key + ") = " + qForm.getMyPropObject(key));
+            System.err.println("DEBUG: PQSFA: qForm myProp(" + key + ") = " + qForm.getMyPropObject(key));
 	}
+	*/
+	//System.err.println("DEBUG: qForm created in PQSFA: " + qForm);
 
 	return qForm;
     }
