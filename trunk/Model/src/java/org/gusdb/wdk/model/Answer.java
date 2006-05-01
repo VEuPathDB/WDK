@@ -387,14 +387,16 @@ public class Answer {
 		new PrimaryKeyValue(getQuestion().getRecordClass().getPrimaryKeyField(), project, id.toString());
 
 	    if (primaryKeySet.contains(attrPrimaryKey)) {
-		String msg = 
-		    "Result Table " + idsTableName + " for Attribute query " +
-		    attributesQueryInstance.getQuery().getFullName() + " " +
-		    " has more than one row for " + attrPrimaryKey; 
-		throw new WdkModelException(msg);
-	    } else {
-		primaryKeySet.add(attrPrimaryKey);
-	    }
+                String msg = "Result Table " + idsTableName
+                        + " for Attribute query "
+                        + attributesQueryInstance.getQuery().getFullName()
+                        + " " + " has more than one row for " + attrPrimaryKey;
+                // close connection before throwing out the exception
+                attrQueryResultList.close();
+                throw new WdkModelException(msg);
+            } else {
+                primaryKeySet.add(attrPrimaryKey);
+            }
 
 	    
 	    RecordInstance recordInstance = 
