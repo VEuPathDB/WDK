@@ -80,7 +80,7 @@ public class CConstants {
     public static final String GOTO_SUMMARY_PARAM = "goto_summary";
     public static final String QUESTION_FULLNAME_PARAM = "questionFullName";
     public static final String ALWAYS_GOTO_SUMMARY_PARAM = "always_goto_summary";
-
+    public static final String FROM_QUESTIONSET_PARAM = "fromQuestionSet";
     //used in action, action forms, and jsp pages
     public static final String NEXT_QUESTION_OPERAND_SUFFIX = "_nextQuestionOperand"; //match WEB-INF/includes/booleanQuestionNode.jsp
     public static final String NEXT_BOOLEAN_OPERATION_SUFFIX = "_nextBooleanOperation"; //match WEB-INF/includes/booleanQuestionNode.jsp

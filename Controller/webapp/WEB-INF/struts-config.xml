@@ -59,7 +59,7 @@
       scope="session"
       name="questionSetForm"
       input="/question.jsp">
-      <forward name="process_questionsetsflat" path="/processQuestion.do"/>
+      <forward name="process_questionsetsflat" path="/processQuestion.do?fromQuestionSet=1"/>
     </action>
     <action
        path="/processQuestion"
