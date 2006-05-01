@@ -56,7 +56,9 @@ public class ShowSummaryAction extends Action {
 		wdkAnswer.setUserAnswerName(userAnswer.getName());
 	    }
 	} else {
-	    QuestionForm qForm = (QuestionForm)form;
+	    QuestionForm qForm = (QuestionForm)request.getSession().getAttribute(CConstants.QUESTIONFORM_KEY);
+	    //System.err.println("DEBUG: qForm retrieved from session " + request.getSession() + " by SSA: " + qForm);
+
 	    //TRICKY: this is for action forward from ProcessQuestionSetsFlatAction
 	    qForm.cleanup();
 

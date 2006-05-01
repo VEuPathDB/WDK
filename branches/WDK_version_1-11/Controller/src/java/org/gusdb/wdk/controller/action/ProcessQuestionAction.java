@@ -27,10 +27,13 @@ public class ProcessQuestionAction extends ShowQuestionAction {
         String submitAction = request.getParameter(CConstants.PQ_SUBMIT_KEY);
         logger.debug("submitAction=" + submitAction);
         if (submitAction.equals(CConstants.PQ_SUBMIT_GET_ANSWER)) {
-	    String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
-	    QuestionBean wdkQuestion = getQuestionByFullName(qFullName);
-	    prepareQuestionForm(wdkQuestion, request);
-            forward = mapping.findForward(CConstants.PQ_SHOW_SUMMARY_MAPKEY);
+	    boolean fromQS = "1".equals(request.getParameter(CConstants.FROM_QUESTIONSET_PARAM));
+	    if (!fromQS) {
+		String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
+		QuestionBean wdkQuestion = getQuestionByFullName(qFullName);
+		prepareQuestionForm(wdkQuestion, request);
+	    }
+	    forward = mapping.findForward(CConstants.PQ_SHOW_SUMMARY_MAPKEY);
         } else if (submitAction.equals(CConstants.PQ_SUBMIT_EXPAND_QUERY)) {
             forward = mapping.findForward(CConstants.PQ_START_BOOLEAN_MAPKEY);
         }
