@@ -17,11 +17,14 @@ import java.util.Vector;
 import java.util.LinkedHashMap;
 import java.util.Iterator;
 
+import javax.servlet.http.HttpSessionBindingEvent;
+import javax.servlet.http.HttpSessionBindingListener;
+
 /**
  * A wrapper on a {@link WdkModel} that provides simplified access for
  * consumption by a view
  */
-public class WdkModelBean {
+public class WdkModelBean implements HttpSessionBindingListener {
 
     WdkModel model;
 
@@ -30,7 +33,7 @@ public class WdkModelBean {
     }
 
     public Map getProperties() {
-	return model.getProperties();
+        return model.getProperties();
     }
 
     public String getName() {
@@ -63,38 +66,40 @@ public class WdkModelBean {
     }
 
     /**
-     * @return Map of recordClassFullName --> Map of question category --> {array of @link QuestionBean}
+     * @return Map of recordClassFullName --> Map of question category -->
+     *         {array of
+     * @link QuestionBean}
      */
     public Map getQuestionsByCategory() {
-	Map<String, Map<String, Question[]>> qByCat = model.getQuestionsByCategory();
+        Map<String, Map<String, Question[]>> qByCat = model
+                .getQuestionsByCategory();
 
-	Map<String, Map<String, QuestionBean[]>> qBeanByCat = 
-        new LinkedHashMap<String, Map<String, QuestionBean[]>>();
-	Iterator recI = qByCat.keySet().iterator();
-	while(recI.hasNext()) {
-	    String recType = (String)recI.next();
-	    Map<String, Question[]> recMap = qByCat.get(recType);
-	    Iterator catI = recMap.keySet().iterator();
-	    while (catI.hasNext()) {
-		String cat = (String)catI.next();
-		Question[] questions = recMap.get(cat);
+        Map<String, Map<String, QuestionBean[]>> qBeanByCat = new LinkedHashMap<String, Map<String, QuestionBean[]>>();
+        Iterator recI = qByCat.keySet().iterator();
+        while (recI.hasNext()) {
+            String recType = (String) recI.next();
+            Map<String, Question[]> recMap = qByCat.get(recType);
+            Iterator catI = recMap.keySet().iterator();
+            while (catI.hasNext()) {
+                String cat = (String) catI.next();
+                Question[] questions = recMap.get(cat);
 
-		QuestionBean[] qBeans = new QuestionBean[questions.length];
-		for (int i=0; i<questions.length; i++) {
-		    qBeans[i] = new QuestionBean(questions[i]);
-		}
+                QuestionBean[] qBeans = new QuestionBean[questions.length];
+                for (int i = 0; i < questions.length; i++) {
+                    qBeans[i] = new QuestionBean(questions[i]);
+                }
 
-		if(null == qBeanByCat.get(recType)) {
-		    qBeanByCat.put(recType, new LinkedHashMap<String, QuestionBean[]>());
-		}
+                if (null == qBeanByCat.get(recType)) {
+                    qBeanByCat.put(recType,
+                            new LinkedHashMap<String, QuestionBean[]>());
+                }
 
-		qBeanByCat.get(recType).put(cat, qBeans);
-	    }
-	}
+                qBeanByCat.get(recType).put(cat, qBeans);
+            }
+        }
 
-	return qBeanByCat;
+        return qBeanByCat;
     }
-
 
     /**
      * @return Map of questionSetName --> {@link QuestionSetBean}
@@ -103,12 +108,11 @@ public class WdkModelBean {
         Map qSets = model.getQuestionSets();
         Iterator it = qSets.keySet().iterator();
 
-        Map<String, QuestionSetBean> qSetBeans = 
-            new LinkedHashMap<String, QuestionSetBean>();
+        Map<String, QuestionSetBean> qSetBeans = new LinkedHashMap<String, QuestionSetBean>();
         while (it.hasNext()) {
-            String qSetKey = (String)it.next();
-            QuestionSetBean qSetBean = new QuestionSetBean(
-                    (QuestionSet) qSets.get(qSetKey));
+            String qSetKey = (String) it.next();
+            QuestionSetBean qSetBean = new QuestionSetBean((QuestionSet) qSets
+                    .get(qSetKey));
             qSetBeans.put(qSetKey, qSetBean);
         }
         return qSetBeans;
@@ -122,8 +126,8 @@ public class WdkModelBean {
         int i = 0;
         while (it.hasNext()) {
             Object qSetKey = it.next();
-            QuestionSetBean qSetBean = new QuestionSetBean(
-                    (QuestionSet) qSets.get(qSetKey));
+            QuestionSetBean qSetBean = new QuestionSetBean((QuestionSet) qSets
+                    .get(qSetKey));
             qSetBeans[i++] = qSetBean;
         }
         return qSetBeans;
@@ -143,8 +147,8 @@ public class WdkModelBean {
             }
         }
 
-        RecordClassBean[] returnedBeans = 
-            new RecordClassBean[recordClassBeans.size()];
+        RecordClassBean[] returnedBeans = new RecordClassBean[recordClassBeans
+                .size()];
         for (int i = 0; i < recordClassBeans.size(); i++) {
             RecordClassBean nextReturnedBean = recordClassBeans.elementAt(i);
             returnedBeans[i] = nextReturnedBean;
@@ -171,7 +175,7 @@ public class WdkModelBean {
         return new UserBean(user);
     }
 
-    public boolean deleteUser(String userID) {
+    public boolean deleteUser(String userID) throws WdkUserException {
         return model.deleteUser(userID);
     }
 
@@ -189,8 +193,7 @@ public class WdkModelBean {
      */
     public Map getXmlQuestionSetsMap() {
         XmlQuestionSetBean[] qSets = getXmlQuestionSets();
-        Map<String, XmlQuestionSetBean> qSetsMap = 
-            new LinkedHashMap<String, XmlQuestionSetBean>();
+        Map<String, XmlQuestionSetBean> qSetsMap = new LinkedHashMap<String, XmlQuestionSetBean>();
         for (int i = 0; i < qSets.length; i++) {
             qSetsMap.put(qSets[i].getName(), qSets[i]);
         }
@@ -204,5 +207,30 @@ public class WdkModelBean {
             rcBeans[i] = new XmlRecordClassSetBean(rcs[i]);
         }
         return rcBeans;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see javax.servlet.http.HttpSessionBindingListener#valueBound(javax.servlet.http.HttpSessionBindingEvent)
+     */
+    public void valueBound(HttpSessionBindingEvent e) {}
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see javax.servlet.http.HttpSessionBindingListener#valueUnbound(javax.servlet.http.HttpSessionBindingEvent)
+     */
+    public void valueUnbound(HttpSessionBindingEvent e) {
+        // check if the unbounding object is a UserBean, if so, also remove the
+        // user and clear the history
+        Object value = e.getValue();
+        if (e.getValue() instanceof UserBean) {
+            try {
+                deleteUser(((UserBean) value).getUserID());
+            } catch (WdkUserException ex) {
+                ex.printStackTrace();
+            }
+        }
     }
 }
