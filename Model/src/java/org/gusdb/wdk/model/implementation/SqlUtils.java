@@ -28,7 +28,7 @@ public class SqlUtils {
     
     // set this variable to true will start a separate thread to monitor the
     // connection usage
-    private static boolean createShowThread = true;
+    private static boolean createShowThread = false;
     
     public static ResultSet getResultSet(DataSource dataSource, String sql) throws SQLException {
 

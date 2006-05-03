@@ -7,7 +7,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Vector;
 
+import javax.servlet.http.HttpSessionBindingEvent;
+import javax.servlet.http.HttpSessionBindingListener;
+
 import org.gusdb.wdk.model.implementation.ModelXmlParser;
+import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
 import org.gusdb.wdk.model.xml.XmlRecordClassSet;
 import org.w3c.dom.Document;
@@ -615,17 +619,27 @@ public class WdkModel {
         if (users.containsKey(userID)) return users.get(userID);
 
         User user = new User(userID, this);
-        users.put(userID, user);
+        // HACK
+        // In the current version user is stored in the session only. It'll be
+        // changed in the future.
+        // users.put(userID, user);
         return user;
     }
 
     public User getUser(String userID) {
-        return users.get(userID);
+        throw new UnsupportedOperationException("The user is stored in the " +
+                "session only in this version of WDK.");
+        //return users.get(userID);
     }
 
-    public boolean deleteUser(String userID) {
-        User user = users.remove(userID);
-        return (user != null);
+    public boolean deleteUser(String userID) throws WdkUserException {
+        throw new UnsupportedOperationException("The user is stored in the " +
+        "session only in this version of WDK.");
+//        User user = users.remove(userID);
+//        if (user != null) {
+//            user.clearUserAnswers();
+//        }
+//        return (user != null);
     }
 
     // =========================================================================

@@ -31,6 +31,7 @@ public class User {
      * the WdkModel is used when growing BooleanQuestionNode
      */
     private WdkModel model;
+    private boolean cleared = false;
 
     public User(String userID, WdkModel model) {
         this.model = model;
@@ -127,6 +128,7 @@ public class User {
     }
 
     public void clearUserAnswers() throws WdkUserException {
+        cleared = true;
         if (userAnswers != null) userAnswers.clear();
         userAnswers = null;
 
@@ -469,8 +471,8 @@ public class User {
      */
     @Override
     protected void finalize() throws Throwable {
-        // in this place the user object removes the query histories
-        clearUserAnswers();
+        // the user's history hasn't been cleared. in this place the user object removes the query histories
+        if (!cleared) clearUserAnswers();
         super.finalize();
     }
 }
