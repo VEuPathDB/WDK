@@ -223,26 +223,45 @@ public class Answer {
 	return question.isSummaryAttribute(attName);
     }
     
-    //Returns null if we have already returned the last instance
-    public RecordInstance getNextRecordInstance() throws WdkModelException{
-	initPageRecordInstances();
-
-	RecordInstance nextInstance = null;
-	if (recordInstanceCursor < pageRecordInstances.length){
-	    nextInstance = pageRecordInstances[recordInstanceCursor];
-	    recordInstanceCursor++;
-	}
-	return nextInstance;
+    private void releaseRecordInstances() {
+        pageRecordInstances = null;
+        recordInstanceCursor = 0;
     }
     
-    public boolean hasMoreRecordInstances() throws WdkModelException 
-    {
-	initPageRecordInstances();
+    //Returns null if we have already returned the last instance
+    public RecordInstance getNextRecordInstance() throws WdkModelException{
+	try {
+        initPageRecordInstances();
 
-        if (pageRecordInstances == null){
-            logger.warn("pageRecordInstances is still null");
+        RecordInstance nextInstance = null;
+        if (recordInstanceCursor < pageRecordInstances.length){
+            nextInstance = pageRecordInstances[recordInstanceCursor];
+            recordInstanceCursor++;
+        } else { // clean up the record instances
+            releaseRecordInstances();
         }
-        return recordInstanceCursor < pageRecordInstances.length;
+        return nextInstance;
+    } catch (WdkModelException ex) {
+        releaseRecordInstances();
+        throw ex;
+    }
+    }
+    
+    public boolean hasMoreRecordInstances() throws WdkModelException {
+        try {
+            initPageRecordInstances();
+
+            if (pageRecordInstances == null) {
+                logger.warn("pageRecordInstances is still null");
+            }
+            if (recordInstanceCursor >= pageRecordInstances.length) {
+                releaseRecordInstances();
+                return false;
+            } else return true;
+        } catch (WdkModelException ex) {
+            releaseRecordInstances();
+            throw ex;
+        }
     }
 
     public void resetRecordInstanceCurser(){
