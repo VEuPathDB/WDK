@@ -33,7 +33,6 @@ public class ShowQuestionSetsFlatAction extends ShowQuestionSetsAction {
 				 HttpServletResponse response) throws Exception {	
 	QuestionSetForm qSetForm = (QuestionSetForm)form;
 	prepareQuestionSetForm(getServlet(), qSetForm);
-	//request.getSession().setAttribute(CConstants.QUESTIONSETFORM_KEY, qSetForm);
 
 	ServletContext svltCtx = getServlet().getServletContext();
 	String customViewDir = (String)svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);

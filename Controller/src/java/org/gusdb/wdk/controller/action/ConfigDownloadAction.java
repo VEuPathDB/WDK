@@ -22,7 +22,7 @@ import org.gusdb.wdk.model.jspwrap.AnswerBean;
  *    2b) forwards control to a GetDownloadResult action
  */
 
-public class ConfigDownloadAction extends Action {
+public class ConfigDownloadAction extends DownloadHistoryAnswerAction {
     public ActionForward execute(ActionMapping mapping,
 				 ActionForm form,
 				 HttpServletRequest request,
@@ -38,7 +38,7 @@ public class ConfigDownloadAction extends Action {
 	    }
 	}
 
-	AnswerBean wdkAnswer = (AnswerBean)request.getSession().getAttribute(CConstants.WDK_ANSWER_KEY);
+	AnswerBean wdkAnswer = getAnswerBean(request);
 	wdkAnswer.setDownloadConfigMap(downloadConfigMap);
 
 	ActionForward forward = mapping.findForward(CConstants.CONFIG_DOWNLOAD_MAPKEY);
