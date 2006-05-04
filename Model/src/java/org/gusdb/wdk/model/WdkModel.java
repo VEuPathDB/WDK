@@ -632,7 +632,7 @@ public class WdkModel {
         //return users.get(userID);
     }
 
-    public boolean deleteUser(String userID) throws WdkUserException {
+    public boolean deleteUser(String userID) {
         throw new UnsupportedOperationException("The user is stored in the " +
         "session only in this version of WDK.");
 //        User user = users.remove(userID);
