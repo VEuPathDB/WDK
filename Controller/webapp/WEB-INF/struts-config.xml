@@ -12,6 +12,7 @@
     <form-bean name="booleanQuestionForm" type="org.gusdb.wdk.controller.action.BooleanQuestionForm"/>
     <form-bean name="downloadConfigForm" type="org.gusdb.wdk.controller.action.DownloadConfigForm"/>
     <form-bean name="booleanExpressionForm" type="org.gusdb.wdk.controller.action.BooleanExpressionForm"/>
+    <form-bean name="testForm" type="org.gusdb.wdk.controller.action.TestForm"/>
   </form-beans>
 
   <global-exceptions>
@@ -33,7 +34,7 @@
     <action
       path="/showQuestion"
       type="org.gusdb.wdk.controller.action.ShowQuestionAction"
-      scope="session"
+      scope="request"
       name="questionSetForm"
       input="/questionSets.jsp">
       <forward name="show_question" path="/question.jsp"/>
@@ -42,21 +43,21 @@
     <action
       path="/showQuestionSets"
       type="org.gusdb.wdk.controller.action.ShowQuestionSetsAction"
-      scope="session"
+      scope="request"
       name="questionSetForm">
       <forward name="show_questionsets" path="/questionSets.jsp"/>
     </action>
     <action
       path="/showQuestionSetsFlat"
       type="org.gusdb.wdk.controller.action.ShowQuestionSetsFlatAction"
-      scope="session"
+      scope="request"
       name="questionSetForm">
       <forward name="show_questionsetsflat" path="/questionSetsFlat.jsp"/>
     </action>
     <action
       path="/processQuestionSetsFlat"
       type="org.gusdb.wdk.controller.action.ProcessQuestionSetsFlatAction"
-      scope="session"
+      scope="request"
       name="questionSetForm"
       input="/question.jsp">
       <forward name="process_questionsetsflat" path="/processQuestion.do?fromQuestionSet=1"/>
@@ -64,7 +65,7 @@
     <action
        path="/processQuestion"
        type="org.gusdb.wdk.controller.action.ProcessQuestionAction"
-       scope="session"
+       scope="request"
        name="questionForm"
        input="/question.jsp">
        <forward name="pq_show_summary" path="/showSummary.do"/>
@@ -73,7 +74,7 @@
     <action
       path="/showSummary"
       type="org.gusdb.wdk.controller.action.ShowSummaryAction"
-      scope="session"
+      scope="request"
       name="questionForm"
       input="/question.jsp">
       <forward name="show_summary" path="/summary.jsp"/>
@@ -155,7 +156,7 @@
       type="org.gusdb.wdk.controller.action.ProcessBooleanExpressionAction"
       name="booleanExpressionForm"
       input="/queryHistory.jsp"
-      scope="session">
+      scope="request">
       <forward name="process_boolean_expression" path="/showSummary.do"/>
     </action>
     <action
@@ -169,6 +170,14 @@
       type="org.gusdb.wdk.controller.action.ShowXmlDataContentAction"
       scope="request">
       <forward name="show_xmldata_content" path="/xmlDataContent.jsp"/>
+    </action>
+    <action
+      path="/processTestForm"
+      type="org.gusdb.wdk.controller.action.ProcessTestFormAction"
+      name="testForm"
+      input="/testForm.jsp"
+      scope="request">
+      <forward name="process_test_form" path="/testFormResult.jsp"/>
     </action>
     <action
       path="/showErrorPage"

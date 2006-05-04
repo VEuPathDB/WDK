@@ -30,8 +30,9 @@ public class ProcessQuestionSetsFlatAction extends ShowQuestionAction {
 	//System.err.println("DEBUG: PQSFA: qFullName from question: " + wdkQuestion.getFullName());
 	QuestionForm qForm = prepareQuestionForm(wdkQuestion, qSetForm);
 
-	request.getSession().setAttribute(CConstants.QUESTIONFORM_KEY, qForm);
-	request.getSession().setAttribute(CConstants.WDK_QUESTION_KEY, wdkQuestion);
+	request.setAttribute(CConstants.QUESTIONFORM_KEY, qForm);
+	request.setAttribute(CConstants.WDK_QUESTION_KEY, wdkQuestion);
+	request.setAttribute("parentURI", request.getRequestURI());
 
 	ActionForward forward = mapping.findForward(CConstants.PROCESS_QUESTIONSETSFLAT_MAPKEY);
 	
