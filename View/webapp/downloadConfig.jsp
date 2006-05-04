@@ -7,7 +7,7 @@
 
 <!-- get wdkAnswer from requestScope -->
 <jsp:useBean id="wdkUser" scope="session" type="org.gusdb.wdk.model.jspwrap.UserBean"/>
-<c:set value="${sessionScope.wdkAnswer}" var="wdkAnswer"/>
+<c:set value="${requestScope.wdkAnswer}" var="wdkAnswer"/>
 <c:set var="ua_id" value="${requestScope.userAnswerId}"/>
 
 <!-- display page header -->
@@ -71,7 +71,8 @@
 <html:form method="get" action="configDownload">
   <table>
   <tr><td valign="top"><b>Columns:</b></td>
-      <td><table>
+      <td><input type="hidden" name="user_answer_id" value="${ua_id}"/>
+          <table>
           <c:set var="numPerLine" value="2"/>
           <c:set var="i" value="0"/>
 

@@ -37,11 +37,10 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
 
         QuestionForm qForm = prepareQuestionForm(wdkQuestion, request);
 
-	QuestionSetForm qSetForm = (QuestionSetForm)request.getSession()
-	    .getAttribute(CConstants.QUESTIONSETFORM_KEY);
+	QuestionSetForm qSetForm = (QuestionSetForm)request.getAttribute(CConstants.QUESTIONSETFORM_KEY);
 	if(null == qSetForm) {
 	    qSetForm = new QuestionSetForm();
-	    request.getSession().setAttribute(CConstants.QUESTIONSETFORM_KEY, qSetForm);
+	    request.setAttribute(CConstants.QUESTIONSETFORM_KEY, qSetForm);
 	}
 	qSetForm.setQuestionFullName(qFullName);
 	prepareQuestionSetForm(getServlet(), qSetForm);
@@ -126,8 +125,8 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
 	    qForm.setNonValidating();
 	}
 
-	request.getSession().setAttribute(CConstants.QUESTIONFORM_KEY, qForm);
-	request.getSession().setAttribute(CConstants.WDK_QUESTION_KEY, wdkQuestion);
+	request.setAttribute(CConstants.QUESTIONFORM_KEY, qForm);
+	request.setAttribute(CConstants.WDK_QUESTION_KEY, wdkQuestion);
 
 	return qForm;
     }
