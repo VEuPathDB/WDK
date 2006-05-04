@@ -24,9 +24,6 @@ public class ShowQueryHistoryAction extends Action {
 				 ActionForm form,
 				 HttpServletRequest request,
 				 HttpServletResponse response) throws Exception {
-	request.getSession().removeAttribute(CConstants.QUESTIONFORM_KEY);
-	request.getSession().removeAttribute(CConstants.WDK_QUESTION_PARAMS_KEY);
-
 	UserBean wdkUser = (UserBean)request.getSession().getAttribute(CConstants.WDK_USER_KEY);
 	if (wdkUser == null) { 
 	    ShowQuestionSetsAction.sessionStart(request, getServlet());
