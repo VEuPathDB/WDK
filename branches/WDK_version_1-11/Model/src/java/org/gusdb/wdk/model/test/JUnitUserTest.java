@@ -100,26 +100,6 @@ public class JUnitUserTest extends TestCase {
     }
 
     /*
-     * Test method for 'org.gusdb.wdk.model.User.getUserID()'
-     */
-    public void testGetUserID() {
-        // get existing users
-        for (int i = 0; i < NUM_USERS; i++) {
-            String userID = "user_" + i;
-            User user = wdkModel.getUser(userID);
-            assertNotNull(user);
-            // System.out.println(user);
-        }
-
-        // get non-existing users
-        for (int i = NUM_USERS + 1; i < NUM_USERS * 2; i++) {
-            String userID = "user_" + i;
-            User user = wdkModel.getUser(userID);
-            assertNull(user);
-        }
-    }
-
-    /*
      * Test method for 'org.gusdb.wdk.model.User.addAnswer(Answer)'
      */
     public void testAddAnswer() {
@@ -129,7 +109,7 @@ public class JUnitUserTest extends TestCase {
             for (int i = 0; i < NUM_USERS; i++) {
                 // get the user
                 String userID = "user_" + i;
-                User user = wdkModel.getUser(userID);
+                User user = wdkModel.createUser(userID);;
 
                 assertNotNull(user);
                 user.clearUserAnswers();
@@ -168,7 +148,7 @@ public class JUnitUserTest extends TestCase {
             for (int i = 0; i < NUM_USERS; i++) {
                 // get the user
                 String userID = "user_" + i;
-                User user = wdkModel.getUser(userID);
+                User user = wdkModel.createUser(userID);;
 
                 assertNotNull(user);
                 user.clearUserAnswers();
@@ -223,7 +203,7 @@ public class JUnitUserTest extends TestCase {
             for (int i = 0; i < NUM_USERS; i++) {
                 // get the user
                 String userID = "user_" + i;
-                User user = wdkModel.getUser(userID);
+                User user = wdkModel.createUser(userID);;
 
                 assertNotNull(user);
                 user.clearUserAnswers();
@@ -256,7 +236,7 @@ public class JUnitUserTest extends TestCase {
             for (int i = 0; i < NUM_USERS; i++) {
                 // get the user
                 String userID = "user_" + i;
-                User user = wdkModel.getUser(userID);
+                User user = wdkModel.createUser(userID);;
 
                 assertNotNull(user);
                 user.clearUserAnswers();
@@ -286,7 +266,7 @@ public class JUnitUserTest extends TestCase {
             for (int i = 0; i < NUM_USERS; i++) {
                 // get the user
                 String userID = "user_" + i;
-                User user = wdkModel.getUser(userID);
+                User user = wdkModel.createUser(userID);;
 
                 assertNotNull(user);
                 user.clearUserAnswers();
@@ -337,7 +317,7 @@ public class JUnitUserTest extends TestCase {
             for (int i = 0; i < NUM_USERS; i++) {
                 // get the user
                 String userID = "user_" + i;
-                User user = wdkModel.getUser(userID);
+                User user = wdkModel.createUser(userID);;
 
                 assertNotNull(user);
                 user.clearUserAnswers();
@@ -388,7 +368,7 @@ public class JUnitUserTest extends TestCase {
             for (int i = 0; i < NUM_USERS; i++) {
                 // get the user
                 String userID = "user_" + i;
-                User user = wdkModel.getUser(userID);
+                User user = wdkModel.createUser(userID);;
 
                 assertNotNull(user);
                 user.clearUserAnswers();
@@ -435,7 +415,7 @@ public class JUnitUserTest extends TestCase {
             for (int i = 0; i < NUM_USERS; i++) {
                 // get the user
                 String userID = "user_" + i;
-                User user = wdkModel.getUser(userID);
+                User user = wdkModel.createUser(userID);;
 
                 assertNotNull(user);
                 user.clearUserAnswers();
@@ -509,7 +489,7 @@ public class JUnitUserTest extends TestCase {
         try {
             // get the user
             String userID = "user_0";
-            User user = wdkModel.getUser(userID);
+            User user = wdkModel.createUser(userID);;
 
             assertNotNull(user);
             user.clearUserAnswers();
@@ -576,7 +556,7 @@ public class JUnitUserTest extends TestCase {
         try {
             // get the user
             String userID = "user_0";
-            User user = wdkModel.getUser(userID);
+            User user = wdkModel.createUser(userID);;
 
             assertNotNull(user);
             user.clearUserAnswers();

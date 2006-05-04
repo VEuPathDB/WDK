@@ -86,7 +86,7 @@ public class ResultFactory implements Serializable {
 
     public synchronized ResultList getResult(QueryInstance instance)
             throws WdkModelException {
-    	logger.debug("QueryInstance " + instance.getQuery().getFullName() + " persistent: " + instance.getIsPersistent());
+    	//logger.debug("QueryInstance " + instance.getQuery().getFullName() + " persistent: " + instance.getIsPersistent());
     	
         ResultList resultList = instance.getIsPersistent() ? getPersistentResult(instance)
                 : instance.getNonpersistentResult();
@@ -707,6 +707,7 @@ public class ResultFactory implements Serializable {
             e.printStackTrace();
             System.exit(1);
         }
+        System.exit(0);
     }
 
     static Options declareOptions() {

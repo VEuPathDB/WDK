@@ -282,8 +282,8 @@ public class RecordInstance {
 	
 	splitSummaryAttributes(attributeFields, summaryAttributes, nonSummaryAttributes);
 
-	printAtts_Aux(buf, "Summary Attributes: " + newline, summaryAttributes);
-	printAtts_Aux(buf, "Non-Summary Attributes: " + newline, nonSummaryAttributes);
+	printAtts_Aux(buf, summaryAttributes);
+	printAtts_Aux(buf, nonSummaryAttributes);
 	
 	Map tableFields = getTables();
 	Iterator fieldNames = tableFields.keySet().iterator();
@@ -296,10 +296,11 @@ public class RecordInstance {
 
 	    TableFieldValue fieldValue = 
 		(TableFieldValue)tableFields.get(fieldName);
-	    buf.append("Table " + fieldValue.getDisplayName()).append( newline );
-        fieldValue.write(buf);
-        fieldValue.closeResult();
+
 	    buf.append(newline);
+	    buf.append("<Table> " + fieldValue.getDisplayName()).append( newline );
+	    fieldValue.write(buf);
+	    fieldValue.closeResult();
 
 	    if(getTimeAttributeQueries()) {
 		buf.append("TIME INFO: " + fieldName + " took " +
@@ -308,6 +309,7 @@ public class RecordInstance {
 
 	}
 	
+	buf.append(newline);
 	buf.append("Nested Records belonging to this RecordInstance:" + newline);
 	Map nestedRecords = getNestedRecordInstances();
 	Iterator recordNames = nestedRecords.keySet().iterator();
@@ -348,7 +350,7 @@ public class RecordInstance {
         splitSummaryAttributes(attributeFields, summaryAttributes,
                 nonSummaryAttributes);
 
-        printAtts_Aux(buf, "Summary Attributes: " + newline, summaryAttributes);
+        printAtts_Aux(buf, summaryAttributes);
         return buf.toString();
     }
 
@@ -600,10 +602,8 @@ public class RecordInstance {
     }
 
 
-    private void printAtts_Aux(StringBuffer buf, String header, Map<String, AttributeFieldValue> attributes){
+    private void printAtts_Aux(StringBuffer buf, Map<String, AttributeFieldValue> attributes){
 	String newline = System.getProperty( "line.separator" );
-	buf.append(header);
-	
 	Iterator<String> attributeNames = attributes.keySet().iterator();
 	while (attributeNames.hasNext()) {
 	    String attributeName = attributeNames.next();
@@ -618,7 +618,6 @@ public class RecordInstance {
 			   (System.currentTimeMillis() - startTime)/1000 + " seconds to retrieve.\n");
 	    }
 	}
-	buf.append(newline);
     }
 
     ////////////////////////////////////////////////////////////////////
