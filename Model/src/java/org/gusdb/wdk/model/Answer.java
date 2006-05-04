@@ -224,8 +224,8 @@ public class Answer {
     }
     
     private void releaseRecordInstances() {
-        pageRecordInstances = null;
-        recordInstanceCursor = 0;
+        pageRecordInstances = new RecordInstance[0];
+        recordInstanceCursor = 1;
     }
     
     //Returns null if we have already returned the last instance
@@ -237,7 +237,9 @@ public class Answer {
         if (recordInstanceCursor < pageRecordInstances.length){
             nextInstance = pageRecordInstances[recordInstanceCursor];
             recordInstanceCursor++;
-        } else { // clean up the record instances
+        } 
+        if (recordInstanceCursor >= pageRecordInstances.length) { 
+            // clean up the record instances
             releaseRecordInstances();
         }
         return nextInstance;
