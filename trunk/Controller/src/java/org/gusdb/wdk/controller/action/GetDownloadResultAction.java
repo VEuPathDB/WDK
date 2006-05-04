@@ -22,7 +22,7 @@ import org.gusdb.wdk.model.jspwrap.RecordBean;
 /**
  * This Action is called by the ActionServlet when a download submit is made.
  * It 1) find selected fields (may be all fields in answer bean)
- *    2) use AnswerBean in session score to get and format results
+ *    2) use AnswerBean to get and format results
  *    3) forward control to a jsp page that displays the result
  */
 
@@ -32,9 +32,9 @@ public class GetDownloadResultAction extends Action {
 				 HttpServletRequest request,
 				 HttpServletResponse response) throws Exception {
 
-	AnswerBean wdkAnswer = (AnswerBean)request.getSession().getAttribute(CConstants.WDK_ANSWER_KEY);
+	AnswerBean wdkAnswer = (AnswerBean)request.getAttribute(CConstants.WDK_ANSWER_KEY);
 	int resultSize = wdkAnswer.getResultSize();
-	Map params = (Map)request.getSession().getAttribute(CConstants.WDK_QUESTION_PARAMS_KEY);
+	Map params = (Map)request.getAttribute(CConstants.WDK_QUESTION_PARAMS_KEY);
 	QuestionBean wdkQuestion = (QuestionBean)wdkAnswer.getQuestion();
 
 	Object root = request.getSession().getAttribute(CConstants.CURRENT_BOOLEAN_ROOT_KEY);

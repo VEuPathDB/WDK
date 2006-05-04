@@ -33,7 +33,7 @@ import org.gusdb.wdk.model.jspwrap.UserBean;
  *    3) forwards control to a jsp page that displays a summary
  */
 
-public class ShowSummaryAction extends Action {
+public class ShowSummaryAction extends ShowQuestionAction {
     public ActionForward execute(ActionMapping mapping,
 				 ActionForm form,
 				 HttpServletRequest request,
@@ -56,23 +56,26 @@ public class ShowSummaryAction extends Action {
 		wdkAnswer.setUserAnswerName(userAnswer.getName());
 	    }
 	} else {
-	    QuestionForm qForm = (QuestionForm)request.getSession().getAttribute(CConstants.QUESTIONFORM_KEY);
-	    //System.err.println("DEBUG: qForm retrieved from session " + request.getSession() + " by SSA: " + qForm);
-
+	    QuestionForm qForm = (QuestionForm)form;
 	    //TRICKY: this is for action forward from ProcessQuestionSetsFlatAction
 	    qForm.cleanup();
 
-	    //why I am not able to get back my question from the session? use the form for  now
-	    QuestionBean wdkQuestion = (QuestionBean)request.getSession().getAttribute(CConstants.WDK_QUESTION_KEY);
+	    QuestionBean wdkQuestion = (QuestionBean)request.getAttribute(CConstants.WDK_QUESTION_KEY);
 	    if(wdkQuestion == null) { wdkQuestion = qForm.getQuestion(); }
-            if(wdkQuestion == null) {
-  	        throw new RuntimeException("Unexpected error: wdkAnswer is null");
+	    if(wdkQuestion == null) {
+		String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
+		if(qFullName != null) {
+		    wdkQuestion = getQuestionByFullName(qFullName);
+		}
+	    }
+            if(wdkQuestion == null) {		
+  	        throw new RuntimeException("Unexpected error: answer maker (wdkQuestion) is null");
 	    }
 
 	    Map params = handleMultiPickParams(new LinkedHashMap(qForm.getMyProps()));
 	    wdkAnswer = summaryPaging(request, wdkQuestion, params);
 
-	    request.getSession().setAttribute(CConstants.WDK_QUESTION_PARAMS_KEY, params);
+	    request.setAttribute(CConstants.WDK_QUESTION_PARAMS_KEY, params);
 
 	    //add AnswerBean to User for query history
  	    wdkUser = (UserBean)request.getSession().getAttribute(CConstants.WDK_USER_KEY);
@@ -88,7 +91,7 @@ public class ShowSummaryAction extends Action {
 	//clear boolean root from session to prevent interference
 	request.getSession().setAttribute(CConstants.CURRENT_BOOLEAN_ROOT_KEY, null);
 
-	request.getSession().setAttribute(CConstants.WDK_ANSWER_KEY, wdkAnswer);
+	request.setAttribute(CConstants.WDK_ANSWER_KEY, wdkAnswer);
 
 	request.setAttribute(CConstants.USER_ANSWER_ID_KEY, ua_id_str);
 
@@ -224,12 +227,12 @@ public class ShowSummaryAction extends Action {
 	    }
 	}
 
-	String uriString = request.getRequestURI();
+	String parentUriString = (String)request.getAttribute("parentURI");
 	request.setAttribute("wdk_paging_total", new Integer(totalSize));
 	request.setAttribute("wdk_paging_pageSize", new Integer(pageSize));
 	request.setAttribute("wdk_paging_start", new Integer(start));
 	request.setAttribute("wdk_paging_end", new Integer(end));
-	request.setAttribute("wdk_paging_url", uriString);
+	request.setAttribute("wdk_paging_url", parentUriString);
 	request.setAttribute("wdk_paging_params", editedParamNames);
 	return wdkAnswer;
     }
