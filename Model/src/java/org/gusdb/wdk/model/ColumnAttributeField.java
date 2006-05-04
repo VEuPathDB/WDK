@@ -28,9 +28,8 @@ public class ColumnAttributeField extends AttributeField implements Serializable
      */
     void setColumn(Column column) {
         // TEST
-        if (column.getName().equalsIgnoreCase("score"))
-            logger.debug("Field ID: " + hashCode() + ", Column ID: "
-                    + column.hashCode());
+//        if (column.getName().equalsIgnoreCase("score"))
+//            logger.debug("Field ID: " + hashCode() + ", Column ID: " + column.hashCode());
         
         this.column = column;
     }

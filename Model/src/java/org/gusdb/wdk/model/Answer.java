@@ -128,9 +128,12 @@ public class Answer {
     }
     
     public int getPageCount() throws WdkModelException {
-        int total = (resultSize == null)? getResultSize() : resultSize;
-        int page = getPageSize();
-        return (int)Math.round(Math.ceil((float)total /page));
+        int total = (resultSize == null) ? getResultSize() : resultSize;
+        int pageSize = endRecordInstanceI - startRecordInstanceI + 1;
+        int pageCount = (int) Math.round(Math.ceil((float) total / pageSize));
+        logger.debug("#Pages: " + pageCount + ",\t#Total: " + total
+                + ",\t#PerPage: " + pageSize);
+        return pageCount;
     }
     
     public int getResultSize() throws WdkModelException {
@@ -220,26 +223,47 @@ public class Answer {
 	return question.isSummaryAttribute(attName);
     }
     
-    //Returns null if we have already returned the last instance
-    public RecordInstance getNextRecordInstance() throws WdkModelException{
-	initPageRecordInstances();
-
-	RecordInstance nextInstance = null;
-	if (recordInstanceCursor < pageRecordInstances.length){
-	    nextInstance = pageRecordInstances[recordInstanceCursor];
-	    recordInstanceCursor++;
-	}
-	return nextInstance;
+    private void releaseRecordInstances() {
+        pageRecordInstances = new RecordInstance[0];
+        recordInstanceCursor = 1;
     }
     
-    public boolean hasMoreRecordInstances() throws WdkModelException 
-    {
-	initPageRecordInstances();
+    //Returns null if we have already returned the last instance
+    public RecordInstance getNextRecordInstance() throws WdkModelException{
+	try {
+        initPageRecordInstances();
 
-        if (pageRecordInstances == null){
-            logger.warn("pageRecordInstances is still null");
+        RecordInstance nextInstance = null;
+        if (recordInstanceCursor < pageRecordInstances.length){
+            nextInstance = pageRecordInstances[recordInstanceCursor];
+            recordInstanceCursor++;
+        } 
+        if (recordInstanceCursor >= pageRecordInstances.length) { 
+            // clean up the record instances
+            releaseRecordInstances();
         }
-        return recordInstanceCursor < pageRecordInstances.length;
+        return nextInstance;
+    } catch (WdkModelException ex) {
+        releaseRecordInstances();
+        throw ex;
+    }
+    }
+    
+    public boolean hasMoreRecordInstances() throws WdkModelException {
+        try {
+            initPageRecordInstances();
+
+            if (pageRecordInstances == null) {
+                logger.warn("pageRecordInstances is still null");
+            }
+            if (recordInstanceCursor >= pageRecordInstances.length) {
+                releaseRecordInstances();
+                return false;
+            } else return true;
+        } catch (WdkModelException ex) {
+            releaseRecordInstances();
+            throw ex;
+        }
     }
 
     public void resetRecordInstanceCurser(){
@@ -255,12 +279,14 @@ public class Answer {
     /////////////////////////////////////////////////////////////////////
 
     public String printAsRecords() throws WdkModelException, WdkUserException{  
+	String newline = System.getProperty( "line.separator" );
 	StringBuffer buf = new StringBuffer();
 
 	initPageRecordInstances();
 
 	for (int i = 0; i < pageRecordInstances.length; i++){
 	    buf.append(pageRecordInstances[i].print());
+	    buf.append("---------------------" + newline);
 	}
 	return buf.toString();
     }
@@ -288,6 +314,11 @@ public class Answer {
 	StringBuffer buf = new StringBuffer();
 
 	initPageRecordInstances();
+    
+    // print summary info
+    buf.append("# of Records: " + getResultSize() + ",\t# of Pages: "
+                + getPageCount() + ",\t# Records per Page: " + getPageSize()
+                + newline);
 		
 	if (pageRecordInstances.length == 0) return buf.toString();
 
@@ -377,14 +408,16 @@ public class Answer {
 		new PrimaryKeyValue(getQuestion().getRecordClass().getPrimaryKeyField(), project, id.toString());
 
 	    if (primaryKeySet.contains(attrPrimaryKey)) {
-		String msg = 
-		    "Result Table " + idsTableName + " for Attribute query " +
-		    attributesQueryInstance.getQuery().getFullName() + " " +
-		    " has more than one row for " + attrPrimaryKey; 
-		throw new WdkModelException(msg);
-	    } else {
-		primaryKeySet.add(attrPrimaryKey);
-	    }
+                String msg = "Result Table " + idsTableName
+                        + " for Attribute query "
+                        + attributesQueryInstance.getQuery().getFullName()
+                        + " " + " has more than one row for " + attrPrimaryKey;
+                // close connection before throwing out the exception
+                attrQueryResultList.close();
+                throw new WdkModelException(msg);
+            } else {
+                primaryKeySet.add(attrPrimaryKey);
+            }
 
 	    
 	    RecordInstance recordInstance = 
