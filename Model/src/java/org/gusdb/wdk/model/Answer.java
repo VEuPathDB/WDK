@@ -542,7 +542,7 @@ public class Answer {
      * @throws WdkUserException
      * @throws WdkModelException
      */
-    public Answer cloneAnswer() throws WdkUserException, WdkModelException {
+    public Answer newAnswer() throws WdkUserException, WdkModelException {
         Answer answer = new Answer(question, idsQueryInstance,
                 startRecordInstanceI, endRecordInstanceI);
         // instead of cloning all parts of an answer, just initialize it as a
