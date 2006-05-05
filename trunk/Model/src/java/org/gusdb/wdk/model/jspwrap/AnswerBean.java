@@ -10,6 +10,7 @@ import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.BooleanQuery;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 
 /**
  * A wrapper on a {@link Answer} that provides simplified access for 
@@ -139,21 +140,6 @@ public class AnswerBean {
 	return new RecordBeanList();
     }
 
-    /**
-     * for controller: reset counter for download purpose
-     */
-    public void resetAnswerRowCursor() {
-	answer.resetRecordInstanceCounter();
-    }
-
-    /**
-     * for controller: reset counter for download purpose
-     */
-    public boolean getResetAnswerRowCursor() {
-	answer.resetRecordInstanceCounter();
-	return true;
-    }
-
     public void setDownloadConfigMap (Map downloadConfigMap) {
 	this.downloadConfigMap = downloadConfigMap;
     }
@@ -247,6 +233,14 @@ public class AnswerBean {
 
     public boolean getIsDynamic() {
 	return answer.isDynamic();
+    }
+    
+    public AnswerBean getClonedAnswer() throws WdkUserException, WdkModelException {
+        AnswerBean answerBean = new AnswerBean(answer.cloneAnswer());
+        answerBean.downloadConfigMap = downloadConfigMap;
+        answerBean.isCombinedAnswer = isCombinedAnswer;
+        answerBean.userAnswerName = userAnswerName;
+        return answerBean;
     }
 
     ////////////////////////////////////////////////////////////////////////

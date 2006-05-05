@@ -69,7 +69,10 @@ public class GetDownloadResultAction extends Action {
 	    downloadResult.append(newLine);
 	}
 
-	wdkAnswer.resetAnswerRowCursor();
+    // the reset function is no longer working; instead, call cloneAnswer() to
+    // get a new answer object.
+    // wdkAnswer.resetAnswerRowCursor();
+    wdkAnswer = wdkAnswer.getClonedAnswer();
 	int pageSize = 100;
 	for (int i=1; i<=resultSize; i+=pageSize) {
 	    int j = i+pageSize;

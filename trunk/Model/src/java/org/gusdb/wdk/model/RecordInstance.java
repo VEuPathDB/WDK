@@ -169,7 +169,11 @@ public class RecordInstance {
             for (int i = 0; i < nq.length; i++) {
                 Question nextNq = nq[i];
                 Answer a = getNestedRecordAnswer(nextNq);
-                a.resetRecordInstanceCounter();
+                // TODO
+                // the reset function is no longer available; instead call
+                // cloneAnswer() to get a new answer object and work on it
+                // a.resetRecordInstanceCounter();
+                a = a.cloneAnswer();
                 RecordInstance nextRi = a.getNextRecordInstance();
 
                 if (a.getNextRecordInstance() != null) {
