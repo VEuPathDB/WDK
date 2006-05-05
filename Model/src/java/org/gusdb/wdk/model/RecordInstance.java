@@ -173,7 +173,7 @@ public class RecordInstance {
                 // the reset function is no longer available; instead call
                 // cloneAnswer() to get a new answer object and work on it
                 // a.resetRecordInstanceCounter();
-                a = a.cloneAnswer();
+                a = a.newAnswer();
                 RecordInstance nextRi = a.getNextRecordInstance();
 
                 if (a.getNextRecordInstance() != null) {
