@@ -6,7 +6,7 @@
 <%@ taglib prefix="nested" uri="http://jakarta.apache.org/struts/tags-nested" %>
 
 <!-- get wdkAnswer from requestScope -->
-<c:set value="${sessionScope.wdkAnswer}" var="wdkAnswer"/>
+<c:set value="${requestScope.wdkAnswer}" var="wdkAnswer"/>
 
 <!-- display page header with wdkAnswer's recordClass's type as banner -->
 <c:set value="${wdkAnswer.recordClass.type}" var="wdkAnswerType"/>
