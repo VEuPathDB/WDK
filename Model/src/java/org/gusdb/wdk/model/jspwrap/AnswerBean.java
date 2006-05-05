@@ -234,13 +234,28 @@ public class AnswerBean {
     public boolean getIsDynamic() {
 	return answer.isDynamic();
     }
-    
-    public AnswerBean getClonedAnswer() throws WdkUserException, WdkModelException {
-        AnswerBean answerBean = new AnswerBean(answer.cloneAnswer());
-        answerBean.downloadConfigMap = downloadConfigMap;
-        answerBean.isCombinedAnswer = isCombinedAnswer;
-        answerBean.userAnswerName = userAnswerName;
-        return answerBean;
+ 
+    /**
+     * for controller: reset counter for download purpose
+     */
+    public void resetAnswerRowCursor() {
+        try {
+            answer = answer.newAnswer();
+        } catch (WdkUserException ex) {
+            ex.printStackTrace();
+            throw new RuntimeException(ex);
+        } catch (WdkModelException ex) {
+            ex.printStackTrace();
+            throw new RuntimeException(ex);
+        }
+    }
+
+    /**
+     * for controller: reset counter for download purpose
+     */
+    public boolean getResetAnswerRowCursor() {
+        resetAnswerRowCursor();
+        return true;
     }
 
     ////////////////////////////////////////////////////////////////////////
