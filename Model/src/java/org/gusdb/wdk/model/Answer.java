@@ -225,7 +225,7 @@ public class Answer {
     
     private void releaseRecordInstances() {
         pageRecordInstances = new RecordInstance[0];
-        recordInstanceCursor = 1;
+        recordInstanceCursor = 0;
     }
     
     //Returns null if we have already returned the last instance
@@ -264,10 +264,6 @@ public class Answer {
             releaseRecordInstances();
             throw ex;
         }
-    }
-
-    public void resetRecordInstanceCurser(){
-	recordInstanceCursor = 0;
     }
 
     public Integer getDatasetId() {
@@ -528,48 +524,6 @@ public class Answer {
 	}
 	return names;
     }
-//
-//    /**
-//     * Initialize a query instance to run an attributes query.
-//     */
-//    private void initAttributesQueryInstance(QueryInstance attributesQueryInstance) throws WdkModelException{
-//
-//    }
-
-    ////////////////////// Deprecated Methods  /////////////////////////////
-
-    /**
-     * @deprecated.  See resetRecordInstanceCursor()
-     */
-    public void resetRecordInstanceCounter(){
-	resetRecordInstanceCurser();
-    }
-
-    /*
-      this method was expecting a query result to skip over certain values of i.  Keep here until we are sure we do not need it.
-
-      
-    void setQueryResult(ResultList resultList) throws WdkModelException {
-
-        int tempCounter = 0;
-        Query query = resultList.getQuery();
-	Column[] columns = query.getColumns();
-            
-	while (resultList.next()){
-            
-            RecordInstance nextRecordInstance = pageRecordInstances[tempCounter];
-            for (int j = 0; j < columns.length; j++){
-                String nextColumnName = columns[j].getName();
-		
-                Object value = 
-		    resultList.getAttributeFieldValue(nextColumnName).getValue();
-                nextRecordInstance.setAttributeValue(nextColumnName, value);
-            }
-            tempCounter++;
-        }
-    }
-
-    */
 
     public String toString() {
         StringBuffer sb = new StringBuffer(question.getDisplayName());
@@ -581,4 +535,13 @@ public class Answer {
         }
         return sb.toString();
     }
+
+    
+    public Answer cloneAnswer() throws WdkUserException, WdkModelException {
+        Answer answer = new Answer(question, idsQueryInstance, startRecordInstanceI, endRecordInstanceI);
+        // instead of cloning all parts of an answer, just initialize it as a
+        // new answer, and the queries can be re-run without any assumption
+        return answer;
+    }
+
 }
