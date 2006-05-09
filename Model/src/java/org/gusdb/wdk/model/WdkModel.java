@@ -7,9 +7,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Vector;
 
-import javax.servlet.http.HttpSessionBindingEvent;
-import javax.servlet.http.HttpSessionBindingListener;
-
 import org.gusdb.wdk.model.implementation.ModelXmlParser;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
