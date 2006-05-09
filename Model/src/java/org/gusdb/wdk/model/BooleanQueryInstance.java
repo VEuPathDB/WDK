@@ -107,10 +107,6 @@ public class BooleanQueryInstance extends QueryInstance {
         for (int i = 0; i < columns.length; i++) {
 
             if (booleanQuery.getColumnMap().get(columns[i].getName()) == null) {
-                // TEST
-                if (columns[i].getName().equalsIgnoreCase("score")) {
-                    logger.debug("Column ID: " + columns[i].hashCode());
-                }
                 booleanQuery.addColumn(columns[i]);
             }
         }
@@ -196,6 +192,19 @@ public class BooleanQueryInstance extends QueryInstance {
 	    " " + operation + " " + 
 	    getResultFactory().getSqlForBooleanOp(secondQueryInstance,
 						  commonColumns);
+        
+        // order by project id, and then primary key, the first item in the
+        // array is primary key, and the second is project id. If the second is
+        // null then only sort on primary key (lower case)
+        String[] names = Answer.findPrimaryKeyColumnNames(booleanQuery);
+        
+        // add sorting clause
+        sql = "SELECT * FROM (" + sql + ") temp ORDER BY ";
+        if (names[1] != null) sql += names[1] + ", ";
+        sql += names[0];
+        
+        // TEST
+        logger.debug("Boolean Id Query: " + sql);
 
         return sql;
     }
@@ -267,19 +276,16 @@ public class BooleanQueryInstance extends QueryInstance {
             Integer firstQueryInstanceId = firstQueryInstance.getQueryInstanceId();
             if (firstQueryInstanceId == null) {
 
-                ResultList rl1 = firstQueryInstance.getResult();// assumes
-                // values have
-                // been set
+                ResultList rl1 = firstQueryInstance.getResult();
+                // assumes values have been set
                 rl1.close(); // rl1 is only needed to close connection
                 firstQueryInstanceId = firstQueryInstance.getQueryInstanceId();
             }
 
             Integer secondQueryInstanceId = secondQueryInstance.getQueryInstanceId();
             if (secondQueryInstanceId == null) {
-                ResultList rl2 = secondQueryInstance.getResult();// assumes
-                // values
-                // have been
-                // set
+                ResultList rl2 = secondQueryInstance.getResult();
+                // assumes values have been set
                 rl2.close(); // rl2 is only needed to close connection
                 secondQueryInstanceId = secondQueryInstance.getQueryInstanceId();
             }
