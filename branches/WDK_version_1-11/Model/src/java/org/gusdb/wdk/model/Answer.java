@@ -224,8 +224,13 @@ public class Answer {
     }
     
     private void releaseRecordInstances() {
-        pageRecordInstances = new RecordInstance[0];
-        recordInstanceCursor = 0;
+	if (pageRecordInstances != null && pageRecordInstances.length > 0) {
+	    if (pageRecordInstances.length == 1) {
+		pageRecordInstances[0].setAnswer(null);
+	    }
+	    pageRecordInstances = new RecordInstance[0];
+	    recordInstanceCursor = 0;
+	} 
     }
     
     //Returns null if we have already returned the last instance
