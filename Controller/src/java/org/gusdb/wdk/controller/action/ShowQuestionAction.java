@@ -106,7 +106,8 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
 		String[] flatVocab = ((FlatVocabParamBean)p).getVocab();
 		qForm.getMyValues().put(p.getName(), flatVocab);
 		qForm.getMyLabels().put(p.getName(), getLengthBoundedLabels(flatVocab));
-		if (cgiParamVal != null) pVal = new String[] {cgiParamVal};
+		String[] cgiParamValSet = request.getParameterValues(p.getName());
+		if (cgiParamValSet != null && cgiParamValSet.length > 0) pVal = cgiParamValSet;
 	    } else {
 		pVal = cgiParamVal;
 	    }
