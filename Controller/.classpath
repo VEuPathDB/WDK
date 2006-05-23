@@ -7,5 +7,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/WDK Model"/>
 	<classpathentry kind="lib" path="lib/java/log4j-1.2.13.jar"/>
+	<classpathentry kind="lib" path="/usr/local/apache/tomcat/tomcat/server/lib/catalina.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>
