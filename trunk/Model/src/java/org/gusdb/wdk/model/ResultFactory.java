@@ -509,12 +509,17 @@ public class ResultFactory implements Serializable {
         Iterator paramValues = instance.getCacheValues().iterator();
         while (paramValues.hasNext()) {
             String val = (String) paramValues.next();
+            // handle empty string
+            if (val != null && val.length()> 0) {
             String cleaned = platform.cleanStringValue(val);
 
             // if (count != 0) {
             sb.append(", ");
             // }
             sb.append("'" + cleaned + "'");
+            } else {
+                sb.append(", null");
+            }
             count++;
         }
         return sb.toString();
@@ -560,10 +565,15 @@ public class ResultFactory implements Serializable {
         int i = 0;
         while (iter.hasNext()) {
             String val = (String) iter.next();
+            // handle null value case
+            if (val != null && val.length() > 0) {
             String cleaned = platform.cleanStringValue(val);
             sb.append(" and param" + i++ + " = '");
             sb.append(cleaned);
             sb.append("'");
+            } else {
+                sb.append(" and param" + i++ + " is null");
+            }
         }
         return sb.toString();
     }
