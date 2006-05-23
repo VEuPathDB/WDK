@@ -9,6 +9,8 @@ import java.util.Vector;
 import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.BooleanQuery;
+import org.gusdb.wdk.model.FlatVocabParam;
+import org.gusdb.wdk.model.Param;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 
@@ -44,12 +46,20 @@ public class AnswerBean {
         Map<String, Object> params = getInternalParams();
         for (String paramName : params.keySet()) {
             String paramValue = params.get(paramName).toString();
+            
+            // check if the parameter is multipick param
+            Param param = answer.getQuestion().getParamMap().get(paramName);
+            String[] values = {paramValue};
+            if (param instanceof FlatVocabParam)
+                values = paramValue.split(",");
             // URL encode the values
-            try {
-                sb.append("&" + paramName + "="
-                        + URLEncoder.encode(paramValue, "UTF-8"));
-            } catch (UnsupportedEncodingException ex) {
-                throw new WdkModelException(ex);
+            for (String value : values) {
+                try {
+                    sb.append("&" + paramName + "="
+                            + URLEncoder.encode(value, "UTF-8"));
+                } catch (UnsupportedEncodingException ex) {
+                    throw new WdkModelException(ex);
+                }
             }
         }
         return sb.toString();
