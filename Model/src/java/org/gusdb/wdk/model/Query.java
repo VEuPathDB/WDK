@@ -246,7 +246,9 @@ public abstract class Query implements Serializable {
             }
         }
         if (errors != null) {
-            throw new WdkUserException(errors);
+	    WdkUserException wue = new WdkUserException(errors);
+	    logger.debug(wue.formatErrors());
+            throw wue;
         }
     }
 
