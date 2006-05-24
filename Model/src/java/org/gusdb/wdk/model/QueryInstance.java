@@ -157,7 +157,9 @@ public abstract class QueryInstance {
      * @param endIndex
      */
     void initJoinMode(String resultTableName,String projectColumnName, String primaryKeyColumnName, int startIndex, int endIndex, boolean isDynamic){
-
+	if (resultTableName == null || resultTableName.equals("")) {
+	    throw new RuntimeException("resultTableName is required but not provided");
+	}
 	this.joinTableName = resultTableName;
 	this.projectColumnName = projectColumnName;
 	this.primaryKeyColumnName = primaryKeyColumnName;

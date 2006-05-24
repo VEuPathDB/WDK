@@ -225,9 +225,6 @@ public class Answer {
     
     private void releaseRecordInstances() {
 	if (pageRecordInstances != null && pageRecordInstances.length > 0) {
-	    if (pageRecordInstances.length == 1) {
-		pageRecordInstances[0].setAnswer(null);
-	    }
 	    pageRecordInstances = new RecordInstance[0];
 	    recordInstanceCursor = 0;
 	} 
@@ -243,7 +240,7 @@ public class Answer {
             nextInstance = pageRecordInstances[recordInstanceCursor];
             recordInstanceCursor++;
         } 
-        if (recordInstanceCursor >= pageRecordInstances.length) { 
+        if (nextInstance == null) { 
             // clean up the record instances
             releaseRecordInstances();
         }
@@ -262,7 +259,6 @@ public class Answer {
                 logger.warn("pageRecordInstances is still null");
             }
             if (recordInstanceCursor >= pageRecordInstances.length) {
-                releaseRecordInstances();
                 return false;
             } else return true;
         } catch (WdkModelException ex) {
