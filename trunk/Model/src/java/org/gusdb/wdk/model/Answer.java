@@ -224,13 +224,10 @@ public class Answer {
     }
     
     private void releaseRecordInstances() {
-       if (pageRecordInstances != null && pageRecordInstances.length > 0) {
-           if (pageRecordInstances.length == 1) {
-               pageRecordInstances[0].setAnswer(null);
-           }
-           pageRecordInstances = new RecordInstance[0];
-           recordInstanceCursor = 0;
-       } 
+	if (pageRecordInstances != null && pageRecordInstances.length > 0) {
+	    pageRecordInstances = new RecordInstance[0];
+	    recordInstanceCursor = 0;
+	} 
     }
     
     //Returns null if we have already returned the last instance
@@ -243,7 +240,7 @@ public class Answer {
             nextInstance = pageRecordInstances[recordInstanceCursor];
             recordInstanceCursor++;
         } 
-        if (recordInstanceCursor >= pageRecordInstances.length) { 
+        if (nextInstance == null) { 
             // clean up the record instances
             releaseRecordInstances();
         }
@@ -262,7 +259,6 @@ public class Answer {
                 logger.warn("pageRecordInstances is still null");
             }
             if (recordInstanceCursor >= pageRecordInstances.length) {
-                releaseRecordInstances();
                 return false;
             } else return true;
         } catch (WdkModelException ex) {
@@ -540,30 +536,13 @@ public class Answer {
         }
         return sb.toString();
     }
+
     
-    /**
-     * clone an answer, and deep clone the pageRecordInstances part
-     * @return
-     * @throws WdkUserException
-     * @throws WdkModelException
-     */
     public Answer newAnswer() throws WdkUserException, WdkModelException {
-        Answer answer = new Answer(question, idsQueryInstance,
-                startRecordInstanceI, endRecordInstanceI);
+        Answer answer = new Answer(question, idsQueryInstance, startRecordInstanceI, endRecordInstanceI);
         // instead of cloning all parts of an answer, just initialize it as a
         // new answer, and the queries can be re-run without any assumption
-        
-        // answer.attributesQueryInstance = this.attributesQueryInstance;
-        // if (pageRecordInstances != null) {
-        // int pageSize = this.pageRecordInstances.length;
-        // answer.pageRecordInstances = new RecordInstance[pageSize];
-        // System.arraycopy(pageRecordInstances, 0, answer.pageRecordInstances,
-        // 0, pageSize);
-        // }
-        // answer.recordIdColumnName = recordIdColumnName;
-        // answer.recordProjectColumnName = recordProjectColumnName;
-        // answer.resultSize = resultSize;
-        // answer.resultSizesByProject = resultSizesByProject;
         return answer;
     }
+
 }
