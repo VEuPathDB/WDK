@@ -199,13 +199,16 @@ public class ShowSummaryAction extends ShowQuestionAction {
 	    pageSize = Integer.parseInt(request.getParameter("pageSize"));
 	}
 
-	if (start <1) { start = 1; } 
-	int end = start + pageSize-1;	
-
 	if (wdkAnswer != null) {
 	    answerMaker = wdkAnswer.getQuestion();
 	    params = wdkAnswer.getInternalParams();
+	    if (wdkAnswer.getPageSize() == wdkAnswer.getResultSize()) {
+		pageSize = wdkAnswer.getResultSize();
+		
+	    }
 	}
+	if (start <1) { start = 1; } 
+	int end = start + pageSize-1;	
 
 	if (answerMaker instanceof org.gusdb.wdk.model.jspwrap.QuestionBean) {
 	    wdkAnswer = ((QuestionBean)answerMaker).makeAnswer(params, start, end);
