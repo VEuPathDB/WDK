@@ -174,33 +174,33 @@
         </tr>
 
         <!-- table rows -->
-        <c:set var="i" value="0"/>
-        <c:forEach var="row" items="${tbl.rows}">
-
-          <c:choose>
+    <c:set var="i" value="0"/>
+    <c:forEach var="row" items="${tbl.visibleRows}">
+        <c:choose>
             <c:when test="${i % 2 == 0}"><tr class="rowLight"></c:when>
-            <c:otherwise><tr class="rowDark"></c:otherwise>
-          </c:choose>
+            <c:otherwise><tr class="rowMedium"></c:otherwise>
+        </c:choose>
 
-            <c:forEach var="rCol" items="${row}">
-            <c:if test="${!rCol.value.internal}">
+        <c:forEach var="rColEntry" items="${row}">
+            <c:set var="rCol" value="${rColEntry.value}"/>
 
-              <!-- need to know if value should be hot linked -->
-              <td>
-              <c:set var="colVal" value="${rCol.value.value}"/>
-              <c:choose>
-                <c:when test="${colVal.class.name eq 'org.gusdb.wdk.model.LinkValue'}">
-                  <a href="${colVal.url}">${colVal.visible}</a>
-                </c:when>
-                <c:otherwise>
-                  ${colVal}
-                </c:otherwise>
-              </c:choose>
-              </td>
+            <%-- need to know if value should be hot linked --%>
+            <td>
+                <c:choose>
+                    <c:when test="${rCol.class.name eq 'org.gusdb.wdk.model.LinkValue'}">
+                        <a href="${rCol.url}">${rCol.visible}</a>
+                    </c:when>
+                    <c:when test="${rCol.class.name eq 'org.gusdb.wdk.model.AttributeFieldValue'}">
+                        ${rCol.value}
+                    </c:when>
+                    <c:otherwise>
+                        ${rCol}
+                    </c:otherwise>
+                </c:choose>
+            </td>
+        </c:forEach>
 
-            </c:if>
-            </c:forEach>
-          </tr>
+        </tr>
         <c:set var="i" value="${i +  1}"/>
         </c:forEach>
       </table>
