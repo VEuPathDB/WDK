@@ -44,11 +44,12 @@ public class ApplicationInitListener implements ServletContextListener {
         String alwaysGoToSummary = application.getInitParameter(CConstants.WDK_ALWAYSGOTOSUMMARY_PARAM);
         String xmlSchema = application.getInitParameter(CConstants.WDK_XMLSCHEMA_PARAM);
         String xmlDataDir =application.getInitParameter(CConstants.WDK_XMLDATA_DIR_PARAM);
+        String loginUrl = application.getInitParameter(CConstants.WDK_LOGIN_URL_PARAM);
         
         xmlDataDir = application.getRealPath(xmlDataDir);
         
         initMemberVars(configXml, modelXml, schema, props, parserClass,
-                customViewDir, alwaysGoToSummary, xmlSchema, xmlDataDir, application);
+                customViewDir, alwaysGoToSummary, xmlSchema, xmlDataDir, application, loginUrl);
 
         // Config.set(application, Config.SQL_DATA_SOURCE, dataSource);
     }
@@ -96,7 +97,8 @@ public class ApplicationInitListener implements ServletContextListener {
 
     private void initMemberVars(String configXml, String modelXml,
             String schema, String props, String parserClass,
-            String customViewDir, String alwaysGoToSummary, String xmlschema, String xmlDataDir, ServletContext application) {
+            String customViewDir, String alwaysGoToSummary, String xmlschema, 
+            String xmlDataDir, ServletContext application, String loginUrl) {
         URL schemaURL = null;
         if (schema != null) {
             schemaURL = createURL(schema, null, application);
@@ -146,6 +148,7 @@ public class ApplicationInitListener implements ServletContextListener {
                     customViewDir);
             application.setAttribute(CConstants.WDK_ALWAYSGOTOSUMMARY_KEY,
                     alwaysGoToSummary);
+            application.setAttribute(CConstants.WDK_LOGIN_URL_KEY, loginUrl);
 
         } catch (Exception exp) {
             exp.printStackTrace();

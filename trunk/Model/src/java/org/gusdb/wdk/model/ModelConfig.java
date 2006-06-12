@@ -1,9 +1,9 @@
 package org.gusdb.wdk.model;
 
 /**
- * @author  
- * @modified Jan 6, 2006 - Jerric
- * add a property for the name of query history table
+ * @author
+ * @modified Jan 6, 2006 - Jerric add a property for the name of query history
+ *           table
  */
 public class ModelConfig {
 
@@ -19,10 +19,18 @@ public class ModelConfig {
     Integer minIdle;
     Integer initialSize;
     String webServiceUrl;
-    /**
-     * The name for the query history table
-     */
-    String historyTable;
+
+    // the fields for authentication use
+    private String authenticationLogin;
+    private String authenticationPassword;
+    private String authenticationConnectionUrl;
+    private String authenticationPlatformClass;
+    private String userTable;
+    private String roleTable;
+    private String historyTable;
+    private String preferenceTable;
+    private String defaultRole;
+    private String smtpServer;
 
     public ModelConfig() {}
 
@@ -64,23 +72,6 @@ public class ModelConfig {
 
     public String getQueryInstanceTable() {
         return instanceTable;
-    }
-
-    /**
-     * Sets the name for the QueryHistory table. It's called by the ModelConfig
-     * loader
-     * 
-     * @param historyTable
-     */
-    public void setQueryHistoryTable(String historyTable) {
-        this.historyTable = historyTable;
-    }
-
-    /**
-     * @return gets the name for QueryHistory table.
-     */
-    public String getQueryHistoryTable() {
-        return historyTable;
     }
 
     public void setMaxQueryParams(Integer maxQueryParams) {
@@ -139,4 +130,161 @@ public class ModelConfig {
         webServiceUrl = urlString;
     }
 
+    /**
+     * @return Returns the authenticationConnectionUrl.
+     */
+    public String getAuthenticationConnectionUrl() {
+        return authenticationConnectionUrl;
+    }
+
+    /**
+     * @param authenticationConnectionUrl The authenticationConnectionUrl to
+     *            set.
+     */
+    public void setAuthenticationConnectionUrl(
+            String authenticationConnectionUrl) {
+        this.authenticationConnectionUrl = authenticationConnectionUrl;
+    }
+
+    /**
+     * @return Returns the authenticationLogin.
+     */
+    public String getAuthenticationLogin() {
+        return authenticationLogin;
+    }
+
+    /**
+     * @param authenticationLogin The authenticationLogin to set.
+     */
+    public void setAuthenticationLogin(String authenticationLogin) {
+        this.authenticationLogin = authenticationLogin;
+    }
+
+    /**
+     * @return Returns the authenticationPassword.
+     */
+    public String getAuthenticationPassword() {
+        return authenticationPassword;
+    }
+
+    /**
+     * @param authenticationPassword The authenticationPassword to set.
+     */
+    public void setAuthenticationPassword(String authenticationPassword) {
+        this.authenticationPassword = authenticationPassword;
+    }
+
+    /**
+     * @return Returns the historyTable.
+     */
+    public String getHistoryTable() {
+        return historyTable;
+    }
+
+    /**
+     * @param historyTable The historyTable to set.
+     */
+    public void setHistoryTable(String historyTable) {
+        this.historyTable = historyTable;
+    }
+
+    /**
+     * @return Returns the instanceTable.
+     */
+    public String getInstanceTable() {
+        return instanceTable;
+    }
+
+    /**
+     * @param instanceTable The instanceTable to set.
+     */
+    public void setInstanceTable(String instanceTable) {
+        this.instanceTable = instanceTable;
+    }
+
+    /**
+     * @return Returns the preferenceTable.
+     */
+    public String getPreferenceTable() {
+        return preferenceTable;
+    }
+
+    /**
+     * @param preferenceTable The preferenceTable to set.
+     */
+    public void setPreferenceTable(String preferenceTable) {
+        this.preferenceTable = preferenceTable;
+    }
+
+    /**
+     * @return Returns the defaultRole.
+     */
+    public String getDefaultRole() {
+        return defaultRole;
+    }
+
+    /**
+     * @param defaultRole The defaultRole to set.
+     */
+    public void setDefaultRole(String defaultRole) {
+        this.defaultRole = defaultRole;
+    }
+
+    /**
+     * @return Returns the userTable.
+     */
+    public String getUserTable() {
+        return userTable;
+    }
+
+    /**
+     * @param userTable The userTable to set.
+     */
+    public void setUserTable(String userTable) {
+        this.userTable = userTable;
+    }
+
+    /**
+     * @return Returns the authenticationPlatformClass.
+     */
+    public String getAuthenticationPlatformClass() {
+        return authenticationPlatformClass;
+    }
+
+    /**
+     * @param authenticationPlatformClass The authenticationPlatformClass to
+     *            set.
+     */
+    public void setAuthenticationPlatformClass(
+            String authenticationPlatformClass) {
+        this.authenticationPlatformClass = authenticationPlatformClass;
+    }
+
+    /**
+     * @return Returns the roleTable.
+     */
+    public String getRoleTable() {
+        return roleTable;
+    }
+
+    /**
+     * @param roleTable The roleTable to set.
+     */
+    public void setRoleTable(String roleTable) {
+        this.roleTable = roleTable;
+    }
+
+    /**
+     * @return Returns the smtpServer.
+     */
+    public String getSmtpServer() {
+        return smtpServer;
+    }
+
+    /**
+     * @param smtpServer The smtpServer to set.
+     */
+    public void setSmtpServer(String smtpServer) {
+        this.smtpServer = smtpServer;
+    }
 }

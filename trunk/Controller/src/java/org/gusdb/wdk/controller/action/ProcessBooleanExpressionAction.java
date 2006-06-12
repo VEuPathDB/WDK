@@ -47,7 +47,7 @@ public class ProcessBooleanExpressionAction extends Action {
     {
 	int start = 1;
 	int end = 3;
-	UserBean wdkUser = (UserBean)request.getSession().getAttribute(CConstants.WDK_USER_KEY);
+    UserBean wdkUser = (UserBean)request.getSession().getAttribute(CConstants.WDK_USER_KEY);
 	UserAnswerBean userAnswer = 
         wdkUser.combineAnswers(beForm.getBooleanExpression(), start, end, 
                 BooleanExpressionForm.booleanOperatorMap);

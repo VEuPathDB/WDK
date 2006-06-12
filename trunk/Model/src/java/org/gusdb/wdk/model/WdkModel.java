@@ -7,11 +7,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Vector;
 
-import javax.servlet.http.HttpSessionBindingEvent;
-import javax.servlet.http.HttpSessionBindingListener;
+import javax.sql.DataSource;
 
 import org.gusdb.wdk.model.implementation.ModelXmlParser;
-import org.gusdb.wdk.model.jspwrap.UserBean;
+import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
 import org.gusdb.wdk.model.xml.XmlRecordClassSet;
 import org.w3c.dom.Document;
@@ -30,6 +30,7 @@ public class WdkModel {
     public static WdkModel INSTANCE = new WdkModel();
 
     protected RDBMSPlatformI platform;
+    private RDBMSPlatformI authenPlatform;
 
     Map<String, QuerySet> querySets = new LinkedHashMap<String, QuerySet>();
     Map<String, ParamSet> paramSets = new LinkedHashMap<String, ParamSet>();
@@ -48,7 +49,7 @@ public class WdkModel {
     private EnumParam booleanOps;
     private Document document;
     String webServiceUrl;
-
+    
     /**
      * this map is used to store active users in memory
      */
@@ -279,7 +280,7 @@ public class WdkModel {
     public Map<String, Map<String, Question[]>>getQuestionsByCategory() {
 	QuestionSet[] qSets = getAllQuestionSets();
 
-	Map<String, Map<String, Vector<Question>>> qVecByCat = new LinkedHashMap();
+	Map<String, Map<String, Vector<Question>>> qVecByCat = new LinkedHashMap<String, Map<String,Vector<Question>>>();
 	for (QuestionSet qSet : qSets) {
 	    if (true == qSet.getInternal()) continue;
 	    Question[] questions = qSet.getQuestions();
@@ -289,18 +290,18 @@ public class WdkModel {
 		if (null == cat) cat = "";
 
 		if(null == qVecByCat.get(recType)) {
-		    qVecByCat.put(recType, new LinkedHashMap());
+		    qVecByCat.put(recType, new LinkedHashMap<String, Vector<Question>>());
 		}
 		
 		if(null == qVecByCat.get(recType).get(cat)) {
-		    qVecByCat.get(recType).put(cat, new Vector());
+		    qVecByCat.get(recType).put(cat, new Vector<Question>());
 		}
 
 		qVecByCat.get(recType).get(cat).add(q);
 	    }
 	}
 
-	Map<String, Map<String, Question[]>> qArrayByCat = new LinkedHashMap();
+	Map<String, Map<String, Question[]>> qArrayByCat = new LinkedHashMap<String, Map<String,Question[]>>();
 	Iterator recI = qVecByCat.keySet().iterator();
 	while(recI.hasNext()) {
 	    String recType = (String)recI.next();
@@ -313,7 +314,7 @@ public class WdkModel {
 		qVec.toArray(qArray);
 
 		if(null == qArrayByCat.get(recType)) {
-		    qArrayByCat.put(recType, new LinkedHashMap());
+		    qArrayByCat.put(recType, new LinkedHashMap<String, Question[]>());
 		}
 
 		qArrayByCat.get(recType).put(cat, qArray);
@@ -408,13 +409,13 @@ public class WdkModel {
 
     public void configure(URL modelConfigXmlFileURL) throws Exception {
 
-        ModelConfig modelConfig = ModelConfigParser.parseXmlFile(modelConfigXmlFileURL);
+        ModelConfig modelConfig = ModelConfigParser
+                .parseXmlFile(modelConfigXmlFileURL);
         String fileName = modelConfigXmlFileURL.getFile();
         String connectionUrl = modelConfig.getConnectionUrl();
         String login = modelConfig.getLogin();
         String password = modelConfig.getPassword();
         String instanceTable = modelConfig.getQueryInstanceTable();
-        String historyTable = modelConfig.getQueryHistoryTable();
         String platformClass = modelConfig.getPlatformClass();
         Integer maxIdle = modelConfig.getMaxIdle();
         Integer minIdle = modelConfig.getMinIdle();
@@ -422,7 +423,31 @@ public class WdkModel {
         Integer maxActive = modelConfig.getMaxActive();
         Integer initialSize = modelConfig.getInitialSize();
 
-        RDBMSPlatformI platform = (RDBMSPlatformI) Class.forName(platformClass).newInstance();
+        RDBMSPlatformI platform = (RDBMSPlatformI) Class.forName(platformClass)
+                .newInstance();
+
+        // also load the connection info for authentication database
+        String authenPlatformClass = modelConfig
+                .getAuthenticationPlatformClass();
+        String authenLogin = modelConfig.getAuthenticationLogin();
+        String authenPassword = modelConfig.getAuthenticationPassword();
+        String authenConnection = modelConfig.getAuthenticationConnectionUrl();
+
+        String userTable = modelConfig.getUserTable();
+        String roleTable = modelConfig.getRoleTable();
+        String historyTable = modelConfig.getHistoryTable();
+        String preferenceTable = modelConfig.getPreferenceTable();
+        String defaultRole = modelConfig.getDefaultRole();
+        String smtpServer = modelConfig.getSmtpServer();
+
+        // initialize authentication factory
+        authenPlatform = (RDBMSPlatformI) Class.forName(authenPlatformClass)
+                .newInstance();
+        authenPlatform.init(authenConnection, authenLogin, authenPassword,
+                minIdle, maxIdle, maxWait, maxActive, initialSize, fileName);
+        DataSource dataSource = authenPlatform.getDataSource();
+        UserFactory.initialize(this, this.name, dataSource, userTable, roleTable,
+                historyTable, preferenceTable, defaultRole, smtpServer);
 
         platform.init(connectionUrl, login, password, minIdle, maxIdle,
                 maxWait, maxActive, initialSize, fileName);
@@ -439,6 +464,10 @@ public class WdkModel {
 
     public RDBMSPlatformI getRDBMSPlatform() {
         return platform;
+    }
+    
+    public UserFactory getUserFactory() throws WdkUserException {
+        return UserFactory.getInstance();
     }
 
     public String getWebServiceUrl() {

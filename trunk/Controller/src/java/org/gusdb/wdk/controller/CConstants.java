@@ -19,7 +19,6 @@ public class CConstants {
     public static final String WDK_QUESTION_PARAMS_KEY = "wdkQuestionParams";
     public static final String WDK_ANSWER_KEY = "wdkAnswer";
     public static final String WDK_RECORD_KEY = "wdkRecord";
-    public static final String WDK_USER_KEY = "wdkUser";
     public static final String USER_ANSWER_ID_KEY = "userAnswerId";
     public static final String NEXT_QUESTION_OPERAND = "nextQuestionOperand";
     public static final String QUESTIONFORM_KEY = "questionForm";
@@ -31,7 +30,19 @@ public class CConstants {
     public static final String WDK_XMLQUESTIONSETS_KEY = "wdkXmlQuestionSets";
     public static final String WDK_XMLANSWER_KEY = "wdkXmlAnswer";
     public static final String QUESTIONSETFORM_KEY = "questionSetForm"; 
-   
+    public static final String WDK_LOGIN_URL_KEY = "wdkLoginUrl";
+
+    // the constants for user authentication/authorization
+    public static final String WDK_USER_KEY = "wdkUser";
+    public static final String WDK_EMAIL_KEY = "email";
+    public static final String WDK_PASSWORD_KEY = "password";
+    public static final String WDK_LOGIN_ERROR_KEY = "loginError";
+    public static final String WDK_REGISTER_ERROR_KEY = "registerError";
+    public static final String WDK_PROFILE_ERROR_KEY = "profileError";
+    public static final String WDK_CHANGE_PASSWORD_ERROR_KEY = "changePasswordError";
+    public static final String WDK_RESET_PASSWORD_ERROR_KEY = "changePasswordError";
+    public static final String WDK_REFERER_URL_KEY = "refererUrl";
+
     //key for finding action forward, from struts-config.xml, used in Action classes
     public static final String SHOW_QUESTION_MAPKEY = "show_question";
     public static final String SKIPTO_SUMMARY_MAPKEY = "skip_to_summary";
@@ -57,6 +68,7 @@ public class CConstants {
     public static final String SHOW_XMLDATA_CONTENT_MAPKEY = "show_xmldata_content";
     public static final String SHOW_ERRORPAGE_USER_MAPKEY = "show_error_page_user";
     public static final String SHOW_ERRORPAGE_MODEL_MAPKEY = "show_error_page_model";
+    public static final String SHOW_LOGIN_MAPKEY = "show_login_page";
 
     //button click detectors, used in action, action forms, and jsp pages
     public static final String PQ_SUBMIT_KEY = "questionSubmit"; //match question.jsp
@@ -96,6 +108,7 @@ public class CConstants {
     protected static final String WDK_ALWAYSGOTOSUMMARY_PARAM = "wdkAlwaysGoToSummary_param";
     protected static final String WDK_XMLSCHEMA_PARAM = "wdkXmlSchema_param";   // the schema for xml data source
     protected static final String WDK_XMLDATA_DIR_PARAM = "wdkXmlDataDir_param";
+    protected static final String WDK_LOGIN_URL_PARAM = "wdkLoginUrl_param";
     
 
     //default value of webapp init params, from web.xml, used in ApplicationInitListener.java
