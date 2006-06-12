@@ -11,7 +11,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
@@ -38,7 +37,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
 				 ActionForm form,
 				 HttpServletRequest request,
 				 HttpServletResponse response) throws Exception {
-	UserBean wdkUser = null;
+        UserBean wdkUser = null;
 	AnswerBean wdkAnswer = null;
     
 	String ua_id_str = request.getParameter(CConstants.USER_ANSWER_ID);

@@ -13,6 +13,12 @@
     <form-bean name="downloadConfigForm" type="org.gusdb.wdk.controller.action.DownloadConfigForm"/>
     <form-bean name="booleanExpressionForm" type="org.gusdb.wdk.controller.action.BooleanExpressionForm"/>
     <form-bean name="testForm" type="org.gusdb.wdk.controller.action.TestForm"/>
+    <form-bean name="loginForm" type="org.gusdb.wdk.controller.action.LoginForm"/>
+    <form-bean name="registerForm" type="org.gusdb.wdk.controller.action.RegisterForm"/>
+    <form-bean name="logoutForm" type="org.gusdb.wdk.controller.action.LogoutForm"/>
+    <form-bean name="profileForm" type="org.gusdb.wdk.controller.action.ProfileForm"/>
+    <form-bean name="passwordForm" type="org.gusdb.wdk.controller.action.PasswordForm"/>
+    <form-bean name="resetPasswordForm" type="org.gusdb.wdk.controller.action.ResetPasswordForm"/>
   </form-beans>
 
   <global-exceptions>
@@ -185,6 +191,48 @@
       scope="request">
       <forward name="show_error_page_user" path="/error.user.jsp"/>
       <forward name="show_error_page_model" path="/error.jsp"/>
+    </action>
+    <action
+      path="/processLogin"
+      type="org.gusdb.wdk.controller.action.ProcessLoginAction"
+      scope="session"
+      name="loginForm">
+      <forward name="process_login" path="/processLogin.do"/>
+    </action>
+    <action
+      path="/processRegister"
+      type="org.gusdb.wdk.controller.action.ProcessRegisterAction"
+      scope="request"
+      name="loginForm">
+      <forward name="process_register" path="/processRegister.do"/>
+    </action>
+    <action
+      path="/processLogout"
+      type="org.gusdb.wdk.controller.action.ProcessLogoutAction"
+      scope="session"
+      name="logoutForm">
+      <forward name="process_logout" path="/processLogout.do"/>
+    </action>
+    <action
+      path="/processProfile"
+      type="org.gusdb.wdk.controller.action.ProcessProfileAction"
+      scope="session"
+      name="profileForm">
+      <forward name="process_profile" path="/processProfile.do"/>
+    </action>
+    <action
+      path="/processPassword"
+      type="org.gusdb.wdk.controller.action.ProcessPasswordAction"
+      scope="session"
+      name="passwordForm">
+      <forward name="process_password" path="/processPassword.do"/>
+    </action>
+    <action
+      path="/processResetPassword"
+      type="org.gusdb.wdk.controller.action.ProcessResetPasswordAction"
+      scope="session"
+      name="resetPasswordForm">
+      <forward name="process_reset_passowrd" path="/processResetPassword.do"/>
     </action>
   </action-mappings>
 

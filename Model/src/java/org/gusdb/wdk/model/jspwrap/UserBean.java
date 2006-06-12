@@ -1,20 +1,415 @@
+/**
+ * 
+ */
 package org.gusdb.wdk.model.jspwrap;
-
-import org.gusdb.wdk.model.User;
-import org.gusdb.wdk.model.UserAnswer;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.gusdb.wdk.model.Answer;
+import org.gusdb.wdk.model.UserAnswer;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.user.History;
+import org.gusdb.wdk.model.user.User;
+
+/**
+ * @author: Jerric
+ * @created: May 25, 2006
+ * @modified by: Jerric
+ * @modified at: May 25, 2006
+ * 
+ */
 public class UserBean {
 
-    User user;
+    private User user;
 
+    /**
+     * 
+     */
     public UserBean(User user) {
         this.user = user;
     }
+    
+    User getUser() {
+        return user;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#addUserRole(java.lang.String)
+     */
+    public void addUserRole(String userRole) {
+        user.addUserRole(userRole);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#clearHistories()
+     */
+    public void clearHistories() {
+        user.clearHistories();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#createHistory(org.gusdb.wdk.model.Answer)
+     */
+    public History createHistory(Answer answer) {
+        return user.createHistory(answer);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#deleteHistory(org.gusdb.wdk.model.user.History)
+     */
+    public void deleteHistory(History history) {
+        user.deleteHistory(history);
+    }
+    
+    public void mergeHistory(UserBean userBean) {
+        this.user.mergeHistory(userBean.getUser());
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#getAddress()
+     */
+    public String getAddress() {
+        return user.getAddress();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#getCity()
+     */
+    public String getCity() {
+        return user.getCity();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#getCountry()
+     */
+    public String getCountry() {
+        return user.getCountry();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#getDepartment()
+     */
+    public String getDepartment() {
+        return user.getDepartment();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#getEmail()
+     */
+    public String getEmail() {
+        return user.getEmail();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#getFirstName()
+     */
+    public String getFirstName() {
+        return user.getFirstName();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#getHistories()
+     */
+    public History[] getHistories() {
+        return user.getHistories();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#getHistoryMap()
+     */
+    public Map<Integer, History> getHistoryMap() {
+        return user.getHistoryMap();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#getLastName()
+     */
+    public String getLastName() {
+        return user.getLastName();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#getMiddleName()
+     */
+    public String getMiddleName() {
+        return user.getMiddleName();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#getOrganization()
+     */
+    public String getOrganization() {
+        return user.getOrganization();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#getPhoneNumber()
+     */
+    public String getPhoneNumber() {
+        return user.getPhoneNumber();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#getPreferenceMap()
+     */
+    public Map<String, String> getPreferenceMap() {
+        return user.getPreferenceMap();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#getRefreshInterval()
+     */
+    public int getRefreshInterval() {
+        return user.getRefreshInterval();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#getState()
+     */
+    public String getState() {
+        return user.getState();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#getTitle()
+     */
+    public String getTitle() {
+        return user.getTitle();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#getUserRoles()
+     */
+    public String[] getUserRoles() {
+        return user.getUserRoles();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#getZipCode()
+     */
+    public String getZipCode() {
+        return user.getZipCode();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#isGuest()
+     */
+    public boolean getGuest() {
+        return user.isGuest();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#queryHistories(java.lang.String)
+     */
+    public History[] queryHistories(String namePattern) {
+        return user.queryHistories(namePattern);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#queryPreferences(java.lang.String)
+     */
+    public Map<String, String> queryPreferences(String namePattern) {
+        return user.queryPreferences(namePattern);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#removeUserRole(java.lang.String)
+     */
+    public void removeUserRole(String userRole) {
+        user.removeUserRole(userRole);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#saveHistory(org.gusdb.wdk.model.user.History)
+     */
+    public void saveHistory(History history) {
+        user.saveHistory(history);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#savePreference(java.lang.String,
+     *      java.lang.String)
+     */
+    public void savePreference(String prefName, String prefValue) {
+        user.savePreference(prefName, prefValue);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#setAddress(java.lang.String)
+     */
+    public void setAddress(String address) {
+        user.setAddress(address);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#setCity(java.lang.String)
+     */
+    public void setCity(String city) {
+        user.setCity(city);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#setCountry(java.lang.String)
+     */
+    public void setCountry(String country) {
+        user.setCountry(country);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#setDepartment(java.lang.String)
+     */
+    public void setDepartment(String department) {
+        user.setDepartment(department);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#setFirstName(java.lang.String)
+     */
+    public void setFirstName(String firstName) {
+        user.setFirstName(firstName);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#setLastName(java.lang.String)
+     */
+    public void setLastName(String lastName) {
+        user.setLastName(lastName);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#setMiddleName(java.lang.String)
+     */
+    public void setMiddleName(String middleName) {
+        user.setMiddleName(middleName);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#setOrganization(java.lang.String)
+     */
+    public void setOrganization(String organization) {
+        user.setOrganization(organization);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#setPhoneNumber(java.lang.String)
+     */
+    public void setPhoneNumber(String phoneNumber) {
+        user.setPhoneNumber(phoneNumber);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#setState(java.lang.String)
+     */
+    public void setState(String state) {
+        user.setState(state);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#setTitle(java.lang.String)
+     */
+    public void setTitle(String title) {
+        user.setTitle(title);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#setZipCode(java.lang.String)
+     */
+    public void setZipCode(String zipCode) {
+        user.setZipCode(zipCode);
+    }
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.user.User#changePassword(java.lang.String, java.lang.String, java.lang.String)
+     */
+    public void changePassword(String oldPassword, String newPassword, String confirmPassword) throws WdkUserException, WdkModelException {
+        user.changePassword(oldPassword, newPassword, confirmPassword);
+    }
+
+    // *************************************************************************
+    // Copied from the original code - to be updated soon
+    // *************************************************************************
 
     /*
      * (non-Javadoc)
@@ -62,8 +457,8 @@ public class UserBean {
     public String validateExpression(String expression, int startIndex,
             int endIndex, Map<String, String> operatorMap) throws WdkModelException
     {
-	return this.user.validateExpression(expression, startIndex, endIndex,
-					    operatorMap);
+    return this.user.validateExpression(expression, startIndex, endIndex,
+                        operatorMap);
     }
 
     /*
@@ -106,7 +501,7 @@ public class UserBean {
 
     public int getUserAnswerIdByAnswer(AnswerBean answer)
             throws WdkUserException {
-	return getUserAnswerByAnswerFuzzy(answer).getAnswerID();
+    return getUserAnswerByAnswerFuzzy(answer).getAnswerID();
     }
 
     public UserAnswerBean getUserAnswerByAnswer(AnswerBean answer)
@@ -184,4 +579,6 @@ public class UserBean {
     public String toString() {
         return this.user.toString();
     }
+
+    // ********************************* END ***********************************
 }

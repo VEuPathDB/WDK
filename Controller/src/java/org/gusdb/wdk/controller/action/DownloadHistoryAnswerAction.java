@@ -32,7 +32,7 @@ public class DownloadHistoryAnswerAction extends Action {
 	String ua_id_str = request.getParameter(CConstants.USER_ANSWER_ID);
 	if (ua_id_str != null) {
 	    int ua_id = Integer.parseInt(ua_id_str);
-	    UserBean wdkUser = (UserBean)request.getSession().getAttribute(CConstants.WDK_USER_KEY);
+        UserBean wdkUser = (UserBean)request.getSession().getAttribute(CConstants.WDK_USER_KEY);
 
 	    UserAnswerBean userAnswer = wdkUser.getUserAnswerByID(ua_id);
 	    AnswerBean wdkAnswer = userAnswer.getAnswer();
