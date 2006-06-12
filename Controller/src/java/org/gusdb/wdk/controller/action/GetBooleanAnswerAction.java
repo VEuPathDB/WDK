@@ -68,7 +68,7 @@ public class GetBooleanAnswerAction extends ShowSummaryAction {
 	request.getSession().setAttribute(CConstants.BOOLEAN_QUESTION_FORM_KEY, bqf);
 
 	//add UserAnswerBean to UserAnswer for query history
-	UserBean wdkUser = (UserBean)request.getSession().getAttribute(CConstants.WDK_USER_KEY);
+    UserBean wdkUser = (UserBean)request.getSession().getAttribute(CConstants.WDK_USER_KEY);
 	wdkUser.addAnswerFuzzy(answer);
 	//set the question form bean saved at ShowQuestionAction time to be non-validating
 	//to prevent problem at show history time (o.w. ShowSummaryAction goes to question page)

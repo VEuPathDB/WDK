@@ -545,4 +545,19 @@ public class Answer {
         return answer;
     }
 
+    
+    /**
+     * @return Returns the endRecordInstanceI.
+     */
+    public int getEndRecordInstanceI() {
+        return endRecordInstanceI;
+    }
+
+    
+    /**
+     * @return Returns the startRecordInstanceI.
+     */
+    public int getStartRecordInstanceI() {
+        return startRecordInstanceI;
+    }
 }

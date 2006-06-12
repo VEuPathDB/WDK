@@ -14,45 +14,53 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
 /**
- * This Action is a glue action to allow display of questionSetsFlat to be handled uniformly.
- * It forwards on the control
+ * This Action is a glue action to allow display of questionSetsFlat to be
+ * handled uniformly. It forwards on the control
  */
 
 public class ShowQuestionSetsAction extends Action {
-    public ActionForward execute(ActionMapping mapping,
-				 ActionForm form,
-				 HttpServletRequest request,
-				 HttpServletResponse response) throws Exception {
 
-	ServletContext svltCtx = getServlet().getServletContext();
-	String customViewDir = (String)svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
-	String customViewFile = customViewDir + File.separator
-	    + CConstants.WDK_CUSTOM_QUESTIONSETS_PAGE;
+    public ActionForward execute(ActionMapping mapping, ActionForm form,
+            HttpServletRequest request, HttpServletResponse response)
+            throws Exception {
 
-	ActionForward forward = null;
-	if (ApplicationInitListener.resourceExists(customViewFile, svltCtx)) {
-	    forward = new ActionForward(customViewFile);
-	} else {
-	    forward = mapping.findForward(CConstants.SHOW_QUESTIONSETS_MAPKEY);
-	}
+        ServletContext svltCtx = getServlet().getServletContext();
+        String customViewDir = (String) svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
+        String customViewFile = customViewDir + File.separator
+                + CConstants.WDK_CUSTOM_QUESTIONSETS_PAGE;
 
-	sessionStart(request, getServlet());
+        ActionForward forward = null;
+        if (ApplicationInitListener.resourceExists(customViewFile, svltCtx)) {
+            forward = new ActionForward(customViewFile);
+        } else {
+            forward = mapping.findForward(CConstants.SHOW_QUESTIONSETS_MAPKEY);
+        }
 
-	return forward;
+        sessionStart(request, getServlet());
+
+        return forward;
     }
 
-    protected static void sessionStart (HttpServletRequest request, HttpServlet servlet) {
-	if (request.getSession().getAttribute(CConstants.WDK_USER_KEY) != null) {
-	    return;
-	}
-	WdkModelBean wdkModel = (WdkModelBean)servlet.getServletContext().getAttribute(CConstants.WDK_MODEL_KEY);
-	HttpSession session = request.getSession();
-	String sessionId = session.getId();
-	UserBean user = wdkModel.createUser(sessionId);
-	request.getSession().setAttribute(CConstants.WDK_USER_KEY, user);
+    protected static void sessionStart(HttpServletRequest request,
+            HttpServlet servlet) {
+        if (request.getSession().getAttribute(CConstants.WDK_USER_KEY) != null) {
+            return;
+        }
+        WdkModelBean wdkModel = (WdkModelBean) servlet.getServletContext().getAttribute(
+                CConstants.WDK_MODEL_KEY);
+        HttpSession session = request.getSession();
+        // create a guest user
+        try {
+            UserBean guest = wdkModel.getUserFactory().createGuestUser();
+
+            session.setAttribute(CConstants.WDK_USER_KEY, guest);
+        } catch (WdkUserException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 }

@@ -67,7 +67,7 @@ public class UserAnswer {
         return getName().substring(0, truncateTo);
     }
 
-    void setName(String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
@@ -83,7 +83,7 @@ public class UserAnswer {
         return this.combinedAnswer;
     }
 
-    void setCombinedAnswer(boolean combinedAnswer) {
+    public void setCombinedAnswer(boolean combinedAnswer) {
         this.combinedAnswer = combinedAnswer;
     }
 

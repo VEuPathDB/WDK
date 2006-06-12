@@ -1,24 +1,24 @@
 package org.gusdb.wdk.model.jspwrap;
 
-import org.gusdb.wdk.model.User;
-import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.Question;
-import org.gusdb.wdk.model.QuestionSet;
-import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.RecordClassSet;
-import org.gusdb.wdk.model.RecordClass;
-import org.gusdb.wdk.model.xml.XmlQuestionSet;
-import org.gusdb.wdk.model.xml.XmlRecordClassSet;
-
-import java.util.Map;
 import java.util.HashMap;
-import java.util.Vector;
-import java.util.LinkedHashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Vector;
 
 import javax.servlet.http.HttpSessionBindingEvent;
 import javax.servlet.http.HttpSessionBindingListener;
+
+import org.gusdb.wdk.model.Question;
+import org.gusdb.wdk.model.QuestionSet;
+import org.gusdb.wdk.model.RecordClass;
+import org.gusdb.wdk.model.RecordClassSet;
+import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.xml.XmlQuestionSet;
+import org.gusdb.wdk.model.xml.XmlRecordClassSet;
 
 /**
  * A wrapper on a {@link WdkModel} that provides simplified access for
@@ -232,5 +232,9 @@ public class WdkModelBean implements HttpSessionBindingListener {
                 ex.printStackTrace();
             }
         }
+    }
+    
+    public UserFactoryBean getUserFactory() throws WdkUserException {
+        return new UserFactoryBean(model.getUserFactory());
     }
 }

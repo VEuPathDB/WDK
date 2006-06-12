@@ -16,12 +16,12 @@ import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
 import org.gusdb.wdk.model.Reference;
-import org.gusdb.wdk.model.User;
 import org.gusdb.wdk.model.UserAnswer;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
+import org.gusdb.wdk.model.user.User;
 
 /**
  * @author Jerric
