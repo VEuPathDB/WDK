@@ -30,6 +30,7 @@ public class CConstants {
     public static final String WDK_XMLQUESTIONSETS_KEY = "wdkXmlQuestionSets";
     public static final String WDK_XMLANSWER_KEY = "wdkXmlAnswer";
     public static final String QUESTIONSETFORM_KEY = "questionSetForm"; 
+    public static final String WDK_SUMMARY_ATTRS_KEY = "wdkSummaryAttributesByQuestion"; 
     public static final String WDK_LOGIN_URL_KEY = "wdkLoginUrl";
 
     // the constants for user authentication/authorization
