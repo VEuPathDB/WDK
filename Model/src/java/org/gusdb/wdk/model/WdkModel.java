@@ -441,13 +441,17 @@ public class WdkModel {
         String smtpServer = modelConfig.getSmtpServer();
 
         // initialize authentication factory
-        authenPlatform = (RDBMSPlatformI) Class.forName(authenPlatformClass)
+	if (authenPlatformClass != null && !"".equals(authenPlatformClass)) {
+	    authenPlatform = (RDBMSPlatformI) Class.forName(authenPlatformClass)
                 .newInstance();
-        authenPlatform.init(authenConnection, authenLogin, authenPassword,
-                minIdle, maxIdle, maxWait, maxActive, initialSize, fileName);
-        DataSource dataSource = authenPlatform.getDataSource();
-        UserFactory.initialize(this, this.name, dataSource, userTable, roleTable,
-                historyTable, preferenceTable, defaultRole, smtpServer);
+	    authenPlatform.init(authenConnection, authenLogin, authenPassword,
+				minIdle, maxIdle, maxWait, maxActive, initialSize, fileName);
+	    DataSource dataSource = authenPlatform.getDataSource();
+	    UserFactory.initialize(this, this.name, dataSource, userTable, roleTable,
+				   historyTable, preferenceTable, defaultRole, smtpServer);
+	} else {
+	    UserFactory.initialize(this, this.name, null, null, null, null, null, null, null);
+	}
 
         platform.init(connectionUrl, login, password, minIdle, maxIdle,
                 maxWait, maxActive, initialSize, fileName);
