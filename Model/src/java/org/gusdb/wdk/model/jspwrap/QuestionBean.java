@@ -6,10 +6,12 @@ import org.gusdb.wdk.model.FlatVocabParam;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.BooleanQuestionNode;
+import org.gusdb.wdk.model.AttributeField;
 
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Iterator;
 
 /**
  * A wrapper on a {@link Question} that provides simplified access for 
@@ -56,6 +58,44 @@ public class QuestionBean implements Serializable {
 	return pMap;
     }
 
+    public Map getSummaryAttributesMap() {
+	Map<String, AttributeField> attribs = question.getSummaryAttributes();
+	Iterator<String> ai = attribs.keySet().iterator();
+
+	Map<String, AttributeFieldBean> saMap = new LinkedHashMap<String, AttributeFieldBean>();
+	while (ai.hasNext()) {
+	    String attribName = ai.next();
+	    saMap.put(attribName, new AttributeFieldBean(attribs.get(attribName)));
+	}
+	return saMap;
+    }
+
+    public Map getReportMakerAttributesMap() {
+	Map<String, AttributeField> attribs = question.getReportMakerAttributeFields();
+	Iterator<String> ai = attribs.keySet().iterator();
+
+	Map<String, AttributeFieldBean> rmaMap = new LinkedHashMap<String, AttributeFieldBean>();
+	while (ai.hasNext()) {
+	    String attribName = ai.next();
+	    rmaMap.put(attribName, new AttributeFieldBean(attribs.get(attribName)));
+	}
+	return rmaMap;
+    }
+
+    public Map getAdditionalSummaryAttributesMap() {
+	Map all = getReportMakerAttributesMap();
+	Map dft = getSummaryAttributesMap();
+	Map opt = new LinkedHashMap<String, AttributeFieldBean>();
+	Iterator<String> ai = all.keySet().iterator();
+	while (ai.hasNext()) {
+	    String attribName = ai.next();
+	    if (dft.get(attribName) == null) {
+		opt.put(attribName, all.get(attribName));
+	    }
+	}
+	return opt;
+    }
+
     public String getName() {
 	return question.getName();
     }
@@ -93,4 +133,5 @@ public class QuestionBean implements Serializable {
     public String getDescription(){
 	return question.getDescription();
     }
+    
 }

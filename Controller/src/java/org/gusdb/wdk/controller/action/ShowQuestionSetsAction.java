@@ -16,7 +16,13 @@ import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.UserBean;
+import org.gusdb.wdk.model.jspwrap.QuestionBean;
+import org.gusdb.wdk.model.jspwrap.QuestionSetBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Iterator;
 
 /**
  * This Action is a glue action to allow display of questionSetsFlat to be
@@ -62,5 +68,25 @@ public class ShowQuestionSetsAction extends Action {
         } catch (WdkUserException ex) {
             throw new RuntimeException(ex);
         }
+	Map sumAttrsByQuestion = getSummaryAttributesByQuestionMap(wdkModel);
+	request.getSession().setAttribute(CConstants.WDK_SUMMARY_ATTRS_KEY, sumAttrsByQuestion);
+    }
+
+    private static Map getSummaryAttributesByQuestionMap(WdkModelBean wdkModel) {
+	Map sumAttrsByQuestion = new HashMap();
+	QuestionSetBean[] qSets = wdkModel.getQuestionSets();
+	for (QuestionSetBean qSet : qSets) {
+	    QuestionBean[] qs = qSet.getQuestions();
+	    for (QuestionBean q : qs) {
+		String key = qSet.getName() + "_" + q.getName();
+		Map toShow = q.getSummaryAttributesMap();
+		Map toAdd = q.getAdditionalSummaryAttributesMap();
+		Map theMap = new HashMap();
+		theMap.put("show", toShow);
+		theMap.put("add", toAdd);
+		sumAttrsByQuestion.put(key, theMap);
+	    }
+	}
+	return sumAttrsByQuestion;
     }
 }
