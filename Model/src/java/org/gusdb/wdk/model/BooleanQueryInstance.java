@@ -200,8 +200,8 @@ public class BooleanQueryInstance extends QueryInstance {
         
         // add sorting clause
         sql = "SELECT * FROM (" + sql + ") temp ORDER BY ";
-        if (names[1] != null) sql += names[1] + ", LOWER(";
-        sql += names[0] +")";
+        if (names[1] != null) sql += names[1] + ", ";
+	sql += "LOWER(" + names[0] +")";
         
         // TEST
         logger.debug("Boolean Id Query: " + sql);
