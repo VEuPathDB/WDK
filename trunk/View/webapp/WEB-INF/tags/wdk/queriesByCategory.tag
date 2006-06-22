@@ -14,7 +14,7 @@
   <c:set var="qByCat" value="${recTypeEntry.value}"/>
   <c:set var="isMultiCat" value="${fn:length(qByCat) > 1}"/>
 
-  <tr bgcolor="#bbaacc"><td colspan="4" align="center"><b>${recTypes[recTypeEntry.key]} Queries</b></td></tr>
+  <tr class="headerRow"><td colspan="4" align="center"><b>${recTypes[recTypeEntry.key]} Queries</b></td></tr>
 
   <c:set var="i" value="0"/>
   <c:forEach items="${qByCat}" var="catEntry">
@@ -26,7 +26,7 @@
         <c:set var="cat" value="miscellaneous"/>
       </c:if>
       <tr><td colspan="4">&nbsp;</td></tr>
-      <tr bgcolor="#ffeeff" width="100%"><td colspan="4" align="center"><b>${cat}</b></td></tr>
+      <tr class="rowDark" width="100%"><td colspan="4" align="center"><b>${cat}</b></td></tr>
     </c:if>
 
     <c:forEach items="${questions}" var="q">
