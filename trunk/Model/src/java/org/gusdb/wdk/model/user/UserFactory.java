@@ -67,7 +67,7 @@ public class UserFactory {
     public static UserFactory getInstance() throws WdkUserException {
         if (factory == null) {
             throw new WdkUserException(
-                    "UserFactory not initialized properly. Please Initialize WdkModel first.");
+                    "UserFactory is not initialized properly. Please Initialize WdkModel first.");
         }
         return factory;
     }
@@ -155,21 +155,21 @@ public class UserFactory {
         if (email == null)
             throw new WdkUserException("The user's email cannot be empty.");
         // format the info
-        email = email.trim().toLowerCase();
+        email = qualify(email.trim().toLowerCase());
         if (email.length() == 0)
             throw new WdkUserException("The user's email cannot be empty.");
-        lastName = lastName.trim();
-        firstName = firstName.trim();
-        middleName = middleName.trim();
-        title = title.trim();
-        organization = organization.trim();
-        department = department.trim();
-        address = address.trim();
-        city = city.trim();
-        state = state.trim();
-        zipCode = zipCode.trim();
-        phoneNumber = phoneNumber.trim();
-        country = country.trim();
+        lastName = qualify(lastName.trim());
+        firstName = qualify(firstName.trim());
+        middleName = qualify(middleName.trim());
+        title = qualify(title.trim());
+        organization = qualify(organization.trim());
+        department = qualify(department.trim());
+        address = qualify(address.trim());
+        city = qualify(city.trim());
+        state = qualify(state.trim());
+        zipCode = qualify(zipCode.trim());
+        phoneNumber = qualify(phoneNumber.trim());
+        country = qualify(country.trim());
 
         try {
             // check whether the user exist in the database already exist.
@@ -236,7 +236,7 @@ public class UserFactory {
     public User authenticate(String email, String password)
             throws WdkModelException, WdkUserException {
         // convert email to lower case
-        email = email.trim().toLowerCase();
+        email = qualify(email.trim().toLowerCase());
         try {
             // encrypt password
             password = encrypt(password);
@@ -272,7 +272,7 @@ public class UserFactory {
     public User loadUser(String email) throws WdkModelException,
             WdkUserException {
         // convert to lower case
-        email = email.trim().toLowerCase();
+        email = qualify(email.trim().toLowerCase());
 
         StringBuffer sql = new StringBuffer();
         sql.append("SELECT * FROM " + userTable);
@@ -342,28 +342,28 @@ public class UserFactory {
             // save the user's basic information
             StringBuffer sql = new StringBuffer();
             sql.append("UPDATE users SET ");
-            sql.append("last_name = '" + user.getLastName().trim() + "', ");
-            sql.append("first_name = '" + user.getFirstName().trim() + "', ");
-            sql.append("middle_name = '" + user.getMiddleName().trim() + "', ");
-            sql.append("title = '" + user.getTitle().trim() + "', ");
-            sql.append("organization = '" + user.getOrganization().trim()
+            sql.append("last_name = '" + qualify(user.getLastName().trim()) + "', ");
+            sql.append("first_name = '" + qualify(user.getFirstName().trim()) + "', ");
+            sql.append("middle_name = '" + qualify(user.getMiddleName().trim()) + "', ");
+            sql.append("title = '" + qualify(user.getTitle().trim()) + "', ");
+            sql.append("organization = '" + qualify(user.getOrganization().trim())
                     + "', ");
-            sql.append("department = '" + user.getDepartment().trim() + "', ");
-            sql.append("address = '" + user.getAddress().trim() + "', ");
-            sql.append("city = '" + user.getCity().trim() + "', ");
-            sql.append("state = '" + user.getState().trim() + "', ");
-            sql.append("zip_code = '" + user.getZipCode().trim() + "', ");
-            sql.append("phone_number = '" + user.getPhoneNumber().trim()
+            sql.append("department = '" + qualify(user.getDepartment().trim()) + "', ");
+            sql.append("address = '" + qualify(user.getAddress().trim()) + "', ");
+            sql.append("city = '" + qualify(user.getCity().trim()) + "', ");
+            sql.append("state = '" + qualify(user.getState().trim()) + "', ");
+            sql.append("zip_code = '" + qualify(user.getZipCode().trim()) + "', ");
+            sql.append("phone_number = '" + qualify(user.getPhoneNumber().trim())
                     + "', ");
-            sql.append("country = '" + user.getCountry().trim() + "' ");
-            sql.append(" WHERE email = '" + user.getEmail() + "'");
+            sql.append("country = '" + qualify(user.getCountry().trim()) + "' ");
+            sql.append(" WHERE email = '" + qualify(user.getEmail()) + "'");
             SqlUtils.execute(dataSource, sql.toString());
 
             // save the user's roles
             // before that, remove the records first
             sql = new StringBuffer();
             sql.append("DELETE FROM " + roleTable);
-            sql.append(" WHERE email = '" + user.getEmail() + "'");
+            sql.append(" WHERE email = '" + qualify(user.getEmail()) + "'");
             SqlUtils.execute(dataSource, sql.toString());
 
             // Then get a prepared statement to do the insertion
@@ -374,7 +374,7 @@ public class UserFactory {
                     sql.toString());
             String[] roles = user.getUserRoles();
             for (String role : roles) {
-                stmt.setString(1, user.getEmail());
+                stmt.setString(1, qualify(user.getEmail()));
                 stmt.setString(2, role);
                 stmt.execute();
             }
@@ -477,6 +477,8 @@ public class UserFactory {
 
     void changePassword(String email, String oldPassword, String newPassword,
             String confirmPassword) throws WdkUserException, WdkModelException {
+        email = qualify(email.trim().toLowerCase());
+        
         // encrypt password
         try {
             oldPassword = encrypt(oldPassword);
@@ -506,6 +508,7 @@ public class UserFactory {
     }
 
     void savePassword(String email, String password) throws WdkModelException {
+        email = qualify(email.trim().toLowerCase());
         try {
             // encrypt the password, and save it
             String encrypted = encrypt(password);
@@ -521,6 +524,7 @@ public class UserFactory {
     }
 
     private boolean isExist(String email) throws SQLException {
+        email = qualify(email.trim().toLowerCase());
         // check if user exists in the database. if not, fail and ask to create
         // the user first
         StringBuffer sql = new StringBuffer();
@@ -539,6 +543,12 @@ public class UserFactory {
             buffer.append(Integer.toHexString(code & 0xFF));
         }
         return buffer.toString();
+    }
+    
+    private String qualify(String content) {
+        // replace all single quotes with two single quotes
+        content = content.replaceAll("'", "''");
+        return content;
     }
 
     public static void main(String[] args) {

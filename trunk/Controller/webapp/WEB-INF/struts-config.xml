@@ -19,6 +19,7 @@
     <form-bean name="profileForm" type="org.gusdb.wdk.controller.action.ProfileForm"/>
     <form-bean name="passwordForm" type="org.gusdb.wdk.controller.action.PasswordForm"/>
     <form-bean name="resetPasswordForm" type="org.gusdb.wdk.controller.action.ResetPasswordForm"/>
+    <form-bean name="addCommentForm" type="org.gusdb.wdk.controller.action.AddCommentForm"/>
   </form-beans>
 
   <global-exceptions>
@@ -233,6 +234,13 @@
       scope="session"
       name="resetPasswordForm">
       <forward name="process_reset_passowrd" path="/processResetPassword.do"/>
+    </action>
+    <action
+      path="/processAddComment"
+      type="org.gusdb.wdk.controller.action.ProcessAddCommentAction"
+      scope="session"
+      name="addCommentForm">
+      <forward name="process_add_comment" path="/processAddComment.do"/>
     </action>
   </action-mappings>
 
