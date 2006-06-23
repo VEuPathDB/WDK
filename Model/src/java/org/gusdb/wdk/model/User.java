@@ -297,11 +297,10 @@ public class User {
 
         // construct the expression
         StringBuffer sb = new StringBuffer();
-        sb.append('#');
         sb.append(firstAnswerID);
         sb.append(' ');
         sb.append(operation);
-        sb.append(" #");
+        sb.append(" ");
         sb.append(secondAnswerID);
 
         // construct BooleanQuestionNode
@@ -360,7 +359,7 @@ public class User {
         Map<String, Answer> operandMap = new LinkedHashMap<String, Answer>();
         for (int answerID : userAnswers.keySet()) {
             UserAnswer userAnswer = userAnswers.get(answerID);
-            operandMap.put("#" + answerID, userAnswer.getAnswer());
+            operandMap.put(Integer.toString(answerID), userAnswer.getAnswer());
             operandMap.put(userAnswer.getName(), userAnswer.getAnswer());
         }
         return operandMap;
