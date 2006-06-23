@@ -215,7 +215,7 @@ public class BooleanExpression {
 
         // grab right piece
         String right = remain.substring(end + 1).trim();
-        // remove parenthese is necessary
+        // remove parenthese if necessary
         bound = right.length() - 1;
         if (right.charAt(0) == '(' && right.charAt(bound) == ')')
             right = right.substring(1, bound).trim();
