@@ -138,8 +138,8 @@ public class ModelConfig {
     }
 
     /**
-     * @param authenticationConnectionUrl The authenticationConnectionUrl to
-     *            set.
+     * @param authenticationConnectionUrl
+     *            The authenticationConnectionUrl to set.
      */
     public void setAuthenticationConnectionUrl(
             String authenticationConnectionUrl) {
@@ -154,7 +154,8 @@ public class ModelConfig {
     }
 
     /**
-     * @param authenticationLogin The authenticationLogin to set.
+     * @param authenticationLogin
+     *            The authenticationLogin to set.
      */
     public void setAuthenticationLogin(String authenticationLogin) {
         this.authenticationLogin = authenticationLogin;
@@ -168,7 +169,8 @@ public class ModelConfig {
     }
 
     /**
-     * @param authenticationPassword The authenticationPassword to set.
+     * @param authenticationPassword
+     *            The authenticationPassword to set.
      */
     public void setAuthenticationPassword(String authenticationPassword) {
         this.authenticationPassword = authenticationPassword;
@@ -182,7 +184,8 @@ public class ModelConfig {
     }
 
     /**
-     * @param historyTable The historyTable to set.
+     * @param historyTable
+     *            The historyTable to set.
      */
     public void setHistoryTable(String historyTable) {
         this.historyTable = historyTable;
@@ -196,7 +199,8 @@ public class ModelConfig {
     }
 
     /**
-     * @param instanceTable The instanceTable to set.
+     * @param instanceTable
+     *            The instanceTable to set.
      */
     public void setInstanceTable(String instanceTable) {
         this.instanceTable = instanceTable;
@@ -210,7 +214,8 @@ public class ModelConfig {
     }
 
     /**
-     * @param preferenceTable The preferenceTable to set.
+     * @param preferenceTable
+     *            The preferenceTable to set.
      */
     public void setPreferenceTable(String preferenceTable) {
         this.preferenceTable = preferenceTable;
@@ -224,7 +229,8 @@ public class ModelConfig {
     }
 
     /**
-     * @param defaultRole The defaultRole to set.
+     * @param defaultRole
+     *            The defaultRole to set.
      */
     public void setDefaultRole(String defaultRole) {
         this.defaultRole = defaultRole;
@@ -238,7 +244,8 @@ public class ModelConfig {
     }
 
     /**
-     * @param userTable The userTable to set.
+     * @param userTable
+     *            The userTable to set.
      */
     public void setUserTable(String userTable) {
         this.userTable = userTable;
@@ -252,8 +259,8 @@ public class ModelConfig {
     }
 
     /**
-     * @param authenticationPlatformClass The authenticationPlatformClass to
-     *            set.
+     * @param authenticationPlatformClass
+     *            The authenticationPlatformClass to set.
      */
     public void setAuthenticationPlatformClass(
             String authenticationPlatformClass) {
@@ -268,7 +275,8 @@ public class ModelConfig {
     }
 
     /**
-     * @param roleTable The roleTable to set.
+     * @param roleTable
+     *            The roleTable to set.
      */
     public void setRoleTable(String roleTable) {
         this.roleTable = roleTable;
@@ -282,7 +290,8 @@ public class ModelConfig {
     }
 
     /**
-     * @param smtpServer The smtpServer to set.
+     * @param smtpServer
+     *            The smtpServer to set.
      */
     public void setSmtpServer(String smtpServer) {
         this.smtpServer = smtpServer;
