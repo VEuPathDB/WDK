@@ -194,7 +194,7 @@ public class UserFactory {
             // assign the role to the user
             sql = new StringBuffer();
             sql.append("INSERT INTO " + roleTable);
-            sql.append(" (email, role) VALUES('");
+            sql.append(" (email, \"role\") VALUES('");
             sql.append(email + "', '" + defaultRole + "')");
             SqlUtils.execute(dataSource, sql.toString());
 
@@ -245,7 +245,7 @@ public class UserFactory {
             StringBuffer sql = new StringBuffer();
             sql.append("SELECT count(*) FROM " + userTable);
             sql.append(" WHERE email = '" + email);
-            sql.append("' AND password = '" + password + "'");
+            sql.append("' AND \"password\" = '" + password + "'");
             int count = SqlUtils.runIntegerQuery(dataSource, sql.toString());
             if (count != 1)
                 throw new WdkUserException("The email/password pair cannot be "
