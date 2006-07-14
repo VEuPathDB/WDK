@@ -34,7 +34,7 @@ CREATE TABLE preferences
   email varchar(255) NOT NULL,
   project_id varchar(50) NOT NULL,
   preference_name varchar(100) NOT NULL,
-  preference_value CLOB,
+  preference_value varchar(4000),
   CONSTRAINT "PREFERENCES_PK" PRIMARY KEY (preference_id),
   CONSTRAINT "USER_PREFERENCE_EMAIL_FK" FOREIGN KEY (email)
       REFERENCES users (email) 
@@ -49,7 +49,7 @@ CREATE TABLE histories
   full_name varchar(20) NOT NULL,
   created_time date NOT NULL,
   custom_name varchar(200),
-  params clob,
+  params carchar(4000),
   CONSTRAINT "HISTORIES_PK" PRIMARY KEY (history_id),
   CONSTRAINT "USER_HISTORY_EMAIL_FK" FOREIGN KEY (email)
       REFERENCES users (email) 
