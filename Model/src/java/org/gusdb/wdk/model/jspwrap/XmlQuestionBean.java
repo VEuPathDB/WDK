@@ -72,6 +72,15 @@ public class XmlQuestionBean {
     /*
      * (non-Javadoc)
      * 
+     * @see org.gusdb.wdk.model.xml.XmlQuestion#getName()
+     */
+    public String getXmlDataURL() {
+        return this.question.getXmlDataURL();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.xml.XmlQuestion#getRecordClass()
      */
     public XmlRecordClassBean getRecordClass() {
