@@ -73,7 +73,7 @@ CREATE TABLE logins.histories
   full_name varchar(20) NOT NULL,
   created_time date NOT NULL,
   custom_name varchar(200),
-  params carchar(4000),
+  params varchar(4000),
   CONSTRAINT "HISTORIES_PK" PRIMARY KEY (history_id),
   CONSTRAINT "USER_HISTORY_EMAIL_FK" FOREIGN KEY (email)
       REFERENCES logins.users (email) 
