@@ -19,7 +19,9 @@
     <form-bean name="profileForm" type="org.gusdb.wdk.controller.action.ProfileForm"/>
     <form-bean name="passwordForm" type="org.gusdb.wdk.controller.action.PasswordForm"/>
     <form-bean name="resetPasswordForm" type="org.gusdb.wdk.controller.action.ResetPasswordForm"/>
-    <form-bean name="addCommentForm" type="org.gusdb.wdk.controller.action.AddCommentForm"/>
+    <form-bean name="showProfileForm" type="org.gusdb.wdk.controller.action.ShowProfileForm"/>
+    <form-bean name="showRegisterForm" type="org.gusdb.wdk.controller.action.ShowRegisterForm"/>
+    <form-bean name="addCommentForm" type="org.appidb.apicommon.controller.AddCommentForm"/>
   </form-beans>
 
   <global-exceptions>
@@ -204,7 +206,7 @@
       path="/processRegister"
       type="org.gusdb.wdk.controller.action.ProcessRegisterAction"
       scope="request"
-      name="loginForm">
+      name="registerForm">
       <forward name="process_register" path="/processRegister.do"/>
     </action>
     <action
@@ -219,14 +221,14 @@
       type="org.gusdb.wdk.controller.action.ProcessProfileAction"
       scope="session"
       name="profileForm">
-      <forward name="process_profile" path="/processProfile.do"/>
+      <forward name="process_profile" path="/processProfile.do" redirect="false"/>
     </action>
     <action
       path="/processPassword"
       type="org.gusdb.wdk.controller.action.ProcessPasswordAction"
       scope="session"
       name="passwordForm">
-      <forward name="process_password" path="/processPassword.do"/>
+      <forward name="process_password" path="/processPassword.do" redirect="false"/>
     </action>
     <action
       path="/processResetPassword"
@@ -234,6 +236,20 @@
       scope="session"
       name="resetPasswordForm">
       <forward name="process_reset_passowrd" path="/processResetPassword.do"/>
+    </action>
+    <action
+      path="/showRegister"
+      type="org.gusdb.wdk.controller.action.ShowRegisterAction"
+      scope="session"
+      name="showRegisterForm">
+      <forward name="show_register" path="/register.jsp"/>
+    </action>
+    <action
+      path="/showProfile"
+      type="org.gusdb.wdk.controller.action.ShowProfileAction"
+      scope="session"
+      name="showProfileForm">
+      <forward name="show_profile" path="/profile.jsp"/>
     </action>
     <action
       path="/processAddComment"

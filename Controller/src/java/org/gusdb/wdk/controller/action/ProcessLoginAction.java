@@ -41,10 +41,13 @@ public class ProcessLoginAction extends Action {
         String referer = (String) request.getParameter(CConstants.WDK_REFERER_URL_KEY);
         if (referer == null) referer = request.getHeader("referer");
 
-        int index = referer.lastIndexOf("/");
-        referer = referer.substring(index);
+//        int index = referer.lastIndexOf("/");
+//        referer = referer.substring(index);
         ActionForward forward = new ActionForward(referer);
-        forward.setRedirect(false);
+        forward.setRedirect(true);
+        
+        // TEST
+        System.out.println("Login Referer: " + referer);
 
         WdkModelBean wdkModel = (WdkModelBean) getServlet().getServletContext().getAttribute(
                 CConstants.WDK_MODEL_KEY);
