@@ -304,7 +304,7 @@ public class UserFactory {
 
             // load the user's roles
             sql = new StringBuffer();
-            sql.append("SELECT role from " + roleTable);
+            sql.append("SELECT \"role\" from " + roleTable);
             sql.append(" WHERE email = '" + email + "'");
             rs = SqlUtils.getResultSet(dataSource, sql.toString());
             while (rs.next()) {
@@ -368,7 +368,7 @@ public class UserFactory {
 
             // Then get a prepared statement to do the insertion
             sql = new StringBuffer();
-            sql.append("INSERT INTO " + roleTable + " (email, role)");
+            sql.append("INSERT INTO " + roleTable + " (email, \"role\")");
             sql.append(" VALUES(?, ?)");
             PreparedStatement stmt = SqlUtils.getPreparedStatement(dataSource,
                     sql.toString());
@@ -487,7 +487,7 @@ public class UserFactory {
             StringBuffer sql = new StringBuffer();
             sql.append("SELECT count(*) FROM " + userTable);
             sql.append(" WHERE email ='" + email);
-            sql.append("' AND password = '" + oldPassword + "'");
+            sql.append("' AND \"password\" = '" + oldPassword + "'");
             int count = SqlUtils.runIntegerQuery(dataSource, sql.toString());
             if (count <= 0)
                 throw new WdkUserException("The current password is incorrect.");
@@ -513,7 +513,7 @@ public class UserFactory {
             // encrypt the password, and save it
             String encrypted = encrypt(password);
             StringBuffer buffer = new StringBuffer();
-            buffer.append("UPDATE users SET password = '" + encrypted + "'");
+            buffer.append("UPDATE users SET \"password\" = '" + encrypted + "'");
             buffer.append(" WHERE email = '" + email + "'");
             SqlUtils.executeUpdate(dataSource, buffer.toString());
         } catch (NoSuchAlgorithmException ex) {

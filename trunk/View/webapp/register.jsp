@@ -43,7 +43,7 @@
     </tr>
 
 <c:choose>
-  <c:when test="${wdkUser.guest != true}">
+  <c:when test="${wdkUser != null && wdkUser.guest != true}">
 
     <tr>
       <td colspan="2">You have already logged in. <br>

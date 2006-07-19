@@ -3,6 +3,9 @@
  */
 package org.gusdb.wdk.controller.action;
 
+import java.io.File;
+
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -10,6 +13,7 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.UserBean;
@@ -32,15 +36,20 @@ public class ProcessProfileAction extends Action {
         // fails if the current use is a guest
         if (user.getGuest()) throw new WdkUserException("Please login first before you change your profile.");
 
-        // redirect to the profile page
-        // get the referer link
-        String referer = (String) request.getParameter(CConstants.WDK_REFERER_URL_KEY);
-        if (referer == null) referer = request.getHeader("referer");
-
-        int index = referer.lastIndexOf("/");
-        referer = referer.substring(index);
-        ActionForward forward = new ActionForward(referer);
-        forward.setRedirect(false);
+        // if a custom profile page exists, use it; otherwise, use default one
+        ServletContext svltCtx = getServlet().getServletContext();
+        String customViewDir = (String) svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
+        String customViewFile = customViewDir + File.separator
+                + CConstants.WDK_CUSTOM_PROFILE_PAGE;
+        ActionForward forward = null;
+        if (ApplicationInitListener.resourceExists(customViewFile, svltCtx)) {
+            forward = new ActionForward(customViewFile);
+            forward.setRedirect(false);
+        } else {
+            forward = mapping.findForward(CConstants.SHOW_PROFILE_MAPKEY);
+        }
+        // TEST
+        System.out.println("profile page: " + customViewFile);
 
         user.setFirstName(request.getParameter("firstName"));
         user.setLastName(request.getParameter("lastName"));
@@ -67,7 +76,6 @@ public class ProcessProfileAction extends Action {
             // email exists, notify the user to input again
             request.setAttribute(CConstants.WDK_PROFILE_ERROR_KEY,
                     ex.getMessage());
-            request.setAttribute(CConstants.WDK_REFERER_URL_KEY, referer);
         }
         return forward;
     }
