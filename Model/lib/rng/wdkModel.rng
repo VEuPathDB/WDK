@@ -5,6 +5,9 @@
       <attribute name="name" />
       <attribute name="displayName" />
       <optional>
+          <attribute name="version"/>
+      </optional>
+      <optional>
           <attribute name="historyDatasetColumnName"/>
       </optional>
       <optional>

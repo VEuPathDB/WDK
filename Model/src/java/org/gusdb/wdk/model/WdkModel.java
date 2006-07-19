@@ -38,8 +38,9 @@ public class WdkModel {
     Map<String, ReferenceList> referenceLists = new LinkedHashMap<String, ReferenceList>();
     Map<String,QuestionSet> questionSets = new LinkedHashMap<String, QuestionSet>();
     Map<String, ModelSetI> allModelSets = new LinkedHashMap<String, ModelSetI>();
-    String name;
+    private String name;
     String displayName;
+    private String version = "1.0"; // use default version
     String introduction;
     String historyDatasetLink;
     String historyDatasetColumnName;
@@ -134,6 +135,20 @@ public class WdkModel {
 
     public String getName() {
         return name;
+    }
+    
+     /**
+     * @return Returns the version.
+     */
+    public String getVersion() {
+        return version;
+    }
+    
+    /**
+     * @param version The version to set.
+     */
+    public void setVersion(String version) {
+        this.version = version;
     }
 
     public void setDisplayName(String displayName) {
