@@ -40,6 +40,13 @@ public class WdkModelBean implements HttpSessionBindingListener {
         return model.getName();
     }
 
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.WdkModel#getVersion()
+     */
+    public String getVersion() {
+        return model.getVersion();
+    }
+
     public String getDisplayName() {
         return model.getDisplayName();
     }
