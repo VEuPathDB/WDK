@@ -111,6 +111,10 @@ public class SummaryTester {
             //System.exit(1);
         }
         // System.exit(0);
+        
+        // HACK
+        // prevent the app from exiting
+        while(true){}
     }
 
     private static void writeSummaryAsXml(Question question,
