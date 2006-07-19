@@ -31,7 +31,7 @@ public class ModelConfig {
     private String preferenceTable;
     private String defaultRole;
     private String smtpServer;
-
+    
     public ModelConfig() {}
 
     public void setPlatformClass(String platformClass) {
