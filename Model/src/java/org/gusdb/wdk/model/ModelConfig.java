@@ -32,6 +32,11 @@ public class ModelConfig {
     private String defaultRole;
     private String smtpServer;
     
+    // the information for registration email
+    private String registerEmail;
+    private String emailSubject;
+    private String emailContent;
+    
     public ModelConfig() {}
 
     public void setPlatformClass(String platformClass) {
@@ -296,4 +301,54 @@ public class ModelConfig {
     public void setSmtpServer(String smtpServer) {
         this.smtpServer = smtpServer;
     }
+
+    
+    /**
+     * @return Returns the emailContent.
+     */
+    public String getEmailContent() {
+        return emailContent;
+    }
+
+    
+    /**
+     * @param emailContent The emailContent to set.
+     */
+    public void setEmailContent(String emailContent) {
+        this.emailContent = emailContent;
+    }
+
+    
+    /**
+     * @return Returns the emailSubject.
+     */
+    public String getEmailSubject() {
+        return emailSubject;
+    }
+
+    
+    /**
+     * @param emailSubject The emailSubject to set.
+     */
+    public void setEmailSubject(String emailSubject) {
+        this.emailSubject = emailSubject;
+    }
+
+    
+    /**
+     * @return Returns the registerEmail.
+     */
+    public String getRegisterEmail() {
+        return registerEmail;
+    }
+
+    
+    /**
+     * @param registerEmail The registerEmail to set.
+     */
+    public void setRegisterEmail(String registerEmail) {
+        this.registerEmail = registerEmail;
+    }
+    
+    
 }
