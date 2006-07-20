@@ -40,9 +40,6 @@ public class ProcessLogoutAction extends Action {
         ActionForward forward = new ActionForward(referer);
         forward.setRedirect(true);
         
-        // TEST
-        System.out.println("Logout Referer: " + referer);
-
         // clear the session, and reset the default user to guest
         WdkModelBean wdkModel = (WdkModelBean) getServlet().getServletContext().getAttribute(
                 CConstants.WDK_MODEL_KEY);

@@ -46,7 +46,7 @@ public class UserFactory {
     private String smtpServer;
 
     private String projectId;
-    
+
     // WdkModel is used by the legacy code, may consider to be removed
     private WdkModel wdkModel;
 
@@ -57,7 +57,8 @@ public class UserFactory {
     private static String subject = "The account information on $$MODEL_NAME$$ website";
     private static String siteUrl = "http://localhost:8080/wdktoy";
     private static String content = "Welcome $$FIRST_NAME$$,\n\n"
-            + "Thanks for registering on $$MODEL_NAME$$ web site. The following is your login information:\n\n"
+            + "Thanks for registering on $$MODEL_NAME$$ web site. "
+            + "The following is your login information:\n\n"
             + "email: $$EMAIL$$\n"
             + "password: $$PASSWORD$$\n\n"
             + "Please login and change your password as soon as possible by visiting the following link:\n"
@@ -72,9 +73,10 @@ public class UserFactory {
         return factory;
     }
 
-    public static void initialize(WdkModel wdkModel, String projectId, DataSource dataSource,
-            String userTable, String roleTable, String historyTable,
-            String preferenceTable, String defaultRole, String smtpServer) {
+    public static void initialize(WdkModel wdkModel, String projectId,
+            DataSource dataSource, String userTable, String roleTable,
+            String historyTable, String preferenceTable, String defaultRole,
+            String smtpServer) {
         factory = new UserFactory(dataSource);
         factory.wdkModel = wdkModel;
         factory.projectId = projectId;
@@ -85,11 +87,11 @@ public class UserFactory {
         factory.defaultRole = defaultRole;
         factory.smtpServer = smtpServer;
     }
-    
+
     public WdkModel getWdkModel() {
         return wdkModel;
     }
-    
+
     public void sendEmail(String email, String reply, String subject,
             String content) throws WdkModelException {
         // create properties and get the session
@@ -248,9 +250,7 @@ public class UserFactory {
             sql.append("' AND \"password\" = '" + password + "'");
             int count = SqlUtils.runIntegerQuery(dataSource, sql.toString());
             if (count != 1)
-                throw new WdkUserException("The email/password pair cannot be "
-                        + "found in the database. Please check your input and "
-                        + "try again.");
+                throw new WdkUserException("The email/password not match.");
 
             // passed validation, load user information
             return loadUser(email);
@@ -341,20 +341,26 @@ public class UserFactory {
 
             // save the user's basic information
             StringBuffer sql = new StringBuffer();
-            sql.append("UPDATE users SET ");
-            sql.append("last_name = '" + qualify(user.getLastName().trim()) + "', ");
-            sql.append("first_name = '" + qualify(user.getFirstName().trim()) + "', ");
-            sql.append("middle_name = '" + qualify(user.getMiddleName().trim()) + "', ");
-            sql.append("title = '" + qualify(user.getTitle().trim()) + "', ");
-            sql.append("organization = '" + qualify(user.getOrganization().trim())
+            sql.append("UPDATE " + userTable + " SET ");
+            sql.append("last_name = '" + qualify(user.getLastName().trim())
                     + "', ");
-            sql.append("department = '" + qualify(user.getDepartment().trim()) + "', ");
-            sql.append("address = '" + qualify(user.getAddress().trim()) + "', ");
+            sql.append("first_name = '" + qualify(user.getFirstName().trim())
+                    + "', ");
+            sql.append("middle_name = '" + qualify(user.getMiddleName().trim())
+                    + "', ");
+            sql.append("title = '" + qualify(user.getTitle().trim()) + "', ");
+            sql.append("organization = '"
+                    + qualify(user.getOrganization().trim()) + "', ");
+            sql.append("department = '" + qualify(user.getDepartment().trim())
+                    + "', ");
+            sql.append("address = '" + qualify(user.getAddress().trim())
+                    + "', ");
             sql.append("city = '" + qualify(user.getCity().trim()) + "', ");
             sql.append("state = '" + qualify(user.getState().trim()) + "', ");
-            sql.append("zip_code = '" + qualify(user.getZipCode().trim()) + "', ");
-            sql.append("phone_number = '" + qualify(user.getPhoneNumber().trim())
+            sql.append("zip_code = '" + qualify(user.getZipCode().trim())
                     + "', ");
+            sql.append("phone_number = '"
+                    + qualify(user.getPhoneNumber().trim()) + "', ");
             sql.append("country = '" + qualify(user.getCountry().trim()) + "' ");
             sql.append(" WHERE email = '" + qualify(user.getEmail()) + "'");
             SqlUtils.execute(dataSource, sql.toString());
@@ -401,7 +407,7 @@ public class UserFactory {
 
             StringBuffer sql = new StringBuffer();
             sql.append("SELECT h.history_id, h.full_name, h.custom_name, h.created_time, h.params");
-            sql.append(" histories h, users u");
+            sql.append(" " + historyTable + " h, " + userTable + " u");
             sql.append(" WHERE u.login_id = h.login_id");
             sql.append(" AND h.projectId = '" + projectId + "'");
             ResultSet rs = SqlUtils.getResultSet(dataSource, sql.toString());
@@ -437,7 +443,8 @@ public class UserFactory {
 
     }
 
-    public void resetPassword(User user) throws WdkUserException, WdkModelException {
+    public void resetPassword(User user) throws WdkUserException,
+            WdkModelException {
         try {
             if (!isExist(user.getEmail()))
                 throw new WdkUserException(
@@ -478,7 +485,7 @@ public class UserFactory {
     void changePassword(String email, String oldPassword, String newPassword,
             String confirmPassword) throws WdkUserException, WdkModelException {
         email = qualify(email.trim().toLowerCase());
-        
+
         // encrypt password
         try {
             oldPassword = encrypt(oldPassword);
@@ -494,8 +501,8 @@ public class UserFactory {
 
             // check if the new password matches
             if (!newPassword.equals(confirmPassword))
-                throw new WdkUserException("The new password doesn't match, " +
-                        "please type them again. It's case sensitive.");
+                throw new WdkUserException("The new password doesn't match, "
+                        + "please type them again. It's case sensitive.");
 
             // passed check, then save the new password
             savePassword(email, newPassword);
@@ -513,7 +520,8 @@ public class UserFactory {
             // encrypt the password, and save it
             String encrypted = encrypt(password);
             StringBuffer buffer = new StringBuffer();
-            buffer.append("UPDATE users SET \"password\" = '" + encrypted + "'");
+            buffer.append("UPDATE " + userTable + " SET \"password\" = '"
+                    + encrypted + "'");
             buffer.append(" WHERE email = '" + email + "'");
             SqlUtils.executeUpdate(dataSource, buffer.toString());
         } catch (NoSuchAlgorithmException ex) {
@@ -544,7 +552,7 @@ public class UserFactory {
         }
         return buffer.toString();
     }
-    
+
     private String qualify(String content) {
         // replace all single quotes with two single quotes
         content = content.replaceAll("'", "''");
