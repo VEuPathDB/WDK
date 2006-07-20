@@ -454,6 +454,9 @@ public class WdkModel {
         String preferenceTable = modelConfig.getPreferenceTable();
         String defaultRole = modelConfig.getDefaultRole();
         String smtpServer = modelConfig.getSmtpServer();
+        String registerEmail = modelConfig.getRegisterEmail();
+        String emailSubject = modelConfig.getEmailSubject();
+        String emailContent = modelConfig.getEmailContent();
 
         // initialize authentication factory
 	if (authenPlatformClass != null && !"".equals(authenPlatformClass)) {
@@ -463,9 +466,10 @@ public class WdkModel {
 				minIdle, maxIdle, maxWait, maxActive, initialSize, fileName);
 	    DataSource dataSource = authenPlatform.getDataSource();
 	    UserFactory.initialize(this, this.name, dataSource, userTable, roleTable,
-				   historyTable, preferenceTable, defaultRole, smtpServer);
+				   historyTable, preferenceTable, defaultRole, smtpServer,
+                   registerEmail, emailSubject, emailContent);
 	} else {
-	    UserFactory.initialize(this, this.name, null, null, null, null, null, null, null);
+	    UserFactory.initialize(this, this.name, null, null, null, null, null, null, null, null, null, null);
 	}
 
         platform.init(connectionUrl, login, password, minIdle, maxIdle,

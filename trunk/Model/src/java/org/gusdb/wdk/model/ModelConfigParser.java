@@ -24,6 +24,8 @@ public class ModelConfigParser {
 	
 	digester.addObjectCreate( "modelConfig", ModelConfig.class );
 	digester.addSetProperties( "modelConfig");
+    digester.addBeanPropertySetter("modelConfig/emailSubject");
+    digester.addBeanPropertySetter("modelConfig/emailContent");
 	
 	return digester;
     }

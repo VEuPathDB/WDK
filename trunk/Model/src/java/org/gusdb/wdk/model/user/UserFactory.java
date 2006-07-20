@@ -3,6 +3,10 @@
  */
 package org.gusdb.wdk.model.user;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
@@ -12,6 +16,7 @@ import java.util.Date;
 import java.util.Properties;
 import java.util.Random;
 
+import javax.activation.DataHandler;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
@@ -32,6 +37,37 @@ import org.gusdb.wdk.model.implementation.SqlUtils;
  */
 public class UserFactory {
 
+    /*
+     * Inner class to act as a JAF datasource to send HTML e-mail content
+     */
+    static class HTMLDataSource implements javax.activation.DataSource {
+        private String html;
+
+        public HTMLDataSource(String htmlString) {
+            html = htmlString;
+        }
+
+        // Return html string in an InputStream.
+        // A new stream must be returned each time.
+        public InputStream getInputStream() throws IOException {
+            if (html == null) throw new IOException("Null HTML");
+            return new ByteArrayInputStream(html.getBytes());
+        }
+
+        public OutputStream getOutputStream() throws IOException {
+            throw new IOException("This DataHandler cannot write HTML");
+        }
+
+        public String getContentType() {
+            return "text/html";
+        }
+
+        public String getName() {
+            return "JAF text/html dataSource to send e-mail only";
+        }
+    }
+
+
     public static final int REGISTERED_REFRESH_INTERVAL = 10;
     public static final int GUEST_REFRESH_INTERVAL = -1;
 
@@ -50,20 +86,10 @@ public class UserFactory {
     // WdkModel is used by the legacy code, may consider to be removed
     private WdkModel wdkModel;
 
-    // for the current release, just hard code support email, reset password
-    // email subject and content. Consider to refine it be reading from
-    // configurations
-    private static String supportEmail = "jerric@pcbi.upenn.edu";
-    private static String subject = "The account information on $$MODEL_NAME$$ website";
-    private static String siteUrl = "http://localhost:8080/wdktoy";
-    private static String content = "Welcome $$FIRST_NAME$$,\n\n"
-            + "Thanks for registering on $$MODEL_NAME$$ web site. "
-            + "The following is your login information:\n\n"
-            + "email: $$EMAIL$$\n"
-            + "password: $$PASSWORD$$\n\n"
-            + "Please login and change your password as soon as possible by visiting the following link:\n"
-            + "$$SITE_URL$$.\n\n"
-            + "Thank you,\n\n$$MODEL_NAME$$ support team.";
+    // the information for registration email
+    private String registerEmail;
+    private String emailSubject;
+    private String emailContent;
 
     public static UserFactory getInstance() throws WdkUserException {
         if (factory == null) {
@@ -76,7 +102,8 @@ public class UserFactory {
     public static void initialize(WdkModel wdkModel, String projectId,
             DataSource dataSource, String userTable, String roleTable,
             String historyTable, String preferenceTable, String defaultRole,
-            String smtpServer) {
+            String smtpServer, String registerEmail, String emailSubject,
+            String emailContent) {
         factory = new UserFactory(dataSource);
         factory.wdkModel = wdkModel;
         factory.projectId = projectId;
@@ -86,6 +113,9 @@ public class UserFactory {
         factory.preferenceTable = preferenceTable;
         factory.defaultRole = defaultRole;
         factory.smtpServer = smtpServer;
+        factory.registerEmail = registerEmail;
+        factory.emailContent = emailContent;
+        factory.emailSubject = emailSubject;
     }
 
     public WdkModel getWdkModel() {
@@ -103,12 +133,13 @@ public class UserFactory {
         // instantiate a message
         try {
             Message message = new MimeMessage(session);
-            message.setFrom(new InternetAddress(supportEmail));
+            message.setFrom(new InternetAddress(registerEmail));
             message.setRecipient(Message.RecipientType.TO, new InternetAddress(
                     email));
             message.setSubject(subject);
             message.setSentDate(new Date());
-            message.setText(content); // set content
+            // set html content
+            message.setDataHandler(new DataHandler(new HTMLDataSource(content)));
 
             // send email
             Transport.send(message);
@@ -472,14 +503,11 @@ public class UserFactory {
         savePassword(user.getEmail(), password);
 
         // send an email to the user
-        String subj = subject.replaceAll("\\$\\$MODEL_NAME\\$\\$", projectId);
-        String message = content.replaceAll("\\$\\$MODEL_NAME\\$\\$", projectId);
-        message = message.replaceAll("\\$\\$FIRST_NAME\\$\\$",
+        String message = emailContent.replaceAll("\\$\\$FIRST_NAME\\$\\$",
                 user.getFirstName());
         message = message.replaceAll("\\$\\$EMAIL\\$\\$", user.getEmail());
         message = message.replaceAll("\\$\\$PASSWORD\\$\\$", password);
-        message = message.replaceAll("\\$\\$SITE_URL\\$\\$", siteUrl);
-        sendEmail(user.getEmail(), supportEmail, subj, message);
+        sendEmail(user.getEmail(), registerEmail, emailSubject, message);
     }
 
     void changePassword(String email, String oldPassword, String newPassword,
