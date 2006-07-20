@@ -41,13 +41,8 @@ public class ProcessLoginAction extends Action {
         String referer = (String) request.getParameter(CConstants.WDK_REFERER_URL_KEY);
         if (referer == null) referer = request.getHeader("referer");
 
-//        int index = referer.lastIndexOf("/");
-//        referer = referer.substring(index);
         ActionForward forward = new ActionForward(referer);
         forward.setRedirect(true);
-        
-        // TEST
-        System.out.println("Login Referer: " + referer);
 
         WdkModelBean wdkModel = (WdkModelBean) getServlet().getServletContext().getAttribute(
                 CConstants.WDK_MODEL_KEY);
@@ -77,11 +72,12 @@ public class ProcessLoginAction extends Action {
             // user authentication succeeded, merge the history
             user.mergeHistory(guest);
             request.getSession().setAttribute(CConstants.WDK_USER_KEY, user);
-            forward.setRedirect(true);
+            request.getSession().setAttribute(CConstants.WDK_LOGIN_ERROR_KEY,
+                    "");
         } catch (WdkUserException ex) {
             ex.printStackTrace();
             // user authentication failed, set the error message
-            request.setAttribute(CConstants.WDK_LOGIN_ERROR_KEY,
+            request.getSession().setAttribute(CConstants.WDK_LOGIN_ERROR_KEY,
                     ex.getMessage());
             request.setAttribute(CConstants.WDK_REFERER_URL_KEY, referer);
         }
