@@ -17,6 +17,8 @@ public class CConstants {
     public static final String WDK_CUSTOM_HISTORY_PAGE = "customQueryHistory.jsp";
     public static final String WDK_CUSTOM_REGISTER_PAGE = "customRegister.jsp";
     public static final String WDK_CUSTOM_PROFILE_PAGE = "customProfile.jsp";
+    public static final String WDK_CUSTOM_PASSWORD_PAGE = "customPassword.jsp";
+    public static final String WDK_CUSTOM_RESET_PASSWORD_PAGE = "customResetpwd.jsp";
     public static final String WDK_QUESTION_KEY = "wdkQuestion";
     public static final String WDK_QUESTION_PARAMS_KEY = "wdkQuestionParams";
     public static final String WDK_ANSWER_KEY = "wdkAnswer";
@@ -74,6 +76,8 @@ public class CConstants {
     public static final String SHOW_LOGIN_MAPKEY = "show_login_page";
     public static final String SHOW_REGISTER_MAPKEY = "show_register";
     public static final String SHOW_PROFILE_MAPKEY = "show_profile";
+    public static final String SHOW_PASSWORD_MAPKEY = "show_password";
+    public static final String SHOW_RESET_PASSWORD_MAPKEY = "show_reset_password";
 
     //button click detectors, used in action, action forms, and jsp pages
     public static final String PQ_SUBMIT_KEY = "questionSubmit"; //match question.jsp

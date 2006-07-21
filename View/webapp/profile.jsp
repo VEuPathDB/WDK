@@ -88,7 +88,7 @@ function submit(e)
     </tr>
     <tr>
       <td align="right" colspan="2" align="center">
-         <a href="<c:url value='/password.jsp'/>">Change Password</a>
+         <a href="<c:url value='/showPassword.do'/>">Change Password</a>
       </td>
     </tr>
     <tr>
