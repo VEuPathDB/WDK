@@ -41,6 +41,7 @@ public class UserFactory {
      * Inner class to act as a JAF datasource to send HTML e-mail content
      */
     static class HTMLDataSource implements javax.activation.DataSource {
+
         private String html;
 
         public HTMLDataSource(String htmlString) {
@@ -66,7 +67,6 @@ public class UserFactory {
             return "JAF text/html dataSource to send e-mail only";
         }
     }
-
 
     public static final int REGISTERED_REFRESH_INTERVAL = 10;
     public static final int GUEST_REFRESH_INTERVAL = -1;
@@ -188,22 +188,12 @@ public class UserFactory {
         if (email == null)
             throw new WdkUserException("The user's email cannot be empty.");
         // format the info
-        email = qualify(email.trim().toLowerCase());
+        email = email.trim().toLowerCase();
         if (email.length() == 0)
             throw new WdkUserException("The user's email cannot be empty.");
-        lastName = qualify(lastName.trim());
-        firstName = qualify(firstName.trim());
-        middleName = qualify(middleName.trim());
-        title = qualify(title.trim());
-        organization = qualify(organization.trim());
-        department = qualify(department.trim());
-        address = qualify(address.trim());
-        city = qualify(city.trim());
-        state = qualify(state.trim());
-        zipCode = qualify(zipCode.trim());
-        phoneNumber = qualify(phoneNumber.trim());
-        country = qualify(country.trim());
 
+        PreparedStatement psUser = null;
+        PreparedStatement psRole = null;
         try {
             // check whether the user exist in the database already exist.
             // if loginId exists, the operation failed
@@ -211,25 +201,33 @@ public class UserFactory {
                 throw new WdkUserException("The email '" + email
                         + "' has been registered. Please choose another one.");
 
-            // insert the user
-            StringBuffer sql = new StringBuffer();
-            sql.append("INSERT INTO " + userTable);
-            sql.append(" (email, last_name, first_name, middle_name, title, "
+            psUser = SqlUtils.getPreparedStatement(dataSource, "INSERT INTO "
+                    + userTable
+                    + " (email, last_name, first_name, middle_name, title, "
                     + "organization, department, address, city, state, "
-                    + "zip_code, phone_number, country) VALUES ('");
-            sql.append(email + "', '" + lastName + "', '" + firstName + "', '");
-            sql.append(middleName + "', '" + title + "', '" + organization);
-            sql.append("', '" + department + "', '" + address + "', '" + city);
-            sql.append("', '" + state + "', '" + zipCode + "', '");
-            sql.append(phoneNumber + "', '" + country + "')");
-            SqlUtils.execute(dataSource, sql.toString());
+                    + "zip_code, phone_number, country) "
+                    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            psUser.setString(1, email);
+            psUser.setString(2, lastName);
+            psUser.setString(3, firstName);
+            psUser.setString(4, middleName);
+            psUser.setString(5, title);
+            psUser.setString(6, organization);
+            psUser.setString(7, department);
+            psUser.setString(8, address);
+            psUser.setString(9, city);
+            psUser.setString(10, state);
+            psUser.setString(11, zipCode);
+            psUser.setString(12, phoneNumber);
+            psUser.setString(13, country);
+            psUser.execute();
 
             // assign the role to the user
-            sql = new StringBuffer();
-            sql.append("INSERT INTO " + roleTable);
-            sql.append(" (email, \"role\") VALUES('");
-            sql.append(email + "', '" + defaultRole + "')");
-            SqlUtils.execute(dataSource, sql.toString());
+            psRole = SqlUtils.getPreparedStatement(dataSource, "INSERT INTO "
+                    + roleTable + " (email, \"role\") VALUES(?, ?)");
+            psRole.setString(1, email);
+            psRole.setString(2, defaultRole);
+            psRole.execute();
 
             // create user object
             User user = new User(email, this);
@@ -255,6 +253,13 @@ public class UserFactory {
             return user;
         } catch (SQLException ex) {
             throw new WdkModelException(ex);
+        } finally {
+            try {
+                SqlUtils.closeStatement(psUser);
+                SqlUtils.closeStatement(psRole);
+            } catch (SQLException ex) {
+                throw new WdkModelException(ex);
+            }
         }
     }
 
@@ -269,17 +274,22 @@ public class UserFactory {
     public User authenticate(String email, String password)
             throws WdkModelException, WdkUserException {
         // convert email to lower case
-        email = qualify(email.trim().toLowerCase());
+        email = email.trim().toLowerCase();
+        PreparedStatement ps = null;
+        ResultSet rs = null;
         try {
             // encrypt password
             password = encrypt(password);
 
             // query on the database to see if the pair match
-            StringBuffer sql = new StringBuffer();
-            sql.append("SELECT count(*) FROM " + userTable);
-            sql.append(" WHERE email = '" + email);
-            sql.append("' AND \"password\" = '" + password + "'");
-            int count = SqlUtils.runIntegerQuery(dataSource, sql.toString());
+            ps = SqlUtils.getPreparedStatement(dataSource, "SELECT count(*) "
+                    + "FROM " + userTable
+                    + " WHERE email = ? AND \"password\" = ?");
+            ps.setString(1, email);
+            ps.setString(2, password);
+            rs = ps.executeQuery();
+            rs.next();
+            int count = rs.getInt(1);
             if (count != 1)
                 throw new WdkUserException("The email/password not match.");
 
@@ -289,6 +299,13 @@ public class UserFactory {
             throw new WdkUserException(ex);
         } catch (SQLException ex) {
             throw new WdkModelException(ex);
+        } finally {
+            try {
+                SqlUtils.closeResultSet(rs);
+                //SqlUtils.closeStatement(ps);
+            } catch (SQLException ex) {
+                throw new WdkModelException(ex);
+            }
         }
     }
 
@@ -303,49 +320,61 @@ public class UserFactory {
     public User loadUser(String email) throws WdkModelException,
             WdkUserException {
         // convert to lower case
-        email = qualify(email.trim().toLowerCase());
+        email = email.trim().toLowerCase();
 
-        StringBuffer sql = new StringBuffer();
-        sql.append("SELECT * FROM " + userTable);
-        sql.append(" WHERE email = '" + email + "'");
+        PreparedStatement psUser = null;
+        PreparedStatement psRole = null;
+        ResultSet rsUser = null;
+        ResultSet rsRole = null;
         try {
-            ResultSet rs = SqlUtils.getResultSet(dataSource, sql.toString());
-            if (!rs.next())
+            // get user information
+            psUser = SqlUtils.getPreparedStatement(dataSource, "SELECT * FROM "
+                    + userTable + " WHERE email = ?");
+            psUser.setString(1, email);
+            rsUser = psUser.executeQuery();
+            if (!rsUser.next())
                 throw new WdkUserException("The user with email '" + email
                         + "' doesn't exist.");
 
             // read user info
             User user = new User(email, this);
-            user.setLastName(rs.getString("last_name"));
-            user.setFirstName(rs.getString("first_name"));
-            user.setMiddleName(rs.getString("middle_name"));
-            user.setTitle(rs.getString("title"));
-            user.setOrganization(rs.getString("organization"));
-            user.setDepartment(rs.getString("department"));
-            user.setAddress(rs.getString("address"));
-            user.setCity(rs.getString("city"));
-            user.setState(rs.getString("state"));
-            user.setZipCode(rs.getString("zip_code"));
-            user.setPhoneNumber(rs.getString("phone_number"));
-            user.setCountry(rs.getString("country"));
+            user.setLastName(rsUser.getString("last_name"));
+            user.setFirstName(rsUser.getString("first_name"));
+            user.setMiddleName(rsUser.getString("middle_name"));
+            user.setTitle(rsUser.getString("title"));
+            user.setOrganization(rsUser.getString("organization"));
+            user.setDepartment(rsUser.getString("department"));
+            user.setAddress(rsUser.getString("address"));
+            user.setCity(rsUser.getString("city"));
+            user.setState(rsUser.getString("state"));
+            user.setZipCode(rsUser.getString("zip_code"));
+            user.setPhoneNumber(rsUser.getString("phone_number"));
+            user.setCountry(rsUser.getString("country"));
             user.setGuest(false);
             user.setRefreshInterval(REGISTERED_REFRESH_INTERVAL);
 
-            SqlUtils.closeResultSet(rs);
-
             // load the user's roles
-            sql = new StringBuffer();
-            sql.append("SELECT \"role\" from " + roleTable);
-            sql.append(" WHERE email = '" + email + "'");
-            rs = SqlUtils.getResultSet(dataSource, sql.toString());
-            while (rs.next()) {
-                user.addUserRole(rs.getString("role"));
+            psRole = SqlUtils.getPreparedStatement(dataSource,
+                    "SELECT \"role\" from " + roleTable + " WHERE email = ?");
+            psRole.setString(1, email);
+            rsRole = psRole.executeQuery();
+            while (rsRole.next()) {
+                user.addUserRole(rsRole.getString("role"));
             }
-            SqlUtils.closeResultSet(rs);
+            SqlUtils.closeResultSet(rsRole);
 
             return user;
         } catch (SQLException ex) {
             throw new WdkModelException(ex);
+        } finally {
+            try {
+                SqlUtils.closeResultSet(rsUser);
+                SqlUtils.closeResultSet(rsRole);
+                //SqlUtils.closeStatement(psUser);
+                //SqlUtils.closeStatement(psRole);
+            } catch (SQLException ex) {
+                throw new WdkModelException(ex);
+            }
         }
     }
 
@@ -364,6 +393,9 @@ public class UserFactory {
 
         // check if user exists in the database. if not, fail and ask to create
         // the user first
+        PreparedStatement psUser = null;
+        PreparedStatement psRoleDelete = null;
+        PreparedStatement psRoleInsert = null;
         try {
             if (!isExist(user.getEmail()))
                 throw new WdkUserException("The user with email "
@@ -371,53 +403,53 @@ public class UserFactory {
                         + " doesn't exist. Save operation cancelled.");
 
             // save the user's basic information
-            StringBuffer sql = new StringBuffer();
-            sql.append("UPDATE " + userTable + " SET ");
-            sql.append("last_name = '" + qualify(user.getLastName().trim())
-                    + "', ");
-            sql.append("first_name = '" + qualify(user.getFirstName().trim())
-                    + "', ");
-            sql.append("middle_name = '" + qualify(user.getMiddleName().trim())
-                    + "', ");
-            sql.append("title = '" + qualify(user.getTitle().trim()) + "', ");
-            sql.append("organization = '"
-                    + qualify(user.getOrganization().trim()) + "', ");
-            sql.append("department = '" + qualify(user.getDepartment().trim())
-                    + "', ");
-            sql.append("address = '" + qualify(user.getAddress().trim())
-                    + "', ");
-            sql.append("city = '" + qualify(user.getCity().trim()) + "', ");
-            sql.append("state = '" + qualify(user.getState().trim()) + "', ");
-            sql.append("zip_code = '" + qualify(user.getZipCode().trim())
-                    + "', ");
-            sql.append("phone_number = '"
-                    + qualify(user.getPhoneNumber().trim()) + "', ");
-            sql.append("country = '" + qualify(user.getCountry().trim()) + "' ");
-            sql.append(" WHERE email = '" + qualify(user.getEmail()) + "'");
-            SqlUtils.execute(dataSource, sql.toString());
+            psUser = SqlUtils.getPreparedStatement(dataSource, "UPDATE "
+                    + userTable + " SET last_name = ?, first_name = ?, "
+                    + "middle_name = ?, title = ?,  organization = ?, "
+                    + "department = ?, address = ?, city = ?, state = ?, "
+                    + "zip_code = ?, phone_number = ?, country = ? "
+                    + "WHERE email = ?");
+            psUser.setString(1, user.getLastName());
+            psUser.setString(2, user.getFirstName());
+            psUser.setString(3, user.getMiddleName());
+            psUser.setString(4, user.getTitle());
+            psUser.setString(5, user.getOrganization());
+            psUser.setString(6, user.getDepartment());
+            psUser.setString(7, user.getAddress());
+            psUser.setString(8, user.getCity());
+            psUser.setString(9, user.getState());
+            psUser.setString(10, user.getZipCode());
+            psUser.setString(11, user.getPhoneNumber());
+            psUser.setString(12, user.getCountry());
+            psUser.setString(13, user.getEmail());
+            psUser.execute();
 
             // save the user's roles
             // before that, remove the records first
-            sql = new StringBuffer();
-            sql.append("DELETE FROM " + roleTable);
-            sql.append(" WHERE email = '" + qualify(user.getEmail()) + "'");
-            SqlUtils.execute(dataSource, sql.toString());
+            psRoleDelete = SqlUtils.getPreparedStatement(dataSource,
+                    "DELETE FROM " + roleTable + " WHERE email = ?");
+            psRoleDelete.setString(1, user.getEmail());
+            psRoleDelete.execute();
 
             // Then get a prepared statement to do the insertion
-            sql = new StringBuffer();
-            sql.append("INSERT INTO " + roleTable + " (email, \"role\")");
-            sql.append(" VALUES(?, ?)");
-            PreparedStatement stmt = SqlUtils.getPreparedStatement(dataSource,
-                    sql.toString());
+            psRoleInsert = SqlUtils.getPreparedStatement(dataSource, "INSERT "
+                    + "INTO " + roleTable + " (email, \"role\") VALUES(?, ?)");
             String[] roles = user.getUserRoles();
             for (String role : roles) {
-                stmt.setString(1, qualify(user.getEmail()));
-                stmt.setString(2, role);
-                stmt.execute();
+                psRoleInsert.setString(1, user.getEmail());
+                psRoleInsert.setString(2, role);
+                psRoleInsert.execute();
             }
-            SqlUtils.closeStatement(stmt);
         } catch (SQLException ex) {
             throw new WdkModelException(ex);
+        } finally {
+            try {
+                SqlUtils.closeStatement(psUser);
+                SqlUtils.closeStatement(psRoleDelete);
+                SqlUtils.closeStatement(psRoleInsert);
+            } catch (SQLException ex) {
+                throw new WdkModelException(ex);
+            }
         }
     }
 
@@ -476,13 +508,9 @@ public class UserFactory {
 
     public void resetPassword(User user) throws WdkUserException,
             WdkModelException {
-        try {
             if (!isExist(user.getEmail()))
                 throw new WdkUserException(
                         "The user doesn't exist. Resetting operation cancelled.");
-        } catch (SQLException ex) {
-            throw new WdkModelException(ex);
-        }
 
         // generate a random password of 8 characters long, the range will be
         // [0-9A-Za-z]
@@ -512,18 +540,23 @@ public class UserFactory {
 
     void changePassword(String email, String oldPassword, String newPassword,
             String confirmPassword) throws WdkUserException, WdkModelException {
-        email = qualify(email.trim().toLowerCase());
+        email = email.trim().toLowerCase();
 
         // encrypt password
+        PreparedStatement ps = null;
+        ResultSet rs = null;
         try {
             oldPassword = encrypt(oldPassword);
 
             // check if the old password matches
-            StringBuffer sql = new StringBuffer();
-            sql.append("SELECT count(*) FROM " + userTable);
-            sql.append(" WHERE email ='" + email);
-            sql.append("' AND \"password\" = '" + oldPassword + "'");
-            int count = SqlUtils.runIntegerQuery(dataSource, sql.toString());
+            ps = SqlUtils.getPreparedStatement(dataSource, "SELECT count(*) "
+                    + "FROM " + userTable + " WHERE email =? "
+                    + "AND \"password\" = ?");
+            ps.setString(1, email);
+            ps.setString(2, oldPassword);
+            rs = ps.executeQuery();
+            rs.next();
+            int count = rs.getInt(1);
             if (count <= 0)
                 throw new WdkUserException("The current password is incorrect.");
 
@@ -538,36 +571,65 @@ public class UserFactory {
             throw new WdkModelException(ex);
         } catch (SQLException ex) {
             throw new WdkModelException(ex);
+        } finally {
+            try {
+                SqlUtils.closeResultSet(rs);
+                //SqlUtils.closeStatement(ps);
+            } catch (SQLException ex) {
+                throw new WdkModelException(ex);
+            }
         }
 
     }
 
     void savePassword(String email, String password) throws WdkModelException {
-        email = qualify(email.trim().toLowerCase());
+        email = email.trim().toLowerCase();
+        PreparedStatement ps = null;
         try {
             // encrypt the password, and save it
             String encrypted = encrypt(password);
-            StringBuffer buffer = new StringBuffer();
-            buffer.append("UPDATE " + userTable + " SET \"password\" = '"
-                    + encrypted + "'");
-            buffer.append(" WHERE email = '" + email + "'");
-            SqlUtils.executeUpdate(dataSource, buffer.toString());
+            ps = SqlUtils.getPreparedStatement(dataSource, "UPDATE "
+                    + userTable + " SET \"password\" = ? WHERE email = ?");
+            ps.setString(1, encrypted);
+            ps.setString(2, email);
+            ps.execute();
         } catch (NoSuchAlgorithmException ex) {
             throw new WdkModelException(ex);
         } catch (SQLException ex) {
             throw new WdkModelException(ex);
+        } finally {
+            try {
+                SqlUtils.closeStatement(ps);
+            } catch (SQLException ex) {
+                throw new WdkModelException(ex);
+            }
         }
     }
 
-    private boolean isExist(String email) throws SQLException {
-        email = qualify(email.trim().toLowerCase());
+    private boolean isExist(String email) throws WdkModelException {
+        email = email.trim().toLowerCase();
         // check if user exists in the database. if not, fail and ask to create
         // the user first
-        StringBuffer sql = new StringBuffer();
-        sql.append("SELECT count(*) FROM " + userTable);
-        sql.append(" WHERE email = '" + email + "'");
-        int count = SqlUtils.runIntegerQuery(dataSource, sql.toString());
-        return (count > 0);
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = SqlUtils.getPreparedStatement(dataSource,
+                    "SELECT count(*) FROM " + userTable + " WHERE email = ?");
+            ps.setString(1, email);
+            rs = ps.executeQuery();
+            rs.next();
+            int count = rs.getInt(1);
+            return (count > 0);
+        } catch (SQLException ex) {
+            throw new WdkModelException(ex);
+        } finally {
+            try {
+                SqlUtils.closeResultSet(rs);
+                //SqlUtils.closeStatement(ps);
+            } catch (SQLException ex) {
+                throw new WdkModelException(ex);
+            }
+        }
     }
 
     private String encrypt(String str) throws NoSuchAlgorithmException {
@@ -579,12 +641,6 @@ public class UserFactory {
             buffer.append(Integer.toHexString(code & 0xFF));
         }
         return buffer.toString();
-    }
-
-    private String qualify(String content) {
-        // replace all single quotes with two single quotes
-        content = content.replaceAll("'", "''");
-        return content;
     }
 
     public static void main(String[] args) {
