@@ -60,6 +60,8 @@ public class ProcessResetPasswordAction extends Action {
                 CConstants.WDK_MODEL_KEY);
         UserFactoryBean factory = wdkModel.getUserFactory();
         try {
+            if (email == null || email.length() == 0)
+                throw new WdkUserException("Please provide a valid email.");
             UserBean user = factory.loadUser(email);
             factory.resetPassword(user);
             // resetting password succeed
