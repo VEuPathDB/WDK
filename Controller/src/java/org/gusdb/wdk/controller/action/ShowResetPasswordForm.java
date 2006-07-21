@@ -10,11 +10,11 @@ import org.apache.struts.action.ActionForm;
  * @author xingao
  *
  */
-public class ShowRegisterForm extends ActionForm {
+public class ShowResetPasswordForm extends ActionForm {
 
     /**
      * 
      */
-    private static final long serialVersionUID = 3136951325437324074L;
+    private static final long serialVersionUID = 799556424057827493L;
 
 }

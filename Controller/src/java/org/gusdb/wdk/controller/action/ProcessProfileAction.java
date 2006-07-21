@@ -20,10 +20,9 @@ import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.UserFactoryBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
-
 /**
  * @author xingao
- *
+ * 
  */
 public class ProcessProfileAction extends Action {
 
@@ -34,7 +33,9 @@ public class ProcessProfileAction extends Action {
         UserBean user = (UserBean) request.getSession().getAttribute(
                 CConstants.WDK_USER_KEY);
         // fails if the current use is a guest
-        if (user.getGuest()) throw new WdkUserException("Please login first before you change your profile.");
+        if (user.getGuest())
+            throw new WdkUserException(
+                    "Please login first before you change your profile.");
 
         // if a custom profile page exists, use it; otherwise, use default one
         ServletContext svltCtx = getServlet().getServletContext();
@@ -48,12 +49,10 @@ public class ProcessProfileAction extends Action {
         } else {
             forward = mapping.findForward(CConstants.SHOW_PROFILE_MAPKEY);
         }
-        // TEST
-        System.out.println("profile page: " + customViewFile);
 
         user.setFirstName(request.getParameter("firstName"));
         user.setLastName(request.getParameter("lastName"));
-        user.setMiddleName( request.getParameter("middleName"));
+        user.setMiddleName(request.getParameter("middleName"));
         user.setTitle(request.getParameter("title"));
         user.setOrganization(request.getParameter("organization"));
         user.setDepartment(request.getParameter("department"));
