@@ -40,6 +40,9 @@
       <td><a href="<c:url value="/showQuestion.do?questionFullName=${q.fullName}"/>"><img src="<c:url value="/images/go.gif"/>" border="0"></td>
       <td>&nbsp;&nbsp;</td>
       <td><c:set var="desc" value="${q.description}"/>
+          <c:if test="${q.summary != null}">
+            <c:set var="desc" value="${q.summary}"/>
+          </c:if>
           <c:if test="${fn:length(desc) > 163}">
             <c:set var="desc" value="${fn:substring(desc, 0, 160)}..."/>
           </c:if>
