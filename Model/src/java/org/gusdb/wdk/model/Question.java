@@ -35,6 +35,8 @@ public class Question implements Serializable {
 
     private String description;
 
+    private String summary;
+
     private String help;
 
     private QuestionSet questionSet;
@@ -66,6 +68,10 @@ public class Question implements Serializable {
 
     public void setDescription(String description) {
 	this.description = description;
+    }
+
+    public void setSummary(String summary) {
+	this.summary = summary;
     }
 
     public void setHelp(String help) {
@@ -140,6 +146,10 @@ public class Question implements Serializable {
 	return description;
     }
 
+    public String getSummary() {
+	return summary;
+    }
+
     public String getHelp() {
 	return help;
     }
@@ -191,6 +201,7 @@ public class Question implements Serializable {
 			     "  recordClass='" + recordClassTwoPartName + "'" + newline +
 			     "  query='" + queryTwoPartName + "'" + newline +
 			    "  displayName='" + getDisplayName() + "'" + newline +
+			    "  summary='" + getSummary() + "'" + newline +
 			    "  description='" + getDescription() + "'" + newline +
 			    "  summaryAttributes='" + saNames + "'" + newline + 
 			    "  help='" + getHelp() + "'" + newline 
@@ -290,6 +301,7 @@ public class Question implements Serializable {
     public Question getBaseQuestion() {
         Question question = new Question();
         question.description = this.description;
+        question.summary = this.summary;
         question.displayName = this.displayName;
         question.help = this.help;
         question.name = this.name;
