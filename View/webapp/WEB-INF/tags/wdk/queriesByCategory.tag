@@ -38,7 +38,7 @@
 
       <td colspan="3">
           <a href="<c:url value="/showQuestion.do?questionFullName=${q.fullName}"/>">
-          <font color="darkblue"><b>${q.displayName}</b></font></a>
+          <font color="#000066"><b>${q.displayName}</b></font></a>
       </td>
       <td>
           <c:choose>
