@@ -93,4 +93,8 @@ public class QuestionBean implements Serializable {
     public String getDescription(){
 	return question.getDescription();
     }
+
+    public String getSummary(){
+	return question.getSummary();
+    }
 }

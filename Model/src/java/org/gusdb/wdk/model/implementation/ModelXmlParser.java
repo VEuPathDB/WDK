@@ -505,6 +505,8 @@ public class ModelXmlParser {
 
         /*    */digester.addBeanPropertySetter("wdkModel/questionSet/question/description");
 
+        /*    */digester.addBeanPropertySetter("wdkModel/questionSet/question/summary");
+
         /*    */digester.addBeanPropertySetter("wdkModel/questionSet/question/help");
 
         /*    */digester.addObjectCreate(
