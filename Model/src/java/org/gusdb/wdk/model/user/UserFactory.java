@@ -291,7 +291,7 @@ public class UserFactory {
             rs.next();
             int count = rs.getInt(1);
             if (count != 1)
-                throw new WdkUserException("The email/password not match.");
+                throw new WdkUserException("Invalid email or password.");
 
             // passed validation, load user information
             return loadUser(email);
@@ -647,13 +647,13 @@ public class UserFactory {
         StringBuffer buffer = new StringBuffer();
         Random rand = new Random();
         for (int i = 0; i < 8; i++) {
-            int value = rand.nextInt(62);
+            int value = rand.nextInt(36);
             if (value < 10) { // number
                 buffer.append(value);
-            } else if (value < 36) { // upper case letters
-                buffer.append((char) ('A' + value - 10));
+//            } else if (value < 36) { // upper case letters
+//                buffer.append((char) ('A' + value - 10));
             } else { // lower case letters
-                buffer.append((char) ('a' + value - 36));
+                buffer.append((char) ('a' + value - 10));
             }
         }
         String password = buffer.toString();
