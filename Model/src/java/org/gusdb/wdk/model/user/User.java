@@ -6,11 +6,6 @@ package org.gusdb.wdk.model.user;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -77,7 +72,8 @@ public class User {
      * the preferences for the user: <prefName, prefValue>. It only contains the
      * preferences for the current project
      */
-    private Map<String, String> preferences;
+    private Map<String, String> globalPreferences;
+    private Map<String, String> projectPreferences;
 
     // *************************************************************************
     // Copied from the riginal code - to be updated soon
@@ -98,14 +94,18 @@ public class User {
         // don't create the userAnswers map by default, since there may be many
         // users at the same time, and it would consume too many memory; so I
         // only create it when it's used.
+
+        globalPreferences = new HashMap<String, String>();
+        projectPreferences = new HashMap<String, String>();
     }
 
     public String getUserID() {
-        //return this.userID;
+        // return this.userID;
         return email;
     }
 
-    public void addAnswer(Answer answer) throws WdkUserException {
+    public void addAnswer(Answer answer) throws WdkUserException,
+            WdkModelException {
         try {
             getUserAnswerByAnswer(answer, false);
             // answer exists, return
@@ -118,7 +118,8 @@ public class User {
         insertAnswer(answer);
     }
 
-    public void addAnswerFuzzy(Answer answer) throws WdkUserException {
+    public void addAnswerFuzzy(Answer answer) throws WdkUserException,
+            WdkModelException {
         try {
             getUserAnswerByAnswer(answer, true);
             // answer exists, return
@@ -131,7 +132,8 @@ public class User {
         insertAnswer(answer);
     }
 
-    private void insertAnswer(Answer answer) throws WdkUserException {
+    private void insertAnswer(Answer answer) throws WdkUserException,
+            WdkModelException {
         answerIndex++;
         UserAnswer userAnswer = new UserAnswer(userID, answerIndex, answer);
 
@@ -141,11 +143,7 @@ public class User {
         userAnswers.put(answerIndex, userAnswer);
 
         // cache the history
-        try {
-            saveHistory(userAnswer);
-        } catch (WdkModelException ex) {
-            throw new WdkUserException(ex);
-        }
+        saveHistory(userAnswer);
     }
 
     public void deleteUserAnswer(int answerId) throws WdkUserException {
@@ -349,8 +347,8 @@ public class User {
 
     public UserAnswer combineUserAnswers(int firstAnswerID, int secondAnswerID,
             String operation, int startIndex, int endIndex,
-            Map<String, String> operatorMap) throws WdkModelException,
-            WdkUserException {
+            Map<String, String> operatorMap) throws WdkUserException,
+            WdkModelException {
         // construct operand map
         Map<String, Answer> operandMap = buildOperandMap();
 
@@ -450,8 +448,8 @@ public class User {
         return sb.toString();
     }
 
-    private void saveHistory(UserAnswer userAnswer) throws WdkModelException,
-            WdkUserException {
+    private void saveHistory(UserAnswer userAnswer) throws WdkUserException,
+            WdkModelException {
         int historyID = userAnswer.getAnswerID();
         Integer tempID = userAnswer.getAnswer().getDatasetId();
         StringBuffer sb = new StringBuffer("SELECT * FROM ");
@@ -543,8 +541,10 @@ public class User {
         userRoles = new LinkedHashSet<String>();
 
         refreshInterval = -1;
-        
+
         this.model = factory.getWdkModel();
+        globalPreferences = new HashMap<String, String>();
+        projectPreferences = new HashMap<String, String>();
     }
 
     /**
@@ -849,22 +849,32 @@ public class User {
     // TODO
     }
 
-    public void savePreference(String prefName, String prefValue) {
-    // TODO
+    public void setProjectPreference(String prefName, String prefValue) {
+        projectPreferences.put(prefName, prefValue);
     }
 
-    public Map<String, String> getPreferenceMap() {
-        // TODO
-        return null;
+    public void unsetProjectPreference(String prefName) {
+        projectPreferences.remove(prefName);
     }
 
-    public Map<String, String> queryPreferences(String namePattern) {
-        // TODO
-        return null;
+    public Map<String, String> getProjectPreferences() {
+        return new HashMap<String, String>(globalPreferences);
+    }
+
+    public void setGlobalPreference(String prefName, String prefValue) {
+        globalPreferences.put(prefName, prefValue);
+    }
+
+    public void unsetGlobalPreference(String prefName) {
+        globalPreferences.remove(prefName);
+    }
+
+    public Map<String, String> getGlobalPreferences() {
+        return new HashMap<String, String>(globalPreferences);
     }
 
     public void changePassword(String oldPassword, String newPassword,
-            String confirmPassword) throws WdkUserException, WdkModelException {
+            String confirmPassword) throws WdkUserException {
         factory.changePassword(email, oldPassword, newPassword, confirmPassword);
     }
 }
