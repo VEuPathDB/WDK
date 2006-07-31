@@ -3,6 +3,8 @@
  */
 package org.gusdb.wdk.model.jspwrap;
 
+import java.util.Map;
+
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.User;
@@ -47,11 +49,14 @@ public class UserFactoryBean {
     public UserBean createUser(String email, String lastName, String firstName,
             String middleName, String title, String organization,
             String department, String address, String city, String state,
-            String zipCode, String phoneNumber, String country)
-            throws WdkUserException, WdkModelException {
+            String zipCode, String phoneNumber, String country,
+            Map<String, String> globalPreferences,
+            Map<String, String> projectPreferences) throws WdkUserException,
+            WdkModelException {
         User user = userFactory.createUser(email, lastName, firstName,
                 middleName, title, organization, department, address, city,
-                state, zipCode, phoneNumber, country);
+                state, zipCode, phoneNumber, country, globalPreferences,
+                projectPreferences);
         return new UserBean(user);
     }
 
@@ -102,7 +107,7 @@ public class UserFactoryBean {
      *      java.lang.String, java.lang.String, java.lang.String)
      */
     public void sendEmail(String email, String reply, String subject,
-            String content) throws WdkModelException {
+            String content) throws WdkUserException {
         userFactory.sendEmail(email, reply, subject, content);
     }
 

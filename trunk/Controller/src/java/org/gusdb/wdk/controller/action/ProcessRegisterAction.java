@@ -4,6 +4,10 @@
 package org.gusdb.wdk.controller.action;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -41,22 +45,48 @@ public class ProcessRegisterAction extends Action {
         } else {
             forward = mapping.findForward(CConstants.SHOW_REGISTER_MAPKEY);
         }
-        // TEST
-        System.out.println("register page: " + customViewFile);
 
-        String email = request.getParameter(CConstants.WDK_EMAIL_KEY);
-        String firstName = request.getParameter("firstName");
-        String lastName = request.getParameter("lastName");
-        String middleName = request.getParameter("middleName");
-        String title = request.getParameter("title");
-        String organization = request.getParameter("organization");
-        String department = request.getParameter("department");
-        String address = request.getParameter("address");
-        String city = request.getParameter("city");
-        String state = request.getParameter("state");
-        String zipCode = request.getParameter("zipCode");
-        String phoneNumber = request.getParameter("phoneNumber");
-        String country = request.getParameter("country");
+        String email = null, firstName = null, lastName = null, middleName = null, title = null, organization = null, department = null, address = null, city = null, state = null, zipCode = null, phoneNumber = null, country = null;
+        Map<String, String> globalPreferences = new HashMap<String, String>();
+        Map<String, String> projectPreferences = new HashMap<String, String>();
+
+        Set params = request.getParameterMap().keySet();
+        for (Object param : params) {
+            String paramName = (String) param;
+            if (paramName.equals(CConstants.WDK_EMAIL_KEY)) {
+                email = request.getParameter(paramName);
+            } else if (paramName.equalsIgnoreCase("firstName")) {
+                firstName = request.getParameter(paramName);
+            } else if (paramName.equalsIgnoreCase("lastName")) {
+                lastName = request.getParameter(paramName);
+            } else if (paramName.equalsIgnoreCase("middleName")) {
+                middleName = request.getParameter(paramName);
+            } else if (paramName.equalsIgnoreCase("title")) {
+                title = request.getParameter(paramName);
+            } else if (paramName.equalsIgnoreCase("organization")) {
+                organization = request.getParameter(paramName);
+            } else if (paramName.equalsIgnoreCase("department")) {
+                department = request.getParameter(paramName);
+            } else if (paramName.equalsIgnoreCase("address")) {
+                address = request.getParameter(paramName);
+            } else if (paramName.equalsIgnoreCase("city")) {
+                city = request.getParameter(paramName);
+            } else if (paramName.equalsIgnoreCase("state")) {
+                state = request.getParameter(paramName);
+            } else if (paramName.equalsIgnoreCase("zipCode")) {
+                zipCode = request.getParameter(paramName);
+            } else if (paramName.equalsIgnoreCase("phoneNumber")) {
+                phoneNumber = request.getParameter(paramName);
+            } else if (paramName.equalsIgnoreCase("country")) {
+                country = request.getParameter(paramName);
+            } else if (paramName.startsWith(CConstants.WDK_PREFERENCE_GLOBAL_KEY)) {
+                String paramValue = request.getParameter(paramName);
+                globalPreferences.put(paramName, paramValue);
+            } else if (paramName.startsWith(CConstants.WDK_PREFERENCE_PROJECT_KEY)) {
+                String paramValue = request.getParameter(paramName);
+                projectPreferences.put(paramName, paramValue);
+            }
+        }
 
         // create the user with user input
         WdkModelBean wdkModel = (WdkModelBean) getServlet().getServletContext().getAttribute(
@@ -65,15 +95,17 @@ public class ProcessRegisterAction extends Action {
         try {
             UserBean user = factory.createUser(email, lastName, firstName,
                     middleName, title, organization, department, address, city,
-                    state, zipCode, phoneNumber, country);
+                    state, zipCode, phoneNumber, country, globalPreferences,
+                    projectPreferences);
             // registration succeed
             request.setAttribute("registerSucceed", true);
         } catch (WdkUserException ex) {
             // email exists, notify the user to input again
             request.setAttribute(CConstants.WDK_REGISTER_ERROR_KEY,
                     ex.getMessage());
-            
-            // push back the user input, so that the user doesn't need to type again
+
+            // push back the user input, so that the user doesn't need to type
+            // again
             request.setAttribute(CConstants.WDK_EMAIL_KEY, email);
             request.setAttribute("firstName", firstName);
             request.setAttribute("lastName", lastName);
@@ -87,6 +119,12 @@ public class ProcessRegisterAction extends Action {
             request.setAttribute("zipCode", zipCode);
             request.setAttribute("phoneNumber", phoneNumber);
             request.setAttribute("country", country);
+            for (String param : projectPreferences.keySet()) {
+                request.setAttribute(param, projectPreferences.get(param));
+            }
+            for (String param : globalPreferences.keySet()) {
+                request.setAttribute(param, globalPreferences.get(param));
+            }
         }
         return forward;
     }

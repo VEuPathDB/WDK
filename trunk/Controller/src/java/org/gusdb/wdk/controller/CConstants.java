@@ -47,6 +47,8 @@ public class CConstants {
     public static final String WDK_CHANGE_PASSWORD_ERROR_KEY = "changePasswordError";
     public static final String WDK_RESET_PASSWORD_ERROR_KEY = "changePasswordError";
     public static final String WDK_REFERER_URL_KEY = "refererUrl";
+    public static final String WDK_PREFERENCE_GLOBAL_KEY = "preference.global.";
+    public static final String WDK_PREFERENCE_PROJECT_KEY = "preference.project.";
 
     //key for finding action forward, from struts-config.xml, used in Action classes
     public static final String SHOW_QUESTION_MAPKEY = "show_question";

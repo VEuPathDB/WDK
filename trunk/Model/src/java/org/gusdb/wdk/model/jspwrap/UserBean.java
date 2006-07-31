@@ -30,7 +30,7 @@ public class UserBean {
     public UserBean(User user) {
         this.user = user;
     }
-    
+
     User getUser() {
         return user;
     }
@@ -70,7 +70,7 @@ public class UserBean {
     public void deleteHistory(History history) {
         user.deleteHistory(history);
     }
-    
+
     public void mergeHistory(UserBean userBean) {
         this.user.mergeHistory(userBean.getUser());
     }
@@ -186,15 +186,6 @@ public class UserBean {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.user.User#getPreferenceMap()
-     */
-    public Map<String, String> getPreferenceMap() {
-        return user.getPreferenceMap();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
      * @see org.gusdb.wdk.model.user.User#getRefreshInterval()
      */
     public int getRefreshInterval() {
@@ -258,15 +249,6 @@ public class UserBean {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.user.User#queryPreferences(java.lang.String)
-     */
-    public Map<String, String> queryPreferences(String namePattern) {
-        return user.queryPreferences(namePattern);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
      * @see org.gusdb.wdk.model.user.User#removeUserRole(java.lang.String)
      */
     public void removeUserRole(String userRole) {
@@ -280,16 +262,6 @@ public class UserBean {
      */
     public void saveHistory(History history) {
         user.saveHistory(history);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.user.User#savePreference(java.lang.String,
-     *      java.lang.String)
-     */
-    public void savePreference(String prefName, String prefValue) {
-        user.savePreference(prefName, prefValue);
     }
 
     /*
@@ -400,10 +372,14 @@ public class UserBean {
         user.setZipCode(zipCode);
     }
 
-    /* (non-Javadoc)
-     * @see org.gusdb.wdk.model.user.User#changePassword(java.lang.String, java.lang.String, java.lang.String)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#changePassword(java.lang.String,
+     *      java.lang.String, java.lang.String)
      */
-    public void changePassword(String oldPassword, String newPassword, String confirmPassword) throws WdkUserException, WdkModelException {
+    public void changePassword(String oldPassword, String newPassword,
+            String confirmPassword) throws WdkUserException, WdkModelException {
         user.changePassword(oldPassword, newPassword, confirmPassword);
     }
 
@@ -416,7 +392,8 @@ public class UserBean {
      * 
      * @see org.gusdb.wdk.model.User#addAnswer(org.gusdb.wdk.model.Answer)
      */
-    public void addAnswer(AnswerBean answer) throws WdkUserException {
+    public void addAnswer(AnswerBean answer) throws WdkUserException,
+            WdkModelException {
         user.addAnswer(answer.answer);
     }
 
@@ -425,7 +402,8 @@ public class UserBean {
      * 
      * @see org.gusdb.wdk.model.User#addAnswerFuzzy(org.gusdb.wdk.model.Answer)
      */
-    public void addAnswerFuzzy(AnswerBean answer) throws WdkUserException {
+    public void addAnswerFuzzy(AnswerBean answer) throws WdkUserException,
+            WdkModelException {
         user.addAnswerFuzzy(answer.answer);
     }
 
@@ -436,8 +414,8 @@ public class UserBean {
      */
     public UserAnswerBean combineUserAnswers(int firstAnswerID,
             int secondAnswerID, String operation, int start, int end,
-            Map<String, String> operatorMap)
-            throws WdkUserException, WdkModelException {
+            Map<String, String> operatorMap) throws WdkUserException,
+            WdkModelException {
         return new UserAnswerBean(this.user.combineUserAnswers(firstAnswerID,
                 secondAnswerID, operation, start, end, operatorMap));
     }
@@ -448,17 +426,17 @@ public class UserBean {
      * @see org.gusdb.wdk.model.User#combineAnswers(java.lang.String)
      */
     public UserAnswerBean combineAnswers(String expression, int start, int end,
-            Map<String, String> operatorMap)
-            throws WdkUserException, WdkModelException {
+            Map<String, String> operatorMap) throws WdkUserException,
+            WdkModelException {
         return new UserAnswerBean(this.user.combineUserAnswers(expression,
                 start, end, operatorMap));
     }
 
     public String validateExpression(String expression, int startIndex,
-            int endIndex, Map<String, String> operatorMap) throws WdkModelException
-    {
-    return this.user.validateExpression(expression, startIndex, endIndex,
-                        operatorMap);
+            int endIndex, Map<String, String> operatorMap)
+            throws WdkModelException {
+        return this.user.validateExpression(expression, startIndex, endIndex,
+                operatorMap);
     }
 
     /*
@@ -501,7 +479,7 @@ public class UserBean {
 
     public int getUserAnswerIdByAnswer(AnswerBean answer)
             throws WdkUserException {
-    return getUserAnswerByAnswerFuzzy(answer).getAnswerID();
+        return getUserAnswerByAnswerFuzzy(answer).getAnswerID();
     }
 
     public UserAnswerBean getUserAnswerByAnswer(AnswerBean answer)
@@ -511,7 +489,8 @@ public class UserBean {
 
     public UserAnswerBean getUserAnswerByAnswerFuzzy(AnswerBean answer)
             throws WdkUserException {
-        return new UserAnswerBean(user.getUserAnswerByAnswerFuzzy(answer.answer));
+        return new UserAnswerBean(
+                user.getUserAnswerByAnswerFuzzy(answer.answer));
     }
 
     /*
@@ -570,6 +549,36 @@ public class UserBean {
             throws WdkUserException {
         this.user.renameUserAnswer(answerID, name);
     }
+
+    public Map<String, String> getGlobalPreferences() {
+        return user.getGlobalPreferences();
+    }
+    
+
+    public Map<String, String> getProjectPreferences() {
+        return user.getProjectPreferences();
+    }
+    
+
+    public void setGlobalPreference(String prefName, String prefValue) {
+        user.setGlobalPreference(prefName, prefValue);
+    }
+    
+
+    public void setProjectPreference(String prefName, String prefValue) {
+        user.setProjectPreference(prefName, prefValue);
+    }
+    
+
+    public void unsetGlobalPreference(String prefName) {
+        user.unsetGlobalPreference(prefName);
+    }
+    
+
+    public void unsetProjectPreference(String prefName) {
+        user.unsetProjectPreference(prefName);
+    }
+
 
     /*
      * (non-Javadoc)
