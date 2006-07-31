@@ -51,12 +51,11 @@ GRANT select on logins.user_roles to GUS_R;
 
 CREATE TABLE logins.preferences
 (
-  preference_id NUMBER(10) NOT NULL,
   email varchar(255) NOT NULL,
   project_id varchar(50) NOT NULL,
-  preference_name varchar(100) NOT NULL,
+  preference_name varchar(200) NOT NULL,
   preference_value varchar(4000),
-  CONSTRAINT "PREFERENCES_PK" PRIMARY KEY (preference_id),
+  CONSTRAINT "PREFERENCES_PK" PRIMARY KEY (email, project_id, preference_name),
   CONSTRAINT "USER_PREFERENCE_EMAIL_FK" FOREIGN KEY (email)
       REFERENCES logins.users (email) 
 );

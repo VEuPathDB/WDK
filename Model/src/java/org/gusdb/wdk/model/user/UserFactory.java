@@ -13,6 +13,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 
@@ -27,7 +28,6 @@ import javax.mail.internet.MimeMessage;
 import javax.sql.DataSource;
 
 import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.implementation.SqlUtils;
 
@@ -70,6 +70,8 @@ public class UserFactory {
 
     public static final int REGISTERED_REFRESH_INTERVAL = 10;
     public static final int GUEST_REFRESH_INTERVAL = -1;
+
+    public static final String GLOBAL_PREFERENCE_KEY = "[Global]";
 
     private static UserFactory factory;
 
@@ -123,7 +125,7 @@ public class UserFactory {
     }
 
     public void sendEmail(String email, String reply, String subject,
-            String content) throws WdkModelException {
+            String content) throws WdkUserException {
         // create properties and get the session
         Properties props = new Properties();
         props.put("mail.smtp.host", smtpServer);
@@ -144,9 +146,9 @@ public class UserFactory {
             // send email
             Transport.send(message);
         } catch (AddressException ex) {
-            throw new WdkModelException(ex);
+            throw new WdkUserException(ex);
         } catch (MessagingException ex) {
-            throw new WdkModelException(ex);
+            throw new WdkUserException(ex);
         }
     }
 
@@ -183,8 +185,10 @@ public class UserFactory {
     public User createUser(String email, String lastName, String firstName,
             String middleName, String title, String organization,
             String department, String address, String city, String state,
-            String zipCode, String phoneNumber, String country)
-            throws WdkUserException, WdkModelException {
+            String zipCode, String phoneNumber, String country,
+            Map<String, String> globalPreferences,
+            Map<String, String> projectPreferences)
+            throws WdkUserException {
         if (email == null)
             throw new WdkUserException("The user's email cannot be empty.");
         // format the info
@@ -246,19 +250,28 @@ public class UserFactory {
             user.addUserRole(defaultRole);
             user.setGuest(false);
             user.setRefreshInterval(REGISTERED_REFRESH_INTERVAL);
+            
+            // save preferences
+            for (String param : globalPreferences.keySet()) {
+                user.setGlobalPreference(param, globalPreferences.get(param));
+            }
+            for (String param : projectPreferences.keySet()) {
+                user.setProjectPreference(param, projectPreferences.get(param));
+            }
+            savePreferences(user);
 
             // generate a random password, and send to the user via email
             resetPassword(user);
 
             return user;
         } catch (SQLException ex) {
-            throw new WdkModelException(ex);
+            throw new WdkUserException(ex);
         } finally {
             try {
                 SqlUtils.closeStatement(psUser);
                 SqlUtils.closeStatement(psRole);
             } catch (SQLException ex) {
-                throw new WdkModelException(ex);
+                throw new WdkUserException(ex);
             }
         }
     }
@@ -272,7 +285,7 @@ public class UserFactory {
     }
 
     public User authenticate(String email, String password)
-            throws WdkModelException, WdkUserException {
+            throws WdkUserException {
         // convert email to lower case
         email = email.trim().toLowerCase();
         PreparedStatement ps = null;
@@ -298,13 +311,13 @@ public class UserFactory {
         } catch (NoSuchAlgorithmException ex) {
             throw new WdkUserException(ex);
         } catch (SQLException ex) {
-            throw new WdkModelException(ex);
+            throw new WdkUserException(ex);
         } finally {
             try {
                 SqlUtils.closeResultSet(rs);
-                //SqlUtils.closeStatement(ps);
+                // SqlUtils.closeStatement(ps);
             } catch (SQLException ex) {
-                throw new WdkModelException(ex);
+                throw new WdkUserException(ex);
             }
         }
     }
@@ -314,11 +327,9 @@ public class UserFactory {
      * 
      * @param email
      * @return
-     * @throws WdkModelException
      * @throws WdkUserException
      */
-    public User loadUser(String email) throws WdkModelException,
-            WdkUserException {
+    public User loadUser(String email) throws WdkUserException {
         // convert to lower case
         email = email.trim().toLowerCase();
 
@@ -362,18 +373,20 @@ public class UserFactory {
                 user.addUserRole(rsRole.getString("role"));
             }
             SqlUtils.closeResultSet(rsRole);
-
+            
+            // load user's preferences
+            loadPreferences(user);
             return user;
         } catch (SQLException ex) {
-            throw new WdkModelException(ex);
+            throw new WdkUserException(ex);
         } finally {
             try {
                 SqlUtils.closeResultSet(rsUser);
                 SqlUtils.closeResultSet(rsRole);
-                //SqlUtils.closeStatement(psUser);
-                //SqlUtils.closeStatement(psRole);
+                // SqlUtils.closeStatement(psUser);
+                // SqlUtils.closeStatement(psRole);
             } catch (SQLException ex) {
-                throw new WdkModelException(ex);
+                throw new WdkUserException(ex);
             }
         }
     }
@@ -382,10 +395,9 @@ public class UserFactory {
      * Save the basic information of a user
      * 
      * @param user
-     * @throws WdkModelException
      * @throws WdkUserException
      */
-    public void saveUser(User user) throws WdkModelException, WdkUserException {
+    public void saveUser(User user) throws WdkUserException {
         // check if the user is allowed to be persistant
         if (user.isGuest())
             throw new WdkUserException(
@@ -440,20 +452,22 @@ public class UserFactory {
                 psRoleInsert.setString(2, role);
                 psRoleInsert.execute();
             }
+            // save preference
+            savePreferences(user);
         } catch (SQLException ex) {
-            throw new WdkModelException(ex);
+            throw new WdkUserException(ex);
         } finally {
             try {
                 SqlUtils.closeStatement(psUser);
                 SqlUtils.closeStatement(psRoleDelete);
                 SqlUtils.closeStatement(psRoleInsert);
             } catch (SQLException ex) {
-                throw new WdkModelException(ex);
+                throw new WdkUserException(ex);
             }
         }
     }
 
-    void loadHistory(User user) throws WdkUserException, WdkModelException {
+    void loadHistories(User user) throws WdkUserException {
         // check if the user is guest user
         if (user.isGuest())
             throw new WdkUserException(
@@ -494,7 +508,7 @@ public class UserFactory {
                 user.addHistory(history);
             }
         } catch (SQLException ex) {
-            throw new WdkModelException(ex);
+            throw new WdkUserException(ex);
         }
     }
 
@@ -506,11 +520,103 @@ public class UserFactory {
 
     }
 
-    public void resetPassword(User user) throws WdkUserException,
-            WdkModelException {
-            if (!isExist(user.getEmail()))
-                throw new WdkUserException(
-                        "The user doesn't exist. Resetting operation cancelled.");
+    private void savePreferences(User user) throws WdkUserException {
+        String email = user.getEmail();
+        PreparedStatement psDelete = null;
+        PreparedStatement psInsert = null;
+        try {
+            // delete preferences
+            psDelete = SqlUtils.getPreparedStatement(dataSource, "DELETE FROM "
+                    + preferenceTable + " WHERE email = ? AND project_id = ?");
+            psDelete.setString(1, email);
+            psDelete.setString(2, GLOBAL_PREFERENCE_KEY);
+            psDelete.execute();
+            psDelete.setString(1, email);
+            psDelete.setString(2, projectId);
+            psDelete.execute();
+
+            // insert preferences
+            psInsert = SqlUtils.getPreparedStatement(dataSource, "INSERT INTO "
+                    + preferenceTable + " (email, project_id, "
+                    + "preference_name, preference_value) "
+                    + "VALUES (?, ?, ?, ?)");
+            Map<String, String> global = user.getGlobalPreferences();
+            for (String prefName : global.keySet()) {
+                String prefValue = global.get(prefName);
+                psInsert.setString(1, email);
+                psInsert.setString(2, GLOBAL_PREFERENCE_KEY);
+                psInsert.setString(3, prefName);
+                psInsert.setString(4, prefValue);
+                psInsert.execute();
+            }
+            Map<String, String> project = user.getProjectPreferences();
+            for (String prefName : project.keySet()) {
+                String prefValue = project.get(prefName);
+                psInsert.setString(1, email);
+                psInsert.setString(2, projectId);
+                psInsert.setString(3, prefName);
+                psInsert.setString(4, prefValue);
+                psInsert.execute();
+            }
+        } catch (SQLException ex) {
+            throw new WdkUserException(ex);
+        } finally {
+            try {
+                SqlUtils.closeStatement(psDelete);
+                SqlUtils.closeStatement(psInsert);
+            } catch (SQLException ex) {
+                throw new WdkUserException(ex);
+            }
+        }
+    }
+
+    private void loadPreferences(User user) throws WdkUserException {
+        String email = user.getEmail();
+        PreparedStatement psGlobal = null, psProject = null;
+        ResultSet rsGlobal = null, rsProject = null;
+        try {
+            // load global preferences
+            psGlobal = SqlUtils.getPreparedStatement(dataSource, "SELECT "
+                    + "preference_name, preference_value FROM "
+                    + preferenceTable + " WHERE email = ? AND project_id = "
+                    + GLOBAL_PREFERENCE_KEY);
+            psGlobal.setString(1, email);
+            rsGlobal = psGlobal.executeQuery();
+            while (rsGlobal.next()) {
+                String prefName = rsGlobal.getString("preference_name");
+                String prefValue = rsGlobal.getString("preference_value");
+                user.setGlobalPreference(prefName, prefValue);
+            }
+
+            // load project specific preferences
+            psProject = SqlUtils.getPreparedStatement(dataSource, "SELECT "
+                    + "preference_name, preference_value FROM "
+                    + preferenceTable + " WHERE email = ? AND project_id = ?");
+            psProject.setString(1, email);
+            psProject.setString(2, projectId);
+            rsProject = psProject.executeQuery();
+            while (rsProject.next()) {
+                String prefName = rsProject.getString("preference_name");
+                String prefValue = rsProject.getString("preference_value");
+                user.setProjectPreference(prefName, prefValue);
+                
+            }
+        } catch (SQLException ex) {
+            throw new WdkUserException(ex);
+        } finally {
+            try {
+                SqlUtils.closeResultSet(rsGlobal);
+                SqlUtils.closeResultSet(rsProject);
+            } catch (SQLException ex) {
+                throw new WdkUserException(ex);
+            }
+        }
+    }
+
+    public void resetPassword(User user) throws WdkUserException {
+        if (!isExist(user.getEmail()))
+            throw new WdkUserException(
+                    "The user doesn't exist. Resetting operation cancelled.");
 
         // generate a random password of 8 characters long, the range will be
         // [0-9A-Za-z]
@@ -539,7 +645,7 @@ public class UserFactory {
     }
 
     void changePassword(String email, String oldPassword, String newPassword,
-            String confirmPassword) throws WdkUserException, WdkModelException {
+            String confirmPassword) throws WdkUserException {
         email = email.trim().toLowerCase();
 
         // encrypt password
@@ -568,21 +674,21 @@ public class UserFactory {
             // passed check, then save the new password
             savePassword(email, newPassword);
         } catch (NoSuchAlgorithmException ex) {
-            throw new WdkModelException(ex);
+            throw new WdkUserException(ex);
         } catch (SQLException ex) {
-            throw new WdkModelException(ex);
+            throw new WdkUserException(ex);
         } finally {
             try {
                 SqlUtils.closeResultSet(rs);
-                //SqlUtils.closeStatement(ps);
+                // SqlUtils.closeStatement(ps);
             } catch (SQLException ex) {
-                throw new WdkModelException(ex);
+                throw new WdkUserException(ex);
             }
         }
 
     }
 
-    void savePassword(String email, String password) throws WdkModelException {
+    void savePassword(String email, String password) throws WdkUserException {
         email = email.trim().toLowerCase();
         PreparedStatement ps = null;
         try {
@@ -594,19 +700,19 @@ public class UserFactory {
             ps.setString(2, email);
             ps.execute();
         } catch (NoSuchAlgorithmException ex) {
-            throw new WdkModelException(ex);
+            throw new WdkUserException(ex);
         } catch (SQLException ex) {
-            throw new WdkModelException(ex);
+            throw new WdkUserException(ex);
         } finally {
             try {
                 SqlUtils.closeStatement(ps);
             } catch (SQLException ex) {
-                throw new WdkModelException(ex);
+                throw new WdkUserException(ex);
             }
         }
     }
 
-    private boolean isExist(String email) throws WdkModelException {
+    private boolean isExist(String email) throws WdkUserException {
         email = email.trim().toLowerCase();
         // check if user exists in the database. if not, fail and ask to create
         // the user first
@@ -621,13 +727,13 @@ public class UserFactory {
             int count = rs.getInt(1);
             return (count > 0);
         } catch (SQLException ex) {
-            throw new WdkModelException(ex);
+            throw new WdkUserException(ex);
         } finally {
             try {
                 SqlUtils.closeResultSet(rs);
-                //SqlUtils.closeStatement(ps);
+                // SqlUtils.closeStatement(ps);
             } catch (SQLException ex) {
-                throw new WdkModelException(ex);
+                throw new WdkUserException(ex);
             }
         }
     }
@@ -650,8 +756,8 @@ public class UserFactory {
             int value = rand.nextInt(36);
             if (value < 10) { // number
                 buffer.append(value);
-//            } else if (value < 36) { // upper case letters
-//                buffer.append((char) ('A' + value - 10));
+                // } else if (value < 36) { // upper case letters
+                // buffer.append((char) ('A' + value - 10));
             } else { // lower case letters
                 buffer.append((char) ('a' + value - 10));
             }
