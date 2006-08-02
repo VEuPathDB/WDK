@@ -850,6 +850,7 @@ public class User {
     }
 
     public void setProjectPreference(String prefName, String prefValue) {
+        if (prefValue == null) prefValue = prefName;
         projectPreferences.put(prefName, prefValue);
     }
 
@@ -858,10 +859,11 @@ public class User {
     }
 
     public Map<String, String> getProjectPreferences() {
-        return new HashMap<String, String>(globalPreferences);
+        return new HashMap<String, String>(projectPreferences);
     }
 
     public void setGlobalPreference(String prefName, String prefValue) {
+        if (prefValue == null) prefValue = prefName;
         globalPreferences.put(prefName, prefValue);
     }
 
@@ -871,6 +873,11 @@ public class User {
 
     public Map<String, String> getGlobalPreferences() {
         return new HashMap<String, String>(globalPreferences);
+    }
+    
+    public void clearPreferences() {
+        globalPreferences.clear();
+        projectPreferences.clear();
     }
 
     public void changePassword(String oldPassword, String newPassword,

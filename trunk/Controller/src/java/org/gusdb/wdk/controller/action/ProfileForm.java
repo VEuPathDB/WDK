@@ -4,6 +4,7 @@
 package org.gusdb.wdk.controller.action;
 
 import org.apache.struts.action.ActionForm;
+import org.gusdb.wdk.model.jspwrap.UserBean;
 
 
 /**
@@ -30,7 +31,7 @@ public class ProfileForm extends ActionForm {
     private String country;
 
     private String refererUrl;
-
+    
     /**
      * @return Returns the address.
      */
@@ -226,5 +227,5 @@ public class ProfileForm extends ActionForm {
         this.refererUrl = refererUrl;
     }
 
-
+    
 }
