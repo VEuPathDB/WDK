@@ -578,8 +578,8 @@ public class UserFactory {
             // load global preferences
             psGlobal = SqlUtils.getPreparedStatement(dataSource, "SELECT "
                     + "preference_name, preference_value FROM "
-                    + preferenceTable + " WHERE email = ? AND project_id = "
-                    + GLOBAL_PREFERENCE_KEY);
+                    + preferenceTable + " WHERE email = ? AND project_id = '"
+                    + GLOBAL_PREFERENCE_KEY + "'");
             psGlobal.setString(1, email);
             rsGlobal = psGlobal.executeQuery();
             while (rsGlobal.next()) {
@@ -623,13 +623,11 @@ public class UserFactory {
         StringBuffer buffer = new StringBuffer();
         Random rand = new Random();
         for (int i = 0; i < 8; i++) {
-            int value = rand.nextInt(62);
+            int value = rand.nextInt(36);
             if (value < 10) { // number
                 buffer.append(value);
-            } else if (value < 36) { // upper case letters
-                buffer.append((char) ('A' + value - 10));
             } else { // lower case letters
-                buffer.append((char) ('a' + value - 36));
+                buffer.append((char) ('a' + value - 10));
             }
         }
         String password = buffer.toString();
