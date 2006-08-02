@@ -578,7 +578,16 @@ public class UserBean {
     public void unsetProjectPreference(String prefName) {
         user.unsetProjectPreference(prefName);
     }
+    
+    
 
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.user.User#clearPreferences()
+     */
+    public void clearPreferences() {
+        user.clearPreferences();
+    }
 
     /*
      * (non-Javadoc)

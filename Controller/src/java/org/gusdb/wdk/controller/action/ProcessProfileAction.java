@@ -4,6 +4,8 @@
 package org.gusdb.wdk.controller.action;
 
 import java.io.File;
+import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -49,19 +51,45 @@ public class ProcessProfileAction extends Action {
         } else {
             forward = mapping.findForward(CConstants.SHOW_PROFILE_MAPKEY);
         }
+        
+        // clear the preference
+        user.clearPreferences();
 
-        user.setFirstName(request.getParameter("firstName"));
-        user.setLastName(request.getParameter("lastName"));
-        user.setMiddleName(request.getParameter("middleName"));
-        user.setTitle(request.getParameter("title"));
-        user.setOrganization(request.getParameter("organization"));
-        user.setDepartment(request.getParameter("department"));
-        user.setAddress(request.getParameter("address"));
-        user.setCity(request.getParameter("city"));
-        user.setState(request.getParameter("state"));
-        user.setZipCode(request.getParameter("zipCode"));
-        user.setPhoneNumber(request.getParameter("phoneNumber"));
-        user.setCountry(request.getParameter("country"));
+        Set params = request.getParameterMap().keySet();
+        for (Object param : params) {
+            String paramName = (String) param;
+            if (paramName.equalsIgnoreCase("firstName")) {
+                user.setFirstName(request.getParameter("firstName"));
+            } else if (paramName.equalsIgnoreCase("lastName")) {
+                user.setLastName(request.getParameter("lastName"));
+            } else if (paramName.equalsIgnoreCase("middleName")) {
+                user.setMiddleName(request.getParameter("middleName"));
+            } else if (paramName.equalsIgnoreCase("title")) {
+                user.setTitle(request.getParameter("title"));
+            } else if (paramName.equalsIgnoreCase("organization")) {
+                user.setOrganization(request.getParameter("organization"));
+            } else if (paramName.equalsIgnoreCase("department")) {
+                user.setDepartment(request.getParameter("department"));
+            } else if (paramName.equalsIgnoreCase("address")) {
+                user.setAddress(request.getParameter("address"));
+            } else if (paramName.equalsIgnoreCase("city")) {
+                user.setCity(request.getParameter("city"));
+            } else if (paramName.equalsIgnoreCase("state")) {
+                user.setState(request.getParameter("state"));
+            } else if (paramName.equalsIgnoreCase("zipCode")) {
+                user.setZipCode(request.getParameter("zipCode"));
+            } else if (paramName.equalsIgnoreCase("phoneNumber")) {
+                user.setPhoneNumber(request.getParameter("phoneNumber"));
+            } else if (paramName.equalsIgnoreCase("country")) {
+                user.setCountry(request.getParameter("country"));
+            } else if (paramName.startsWith(CConstants.WDK_PREFERENCE_GLOBAL_KEY)) {
+                String paramValue = request.getParameter(paramName);
+                user.setGlobalPreference(paramName, paramValue);
+            } else if (paramName.startsWith(CConstants.WDK_PREFERENCE_PROJECT_KEY)) {
+                String paramValue = request.getParameter(paramName);
+                user.setProjectPreference(paramName, paramValue);
+            }
+        }
 
         // update and save the user with user input
         WdkModelBean wdkModel = (WdkModelBean) getServlet().getServletContext().getAttribute(
@@ -76,6 +104,7 @@ public class ProcessProfileAction extends Action {
             request.setAttribute(CConstants.WDK_PROFILE_ERROR_KEY,
                     ex.getMessage());
         }
+
         return forward;
     }
 }
