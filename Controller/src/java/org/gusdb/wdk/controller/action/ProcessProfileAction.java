@@ -4,7 +4,6 @@
 package org.gusdb.wdk.controller.action;
 
 import java.io.File;
-import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.ServletContext;
@@ -34,10 +33,6 @@ public class ProcessProfileAction extends Action {
         // get the current user
         UserBean user = (UserBean) request.getSession().getAttribute(
                 CConstants.WDK_USER_KEY);
-        // fails if the current use is a guest
-        if (user.getGuest())
-            throw new WdkUserException(
-                    "Please login first before you change your profile.");
 
         // if a custom profile page exists, use it; otherwise, use default one
         ServletContext svltCtx = getServlet().getServletContext();
@@ -51,58 +46,61 @@ public class ProcessProfileAction extends Action {
         } else {
             forward = mapping.findForward(CConstants.SHOW_PROFILE_MAPKEY);
         }
-        
-        // clear the preference
-        user.clearPreferences();
+        // fails if the current use is a guest
+        if (user != null && !user.getGuest()) {
 
-        Set params = request.getParameterMap().keySet();
-        for (Object param : params) {
-            String paramName = (String) param;
-            if (paramName.equalsIgnoreCase("firstName")) {
-                user.setFirstName(request.getParameter("firstName"));
-            } else if (paramName.equalsIgnoreCase("lastName")) {
-                user.setLastName(request.getParameter("lastName"));
-            } else if (paramName.equalsIgnoreCase("middleName")) {
-                user.setMiddleName(request.getParameter("middleName"));
-            } else if (paramName.equalsIgnoreCase("title")) {
-                user.setTitle(request.getParameter("title"));
-            } else if (paramName.equalsIgnoreCase("organization")) {
-                user.setOrganization(request.getParameter("organization"));
-            } else if (paramName.equalsIgnoreCase("department")) {
-                user.setDepartment(request.getParameter("department"));
-            } else if (paramName.equalsIgnoreCase("address")) {
-                user.setAddress(request.getParameter("address"));
-            } else if (paramName.equalsIgnoreCase("city")) {
-                user.setCity(request.getParameter("city"));
-            } else if (paramName.equalsIgnoreCase("state")) {
-                user.setState(request.getParameter("state"));
-            } else if (paramName.equalsIgnoreCase("zipCode")) {
-                user.setZipCode(request.getParameter("zipCode"));
-            } else if (paramName.equalsIgnoreCase("phoneNumber")) {
-                user.setPhoneNumber(request.getParameter("phoneNumber"));
-            } else if (paramName.equalsIgnoreCase("country")) {
-                user.setCountry(request.getParameter("country"));
-            } else if (paramName.startsWith(CConstants.WDK_PREFERENCE_GLOBAL_KEY)) {
-                String paramValue = request.getParameter(paramName);
-                user.setGlobalPreference(paramName, paramValue);
-            } else if (paramName.startsWith(CConstants.WDK_PREFERENCE_PROJECT_KEY)) {
-                String paramValue = request.getParameter(paramName);
-                user.setProjectPreference(paramName, paramValue);
+            // clear the preference
+            user.clearPreferences();
+
+            Set params = request.getParameterMap().keySet();
+            for (Object param : params) {
+                String paramName = (String) param;
+                if (paramName.equalsIgnoreCase("firstName")) {
+                    user.setFirstName(request.getParameter("firstName"));
+                } else if (paramName.equalsIgnoreCase("lastName")) {
+                    user.setLastName(request.getParameter("lastName"));
+                } else if (paramName.equalsIgnoreCase("middleName")) {
+                    user.setMiddleName(request.getParameter("middleName"));
+                } else if (paramName.equalsIgnoreCase("title")) {
+                    user.setTitle(request.getParameter("title"));
+                } else if (paramName.equalsIgnoreCase("organization")) {
+                    user.setOrganization(request.getParameter("organization"));
+                } else if (paramName.equalsIgnoreCase("department")) {
+                    user.setDepartment(request.getParameter("department"));
+                } else if (paramName.equalsIgnoreCase("address")) {
+                    user.setAddress(request.getParameter("address"));
+                } else if (paramName.equalsIgnoreCase("city")) {
+                    user.setCity(request.getParameter("city"));
+                } else if (paramName.equalsIgnoreCase("state")) {
+                    user.setState(request.getParameter("state"));
+                } else if (paramName.equalsIgnoreCase("zipCode")) {
+                    user.setZipCode(request.getParameter("zipCode"));
+                } else if (paramName.equalsIgnoreCase("phoneNumber")) {
+                    user.setPhoneNumber(request.getParameter("phoneNumber"));
+                } else if (paramName.equalsIgnoreCase("country")) {
+                    user.setCountry(request.getParameter("country"));
+                } else if (paramName.startsWith(CConstants.WDK_PREFERENCE_GLOBAL_KEY)) {
+                    String paramValue = request.getParameter(paramName);
+                    user.setGlobalPreference(paramName, paramValue);
+                } else if (paramName.startsWith(CConstants.WDK_PREFERENCE_PROJECT_KEY)) {
+                    String paramValue = request.getParameter(paramName);
+                    user.setProjectPreference(paramName, paramValue);
+                }
             }
-        }
 
-        // update and save the user with user input
-        WdkModelBean wdkModel = (WdkModelBean) getServlet().getServletContext().getAttribute(
-                CConstants.WDK_MODEL_KEY);
-        UserFactoryBean factory = wdkModel.getUserFactory();
-        try {
-            factory.saveUser(user);
-            // Update profile succeed
-            request.setAttribute("profileSucceed", true);
-        } catch (WdkUserException ex) {
-            // email exists, notify the user to input again
-            request.setAttribute(CConstants.WDK_PROFILE_ERROR_KEY,
-                    ex.getMessage());
+            // update and save the user with user input
+            WdkModelBean wdkModel = (WdkModelBean) getServlet().getServletContext().getAttribute(
+                    CConstants.WDK_MODEL_KEY);
+            UserFactoryBean factory = wdkModel.getUserFactory();
+            try {
+                factory.saveUser(user);
+                // Update profile succeed
+                request.setAttribute("profileSucceed", true);
+            } catch (WdkUserException ex) {
+                // email exists, notify the user to input again
+                request.setAttribute(CConstants.WDK_PROFILE_ERROR_KEY,
+                        ex.getMessage());
+            }
         }
 
         return forward;

@@ -5,7 +5,6 @@ package org.gusdb.wdk.controller.action;
 
 import java.io.File;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -88,42 +87,45 @@ public class ProcessRegisterAction extends Action {
             }
         }
 
-        // create the user with user input
-        WdkModelBean wdkModel = (WdkModelBean) getServlet().getServletContext().getAttribute(
-                CConstants.WDK_MODEL_KEY);
-        UserFactoryBean factory = wdkModel.getUserFactory();
-        try {
-            UserBean user = factory.createUser(email, lastName, firstName,
-                    middleName, title, organization, department, address, city,
-                    state, zipCode, phoneNumber, country, globalPreferences,
-                    projectPreferences);
-            // registration succeed
-            request.setAttribute("registerSucceed", true);
-        } catch (WdkUserException ex) {
-            // email exists, notify the user to input again
-            request.setAttribute(CConstants.WDK_REGISTER_ERROR_KEY,
-                    ex.getMessage());
+        if (email != null && email.length() != 0) {
+            // create the user with user input
+            WdkModelBean wdkModel = (WdkModelBean) getServlet().getServletContext().getAttribute(
+                    CConstants.WDK_MODEL_KEY);
+            UserFactoryBean factory = wdkModel.getUserFactory();
+            try {
+                UserBean user = factory.createUser(email, lastName, firstName,
+                        middleName, title, organization, department, address,
+                        city, state, zipCode, phoneNumber, country,
+                        globalPreferences, projectPreferences);
+                // registration succeed
+                request.setAttribute("registerSucceed", true);
+            } catch (WdkUserException ex) {
+                // email exists, notify the user to input again
+                request.setAttribute(CConstants.WDK_REGISTER_ERROR_KEY,
+                        ex.getMessage());
 
-            // push back the user input, so that the user doesn't need to type
-            // again
-            request.setAttribute(CConstants.WDK_EMAIL_KEY, email);
-            request.setAttribute("firstName", firstName);
-            request.setAttribute("lastName", lastName);
-            request.setAttribute("middleName", middleName);
-            request.setAttribute("title", title);
-            request.setAttribute("organization", organization);
-            request.setAttribute("department", department);
-            request.setAttribute("address", address);
-            request.setAttribute("city", city);
-            request.setAttribute("state", state);
-            request.setAttribute("zipCode", zipCode);
-            request.setAttribute("phoneNumber", phoneNumber);
-            request.setAttribute("country", country);
-            for (String param : projectPreferences.keySet()) {
-                request.setAttribute(param, projectPreferences.get(param));
-            }
-            for (String param : globalPreferences.keySet()) {
-                request.setAttribute(param, globalPreferences.get(param));
+                // push back the user input, so that the user doesn't need to
+                // type
+                // again
+                request.setAttribute(CConstants.WDK_EMAIL_KEY, email);
+                request.setAttribute("firstName", firstName);
+                request.setAttribute("lastName", lastName);
+                request.setAttribute("middleName", middleName);
+                request.setAttribute("title", title);
+                request.setAttribute("organization", organization);
+                request.setAttribute("department", department);
+                request.setAttribute("address", address);
+                request.setAttribute("city", city);
+                request.setAttribute("state", state);
+                request.setAttribute("zipCode", zipCode);
+                request.setAttribute("phoneNumber", phoneNumber);
+                request.setAttribute("country", country);
+                for (String param : projectPreferences.keySet()) {
+                    request.setAttribute(param, projectPreferences.get(param));
+                }
+                for (String param : globalPreferences.keySet()) {
+                    request.setAttribute(param, globalPreferences.get(param));
+                }
             }
         }
         return forward;
