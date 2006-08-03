@@ -34,11 +34,6 @@ public class ShowProfileAction extends Action {
         if (user.getGuest())
             throw new WdkUserException(
                     "Please login first before you change your profile.");
-        
-        // add global & project preferences to the form
-        ShowProfileForm profileForm = (ShowProfileForm) form;
-        profileForm.addGlobalPreferences(user.getGlobalPreferences());
-        profileForm.addProjectPreferences(user.getProjectPreferences());
 
         // if a custom profile page exists, use it; otherwise, use default one
         ServletContext svltCtx = getServlet().getServletContext();
@@ -50,7 +45,7 @@ public class ShowProfileAction extends Action {
         
         if (ApplicationInitListener.resourceExists(customViewFile, svltCtx)) {
             forward = new ActionForward(customViewFile);
-            forward.setRedirect(true);
+            forward.setRedirect(false);
         } else {
             forward = mapping.findForward(CConstants.SHOW_PROFILE_MAPKEY);
         }
