@@ -33,7 +33,7 @@ public class ShowRegisterAction extends Action {
         ActionForward forward = null;
         if (ApplicationInitListener.resourceExists(customViewFile, svltCtx)) {
             forward = new ActionForward(customViewFile);
-            forward.setRedirect(true);
+            forward.setRedirect(false);
         } else {
             forward = mapping.findForward(CConstants.SHOW_REGISTER_MAPKEY);
         }
