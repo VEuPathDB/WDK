@@ -18,6 +18,7 @@ import java.util.Properties;
 import java.util.Random;
 
 import javax.activation.DataHandler;
+import javax.mail.Address;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
@@ -126,6 +127,9 @@ public class UserFactory {
 
     public void sendEmail(String email, String reply, String subject,
             String content) throws WdkUserException {
+        // TEST
+        System.out.println("Reply email is: " + reply);
+        
         // create properties and get the session
         Properties props = new Properties();
         props.put("mail.smtp.host", smtpServer);
@@ -135,7 +139,8 @@ public class UserFactory {
         // instantiate a message
         try {
             Message message = new MimeMessage(session);
-            message.setFrom(new InternetAddress(registerEmail));
+            message.setFrom(new InternetAddress(reply));
+            message.setReplyTo(new Address[]{new InternetAddress(reply)});
             message.setRecipient(Message.RecipientType.TO, new InternetAddress(
                     email));
             message.setSubject(subject);

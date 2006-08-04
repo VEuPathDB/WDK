@@ -9,6 +9,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.log4j.Logger;
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -27,6 +28,8 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
  */
 public class ProcessResetPasswordAction extends Action {
 
+    private static Logger logger = Logger.getLogger(ProcessResetPasswordAction.class);
+    
     /*
      * (non-Javadoc)
      * 
@@ -39,7 +42,6 @@ public class ProcessResetPasswordAction extends Action {
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
-
         // if a custom profile page exists, use it; otherwise, use default one
         ServletContext svltCtx = getServlet().getServletContext();
         String customViewDir = (String) svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
@@ -55,7 +57,7 @@ public class ProcessResetPasswordAction extends Action {
 
         // get user's input
         String email = request.getParameter("email");
-
+        
         WdkModelBean wdkModel = (WdkModelBean) getServlet().getServletContext().getAttribute(
                 CConstants.WDK_MODEL_KEY);
         UserFactoryBean factory = wdkModel.getUserFactory();
