@@ -74,7 +74,7 @@
       <td align="left"><input type="password" name="newPassword"></td>
     </tr>
     <tr>
-      <td align="right" width="100" nowrap>Last Name: </td>
+      <td align="right" width="100" nowrap>Retype Password: </td>
       <td align="left"><input type="password" name="confirmPassword"></td>
     </tr>
     <tr>
