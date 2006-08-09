@@ -51,7 +51,7 @@ public class ResultFactory implements Serializable {
     /**
      * The name of query history table
      */
-    public static final String TABLE_HISTORY = "wdk_query_history";
+    public static final String TABLE_HISTORY_SUFFIX = "_history";
     public static final String FIELD_USER_ID = "session_id";
     public static final String FIELD_HISTORY_ID = "history_id";
     public static final String FIELD_DATASET_ID = "dataset_id";
@@ -75,7 +75,7 @@ public class ResultFactory implements Serializable {
         this.instanceTableFullName = platform.getTableFullName(schemaName,
                 instanceTableName);
         // get the full name of query history table
-        historyTableName = TABLE_HISTORY;
+        historyTableName = instanceTableName +  TABLE_HISTORY_SUFFIX;
         historyTableFullName = platform.getTableFullName(schemaName,
                 historyTableName);
     }
