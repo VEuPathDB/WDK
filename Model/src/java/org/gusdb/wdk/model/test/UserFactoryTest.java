@@ -75,7 +75,7 @@ public class UserFactoryTest extends TestCase {
      * Test method for 'org.gusdb.wdk.model.user.UserFactory.createGuestUser()'
      */
     public void testCreateGuestUser() {
-        User user = factory.createGuestUser();
+        User user = factory.getGuestUser();
         assertNotNull(user);
         assertTrue(user.isGuest());
     }
