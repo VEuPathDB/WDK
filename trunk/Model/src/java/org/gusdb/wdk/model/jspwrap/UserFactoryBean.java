@@ -33,8 +33,8 @@ public class UserFactoryBean {
      * 
      * @see org.gusdb.wdk.model.user.UserFactory#createGuestUser()
      */
-    public UserBean createGuestUser() {
-        return new UserBean(userFactory.createGuestUser());
+    public UserBean getGuestUser() {
+        return new UserBean(userFactory.getGuestUser());
     }
 
     /*

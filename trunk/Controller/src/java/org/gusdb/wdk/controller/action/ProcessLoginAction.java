@@ -54,7 +54,7 @@ public class ProcessLoginAction extends Action {
         // if guest is null, means the session is timed out, create the guest
         // again
         if (guest == null) {
-            guest = factory.createGuestUser();
+            guest = factory.getGuestUser();
             request.getSession().setAttribute(CConstants.WDK_USER_KEY, guest);
         }
 

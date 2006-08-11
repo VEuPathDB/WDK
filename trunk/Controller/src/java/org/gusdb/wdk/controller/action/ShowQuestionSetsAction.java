@@ -62,7 +62,7 @@ public class ShowQuestionSetsAction extends Action {
         HttpSession session = request.getSession();
         // create a guest user
         try {
-            UserBean guest = wdkModel.getUserFactory().createGuestUser();
+            UserBean guest = wdkModel.getUserFactory().getGuestUser();
 
             session.setAttribute(CConstants.WDK_USER_KEY, guest);
         } catch (WdkUserException ex) {

@@ -281,7 +281,7 @@ public class UserFactory {
         }
     }
 
-    public User createGuestUser() {
+    public User getGuestUser() {
         User user = new User("guest", this);
         user.setFirstName("Guest");
         user.setGuest(true);
