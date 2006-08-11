@@ -44,7 +44,7 @@ public class ProcessLogoutAction extends Action {
         WdkModelBean wdkModel = (WdkModelBean) getServlet().getServletContext().getAttribute(
                 CConstants.WDK_MODEL_KEY);
         UserFactoryBean factory = wdkModel.getUserFactory();
-        UserBean guest = factory.createGuestUser();
+        UserBean guest = factory.getGuestUser();
         request.getSession().setAttribute(CConstants.WDK_USER_KEY, guest);
 
         return forward;
