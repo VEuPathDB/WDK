@@ -1,4 +1,14 @@
 ------------------------------------------------------------------------------
+ooooooooooooooooooooooooooo  WDK Version 1.12  ooooooooooooooooooooooooooooooo
+------------------------------------------------------------------------------
+
+Summary: this is a version that supports PlasmoDB 5.1 general release
+         (http://www.plasmodb.org/). In addition to fixes of issues and bugs
+         revealed by extensive QA of the above site, we have user authentication
+         functions, and user comments for authorized users.
+
+
+------------------------------------------------------------------------------
 ooooooooooooooooooooooooooo  WDK Version 1.11  ooooooooooooooooooooooooooooooo
 ------------------------------------------------------------------------------
 
