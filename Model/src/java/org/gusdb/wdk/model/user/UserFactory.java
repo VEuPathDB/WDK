@@ -12,7 +12,9 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
@@ -129,7 +131,7 @@ public class UserFactory {
             String content) throws WdkUserException {
         // TEST
         System.out.println("Reply email is: " + reply);
-        
+
         // create properties and get the session
         Properties props = new Properties();
         props.put("mail.smtp.host", smtpServer);
@@ -140,7 +142,7 @@ public class UserFactory {
         try {
             Message message = new MimeMessage(session);
             message.setFrom(new InternetAddress(reply));
-            message.setReplyTo(new Address[]{new InternetAddress(reply)});
+            message.setReplyTo(new Address[] { new InternetAddress(reply) });
             message.setRecipient(Message.RecipientType.TO, new InternetAddress(
                     email));
             message.setSubject(subject);
@@ -192,12 +194,24 @@ public class UserFactory {
             String department, String address, String city, String state,
             String zipCode, String phoneNumber, String country,
             Map<String, String> globalPreferences,
-            Map<String, String> projectPreferences)
+            Map<String, String> projectPreferences) throws WdkUserException {
+        return createUser(email, lastName, firstName, middleName, title,
+                organization, department, address, city, state, zipCode,
+                phoneNumber, country, globalPreferences, projectPreferences,
+                true);
+    }
+
+    public User createUser(String email, String lastName, String firstName,
+            String middleName, String title, String organization,
+            String department, String address, String city, String state,
+            String zipCode, String phoneNumber, String country,
+            Map<String, String> globalPreferences,
+            Map<String, String> projectPreferences, boolean resetPwd)
             throws WdkUserException {
         if (email == null)
             throw new WdkUserException("The user's email cannot be empty.");
         // format the info
-        email = email.trim().toLowerCase();
+        email = email.trim();
         if (email.length() == 0)
             throw new WdkUserException("The user's email cannot be empty.");
 
@@ -255,7 +269,7 @@ public class UserFactory {
             user.addUserRole(defaultRole);
             user.setGuest(false);
             user.setRefreshInterval(REGISTERED_REFRESH_INTERVAL);
-            
+
             // save preferences
             for (String param : globalPreferences.keySet()) {
                 user.setGlobalPreference(param, globalPreferences.get(param));
@@ -266,7 +280,7 @@ public class UserFactory {
             savePreferences(user);
 
             // generate a random password, and send to the user via email
-            resetPassword(user);
+            if (resetPwd) resetPassword(user);
 
             return user;
         } catch (SQLException ex) {
@@ -292,7 +306,7 @@ public class UserFactory {
     public User authenticate(String email, String password)
             throws WdkUserException {
         // convert email to lower case
-        email = email.trim().toLowerCase();
+        email = email.trim();
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
@@ -336,7 +350,7 @@ public class UserFactory {
      */
     public User loadUser(String email) throws WdkUserException {
         // convert to lower case
-        email = email.trim().toLowerCase();
+        email = email.trim();
 
         PreparedStatement psUser = null;
         PreparedStatement psRole = null;
@@ -378,7 +392,7 @@ public class UserFactory {
                 user.addUserRole(rsRole.getString("role"));
             }
             SqlUtils.closeResultSet(rsRole);
-            
+
             // load user's preferences
             loadPreferences(user);
             return user;
@@ -604,7 +618,7 @@ public class UserFactory {
                 String prefName = rsProject.getString("preference_name");
                 String prefValue = rsProject.getString("preference_value");
                 user.setProjectPreference(prefName, prefValue);
-                
+
             }
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
@@ -649,7 +663,7 @@ public class UserFactory {
 
     void changePassword(String email, String oldPassword, String newPassword,
             String confirmPassword) throws WdkUserException {
-        email = email.trim().toLowerCase();
+        email = email.trim();
 
         // encrypt password
         PreparedStatement ps = null;
@@ -691,8 +705,8 @@ public class UserFactory {
 
     }
 
-    void savePassword(String email, String password) throws WdkUserException {
-        email = email.trim().toLowerCase();
+    public void savePassword(String email, String password) throws WdkUserException {
+        email = email.trim();
         PreparedStatement ps = null;
         try {
             // encrypt the password, and save it
@@ -716,7 +730,7 @@ public class UserFactory {
     }
 
     private boolean isExist(String email) throws WdkUserException {
-        email = email.trim().toLowerCase();
+        email = email.trim();
         // check if user exists in the database. if not, fail and ask to create
         // the user first
         PreparedStatement ps = null;
@@ -750,6 +764,62 @@ public class UserFactory {
             buffer.append(Integer.toHexString(code & 0xFF));
         }
         return buffer.toString();
+    }
+    
+    public User[] queryUsers(String emailPattern) throws WdkUserException {
+        String sql = "SELECT email FROM " + userTable;;
+        if (emailPattern != null && emailPattern.length() > 0) {
+            emailPattern = emailPattern.replace('*', '%');
+            emailPattern = emailPattern.replaceAll("'", "");
+            sql += " WHERE email LIKE '" + emailPattern + "'";
+        }
+        sql += " ORDER BY email";
+        List<User> users = new ArrayList<User>();
+        ResultSet rs = null;
+        try {
+            rs = SqlUtils.getResultSet(dataSource, sql);
+            while (rs.next()) {
+                String email = rs.getString("email");
+                User user = loadUser(email);
+                users.add(user);
+            }
+        } catch (SQLException ex) {
+            throw new WdkUserException(ex);
+        } finally {
+            try {
+                SqlUtils.closeResultSet(rs);
+            } catch (SQLException ex) {
+                throw new WdkUserException(ex);
+            }
+        }
+        User[] array = new User[users.size()];
+        users.toArray(array);
+        return array;
+    }
+    
+    public void deleteUser(String email) throws WdkUserException {
+        email = email.replaceAll("'", "");
+        String where = " WHERE email = '" + email + "'";
+        try {
+            // delete preference
+            String sql = "DELETE FROM " + preferenceTable + where;
+            SqlUtils.executeUpdate(dataSource, sql);
+            
+            // delete history
+            sql = "DELETE FROM " + historyTable + where;
+            SqlUtils.executeUpdate(dataSource, sql);
+            
+            // delete user roles
+            sql = "DELETE FROM " + roleTable + where;
+            SqlUtils.executeUpdate(dataSource, sql);
+            
+            // delete user
+            sql = "DELETE FROM " + userTable + where;
+            SqlUtils.executeUpdate(dataSource, sql);
+        } catch (SQLException ex) {
+            throw new WdkUserException(ex);
+        }
+        
     }
 
     public static void main(String[] args) {
