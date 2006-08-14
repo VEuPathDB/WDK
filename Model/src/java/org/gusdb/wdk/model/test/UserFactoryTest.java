@@ -63,6 +63,11 @@ public class UserFactoryTest extends TestCase {
 
     public static void main(String[] args) throws MalformedURLException,
             WdkModelException, WdkUserException {
+        if (args.length <1) {
+            printUsage("Command is missing.");
+            System.exit(-1);
+        }
+        
         // determine the command
         String cmd = args[0].trim();
         String[] subArgs = new String[args.length - 1];
