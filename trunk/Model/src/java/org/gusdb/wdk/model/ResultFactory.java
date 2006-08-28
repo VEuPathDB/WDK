@@ -12,7 +12,6 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
-import java.util.Map;
 
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
@@ -25,8 +24,6 @@ import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.implementation.SqlResultList;
 import org.gusdb.wdk.model.implementation.SqlUtils;
-
-import sun.net.www.content.image.gif;
 
 /**
  * How the QueryInstance table works.

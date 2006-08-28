@@ -194,7 +194,9 @@ public class DynamicAttributeSet implements Serializable {
             sqlWhere += " AND " + resultTableMacro + "." + pkColNames[1]
                     + " = " + "$$" + RecordClass.PROJECT_ID_NAME + "$$";
 
-        // the use of "dual" causes trouble on PostgreSQL
+        // the use of "dual" causes trouble on PostgreSQL.
+        // Solution: create a "dual" table in PostgreSQL - consider putting the 
+        // table creation code into wdkCache -new
         String sql = "SELECT " + sqlSelect + " FROM dual" + sqlWhere;
 
         ((SqlQuery) attributesQuery).setSql(sql);
