@@ -24,8 +24,13 @@ public class DeleteHistoryAnswerAction extends Action {
 	String ua_id_str = request.getParameter(CConstants.USER_ANSWER_ID);
 	if (ua_id_str != null) {
 	    int ua_id = Integer.parseInt(ua_id_str);
-        UserBean wdkUser = (UserBean)request.getSession().getAttribute(CConstants.WDK_USER_KEY);
-	    wdkUser.deleteUserAnswer(ua_id);
+	    UserBean wdkUser = (UserBean)request.getSession().getAttribute(CConstants.WDK_USER_KEY);
+	    try {
+		wdkUser.deleteUserAnswer(ua_id);
+	    } catch (Exception e) {
+		e.printStackTrace();
+		//prevent refresh of page after delete from breaking
+	    }
 	} else {
 	    throw new Exception ("no user answer id is given for deletion");
 	}
