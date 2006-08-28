@@ -1,11 +1,18 @@
 package org.gusdb.wdk.model;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.GregorianCalendar;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
@@ -18,6 +25,8 @@ import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.implementation.SqlResultList;
 import org.gusdb.wdk.model.implementation.SqlUtils;
+
+import sun.net.www.content.image.gif;
 
 /**
  * How the QueryInstance table works.
@@ -44,7 +53,8 @@ public class ResultFactory implements Serializable {
      */
     private static final long serialVersionUID = -494603755802202030L;
 
-    //private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.model.ResultFactory");
+    // private static final Logger logger =
+    // WdkLogManager.getLogger("org.gusdb.wdk.model.ResultFactory");
     private static Logger logger = Logger.getLogger(ResultFactory.class);
 
     // the following constants are used by persistent query history
@@ -67,17 +77,25 @@ public class ResultFactory implements Serializable {
     private String historyTableName;
     private String historyTableFullName;
 
+    private boolean enableQueryLogger;
+    private String queryLoggerFile;
+
     public ResultFactory(RDBMSPlatformI platform, String schemaName,
-            String instanceTableName) {
+            String instanceTableName, boolean enableQueryLogger,
+            String queryLoggerFile) {
         this.platform = platform;
         this.schemaName = schemaName;
         this.instanceTableName = instanceTableName;
         this.instanceTableFullName = platform.getTableFullName(schemaName,
                 instanceTableName);
         // get the full name of query history table
-        historyTableName = instanceTableName +  TABLE_HISTORY_SUFFIX;
+        historyTableName = instanceTableName + TABLE_HISTORY_SUFFIX;
         historyTableFullName = platform.getTableFullName(schemaName,
                 historyTableName);
+
+        // configure query logger
+        this.enableQueryLogger = enableQueryLogger;
+        this.queryLoggerFile = queryLoggerFile;
     }
 
     // /////////////////////////////////////////////////////////////////////////
@@ -86,9 +104,11 @@ public class ResultFactory implements Serializable {
 
     public synchronized ResultList getResult(QueryInstance instance)
             throws WdkModelException {
-    	//logger.debug("QueryInstance " + instance.getQuery().getFullName() + " persistent: " + instance.getIsPersistent());
-    	
-        ResultList resultList = instance.getIsPersistent() ? getPersistentResult(instance)
+        // logger.debug("QueryInstance " + instance.getQuery().getFullName() + "
+        // persistent: " + instance.getIsPersistent());
+
+        ResultList resultList = instance.getIsPersistent()
+                ? getPersistentResult(instance)
                 : instance.getNonpersistentResult();
         return resultList;
     }
@@ -142,7 +162,8 @@ public class ResultFactory implements Serializable {
             throws WdkModelException {
         String newline = System.getProperty("line.separator");
 
-        String nameToUse = (noSchemaOutput == true ? instanceTableName
+        String nameToUse = (noSchemaOutput == true
+                ? instanceTableName
                 : instanceTableFullName);
 
         // Format sql to create table
@@ -188,7 +209,8 @@ public class ResultFactory implements Serializable {
             throws WdkModelException {
         String newline = System.getProperty("line.separator");
 
-        String nameToUse = (noSchemaOutput == true ? historyTableName
+        String nameToUse = (noSchemaOutput == true
+                ? historyTableName
                 : historyTableFullName);
 
         // Format sql to create table
@@ -244,7 +266,8 @@ public class ResultFactory implements Serializable {
 
         // Query for the names of all cached result tables
         //
-        String nameToUse = (noSchemaOutput == true ? instanceTableName
+        String nameToUse = (noSchemaOutput == true
+                ? instanceTableName
                 : instanceTableFullName);
         StringBuffer s = new StringBuffer();
         s.append("select result_table from " + instanceTableFullName);
@@ -292,7 +315,8 @@ public class ResultFactory implements Serializable {
             throws WdkModelException {
         try {
             resetCache(noSchemaOutput);
-            String nameToUse = (noSchemaOutput == true ? instanceTableName
+            String nameToUse = (noSchemaOutput == true
+                    ? instanceTableName
                     : instanceTableFullName);
             System.out.println("Dropping table " + nameToUse);
             platform.dropTable(schemaName + "." + instanceTableName);
@@ -300,7 +324,8 @@ public class ResultFactory implements Serializable {
             platform.dropSequence(instanceTableFullName + "_pkseq");
             // and also drop the history cache
             System.out.println("Dropping table "
-                    + (noSchemaOutput == true ? historyTableName
+                    + (noSchemaOutput == true
+                            ? historyTableName
                             : historyTableFullName));
             platform.dropTable(schemaName + "." + historyTableName);
         } catch (SQLException e) {
@@ -309,14 +334,15 @@ public class ResultFactory implements Serializable {
     }
 
     private synchronized void resetHistoryCache(boolean noSchemaOutput)
-            throws  SQLException {
-        String nameToUse = (noSchemaOutput == true ? historyTableName
+            throws SQLException {
+        String nameToUse = (noSchemaOutput == true
+                ? historyTableName
                 : historyTableFullName);
 
         System.out.println("Deleting all rows from " + nameToUse);
 
-            SqlUtils.executeUpdate(platform.getDataSource(), "delete from "
-                    + historyTableFullName);
+        SqlUtils.executeUpdate(platform.getDataSource(), "delete from "
+                + historyTableFullName);
     }
 
     public RDBMSPlatformI getRDBMSPlatform() {
@@ -347,9 +373,8 @@ public class ResultFactory implements Serializable {
                 + resultTableName + "'");
         sql.append(" where query_instance_id = " + queryInstanceId.toString());
         try {
-            //int numRows = 
-                SqlUtils.executeUpdate(platform.getDataSource(),
-                    sql.toString());
+            // int numRows =
+            SqlUtils.executeUpdate(platform.getDataSource(), sql.toString());
         } catch (SQLException e) {
             throw new WdkModelException(e);
         }
@@ -381,6 +406,13 @@ public class ResultFactory implements Serializable {
             throws WdkModelException {
 
         String resultTableFullName;
+
+        // enable query logger
+        if (enableQueryLogger) try {
+            logQuery(instance);
+        } catch (IOException ex) {
+            throw new WdkModelException(ex);
+        }
 
         // Construct SQL query to retrieve the requested table's name
         //
@@ -460,7 +492,8 @@ public class ResultFactory implements Serializable {
         // format values
         String queryName = "'" + instance.getQuery().getFullName() + "'";
         sessionId = (sessionId != null) ? ("'" + sessionId + "'") : "null";
-        datasetName = (datasetName != null) ? ("'" + datasetName + "'")
+        datasetName = (datasetName != null)
+                ? ("'" + datasetName + "'")
                 : "null";
         String pVals = formatInstanceParamVals(instance);
         int cached = instance.getIsCacheable() ? 1 : 0;
@@ -480,11 +513,9 @@ public class ResultFactory implements Serializable {
                 + sessionId + ", " + datasetName + ", " + datefunc + " "
                 + pVals + ")");
 
-
         try {
-            //int numRows = 
-            SqlUtils.executeUpdate(platform.getDataSource(),
-                    sqlb.toString());
+            // int numRows =
+            SqlUtils.executeUpdate(platform.getDataSource(), sqlb.toString());
         } catch (SQLException e) {
             throw new WdkModelException(e);
         }
@@ -510,13 +541,13 @@ public class ResultFactory implements Serializable {
         while (paramValues.hasNext()) {
             String val = (String) paramValues.next();
             // handle empty string
-            if (val != null && val.length()> 0) {
-            String cleaned = platform.cleanStringValue(val);
+            if (val != null && val.length() > 0) {
+                String cleaned = platform.cleanStringValue(val);
 
-            // if (count != 0) {
-            sb.append(", ");
-            // }
-            sb.append("'" + cleaned + "'");
+                // if (count != 0) {
+                sb.append(", ");
+                // }
+                sb.append("'" + cleaned + "'");
             } else {
                 sb.append(", null");
             }
@@ -567,10 +598,10 @@ public class ResultFactory implements Serializable {
             String val = (String) iter.next();
             // handle null value case
             if (val != null && val.length() > 0) {
-            String cleaned = platform.cleanStringValue(val);
-            sb.append(" and param" + i++ + " = '");
-            sb.append(cleaned);
-            sb.append("'");
+                String cleaned = platform.cleanStringValue(val);
+                sb.append(" and param" + i++ + " = '");
+                sb.append(cleaned);
+                sb.append("'");
             } else {
                 sb.append(" and param" + i++ + " is null");
             }
@@ -598,9 +629,8 @@ public class ResultFactory implements Serializable {
     // } catch (SQLException e) {
     // throw new WdkModelException(e);
     // }
-    //        return tables.length != 0;
+    // return tables.length != 0;
     // }
-
     private ResultSet fetchCachedResult(String resultTableName)
             throws WdkModelException {
 
@@ -659,6 +689,59 @@ public class ResultFactory implements Serializable {
         return queryInstanceId;
     }
 
+    private void logQuery(QueryInstance instance) throws WdkModelException,
+            IOException {
+        Calendar cal = GregorianCalendar.getInstance();
+
+        // decide the name of the logger file
+        int pos = queryLoggerFile.lastIndexOf('.');
+        StringBuffer name = new StringBuffer();
+        name.append((pos < 0) ? queryLoggerFile : queryLoggerFile.substring(0,
+                pos));
+        name.append("_" + cal.get(Calendar.MONTH));
+        name.append("-" + cal.get(Calendar.YEAR));
+        if (pos >= 0) name.append(queryLoggerFile.substring(pos));
+        File file = new File(name.toString());
+        if (!file.exists()) file.createNewFile();
+
+        // compose the log
+        StringBuffer log = new StringBuffer();
+
+        // log time
+        SimpleDateFormat format = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
+        log.append(format.format(cal.getTime()));
+
+        // log query full name
+        log.append("\t-query " + instance.getQuery().getFullName());
+
+        // log parameters
+        Param[] params = instance.getQuery().getParams();
+        if (params.length > 0) {
+            log.append("\t-params ");
+            for (Param param : params) {
+                String key = param.getName();
+                String value = (String) (instance.getValuesMap().get(key));
+                log.append(" " + key + " \"" + value + "\"");
+            }
+        }
+
+        // now write the log onto a file
+        try {
+            PrintWriter out = new PrintWriter(new FileWriter(file, true));
+            out.println(log.toString());
+            out.close();
+        } catch (IOException ex) {
+            // cannot lock and write to the log file, try it again after a short
+            // sleep;
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException ex1) {}
+            PrintWriter out = new PrintWriter(new FileWriter(file));
+            out.println(log.toString());
+            out.close();
+        }
+    }
+
     // ////////////////////////////////////////////////////////////////////
     // /// Static methods
     // ////////////////////////////////////////////////////////////////////
@@ -697,6 +780,9 @@ public class ResultFactory implements Serializable {
             Integer maxActive = modelConfig.getMaxActive();
             Integer initialSize = modelConfig.getInitialSize();
 
+            boolean enableQueryLogger = modelConfig.isEnableQueryLogger();
+            String queryLoggerFile = modelConfig.getQueryLoggerFile();
+
             RDBMSPlatformI platform = (RDBMSPlatformI) Class.forName(
                     platformClass).newInstance();
             platform.init(connectionUrl, login, password, minIdle, maxIdle,
@@ -704,7 +790,7 @@ public class ResultFactory implements Serializable {
                     modelConfigXmlFile.getAbsolutePath());
 
             ResultFactory factory = new ResultFactory(platform, login,
-                    instanceTableName);
+                    instanceTableName, enableQueryLogger, queryLoggerFile);
 
             if (newCache) factory.createCache(maxQueryParams.intValue(),
                     noSchemaOutput);
