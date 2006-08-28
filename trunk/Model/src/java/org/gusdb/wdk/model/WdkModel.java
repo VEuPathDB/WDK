@@ -94,9 +94,11 @@ public class WdkModel {
         File xmlDataDir = new File(System.getProperty("xmlDataDir"));
 
         try {
-            WdkModel model = ModelXmlParser.parseXmlFile(modelXmlFile.toURL(),
-                    modelPropFile.toURL(), schemaFile.toURL(),
-                    xmlSchemaFile.toURL(), modelConfigXmlFile.toURL());
+            WdkModel model = ModelXmlParser.parseXmlFile(
+                    modelXmlFile.toURI().toURL(),
+                    modelPropFile.toURI().toURL(), schemaFile.toURI().toURL(),
+                    xmlSchemaFile.toURI().toURL(), 
+                    modelConfigXmlFile.toURI().toURL());
             model.setXmlDataDir(xmlDataDir);
             return model;
         } catch (java.net.MalformedURLException e) {
@@ -424,8 +426,7 @@ public class WdkModel {
 
     public void configure(URL modelConfigXmlFileURL) throws Exception {
 
-        ModelConfig modelConfig = ModelConfigParser
-                .parseXmlFile(modelConfigXmlFileURL);
+        ModelConfig modelConfig = ModelConfigParser.parseXmlFile(modelConfigXmlFileURL);
         String fileName = modelConfigXmlFileURL.getFile();
         String connectionUrl = modelConfig.getConnectionUrl();
         String login = modelConfig.getLogin();
@@ -438,12 +439,10 @@ public class WdkModel {
         Integer maxActive = modelConfig.getMaxActive();
         Integer initialSize = modelConfig.getInitialSize();
 
-        RDBMSPlatformI platform = (RDBMSPlatformI) Class.forName(platformClass)
-                .newInstance();
+        RDBMSPlatformI platform = (RDBMSPlatformI) Class.forName(platformClass).newInstance();
 
         // also load the connection info for authentication database
-        String authenPlatformClass = modelConfig
-                .getAuthenticationPlatformClass();
+        String authenPlatformClass = modelConfig.getAuthenticationPlatformClass();
         String authenLogin = modelConfig.getAuthenticationLogin();
         String authenPassword = modelConfig.getAuthenticationPassword();
         String authenConnection = modelConfig.getAuthenticationConnectionUrl();
@@ -457,32 +456,35 @@ public class WdkModel {
         String registerEmail = modelConfig.getRegisterEmail();
         String emailSubject = modelConfig.getEmailSubject();
         String emailContent = modelConfig.getEmailContent();
+        
+        boolean enableQueryLogger = modelConfig.isEnableQueryLogger();
+        String queryLoggerFile = modelConfig.getQueryLoggerFile();
 
         // initialize authentication factory
-	if (authenPlatformClass != null && !"".equals(authenPlatformClass)) {
-	    authenPlatform = (RDBMSPlatformI) Class.forName(authenPlatformClass)
-                .newInstance();
-	    authenPlatform.init(authenConnection, authenLogin, authenPassword,
-				minIdle, maxIdle, maxWait, maxActive, initialSize, fileName);
-	    DataSource dataSource = authenPlatform.getDataSource();
-	    UserFactory.initialize(this, this.name, dataSource, userTable, roleTable,
-				   historyTable, preferenceTable, defaultRole, smtpServer,
-                   registerEmail, emailSubject, emailContent);
-	} else {
-	    UserFactory.initialize(this, this.name, null, null, null, null, null, null, null, null, null, null);
-	}
+        if (authenPlatformClass != null && !"".equals(authenPlatformClass)) {
+            authenPlatform = (RDBMSPlatformI) Class.forName(authenPlatformClass).newInstance();
+            authenPlatform.init(authenConnection, authenLogin, authenPassword,
+                    minIdle, maxIdle, maxWait, maxActive, initialSize, fileName);
+            DataSource dataSource = authenPlatform.getDataSource();
+            UserFactory.initialize(this, this.name, dataSource, userTable,
+                    roleTable, historyTable, preferenceTable, defaultRole,
+                    smtpServer, registerEmail, emailSubject, emailContent);
+        } else {
+            UserFactory.initialize(this, this.name, null, null, null, null,
+                    null, null, null, null, null, null);
+        }
 
         platform.init(connectionUrl, login, password, minIdle, maxIdle,
                 maxWait, maxActive, initialSize, fileName);
         ResultFactory resultFactory = new ResultFactory(platform, login,
-                instanceTable);
+                instanceTable, enableQueryLogger, queryLoggerFile);
         this.platform = platform;
         this.webServiceUrl = modelConfig.getWebServiceUrl();
         this.resultFactory = resultFactory;
     }
 
     public void configure(File modelConfigXmlFile) throws Exception {
-        configure(modelConfigXmlFile.toURL());
+        configure(modelConfigXmlFile.toURI().toURL());
     }
 
     public RDBMSPlatformI getRDBMSPlatform() {

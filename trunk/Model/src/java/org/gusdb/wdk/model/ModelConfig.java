@@ -31,12 +31,16 @@ public class ModelConfig {
     private String preferenceTable;
     private String defaultRole;
     private String smtpServer;
-    
+
     // the information for registration email
     private String registerEmail;
     private String emailSubject;
     private String emailContent;
-    
+
+    // query logger property
+    private boolean enableQueryLogger = false;
+    private String queryLoggerFile;
+
     public ModelConfig() {}
 
     public void setPlatformClass(String platformClass) {
@@ -143,8 +147,8 @@ public class ModelConfig {
     }
 
     /**
-     * @param authenticationConnectionUrl
-     *            The authenticationConnectionUrl to set.
+     * @param authenticationConnectionUrl The authenticationConnectionUrl to
+     *            set.
      */
     public void setAuthenticationConnectionUrl(
             String authenticationConnectionUrl) {
@@ -159,8 +163,7 @@ public class ModelConfig {
     }
 
     /**
-     * @param authenticationLogin
-     *            The authenticationLogin to set.
+     * @param authenticationLogin The authenticationLogin to set.
      */
     public void setAuthenticationLogin(String authenticationLogin) {
         this.authenticationLogin = authenticationLogin;
@@ -174,8 +177,7 @@ public class ModelConfig {
     }
 
     /**
-     * @param authenticationPassword
-     *            The authenticationPassword to set.
+     * @param authenticationPassword The authenticationPassword to set.
      */
     public void setAuthenticationPassword(String authenticationPassword) {
         this.authenticationPassword = authenticationPassword;
@@ -189,8 +191,7 @@ public class ModelConfig {
     }
 
     /**
-     * @param historyTable
-     *            The historyTable to set.
+     * @param historyTable The historyTable to set.
      */
     public void setHistoryTable(String historyTable) {
         this.historyTable = historyTable;
@@ -204,8 +205,7 @@ public class ModelConfig {
     }
 
     /**
-     * @param instanceTable
-     *            The instanceTable to set.
+     * @param instanceTable The instanceTable to set.
      */
     public void setInstanceTable(String instanceTable) {
         this.instanceTable = instanceTable;
@@ -219,8 +219,7 @@ public class ModelConfig {
     }
 
     /**
-     * @param preferenceTable
-     *            The preferenceTable to set.
+     * @param preferenceTable The preferenceTable to set.
      */
     public void setPreferenceTable(String preferenceTable) {
         this.preferenceTable = preferenceTable;
@@ -234,8 +233,7 @@ public class ModelConfig {
     }
 
     /**
-     * @param defaultRole
-     *            The defaultRole to set.
+     * @param defaultRole The defaultRole to set.
      */
     public void setDefaultRole(String defaultRole) {
         this.defaultRole = defaultRole;
@@ -249,8 +247,7 @@ public class ModelConfig {
     }
 
     /**
-     * @param userTable
-     *            The userTable to set.
+     * @param userTable The userTable to set.
      */
     public void setUserTable(String userTable) {
         this.userTable = userTable;
@@ -264,8 +261,8 @@ public class ModelConfig {
     }
 
     /**
-     * @param authenticationPlatformClass
-     *            The authenticationPlatformClass to set.
+     * @param authenticationPlatformClass The authenticationPlatformClass to
+     *            set.
      */
     public void setAuthenticationPlatformClass(
             String authenticationPlatformClass) {
@@ -280,8 +277,7 @@ public class ModelConfig {
     }
 
     /**
-     * @param roleTable
-     *            The roleTable to set.
+     * @param roleTable The roleTable to set.
      */
     public void setRoleTable(String roleTable) {
         this.roleTable = roleTable;
@@ -295,14 +291,12 @@ public class ModelConfig {
     }
 
     /**
-     * @param smtpServer
-     *            The smtpServer to set.
+     * @param smtpServer The smtpServer to set.
      */
     public void setSmtpServer(String smtpServer) {
         this.smtpServer = smtpServer;
     }
 
-    
     /**
      * @return Returns the emailContent.
      */
@@ -310,7 +304,6 @@ public class ModelConfig {
         return emailContent;
     }
 
-    
     /**
      * @param emailContent The emailContent to set.
      */
@@ -318,7 +311,6 @@ public class ModelConfig {
         this.emailContent = emailContent;
     }
 
-    
     /**
      * @return Returns the emailSubject.
      */
@@ -326,7 +318,6 @@ public class ModelConfig {
         return emailSubject;
     }
 
-    
     /**
      * @param emailSubject The emailSubject to set.
      */
@@ -334,7 +325,6 @@ public class ModelConfig {
         this.emailSubject = emailSubject;
     }
 
-    
     /**
      * @return Returns the registerEmail.
      */
@@ -342,13 +332,39 @@ public class ModelConfig {
         return registerEmail;
     }
 
-    
     /**
      * @param registerEmail The registerEmail to set.
      */
     public void setRegisterEmail(String registerEmail) {
         this.registerEmail = registerEmail;
     }
-    
-    
+
+    /**
+     * @return the enableQueryLogger
+     */
+    public boolean isEnableQueryLogger() {
+        return enableQueryLogger;
+    }
+
+    /**
+     * @param enableQueryLogger the enableQueryLogger to set
+     */
+    public void setEnableQueryLogger(boolean enableQueryLogger) {
+        this.enableQueryLogger = enableQueryLogger;
+    }
+
+    /**
+     * @return the queryLoggerFile
+     */
+    public String getQueryLoggerFile() {
+        return queryLoggerFile;
+    }
+
+    /**
+     * @param queryLoggerFile the queryLoggerFile to set
+     */
+    public void setQueryLoggerFile(String queryLoggerFile) {
+        this.queryLoggerFile = queryLoggerFile;
+    }
+
 }
