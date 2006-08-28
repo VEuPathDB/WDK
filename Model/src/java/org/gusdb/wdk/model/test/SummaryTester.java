@@ -114,7 +114,7 @@ public class SummaryTester {
         
         // HACK
         // prevent the app from exiting
-        while(true){}
+        // while(true){}
     }
 
     private static void writeSummaryAsXml(Question question,
