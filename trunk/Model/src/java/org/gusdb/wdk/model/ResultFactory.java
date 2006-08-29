@@ -103,6 +103,13 @@ public class ResultFactory implements Serializable {
             throws WdkModelException {
         // logger.debug("QueryInstance " + instance.getQuery().getFullName() + "
         // persistent: " + instance.getIsPersistent());
+            
+//        // enable query logger
+//        if (instance.getIsPersistent() && enableQueryLogger) try {
+//            logQuery(instance);
+//        } catch (IOException ex) {
+//            throw new WdkModelException(ex);
+//        }
 
         ResultList resultList = instance.getIsPersistent()
                 ? getPersistentResult(instance)
@@ -119,7 +126,14 @@ public class ResultFactory implements Serializable {
                     "Attempting to get a page a fgetNonpersistentResultrom non-perstent result");
         }
 
-        String resultTableName = getResultTableName(instance);
+        // enable query logger
+        if (enableQueryLogger) try {
+            logQuery(instance);
+        } catch (IOException ex) {
+            throw new WdkModelException(ex);
+        }
+        
+       String resultTableName = getResultTableName(instance);
         ResultSet rs = fetchCachedResultPage(resultTableName, startRow, endRow);
         return new SqlResultList(instance, resultTableName, rs);
     }
@@ -404,13 +418,6 @@ public class ResultFactory implements Serializable {
 
         String resultTableFullName;
 
-        // enable query logger
-        if (enableQueryLogger) try {
-            logQuery(instance);
-        } catch (IOException ex) {
-            throw new WdkModelException(ex);
-        }
-
         // Construct SQL query to retrieve the requested table's name
         //
         StringBuffer sqlb = new StringBuffer();
@@ -688,6 +695,10 @@ public class ResultFactory implements Serializable {
 
     private void logQuery(QueryInstance instance) throws WdkModelException,
             IOException {
+//        // TEST
+//        try { throw new Exception("Inocation path test."); } 
+//        catch(Exception ex) {ex.printStackTrace();}
+        
         Calendar cal = GregorianCalendar.getInstance();
 
         // decide the name of the logger file
@@ -714,7 +725,7 @@ public class ResultFactory implements Serializable {
         // log parameters
         Param[] params = instance.getQuery().getParams();
         if (params.length > 0) {
-            log.append("\t-params ");
+            log.append("\t-params");
             for (Param param : params) {
                 String key = param.getName();
                 String value = (String) (instance.getValuesMap().get(key));
@@ -723,19 +734,23 @@ public class ResultFactory implements Serializable {
         }
 
         // now write the log onto a file
+        PrintWriter out = null;
         try {
-            PrintWriter out = new PrintWriter(new FileWriter(file, true));
+            out = new PrintWriter(new FileWriter(file, true));
             out.println(log.toString());
-            out.close();
         } catch (IOException ex) {
             // cannot lock and write to the log file, try it again after a short
             // sleep;
             try {
                 Thread.sleep(100);
             } catch (InterruptedException ex1) {}
-            PrintWriter out = new PrintWriter(new FileWriter(file));
+            out = new PrintWriter(new FileWriter(file));
             out.println(log.toString());
-            out.close();
+        } finally {
+            if (out != null) {
+                out.flush();
+                out.close();
+            }
         }
     }
 

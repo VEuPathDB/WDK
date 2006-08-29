@@ -35,7 +35,7 @@ public class SqlUtils {
 
 	/* debug flag -- added by Jerric
 	 */
-	private static boolean debug = true;
+	private static boolean debug = false;
 
 	// private static final Logger logger =
 	// WdkLogManager.getLogger("org.gusdb.wdk.model.implementation.SqlUtils");
