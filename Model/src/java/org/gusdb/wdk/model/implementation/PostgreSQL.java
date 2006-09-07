@@ -110,14 +110,13 @@ public class PostgreSQL implements RDBMSPlatformI, Serializable {
   /**
      * @return count of removed rows
      */
-    public int dropTable(String fullTableName) throws SQLException  {
-	String sql = "truncate table " + fullTableName;
+    public int dropTable(String fullTableName) throws SQLException {
+        // String sql = "truncate table " + fullTableName;
+        // SqlUtils.executeUpdate(dataSource, sql);
 
-	SqlUtils.executeUpdate(dataSource, sql);
-	
-	sql = "drop table " + fullTableName;
-	
-	return SqlUtils.executeUpdate(dataSource, sql);
+        String sql = "drop table " + fullTableName;
+
+        return SqlUtils.executeUpdate(dataSource, sql);
     }
     
     /**
@@ -218,6 +217,20 @@ public class PostgreSQL implements RDBMSPlatformI, Serializable {
  
     public int getIdleCount() {
         return connectionPool.getNumIdle();
+    }
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.RDBMSPlatformI#getTableCount(java.lang.String)
+     */
+    public int getTableCount(String tableNamePattern) throws SQLException {
+        throw new UnsupportedOperationException("Method not supported in PostgreSQL");
+    }
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.RDBMSPlatformI#forceDropTables(java.lang.String)
+     */
+    public int forceDropTables(String tableNamePattern) throws SQLException {
+        throw new UnsupportedOperationException("Method not supported in PostgreSQL");
     }
 }
 

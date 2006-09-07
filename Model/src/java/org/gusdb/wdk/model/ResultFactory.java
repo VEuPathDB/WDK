@@ -55,6 +55,7 @@ public class ResultFactory implements Serializable {
     private static Logger logger = Logger.getLogger(ResultFactory.class);
 
     // the following constants are used by persistent query history
+    public static final String TABLE_QUERY_INSTANCE = "QueryInstance";
     /**
      * The name of query history table
      */
@@ -78,11 +79,10 @@ public class ResultFactory implements Serializable {
     private String queryLoggerFile;
 
     public ResultFactory(RDBMSPlatformI platform, String schemaName,
-            String instanceTableName, boolean enableQueryLogger,
-            String queryLoggerFile) {
+            boolean enableQueryLogger, String queryLoggerFile) {
         this.platform = platform;
         this.schemaName = schemaName;
-        this.instanceTableName = instanceTableName;
+        this.instanceTableName = TABLE_QUERY_INSTANCE;
         this.instanceTableFullName = platform.getTableFullName(schemaName,
                 instanceTableName);
         // get the full name of query history table
@@ -103,16 +103,15 @@ public class ResultFactory implements Serializable {
             throws WdkModelException {
         // logger.debug("QueryInstance " + instance.getQuery().getFullName() + "
         // persistent: " + instance.getIsPersistent());
-            
-//        // enable query logger
-//        if (instance.getIsPersistent() && enableQueryLogger) try {
-//            logQuery(instance);
-//        } catch (IOException ex) {
-//            throw new WdkModelException(ex);
-//        }
 
-        ResultList resultList = instance.getIsPersistent()
-                ? getPersistentResult(instance)
+        // // enable query logger
+        // if (instance.getIsPersistent() && enableQueryLogger) try {
+        // logQuery(instance);
+        // } catch (IOException ex) {
+        // throw new WdkModelException(ex);
+        // }
+
+        ResultList resultList = instance.getIsPersistent() ? getPersistentResult(instance)
                 : instance.getNonpersistentResult();
         return resultList;
     }
@@ -132,8 +131,8 @@ public class ResultFactory implements Serializable {
         } catch (IOException ex) {
             throw new WdkModelException(ex);
         }
-        
-       String resultTableName = getResultTableName(instance);
+
+        String resultTableName = getResultTableName(instance);
         ResultSet rs = fetchCachedResultPage(resultTableName, startRow, endRow);
         return new SqlResultList(instance, resultTableName, rs);
     }
@@ -167,14 +166,14 @@ public class ResultFactory implements Serializable {
     }
 
     /**
-     * @param numParams Number of parameters allowed in a cached query
+     * @param numParams
+     *            Number of parameters allowed in a cached query
      */
     public void createCache(int numParams, boolean noSchemaOutput)
             throws WdkModelException {
         String newline = System.getProperty("line.separator");
 
-        String nameToUse = (noSchemaOutput == true
-                ? instanceTableName
+        String nameToUse = (noSchemaOutput == true ? instanceTableName
                 : instanceTableFullName);
 
         // Format sql to create table
@@ -220,8 +219,7 @@ public class ResultFactory implements Serializable {
             throws WdkModelException {
         String newline = System.getProperty("line.separator");
 
-        String nameToUse = (noSchemaOutput == true
-                ? historyTableName
+        String nameToUse = (noSchemaOutput == true ? historyTableName
                 : historyTableFullName);
 
         // Format sql to create table
@@ -272,13 +270,12 @@ public class ResultFactory implements Serializable {
      * rows in the cache table both within one transaction; then separately, as
      * a post-process, drop the tables in the dropThese table.
      */
-    public synchronized void resetCache(boolean noSchemaOutput)
-            throws WdkModelException {
+    public synchronized void resetCache(boolean noSchemaOutput,
+            boolean forceDrop) throws WdkModelException {
 
         // Query for the names of all cached result tables
         //
-        String nameToUse = (noSchemaOutput == true
-                ? instanceTableName
+        String nameToUse = (noSchemaOutput == true ? instanceTableName
                 : instanceTableFullName);
         StringBuffer s = new StringBuffer();
         s.append("select result_table from " + instanceTableFullName);
@@ -297,37 +294,46 @@ public class ResultFactory implements Serializable {
             try {
                 platform.dropTable(schemaName + "." + tables[i]);
                 nDropped++;
-            } catch (SQLException e) {}
+            } catch (SQLException e) {
+                System.err.println(e.getMessage());
+            }
+        }
+        System.out.println("Succeeded in dropping " + nDropped);
+
+        if (forceDrop) {
+            System.out.println("Force to drop all cache tables");
+            try {
+                nDropped = platform.forceDropTables(CACHE_TABLE_PREFIX.toUpperCase()
+                        + "%");
+            } catch (SQLException ex) {
+                throw new WdkModelException(ex);
+            }
+            System.out.println("Succeeded in foreced dropping " + nDropped);
         }
 
-        System.out.println("Succeeded in dropping " + nDropped);
-        System.out.println("Deleting all rows from " + nameToUse);
-
         try {
+            System.out.println("Deleting all rows from " + nameToUse);
             SqlUtils.execute(platform.getDataSource(), "delete from "
                     + instanceTableFullName);
+            resetHistoryCache(noSchemaOutput);
+
+            // validate the dropping operation
+            if (!validateDrop())
+                throw new WdkModelException(
+                        "Not all cache tables are dropped successfully.");
         } catch (SQLException e) {
             throw new WdkModelException(e);
-        }
-        // now reset the history cache
-        try {
-            resetHistoryCache(noSchemaOutput);
-        } catch (SQLException ex) {
-            // TODO Auto-generated catch block
-            // ex.printStackTrace();
-            System.err.println(ex);
         }
     }
 
     /**
      * Drop all tables and sequences associated with the cache
      */
-    public synchronized void dropCache(boolean noSchemaOutput)
+    public synchronized void dropCache(boolean noSchemaOutput, boolean forceDrop)
             throws WdkModelException {
         try {
-            resetCache(noSchemaOutput);
-            String nameToUse = (noSchemaOutput == true
-                    ? instanceTableName
+            resetCache(noSchemaOutput, forceDrop);
+            String nameToUse = (noSchemaOutput == true ? instanceTableName
                     : instanceTableFullName);
             System.out.println("Dropping table " + nameToUse);
             platform.dropTable(schemaName + "." + instanceTableName);
@@ -335,8 +341,7 @@ public class ResultFactory implements Serializable {
             platform.dropSequence(instanceTableFullName + "_pkseq");
             // and also drop the history cache
             System.out.println("Dropping table "
-                    + (noSchemaOutput == true
-                            ? historyTableName
+                    + (noSchemaOutput == true ? historyTableName
                             : historyTableFullName));
             platform.dropTable(schemaName + "." + historyTableName);
         } catch (SQLException e) {
@@ -346,8 +351,7 @@ public class ResultFactory implements Serializable {
 
     private synchronized void resetHistoryCache(boolean noSchemaOutput)
             throws SQLException {
-        String nameToUse = (noSchemaOutput == true
-                ? historyTableName
+        String nameToUse = (noSchemaOutput == true ? historyTableName
                 : historyTableFullName);
 
         System.out.println("Deleting all rows from " + nameToUse);
@@ -411,7 +415,8 @@ public class ResultFactory implements Serializable {
      *         database (either because it was never there or it has been
      *         expired.)
      * 
-     * @param instance The instance of the query
+     * @param instance
+     *            The instance of the query
      */
     private String getResultTableName(QueryInstance instance)
             throws WdkModelException {
@@ -496,8 +501,7 @@ public class ResultFactory implements Serializable {
         // format values
         String queryName = "'" + instance.getQuery().getFullName() + "'";
         sessionId = (sessionId != null) ? ("'" + sessionId + "'") : "null";
-        datasetName = (datasetName != null)
-                ? ("'" + datasetName + "'")
+        datasetName = (datasetName != null) ? ("'" + datasetName + "'")
                 : "null";
         String pVals = formatInstanceParamVals(instance);
         int cached = instance.getIsCacheable() ? 1 : 0;
@@ -695,10 +699,10 @@ public class ResultFactory implements Serializable {
 
     private void logQuery(QueryInstance instance) throws WdkModelException,
             IOException {
-//        // TEST
-//        try { throw new Exception("Inocation path test."); } 
-//        catch(Exception ex) {ex.printStackTrace();}
-        
+        // // TEST
+        // try { throw new Exception("Inocation path test."); }
+        // catch(Exception ex) {ex.printStackTrace();}
+
         Calendar cal = GregorianCalendar.getInstance();
 
         // decide the name of the logger file
@@ -754,6 +758,11 @@ public class ResultFactory implements Serializable {
         }
     }
 
+    private boolean validateDrop() throws SQLException {
+        String pattern = CACHE_TABLE_PREFIX.toUpperCase() + "%";
+        return (0 == platform.getTableCount(pattern));
+    }
+
     // ////////////////////////////////////////////////////////////////////
     // /// Static methods
     // ////////////////////////////////////////////////////////////////////
@@ -775,6 +784,7 @@ public class ResultFactory implements Serializable {
         boolean resetCache = cmdLine.hasOption("reset");
         boolean dropCache = cmdLine.hasOption("drop");
         boolean noSchemaOutput = cmdLine.hasOption("noSchemaOutput");
+        boolean forceDrop = cmdLine.hasOption("forceDrop");
 
         try {
             // read config info
@@ -783,7 +793,6 @@ public class ResultFactory implements Serializable {
             String login = modelConfig.getLogin();
             String password = modelConfig.getPassword();
             Integer maxQueryParams = modelConfig.getMaxQueryParams();
-            String instanceTableName = modelConfig.getQueryInstanceTable();
             String platformClass = modelConfig.getPlatformClass();
 
             Integer maxIdle = modelConfig.getMaxIdle();
@@ -802,12 +811,16 @@ public class ResultFactory implements Serializable {
                     modelConfigXmlFile.getAbsolutePath());
 
             ResultFactory factory = new ResultFactory(platform, login,
-                    instanceTableName, enableQueryLogger, queryLoggerFile);
+                    enableQueryLogger, queryLoggerFile);
 
+            long start = System.currentTimeMillis();
             if (newCache) factory.createCache(maxQueryParams.intValue(),
                     noSchemaOutput);
-            else if (resetCache) factory.resetCache(noSchemaOutput);
-            else if (dropCache) factory.dropCache(noSchemaOutput);
+            else if (resetCache) factory.resetCache(noSchemaOutput, forceDrop);
+            else if (dropCache) factory.dropCache(noSchemaOutput, forceDrop);
+            long end = System.currentTimeMillis();
+            System.out.println("Command succeeded in "
+                    + ((end - start) / 1000.0) + " seconds");
 
         } catch (Exception e) {
             System.err.println("FAILED");
@@ -837,12 +850,16 @@ public class ResultFactory implements Serializable {
         Option noSchema = new Option("noSchemaOutput",
                 "remove references to the schema when printing out messages regarding a table");
 
+        Option forceDrop = new Option("forceDrop",
+                "drop all cache tables even if the cache is not listed in query instance table");
+
         OptionGroup operation = new OptionGroup();
         operation.setRequired(true);
         operation.addOption(newQ);
         operation.addOption(resetQ);
         operation.addOption(dropQ);
         options.addOption(noSchema);
+        options.addOption(forceDrop);
         options.addOptionGroup(operation);
 
         return options;
@@ -880,7 +897,7 @@ public class ResultFactory implements Serializable {
 
         String newline = System.getProperty("line.separator");
         String cmdlineSyntax = cmdName
-                + " -model model_name -new|-reset|-drop [-noSchemaOutput]";
+                + " -model model_name -new|-reset|-drop [-noSchemaOutput] -[forceDrop]";
 
         String header = newline
                 + "Create, reset or drop a query cache. The name of the cache table is found in the Model config file (the table is placed in the schema owned by login).  Resetting the cache drops all results tables and deletes all rows from the cache table.  Dropping the cache first resets it then drops the cache table and sequence."

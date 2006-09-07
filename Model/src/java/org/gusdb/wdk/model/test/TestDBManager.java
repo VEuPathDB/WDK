@@ -47,7 +47,6 @@ public class TestDBManager {
 	    String password = modelConfig.getPassword();
         // variable never used
 	    //String instanceTable = modelConfig.getQueryInstanceTable();
-        modelConfig.getQueryInstanceTable();
 	    String platformClass = modelConfig.getPlatformClass();
 
 	    Integer maxIdle = modelConfig.getMaxIdle();
