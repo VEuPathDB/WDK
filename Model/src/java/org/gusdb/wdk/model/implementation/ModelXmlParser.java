@@ -620,8 +620,8 @@ public class ModelXmlParser {
                 "wdkModel/xmlRecordClassSet/xmlRecordClass/xmlTable",
                 "addTableField");
 
-//        digester.addSetNext("wdkModel/xmlRecordClassSet/xmlRecordClass",
-//                "addRecordClass");
+        digester.addSetNext("wdkModel/xmlRecordClassSet/xmlRecordClass",
+                "addRecordClass");
 
         digester.addSetNext("wdkModel/xmlRecordClassSet",
                 "addXmlRecordClassSet");
