@@ -484,9 +484,6 @@
         <zeroOrMore>
            <ref name="xmlTable" />
         </zeroOrMore>
-        <zeroOrMore>
-           <ref name="xmlRecordClass" />
-        </zeroOrMore>
      </element>
   </define>
 
