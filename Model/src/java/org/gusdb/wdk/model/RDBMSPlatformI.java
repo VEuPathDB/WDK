@@ -52,6 +52,10 @@ public interface RDBMSPlatformI {
     public int getActiveCount();
     
     public int getIdleCount();
+    
+    public int getTableCount(String tableNamePattern) throws SQLException;
+    
+    public int forceDropTables(String tableNamePattern) throws SQLException;
 }
 
 

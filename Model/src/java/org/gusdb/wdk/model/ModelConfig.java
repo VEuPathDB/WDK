@@ -10,7 +10,6 @@ public class ModelConfig {
     String connectionUrl;
     String login;
     String password;
-    String instanceTable;
     String platformClass;
     Integer maxQueryParams;
     Integer maxIdle;
@@ -73,14 +72,6 @@ public class ModelConfig {
 
     public String getPassword() {
         return password;
-    }
-
-    public void setQueryInstanceTable(String instanceTable) {
-        this.instanceTable = instanceTable;
-    }
-
-    public String getQueryInstanceTable() {
-        return instanceTable;
     }
 
     public void setMaxQueryParams(Integer maxQueryParams) {
@@ -195,20 +186,6 @@ public class ModelConfig {
      */
     public void setHistoryTable(String historyTable) {
         this.historyTable = historyTable;
-    }
-
-    /**
-     * @return Returns the instanceTable.
-     */
-    public String getInstanceTable() {
-        return instanceTable;
-    }
-
-    /**
-     * @param instanceTable The instanceTable to set.
-     */
-    public void setInstanceTable(String instanceTable) {
-        this.instanceTable = instanceTable;
     }
 
     /**

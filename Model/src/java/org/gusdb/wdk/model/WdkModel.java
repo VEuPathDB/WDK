@@ -431,7 +431,6 @@ public class WdkModel {
         String connectionUrl = modelConfig.getConnectionUrl();
         String login = modelConfig.getLogin();
         String password = modelConfig.getPassword();
-        String instanceTable = modelConfig.getQueryInstanceTable();
         String platformClass = modelConfig.getPlatformClass();
         Integer maxIdle = modelConfig.getMaxIdle();
         Integer minIdle = modelConfig.getMinIdle();
@@ -477,7 +476,7 @@ public class WdkModel {
         platform.init(connectionUrl, login, password, minIdle, maxIdle,
                 maxWait, maxActive, initialSize, fileName);
         ResultFactory resultFactory = new ResultFactory(platform, login,
-                instanceTable, enableQueryLogger, queryLoggerFile);
+                enableQueryLogger, queryLoggerFile);
         this.platform = platform;
         this.webServiceUrl = modelConfig.getWebServiceUrl();
         this.resultFactory = resultFactory;
