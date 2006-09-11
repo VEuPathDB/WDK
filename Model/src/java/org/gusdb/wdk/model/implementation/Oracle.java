@@ -2,13 +2,17 @@ package org.gusdb.wdk.model.implementation;
 
 import java.io.Serializable;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 
+import oracle.sql.CLOB;
+
 import org.apache.commons.dbcp.ConnectionFactory;
+import org.apache.commons.dbcp.DelegatingConnection;
 import org.apache.commons.dbcp.DriverManagerConnectionFactory;
 import org.apache.commons.dbcp.PoolableConnectionFactory;
 import org.apache.commons.dbcp.PoolingDataSource;
@@ -176,6 +180,7 @@ public class Oracle implements RDBMSPlatformI, Serializable {
                     null, null, false, true);
 
             PoolingDataSource dataSource = new PoolingDataSource(connectionPool);
+            dataSource.setAccessToUnderlyingConnectionAllowed(true);
             this.dataSource = dataSource;
             Connection connection = dataSource.getConnection();
             connection.close();
@@ -261,4 +266,18 @@ public class Oracle implements RDBMSPlatformI, Serializable {
         return count;
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.RDBMSPlatformI#updateClobData(java.sql.PreparedStatement,
+     *      java.lang.String)
+     */
+    public void updateClobData(PreparedStatement ps, int columnIndex,
+            String content) throws SQLException {
+        Connection conn = ((DelegatingConnection) ps.getConnection()).getInnermostDelegate();
+        CLOB clob = CLOB.createTemporary(conn, false, CLOB.DURATION_SESSION);
+        clob.setString(1, content);
+        ps.setClob(columnIndex, clob);
+        ps.executeUpdate();
+    }
 }
