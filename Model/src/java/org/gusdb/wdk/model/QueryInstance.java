@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model;
  
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -9,6 +11,8 @@ import java.util.Map;
  * to do most of the real implementation.
  */
 public abstract class QueryInstance {
+    
+    public static final String PARAM_CLOB_DIVIDER = "--WDK_CLOB_DIVIDER--";
 
     protected boolean isCacheable;
 
@@ -59,6 +63,8 @@ public abstract class QueryInstance {
      * results for this Instance.
      */
     String resultTableName = null;
+    
+    protected String checksum = null;
 
 
     // ------------------------------------------------------------------
@@ -67,6 +73,7 @@ public abstract class QueryInstance {
 
     public void setValues(Map<String, Object> values) throws WdkUserException, WdkModelException {
 	this.values = new LinkedHashMap<String, Object>(values);
+    checksum = null;
 	query.applyDefaults(values);
 	query.validateParamValues(values);
     }
@@ -171,6 +178,37 @@ public abstract class QueryInstance {
 
     public Collection getCacheValues() throws WdkModelException{
 	return getValues();
+    }
+    
+    public String getClobContent() {
+        StringBuffer content = new StringBuffer();
+        content.append(query.getFullName());
+        for (String param : values.keySet()) {
+            content.append(PARAM_CLOB_DIVIDER + param + "=" + values.get(param));
+        }
+        return content.toString();
+    }
+    
+    public String getChecksum() throws WdkModelException {
+        if (checksum == null) {
+            try {
+                // get the clob content: a combination of query name, param names and values
+                String content = getClobContent();
+                MessageDigest digest = MessageDigest.getInstance("MD5");
+                byte[] byteBuffer = digest.digest(content.getBytes());
+                // convert each byte into hex format
+                StringBuffer buffer = new StringBuffer();
+                for (int i = 0; i < byteBuffer.length; i++) {
+                    int code = (byteBuffer[i] & 0xFF);
+                    if (code < 0x10) buffer.append('0');
+                    buffer.append(Integer.toHexString(code));
+                }
+                checksum = buffer.toString();
+            } catch (NoSuchAlgorithmException ex) {
+                throw new WdkModelException(ex);
+            }
+        }
+        return checksum;
     }
 
     public abstract String getLowLevelQuery() throws WdkModelException;

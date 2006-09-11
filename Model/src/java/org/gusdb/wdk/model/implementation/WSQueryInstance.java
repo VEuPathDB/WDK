@@ -96,7 +96,7 @@ public class WSQueryInstance extends QueryInstance  {
             String clob = platform.getClobDataType();
 
              createSqlB.append(column.getName()
-                    + ((cw > 2000) ? (" " + clob + ", ")
+                    + ((cw >= 2000) ? (" " + clob + ", ")
                             : (" varchar(" + cw + "), ")));
             
             if (cw > 2000) {

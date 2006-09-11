@@ -5,13 +5,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.GregorianCalendar;
-import java.util.Iterator;
 
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
@@ -50,8 +49,6 @@ public class ResultFactory implements Serializable {
      */
     private static final long serialVersionUID = -494603755802202030L;
 
-    // private static final Logger logger =
-    // WdkLogManager.getLogger("org.gusdb.wdk.model.ResultFactory");
     private static Logger logger = Logger.getLogger(ResultFactory.class);
 
     // the following constants are used by persistent query history
@@ -101,16 +98,6 @@ public class ResultFactory implements Serializable {
 
     public synchronized ResultList getResult(QueryInstance instance)
             throws WdkModelException {
-        // logger.debug("QueryInstance " + instance.getQuery().getFullName() + "
-        // persistent: " + instance.getIsPersistent());
-
-        // // enable query logger
-        // if (instance.getIsPersistent() && enableQueryLogger) try {
-        // logQuery(instance);
-        // } catch (IOException ex) {
-        // throw new WdkModelException(ex);
-        // }
-
         ResultList resultList = instance.getIsPersistent() ? getPersistentResult(instance)
                 : instance.getNonpersistentResult();
         return resultList;
@@ -187,11 +174,10 @@ public class ResultFactory implements Serializable {
                 + "(12) not null, query_name varchar(100) not null, cached "
                 + numericType + "(1) not null,");
 
-        sqlb.append("result_table varchar(30), start_time date not null, end_time date, dataset_name varchar(100), session_id varchar(50), ");
-        for (int i = 0; i < numParams - 1; i++) {
-            sqlb.append("param" + i + " varchar(4000), ");
-        }
-        sqlb.append("param" + numParams + " varchar(4000))");
+        sqlb.append("result_table varchar(30), start_time date not null, "
+                + "end_time date, dataset_name varchar(100), "
+                + "session_id varchar(50), query_checksum varchar(40), "
+                + "param_clob " + platform.getClobDataType() + ")");
 
         // Execute it
         System.out.println(newline + "Making cache table " + nameToUse
@@ -503,65 +489,42 @@ public class ResultFactory implements Serializable {
         sessionId = (sessionId != null) ? ("'" + sessionId + "'") : "null";
         datasetName = (datasetName != null) ? ("'" + datasetName + "'")
                 : "null";
-        String pVals = formatInstanceParamVals(instance);
         int cached = instance.getIsCacheable() ? 1 : 0;
+        String checksum = "'" + instance.getChecksum() + "'";
 
         // format insert statement
         StringBuffer sqlb = new StringBuffer();
-        sqlb.append("insert into "
-                + instanceTableFullName
-                + " (query_instance_id, query_name, cached, session_id, dataset_name, start_time");
-        Collection instanceValues = instance.getCacheValues();
-        for (int i = 0; i < instanceValues.size(); ++i) {
-            sqlb.append(", param" + i);
-        }
-        sqlb.append(") values (");
+        sqlb.append("insert into " + instanceTableFullName
+                + " (query_instance_id, query_name, cached, session_id, "
+                + "dataset_name, start_time, query_checksum) values (");
         String datefunc = platform.getCurrentDateFunction();
         sqlb.append(nextID + ", " + queryName + ", " + cached + ", "
-                + sessionId + ", " + datasetName + ", " + datefunc + " "
-                + pVals + ")");
+                + sessionId + ", " + datasetName + ", " + datefunc + ", "
+                + checksum + ")");
 
+        PreparedStatement psClob = null;
         try {
-            // int numRows =
             SqlUtils.executeUpdate(platform.getDataSource(), sqlb.toString());
+
+            // now update the clob data
+            String content = instance.getClobContent();
+            psClob = SqlUtils.getPreparedStatement(platform.getDataSource(),
+                    "UPDATE " + instanceTableFullName + " SET param_clob = ? "
+                            + "WHERE query_instance_id = " + nextID);
+            platform.updateClobData(psClob, 1, content);
+
+            Integer finalId = new Integer(nextID);
+            instance.setQueryInstanceId(finalId);
+            return finalId;
         } catch (SQLException e) {
             throw new WdkModelException(e);
-        }
-
-        // This may happen because a parameter value is too large
-        // to fit in the corresponding column of the Queries table.
-        //
-        // Commented by Jerric - never used
-        // if (numRows != 1) {
-        // String err = "insert failed: '" + sqlb.toString() + "'";
-        // }
-        Integer finalId = new Integer(nextID);
-        instance.setQueryInstanceId(finalId);
-        return finalId;
-    }
-
-    private String formatInstanceParamVals(QueryInstance instance)
-            throws WdkModelException {
-        StringBuffer sb = new StringBuffer();
-
-        int count = 0;
-        Iterator paramValues = instance.getCacheValues().iterator();
-        while (paramValues.hasNext()) {
-            String val = (String) paramValues.next();
-            // handle empty string
-            if (val != null && val.length() > 0) {
-                String cleaned = platform.cleanStringValue(val);
-
-                // if (count != 0) {
-                sb.append(", ");
-                // }
-                sb.append("'" + cleaned + "'");
-            } else {
-                sb.append(", null");
+        } finally {
+            if (psClob != null) try {
+                SqlUtils.closeStatement(psClob);
+            } catch (SQLException ex) {
+                throw new WdkModelException(ex);
             }
-            count++;
         }
-        return sb.toString();
     }
 
     /**
@@ -596,49 +559,15 @@ public class ResultFactory implements Serializable {
      */
     private String instanceWhereClause(QueryInstance instance)
             throws WdkModelException {
-        StringBuffer sb = new StringBuffer();
-        Iterator iter = instance.getCacheValues().iterator();
+        // get checksum of the instance
+        String checksum = instance.getChecksum();
 
-        sb.append(" query_name = '" + instance.getQuery().getFullName() + "'");
-
-        int i = 0;
-        while (iter.hasNext()) {
-            String val = (String) iter.next();
-            // handle null value case
-            if (val != null && val.length() > 0) {
-                String cleaned = platform.cleanStringValue(val);
-                sb.append(" and param" + i++ + " = '");
-                sb.append(cleaned);
-                sb.append("'");
-            } else {
-                sb.append(" and param" + i++ + " is null");
-            }
-        }
-        return sb.toString();
+        StringBuffer sql = new StringBuffer();
+        sql.append(" query_name = '" + instance.getQuery().getFullName() + "'");
+        sql.append(" AND query_checksum = '" + checksum + "'");
+        return sql.toString();
     }
 
-    /**
-     * Commented by Jerric - never used
-     * 
-     * @return true if dataset name is in use for this session id
-     */
-    // private boolean checkIfDatasetNameInUse(String sessionId, String
-    // datasetName)
-    // throws WdkModelException {
-    // StringBuffer s = new StringBuffer();
-    // s.append("select result_table from " + instanceTableFullName
-    // + " where " + "dataset_name = '" + datasetName + "' and "
-    // + "session_id = '" + sessionId + "'");
-    //
-    // String tables[] = null;
-    // try {
-    // tables = SqlUtils.runStringArrayQuery(platform.getDataSource(),
-    // s.toString());
-    // } catch (SQLException e) {
-    // throw new WdkModelException(e);
-    // }
-    // return tables.length != 0;
-    // }
     private ResultSet fetchCachedResult(String resultTableName)
             throws WdkModelException {
 

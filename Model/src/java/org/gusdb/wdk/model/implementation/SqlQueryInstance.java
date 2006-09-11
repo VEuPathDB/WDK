@@ -111,6 +111,7 @@ public class SqlQueryInstance extends QueryInstance  {
     private String instantiateSqlWithJoin(String sql) throws WdkModelException { 
 	String primaryKeyJoin = joinTableName + "." + primaryKeyColumnName;
 
+    checksum = null;
 	values.put(RecordClass.PRIMARY_KEY_NAME, primaryKeyJoin); 
 	
 	if (projectColumnName != null) {
