@@ -58,20 +58,22 @@ public class FieldValueMap implements Map {
      * @see java.util.Map#keySet()
      */
     public Set keySet() {
-	Set<String> keySet = null;
-	if (TABLE_MAP.equals(mapType)) {
-	    keySet = recordClass.getTableFieldMap().keySet();
-	} else {
-	    keySet = new LinkedHashSet<String>(recordClass.getAttributeFieldMap().keySet());
-	    if (SUMMARY_ATTRIBUTE_MAP.equals(mapType) && dynamicAttributeFields != null) {
-		keySet.addAll(dynamicAttributeFields.keySet());
-	    }
-	    if (ATTRIBUTE_MAP.equals(mapType) && dynamicAttributeFields != null) {
-		keySet.addAll(dynamicAttributeFields.keySet());
-	    }
-	}
+        Set<String> keySet = null;
+        if (TABLE_MAP.equals(mapType)) {
+            keySet = recordClass.getTableFieldMap().keySet();
+        } else {
+            keySet = new LinkedHashSet<String>(
+                    recordClass.getAttributeFieldMap().keySet());
+            if (SUMMARY_ATTRIBUTE_MAP.equals(mapType)
+                    && dynamicAttributeFields != null) {
+                keySet.addAll(dynamicAttributeFields.keySet());
+            }
+            if (ATTRIBUTE_MAP.equals(mapType) && dynamicAttributeFields != null) {
+                keySet.addAll(dynamicAttributeFields.keySet());
+            }
+        }
 
-	return keySet;
+        return keySet;
     }
 
     /**
@@ -80,38 +82,43 @@ public class FieldValueMap implements Map {
      * finished with it.
      */
     public Object get(Object key) {
-	if (!containsKey(key)) throw new IllegalArgumentException("Record " + recordClass.getFullName() + " does not have any value with key " + key);
+        if (!containsKey(key))
+            throw new IllegalArgumentException("Record "
+                    + recordClass.getFullName()
+                    + " does not have any value with key " + key);
 
-	try {
-	    String fieldName = (String)key;
-	    Object fieldValue;
-	    if (TABLE_MAP.equals(mapType)) {
-		    fieldValue = recordInstance.getTableValue(fieldName);
-	    } else {
-	        AttributeField field = null;
+        try {
+            String fieldName = (String) key;
+            Object fieldValue;
+            if (TABLE_MAP.equals(mapType)) {
+                fieldValue = recordInstance.getTableValue(fieldName);
+            } else {
+                AttributeField field = null;
 
-		if (SUMMARY_ATTRIBUTE_MAP.equals(mapType) && dynamicAttributeFields != null) {
-		    field = dynamicAttributeFields.get(fieldName);
-		}
+                if (SUMMARY_ATTRIBUTE_MAP.equals(mapType)
+                        && dynamicAttributeFields != null) {
+                    field = dynamicAttributeFields.get(fieldName);
+                }
 
-		if (ATTRIBUTE_MAP.equals(mapType) && dynamicAttributeFields != null) {
-		    field = dynamicAttributeFields.get(fieldName);
-		}
+                if (ATTRIBUTE_MAP.equals(mapType)
+                        && dynamicAttributeFields != null) {
+                    field = dynamicAttributeFields.get(fieldName);
+                }
 
-		if (field == null) {
-		    field = recordClass.getAttributeField(fieldName);
-		}
+                if (field == null) {
+                    field = recordClass.getAttributeField(fieldName);
+                }
 
-		Object value = recordInstance.getAttributeValue(field);
-		AttributeFieldValue temp = new AttributeFieldValue(field, value);
+                Object value = recordInstance.getAttributeValue(field);
+                AttributeFieldValue temp = new AttributeFieldValue(field, value);
 
-		temp.setIsSummary(recordInstance.isSummaryAttribute(fieldName));
-		fieldValue = temp;
-	    }
-	    return fieldValue;
-	} catch (WdkModelException e) {
-	    throw new RuntimeException(e);
-	}
+                temp.setIsSummary(recordInstance.isSummaryAttribute(fieldName));
+                fieldValue = temp;
+            }
+            return fieldValue;
+        } catch (WdkModelException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**

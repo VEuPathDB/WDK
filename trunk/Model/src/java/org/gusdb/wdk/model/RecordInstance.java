@@ -58,9 +58,27 @@ public class RecordInstance {
     /**
      * Get the value for a attribute or a text attribute
      */
-    public Object getAttributeValue(String attributeName) throws WdkModelException {
-
-	return getAttributeValue(recordClass.getAttributeField(attributeName)); 
+    public Object getAttributeValue(String attributeName)
+            throws WdkModelException {
+        AttributeField attrField;
+        try {
+            attrField = recordClass.getAttributeField(attributeName);
+        } catch (WdkModelException ex) {
+            // the field is not defined in the RecordClass, then check it in the
+            // DynamicAttributeSet
+            attrField = dynamicAttributeFields.get(attributeName);
+            if (attrField == null) {
+                String msg = "The attribute field '" + attributeName
+                        + "' is not defined in the RecordClass "
+                        + recordClass.getFullName();
+                if (answer != null)
+                    msg += ", neither in the DynamicAttributeSet of Question "
+                            + answer.getQuestion().getFullName();
+                logger.error(msg);
+                throw new WdkModelException(msg);
+            }
+        }
+        return getAttributeValue(attrField);
     }
 
     /**
@@ -341,7 +359,6 @@ public class RecordInstance {
     
     public String printSummary() throws WdkModelException {
 
-        String newline = System.getProperty("line.separator");
         StringBuffer buf = new StringBuffer();
 
         Map<String, AttributeFieldValue> attributeFields = getAttributes();

@@ -2,8 +2,8 @@ package org.gusdb.wdk.model;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -24,10 +24,12 @@ public class DynamicAttributeSet implements Serializable {
     private RecordClass recordClass;
     private Query attributesQuery;
     private Set<String> columnAttributeFieldNames;
+    private Set<String> noncolumnAttributeFieldNames;
 
     public DynamicAttributeSet() {
         attributesFieldMap = new LinkedHashMap<String, AttributeField>();
-        columnAttributeFieldNames = new HashSet<String>();
+        columnAttributeFieldNames = new LinkedHashSet<String>();
+        noncolumnAttributeFieldNames = new LinkedHashSet<String>();
     }
 
     public void addAttributeField(AttributeField attributeField)
@@ -45,8 +47,11 @@ public class DynamicAttributeSet implements Serializable {
 
         // check if it's a column attribute. this kind of attribute must be
         // matched with a column
-        if (attributeField instanceof ColumnAttributeField)
-            columnAttributeFieldNames.add(name);
+        if (attributeField instanceof ColumnAttributeField) {
+            columnAttributeFieldNames.add(name);}
+        else {
+            noncolumnAttributeFieldNames.add(name);
+        }
     }
 
     public String toString() {
@@ -184,6 +189,9 @@ public class DynamicAttributeSet implements Serializable {
         }
 
         String[] pkColNames = Answer.findPrimaryKeyColumnNames(question.getQuery());
+        
+        // add other attribute fields into the query, such as text and link attributes
+        
 
         // last comma
         String sqlSelect = sqlSelectBuf.substring(0, sqlSelectBuf.length() - 2);
