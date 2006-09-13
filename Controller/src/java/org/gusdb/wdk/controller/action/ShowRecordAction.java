@@ -33,13 +33,6 @@ public class ShowRecordAction extends Action {
 	ServletContext svltCtx = getServlet().getServletContext();
 	WdkModelBean wdkModel = (WdkModelBean)svltCtx.getAttribute(CConstants.WDK_MODEL_KEY);
 	String customViewDir = (String)svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
-
-	RecordClassBean wdkRecordClass = wdkModel.findRecordClass(request.getParameter("name"));
-	RecordBean wdkRecord = wdkRecordClass.makeRecord();
-    
-    // modified by Jerric
-    //String id = request.getParameter("id");
-    //wdkRecord.assignPrimaryKey(id);
     
 //* modified by mheiges to make backward compatible with older url
 //* formats which only had an 'id' parameter (which was renamed 
@@ -52,8 +45,9 @@ public class ShowRecordAction extends Action {
         projectID = request.getParameter("project_id").trim();
         if (projectID.length() == 0) projectID = null;
     }
-    wdkRecord.assignPrimaryKey(projectID, id);
 
+    RecordClassBean wdkRecordClass = wdkModel.findRecordClass(request.getParameter("name"));
+    RecordBean wdkRecord = wdkRecordClass.makeRecord(projectID, id);
 
 	request.setAttribute(CConstants.WDK_RECORD_KEY, wdkRecord);
 

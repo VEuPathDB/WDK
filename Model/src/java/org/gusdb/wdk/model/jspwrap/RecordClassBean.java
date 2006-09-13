@@ -7,6 +7,7 @@ import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.TableField;
+import org.gusdb.wdk.model.WdkModelException;
 
 /**
  * A wrapper on a {@link RecordClass} that provides simplified access for 
@@ -53,12 +54,25 @@ public class RecordClassBean {
         }
         return fieldBeans;
     }
+    
+    public RecordBean makeRecord(String recordId) {
+        try {
+            return new RecordBean(recordClass.makeRecordInstance(recordId));
+        } catch (WdkModelException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
 
     /**
      * used by the controller
      */
-    public RecordBean makeRecord () {
-	return new RecordBean(recordClass.makeRecordInstance());
+    public RecordBean makeRecord(String projectId, String recordId) {
+        try {
+            return new RecordBean(recordClass.makeRecordInstance(projectId,
+                    recordId));
+        } catch (WdkModelException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     public QuestionBean[] getQuestions(){

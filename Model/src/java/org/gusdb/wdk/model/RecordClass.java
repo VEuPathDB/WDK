@@ -62,6 +62,13 @@ public class RecordClass {
      */
     private ParamReference projectParamRef;
 
+    /**
+     * the reference to a query that returns a list of alias ids of the given
+     * gene id
+     */
+    private String aliasQueryName = null;
+    private Query aliasQuery = null;
+
     public RecordClass() {
         // make sure these keys are at the front of the list
         // it doesn't make sense, since you can't guarantee the order in a map
@@ -103,8 +110,9 @@ public class RecordClass {
     }
 
     /**
-     * @param attList comma separated list of attributes in a summary containing
-     *        this recordClass.
+     * @param attList
+     *            comma separated list of attributes in a summary containing
+     *            this recordClass.
      */
     /*
      * public void setSummaryAttributeList (String attList){
@@ -115,8 +123,13 @@ public class RecordClass {
         this.attributeOrdering = attOrder;
     }
 
+    public void setAliasQueryRef(String queryRef) {
+        this.aliasQueryName = queryRef;
+    }
+
     /**
-     * @param attributesQueryRef two part query name (set.name)
+     * @param attributesQueryRef
+     *            two part query name (set.name)
      */
     public void addAttributesQueryRef(AttributeQueryReference attributesQueryRef) {
         attributesQueryRefs.add(attributesQueryRef);
@@ -279,8 +292,15 @@ public class RecordClass {
         return primaryKeyField;
     }
 
-    public RecordInstance makeRecordInstance() {
-        return new RecordInstance(this);
+    public RecordInstance makeRecordInstance(String recordId)
+            throws WdkModelException {
+        return new RecordInstance(this, recordId);
+    }
+
+    public RecordInstance makeRecordInstance(String projectId, String recordId)
+            throws WdkModelException {
+        String sourceId = lookupSourceId(recordId);
+        return new RecordInstance(this, projectId, sourceId);
     }
 
     public String toString() {
@@ -306,7 +326,8 @@ public class RecordClass {
     // /////////////////////////////////////////////////////////////////////////
 
     /**
-     * @param recordSetName name of the recordSet to which this record belongs.
+     * @param recordSetName
+     *            name of the recordSet to which this record belongs.
      */
     void setFullName(String recordSetName) {
         this.fullName = recordSetName + "." + name;
@@ -345,14 +366,13 @@ public class RecordClass {
             projectParam = (FlatVocabParam) model.resolveReference(
                     projectParamRef.getTwoPartName(), getName(),
                     this.getClass().getName(), "projectParamRef");
-            projectParam = (FlatVocabParam)projectParam.clone();
+            projectParam = (FlatVocabParam) projectParam.clone();
             projectParam.setDefault(projectParamRef.getDefault());
         }
 
         // create PrimaryKeyField
-        primaryKeyField = 
-	    new PrimaryKeyField(PRIMARY_KEY_NAME,
-				getType(), "Some help here", projectParam);
+        primaryKeyField = new PrimaryKeyField(PRIMARY_KEY_NAME, getType(),
+                "Some help here", projectParam);
         primaryKeyField.setIdPrefix(this.idPrefix);
         primaryKeyField.setDelimiter(this.delimiter);
         attributeFieldsMap.put(PRIMARY_KEY_NAME, primaryKeyField);
@@ -376,7 +396,7 @@ public class RecordClass {
                 AttributeField field = fieldMap.get(column.getName());
                 if (field != null && field instanceof ColumnAttributeField) {
                     ((ColumnAttributeField) field).setColumn(column);
-                } 
+                }
             }
         }
 
@@ -397,6 +417,12 @@ public class RecordClass {
 
         for (NestedRecordList nestedRecordList : nestedRecordListQuestionRefs) {
             nestedRecordList.resolveReferences(model);
+        }
+
+        // resolve reference for alias query
+        if (aliasQueryName != null) {
+            aliasQuery = (Query) model.resolveReference(aliasQueryName, name,
+                    RecordClass.class.getName(), "aliasQueryRef");
         }
     }
 
@@ -459,5 +485,25 @@ public class RecordClass {
             }
         }
         return orderedAttsMap;
+    }
+    
+    private String lookupSourceId(String aliasName) throws WdkModelException {
+        // nothing to look up
+        if (aliasQuery == null) return aliasName;
+
+        // create a query instance with alias as the primaryKey
+        QueryInstance qinstance = aliasQuery.makeInstance();
+        qinstance.setIsCacheable(false);
+        Map<String, Object> params = new LinkedHashMap<String, Object>();
+        params.put(PRIMARY_KEY_NAME, aliasName);
+        qinstance.setValues(params);
+        ResultList resultList = qinstance.getResult();
+        if (resultList.next()) {
+            String columnName = aliasQuery.getColumns()[0].getName();
+            String sourceId = (String) resultList.getValue(columnName);
+            return sourceId;
+        }
+        resultList.close();
+        return aliasName;
     }
 }

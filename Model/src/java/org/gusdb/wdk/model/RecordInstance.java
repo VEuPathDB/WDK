@@ -10,9 +10,9 @@ import org.apache.log4j.Logger;
 public class RecordInstance {
 
     public static final int MAXIMUM_NESTED_RECORD_INSTANCES = 1000;
-    
+
     private static Logger logger = Logger.getLogger(RecordInstance.class);
-    
+
     PrimaryKeyValue primaryKey;
     RecordClass recordClass;
     Map<String, Map> attributesResultSetsMap;
@@ -21,38 +21,49 @@ public class RecordInstance {
     Map<String, AttributeField> dynamicAttributeFields;
     boolean timeAttributeQueries = false;
 
-    public RecordInstance(RecordClass recordClass) {
-	this.recordClass = recordClass;
-	attributesResultSetsMap = new LinkedHashMap<String, Map>();
-	summaryAttributeMap = new LinkedHashMap<String, Integer>();
+    public RecordInstance(RecordClass recordClass, String recordId)
+            throws WdkModelException {
+        this(recordClass, null, recordId);
     }
 
-    public RecordClass getRecordClass() { return recordClass; }
+    public RecordInstance(RecordClass recordClass, String projectId,
+            String recordId) throws WdkModelException {
+        this.recordClass = recordClass;
+        attributesResultSetsMap = new LinkedHashMap<String, Map>();
+        summaryAttributeMap = new LinkedHashMap<String, Integer>();
+        setPrimaryKey(projectId, recordId);
+    }
+
+    public RecordClass getRecordClass() {
+        return recordClass;
+    }
 
     /**
      * Modified by Jerric - Use two parts as primarykeyValue, projectId and the
      * original recordId String
+     * 
      * @param projectId
      * @param recordId
-     * @throws WdkModelException 
+     * @throws WdkModelException
      */
-    public void setPrimaryKey(String projectId, String recordId) 
-    throws WdkModelException {
-        PrimaryKeyField field = 
-            (PrimaryKeyField) recordClass.getAttributeField(RecordClass.PRIMARY_KEY_NAME);
+    private void setPrimaryKey(String projectId, String recordId)
+            throws WdkModelException {
+        PrimaryKeyField field = (PrimaryKeyField) recordClass.getAttributeField(RecordClass.PRIMARY_KEY_NAME);
         // create primary key
-	if (recordId == null || "".equals(recordId)) {
-	    throw new WdkModelException(getRecordClass().getFullName() + " encountered empty primaryKey value");
-	}
+        if (recordId == null || "".equals(recordId)) {
+            throw new WdkModelException(getRecordClass().getFullName()
+                    + " encountered empty primaryKey value");
+        }
         this.primaryKey = new PrimaryKeyValue(field, projectId, recordId);
     }
 
     /**
      * Modified by Jerric - use an object for primaryKeyValue
+     * 
      * @return
      */
     public PrimaryKeyValue getPrimaryKey() {
-	return primaryKey;
+        return primaryKey;
     }
 
     /**
@@ -84,51 +95,59 @@ public class RecordInstance {
     /**
      * Get the value for a attribute or a text attribute
      */
-    public Object getAttributeValue(AttributeField field) throws WdkModelException {
-	Object value;	
-	if (field instanceof PrimaryKeyField) {
-        // modified by Jerric
-	    //value = recordClass.getIdPrefix() + getPrimaryKey();
-        value = getPrimaryKey().getValue();
+    public Object getAttributeValue(AttributeField field)
+            throws WdkModelException {
+        Object value;
+        if (field instanceof PrimaryKeyField) {
+            // modified by Jerric
+            // value = recordClass.getIdPrefix() + getPrimaryKey();
+            value = getPrimaryKey().getValue();
 
-	} else if (field instanceof TextAttributeField) {
-	    TextAttributeField taField = (TextAttributeField)field;
-	    value = instantiateTextAttribute(taField.getName(), 
-					     taField,
-					     new LinkedHashMap<String, String>());
+        } else if (field instanceof TextAttributeField) {
+            TextAttributeField taField = (TextAttributeField) field;
+            value = instantiateTextAttribute(taField.getName(), taField,
+                    new LinkedHashMap<String, String>());
 
-	} else if (field instanceof LinkAttributeField) {
-	    LinkAttributeField laField = (LinkAttributeField)field;
-	    value = instantiateLinkAttribute(laField.getName(), 
-					     laField, 
-					     new LinkedHashMap<String, String>());
+        } else if (field instanceof LinkAttributeField) {
+            LinkAttributeField laField = (LinkAttributeField) field;
+            value = instantiateLinkAttribute(laField.getName(), laField,
+                    new LinkedHashMap<String, String>());
 
-	} else if (field instanceof ColumnAttributeField){
-	    ColumnAttributeField aField = (ColumnAttributeField)field;
-	    Query query = aField.getQuery();
-        
-        // TEST
-        //logger.debug("Field: " + aField.name);
-        //logger.debug("Query: " + query.getFullName());
-        
-	    String queryName = query.getName();
-	    String attributeName = field.getName();
+        } else if (field instanceof ColumnAttributeField) {
+            ColumnAttributeField aField = (ColumnAttributeField) field;
+            Query query = aField.getQuery();
 
-	    if (!attributesResultSetsMap.containsKey(queryName)) {
-		runAttributesQuery(query);
-	    }
-	    Map resultMap = attributesResultSetsMap.get(queryName);
-	    if (resultMap == null) {
-	        throw new WdkModelException("Attempting to find a value for attribute '" + attributeName + "' in recordClass '" + recordClass.getName() + "'.  It is claiming to come from query amed '"+queryName+"' but there is no resultMap for that name." );
-	    }
-	    value = resultMap.get(attributeName);
-	} else {
-	    throw new WdkModelException("Unsupported field type: " + field.getClass());
-	}
-	return value;
+            // TEST
+            // logger.debug("Field: " + aField.name);
+            // logger.debug("Query: " + query.getFullName());
+
+            String queryName = query.getName();
+            String attributeName = field.getName();
+
+            if (!attributesResultSetsMap.containsKey(queryName)) {
+                runAttributesQuery(query);
+            }
+            Map resultMap = attributesResultSetsMap.get(queryName);
+            if (resultMap == null) {
+                throw new WdkModelException(
+                        "Attempting to find a value for attribute '"
+                                + attributeName
+                                + "' in recordClass '"
+                                + recordClass.getName()
+                                + "'.  It is claiming to come from query amed '"
+                                + queryName
+                                + "' but there is no resultMap for that name.");
+            }
+            value = resultMap.get(attributeName);
+        } else {
+            throw new WdkModelException("Unsupported field type: "
+                    + field.getClass());
+        }
+        return value;
     }
 
-    public TableFieldValue getTableValue(String tableName) throws WdkModelException {
+    public TableFieldValue getTableValue(String tableName)
+            throws WdkModelException {
         // get the table field
         TableField tableField = recordClass.getTableField(tableName);
         Query query = tableField.getQuery();
@@ -143,11 +162,7 @@ public class RecordInstance {
             paramHash.put(RecordClass.PROJECT_ID_NAME, projectId);
         paramHash.put(RecordClass.PRIMARY_KEY_NAME, primaryKey.getRecordId());
 
-        try {
-            instance.setValues(paramHash);
-        } catch (WdkUserException e) {
-            throw new WdkModelException(e);
-        }
+        instance.setValues(paramHash);
         return new TableFieldValue(tableField, instance.getResult());
     }
 
@@ -155,7 +170,8 @@ public class RecordInstance {
      * @return Map of tableName -> TableFieldValue
      */
     public Map getTables() {
-	return new FieldValueMap(recordClass, this, FieldValueMap.TABLE_MAP, null);
+        return new FieldValueMap(recordClass, this, FieldValueMap.TABLE_MAP,
+                null);
     }
 
     /**
@@ -163,20 +179,24 @@ public class RecordInstance {
      */
 
     public Map<String, AttributeFieldValue> getAttributes() {
-	return new FieldValueMap(recordClass, this, FieldValueMap.ATTRIBUTE_MAP, dynamicAttributeFields);
-	
+        return new FieldValueMap(recordClass, this,
+                FieldValueMap.ATTRIBUTE_MAP, dynamicAttributeFields);
+
     }
 
     /**
-     * This will include dynamic attributes if they appear in the summaryAttributeList
+     * This will include dynamic attributes if they appear in the
+     * summaryAttributeList
+     * 
      * @return Map of summaryAttributeName -> AttributeFieldValue
      */
 
     public Map getSummaryAttributes() {
-	return new FieldValueMap(recordClass, this, FieldValueMap.SUMMARY_ATTRIBUTE_MAP, dynamicAttributeFields);	
+        return new FieldValueMap(recordClass, this,
+                FieldValueMap.SUMMARY_ATTRIBUTE_MAP, dynamicAttributeFields);
     }
-    
-    //change name of method?
+
+    // change name of method?
     public Map<String, RecordInstance> getNestedRecordInstances()
             throws WdkModelException, WdkUserException {
 
@@ -209,7 +229,6 @@ public class RecordInstance {
         return riMap;
     }
 
-    
     public Map<String, RecordInstance[]> getNestedRecordInstanceLists()
             throws WdkModelException, WdkUserException {
 
@@ -236,137 +255,134 @@ public class RecordInstance {
     }
 
     public void setTimeAttributeQueries(boolean doTiming) {
-	timeAttributeQueries = doTiming;
+        timeAttributeQueries = doTiming;
     }
 
     public boolean getTimeAttributeQueries() {
-	return timeAttributeQueries;
+        return timeAttributeQueries;
     }
 
-    private Answer getNestedRecordAnswer(Question q) throws WdkModelException, WdkUserException {
-	
-	Param nestedQueryParams[] = q.getQuery().getParams();
-	Map<String, Object> queryValues = new LinkedHashMap<String, Object>();
-	for (int j = 0; j < nestedQueryParams.length; j++){
-	    Param nextParam = nestedQueryParams[j];
-	    String paramName = nextParam.getName();
+    private Answer getNestedRecordAnswer(Question q) throws WdkModelException,
+            WdkUserException {
 
-        String value;
-        if (paramName.equalsIgnoreCase("projectId")) {
-            value = this.getPrimaryKey().getProjectId();
-        } else {
-            AttributeField field = this.getRecordClass().getAttributeField(paramName);
-            if (field instanceof PrimaryKeyField){
-                value = this.getPrimaryKey().getRecordId();
+        Param nestedQueryParams[] = q.getQuery().getParams();
+        Map<String, Object> queryValues = new LinkedHashMap<String, Object>();
+        for (int j = 0; j < nestedQueryParams.length; j++) {
+            Param nextParam = nestedQueryParams[j];
+            String paramName = nextParam.getName();
+
+            String value;
+            if (paramName.equalsIgnoreCase("projectId")) {
+                value = this.getPrimaryKey().getProjectId();
+            } else {
+                AttributeField field = this.getRecordClass().getAttributeField(
+                        paramName);
+                if (field instanceof PrimaryKeyField) {
+                    value = this.getPrimaryKey().getRecordId();
+                } else if (field instanceof AttributeField) {
+                    value = this.getAttributeValue(paramName).toString();
+                } else {
+                    throw new WdkModelException(
+                            "Illegal to link NestedRecordList " + q.getName()
+                                    + " on attribute of type "
+                                    + field.getClass().getName());
+                }
             }
-            else if (field instanceof AttributeField){
-                value = this.getAttributeValue(paramName).toString();
-            }
-            else {
-                throw new WdkModelException ("Illegal to link NestedRecordList " 
-                        + q.getName() + " on attribute of type " 
-                        + field.getClass().getName());
-            }
+
+            queryValues.put(paramName, value);
         }
-
-	    queryValues.put(paramName, value);
-	}
-	Answer a = q.makeAnswer(queryValues, 1, MAXIMUM_NESTED_RECORD_INSTANCES); 
-	return a;
+        Answer a = q.makeAnswer(queryValues, 1, MAXIMUM_NESTED_RECORD_INSTANCES);
+        return a;
     }
 
-	
-
-    //maybe change this to RecordInstance[][] for jspwrap purposes?
-    /*    public Vector getNestedRecordListInstances() throws WdkModelException, WdkUserException{
-	NestedRecordList nrLists[] = this.recordClass.getNestedRecordLists();
-	Vector nrVector = new Vector();
-	if (nrLists != null){
-	    for (int i = 0; i < nrLists.length; i++){
-		NestedRecordList nextNrList = nrLists[i];
-		RecordInstance riList[] = nextNrList.getRecordInstances(this);
-		nrVector.add(riList);
-	    }
-	}
-	return nrVector;
-
-	}*/
+    // maybe change this to RecordInstance[][] for jspwrap purposes?
+    /*
+     * public Vector getNestedRecordListInstances() throws WdkModelException,
+     * WdkUserException{ NestedRecordList nrLists[] =
+     * this.recordClass.getNestedRecordLists(); Vector nrVector = new Vector();
+     * if (nrLists != null){ for (int i = 0; i < nrLists.length; i++){
+     * NestedRecordList nextNrList = nrLists[i]; RecordInstance riList[] =
+     * nextNrList.getRecordInstances(this); nrVector.add(riList); } } return
+     * nrVector;
+     *  }
+     */
 
     public String print() throws WdkModelException, WdkUserException {
 
-	String newline = System.getProperty( "line.separator" );
-	StringBuffer buf = new StringBuffer();
-	
-	Map<String, AttributeFieldValue> attributeFields = getAttributes();
-	
-	Map<String, AttributeFieldValue> summaryAttributes = new LinkedHashMap<String, AttributeFieldValue>();
-	Map<String, AttributeFieldValue> nonSummaryAttributes = new LinkedHashMap<String, AttributeFieldValue>();
-	
-	splitSummaryAttributes(attributeFields, summaryAttributes, nonSummaryAttributes);
+        String newline = System.getProperty("line.separator");
+        StringBuffer buf = new StringBuffer();
 
-	printAtts_Aux(buf, summaryAttributes);
-	printAtts_Aux(buf, nonSummaryAttributes);
-	
-	Map tableFields = getTables();
-	Iterator fieldNames = tableFields.keySet().iterator();
-	
-	while (fieldNames.hasNext()) {
-	    
-	    String fieldName = (String)fieldNames.next();
+        Map<String, AttributeFieldValue> attributeFields = getAttributes();
 
-	    long startTime = System.currentTimeMillis();
+        Map<String, AttributeFieldValue> summaryAttributes = new LinkedHashMap<String, AttributeFieldValue>();
+        Map<String, AttributeFieldValue> nonSummaryAttributes = new LinkedHashMap<String, AttributeFieldValue>();
 
-	    TableFieldValue fieldValue = 
-		(TableFieldValue)tableFields.get(fieldName);
+        splitSummaryAttributes(attributeFields, summaryAttributes,
+                nonSummaryAttributes);
 
-	    buf.append(newline);
-	    buf.append("<Table> " + fieldValue.getDisplayName()).append( newline );
-	    fieldValue.write(buf);
-	    fieldValue.closeResult();
+        printAtts_Aux(buf, summaryAttributes);
+        printAtts_Aux(buf, nonSummaryAttributes);
 
-	    if(getTimeAttributeQueries()) {
-		buf.append("TIME INFO: " + fieldName + " took " +
-			   (System.currentTimeMillis() - startTime)/1000 + " seconds to retrieve.\n");
-	    }
+        Map tableFields = getTables();
+        Iterator fieldNames = tableFields.keySet().iterator();
 
-	}
-	
-	buf.append(newline);
-	buf.append("Nested Records belonging to this RecordInstance:" + newline);
-	Map nestedRecords = getNestedRecordInstances();
-	Iterator recordNames = nestedRecords.keySet().iterator();
-	while (recordNames.hasNext()){
-	    String nextRecordName = (String)recordNames.next();
-	    RecordInstance nextNr = (RecordInstance)nestedRecords.get(nextRecordName);
-	    buf.append ("***" + nextRecordName + "***" + newline + nextNr.printSummary() + newline);
-	}
-    
-	buf.append("Nested Record Lists belonging to this RecordInstance:" + newline);
+        while (fieldNames.hasNext()) {
 
-	Map nestedRecordLists = getNestedRecordInstanceLists();
-	Iterator recordListNames = nestedRecordLists.keySet().iterator();
-	while (recordListNames.hasNext()){
-	    String nextRecordListName = (String)recordListNames.next();
-	    RecordInstance nextNrList[] = (RecordInstance[])nestedRecordLists.get(nextRecordListName);
-	    buf.append ("***" + nextRecordListName + "***" + newline);
-	    for (int i = 0; i < nextNrList.length; i++){
-		buf.append(nextNrList[i].printSummary() + newline);
-	    }
-	}
-	
-	return buf.toString();
+            String fieldName = (String) fieldNames.next();
+
+            long startTime = System.currentTimeMillis();
+
+            TableFieldValue fieldValue = (TableFieldValue) tableFields.get(fieldName);
+
+            buf.append(newline);
+            buf.append("<Table> " + fieldValue.getDisplayName()).append(newline);
+            fieldValue.write(buf);
+            fieldValue.closeResult();
+
+            if (getTimeAttributeQueries()) {
+                buf.append("TIME INFO: " + fieldName + " took "
+                        + (System.currentTimeMillis() - startTime) / 1000
+                        + " seconds to retrieve.\n");
+            }
+
+        }
+
+        buf.append(newline);
+        buf.append("Nested Records belonging to this RecordInstance:" + newline);
+        Map nestedRecords = getNestedRecordInstances();
+        Iterator recordNames = nestedRecords.keySet().iterator();
+        while (recordNames.hasNext()) {
+            String nextRecordName = (String) recordNames.next();
+            RecordInstance nextNr = (RecordInstance) nestedRecords.get(nextRecordName);
+            buf.append("***" + nextRecordName + "***" + newline
+                    + nextNr.printSummary() + newline);
+        }
+
+        buf.append("Nested Record Lists belonging to this RecordInstance:"
+                + newline);
+
+        Map nestedRecordLists = getNestedRecordInstanceLists();
+        Iterator recordListNames = nestedRecordLists.keySet().iterator();
+        while (recordListNames.hasNext()) {
+            String nextRecordListName = (String) recordListNames.next();
+            RecordInstance nextNrList[] = (RecordInstance[]) nestedRecordLists.get(nextRecordListName);
+            buf.append("***" + nextRecordListName + "***" + newline);
+            for (int i = 0; i < nextNrList.length; i++) {
+                buf.append(nextNrList[i].printSummary() + newline);
+            }
+        }
+
+        return buf.toString();
     }
-    
+
     public String printSummary() throws WdkModelException {
 
         StringBuffer buf = new StringBuffer();
 
         Map<String, AttributeFieldValue> attributeFields = getAttributes();
 
-        Map<String, AttributeFieldValue> summaryAttributes = 
-            new LinkedHashMap<String, AttributeFieldValue>();
-        Map<String, AttributeFieldValue> nonSummaryAttributes = 
-            new LinkedHashMap<String, AttributeFieldValue>();
+        Map<String, AttributeFieldValue> summaryAttributes = new LinkedHashMap<String, AttributeFieldValue>();
+        Map<String, AttributeFieldValue> nonSummaryAttributes = new LinkedHashMap<String, AttributeFieldValue>();
 
         splitSummaryAttributes(attributeFields, summaryAttributes,
                 nonSummaryAttributes);
@@ -375,122 +391,125 @@ public class RecordInstance {
         return buf.toString();
     }
 
-    public String toXML() throws WdkModelException, WdkUserException { return toXML(""); }
-
-    public String toXML(String ident) throws WdkModelException, WdkUserException {
-	String newline = System.getProperty( "line.separator" );
-	StringBuffer buf = new StringBuffer();
-
-	String rootStart = ident + "<" + getRecordClass().getFullName() + ">" + newline
-	    + ident + "<li>" + newline;
-	String rootEnd = ident + "</li>" + newline
-	    + ident + "</" + getRecordClass().getFullName() + ">" + newline;
-	ident = ident + "    ";
-	buf.append(rootStart);
-	
-	Map attributeFields = getAttributes();
-	Iterator fieldNames = attributeFields.keySet().iterator();
-	while (fieldNames.hasNext()) {
-	    String fieldName = (String)fieldNames.next();
-	    AttributeFieldValue field = 
-		(AttributeFieldValue)attributeFields.get(fieldName);
-	    buf.append(ident + "<" + field.getName() + ">" + field.getValue() + "</" + field.getName() + ">" + newline);
-	}
-
-	Map tableFields = getTables();
-	fieldNames = tableFields.keySet().iterator();
-	while (fieldNames.hasNext()) {
-	    String fieldName = (String)fieldNames.next();
-	    buf.append(ident + "<" + fieldName + ">" + newline);
-        
-        TableFieldValue tableValue = getTableValue(fieldName);
-        tableValue.toXML(buf, "li", ident);
-	    buf.append(ident + "</" + fieldName + ">" + newline);
-	}
-	
-	Map nestedRecords = getNestedRecordInstances();
-	Iterator recordNames = nestedRecords.keySet().iterator();
-	while (recordNames.hasNext()){
-	    String nextRecordName = (String)recordNames.next();
-	    RecordInstance nextNr = (RecordInstance)nestedRecords.get(nextRecordName);
-	    buf.append (nextNr.toXML(ident));
-	}
-    
-	Map nestedRecordLists = getNestedRecordInstanceLists();
-	Iterator recordListNames = nestedRecordLists.keySet().iterator();
-	while (recordListNames.hasNext()){
-	    String nextRecordListName = (String)recordListNames.next();
-	    RecordInstance nextNrList[] = (RecordInstance[])nestedRecordLists.get(nextRecordListName);
-	    for (int i = 0; i < nextNrList.length; i++){
-		buf.append(nextNrList[i].toXML(ident) + newline);
-	    }
-	}
-	
-	buf.append(rootEnd);
-
-	return buf.toString();
+    public String toXML() throws WdkModelException, WdkUserException {
+        return toXML("");
     }
 
-    ///////////////////////////////////////////////////////////////////////////
+    public String toXML(String ident) throws WdkModelException,
+            WdkUserException {
+        String newline = System.getProperty("line.separator");
+        StringBuffer buf = new StringBuffer();
+
+        String rootStart = ident + "<" + getRecordClass().getFullName() + ">"
+                + newline + ident + "<li>" + newline;
+        String rootEnd = ident + "</li>" + newline + ident + "</"
+                + getRecordClass().getFullName() + ">" + newline;
+        ident = ident + "    ";
+        buf.append(rootStart);
+
+        Map attributeFields = getAttributes();
+        Iterator fieldNames = attributeFields.keySet().iterator();
+        while (fieldNames.hasNext()) {
+            String fieldName = (String) fieldNames.next();
+            AttributeFieldValue field = (AttributeFieldValue) attributeFields.get(fieldName);
+            buf.append(ident + "<" + field.getName() + ">" + field.getValue()
+                    + "</" + field.getName() + ">" + newline);
+        }
+
+        Map tableFields = getTables();
+        fieldNames = tableFields.keySet().iterator();
+        while (fieldNames.hasNext()) {
+            String fieldName = (String) fieldNames.next();
+            buf.append(ident + "<" + fieldName + ">" + newline);
+
+            TableFieldValue tableValue = getTableValue(fieldName);
+            tableValue.toXML(buf, "li", ident);
+            buf.append(ident + "</" + fieldName + ">" + newline);
+        }
+
+        Map nestedRecords = getNestedRecordInstances();
+        Iterator recordNames = nestedRecords.keySet().iterator();
+        while (recordNames.hasNext()) {
+            String nextRecordName = (String) recordNames.next();
+            RecordInstance nextNr = (RecordInstance) nestedRecords.get(nextRecordName);
+            buf.append(nextNr.toXML(ident));
+        }
+
+        Map nestedRecordLists = getNestedRecordInstanceLists();
+        Iterator recordListNames = nestedRecordLists.keySet().iterator();
+        while (recordListNames.hasNext()) {
+            String nextRecordListName = (String) recordListNames.next();
+            RecordInstance nextNrList[] = (RecordInstance[]) nestedRecordLists.get(nextRecordListName);
+            for (int i = 0; i < nextNrList.length; i++) {
+                buf.append(nextNrList[i].toXML(ident) + newline);
+            }
+        }
+
+        buf.append(rootEnd);
+
+        return buf.toString();
+    }
+
+    // /////////////////////////////////////////////////////////////////////////
     // package methods
-    ///////////////////////////////////////////////////////////////////////////
+    // /////////////////////////////////////////////////////////////////////////
 
     void setDynamicAttributeFields(Map<String, AttributeField> dynaAttribs) {
-	dynamicAttributeFields = dynaAttribs;
+        dynamicAttributeFields = dynaAttribs;
     }
 
-    void setAnswer(Answer answer){
-	this.answer = answer;
+    void setAnswer(Answer answer) {
+        this.answer = answer;
     }
 
-    void setSummaryAttributeList(String[] summaryAttributeList){
-	if (summaryAttributeList != null){
-	    for (int i = 0; i < summaryAttributeList.length; i++){
-		summaryAttributeMap.put(summaryAttributeList[i], i);
-	    }
-	}
+    void setSummaryAttributeList(String[] summaryAttributeList) {
+        if (summaryAttributeList != null) {
+            for (int i = 0; i < summaryAttributeList.length; i++) {
+                summaryAttributeMap.put(summaryAttributeList[i], i);
+            }
+        }
     }
 
     Map<String, Integer> getSummaryAttributesMap() {
-	return summaryAttributeMap;
+        return summaryAttributeMap;
     }
 
-    public boolean isSummaryAttribute(String attName){
-	
-	if (answer != null){
-	    return answer.isSummaryAttribute(attName);
-	}
-	else return false;
+    public boolean isSummaryAttribute(String attName) {
+
+        if (answer != null) {
+            return answer.isSummaryAttribute(attName);
+        } else return false;
 
     }
 
-    ///////////////////////////////////////////////////////////////////////////
+    // /////////////////////////////////////////////////////////////////////////
     // protected methods
-    ///////////////////////////////////////////////////////////////////////////
+    // /////////////////////////////////////////////////////////////////////////
 
-    protected void setAttributeValue(String attributeName, Object attributeValue, Query query) throws WdkModelException{
-	
-	String queryName = query.getName();
-	Map resultMap = attributesResultSetsMap.get(queryName);
-	if (resultMap == null){
-	    resultMap = new LinkedHashMap();
-	    attributesResultSetsMap.put(queryName, resultMap);
-	}
-	resultMap.put(attributeName, attributeValue);
+    protected void setAttributeValue(String attributeName,
+            Object attributeValue, Query query) throws WdkModelException {
+
+        String queryName = query.getName();
+        Map resultMap = attributesResultSetsMap.get(queryName);
+        if (resultMap == null) {
+            resultMap = new LinkedHashMap();
+            attributesResultSetsMap.put(queryName, resultMap);
+        }
+        resultMap.put(attributeName, attributeValue);
     }
-    
+
     protected void setAttributeValue(String attributeName, Object attributeValue)
             throws WdkModelException {
         ColumnAttributeField field = (ColumnAttributeField) recordClass.getAttributeField(attributeName);
         setAttributeValue(attributeName, attributeValue, field.getQuery());
     }
-    
+
     /**
      * Place hash of single row result into hash keyed on query name
      */
     protected void runAttributesQuery(Query query) throws WdkModelException {
         // TEST
-//        logger.debug("runAttributeQuery: " + query.getFullName());
+        // logger.debug("runAttributeQuery: " + query.getFullName());
 
         QueryInstance qInstance = query.makeInstance();
         qInstance.setIsCacheable(false);
@@ -515,11 +534,7 @@ public class RecordInstance {
             paramHash.put(RecordClass.PRIMARY_KEY_NAME,
                     primaryKey.getRecordId());
 
-            try {
-                qInstance.setValues(paramHash);
-            } catch (WdkUserException e) {
-                throw new WdkModelException(e);
-            }
+            qInstance.setValues(paramHash);
 
             ResultList rl = qInstance.getResult();
 
@@ -545,130 +560,142 @@ public class RecordInstance {
         }
     }
 
-    protected String instantiateTextAttribute(String textAttributeName, 
-					      TextAttributeField field, 
-					      Map<String, String> alreadyVisited) throws WdkModelException {
+    protected String instantiateTextAttribute(String textAttributeName,
+            TextAttributeField field, Map<String, String> alreadyVisited)
+            throws WdkModelException {
 
-	if (alreadyVisited.containsKey(textAttributeName)) {
-	    throw new WdkModelException("Circular text attribute subsitution involving text attribute '" 
-					+ textAttributeName + "'");
-	}
+        if (alreadyVisited.containsKey(textAttributeName)) {
+            throw new WdkModelException(
+                    "Circular text attribute subsitution involving text attribute '"
+                            + textAttributeName + "'");
+        }
 
-	alreadyVisited.put(textAttributeName, textAttributeName);
-	return instantiateAttr(field.getText(), textAttributeName);
+        alreadyVisited.put(textAttributeName, textAttributeName);
+        return instantiateAttr(field.getText(), textAttributeName);
     }
 
-    protected LinkValue instantiateLinkAttribute(String linkAttributeName, 
-						 LinkAttributeField field, 
-						 Map<String, String> alreadyVisited) throws WdkModelException {
+    protected LinkValue instantiateLinkAttribute(String linkAttributeName,
+            LinkAttributeField field, Map<String, String> alreadyVisited)
+            throws WdkModelException {
 
-	if (alreadyVisited.containsKey(linkAttributeName)) {
-	    throw new WdkModelException("Circular link attribute subsitution involving text attribute '" 
-					+ linkAttributeName + "'");
-	}
+        if (alreadyVisited.containsKey(linkAttributeName)) {
+            throw new WdkModelException(
+                    "Circular link attribute subsitution involving text attribute '"
+                            + linkAttributeName + "'");
+        }
 
-	alreadyVisited.put(linkAttributeName, linkAttributeName);
+        alreadyVisited.put(linkAttributeName, linkAttributeName);
 
-	return new LinkValue(instantiateAttr(field.getVisible(), 
-					     linkAttributeName),
-			     instantiateAttr(field.getUrl(), 
-					     linkAttributeName),
-			     field);
+        return new LinkValue(instantiateAttr(field.getVisible(),
+                linkAttributeName), instantiateAttr(field.getUrl(),
+                linkAttributeName), field);
     }
 
-    private String instantiateAttr(String rawText, String targetAttrName) throws WdkModelException { 
-	String instantiatedText = rawText;
+    private String instantiateAttr(String rawText, String targetAttrName)
+            throws WdkModelException {
+        String instantiatedText = rawText;
 
-    Map<String, AttributeFieldValue> attributes = getAttributes();
-	Iterator attributeNames = attributes.keySet().iterator();
-	while (attributeNames.hasNext()) {
-	    String attrName = (String)attributeNames.next();
-	    if (attrName.equals(targetAttrName)) continue;
-	    if (containsMacro(instantiatedText, attrName)) {
-           
-		String valString =  
-		    getAttributeValue(attrName).toString();
-		instantiatedText = instantiateText(instantiatedText, 
-						   attrName, 
-						   valString);
-	    }
-	}
+        Map<String, AttributeFieldValue> attributes = getAttributes();
+        Iterator attributeNames = attributes.keySet().iterator();
+        while (attributeNames.hasNext()) {
+            String attrName = (String) attributeNames.next();
+            if (attrName.equals(targetAttrName)) continue;
+            if (containsMacro(instantiatedText, attrName)) {
 
-	checkInstantiatedText(instantiatedText);
+                String valString = getAttributeValue(attrName).toString();
+                instantiatedText = instantiateText(instantiatedText, attrName,
+                        valString);
+            }
+        }
 
-	return instantiatedText;
+        checkInstantiatedText(instantiatedText);
+
+        return instantiatedText;
     }
 
     /**
-     * Given a map of all attributes in this recordInstance, separate them into those that are summary attributes
-     * and those that are not summary attributes.  Place results into @param summaryAttributes and @param
-     * nonSummaryAttributes.
+     * Given a map of all attributes in this recordInstance, separate them into
+     * those that are summary attributes and those that are not summary
+     * attributes. Place results into
+     * 
+     * @param summaryAttributes
+     *            and
+     * @param nonSummaryAttributes.
      */
-    
-    private void splitSummaryAttributes(Map<String, AttributeFieldValue> attributes, Map<String, AttributeFieldValue> summaryAttributes, Map<String, AttributeFieldValue> nonSummaryAttributes){
 
-	Iterator<String> fieldNames = attributes.keySet().iterator();
-	//	if (fieldNames
-	while (fieldNames.hasNext()) {
-	    String fieldName = (String)fieldNames.next();
-	    AttributeFieldValue attribute = 
-		(AttributeFieldValue)attributes.get(fieldName);
-	    if (attribute.isSummary()){
-		summaryAttributes.put(fieldName, attribute);
-	    }
-	    else {
-		nonSummaryAttributes.put(fieldName, attribute);
-	    }
-	}
+    private void splitSummaryAttributes(
+            Map<String, AttributeFieldValue> attributes,
+            Map<String, AttributeFieldValue> summaryAttributes,
+            Map<String, AttributeFieldValue> nonSummaryAttributes) {
+
+        Iterator<String> fieldNames = attributes.keySet().iterator();
+        // if (fieldNames
+        while (fieldNames.hasNext()) {
+            String fieldName = (String) fieldNames.next();
+            AttributeFieldValue attribute = (AttributeFieldValue) attributes.get(fieldName);
+            if (attribute.isSummary()) {
+                summaryAttributes.put(fieldName, attribute);
+            } else {
+                nonSummaryAttributes.put(fieldName, attribute);
+            }
+        }
     }
 
+    private void printAtts_Aux(StringBuffer buf,
+            Map<String, AttributeFieldValue> attributes) {
+        String newline = System.getProperty("line.separator");
+        Iterator<String> attributeNames = attributes.keySet().iterator();
+        while (attributeNames.hasNext()) {
+            String attributeName = attributeNames.next();
 
-    private void printAtts_Aux(StringBuffer buf, Map<String, AttributeFieldValue> attributes){
-	String newline = System.getProperty( "line.separator" );
-	Iterator<String> attributeNames = attributes.keySet().iterator();
-	while (attributeNames.hasNext()) {
-	    String attributeName = attributeNames.next();
-
-	    AttributeFieldValue attribute = 
-		attributes.get(attributeName);
-	    long startTime = System.currentTimeMillis();
-	    buf.append(attribute.getDisplayName() + ":   " + 
-                attribute.getBriefValue()).append( newline );
-	    if(getTimeAttributeQueries()) {
-		buf.append("TIME INFO: " + attributeName + " took " +
-			   (System.currentTimeMillis() - startTime)/1000 + " seconds to retrieve.\n");
-	    }
-	}
+            AttributeFieldValue attribute = attributes.get(attributeName);
+            long startTime = System.currentTimeMillis();
+            buf.append(
+                    attribute.getDisplayName() + ":   "
+                            + attribute.getBriefValue()).append(newline);
+            if (getTimeAttributeQueries()) {
+                buf.append("TIME INFO: " + attributeName + " took "
+                        + (System.currentTimeMillis() - startTime) / 1000
+                        + " seconds to retrieve.\n");
+            }
+        }
     }
 
-    ////////////////////////////////////////////////////////////////////
-    //   static
-    ////////////////////////////////////////////////////////////////////
+    // //////////////////////////////////////////////////////////////////
+    // static
+    // //////////////////////////////////////////////////////////////////
 
     /**
-     * substitute a value for a macro in a text string.  The macro is delimited by $$
-     @param text the text which contains the macro
-     @param macroName the name of the macro, without the delimiter
-     @param value the value to substitute in
+     * substitute a value for a macro in a text string. The macro is delimited
+     * by $$
+     * 
+     * @param text
+     *            the text which contains the macro
+     * @param macroName
+     *            the name of the macro, without the delimiter
+     * @param value
+     *            the value to substitute in
      */
-    public static String instantiateText(String text, String macroName, String value) {
-	String macro = "$$" + macroName + "$$";
-	String macroRegex = "\\$\\$" + macroName + "\\$\\$";
-	if (text.indexOf(macro) != -1) {
-	    text = text.replaceAll(macroRegex, value);
-	}
-	return text;
+    public static String instantiateText(String text, String macroName,
+            String value) {
+        String macro = "$$" + macroName + "$$";
+        String macroRegex = "\\$\\$" + macroName + "\\$\\$";
+        if (text.indexOf(macro) != -1) {
+            text = text.replaceAll(macroRegex, value);
+        }
+        return text;
     }
 
     public static boolean containsMacro(String text, String macroName) {
-	String macro = "$$" + macroName + "$$";
-	return text.indexOf(macro) != -1;
+        String macro = "$$" + macroName + "$$";
+        return text.indexOf(macro) != -1;
     }
 
-    public static void checkInstantiatedText(String instantiatedText) throws WdkModelException {
-	if (instantiatedText.matches("\\$\\$\\w+\\$\\$")) 
-	    throw new WdkModelException ("'" + instantiatedText + 
-				 "' contains unrecognized macro");
+    public static void checkInstantiatedText(String instantiatedText)
+            throws WdkModelException {
+        if (instantiatedText.matches("\\$\\$\\w+\\$\\$"))
+            throw new WdkModelException("'" + instantiatedText
+                    + "' contains unrecognized macro");
     }
-	
+
 }
