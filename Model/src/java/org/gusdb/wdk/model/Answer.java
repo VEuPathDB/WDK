@@ -470,33 +470,32 @@ public class Answer {
      */
     private void initPageRecordInstances() throws WdkModelException {
 
-	if (pageRecordInstances != null) return;
+        if (pageRecordInstances != null) return;
 
-	// set instance variables projectColumnName and idsColumnName
-	findPrimaryKeyColumnNames();
-        
-	ResultList rl = 
-	    idsQueryInstance.getPersistentResultPage(startRecordInstanceI,
-						     endRecordInstanceI);
-   
-	Vector<RecordInstance> tempRecordInstances = new Vector<RecordInstance>();
+        // set instance variables projectColumnName and idsColumnName
+        findPrimaryKeyColumnNames();
 
-	while (rl.next()){
-	    RecordInstance nextRecordInstance = 
-		getQuestion().getRecordClass().makeRecordInstance();
-	    nextRecordInstance.setDynamicAttributeFields(question.getDynamicAttributeFields());
-	    String project = null;
-	    if (recordProjectColumnName != null)
-		project = rl.getValue(recordProjectColumnName).toString();
-	    String id = rl.getValue(recordIdColumnName).toString();
-	    nextRecordInstance.setPrimaryKey(project, id);
-	    
-	    nextRecordInstance.setAnswer(this);
-	    tempRecordInstances.add(nextRecordInstance);
-	}        
-	pageRecordInstances = new RecordInstance[tempRecordInstances.size()];
-	tempRecordInstances.copyInto(pageRecordInstances);
-	rl.close();
+        ResultList rl = idsQueryInstance.getPersistentResultPage(
+                startRecordInstanceI, endRecordInstanceI);
+
+        Vector<RecordInstance> tempRecordInstances = new Vector<RecordInstance>();
+
+        while (rl.next()) {
+            String project = null;
+            if (recordProjectColumnName != null)
+                project = rl.getValue(recordProjectColumnName).toString();
+            String id = rl.getValue(recordIdColumnName).toString();
+            RecordClass recordClass = question.getRecordClass();
+            RecordInstance nextRecordInstance = recordClass.makeRecordInstance(
+                    project, id);
+            nextRecordInstance.setDynamicAttributeFields(question.getDynamicAttributeFields());
+
+            nextRecordInstance.setAnswer(this);
+            tempRecordInstances.add(nextRecordInstance);
+        }
+        pageRecordInstances = new RecordInstance[tempRecordInstances.size()];
+        tempRecordInstances.copyInto(pageRecordInstances);
+        rl.close();
     }
 
     /**

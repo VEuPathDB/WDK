@@ -127,14 +127,4 @@ public class RecordBean {
     public Map getTables() {
 	return recordInstance.getTables();
     }
-
-    /**
-     * used by the controller. Modified by Jerric
-     * @param projectID
-     * @param key
-     * @throws WdkModelException 
-     */
-    public void assignPrimaryKey(String projectID, String key) throws WdkModelException {
-	recordInstance.setPrimaryKey(projectID, key);
-    }
 }

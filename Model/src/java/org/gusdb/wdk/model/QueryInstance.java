@@ -71,7 +71,7 @@ public abstract class QueryInstance {
     // Public Methods
     // ------------------------------------------------------------------
 
-    public void setValues(Map<String, Object> values) throws WdkUserException, WdkModelException {
+    public void setValues(Map<String, Object> values) throws WdkModelException {
 	this.values = new LinkedHashMap<String, Object>(values);
     checksum = null;
 	query.applyDefaults(values);

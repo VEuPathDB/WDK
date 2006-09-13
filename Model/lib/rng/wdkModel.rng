@@ -275,6 +275,10 @@
          </element>
       </optional>
 
+      <optional>
+         <attribute name="aliasQueryRef" />
+      </optional>
+
       <zeroOrMore>  
           <element name="attributeQueryRef">
               <attribute name="ref" />

@@ -237,9 +237,7 @@ public class SanityTester {
                 recordRef = new Reference(records[i].getRef());
                 RecordClassSet nextRecordClassSet = wdkModel.getRecordClassSet(recordRef.getSetName());
                 RecordClass nextRecordClass = nextRecordClassSet.getRecordClass(recordRef.getElementName());
-                RecordInstance nextRecordInstance = nextRecordClass.makeRecordInstance();
-
-                nextRecordInstance.setPrimaryKey(records[i].getProjectID(),
+                RecordInstance nextRecordInstance = nextRecordClass.makeRecordInstance(records[i].getProjectID(),
                         records[i].getPrimaryKey());
 
                 String riString = nextRecordInstance.print();
