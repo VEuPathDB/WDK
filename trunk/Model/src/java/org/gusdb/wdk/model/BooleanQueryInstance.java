@@ -84,8 +84,7 @@ public class BooleanQueryInstance extends QueryInstance {
      *        StringParam). Columns are set at this time for the BooleanQuery
      *        this instance points to.
      */
-    public void setValues(Map<String, Object> values) throws WdkUserException,
-            WdkModelException {
+    public void setValues(Map<String, Object> values) throws WdkModelException {
 
         super.setValues(values);
 

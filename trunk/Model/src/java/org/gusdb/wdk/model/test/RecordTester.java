@@ -63,9 +63,8 @@ public class RecordTester {
 
 	    RecordClassSet recordClassSet = wdkModel.getRecordClassSet(recordClassSetName);
 	    RecordClass recordClass = recordClassSet.getRecordClass(recordClassName);
-	    RecordInstance recordInstance = recordClass.makeRecordInstance();
+	    RecordInstance recordInstance = recordClass.makeRecordInstance(projectID, primaryKey);
         
-	    recordInstance.setPrimaryKey(projectID, primaryKey);
 	    if (timeQueries) {
 		recordInstance.setTimeAttributeQueries(true);
 	    }

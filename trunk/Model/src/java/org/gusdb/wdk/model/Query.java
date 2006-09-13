@@ -213,7 +213,7 @@ public abstract class Query implements Serializable {
     }
 
     protected void validateParamValues(Map<String, Object> values)
-            throws WdkUserException, WdkModelException {
+            throws WdkModelException {
         LinkedHashMap<Param, String[]> errors = null;
 
         // first confirm that all supplied values have legal names
@@ -221,7 +221,7 @@ public abstract class Query implements Serializable {
         while (valueNames.hasNext()) {
             String valueName = valueNames.next();
             if (paramsH.get(valueName) == null) {
-                throw new WdkUserException("'" + valueName
+                throw new WdkModelException("'" + valueName
                         + "' is not a legal parameter name for query '"
                         + getFullName() + "'");
             }
@@ -246,9 +246,9 @@ public abstract class Query implements Serializable {
             }
         }
         if (errors != null) {
-	    WdkUserException wue = new WdkUserException(errors);
-	    logger.debug(wue.formatErrors());
-            throw wue;
+            WdkModelException ex = new WdkModelException(errors);
+            logger.debug(ex.formatErrors());
+            throw ex;
         }
     }
 
