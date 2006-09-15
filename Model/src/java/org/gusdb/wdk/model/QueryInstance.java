@@ -65,6 +65,13 @@ public abstract class QueryInstance {
     String resultTableName = null;
     
     protected String checksum = null;
+    
+    /**
+     * The result message contains a description of the status of the result.
+     * For example, for blast searh, if the blast returns no hit, the message
+     * will contain the warning information provided by blast program.
+     */
+    protected String resultMessage;
 
 
     // ------------------------------------------------------------------
@@ -209,6 +216,20 @@ public abstract class QueryInstance {
             }
         }
         return checksum;
+    }
+    
+    /**
+     * @return Returns the resultMessage.
+     */
+    public String getResultMessage() {
+        return resultMessage;
+    }
+    
+    /**
+     * @param resultMessage The resultMessage to set.
+     */
+    public void setResultMessage(String resultMessage) {
+        this.resultMessage = resultMessage;
     }
 
     public abstract String getLowLevelQuery() throws WdkModelException;

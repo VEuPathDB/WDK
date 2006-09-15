@@ -11,6 +11,7 @@ import java.util.Map;
 
 import javax.xml.rpc.ServiceException;
 
+import org.gusdb.wsf.service.WsfResponse;
 import org.gusdb.wsf.service.WsfService;
 import org.gusdb.wsf.service.WsfServiceServiceLocator;
 
@@ -55,7 +56,11 @@ public class WsfClientTest {
 
         try {
             WsfService service = locator.getWsfService(new URL(url));
-            String[][] result = service.invoke(plugin, params, orderedColumns);
+            WsfResponse response = service.invoke(plugin, params, orderedColumns);
+            String message = response.getMessage();
+            String[][] result = response.getResults();
+            // print result message
+            System.out.println("Result message: " + message);
             // print out columns
             System.out.println(printArray(orderedColumns));
             System.out.println(printArray(result));

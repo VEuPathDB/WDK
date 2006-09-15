@@ -267,6 +267,14 @@ public class AnswerBean {
         resetAnswerRowCursor();
         return true;
     }
+    
+    public String getResultMessage() {
+        // TEST
+        System.out.println("Result message from AnswerBean: " + answer.getResultMessage());
+        
+        return answer.getResultMessage();
+    }
+    
 
     ////////////////////////////////////////////////////////////////////////
     // Inner classes
@@ -300,6 +308,9 @@ public class AnswerBean {
 	} 
 	
     }
-    
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.Answer#getResultMessage()
+     */
 
 }
