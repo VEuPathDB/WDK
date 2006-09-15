@@ -19,6 +19,7 @@ import org.gusdb.wdk.model.RDBMSPlatformI;
 import org.gusdb.wdk.model.ResultFactory;
 import org.gusdb.wdk.model.ResultList;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wsf.service.WsfResponse;
 import org.gusdb.wsf.service.WsfService;
 import org.gusdb.wsf.service.WsfServiceServiceLocator;
 
@@ -64,9 +65,15 @@ public class WSQueryInstance extends QueryInstance  {
             // TEST
             logger.info("Invoking " + wsQuery.getProcessName() + " at " + getServiceUrl());
             
-            // get
-            String[][] result = client.invoke(wsQuery.getProcessName(), params,
+            // get the response from the web service
+            WsfResponse response = client.invoke(wsQuery.getProcessName(), params,
                     columnNames);
+            this.resultMessage = response.getMessage();
+            
+            // TEST
+            logger.info("WSQI Result Message:" + resultMessage);
+            
+            String[][] result = response.getResults();
             return new WSResultList(this, result);
 
         } catch (RemoteException e) {

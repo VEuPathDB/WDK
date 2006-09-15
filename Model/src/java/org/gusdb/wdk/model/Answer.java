@@ -559,4 +559,8 @@ public class Answer {
     public int getStartRecordInstanceI() {
         return startRecordInstanceI;
     }
+    
+    public String getResultMessage() {
+        return idsQueryInstance.getResultMessage();
+    }
 }

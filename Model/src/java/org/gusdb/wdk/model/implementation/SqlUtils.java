@@ -412,6 +412,7 @@ public class SqlUtils {
     }
 
     public static synchronized void showConnectionCount() {
+        
         if (createShowThread) {
             createShowThread = false;
             Thread t = new Thread() {
@@ -428,7 +429,7 @@ public class SqlUtils {
                                         + platform.getIdleCount() + ")");
                         }
                         try {
-                            Thread.sleep(10000);
+                            Thread.sleep(1000);
                         } catch (InterruptedException ex) {
                             // TODO Auto-generated catch block
                             ex.printStackTrace();
