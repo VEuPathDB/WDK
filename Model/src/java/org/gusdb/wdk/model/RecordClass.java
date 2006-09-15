@@ -501,7 +501,7 @@ public class RecordClass {
         if (resultList.next()) {
             String columnName = aliasQuery.getColumns()[0].getName();
             String sourceId = (String) resultList.getValue(columnName);
-            return sourceId;
+            aliasName = sourceId;
         }
         resultList.close();
         return aliasName;
