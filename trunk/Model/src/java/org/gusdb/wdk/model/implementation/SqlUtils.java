@@ -600,15 +600,17 @@ public class SqlUtils {
             private Finished finish;
             private Result result;
             private long before, after;
+            private double timeout;
 
             Query(DataSource dataSource, String site, String sql,
-                    Connected connect, Finished finish, Result result) {
+                    Connected connect, Finished finish, Result result, double timeout) {
                 this.dataSource = dataSource;
                 this.site = site;
                 this.sql = sql;
                 this.connect = connect;
                 this.finish = finish;
                 this.result = result;
+                this.timeout = timeout;
             }
 
             public void run() {
@@ -629,6 +631,8 @@ public class SqlUtils {
                     Connection connection = dataSource.getConnection();
                     // showConnectionCount();
                     stmt = connection.createStatement();
+                    Double timeoutD = timeout/1000;
+                    stmt.setQueryTimeout(timeoutD.intValue());
                     ResultSet rs = stmt.executeQuery(sql);
                     if (rs == null) {
                         System.out.println("sql query result shouldn't null");
@@ -704,13 +708,13 @@ public class SqlUtils {
         Result tResult = new Result(null);
         // suppose the order of "queries" is: crypto, plasmo and toxo
         Thread cThread = new Query(dataSource, queries[0][0], queries[0][1],
-                cConnected, cFinished, cResult);
+                cConnected, cFinished, cResult, TIME_OUT);
         cThread.start();
         Thread pThread = new Query(dataSource, queries[1][0], queries[1][1],
-                pConnected, pFinished, pResult);
+                pConnected, pFinished, pResult, TIME_OUT);
         pThread.start();
         Thread tThread = new Query(dataSource, queries[2][0], queries[2][1],
-                tConnected, tFinished, tResult);
+                tConnected, tFinished, tResult, TIME_OUT);
         tThread.start();
 
         boolean allFinished = false;
@@ -724,39 +728,39 @@ public class SqlUtils {
             if (cFinished.get() && pFinished.get() && tFinished.get())
                 allFinished = true; // all threads finished
             if ((after - before) > TIME_OUT) ifTimeOut = true;
-            if (ifTimeOut) { // time out, kill threads
+            if (ifTimeOut) { // time out, DON'T kill threads, leave it alone, because query timeout has been set
                 if (!cFinished.get()) {
-                    try {
-                        cThread.stop();
-                        cThread.destroy();
-                    } catch (Error e) {
-                        // TODO Auto-generated catch block
-                        // e.printStackTrace();
-                    }
+//                    try {
+//                        cThread.stop();
+//                        cThread.destroy();
+//                    } catch (Error e) {
+//                        // TODO Auto-generated catch block
+//                        // e.printStackTrace();
+//                    }
                     cConnected.set(false);
                     cFinished.set(true);
                     cResult.set(null);
                 }
                 if (!pFinished.get()) {
-                    try {
-                        pThread.stop();
-                        pThread.destroy();
-                    } catch (Error e) {
-                        // TODO Auto-generated catch block
-                        // e.printStackTrace();
-                    }
+//                    try {
+//                        pThread.stop();
+//                        pThread.destroy();
+//                    } catch (Error e) {
+//                        // TODO Auto-generated catch block
+//                        // e.printStackTrace();
+//                    }
                     pConnected.set(false);
                     pFinished.set(true);
                     pResult.set(null);
                 }
                 if (!tFinished.get()) {
-                    try {
-                        tThread.stop();
-                        tThread.destroy();
-                    } catch (Error e) {
-                        // TODO Auto-generated catch block
-                        // e.printStackTrace();
-                    }
+//                    try {
+//                        tThread.stop();
+//                        tThread.destroy();
+//                    } catch (Error e) {
+//                        // TODO Auto-generated catch block
+//                        // e.printStackTrace();
+//                    }
                     tConnected.set(false);
                     tFinished.set(true);
                     tResult.set(null);
