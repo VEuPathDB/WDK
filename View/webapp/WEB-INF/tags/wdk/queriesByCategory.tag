@@ -14,7 +14,10 @@
   <c:set var="qByCat" value="${recTypeEntry.value}"/>
   <c:set var="isMultiCat" value="${fn:length(qByCat) > 1}"/>
 
-  <tr class="headerRow"><td colspan="4" align="center"><b>${recTypes[recTypeEntry.key]} Queries</b></td></tr>
+  <c:if test="${param.cat == null or param.cat eq recTypes[recTypeEntry.key] or param.cat == ''}">
+
+  <tr class="headerRow"><td colspan="4" align="center"><b>${recTypes[recTypeEntry.key]} Queries</b>
+</td></tr>
 
   <c:set var="i" value="0"/>
   <c:forEach items="${qByCat}" var="catEntry">
@@ -59,6 +62,14 @@
   </c:forEach>
 
   <tr><td colspan="4">&nbsp;</td></tr>
+  
+  <c:if test="${param.cat != null and param.cat != ''}">
+  <tr><td colspan="4"> 
+ <a href="${pageContext.request.requestURI}" id='allQueriesAndTools'>All Queries and Tools</a>
+  </td></tr>
+  </c:if>
+
+  </c:if>
 
 </c:forEach>
 </table>
