@@ -265,9 +265,9 @@ public class PostgreSQL implements RDBMSPlatformI, Serializable {
      * @see org.gusdb.wdk.model.RDBMSPlatformI#updateClobData(java.sql.PreparedStatement,
      *      int, java.lang.String)
      */
-    public void updateClobData(PreparedStatement ps, int columnIndex,
+    public int updateClobData(PreparedStatement ps, int columnIndex,
             String content) throws SQLException {
         ps.setString(columnIndex, content);
-        ps.executeUpdate();
+        return ps.executeUpdate();
     }
 }

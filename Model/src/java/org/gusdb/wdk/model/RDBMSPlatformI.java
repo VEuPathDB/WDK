@@ -61,6 +61,6 @@ public interface RDBMSPlatformI {
 
     public int forceDropTables(String tableNamePattern) throws SQLException;
 
-    public void updateClobData(PreparedStatement ps, int columnIndex,
+    public int updateClobData(PreparedStatement ps, int columnIndex,
             String content) throws SQLException;
 }
