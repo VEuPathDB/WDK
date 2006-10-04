@@ -22,7 +22,7 @@ public class QuestionSetForm extends ActionForm {
     }
 
     private String qFullName = null;
-    private Map myProps = new LinkedHashMap();
+    private Map<String, Object> myProps = new LinkedHashMap<String, Object>();
     private Map myLabels = new LinkedHashMap();
     private Map myValues = new LinkedHashMap();
 
@@ -53,7 +53,7 @@ public class QuestionSetForm extends ActionForm {
     public void setMyProp(String key, String val)
     {
 	//System.err.println("*** QuestionSetForm.setMyProp: " + key + " = " + val + "\n");
-	myProps.put(key, val);
+	myProps.put(key, val.trim());
     }
 
     public void setMyMultiProp(String key, String[] vals)
@@ -92,8 +92,8 @@ public class QuestionSetForm extends ActionForm {
 	return (String[])getMyValues().get(key);
     }
 
-    void setMyProps(Map props) { myProps = props; }
-    public Map getMyProps() { return myProps; }
+    void setMyProps(Map<String, Object> props) { myProps = props; }
+    public Map<String, Object> getMyProps() { return myProps; }
 
     void setMyLabels (Map lbls) { myLabels = lbls; }
     Map getMyLabels () { return myLabels; }
