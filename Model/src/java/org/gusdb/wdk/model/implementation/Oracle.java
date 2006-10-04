@@ -272,12 +272,12 @@ public class Oracle implements RDBMSPlatformI, Serializable {
      * @see org.gusdb.wdk.model.RDBMSPlatformI#updateClobData(java.sql.PreparedStatement,
      *      java.lang.String)
      */
-    public void updateClobData(PreparedStatement ps, int columnIndex,
+    public int updateClobData(PreparedStatement ps, int columnIndex,
             String content) throws SQLException {
         Connection conn = ((DelegatingConnection) ps.getConnection()).getInnermostDelegate();
         CLOB clob = CLOB.createTemporary(conn, false, CLOB.DURATION_SESSION);
         clob.setString(1, content);
         ps.setClob(columnIndex, clob);
-        ps.executeUpdate();
+        return ps.executeUpdate();
     }
 }

@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.sql.Clob;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -168,16 +169,16 @@ public class ResultFactory implements Serializable {
         String tblName = schemaName + "." + instanceTableName;
 
         String numericType = platform.getNumberDataType();
+        String clobType = platform.getClobDataType();
 
         sqlb.append("create table " + tblName + " (query_instance_id "
-                + numericType
-                + "(12) not null, query_name varchar(100) not null, cached "
-                + numericType + "(1) not null,");
-
-        sqlb.append("result_table varchar(30), start_time date not null, "
-                + "end_time date, dataset_name varchar(100), "
-                + "session_id varchar(50), query_checksum varchar(40), "
-                + "param_clob " + platform.getClobDataType() + ")");
+                + numericType + "(12) not null, query_name varchar(100) "
+                + "not null, cached " + numericType + "(1) not null,"
+                + "result_table varchar(30), start_time date not null, "
+                + "end_time date, dataset_name varchar(100), session_id "
+                + "varchar(50), query_checksum varchar(40), result_message "
+                + clobType + ", CONSTRAINT " + instanceTableName
+                + "_pk PRIMARY KEY " + "(query_instance_id))");
 
         // Execute it
         System.out.println(newline + "Making cache table " + nameToUse
@@ -412,8 +413,8 @@ public class ResultFactory implements Serializable {
         // Construct SQL query to retrieve the requested table's name
         //
         StringBuffer sqlb = new StringBuffer();
-        sqlb.append("select result_table from " + instanceTableFullName
-                + " where ");
+        sqlb.append("select result_table, result_message from "
+                + instanceTableFullName + " where ");
 
         if (instance.getIsCacheable()) {
             sqlb.append("cached = 1 and end_time IS NOT NULL and ");
@@ -421,24 +422,35 @@ public class ResultFactory implements Serializable {
         sqlb.append(instanceWhereClause(instance));
 
         String resultTableName = null;
+        String resultMessage = null;
+        ResultSet rsInstance = null;
         try {
-            resultTableName = SqlUtils.runStringQuery(platform.getDataSource(),
+            rsInstance = SqlUtils.getResultSet(platform.getDataSource(),
                     sqlb.toString());
+            if (rsInstance.next()) {
+                resultTableName = rsInstance.getString("result_table");
+                Clob messageClob = rsInstance.getClob("result_message");
+                resultMessage = messageClob.getSubString(1,
+                        (int) messageClob.length());
+
+                // instance result is in cache but is newly created object
+                if (instance.getQueryInstanceId() == null)
+                    instance.setQueryInstanceId(getQueryInstanceId(instance));
+                instance.setResultMessage(resultMessage);
+
+                resultTableFullName = platform.getTableFullName(schemaName,
+                        resultTableName);
+            } else {
+                resultTableFullName = getNewResultTableName(instance);
+            }
         } catch (SQLException e) {
             throw new WdkModelException(e);
-        }
-
-        if (resultTableName == null) {
-            resultTableFullName = getNewResultTableName(instance);
-        } else {
-            if (instance.getQueryInstanceId() == null) { // instance result
-                // is in cache but
-                // is newly created
-                // object
-                instance.setQueryInstanceId(getQueryInstanceId(instance));
+        } finally {
+            try {
+                SqlUtils.closeResultSet(rsInstance);
+            } catch (SQLException ex) {
+                throw new WdkModelException(ex);
             }
-            resultTableFullName = platform.getTableFullName(schemaName,
-                    resultTableName);
         }
         return resultTableFullName;
     }
@@ -491,39 +503,24 @@ public class ResultFactory implements Serializable {
                 : "null";
         int cached = instance.getIsCacheable() ? 1 : 0;
         String checksum = "'" + instance.getChecksum() + "'";
+        String datefunc = platform.getCurrentDateFunction();
 
         // format insert statement
         StringBuffer sqlb = new StringBuffer();
         sqlb.append("insert into " + instanceTableFullName
                 + " (query_instance_id, query_name, cached, session_id, "
-                + "dataset_name, start_time, query_checksum) values (");
-        String datefunc = platform.getCurrentDateFunction();
-        sqlb.append(nextID + ", " + queryName + ", " + cached + ", "
-                + sessionId + ", " + datasetName + ", " + datefunc + ", "
-                + checksum + ")");
+                + "dataset_name, start_time, query_checksum) values (" + nextID
+                + ", " + queryName + ", " + cached + ", " + sessionId + ", "
+                + datasetName + ", " + datefunc + ", " + checksum + ")");
 
-        PreparedStatement psClob = null;
         try {
             SqlUtils.executeUpdate(platform.getDataSource(), sqlb.toString());
-
-            // now update the clob data
-            String content = instance.getClobContent();
-            psClob = SqlUtils.getPreparedStatement(platform.getDataSource(),
-                    "UPDATE " + instanceTableFullName + " SET param_clob = ? "
-                            + "WHERE query_instance_id = " + nextID);
-            platform.updateClobData(psClob, 1, content);
 
             Integer finalId = new Integer(nextID);
             instance.setQueryInstanceId(finalId);
             return finalId;
         } catch (SQLException e) {
             throw new WdkModelException(e);
-        } finally {
-            if (psClob != null) try {
-                SqlUtils.closeStatement(psClob);
-            } catch (SQLException ex) {
-                throw new WdkModelException(ex);
-            }
         }
     }
 
@@ -536,18 +533,30 @@ public class ResultFactory implements Serializable {
      */
     private boolean finishQueryInstance(QueryInstance instance)
             throws WdkModelException {
+        PreparedStatement psClob = null;
         StringBuffer sqlb = new StringBuffer();
         sqlb.append("update " + instanceTableFullName + " set end_time = "
-                + platform.getCurrentDateFunction());
+                + platform.getCurrentDateFunction() + ", result_message = ? ");
         sqlb.append(" where ");
         sqlb.append(instanceWhereClause(instance));
         boolean ok = false;
 
         try {
-            ok = SqlUtils.executeUpdate(platform.getDataSource(),
-                    sqlb.toString()) == 1;
+            // now update the clob data
+            String message = instance.getResultMessage();
+            if (message == null) message = "No Result found.";
+
+            psClob = SqlUtils.getPreparedStatement(platform.getDataSource(),
+                    sqlb.toString());
+            ok = (platform.updateClobData(psClob, 1, message) == 1);
         } catch (SQLException e) {
             throw new WdkModelException(e);
+        } finally {
+            if (psClob != null) try {
+                SqlUtils.closeStatement(psClob);
+            } catch (SQLException ex) {
+                throw new WdkModelException(ex);
+            }
         }
         return ok;
     }
