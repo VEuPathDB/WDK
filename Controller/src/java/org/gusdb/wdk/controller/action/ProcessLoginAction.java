@@ -37,12 +37,14 @@ public class ProcessLoginAction extends Action {
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
-        // get the referer link
+        // get the referer link and possibly an url to the client's original page if user invoked a separate login form page.
         String referer = (String) request.getParameter(CConstants.WDK_REFERER_URL_KEY);
         if (referer == null) referer = request.getHeader("referer");
-
-        ActionForward forward = new ActionForward(referer);
+        String originUrl = request.getParameter(CConstants.WDK_ORIGIN_URL_KEY);
+        
+        ActionForward forward = new ActionForward();
         forward.setRedirect(true);
+        String forwardUrl;
 
         WdkModelBean wdkModel = (WdkModelBean) getServlet().getServletContext().getAttribute(
                 CConstants.WDK_MODEL_KEY);
@@ -74,13 +76,24 @@ public class ProcessLoginAction extends Action {
             request.getSession().setAttribute(CConstants.WDK_USER_KEY, user);
             request.getSession().setAttribute(CConstants.WDK_LOGIN_ERROR_KEY,
                     "");
+            if (originUrl != null) {
+                forwardUrl = originUrl;
+                request.getSession().setAttribute(CConstants.WDK_ORIGIN_URL_KEY, null);
+            } else {
+                forwardUrl = referer;
+            }
         } catch (WdkUserException ex) {
             ex.printStackTrace();
             // user authentication failed, set the error message
             request.getSession().setAttribute(CConstants.WDK_LOGIN_ERROR_KEY,
                     ex.getMessage());
             request.setAttribute(CConstants.WDK_REFERER_URL_KEY, referer);
+            // use session so originURL survives the redirect
+            request.getSession().setAttribute(CConstants.WDK_ORIGIN_URL_KEY, 
+                    request.getParameter(CConstants.WDK_ORIGIN_URL_KEY));
+            forwardUrl = referer;
         }
+        forward.setPath(forwardUrl);
         return forward;
     }
 }
