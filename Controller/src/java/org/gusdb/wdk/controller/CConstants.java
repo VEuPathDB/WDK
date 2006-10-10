@@ -47,6 +47,7 @@ public class CConstants {
     public static final String WDK_CHANGE_PASSWORD_ERROR_KEY = "changePasswordError";
     public static final String WDK_RESET_PASSWORD_ERROR_KEY = "resetPasswordError";
     public static final String WDK_REFERER_URL_KEY = "refererUrl";
+    public static final String WDK_ORIGIN_URL_KEY = "originUrl";
     public static final String WDK_PREFERENCE_GLOBAL_KEY = "preference_global_";
     public static final String WDK_PREFERENCE_PROJECT_KEY = "preference_project_";
 
