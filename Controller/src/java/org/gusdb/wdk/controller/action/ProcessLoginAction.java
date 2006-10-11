@@ -87,8 +87,8 @@ public class ProcessLoginAction extends Action {
             // user authentication failed, set the error message
             request.getSession().setAttribute(CConstants.WDK_LOGIN_ERROR_KEY,
                     ex.getMessage());
-            request.setAttribute(CConstants.WDK_REFERER_URL_KEY, referer);
-            // use session so originURL survives the redirect
+            // use session so attributes survive the redirect
+            request.getSession().setAttribute(CConstants.WDK_REFERER_URL_KEY, referer);
             request.getSession().setAttribute(CConstants.WDK_ORIGIN_URL_KEY, 
                     request.getParameter(CConstants.WDK_ORIGIN_URL_KEY));
             forwardUrl = referer;
