@@ -34,7 +34,8 @@ public class ProcessLogoutAction extends Action {
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         // get the referer link
-        String referer = request.getHeader("referer");
+        String referer = (String) request.getParameter(CConstants.WDK_REFERER_URL_KEY);
+        if (referer == null) referer = request.getHeader("referer");
         // int index = referer.lastIndexOf("/");
         // referer = referer.substring(index);
         ActionForward forward = new ActionForward(referer);
