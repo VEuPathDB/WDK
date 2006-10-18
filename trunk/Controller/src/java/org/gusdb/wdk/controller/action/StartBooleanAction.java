@@ -1,6 +1,7 @@
 package org.gusdb.wdk.controller.action;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -38,7 +39,6 @@ public class StartBooleanAction extends Action{
 	    EnumParamBean booleanOps = wdkModel.getBooleanOps();
 	    String[] booleanOpsVocab = booleanOps.getVocab();
 	    String[] booleanOpsVocabInternal = booleanOps.getVocabInternal();
-	    
 
 	    bqf.getMyLabels().put(CConstants.BOOLEAN_OPERATIONS_PARAM_NAME, booleanOpsVocab);
 	    bqf.getMyValues().put(CConstants.BOOLEAN_OPERATIONS_PARAM_NAME, booleanOpsVocabInternal);

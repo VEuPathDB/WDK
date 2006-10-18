@@ -22,6 +22,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
+import org.gusdb.wdk.model.user.User;
 
 /**
  * @author Jerric
@@ -72,7 +73,7 @@ public class JUnitBooleanExpressionTest extends TestCase {
         sanityModel = utility.getSanityModel();
 
         operandMap = buildOperandMap(sanityModel);
-        
+
         operatorMap = new LinkedHashMap<String, String>();
         operatorMap.put("and", BooleanQuestionNodeBean.INTERNAL_AND);
         operatorMap.put("or", BooleanQuestionNodeBean.INTERNAL_OR);
@@ -140,58 +141,64 @@ public class JUnitBooleanExpressionTest extends TestCase {
      * Answer>)'
      */
     public void testParseExpression() {
-        BooleanExpression be = new BooleanExpression(wdkModel);
+        try {
+            User user = wdkModel.getUserFactory().createGuestUser();
+            BooleanExpression be = new BooleanExpression(user);
 
-        String[] valid = { "1 OR 2", "1 AND (2 NOT 3)",
-                "(1 AND 3)AND(2 AND 4)",
-                "(1) OR (3)", "ans_1 OR \"ans (2\"" };
-//        String[] valid = { "#1 OR #2"};
+            String[] valid = { "1 OR 2", "1 AND (2 NOT 3)",
+                    "(1 AND 3)AND(2 AND 4)", "(1) OR (3)",
+                    "ans_1 OR \"ans (2\"" };
+            // String[] valid = { "#1 OR #2"};
 
-        for (String expression : valid) {
-            try {
-                BooleanQuestionNode bqn = be.parseExpression(expression,
-                        operandMap, operatorMap);
+            for (String expression : valid) {
+                try {
+                    BooleanQuestionNode bqn = be.parseExpression(expression,
+                            operatorMap);
 
-                assertNotNull(bqn);
+                    assertNotNull(bqn);
 
-                // make answer
-                Answer answer = bqn.makeAnswer(1, 20);
+                    // make answer
+                    Answer answer = bqn.makeAnswer(1, 20);
 
-                assertNotNull(answer);
+                    assertNotNull(answer);
 
-                assertTrue(answer.getResultSize() >= 0);
+                    assertTrue(answer.getResultSize() >= 0);
 
-                // TEST
-                System.out.println(answer.printAsTable());
-            } catch (Exception ex) {
-                // TODO Auto-generated catch block
-                ex.printStackTrace();
-                // System.err.println(ex);
-                assertTrue(false);
+                    // TEST
+                    System.out.println(answer.printAsTable());
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    // System.err.println(ex);
+                    assertTrue(false);
+                }
             }
-        }
 
-        String[] invalid = { "#0 OR #2", "#1 AND (#2 NOT #3",
-                "(#1 AND) #3", "#1(OR #2)", "#1 BAD #2",
-                "ans_0 OR #1", "\"ans_1 OR \"ans (2\"" };
+            String[] invalid = { "#0 OR #2", "#1 AND (#2 NOT #3",
+                    "(#1 AND) #3", "#1(OR #2)", "#1 BAD #2", "ans_0 OR #1",
+                    "\"ans_1 OR \"ans (2\"" };
 
-        for (String expression : invalid) {
-            try {
-                BooleanQuestionNode bqn = be.parseExpression(expression,
-                        operandMap, operatorMap);
+            for (String expression : invalid) {
+                try {
+                    BooleanQuestionNode bqn = be.parseExpression(expression,
+                            operatorMap);
 
-                assertNotNull(bqn);
+                    assertNotNull(bqn);
 
-                // make answer
-                bqn.makeAnswer(1, 20);
+                    // make answer
+                    bqn.makeAnswer(1, 20);
 
-                assertTrue(false);
-            } catch (Exception ex) {
-                // TODO Auto-generated catch block
-                //ex.printStackTrace();
-                 System.err.println(ex + " - expected.");
-                assertTrue(true);
+                    assertTrue(false);
+                } catch (Exception ex) {
+                    // TODO Auto-generated catch block
+                    // ex.printStackTrace();
+                    System.err.println(ex + " - expected.");
+                    assertTrue(true);
+                }
             }
+        } catch (WdkUserException ex) {
+            ex.printStackTrace();
+        } catch (WdkModelException ex) {
+            ex.printStackTrace();
         }
     }
 }

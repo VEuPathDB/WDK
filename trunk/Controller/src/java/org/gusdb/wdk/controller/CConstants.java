@@ -23,7 +23,7 @@ public class CConstants {
     public static final String WDK_QUESTION_PARAMS_KEY = "wdkQuestionParams";
     public static final String WDK_ANSWER_KEY = "wdkAnswer";
     public static final String WDK_RECORD_KEY = "wdkRecord";
-    public static final String USER_ANSWER_ID_KEY = "userAnswerId";
+    public static final String WDK_HISTORY_ID_KEY = "wdk_history_id";
     public static final String NEXT_QUESTION_OPERAND = "nextQuestionOperand";
     public static final String QUESTIONFORM_KEY = "questionForm";
     public static final String BOOLEAN_QUESTION_FORM_KEY = "booleanQuestionForm";
@@ -94,7 +94,6 @@ public class CConstants {
     public static final String YES = "yes"; //match downloadConfig.jsp
     public static final String NO = "no"; 
     public static final String ALL = "all"; //match downloadConfig.jsp
-    public static final String USER_ANSWER_ID = "user_answer_id"; //match queryHistory.jsp
     public static final String NAME = "name"; //match xmlDataList.jsp
     public static final int MAX_PARAM_LABEL_LEN = 69;
     public static final String ERROR_TYPE_PARAM = "type"; //match struts-config.xml

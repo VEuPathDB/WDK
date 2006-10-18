@@ -54,14 +54,7 @@ public class ResultFactory implements Serializable {
 
     // the following constants are used by persistent query history
     public static final String TABLE_QUERY_INSTANCE = "QueryInstance";
-    /**
-     * The name of query history table
-     */
-    public static final String TABLE_HISTORY_SUFFIX = "_history";
-    public static final String FIELD_USER_ID = "session_id";
-    public static final String FIELD_HISTORY_ID = "history_id";
-    public static final String FIELD_DATASET_ID = "dataset_id";
-
+ 
     public static final String RESULT_TABLE_I = "result_index_column";
     static final String CACHE_TABLE_PREFIX = "query_result_";
 
@@ -69,9 +62,6 @@ public class ResultFactory implements Serializable {
     String schemaName;
     String instanceTableName;
     String instanceTableFullName;
-
-    private String historyTableName;
-    private String historyTableFullName;
 
     private boolean enableQueryLogger;
     private String queryLoggerFile;
@@ -83,10 +73,6 @@ public class ResultFactory implements Serializable {
         this.instanceTableName = TABLE_QUERY_INSTANCE;
         this.instanceTableFullName = platform.getTableFullName(schemaName,
                 instanceTableName);
-        // get the full name of query history table
-        historyTableName = instanceTableName + TABLE_HISTORY_SUFFIX;
-        historyTableFullName = platform.getTableFullName(schemaName,
-                historyTableName);
 
         // configure query logger
         this.enableQueryLogger = enableQueryLogger;
@@ -131,10 +117,6 @@ public class ResultFactory implements Serializable {
     public synchronized String getResultAsTableName(QueryInstance instance)
             throws WdkModelException {
         return getResultTableName(instance);
-    }
-
-    public synchronized String getHistoryTableName() {
-        return historyTableFullName;
     }
 
     public synchronized String getSqlForBooleanOp(QueryInstance instance,
@@ -197,54 +179,6 @@ public class ResultFactory implements Serializable {
         } catch (SQLException e) {
             throw new WdkModelException(e);
         }
-
-        // now create this QueryHistory
-        createHistoryCache(noSchemaOutput);
-    }
-
-    private void createHistoryCache(boolean noSchemaOutput)
-            throws WdkModelException {
-        String newline = System.getProperty("line.separator");
-
-        String nameToUse = (noSchemaOutput == true ? historyTableName
-                : historyTableFullName);
-
-        // Format sql to create table
-        StringBuffer sqlb = new StringBuffer();
-        String tblName = schemaName + "." + historyTableName;
-
-        String numericType = platform.getNumberDataType();
-
-        sqlb.append("CREATE TABLE ");
-        sqlb.append(tblName);
-        sqlb.append(" (");
-        sqlb.append(FIELD_USER_ID);
-        sqlb.append(" varchar(100) not null, ");
-        sqlb.append(FIELD_HISTORY_ID);
-        sqlb.append(" ");
-        sqlb.append(numericType);
-        sqlb.append("(12) not null, ");
-        sqlb.append(FIELD_DATASET_ID);
-        sqlb.append(" ");
-        sqlb.append(numericType);
-        sqlb.append("(12) not null, PRIMARY KEY (");
-        sqlb.append(FIELD_USER_ID);
-        sqlb.append(", ");
-        sqlb.append(FIELD_HISTORY_ID);
-        sqlb.append("))");
-
-        // Execute it
-        System.out.println(newline + "Making history table " + nameToUse
-                + newline);
-
-        logger.debug("Using sql: " + sqlb.toString());
-        try {
-            SqlUtils.execute(platform.getDataSource(), sqlb.toString());
-            logger.debug("Done" + newline);
-            System.out.println("Done" + newline);
-        } catch (SQLException e) {
-            throw new WdkModelException(e);
-        }
     }
 
     /**
@@ -302,7 +236,6 @@ public class ResultFactory implements Serializable {
             System.out.println("Deleting all rows from " + nameToUse);
             SqlUtils.execute(platform.getDataSource(), "delete from "
                     + instanceTableFullName);
-            resetHistoryCache(noSchemaOutput);
 
             // validate the dropping operation
             if (!validateDrop())
@@ -326,25 +259,9 @@ public class ResultFactory implements Serializable {
             platform.dropTable(schemaName + "." + instanceTableName);
             System.out.println("Dropping sequence " + nameToUse + "_pkseq");
             platform.dropSequence(instanceTableFullName + "_pkseq");
-            // and also drop the history cache
-            System.out.println("Dropping table "
-                    + (noSchemaOutput == true ? historyTableName
-                            : historyTableFullName));
-            platform.dropTable(schemaName + "." + historyTableName);
         } catch (SQLException e) {
             throw new WdkModelException(e);
         }
-    }
-
-    private synchronized void resetHistoryCache(boolean noSchemaOutput)
-            throws SQLException {
-        String nameToUse = (noSchemaOutput == true ? historyTableName
-                : historyTableFullName);
-
-        System.out.println("Deleting all rows from " + nameToUse);
-
-        SqlUtils.executeUpdate(platform.getDataSource(), "delete from "
-                + historyTableFullName);
     }
 
     public RDBMSPlatformI getRDBMSPlatform() {
@@ -670,7 +587,7 @@ public class ResultFactory implements Serializable {
             log.append("\t-params");
             for (Param param : params) {
                 String key = param.getName();
-                String value = (String) (instance.getValuesMap().get(key));
+                String value = instance.getValuesMap().get(key).toString();
                 log.append(" " + key + " \"" + value + "\"");
             }
         }

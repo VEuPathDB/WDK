@@ -1,0 +1,163 @@
+/**
+ * 
+ */
+package org.gusdb.wdk.model.jspwrap;
+
+import java.util.Date;
+
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.user.History;
+
+/**
+ * @author xingao
+ * 
+ */
+public class HistoryBean {
+
+    private History history;
+    private int nameTruncateTo;
+
+    public HistoryBean(History history) {
+        this.history = history;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.History#getChecksum()
+     */
+    public String getChecksum() throws WdkModelException {
+        return history.getChecksum();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.History#getCreatedTime()
+     */
+    public Date getCreatedTime() {
+        return history.getCreatedTime();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.History#getCustomName()
+     */
+    public String getCustomName() {
+        return history.getCustomName();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.History#getDataType()
+     */
+    public String getDataType() {
+        return history.getDataType();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.History#getEstimateSize()
+     */
+    public int getEstimateSize() {
+        return history.getEstimateSize();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.History#getHistoryId()
+     */
+    public int getHistoryId() {
+        return history.getHistoryId();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.History#getLastRunTime()
+     */
+    public Date getLastRunTime() {
+        return history.getLastRunTime();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.History#getSignature()
+     */
+    public String getSignature() throws WdkModelException {
+        return history.getSignature();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.History#getUser()
+     */
+    public UserBean getUser() {
+        return new UserBean(history.getUser());
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.History#isBoolean()
+     */
+    public boolean isBoolean() {
+        return history.isBoolean();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.History#update()
+     */
+    public void update() throws WdkUserException {
+        history.update();
+    }
+    
+    
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.user.History#isDepended()
+     */
+    public boolean getDepended() throws WdkUserException, WdkModelException {
+        return history.isDepended();
+    }
+
+    /**
+     * @return
+     * @throws WdkUserException
+     * @see org.gusdb.wdk.model.user.History#getAnswer()
+     */
+    public AnswerBean getAnswer() throws WdkUserException {
+        return new AnswerBean(history.getAnswer());
+    }
+
+    /**
+     * @return Returns the nameTruncateTo.
+     */
+    public int getNameTruncateTo() {
+        return nameTruncateTo;
+    }
+
+    /**
+     * @param nameTruncateTo
+     *            The nameTruncateTo to set.
+     */
+    public void setNameTruncateTo(int nameTruncateTo) {
+        this.nameTruncateTo = nameTruncateTo;
+    }
+
+    public String getTruncatedName() {
+        String name = history.getCustomName();
+        if (name.length() > nameTruncateTo)
+            name = name.substring(0, nameTruncateTo) + "...";
+        return name;
+    }
+}

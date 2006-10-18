@@ -12,7 +12,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 
 public class SqlQuery extends Query implements Serializable {
-    
+
     /**
      * 
      */
@@ -20,39 +20,40 @@ public class SqlQuery extends Query implements Serializable {
 
     static final String RESULT_TABLE_MACRO = "%%RESULT_TABLE%%";
 
-    String sql;
-    RDBMSPlatformI platform;
-    
-    public SqlQuery () {
-	super();
+    private String sql;
+    private RDBMSPlatformI platform;
+
+    public SqlQuery() {
+        super();
     }
 
-    /////////////////////////////////////////////////////////////////////
-    /////////////  Public properties ////////////////////////////////////
-    /////////////////////////////////////////////////////////////////////
+    // ///////////////////////////////////////////////////////////////////
+    // /////////// Public properties ////////////////////////////////////
+    // ///////////////////////////////////////////////////////////////////
 
     public QueryInstance makeInstance() {
-	return new SqlQueryInstance(this);
+        return new SqlQueryInstance(this);
     }
 
     public void setSql(String sql) {
-	this.sql = sql;
+        this.sql = sql;
+        signature = null;
     }
 
-    /////////////////////////////////////////////////////////////////////
-    /////////////  Protected ////////////////////////////////////////////
-    /////////////////////////////////////////////////////////////////////
+    // ///////////////////////////////////////////////////////////////////
+    // /////////// Protected ////////////////////////////////////////////
+    // ///////////////////////////////////////////////////////////////////
 
     protected void setResources(WdkModel model) throws WdkModelException {
-	this.platform = model.getRDBMSPlatform();
-	super.setResources(model);
+        this.platform = model.getRDBMSPlatform();
+        super.setResources(model);
     }
 
     /**
      * @param values These values are assumed to be pre-validated
      */
     protected String instantiateSql(Map<String, String> values) {
-	return instantiateSql(values, sql);
+        return instantiateSql(values, sql);
     }
 
     /**
@@ -60,34 +61,36 @@ public class SqlQuery extends Query implements Serializable {
      * @param inputSql Sql to use (may be modified from this.sql)
      */
     protected String instantiateSql(Map<String, String> values, String inputSql) {
-	Iterator<String> keySet = values.keySet().iterator();
-	String s = inputSql;
-	while (keySet.hasNext()) {
-	    String key = keySet.next();
-	    String regex = "\\$\\$" + key  + "\\$\\$";
-        // also escape all single quotes in the value
-	    s = s.replaceAll(regex, values.get(key));
-	}
+        Iterator<String> keySet = values.keySet().iterator();
+        String s = inputSql;
+        while (keySet.hasNext()) {
+            String key = keySet.next();
+            String regex = "\\$\\$" + key + "\\$\\$";
+            // also escape all single quotes in the value
+            s = s.replaceAll(regex, values.get(key));
+        }
 
-	return s;
+        return s;
     }
 
     protected StringBuffer formatHeader() {
-       String newline = System.getProperty( "line.separator" );
-       StringBuffer buf = super.formatHeader();
-       buf.append("  sql='" + sql + "'" + newline);
-       return buf;
+        String newline = System.getProperty("line.separator");
+        StringBuffer buf = super.formatHeader();
+        buf.append("  sql='" + sql + "'" + newline);
+        return buf;
     }
 
     String getSql() {
-	return sql;
+        return sql;
     }
 
     RDBMSPlatformI getRDBMSPlatform() {
-	return platform;
+        return platform;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.Query#getBaseQuery(java.util.Set)
      */
     @Override
@@ -100,4 +103,14 @@ public class SqlQuery extends Query implements Serializable {
         query.sql = this.sql;
         return query;
     }
- }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.Query#getSignatureData()
+     */
+    @Override
+    protected String getSignatureData() {
+        return sql.replaceAll("\\s+", " ");
+    }
+}

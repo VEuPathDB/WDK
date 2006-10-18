@@ -3,22 +3,18 @@
  */
 package org.gusdb.wdk.model.user;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.*;
-
-import javax.sql.DataSource;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.Answer;
-import org.gusdb.wdk.model.BooleanExpression;
-import org.gusdb.wdk.model.BooleanQuestionNode;
-import org.gusdb.wdk.model.ResultFactory;
-import org.gusdb.wdk.model.UserAnswer;
-import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.implementation.SqlUtils;
+import org.gusdb.wdk.model.*;
+import org.gusdb.wdk.model.DatasetParam.InputType;
 
 /**
  * @author xingao
@@ -26,7 +22,14 @@ import org.gusdb.wdk.model.implementation.SqlUtils;
  */
 public class User {
 
+    public final static String PREF_ITEMS_PER_PAGE = "preference_global_items_per_page";
+
     private Logger logger = Logger.getLogger(User.class);
+
+    private WdkModel model;
+    private UserFactory userFactory;
+    private DatasetFactory datasetFactory;
+    private int userId;
 
     // basic user information
     private String email;
@@ -47,504 +50,469 @@ public class User {
     private boolean guest = true;
 
     /**
-     * The interval for caching user's history and preference. If the period
-     * since last refresh is bigger than it, the history and/or preference will
-     * be fetched from the database again.
-     */
-    private int refreshInterval;
-    /**
-     * ticks since the last time of refreshing history cache
-     */
-    private long lastRefreshHistory;
-    /**
-     * ticks since the last time of refreshing preference cache/
-     */
-    private long lastRefreshPreference;
-
-    private UserFactory factory;
-
-    /**
-     * the histories for the user: <historyId, history>. It only contains the
-     * histories for the current project
-     */
-    private Map<Integer, History> histories;
-    /**
      * the preferences for the user: <prefName, prefValue>. It only contains the
      * preferences for the current project
      */
     private Map<String, String> globalPreferences;
     private Map<String, String> projectPreferences;
 
-    // *************************************************************************
-    // Copied from the riginal code - to be updated soon
-    // *************************************************************************
-    private String userID;
-    private Map<Integer, UserAnswer> userAnswers;
-    private int answerIndex;
-    /**
-     * the WdkModel is used when growing BooleanQuestionNode
-     */
-    WdkModel model;
-    private boolean cleared = false;
+    // private boolean cleared = false;
+    //
+    // public User(String email, WdkModel model) {
+    // this.model = model;
+    // this.email = email;
+    //
+    // globalPreferences = new LinkedHashMap<String, String>();
+    // projectPreferences = new LinkedHashMap<String, String>();
+    // histories = new ArrayList<History>();
+    // }
+    //
+    // public void addAnswer(Answer answer) throws WdkUserException,
+    // WdkModelException {
+    // try {
+    // getUserAnswerByAnswer(answer, false);
+    // // answer exists, return
+    // return;
+    // } catch (WdkUserException ex) {
+    // // ex.printStackTrace();
+    // // System.err.println(ex);
+    // }
+    // insertAnswer(answer);
+    // }
+    //
+    // public void addAnswerFuzzy(Answer answer) throws WdkUserException,
+    // WdkModelException {
+    // try {
+    // getUserAnswerByAnswer(answer, true);
+    // // answer exists, return
+    // return;
+    // } catch (WdkUserException ex) {
+    // // ex.printStackTrace();
+    // // System.err.println(ex);
+    // }
+    // insertAnswer(answer);
+    // }
+    //
+    // private void insertAnswer(Answer answer) throws WdkUserException,
+    // WdkModelException {
+    // answerIndex++;
+    // UserAnswer userAnswer = new UserAnswer(userID, answerIndex, answer);
+    //
+    // // initialize userAnswers map
+    // if (userAnswers == null)
+    // userAnswers = new LinkedHashMap<Integer, UserAnswer>();
+    // userAnswers.put(answerIndex, userAnswer);
+    //
+    // // cache the history
+    // saveHistory(userAnswer);
+    // }
+    //
+    // public void deleteUserAnswer(int answerId) throws WdkUserException {
+    // if (userAnswers == null)
+    // throw new WdkUserException(
+    // "The answer specified by the given ID doesn't exist!");
+    // UserAnswer answer = userAnswers.remove(answerId);
+    // if (answer == null)
+    // throw new WdkUserException(
+    // "The answer specified by the given ID doesn't exist!");
+    // if (userAnswers.isEmpty()) userAnswers = null;
+    //
+    // // also delete the history record in the database
+    // deleteHistory(answerId);
+    // }
+    //
+    // private synchronized void deleteHistory(int historyID)
+    // throws WdkUserException {
+    // String historyTableName = model.getResultFactory().getHistoryTableName();
+    // DataSource dataSource = model.getRDBMSPlatform().getDataSource();
+    //
+    // StringBuffer sb = new StringBuffer("DELETE FROM ");
+    // sb.append(historyTableName);
+    // sb.append(" WHERE ");
+    // sb.append(ResultFactory.FIELD_USER_ID);
+    // sb.append("='" + userID + "'");
+    // sb.append(" AND ");
+    // sb.append(ResultFactory.FIELD_HISTORY_ID);
+    // sb.append("=");
+    // sb.append(historyID);
+    //
+    // // execute the deletion
+    // try {
+    // SqlUtils.executeUpdate(dataSource, sb.toString());
+    // } catch (SQLException ex) {
+    // logger.error("Got an SQLException: " + ex.toString());
+    // throw new WdkUserException(ex);
+    // }
+    // }
+    //
+    // public void clearUserAnswers() throws WdkUserException {
+    // cleared = true;
+    // if (userAnswers != null) userAnswers.clear();
+    // userAnswers = null;
+    //
+    // // clear the history cache, too
+    // String historyTableName = model.getResultFactory().getHistoryTableName();
+    // DataSource dataSource = model.getRDBMSPlatform().getDataSource();
+    //
+    // StringBuffer sb = new StringBuffer("DELETE FROM ");
+    // sb.append(historyTableName);
+    // sb.append(" WHERE ");
+    // sb.append(ResultFactory.FIELD_USER_ID);
+    // sb.append("='");
+    // sb.append(userID);
+    // sb.append("'");
+    // try {
+    // SqlUtils.execute(dataSource, sb.toString());
+    // } catch (SQLException ex) {
+    // logger.error("Got an SQLException: " + ex.toString());
+    // throw new WdkUserException(ex);
+    // }
+    // }
+    //
+    // public UserAnswer[] getUserAnswers() {
+    // if (userAnswers == null || userAnswers.size() == 0)
+    // return new UserAnswer[0];
+    // UserAnswer[] answers = new UserAnswer[userAnswers.size()];
+    // userAnswers.values().toArray(answers);
+    // return answers;
+    // }
+    //
+    // public Map getRecordAnswerMap() {
+    // Map<String, Map<Integer, UserAnswer>> recAnsMapMap = new
+    // LinkedHashMap<String, Map<Integer, UserAnswer>>();
+    // if (userAnswers == null || userAnswers.size() == 0)
+    // return recAnsMapMap;
+    //
+    // for (int ansID : userAnswers.keySet()) {
+    // UserAnswer usrAns = userAnswers.get(new Integer(ansID));
+    // String rec =
+    // usrAns.getAnswer().getQuestion().getRecordClass().getFullName();
+    // if (recAnsMapMap.get(rec) == null) {
+    // recAnsMapMap.put(rec, new LinkedHashMap<Integer, UserAnswer>());
+    // }
+    // Map<Integer, UserAnswer> recAnsMapMap1 = recAnsMapMap.get(rec);
+    // recAnsMapMap1.put(new Integer(ansID), usrAns);
+    // }
+    //
+    // // wants answers in sorted arrays
+    // Map<String, UserAnswer[]> recAnsMap = new LinkedHashMap<String,
+    // UserAnswer[]>();
+    // for (Object r : recAnsMapMap.keySet()) {
+    // String rec = (String) r;
+    // Map<Integer, UserAnswer> recAnsMapMap1 = recAnsMapMap.get(rec);
+    // List ansIDList = Arrays.asList(recAnsMapMap1.keySet().toArray());
+    // Collections.sort(ansIDList);
+    // Collections.reverse(ansIDList);
+    // Object[] sortedAnsIDs = ansIDList.toArray();
+    // Vector v = new Vector();
+    // for (int i = 0; i < sortedAnsIDs.length; i++) {
+    // v.add(recAnsMapMap1.get((Integer) sortedAnsIDs[i]));
+    // }
+    // UserAnswer[] sortedUsrAns = new UserAnswer[v.size()];
+    // v.copyInto(sortedUsrAns);
+    //
+    // recAnsMap.put(rec, sortedUsrAns);
+    // }
+    //
+    // return recAnsMap;
+    // }
+    //
+    // public UserAnswer getUserAnswerByID(int answerID) throws WdkUserException
+    // {
+    // if (userAnswers == null || !userAnswers.containsKey(answerID))
+    // throw new WdkUserException("The answer of ID " + answerID
+    // + " does not exist!");
+    // return userAnswers.get(answerID);
+    // }
+    //
+    // public UserAnswer getUserAnswerByName(String name) throws
+    // WdkUserException {
+    // if (userAnswers != null) {
+    // for (UserAnswer answer : userAnswers.values()) {
+    // if (answer.getName().equalsIgnoreCase(name)) return answer;
+    // }
+    // }
+    // throw new WdkUserException("The answer of name " + name
+    // + " does not exist!");
+    // }
+    //
+    // public UserAnswer getUserAnswerByAnswerFuzzy(Answer answer)
+    // throws WdkUserException {
+    // return getUserAnswerByAnswer(answer, true);
+    // }
+    //
+    // public UserAnswer getUserAnswerByAnswer(Answer answer)
+    // throws WdkUserException {
+    // return getUserAnswerByAnswer(answer, false);
+    // }
+    //
+    // private UserAnswer getUserAnswerByAnswer(Answer answer, boolean
+    // ignorePage)
+    // throws WdkUserException {
+    // if (userAnswers != null) {
+    // // check if the answer exists or not
+    // for (UserAnswer uans : userAnswers.values()) {
+    // Answer ans = uans.getAnswer();
+    // // check question name
+    // String qname = ans.getQuestion().getFullName();
+    // if (!qname.equalsIgnoreCase(answer.getQuestion().getFullName()))
+    // continue;
+    //
+    // // check paging number
+    // if (!ignorePage
+    // && (ans.getStartRecordInstanceI() != answer.getStartRecordInstanceI() ||
+    // ans.getEndRecordInstanceI() != answer.getEndRecordInstanceI()))
+    // continue;
+    //
+    // // check parameters
+    // Map params = ans.getParams();
+    // Map pchecks = answer.getParams();
+    // Iterator it = params.keySet().iterator();
+    // boolean equal = true;
+    // while (it.hasNext()) {
+    // String key = (String) it.next();
+    // String value = params.get(key).toString();
+    // // check on the input answer
+    // if (pchecks.containsKey(key)) {
+    // String vcheck = pchecks.get(key).toString();
+    // if (!value.equalsIgnoreCase(vcheck)) {
+    // equal = false;
+    // break;
+    // }
+    // } else {
+    // equal = false;
+    // break;
+    // }
+    // }
+    // // check if two answers are the same
+    // if (equal) return uans;
+    // }
+    // }
+    // throw new WdkUserException(
+    // "The UserAnswer specified by the given answer doesn't exist!");
+    // }
+    //
+    // public void renameUserAnswer(int answerID, String name)
+    // throws WdkUserException {
+    // // check if the answer exists
+    // if (userAnswers == null || !userAnswers.containsKey(answerID))
+    // throw new WdkUserException(
+    // "The answer specified by the given ID doesn't exist!");
+    //
+    // // check if the answer name is unique
+    // for (int ansID : userAnswers.keySet()) {
+    // if (ansID != answerID) {
+    // UserAnswer answer = userAnswers.get(ansID);
+    // if (answer.getName().equalsIgnoreCase(name))
+    // throw new WdkUserException(
+    // "Duplicated name of the answer for this user");
+    // }
+    // }
+    // // name is unique in user's session scope
+    // UserAnswer answer = userAnswers.get(answerID);
+    // answer.setName(name);
+    // }
+    //
+    // public UserAnswer combineUserAnswers(int firstAnswerID, int
+    // secondAnswerID,
+    // String operation, int startIndex, int endIndex,
+    // Map<String, String> operatorMap) throws WdkUserException,
+    // WdkModelException {
+    // // construct operand map
+    // Map<String, Answer> operandMap = buildOperandMap();
+    //
+    // // construct the expression
+    // StringBuffer sb = new StringBuffer();
+    // sb.append(firstAnswerID);
+    // sb.append(' ');
+    // sb.append(operation);
+    // sb.append(" ");
+    // sb.append(secondAnswerID);
+    //
+    // // construct BooleanQuestionNode
+    // BooleanExpression be = new BooleanExpression(model);
+    // BooleanQuestionNode root = be.parseExpression(sb.toString(),
+    // operandMap, operatorMap);
+    //
+    // // create a new UserAnswer
+    // Answer answer = root.makeAnswer(startIndex, endIndex);
+    // addAnswer(answer);
+    // // set user answer as combined
+    // UserAnswer userAnswer = getUserAnswerByAnswer(answer);
+    // userAnswer.setCombinedAnswer(true);
+    // userAnswer.setName(sb.toString());
+    // return userAnswer;
+    // }
+    //
+    // public UserAnswer combineUserAnswers(String expression, int startIndex,
+    // int endIndex, Map<String, String> operatorMap)
+    // throws WdkUserException, WdkModelException {
+    // // construct operand map
+    // Map<String, Answer> operandMap = buildOperandMap();
+    //
+    // // construct BooleanQuestionNode
+    // BooleanExpression be = new BooleanExpression(model);
+    // BooleanQuestionNode root = be.parseExpression(expression, operandMap,
+    // operatorMap);
+    //
+    // // make answer
+    // Answer answer = root.makeAnswer(startIndex, endIndex);
+    // addAnswer(answer);
+    // // set user answer as combined
+    // UserAnswer userAnswer = getUserAnswerByAnswer(answer);
+    // userAnswer.setCombinedAnswer(true);
+    // userAnswer.setName(expression);
+    // return userAnswer;
+    // }
+    //
+    //
+    // private Map<String, Answer> buildOperandMap() {
+    // Map<String, Answer> operandMap = new LinkedHashMap<String, Answer>();
+    // for (int answerID : userAnswers.keySet()) {
+    // UserAnswer userAnswer = userAnswers.get(answerID);
+    // operandMap.put(Integer.toString(answerID), userAnswer.getAnswer());
+    // operandMap.put(userAnswer.getName(), userAnswer.getAnswer());
+    // }
+    // return operandMap;
+    // }
+    //
+    // public String toString() {
+    // String newline = System.getProperty("line.separator");
+    // StringBuffer sb = new StringBuffer();
+    //
+    // sb.append("==================================");
+    // sb.append(newline);
+    // sb.append("UserID=" + userID);
+    // int size = (userAnswers != null) ? userAnswers.size() : 0;
+    // sb.append("\t#Answers=" + size);
+    // sb.append(newline);
+    // if (userAnswers != null) {
+    // sb.append("----------------------------------");
+    // sb.append(newline);
+    // sb.append("ID\tType\t\t\tName");
+    // sb.append(newline);
+    // for (UserAnswer answer : userAnswers.values()) {
+    // sb.append(answer.getAnswerID());
+    // sb.append("\t" + answer.getType());
+    // sb.append("\t" + answer.getName());
+    // sb.append(newline);
+    // }
+    // }
+    // sb.append(newline);
+    // return sb.toString();
+    // }
+    //
+    // private void saveHistory(UserAnswer userAnswer) throws WdkUserException,
+    // WdkModelException {
+    // int historyID = userAnswer.getAnswerID();
+    // Integer tempID = userAnswer.getAnswer().getDatasetId();
+    // StringBuffer sb = new StringBuffer("SELECT * FROM ");
+    // try {
+    // if (tempID == null) {
+    // // read the record to make sure the id is initialized
+    // userAnswer.getAnswer().getResultSize();
+    // tempID = userAnswer.getAnswer().getDatasetId();
+    // }
+    // int datasetID = tempID.intValue();
+    //
+    // String historyTableName = model.getResultFactory().getHistoryTableName();
+    // DataSource dataSource = model.getRDBMSPlatform().getDataSource();
+    //
+    // // check if the same history ID has been used; if so, replace the
+    // // old
+    // // one; otherwise, insert a new record
+    // sb.append(historyTableName);
+    // sb.append(" WHERE ");
+    // sb.append(ResultFactory.FIELD_USER_ID);
+    // sb.append("='");
+    // sb.append(userID);
+    // sb.append("' AND ");
+    // sb.append(ResultFactory.FIELD_HISTORY_ID);
+    // sb.append("=");
+    // sb.append(historyID);
+    //
+    // ResultSet rs = SqlUtils.getResultSet(dataSource, sb.toString());
+    // sb.delete(0, sb.length());
+    // if (rs.next()) { // has existing history, replace old one
+    // sb.append("UPDATE ");
+    // sb.append(historyTableName);
+    // sb.append(" SET ");
+    // sb.append(ResultFactory.FIELD_DATASET_ID);
+    // sb.append("=");
+    // sb.append(datasetID);
+    // sb.append(" WHERE ");
+    // sb.append(ResultFactory.FIELD_USER_ID);
+    // sb.append("='");
+    // sb.append(userID);
+    // sb.append("' AND ");
+    // sb.append(ResultFactory.FIELD_HISTORY_ID);
+    // sb.append("=");
+    // sb.append(historyID);
+    // } else { // no matched history, insert a new one
+    // sb.append("INSERT INTO ");
+    // sb.append(historyTableName);
+    // sb.append(" (");
+    // sb.append(ResultFactory.FIELD_USER_ID);
+    // sb.append(", ");
+    // sb.append(ResultFactory.FIELD_HISTORY_ID);
+    // sb.append(", ");
+    // sb.append(ResultFactory.FIELD_DATASET_ID);
+    // sb.append(") VALUES ('");
+    // sb.append(userID);
+    // sb.append("', ");
+    // sb.append(historyID);
+    // sb.append(", ");
+    // sb.append(datasetID);
+    // sb.append(")");
+    // }
+    // SqlUtils.closeResultSet(rs);
+    // // execute update/insert
+    // SqlUtils.executeUpdate(dataSource, sb.toString());
+    // } catch (SQLException ex) {
+    // logger.error("Got an SQLException: " + ex.toString());
+    // throw new WdkUserException(ex.getMessage() + ": " + sb);
+    // }
+    // }
+    //
+    // /*
+    // * (non-Javadoc)
+    // *
+    // * @see java.lang.Object#finalize()
+    // */
+    // @Override
+    // protected void finalize() throws Throwable {
+    // // the user's history hasn't been cleared. in this place the user object
+    // // removes the query histories
+    // if (!cleared) clearUserAnswers();
+    // super.finalize();
+    // }
+    //
+    // // ******************************** END
+    // ************************************
 
-    public User(String userID, WdkModel model) {
-        this.model = model;
-        this.userID = userID;
-        this.answerIndex = 0;
-        // don't create the userAnswers map by default, since there may be many
-        // users at the same time, and it would consume too many memory; so I
-        // only create it when it's used.
-
-        globalPreferences = new HashMap<String, String>();
-        projectPreferences = new HashMap<String, String>();
-    }
-
-    public String getUserID() {
-        // return this.userID;
-        return email;
-    }
-
-    public void addAnswer(Answer answer) throws WdkUserException,
+    User(WdkModel model, int userId, String email) throws WdkUserException,
             WdkModelException {
-        try {
-            getUserAnswerByAnswer(answer, false);
-            // answer exists, return
-            return;
-        } catch (WdkUserException ex) {
-            // TODO Auto-generated catch block
-            // ex.printStackTrace();
-            // System.err.println(ex);
-        }
-        insertAnswer(answer);
-    }
-
-    public void addAnswerFuzzy(Answer answer) throws WdkUserException,
-            WdkModelException {
-        try {
-            getUserAnswerByAnswer(answer, true);
-            // answer exists, return
-            return;
-        } catch (WdkUserException ex) {
-            // TODO Auto-generated catch block
-            // ex.printStackTrace();
-            // System.err.println(ex);
-        }
-        insertAnswer(answer);
-    }
-
-    private void insertAnswer(Answer answer) throws WdkUserException,
-            WdkModelException {
-        answerIndex++;
-        UserAnswer userAnswer = new UserAnswer(userID, answerIndex, answer);
-
-        // initialize userAnswers map
-        if (userAnswers == null)
-            userAnswers = new LinkedHashMap<Integer, UserAnswer>();
-        userAnswers.put(answerIndex, userAnswer);
-
-        // cache the history
-        saveHistory(userAnswer);
-    }
-
-    public void deleteUserAnswer(int answerId) throws WdkUserException {
-        if (userAnswers == null)
-            throw new WdkUserException(
-                    "The answer specified by the given ID doesn't exist!");
-        UserAnswer answer = userAnswers.remove(answerId);
-        if (answer == null)
-            throw new WdkUserException(
-                    "The answer specified by the given ID doesn't exist!");
-        if (userAnswers.isEmpty()) userAnswers = null;
-
-        // also delete the history record in the database
-        deleteHistory(answerId);
-    }
-
-    private synchronized void deleteHistory(int historyID)
-            throws WdkUserException {
-        String historyTableName = model.getResultFactory().getHistoryTableName();
-        DataSource dataSource = model.getRDBMSPlatform().getDataSource();
-
-        StringBuffer sb = new StringBuffer("DELETE FROM ");
-        sb.append(historyTableName);
-        sb.append(" WHERE ");
-        sb.append(ResultFactory.FIELD_USER_ID);
-        sb.append("='" + userID + "'");
-        sb.append(" AND ");
-        sb.append(ResultFactory.FIELD_HISTORY_ID);
-        sb.append("=");
-        sb.append(historyID);
-
-        // execute the deletion
-        try {
-            SqlUtils.executeUpdate(dataSource, sb.toString());
-        } catch (SQLException ex) {
-            logger.error("Got an SQLException: " + ex.toString());
-            throw new WdkUserException(ex);
-        }
-    }
-
-    public void clearUserAnswers() throws WdkUserException {
-        cleared = true;
-        if (userAnswers != null) userAnswers.clear();
-        userAnswers = null;
-
-        // clear the history cache, too
-        String historyTableName = model.getResultFactory().getHistoryTableName();
-        DataSource dataSource = model.getRDBMSPlatform().getDataSource();
-
-        StringBuffer sb = new StringBuffer("DELETE FROM ");
-        sb.append(historyTableName);
-        sb.append(" WHERE ");
-        sb.append(ResultFactory.FIELD_USER_ID);
-        sb.append("='");
-        sb.append(userID);
-        sb.append("'");
-        try {
-            SqlUtils.execute(dataSource, sb.toString());
-        } catch (SQLException ex) {
-            logger.error("Got an SQLException: " + ex.toString());
-            throw new WdkUserException(ex);
-        }
-    }
-
-    public UserAnswer[] getUserAnswers() {
-        if (userAnswers == null || userAnswers.size() == 0)
-            return new UserAnswer[0];
-        UserAnswer[] answers = new UserAnswer[userAnswers.size()];
-        userAnswers.values().toArray(answers);
-        return answers;
-    }
-
-    public Map getRecordAnswerMap() {
-        Map<String, Map<Integer, UserAnswer>> recAnsMapMap = new LinkedHashMap<String, Map<Integer, UserAnswer>>();
-        if (userAnswers == null || userAnswers.size() == 0)
-            return recAnsMapMap;
-
-        for (int ansID : userAnswers.keySet()) {
-            UserAnswer usrAns = userAnswers.get(new Integer(ansID));
-            String rec = usrAns.getAnswer().getQuestion().getRecordClass().getFullName();
-            if (recAnsMapMap.get(rec) == null) {
-                recAnsMapMap.put(rec, new LinkedHashMap<Integer, UserAnswer>());
-            }
-            Map<Integer, UserAnswer> recAnsMapMap1 = recAnsMapMap.get(rec);
-            recAnsMapMap1.put(new Integer(ansID), usrAns);
-        }
-
-        // wants answers in sorted arrays
-        Map<String, UserAnswer[]> recAnsMap = new LinkedHashMap<String, UserAnswer[]>();
-        for (Object r : recAnsMapMap.keySet()) {
-            String rec = (String) r;
-            Map<Integer, UserAnswer> recAnsMapMap1 = recAnsMapMap.get(rec);
-            List ansIDList = Arrays.asList(recAnsMapMap1.keySet().toArray());
-            Collections.sort(ansIDList);
-            Collections.reverse(ansIDList);
-            Object[] sortedAnsIDs = ansIDList.toArray();
-            Vector v = new Vector();
-            for (int i = 0; i < sortedAnsIDs.length; i++) {
-                v.add(recAnsMapMap1.get((Integer) sortedAnsIDs[i]));
-            }
-            UserAnswer[] sortedUsrAns = new UserAnswer[v.size()];
-            v.copyInto(sortedUsrAns);
-
-            recAnsMap.put(rec, sortedUsrAns);
-        }
-
-        return recAnsMap;
-    }
-
-    public UserAnswer getUserAnswerByID(int answerID) throws WdkUserException {
-        if (userAnswers == null || !userAnswers.containsKey(answerID))
-            throw new WdkUserException("The answer of ID " + answerID
-                    + " does not exist!");
-        return userAnswers.get(answerID);
-    }
-
-    public UserAnswer getUserAnswerByName(String name) throws WdkUserException {
-        if (userAnswers != null) {
-            for (UserAnswer answer : userAnswers.values()) {
-                if (answer.getName().equalsIgnoreCase(name)) return answer;
-            }
-        }
-        throw new WdkUserException("The answer of name " + name
-                + " does not exist!");
-    }
-
-    public UserAnswer getUserAnswerByAnswerFuzzy(Answer answer)
-            throws WdkUserException {
-        return getUserAnswerByAnswer(answer, true);
-    }
-
-    public UserAnswer getUserAnswerByAnswer(Answer answer)
-            throws WdkUserException {
-        return getUserAnswerByAnswer(answer, false);
-    }
-
-    private UserAnswer getUserAnswerByAnswer(Answer answer, boolean ignorePage)
-            throws WdkUserException {
-        if (userAnswers != null) {
-            // check if the answer exists or not
-            for (UserAnswer uans : userAnswers.values()) {
-                Answer ans = uans.getAnswer();
-                // check question name
-                String qname = ans.getQuestion().getFullName();
-                if (!qname.equalsIgnoreCase(answer.getQuestion().getFullName()))
-                    continue;
-
-                // check paging number
-                if (!ignorePage
-                        && (ans.getStartRecordInstanceI() != answer.getStartRecordInstanceI() || ans.getEndRecordInstanceI() != answer.getEndRecordInstanceI()))
-                    continue;
-
-                // check parameters
-                Map params = ans.getParams();
-                Map pchecks = answer.getParams();
-                Iterator it = params.keySet().iterator();
-                boolean equal = true;
-                while (it.hasNext()) {
-                    String key = (String) it.next();
-                    String value = params.get(key).toString();
-                    // check on the input answer
-                    if (pchecks.containsKey(key)) {
-                        String vcheck = pchecks.get(key).toString();
-                        if (!value.equalsIgnoreCase(vcheck)) {
-                            equal = false;
-                            break;
-                        }
-                    } else {
-                        equal = false;
-                        break;
-                    }
-                }
-                // check if two answers are the same
-                if (equal) return uans;
-            }
-        }
-        throw new WdkUserException(
-                "The UserAnswer specified by the given answer doesn't exist!");
-    }
-
-    public void renameUserAnswer(int answerID, String name)
-            throws WdkUserException {
-        // check if the answer exists
-        if (userAnswers == null || !userAnswers.containsKey(answerID))
-            throw new WdkUserException(
-                    "The answer specified by the given ID doesn't exist!");
-
-        // check if the answer name is unique
-        for (int ansID : userAnswers.keySet()) {
-            if (ansID != answerID) {
-                UserAnswer answer = userAnswers.get(ansID);
-                if (answer.getName().equalsIgnoreCase(name))
-                    throw new WdkUserException(
-                            "Duplicated name of the answer for this user");
-            }
-        }
-        // name is unique in user's session scope
-        UserAnswer answer = userAnswers.get(answerID);
-        answer.setName(name);
-    }
-
-    public UserAnswer combineUserAnswers(int firstAnswerID, int secondAnswerID,
-            String operation, int startIndex, int endIndex,
-            Map<String, String> operatorMap) throws WdkUserException,
-            WdkModelException {
-        // construct operand map
-        Map<String, Answer> operandMap = buildOperandMap();
-
-        // construct the expression
-        StringBuffer sb = new StringBuffer();
-        sb.append(firstAnswerID);
-        sb.append(' ');
-        sb.append(operation);
-        sb.append(" ");
-        sb.append(secondAnswerID);
-
-        // construct BooleanQuestionNode
-        BooleanExpression be = new BooleanExpression(model);
-        BooleanQuestionNode root = be.parseExpression(sb.toString(),
-                operandMap, operatorMap);
-
-        // create a new UserAnswer
-        Answer answer = root.makeAnswer(startIndex, endIndex);
-        addAnswer(answer);
-        // set user answer as combined
-        UserAnswer userAnswer = getUserAnswerByAnswer(answer);
-        userAnswer.setCombinedAnswer(true);
-        userAnswer.setName(sb.toString());
-        return userAnswer;
-    }
-
-    public UserAnswer combineUserAnswers(String expression, int startIndex,
-            int endIndex, Map<String, String> operatorMap)
-            throws WdkUserException, WdkModelException {
-        // construct operand map
-        Map<String, Answer> operandMap = buildOperandMap();
-
-        // construct BooleanQuestionNode
-        BooleanExpression be = new BooleanExpression(model);
-        BooleanQuestionNode root = be.parseExpression(expression, operandMap,
-                operatorMap);
-
-        // make answer
-        Answer answer = root.makeAnswer(startIndex, endIndex);
-        addAnswer(answer);
-        // set user answer as combined
-        UserAnswer userAnswer = getUserAnswerByAnswer(answer);
-        userAnswer.setCombinedAnswer(true);
-        userAnswer.setName(expression);
-        return userAnswer;
-    }
-
-    public String validateExpression(String expression, int startIndex,
-            int endIndex, Map<String, String> operatorMap)
-            throws WdkModelException {
-        // construct operand map
-        Map<String, Answer> operandMap = buildOperandMap();
-
-        // construct BooleanQuestionNode
-        BooleanExpression be = new BooleanExpression(model);
-        try {
-            be.parseExpression(expression, operandMap, operatorMap);
-        } catch (WdkUserException ue) {
-            return ue.getMessage();
-        }
-        return null;
-    }
-
-    private Map<String, Answer> buildOperandMap() {
-        Map<String, Answer> operandMap = new LinkedHashMap<String, Answer>();
-        for (int answerID : userAnswers.keySet()) {
-            UserAnswer userAnswer = userAnswers.get(answerID);
-            operandMap.put(Integer.toString(answerID), userAnswer.getAnswer());
-            operandMap.put(userAnswer.getName(), userAnswer.getAnswer());
-        }
-        return operandMap;
-    }
-
-    public String toString() {
-        String newline = System.getProperty("line.separator");
-        StringBuffer sb = new StringBuffer();
-
-        sb.append("==================================");
-        sb.append(newline);
-        sb.append("UserID=" + userID);
-        int size = (userAnswers != null) ? userAnswers.size() : 0;
-        sb.append("\t#Answers=" + size);
-        sb.append(newline);
-        if (userAnswers != null) {
-            sb.append("----------------------------------");
-            sb.append(newline);
-            sb.append("ID\tType\t\t\tName");
-            sb.append(newline);
-            for (UserAnswer answer : userAnswers.values()) {
-                sb.append(answer.getAnswerID());
-                sb.append("\t" + answer.getType());
-                sb.append("\t" + answer.getName());
-                sb.append(newline);
-            }
-        }
-        sb.append(newline);
-        return sb.toString();
-    }
-
-    private void saveHistory(UserAnswer userAnswer) throws WdkUserException,
-            WdkModelException {
-        int historyID = userAnswer.getAnswerID();
-        Integer tempID = userAnswer.getAnswer().getDatasetId();
-        StringBuffer sb = new StringBuffer("SELECT * FROM ");
-        try {
-            if (tempID == null) {
-                // read the record to make sure the id is initialized
-                userAnswer.getAnswer().getResultSize();
-                tempID = userAnswer.getAnswer().getDatasetId();
-            }
-            int datasetID = tempID.intValue();
-
-            String historyTableName = model.getResultFactory().getHistoryTableName();
-            DataSource dataSource = model.getRDBMSPlatform().getDataSource();
-
-            // check if the same history ID has been used; if so, replace the
-            // old
-            // one; otherwise, insert a new record
-            sb.append(historyTableName);
-            sb.append(" WHERE ");
-            sb.append(ResultFactory.FIELD_USER_ID);
-            sb.append("='");
-            sb.append(userID);
-            sb.append("' AND ");
-            sb.append(ResultFactory.FIELD_HISTORY_ID);
-            sb.append("=");
-            sb.append(historyID);
-
-            ResultSet rs = SqlUtils.getResultSet(dataSource, sb.toString());
-            sb.delete(0, sb.length());
-            if (rs.next()) { // has existing history, replace old one
-                sb.append("UPDATE ");
-                sb.append(historyTableName);
-                sb.append(" SET ");
-                sb.append(ResultFactory.FIELD_DATASET_ID);
-                sb.append("=");
-                sb.append(datasetID);
-                sb.append(" WHERE ");
-                sb.append(ResultFactory.FIELD_USER_ID);
-                sb.append("='");
-                sb.append(userID);
-                sb.append("' AND ");
-                sb.append(ResultFactory.FIELD_HISTORY_ID);
-                sb.append("=");
-                sb.append(historyID);
-            } else { // no matched history, insert a new one
-                sb.append("INSERT INTO ");
-                sb.append(historyTableName);
-                sb.append(" (");
-                sb.append(ResultFactory.FIELD_USER_ID);
-                sb.append(", ");
-                sb.append(ResultFactory.FIELD_HISTORY_ID);
-                sb.append(", ");
-                sb.append(ResultFactory.FIELD_DATASET_ID);
-                sb.append(") VALUES ('");
-                sb.append(userID);
-                sb.append("', ");
-                sb.append(historyID);
-                sb.append(", ");
-                sb.append(datasetID);
-                sb.append(")");
-            }
-            SqlUtils.closeResultSet(rs);
-            // execute update/insert
-            SqlUtils.executeUpdate(dataSource, sb.toString());
-        } catch (SQLException ex) {
-            logger.error("Got an SQLException: " + ex.toString());
-            throw new WdkUserException(ex.getMessage() + ": " + sb);
-        }
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#finalize()
-     */
-    @Override
-    protected void finalize() throws Throwable {
-        // the user's history hasn't been cleared. in this place the user object
-        // removes the query histories
-        if (!cleared) clearUserAnswers();
-        super.finalize();
-    }
-
-    // ******************************** END ************************************
-
-    User(String email, UserFactory factory) {
+        this.userId = userId;
         this.email = email;
-        this.factory = factory;
+        this.model = model;
+        this.userFactory = model.getUserFactory();
+        this.datasetFactory = model.getDatasetFactory();
+
         userRoles = new LinkedHashSet<String>();
 
-        refreshInterval = -1;
-
-        this.model = factory.getWdkModel();
         globalPreferences = new HashMap<String, String>();
         projectPreferences = new HashMap<String, String>();
+    }
+
+    public WdkModel getWdkModel() {
+        return this.model;
+    }
+
+    /**
+     * @return Returns the userId.
+     */
+    public int getUserId() {
+        return userId;
     }
 
     /**
@@ -735,16 +703,12 @@ public class User {
     }
 
     /**
-     * @return Returns the refreshInterval.
-     */
-    public int getRefreshInterval() {
-        return refreshInterval;
-    }
-
-    /**
      * @return Returns the guest.
+     * @throws WdkUserException
      */
-    public boolean isGuest() {
+    public boolean isGuest() throws WdkUserException {
+        // update user's time stamp
+        userFactory.updateUser(this);
         return guest;
     }
 
@@ -777,76 +741,208 @@ public class User {
         this.guest = guest;
     }
 
-    /**
-     * @param refreshInterval
-     *            The refreshInterval to set.
-     */
-    void setRefreshInterval(int refreshInterval) {
-        this.refreshInterval = refreshInterval;
+    public History createHistory(Answer answer) throws WdkUserException,
+            WdkModelException {
+        return createHistory(answer, null);
+    }
+
+    private History createHistory(Answer answer, String booleanExpression)
+            throws WdkUserException, WdkModelException {
+        return userFactory.createHistory(this, answer, booleanExpression);
     }
 
     /**
-     * create and save a history from the answer
+     * this method is only called by UserFactory during the login process, it
+     * merges the existing history of the current guest user into the logged-in
+     * user.
      * 
-     * @param answer
-     * @return
+     * @param user
+     * @throws WdkUserException
+     * @throws WdkModelException
      */
-    public History createHistory(Answer answer) {
-        // TODO
-        return null;
-    }
+    void mergeUser(User user) throws WdkUserException, WdkModelException {
+        // TEST
+        logger.debug("Merging user #" + user.getUserId() + " into user #"
+                + userId + "...");
 
-    /**
-     * this method is used by the factory when loading histories from database
-     * 
-     * @param history
-     */
-    void addHistory(History history) {
-    // TODO
-    }
+        // merge the datasets
+        Map<String, String> datasetMap = new LinkedHashMap<String, String>();
+        Dataset[] dsets = user.getDatasets();
+        for (Dataset dset : dsets) {
+            String oldName = dset.getDatasetName();
+            String newName = oldName;
+            // check the name availability, in the new user domain
+            if (!datasetFactory.checkAvailability(this, oldName))
+                newName += " #" + dset.getDatasetId();
+            dset.setUserId(userId);
+            dset.setDatasetName(newName);
+            datasetFactory.saveDatasetInfo(dset);
+            datasetMap.put(oldName, newName);
+        }
 
-    public void mergeHistory(User user) {
-    // TODO
+        // sort history by id, since the boolean history always has a bigger
+        // history id than its compoment histories
+        Map<Integer, History> hists = user.getHistoriesMap();
+        List<Integer> histIds = new ArrayList<Integer>(hists.keySet());
+        Collections.sort(histIds);
+        Map<String, String> historyMap = new LinkedHashMap<String, String>();
+
+        // recreate each history in the new user's domain, beware to update
+        // the parameter information
+        for (int histId : histIds) {
+            History hist = hists.get(histId);
+
+            // handle boolean history
+            if (hist.isBoolean()) {
+                // need to replace the history Ids in the expression
+                String expression = hist.getBooleanExpression();
+                for (String oldId : historyMap.keySet()) {
+                    String newId = historyMap.get(oldId);
+                    expression = expression.replaceAll("\\b" + oldId + "\\b",
+                            newId);
+                }
+                History history = combineHistory(expression);
+                historyMap.put(Integer.toString(histId),
+                        Integer.toString(history.getHistoryId()));
+                continue;
+            }
+
+            // handle non-boolean history
+            Answer answer = hist.getAnswer();
+            Question question = answer.getQuestion();
+            QueryInstance qinstance = answer.getIdsQueryInstance();
+            Param[] params = qinstance.getQuery().getParams();
+            Map<String, Object> values = qinstance.getValuesMap();
+
+            // check if the parameter contains DatasetParam
+            boolean repack = false;
+            for (Param param : params) {
+                if (param instanceof DatasetParam) {
+                    // get the type of iput data
+                    DatasetParam dsParam = (DatasetParam) param;
+                    String compound = values.get(dsParam.getName()).toString();
+                    InputType inputType = dsParam.getInputType(compound);
+
+                    // get the input value
+                    String value = compound.substring(compound.indexOf(':') + 1);
+                    if (inputType == InputType.Dataset) {
+                        value = datasetMap.get(value);
+                    } else if (inputType == InputType.History) {
+                        value = historyMap.get(value);
+                    }
+                    compound = inputType.name() + ":" + value;
+                    values.put(param.getName(), compound);
+                    repack = true;
+                }
+            }
+            // need to repack the query
+            if (repack) {
+                int startIndex = answer.getStartRecordInstanceI();
+                int endIndex = answer.getEndRecordInstanceI();
+                answer = question.makeAnswer(values, startIndex, endIndex);
+            }
+            History history = createHistory(answer);
+            historyMap.put(Integer.toString(histId),
+                    Integer.toString(history.getHistoryId()));
+        }
     }
 
     /**
      * get an array of cached histories in the current project site; if the
-     * cache is expired. it will be refreshed from the database
+     * cache is expired. it will be refreshed from the database. The result
+     * array is sorted by last_run_time, the lastest at the first
      * 
      * @return
+     * @throws WdkModelException
+     * @throws WdkUserException
      */
-    public History[] getHistories() {
-        // TODO
-        return null;
+    public Map<Integer, History> getHistoriesMap() throws WdkUserException,
+            WdkModelException {
+        return userFactory.loadHistories(this);
     }
 
-    public Map<Integer, History> getHistoryMap() {
-        // TODO
-        return null;
+    public History[] getHistories() throws WdkUserException, WdkModelException {
+        Map<Integer, History> map = userFactory.loadHistories(this);
+        History[] array = new History[map.size()];
+        map.values().toArray(array);
+        return array;
+    }
+
+    public Map<String, List<History>> getHistoriesByCategory()
+            throws WdkUserException, WdkModelException {
+        Map<Integer, History> histories = userFactory.loadHistories(this);
+        Map<String, List<History>> category = new LinkedHashMap<String, List<History>>();
+        for (History history : histories.values()) {
+            String type = history.getDataType();
+            List<History> list;
+            if (category.containsKey(type)) {
+                list = category.get(type);
+            } else {
+                list = new ArrayList<History>();
+                category.put(type, list);
+            }
+            list.add(history);
+        }
+        return category;
     }
 
     /**
-     * return a list
+     * * The result array is sorted by last_run_time, the lastest at the first
      * 
-     * @param namePattern
+     * @param dataType
      * @return
+     * @throws WdkModelException
+     * @throws WdkUserException
      */
-    public History[] queryHistories(String namePattern) {
-        List<History> hits = new ArrayList<History>();
-        // TODO
-        return null;
+    public Map<Integer, History> getHistoriesMap(String dataType)
+            throws WdkUserException, WdkModelException {
+        Map<Integer, History> histories = userFactory.loadHistories(this);
+        Map<Integer, History> selected = new LinkedHashMap<Integer, History>();
+        for (int historyId : histories.keySet()) {
+            History history = histories.get(historyId);
+            if (dataType.equalsIgnoreCase(history.getDataType()))
+                selected.put(historyId, history);
+        }
+        return selected;
     }
 
-    public void saveHistory(History history) {
-    // TODO
+    public History[] getHistories(String dataType) throws WdkUserException,
+            WdkModelException {
+        Map<Integer, History> map = getHistoriesMap(dataType);
+        History[] array = new History[map.size()];
+        map.values().toArray(array);
+        return array;
     }
 
-    public void clearHistories() {
-    // TODO
+    /**
+     * if the history of the given id doesn't exist, a null is returned
+     * 
+     * @param historyId
+     * @return
+     * @throws WdkUserException
+     * @throws WdkModelException
+     */
+    public History getHistory(int historyId) throws WdkUserException,
+            WdkModelException {
+        return userFactory.loadHistory(this, historyId);
     }
 
-    public void deleteHistory(History history) {
-    // TODO
+    public void deleteHistories() throws WdkUserException {
+        userFactory.deleteHistories(this);
+    }
+
+    public void deleteHistory(int historyId) throws WdkUserException,
+            WdkModelException {
+        // check the dependencies of the history
+        History history = getHistory(historyId);
+        if (history.isDepended())
+            throw new WdkUserException("The history #" + historyId + " cannot "
+                    + "be deleted, since other histories depends on it");
+        userFactory.deleteHistory(this, historyId);
+    }
+
+    public int getHistoryCount() throws WdkUserException {
+        return userFactory.getHistoryCount(this);
     }
 
     public void setProjectPreference(String prefName, String prefValue) {
@@ -862,9 +958,17 @@ public class User {
         return new HashMap<String, String>(projectPreferences);
     }
 
+    public String getProjectPreference(String key) {
+        return projectPreferences.get(key);
+    }
+
     public void setGlobalPreference(String prefName, String prefValue) {
         if (prefValue == null) prefValue = prefName;
         globalPreferences.put(prefName, prefValue);
+    }
+
+    public String getGlobalPreference(String key) {
+        return globalPreferences.get(key);
     }
 
     public void unsetGlobalPreference(String prefName) {
@@ -874,7 +978,7 @@ public class User {
     public Map<String, String> getGlobalPreferences() {
         return new HashMap<String, String>(globalPreferences);
     }
-    
+
     public void clearPreferences() {
         globalPreferences.clear();
         projectPreferences.clear();
@@ -882,6 +986,95 @@ public class User {
 
     public void changePassword(String oldPassword, String newPassword,
             String confirmPassword) throws WdkUserException {
-        factory.changePassword(email, oldPassword, newPassword, confirmPassword);
+        userFactory.changePassword(email, oldPassword, newPassword,
+                confirmPassword);
+        update();
+    }
+
+    public Map<String, Dataset> getDatasetsMap() throws WdkUserException {
+        return datasetFactory.loadDatasets(this);
+    }
+
+    public Dataset[] getDatasets() throws WdkUserException {
+        Map<String, Dataset> datasets = datasetFactory.loadDatasets(this);
+        Dataset[] array = new Dataset[datasets.size()];
+        datasets.values().toArray(array);
+        return array;
+    }
+
+    public Map<String, Dataset> getDatasetsMap(String dataType)
+            throws WdkUserException {
+        Map<String, Dataset> datasets = datasetFactory.loadDatasets(this);
+        Map<String, Dataset> selected = new LinkedHashMap<String, Dataset>();
+        for (String datasetName : datasets.keySet()) {
+            Dataset dataset = datasets.get(datasetName);
+            if (dataType.equalsIgnoreCase(dataset.getDataType()))
+                selected.put(datasetName, dataset);
+        }
+        return selected;
+    }
+
+    public Dataset[] getDatasets(String dataType) throws WdkUserException {
+        Map<String, Dataset> datasets = getDatasetsMap(dataType);
+        Dataset[] array = new Dataset[datasets.size()];
+        datasets.values().toArray(array);
+        return array;
+    }
+
+    public Dataset getDataset(String datasetName) throws WdkUserException {
+        return datasetFactory.loadDataset(this, datasetName);
+    }
+
+    public Dataset createDataset(String datasetName, String dataType,
+            String[][] values) throws WdkUserException {
+        // the dataset name may be updated to keep the uniqueness constraint
+        return datasetFactory.createDataset(this, datasetName, dataType,
+                values, false);
+    }
+
+    public void deleteDataset(String datasetName) throws WdkUserException {
+        datasetFactory.deleteDataset(this, datasetName);
+    }
+
+    public void deleteDatasets() throws WdkUserException {
+        datasetFactory.deleteDatasets(this);
+    }
+
+    public void save() throws WdkUserException {
+        userFactory.saveUser(this);
+    }
+
+    public void update() throws WdkUserException {
+        // update user's time stamp
+        userFactory.updateUser(this);
+    }
+
+    public int getItemsPerPage() {
+        String prefValue = getGlobalPreference(User.PREF_ITEMS_PER_PAGE);
+        int itemsPerPage = (prefValue == null) ? 20
+                : Integer.parseInt(prefValue);
+        return itemsPerPage;
+    }
+
+    public History combineHistory(String expression) throws WdkUserException,
+            WdkModelException {
+        BooleanExpression exp = new BooleanExpression(this);
+        Map<String, String> operatorMap = getWdkModel().getBooleanOperators();
+        BooleanQuestionNode root = exp.parseExpression(expression, operatorMap);
+
+        Answer answer = root.makeAnswer(0, getItemsPerPage());
+        return createHistory(answer, expression);
+    }
+
+    public String validateExpression(String expression,
+            Map<String, String> operatorMap) throws WdkModelException {
+        // construct BooleanQuestionNode
+        BooleanExpression be = new BooleanExpression(this);
+        try {
+            be.parseExpression(expression, operatorMap);
+        } catch (WdkUserException ue) {
+            return ue.getMessage();
+        }
+        return null;
     }
 }

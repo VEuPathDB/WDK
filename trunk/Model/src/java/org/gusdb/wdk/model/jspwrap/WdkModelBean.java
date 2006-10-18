@@ -6,9 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Vector;
 
-import javax.servlet.http.HttpSessionBindingEvent;
-import javax.servlet.http.HttpSessionBindingListener;
-
+import org.gusdb.wdk.model.EnumParam;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
 import org.gusdb.wdk.model.RecordClass;
@@ -16,7 +14,7 @@ import org.gusdb.wdk.model.RecordClassSet;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.user.DatasetFactory;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
 import org.gusdb.wdk.model.xml.XmlRecordClassSet;
 
@@ -24,7 +22,7 @@ import org.gusdb.wdk.model.xml.XmlRecordClassSet;
  * A wrapper on a {@link WdkModel} that provides simplified access for
  * consumption by a view
  */
-public class WdkModelBean implements HttpSessionBindingListener {
+public class WdkModelBean  {
 
     WdkModel model;
 
@@ -53,10 +51,6 @@ public class WdkModelBean implements HttpSessionBindingListener {
 
     public String getIntroduction() {
         return model.getIntroduction();
-    }
-
-    public EnumParamBean getBooleanOps() {
-        return new EnumParamBean(model.getBooleanOps());
     }
 
     // to do: figure out how to do this without using getModel()
@@ -172,20 +166,6 @@ public class WdkModelBean implements HttpSessionBindingListener {
         return types;
     }
 
-    public UserBean createUser(String userID) {
-        User user = model.createUser(userID);
-        return new UserBean(user);
-    }
-
-    public UserBean getUser(String userID) {
-        User user = model.getUser(userID);
-        return new UserBean(user);
-    }
-
-    public boolean deleteUser(String userID) throws WdkUserException {
-        return model.deleteUser(userID);
-    }
-
     public XmlQuestionSetBean[] getXmlQuestionSets() {
         XmlQuestionSet[] qsets = model.getXmlQuestionSets();
         XmlQuestionSetBean[] qsetBeans = new XmlQuestionSetBean[qsets.length];
@@ -216,32 +196,21 @@ public class WdkModelBean implements HttpSessionBindingListener {
         return rcBeans;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see javax.servlet.http.HttpSessionBindingListener#valueBound(javax.servlet.http.HttpSessionBindingEvent)
-     */
-    public void valueBound(HttpSessionBindingEvent e) {}
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see javax.servlet.http.HttpSessionBindingListener#valueUnbound(javax.servlet.http.HttpSessionBindingEvent)
-     */
-    public void valueUnbound(HttpSessionBindingEvent e) {
-        // check if the unbounding object is a UserBean, if so, also remove the
-        // user and clear the history
-        Object value = e.getValue();
-        if (e.getValue() instanceof UserBean) {
-            try {
-                deleteUser(((UserBean) value).getUserID());
-            } catch (WdkUserException ex) {
-                ex.printStackTrace();
-            }
-        }
-    }
-    
     public UserFactoryBean getUserFactory() throws WdkUserException {
         return new UserFactoryBean(model.getUserFactory());
+    }
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.WdkModel#getBooleanOperators()
+     */
+    public Map<String, String> getBooleanOperators() {
+        return model.getBooleanOperators();
+    }
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.WdkModel#getBooleanOps()
+     */
+    public EnumParamBean getBooleanOps() {
+        return new EnumParamBean(model.getBooleanOps());
     }
 }

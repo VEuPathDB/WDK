@@ -23,8 +23,8 @@ import org.apache.log4j.Logger;
  */
 
 public class BooleanQueryInstance extends QueryInstance {
-    
-    private static Logger logger =Logger.getLogger(BooleanQueryInstance.class);
+
+    private static Logger logger = Logger.getLogger(BooleanQueryInstance.class);
 
     // ------------------------------------------------------------------
     // Instance Variables
@@ -77,12 +77,13 @@ public class BooleanQueryInstance extends QueryInstance {
     // ------------------------------------------------------------------
 
     /**
-     * @param values Map where the keys are the names for BooleanQuery
-     *        parameters found as static variables in BooleanQuery, and the
-     *        values are the expected values for those parameters (Answers for
-     *        the two AnswerParam and the name of the boolean operation for the
-     *        StringParam). Columns are set at this time for the BooleanQuery
-     *        this instance points to.
+     * @param values
+     *            Map where the keys are the names for BooleanQuery parameters
+     *            found as static variables in BooleanQuery, and the values are
+     *            the expected values for those parameters (Answers for the two
+     *            AnswerParam and the name of the boolean operation for the
+     *            StringParam). Columns are set at this time for the
+     *            BooleanQuery this instance points to.
      */
     public void setValues(Map<String, Object> values) throws WdkModelException {
 
@@ -184,24 +185,26 @@ public class BooleanQueryInstance extends QueryInstance {
      */
     protected String getSql() throws WdkModelException {
 
-	String[] commonColumns = findCommonColumnNames();
+        String[] commonColumns = findCommonColumnNames();
 
-        String sql = getResultFactory().getSqlForBooleanOp(firstQueryInstance, 
-							   commonColumns) + 
-	    " " + operation + " " + 
-	    getResultFactory().getSqlForBooleanOp(secondQueryInstance,
-						  commonColumns);
-        
+        String sql = getResultFactory().getSqlForBooleanOp(firstQueryInstance,
+                commonColumns)
+                + " "
+                + operation
+                + " "
+                + getResultFactory().getSqlForBooleanOp(secondQueryInstance,
+                        commonColumns);
+
         // order by project id, and then primary key, the first item in the
         // array is primary key, and the second is project id. If the second is
         // null then only sort on primary key (lower case)
         String[] names = Answer.findPrimaryKeyColumnNames(booleanQuery);
-        
+
         // add sorting clause
         sql = "SELECT * FROM (" + sql + ") temp ORDER BY ";
         if (names[1] != null) sql += names[1] + ", ";
-	sql += "LOWER(" + names[0] +")";
-        
+        sql += "LOWER(" + names[0] + ")";
+
         // TEST
         logger.debug("Boolean Id Query: " + sql);
 
@@ -214,27 +217,33 @@ public class BooleanQueryInstance extends QueryInstance {
 
     /**
      * Checks to make sure that the Queries in the Questions for the given
-     * Answers have the same primary key Columns and that the Questions' 
+     * Answers have the same primary key Columns and that the Questions'
      * RecordClasses are the same.
      */
     private void validateBooleanValues(Answer firstAnswer, Answer secondAnswer)
             throws WdkModelException {
 
-	String[] cols1 = firstAnswer.findPrimaryKeyColumnNames();
-	String[] cols2 = secondAnswer.findPrimaryKeyColumnNames();
+        String[] cols1 = firstAnswer.findPrimaryKeyColumnNames();
+        String[] cols2 = secondAnswer.findPrimaryKeyColumnNames();
 
-	// compare nulls and strings
-	boolean recIdMisMatch = cols1[0] != cols2[0] && !cols1[0].equals(cols2[0]);
-	boolean prjIdMisMatch = cols1[1] != cols2[1] && !cols1[1].equals(cols2[1]);
-	if (recIdMisMatch || prjIdMisMatch) {
-	    String errMsg = 
-		"Primary key columns don't match in Boolean Query for " +
-		firstAnswer.getQuestion().getFullName() +
-		" (" + cols1[0] + ", " + cols1[1] + ") and " +
-		secondAnswer.getQuestion().getFullName() + 
-		" (" + cols2[0] + ", " + cols2[1] + ")";
-	    throw new WdkModelException(errMsg);
-	} 
+        // compare nulls and strings
+        boolean recIdMisMatch = cols1[0] != cols2[0]
+                && !cols1[0].equals(cols2[0]);
+        boolean prjIdMisMatch = cols1[1] != cols2[1]
+                && !cols1[1].equals(cols2[1]);
+        if (recIdMisMatch || prjIdMisMatch) {
+            String errMsg = "Primary key columns don't match in Boolean Query for "
+                    + firstAnswer.getQuestion().getFullName()
+                    + " ("
+                    + cols1[0]
+                    + ", "
+                    + cols1[1]
+                    + ") and "
+                    + secondAnswer.getQuestion().getFullName()
+                    + " ("
+                    + cols2[0] + ", " + cols2[1] + ")";
+            throw new WdkModelException(errMsg);
+        }
 
         RecordClass firstRecordClass = firstAnswer.getQuestion().getRecordClass();
         RecordClass secondRecordClass = secondAnswer.getQuestion().getRecordClass();
@@ -249,14 +258,15 @@ public class BooleanQueryInstance extends QueryInstance {
     }
 
     private String[] findCommonColumnNames() {
-	Column[] cols1 = firstQueryInstance.getQuery().getColumns();
-	Column[] cols2 = secondQueryInstance.getQuery().getColumns();
-	Map<String, String> cols1Map = new LinkedHashMap<String, String>();
-	for (Column col : cols1) cols1Map.put(col.getName(), col.getName());
-	Vector<String> answer = new Vector<String>();
-	for (Column col : cols2) 
-	    if (cols1Map.get(col.getName()) != null) answer.add(col.getName());
-	return answer.toArray(new String[1]);
+        Column[] cols1 = firstQueryInstance.getQuery().getColumns();
+        Column[] cols2 = secondQueryInstance.getQuery().getColumns();
+        Map<String, String> cols1Map = new LinkedHashMap<String, String>();
+        for (Column col : cols1)
+            cols1Map.put(col.getName(), col.getName());
+        Vector<String> answer = new Vector<String>();
+        for (Column col : cols2)
+            if (cols1Map.get(col.getName()) != null) answer.add(col.getName());
+        return answer.toArray(new String[1]);
     }
 
     private void setOperandIds(Map values) {
