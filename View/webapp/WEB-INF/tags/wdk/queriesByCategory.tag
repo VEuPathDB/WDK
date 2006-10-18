@@ -47,7 +47,7 @@
 
     <c:if test="${param.cat == null or param.cat eq cat or param.cat == ''}">
       <tr><td colspan="4">&nbsp;</td></tr>
-      <tr class="rowDark" width="100%"><td colspan="4" align="center"><b>${cat}</b></td></tr>
+      <tr class="rowDark" width="100%"><td colspan="4" align="center"><b><a name='${cat}'>${cat}</a></b></td></tr>
 
       <c:forEach items="${questions}" var="q">
         <c:set var="i" value="${i+1}"/>
