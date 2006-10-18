@@ -7,10 +7,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Vector;
 
-import javax.sql.DataSource;
-
 import org.gusdb.wdk.model.implementation.ModelXmlParser;
-import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.user.DatasetFactory;
 import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
 import org.gusdb.wdk.model.xml.XmlRecordClassSet;
@@ -19,14 +17,16 @@ import org.w3c.dom.Document;
 // why is this in impl?
 
 /**
- * @author  
- * @modified Jan 6, 2006 - Jerric
- *  Add a historyFactory in the model
+ * @author
+ * @modified Jan 6, 2006 - Jerric Add a historyFactory in the model
  */
 public class WdkModel {
 
+    // used to
+    public static final String PARAM_DIVIDER = "--WDK_PARAM_DIVIDER--";
+
     public static final int TRUNCATE_DEFAULT = 100;
-    //public static final WdkModel INSTANCE = new WdkModel();
+
     public static WdkModel INSTANCE = new WdkModel();
 
     protected RDBMSPlatformI platform;
@@ -36,7 +36,7 @@ public class WdkModel {
     Map<String, ParamSet> paramSets = new LinkedHashMap<String, ParamSet>();
     Map<String, RecordClassSet> recordClassSets = new LinkedHashMap<String, RecordClassSet>();
     Map<String, ReferenceList> referenceLists = new LinkedHashMap<String, ReferenceList>();
-    Map<String,QuestionSet> questionSets = new LinkedHashMap<String, QuestionSet>();
+    Map<String, QuestionSet> questionSets = new LinkedHashMap<String, QuestionSet>();
     Map<String, ModelSetI> allModelSets = new LinkedHashMap<String, ModelSetI>();
     private String name;
     String displayName;
@@ -46,15 +46,10 @@ public class WdkModel {
     String historyDatasetColumnName;
     ResultFactory resultFactory;
     Map<String, String> properties;
-   
+
     private EnumParam booleanOps;
     private Document document;
     String webServiceUrl;
-    
-    /**
-     * this map is used to store active users in memory
-     */
-    private Map<String, User> users;
 
     /**
      * xmlSchemaURL is used by the XmlQuestions. This is the only place where
@@ -68,12 +63,13 @@ public class WdkModel {
 
     private File xmlDataDir;
 
+    private DatasetFactory datasetFactory;
+
     /**
      * Default constructor
      */
     public WdkModel() {
         INSTANCE = this;
-        users = new LinkedHashMap<String, User>();
         xmlQuestionSets = new LinkedHashMap<String, XmlQuestionSet>();
         xmlRecordClassSets = new LinkedHashMap<String, XmlRecordClassSet>();
     }
@@ -97,7 +93,7 @@ public class WdkModel {
             WdkModel model = ModelXmlParser.parseXmlFile(
                     modelXmlFile.toURI().toURL(),
                     modelPropFile.toURI().toURL(), schemaFile.toURI().toURL(),
-                    xmlSchemaFile.toURI().toURL(), 
+                    xmlSchemaFile.toURI().toURL(),
                     modelConfigXmlFile.toURI().toURL());
             model.setXmlDataDir(xmlDataDir);
             return model;
@@ -121,7 +117,7 @@ public class WdkModel {
     }
 
     public RecordClass getRecordClass(String recordClassReference)
-            throws WdkUserException, WdkModelException {
+            throws WdkModelException {
         Reference r = new Reference(recordClassReference);
         RecordClassSet rs = getRecordClassSet(r.getSetName());
         return rs.getRecordClass(r.getElementName());
@@ -138,16 +134,17 @@ public class WdkModel {
     public String getName() {
         return name;
     }
-    
-     /**
+
+    /**
      * @return Returns the version.
      */
     public String getVersion() {
         return version;
     }
-    
+
     /**
-     * @param version The version to set.
+     * @param version
+     *            The version to set.
      */
     public void setVersion(String version) {
         this.version = version;
@@ -170,11 +167,11 @@ public class WdkModel {
     }
 
     public Map getProperties() {
-	return properties;
+        return properties;
     }
 
     public void setProperties(Map<String, String> properties) {
-	this.properties = properties;
+        this.properties = properties;
     }
 
     public void setHistoryDataset(String historyDatasetLink) {
@@ -193,7 +190,6 @@ public class WdkModel {
         return historyDatasetColumnName;
     }
 
-
     // RecordClass Sets
     public void addRecordClassSet(RecordClassSet recordClassSet)
             throws WdkModelException {
@@ -201,14 +197,14 @@ public class WdkModel {
     }
 
     public RecordClassSet getRecordClassSet(String recordClassSetName)
-            throws WdkUserException {
+            throws WdkModelException {
 
         if (!recordClassSets.containsKey(recordClassSetName)) {
             String err = "WDK Model " + name
                     + " does not contain a recordClass set with name "
                     + recordClassSetName;
 
-            throw new WdkUserException(err);
+            throw new WdkModelException(err);
         }
         return (RecordClassSet) recordClassSets.get(recordClassSetName);
     }
@@ -294,51 +290,53 @@ public class WdkModel {
         return new LinkedHashMap<String, QuestionSet>(questionSets);
     }
 
-    public Map<String, Map<String, Question[]>>getQuestionsByCategory() {
-	QuestionSet[] qSets = getAllQuestionSets();
+    public Map<String, Map<String, Question[]>> getQuestionsByCategory() {
+        QuestionSet[] qSets = getAllQuestionSets();
 
-	Map<String, Map<String, Vector<Question>>> qVecByCat = new LinkedHashMap<String, Map<String,Vector<Question>>>();
-	for (QuestionSet qSet : qSets) {
-	    if (true == qSet.getInternal()) continue;
-	    Question[] questions = qSet.getQuestions();
-	    for (Question q : questions) {
-		String recType = q.getRecordClass().getFullName();
-		String cat = q.getCategory();
-		if (null == cat) cat = "";
+        Map<String, Map<String, Vector<Question>>> qVecByCat = new LinkedHashMap<String, Map<String, Vector<Question>>>();
+        for (QuestionSet qSet : qSets) {
+            if (true == qSet.getInternal()) continue;
+            Question[] questions = qSet.getQuestions();
+            for (Question q : questions) {
+                String recType = q.getRecordClass().getFullName();
+                String cat = q.getCategory();
+                if (null == cat) cat = "";
 
-		if(null == qVecByCat.get(recType)) {
-		    qVecByCat.put(recType, new LinkedHashMap<String, Vector<Question>>());
-		}
-		
-		if(null == qVecByCat.get(recType).get(cat)) {
-		    qVecByCat.get(recType).put(cat, new Vector<Question>());
-		}
+                if (null == qVecByCat.get(recType)) {
+                    qVecByCat.put(recType,
+                            new LinkedHashMap<String, Vector<Question>>());
+                }
 
-		qVecByCat.get(recType).get(cat).add(q);
-	    }
-	}
+                if (null == qVecByCat.get(recType).get(cat)) {
+                    qVecByCat.get(recType).put(cat, new Vector<Question>());
+                }
 
-	Map<String, Map<String, Question[]>> qArrayByCat = new LinkedHashMap<String, Map<String,Question[]>>();
-	Iterator recI = qVecByCat.keySet().iterator();
-	while(recI.hasNext()) {
-	    String recType = (String)recI.next();
-	    Map<String, Vector<Question>> recMap = qVecByCat.get(recType);
-	    Iterator catI = recMap.keySet().iterator();
-	    while (catI.hasNext()) {
-		String cat = (String)catI.next();
-		Vector<Question> qVec = recMap.get(cat);
-		Question[] qArray = new Question[qVec.size()];
-		qVec.toArray(qArray);
+                qVecByCat.get(recType).get(cat).add(q);
+            }
+        }
 
-		if(null == qArrayByCat.get(recType)) {
-		    qArrayByCat.put(recType, new LinkedHashMap<String, Question[]>());
-		}
+        Map<String, Map<String, Question[]>> qArrayByCat = new LinkedHashMap<String, Map<String, Question[]>>();
+        Iterator recI = qVecByCat.keySet().iterator();
+        while (recI.hasNext()) {
+            String recType = (String) recI.next();
+            Map<String, Vector<Question>> recMap = qVecByCat.get(recType);
+            Iterator catI = recMap.keySet().iterator();
+            while (catI.hasNext()) {
+                String cat = (String) catI.next();
+                Vector<Question> qVec = recMap.get(cat);
+                Question[] qArray = new Question[qVec.size()];
+                qVec.toArray(qArray);
 
-		qArrayByCat.get(recType).put(cat, qArray);
-	    }
-	}
+                if (null == qArrayByCat.get(recType)) {
+                    qArrayByCat.put(recType,
+                            new LinkedHashMap<String, Question[]>());
+                }
 
-	return qArrayByCat;
+                qArrayByCat.get(recType).put(cat, qArray);
+            }
+        }
+
+        return qArrayByCat;
     }
 
     // ReferenceLists
@@ -446,31 +444,30 @@ public class WdkModel {
         String authenPassword = modelConfig.getAuthenticationPassword();
         String authenConnection = modelConfig.getAuthenticationConnectionUrl();
 
-        String userTable = modelConfig.getUserTable();
-        String roleTable = modelConfig.getRoleTable();
-        String historyTable = modelConfig.getHistoryTable();
-        String preferenceTable = modelConfig.getPreferenceTable();
+        String loginSchema = modelConfig.getLoginSchema();
+
         String defaultRole = modelConfig.getDefaultRole();
         String smtpServer = modelConfig.getSmtpServer();
         String registerEmail = modelConfig.getRegisterEmail();
         String emailSubject = modelConfig.getEmailSubject();
         String emailContent = modelConfig.getEmailContent();
-        
+
         boolean enableQueryLogger = modelConfig.isEnableQueryLogger();
         String queryLoggerFile = modelConfig.getQueryLoggerFile();
+
+        String projectId = getProjectId();
 
         // initialize authentication factory
         if (authenPlatformClass != null && !"".equals(authenPlatformClass)) {
             authenPlatform = (RDBMSPlatformI) Class.forName(authenPlatformClass).newInstance();
             authenPlatform.init(authenConnection, authenLogin, authenPassword,
                     minIdle, maxIdle, maxWait, maxActive, initialSize, fileName);
-            DataSource dataSource = authenPlatform.getDataSource();
-            UserFactory.initialize(this, this.name, dataSource, userTable,
-                    roleTable, historyTable, preferenceTable, defaultRole,
-                    smtpServer, registerEmail, emailSubject, emailContent);
+            UserFactory.initialize(this, projectId, authenPlatform,
+                    loginSchema, defaultRole, smtpServer, registerEmail,
+                    emailSubject, emailContent);
         } else {
-            UserFactory.initialize(this, this.name, null, null, null, null,
-                    null, null, null, null, null, null);
+            UserFactory.initialize(this, projectId, null, null, null, null,
+                    null, null, null);
         }
 
         platform.init(connectionUrl, login, password, minIdle, maxIdle,
@@ -480,6 +477,9 @@ public class WdkModel {
         this.platform = platform;
         this.webServiceUrl = modelConfig.getWebServiceUrl();
         this.resultFactory = resultFactory;
+
+        // initialize dataset factory with the login preferences
+        datasetFactory = new DatasetFactory(authenPlatform, loginSchema);
     }
 
     public void configure(File modelConfigXmlFile) throws Exception {
@@ -489,7 +489,7 @@ public class WdkModel {
     public RDBMSPlatformI getRDBMSPlatform() {
         return platform;
     }
-    
+
     public UserFactory getUserFactory() throws WdkUserException {
         return UserFactory.getInstance();
     }
@@ -664,38 +664,6 @@ public class WdkModel {
     }
 
     // =========================================================================
-    // User related methods
-    // =========================================================================
-
-    public User createUser(String userID) {
-        // check if the user exists
-        if (users.containsKey(userID)) return users.get(userID);
-
-        User user = new User(userID, this);
-        // HACK
-        // In the current version user is stored in the session only. It'll be
-        // changed in the future.
-        // users.put(userID, user);
-        return user;
-    }
-
-    public User getUser(String userID) {
-        throw new UnsupportedOperationException("The user is stored in the " +
-                "session only in this version of WDK.");
-        //return users.get(userID);
-    }
-
-    public boolean deleteUser(String userID) throws WdkUserException {
-        throw new UnsupportedOperationException("The user is stored in the " +
-        "session only in this version of WDK.");
-//        User user = users.remove(userID);
-//        if (user != null) {
-//            user.clearUserAnswers();
-//        }
-//        return (user != null);
-    }
-
-    // =========================================================================
     // Xml data source related methods
     // =========================================================================
 
@@ -756,8 +724,41 @@ public class WdkModel {
     public File getXmlDataDir() {
         return xmlDataDir;
     }
-    
+
     public RDBMSPlatformI getPlatform() {
         return platform;
+    }
+
+    public DatasetFactory getDatasetFactory() {
+        return datasetFactory;
+    }
+
+    public String getProjectId() {
+        return this.name;
+    }
+
+    public Map<String, String> getBooleanOperators() {
+        Map<String, String> map = new LinkedHashMap<String, String>();
+        map.put("and", "INTERSECT");
+        map.put("AND", "INTERSECT");
+        map.put("intersect", "INTERSECT");
+        map.put("INTERSECT", "INTERSECT");
+        map.put("&&", "INTERSECT");
+
+        map.put("or", "UNION");
+        map.put("OR", "UNION");
+        map.put("union", "UNION");
+        map.put("UNION", "UNION");
+        map.put("||", "UNION");
+        map.put("+", "UNION");
+
+        String minus = platform.getMinus();
+        map.put("minus", minus);
+        map.put("MINUS", minus);
+        map.put("except", minus);
+        map.put("EXCEPT", minus);
+        map.put("-", minus);
+
+        return map;
     }
 }

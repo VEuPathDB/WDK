@@ -70,9 +70,7 @@ public class ProcessLoginAction extends Action {
 
         // authenticate
         try {
-            UserBean user = factory.authenticate(email, password);
-            // user authentication succeeded, merge the history
-            user.mergeHistory(guest);
+            UserBean user = factory.login(guest, email, password);
             request.getSession().setAttribute(CConstants.WDK_USER_KEY, user);
             request.getSession().setAttribute(CConstants.WDK_LOGIN_ERROR_KEY,
                     "");

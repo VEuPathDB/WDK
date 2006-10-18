@@ -4,7 +4,14 @@
 package org.gusdb.wdk.model;
 
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.gusdb.wdk.model.user.History;
+import org.gusdb.wdk.model.user.User;
 
 /**
  * @author Jerric
@@ -14,15 +21,15 @@ public class BooleanExpression {
 
     private static final String STUB_PREFIX = "__STUB__";
 
-    private WdkModel model;
+    private User user;
 
-    private String expression;
+    private String orgExp;
 
     /**
      * 
      */
-    public BooleanExpression(WdkModel model) {
-        this.model = model;
+    public BooleanExpression(User user) {
+        this.user = user;
     }
 
     /**
@@ -44,12 +51,11 @@ public class BooleanExpression {
      * @throws WdkModelException
      */
     public BooleanQuestionNode parseExpression(String expression,
-            Map<String, Answer> operandMap, Map<String, String> operatorMap)
-            throws WdkUserException, WdkModelException {
-        //expression = internalize(expression);
-        this.expression = expression;
+            Map<String, String> operatorMap) throws WdkUserException,
+            WdkModelException {
+        this.orgExp = expression;
         // TEST
-        // System.out.println("Expression: " + expression);
+        System.out.println("Expression: " + expression);
 
         // replace the literals in the expression
         Map<String, String> replace = new LinkedHashMap<String, String>();
@@ -61,24 +67,18 @@ public class BooleanExpression {
             if (expression.charAt(i) == '(') count++;
             else if (expression.charAt(i) == ')') count--;
             if (count < 0)
-                throw new WdkUserException("Bad parentheses: "
-                        + this.expression);
+                throw new WdkUserException("Bad parentheses: " + orgExp);
         }
         if (count != 0)
-            throw new WdkUserException("Bad parentheses: " + this.expression);
+            throw new WdkUserException("Bad parentheses: " + orgExp);
 
-//        // disallow non upper case "and", "or" and "not" outside of literals
-//        checkOperatorCases(expression);
-
-        // insert a space before open parenthese; it's used when getting
-        // operator
+        // insert a space before open parenthes; it's used when getting operator
         expression = expression.replaceAll("\\(", " (");
         // delete extra white spaces
         expression = expression.replaceAll("\\s", " ").trim();
 
         // build the BooleanQuestionNode tree
-        BooleanQuestionNode root = parseBlock(expression, replace, operandMap,
-                operatorMap);
+        BooleanQuestionNode root = parseBlock(expression, replace, operatorMap);
         return root;
     }
 
@@ -95,8 +95,7 @@ public class BooleanExpression {
 
         // validate the expression by number of quotes; there are odd parts
         if (parts.length % 2 == 0)
-            throw new WdkUserException("Odd number of quotes in: "
-                    + this.expression);
+            throw new WdkUserException("Odd number of quotes in: " + orgExp);
 
         // replace literals with stub
         StringBuffer sb = new StringBuffer(parts[0]);
@@ -111,55 +110,48 @@ public class BooleanExpression {
     }
 
     private BooleanQuestionNode parseBlock(String block,
-            Map<String, String> replace, Map<String, Answer> operandMap,
-            Map<String, String> operatorMap)
+            Map<String, String> replace, Map<String, String> operatorMap)
             throws WdkUserException, WdkModelException {
         // check if the expression can be divided further
         // to do so, just need to check if there're spaces
         int spaces = block.indexOf(" ");
         int parenthese = block.indexOf("(");
         // it's a leaf node
-        if (spaces < 0 && parenthese < 0)
-            return buildLeaf(block, replace, operandMap);
+        if (spaces < 0 && parenthese < 0) return buildLeaf(block, replace);
 
         // otherwise, need to divide further
         String[] triplet = getTriplet(block);
 
         if (triplet.length == 1) { // only remove one pair of parentheses
-            return parseBlock(triplet[0], replace, operandMap, operatorMap);
+            return parseBlock(triplet[0], replace, operatorMap);
         } else { // a triplet
             // create BooleanQuestioNode for each piece
             BooleanQuestionNode left = parseBlock(triplet[0], replace,
-                    operandMap, operatorMap);
+                    operatorMap);
             BooleanQuestionNode right = parseBlock(triplet[2], replace,
-                    operandMap, operatorMap);
+                    operatorMap);
 
             // combine left & right sub-tree to form a new tree
-            return BooleanQuestionNode.combine(left, right, triplet[1], model,
-                    operatorMap);
+            return BooleanQuestionNode.combine(left, right, triplet[1],
+                    user.getWdkModel(), operatorMap);
         }
     }
 
     private BooleanQuestionNode buildLeaf(String block,
-            Map<String, String> replace, Map<String, Answer> operandMap)
-            throws WdkUserException {
-        // the block can be an id, a name, or a stub of the name the Answer;
-        // id starts with '#', stub starts with stub_prefix
-        Answer answer = operandMap.get(block);
-        if (answer == null) { // not an id or name, try stub
-            String name = replace.get(block);
-
-            // validate name
-            if (name == null)
-                throw new WdkUserException("Invalid name of the answer: "
-                        + block);
-
-            answer = operandMap.get(name);
-
-            if (answer == null)
-                throw new WdkUserException("Invalid name of the answer: "
-                        + name);
+            Map<String, String> replace) throws WdkUserException,
+            WdkModelException {
+        // the block must be a history id or an id starting with '#'
+        String strId = (block.charAt(0) == '#') ? block.substring(1) : block;
+        int historyId;
+        try {
+            historyId = Integer.parseInt(strId);
+        } catch (NumberFormatException ex) {
+            throw new WdkUserException("Invalid history Id: " + orgExp);
         }
+
+        // get history
+        History history = user.getHistory(historyId);
+        Answer answer = history.getAnswer();
 
         // create a leaf BooleanQuestionNode from the answer
         BooleanQuestionNode leaf = new BooleanQuestionNode(
@@ -188,11 +180,11 @@ public class BooleanExpression {
                 if (block.charAt(pos) == '(') parenthese++;
                 else if (block.charAt(pos) == ')') parenthese--;
                 if (parenthese < 0)
-                    throw new WdkUserException("Bad parentheses: " + expression);
+                    throw new WdkUserException("Bad parentheses: " + orgExp);
                 pos++;
             }
             if (parenthese != 0)
-                throw new WdkUserException("Bad parentheses: " + expression);
+                throw new WdkUserException("Bad parentheses: " + orgExp);
         } else { // no parenthese, then must be separated with space
             pos = block.indexOf(" ");
         }
@@ -210,7 +202,7 @@ public class BooleanExpression {
         String remain = block.substring(pos).trim();
         int end = remain.indexOf(" ");
         if (end < 0)
-            throw new WdkUserException("Incomplete expression: " + expression);
+            throw new WdkUserException("Incomplete expression: " + orgExp);
         String operator = remain.substring(0, end).trim();
 
         // grab right piece
@@ -221,27 +213,16 @@ public class BooleanExpression {
             right = right.substring(1, bound).trim();
         return new String[] { left, operator, right };
     }
-//
-//    private String internalize(String expression) {
-//        String intExp = expression.replaceAll(" AND ", " INTERSECT ");
-//        intExp = intExp.replaceAll(" OR ", " UNION ");
-//        intExp = intExp.replaceAll(" NOT ", " MINUS ");
-//        return intExp;
-//    }
-//
-//    private void checkOperatorCases(String exp) throws WdkUserException {
-//        if (exp.matches(".* (and|anD|aNd|aND|And|AnD|ANd) .*")) {
-//            throw new WdkUserException(
-//                    "Bad expression with non all-capital AND: " + expression);
-//        }
-//        if (exp.matches(".* (or|oR|Or) .*")) {
-//            throw new WdkUserException(
-//                    "Bad expression with non all-capital OR: " + expression);
-//        }
-//        if (exp.matches(".* (not|noT|nOt|nOT|Not|NoT|NOt) .*")) {
-//            throw new WdkUserException(
-//                    "Bad expression with non all-capital NOT: " + expression);
-//        }
-//    }
-//
+    
+    public Set<Integer> getOperands(String expression) {
+        Set<Integer> operands = new LinkedHashSet<Integer>();
+        // assuming operands are all digits, or digits heading with #
+        Pattern pattern = Pattern.compile("\\b#?(\\d+?)\\b");
+        Matcher matcher = pattern.matcher(expression);
+        while (matcher.find()) {
+            String strId = matcher.group(1);
+            operands.add(Integer.parseInt(strId));
+        }
+        return operands;
+    }
 }

@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model.jspwrap;
 
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Vector;
 
 import org.gusdb.wdk.model.BooleanQuery;
@@ -51,22 +52,14 @@ public class BooleanQuestionNodeBean {
      * @throws WdkModelException
      * @throws WdkUserException
      */
-    public AnswerBean makeAnswer(int start, int end) throws WdkModelException,
+    public AnswerBean makeAnswer(int startIndex, int endIndex) throws WdkModelException,
             WdkUserException {
-
-        // Hashtable values = bqn.getValues();
-        // Answer answer = bqn.getQuestion().makeAnswer(values, start, end);
-        // System.err.println("Made answer for BooleanQuestionNode Bean: " +
-        // toString());
-        // //answer.printAsTable();
-        // return new AnswerBean(answer);
-
-        return new AnswerBean(bqn.makeAnswer(start, end));
+        return new AnswerBean(bqn.makeAnswer(startIndex, endIndex));
     }
 
     public String getOperation() {
         // change this when we make EnumParams.
-        LinkedHashMap values = this.bqn.getValues();
+        Map<String, Object> values = this.bqn.getValues();
         String op = (String) values.get(BooleanQuery.OPERATION_PARAM_NAME);
         return op;
     }

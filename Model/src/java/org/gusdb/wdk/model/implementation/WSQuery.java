@@ -9,55 +9,59 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 
 public class WSQuery extends Query implements Serializable {
-    
+
     /**
      * 
      */
     private static final long serialVersionUID = -3057750262476024684L;
-    String processName;
-    String webServiceUrl;
+    private String processName;
+    private String webServiceUrl;
 
-    public WSQuery () {
-	super();
+    public WSQuery() {
+        super();
     }
 
-    /////////////////////////////////////////////////////////////////////
-    /////////////  Public properties ////////////////////////////////////
-    /////////////////////////////////////////////////////////////////////
+    // ///////////////////////////////////////////////////////////////////
+    // /////////// Public properties ////////////////////////////////////
+    // ///////////////////////////////////////////////////////////////////
 
     public void setProcessName(String name) {
-	processName = name;
+        processName = name;
+        signature = null;
     }
 
     public QueryInstance makeInstance() {
-	return new WSQueryInstance(this);
+        return new WSQueryInstance(this);
     }
 
-    /////////////////////////////////////////////////////////////////////
-    /////////////  Protected ////////////////////////////////////////////
-    /////////////////////////////////////////////////////////////////////
+    // ///////////////////////////////////////////////////////////////////
+    // /////////// Protected ////////////////////////////////////////////
+    // ///////////////////////////////////////////////////////////////////
 
     protected void setResources(WdkModel model) throws WdkModelException {
-	super.setResources(model);
-	this.webServiceUrl = model.getWebServiceUrl();
+        super.setResources(model);
+        this.webServiceUrl = model.getWebServiceUrl();
+        signature = null;
     }
 
     String getProcessName() {
-	return processName;
+        return processName;
     }
 
     String getWebServiceUrl() {
-	return webServiceUrl;
+        return webServiceUrl;
     }
 
     protected StringBuffer formatHeader() {
-       String newline = System.getProperty( "line.separator" );
-       StringBuffer buf = super.formatHeader();
-       buf.append("  processName='" + processName + "'" + newline);
-       return buf;
+        String newline = System.getProperty("line.separator");
+        StringBuffer buf = super.formatHeader();
+        buf.append("  processName='" + processName + "'" + newline);
+        return buf;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.Query#getBaseQuery(java.util.Set)
      */
     @Override
@@ -70,4 +74,14 @@ public class WSQuery extends Query implements Serializable {
         query.webServiceUrl = this.webServiceUrl;
         return query;
     }
- }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.Query#getSignatureData()
+     */
+    @Override
+    protected String getSignatureData() {
+        return processName;
+    }
+}

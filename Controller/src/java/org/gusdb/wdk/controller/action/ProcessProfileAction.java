@@ -93,7 +93,7 @@ public class ProcessProfileAction extends Action {
                     CConstants.WDK_MODEL_KEY);
             UserFactoryBean factory = wdkModel.getUserFactory();
             try {
-                factory.saveUser(user);
+                user.save();
                 // Update profile succeed
                 request.setAttribute("profileSucceed", true);
             } catch (WdkUserException ex) {

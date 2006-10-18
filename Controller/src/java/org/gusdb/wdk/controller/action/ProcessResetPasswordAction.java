@@ -17,7 +17,6 @@ import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.UserFactoryBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
@@ -64,8 +63,7 @@ public class ProcessResetPasswordAction extends Action {
         try {
             if (email == null || email.length() == 0)
                 throw new WdkUserException("Please provide a valid email.");
-            UserBean user = factory.loadUser(email);
-            factory.resetPassword(user);
+            factory.resetPassword(email);
             // resetting password succeed
             request.setAttribute("resetPasswordSucceed", true);
         } catch (WdkUserException ex) {
@@ -76,5 +74,4 @@ public class ProcessResetPasswordAction extends Action {
         }
         return forward;
     }
-
 }
