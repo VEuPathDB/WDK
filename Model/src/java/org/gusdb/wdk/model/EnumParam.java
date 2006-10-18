@@ -4,10 +4,6 @@ import java.util.LinkedHashMap;
 
 
 public class EnumParam extends AbstractEnumParam {
-    
-    public EnumParam () {
-	super();
-    }
 
     /////////////////////////////////////////////////////////////////////
     /////////////  Public properties ////////////////////////////////////

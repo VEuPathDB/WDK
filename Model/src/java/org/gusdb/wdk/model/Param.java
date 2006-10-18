@@ -1,7 +1,7 @@
 package org.gusdb.wdk.model;
 
 public abstract class Param {
-
+    
     protected String name;
     protected String prompt;
     protected String help;
@@ -10,12 +10,12 @@ public abstract class Param {
 
     private boolean visible;
     private boolean readonly;
-
+    
     public Param() {
         visible = true;
         readonly = false;
     }
-
+    
     public void setName(String name) {
         this.name = name;
     }

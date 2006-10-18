@@ -20,24 +20,25 @@ import org.apache.log4j.Logger;
 
 /**
  * A list of RecordInstances representing one page of the answer to a Question.
- * The constructor of the Answer provides a handle (QueryInstance) on 
- * the ResultList that is the list of primary keys for the all the records (not  * just one page) that are the answer to the Question.   The ResultList also 
- * has a column that contains the row number (RESULT_TABLE_I) so that a list of
+ * The constructor of the Answer provides a handle (QueryInstance) on the
+ * ResultList that is the list of primary keys for the all the records (not *
+ * just one page) that are the answer to the Question. The ResultList also has a
+ * column that contains the row number (RESULT_TABLE_I) so that a list of
  * primary keys for a single page can be efficiently accessed.
  * 
- * The Answer is lazy in that it only constructs the set of RecordInstances
- * for the page when the first RecordInstance is requested.  
- *
- * The initial request triggers the creation of skeletal RecordInstances for
- * the page.  They contain only primary keys (these being acquired from the 
+ * The Answer is lazy in that it only constructs the set of RecordInstances for
+ * the page when the first RecordInstance is requested.
+ * 
+ * The initial request triggers the creation of skeletal RecordInstances for the
+ * page. They contain only primary keys (these being acquired from the
  * ResultList).
  * 
  * These skeletal RecordInstances are also lazy in that they only run an
- * attributes query when an attribute provided by that query is requested.
- * When they do run an attribute query, its QueryInstance is put into joinMode.
- * This means that the attribute query joins with the table containing
- * the primary keys, and, in one database query, generates rows containing
- * the attribute values for all the RecordInstances in the page.
+ * attributes query when an attribute provided by that query is requested. When
+ * they do run an attribute query, its QueryInstance is put into joinMode. This
+ * means that the attribute query joins with the table containing the primary
+ * keys, and, in one database query, generates rows containing the attribute
+ * values for all the RecordInstances in the page.
  * 
  * The method <code>integrateAttributesQueryResult</> is invoked by the
  * first RecordInstance in the page upon the first request for an attribute 
@@ -56,7 +57,7 @@ import org.apache.log4j.Logger;
 public class Answer {
 
     private static final Logger logger = Logger.getLogger(Answer.class);
-    
+
     // ------------------------------------------------------------------
     // Instance variables
     // ------------------------------------------------------------------
@@ -76,13 +77,13 @@ public class Answer {
     private int recordInstanceCursor;
 
     private String recordIdColumnName;
-    
+
     private String recordProjectColumnName;
 
     private boolean isBoolean = false;
 
-    private Integer resultSize;   // size of total result
-    
+    private Integer resultSize; // size of total result
+
     private Map<String, Integer> resultSizesByProject = null;
 
     // ------------------------------------------------------------------
@@ -90,26 +91,36 @@ public class Answer {
     // ------------------------------------------------------------------
 
     /**
-     * @param question The <code>Question</code> to which this is the <code>Answer</code>.
-     * @param idsQueryInstance  The <co de>QueryInstance</code> that provides a handle on the ResultList containing all primary keys that are the result for the
-     * question (not just one page worth).
-     * @param startRecordInstanceI The index of the first <code>RecordInstance</code> in the page. (>=1)
-     * @param endRecordInstanceI The index of the last <code>RecordInstance</code> in the page, inclusive.
+     * @param question
+     *            The <code>Question</code> to which this is the
+     *            <code>Answer</code>.
+     * @param idsQueryInstance
+     *            The <co de>QueryInstance</code> that provides a handle on the
+     *            ResultList containing all primary keys that are the result for
+     *            the question (not just one page worth).
+     * @param startRecordInstanceI
+     *            The index of the first <code>RecordInstance</code> in the
+     *            page. (>=1)
+     * @param endRecordInstanceI
+     *            The index of the last <code>RecordInstance</code> in the
+     *            page, inclusive.
      */
-    Answer(Question question, QueryInstance idsQueryInstance, int startRecordInstanceI, int endRecordInstanceI) throws WdkUserException, WdkModelException{
-	this.question = question;
-	this.idsQueryInstance = idsQueryInstance;
-	this.isBoolean = (idsQueryInstance instanceof BooleanQueryInstance);
-	this.recordInstanceCursor = 0;
-	this.startRecordInstanceI = startRecordInstanceI;
-	this.endRecordInstanceI = endRecordInstanceI;   
+    Answer(Question question, QueryInstance idsQueryInstance,
+            int startRecordInstanceI, int endRecordInstanceI)
+            throws WdkUserException, WdkModelException {
+        this.question = question;
+        this.idsQueryInstance = idsQueryInstance;
+        this.isBoolean = (idsQueryInstance instanceof BooleanQueryInstance);
+        this.recordInstanceCursor = 0;
+        this.startRecordInstanceI = startRecordInstanceI;
+        this.endRecordInstanceI = endRecordInstanceI;
 
-	/*
-	ResultList rl = 
-	    idsQueryInstance.getPersistentResultPage(startRecordInstanceI, 
-						     endRecordI   nstanceI);
-	rl.close(); // rl only needed to close connection
-	*/
+        /*
+         * ResultList rl =
+         * idsQueryInstance.getPersistentResultPage(startRecordInstanceI,
+         * endRecordI nstanceI); rl.close(); // rl only needed to close
+         * connection
+         */
     }
 
     // ------------------------------------------------------------------
@@ -119,14 +130,14 @@ public class Answer {
     /**
      * provide property that user's term for question
      */
-    public Question getQuestion(){
-	return this.question;
+    public Question getQuestion() {
+        return this.question;
     }
 
-    public int getPageSize(){
-	return pageRecordInstances == null? 0 : pageRecordInstances.length;
+    public int getPageSize() {
+        return pageRecordInstances == null ? 0 : pageRecordInstances.length;
     }
-    
+
     public int getPageCount() throws WdkModelException {
         int total = (resultSize == null) ? getResultSize() : resultSize;
         int pageSize = endRecordInstanceI - startRecordInstanceI + 1;
@@ -135,23 +146,22 @@ public class Answer {
                 + ",\t#PerPage: " + pageSize);
         return pageCount;
     }
-    
+
     public int getResultSize() throws WdkModelException {
         if (resultSize == null || resultSizesByProject == null) {
             resultSizesByProject = new LinkedHashMap<String, Integer>();
             // fill the project column name
             findPrimaryKeyColumnNames();
-            
+
             ResultList rl = idsQueryInstance.getResult();
             int counter = 0;
             while (rl.next()) {
                 counter++;
                 // get the project id
                 if (recordProjectColumnName != null) {
-                    String project = 
-                        rl.getValue(recordProjectColumnName).toString();
+                    String project = rl.getValue(recordProjectColumnName).toString();
                     int subCounter = 0;
-                    if (resultSizesByProject.containsKey(project)) 
+                    if (resultSizesByProject.containsKey(project))
                         subCounter = resultSizesByProject.get(project);
                     resultSizesByProject.put(project, ++subCounter);
                 }
@@ -161,96 +171,96 @@ public class Answer {
         }
         return resultSize.intValue();
     }
-    
-    public Map<String, Integer> getResultSizesByProject() throws WdkModelException {
+
+    public Map<String, Integer> getResultSizesByProject()
+            throws WdkModelException {
         // fill the result size map grouped by project id
         if (resultSizesByProject == null) getResultSize();
         return resultSizesByProject;
     }
 
     public boolean isDynamic() {
-	return getQuestion().isDynamic();
+        return getQuestion().isDynamic();
     }
 
     /**
      * @return Map where key is param name and value is param value
      */
     public Map<String, Object> getParams() {
-	return idsQueryInstance.getValuesMap();
+        return idsQueryInstance.getValuesMap();
     }
 
     /**
      * @return Map where key is param display name and value is param value
      */
     public Map<String, Object> getDisplayParams() {
-	Map<String, Object> displayParamsMap = new LinkedHashMap<String, Object>();
-	Map<String, Object> paramsMap = getParams();
-	Param[] params = question.getParams();
-	for (int i=0; i<params.length; i++) {
-	    Param param = params[i];
-	    displayParamsMap.put(param.getPrompt(), 
-				 paramsMap.get(param.getName()));
-	}
-	return displayParamsMap;
+        Map<String, Object> displayParamsMap = new LinkedHashMap<String, Object>();
+        Map<String, Object> paramsMap = getParams();
+        Param[] params = question.getParams();
+        for (int i = 0; i < params.length; i++) {
+            Param param = params[i];
+            displayParamsMap.put(param.getPrompt(),
+                    paramsMap.get(param.getName()));
+        }
+        return displayParamsMap;
     }
 
-
-    public boolean getIsBoolean(){
-	return this.isBoolean;
+    public boolean getIsBoolean() {
+        return this.isBoolean;
     }
 
-    // this method is wrong.  it should be plural, and return
-    // all the attributes query instances.  this returns only the last
-    // one made, which is bogus.  it is used by wdkSummary --showQuery
+    // this method is wrong. it should be plural, and return
+    // all the attributes query instances. this returns only the last
+    // one made, which is bogus. it is used by wdkSummary --showQuery
     // which itself should be --showQueries
     public QueryInstance getAttributesQueryInstance() {
-	return attributesQueryInstance;
+        return attributesQueryInstance;
     }
 
-    public QueryInstance getIdsQueryInstance(){
-	return idsQueryInstance;
+    public QueryInstance getIdsQueryInstance() {
+        return idsQueryInstance;
     }
 
-    public Map<String , AttributeField> getAttributeFields() {
-	return question.getAttributeFields();
+    public Map<String, AttributeField> getAttributeFields() {
+        return question.getAttributeFields();
     }
-    
+
     public Map<String, AttributeField> getReportMakerAttributeFields() {
         return question.getReportMakerAttributeFields();
     }
 
-    public boolean isSummaryAttribute(String attName){
-	return question.isSummaryAttribute(attName);
+    public boolean isSummaryAttribute(String attName) {
+        return question.isSummaryAttribute(attName);
     }
-    
-    private void releaseRecordInstances() {
-	if (pageRecordInstances != null && pageRecordInstances.length > 0) {
-	    pageRecordInstances = new RecordInstance[0];
-	    recordInstanceCursor = 0;
-	} 
-    }
-    
-    //Returns null if we have already returned the last instance
-    public RecordInstance getNextRecordInstance() throws WdkModelException{
-	try {
-        initPageRecordInstances();
 
-        RecordInstance nextInstance = null;
-        if (recordInstanceCursor < pageRecordInstances.length){
-            nextInstance = pageRecordInstances[recordInstanceCursor];
-            recordInstanceCursor++;
-        } 
-        if (nextInstance == null) { 
-            // clean up the record instances
-            releaseRecordInstances();
+    private void releaseRecordInstances() {
+        if (pageRecordInstances != null && pageRecordInstances.length > 0) {
+            pageRecordInstances = new RecordInstance[0];
+            recordInstanceCursor = 0;
         }
-        return nextInstance;
-    } catch (WdkModelException ex) {
-        releaseRecordInstances();
-        throw ex;
     }
+
+    // Returns null if we have already returned the last instance
+    public RecordInstance getNextRecordInstance() throws WdkModelException {
+        try {
+            initPageRecordInstances();
+
+            RecordInstance nextInstance = null;
+            if (recordInstanceCursor < pageRecordInstances.length) {
+                nextInstance = pageRecordInstances[recordInstanceCursor];
+                recordInstanceCursor++;
+            }
+            if (nextInstance == null) {
+                // clean up the record instances
+                releaseRecordInstances();
+            }
+            return nextInstance;
+        } catch (WdkModelException ex) {
+            releaseRecordInstances();
+            throw ex;
+        }
     }
-    
+
     public boolean hasMoreRecordInstances() throws WdkModelException {
         try {
             initPageRecordInstances();
@@ -268,85 +278,83 @@ public class Answer {
     }
 
     public Integer getDatasetId() {
-	return idsQueryInstance.getQueryInstanceId();
+        return idsQueryInstance.getQueryInstanceId();
     }
 
-    /////////////////////////////////////////////////////////////////////
-    //   print methods
-    /////////////////////////////////////////////////////////////////////
+    // ///////////////////////////////////////////////////////////////////
+    // print methods
+    // ///////////////////////////////////////////////////////////////////
 
-    public String printAsRecords() throws WdkModelException, WdkUserException{  
-	String newline = System.getProperty( "line.separator" );
-	StringBuffer buf = new StringBuffer();
+    public String printAsRecords() throws WdkModelException, WdkUserException {
+        String newline = System.getProperty("line.separator");
+        StringBuffer buf = new StringBuffer();
 
-	initPageRecordInstances();
+        initPageRecordInstances();
 
-	for (int i = 0; i < pageRecordInstances.length; i++){
-	    buf.append(pageRecordInstances[i].print());
-	    buf.append("---------------------" + newline);
-	}
-	return buf.toString();
-    }
-    
-    /**
-     * print summary attributes, one per line
-     * Note: not sure why this is needed
-     */
-    public String printAsSummary() throws WdkModelException, WdkUserException{
-	StringBuffer buf = new StringBuffer();
-
-	initPageRecordInstances();
-
-	for (int i = 0; i < pageRecordInstances.length; i++){
-	    buf.append(pageRecordInstances[i].printSummary());
-	}
-	return buf.toString();
+        for (int i = 0; i < pageRecordInstances.length; i++) {
+            buf.append(pageRecordInstances[i].print());
+            buf.append("---------------------" + newline);
+        }
+        return buf.toString();
     }
 
     /**
-     * print summary attributes in tab delimited table with header of attr. names
+     * print summary attributes, one per line Note: not sure why this is needed
      */
-    public String printAsTable () throws WdkModelException, WdkUserException{
-	String newline = System.getProperty( "line.separator" );
-	StringBuffer buf = new StringBuffer();
+    public String printAsSummary() throws WdkModelException, WdkUserException {
+        StringBuffer buf = new StringBuffer();
 
-	initPageRecordInstances();
-    
-    // print summary info
-    buf.append("# of Records: " + getResultSize() + ",\t# of Pages: "
+        initPageRecordInstances();
+
+        for (int i = 0; i < pageRecordInstances.length; i++) {
+            buf.append(pageRecordInstances[i].printSummary());
+        }
+        return buf.toString();
+    }
+
+    /**
+     * print summary attributes in tab delimited table with header of attr.
+     * names
+     */
+    public String printAsTable() throws WdkModelException, WdkUserException {
+        String newline = System.getProperty("line.separator");
+        StringBuffer buf = new StringBuffer();
+
+        initPageRecordInstances();
+
+        // print summary info
+        buf.append("# of Records: " + getResultSize() + ",\t# of Pages: "
                 + getPageCount() + ",\t# Records per Page: " + getPageSize()
                 + newline);
-		
-	if (pageRecordInstances.length == 0) return buf.toString();
 
-	for (int i = -1; i < pageRecordInstances.length; i++){
+        if (pageRecordInstances.length == 0) return buf.toString();
 
-	    Iterator attributeNames = 
-		question.getSummaryAttributes().keySet().iterator();
+        for (int i = -1; i < pageRecordInstances.length; i++) {
 
-        // only print
-	    while (attributeNames.hasNext()){
-		String nextAttName = (String)attributeNames.next();
+            Iterator attributeNames = question.getSummaryAttributes().keySet().iterator();
 
-		// make header
-		if (i == -1) buf.append(nextAttName + "\t");
+            // only print
+            while (attributeNames.hasNext()) {
+                String nextAttName = (String) attributeNames.next();
 
-		// make data row
-		else {
-		    AttributeField field = getAttributeFields().get(nextAttName);
-		    Object value = 
-			pageRecordInstances[i].getAttributeValue(field);
-		    if (value == null) value = "";
-            // only print part of the string
-            String str = value.toString().trim();
-            if (str.length()>50) str = str.substring(0, 47) + "...";
-		    buf.append(str + "\t");
-		}
-	    }
-	    buf.append(newline);
-	}
+                // make header
+                if (i == -1) buf.append(nextAttName + "\t");
 
-	return buf.toString();
+                // make data row
+                else {
+                    AttributeField field = getAttributeFields().get(nextAttName);
+                    Object value = pageRecordInstances[i].getAttributeValue(field);
+                    if (value == null) value = "";
+                    // only print part of the string
+                    String str = value.toString().trim();
+                    if (str.length() > 50) str = str.substring(0, 47) + "...";
+                    buf.append(str + "\t");
+                }
+            }
+            buf.append(newline);
+        }
+
+        return buf.toString();
     }
 
     // ------------------------------------------------------------------
@@ -354,23 +362,24 @@ public class Answer {
     // ------------------------------------------------------------------
 
     /**
-     * Integrate into the page's RecordInstances the attribute 
-     * values from a particular attributes query.  The attributes
-     * query result includes only rows for this page.
+     * Integrate into the page's RecordInstances the attribute values from a
+     * particular attributes query. The attributes query result includes only
+     * rows for this page.
      */
     void integrateAttributesQueryResult(QueryInstance attributesQueryInstance)
             throws WdkModelException {
         // TEST
-//        logger.debug("Question is: " + question.hashCode());
-//        logger.debug("#Summary Attributes: "
-//                + question.getSummaryAttributes().size());
+        // logger.debug("Question is: " + question.hashCode());
+        // logger.debug("#Summary Attributes: "
+        // + question.getSummaryAttributes().size());
 
         this.attributesQueryInstance = attributesQueryInstance;
 
         boolean isDynamic = attributesQueryInstance.getQuery().getParam(
                 DynamicAttributeSet.RESULT_TABLE) != null;
-        
-        logger.debug("AttributeQuery is: " + attributesQueryInstance.getQuery().getFullName());
+
+        logger.debug("AttributeQuery is: "
+                + attributesQueryInstance.getQuery().getFullName());
         logger.debug("isDynamic=" + isDynamic);
 
         String idsTableName = idsQueryInstance.getResultAsTableName();
@@ -379,8 +388,7 @@ public class Answer {
                 startRecordInstanceI, endRecordInstanceI, isDynamic);
 
         // Initialize with nulls (handle missing attribute rows)
-        Map<PrimaryKeyValue, RecordInstance> recordInstanceMap = 
-            new LinkedHashMap<PrimaryKeyValue, RecordInstance>();
+        Map<PrimaryKeyValue, RecordInstance> recordInstanceMap = new LinkedHashMap<PrimaryKeyValue, RecordInstance>();
         for (RecordInstance recordInstance : pageRecordInstances) {
             setColumnValues(recordInstance, attributesQueryInstance, isDynamic,
                     recordIdColumnName, recordProjectColumnName, null);
@@ -388,23 +396,23 @@ public class Answer {
             recordInstanceMap.put(primaryKey, recordInstance);
         }
 
-//	int pageIndex = 0;
-//	int idsResultTableI = startRecordInstanceI;
-	Set<PrimaryKeyValue> primaryKeySet = new LinkedHashSet<PrimaryKeyValue>(); 
-	ResultList attrQueryResultList = attributesQueryInstance.getResult();
-	while (attrQueryResultList.next()){
-	    
-	    String id = attrQueryResultList.getValue(recordIdColumnName).toString();
-	    String project = null;
-	    if (recordProjectColumnName != null) {
-		project = 
-		    attrQueryResultList.getValue(recordProjectColumnName).toString();
-	    }
+        // int pageIndex = 0;
+        // int idsResultTableI = startRecordInstanceI;
+        Set<PrimaryKeyValue> primaryKeySet = new LinkedHashSet<PrimaryKeyValue>();
+        ResultList attrQueryResultList = attributesQueryInstance.getResult();
+        while (attrQueryResultList.next()) {
 
-	    PrimaryKeyValue attrPrimaryKey = 
-		new PrimaryKeyValue(getQuestion().getRecordClass().getPrimaryKeyField(), project, id.toString());
+            String id = attrQueryResultList.getValue(recordIdColumnName).toString();
+            String project = null;
+            if (recordProjectColumnName != null) {
+                project = attrQueryResultList.getValue(recordProjectColumnName).toString();
+            }
 
-	    if (primaryKeySet.contains(attrPrimaryKey)) {
+            PrimaryKeyValue attrPrimaryKey = new PrimaryKeyValue(
+                    getQuestion().getRecordClass().getPrimaryKeyField(),
+                    project, id.toString());
+
+            if (primaryKeySet.contains(attrPrimaryKey)) {
                 String msg = "Result Table " + idsTableName
                         + " for Attribute query "
                         + attributesQueryInstance.getQuery().getFullName()
@@ -416,57 +424,50 @@ public class Answer {
                 primaryKeySet.add(attrPrimaryKey);
             }
 
-	    
-	    RecordInstance recordInstance = 
-		recordInstanceMap.get(attrPrimaryKey);
-	    setColumnValues(recordInstance, attributesQueryInstance,
-			    isDynamic, recordIdColumnName,
-			    recordProjectColumnName,
-			    attrQueryResultList);
+            RecordInstance recordInstance = recordInstanceMap.get(attrPrimaryKey);
+            setColumnValues(recordInstance, attributesQueryInstance, isDynamic,
+                    recordIdColumnName, recordProjectColumnName,
+                    attrQueryResultList);
         }
-	attrQueryResultList.close();
+        attrQueryResultList.close();
     }
 
     private void setColumnValues(RecordInstance recordInstance,
-			 QueryInstance attributesQueryInstance, 
-			 boolean isDynamic,
-			 String recordIdColumnName,
-			 String recordProjectColumnName,
-			 ResultList attrQueryResultList) throws WdkModelException {
+            QueryInstance attributesQueryInstance, boolean isDynamic,
+            String recordIdColumnName, String recordProjectColumnName,
+            ResultList attrQueryResultList) throws WdkModelException {
 
-	Column[] columns = attributesQueryInstance.getQuery().getColumns();
+        Column[] columns = attributesQueryInstance.getQuery().getColumns();
 
-	for (int i = 0; i < columns.length; i++) {
-	    String colName = columns[i].getName();
-	    if (colName.equalsIgnoreCase(recordIdColumnName)) continue;
-	    if (colName.equalsIgnoreCase(recordProjectColumnName)) continue;
-	    Object value = null;
-	    if (attrQueryResultList != null) 
-		value = attrQueryResultList.getValue(colName);
-		    
-	    if (isDynamic) 
-		recordInstance.setAttributeValue(colName, value,
-						 attributesQueryInstance.getQuery());
-	    else
-		recordInstance.setAttributeValue(colName, value);
-	}
+        for (int i = 0; i < columns.length; i++) {
+            String colName = columns[i].getName();
+            if (colName.equalsIgnoreCase(recordIdColumnName)) continue;
+            if (colName.equalsIgnoreCase(recordProjectColumnName)) continue;
+            Object value = null;
+            if (attrQueryResultList != null)
+                value = attrQueryResultList.getValue(colName);
+
+            if (isDynamic) recordInstance.setAttributeValue(colName, value,
+                    attributesQueryInstance.getQuery());
+            else recordInstance.setAttributeValue(colName, value);
+        }
     }
 
     String[] findPrimaryKeyColumnNames() {
-        String[] names =findPrimaryKeyColumnNames(idsQueryInstance.getQuery());
-	recordIdColumnName = names[0];
-	recordProjectColumnName = names[1];	
-	return names;
+        String[] names = findPrimaryKeyColumnNames(idsQueryInstance.getQuery());
+        recordIdColumnName = names[0];
+        recordProjectColumnName = names[1];
+        return names;
     }
 
     // ------------------------------------------------------------------
     // Private Methods
     // ------------------------------------------------------------------
-    
+
     /**
      * If not already initialized, initialize the page's record instances,
-     * setting each with its id (either just primary key or that and
-     * project, if using a federated data source).
+     * setting each with its id (either just primary key or that and project, if
+     * using a federated data source).
      */
     private void initPageRecordInstances() throws WdkModelException {
 
@@ -499,30 +500,30 @@ public class Answer {
     }
 
     /**
-     * Given a set of columns, find the id and project column names
-     * The project column is optional.  
-     * Assumption:  the id and project columns are the first two
-     * columns, but, they may be (id, project) or (project, id)
+     * Given a set of columns, find the id and project column names The project
+     * column is optional. Assumption: the id and project columns are the first
+     * two columns, but, they may be (id, project) or (project, id)
+     * 
      * @return array where first element is pk col name, second is project
-    */
+     */
     static String[] findPrimaryKeyColumnNames(Query query) {
-	Column[] columns = query.getColumns();
-	String[] names = new String[2];
+        Column[] columns = query.getColumns();
+        String[] names = new String[2];
 
-	// assume id is in first column and no project column
-	names[0] = columns[0].getName();
-	names[1] = null;
+        // assume id is in first column and no project column
+        names[0] = columns[0].getName();
+        names[1] = null;
 
-	// having two columns, one is for Id and one for project
-	if (columns.length > 1) {
-	    if (columns[0].getName().toUpperCase().indexOf("PROJECT")!= -1) {
-		names[0] = columns[1].getName();
-		names[1] = columns[0].getName();
-	    } else if (columns[1].getName().toUpperCase().indexOf("PROJECT")!= -1){
-		names[1] = columns[1].getName();
-	    }
-	}
-	return names;
+        // having two columns, one is for Id and one for project
+        if (columns.length > 1) {
+            if (columns[0].getName().toUpperCase().indexOf("PROJECT") != -1) {
+                names[0] = columns[1].getName();
+                names[1] = columns[0].getName();
+            } else if (columns[1].getName().toUpperCase().indexOf("PROJECT") != -1) {
+                names[1] = columns[1].getName();
+            }
+        }
+        return names;
     }
 
     public String toString() {
@@ -536,15 +537,14 @@ public class Answer {
         return sb.toString();
     }
 
-    
     public Answer newAnswer() throws WdkUserException, WdkModelException {
-        Answer answer = new Answer(question, idsQueryInstance, startRecordInstanceI, endRecordInstanceI);
+        Answer answer = new Answer(question, idsQueryInstance,
+                startRecordInstanceI, endRecordInstanceI);
         // instead of cloning all parts of an answer, just initialize it as a
         // new answer, and the queries can be re-run without any assumption
         return answer;
     }
 
-    
     /**
      * @return Returns the endRecordInstanceI.
      */
@@ -552,15 +552,36 @@ public class Answer {
         return endRecordInstanceI;
     }
 
-    
     /**
      * @return Returns the startRecordInstanceI.
      */
     public int getStartRecordInstanceI() {
         return startRecordInstanceI;
     }
-    
+
     public String getResultMessage() {
         return idsQueryInstance.getResultMessage();
+    }
+
+    /**
+     * @return get the name as a combination of question full name, parameter
+     *         and values
+     */
+    public String getName() {
+        StringBuffer nameBuf = new StringBuffer();
+        nameBuf.append(question.getDisplayName() + ": ");
+
+        Map<String, Param> params = question.getParamMap();
+        Map<String, Object> paramValues = idsQueryInstance.getValuesMap();
+
+        boolean first = true;
+        for (String paramName : paramValues.keySet()) {
+            Param param = params.get(paramName);
+            Object value = paramValues.get(paramName);
+            if (first) first = false;
+            else nameBuf.append(", ");
+            nameBuf.append("<b>" + param.getPrompt() + "</b>=" + value);
+        }
+        return nameBuf.toString();
     }
 }

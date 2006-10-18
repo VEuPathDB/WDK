@@ -24,10 +24,8 @@ public class ModelConfig {
     private String authenticationPassword;
     private String authenticationConnectionUrl;
     private String authenticationPlatformClass;
-    private String userTable;
-    private String roleTable;
-    private String historyTable;
-    private String preferenceTable;
+    
+    private String loginSchema;
     private String defaultRole;
     private String smtpServer;
 
@@ -174,32 +172,20 @@ public class ModelConfig {
         this.authenticationPassword = authenticationPassword;
     }
 
+    
     /**
-     * @return Returns the historyTable.
+     * @return Returns the loginSchema.
      */
-    public String getHistoryTable() {
-        return historyTable;
+    public String getLoginSchema() {
+        return loginSchema;
     }
 
+    
     /**
-     * @param historyTable The historyTable to set.
+     * @param loginSchema The loginSchema to set.
      */
-    public void setHistoryTable(String historyTable) {
-        this.historyTable = historyTable;
-    }
-
-    /**
-     * @return Returns the preferenceTable.
-     */
-    public String getPreferenceTable() {
-        return preferenceTable;
-    }
-
-    /**
-     * @param preferenceTable The preferenceTable to set.
-     */
-    public void setPreferenceTable(String preferenceTable) {
-        this.preferenceTable = preferenceTable;
+    public void setLoginSchema(String loginSchema) {
+        this.loginSchema = loginSchema;
     }
 
     /**
@@ -217,20 +203,6 @@ public class ModelConfig {
     }
 
     /**
-     * @return Returns the userTable.
-     */
-    public String getUserTable() {
-        return userTable;
-    }
-
-    /**
-     * @param userTable The userTable to set.
-     */
-    public void setUserTable(String userTable) {
-        this.userTable = userTable;
-    }
-
-    /**
      * @return Returns the authenticationPlatformClass.
      */
     public String getAuthenticationPlatformClass() {
@@ -244,20 +216,6 @@ public class ModelConfig {
     public void setAuthenticationPlatformClass(
             String authenticationPlatformClass) {
         this.authenticationPlatformClass = authenticationPlatformClass;
-    }
-
-    /**
-     * @return Returns the roleTable.
-     */
-    public String getRoleTable() {
-        return roleTable;
-    }
-
-    /**
-     * @param roleTable The roleTable to set.
-     */
-    public void setRoleTable(String roleTable) {
-        this.roleTable = roleTable;
     }
 
     /**

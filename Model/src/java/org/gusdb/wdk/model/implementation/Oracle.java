@@ -58,6 +58,11 @@ public class Oracle implements RDBMSPlatformI, Serializable {
 
     public String getNextId(String schemaName, String tableName)
             throws SQLException {
+        // remove the ending dot, if necessary
+        int len = schemaName.length() - 1;
+        if (schemaName.charAt(len) == '.')
+            schemaName = schemaName.substring(0, len);
+        
         String sql = "select " + schemaName + "." + tableName
                 + "_pkseq.nextval from dual";
         String nextId = SqlUtils.runStringQuery(dataSource, sql);

@@ -4,29 +4,40 @@
 package org.gusdb.wdk.model.user;
 
 import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.Set;
 
+import org.gusdb.wdk.model.Answer;
+import org.gusdb.wdk.model.BooleanExpression;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 
 /**
  * @author xingao
- *
+ * 
  */
 public class History {
 
+    private UserFactory factory;
     private User user;
     private int historyId;
-    private String fullName;
     private Date createdTime;
+    private Date lastRunTime;
     private String customName;
-    private Map<String, String> params;
-    
-    History(User user, int historyId) {
+    private Answer answer = null;
+    private int estimateSize;
+    private boolean isBoolean;
+    private String booleanExpression;
+
+    History(UserFactory factory, User user, int historyId) {
+        this.factory = factory;
+        this.user = user;
         this.historyId = historyId;
-        params = new LinkedHashMap<String, String>();
     }
 
-    
+    public User getUser() {
+        return user;
+    }
+
     /**
      * @return Returns the createTime.
      */
@@ -34,71 +45,143 @@ public class History {
         return createdTime;
     }
 
-    
     /**
-     * @param createTime The createTime to set.
+     * @param createTime
+     *            The createTime to set.
      */
     void setCreatedTime(Date createdTime) {
         this.createdTime = createdTime;
     }
 
-    
     /**
-     * @return Returns the customName.
+     * @return Returns the customName. If no custom name set before, it will
+     *         return the default name provided by the underline Answer - a
+     *         combination of question's full name, parameter names and values.
      */
     public String getCustomName() {
-        return customName;
+        if (customName == null) {
+            customName = (isBoolean) ? booleanExpression : answer.getName();
+        }
+        if (customName.length() > 4000) return customName.substring(0, 4000);
+        else return customName;
     }
-    
+
     /**
-     * @param customName The customName to set.
+     * @param customName
+     *            The customName to set.
      */
     public void setCustomName(String customName) {
         this.customName = customName;
-        // also, save the history into database
-        user.saveHistory(this);
     }
 
-    /**
-     * called by UserFactory when loading and filling in the data
-     * @param customName
-     */
-    void setCustomTimeNoUp(String customName) {
-        this.customName = customName;
-    }
-    
-    /**
-     * @return Returns the fullName.
-     */
-    public String getFullName() {
-        return fullName;
-    }
-
-    
-    /**
-     * @param fullName The fullName to set.
-     */
-    void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
-
-    
     /**
      * @return Returns the historyId.
      */
     public int getHistoryId() {
         return historyId;
     }
-    
-    public void addParam(String paramName, String paramValue) {
-        params.put(paramName, paramValue);
+
+    /**
+     * @return Returns the answer.
+     * @throws WdkUserException
+     */
+    public Answer getAnswer() throws WdkUserException {
+        return answer;
     }
-    
-    public Map<String, String> getParams() {
-        return new LinkedHashMap<String, String>(params);
+
+    /**
+     * @param answer
+     *            The answer to set.
+     */
+    public void setAnswer(Answer answer) {
+        this.answer = answer;
     }
-    
-    public String getParam(String paramName) {
-        return params.get(paramName);
+
+    /**
+     * @return Returns the estimateSize.
+     */
+    public int getEstimateSize() {
+        return estimateSize;
+    }
+
+    /**
+     * @param estimateSize
+     *            The estimateSize to set.
+     */
+    void setEstimateSize(int estimateSize) {
+        this.estimateSize = estimateSize;
+    }
+
+    /**
+     * @return Returns the lastRunTime.
+     */
+    public Date getLastRunTime() {
+        return lastRunTime;
+    }
+
+    /**
+     * @param lastRunTime
+     *            The lastRunTime to set.
+     */
+    public void setLastRunTime(Date lastRunTime) {
+        this.lastRunTime = lastRunTime;
+    }
+
+    /**
+     * @return Returns the isBoolean.
+     */
+    public boolean isBoolean() {
+        return isBoolean;
+    }
+
+    /**
+     * @param isBoolean
+     *            The isBoolean to set.
+     */
+    public void setBoolean(boolean isBoolean) {
+        this.isBoolean = isBoolean;
+    }
+
+    /**
+     * @return Returns the booleanExpression.
+     */
+    public String getBooleanExpression() {
+        return booleanExpression;
+    }
+
+    /**
+     * @param booleanExpression
+     *            The booleanExpression to set.
+     */
+    public void setBooleanExpression(String booleanExpression) {
+        this.booleanExpression = booleanExpression;
+    }
+
+    public String getSignature() throws WdkModelException {
+        return answer.getIdsQueryInstance().getQuery().getSignature();
+    }
+
+    public String getChecksum() throws WdkModelException {
+        return answer.getIdsQueryInstance().getChecksum();
+    }
+
+    public String getDataType() {
+        return answer.getQuestion().getRecordClass().getFullName();
+    }
+
+    public void update() throws WdkUserException {
+        factory.updateHistory(user, this);
+    }
+
+    public boolean isDepended() throws WdkUserException, WdkModelException {
+        History[] histories = user.getHistories();
+        BooleanExpression expression = new BooleanExpression(user);
+        for (History history : histories) {
+            if (history.isBoolean()) {
+                Set<Integer> depends = expression.getOperands(history.getBooleanExpression());
+                if (depends.contains(historyId)) return true;
+            }
+        }
+        return false;
     }
 }

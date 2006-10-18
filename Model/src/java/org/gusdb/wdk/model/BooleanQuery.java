@@ -169,4 +169,12 @@ public class BooleanQuery extends Query {
         return query;
     }
 
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.Query#getSignatureData()
+     */
+    @Override
+    protected String getSignatureData() {
+        return null;
+    }
+
 }

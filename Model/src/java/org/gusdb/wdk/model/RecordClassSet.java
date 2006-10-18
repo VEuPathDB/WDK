@@ -22,11 +22,12 @@ public class RecordClassSet implements ModelSetI {
     }
 
 
-    public RecordClass getRecordClass(String name) throws WdkUserException {
-
-	RecordClass s = recordClassSet.get(name);
-	if (s == null) throw new WdkUserException("RecordClass Set " + getName() + " does not include recordClass " + name);
-	return s;
+    public RecordClass getRecordClass(String name) throws WdkModelException {
+        RecordClass s = recordClassSet.get(name);
+        if (s == null)
+            throw new WdkModelException("RecordClass Set " + getName()
+                    + " does not include recordClass " + name);
+        return s;
     }
 
     public Object getElement(String name) {

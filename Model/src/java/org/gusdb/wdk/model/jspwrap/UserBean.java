@@ -3,13 +3,14 @@
  */
 package org.gusdb.wdk.model.jspwrap;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
-import org.gusdb.wdk.model.Answer;
-import org.gusdb.wdk.model.UserAnswer;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.user.Dataset;
 import org.gusdb.wdk.model.user.History;
 import org.gusdb.wdk.model.user.User;
 
@@ -38,41 +39,19 @@ public class UserBean {
     /*
      * (non-Javadoc)
      * 
+     * @see org.gusdb.wdk.model.user.User#getUserId()
+     */
+    public int getUserId() {
+        return user.getUserId();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.user.User#addUserRole(java.lang.String)
      */
     public void addUserRole(String userRole) {
         user.addUserRole(userRole);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.user.User#clearHistories()
-     */
-    public void clearHistories() {
-        user.clearHistories();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.user.User#createHistory(org.gusdb.wdk.model.Answer)
-     */
-    public History createHistory(Answer answer) {
-        return user.createHistory(answer);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.user.User#deleteHistory(org.gusdb.wdk.model.user.History)
-     */
-    public void deleteHistory(History history) {
-        user.deleteHistory(history);
-    }
-
-    public void mergeHistory(UserBean userBean) {
-        this.user.mergeHistory(userBean.getUser());
     }
 
     /*
@@ -132,24 +111,6 @@ public class UserBean {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.user.User#getHistories()
-     */
-    public History[] getHistories() {
-        return user.getHistories();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.user.User#getHistoryMap()
-     */
-    public Map<Integer, History> getHistoryMap() {
-        return user.getHistoryMap();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
      * @see org.gusdb.wdk.model.user.User#getLastName()
      */
     public String getLastName() {
@@ -181,15 +142,6 @@ public class UserBean {
      */
     public String getPhoneNumber() {
         return user.getPhoneNumber();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.user.User#getRefreshInterval()
-     */
-    public int getRefreshInterval() {
-        return user.getRefreshInterval();
     }
 
     /*
@@ -233,17 +185,8 @@ public class UserBean {
      * 
      * @see org.gusdb.wdk.model.user.User#isGuest()
      */
-    public boolean getGuest() {
+    public boolean getGuest() throws WdkUserException {
         return user.isGuest();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.user.User#queryHistories(java.lang.String)
-     */
-    public History[] queryHistories(String namePattern) {
-        return user.queryHistories(namePattern);
     }
 
     /*
@@ -253,15 +196,6 @@ public class UserBean {
      */
     public void removeUserRole(String userRole) {
         user.removeUserRole(userRole);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.user.User#saveHistory(org.gusdb.wdk.model.user.History)
-     */
-    public void saveHistory(History history) {
-        user.saveHistory(history);
     }
 
     /*
@@ -379,214 +313,403 @@ public class UserBean {
      *      java.lang.String, java.lang.String)
      */
     public void changePassword(String oldPassword, String newPassword,
-            String confirmPassword) throws WdkUserException, WdkModelException {
+            String confirmPassword) throws WdkUserException {
         user.changePassword(oldPassword, newPassword, confirmPassword);
     }
 
+    //
+    // //
     // *************************************************************************
-    // Copied from the original code - to be updated soon
+    // // Copied from the original code - to be updated soon
+    // //
     // *************************************************************************
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.User#addAnswer(org.gusdb.wdk.model.Answer)
-     */
-    public void addAnswer(AnswerBean answer) throws WdkUserException,
-            WdkModelException {
-        user.addAnswer(answer.answer);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.User#addAnswerFuzzy(org.gusdb.wdk.model.Answer)
-     */
-    public void addAnswerFuzzy(AnswerBean answer) throws WdkUserException,
-            WdkModelException {
-        user.addAnswerFuzzy(answer.answer);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.User#combineAnswers(int, int, java.lang.String)
-     */
-    public UserAnswerBean combineUserAnswers(int firstAnswerID,
-            int secondAnswerID, String operation, int start, int end,
-            Map<String, String> operatorMap) throws WdkUserException,
-            WdkModelException {
-        return new UserAnswerBean(this.user.combineUserAnswers(firstAnswerID,
-                secondAnswerID, operation, start, end, operatorMap));
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.User#combineAnswers(java.lang.String)
-     */
-    public UserAnswerBean combineAnswers(String expression, int start, int end,
-            Map<String, String> operatorMap) throws WdkUserException,
-            WdkModelException {
-        return new UserAnswerBean(this.user.combineUserAnswers(expression,
-                start, end, operatorMap));
-    }
-
-    public String validateExpression(String expression, int startIndex,
-            int endIndex, Map<String, String> operatorMap)
-            throws WdkModelException {
-        return this.user.validateExpression(expression, startIndex, endIndex,
-                operatorMap);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.User#deleteAnswer(int)
-     */
-    public void deleteUserAnswer(int answerId) throws WdkUserException {
-        this.user.deleteUserAnswer(answerId);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.User#clearAnswers()
-     */
-    public void clearUserAnswers() throws WdkUserException {
-        this.user.clearUserAnswers();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.User#getAnswerByID(int)
-     */
-    public UserAnswerBean getUserAnswerByID(int answerID)
-            throws WdkUserException {
-        return new UserAnswerBean(this.user.getUserAnswerByID(answerID));
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.User#getAnswerByName(java.lang.String)
-     */
-    public UserAnswerBean getUserAnswerByName(String name)
-            throws WdkUserException {
-        return new UserAnswerBean(this.user.getUserAnswerByName(name));
-    }
-
-    public int getUserAnswerIdByAnswer(AnswerBean answer)
-            throws WdkUserException {
-        return getUserAnswerByAnswerFuzzy(answer).getAnswerID();
-    }
-
-    public UserAnswerBean getUserAnswerByAnswer(AnswerBean answer)
-            throws WdkUserException {
-        return new UserAnswerBean(user.getUserAnswerByAnswer(answer.answer));
-    }
-
-    public UserAnswerBean getUserAnswerByAnswerFuzzy(AnswerBean answer)
-            throws WdkUserException {
-        return new UserAnswerBean(
-                user.getUserAnswerByAnswerFuzzy(answer.answer));
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.User#getAnswers()
-     */
-    public UserAnswerBean[] getUserAnswers() {
-        UserAnswer[] answers = user.getUserAnswers();
-        UserAnswerBean[] answerBeans = new UserAnswerBean[answers.length];
-        for (int i = 0; i < answers.length; i++) {
-            answerBeans[i] = new UserAnswerBean(answers[i]);
-        }
-        return answerBeans;
-    }
-
-    public int getAnswerCount() {
-        return user.getUserAnswers().length;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.User#getRecordAnswerMap()
-     */
-    public Map<String, UserAnswerBean[]> getRecordAnswerMap() {
-        Map recUsrAnsMap = user.getRecordAnswerMap();
-        Map<String, UserAnswerBean[]> recUsrAnsBeanMap = new LinkedHashMap<String, UserAnswerBean[]>();
-        for (Object r : recUsrAnsMap.keySet()) {
-            String rec = (String) r;
-            UserAnswer[] usrAns = (UserAnswer[]) recUsrAnsMap.get(rec);
-            UserAnswerBean[] answerBeans = new UserAnswerBean[usrAns.length];
-            for (int i = 0; i < usrAns.length; i++) {
-                answerBeans[i] = new UserAnswerBean(usrAns[i]);
-            }
-            recUsrAnsBeanMap.put(rec, answerBeans);
-        }
-        return recUsrAnsBeanMap;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.User#getUserID()
-     */
-    public String getUserID() {
-        return this.user.getUserID();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.User#renameAnswer(int, java.lang.String)
-     */
-    public void renameUserAnswer(int answerID, String name)
-            throws WdkUserException {
-        this.user.renameUserAnswer(answerID, name);
-    }
+    //
+    // /*
+    // * (non-Javadoc)
+    // *
+    // * @see org.gusdb.wdk.model.User#addAnswer(org.gusdb.wdk.model.Answer)
+    // */
+    // public void addAnswer(AnswerBean answer) throws WdkUserException,
+    // WdkModelException {
+    // user.addAnswer(answer.answer);
+    // }
+    //
+    // /*
+    // * (non-Javadoc)
+    // *
+    // * @see
+    // org.gusdb.wdk.model.User#addAnswerFuzzy(org.gusdb.wdk.model.Answer)
+    // */
+    // public void addAnswerFuzzy(AnswerBean answer) throws WdkUserException,
+    // WdkModelException {
+    // user.addAnswerFuzzy(answer.answer);
+    // }
+    //
+    // /*
+    // * (non-Javadoc)
+    // *
+    // * @see org.gusdb.wdk.model.User#combineAnswers(int, int,
+    // java.lang.String)
+    // */
+    // public UserAnswerBean combineUserAnswers(int firstAnswerID,
+    // int secondAnswerID, String operation, int start, int end,
+    // Map<String, String> operatorMap) throws WdkUserException,
+    // WdkModelException {
+    // return new UserAnswerBean(this.user.combineUserAnswers(firstAnswerID,
+    // secondAnswerID, operation, start, end, operatorMap));
+    // }
+    //
+    // /*
+    // * (non-Javadoc)
+    // *
+    // * @see org.gusdb.wdk.model.User#combineAnswers(java.lang.String)
+    // */
+    // public UserAnswerBean combineAnswers(String expression, int start, int
+    // end,
+    // Map<String, String> operatorMap) throws WdkUserException,
+    // WdkModelException {
+    // return new UserAnswerBean(this.user.combineUserAnswers(expression,
+    // start, end, operatorMap));
+    // }
+    //
+    //
+    // /*
+    // * (non-Javadoc)
+    // *
+    // * @see org.gusdb.wdk.model.User#deleteAnswer(int)
+    // */
+    // public void deleteUserAnswer(int answerId) throws WdkUserException {
+    // this.user.deleteUserAnswer(answerId);
+    // }
+    //
+    // /*
+    // * (non-Javadoc)
+    // *
+    // * @see org.gusdb.wdk.model.User#clearAnswers()
+    // */
+    // public void clearUserAnswers() throws WdkUserException {
+    // this.user.clearUserAnswers();
+    // }
+    //
+    // /*
+    // * (non-Javadoc)
+    // *
+    // * @see org.gusdb.wdk.model.User#getAnswerByID(int)
+    // */
+    // public UserAnswerBean getUserAnswerByID(int answerID)
+    // throws WdkUserException {
+    // return new UserAnswerBean(this.user.getUserAnswerByID(answerID));
+    // }
+    //
+    // /*
+    // * (non-Javadoc)
+    // *
+    // * @see org.gusdb.wdk.model.User#getAnswerByName(java.lang.String)
+    // */
+    // public UserAnswerBean getUserAnswerByName(String name)
+    // throws WdkUserException {
+    // return new UserAnswerBean(this.user.getUserAnswerByName(name));
+    // }
+    //
+    // public int getUserAnswerIdByAnswer(AnswerBean answer)
+    // throws WdkUserException {
+    // return getUserAnswerByAnswerFuzzy(answer).getAnswerID();
+    // }
+    //
+    // public UserAnswerBean getUserAnswerByAnswer(AnswerBean answer)
+    // throws WdkUserException {
+    // return new UserAnswerBean(user.getUserAnswerByAnswer(answer.answer));
+    // }
+    //
+    // public UserAnswerBean getUserAnswerByAnswerFuzzy(AnswerBean answer)
+    // throws WdkUserException {
+    // return new UserAnswerBean(
+    // user.getUserAnswerByAnswerFuzzy(answer.answer));
+    // }
+    //
+    // /*
+    // * (non-Javadoc)
+    // *
+    // * @see org.gusdb.wdk.model.User#getAnswers()
+    // */
+    // public UserAnswerBean[] getUserAnswers() {
+    // UserAnswer[] answers = user.getUserAnswers();
+    // UserAnswerBean[] answerBeans = new UserAnswerBean[answers.length];
+    // for (int i = 0; i < answers.length; i++) {
+    // answerBeans[i] = new UserAnswerBean(answers[i]);
+    // }
+    // return answerBeans;
+    // }
+    //
+    // public int getAnswerCount() {
+    // return user.getUserAnswers().length;
+    // }
+    //
+    // /*
+    // * (non-Javadoc)
+    // *
+    // * @see org.gusdb.wdk.model.User#getRecordAnswerMap()
+    // */
+    // public Map<String, UserAnswerBean[]> getRecordAnswerMap() {
+    // Map recUsrAnsMap = user.getRecordAnswerMap();
+    // Map<String, UserAnswerBean[]> recUsrAnsBeanMap = new
+    // LinkedHashMap<String, UserAnswerBean[]>();
+    // for (Object r : recUsrAnsMap.keySet()) {
+    // String rec = (String) r;
+    // UserAnswer[] usrAns = (UserAnswer[]) recUsrAnsMap.get(rec);
+    // UserAnswerBean[] answerBeans = new UserAnswerBean[usrAns.length];
+    // for (int i = 0; i < usrAns.length; i++) {
+    // answerBeans[i] = new UserAnswerBean(usrAns[i]);
+    // }
+    // recUsrAnsBeanMap.put(rec, answerBeans);
+    // }
+    // return recUsrAnsBeanMap;
+    // }
+    //
+    // /*
+    // * (non-Javadoc)
+    // *
+    // * @see org.gusdb.wdk.model.User#renameAnswer(int, java.lang.String)
+    // */
+    // public void renameUserAnswer(int answerID, String name)
+    // throws WdkUserException {
+    // this.user.renameUserAnswer(answerID, name);
+    // }
 
     public Map<String, String> getGlobalPreferences() {
         return user.getGlobalPreferences();
     }
-    
 
     public Map<String, String> getProjectPreferences() {
         return user.getProjectPreferences();
     }
-    
 
     public void setGlobalPreference(String prefName, String prefValue) {
         user.setGlobalPreference(prefName, prefValue);
     }
-    
 
     public void setProjectPreference(String prefName, String prefValue) {
         user.setProjectPreference(prefName, prefValue);
     }
-    
 
     public void unsetGlobalPreference(String prefName) {
         user.unsetGlobalPreference(prefName);
     }
-    
 
     public void unsetProjectPreference(String prefName) {
         user.unsetProjectPreference(prefName);
     }
-    
-    
 
-
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.user.User#clearPreferences()
      */
     public void clearPreferences() {
         user.clearPreferences();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#save()
+     */
+    public void save() throws WdkUserException {
+        user.save();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#update()
+     */
+    public void update() throws WdkUserException {
+        user.update();
+    }
+
+    // =========================================================================
+    // Methods for dataset operations
+    // =========================================================================
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#createDataset(java.lang.String,
+     *      java.lang.String, java.lang.String[])
+     */
+    public DatasetBean createDataset(String datasetName, String dataType,
+            String[][] values) throws WdkUserException {
+        DatasetBean bean = new DatasetBean(user.createDataset(datasetName,
+                dataType, values));
+        return bean;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#deleteDataset(java.lang.String)
+     */
+    public void deleteDataset(String datasetName) throws WdkUserException {
+        user.deleteDataset(datasetName);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#getDataset(java.lang.String)
+     */
+    public DatasetBean getDataset(String datasetName) throws WdkUserException {
+        return new DatasetBean(user.getDataset(datasetName));
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#getDatasets()
+     */
+    public DatasetBean[] getDatasets() throws WdkUserException {
+        Dataset[] datasets = user.getDatasets();
+        DatasetBean[] beans = new DatasetBean[datasets.length];
+        for (int i = 0; i < datasets.length; i++) {
+            beans[i] = new DatasetBean(datasets[i]);
+        }
+        return beans;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#getDatasets(java.lang.String)
+     */
+    public DatasetBean[] getDatasets(String dataType) throws WdkUserException {
+        Dataset[] datasets = user.getDatasets(dataType);
+        DatasetBean[] beans = new DatasetBean[datasets.length];
+        for (int i = 0; i < datasets.length; i++) {
+            beans[i] = new DatasetBean(datasets[i]);
+        }
+        return beans;
+    }
+
+    // =========================================================================
+    // Methods for Persistent history operations
+    // =========================================================================
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#clearHistories()
+     */
+    public void deleteHistories() throws WdkUserException {
+        user.deleteHistories();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#createHistory(org.gusdb.wdk.model.Answer)
+     */
+    public HistoryBean createHistory(AnswerBean answer)
+            throws WdkUserException, WdkModelException {
+        History history = user.createHistory(answer.answer);
+        return new HistoryBean(history);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#deleteHistory(int)
+     */
+    public void deleteHistory(int historyId) throws WdkUserException,
+            WdkModelException {
+        user.deleteHistory(historyId);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#getHistories()
+     */
+    public HistoryBean[] getHistories() throws WdkUserException,
+            WdkModelException {
+        History[] histories = user.getHistories();
+        HistoryBean[] beans = new HistoryBean[histories.length];
+        for (int i = 0; i < histories.length; i++) {
+            beans[i] = new HistoryBean(histories[i]);
+        }
+        return beans;
+    }
+
+    public Map<String, List<HistoryBean>> getHistoriesByCategory()
+            throws WdkUserException, WdkModelException {
+        Map<String, List<History>> histories = user.getHistoriesByCategory();
+        Map<String, List<HistoryBean>> category = new LinkedHashMap<String, List<HistoryBean>>();
+        for (String type : histories.keySet()) {
+            List<History> list = histories.get(type);
+            List<HistoryBean> beans = new ArrayList<HistoryBean>();
+            for (History history : list) {
+                beans.add(new HistoryBean(history));
+            }
+            category.put(type, beans);
+        }
+        return category;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#getHistories(java.lang.String)
+     */
+    public HistoryBean[] getHistories(String dataType) throws WdkUserException,
+            WdkModelException {
+        History[] histories = user.getHistories(dataType);
+        HistoryBean[] beans = new HistoryBean[histories.length];
+        for (int i = 0; i < histories.length; i++) {
+            beans[i] = new HistoryBean(histories[i]);
+        }
+        return beans;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#getHistory(int)
+     */
+    public HistoryBean getHistory(int historyId) throws WdkUserException,
+            WdkModelException {
+        return new HistoryBean(user.getHistory(historyId));
+    }
+
+    public String validateExpression(String expression,
+            Map<String, String> operatorMap) throws WdkModelException {
+        return this.user.validateExpression(expression, operatorMap);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#combineHistory(java.lang.String)
+     */
+    public HistoryBean combineHistory(String expression)
+            throws WdkUserException, WdkModelException {
+        return new HistoryBean(user.combineHistory(expression));
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#getHistoryCount()
+     */
+    public int getHistoryCount() throws WdkUserException {
+        return user.getHistoryCount();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#getItemsPerPage()
+     */
+    public int getItemsPerPage() {
+        return user.getItemsPerPage();
     }
 
     /*

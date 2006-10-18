@@ -1,6 +1,9 @@
 package org.gusdb.wdk.model;
 
 import java.io.Serializable;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -27,6 +30,8 @@ public abstract class Query implements Serializable {
     protected Vector<Column> columnsV;
     protected ResultFactory resultFactory;
 
+    protected String signature = null;
+
     public Query() {
         paramRefs = new LinkedHashSet<ParamReference>();
         paramsH = new LinkedHashMap<String, Param>();
@@ -41,6 +46,7 @@ public abstract class Query implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+        signature = null;
     }
 
     public void setDisplayName(String displayName) {
@@ -64,14 +70,10 @@ public abstract class Query implements Serializable {
     }
 
     public void addColumn(Column column) {
-        // TEST
-        // if (column.getName().equalsIgnoreCase("score"))
-        // logger.trace("Query '" + this.getFullName()
-        // + "' is setting column.");
-
         column.setQuery(this);
         columnsV.add(column);
         columnsH.put(column.getName(), column);
+        signature = null;
     }
 
     // ///////////////////////////////////////////////////////////////////////
@@ -95,7 +97,7 @@ public abstract class Query implements Serializable {
         paramsV.copyInto(paramA);
         return paramA;
     }
-    
+
     public Map<String, Param> getParamMap() {
         return new LinkedHashMap<String, Param>(paramsH);
     }
@@ -165,21 +167,77 @@ public abstract class Query implements Serializable {
         return buf.toString();
     }
 
-    // ///////////////////////////////////////////////////////////////////
-    // /////////// Protected methods ////////////////////////////////////
-    // ///////////////////////////////////////////////////////////////////
-
     public ResultFactory getResultFactory() {
         return resultFactory;
     }
 
+    public String getSignature() throws WdkModelException {
+        if (signature == null) {
+            StringBuffer content = new StringBuffer();
+            content.append(fullName);
+
+            // get parameter name list, and sort it
+            String[] paramNames = new String[paramsH.size()];
+            paramsH.keySet().toArray(paramNames);
+            Arrays.sort(paramNames);
+
+            // get a combination of parameters and types
+            for (String paramName : paramNames) {
+                Param param = paramsH.get(paramName);
+                content.append(WdkModel.PARAM_DIVIDER);
+                content.append(paramName);
+                content.append('|');
+                content.append(param.getClass().getName());
+            }
+            
+            // get the columns
+            String[] columnNames = new String[columnsH.size()];
+            columnsH.keySet().toArray(columnNames);
+            Arrays.sort(columnNames);
+            
+            for (String columnName : columnNames) {
+                content.append(WdkModel.PARAM_DIVIDER);
+                content.append(columnName);
+            }
+            
+            // get extra data for making signature
+            String extra = getSignatureData();
+            if (extra != null) {
+                content.append(WdkModel.PARAM_DIVIDER);
+                content.append(extra);
+            }
+
+            try {
+                MessageDigest digest = MessageDigest.getInstance("MD5");
+                byte[] byteBuffer = digest.digest(content.toString().getBytes());
+                // convert each byte into hex format
+                StringBuffer buffer = new StringBuffer();
+                for (int i = 0; i < byteBuffer.length; i++) {
+                    int code = (byteBuffer[i] & 0xFF);
+                    if (code < 0x10) buffer.append('0');
+                    buffer.append(Integer.toHexString(code));
+                }
+                signature = buffer.toString();
+            } catch (NoSuchAlgorithmException ex) {
+                throw new WdkModelException(ex);
+            }
+        }
+        return signature;
+    }
+
+    // ///////////////////////////////////////////////////////////////////
+    // /////////// Protected methods ////////////////////////////////////
+    // ///////////////////////////////////////////////////////////////////
+
     void setSetName(String querySetName) {
         this.fullName = querySetName + "." + name;
+        signature = null;
     }
 
     protected void addParam(Param param) {
         paramsV.add(param);
         paramsH.put(param.getName(), param);
+        signature = null;
     }
 
     Param getParam(String paramName) {
@@ -241,7 +299,8 @@ public abstract class Query implements Serializable {
             if (errMsg != null) {
                 if (errors == null)
                     errors = new LinkedHashMap<Param, String[]>();
-                String booBoo[] = { value == null ? "" : value.toString(), errMsg };
+                String booBoo[] = { value == null ? "" : value.toString(),
+                        errMsg };
                 errors.put(p, booBoo);
             }
         }
@@ -282,6 +341,7 @@ public abstract class Query implements Serializable {
 
     /**
      * The query clones its members, and only contains the allowed columns
+     * 
      * @param query
      * @param allowedColumns
      */
@@ -305,4 +365,6 @@ public abstract class Query implements Serializable {
         query.paramsV.addAll(this.paramsV);
         query.resultFactory = this.resultFactory;
     }
+    
+    protected abstract String getSignatureData();
 }

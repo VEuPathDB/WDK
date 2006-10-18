@@ -3,10 +3,11 @@
  */
 package org.gusdb.wdk.model.test;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Random;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -16,12 +17,13 @@ import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
 import org.gusdb.wdk.model.Reference;
-import org.gusdb.wdk.model.UserAnswer;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
+import org.gusdb.wdk.model.user.DatasetFactory;
+import org.gusdb.wdk.model.user.History;
 import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.user.UserFactory;
 
 /**
  * @author Jerric
@@ -29,14 +31,14 @@ import org.gusdb.wdk.model.user.User;
  */
 public class JUnitUserTest extends TestCase {
 
-    private static final int NUM_USERS = 2;
-
     private TestUtility utility;
     private WdkModel wdkModel;
     private SanityModel sanityModel;
+    private UserFactory userFactory;
+    private DatasetFactory datasetFactory;
     private Answer[] answers;
-
-    private Map<String, String> operatorMap;
+    private User user;
+    private Random rand;
 
     public static void main(String[] args) {
         junit.textui.TestRunner.run(JUnitUserTest.class);
@@ -44,17 +46,15 @@ public class JUnitUserTest extends TestCase {
 
     public static Test suite() {
         TestSuite suite = new TestSuite();
-        suite.addTest(new JUnitUserTest("testGetUserID"));
-        suite.addTest(new JUnitUserTest("testAddAnswer"));
-        suite.addTest(new JUnitUserTest("testDeleteUserAnswer"));
-        suite.addTest(new JUnitUserTest("testClearUserAnswers"));
-        suite.addTest(new JUnitUserTest("testGetUserAnswers"));
-        suite.addTest(new JUnitUserTest("testGetUserAnswerByID"));
-        suite.addTest(new JUnitUserTest("testGetUserAnswerByName"));
-        suite.addTest(new JUnitUserTest("testGetUserAnswerByAnswer"));
-        suite.addTest(new JUnitUserTest("testRenameUserAnswer"));
-        suite.addTest(new JUnitUserTest("testCombineUserAnswersIntIntString"));
-        suite.addTest(new JUnitUserTest("testCombineUserAnswersString"));
+        suite.addTest(new JUnitUserTest("testCreateHistory"));
+        suite.addTest(new JUnitUserTest("testLoadHistory"));
+        suite.addTest(new JUnitUserTest("testUpdateHistory"));
+        suite.addTest(new JUnitUserTest("testDeleteHistory"));
+        suite.addTest(new JUnitUserTest("testCombineHistory"));
+        suite.addTest(new JUnitUserTest("testCreateDataset"));
+        suite.addTest(new JUnitUserTest("testLoadDataset"));
+        suite.addTest(new JUnitUserTest("testUpdateDataset"));
+        suite.addTest(new JUnitUserTest("testDeleteDataset"));
         return suite;
     }
 
@@ -63,7 +63,6 @@ public class JUnitUserTest extends TestCase {
      */
     public JUnitUserTest() {
         super();
-        // TODO Auto-generated constructor stub
     }
 
     /**
@@ -71,7 +70,6 @@ public class JUnitUserTest extends TestCase {
      */
     public JUnitUserTest(String name) {
         super(name);
-        // TODO Auto-generated constructor stub
     }
 
     /*
@@ -80,645 +78,223 @@ public class JUnitUserTest extends TestCase {
     protected void setUp() throws Exception {
         super.setUp();
 
-        operatorMap = new LinkedHashMap<String, String>();
-        operatorMap.put("and", BooleanQuestionNodeBean.INTERNAL_AND);
-        operatorMap.put("or", BooleanQuestionNodeBean.INTERNAL_OR);
-        operatorMap.put("not", BooleanQuestionNodeBean.INTERNAL_NOT);
-
+        rand = new Random(System.currentTimeMillis());
         utility = TestUtility.getInstance();
-        wdkModel = utility.getWdkModel();
-        sanityModel = utility.getSanityModel();
+        if (wdkModel == null) {
+            wdkModel = utility.getWdkModel();
+            sanityModel = utility.getSanityModel();
+            userFactory = wdkModel.getUserFactory();
+            datasetFactory = wdkModel.getDatasetFactory();
 
-        answers = createAnswers(sanityModel);
+            user = userFactory.loadUser(1);
+            // user = userFactory.createGuestUser();
+            // System.out.println("New user: #" + user.getUserId());
+            // System.exit(0);
 
-        // test must first create some users, and then get the ID of that user;
-        // assuming add user function has been tested in model junit test
-        for (int i = 0; i < NUM_USERS; i++) {
-            String userID = "user_" + i;
-            wdkModel.createUser(userID);
+            answers = createAnswers(sanityModel);
         }
     }
 
-    /*
-     * Test method for 'org.gusdb.wdk.model.User.addAnswer(Answer)'
-     */
-    public void testAddAnswer() {
-        // create answers for those questions
+    public void testCreateHistory() {
+    // Set<Integer> ids = new HashSet<Integer>();
+    // for (int i = 0; i < answers.length; i++) {
+    // String qname = answers[i].getQuestion().getName();
+    // try {
+    // History history = user.createHistory(answers[i]);
+    //
+    // // print history
+    // printHistory(history);
+    //
+    // int historyId = history.getHistoryId();
+    // assertFalse(ids.contains(historyId));
+    // ids.add(historyId);
+    // } catch (WdkUserException ex) {
+    // ex.printStackTrace();
+    // assertTrue(false);
+    // } catch (WdkModelException ex) {
+    // System.err.println("Question failed: " + qname);
+    // ex.printStackTrace();
+    // assertTrue(false);
+    // }
+    // }
+    }
+
+    public void testLoadHistory() {
+    // try {
+    // // test to load all histories
+    // History[] histories = user.getHistories();
+    // int[] histIds = new int[histories.length];
+    //
+    // for (int i = 0; i < histories.length; i++) {
+    // History history = histories[i];
+    //
+    // // print history
+    // printHistory(history);
+    //
+    // histIds[i] = history.getHistoryId();
+    // }
+    //
+    // // test to load history one by one
+    // for (int i = 0; i < histIds.length; i++) {
+    // // int index = rand.nextInt(histIds.length);
+    // int index = i;
+    // int histId = histIds[index];
+    // History history = user.getHistory(histId);
+    //
+    // printHistory(history);
+    //
+    // assertEquals(histId, history.getHistoryId());
+    // }
+    // } catch (WdkUserException ex) {
+    // ex.printStackTrace();
+    // assertTrue(false);
+    // } catch (WdkModelException ex) {
+    // ex.printStackTrace();
+    // assertTrue(false);
+    // }
+    }
+
+    public void testUpdateHistory() {
+    // try {
+    // History[] histories = user.getHistories();
+    //
+    // // update the history names
+    // for (History history : histories) {
+    // int histId = history.getHistoryId();
+    // String name = "History_" + histId + "_" + rand.nextInt(10000);
+    // history.setCustomName(name);
+    // history.update();
+    //
+    // // then load the history from the database and print it
+    // history = user.getHistory(histId);
+    // printHistory(history);
+    // }
+    // } catch (WdkUserException ex) {
+    // ex.printStackTrace();
+    // assertTrue(false);
+    // } catch (WdkModelException ex) {
+    // ex.printStackTrace();
+    // assertTrue(false);
+    // }
+    }
+
+    public void testCombineHistory() {
+//        try {
+//            History hist1 = user.getHistory(1);
+//            History hist2 = user.getHistory(2);
+//            History hist9 = user.getHistory(9);
+//
+//            // print the base history
+//            printHistory(hist1);
+//            printHistory(hist2);
+//            printHistory(hist9);
+//
+//            History history = user.combineHistory("(1 OR 2) OR 9");
+//            printHistory(history);
+//
+//        } catch (WdkUserException ex) {
+//            ex.printStackTrace();
+//            assertTrue(false);
+//        } catch (WdkModelException ex) {
+//            ex.printStackTrace();
+//            assertTrue(false);
+//        }
+    }
+
+    public void testDeleteHistory() {
+        int historyId = 14;
         try {
-            // now all users ask all questions
-            for (int i = 0; i < NUM_USERS; i++) {
-                // get the user
-                String userID = "user_" + i;
-                User user = wdkModel.createUser(userID);;
-
-                assertNotNull(user);
-                user.clearUserAnswers();
-
-                for (Answer answer : answers) {
-                    user.addAnswer(answer);
-                    UserAnswer userAnswer = user.getUserAnswerByAnswerFuzzy(answer);
-                    assertNotNull(userAnswer);
-                }
-
-                // test on duplicates situation
-                UserAnswer uans = user.getUserAnswers()[0];
-                user.addAnswer(uans.getAnswer());
-                UserAnswer uansnew = user.getUserAnswerByAnswer(uans.getAnswer());
-                assertEquals(uans, uansnew);
-
-                // the answer list should be full now
-                assertEquals(answers.length, user.getUserAnswers().length);
-                // System.out.println(user);
-            }
-        } catch (Exception ex) {
-            // TODO Auto-generated catch block
+            user.deleteHistory(historyId);
+        } catch (WdkUserException ex) {
             ex.printStackTrace();
-            // System.err.println(ex);
+            assertTrue(false);
+        } catch (WdkModelException ex) {
+            ex.printStackTrace();
+            assertTrue(false);
+        }
+        
+        // the history shouldn't be found
+        try {
+            History history = user.getHistory(historyId);
+            assertNull(history);
+        } catch (WdkUserException ex) {
+            // ex.printStackTrace();
+            System.out.println("Expected: " + ex.toString());
+            assertTrue(true);
+        } catch (WdkModelException ex) {
+            ex.printStackTrace();
             assertTrue(false);
         }
     }
 
-    /*
-     * Test method for 'org.gusdb.wdk.model.User.deleteAnswer(int)'
-     */
-    public void testDeleteUserAnswer() {
-        // first add answers to the user
-        try {
-            // now all users ask all questions
-            for (int i = 0; i < NUM_USERS; i++) {
-                // get the user
-                String userID = "user_" + i;
-                User user = wdkModel.createUser(userID);;
+    public void testCreateDataset() {
 
-                assertNotNull(user);
-                user.clearUserAnswers();
-
-                List<Integer> answerIDs = new ArrayList<Integer>();
-                for (Answer answer : answers) {
-                    user.addAnswer(answer);
-                    UserAnswer userAnswer = user.getUserAnswerByAnswer(answer);
-                    assertNotNull(userAnswer);
-
-                    answerIDs.add(userAnswer.getAnswerID());
-                }
-
-                // the answer list should be full now
-                assertEquals(answers.length, user.getUserAnswers().length);
-
-                // now try to delete answers one by one
-                for (int answerID : answerIDs) {
-                    user.deleteUserAnswer(answerID);
-                }
-                // all answers should be deleted
-                assertEquals(0, user.getUserAnswers().length);
-
-                // now try on invalid answers
-                for (int answerID : answerIDs) {
-                    try {
-                        user.deleteUserAnswer(answerID);
-                        assertTrue(false);
-                    } catch (WdkUserException ex) {
-                        // TODO Auto-generated catch block
-                        // ex.printStackTrace();
-                        // System.err.println(ex);
-                    }
-                }
-            }
-        } catch (Exception ex) {
-            // TODO Auto-generated catch block
-            ex.printStackTrace();
-            // System.err.println(ex);
-            assertTrue(false);
-        }
-
-        // delete all answers from all users
     }
 
-    /*
-     * Test method for 'org.gusdb.wdk.model.User.clearAnswers()'
-     */
-    public void testClearUserAnswers() {
-        try {
-            // clear all answers from all users
-            for (int i = 0; i < NUM_USERS; i++) {
-                // get the user
-                String userID = "user_" + i;
-                User user = wdkModel.createUser(userID);;
+    public void testLoadDataset() {
 
-                assertNotNull(user);
-                user.clearUserAnswers();
-
-                // add answers into history
-                for (Answer answer : answers)
-                    user.addAnswer(answer);
-
-                // the answer list should be full now
-                assertEquals(answers.length, user.getUserAnswers().length);
-
-                user.clearUserAnswers();
-                // all answers should be deleted
-                assertEquals(0, user.getUserAnswers().length);
-            }
-        } catch (Exception ex) {
-            // TODO Auto-generated catch block
-            ex.printStackTrace();
-            // System.err.println(ex);
-            assertTrue(false);
-        }
     }
 
-    /*
-     * Test method for 'org.gusdb.wdk.model.User.getUserAnswers()'
-     */
-    public void testGetUserAnswers() {
-        try {
-            // since the user is newly created, the answer list should be empty
-            for (int i = 0; i < NUM_USERS; i++) {
-                // get the user
-                String userID = "user_" + i;
-                User user = wdkModel.createUser(userID);;
+    public void testUpdateDataset() {
 
-                assertNotNull(user);
-                user.clearUserAnswers();
-
-                // add answers into history
-                for (Answer answer : answers) {
-                    user.addAnswer(answer);
-                }
-
-                // the answer list should be full now
-                assertEquals(answers.length, user.getUserAnswers().length);
-            }
-        } catch (Exception ex) {
-            // TODO Auto-generated catch block
-            ex.printStackTrace();
-            // System.err.println(ex);
-            assertTrue(false);
-        }
     }
 
-    /*
-     * Test method for 'org.gusdb.wdk.model.User.getAnswerByID(int)'
-     */
-    public void testGetUserAnswerByID() {
-        try {
-            // since the user is newly created, the answer list should be empty
-            for (int i = 0; i < NUM_USERS; i++) {
-                // get the user
-                String userID = "user_" + i;
-                User user = wdkModel.createUser(userID);;
+    public void testDeleteDataset() {
 
-                assertNotNull(user);
-                user.clearUserAnswers();
-
-                // add answers into history
-                List<Integer> answerIDs = new ArrayList<Integer>();
-                for (Answer answer : answers) {
-                    user.addAnswer(answer);
-                    UserAnswer userAnswer = user.getUserAnswerByAnswer(answer);
-                    answerIDs.add(userAnswer.getAnswerID());
-                }
-
-                // the answer list should be full now
-                assertEquals(answers.length, user.getUserAnswers().length);
-
-                for (int answerID : answerIDs) {
-                    UserAnswer userAnswer = user.getUserAnswerByID(answerID);
-                    assertNotNull(userAnswer);
-                }
-
-                // now test on invalid situations
-                user.clearUserAnswers();
-                for (int answerID : answerIDs) {
-                    try {
-                        user.getUserAnswerByID(answerID);
-                        assertTrue(false);
-                    } catch (WdkUserException ex) {
-                        // TODO Auto-generated catch block
-                        // ex.printStackTrace();
-                        // System.err.println(ex);
-                    }
-                }
-            }
-        } catch (Exception ex) {
-            // TODO Auto-generated catch block
-            ex.printStackTrace();
-            // System.err.println(ex);
-            assertTrue(false);
-        }
-    }
-
-    /*
-     * Test method for 'org.gusdb.wdk.model.User.getAnswerByName(String)'
-     */
-    public void testGetUserAnswerByName() {
-        try {
-            // since the user is newly created, the answer list should be empty
-            for (int i = 0; i < NUM_USERS; i++) {
-                // get the user
-                String userID = "user_" + i;
-                User user = wdkModel.createUser(userID);;
-
-                assertNotNull(user);
-                user.clearUserAnswers();
-
-                // add answers into history
-                List<String> answerNames = new ArrayList<String>();
-                for (Answer answer : answers) {
-                    user.addAnswer(answer);
-                    UserAnswer userAnswer = user.getUserAnswerByAnswer(answer);
-                    answerNames.add(userAnswer.getName());
-                }
-
-                // the answer list should be full now
-                assertEquals(answers.length, user.getUserAnswers().length);
-
-                for (String name : answerNames) {
-                    UserAnswer userAnswer = user.getUserAnswerByName(name);
-                    assertNotNull(userAnswer);
-                }
-
-                // now test on invalid situations
-                user.clearUserAnswers();
-                for (String name : answerNames) {
-                    try {
-                        user.getUserAnswerByName(name);
-                        assertTrue(false);
-                    } catch (WdkUserException ex) {
-                        // TODO Auto-generated catch block
-                        // ex.printStackTrace();
-                        // System.err.println(ex);
-                    }
-                }
-            }
-        } catch (Exception ex) {
-            // TODO Auto-generated catch block
-            ex.printStackTrace();
-            // System.err.println(ex);
-            assertTrue(false);
-        }
-    }
-
-    /*
-     * Test method for 'org.gusdb.wdk.model.User.getAnswerByName(String)'
-     */
-    public void testGetUserAnswerByAnswer() {
-        try {
-            // since the user is newly created, the answer list should be empty
-            for (int i = 0; i < NUM_USERS; i++) {
-                // get the user
-                String userID = "user_" + i;
-                User user = wdkModel.createUser(userID);;
-
-                assertNotNull(user);
-                user.clearUserAnswers();
-
-                // add answers into history
-                for (Answer answer : answers) {
-                    user.addAnswer(answer);
-                }
-
-                // the answer list should be full now
-                assertEquals(answers.length, user.getUserAnswers().length);
-
-                for (Answer answer : answers) {
-                    UserAnswer userAnswer = user.getUserAnswerByAnswer(answer);
-                    assertNotNull(userAnswer);
-                }
-
-                // now test on invalid situations
-                user.clearUserAnswers();
-                for (Answer answer : answers) {
-                    try {
-                        user.getUserAnswerByAnswer(answer);
-                        assertTrue(false);
-                    } catch (WdkUserException ex) {
-                        // TODO Auto-generated catch block
-                        // ex.printStackTrace();
-                        // System.err.println(ex);
-                    }
-                }
-            }
-        } catch (Exception ex) {
-            // TODO Auto-generated catch block
-            ex.printStackTrace();
-            // System.err.println(ex);
-            assertTrue(false);
-        }
-    }
-
-    /*
-     * Test method for 'org.gusdb.wdk.model.User.renameAnswer(int, String)'
-     */
-    public void testRenameUserAnswer() {
-        try {
-            for (int i = 0; i < NUM_USERS; i++) {
-                // get the user
-                String userID = "user_" + i;
-                User user = wdkModel.createUser(userID);;
-
-                assertNotNull(user);
-                user.clearUserAnswers();
-
-                // add answers into history
-                List<Integer> answerIDs = new ArrayList<Integer>();
-                for (Answer answer : answers) {
-                    user.addAnswer(answer);
-                    UserAnswer userAnswer = user.getUserAnswerByAnswer(answer);
-                    answerIDs.add(userAnswer.getAnswerID());
-                }
-
-                // the answer list should be full now
-                assertEquals(answers.length, user.getUserAnswers().length);
-
-                // now test on renaming answers
-                int idx = 1;
-                for (int answerID : answerIDs) {
-                    String newName = "answer_" + idx;
-                    UserAnswer oldAnswer = user.getUserAnswerByID(answerID);
-                    user.renameUserAnswer(answerID, newName);
-                    UserAnswer newAnswer = user.getUserAnswerByName(newName);
-
-                    assertEquals(oldAnswer, newAnswer);
-                    // System.out.println(newAnswer);
-                    idx++;
-                }
-
-                // now test on duplicates situations
-                idx = 1;
-                for (int answerID : answerIDs) {
-                    String newName = "answer_" + (answerIDs.size() - idx + 1);
-                    // make sure I don't change a name of its own
-                    if (idx == (answerIDs.size() - idx + 1)) continue;
-                    try {
-                        user.renameUserAnswer(answerID, newName);
-                        assertTrue(false);
-                    } catch (WdkUserException ex) {
-                        // ex.printStackTrace();
-                    }
-                    idx++;
-                }
-
-                // now test on non-existing answers
-                user.clearUserAnswers();
-                idx = 1;
-                for (int answerID : answerIDs) {
-                    String newName = "answer_" + idx;
-                    try {
-                        user.renameUserAnswer(answerID, newName);
-                        assertTrue(false);
-                    } catch (WdkUserException ex) {
-                        // ex.printStackTrace();
-                    }
-                    idx++;
-                }
-            }
-        } catch (Exception ex) {
-            // TODO Auto-generated catch block
-            ex.printStackTrace();
-            // System.err.println(ex);
-            assertTrue(false);
-        }
-    }
-
-    /*
-     * Test method for 'org.gusdb.wdk.model.User.combineAnswers(int, int,
-     * String)'
-     */
-    public void testCombineUserAnswersIntIntString() {
-        try {
-            // get the user
-            String userID = "user_0";
-            User user = wdkModel.createUser(userID);;
-
-            assertNotNull(user);
-            user.clearUserAnswers();
-
-            // add answers into history
-            List<Integer> answerIDs = new ArrayList<Integer>();
-            for (Answer answer : answers) {
-                user.addAnswer(answer);
-                UserAnswer userAnswer = user.getUserAnswerByAnswer(answer);
-                answerIDs.add(userAnswer.getAnswerID());
-            }
-
-            // the answer list should be full now
-            assertEquals(answers.length, user.getUserAnswers().length);
-
-            // try to combine answers of the same type
-            for (int firstID : answerIDs) {
-                for (int secondID : answerIDs) {
-                    UserAnswer firstAnswer = user.getUserAnswerByID(firstID);
-                    UserAnswer secondAnswer = user.getUserAnswerByID(secondID);
-                    String firstType = firstAnswer.getType();
-                    String secondType = secondAnswer.getType();
-                    if (firstType.equalsIgnoreCase(secondType)) {
-                        // test union
-                        UserAnswer userAnswer = user.combineUserAnswers(
-                                firstID, secondID, "OR", 1, 20, operatorMap);
-                        assertNotNull(userAnswer);
-                        // System.out.println(userAnswer);
-                        // test intersect
-                        userAnswer = user.combineUserAnswers(firstID, secondID,
-                                "AND", 1, 20, operatorMap);
-                        assertNotNull(userAnswer);
-                        // System.out.println(userAnswer);
-                        // test except
-                        userAnswer = user.combineUserAnswers(firstID, secondID,
-                                "NOT", 1, 20, operatorMap);
-                        assertNotNull(userAnswer);
-                        // System.out.println(userAnswer);
-                    } else { // test on invalid combinations
-                        try {
-                            user.combineUserAnswers(firstID, secondID, "OR", 1,
-                                    20, operatorMap);
-                            assertTrue(false);
-                        } catch (WdkUserException ex) {
-                            // ex.printStackTrace();
-                        } catch (WdkModelException ex) {
-                            // ex.printStackTrace();
-                        }
-                    }
-                }
-            }
-        } catch (Exception ex) {
-            // TODO Auto-generated catch block
-            ex.printStackTrace();
-            // System.err.println(ex);
-            assertTrue(false);
-        }
-    }
-
-    /*
-     * Test method for 'org.gusdb.wdk.model.User.combineAnswers(String)'
-     */
-    public void testCombineUserAnswersString() {
-        try {
-            // get the user
-            String userID = "user_0";
-            User user = wdkModel.createUser(userID);;
-
-            assertNotNull(user);
-            user.clearUserAnswers();
-
-            // add answers into history, and also store IDs by type
-            Map<String, List<Integer>> groups = new LinkedHashMap<String, List<Integer>>();
-            for (Answer answer : answers) {
-                user.addAnswer(answer);
-                UserAnswer userAnswer = user.getUserAnswerByAnswer(answer);
-
-                // store them by type
-                String type = userAnswer.getType();
-                if (!groups.containsKey(type))
-                    groups.put(type, new ArrayList<Integer>());
-                groups.get(type).add(userAnswer.getAnswerID());
-            }
-
-            // the answer list should be full now
-            assertEquals(answers.length, user.getUserAnswers().length);
-
-            // now get the list of largest number of answers
-            int max = 0;
-            List<Integer> answerIDs = null;
-            for (List<Integer> group : groups.values()) {
-                if (group.size() > max) {
-                    answerIDs = group;
-                    max = group.size();
-                }
-            }
-            assertTrue(max > 0);
-
-            // now change the answer name to be "ans_x", where x is the id of it
-            String[] name = new String[answerIDs.size()];
-            String[] id = new String[answerIDs.size()];
-            for (int i = 0; i < answerIDs.size(); i++) {
-                int answerID = answerIDs.get(i);
-                id[i] = "#" + answerID;
-                name[i] = "ans_" + answerID;
-                user.renameUserAnswer(answerID, name[i]);
-            }
-
-            // TEST
-            // System.out.println("Testbed Size: " + answerIDs.size());
-
-            // write the test cases for it
-            UserAnswer result;
-            if (answerIDs.size() >= 2) {
-                result = user.combineUserAnswers(id[0] + " OR " + id[1], 1, 20,
-                        operatorMap);
-                assertNotNull(result);
-                // System.out.println(result);
-
-                result = user.combineUserAnswers("\"" + name[0] + "\" OR \""
-                        + name[1] + "\"", 1, 20, operatorMap);
-                assertNotNull(result);
-                // System.out.println(result);
-
-                result = user.combineUserAnswers("\"" + name[0] + "\" OR "
-                        + id[1], 1, 20, operatorMap);
-                assertNotNull(result);
-                // System.out.println(result);
-
-                result = user.combineUserAnswers(name[0] + " OR " + name[1], 1,
-                        20, operatorMap);
-                assertNotNull(result);
-                // System.out.println(result);
-            }
-            if (answerIDs.size() >= 3) {
-                result = user.combineUserAnswers(id[0] + " OR " + id[1]
-                        + " AND " + id[2], 1, 20, operatorMap);
-                assertNotNull(result);
-                // System.out.println(result);
-
-                result = user.combineUserAnswers(id[0] + " NOT (\"" + name[1]
-                        + "\" AND " + id[2] + ")", 1, 20, operatorMap);
-                assertNotNull(result);
-                // System.out.println(result);
-            }
-            if (answerIDs.size() >= 4) {
-                result = user.combineUserAnswers("(" + id[0] + " AND " + id[1]
-                        + ") AND (" + id[2] + " AND " + id[3] + ")", 1, 20,
-                        operatorMap);
-                assertNotNull(result);
-                // System.out.println(result);
-
-                result = user.combineUserAnswers("((" + id[0] + " AND " + id[1]
-                        + ") AND " + id[2] + ") AND " + id[3], 1, 20,
-                        operatorMap);
-                assertNotNull(result);
-                // System.out.println(result);
-            }
-
-            // now test some of invalid expressions
-            try { // wrong operators
-                result = user.combineUserAnswers("#1 BAD #2", 1, 20,
-                        operatorMap);
-                assertTrue(false);
-            } catch (WdkUserException ex) {
-                // ex.printStackTrace();
-                // System.err.println(ex);
-            } catch (WdkModelException ex) {
-                // ex.printStackTrace();
-                // System.err.println(ex);
-            }
-            try { // miss the other part of parenthese
-                result = user.combineUserAnswers("(#1 OR #2) NOT #3)", 1, 20,
-                        operatorMap);
-                assertTrue(false);
-            } catch (WdkUserException ex) {
-                // ex.printStackTrace();
-                // System.err.println(ex);
-            } catch (WdkModelException ex) {
-                // ex.printStackTrace();
-                // System.err.println(ex);
-            }
-            try { // miss the other part of double quote
-                result = user.combineUserAnswers("\"ans_1\" OR \"ans_2", 1, 20,
-                        operatorMap);
-                assertTrue(false);
-            } catch (WdkUserException ex) {
-                // ex.printStackTrace();
-                // System.err.println(ex);
-            } catch (WdkModelException ex) {
-                // ex.printStackTrace();
-                // System.err.println(ex);
-            }
-            try { // question not found
-                result = user.combineUserAnswers("\"invalid_ans\" OR ans_2", 1,
-                        20, operatorMap);
-                assertTrue(false);
-            } catch (WdkUserException ex) {
-                // ex.printStackTrace();
-                // System.err.println(ex);
-            } catch (WdkModelException ex) {
-                // ex.printStackTrace();
-                // System.err.println(ex);
-            }
-        } catch (Exception ex) {
-            // TODO Auto-generated catch block
-            ex.printStackTrace();
-            // System.err.println(ex);
-            assertTrue(false);
-        }
     }
 
     private Answer[] createAnswers(SanityModel sanityModel)
             throws WdkUserException, WdkModelException {
+        // TEST
+        System.out.println("Creating answers....");
+
         // get sanity questions
         SanityQuestion[] questions = sanityModel.getAllSanityQuestions();
 
         assertTrue(questions.length > 0);
-        Answer[] answers = new Answer[questions.length];
-        for (int i = 0; i < questions.length; i++) {
+        List<Answer> answers = new ArrayList<Answer>();
+        // choose a subset of questions only
+        for (int i = 0; i < 10; i++) {
+            // int index = rand.nextInt(questions.length);
+            int index = i;
+
             // get model question from sanity question
-            Reference questionRef = new Reference(questions[i].getRef());
+            Reference questionRef = new Reference(questions[index].getRef());
             QuestionSet questionSet = wdkModel.getQuestionSet(questionRef.getSetName());
             Question question = questionSet.getQuestion(questionRef.getElementName());
 
             // run question
-            answers[i] = question.makeAnswer(questions[i].getParamHash(),
-                    questions[i].getPageStart(), questions[i].getPageEnd());
+            Answer answer = question.makeAnswer(
+                    questions[index].getParamHash(),
+                    questions[index].getPageStart(),
+                    questions[index].getPageEnd());
+            answers.add(answer);
         }
-        return answers;
+        Answer[] array = new Answer[answers.size()];
+        answers.toArray(array);
+
+        // TEST
+        System.out.println(array.length + " answers are created.");
+
+        return array;
+    }
+
+    private void printHistory(History history) throws WdkModelException,
+            WdkUserException {
+        assertNotNull(history);
+
+        DateFormat format = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
+
+        // print out the history info
+        System.out.println("-----------------------------------------");
+        System.out.println("History #" + history.getHistoryId() + " - '"
+                + history.getCustomName() + "' ("
+                + format.format(history.getLastRunTime()) + ") EST="
+                + history.getEstimateSize());
+
+        // print out the answer
+        Answer answer = history.getAnswer();
+        assertNotNull(answer);
+        System.out.println(answer.printAsTable());
     }
 }

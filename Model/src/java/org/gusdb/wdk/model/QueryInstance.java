@@ -2,6 +2,7 @@ package org.gusdb.wdk.model;
  
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -11,8 +12,6 @@ import java.util.Map;
  * to do most of the real implementation.
  */
 public abstract class QueryInstance {
-    
-    public static final String PARAM_CLOB_DIVIDER = "--WDK_CLOB_DIVIDER--";
 
     protected boolean isCacheable;
 
@@ -188,10 +187,19 @@ public abstract class QueryInstance {
     }
     
     public String getClobContent() {
+        // get parameter name list, and sort it
+        String[] paramNames = new String[values.size()];
+        values.keySet().toArray(paramNames);
+        Arrays.sort(paramNames);
+
+        // concatenate parameter name, type, and values
         StringBuffer content = new StringBuffer();
         content.append(query.getFullName());
-        for (String param : values.keySet()) {
-            content.append(PARAM_CLOB_DIVIDER + param + "=" + values.get(param));
+        for (String paramName : paramNames) {
+            content.append(WdkModel.PARAM_DIVIDER);
+            content.append(paramName);
+            content.append('=');
+            content.append(values.get(paramName));
         }
         return content.toString();
     }
@@ -222,7 +230,7 @@ public abstract class QueryInstance {
      * @return Returns the resultMessage.
      */
     public String getResultMessage() {
-        return resultMessage;
+        return (resultMessage == null) ? "": resultMessage;
     }
     
     /**
@@ -232,15 +240,15 @@ public abstract class QueryInstance {
         this.resultMessage = resultMessage;
     }
 
+    public Map<String, Object> getValuesMap() {
+        return values;
+    }
+
     public abstract String getLowLevelQuery() throws WdkModelException;
 
     // ------------------------------------------------------------------
     // Protected methods
     // ------------------------------------------------------------------
-
-    protected Map<String, Object> getValuesMap() {
-	return values;
-    }
 
     protected QueryInstance (Query query) {
 	this.query = query;

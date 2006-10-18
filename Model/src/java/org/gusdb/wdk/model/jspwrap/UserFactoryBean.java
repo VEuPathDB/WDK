@@ -33,8 +33,8 @@ public class UserFactoryBean {
      * 
      * @see org.gusdb.wdk.model.user.UserFactory#createGuestUser()
      */
-    public UserBean getGuestUser() {
-        return new UserBean(userFactory.getGuestUser());
+    public UserBean getGuestUser() throws WdkUserException, WdkModelException {
+        return new UserBean(userFactory.createGuestUser());
     }
 
     /*
@@ -84,20 +84,10 @@ public class UserFactoryBean {
      * @see org.gusdb.wdk.model.user.UserFactory#authenticate(java.lang.String,
      *      java.lang.String)
      */
-    public UserBean authenticate(String email, String password)
+    public UserBean login(UserBean guest, String email, String password)
             throws WdkModelException, WdkUserException {
-        User user = userFactory.authenticate(email, password);
+        User user = userFactory.login(guest.getUser(), email, password);
         return new UserBean(user);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.user.UserFactory#saveUser(org.gusdb.wdk.model.user.User)
-     */
-    public void saveUser(UserBean user) throws WdkModelException,
-            WdkUserException {
-        userFactory.saveUser(user.getUser());
     }
 
     /*
@@ -116,9 +106,9 @@ public class UserFactoryBean {
      * 
      * @see org.gusdb.wdk.model.user.UserFactory#resetPassword(org.gusdb.wdk.model.user.User)
      */
-    public void resetPassword(UserBean user) throws WdkUserException,
+    public void resetPassword(String email) throws WdkUserException,
             WdkModelException {
-        userFactory.resetPassword(user.getUser());
+        userFactory.resetPassword(email);
     }
 
     /*
@@ -131,4 +121,13 @@ public class UserFactoryBean {
         User user = userFactory.loadUser(email);
         return new UserBean(user);
     }
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.user.UserFactory#loadUser(int)
+     */
+    public UserBean loadUser(int userId) throws WdkUserException, WdkModelException {
+        User user = userFactory.loadUser(userId);
+        return new UserBean(user);
+    }
+    
 }
