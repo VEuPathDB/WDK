@@ -755,6 +755,8 @@ public class WdkModel {
         String minus = platform.getMinus();
         map.put("minus", minus);
         map.put("MINUS", minus);
+        map.put("not", minus);
+        map.put("NOT", minus);
         map.put("except", minus);
         map.put("EXCEPT", minus);
         map.put("-", minus);
