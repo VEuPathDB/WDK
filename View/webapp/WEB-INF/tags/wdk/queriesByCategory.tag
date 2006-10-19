@@ -49,11 +49,13 @@
       <tr><td colspan="4">&nbsp;</td></tr>
       <tr class="rowDark" width="100%"><td colspan="4" align="center"><b><a name='${cat}'>${cat}</a></b></td></tr>
 
+     <%-- Cristina reset per category, first rowMedium, then rowLight --%>    
+     <c:set var="i" value="0"/>
       <c:forEach items="${questions}" var="q">
         <c:set var="i" value="${i+1}"/>
         <c:choose>
-          <c:when test="${i % 2 == 1}"><tr class="rowLight"></c:when>
-          <c:otherwise><tr class="rowMedium"></c:otherwise>
+          <c:when test="${i % 2 == 1}"><tr class="rowMedium"></c:when>
+          <c:otherwise><tr class="rowLight"></c:otherwise>
         </c:choose>
   
         <td colspan="3">
