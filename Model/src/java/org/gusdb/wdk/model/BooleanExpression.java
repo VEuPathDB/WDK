@@ -55,7 +55,7 @@ public class BooleanExpression {
             WdkModelException {
         this.orgExp = expression;
         // TEST
-        System.out.println("Expression: " + expression);
+        // System.out.println("Expression: " + expression);
 
         // replace the literals in the expression
         Map<String, String> replace = new LinkedHashMap<String, String>();

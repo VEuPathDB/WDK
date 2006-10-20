@@ -35,12 +35,13 @@ import org.gusdb.wdk.model.jspwrap.UserBean;
 public class ShowSummaryAction extends ShowQuestionAction {
 
     private static Logger logger = Logger.getLogger(ShowSummaryAction.class);
-    
+
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         UserBean wdkUser = null;
         AnswerBean wdkAnswer = null;
+        HistoryBean history = null;
 
         String strHistId = request.getParameter(CConstants.WDK_HISTORY_ID_KEY);
         if (strHistId == null) {
@@ -50,7 +51,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             int historyId = Integer.parseInt(strHistId);
             wdkUser = (UserBean) request.getSession().getAttribute(
                     CConstants.WDK_USER_KEY);
-            HistoryBean history = wdkUser.getHistory(historyId);
+            history = wdkUser.getHistory(historyId);
             history.update();
             wdkAnswer = history.getAnswer();
             wdkAnswer = summaryPaging(request, null, null, wdkAnswer);
@@ -70,13 +71,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
             }
             if (wdkQuestion == null) {
                 String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
-                
-                // TEST
-                logger.info("Get Question by name: " + qFullName);
-                
-                if (qFullName != null) {
+                if (qFullName != null)
                     wdkQuestion = getQuestionByFullName(qFullName);
-                }
             }
             if (wdkQuestion == null) {
                 throw new RuntimeException(
@@ -97,10 +93,14 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 wdkUser = (UserBean) request.getSession().getAttribute(
                         CConstants.WDK_USER_KEY);
             }
-            HistoryBean history = wdkUser.createHistory(wdkAnswer);
+            history = wdkUser.createHistory(wdkAnswer);
 
             strHistId = Integer.toString(history.getHistoryId());
         }
+
+        // delete empty history
+        if (history != null && history.getEstimateSize() == 0)
+            wdkUser.deleteHistory(history.getHistoryId());
 
         // clear boolean root from session to prevent interference
         request.getSession().setAttribute(CConstants.CURRENT_BOOLEAN_ROOT_KEY,
@@ -170,7 +170,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
         String path = forward.getPath();
         if (path.indexOf("?") > 0) {
             if (path.indexOf(CConstants.WDK_HISTORY_ID_KEY) < 0) {
-                path += "&" + CConstants.WDK_HISTORY_ID_KEY + "=" + strHistoryId;
+                path += "&" + CConstants.WDK_HISTORY_ID_KEY + "="
+                        + strHistoryId;
             }
         } else {
             path += "?" + CConstants.WDK_HISTORY_ID_KEY + "=" + strHistoryId;

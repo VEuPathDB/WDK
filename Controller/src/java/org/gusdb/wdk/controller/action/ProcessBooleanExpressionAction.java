@@ -34,8 +34,7 @@ public class ProcessBooleanExpressionAction extends Action {
                         + userAnswerIdStr;
             }
         } else {
-            path += "?" + CConstants.WDK_HISTORY_ID_KEY + "="
-                    + userAnswerIdStr;
+            path += "?" + CConstants.WDK_HISTORY_ID_KEY + "=" + userAnswerIdStr;
         }
 
         return new ActionForward(path);
