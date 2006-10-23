@@ -8,7 +8,7 @@
 <!-- get wdkAnswer from requestScope -->
 <jsp:useBean id="wdkUser" scope="session" type="org.gusdb.wdk.model.jspwrap.UserBean"/>
 <c:set value="${requestScope.wdkAnswer}" var="wdkAnswer"/>
-<c:set var="ua_id" value="${requestScope.userAnswerId}"/>
+<c:set var="history_id" value="${requestScope.wdk_history_id}"/>
 
 <!-- display page header -->
 <site:header banner="Create and download a report" />
@@ -71,14 +71,14 @@
 <html:form method="get" action="configDownload">
   <table>
   <tr><td valign="top"><b>Columns:</b></td>
-      <td><input type="hidden" name="user_answer_id" value="${ua_id}"/>
+      <td><input type="hidden" name="wdk_history_id" value="${history_id}"/>
           <table>
           <c:set var="numPerLine" value="2"/>
           <c:set var="i" value="0"/>
 
           <tr><td colspan="${numPerLine}">
           <html:multibox property="selectedFields" onclick="uncheck(1);">all</html:multibox>
-          Default (same as in <a href="showSummary.do?user_answer_id=${ua_id}">result</a>), or...
+          Default (same as in <a href="showSummary.do?wdk_history_id=${history_id}">result</a>), or...
           </td></tr>
           <tr><td colspan="${numPerLine}">&nbsp;</td></tr>
 
