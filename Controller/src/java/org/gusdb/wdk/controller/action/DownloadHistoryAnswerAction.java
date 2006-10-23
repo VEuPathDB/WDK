@@ -30,6 +30,9 @@ public class DownloadHistoryAnswerAction extends Action {
 
     protected AnswerBean getAnswerBean(HttpServletRequest request) throws Exception {
 	String histIdstr = request.getParameter(CConstants.WDK_HISTORY_ID_KEY);
+    if (histIdstr == null) {
+        histIdstr = (String) request.getAttribute(CConstants.WDK_HISTORY_ID_KEY);
+    }
 	if (histIdstr != null) {
 	    int histId = Integer.parseInt(histIdstr);
         UserBean wdkUser = (UserBean)request.getSession().getAttribute(CConstants.WDK_USER_KEY);
@@ -47,7 +50,7 @@ public class DownloadHistoryAnswerAction extends Action {
 
 	    return wdkAnswer;
 	} else {
-	    throw new Exception ("no user answer id is given for which to download the result");
+	    throw new Exception ("no history id is given for which to download the result");
 	}
     }
 }
