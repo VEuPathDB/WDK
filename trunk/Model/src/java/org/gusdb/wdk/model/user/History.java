@@ -170,7 +170,11 @@ public class History {
     }
 
     public void update() throws WdkUserException {
-        factory.updateHistory(user, this);
+        factory.updateHistory(user, this, true);
+    }
+
+    public void update(boolean updateTime) throws WdkUserException {
+        factory.updateHistory(user, this, updateTime);
     }
 
     public boolean isDepended() throws WdkUserException, WdkModelException {

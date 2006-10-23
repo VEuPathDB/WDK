@@ -959,14 +959,15 @@ public class UserFactory {
      * @param history
      * @throws WdkUserException
      */
-    void updateHistory(User user, History history) throws WdkUserException {
+    void updateHistory(User user, History history, boolean updateTime)
+            throws WdkUserException {
         // check email existence
         if (!isExist(user.getEmail()))
             throw new WdkUserException("The user " + user.getEmail()
                     + " doesn't exist. Updating operation cancelled.");
 
         // update custom name
-        Date lastRunTime = new Date();
+        Date lastRunTime = (updateTime) ? new Date() : history.getLastRunTime();
         PreparedStatement psHistory = null;
         try {
             psHistory = SqlUtils.getPreparedStatement(dataSource, "UPDATE "

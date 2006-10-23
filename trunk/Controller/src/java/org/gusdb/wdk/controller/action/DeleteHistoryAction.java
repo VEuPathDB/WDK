@@ -15,7 +15,7 @@ import org.gusdb.wdk.model.jspwrap.UserBean;
  * 
  */
 
-public class DeleteHistoryAnswerAction extends Action {
+public class DeleteHistoryAction extends Action {
 
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
@@ -36,7 +36,7 @@ public class DeleteHistoryAnswerAction extends Action {
             throw new Exception("no user answer id is given for deletion");
         }
 
-        ActionForward forward = mapping.findForward(CConstants.DELETE_HISTORY_ANSWER_MAPKEY);
+        ActionForward forward = mapping.findForward(CConstants.DELETE_HISTORY_MAPKEY);
 
         return forward;
     }

@@ -24,6 +24,7 @@ public class CConstants {
     public static final String WDK_ANSWER_KEY = "wdkAnswer";
     public static final String WDK_RECORD_KEY = "wdkRecord";
     public static final String WDK_HISTORY_ID_KEY = "wdk_history_id";
+    public static final String WDK_HISTORY_CUSTOM_NAME_KEY = "wdk_custom_name";
     public static final String NEXT_QUESTION_OPERAND = "nextQuestionOperand";
     public static final String QUESTIONFORM_KEY = "questionForm";
     public static final String BOOLEAN_QUESTION_FORM_KEY = "booleanQuestionForm";
@@ -70,7 +71,8 @@ public class CConstants {
     public static final String GET_DOWNLOAD_RESULT_MAPKEY = "get_download_result";
     public static final String SHOW_QUERY_HISTORY_MAPKEY = "show_query_history";
     public static final String DOWNLOAD_HISTORY_ANSWER_MAPKEY = "download_history_answer";
-    public static final String DELETE_HISTORY_ANSWER_MAPKEY = "delete_history_answer";
+    public static final String DELETE_HISTORY_MAPKEY = "delete_history";
+    public static final String RENAME_HISTORY_MAPKEY = "rename_history";
     public static final String PROCESS_BOOLEAN_EXPRESSION_MAPKEY = "process_boolean_expression";
     public static final String SHOW_XMLDATA_LIST_MAPKEY = "show_xmldata_list";
     public static final String SHOW_XMLDATA_CONTENT_MAPKEY = "show_xmldata_content";

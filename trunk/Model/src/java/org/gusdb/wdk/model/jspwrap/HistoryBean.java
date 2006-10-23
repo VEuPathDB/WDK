@@ -120,10 +120,19 @@ public class HistoryBean {
     public void update() throws WdkUserException {
         history.update();
     }
-    
-    
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.History#update(boolean)
+     */
+    public void update(boolean updateTime) throws WdkUserException {
+        history.update(updateTime);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.user.History#isDepended()
      */
     public boolean getDepended() throws WdkUserException, WdkModelException {
@@ -159,5 +168,12 @@ public class HistoryBean {
         if (name.length() > nameTruncateTo)
             name = name.substring(0, nameTruncateTo) + "...";
         return name;
+    }
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.user.History#setCustomName(java.lang.String)
+     */
+    public void setCustomName(String customName) {
+        history.setCustomName(customName);
     }
 }
