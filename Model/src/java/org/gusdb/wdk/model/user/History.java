@@ -3,7 +3,10 @@
  */
 package org.gusdb.wdk.model.user;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.gusdb.wdk.model.Answer;
@@ -27,6 +30,7 @@ public class History {
     private int estimateSize;
     private boolean isBoolean;
     private String booleanExpression;
+    private int[] dependencies = null;
 
     History(UserFactory factory, User user, int historyId) {
         this.factory = factory;
@@ -59,11 +63,12 @@ public class History {
      *         combination of question's full name, parameter names and values.
      */
     public String getCustomName() {
-        if (customName == null) {
-            customName = (isBoolean) ? booleanExpression : answer.getName();
+        if (customName == null && isBoolean) customName = booleanExpression;
+        if (customName != null && customName.length() > 4000) {
+            return customName.substring(0, 4000);
+        } else {
+            return customName;
         }
-        if (customName.length() > 4000) return customName.substring(0, 4000);
-        else return customName;
     }
 
     /**
@@ -72,6 +77,11 @@ public class History {
      */
     public void setCustomName(String customName) {
         this.customName = customName;
+    }
+
+    public String getDefaultName() {
+        String name = getCustomName();
+        return (name == null) ? answer.getName() : name;
     }
 
     /**
@@ -178,14 +188,54 @@ public class History {
     }
 
     public boolean isDepended() throws WdkUserException, WdkModelException {
-        History[] histories = user.getHistories();
+        int[] array = getDependencies();
+        return (array.length != 0);
+    }
+
+    public int[] getDependencies() throws WdkUserException, WdkModelException {
+        if (dependencies == null) computeDependencies(user.getHistories());
+        return dependencies;
+    }
+
+    void computeDependencies(History[] histories) {
+        Set<Integer> dependencies = new LinkedHashSet<Integer>();
+        List<History> candidates = new ArrayList<History>();
         BooleanExpression expression = new BooleanExpression(user);
+
+        // initialize container
+        dependencies.add(historyId);
         for (History history : histories) {
-            if (history.isBoolean()) {
-                Set<Integer> depends = expression.getOperands(history.getBooleanExpression());
-                if (depends.contains(historyId)) return true;
-            }
+            if (history.getHistoryId() != historyId && history.isBoolean())
+                candidates.add(history);
         }
-        return false;
+
+        // iterate till no new dependencies are added
+        boolean updated = true;
+        while (updated) {
+            int previousSize = dependencies.size();
+            List<History> newCandidates = new ArrayList<History>();
+            for (History history : candidates) {
+                Set<Integer> depends = expression.getOperands(history.getBooleanExpression());
+                for (int histId : depends) {
+                    if (dependencies.contains(histId)) {
+                        dependencies.add(history.getHistoryId());
+                    }
+                }
+                // check if the history is still a candidate, that is, it's not
+                // in the dependencies list
+                if (!dependencies.contains(history.getHistoryId()))
+                    newCandidates.add(history);
+            }
+            candidates = newCandidates;
+            // check if there's update on dependencies
+            updated = (dependencies.size() != previousSize);
+        }
+        // skip the history id of itself
+        this.dependencies = new int[dependencies.size() - 1];
+        int i = 0;
+        for (int histId : dependencies) {
+            if (histId == historyId) continue;
+            this.dependencies[i++] = histId;
+        }
     }
 }
