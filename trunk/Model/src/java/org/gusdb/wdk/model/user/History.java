@@ -63,13 +63,18 @@ public class History {
      *         combination of question's full name, parameter names and values.
      */
     public String getCustomName() {
-        if (customName == null && isBoolean) customName = booleanExpression;
-        if (customName != null && customName.length() > 4000) {
-            return customName.substring(0, 4000);
-        } else {
-            return customName;
+        String name = customName;
+        if (name == null && isBoolean) name = booleanExpression;
+        if (name != null) {
+            // remove script injections
+            name = name.replaceAll("<.+?>", " ");
+            name = name.replaceAll("['\"]", " ");
+            name = name.replaceAll("\\s+?", " ");
+            if (name.length() > 4000) 
+                name = name.substring(0, 4000);
         }
-    }
+        return name;
+   }
 
     /**
      * @param customName
