@@ -4,6 +4,7 @@
 package org.gusdb.wdk.model.user;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -64,17 +65,17 @@ public class History {
      */
     public String getCustomName() {
         String name = customName;
-        if (name == null && isBoolean) name = booleanExpression;
+        if (name == null)
+            name = (isBoolean) ? booleanExpression : answer.getName();
         if (name != null) {
             // remove script injections
             name = name.replaceAll("<.+?>", " ");
             name = name.replaceAll("['\"]", " ");
             name = name.replaceAll("\\s+?", " ");
-            if (name.length() > 4000) 
-                name = name.substring(0, 4000);
+            if (name.length() > 4000) name = name.substring(0, 4000);
         }
         return name;
-   }
+    }
 
     /**
      * @param customName
@@ -82,11 +83,6 @@ public class History {
      */
     public void setCustomName(String customName) {
         this.customName = customName;
-    }
-
-    public String getDefaultName() {
-        String name = getCustomName();
-        return (name == null) ? answer.getName() : name;
     }
 
     /**
@@ -242,5 +238,10 @@ public class History {
             if (histId == historyId) continue;
             this.dependencies[i++] = histId;
         }
+        Arrays.sort(this.dependencies);
+    }
+    
+    public String getDescription() {
+        return (isBoolean)? booleanExpression : answer.getName();
     }
 }

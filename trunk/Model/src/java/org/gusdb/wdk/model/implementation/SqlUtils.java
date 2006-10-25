@@ -39,18 +39,18 @@ public class SqlUtils {
      */
     private static boolean debug = false;
 
+    /*
+     * set this variable to true will start a separate thread to monitor the
+     * connection usage
+     */
+    private static boolean createShowThread = false;
+
     // private static final Logger logger =
     // WdkLogManager.getLogger("org.gusdb.wdk.model.implementation.SqlUtils");
     /*
      * log major steps to trace later
      */
     private static final Logger logger = Logger.getLogger(SqlUtils.class);
-
-    /*
-     * set this variable to true will start a separate thread to monitor the
-     * connection usage
-     */
-    private static boolean createShowThread = false;
 
     /*
      * private static BufferedWriter getOut(String name) { //private static File
@@ -418,13 +418,13 @@ public class SqlUtils {
             Thread t = new Thread() {
 
                 public void run() {
-                    logger.debug("Logging connections.");
+                    logger.info("Logging connections.");
                     while (true) {
                         WdkModel model = WdkModel.INSTANCE;
                         if (model != null) {
                             RDBMSPlatformI platform = model.getPlatform();
                             if (platform != null)
-                                logger.debug("Connections: ("
+                                logger.info("Connections: ("
                                         + platform.getActiveCount() + ", "
                                         + platform.getIdleCount() + ")");
                         }

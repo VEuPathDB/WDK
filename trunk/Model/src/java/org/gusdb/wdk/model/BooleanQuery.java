@@ -96,7 +96,8 @@ public class BooleanQuery extends Query {
 	
 	StringParam operation = new StringParam();
 	operation.setName(OPERATION_PARAM_NAME);
-	operation.setFullName(BOOLEAN_PARAM_SET_NAME);
+    operation.setFullName(BOOLEAN_PARAM_SET_NAME);
+    operation.setPrompt(OPERATION_PARAM_NAME);
 	addParam(operation);
     }
     
