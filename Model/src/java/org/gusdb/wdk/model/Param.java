@@ -44,6 +44,7 @@ public abstract class Param {
     }
 
     public String getPrompt() {
+        if (prompt == null) return name;
         return prompt;
     }
 
@@ -52,6 +53,7 @@ public abstract class Param {
     }
 
     public String getHelp() {
+        if (help == null) return getPrompt();
         return help;
     }
 
