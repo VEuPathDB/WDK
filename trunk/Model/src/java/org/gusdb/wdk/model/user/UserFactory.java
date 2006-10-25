@@ -710,8 +710,9 @@ public class UserFactory {
         try {
             PreparedStatement psMax = SqlUtils.getPreparedStatement(dataSource,
                     "SELECT max(history_id) AS maxId FROM " + loginSchema
-                            + "histories WHERE user_id = ?");
+                            + "histories WHERE user_id = ? AND project_id = ?");
             psMax.setInt(1, userId);
+            psMax.setString(2, projectId);
             rsMax = psMax.executeQuery();
             if (rsMax.next()) maxId = rsMax.getInt("maxId");
         } catch (SQLException ex) {
@@ -769,6 +770,12 @@ public class UserFactory {
                 }
                 history.setAnswer(answer);
                 histories.put(historyId, history);
+            }
+            // now compute the dependencies of the histories
+            History[] array = new History[histories.size()];
+            histories.values().toArray(array);
+            for (History history : histories.values()) {
+                history.computeDependencies(array);
             }
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
@@ -873,8 +880,8 @@ public class UserFactory {
         String questionName = answer.getQuestion().getFullName();
 
         boolean isBoolean = answer.getIsBoolean();
-        String customName = (isBoolean) ? booleanExpression : answer.getName();
-        if (customName.length() > 4000)
+        String customName = (isBoolean) ? booleanExpression : null;
+        if (customName != null && customName.length() > 4000)
             customName = customName.substring(0, 4000);
 
         int estimateSize = answer.getResultSize();

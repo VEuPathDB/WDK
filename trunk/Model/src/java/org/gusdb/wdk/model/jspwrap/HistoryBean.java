@@ -49,6 +49,13 @@ public class HistoryBean {
         return history.getCustomName();
     }
 
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.user.History#getDefaultName()
+     */
+    public String getDefaultName() {
+        return history.getDefaultName();
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -139,6 +146,17 @@ public class HistoryBean {
         return history.isDepended();
     }
 
+    public String getDependencyString() throws WdkUserException,
+            WdkModelException {
+        int[] depends = history.getDependencies();
+        StringBuffer sb = new StringBuffer();
+        if (depends.length > 0) sb.append("#" + depends[0]);
+        for (int i = 1; i < depends.length; i++) {
+            sb.append(", #" + depends[i]);
+        }
+        return sb.toString();
+    }
+
     /**
      * @return
      * @throws WdkUserException
@@ -164,13 +182,15 @@ public class HistoryBean {
     }
 
     public String getTruncatedName() {
-        String name = history.getCustomName();
+        String name = history.getDefaultName();
         if (name.length() > nameTruncateTo)
             name = name.substring(0, nameTruncateTo) + "...";
         return name;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.user.History#setCustomName(java.lang.String)
      */
     public void setCustomName(String customName) {
