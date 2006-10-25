@@ -49,13 +49,6 @@ public class HistoryBean {
         return history.getCustomName();
     }
 
-    /* (non-Javadoc)
-     * @see org.gusdb.wdk.model.user.History#getDefaultName()
-     */
-    public String getDefaultName() {
-        return history.getDefaultName();
-    }
-
     /*
      * (non-Javadoc)
      * 
@@ -182,7 +175,7 @@ public class HistoryBean {
     }
 
     public String getTruncatedName() {
-        String name = history.getDefaultName();
+        String name = history.getCustomName();
         if (name.length() > nameTruncateTo)
             name = name.substring(0, nameTruncateTo) + "...";
         return name;
@@ -195,5 +188,12 @@ public class HistoryBean {
      */
     public void setCustomName(String customName) {
         history.setCustomName(customName);
+    }
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.user.History#getDescription()
+     */
+    public String getDescription() {
+        return history.getDescription();
     }
 }

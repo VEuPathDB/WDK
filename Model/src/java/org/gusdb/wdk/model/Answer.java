@@ -580,7 +580,7 @@ public class Answer {
             Object value = paramValues.get(paramName);
             if (first) first = false;
             else nameBuf.append(", ");
-            nameBuf.append("<b>" + param.getPrompt() + "</b>=" + value);
+            nameBuf.append(param.getPrompt() + "=(" + value + ")");
         }
         return nameBuf.toString();
     }
