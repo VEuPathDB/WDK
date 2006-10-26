@@ -40,7 +40,7 @@
             <!-- display description -->
             <tr><td colspan="2">
                 <img alt="spacer" width="12" height="16" src="<c:url value="/images/booleanBullet.gif" />">
-                <b><jsp:getProperty name="wdkQ" property="description"/></b></td></tr>
+                <b><jsp:getProperty name="wdkQ" property="displayName"/></b></td></tr>
 
             <!-- display params -->
             <c:forEach items="${qParams}" var="qP">
