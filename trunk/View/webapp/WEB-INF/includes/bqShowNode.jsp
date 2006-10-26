@@ -22,14 +22,14 @@
     </c:when>	
     <c:otherwise>
 
-         <table border="0">
+         <table border="0" width="100%">
             <!-- Print out question -->
             <nested:define id="wdkQ" property="question"/>
             <nested:define id="answerParams" property="params"/>
 
             <!-- display description -->
             <tr><td colspan="2">
-                <b><jsp:getProperty name="wdkQ" property="description"/></b></td></tr>
+                <b><jsp:getProperty name="wdkQ" property="displayName"/></b></td></tr>
 
             <!-- display params -->
             <c:forEach items="${answerParams}" var="aP">
