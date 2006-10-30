@@ -58,7 +58,8 @@ public class WdkUserException extends Exception {
 
         String newline = System.getProperty("line.separator");
         StringBuffer buf = new StringBuffer(newline);
-        if (getMessage() != null) buf.append(getMessage() + newline);
+        String message = super.getMessage();
+        if (message != null) buf.append(message + newline);
         if (booBoos != null) {
             Iterator keys = booBoos.keySet().iterator();
             while (keys.hasNext()) {
@@ -71,4 +72,11 @@ public class WdkUserException extends Exception {
         return buf.toString();
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Throwable#getMessage()
+     */
+    @Override
+    public String getMessage() {
+        return formatErrors();
+    }
 }
