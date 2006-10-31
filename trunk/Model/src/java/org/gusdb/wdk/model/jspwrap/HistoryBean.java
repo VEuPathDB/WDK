@@ -5,6 +5,7 @@ package org.gusdb.wdk.model.jspwrap;
 
 import java.util.Date;
 
+import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.History;
@@ -156,7 +157,11 @@ public class HistoryBean {
      * @see org.gusdb.wdk.model.user.History#getAnswer()
      */
     public AnswerBean getAnswer() throws WdkUserException {
-        return new AnswerBean(history.getAnswer());
+        Answer answer = history.getAnswer();
+        AnswerBean answerBean = new AnswerBean(answer);
+        if (answer.getIsBoolean())
+            answerBean.customName = history.getCustomName();
+        return answerBean;
     }
 
     /**
@@ -190,7 +195,9 @@ public class HistoryBean {
         history.setCustomName(customName);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.user.History#getDescription()
      */
     public String getDescription() {
