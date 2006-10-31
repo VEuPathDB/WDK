@@ -23,8 +23,7 @@ public class AnswerBean {
     Answer answer;
     Map downloadConfigMap = null;
 
-    boolean isCombinedAnswer = false;
-    String userAnswerName = null;
+    String customName = null;
 
     public AnswerBean(Answer answer) {
         this.answer = answer;
@@ -238,20 +237,12 @@ public class AnswerBean {
         return downloadAttribNames;
     }
 
-    public void setIsCombinedAnswer(boolean isComAns) {
-        isCombinedAnswer = isComAns;
+    public void setCustomName(String name) {
+        customName = name;
     }
 
-    public boolean getIsCombinedAnswer() {
-        return isCombinedAnswer;
-    }
-
-    public void setUserAnswerName(String ua) {
-        userAnswerName = ua;
-    }
-
-    public String getUserAnswerName() {
-        return userAnswerName;
+    public String getCustomName() {
+        return customName;
     }
 
     public boolean getIsDynamic() {
