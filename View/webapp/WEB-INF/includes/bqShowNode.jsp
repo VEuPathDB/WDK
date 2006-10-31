@@ -10,32 +10,41 @@
   <nested:define id="isNode" property="isBoolean"/> 
   <c:choose>
     <c:when test="${isNode}">
-    <nested:write property="booleanOperation"/><br>
-    <nested:nest property="firstChildAnswer">
-      <jsp:include page="/WEB-INF/includes/bqShowNode.jsp"/>
-    </nested:nest>
-
-    <nested:nest property="secondChildAnswer">
-      <jsp:include page="/WEB-INF/includes/bqShowNode.jsp"/>
-    </nested:nest>
-
+    <div>
+       <nested:write property="booleanOperation"/><br>
+       <nested:nest property="firstChildAnswer">
+          <jsp:include page="/WEB-INF/includes/bqShowNode.jsp"/>
+       </nested:nest>
+    </div>
+    <p>
+       <nested:nest property="secondChildAnswer">
+          <jsp:include page="/WEB-INF/includes/bqShowNode.jsp"/>
+       </nested:nest>
+    </p>
     </c:when>	
     <c:otherwise>
 
-         <table border="0" width="100%">
+         <table border="0" cellpadding="0" cellspacing="0" width="100%">
             <!-- Print out question -->
             <nested:define id="wdkQ" property="question"/>
             <nested:define id="answerParams" property="params"/>
 
             <!-- display description -->
             <tr><td colspan="2">
-                <b><jsp:getProperty name="wdkQ" property="displayName"/></b></td></tr>
+                <b><jsp:getProperty name="wdkQ" property="displayName"/></b>
+            </td></tr>
 
             <!-- display params -->
-            <c:forEach items="${answerParams}" var="aP">
-               <tr><td align="right">
-                   ${aP.key}=${aP.value}</td></tr>
-           </c:forEach>
+            <tr><td>
+               <table border="0" cellpadding="0" cellspacing="0">
+                 <c:forEach items="${answerParams}" var="aP">
+                   <tr>
+                      <td align="right"><i>${aP.key}&nbsp;=&nbsp;</i></td>
+                      <td>${aP.value}</td>
+                   </tr>
+                 </c:forEach>
+               </table>
+            </td></tr>
          </table>
 
     </c:otherwise>

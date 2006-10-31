@@ -35,7 +35,7 @@
 
       <!-- put an anchor here for linking back from help sections -->
       <A name="${fromAnchorQ}"></A>
-         <table border="0">
+         <table>
             <!-- Print out question -->
             <!-- display description -->
             <tr><td colspan="2">
