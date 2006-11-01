@@ -3,8 +3,8 @@
  */
 package org.gusdb.wdk.model.test;
 
-import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -99,7 +99,7 @@ public class JUnitBooleanExpressionTest extends TestCase {
             String type = question.getRecordClass().getFullName();
 
             if (!sqSets.containsKey(type))
-                sqSets.put(type, new HashSet<SanityQuestion>());
+                sqSets.put(type, new LinkedHashSet<SanityQuestion>());
             sqSet = sqSets.get(type);
             sqSet.add(sq);
         }
