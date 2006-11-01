@@ -1,6 +1,6 @@
 package org.gusdb.wdk.controller.action;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Vector;
 
@@ -36,7 +36,7 @@ public class BooleanQuestionForm extends QuestionForm {
     private String nextBooleanOperation;
     private String nextQuestionOperand;
 
-    public static Map booleanOperatorMap = new HashMap<String, String>();
+    public static Map<String, String> booleanOperatorMap = new LinkedHashMap<String, String>();
     {
 	booleanOperatorMap.put("union", BooleanQuestionNodeBean.INTERNAL_OR);
 	booleanOperatorMap.put("intersect", BooleanQuestionNodeBean.INTERNAL_AND);

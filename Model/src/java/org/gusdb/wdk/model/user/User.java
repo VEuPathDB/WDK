@@ -5,7 +5,6 @@ package org.gusdb.wdk.model.user;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -66,8 +65,8 @@ public class User {
 
         userRoles = new LinkedHashSet<String>();
 
-        globalPreferences = new HashMap<String, String>();
-        projectPreferences = new HashMap<String, String>();
+        globalPreferences = new LinkedHashMap<String, String>();
+        projectPreferences = new LinkedHashMap<String, String>();
     }
 
     public WdkModel getWdkModel() {
@@ -521,7 +520,7 @@ public class User {
     }
 
     public Map<String, String> getProjectPreferences() {
-        return new HashMap<String, String>(projectPreferences);
+        return new LinkedHashMap<String, String>(projectPreferences);
     }
 
     public String getProjectPreference(String key) {
@@ -542,7 +541,7 @@ public class User {
     }
 
     public Map<String, String> getGlobalPreferences() {
-        return new HashMap<String, String>(globalPreferences);
+        return new LinkedHashMap<String, String>(globalPreferences);
     }
 
     public void clearPreferences() {

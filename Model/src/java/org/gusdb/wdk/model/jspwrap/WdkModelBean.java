@@ -1,12 +1,10 @@
 package org.gusdb.wdk.model.jspwrap;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Vector;
 
-import org.gusdb.wdk.model.EnumParam;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
 import org.gusdb.wdk.model.RecordClass;
@@ -14,7 +12,6 @@ import org.gusdb.wdk.model.RecordClassSet;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.user.DatasetFactory;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
 import org.gusdb.wdk.model.xml.XmlRecordClassSet;
 
@@ -159,7 +156,7 @@ public class WdkModelBean  {
 
     public Map<String, String> getRecordClassTypes() {
         RecordClassBean[] recClasses = getRecordClasses();
-        Map<String, String> types = new HashMap<String, String>();
+        Map<String, String> types = new LinkedHashMap<String, String>();
         for (RecordClassBean r : recClasses) {
             types.put(r.getFullName(), r.getType());
         }

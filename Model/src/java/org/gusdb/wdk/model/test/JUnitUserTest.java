@@ -96,7 +96,7 @@ public class JUnitUserTest extends TestCase {
     }
 
     public void testCreateHistory() {
-    // Set<Integer> ids = new HashSet<Integer>();
+    // Set<Integer> ids = new LinkedHashSet<Integer>();
     // for (int i = 0; i < answers.length; i++) {
     // String qname = answers[i].getQuestion().getName();
     // try {

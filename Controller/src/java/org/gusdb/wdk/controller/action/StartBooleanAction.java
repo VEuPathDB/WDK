@@ -1,7 +1,6 @@
 package org.gusdb.wdk.controller.action;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.LinkedHashMap;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -28,9 +27,9 @@ public class StartBooleanAction extends Action{
 				 HttpServletResponse response) throws Exception {
 
 	    BooleanQuestionForm bqf = new BooleanQuestionForm();
-	    bqf.setMyProps(new HashMap());
-	    bqf.setMyLabels(new HashMap());
-	    bqf.setMyValues(new HashMap());
+	    bqf.setMyProps(new LinkedHashMap());
+	    bqf.setMyLabels(new LinkedHashMap());
+	    bqf.setMyValues(new LinkedHashMap());
 	    ActionServlet servlet = getServlet();
 	    bqf.setServlet(servlet);
 	
