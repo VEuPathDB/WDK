@@ -6,7 +6,7 @@ package org.gusdb.wdk.model.test;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.rmi.RemoteException;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.xml.rpc.ServiceException;
@@ -30,7 +30,7 @@ public class WsfClientTest {
     private static Map<String, Boolean> knownParams;
 
     static {
-        knownParams = new HashMap<String, Boolean>();
+        knownParams = new LinkedHashMap<String, Boolean>();
         knownParams.put("url", true);
         knownParams.put("pluginclass", true);
         knownParams.put("params", true);
@@ -74,7 +74,7 @@ public class WsfClientTest {
     }
 
     private static Map<String, String> parseParameter(String[] args) {
-        Map<String, String> params = new HashMap<String, String>();
+        Map<String, String> params = new LinkedHashMap<String, String>();
         for (int i = 0; i < args.length; i++) {
             if (args[i].charAt(0) == '-') {
                 String param = args[i].substring(1).trim().toLowerCase();

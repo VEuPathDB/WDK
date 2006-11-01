@@ -4,7 +4,6 @@
 package org.gusdb.wdk.model.test;
 
 import java.net.MalformedURLException;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -138,8 +137,8 @@ public class UserFactoryTest extends TestCase {
             User user = factory.createUser(email, "Gao", "Jerric", "", "Mr.",
                     "UGA", "Biology", "C210 Life Science", "Athens", "GA",
                     "36302", "706-542-1447", "USA",
-                    new HashMap<String, String>(),
-                    new HashMap<String, String>());
+                    new LinkedHashMap<String, String>(),
+                    new LinkedHashMap<String, String>());
             factory.savePassword(email, password);
             assertNotNull(user);
             assertFalse(user.isGuest());
@@ -258,7 +257,7 @@ public class UserFactoryTest extends TestCase {
             Map<String, Boolean> knownParams) {
 
         // get the parameters
-        Map<String, String> params = new HashMap<String, String>();
+        Map<String, String> params = new LinkedHashMap<String, String>();
 
         // there must be even number of args, the key value pairs
         if (args.length % 2 != 0) {
@@ -345,8 +344,8 @@ public class UserFactoryTest extends TestCase {
         try {
             factory.createUser(email, lastName, firstName, middleName, title,
                     organization, department, address, city, state, zipCode,
-                    phoneNumber, country, new HashMap<String, String>(),
-                    new HashMap<String, String>());
+                    phoneNumber, country, new LinkedHashMap<String, String>(),
+                    new LinkedHashMap<String, String>());
             // now save the password
             factory.savePassword(email, password);
 

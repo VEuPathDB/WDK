@@ -4,7 +4,7 @@
 package org.gusdb.wdk.controller.action;
 
 import java.io.File;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -46,8 +46,8 @@ public class ProcessRegisterAction extends Action {
         }
 
         String email = null, firstName = null, lastName = null, middleName = null, title = null, organization = null, department = null, address = null, city = null, state = null, zipCode = null, phoneNumber = null, country = null;
-        Map<String, String> globalPreferences = new HashMap<String, String>();
-        Map<String, String> projectPreferences = new HashMap<String, String>();
+        Map<String, String> globalPreferences = new LinkedHashMap<String, String>();
+        Map<String, String> projectPreferences = new LinkedHashMap<String, String>();
 
         Set params = request.getParameterMap().keySet();
         for (Object param : params) {

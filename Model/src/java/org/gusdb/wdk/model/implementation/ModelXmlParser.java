@@ -9,9 +9,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.Enumeration;
-import java.util.Properties;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.HashMap;
+import java.util.Properties;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -668,7 +668,7 @@ public class ModelXmlParser {
     }
 
     static Map<String, String> getPropMap(URL modelPropURL)  throws WdkModelException {
-	Map<String, String> propMap = new HashMap<String, String>();
+	Map<String, String> propMap = new LinkedHashMap<String, String>();
         try {
 	    Properties properties = new Properties();
 	    properties.load(modelPropURL.openStream());
