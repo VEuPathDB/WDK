@@ -15,6 +15,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -78,6 +79,17 @@ public class UserFactory {
 
         public String getName() {
             return "JAF text/html dataSource to send e-mail only";
+        }
+    }
+
+    static class HistoryKey {
+
+        public int userId;
+        public int historyId;
+
+        public HistoryKey(int userId, int historyId) {
+            this.userId = userId;
+            this.historyId = historyId;
         }
     }
 
@@ -703,6 +715,38 @@ public class UserFactory {
         }
     }
 
+    public void deleteExpiredUsers(int hoursSinceActive)
+            throws WdkUserException, WdkModelException {
+        ResultSet rsUser = null;
+        try {
+            // construct time
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.HOUR_OF_DAY, -hoursSinceActive);
+            Timestamp timestamp = new Timestamp(calendar.getTime().getTime());
+
+            PreparedStatement psUser = SqlUtils.getPreparedStatement(
+                    dataSource, "SELECT email FROM " + loginSchema + "users "
+                            + "WHERE email " + "LIKE '" + GUEST_USER_PREFIX
+                            + "%' AND last_active < ?");
+            psUser.setTimestamp(1, timestamp);
+            rsUser = psUser.executeQuery();
+            int count = 0;
+            while (rsUser.next()) {
+                deleteUser(rsUser.getString("email"));
+                count++;
+            }
+            System.out.println("Deleted " + count + " expired users.");
+        } catch (SQLException ex) {
+            throw new WdkUserException(ex);
+        } finally {
+            try {
+                SqlUtils.closeResultSet(rsUser);
+            } catch (SQLException ex) {
+                throw new WdkUserException(ex);
+            }
+        }
+    }
+
     private int getMaxHistoryId(int userId) throws WdkUserException {
         int maxId = 0;
         // get the max id from the history storage
@@ -1044,6 +1088,56 @@ public class UserFactory {
         } finally {
             try {
                 SqlUtils.closeStatement(psHistory);
+            } catch (SQLException ex) {
+                throw new WdkUserException(ex);
+            }
+        }
+    }
+
+    public void deleteInvalidHistories(Map<String, String> signatures)
+            throws WdkUserException {
+        ResultSet rsHistory = null;
+        PreparedStatement psDelete = null;
+        try {
+            // get invalid histories
+            PreparedStatement psHistory = SqlUtils.getPreparedStatement(
+                    dataSource, "SELECT user_id, history_id, question_name, "
+                            + "signature FROM " + loginSchema + "histories "
+                            + "where project_id = ?");
+            psHistory.setString(1, projectId);
+            rsHistory = psHistory.executeQuery();
+            List<HistoryKey> histories = new ArrayList<HistoryKey>();
+            while (rsHistory.next()) {
+                int userId = rsHistory.getInt("user_id");
+                int historyId = rsHistory.getInt("history_id");
+                String questionName = rsHistory.getString("question_name");
+                String signature = rsHistory.getString("signature");
+                if (!signatures.containsKey(questionName)) {
+                    histories.add(new HistoryKey(userId, historyId));
+                } else if (!signature.equals(signatures.get(questionName))) {
+                    histories.add(new HistoryKey(userId, historyId));
+                }
+            }
+            
+            System.out.print(histories.size() + " invalid Histories found. Deleting them...");
+
+            // delete invalid histories
+            psDelete = SqlUtils.getPreparedStatement(dataSource, "DELETE FROM "
+                    + loginSchema + "histories WHERE user_id = ? AND "
+                    + "project_id = ? AND history_id = ?");
+            for (HistoryKey history : histories) {
+                psDelete.setInt(1, history.userId);
+                psDelete.setString(2, projectId);
+                psDelete.setInt(3, history.historyId);
+                psDelete.executeUpdate();
+            }
+            System.out.println("done.");
+        } catch (SQLException ex) {
+            throw new WdkUserException(ex);
+        } finally {
+            try {
+                SqlUtils.closeResultSet(rsHistory);
+                SqlUtils.closeStatement(psDelete);
             } catch (SQLException ex) {
                 throw new WdkUserException(ex);
             }

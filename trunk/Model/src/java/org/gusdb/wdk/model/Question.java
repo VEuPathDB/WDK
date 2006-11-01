@@ -343,4 +343,8 @@ public class Question implements Serializable {
         
         return question;
     }
+    
+    public String getSignature() throws WdkModelException {
+        return query.getSignature();
+    }
 }
