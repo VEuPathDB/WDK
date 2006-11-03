@@ -20,10 +20,10 @@
 <table>
 
 <c:choose>
-  <c:when test="${wdkAnswer.isCombinedAnswer}">
+  <c:when test="${wdkAnswer.isBoolean}">
     <!-- combined answer from history boolean expression -->
     <tr><td valign="top" align="left"><b>Combined Answer:</b></td>
-        <td valign="top" align="left">${wdkAnswer.userAnswerName}</td></tr>
+        <td valign="top" align="left">${wdkAnswer.customName}</td></tr>
   </c:when>
   <c:otherwise>
 
