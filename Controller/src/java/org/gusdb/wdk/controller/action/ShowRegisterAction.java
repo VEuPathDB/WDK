@@ -15,6 +15,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.model.jspwrap.UserBean;
 
 /**
  * @author xingao
@@ -30,12 +31,28 @@ public class ShowRegisterAction extends Action {
         String customViewDir = (String) svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
         String customViewFile = customViewDir + File.separator
                 + CConstants.WDK_CUSTOM_REGISTER_PAGE;
+        
+        UserBean wdkUser = (UserBean) request.getSession().getAttribute(
+                CConstants.WDK_USER_KEY);
+        
         ActionForward forward = null;
-        if (ApplicationInitListener.resourceExists(customViewFile, svltCtx)) {
-            forward = new ActionForward(customViewFile);
-            forward.setRedirect(false);
+        if (wdkUser != null && !wdkUser.getGuest()) {
+            String customProfileViewFile = customViewDir + File.separator
+                    + CConstants.WDK_CUSTOM_PROFILE_PAGE;
+            if (ApplicationInitListener.resourceExists(customProfileViewFile,
+                    svltCtx)) {
+                forward = new ActionForward(customProfileViewFile);
+                forward.setRedirect(true);
+            } else {
+                forward = mapping.findForward(CConstants.SHOW_PROFILE_MAPKEY);
+            }
         } else {
-            forward = mapping.findForward(CConstants.SHOW_REGISTER_MAPKEY);
+            if (ApplicationInitListener.resourceExists(customViewFile, svltCtx)) {
+                forward = new ActionForward(customViewFile);
+                forward.setRedirect(false);
+            } else {
+                forward = mapping.findForward(CConstants.SHOW_REGISTER_MAPKEY);
+            }
         }
 
         return forward;

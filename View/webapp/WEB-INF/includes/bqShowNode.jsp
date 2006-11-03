@@ -39,7 +39,8 @@
                <table border="0" cellpadding="0" cellspacing="0">
                  <c:forEach items="${answerParams}" var="aP">
                    <tr>
-                      <td align="right"><i>${aP.key}&nbsp;=&nbsp;</i></td>
+                      <td align="right" width="200"><i>${aP.key}</i></td>
+                      <td>&nbsp;=&nbsp;</td>
                       <td>${aP.value}</td>
                    </tr>
                  </c:forEach>
