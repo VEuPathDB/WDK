@@ -569,19 +569,20 @@ public class Answer {
      */
     public String getName() {
         StringBuffer nameBuf = new StringBuffer();
-        nameBuf.append(question.getDisplayName() + ": ");
+        nameBuf.append("<table border='0'><tr><td colspan='3'><b>");
+        nameBuf.append(question.getDisplayName() + "</b>:</td></tr>");
 
         Map<String, Param> params = question.getParamMap();
         Map<String, Object> paramValues = idsQueryInstance.getValuesMap();
 
-        boolean first = true;
         for (String paramName : paramValues.keySet()) {
             Param param = params.get(paramName);
             Object value = paramValues.get(paramName);
-            if (first) first = false;
-            else nameBuf.append(", ");
-            nameBuf.append(param.getPrompt() + "=(" + value + ")");
+            nameBuf.append("<tr><td align='right'><i>");
+            nameBuf.append(param.getPrompt() + "</i></td><td> = </td><td>");
+            nameBuf.append(value + "</td></tr>");
         }
+        nameBuf.append("</table>");
         return nameBuf.toString();
     }
 }

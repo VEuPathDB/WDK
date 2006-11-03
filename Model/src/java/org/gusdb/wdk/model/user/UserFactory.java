@@ -1298,6 +1298,14 @@ public class UserFactory {
             String confirmPassword) throws WdkUserException {
         email = email.trim();
 
+        if (newPassword == null || newPassword.trim().length() == 0)
+            throw new WdkUserException("The new password cannot be empty.");
+
+        // check if the new password matches
+        if (!newPassword.equals(confirmPassword))
+            throw new WdkUserException("The new password doesn't match, "
+                    + "please type them again. It's case sensitive.");
+
         // encrypt password
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -1315,11 +1323,6 @@ public class UserFactory {
             int count = rs.getInt(1);
             if (count <= 0)
                 throw new WdkUserException("The current password is incorrect.");
-
-            // check if the new password matches
-            if (!newPassword.equals(confirmPassword))
-                throw new WdkUserException("The new password doesn't match, "
-                        + "please type them again. It's case sensitive.");
 
             // passed check, then save the new password
             savePassword(email, newPassword);
