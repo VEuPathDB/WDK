@@ -25,6 +25,7 @@ import org.gusdb.wdk.model.jspwrap.HistoryBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.RecordBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
+import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
 /**
  * This Action is called by the ActionServlet when a WDK question is asked. It
@@ -39,9 +40,18 @@ public class ShowSummaryAction extends ShowQuestionAction {
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
-        UserBean wdkUser = null;
         AnswerBean wdkAnswer = null;
         HistoryBean history = null;
+
+        // get user
+        WdkModelBean wdkModel = (WdkModelBean) servlet.getServletContext().getAttribute(
+                CConstants.WDK_MODEL_KEY);
+        UserBean wdkUser = (UserBean) request.getSession().getAttribute(
+                CConstants.WDK_USER_KEY);
+        if (wdkUser == null) {
+            wdkUser = wdkModel.getUserFactory().getGuestUser();
+            request.getSession().setAttribute(CConstants.WDK_USER_KEY, wdkUser);
+        }
 
         String strHistId = request.getParameter(CConstants.WDK_HISTORY_ID_KEY);
         if (strHistId == null) {
@@ -49,16 +59,10 @@ public class ShowSummaryAction extends ShowQuestionAction {
         }
         if (strHistId != null) {
             int historyId = Integer.parseInt(strHistId);
-            wdkUser = (UserBean) request.getSession().getAttribute(
-                    CConstants.WDK_USER_KEY);
             history = wdkUser.getHistory(historyId);
             history.update();
             wdkAnswer = history.getAnswer();
             wdkAnswer = summaryPaging(request, null, null, wdkAnswer);
-            // if (userAnswer.isCombinedAnswer()) {
-            // wdkAnswer.setIsCombinedAnswer(true);
-            // wdkAnswer.setUserAnswerName(userAnswer.getName());
-            // }
         } else {
             QuestionForm qForm = (QuestionForm) form;
             // TRICKY: this is for action forward from
@@ -215,33 +219,39 @@ public class ShowSummaryAction extends ShowQuestionAction {
     private AnswerBean summaryPaging(HttpServletRequest request,
             Object answerMaker, Map params, AnswerBean wdkAnswer)
             throws WdkModelException, WdkUserException {
+        UserBean wdkUser = (UserBean) request.getSession().getAttribute(
+                CConstants.WDK_USER_KEY);
         int start = 1;
         if (request.getParameter("pager.offset") != null) {
             start = Integer.parseInt(request.getParameter("pager.offset"));
             start++;
         }
-        int pageSize = 20;
+        int pageSize = wdkUser.getItemsPerPage();
         if (request.getParameter("pageSize") != null) {
             pageSize = Integer.parseInt(request.getParameter("pageSize"));
+            wdkUser.setItemsPerPage(pageSize);
+            
+            logger.info("user " + wdkUser.getEmail() + " pageSize = " +pageSize);
         }
 
         if (wdkAnswer != null) {
             answerMaker = wdkAnswer.getQuestion();
             params = wdkAnswer.getInternalParams();
-            if (wdkAnswer.getPageSize() == wdkAnswer.getResultSize()) {
-                pageSize = wdkAnswer.getResultSize();
-
-            }
+//            if (wdkAnswer.getPageSize() == wdkAnswer.getResultSize()) {
+//                pageSize = wdkAnswer.getResultSize();
+//            }
         }
         if (start < 1) {
             start = 1;
         }
         int end = start + pageSize - 1;
+        
+        logger.info("Make answer with start=" + start + ", end=" + end);
 
-        if (answerMaker instanceof org.gusdb.wdk.model.jspwrap.QuestionBean) {
+        if (answerMaker instanceof QuestionBean) {
             wdkAnswer = ((QuestionBean) answerMaker).makeAnswer(params, start,
                     end);
-        } else if (answerMaker instanceof org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean) {
+        } else if (answerMaker instanceof BooleanQuestionNodeBean) {
             wdkAnswer = ((BooleanQuestionNodeBean) answerMaker).makeAnswer(
                     start, end);
         } else {

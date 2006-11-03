@@ -620,6 +620,12 @@ public class User {
                 : Integer.parseInt(prefValue);
         return itemsPerPage;
     }
+    
+    public void setItemsPerPage(int itemsPerPage) throws WdkUserException {
+        if (itemsPerPage <= 0) itemsPerPage = 20;
+        setGlobalPreference(User.PREF_ITEMS_PER_PAGE, Integer.toString(itemsPerPage));
+        save();
+    }
 
     public History combineHistory(String expression) throws WdkUserException,
             WdkModelException {

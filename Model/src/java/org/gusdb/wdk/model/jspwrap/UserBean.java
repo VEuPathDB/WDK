@@ -712,6 +712,14 @@ public class UserBean {
         return user.getItemsPerPage();
     }
 
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.user.User#setItemsPerPage(int)
+     */
+    public void setItemsPerPage(int itemsPerPage) throws WdkUserException {
+        user.setItemsPerPage(itemsPerPage);
+    }
+    
+
     /*
      * (non-Javadoc)
      * 
