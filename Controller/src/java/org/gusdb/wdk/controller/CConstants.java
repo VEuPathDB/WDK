@@ -83,6 +83,7 @@ public class CConstants {
     public static final String SHOW_PROFILE_MAPKEY = "show_profile";
     public static final String SHOW_PASSWORD_MAPKEY = "show_password";
     public static final String SHOW_RESET_PASSWORD_MAPKEY = "show_reset_password";
+    public static final String PROCESS_LOGOUT_MAPKEY = "process_logout";
 
     //button click detectors, used in action, action forms, and jsp pages
     public static final String PQ_SUBMIT_KEY = "questionSubmit"; //match question.jsp
