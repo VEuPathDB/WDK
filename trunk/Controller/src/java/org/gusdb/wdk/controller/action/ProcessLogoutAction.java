@@ -35,12 +35,17 @@ public class ProcessLogoutAction extends Action {
             throws Exception {
         // get the referer link
         String referer = (String) request.getParameter(CConstants.WDK_REFERER_URL_KEY);
-        if (referer == null) referer = request.getHeader("referer");
+        //if (referer == null) referer = request.getHeader("referer");
         // int index = referer.lastIndexOf("/");
         // referer = referer.substring(index);
-        // ActionForward forward = new ActionForward(referer);
-        ActionForward forward = mapping.findForward(CConstants.PROCESS_LOGOUT_MAPKEY);
-        //forward.setRedirect(true);
+        
+        ActionForward forward;
+        if (referer != null) {
+            forward = new ActionForward(referer);
+            forward.setRedirect(true);
+         } else {
+            forward = mapping.findForward(CConstants.PROCESS_LOGOUT_MAPKEY);
+         }
         
         // clear the session, and reset the default user to guest
         WdkModelBean wdkModel = (WdkModelBean) getServlet().getServletContext().getAttribute(
