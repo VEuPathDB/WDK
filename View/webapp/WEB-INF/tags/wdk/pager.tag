@@ -2,24 +2,29 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
 
+<%@ attribute name="pager_id"
+              required="true"
+              description="the unique identifier for the included pager"
+%>
 
 <script language="JavaScript">
 <!--
 
-    function updatePageCount() {
+    function updatePageCount(pager_id) {
         var resultSize = ${wdkAnswer.resultSize};
-        var psSelect = document.getElementById("pageSize");
-        var pageSize = psSelect.options[psSelect.selectedIndex].value;
+        var psSelect = document.getElementById(pager_id + "_pageSize");
+        var index = psSelect.selectedIndex;
+        var pageSize = psSelect.options[index].value;
         var pageCount = Math.ceil(resultSize / pageSize);
         if (pageCount * pageSize < resultSize) pageCount++;
-        var span = document.getElementById("pageCount");
-        span.innerText = pageCount;
+        var span = document.getElementById(pager_id + "_pageCount");
+        span.innerHTML = pageCount;
     }
     
-    function gotoPage() {
+    function gotoPage(pager_id) {
         //alert("hello");
-        var pageNumber = document.getElementById("pageNumber").value;
-        var psSelect = document.getElementById("pageSize");
+        var pageNumber = document.getElementById(pager_id + "_pageNumber").value;
+        var psSelect = document.getElementById(pager_id + "_pageSize");
         var pageSize = psSelect.options[psSelect.selectedIndex].value;
         
         var pageUrl = document.getElementById("pageUrl").value;
@@ -74,22 +79,22 @@
         <pg:page>
 
           &nbsp;&nbsp;Go to page: 
-          <input type="text" id="pageNumber" name="pageNumber" size="5" value="${currentPageNumber}"/>
-          <input type="hidden" name="pageUrl" value="${pageUrl}" />
+          <input type="text" id="${pager_id}_pageNumber" size="5" value="${currentPageNumber}"/>
+          <input type="hidden" id="pageUrl" value="${pageUrl}" />
           <font size="-1">
-            [1 ... <span id="pageCount">${wdkAnswer.pageCount}</span>]
+            [1 ... <span id="${pager_id}_pageCount">${wdkAnswer.pageCount}</span>]
             &nbsp;page size:
           </font>
           
           <!-- display the choice of page size -->
-          <select name="pageSize" onchange="updatePageCount();">
+          <select id="${pager_id}_pageSize" onchange="updatePageCount('${pager_id}');">
              <option value="5" ${(wdk_paging_pageSize == 5)? 'SELECTED' : ''}>5</option>
              <option value="10" ${(wdk_paging_pageSize == 10)? 'SELECTED' : ''}>10</option>
              <option value="20" ${(wdk_paging_pageSize == 20)? 'SELECTED' : ''}>20</option>
              <option value="50" ${(wdk_paging_pageSize == 50)? 'SELECTED' : ''}>50</option>
              <option value="100" ${(wdk_paging_pageSize== 100)? 'SELECTED' : ''}>100</option>
            </select>
-           <input type="button" name="questionSubmit" value="GO" onclick="gotoPage();"/>
+           <input type="button" value="GO" onclick="gotoPage('${pager_id}');"/>
         
         </pg:page>
       </td>

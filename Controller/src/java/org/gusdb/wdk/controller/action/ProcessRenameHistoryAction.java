@@ -44,7 +44,23 @@ public class ProcessRenameHistoryAction extends Action {
             throw new Exception("no user history id is given for update");
         }
 
-        ActionForward forward = mapping.findForward(CConstants.RENAME_HISTORY_MAPKEY);
+        //ActionForward forward = mapping.findForward(CConstants.RENAME_HISTORY_MAPKEY);
+
+        // get the referer link and possibly an url to the client's original page if user invoked a separate login form page.
+        String referer = (String) request.getParameter(CConstants.WDK_REFERER_URL_KEY);
+        if (referer == null) referer = request.getHeader("referer");
+        String originUrl = request.getParameter(CConstants.WDK_ORIGIN_URL_KEY);
+
+        ActionForward forward = new ActionForward();
+        forward.setRedirect(true);
+        String forwardUrl;
+        if (originUrl != null) {
+            forwardUrl = originUrl;
+            request.getSession().setAttribute(CConstants.WDK_ORIGIN_URL_KEY, null);
+        } else {
+            forwardUrl = referer;
+        }
+        forward.setPath(forwardUrl);
 
         return forward;
     }
