@@ -155,10 +155,11 @@
 <!-- show all tables for record -->
 
 <c:forEach items="${wdkRecord.tables}"  var="tblEntry">
+  <c:set var="tbl" value="${tblEntry.value}"/>
   <br>
   <table>
   <tr>
-    <tr><td valign="top"><b>${tblEntry.key}</b></td></tr>
+    <tr><td valign="top"><b>${tbl.displayName}</b></td></tr>
     <td>
       <c:set var="tbl" value="${tblEntry.value}"/>
 
