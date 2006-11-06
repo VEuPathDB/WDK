@@ -33,7 +33,7 @@ public class DeleteHistoryAction extends Action {
                 // prevent refresh of page after delete from breaking
             }
         } else {
-            throw new Exception("no user answer id is given for deletion");
+            throw new Exception("no history id is given for deletion");
         }
 
         ActionForward forward = mapping.findForward(CConstants.DELETE_HISTORY_MAPKEY);
