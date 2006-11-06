@@ -71,7 +71,7 @@ public class History {
             // remove script injections
             name = name.replaceAll("<.+?>", " ");
             name = name.replaceAll("['\"]", " ");
-            name = name.replaceAll("\\s+?", " ");
+            name = name.trim().replaceAll("\\s+", " ");
             if (name.length() > 4000) name = name.substring(0, 4000);
         }
         return name;

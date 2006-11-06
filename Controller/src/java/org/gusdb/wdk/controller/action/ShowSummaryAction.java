@@ -57,7 +57,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
         if (strHistId == null) {
             strHistId = (String) request.getAttribute(CConstants.WDK_HISTORY_ID_KEY);
         }
-        if (strHistId != null) {
+        if (strHistId != null) {    // use existing history
             int historyId = Integer.parseInt(strHistId);
             history = wdkUser.getHistory(historyId);
             history.update();
@@ -111,6 +111,9 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 null);
 
         request.setAttribute(CConstants.WDK_ANSWER_KEY, wdkAnswer);
+        
+        // store history too
+        request.setAttribute(CConstants.WDK_HISTORY_KEY, history);
 
         request.setAttribute(CConstants.WDK_HISTORY_ID_KEY, strHistId);
 
@@ -172,14 +175,14 @@ public class ShowSummaryAction extends ShowQuestionAction {
         }
 
         String path = forward.getPath();
-        if (path.indexOf("?") > 0) {
-            if (path.indexOf(CConstants.WDK_HISTORY_ID_KEY) < 0) {
-                path += "&" + CConstants.WDK_HISTORY_ID_KEY + "="
-                        + strHistoryId;
-            }
-        } else {
-            path += "?" + CConstants.WDK_HISTORY_ID_KEY + "=" + strHistoryId;
-        }
+//        if (path.indexOf("?") >= 0) {
+//            if (path.indexOf(CConstants.WDK_HISTORY_ID_KEY) < 0) {
+//                path += "&" + CConstants.WDK_HISTORY_ID_KEY + "="
+//                        + strHistoryId;
+//            }
+//        } else {
+//            path += "?" + CConstants.WDK_HISTORY_ID_KEY + "=" + strHistoryId;
+//        }
         return new ActionForward(path);
     }
 
