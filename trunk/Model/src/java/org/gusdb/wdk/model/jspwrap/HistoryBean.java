@@ -203,4 +203,11 @@ public class HistoryBean {
     public String getDescription() {
         return history.getDescription();
     }
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.user.History#getBooleanExpression()
+     */
+    public String getBooleanExpression() {
+        return history.getBooleanExpression();
+    }
 }
