@@ -19,6 +19,10 @@ public class ParamBean {
         return param.getName();
     }
 
+    public String getId() {
+        return param.getId();
+    }
+
     public String getFullName() {
         return param.getFullName();
     }

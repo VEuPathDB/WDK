@@ -3,6 +3,7 @@ package org.gusdb.wdk.model;
 public abstract class Param {
     
     protected String name;
+    protected String id;
     protected String prompt;
     protected String help;
     protected String defaultValue;
@@ -28,6 +29,14 @@ public abstract class Param {
         return fullName;
     }
 
+    public void setId(String id) {
+        this.id = id;
+    }
+    
+    public String getId() {
+        return id;
+    }
+    
     /**
      * Assumes that the name of this param has already been set. Note this is
      * slightly different than a simple accessor in that the full name of the
@@ -98,6 +107,7 @@ public abstract class Param {
         String newline = System.getProperty("line.separator");
         String classnm = this.getClass().getName();
         StringBuffer buf = new StringBuffer(classnm + ": name='" + name + "'"
+                + ": id='" + id + "'"
                 + newline + "  prompt='" + prompt + "'" + newline + "  help='"
                 + help + "'" + newline + "  default='" + defaultValue + "'"
                 + newline + "  readonly=" + readonly + newline + "  visible="
@@ -132,6 +142,7 @@ public abstract class Param {
     
     protected void clone(Param param) {
         param.name = name;
+        param.id = id;
         param.prompt = prompt;
         param.help = help;
         param.defaultValue = defaultValue;
