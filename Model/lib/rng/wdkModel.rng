@@ -83,6 +83,9 @@
   <define name="ParamBaseContents">
     <attribute name="name" />
     <optional>
+      <attribute name="id" />
+    </optional>
+    <optional>
       <attribute name="prompt" />
     </optional>
     <optional>
