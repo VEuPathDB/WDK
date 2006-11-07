@@ -137,5 +137,11 @@ public class QuestionBean implements Serializable {
     public String getSummary(){
 	return question.getSummary();
     }
-    
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.Question#getCategory()
+     */
+    public String getCategory() {
+        return question.getCategory();
+    }
 }
