@@ -120,9 +120,9 @@
     <zeroOrMore>
       <element name="paramRef">
         <attribute name="ref" />
-    <optional>
-      <attribute name="default" />
-    </optional>
+        <optional>
+           <attribute name="default" />
+        </optional>
       </element>
     </zeroOrMore>
   </define>
@@ -283,35 +283,28 @@
       </optional>
 
       <zeroOrMore>  
+        <choice>
           <element name="attributeQueryRef">
               <attribute name="ref" />
               <zeroOrMore>
                   <ref name="attributes" />
               </zeroOrMore>
           </element>
-      </zeroOrMore>
-   
-      <zeroOrMore>
+
           <ref name="table" />
-      </zeroOrMore>
-      
-      <zeroOrMore>
-        <ref name="linkAttribute" />
-      </zeroOrMore>
 
-      <zeroOrMore>
-        <ref name="textAttribute" />
-      </zeroOrMore>
+          <ref name="linkAttribute" />
 
-      <zeroOrMore>
-        <element name="nestedRecord">
+          <ref name="textAttribute" />
+
+          <element name="nestedRecord">
             <attribute name="questionRef" />
-        </element>
-      </zeroOrMore>
-      <zeroOrMore>
-        <element name="nestedRecordList">
+          </element>
+
+          <element name="nestedRecordList">
             <attribute name="questionRef" />
-        </element>
+          </element>
+	</choice>
       </zeroOrMore>
     </element>
   </define>
@@ -331,33 +324,35 @@
       <optional>
            <attribute name="summaryAttributesList" />
       </optional>
+                 
       <optional>
          <element name="summary">
             <text/>
          </element>        
       </optional>
+
       <element name="description">
-          <text />
-      </element>        
+         <text />   
+      </element>
+ 
       <optional>
-         <element name="dynamicAttributes">
-           <oneOrMore>
-             <ref name="columnAttribute" />
-           </oneOrMore>
-           <zeroOrMore>
-             <ref name="linkAttribute" />
-           </zeroOrMore>
-           <zeroOrMore>
-             <ref name="textAttribute" />
-           </zeroOrMore>
+         <element name="help">
+            <text />
          </element>
       </optional>
-      <optional>          
-       
-         <element name="help">
-             <text />
-         </element>        
+
+      <optional>
+         <element name="dynamicAttributes">
+            <zeroOrMore>
+               <choice>
+                  <ref name="columnAttribute" />
+                  <ref name="linkAttribute" />
+                  <ref name="textAttribute" />
+               </choice>
+            </zeroOrMore>
+         </element>
       </optional>
+      
     </element>
   </define>
     
@@ -485,11 +480,11 @@
         <optional>
            <attribute name="attributeOrdering" />
         </optional>
-        <zeroOrMore>  
-           <ref name="xmlAttribute" />
-        </zeroOrMore>
         <zeroOrMore>
-           <ref name="xmlTable" />
+	   <choice>
+              <ref name="xmlAttribute" />
+              <ref name="xmlTable" />
+	   </choice>
         </zeroOrMore>
      </element>
   </define>
@@ -504,9 +499,9 @@
   </define>
 
   <define name ="xmlAttribute">
-     <element name="xmlAttribute">
+      <element name="xmlAttribute">
          <ref name="FieldBaseContents" />
-     </element>
+      </element>
   </define>
  
 </grammar>
