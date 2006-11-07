@@ -142,6 +142,10 @@ public class AnswerBean {
         return answer.getIsBoolean();
     }
 
+    public boolean getIsCombinedAnswer () {
+        return answer.getIsBoolean();
+    }
+
     public RecordClassBean getRecordClass() {
         return new RecordClassBean(answer.getQuestion().getRecordClass());
     }
