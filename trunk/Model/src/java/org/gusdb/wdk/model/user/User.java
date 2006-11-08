@@ -493,7 +493,11 @@ public class User {
     }
 
     public void deleteHistories() throws WdkUserException {
-        userFactory.deleteHistories(this);
+        userFactory.deleteHistories(this, false);
+    }
+
+    public void deleteHistories(boolean allProjects) throws WdkUserException {
+        userFactory.deleteHistories(this, allProjects);
     }
 
     public void deleteHistory(int historyId) throws WdkUserException,
@@ -620,10 +624,12 @@ public class User {
                 : Integer.parseInt(prefValue);
         return itemsPerPage;
     }
-    
+
     public void setItemsPerPage(int itemsPerPage) throws WdkUserException {
         if (itemsPerPage <= 0) itemsPerPage = 20;
-        setGlobalPreference(User.PREF_ITEMS_PER_PAGE, Integer.toString(itemsPerPage));
+        else if (itemsPerPage > 100) itemsPerPage = 100;
+        setGlobalPreference(User.PREF_ITEMS_PER_PAGE,
+                Integer.toString(itemsPerPage));
         save();
     }
 
@@ -633,7 +639,7 @@ public class User {
         Map<String, String> operatorMap = getWdkModel().getBooleanOperators();
         BooleanQuestionNode root = exp.parseExpression(expression, operatorMap);
 
-        Answer answer = root.makeAnswer(0, getItemsPerPage());
+        Answer answer = root.makeAnswer(1, getItemsPerPage());
         return createHistory(answer, expression);
     }
 
