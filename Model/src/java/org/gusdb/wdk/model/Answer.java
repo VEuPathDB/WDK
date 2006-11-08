@@ -470,9 +470,8 @@ public class Answer {
      * using a federated data source).
      */
     private void initPageRecordInstances() throws WdkModelException {
-
         if (pageRecordInstances != null) return;
-
+        
         // set instance variables projectColumnName and idsColumnName
         findPrimaryKeyColumnNames();
 
