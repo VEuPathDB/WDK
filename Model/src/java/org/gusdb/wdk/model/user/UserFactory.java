@@ -34,6 +34,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.sql.DataSource;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.BooleanExpression;
 import org.gusdb.wdk.model.BooleanQuestionNode;
@@ -96,6 +97,8 @@ public class UserFactory {
     public static final String GUEST_USER_PREFIX = "WDK_GUEST_";
 
     public static final String GLOBAL_PREFERENCE_KEY = "[Global]";
+
+    private static Logger logger = Logger.getLogger(UserFactory.class);
 
     private static UserFactory factory;
 
@@ -771,8 +774,7 @@ public class UserFactory {
         return maxId;
     }
 
-    Map<Integer, History> loadHistories(User user) throws WdkUserException,
-            WdkModelException {
+    Map<Integer, History> loadHistories(User user) throws WdkUserException {
         Map<Integer, History> histories = new LinkedHashMap<Integer, History>();
 
         ResultSet rsHistory = null;
@@ -805,15 +807,28 @@ public class UserFactory {
 
                 // re-construct the answer
                 Answer answer;
-                if (history.isBoolean()) {
-                    answer = constructBooleanAnswer(user, paramsClob);
-                    history.setBooleanExpression(paramsClob);
-                } else {
-                    String questionName = rsHistory.getString("question_name");
-                    answer = constructAnswer(user, questionName, paramsClob);
+                
+                // skip the invalid histories, but print out error messages
+                String errMsg = "The history #" + historyId + " of user "
+                        + user.getEmail() + " in project " + projectId
+                        + " is invalid, and won't be loaded.";
+                try {
+                    if (history.isBoolean()) {
+                        answer = constructBooleanAnswer(user, paramsClob);
+                        history.setBooleanExpression(paramsClob);
+                    } else {
+                        String questionName = rsHistory.getString("question_name");
+                        answer = constructAnswer(user, questionName, paramsClob);
+                    }
+                    history.setAnswer(answer);
+                    histories.put(historyId, history);
+                } catch (WdkModelException ex) {
+                    logger.warn(errMsg);
+                    System.err.println(errMsg);
+                } catch (WdkUserException ex) {
+                    logger.warn(errMsg);
+                    System.err.println(errMsg);
                 }
-                history.setAnswer(answer);
-                histories.put(historyId, history);
             }
             // now compute the dependencies of the histories
             History[] array = new History[histories.size()];
@@ -906,7 +921,7 @@ public class UserFactory {
         }
 
         // get the user's preference of items per page
-        return question.makeAnswer(params, 0, user.getItemsPerPage() - 1);
+        return question.makeAnswer(params, 1, user.getItemsPerPage());
     }
 
     private Answer constructBooleanAnswer(User user, String expression)
@@ -915,7 +930,7 @@ public class UserFactory {
         Map<String, String> operatorMap = getWdkModel().getBooleanOperators();
         BooleanQuestionNode root = exp.parseExpression(expression, operatorMap);
 
-        return root.makeAnswer(0, user.getItemsPerPage());
+        return root.makeAnswer(1, user.getItemsPerPage());
     }
 
     History createHistory(User user, Answer answer, String booleanExpression)
@@ -1074,14 +1089,19 @@ public class UserFactory {
         }
     }
 
-    void deleteHistories(User user) throws WdkUserException {
+    void deleteHistories(User user, boolean allProjects)
+            throws WdkUserException {
         PreparedStatement psHistory = null;
         try {
-            psHistory = SqlUtils.getPreparedStatement(dataSource, "DELETE "
-                    + "FROM " + loginSchema + "histories WHERE user_id = ? "
-                    + "AND project_id = ?");
+            StringBuffer sql = new StringBuffer();
+            sql.append("DELETE FROM " + loginSchema + "histories "
+                    + "WHERE user_id = ? ");
+            if (!allProjects) sql.append("AND project_id = ?");
+            psHistory = SqlUtils.getPreparedStatement(dataSource,
+                    sql.toString());
+
             psHistory.setInt(1, user.getUserId());
-            psHistory.setString(2, projectId);
+            if (!allProjects) psHistory.setString(2, projectId);
             psHistory.executeUpdate();
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
@@ -1118,8 +1138,9 @@ public class UserFactory {
                     histories.add(new HistoryKey(userId, historyId));
                 }
             }
-            
-            System.out.print(histories.size() + " invalid Histories found. Deleting them...");
+
+            System.out.print(histories.size()
+                    + " invalid Histories found. Deleting them...");
 
             // delete invalid histories
             psDelete = SqlUtils.getPreparedStatement(dataSource, "DELETE FROM "
@@ -1408,8 +1429,8 @@ public class UserFactory {
         // get user id
         User user = loadUser(email);
 
-        // delete history
-        user.deleteHistories();
+        // delete history from all projects
+        user.deleteHistories(true);
 
         // delete datasets
         user.deleteDatasets();
