@@ -34,6 +34,11 @@ public class Oracle implements RDBMSPlatformI, Serializable {
     /**
      * 
      */
+    /*
+     * debug flag -- added by Sammy
+     */
+    private static boolean debug = true;
+
     private static final long serialVersionUID = 1097981172046682268L;
 
     private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.model.implementation.Oracle");
@@ -134,10 +139,95 @@ public class Oracle implements RDBMSPlatformI, Serializable {
         // Initialize the table with the results of <code>sql</code>
         String newSql = "create table " + tableName + " as " + sql;
 
+        if(debug) System.out.println("call SqlUtils.execute from Oracle.java with sql " + newSql);
         SqlUtils.execute(dataSource, newSql);
-
         addIndexColumn(dataSource, tableName);
 
+        //added by Sammy, copy cached table (query_result_#) from apidb to component databases
+        //needn't care about query_instance table
+        //table name doesn't include name space
+//        ComponentDBConnection.copyTable(dataSource.getConnection(), ComponentDBConnection.getCConnection(), tableName);
+//        ComponentDBConnection.copyTable(dataSource.getConnection(), ComponentDBConnection.getPConnection(), tableName);
+//        ComponentDBConnection.copyTable(dataSource.getConnection(), ComponentDBConnection.getTConnection(), tableName);
+
+//        //using thread to concurrent copy cache tables from api to component dbs
+        // inner class to indicate if thread is finished or not
+        class Finished {
+
+            private boolean finished;
+            private boolean successed;
+
+            public Finished(boolean finished, boolean successed) {
+                this.finished = finished;
+                this.successed = successed;
+            }
+
+			public boolean isSuccessed() {
+				return successed;
+			}
+
+			public void setSuccessed(boolean successed) {
+				this.successed = successed;
+			}
+
+			public boolean isFinished() {
+				return finished;
+			}
+
+			public void setFinished(boolean finished) {
+				this.finished = finished;
+			}
+        }
+
+        class CopyTable extends Thread {
+        	private Connection fromConn, toConn;
+        	private String tableName;
+        	private Finished finish; 
+        	
+        	CopyTable(Connection fromConn, Connection toConn, String tableName, Finished finish){
+        		this.fromConn = fromConn;
+        		this.toConn = toConn;
+        		this.tableName = tableName;
+        		this.finish = finish;
+        	}
+        	
+        	public void run() {
+        		try {
+					ComponentDBConnection.copyTable(fromConn, toConn, tableName);
+					finish.setFinished(true);
+					finish.setSuccessed(true);
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					finish.setFinished(true);
+					finish.setSuccessed(false);
+				}
+        	}
+        }//end thread CopyTable
+        
+        Finished cFinished = new Finished(false, false);
+        Thread cThread = new CopyTable(dataSource.getConnection(), ComponentDBConnection.getCConnection(), tableName, cFinished);
+        cThread.start();
+        Finished pFinished = new Finished(false, false);
+        Thread pThread = new CopyTable(dataSource.getConnection(), ComponentDBConnection.getPConnection(), tableName, pFinished);
+        pThread.start();
+        Finished tFinished = new Finished(false, false);
+        Thread tThread = new CopyTable(dataSource.getConnection(), ComponentDBConnection.getTConnection(), tableName, tFinished);
+        tThread.start();
+        
+        boolean allFinished = false;
+
+        while (!allFinished) {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {}
+            if (cFinished.isFinished() && pFinished.isFinished() && tFinished.isFinished()) {
+                allFinished = true; // all threads finished
+            }// end if(ifTimeOut)
+        }// end while
+        System.out.println("copying cache table to crypto is " + cFinished.isSuccessed());
+        System.out.println("copying cache table to plasmo is " + pFinished.isSuccessed());
+        System.out.println("copying cache table to toxo is " + tFinished.isSuccessed());
     }
 
     public void addIndexColumn(DataSource dataSource, String tableName)

@@ -46,7 +46,17 @@ public class SqlResultList extends ResultList {
         Object o = null;
         try {
             ResultSetMetaData rsmd = resultSet.getMetaData();
-            int columnIndex = resultSet.findColumn(attributeName);
+/*            int columnIndex = resultSet.findColumn(attributeName);
+*modified by Sammy	
+*it doesn't work for RowSet if RowSet is serialized and deserialized becuase of lost connection			 
+*/            
+            int columnIndex = 0;
+            for(int i=1; i<rsmd.getColumnCount()+1; i++) {
+            	if( (rsmd.getColumnName(i).trim()).equalsIgnoreCase(attributeName) ) {
+            		columnIndex = i;
+            		break;
+            	}
+            }
             int columnType = rsmd.getColumnType(columnIndex);
             if (columnType == Types.CLOB) {
                 Clob clob = resultSet.getClob(attributeName);
@@ -55,7 +65,9 @@ public class SqlResultList extends ResultList {
                     o = clob.getSubString(1, length.intValue());
                 }
             } else {
-                o = resultSet.getObject(attributeName);
+                //o = resultSet.getObject(attributeName);
+            	//modified by Sammy because of the same reason as previous one
+            	o = resultSet.getObject(columnIndex);
             }
         } catch (SQLException e) {
             // close the connection, assuming the resultSet won't be used later.
