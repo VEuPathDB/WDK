@@ -3,6 +3,8 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
 <%@ taglib prefix="nested" uri="http://jakarta.apache.org/struts/tags-nested" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+
 
 <dir>
 
@@ -41,7 +43,13 @@
                    <tr>
                       <td align="right" width="200"><i>${aP.key}</i></td>
                       <td>&nbsp;=&nbsp;</td>
-                      <td>${aP.value}</td>
+                      <td>
+                         <c:set var="aPval" value="${aP.value}" />
+                         <c:if test="${fn:length(aPval) > 60}">
+                            <c:set var="aPval" value="${fn:substring(aPval, 0, 60)}..." />
+                         </c:if> 
+                         ${aPval}
+                      </td>
                    </tr>
                  </c:forEach>
                </table>
