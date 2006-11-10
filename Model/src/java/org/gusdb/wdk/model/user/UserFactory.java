@@ -14,14 +14,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Random;
+import java.util.*;
 
 import javax.activation.DataHandler;
 import javax.mail.Address;
@@ -879,9 +872,6 @@ public class UserFactory {
 
             Clob clob = rsHistory.getClob("params");
             String paramsClob = clob.getSubString(1, (int) clob.length());
-            // TEST
-            if (rsHistory.getString("question_name").equals("GeneQuestions.GenesByMotifSearch"))
-            System.err.println(paramsClob);
 
             // re-construct the answer
             Answer answer;
@@ -1129,7 +1119,7 @@ public class UserFactory {
                             + "where project_id = ?");
             psHistory.setString(1, projectId);
             rsHistory = psHistory.executeQuery();
-            List<HistoryKey> histories = new ArrayList<HistoryKey>();
+            Set<HistoryKey> histories = new LinkedHashSet<HistoryKey>();
             while (rsHistory.next()) {
                 int userId = rsHistory.getInt("user_id");
                 int historyId = rsHistory.getInt("history_id");

@@ -57,7 +57,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
         if (strHistId == null) {
             strHistId = (String) request.getAttribute(CConstants.WDK_HISTORY_ID_KEY);
         }
-        if (strHistId != null) {    // use existing history
+        if (strHistId != null) { // use existing history
             int historyId = Integer.parseInt(strHistId);
             history = wdkUser.getHistory(historyId);
             history.update();
@@ -111,7 +111,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 null);
 
         request.setAttribute(CConstants.WDK_ANSWER_KEY, wdkAnswer);
-        
+
         // store history too
         request.setAttribute(CConstants.WDK_HISTORY_KEY, history);
 
@@ -175,14 +175,14 @@ public class ShowSummaryAction extends ShowQuestionAction {
         }
 
         String path = forward.getPath();
-//        if (path.indexOf("?") >= 0) {
-//            if (path.indexOf(CConstants.WDK_HISTORY_ID_KEY) < 0) {
-//                path += "&" + CConstants.WDK_HISTORY_ID_KEY + "="
-//                        + strHistoryId;
-//            }
-//        } else {
-//            path += "?" + CConstants.WDK_HISTORY_ID_KEY + "=" + strHistoryId;
-//        }
+        // if (path.indexOf("?") >= 0) {
+        // if (path.indexOf(CConstants.WDK_HISTORY_ID_KEY) < 0) {
+        // path += "&" + CConstants.WDK_HISTORY_ID_KEY + "="
+        // + strHistoryId;
+        // }
+        // } else {
+        // path += "?" + CConstants.WDK_HISTORY_ID_KEY + "=" + strHistoryId;
+        // }
         return new ActionForward(path);
     }
 
@@ -230,25 +230,28 @@ public class ShowSummaryAction extends ShowQuestionAction {
             start++;
         }
         int pageSize = wdkUser.getItemsPerPage();
-        if (request.getParameter("pageSize") != null) {
-            pageSize = Integer.parseInt(request.getParameter("pageSize"));
+        String pageSizeKey = request.getParameter(CConstants.WDK_PAGE_SIZE_KEY);
+        if (pageSizeKey != null) {
+            pageSize = Integer.parseInt(pageSizeKey);
             wdkUser.setItemsPerPage(pageSize);
-            
-            logger.info("user " + wdkUser.getEmail() + " pageSize = " +pageSize);
+        } else {
+            String altPageSizeKey = request.getParameter(CConstants.WDK_ALT_PAGE_SIZE_KEY);
+            if (altPageSizeKey != null)
+                pageSize = Integer.parseInt(altPageSizeKey);
         }
 
         if (wdkAnswer != null) {
             answerMaker = wdkAnswer.getQuestion();
             params = wdkAnswer.getInternalParams();
-//            if (wdkAnswer.getPageSize() == wdkAnswer.getResultSize()) {
-//                pageSize = wdkAnswer.getResultSize();
-//            }
+            // if (wdkAnswer.getPageSize() == wdkAnswer.getResultSize()) {
+            // pageSize = wdkAnswer.getResultSize();
+            // }
         }
         if (start < 1) {
             start = 1;
         }
         int end = start + pageSize - 1;
-        
+
         logger.info("Make answer with start=" + start + ", end=" + end);
 
         if (answerMaker instanceof QuestionBean) {
@@ -270,8 +273,9 @@ public class ShowSummaryAction extends ShowQuestionAction {
         List<String> editedParamNames = new ArrayList<String>();
         for (Enumeration en = request.getParameterNames(); en.hasMoreElements();) {
             String key = (String) en.nextElement();
-            if (!"pageSize".equals(key) && !"start".equals(key)
-                    && !"pager.offset".equals(key)) {
+            if (!key.equals(CConstants.WDK_PAGE_SIZE_KEY)
+                    && !key.equals(CConstants.WDK_ALT_PAGE_SIZE_KEY)
+                    && !"start".equals(key) && !"pager.offset".equals(key)) {
                 editedParamNames.add(key);
             }
         }
