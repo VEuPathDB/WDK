@@ -17,6 +17,7 @@ import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.UserFactoryBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
@@ -41,12 +42,20 @@ public class ProcessResetPasswordAction extends Action {
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
+        ActionForward forward = null;
+
+        // if the user is logged in, redirect him/her to change password page
+        UserBean user = (UserBean)request.getSession().getAttribute(CConstants.WDK_USER_KEY);
+        if (user != null && !user.getGuest()) {
+            forward= mapping.findForward(CConstants.SHOW_PASSWORD_MAPKEY);
+            return forward;
+        }
+        
         // if a custom profile page exists, use it; otherwise, use default one
         ServletContext svltCtx = getServlet().getServletContext();
         String customViewDir = (String) svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
         String customViewFile = customViewDir + File.separator
                 + CConstants.WDK_CUSTOM_RESET_PASSWORD_PAGE;
-        ActionForward forward = null;
         if (ApplicationInitListener.resourceExists(customViewFile, svltCtx)) {
             forward = new ActionForward(customViewFile);
             forward.setRedirect(false);
