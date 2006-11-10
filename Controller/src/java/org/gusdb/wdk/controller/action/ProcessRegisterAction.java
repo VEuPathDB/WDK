@@ -105,8 +105,7 @@ public class ProcessRegisterAction extends Action {
                         ex.getMessage());
 
                 // push back the user input, so that the user doesn't need to
-                // type
-                // again
+                // type again
                 request.setAttribute(CConstants.WDK_EMAIL_KEY, email);
                 request.setAttribute("firstName", firstName);
                 request.setAttribute("lastName", lastName);
