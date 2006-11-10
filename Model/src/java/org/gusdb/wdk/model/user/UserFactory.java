@@ -879,6 +879,9 @@ public class UserFactory {
 
             Clob clob = rsHistory.getClob("params");
             String paramsClob = clob.getSubString(1, (int) clob.length());
+            // TEST
+            if (rsHistory.getString("question_name").equals("GeneQuestions.GenesByMotifSearch"))
+            System.err.println(paramsClob);
 
             // re-construct the answer
             Answer answer;
@@ -1133,9 +1136,21 @@ public class UserFactory {
                 String questionName = rsHistory.getString("question_name");
                 String signature = rsHistory.getString("signature");
                 if (!signatures.containsKey(questionName)) {
+                    // check if the question still exists
                     histories.add(new HistoryKey(userId, historyId));
                 } else if (!signature.equals(signatures.get(questionName))) {
+                    // check if the parameter names/number has been changed
                     histories.add(new HistoryKey(userId, historyId));
+                } else {    
+                    // check if the history has valid parameter values by trying
+                    // to make an answer
+                    try {
+                        User user = loadUser(userId);
+                        loadHistory(user, historyId);
+                    } catch (WdkModelException ex) {
+                        histories.add(new HistoryKey(userId, historyId));
+                    }
+                    
                 }
             }
 

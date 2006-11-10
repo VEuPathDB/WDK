@@ -96,7 +96,7 @@ public class History {
      * @return Returns the answer.
      * @throws WdkUserException
      */
-    public Answer getAnswer() throws WdkUserException {
+    public Answer getAnswer() {
         return answer;
     }
 
