@@ -3,38 +3,38 @@ package org.gusdb.wdk.model;
 import java.util.LinkedHashMap;
 
 public class FlatVocabParam extends AbstractEnumParam {
-    
+
     protected Query query;
     protected String queryTwoPartName;
 
-    /////////////////////////////////////////////////////////////////////
-    /////////////  Public properties ////////////////////////////////////
-    /////////////////////////////////////////////////////////////////////
+    // ///////////////////////////////////////////////////////////////////
+    // /////////// Public properties ////////////////////////////////////
+    // ///////////////////////////////////////////////////////////////////
 
-    public void setQueryRef(String queryTwoPartName){
+    public void setQueryRef(String queryTwoPartName) {
 
-	this.queryTwoPartName = queryTwoPartName;
+        this.queryTwoPartName = queryTwoPartName;
     }
 
     public Query getQuery() {
-	return query;
+        return query;
     }
 
-
-    /////////////////////////////////////////////////////////////////////
-    /////////////  Protected properties ////////////////////////////////////
-    /////////////////////////////////////////////////////////////////////
+    // ///////////////////////////////////////////////////////////////////
+    // /////////// Protected properties ////////////////////////////////////
+    // ///////////////////////////////////////////////////////////////////
 
     protected void resolveReferences(WdkModel model) throws WdkModelException {
-	query = (Query)model.resolveReference(queryTwoPartName, name, "flatVocabParam", "queryRef");
-	query.resolveReferences(model);
-	// here check query's columns
+        query = (Query) model.resolveReference(queryTwoPartName, name,
+                "flatVocabParam", "queryRef");
+        query.resolveReferences(model);
+        // here check query's columns
     }
 
-    public void setResources(WdkModel model)throws WdkModelException {
-	query.setResources(model);
+    public void setResources(WdkModel model) throws WdkModelException {
+        query.setResources(model);
     }
-    
+
     protected void initVocabMap() throws WdkModelException {
         if (vocabMap == null) {
             vocabMap = new LinkedHashMap();
@@ -49,7 +49,9 @@ public class FlatVocabParam extends AbstractEnumParam {
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.Param#clone()
      */
     @Override
@@ -61,4 +63,14 @@ public class FlatVocabParam extends AbstractEnumParam {
         return param;
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.Param#getDefault()
+     */
+    @Override
+    public String getDefault() {
+        if (defaultValue == null || defaultValue.length() == 0) return "first";
+        else return defaultValue;
+    }
 }
