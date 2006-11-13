@@ -18,11 +18,11 @@
           <jsp:include page="/WEB-INF/includes/bqShowNode.jsp"/>
        </nested:nest>
     </div>
-    <p>
+    <div>
        <nested:nest property="secondChildAnswer">
           <jsp:include page="/WEB-INF/includes/bqShowNode.jsp"/>
        </nested:nest>
-    </p>
+    </div>
     </c:when>	
     <c:otherwise>
 
