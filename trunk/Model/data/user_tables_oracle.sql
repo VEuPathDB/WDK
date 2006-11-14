@@ -87,6 +87,7 @@ CREATE TABLE logins.histories
   checksum varchar(40),
   signature varchar(40),
   is_boolean NUMBER(1),
+  is_deleted NUMBER(1),
   params clob,
   CONSTRAINT "HISTORIES_PK" PRIMARY KEY (user_id, history_id, project_id),
   CONSTRAINT "HISTORY_USER_ID_FK" FOREIGN KEY (user_id)

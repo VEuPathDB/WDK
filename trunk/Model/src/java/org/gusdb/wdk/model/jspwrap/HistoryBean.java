@@ -210,4 +210,11 @@ public class HistoryBean {
     public String getBooleanExpression() {
         return history.getBooleanExpression();
     }
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.user.History#isDeleted()
+     */
+    public boolean isDeleted() {
+        return history.isDeleted();
+    }
 }
