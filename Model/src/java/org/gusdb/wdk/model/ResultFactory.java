@@ -279,6 +279,9 @@ public class ResultFactory implements Serializable {
             throws WdkModelException {
 
         // populates cache if not already in there
+        
+        // TEST
+        // logger.info("Getting new result table of query: " + instance.getQuery().getFullName());
 
         // add row to QueryInstance table
         Integer queryInstanceId = getQueryInstanceId(instance);
@@ -353,6 +356,7 @@ public class ResultFactory implements Serializable {
                 // instance result is in cache but is newly created object
                 if (instance.getQueryInstanceId() == null)
                     instance.setQueryInstanceId(getQueryInstanceId(instance));
+                
                 instance.setResultMessage(resultMessage);
 
                 resultTableFullName = platform.getTableFullName(schemaName,
