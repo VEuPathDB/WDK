@@ -93,8 +93,8 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
     }
 
     protected QuestionForm prepareQuestionForm(QuestionBean wdkQuestion,
-            HttpServletRequest request) throws Exception {
-        Random rand = new Random();
+            HttpServletRequest request) {
+        Random rand = new Random(System.currentTimeMillis());
         QuestionForm qForm = new QuestionForm();
 
         ActionServlet servlet = getServlet();

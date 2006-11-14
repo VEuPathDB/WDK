@@ -775,9 +775,9 @@ public class UserFactory {
             PreparedStatement psHistory = SqlUtils.getPreparedStatement(
                     dataSource, "SELECT history_id, question_name, create_time"
                             + ", last_run_time, custom_name, estimate_size, "
-                            + "is_boolean, params FROM " + loginSchema
-                            + "histories WHERE user_id = ? AND project_id = ? "
-                            + "ORDER BY last_run_time DESC");
+                            + "is_boolean, is_deleted, params FROM "
+                            + loginSchema + "histories WHERE user_id = ? "
+                            + "AND project_id = ? ORDER BY last_run_time DESC");
             psHistory.setInt(1, user.getUserId());
             psHistory.setString(2, projectId);
             rsHistory = psHistory.executeQuery();
@@ -794,13 +794,14 @@ public class UserFactory {
                 history.setCustomName(rsHistory.getString("custom_name"));
                 history.setEstimateSize(rsHistory.getInt("estimate_size"));
                 history.setBoolean(rsHistory.getBoolean("is_boolean"));
+                history.setDeleted(rsHistory.getBoolean("is_deleted"));
 
                 Clob clob = rsHistory.getClob("params");
                 String paramsClob = clob.getSubString(1, (int) clob.length());
 
                 // re-construct the answer
                 Answer answer;
-                
+
                 // skip the invalid histories, but print out error messages
                 String errMsg = "The history #" + historyId + " of user "
                         + user.getEmail() + " in project " + projectId
@@ -848,9 +849,10 @@ public class UserFactory {
             PreparedStatement psHistory = SqlUtils.getPreparedStatement(
                     dataSource, "SELECT question_name, create_time, "
                             + "last_run_time, custom_name, estimate_size, "
-                            + "is_boolean, params FROM " + loginSchema
-                            + "histories WHERE user_id = ? AND project_id = ? "
-                            + "AND history_id = ? ORDER BY last_run_time DESC");
+                            + "is_boolean, is_deleted, params FROM "
+                            + loginSchema + "histories WHERE user_id = ? "
+                            + "AND project_id = ? AND history_id = ? "
+                            + "ORDER BY last_run_time DESC");
             psHistory.setInt(1, user.getUserId());
             psHistory.setString(2, projectId);
             psHistory.setInt(3, historyId);
@@ -869,6 +871,7 @@ public class UserFactory {
             history.setCustomName(rsHistory.getString("custom_name"));
             history.setEstimateSize(rsHistory.getInt("estimate_size"));
             history.setBoolean(rsHistory.getBoolean("is_boolean"));
+            history.setDeleted(rsHistory.getBoolean("is_deleted"));
 
             Clob clob = rsHistory.getClob("params");
             String paramsClob = clob.getSubString(1, (int) clob.length());
@@ -943,14 +946,14 @@ public class UserFactory {
         String params = (isBoolean) ? booleanExpression
                 : qinstance.getClobContent();
 
-        // check whether the asnwer exist or not
+        // check whether the answer exist or not
         ResultSet rsHistory = null;
         PreparedStatement psHistory = null;
         try {
             PreparedStatement psCheck = SqlUtils.getPreparedStatement(
                     dataSource, "SELECT history_id FROM " + loginSchema
                             + "histories WHERE user_id = ? AND project_id = ? "
-                            + "AND checksum = ?");
+                            + "AND checksum = ? AND is_deleted = 0");
             psCheck.setInt(1, userId);
             psCheck.setString(2, projectId);
             psCheck.setString(3, checksum);
@@ -974,8 +977,8 @@ public class UserFactory {
                     + "INTO " + loginSchema + "histories (history_id, user_id,"
                     + " project_id, question_name, create_time, last_run_time,"
                     + " custom_name, estimate_size, checksum, signature, "
-                    + "is_boolean, params) VALUES (?, ?, ?, ?, ?, ?, ?, ?, "
-                    + "?, ?, ?, ?)");
+                    + "is_boolean, is_deleted, params) "
+                    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)");
             psHistory.setInt(1, historyId);
             psHistory.setInt(2, userId);
             psHistory.setString(3, projectId);
@@ -1031,13 +1034,14 @@ public class UserFactory {
         try {
             psHistory = SqlUtils.getPreparedStatement(dataSource, "UPDATE "
                     + loginSchema + "histories SET custom_name = ?, "
-                    + "last_run_time = ? WHERE user_id = ? "
+                    + "last_run_time = ?, is_deleted = ? WHERE user_id = ? "
                     + "AND project_id = ? AND history_id = ?");
             psHistory.setString(1, history.getCustomName());
             psHistory.setTimestamp(2, new Timestamp(lastRunTime.getTime()));
-            psHistory.setInt(3, user.getUserId());
-            psHistory.setString(4, projectId);
-            psHistory.setInt(5, history.getHistoryId());
+            psHistory.setBoolean(3, history.isDeleted());
+            psHistory.setInt(4, user.getUserId());
+            psHistory.setString(5, projectId);
+            psHistory.setInt(6, history.getHistoryId());
             int result = psHistory.executeUpdate();
             if (result == 0)
                 throw new WdkUserException("The history #"
@@ -1131,7 +1135,7 @@ public class UserFactory {
                 } else if (!signature.equals(signatures.get(questionName))) {
                     // check if the parameter names/number has been changed
                     histories.add(new HistoryKey(userId, historyId));
-                } else {    
+                } else {
                     // check if the history has valid parameter values by trying
                     // to make an answer
                     try {
@@ -1140,7 +1144,7 @@ public class UserFactory {
                     } catch (WdkModelException ex) {
                         histories.add(new HistoryKey(userId, historyId));
                     }
-                    
+
                 }
             }
 
@@ -1175,7 +1179,8 @@ public class UserFactory {
         try {
             PreparedStatement psHistory = SqlUtils.getPreparedStatement(
                     dataSource, "SELECT count(*) AS num FROM " + loginSchema
-                            + "histories WHERE user_id = ? AND project_id = ?");
+                            + "histories WHERE user_id = ? AND project_id = ? "
+                            + "AND is_deleted = 0");
             psHistory.setInt(1, user.getUserId());
             psHistory.setString(2, projectId);
             rsHistory = psHistory.executeQuery();
