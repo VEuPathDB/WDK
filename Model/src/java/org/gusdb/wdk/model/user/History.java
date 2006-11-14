@@ -31,12 +31,14 @@ public class History {
     private int estimateSize;
     private boolean isBoolean;
     private String booleanExpression;
+    private boolean isDeleted;
     private int[] dependencies = null;
 
     History(UserFactory factory, User user, int historyId) {
         this.factory = factory;
         this.user = user;
         this.historyId = historyId;
+        isDeleted = false;
     }
 
     public User getUser() {
@@ -240,8 +242,23 @@ public class History {
         }
         Arrays.sort(this.dependencies);
     }
-    
+
     public String getDescription() {
-        return (isBoolean)? booleanExpression : answer.getName();
+        return (isBoolean) ? booleanExpression : answer.getName();
+    }
+
+    /**
+     * @return Returns the isDeleted.
+     */
+    public boolean isDeleted() {
+        return isDeleted;
+    }
+
+    /**
+     * @param isDeleted
+     *            The isDeleted to set.
+     */
+    public void setDeleted(boolean isDeleted) {
+        this.isDeleted = isDeleted;
     }
 }

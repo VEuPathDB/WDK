@@ -438,6 +438,9 @@ public class User {
         Map<Integer, History> histories = userFactory.loadHistories(this);
         Map<String, List<History>> category = new LinkedHashMap<String, List<History>>();
         for (History history : histories.values()) {
+            // not include the histories marked as 'deleted'
+            if (history.isDeleted()) continue;
+            
             String type = history.getDataType();
             List<History> list;
             if (category.containsKey(type)) {
@@ -504,10 +507,15 @@ public class User {
             WdkModelException {
         // check the dependencies of the history
         History history = getHistory(historyId);
-        if (history.isDepended())
-            throw new WdkUserException("The history #" + historyId + " cannot "
-                    + "be deleted, since other histories depends on it");
-        userFactory.deleteHistory(this, historyId);
+        if (history.isDepended()) {
+            // the history is depended by other nodes, mark it as delete, but
+            // don't really delete it from the database
+            history.setDeleted(true);
+            history.update(false);
+        } else {
+            // delete the history from the database
+            userFactory.deleteHistory(this, historyId);
+        }
     }
 
     public int getHistoryCount() throws WdkUserException {
