@@ -8,16 +8,21 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionServlet;
 import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.FlatVocabParamBean;
+import org.gusdb.wdk.model.jspwrap.HistoryBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.QuestionSetBean;
+import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
 /**
@@ -27,6 +32,8 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
  */
 
 public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
+
+    private static Logger logger = Logger.getLogger(ShowQuestionAction.class);
 
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
@@ -93,7 +100,12 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
     }
 
     protected QuestionForm prepareQuestionForm(QuestionBean wdkQuestion,
-            HttpServletRequest request) {
+            HttpServletRequest request) throws WdkUserException,
+            WdkModelException {
+        // get the current user
+        UserBean user = (UserBean) request.getSession().getAttribute(
+                CConstants.WDK_USER_KEY);
+
         Random rand = new Random(System.currentTimeMillis());
         QuestionForm qForm = new QuestionForm();
 
@@ -127,8 +139,10 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
                         // just select the first one as the default
                         pVal = new String[] { flatVocab[0] };
                     } else if (defaultSelection.equalsIgnoreCase("random")) {
-                        // just select the first one as the default
+                        // select a random one as default
                         pVal = new String[] { flatVocab[rand.nextInt(flatVocab.length)] };
+                    } else { // if something else, use 'first'
+                        pVal = new String[] { flatVocab[0] };
                     }
                 }
             } else {
@@ -143,6 +157,29 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
                 pVal = p.getDefault();
             }
             qForm.getMyProps().put(p.getName(), pVal);
+        }
+
+        // check if we need to translate history id into dataset id
+        String cgiParamVal = request.getParameter(CConstants.WDK_HISTORY_ID_KEY);
+        if (cgiParamVal != null && cgiParamVal.length() != 0) {
+            // split the values
+            String[] parts = cgiParamVal.split(":");
+            if (parts.length == 2) {
+                // correct, have both dataset param_name, history_id
+                String paramName = parts[0].trim();
+                int historyId = Integer.parseInt(parts[1].trim());
+
+                // make sure the param exists
+                if (wdkQuestion.getParamsMap().containsKey(paramName)) {
+                    HistoryBean history = user.getHistory(historyId);
+                    Integer datasetId = history.getAnswer().getDatasetId();
+                    qForm.getMyProps().put(paramName, datasetId.toString());
+
+                    // TEST
+                    logger.info("History ID #" + historyId + " is translated "
+                            + "to Dataset ID #" + datasetId);
+                }
+            }
         }
         qForm.setQuestion(wdkQuestion);
         qForm.setParamsFilled(hasAllParams);

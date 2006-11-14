@@ -277,7 +277,9 @@ public class Answer {
         }
     }
 
-    public Integer getDatasetId() {
+    public Integer getDatasetId() throws WdkModelException {
+        Integer datasetId = idsQueryInstance.getQueryInstanceId();
+        if (datasetId == null) idsQueryInstance.getResultAsTableName();
         return idsQueryInstance.getQueryInstanceId();
     }
 

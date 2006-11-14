@@ -64,7 +64,7 @@ public class AnswerBean {
         return sb.toString();
     }
 
-    public Integer getDatasetId() {
+    public Integer getDatasetId() throws WdkModelException {
         return answer.getDatasetId();
     }
 
