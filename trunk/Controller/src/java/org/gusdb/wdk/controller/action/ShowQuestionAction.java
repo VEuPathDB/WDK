@@ -129,20 +129,13 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
                 if (cgiParamValSet != null && cgiParamValSet.length > 0) {
                     // use the user's selection from revise url
                     pVal = cgiParamValSet;
-                } else {
-                    // no selection made, then use the default ones;
+                } else { // no selection made, then use the default ones;
                     String defaultSelection = p.getDefault();
-                    if (defaultSelection.equalsIgnoreCase("all")) {
-                        // select all items
-                        pVal = flatVocab;
-                    } else if (defaultSelection.equalsIgnoreCase("first")) {
+                    if (defaultSelection == null) {
                         // just select the first one as the default
                         pVal = new String[] { flatVocab[0] };
-                    } else if (defaultSelection.equalsIgnoreCase("random")) {
-                        // select a random one as default
-                        pVal = new String[] { flatVocab[rand.nextInt(flatVocab.length)] };
-                    } else { // if something else, use 'first'
-                        pVal = new String[] { flatVocab[0] };
+                    } else { // use the value by the author
+                        pVal = new String[] { defaultSelection };
                     }
                 }
             } else {
