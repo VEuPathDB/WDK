@@ -240,10 +240,11 @@ public class UserFactory {
 
             psUser = SqlUtils.getPreparedStatement(dataSource, "INSERT INTO "
                     + loginSchema + "users (user_id, email, passwd, is_guest, "
-                    + "last_active, last_name, first_name, middle_name, title,"
-                    + " organization, department, address, city, state, "
-                    + "zip_code, phone_number, country) VALUES (?, ?, ' ', ?, "
-                    + "SYSDATE, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                    + "register_time, last_active, last_name, first_name, "
+                    + "middle_name, title, organization, department, address, "
+                    + "city, state, zip_code, phone_number, country) "
+                    + "VALUES (?, ?, ' ', ?, SYSDATE, SYSDATE, ?, ?, ?, ?, ?, "
+                    + "?, ?, ?, ?, ?, ?, ?)");
             psUser.setInt(1, userId);
             psUser.setString(2, email);
             psUser.setBoolean(3, false);
@@ -315,8 +316,8 @@ public class UserFactory {
             String firstName = "Guest #" + userId;
             psUser = SqlUtils.getPreparedStatement(dataSource, "INSERT INTO "
                     + loginSchema + "users (user_id, email, passwd, is_guest, "
-                    + "last_active, first_name) "
-                    + "VALUES (?, ?, ' ', 1, SYSDATE, ?)");
+                    + "register_time, last_active, first_name) "
+                    + "VALUES (?, ?, ' ', 1, SYSDATE, SYSDATE, ?)");
             psUser.setInt(1, userId);
             psUser.setString(2, email);
             psUser.setString(3, firstName);
