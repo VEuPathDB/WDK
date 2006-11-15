@@ -25,6 +25,7 @@ CREATE TABLE logins.users
   email varchar(255) NOT NULL,
   passwd varchar(50) NOT NULL,
   is_guest NUMBER(1) NOT NULL,
+  register_time timestamp,
   last_active timestamp,
   last_name varchar(50),
   first_name varchar(50),
