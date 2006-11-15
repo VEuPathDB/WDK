@@ -62,15 +62,4 @@ public class FlatVocabParam extends AbstractEnumParam {
         param.queryTwoPartName = queryTwoPartName;
         return param;
     }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.Param#getDefault()
-     */
-    @Override
-    public String getDefault() {
-        if (defaultValue == null || defaultValue.length() == 0) return "first";
-        else return defaultValue;
-    }
 }
