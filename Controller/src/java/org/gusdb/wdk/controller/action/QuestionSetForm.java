@@ -1,5 +1,6 @@
 package org.gusdb.wdk.controller.action;
 
+import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionForm;
 import org.gusdb.wdk.model.WdkModelException;
 import java.util.Map;
@@ -16,6 +17,7 @@ public class QuestionSetForm extends ActionForm {
      * 
      */
     private static final long serialVersionUID = 9205598895135808021L;
+    private static Logger logger = Logger.getLogger(QuestionSetForm.class);
 
     public QuestionSetForm () {
 	super();
