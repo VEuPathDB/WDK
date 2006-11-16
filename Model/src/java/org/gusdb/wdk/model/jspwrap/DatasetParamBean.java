@@ -18,6 +18,7 @@ public class DatasetParamBean extends ParamBean {
     
     public DatasetParamBean(DatasetParam datasetParam) {
         super(datasetParam);
+        this.datasetParam = datasetParam;
     }
 
     /* (non-Javadoc)

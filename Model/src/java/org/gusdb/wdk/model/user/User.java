@@ -4,7 +4,6 @@
 package org.gusdb.wdk.model.user;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -29,6 +28,7 @@ public class User {
     private UserFactory userFactory;
     private DatasetFactory datasetFactory;
     private int userId;
+    private String signature;
 
     // basic user information
     private String email;
@@ -55,10 +55,11 @@ public class User {
     private Map<String, String> globalPreferences;
     private Map<String, String> projectPreferences;
 
-    User(WdkModel model, int userId, String email) throws WdkUserException,
-            WdkModelException {
+    User(WdkModel model, int userId, String email, String signature)
+            throws WdkUserException, WdkModelException {
         this.userId = userId;
         this.email = email;
+        this.signature = signature;
         this.model = model;
         this.userFactory = model.getUserFactory();
         this.datasetFactory = model.getDatasetFactory();
@@ -78,6 +79,13 @@ public class User {
      */
     public int getUserId() {
         return userId;
+    }
+
+    /**
+     * @return Returns the signature.
+     */
+    public String getSignature() {
+        return signature;
     }
 
     /**
@@ -316,6 +324,12 @@ public class User {
         return userFactory.createHistory(this, answer, booleanExpression);
     }
 
+    private History createHistory(Answer answer, String booleanExpression,
+            boolean deleted) throws WdkUserException, WdkModelException {
+        return userFactory.createHistory(this, answer, booleanExpression,
+                deleted);
+    }
+
     /**
      * this method is only called by UserFactory during the login process, it
      * merges the existing history of the current guest user into the logged-in
@@ -345,71 +359,110 @@ public class User {
             datasetMap.put(oldName, newName);
         }
 
-        // sort history by id, since the boolean history always has a bigger
-        // history id than its compoment histories
-        Map<Integer, History> hists = user.getHistoriesMap();
-        List<Integer> histIds = new ArrayList<Integer>(hists.keySet());
-        Collections.sort(histIds);
-        Map<String, String> historyMap = new LinkedHashMap<String, String>();
+        // merge histories
+        // a history can be merged only if its all components have been merged
+        Map<Integer, Integer> historyMap = new LinkedHashMap<Integer, Integer>();
+        Map<Integer, History> histories = user.getHistoriesMap();
+        while (!histories.isEmpty()) {
+            // for each round, only merge the histories that have no components,
+            // or all of its components have been merged
+            Map<Integer, History> pendings = new LinkedHashMap<Integer, History>();
+            for (History history : histories.values()) {
+                Set<Integer> components = history.getComponentHistories();
 
-        // recreate each history in the new user's domain, beware to update
-        // the parameter information
-        for (int histId : histIds) {
-            History hist = hists.get(histId);
-
-            // handle boolean history
-            if (hist.isBoolean()) {
-                // need to replace the history Ids in the expression
-                String expression = hist.getBooleanExpression();
-                for (String oldId : historyMap.keySet()) {
-                    String newId = historyMap.get(oldId);
-                    expression = expression.replaceAll("\\b" + oldId + "\\b",
-                            newId);
+                if (components.isEmpty()) {
+                    // no components, can merge
+                    History newHistory = createHistory(history.getAnswer(),
+                            null, history.isDeleted());
+                    newHistory.setCustomName(history.getBaseCustomName());
+                    newHistory.update();
+                    historyMap.put(history.getHistoryId(),
+                            newHistory.getHistoryId());
+                    continue;
                 }
-                History history = combineHistory(expression);
-                historyMap.put(Integer.toString(histId),
-                        Integer.toString(history.getHistoryId()));
-                continue;
-            }
 
-            // handle non-boolean history
-            Answer answer = hist.getAnswer();
-            Question question = answer.getQuestion();
-            QueryInstance qinstance = answer.getIdsQueryInstance();
-            Param[] params = qinstance.getQuery().getParams();
-            Map<String, Object> values = qinstance.getValuesMap();
-
-            // check if the parameter contains DatasetParam
-            boolean repack = false;
-            for (Param param : params) {
-                if (param instanceof DatasetParam) {
-                    // get the type of iput data
-                    DatasetParam dsParam = (DatasetParam) param;
-                    String compound = values.get(dsParam.getName()).toString();
-                    InputType inputType = dsParam.getInputType(compound);
-
-                    // get the input value
-                    String value = compound.substring(compound.indexOf(':') + 1);
-                    if (inputType == InputType.Dataset) {
-                        value = datasetMap.get(value);
-                    } else if (inputType == InputType.History) {
-                        value = historyMap.get(value);
+                // histories with components, the components need ed to be
+                // merged first
+                boolean canMerge = true;
+                for (Integer compId : components) {
+                    if (!historyMap.containsKey(compId)) {
+                        // still have components not merged
+                        canMerge = false;
+                        break;
                     }
-                    compound = inputType.name() + ":" + value;
-                    values.put(param.getName(), compound);
-                    repack = true;
                 }
+                if (!canMerge) {
+                    pendings.put(history.getHistoryId(), history);
+                    continue;
+                }
+
+                // can merge, needs to repack the param values
+                History newHistory;
+                if (history.isBoolean()) {
+                    // merge boolean history
+                    String expression = history.getBooleanExpression();
+                    for (Integer compId : components) {
+                        Integer newId = historyMap.get(compId);
+                        expression = expression.replaceAll("\\b"
+                                + compId.toString() + "\\b", newId.toString());
+                    }
+                    newHistory = combineHistory(expression, history.isDeleted());
+                } else {
+                    // merge histories with DatasetParam/HistoryParam
+                    Answer answer = history.getAnswer();
+                    Question question = answer.getQuestion();
+                    int startIndex = answer.getStartRecordInstanceI();
+                    int endIndex = answer.getEndRecordInstanceI();
+                    Param[] params = question.getParams();
+                    Map<String, Object> values = answer.getParams();
+                    for (Param param : params) {
+                        if (param instanceof HistoryParam) {
+                            String compound = values.get(param.getName()).toString();
+                            // two parts: user_signature, history_id
+                            String parts[] = compound.split(":");
+                            int histId = Integer.parseInt(parts[1].trim());
+                            Integer newId = historyMap.get(histId);
+                            // replace the signature with current user's
+                            String newValue = this.signature + ":" + newId;
+                            values.put(param.getName(), newValue);
+                        } else if (param instanceof DatasetParam) {
+                            DatasetParam dsParam = (DatasetParam) param;
+                            String compound = values.get(param.getName()).toString();
+                            InputType inputType = dsParam.getInputType(compound);
+                            String value = compound.substring(compound.indexOf(':') + 1);
+                            ;
+                            if (inputType == InputType.Dataset) {
+                                value = datasetMap.get(value);
+                            } else if (inputType == InputType.History) {
+                                // three parts: input_type, user_signature,
+                                // history_id
+                                String[] parts = compound.split(":");
+                                int histId = Integer.parseInt(parts[2].trim());
+                                value = this.signature + ":"
+                                        + historyMap.get(histId);
+                            } // otherwise keep the current value
+                            compound = inputType.name() + ":" + value;
+                            values.put(param.getName(), compound);
+                        }
+                    }
+                    answer = question.makeAnswer(values, startIndex, endIndex);
+                    newHistory = createHistory(answer, null,
+                            history.isDeleted());
+                }
+                newHistory.setCustomName(history.getBaseCustomName());
+                newHistory.setDeleted(history.isDeleted());
+                newHistory.update();
+                historyMap.put(history.getHistoryId(),
+                        newHistory.getHistoryId());
             }
-            // need to repack the query
-            if (repack) {
-                int startIndex = answer.getStartRecordInstanceI();
-                int endIndex = answer.getEndRecordInstanceI();
-                answer = question.makeAnswer(values, startIndex, endIndex);
-            }
-            History history = createHistory(answer);
-            historyMap.put(Integer.toString(histId),
-                    Integer.toString(history.getHistoryId()));
+            histories = pendings;
         }
+        // TEST
+        StringBuffer sb = new StringBuffer("The history Mapping: ");
+        for (int histId : historyMap.keySet()) {
+            sb.append("(" + histId + "-" + historyMap.get(histId) + ") ");
+        }
+        logger.info(sb.toString().trim());
     }
 
     /**
@@ -440,7 +493,7 @@ public class User {
         for (History history : histories.values()) {
             // not include the histories marked as 'deleted'
             if (history.isDeleted()) continue;
-            
+
             String type = history.getDataType();
             List<History> list;
             if (category.containsKey(type)) {
@@ -512,6 +565,10 @@ public class User {
             // don't really delete it from the database
             history.setDeleted(true);
             history.update(false);
+
+            // TEST
+            logger.info("History #" + historyId + " of user " + email
+                    + " is depended by other histories. Marked as deleted.");
         } else {
             // delete the history from the database
             userFactory.deleteHistory(this, historyId);
@@ -643,6 +700,11 @@ public class User {
 
     public History combineHistory(String expression) throws WdkUserException,
             WdkModelException {
+        return combineHistory(expression, false);
+    }
+
+    private History combineHistory(String expression, boolean deleted)
+            throws WdkUserException, WdkModelException {
         BooleanExpression exp = new BooleanExpression(this);
         Map<String, String> operatorMap = getWdkModel().getBooleanOperators();
         BooleanQuestionNode root = exp.parseExpression(expression, operatorMap);

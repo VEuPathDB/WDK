@@ -237,14 +237,15 @@ public class UserFactory {
             // get a new userId
             int userId = Integer.parseInt(platform.getNextId(loginSchema,
                     "users"));
+            String signature = encrypt(userId + "_" + email);
 
             psUser = SqlUtils.getPreparedStatement(dataSource, "INSERT INTO "
                     + loginSchema + "users (user_id, email, passwd, is_guest, "
                     + "register_time, last_active, last_name, first_name, "
                     + "middle_name, title, organization, department, address, "
-                    + "city, state, zip_code, phone_number, country) "
-                    + "VALUES (?, ?, ' ', ?, SYSDATE, SYSDATE, ?, ?, ?, ?, ?, "
-                    + "?, ?, ?, ?, ?, ?, ?)");
+                    + "city, state, zip_code, phone_number, country,signature)"
+                    + " VALUES (?, ?, ' ', ?, SYSDATE, SYSDATE, ?, ?, ?, ?, ?,"
+                    + "?, ?, ?, ?, ?, ?, ?, ?)");
             psUser.setInt(1, userId);
             psUser.setString(2, email);
             psUser.setBoolean(3, false);
@@ -260,10 +261,11 @@ public class UserFactory {
             psUser.setString(13, zipCode);
             psUser.setString(14, phoneNumber);
             psUser.setString(15, country);
+            psUser.setString(16, signature);
             psUser.execute();
 
             // create user object
-            User user = new User(wdkModel, userId, email);
+            User user = new User(wdkModel, userId, email, signature);
             user.setLastName(lastName);
             user.setFirstName(firstName);
             user.setMiddleName(middleName);
@@ -297,6 +299,8 @@ public class UserFactory {
             return user;
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
+        } catch (NoSuchAlgorithmException ex) {
+            throw new WdkUserException(ex);
         } finally {
             try {
                 SqlUtils.closeStatement(psUser);
@@ -313,17 +317,19 @@ public class UserFactory {
             int userId = Integer.parseInt(platform.getNextId(loginSchema,
                     "users"));
             String email = GUEST_USER_PREFIX + userId;
+            String signature = encrypt(userId + "_" + email);
             String firstName = "Guest #" + userId;
             psUser = SqlUtils.getPreparedStatement(dataSource, "INSERT INTO "
                     + loginSchema + "users (user_id, email, passwd, is_guest, "
-                    + "register_time, last_active, first_name) "
-                    + "VALUES (?, ?, ' ', 1, SYSDATE, SYSDATE, ?)");
+                    + "register_time, last_active, first_name, signature) "
+                    + "VALUES (?, ?, ' ', 1, SYSDATE, SYSDATE, ?, ?)");
             psUser.setInt(1, userId);
             psUser.setString(2, email);
             psUser.setString(3, firstName);
+            psUser.setString(4, signature);
             psUser.executeUpdate();
 
-            User user = new User(wdkModel, userId, email);
+            User user = new User(wdkModel, userId, email, signature);
             user.setFirstName(firstName);
             user.addUserRole(defaultRole);
             user.setGuest(true);
@@ -333,6 +339,8 @@ public class UserFactory {
 
             return user;
         } catch (SQLException ex) {
+            throw new WdkUserException(ex);
+        } catch (NoSuchAlgorithmException ex) {
             throw new WdkUserException(ex);
         } finally {
             try {
@@ -424,17 +432,13 @@ public class UserFactory {
      */
     public User loadUser(String email) throws WdkUserException,
             WdkModelException {
-        // convert to lower case
         email = email.trim();
 
         ResultSet rsUser = null;
         try {
             // get user information
             PreparedStatement psUser = SqlUtils.getPreparedStatement(
-                    dataSource, "SELECT user_id, is_guest, last_name, "
-                            + "first_name, middle_name, title, organization, "
-                            + "department, address, city, state, zip_code, "
-                            + "phone_number, country FROM " + loginSchema
+                    dataSource, "SELECT user_id FROM " + loginSchema
                             + "users WHERE email = ?");
             psUser.setString(1, email);
             rsUser = psUser.executeQuery();
@@ -444,31 +448,35 @@ public class UserFactory {
 
             // read user info
             int userId = rsUser.getInt("user_id");
-            User user = new User(wdkModel, userId, email);
-            user.setGuest(rsUser.getBoolean("is_guest"));
-            user.setLastName(rsUser.getString("last_name"));
-            user.setFirstName(rsUser.getString("first_name"));
-            user.setMiddleName(rsUser.getString("middle_name"));
-            user.setTitle(rsUser.getString("title"));
-            user.setOrganization(rsUser.getString("organization"));
-            user.setDepartment(rsUser.getString("department"));
-            user.setAddress(rsUser.getString("address"));
-            user.setCity(rsUser.getString("city"));
-            user.setState(rsUser.getString("state"));
-            user.setZipCode(rsUser.getString("zip_code"));
-            user.setPhoneNumber(rsUser.getString("phone_number"));
-            user.setCountry(rsUser.getString("country"));
+            return loadUser(userId);
+        } catch (SQLException ex) {
+            throw new WdkUserException(ex);
+        } finally {
+            try {
+                SqlUtils.closeResultSet(rsUser);
+            } catch (SQLException ex) {
+                throw new WdkUserException(ex);
+            }
+        }
+    }
 
-            // load the user's roles
-            loadUserRoles(user);
+    public User loadUserBySignature(String signature) throws WdkUserException,
+            WdkModelException {
+        ResultSet rsUser = null;
+        try {
+            // get user information
+            PreparedStatement psUser = SqlUtils.getPreparedStatement(
+                    dataSource, "SELECT user_id FROM " + loginSchema
+                            + "users WHERE signature = ?");
+            psUser.setString(1, signature);
+            rsUser = psUser.executeQuery();
+            if (!rsUser.next())
+                throw new WdkUserException("The user with signature '"
+                        + signature + "' doesn't exist.");
 
-            // load user's preferences
-            loadPreferences(user);
-
-            // update user active timestamp
-            markActive(user);
-
-            return user;
+            // read user info
+            int userId = rsUser.getInt("user_id");
+            return loadUser(userId);
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
         } finally {
@@ -485,7 +493,8 @@ public class UserFactory {
         try {
             // get user information
             PreparedStatement psUser = SqlUtils.getPreparedStatement(
-                    dataSource, "SELECT email, is_guest, last_name, "
+                    dataSource,
+                    "SELECT email, signature, is_guest, last_name, "
                             + "first_name, middle_name, title, organization, "
                             + "department, address, city, state, zip_code, "
                             + "phone_number, country FROM " + loginSchema
@@ -498,7 +507,8 @@ public class UserFactory {
 
             // read user info
             String email = rsUser.getString("email");
-            User user = new User(wdkModel, userId, email);
+            String signature = rsUser.getString("signature");
+            User user = new User(wdkModel, userId, email, signature);
             user.setGuest(rsUser.getBoolean("is_guest"));
             user.setLastName(rsUser.getString("last_name"));
             user.setFirstName(rsUser.getString("first_name"));
@@ -536,8 +546,8 @@ public class UserFactory {
 
     public User[] queryUsers(String emailPattern) throws WdkUserException,
             WdkModelException {
-        String sql = "SELECT user_id FROM " + loginSchema + "users";
-        ;
+        String sql = "SELECT user_id, email FROM " + loginSchema + "users ";
+
         if (emailPattern != null && emailPattern.length() > 0) {
             emailPattern = emailPattern.replace('*', '%');
             emailPattern = emailPattern.replaceAll("'", "");
@@ -546,18 +556,37 @@ public class UserFactory {
         sql += " ORDER BY email";
         List<User> users = new ArrayList<User>();
         ResultSet rs = null;
+
+        // HACK
+        PreparedStatement psUser = null;
         try {
+            psUser = SqlUtils.getPreparedStatement(dataSource, "Update "
+                    + loginSchema + "users SET signature = ? WHERE user_id = ?");
+
             rs = SqlUtils.getResultSet(dataSource, sql);
             while (rs.next()) {
-                int userId = rs.getInt("userId");
-                User user = loadUser(userId);
-                users.add(user);
+                int userId = rs.getInt("user_id");
+
+                // HACK insert the following code to update signature
+                String email = rs.getString("email");
+                String signature = encrypt(userId + "_" + email);
+                psUser.setString(1, signature);
+                psUser.setInt(2, userId);
+                psUser.executeUpdate();
+                System.out.println("User [" + userId + "] " + email
+                        + "'s signature is updated");
+
+                // User user = loadUser(userId);
+                // users.add(user);
             }
         } catch (SQLException ex) {
+            throw new WdkUserException(ex);
+        } catch (NoSuchAlgorithmException ex) {
             throw new WdkUserException(ex);
         } finally {
             try {
                 SqlUtils.closeResultSet(rs);
+                SqlUtils.closeStatement(psUser);
             } catch (SQLException ex) {
                 throw new WdkUserException(ex);
             }
@@ -768,7 +797,8 @@ public class UserFactory {
         return maxId;
     }
 
-    Map<Integer, History> loadHistories(User user) throws WdkUserException {
+    Map<Integer, History> loadHistories(User user) throws WdkUserException,
+            WdkModelException {
         Map<Integer, History> histories = new LinkedHashMap<Integer, History>();
 
         ResultSet rsHistory = null;
@@ -932,6 +962,11 @@ public class UserFactory {
 
     History createHistory(User user, Answer answer, String booleanExpression)
             throws WdkUserException, WdkModelException {
+        return createHistory(user, answer, booleanExpression, false);
+    }
+
+    History createHistory(User user, Answer answer, String booleanExpression,
+            boolean deleted) throws WdkUserException, WdkModelException {
         int userId = user.getUserId();
         String questionName = answer.getQuestion().getFullName();
 
@@ -954,10 +989,11 @@ public class UserFactory {
             PreparedStatement psCheck = SqlUtils.getPreparedStatement(
                     dataSource, "SELECT history_id FROM " + loginSchema
                             + "histories WHERE user_id = ? AND project_id = ? "
-                            + "AND checksum = ? AND is_deleted = 0");
+                            + "AND checksum = ? AND is_deleted = ?");
             psCheck.setInt(1, userId);
             psCheck.setString(2, projectId);
             psCheck.setString(3, checksum);
+            psCheck.setBoolean(4, deleted);
             rsHistory = psCheck.executeQuery();
 
             if (rsHistory.next()) {
@@ -1424,7 +1460,7 @@ public class UserFactory {
         }
     }
 
-    private String encrypt(String str) throws NoSuchAlgorithmException {
+    String encrypt(String str) throws NoSuchAlgorithmException {
         MessageDigest digest = MessageDigest.getInstance("MD5");
         byte[] encrypted = digest.digest(str.getBytes());
         // convert each byte into hex format

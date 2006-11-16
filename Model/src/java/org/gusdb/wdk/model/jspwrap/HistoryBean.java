@@ -140,17 +140,6 @@ public class HistoryBean {
         return history.isDepended();
     }
 
-    public String getDependencyString() throws WdkUserException,
-            WdkModelException {
-        int[] depends = history.getDependencies();
-        StringBuffer sb = new StringBuffer();
-        if (depends.length > 0) sb.append("#" + depends[0]);
-        for (int i = 1; i < depends.length; i++) {
-            sb.append(", #" + depends[i]);
-        }
-        return sb.toString();
-    }
-
     /**
      * @return
      * @throws WdkUserException

@@ -45,6 +45,7 @@
     <choice>
       <ref name="stringParam" />
       <ref name="flatVocabParam" />
+      <ref name="historyParam" />
     </choice>
   </define>
   
@@ -239,7 +240,14 @@
       <attribute name="queryRef" />
     </element>
   </define>
-   
+    
+  <define name="historyParam">
+    <element name="historyParam">
+      <ref name="ParamBaseContents" />
+    </element>
+  </define>
+
+      
   <!-- Columns -->
   <define name="sqlColumn">
     <element name="column">
