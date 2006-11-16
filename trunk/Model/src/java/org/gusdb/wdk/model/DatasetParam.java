@@ -9,8 +9,9 @@ import org.gusdb.wdk.model.user.History;
 import org.gusdb.wdk.model.user.User;
 
 /**
- * @author xingao
- * 
+ * @author xingao the DatasetParam is not functioning as of Nov.16, 2006, will
+ *         be rewritten soon. The User cannot be a member, since DatasetParam
+ *         has a global scope, while User object does not.
  */
 public class DatasetParam extends Param {
 
@@ -56,7 +57,9 @@ public class DatasetParam extends Param {
                 if (null == user.getDataset(val))
                     return "The dataset name '" + val + "' is invalid.";
             } else if (inputType == InputType.History) {
-                int historyId = Integer.parseInt(val);
+                String[] parts = val.split(":");
+                String signature = parts[0].trim();
+                int historyId = Integer.parseInt(parts[1].trim());
                 if (null == user.getHistory(historyId))
                     return "The history id #" + historyId + " is invalid.";
             }

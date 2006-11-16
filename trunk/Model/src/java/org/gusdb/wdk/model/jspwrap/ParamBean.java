@@ -9,7 +9,7 @@ import org.gusdb.wdk.model.WdkModelException;
  */
 public class ParamBean {
 
-    Param param;
+    protected Param param;
 
     public ParamBean(Param param) {
         this.param = param;

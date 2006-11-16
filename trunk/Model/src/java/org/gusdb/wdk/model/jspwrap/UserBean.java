@@ -309,6 +309,15 @@ public class UserBean {
     /*
      * (non-Javadoc)
      * 
+     * @see org.gusdb.wdk.model.user.User#getSignature()
+     */
+    public String getSignature() {
+        return user.getSignature();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.user.User#changePassword(java.lang.String,
      *      java.lang.String, java.lang.String)
      */
@@ -712,13 +721,14 @@ public class UserBean {
         return user.getItemsPerPage();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.user.User#setItemsPerPage(int)
      */
     public void setItemsPerPage(int itemsPerPage) throws WdkUserException {
         user.setItemsPerPage(itemsPerPage);
     }
-    
 
     /*
      * (non-Javadoc)

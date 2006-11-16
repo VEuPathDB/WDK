@@ -3,17 +3,19 @@
  */
 package org.gusdb.wdk.model.user;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.BooleanExpression;
+import org.gusdb.wdk.model.DatasetParam;
+import org.gusdb.wdk.model.HistoryParam;
+import org.gusdb.wdk.model.Param;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.DatasetParam.InputType;
 
 /**
  * @author xingao
@@ -32,7 +34,7 @@ public class History {
     private boolean isBoolean;
     private String booleanExpression;
     private boolean isDeleted;
-    private int[] dependencies = null;
+    private Boolean isDepended;
 
     History(UserFactory factory, User user, int historyId) {
         this.factory = factory;
@@ -60,6 +62,10 @@ public class History {
         this.createdTime = createdTime;
     }
 
+    String getBaseCustomName() {
+        return customName;
+    }
+    
     /**
      * @return Returns the customName. If no custom name set before, it will
      *         return the default name provided by the underline Answer - a
@@ -191,56 +197,53 @@ public class History {
     }
 
     public boolean isDepended() throws WdkUserException, WdkModelException {
-        int[] array = getDependencies();
-        return (array.length != 0);
+        if (isDepended == null) computeDependencies(user.getHistories());
+        return isDepended;
     }
 
-    public int[] getDependencies() throws WdkUserException, WdkModelException {
-        if (dependencies == null) computeDependencies(user.getHistories());
-        return dependencies;
-    }
-
-    void computeDependencies(History[] histories) {
-        Set<Integer> dependencies = new LinkedHashSet<Integer>();
-        List<History> candidates = new ArrayList<History>();
-        BooleanExpression expression = new BooleanExpression(user);
-
-        // initialize container
-        dependencies.add(historyId);
+    void computeDependencies(History[] histories) throws WdkModelException {
+        isDepended = false;
         for (History history : histories) {
-            if (history.getHistoryId() != historyId && history.isBoolean())
-                candidates.add(history);
-        }
-
-        // iterate till no new dependencies are added
-        boolean updated = true;
-        while (updated) {
-            int previousSize = dependencies.size();
-            List<History> newCandidates = new ArrayList<History>();
-            for (History history : candidates) {
-                Set<Integer> depends = expression.getOperands(history.getBooleanExpression());
-                for (int histId : depends) {
-                    if (dependencies.contains(histId)) {
-                        dependencies.add(history.getHistoryId());
-                    }
-                }
-                // check if the history is still a candidate, that is, it's not
-                // in the dependencies list
-                if (!dependencies.contains(history.getHistoryId()))
-                    newCandidates.add(history);
+            if (history.historyId == this.historyId) continue;
+            Set<Integer> components = history.getComponentHistories();
+            if (components.contains(historyId)) {
+                isDepended = true;
+                break;
             }
-            candidates = newCandidates;
-            // check if there's update on dependencies
-            updated = (dependencies.size() != previousSize);
         }
-        // skip the history id of itself
-        this.dependencies = new int[dependencies.size() - 1];
-        int i = 0;
-        for (int histId : dependencies) {
-            if (histId == historyId) continue;
-            this.dependencies[i++] = histId;
+    }
+
+    /**
+     * @return get a list of history ID's this one depends on directly.
+     * @throws WdkModelException
+     */
+    public Set<Integer> getComponentHistories() throws WdkModelException {
+        if (isBoolean) {
+            BooleanExpression parser = new BooleanExpression(user);
+            return parser.getOperands(booleanExpression);
+        } else {
+            Set<Integer> components = new LinkedHashSet<Integer>();
+            Param[] params = answer.getQuestion().getParams();
+            Map<String, Object> values = answer.getParams();
+            for (Param param : params) {
+                if (param instanceof DatasetParam) {
+                    DatasetParam dsParam = (DatasetParam) param;
+                    String compound = values.get(param.getName()).toString();
+                    InputType inputType = dsParam.getInputType(compound);
+                    if (inputType == InputType.History) {
+                        // three parts: input_type, user_signature, history_id
+                        String[] parts = compound.split(":");
+                        components.add(Integer.parseInt(parts[2].trim()));
+                    }
+                } else if (param instanceof HistoryParam) {
+                    String compound = values.get(param.getName()).toString();
+                    // two parts: user_signature, history_id
+                    String[] parts = compound.split(":");
+                    components.add(Integer.parseInt(parts[1].trim()));
+                }
+            }
+            return components;
         }
-        Arrays.sort(this.dependencies);
     }
 
     public String getDescription() {
