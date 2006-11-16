@@ -471,6 +471,13 @@ public class ModelXmlParser {
 
         /*  */digester.addSetNext("wdkModel/paramSet/flatVocabParam",
                 "addParam");
+        
+        /*  */digester.addObjectCreate("wdkModel/paramSet/historyParam",
+                HistoryParam.class);
+
+        /*  */digester.addSetProperties("wdkModel/paramSet/historyParam");
+
+        /*  */digester.addSetNext("wdkModel/paramSet/historyParam", "addParam");
 
         /**/digester.addSetNext("wdkModel/paramSet", "addParamSet");
 
