@@ -85,6 +85,29 @@ public class UserFactory {
             this.userId = userId;
             this.historyId = historyId;
         }
+
+        /*
+         * (non-Javadoc)
+         * 
+         * @see java.lang.Object#equals(java.lang.Object)
+         */
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof HistoryKey) {
+                HistoryKey hkey = (HistoryKey) obj;
+                return ((this.userId == hkey.userId) && (this.historyId == hkey.historyId));
+            } else return false;
+        }
+
+        /*
+         * (non-Javadoc)
+         * 
+         * @see java.lang.Object#hashCode()
+         */
+        @Override
+        public int hashCode() {
+            return (userId + (userId ^ historyId));
+        }
     }
 
     public static final String GUEST_USER_PREFIX = "WDK_GUEST_";
@@ -546,7 +569,7 @@ public class UserFactory {
 
     public User[] queryUsers(String emailPattern) throws WdkUserException,
             WdkModelException {
-        String sql = "SELECT user_id, email FROM " + loginSchema + "users ";
+        String sql = "SELECT user_id, email FROM " + loginSchema + "users";
 
         if (emailPattern != null && emailPattern.length() > 0) {
             emailPattern = emailPattern.replace('*', '%');
@@ -556,10 +579,48 @@ public class UserFactory {
         sql += " ORDER BY email";
         List<User> users = new ArrayList<User>();
         ResultSet rs = null;
+        try {
+            rs = SqlUtils.getResultSet(dataSource, sql);
+            while (rs.next()) {
+                int userId = rs.getInt("user_id");
+                User user = loadUser(userId);
+                users.add(user);
+            }
+        } catch (SQLException ex) {
+            throw new WdkUserException(ex);
+        } finally {
+            try {
+                SqlUtils.closeResultSet(rs);
+            } catch (SQLException ex) {
+                throw new WdkUserException(ex);
+            }
+        }
+        User[] array = new User[users.size()];
+        users.toArray(array);
+        return array;
+    }
 
-        // HACK
+    public void checkConsistancy() throws WdkUserException {
+        String sql = "SELECT user_id, email FROM " + loginSchema + "users "
+                + "where signature is null";
+
+        ResultSet rs = null;
         PreparedStatement psUser = null;
         try {
+            // update user's register time
+            int count = SqlUtils.executeUpdate(dataSource, "UPDATE "
+                    + loginSchema + "users SET register_time = last_active "
+                    + "WHERE register_time is null");
+            System.out.println(count + " users with empty register_time have "
+                    + "been updated");
+
+            // update history's is_delete field
+            count = SqlUtils.executeUpdate(dataSource, "UPDATE " + loginSchema
+                    + "histories SET is_deleted = 0 WHERE is_deleted is null");
+            System.out.println(count + " histories with empty is_deleted have "
+                    + "been updated");
+
+            // update user's signature
             psUser = SqlUtils.getPreparedStatement(dataSource, "Update "
                     + loginSchema + "users SET signature = ? WHERE user_id = ?");
 
@@ -567,7 +628,6 @@ public class UserFactory {
             while (rs.next()) {
                 int userId = rs.getInt("user_id");
 
-                // HACK insert the following code to update signature
                 String email = rs.getString("email");
                 String signature = encrypt(userId + "_" + email);
                 psUser.setString(1, signature);
@@ -575,9 +635,6 @@ public class UserFactory {
                 psUser.executeUpdate();
                 System.out.println("User [" + userId + "] " + email
                         + "'s signature is updated");
-
-                // User user = loadUser(userId);
-                // users.add(user);
             }
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
@@ -591,9 +648,6 @@ public class UserFactory {
                 throw new WdkUserException(ex);
             }
         }
-        User[] array = new User[users.size()];
-        users.toArray(array);
-        return array;
     }
 
     private void loadUserRoles(User user) throws WdkUserException {

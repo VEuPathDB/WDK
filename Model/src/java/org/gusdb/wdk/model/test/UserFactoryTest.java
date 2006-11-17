@@ -58,6 +58,17 @@ public class UserFactoryTest extends TestCase {
         }
     }
 
+    private static String[] checkKeys = { "model" };
+    private static boolean[] checkRequired = { true };
+
+    private static Map<String, Boolean> checkParams = new LinkedHashMap<String, Boolean>();
+
+    static {
+        for (int i = 0; i < checkKeys.length; i++) {
+            checkParams.put(checkKeys[i].toLowerCase(), checkRequired[i]);
+        }
+    }
+
     private static UserFactory factory;
 
     private String email = "jerric@uga.edu";
@@ -82,6 +93,8 @@ public class UserFactoryTest extends TestCase {
             params = prepareParameters(subArgs, listParams);
         } else if (cmd.equalsIgnoreCase("delete")) {
             params = prepareParameters(subArgs, deleteParams);
+        } else if (cmd.equalsIgnoreCase("check")) {
+            params = prepareParameters(subArgs, checkParams);
         } else {
             printUsage("Unknown command for userTester: " + cmd);
             System.exit(-1);
@@ -99,6 +112,7 @@ public class UserFactoryTest extends TestCase {
         if (cmd.equalsIgnoreCase("add")) addUser(params);
         else if (cmd.equalsIgnoreCase("list")) listUsers(params);
         else if (cmd.equalsIgnoreCase("delete")) deleteUser(params);
+        else if (cmd.equalsIgnoreCase("check")) checkConsistancy(params);
     }
 
     /*
@@ -321,6 +335,15 @@ public class UserFactoryTest extends TestCase {
             else System.err.print(" -" + key + " <" + key + ">");
         }
         System.err.println();
+        System.err.println();
+
+        System.err.print("\twdkUser check");
+        for (String key : listParams.keySet()) {
+            boolean required = listParams.get(key);
+            if (!required) System.err.print(" [-" + key + " <" + key + ">]");
+            else System.err.print(" -" + key + " <" + key + ">");
+        }
+        System.err.println();
     }
 
     public static void addUser(Map<String, String> params)
@@ -380,5 +403,11 @@ public class UserFactoryTest extends TestCase {
 
         System.out.println("User " + email
                 + " has be deleted from the database.");
+    }
+
+    public static void checkConsistancy(Map<String, String> params)
+            throws WdkUserException, WdkModelException {
+        factory.checkConsistancy();
+        System.out.println("Consistancy check finished.");
     }
 }
