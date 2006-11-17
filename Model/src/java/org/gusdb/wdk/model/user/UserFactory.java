@@ -1025,9 +1025,10 @@ public class UserFactory {
         String questionName = answer.getQuestion().getFullName();
 
         boolean isBoolean = answer.getIsBoolean();
-        String customName = (isBoolean) ? booleanExpression : null;
-        if (customName != null && customName.length() > 4000)
-            customName = customName.substring(0, 4000);
+        // String customName = (isBoolean) ? booleanExpression : null;
+        // if (customName != null && customName.length() > 4000)
+        // customName = customName.substring(0, 4000);
+        String customName = null;
 
         int estimateSize = answer.getResultSize();
         QueryInstance qinstance = answer.getIdsQueryInstance();
@@ -1127,7 +1128,7 @@ public class UserFactory {
                     + loginSchema + "histories SET custom_name = ?, "
                     + "last_run_time = ?, is_deleted = ? WHERE user_id = ? "
                     + "AND project_id = ? AND history_id = ?");
-            psHistory.setString(1, history.getCustomName());
+            psHistory.setString(1, history.getBaseCustomName());
             psHistory.setTimestamp(2, new Timestamp(lastRunTime.getTime()));
             psHistory.setBoolean(3, history.isDeleted());
             psHistory.setInt(4, user.getUserId());
