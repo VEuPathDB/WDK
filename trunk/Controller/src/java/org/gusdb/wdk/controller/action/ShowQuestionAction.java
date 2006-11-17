@@ -18,7 +18,6 @@ import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.FlatVocabParamBean;
-import org.gusdb.wdk.model.jspwrap.HistoryBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.QuestionSetBean;
@@ -150,29 +149,6 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
                 pVal = p.getDefault();
             }
             qForm.getMyProps().put(p.getName(), pVal);
-        }
-
-        // check if we need to translate history id into dataset id
-        String cgiParamVal = request.getParameter(CConstants.WDK_HISTORY_ID_KEY);
-        if (cgiParamVal != null && cgiParamVal.length() != 0) {
-            // split the values
-            String[] parts = cgiParamVal.split(":");
-            if (parts.length == 2) {
-                // correct, have both dataset param_name, history_id
-                String paramName = parts[0].trim();
-                int historyId = Integer.parseInt(parts[1].trim());
-
-                // make sure the param exists
-                if (wdkQuestion.getParamsMap().containsKey(paramName)) {
-                    HistoryBean history = user.getHistory(historyId);
-                    Integer datasetId = history.getAnswer().getDatasetId();
-                    qForm.getMyProps().put(paramName, datasetId.toString());
-
-                    // TEST
-                    logger.info("History ID #" + historyId + " is translated "
-                            + "to Dataset ID #" + datasetId);
-                }
-            }
         }
         qForm.setQuestion(wdkQuestion);
         qForm.setParamsFilled(hasAllParams);
