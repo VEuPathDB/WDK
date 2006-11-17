@@ -50,6 +50,13 @@ public class HistoryBean {
         return history.getCustomName();
     }
 
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.user.History#getBaseCustomName()
+     */
+    public String getBaseCustomName() {
+        return history.getBaseCustomName();
+    }
+
     /*
      * (non-Javadoc)
      * 

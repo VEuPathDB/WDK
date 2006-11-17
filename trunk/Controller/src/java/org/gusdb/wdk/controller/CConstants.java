@@ -25,7 +25,7 @@ public class CConstants {
     public static final String WDK_RECORD_KEY = "wdkRecord";
     public static final String WDK_HISTORY_KEY = "wdkHistory";
     public static final String WDK_HISTORY_ID_KEY = "wdk_history_id";
-    public static final String WDK_HISTORY_CUSTOM_NAME_KEY = "wdk_custom_name";
+    public static final String WDK_HISTORY_CUSTOM_NAME_KEY = "customName";
     public static final String NEXT_QUESTION_OPERAND = "nextQuestionOperand";
     public static final String QUESTIONFORM_KEY = "questionForm";
     public static final String BOOLEAN_QUESTION_FORM_KEY = "booleanQuestionForm";

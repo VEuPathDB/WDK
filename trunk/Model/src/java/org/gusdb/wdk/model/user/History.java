@@ -62,7 +62,7 @@ public class History {
         this.createdTime = createdTime;
     }
 
-    String getBaseCustomName() {
+    public String getBaseCustomName() {
         return customName;
     }
     
