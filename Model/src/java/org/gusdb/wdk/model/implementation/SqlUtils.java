@@ -200,17 +200,12 @@ public class SqlUtils {
         ResultSet resultSet = null;
         String result = null;
 
-        // TEST
-        // if (debug) System.out.println("<==runStringQuery==>: " + sql);
-
         try {
             resultSet = getResultSet(dataSource, sql);
             if (resultSet.next()) {
                 result = resultSet.getString(1);
             }
         } catch (SQLException e) {
-            // System.err.println("Failed attempting to execute sql in
-            // runStringQuery: '" + sql + "'");
             logger.error("Failed attempting to execute sql in runStringQuery: '"
                     + sql + "'");
             e.printStackTrace(System.err);
