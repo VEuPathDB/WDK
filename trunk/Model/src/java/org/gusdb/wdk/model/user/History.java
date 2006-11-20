@@ -74,7 +74,7 @@ public class History {
     public String getCustomName() {
         String name = customName;
         if (name == null)
-            name = (isBoolean) ? booleanExpression : answer.getName();
+            name = (isBoolean) ? booleanExpression : answer.getQuestion().getDisplayName();
         if (name != null) {
             // remove script injections
             name = name.replaceAll("<.+?>", " ");

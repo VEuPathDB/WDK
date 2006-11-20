@@ -359,6 +359,8 @@ public class UserFactory {
 
             // save user's roles
             saveUserRoles(user);
+            
+            logger.info("Guest user #" + userId + " created.");
 
             return user;
         } catch (SQLException ex) {

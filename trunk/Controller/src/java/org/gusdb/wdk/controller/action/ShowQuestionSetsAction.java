@@ -8,7 +8,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
@@ -16,11 +15,8 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.QuestionSetBean;
-import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
 /**
@@ -53,22 +49,8 @@ public class ShowQuestionSetsAction extends Action {
 
     protected static void sessionStart(HttpServletRequest request,
             HttpServlet servlet) {
-        if (request.getSession().getAttribute(CConstants.WDK_USER_KEY) != null) {
-            return;
-        }
         WdkModelBean wdkModel = (WdkModelBean) servlet.getServletContext().getAttribute(
                 CConstants.WDK_MODEL_KEY);
-        HttpSession session = request.getSession();
-        // create a guest user
-        try {
-            UserBean guest = wdkModel.getUserFactory().getGuestUser();
-
-            session.setAttribute(CConstants.WDK_USER_KEY, guest);
-        } catch (WdkUserException ex) {
-            throw new RuntimeException(ex);
-        } catch (WdkModelException ex) {
-            throw new RuntimeException(ex);
-        }
         Map sumAttrsByQuestion = getSummaryAttributesByQuestionMap(wdkModel);
         request.getSession().setAttribute(CConstants.WDK_SUMMARY_ATTRS_KEY,
                 sumAttrsByQuestion);
