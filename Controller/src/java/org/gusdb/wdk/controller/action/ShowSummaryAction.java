@@ -43,7 +43,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
         AnswerBean wdkAnswer = null;
         HistoryBean history = null;
 
-        // get user
+        // get user, or create one, if not exist
         WdkModelBean wdkModel = (WdkModelBean) servlet.getServletContext().getAttribute(
                 CConstants.WDK_MODEL_KEY);
         UserBean wdkUser = (UserBean) request.getSession().getAttribute(
