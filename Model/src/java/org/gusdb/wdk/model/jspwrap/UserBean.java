@@ -527,15 +527,6 @@ public class UserBean {
         user.save();
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.user.User#update()
-     */
-    public void update() throws WdkUserException {
-        user.update();
-    }
-
     // =========================================================================
     // Methods for dataset operations
     // =========================================================================

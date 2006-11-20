@@ -54,6 +54,9 @@ public class User {
      */
     private Map<String, String> globalPreferences;
     private Map<String, String> projectPreferences;
+    
+    // cache the history count in memory
+    int historyCount;
 
     User(WdkModel model, int userId, String email, String signature)
             throws WdkUserException, WdkModelException {
@@ -68,6 +71,8 @@ public class User {
 
         globalPreferences = new LinkedHashMap<String, String>();
         projectPreferences = new LinkedHashMap<String, String>();
+        
+        historyCount = 0;
     }
 
     public WdkModel getWdkModel() {
@@ -280,8 +285,6 @@ public class User {
      * @throws WdkUserException
      */
     public boolean isGuest() throws WdkUserException {
-        // update user's time stamp
-        userFactory.updateUser(this);
         return guest;
     }
 
@@ -316,12 +319,7 @@ public class User {
 
     public History createHistory(Answer answer) throws WdkUserException,
             WdkModelException {
-        return createHistory(answer, null);
-    }
-
-    private History createHistory(Answer answer, String booleanExpression)
-            throws WdkUserException, WdkModelException {
-        return userFactory.createHistory(this, answer, booleanExpression);
+        return createHistory(answer, null, false);
     }
 
     private History createHistory(Answer answer, String booleanExpression,
@@ -476,11 +474,18 @@ public class User {
      */
     public Map<Integer, History> getHistoriesMap() throws WdkUserException,
             WdkModelException {
-        return userFactory.loadHistories(this);
+        Map<Integer, History> histories =  userFactory.loadHistories(this);
+        
+        // update the history count
+        historyCount = 0;
+        for (History history : histories.values()) {
+            if (!history.isDeleted()) historyCount++;
+        }
+        return histories;
     }
 
     public History[] getHistories() throws WdkUserException, WdkModelException {
-        Map<Integer, History> map = userFactory.loadHistories(this);
+        Map<Integer, History> map = getHistoriesMap();
         History[] array = new History[map.size()];
         map.values().toArray(array);
         return array;
@@ -488,7 +493,7 @@ public class User {
 
     public Map<String, List<History>> getHistoriesByCategory()
             throws WdkUserException, WdkModelException {
-        Map<Integer, History> histories = userFactory.loadHistories(this);
+        Map<Integer, History> histories = getHistoriesMap();
         Map<String, List<History>> category = new LinkedHashMap<String, List<History>>();
         for (History history : histories.values()) {
             // not include the histories marked as 'deleted'
@@ -517,7 +522,7 @@ public class User {
      */
     public Map<Integer, History> getHistoriesMap(String dataType)
             throws WdkUserException, WdkModelException {
-        Map<Integer, History> histories = userFactory.loadHistories(this);
+        Map<Integer, History> histories = getHistoriesMap();
         Map<Integer, History> selected = new LinkedHashMap<Integer, History>();
         for (int historyId : histories.keySet()) {
             History history = histories.get(historyId);
@@ -573,10 +578,22 @@ public class User {
             // delete the history from the database
             userFactory.deleteHistory(this, historyId);
         }
+        // decrement the history count
+        historyCount--;
     }
 
     public int getHistoryCount() throws WdkUserException {
-        return userFactory.getHistoryCount(this);
+        return historyCount;
+    }
+    
+    
+
+    
+    /**
+     * @param historyCount The historyCount to set.
+     */
+    void setHistoryCount(int historyCount) {
+        this.historyCount = historyCount;
     }
 
     public void setProjectPreference(String prefName, String prefValue) {
@@ -622,7 +639,6 @@ public class User {
             String confirmPassword) throws WdkUserException {
         userFactory.changePassword(email, oldPassword, newPassword,
                 confirmPassword);
-        update();
     }
 
     public Map<String, Dataset> getDatasetsMap() throws WdkUserException {
@@ -678,11 +694,6 @@ public class User {
         userFactory.saveUser(this);
     }
 
-    public void update() throws WdkUserException {
-        // update user's time stamp
-        userFactory.updateUser(this);
-    }
-
     public int getItemsPerPage() {
         String prefValue = getGlobalPreference(User.PREF_ITEMS_PER_PAGE);
         int itemsPerPage = (prefValue == null) ? 20
@@ -710,7 +721,7 @@ public class User {
         BooleanQuestionNode root = exp.parseExpression(expression, operatorMap);
 
         Answer answer = root.makeAnswer(1, getItemsPerPage());
-        return createHistory(answer, expression);
+        return createHistory(answer, expression, false);
     }
 
     public String validateExpression(String expression,
