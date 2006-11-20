@@ -71,7 +71,7 @@ public class WSQueryInstance extends QueryInstance  {
             this.resultMessage = response.getMessage();
             
             // TEST
-            logger.info("WSQI Result Message:" + resultMessage);
+            logger.debug("WSQI Result Message:" + resultMessage);
             
             String[][] result = response.getResults();
             return new WSResultList(this, result);
