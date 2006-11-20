@@ -324,8 +324,6 @@ public class UserFactory {
             throw new WdkUserException(ex);
         } catch (NoSuchAlgorithmException ex) {
             throw new WdkUserException(ex);
-        } catch (Exception ex) {
-            throw new WdkUserException(ex);
         } finally {
             try {
                 SqlUtils.closeStatement(psUser);
@@ -367,8 +365,6 @@ public class UserFactory {
             throw new WdkUserException(ex);
         } catch (NoSuchAlgorithmException ex) {
             throw new WdkUserException(ex);
-        } catch (Exception ex) {
-            throw new WdkUserException(ex);
         } finally {
             try {
                 SqlUtils.closeStatement(psUser);
@@ -390,7 +386,6 @@ public class UserFactory {
 
         // merge the history of the guest into the user
         user.mergeUser(guest);
-        user.update();
         return user;
     }
 
@@ -405,48 +400,24 @@ public class UserFactory {
 
             // query on the database to see if the pair match
             PreparedStatement ps = SqlUtils.getPreparedStatement(dataSource,
-                    "SELECT count(*) " + "FROM " + loginSchema + "users WHERE "
+                    "SELECT user_id " + "FROM " + loginSchema + "users WHERE "
                             + "email = ? AND passwd = ?");
             ps.setString(1, email);
             ps.setString(2, password);
             rs = ps.executeQuery();
-            rs.next();
-            int count = rs.getInt(1);
-            if (count != 1)
+            if (!rs.next())
                 throw new WdkUserException("Invalid email or password.");
+            int userId = rs.getInt("user_id");
 
             // passed validation, load user information
-            return loadUser(email);
+            return loadUser(userId);
         } catch (NoSuchAlgorithmException ex) {
             throw new WdkUserException(ex);
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
-        } catch (Exception ex) {
-            throw new WdkUserException(ex);
-       } finally {
-            try {
-                SqlUtils.closeResultSet(rs);
-            } catch (SQLException ex) {
-                throw new WdkUserException(ex);
-            }
-        }
-    }
-
-    private void markActive(User user) throws WdkUserException {
-        PreparedStatement psUser = null;
-        try {
-            psUser = SqlUtils.getPreparedStatement(dataSource, "UPDATE "
-                    + loginSchema + "users SET last_active = SYSDATE WHERE "
-                    + "user_id = ?");
-            psUser.setInt(1, user.getUserId());
-            psUser.executeUpdate();
-        } catch (SQLException ex) {
-            throw new WdkUserException(ex);
-        } catch (Exception ex) {
-            throw new WdkUserException(ex);
         } finally {
             try {
-                SqlUtils.closeStatement(psUser);
+                SqlUtils.closeResultSet(rs);
             } catch (SQLException ex) {
                 throw new WdkUserException(ex);
             }
@@ -482,8 +453,6 @@ public class UserFactory {
             return loadUser(userId);
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
-        } catch (Exception ex) {
-            throw new WdkUserException(ex);
         } finally {
             try {
                 SqlUtils.closeResultSet(rsUser);
@@ -511,8 +480,6 @@ public class UserFactory {
             int userId = rsUser.getInt("user_id");
             return loadUser(userId);
         } catch (SQLException ex) {
-            throw new WdkUserException(ex);
-        } catch (Exception ex) {
             throw new WdkUserException(ex);
         } finally {
             try {
@@ -564,13 +531,15 @@ public class UserFactory {
             // load user's preferences
             loadPreferences(user);
 
+            // load history count
+            int historyCount = getHistoryCount(user);
+            user.setHistoryCount(historyCount);
+
             // update user active timestamp
-            markActive(user);
+            updateUser(user);
 
             return user;
         } catch (SQLException ex) {
-            throw new WdkUserException(ex);
-        } catch (Exception ex) {
             throw new WdkUserException(ex);
         } finally {
             try {
@@ -601,8 +570,6 @@ public class UserFactory {
                 users.add(user);
             }
         } catch (SQLException ex) {
-            throw new WdkUserException(ex);
-        } catch (Exception ex) {
             throw new WdkUserException(ex);
         } finally {
             try {
@@ -656,8 +623,6 @@ public class UserFactory {
             throw new WdkUserException(ex);
         } catch (NoSuchAlgorithmException ex) {
             throw new WdkUserException(ex);
-        } catch (Exception ex) {
-            throw new WdkUserException(ex);
         } finally {
             try {
                 SqlUtils.closeResultSet(rs);
@@ -681,8 +646,6 @@ public class UserFactory {
                 user.addUserRole(rsRole.getString("user_role"));
             }
         } catch (SQLException ex) {
-            throw new WdkUserException(ex);
-        } catch (Exception ex) {
             throw new WdkUserException(ex);
         } finally {
             try {
@@ -715,8 +678,6 @@ public class UserFactory {
                 psRoleInsert.execute();
             }
         } catch (SQLException ex) {
-            throw new WdkUserException(ex);
-        } catch (Exception ex) {
             throw new WdkUserException(ex);
         } finally {
             try {
@@ -778,8 +739,6 @@ public class UserFactory {
             savePreferences(user);
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
-        } catch (Exception ex) {
-            throw new WdkUserException(ex);
         } finally {
             try {
                 SqlUtils.closeStatement(psUser);
@@ -797,7 +756,7 @@ public class UserFactory {
      * @param user
      * @throws WdkUserException
      */
-    void updateUser(User user) throws WdkUserException {
+    private void updateUser(User user) throws WdkUserException {
         PreparedStatement psUser = null;
         try {
             psUser = SqlUtils.getPreparedStatement(dataSource, "UPDATE "
@@ -809,8 +768,6 @@ public class UserFactory {
                 throw new WdkUserException("User " + user.getEmail()
                         + " cannot be found.");
         } catch (SQLException ex) {
-            throw new WdkUserException(ex);
-        } catch (Exception ex) {
             throw new WdkUserException(ex);
         } finally {
             try {
@@ -844,8 +801,6 @@ public class UserFactory {
             System.out.println("Deleted " + count + " expired users.");
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
-        } catch (Exception ex) {
-            throw new WdkUserException(ex);
         } finally {
             try {
                 SqlUtils.closeResultSet(rsUser);
@@ -868,8 +823,6 @@ public class UserFactory {
             rsMax = psMax.executeQuery();
             if (rsMax.next()) maxId = rsMax.getInt("maxId");
         } catch (SQLException ex) {
-            throw new WdkUserException(ex);
-        } catch (Exception ex) {
             throw new WdkUserException(ex);
         } finally {
             try {
@@ -947,8 +900,6 @@ public class UserFactory {
             }
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
-        } catch (Exception ex) {
-            throw new WdkUserException(ex);
         } finally {
             try {
                 SqlUtils.closeResultSet(rsHistory);
@@ -1007,8 +958,6 @@ public class UserFactory {
             return history;
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
-        } catch (Exception ex) {
-            throw new WdkUserException(ex);
         } finally {
             try {
                 SqlUtils.closeResultSet(rsHistory);
@@ -1046,11 +995,6 @@ public class UserFactory {
         BooleanQuestionNode root = exp.parseExpression(expression, operatorMap);
 
         return root.makeAnswer(1, user.getItemsPerPage());
-    }
-
-    History createHistory(User user, Answer answer, String booleanExpression)
-            throws WdkUserException, WdkModelException {
-        return createHistory(user, answer, booleanExpression, false);
     }
 
     History createHistory(User user, Answer answer, String booleanExpression,
@@ -1095,7 +1039,7 @@ public class UserFactory {
                 return history;
             }
 
-            // new existing ones matched, get a new history id
+            // no existing ones matched, get a new history id
             int historyId = getMaxHistoryId(userId) + 1;
             Date createTime = new Date();
             Date lastRunTime = new Date(createTime.getTime());
@@ -1127,11 +1071,13 @@ public class UserFactory {
             history.setCustomName(customName);
             history.setEstimateSize(estimateSize);
             history.setBoolean(answer.getIsBoolean());
+            
+            // update the user's history count
+            int historyCount = getHistoryCount(user);
+            user.setHistoryCount(historyCount);
 
             return history;
         } catch (SQLException ex) {
-            throw new WdkUserException(ex);
-        } catch (Exception ex) {
             throw new WdkUserException(ex);
         } finally {
             try {
@@ -1180,8 +1126,6 @@ public class UserFactory {
             history.setLastRunTime(lastRunTime);
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
-        } catch (Exception ex) {
-            throw new WdkUserException(ex);
         } finally {
             try {
                 SqlUtils.closeStatement(psHistory);
@@ -1207,8 +1151,6 @@ public class UserFactory {
                         + " of user " + user.getEmail() + " cannot be found.");
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
-        } catch (Exception ex) {
-            throw new WdkUserException(ex);
         } finally {
             try {
                 SqlUtils.closeStatement(psHistory);
@@ -1233,8 +1175,6 @@ public class UserFactory {
             if (!allProjects) psHistory.setString(2, projectId);
             psHistory.executeUpdate();
         } catch (SQLException ex) {
-            throw new WdkUserException(ex);
-        } catch (Exception ex) {
             throw new WdkUserException(ex);
         } finally {
             try {
@@ -1298,8 +1238,6 @@ public class UserFactory {
             System.out.println("done.");
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
-        } catch (Exception ex) {
-            throw new WdkUserException(ex);
         } finally {
             try {
                 SqlUtils.closeResultSet(rsHistory);
@@ -1310,7 +1248,7 @@ public class UserFactory {
         }
     }
 
-    int getHistoryCount(User user) throws WdkUserException {
+    private int getHistoryCount(User user) throws WdkUserException {
         ResultSet rsHistory = null;
         try {
             PreparedStatement psHistory = SqlUtils.getPreparedStatement(
@@ -1323,8 +1261,6 @@ public class UserFactory {
             rsHistory.next();
             return rsHistory.getInt("num");
         } catch (SQLException ex) {
-            throw new WdkUserException(ex);
-        } catch (Exception ex) {
             throw new WdkUserException(ex);
         } finally {
             try {
@@ -1376,8 +1312,6 @@ public class UserFactory {
             }
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
-        } catch (Exception ex) {
-            throw new WdkUserException(ex);
         } finally {
             try {
                 SqlUtils.closeStatement(psDelete);
@@ -1420,8 +1354,6 @@ public class UserFactory {
 
             }
         } catch (SQLException ex) {
-            throw new WdkUserException(ex);
-        } catch (Exception ex) {
             throw new WdkUserException(ex);
         } finally {
             try {
@@ -1503,8 +1435,6 @@ public class UserFactory {
             throw new WdkUserException(ex);
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
-        } catch (Exception ex) {
-            throw new WdkUserException(ex);
         } finally {
             try {
                 SqlUtils.closeResultSet(rs);
@@ -1532,8 +1462,6 @@ public class UserFactory {
             throw new WdkUserException(ex);
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
-        } catch (Exception ex) {
-            throw new WdkUserException(ex);
         } finally {
             try {
                 SqlUtils.closeStatement(ps);
@@ -1558,8 +1486,6 @@ public class UserFactory {
             int count = rs.getInt(1);
             return (count > 0);
         } catch (SQLException ex) {
-            throw new WdkUserException(ex);
-        } catch (Exception ex) {
             throw new WdkUserException(ex);
         } finally {
             try {

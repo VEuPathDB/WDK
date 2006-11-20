@@ -190,6 +190,10 @@ public class XmlQuestion {
     public XmlAnswer makeAnswer(Map<String, String> params, int startIndex,
             int endIndex) throws WdkModelException {
         XmlAnswer answer;
+        InputStream inXmlStream = null;
+        InputStream inXslStream = null;
+        ByteArrayOutputStream outXmlStream = null;
+        InputStream convertedStream = null;
         try {
             URL xmlDataURL = createURL(xmlData);
 
@@ -197,10 +201,10 @@ public class XmlQuestion {
             if (xsl != null && xsl.length() != 0) {
                 // yes, convert the xml first
                 URL xslURL = createURL(xsl);
-                InputStream inXmlStream = xmlDataURL.openStream();
-                InputStream inXslStream = xslURL.openStream();
+                inXmlStream = xmlDataURL.openStream();
+                inXslStream = xslURL.openStream();
 
-                ByteArrayOutputStream outXmlStream = new ByteArrayOutputStream();
+                outXmlStream = new ByteArrayOutputStream();
 
                 XmlConverter.convert(inXmlStream, inXslStream, outXmlStream);
 
@@ -209,7 +213,7 @@ public class XmlQuestion {
                 // TEST
                 // System.out.println(new String(buffer));
 
-                InputStream convertedStream = new ByteArrayInputStream(buffer);
+                convertedStream = new ByteArrayInputStream(buffer);
 
                 answer = loader.parseDataStream(convertedStream);
             } else { // no, just parse the xml directly
@@ -219,6 +223,15 @@ public class XmlQuestion {
             throw new WdkModelException(ex);
         } catch (IOException ex) {
             throw new WdkModelException(ex);
+        } finally {
+            try {
+                if (inXmlStream != null)  inXmlStream.close();
+                if (inXslStream != null)  inXslStream.close();
+                if (outXmlStream != null)  outXmlStream.close();
+                if (convertedStream != null)  convertedStream.close();
+            } catch (IOException ex) {
+                throw new WdkModelException(ex);
+            }
         }
         // assign start & end index
         answer.setStartIndex((startIndex <= endIndex) ? startIndex : endIndex);

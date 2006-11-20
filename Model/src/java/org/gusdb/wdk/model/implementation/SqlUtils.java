@@ -43,7 +43,7 @@ public class SqlUtils {
      * set this variable to true will start a separate thread to monitor the
      * connection usage
      */
-    private static boolean createShowThread = false;
+    private static boolean createShowThread = true;
 
     // private static final Logger logger =
     // WdkLogManager.getLogger("org.gusdb.wdk.model.implementation.SqlUtils");
@@ -424,7 +424,7 @@ public class SqlUtils {
                                         + platform.getIdleCount() + ")");
                         }
                         try {
-                            Thread.sleep(1000);
+                            Thread.sleep(60 * 1000);
                         } catch (InterruptedException ex) {
                             // TODO Auto-generated catch block
                             ex.printStackTrace();
