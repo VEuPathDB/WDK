@@ -228,27 +228,6 @@ public class UserFactoryTest extends TestCase {
     }
 
     /*
-     * Test method for 'org.gusdb.wdk.model.user.UserFactory.saveUser(User)'
-     */
-    public void testUpdateUser() {
-        try {
-            User guest = factory.createGuestUser();
-            User user = factory.login(guest, email, "jerric");
-            assertNotNull(user);
-            assertFalse(user.isGuest());
-
-            // update user information, and save it
-            user.update();
-        } catch (WdkUserException ex) {
-            ex.printStackTrace();
-            assertTrue(false);
-        } catch (WdkModelException ex) {
-            ex.printStackTrace();
-            assertTrue(false);
-        }
-    }
-
-    /*
      * Test method for 'org.gusdb.wdk.model.user.UserFactory.deleteUser(User)'
      */
     public void testDeleteUser() {
