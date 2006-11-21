@@ -728,6 +728,10 @@ public class WdkModel {
     public RDBMSPlatformI getPlatform() {
         return platform;
     }
+    
+    public RDBMSPlatformI getAuthenticationPlatform() {
+        return authenPlatform;
+    }
 
     public DatasetFactory getDatasetFactory() {
         return datasetFactory;
