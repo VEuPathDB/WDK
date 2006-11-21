@@ -432,11 +432,13 @@ public class SqlUtils {
                             }
                             int totalActive = wdkActive + loginActive;
                             int totalIdle = wdkIdle + loginIdle;
+                            String modelName = model.getProjectId();
 
-                            logger.info("Connections: active=" + totalActive
-                                    + "(W:" + wdkActive + ", L:" + loginActive
-                                    + "), idle=" + totalIdle + "(W:" + wdkIdle
-                                    + ", L:" + loginIdle + ")");
+                            logger.info(modelName + " Connections: active="
+                                    + totalActive + "(W:" + wdkActive + ", L:"
+                                    + loginActive + "), idle=" + totalIdle
+                                    + "(W:" + wdkIdle + ", L:" + loginIdle
+                                    + ")");
                         }
                         try {
                             Thread.sleep(60 * 1000);
@@ -741,7 +743,7 @@ public class SqlUtils {
                 allFinished = true; // all threads finished
             if ((after - before) > TIME_OUT) ifTimeOut = true;
             if (ifTimeOut) { // time out, DON'T kill threads, leave it alone,
-                                // because query timeout has been set
+                // because query timeout has been set
                 if (!cFinished.get()) {
                     // try {
                     // cThread.stop();
