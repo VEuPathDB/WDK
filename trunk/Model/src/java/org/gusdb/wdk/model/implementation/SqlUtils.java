@@ -43,7 +43,7 @@ public class SqlUtils {
      * set this variable to true will start a separate thread to monitor the
      * connection usage
      */
-    private static boolean createShowThread = false;
+    private static boolean createShowThread = true;
 
     // private static final Logger logger =
     // WdkLogManager.getLogger("org.gusdb.wdk.model.implementation.SqlUtils");
@@ -407,7 +407,7 @@ public class SqlUtils {
     }
 
     public static synchronized void showConnectionCount() {
-        
+
         if (createShowThread) {
             createShowThread = false;
             Thread t = new Thread() {
@@ -417,11 +417,26 @@ public class SqlUtils {
                     while (true) {
                         WdkModel model = WdkModel.INSTANCE;
                         if (model != null) {
-                            RDBMSPlatformI platform = model.getPlatform();
-                            if (platform != null)
-                                logger.info("Connections: ("
-                                        + platform.getActiveCount() + ", "
-                                        + platform.getIdleCount() + ")");
+                            RDBMSPlatformI wdkPlatform = model.getPlatform();
+                            RDBMSPlatformI loginPlatform = model.getAuthenticationPlatform();
+                            int wdkActive = 0, wdkIdle = 0;
+                            if (wdkPlatform != null) {
+                                wdkActive = wdkPlatform.getActiveCount();
+                                wdkIdle = wdkPlatform.getIdleCount();
+                            }
+                            int loginActive = 0, loginIdle = 0;
+
+                            if (loginPlatform != null) {
+                                loginActive = loginPlatform.getActiveCount();
+                                loginIdle = loginPlatform.getIdleCount();
+                            }
+                            int totalActive = wdkActive + loginActive;
+                            int totalIdle = wdkIdle + loginIdle;
+
+                            logger.info("Connections: active=" + totalActive
+                                    + "(W:" + wdkActive + ", L:" + loginActive
+                                    + "), idle=" + totalIdle + "(W:" + wdkIdle
+                                    + ", L:" + loginIdle + ")");
                         }
                         try {
                             Thread.sleep(60 * 1000);
@@ -599,7 +614,8 @@ public class SqlUtils {
             private double timeout;
 
             Query(DataSource dataSource, String site, String sql,
-                    Connected connect, Finished finish, Result result, double timeout) {
+                    Connected connect, Finished finish, Result result,
+                    double timeout) {
                 this.dataSource = dataSource;
                 this.site = site;
                 this.sql = sql;
@@ -627,7 +643,7 @@ public class SqlUtils {
                     Connection connection = dataSource.getConnection();
                     // showConnectionCount();
                     stmt = connection.createStatement();
-                    Double timeoutD = timeout/1000;
+                    Double timeoutD = timeout / 1000;
                     stmt.setQueryTimeout(timeoutD.intValue());
                     ResultSet rs = stmt.executeQuery(sql);
                     if (rs == null) {
@@ -724,39 +740,40 @@ public class SqlUtils {
             if (cFinished.get() && pFinished.get() && tFinished.get())
                 allFinished = true; // all threads finished
             if ((after - before) > TIME_OUT) ifTimeOut = true;
-            if (ifTimeOut) { // time out, DON'T kill threads, leave it alone, because query timeout has been set
+            if (ifTimeOut) { // time out, DON'T kill threads, leave it alone,
+                                // because query timeout has been set
                 if (!cFinished.get()) {
-//                    try {
-//                        cThread.stop();
-//                        cThread.destroy();
-//                    } catch (Error e) {
-//                        // TODO Auto-generated catch block
-//                        // e.printStackTrace();
-//                    }
+                    // try {
+                    // cThread.stop();
+                    // cThread.destroy();
+                    // } catch (Error e) {
+                    // // TODO Auto-generated catch block
+                    // // e.printStackTrace();
+                    // }
                     cConnected.set(false);
                     cFinished.set(true);
                     cResult.set(null);
                 }
                 if (!pFinished.get()) {
-//                    try {
-//                        pThread.stop();
-//                        pThread.destroy();
-//                    } catch (Error e) {
-//                        // TODO Auto-generated catch block
-//                        // e.printStackTrace();
-//                    }
+                    // try {
+                    // pThread.stop();
+                    // pThread.destroy();
+                    // } catch (Error e) {
+                    // // TODO Auto-generated catch block
+                    // // e.printStackTrace();
+                    // }
                     pConnected.set(false);
                     pFinished.set(true);
                     pResult.set(null);
                 }
                 if (!tFinished.get()) {
-//                    try {
-//                        tThread.stop();
-//                        tThread.destroy();
-//                    } catch (Error e) {
-//                        // TODO Auto-generated catch block
-//                        // e.printStackTrace();
-//                    }
+                    // try {
+                    // tThread.stop();
+                    // tThread.destroy();
+                    // } catch (Error e) {
+                    // // TODO Auto-generated catch block
+                    // // e.printStackTrace();
+                    // }
                     tConnected.set(false);
                     tFinished.set(true);
                     tResult.set(null);

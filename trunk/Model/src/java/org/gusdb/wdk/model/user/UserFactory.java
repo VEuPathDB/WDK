@@ -1084,6 +1084,7 @@ public class UserFactory {
         } finally {
             try {
                 SqlUtils.closeStatement(psHistory);
+                SqlUtils.closeResultSet(rsHistory);
             } catch (SQLException ex) {
                 throw new WdkUserException(ex);
             }
