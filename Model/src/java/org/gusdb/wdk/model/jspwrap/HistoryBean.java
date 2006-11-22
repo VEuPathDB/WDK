@@ -75,6 +75,13 @@ public class HistoryBean {
         return history.getEstimateSize();
     }
 
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.user.History#setEstimateSize(int)
+     */
+    public void setEstimateSize(int estimateSize) {
+        history.setEstimateSize(estimateSize);
+    }
+
     /*
      * (non-Javadoc)
      * 

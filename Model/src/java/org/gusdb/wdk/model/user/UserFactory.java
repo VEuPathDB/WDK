@@ -359,7 +359,7 @@ public class UserFactory {
 
             // save user's roles
             saveUserRoles(user);
-            
+
             logger.info("Guest user #" + userId + " created.");
 
             return user;
@@ -1073,7 +1073,7 @@ public class UserFactory {
             history.setCustomName(customName);
             history.setEstimateSize(estimateSize);
             history.setBoolean(answer.getIsBoolean());
-            
+
             // update the user's history count
             int historyCount = getHistoryCount(user);
             user.setHistoryCount(historyCount);
@@ -1111,14 +1111,15 @@ public class UserFactory {
         try {
             psHistory = SqlUtils.getPreparedStatement(dataSource, "UPDATE "
                     + loginSchema + "histories SET custom_name = ?, "
-                    + "last_run_time = ?, is_deleted = ? WHERE user_id = ? "
-                    + "AND project_id = ? AND history_id = ?");
+                    + "last_run_time = ?, is_deleted = ?, estimate_size = ?"
+                    + "WHERE user_id = ? AND project_id = ? AND history_id = ?");
             psHistory.setString(1, history.getBaseCustomName());
             psHistory.setTimestamp(2, new Timestamp(lastRunTime.getTime()));
             psHistory.setBoolean(3, history.isDeleted());
-            psHistory.setInt(4, user.getUserId());
-            psHistory.setString(5, projectId);
-            psHistory.setInt(6, history.getHistoryId());
+            psHistory.setInt(4, history.getEstimateSize());
+            psHistory.setInt(5, user.getUserId());
+            psHistory.setString(6, projectId);
+            psHistory.setInt(7, history.getHistoryId());
             int result = psHistory.executeUpdate();
             if (result == 0)
                 throw new WdkUserException("The history #"
@@ -1217,7 +1218,10 @@ public class UserFactory {
                     // to make an answer
                     try {
                         User user = loadUser(userId);
-                        loadHistory(user, historyId);
+                        History history = loadHistory(user, historyId);
+                        // remove deleted, undepended histories
+                        if (history.isDeleted() && !history.isDepended())
+                            histories.add(new HistoryKey(userId, historyId));
                     } catch (WdkModelException ex) {
                         histories.add(new HistoryKey(userId, historyId));
                     }

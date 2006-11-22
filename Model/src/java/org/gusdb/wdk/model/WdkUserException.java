@@ -9,6 +9,8 @@ import java.util.Iterator;
  */
 public class WdkUserException extends Exception {
 
+    public static String modelName;
+
     /**
      * 
      */
@@ -59,7 +61,16 @@ public class WdkUserException extends Exception {
         String newline = System.getProperty("line.separator");
         StringBuffer buf = new StringBuffer(newline);
         String message = super.getMessage();
-        if (message != null) buf.append(message + newline);
+        if (message != null) {
+            // add project header
+            if (modelName != null) {
+                String prefix = "[" + modelName + "] ";
+                if (!message.trim().startsWith(prefix))
+                    buf.append(prefix);
+            }
+
+            buf.append(message + newline);
+        }
         if (booBoos != null) {
             Iterator keys = booBoos.keySet().iterator();
             while (keys.hasNext()) {

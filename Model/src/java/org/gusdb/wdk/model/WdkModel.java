@@ -96,6 +96,11 @@ public class WdkModel {
                     xmlSchemaFile.toURI().toURL(),
                     modelConfigXmlFile.toURI().toURL());
             model.setXmlDataDir(xmlDataDir);
+            
+            // set the exception header
+            WdkModelException.modelName = model.getProjectId();
+            WdkUserException.modelName = model.getProjectId();
+
             return model;
         } catch (java.net.MalformedURLException e) {
             throw new WdkModelException(e);
@@ -458,10 +463,11 @@ public class WdkModel {
         String projectId = getProjectId();
 
         // initialize authentication factory
+        // set the max active as half of the model's configuration
         if (authenPlatformClass != null && !"".equals(authenPlatformClass)) {
             authenPlatform = (RDBMSPlatformI) Class.forName(authenPlatformClass).newInstance();
             authenPlatform.init(authenConnection, authenLogin, authenPassword,
-                    minIdle, maxIdle, maxWait, maxActive, initialSize, fileName);
+                    minIdle, maxIdle, maxWait, maxActive / 2, initialSize, fileName);
             UserFactory.initialize(this, projectId, authenPlatform,
                     loginSchema, defaultRole, smtpServer, registerEmail,
                     emailSubject, emailContent);
