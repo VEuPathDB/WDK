@@ -1197,8 +1197,8 @@ public class UserFactory {
             // get invalid histories
             PreparedStatement psHistory = SqlUtils.getPreparedStatement(
                     dataSource, "SELECT user_id, history_id, question_name, "
-                            + "signature FROM " + loginSchema + "histories "
-                            + "where project_id = ?");
+                            + "is_boolean, signature FROM " + loginSchema
+                            + "histories where project_id = ?");
             psHistory.setString(1, projectId);
             rsHistory = psHistory.executeQuery();
             Set<HistoryKey> histories = new LinkedHashSet<HistoryKey>();
@@ -1206,27 +1206,31 @@ public class UserFactory {
                 int userId = rsHistory.getInt("user_id");
                 int historyId = rsHistory.getInt("history_id");
                 String questionName = rsHistory.getString("question_name");
+                boolean isBoolean = rsHistory.getBoolean("is_boolean");
                 String signature = rsHistory.getString("signature");
-                if (!signatures.containsKey(questionName)) {
-                    // check if the question still exists
-                    histories.add(new HistoryKey(userId, historyId));
-                } else if (!signature.equals(signatures.get(questionName))) {
-                    // check if the parameter names/number has been changed
-                    histories.add(new HistoryKey(userId, historyId));
-                } else {
-                    // check if the history has valid parameter values by trying
-                    // to make an answer
-                    try {
-                        User user = loadUser(userId);
-                        History history = loadHistory(user, historyId);
-                        // remove deleted, undepended histories
-                        if (history.isDeleted() && !history.isDepended())
-                            histories.add(new HistoryKey(userId, historyId));
-                    } catch (WdkModelException ex) {
+                if (!isBoolean) {
+                    if (!signatures.containsKey(questionName)) {
+                        // check if the question still exists
                         histories.add(new HistoryKey(userId, historyId));
+                        continue;
+                    } else if (!signature.equals(signatures.get(questionName))) {
+                        // check if the parameter names/number has been changed
+                        histories.add(new HistoryKey(userId, historyId));
+                        continue;
                     }
-
                 }
+                // check if the history has valid parameter values by trying
+                // to make an answer
+                try {
+                    User user = loadUser(userId);
+                    History history = loadHistory(user, historyId);
+                    // remove deleted, undepended histories
+                    if (history.isDeleted() && !history.isDepended())
+                        histories.add(new HistoryKey(userId, historyId));
+                } catch (WdkModelException ex) {
+                    histories.add(new HistoryKey(userId, historyId));
+                }
+
             }
 
             System.out.print(histories.size()
