@@ -12,6 +12,7 @@ import javax.servlet.ServletContextListener;
 import org.gusdb.wdk.model.RDBMSPlatformI;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
 /**
@@ -133,6 +134,10 @@ public class ApplicationInitListener implements ServletContextListener {
                     new Class[] { URL.class, URL.class, URL.class, URL.class, URL.class });
             WdkModel wdkModelRaw = (WdkModel) build.invoke(null, new Object[] {
                     modelURL, propsURL, schemaURL, xmlSchemaURL, configURL });
+            
+            // set the exception header
+            WdkModelException.modelName = wdkModelRaw.getProjectId();
+            WdkUserException.modelName = wdkModelRaw.getProjectId();
             
             // set schema for xml data source to the model
             wdkModelRaw.setXmlSchema(xmlSchemaURL);

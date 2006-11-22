@@ -60,8 +60,10 @@ public class ShowSummaryAction extends ShowQuestionAction {
         if (strHistId != null) { // use existing history
             int historyId = Integer.parseInt(strHistId);
             history = wdkUser.getHistory(historyId);
-            history.update();
             wdkAnswer = history.getAnswer();
+            // update the estimate size, in case the database has changed
+            history.setEstimateSize(wdkAnswer.getResultSize());
+            history.update();
             wdkAnswer = summaryPaging(request, null, null, wdkAnswer);
         } else {
             QuestionForm qForm = (QuestionForm) form;

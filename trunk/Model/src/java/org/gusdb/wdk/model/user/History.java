@@ -127,7 +127,7 @@ public class History {
      * @param estimateSize
      *            The estimateSize to set.
      */
-    void setEstimateSize(int estimateSize) {
+    public void setEstimateSize(int estimateSize) {
         this.estimateSize = estimateSize;
     }
 
