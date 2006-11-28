@@ -87,8 +87,9 @@ public class HistoryRecycler implements Runnable {
             }
         }
 
+        // in this version, do not delete invalid histories
         // remove invalid histories
-        factory.deleteInvalidHistories(signatures);
+        //factory.deleteInvalidHistories(signatures);
 
         // remove expired users
         System.out.println("Deleting expired guest users...");
