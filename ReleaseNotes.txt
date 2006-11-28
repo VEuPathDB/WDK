@@ -7,66 +7,6 @@ Summary: this is a version that supports PlasmoDB 5.1 general release
          revealed by extensive QA of the above site, we have user authentication
          functions, and user comments for authorized users.
 
-=========================== Model Features ===========================
-
-* Add persistant query history function
-
-* refine WDK cache to store MD5 hashing of param/value pairs only
-
-* Add support to allow large size of input parameters (>4000 characters)
-
-* Add "forceDrop" option to wdkCache command
-
-* Add "wdkUser" command to manage user accounts. It includes:
-  - add user
-  - delete user
-  - list/query users
-  - correct the consistance of user related tables
-  
-* Add historyParam to allow to use the "dynamic" cache table represented by the
-  user's history as the input parameters if a query
-  
-* Allow default values(single value, or the first one by default) for 
-  FlatVocabParam
-  
-=========================== Controller Features ===========================
-
-* Add/Update persistant query history related actions
-  - createHistory
-  - renameHistory
-  - deleteHistory
-  - reviseHistory
-  - clearHistory
-  - combineHistory
-
-* Update guest user mode to create guest user only when needed
-
-* Add custom page size abilities
-
-* Add generic user preference update action
-
-* Add support for default selection of FlatVocabParam
-
-  
-=========================== View Features ===========================
-
-* Update user register, updateProfile UI to combine client-side/server-side 
-  verification
-
-* update query history page to allow
-  - mouse over for detailed info of the query history
-  - allow renaming of history
-  - allow deletion of history
-  - allow revision of both simple history and combined histories
-  - allow deletion of all histories at once
-
-* Add custom page size function in query result page and as a preference of the
-  user
-
-* Revise query result page to:
-  - allow hide/show parameters section;
-  - allow customized page size
-
 
 ------------------------------------------------------------------------------
 ooooooooooooooooooooooooooo  WDK Version 1.11  ooooooooooooooooooooooooooooooo
@@ -102,17 +42,14 @@ Summary: this is a version that supports PlasmoDB 5.1 general release
 =========================== View Features ===========================
 
 * Add following new user interfaces:
-   - register jsp page
-   - login/logout tag
-   - updateProfile jsp page
-   - changePassword jsp page
-   - resetPassword jsp page
+   - register
+   - login
+   - logout
+   - updateProfile
+   - changePassword
+   - resetPassword
 
-* Add user's query history page
-
-* Refine the boolean operation action for the support of query history
-
-* Add "go to page" function to allow user to page up/down to any page
+* refine the boolean operation action for the support of query history
 
 
 ------------------------------------------------------------------------------
