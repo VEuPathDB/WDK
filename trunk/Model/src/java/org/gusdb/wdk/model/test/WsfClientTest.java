@@ -11,9 +11,9 @@ import java.util.Map;
 
 import javax.xml.rpc.ServiceException;
 
-import org.gusdb.wsf.service.WsfResponse;
-import org.gusdb.wsf.service.WsfService;
-import org.gusdb.wsf.service.WsfServiceServiceLocator;
+import org.gusdb.wsf.client.WsfResponse;
+import org.gusdb.wsf.client.WsfService;
+import org.gusdb.wsf.client.WsfServiceServiceLocator;
 
 /**
  * @author Jerric
