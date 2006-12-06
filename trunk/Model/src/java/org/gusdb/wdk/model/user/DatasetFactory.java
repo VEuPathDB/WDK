@@ -60,8 +60,7 @@ public class DatasetFactory {
             psInfo.setInt(1, userId);
             rsInfo = psInfo.executeQuery();
             while (rsInfo.next()) {
-                Dataset dataset = new Dataset(this, rsInfo.getInt("dataset_id"));
-                dataset.setUserId(userId);
+                Dataset dataset = new Dataset(this, userId, rsInfo.getInt("dataset_id"));
                 dataset.setDatasetName(rsInfo.getString("dataset_name"));
                 dataset.setCacheTable(rsInfo.getString("cache_table"));
                 dataset.setTemporary(rsInfo.getBoolean("temporary"));
@@ -95,8 +94,8 @@ public class DatasetFactory {
             psInfo.setInt(1, datasetId);
             rsInfo = psInfo.executeQuery();
             if (rsInfo.next()) {
-                dataset = new Dataset(this, datasetId);
-                dataset.setUserId(rsInfo.getInt("user_id"));
+                int userId = rsInfo.getInt("user_id");
+                dataset = new Dataset(this, userId, datasetId);
                 dataset.setDatasetName(rsInfo.getString("dataset_name"));
                 dataset.setCacheTable(rsInfo.getString("cache_table"));
                 dataset.setTemporary(rsInfo.getBoolean("temporary"));
@@ -131,8 +130,7 @@ public class DatasetFactory {
             psInfo.setString(2, datasetName);
             rsInfo = psInfo.executeQuery();
             if (rsInfo.next()) {
-                dataset = new Dataset(this, rsInfo.getInt("dataset_id"));
-                dataset.setUserId(userId);
+                dataset = new Dataset(this,userId,  rsInfo.getInt("dataset_id"));
                 dataset.setDatasetName(datasetName);
                 dataset.setCacheTable(rsInfo.getString("cache_table"));
                 dataset.setTemporary(rsInfo.getBoolean("temporary"));
@@ -227,8 +225,7 @@ public class DatasetFactory {
             psCreate.executeUpdate();
 
             // construct dataset
-            dataset = new Dataset(this, datasetId);
-            dataset.setUserId(userId);
+            dataset = new Dataset(this, userId, datasetId);
             dataset.setDatasetName(datasetName);
             dataset.setCacheTable(cacheTable);
             dataset.setCreateTime(createTime);
@@ -254,7 +251,7 @@ public class DatasetFactory {
     }
 
     public Dataset createDataset(User user, String datasetName,
-            String dataType, String cacheFullTable, String projectIdColumn,
+            String dataType, String cacheFullTable, 
             String primaryKeyColumn, boolean temporary) throws WdkUserException {
         int userId = user.getUserId();
         if (datasetName.length() > 200)
@@ -293,10 +290,6 @@ public class DatasetFactory {
             StringBuffer sbCreate = new StringBuffer("CREATE TABLE ");
             sbCreate.append(datasetSchema + cacheTable);
             sbCreate.append(" AS SELECT ");
-            if (projectIdColumn != null) {
-                sbCreate.append(projectIdColumn + " AS " + COLUMN_PROJECT_ID
-                        + ", ");
-            }
             sbCreate.append(primaryKeyColumn + " AS " + COLUMN_PRIMARY_KEY);
             sbCreate.append(" FROM " + cacheFullTable);
             psCreate = SqlUtils.getPreparedStatement(dataSource,
@@ -304,8 +297,7 @@ public class DatasetFactory {
             psCreate.executeUpdate();
 
             // construct dataset
-            dataset = new Dataset(this, datasetId);
-            dataset.setUserId(userId);
+            dataset = new Dataset(this, userId, datasetId);
             dataset.setDatasetName(datasetName);
             dataset.setCacheTable(cacheTable);
             dataset.setCreateTime(createTime);

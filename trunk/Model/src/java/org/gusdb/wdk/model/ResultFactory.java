@@ -469,7 +469,7 @@ public class ResultFactory implements Serializable {
 
             psClob = SqlUtils.getPreparedStatement(platform.getDataSource(),
                     sqlb.toString());
-            ok = (platform.updateClobData(psClob, 1, message) == 1);
+            ok = (platform.updateClobData(psClob, 1, message, true) == 1);
         } catch (SQLException e) {
             throw new WdkModelException(e);
         } finally {
