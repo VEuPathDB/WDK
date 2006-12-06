@@ -62,7 +62,7 @@ public class Oracle implements RDBMSPlatformI, Serializable {
         int len = schemaName.length() - 1;
         if (schemaName.charAt(len) == '.')
             schemaName = schemaName.substring(0, len);
-        
+
         String sql = "select " + schemaName + "." + tableName
                 + "_pkseq.nextval from dual";
         String nextId = SqlUtils.runStringQuery(dataSource, sql);
@@ -278,11 +278,11 @@ public class Oracle implements RDBMSPlatformI, Serializable {
      *      java.lang.String)
      */
     public int updateClobData(PreparedStatement ps, int columnIndex,
-            String content) throws SQLException {
+            String content, boolean commit) throws SQLException {
         Connection conn = ((DelegatingConnection) ps.getConnection()).getInnermostDelegate();
         CLOB clob = CLOB.createTemporary(conn, false, CLOB.DURATION_SESSION);
         clob.setString(1, content);
         ps.setClob(columnIndex, clob);
-        return ps.executeUpdate();
+        return commit ? ps.executeUpdate() : 0;
     }
 }
