@@ -268,6 +268,6 @@ public class DatasetParam extends Param {
         String primaryKeyColumn = qinstance.primaryKeyColumnName;
 
         return factory.createDataset(user, datasetName, dataType, cacheTable,
-                projectIdColumn, primaryKeyColumn, true);
+                primaryKeyColumn, true);
     }
 }

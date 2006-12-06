@@ -351,7 +351,7 @@ public class User {
             // check the name availability, in the new user domain
             if (!datasetFactory.checkAvailability(this, oldName))
                 newName += " #" + dset.getDatasetId();
-            dset.setUserId(userId);
+            dset.setUserId(this.userId);
             dset.setDatasetName(newName);
             datasetFactory.saveDatasetInfo(dset);
             datasetMap.put(oldName, newName);

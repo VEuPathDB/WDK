@@ -271,8 +271,8 @@ public class PostgreSQL implements RDBMSPlatformI, Serializable {
      *      int, java.lang.String)
      */
     public int updateClobData(PreparedStatement ps, int columnIndex,
-            String content) throws SQLException {
+            String content, boolean commit) throws SQLException {
         ps.setString(columnIndex, content);
-        return ps.executeUpdate();
+        return commit ? ps.executeUpdate() : 0;
     }
 }

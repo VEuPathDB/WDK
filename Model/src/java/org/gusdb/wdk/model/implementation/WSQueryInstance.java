@@ -3,15 +3,19 @@ package org.gusdb.wdk.model.implementation;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.rmi.RemoteException;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Vector;
+import java.util.Set;
 
 import javax.sql.DataSource;
 import javax.xml.rpc.ServiceException;
 
+import oracle.sql.CLOB;
+
+import org.apache.commons.dbcp.DelegatingConnection;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Column;
 import org.gusdb.wdk.model.QueryInstance;
@@ -23,17 +27,24 @@ import org.gusdb.wsf.client.WsfResponse;
 import org.gusdb.wsf.client.WsfService;
 import org.gusdb.wsf.client.WsfServiceServiceLocator;
 
-public class WSQueryInstance extends QueryInstance  {
+public class WSQueryInstance extends QueryInstance {
+
+    /**
+     * The threshold for the width of the columns that are stored as CLOBs; If
+     * the column width is defined < 4000, a varchar(width) will be used,
+     * otherwise, the CLOB will be used
+     */
+    public static final int CLOB_WIDTH_THRESHOLD = 4000;
 
     private static final Logger logger = Logger.getLogger(WSQueryInstance.class);
-    
-    public WSQueryInstance (WSQuery query) {
+
+    public WSQueryInstance(WSQuery query) {
         super(query);
         this.isCacheable = true;
     }
 
     public String getLowLevelQuery() throws WdkModelException {
-	return null;
+        return null;
     }
 
     protected ResultList getNonpersistentResult() throws WdkModelException {
@@ -58,21 +69,26 @@ public class WSQueryInstance extends QueryInstance  {
             for (int i = 0; i < columns.length; i++) {
                 columnNames[i] = columns[i].getName();
                 // if the wsName is defined, reassign it to the columns
-                if (columns[i].getWsName() != null) 
+                if (columns[i].getWsName() != null)
                     columnNames[i] = columns[i].getWsName();
             }
 
             // TEST
-            logger.info("Invoking " + wsQuery.getProcessName() + " at " + getServiceUrl());
+            logger.info("Invoking " + wsQuery.getProcessName() + " at "
+                    + getServiceUrl());
+            long start = System.currentTimeMillis();
             
             // get the response from the web service
-            WsfResponse response = client.invoke(wsQuery.getProcessName(), params,
-                    columnNames);
+            WsfResponse response = client.invoke(wsQuery.getProcessName(),
+                    params, columnNames);
             this.resultMessage = response.getMessage();
             
+            long end = System.currentTimeMillis();
+            logger.info("Invoking on client takes " + ((end - start)/1000.0) + " seconds.");
+
             // TEST
             logger.debug("WSQI Result Message:" + resultMessage);
-            
+
             String[][] result = response.getResults();
             return new WSResultList(this, result);
 
@@ -85,6 +101,17 @@ public class WSQueryInstance extends QueryInstance  {
 
     protected void writeResultToTable(String resultTableName, ResultFactory rf)
             throws WdkModelException {
+
+        long start = System.currentTimeMillis();
+        
+        // invoke web service to get the result
+        ResultList resultList = getNonpersistentResult();
+        
+        long end = System.currentTimeMillis();
+        logger.info("Get Non-P Result takes: " + ((end - start) / 1000.0)
+                + " seconds.");
+        start = System.currentTimeMillis();
+
         // TEST
         logger.info("Caching the result from "
                 + ((WSQuery) query).getProcessName());
@@ -93,79 +120,88 @@ public class WSQueryInstance extends QueryInstance  {
         DataSource dataSource = platform.getDataSource();
 
         Column[] columns = query.getColumns();
+        Set<String> clobCols = new LinkedHashSet<String>();
+
         StringBuffer createSqlB = new StringBuffer("create table "
                 + resultTableName + "(");
+        StringBuffer insertSqlB = new StringBuffer("insert into "
+                + resultTableName + " (");
+        StringBuffer insertSqlV = new StringBuffer(" values (");
 
-        Map<String, Integer> colIsClob = new LinkedHashMap<String, Integer>();
         for (Column column : columns) {
+            String colName = column.getName();
             int cw = column.getWidth();
+
             // the clob datatype is DBMS specific
-            String clob = platform.getClobDataType();
-
-             createSqlB.append(column.getName()
-                    + ((cw >= 2000) ? (" " + clob + ", ")
-                            : (" varchar(" + cw + "), ")));
-            
-            if (cw > 2000) {
-                colIsClob.put(column.getName(), new Integer(1));
+            String clobType = platform.getClobDataType();
+            createSqlB.append(colName + " ");
+            if (cw >= CLOB_WIDTH_THRESHOLD) {
+                createSqlB.append(clobType + ", ");
+                clobCols.add(colName);
+            } else {
+                createSqlB.append("varchar(" + cw + "), ");
             }
+            insertSqlB.append(colName + ", ");
+            insertSqlV.append("?,");
         }
-        String createSql = createSqlB.toString()
-                + (ResultFactory.RESULT_TABLE_I + " "
-                        + platform.getNumberDataType() + " (12))");
-
-        String insertSql = "insert into " + resultTableName + " values (";
-
-        ResultList resultList = getNonpersistentResult();
-
-        // Since each row has same number/type of fields, the PreparedStatement
-        // should be constructed outside of the while loop, to make it really
-        // "prepared". Consider refactoring the code later
+        createSqlB.append(ResultFactory.RESULT_TABLE_I + " "
+                + platform.getNumberDataType() + " (12))");
+        insertSqlB.append(ResultFactory.RESULT_TABLE_I + ") ");
+        insertSqlB.append(insertSqlV);
+        insertSqlB.append("?)");
+        
         PreparedStatement pstmt = null;
         try {
+            // create cache table
+            SqlUtils.execute(dataSource, createSqlB.toString());
 
-            SqlUtils.execute(dataSource, createSql);
+            end = System.currentTimeMillis();
+            logger.info("Create cache takes: " + ((end - start) / 1000.0)
+                    + " seconds.");
+            start = System.currentTimeMillis();
+
+            pstmt = SqlUtils.getPreparedStatement(dataSource,
+                    insertSqlB.toString());
 
             int idx = 0;
             while (resultList.next()) {
-                StringBuffer insertSqlB = new StringBuffer(insertSql);
-                Vector<String> v = new Vector<String>();
-                for (Column column : columns) {
-                    String val = (String) resultList.getValueFromResult(column.getName());
-                    insertSqlB.append("?,");
-                    v.add(val);
-                }
-                String[] vals = new String[v.size()];
-                v.copyInto(vals);
+                for (int index = 0; index < columns.length; index++) {
+                    String colName = columns[index].getName();
+                    String val = (String) resultList.getValueFromResult(colName);
 
-                String s = insertSqlB.toString() + "?)";
-                pstmt = SqlUtils.getPreparedStatement(dataSource, s);
-
-                for (int i = 0; i < vals.length; i++) {
-                    //todo: may need to handle large strings for clob columns?
-                    pstmt.setString(i + 1, vals[i]);
+                    // check if it's clob field or not
+                    if (clobCols.contains(colName)) {
+                        platform.updateClobData(pstmt, index + 1, val, false);
+                    } else {
+                        pstmt.setString(index + 1, val);
+                    }
                 }
-                pstmt.setInt(vals.length + 1, ++idx);
-                pstmt.execute();
-                SqlUtils.closeStatement(pstmt);
-                pstmt = null;
+                pstmt.setInt(columns.length + 1, ++idx);
+                pstmt.addBatch();
             }
+            // do a batch update
+            pstmt.executeBatch();
         } catch (SQLException e) {
+            throw new WdkModelException(e);
+        } finally {
+            end = System.currentTimeMillis();
+            logger.info("Insert cache takes: " + ((end - start) / 1000.0)
+                    + " seconds.");
             try {
                 SqlUtils.closeStatement(pstmt);
             } catch (SQLException ex) {
-                throw new WdkModelException("Failed closing the PreparedStatement.",  ex);
+                throw new WdkModelException(
+                        "Failed closing the PreparedStatement.", ex);
             }
-            throw new WdkModelException(e);
         }
     }
 
     private URL getServiceUrl() throws WdkModelException {
-	try {
-	    return new URL(((WSQuery)query).getWebServiceUrl());
-	} catch (MalformedURLException e) {
-	    throw new WdkModelException(e);
-	}
-     }
+        try {
+            return new URL(((WSQuery) query).getWebServiceUrl());
+        } catch (MalformedURLException e) {
+            throw new WdkModelException(e);
+        }
+    }
 
 }

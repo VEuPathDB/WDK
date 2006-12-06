@@ -1063,7 +1063,8 @@ public class UserFactory {
             psHistory.setString(10, signature);
             psHistory.setBoolean(11, isBoolean);
             // the platform set clob, and run the statement
-            platform.updateClobData(psHistory, 12, params);
+            platform.updateClobData(psHistory, 12, params, false);
+            psHistory.executeUpdate();
 
             // create the History
             History history = new History(this, user, historyId);

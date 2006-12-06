@@ -23,8 +23,9 @@ public class Dataset {
     private Date createTime;
     private String dataType;
 
-    public Dataset(DatasetFactory factory, int datasetId) {
+    public Dataset(DatasetFactory factory, int userId, int datasetId) {
         this.factory = factory;
+        this.userId = userId;
         this.datasetId = datasetId;
     }
 
@@ -104,6 +105,7 @@ public class Dataset {
         this.temporary = temporary;
     }
 
+    
     /**
      * @return Returns the userId.
      */
@@ -111,11 +113,11 @@ public class Dataset {
         return userId;
     }
 
+    
     /**
-     * @param userId
-     *            The userId to set.
+     * @param userId The userId to set.
      */
-    public void setUserId(int userId) {
+    void setUserId(int userId) {
         this.userId = userId;
     }
 
