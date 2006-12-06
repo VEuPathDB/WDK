@@ -85,6 +85,10 @@ public class WSQueryInstance extends QueryInstance  {
 
     protected void writeResultToTable(String resultTableName, ResultFactory rf)
             throws WdkModelException {
+
+        ResultList resultList = getNonpersistentResult();
+
+        long start = System.currentTimeMillis(); 
         // TEST
         logger.info("Caching the result from "
                 + ((WSQuery) query).getProcessName());
@@ -116,8 +120,6 @@ public class WSQueryInstance extends QueryInstance  {
 
         String insertSql = "insert into " + resultTableName + " values (";
 
-        ResultList resultList = getNonpersistentResult();
-
         // Since each row has same number/type of fields, the PreparedStatement
         // should be constructed outside of the while loop, to make it really
         // "prepared". Consider refactoring the code later
@@ -125,38 +127,43 @@ public class WSQueryInstance extends QueryInstance  {
         try {
 
             SqlUtils.execute(dataSource, createSql);
+            
+            // prepare the 
+            StringBuffer insertSqlB = new StringBuffer(insertSql);
+            for (Column column : columns) {
+                insertSqlB.append("?,");
+            }
+            insertSqlB.append("?)");
+            pstmt = SqlUtils.getPreparedStatement(dataSource, insertSqlB.toString());
 
             int idx = 0;
             while (resultList.next()) {
-                StringBuffer insertSqlB = new StringBuffer(insertSql);
                 Vector<String> v = new Vector<String>();
                 for (Column column : columns) {
                     String val = (String) resultList.getValueFromResult(column.getName());
-                    insertSqlB.append("?,");
                     v.add(val);
                 }
                 String[] vals = new String[v.size()];
                 v.copyInto(vals);
-
-                String s = insertSqlB.toString() + "?)";
-                pstmt = SqlUtils.getPreparedStatement(dataSource, s);
 
                 for (int i = 0; i < vals.length; i++) {
                     //todo: may need to handle large strings for clob columns?
                     pstmt.setString(i + 1, vals[i]);
                 }
                 pstmt.setInt(vals.length + 1, ++idx);
-                pstmt.execute();
-                SqlUtils.closeStatement(pstmt);
-                pstmt = null;
+                pstmt.addBatch();
             }
+            pstmt.executeBatch();
         } catch (SQLException e) {
+            throw new WdkModelException(e);
+        } finally {
+            long end = System.currentTimeMillis(); 
+            System.out.println("WS Caching takes: " + ((end - start)/1000.0) + " seconds.");
             try {
                 SqlUtils.closeStatement(pstmt);
             } catch (SQLException ex) {
                 throw new WdkModelException("Failed closing the PreparedStatement.",  ex);
             }
-            throw new WdkModelException(e);
         }
     }
 
