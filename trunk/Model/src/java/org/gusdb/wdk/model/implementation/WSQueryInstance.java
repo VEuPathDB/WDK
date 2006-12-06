@@ -84,7 +84,7 @@ public class WSQueryInstance extends QueryInstance {
             this.resultMessage = response.getMessage();
             
             long end = System.currentTimeMillis();
-            logger.info("Invoking on client takes " + ((end - start)/1000.0) + " seconds.");
+            logger.debug("Invoking on client takes " + ((end - start)/1000.0) + " seconds.");
 
             // TEST
             logger.debug("WSQI Result Message:" + resultMessage);
@@ -106,11 +106,6 @@ public class WSQueryInstance extends QueryInstance {
         
         // invoke web service to get the result
         ResultList resultList = getNonpersistentResult();
-        
-        long end = System.currentTimeMillis();
-        logger.info("Get Non-P Result takes: " + ((end - start) / 1000.0)
-                + " seconds.");
-        start = System.currentTimeMillis();
 
         // TEST
         logger.info("Caching the result from "
@@ -155,11 +150,6 @@ public class WSQueryInstance extends QueryInstance {
             // create cache table
             SqlUtils.execute(dataSource, createSqlB.toString());
 
-            end = System.currentTimeMillis();
-            logger.info("Create cache takes: " + ((end - start) / 1000.0)
-                    + " seconds.");
-            start = System.currentTimeMillis();
-
             pstmt = SqlUtils.getPreparedStatement(dataSource,
                     insertSqlB.toString());
 
@@ -184,7 +174,7 @@ public class WSQueryInstance extends QueryInstance {
         } catch (SQLException e) {
             throw new WdkModelException(e);
         } finally {
-            end = System.currentTimeMillis();
+            long end = System.currentTimeMillis();
             logger.info("Insert cache takes: " + ((end - start) / 1000.0)
                     + " seconds.");
             try {
