@@ -3,7 +3,6 @@ package org.gusdb.wdk.model.implementation;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.rmi.RemoteException;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.LinkedHashSet;
@@ -13,9 +12,6 @@ import java.util.Set;
 import javax.sql.DataSource;
 import javax.xml.rpc.ServiceException;
 
-import oracle.sql.CLOB;
-
-import org.apache.commons.dbcp.DelegatingConnection;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Column;
 import org.gusdb.wdk.model.QueryInstance;
@@ -28,7 +24,7 @@ import org.gusdb.wsf.client.WsfService;
 import org.gusdb.wsf.client.WsfServiceServiceLocator;
 
 public class WSQueryInstance extends QueryInstance {
-
+    
     /**
      * The threshold for the width of the columns that are stored as CLOBs; If
      * the column width is defined < 4000, a varchar(width) will be used,
@@ -72,6 +68,8 @@ public class WSQueryInstance extends QueryInstance {
                 if (columns[i].getWsName() != null)
                     columnNames[i] = columns[i].getWsName();
             }
+            
+            String invokeKey = query.getFullName();
 
             // TEST
             logger.info("Invoking " + wsQuery.getProcessName() + " at "
@@ -79,7 +77,7 @@ public class WSQueryInstance extends QueryInstance {
             long start = System.currentTimeMillis();
             
             // get the response from the web service
-            WsfResponse response = client.invoke(wsQuery.getProcessName(),
+            WsfResponse response = client.invoke(wsQuery.getProcessName(), invokeKey,
                     params, columnNames);
             this.resultMessage = response.getMessage();
             
@@ -193,5 +191,4 @@ public class WSQueryInstance extends QueryInstance {
             throw new WdkModelException(e);
         }
     }
-
 }
