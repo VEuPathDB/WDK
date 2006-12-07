@@ -56,7 +56,7 @@ public class WsfClientTest {
 
         try {
             WsfService service = locator.getWsfService(new URL(url));
-            WsfResponse response = service.invoke(plugin, params, orderedColumns);
+            WsfResponse response = service.invoke(plugin, "", params, orderedColumns);
             String message = response.getMessage();
             String[][] result = response.getResults();
             // print result message
