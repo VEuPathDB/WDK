@@ -267,7 +267,9 @@ public class UserFactory {
                     + "register_time, last_active, last_name, first_name, "
                     + "middle_name, title, organization, department, address, "
                     + "city, state, zip_code, phone_number, country,signature)"
-                    + " VALUES (?, ?, ' ', ?, SYSDATE, SYSDATE, ?, ?, ?, ?, ?,"
+                    + " VALUES (?, ?, ' ', ?, "
+                    + platform.GetCurrentDateFunction() + ", "
+                    + platform.GetCurrentDateFunction() + ", ?, ?, ?, ?, ?,"
                     + "?, ?, ?, ?, ?, ?, ?, ?)");
             psUser.setInt(1, userId);
             psUser.setString(2, email);
@@ -345,7 +347,9 @@ public class UserFactory {
             psUser = SqlUtils.getPreparedStatement(dataSource, "INSERT INTO "
                     + loginSchema + "users (user_id, email, passwd, is_guest, "
                     + "register_time, last_active, first_name, signature) "
-                    + "VALUES (?, ?, ' ', 1, SYSDATE, SYSDATE, ?, ?)");
+                    + "VALUES (?, ?, ' ', 1, "
+                    + platform.GetCurrentDateFunction() + ", "
+                    + platform.GetCurrentDateFunction() + ", ?, ?)");
             psUser.setInt(1, userId);
             psUser.setString(2, email);
             psUser.setString(3, firstName);
@@ -713,7 +717,8 @@ public class UserFactory {
             // save the user's basic information
             psUser = SqlUtils.getPreparedStatement(dataSource, "UPDATE "
                     + loginSchema + "users SET is_guest = ?, "
-                    + "last_active = SYSDATE, last_name = ?, first_name = ?, "
+                    + "last_active = " + platform.GetCurrentDateFunction()
+                    + ", last_name = ?, first_name = ?, "
                     + "middle_name = ?, organization = ?, department = ?, "
                     + "title = ?,  address = ?, city = ?, state = ?, "
                     + "zip_code = ?, phone_number = ?, country = ? "
@@ -762,8 +767,9 @@ public class UserFactory {
         PreparedStatement psUser = null;
         try {
             psUser = SqlUtils.getPreparedStatement(dataSource, "UPDATE "
-                    + loginSchema + "users SET last_active = SYSDATE "
-                    + "WHERE user_id = ?");
+                    + loginSchema + "users SET last_active = "
+		    + platform.getCurrentDatefunction()
+                    + " WHERE user_id = ?");
             psUser.setInt(1, user.getUserId());
             int result = psUser.executeUpdate();
             if (result == 0)
