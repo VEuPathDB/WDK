@@ -38,6 +38,8 @@ public class PostgreSQL implements RDBMSPlatformI, Serializable {
     private DataSource dataSource;
     private GenericObjectPool connectionPool;
 
+    private String user;
+
     public PostgreSQL() {}
 
     public DataSource getDataSource() {
@@ -197,6 +199,7 @@ public class PostgreSQL implements RDBMSPlatformI, Serializable {
             PoolingDataSource dataSource = new PoolingDataSource(connectionPool);
 
             this.dataSource = dataSource;
+	    this.user = user;
         } catch (Exception sqle) {
             throw new WdkModelException(
                     "\n\n*************ERROR***********\nCould not connect to database.\nIt is possible that you are using an incorrect url for connecting to the database or that your login or password is incorrect.\nPlease check "
@@ -250,8 +253,9 @@ public class PostgreSQL implements RDBMSPlatformI, Serializable {
      * @see org.gusdb.wdk.model.RDBMSPlatformI#getTableCount(java.lang.String)
      */
     public int getTableCount(String tableNamePattern) throws SQLException {
-        throw new UnsupportedOperationException(
-                "Method not supported in PostgreSQL");
+        String sql = "SELECT count(*) FROM information_schema.tables WHERE table_schema = '" + user + "' and table_name ilike '"
+                + tableNamePattern + "'";
+        return SqlUtils.runIntegerQuery(dataSource, sql);
     }
 
     /*
