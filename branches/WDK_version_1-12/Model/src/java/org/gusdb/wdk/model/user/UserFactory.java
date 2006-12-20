@@ -268,8 +268,8 @@ public class UserFactory {
                     + "middle_name, title, organization, department, address, "
                     + "city, state, zip_code, phone_number, country,signature)"
                     + " VALUES (?, ?, ' ', ?, "
-                    + platform.GetCurrentDateFunction() + ", "
-                    + platform.GetCurrentDateFunction() + ", ?, ?, ?, ?, ?,"
+                    + platform.getCurrentDateFunction() + ", "
+                    + platform.getCurrentDateFunction() + ", ?, ?, ?, ?, ?,"
                     + "?, ?, ?, ?, ?, ?, ?, ?)");
             psUser.setInt(1, userId);
             psUser.setString(2, email);
@@ -348,8 +348,8 @@ public class UserFactory {
                     + loginSchema + "users (user_id, email, passwd, is_guest, "
                     + "register_time, last_active, first_name, signature) "
                     + "VALUES (?, ?, ' ', 1, "
-                    + platform.GetCurrentDateFunction() + ", "
-                    + platform.GetCurrentDateFunction() + ", ?, ?)");
+                    + platform.getCurrentDateFunction() + ", "
+                    + platform.getCurrentDateFunction() + ", ?, ?)");
             psUser.setInt(1, userId);
             psUser.setString(2, email);
             psUser.setString(3, firstName);
@@ -717,7 +717,7 @@ public class UserFactory {
             // save the user's basic information
             psUser = SqlUtils.getPreparedStatement(dataSource, "UPDATE "
                     + loginSchema + "users SET is_guest = ?, "
-                    + "last_active = " + platform.GetCurrentDateFunction()
+                    + "last_active = " + platform.getCurrentDateFunction()
                     + ", last_name = ?, first_name = ?, "
                     + "middle_name = ?, organization = ?, department = ?, "
                     + "title = ?,  address = ?, city = ?, state = ?, "
@@ -768,7 +768,7 @@ public class UserFactory {
         try {
             psUser = SqlUtils.getPreparedStatement(dataSource, "UPDATE "
                     + loginSchema + "users SET last_active = "
-		    + platform.getCurrentDatefunction()
+		    + platform.getCurrentDateFunction()
                     + " WHERE user_id = ?");
             psUser.setInt(1, user.getUserId());
             int result = psUser.executeUpdate();
