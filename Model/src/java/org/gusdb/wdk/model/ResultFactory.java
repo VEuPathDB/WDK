@@ -349,9 +349,7 @@ public class ResultFactory implements Serializable {
                     sqlb.toString());
             if (rsInstance.next()) {
                 resultTableName = rsInstance.getString("result_table");
-                Clob messageClob = rsInstance.getClob("result_message");
-                resultMessage = messageClob.getSubString(1,
-                        (int) messageClob.length());
+                resultMessage = platform.getClobData(rsInstance, "result_message");
 
                 // instance result is in cache but is newly created object
                 if (instance.getQueryInstanceId() == null)
