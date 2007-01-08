@@ -872,8 +872,7 @@ public class UserFactory {
                 history.setBoolean(rsHistory.getBoolean("is_boolean"));
                 history.setDeleted(rsHistory.getBoolean("is_deleted"));
 
-                Clob clob = rsHistory.getClob("params");
-                String paramsClob = clob.getSubString(1, (int) clob.length());
+                String paramsClob = platform.getClobData(rsHistory, "params");
 
                 // re-construct the answer
                 Answer answer;
@@ -949,8 +948,7 @@ public class UserFactory {
             history.setBoolean(rsHistory.getBoolean("is_boolean"));
             history.setDeleted(rsHistory.getBoolean("is_deleted"));
 
-            Clob clob = rsHistory.getClob("params");
-            String paramsClob = clob.getSubString(1, (int) clob.length());
+            String paramsClob = platform.getClobData(rsHistory, "params");
 
             // re-construct the answer
             Answer answer;
