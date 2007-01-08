@@ -2,6 +2,7 @@ package org.gusdb.wdk.model;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.ResultSet;
 
 import javax.sql.DataSource;
 
@@ -63,4 +64,6 @@ public interface RDBMSPlatformI {
 
     public int updateClobData(PreparedStatement ps, int columnIndex,
             String content, boolean commit) throws SQLException;
+
+    public String getClobData(ResultSet rs, String columnName) throws SQLException;
 }

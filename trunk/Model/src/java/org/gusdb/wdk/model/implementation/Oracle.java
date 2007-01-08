@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 
+import java.sql.Clob;
 import oracle.sql.CLOB;
 
 import org.apache.commons.dbcp.ConnectionFactory;
@@ -284,5 +285,11 @@ public class Oracle implements RDBMSPlatformI, Serializable {
         clob.setString(1, content);
         ps.setClob(columnIndex, clob);
         return commit ? ps.executeUpdate() : 0;
+    }
+
+    public String getClobData(ResultSet rs, String columnName) throws SQLException {
+	Clob messageClob = rs.getClob(columnName);
+	return messageClob.getSubString(1, (int) messageClob.length());
+
     }
 }
