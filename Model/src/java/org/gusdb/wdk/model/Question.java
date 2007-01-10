@@ -122,6 +122,25 @@ public class Question implements Serializable {
         return rmfields;
     }
 
+    public Map<String, TableField> getReportMakerTableFields() {
+        Map<String, TableField> rmfields = recordClass.getReportMakerTableFieldMap();
+        return rmfields;
+    }
+    
+    public Map<String, Field> getReportMakerFields() {
+        Map<String, Field> fields = new LinkedHashMap<String, Field>();
+        Map<String, AttributeField> attributes = getReportMakerAttributeFields();
+        Map<String, TableField> tables = getReportMakerTableFields();
+        
+        for (String name : attributes.keySet()) {
+            fields.put(name, attributes.get(name));
+        }
+        for (String name : tables.keySet()) {
+            fields.put(name, tables.get(name));
+        }
+        return fields;
+    }
+
     ///////////////////////////////////////////////////////////////////////
 
 

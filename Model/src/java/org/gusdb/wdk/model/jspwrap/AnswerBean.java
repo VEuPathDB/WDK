@@ -11,8 +11,8 @@ import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.BooleanQuery;
 import org.gusdb.wdk.model.FlatVocabParam;
 import org.gusdb.wdk.model.Param;
+import org.gusdb.wdk.model.TableField;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 
 /**
  * A wrapper on a {@link Answer} that provides simplified access for consumption
@@ -229,6 +229,20 @@ public class AnswerBean {
         return rmAttribs;
     }
 
+    public TableFieldBean[] getAllReportMakerTables() {
+        Map<String, TableField> tables = answer.getReportMakerTableFields();
+        Iterator<String> ti = tables.keySet().iterator();
+        Vector<TableFieldBean> v = new Vector<TableFieldBean>();
+        while (ti.hasNext()) {
+            String tableName = ti.next();
+            v.add(new TableFieldBean(tables.get(tableName)));
+        }
+        int size = v.size();
+        TableFieldBean[] rmTables = new TableFieldBean[size];
+        v.toArray(rmTables);
+        return rmTables;
+    }
+
     public String[] getDownloadAttributeNames() {
         AttributeFieldBean[] downloadAttribs = getDownloadAttributes();
         Vector<String> v = new Vector<String>();
@@ -259,9 +273,6 @@ public class AnswerBean {
     public void resetAnswerRowCursor() {
         try {
             answer = answer.newAnswer();
-        } catch (WdkUserException ex) {
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
         } catch (WdkModelException ex) {
             ex.printStackTrace();
             throw new RuntimeException(ex);
@@ -276,12 +287,28 @@ public class AnswerBean {
         return true;
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.Answer#getResultMessage()
+     */
     public String getResultMessage() {
         // TEST
         System.out.println("Result message from AnswerBean: "
                 + answer.getResultMessage());
 
         return answer.getResultMessage();
+    }
+    
+    /**
+     * @param reporterName
+     * @param config
+     * @return
+     * @throws WdkModelException
+     * @see org.gusdb.wdk.model.Answer#getReport(java.lang.String, java.util.Map)
+     */
+    public String getReport(String reporterName, Map<String, String> config) throws WdkModelException {
+        return answer.getReport(reporterName, config);
     }
 
     // //////////////////////////////////////////////////////////////////////
@@ -317,10 +344,8 @@ public class AnswerBean {
 
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.Answer#getResultMessage()
-     */
+
+
+ 
 
 }
