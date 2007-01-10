@@ -13,7 +13,7 @@
 	<classpathentry kind="lib" path="lib/java/xml-apis.jar"/>
 	<classpathentry kind="lib" path="lib/java/xsltc.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry sourcepath="ECLIPSE_HOME/plugins/org.eclipse.jdt.source_3.1.1/src/org.junit_3.8.1/junitsrc.zip" kind="var" path="JUNIT_HOME/junit.jar"/>
+	<classpathentry kind="var" path="JUNIT_HOME/junit.jar" sourcepath="ECLIPSE_HOME/plugins/org.eclipse.jdt.source_3.1.1/src/org.junit_3.8.1/junitsrc.zip"/>
 	<classpathentry kind="lib" path="lib/java/commons-logging-api.jar"/>
 	<classpathentry kind="lib" path="lib/java/axis.jar"/>
 	<classpathentry kind="lib" path="lib/java/commons-discovery-0.2.jar"/>

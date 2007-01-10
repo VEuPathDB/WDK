@@ -6,6 +6,7 @@ import java.util.Map;
 import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.RecordClass;
+import org.gusdb.wdk.model.ReporterRef;
 import org.gusdb.wdk.model.TableField;
 import org.gusdb.wdk.model.WdkModelException;
 
@@ -83,5 +84,15 @@ public class RecordClassBean {
 	    questionBeans[i] = new QuestionBean(questions[i]);
 	}
 	return questionBeans;
+    }
+    
+    public Map<String, String> getReporters() {
+        Map<String, ReporterRef> reporterMap = recordClass.getReporterMap();
+        Map<String, String> reporters = new LinkedHashMap<String, String>();
+        for (String name : reporterMap.keySet()) {
+            ReporterRef ref = reporterMap.get(name);
+            reporters.put(name, ref.getDisplayName());
+        }
+        return reporters;
     }
 }

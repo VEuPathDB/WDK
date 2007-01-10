@@ -13,7 +13,7 @@ import org.gusdb.wdk.model.TableField;
  * @author  Jerric
  * @created Jan 23, 2006
  */
-public class TableFieldBean {
+public class TableFieldBean extends FieldBean {
 
     private TableField field;
     
@@ -21,6 +21,7 @@ public class TableFieldBean {
      * 
      */
     public TableFieldBean(TableField field) {
+        super(field);
         this.field = field;
     }
 
@@ -48,61 +49,4 @@ public class TableFieldBean {
         }
         return fieldBeans;
     }
-
-    /* (non-Javadoc)
-     * @see org.gusdb.wdk.model.Field#getDisplayName()
-     */
-    public String getDisplayName() {
-        return this.field.getDisplayName();
-    }
-
-    /* (non-Javadoc)
-     * @see org.gusdb.wdk.model.Field#getHelp()
-     */
-    public String getHelp() {
-        return this.field.getHelp();
-    }
-
-    /* (non-Javadoc)
-     * @see org.gusdb.wdk.model.Field#getInReportMaker()
-     */
-    public boolean getInReportMaker() {
-        return this.field.getInReportMaker();
-    }
-
-    /* (non-Javadoc)
-     * @see org.gusdb.wdk.model.Field#getInternal()
-     */
-    public boolean getInternal() {
-        return this.field.getInternal();
-    }
-
-    /* (non-Javadoc)
-     * @see org.gusdb.wdk.model.Field#getName()
-     */
-    public String getName() {
-        return this.field.getName();
-    }
-
-    /* (non-Javadoc)
-     * @see org.gusdb.wdk.model.TableField#getTruncateTo()
-     */
-    public int getTruncateTo() {
-        return this.field.getTruncateTo();
-    }
-
-    /* (non-Javadoc)
-     * @see org.gusdb.wdk.model.Field#getType()
-     */
-    public String getType() {
-        return this.field.getType();
-    }
-
-    /* (non-Javadoc)
-     * @see org.gusdb.wdk.model.Field#toString()
-     */
-    public String toString() {
-        return this.field.toString();
-    }
-
 }

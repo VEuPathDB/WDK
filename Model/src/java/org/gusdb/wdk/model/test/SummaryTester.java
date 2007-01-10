@@ -1,9 +1,13 @@
 package org.gusdb.wdk.model.test;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Hashtable;
+import java.io.InputStreamReader;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
@@ -44,6 +48,17 @@ public class SummaryTester {
         String xmlFileName = cmdLine.getOptionValue("toXml");
         String[] rows = cmdLine.getOptionValues("rows");
 
+        boolean hasFormat = cmdLine.hasOption("format");
+        String format = cmdLine.getOptionValue("format");
+
+        boolean hasFormatConfig = cmdLine.hasOption("config");
+        String configFile = cmdLine.getOptionValue("config");
+
+        if (!hasFormat && hasFormatConfig) {
+            throw new IllegalArgumentException(
+                    "Please specify the output format before providing the configuration file for that format.");
+        }
+
         if (toXml) {
             if (xmlFileName == null || xmlFileName.equals(""))
                 usage(cmdName, options);
@@ -58,13 +73,12 @@ public class SummaryTester {
             Reference ref = new Reference(questionFullName);
             String questionSetName = ref.getSetName();
             String questionName = ref.getElementName();
-            WdkModel wdkModel = WdkModel.construct(cmdLine
-                    .getOptionValue("model"));
+            WdkModel wdkModel = WdkModel.construct(cmdLine.getOptionValue("model"));
 
             QuestionSet questionSet = wdkModel.getQuestionSet(questionSetName);
             Question question = questionSet.getQuestion(questionName);
 
-            Hashtable paramValues = new Hashtable();
+            Map<String, Object> paramValues = new LinkedHashMap<String, Object>();
             if (haveParams) {
                 paramValues = parseParamArgs(params);
             }
@@ -90,16 +104,23 @@ public class SummaryTester {
                 // all. Fix this in Answer by saving a list of attribute
                 // queries, not just one.
                 if (cmdLine.hasOption("showQuery")) {
-                    answer.printAsTable();
                     System.out.println(getLowLevelQuery(answer));
-                    return;
                 }
 
                 if (rows.length != 2) System.out.println("page " + pageCount);
 
-                if (cmdLine.hasOption("fullRecords")) System.out.println(answer
-                        .printAsRecords());
-                else System.out.println(answer.printAsTable());
+                // load configuration for output format
+                if (!hasFormat) format = "tabular";
+                Map<String, String> config = loadConfiguration(configFile);
+
+                // if (cmdLine.hasOption("fullRecords"))
+                // System.out.println(answer
+                // .printAsRecords());
+                // else System.out.println(answer.printAsTable());
+
+                String result = answer.getReport(format, config, nextStartRow,
+                        nextEndRow);
+                System.out.println(result);
 
                 pageCount++;
             }
@@ -108,17 +129,38 @@ public class SummaryTester {
             System.exit(1);
         } catch (Exception e) {
             e.printStackTrace();
-            //System.exit(1);
+            // System.exit(1);
         }
         // System.exit(0);
-        
+
         // HACK
         // prevent the app from exiting
         // while(true){}
     }
 
+    private static Map<String, String> loadConfiguration(String configFileName)
+            throws IOException {
+        Map<String, String> config = new LinkedHashMap<String, String>();
+
+        if (configFileName == null || configFileName.length() == 0)
+            return config;
+
+        File configFile = new File(configFileName);
+        BufferedReader in = new BufferedReader(new InputStreamReader(
+                new FileInputStream(configFile)));
+        String line;
+        while ((line = in.readLine()) != null) {
+            if (line.trim().length() == 0) continue;
+            if (line.charAt(0) == '#') continue;
+            int pos = line.indexOf("=");
+            if (pos < 0) config.put(line, null);
+            else config.put(line.substring(0, pos), line.substring(pos + 1));
+        }
+        return config;
+    }
+
     private static void writeSummaryAsXml(Question question,
-            Hashtable paramValues, String xmlFile) throws WdkModelException,
+            Map<String, Object> paramValues, String xmlFile) throws WdkModelException,
             WdkUserException, IOException {
         Answer answer = question.makeAnswer(paramValues, 1, 10);
         int resultSize = answer.getResultSize();
@@ -141,12 +183,12 @@ public class SummaryTester {
 
     private static String getLowLevelQuery(Answer answer)
             throws WdkModelException {
-        QueryInstance instance = answer.getAttributesQueryInstance();
+        // QueryInstance instance = answer.getAttributesQueryInstance();
+         QueryInstance instance = answer.getIdsQueryInstance();
         String query = instance.getLowLevelQuery();
         String newline = System.getProperty("line.separator");
         String newlineQuery = query.replaceAll("^\\s\\s\\s", newline);
-        newlineQuery = newlineQuery
-                .replaceAll("(\\S)\\s\\s\\s", "$1" + newline);
+        newlineQuery = newlineQuery.replaceAll("(\\S)\\s\\s\\s", "$1" + newline);
         return newline + newlineQuery + newline;
     }
 
@@ -193,6 +235,16 @@ public class SummaryTester {
         Option fullRecords = new Option("fullRecords", "output full records");
         options.addOption(fullRecords);
 
+        // output format
+        Option format = new Option("format", true, "the output format, which "
+                + "is record type specific (defined in the model file)");
+        options.addOption(format);
+
+        // the config file for output format
+        Option config = new Option("config", true,
+                "The configuration file for " + "the output format");
+        options.addOption(config);
+
         // params
         Option params = new Option("params", true,
                 "Space delimited list of param_name param_value ....");
@@ -228,9 +280,9 @@ public class SummaryTester {
         }
     }
 
-    static Hashtable<String, String> parseParamArgs(String[] params) {
+    static Map<String, Object> parseParamArgs(String[] params) {
 
-        Hashtable<String, String> h = new Hashtable<String, String>();
+        Map<String, Object> h = new LinkedHashMap<String, Object>();
         if (params[0].equals("NONE")) {
             return h;
         } else {
@@ -248,9 +300,13 @@ public class SummaryTester {
     static void usage(String cmdName, Options options) {
 
         String newline = System.getProperty("line.separator");
-        String cmdlineSyntax = cmdName + " -model model_name"
-                + " -question full_question_name" + " [-rows start end]"
-                + " [-showQuery]" + " [-toXml <xmlFile>|-fullRecords]"
+        String cmdlineSyntax = cmdName
+                + " -model model_name"
+                + " -question full_question_name"
+                + " [-rows start end]"
+                + " [-showQuery]"
+                + " [-toXml <xmlFile>|-fullRecords]"
+                + " [-format tabular | gff3 | fullRecords [-config <config_file>]]"
                 + " -params param_1_name param_1_value ...";
 
         String header = newline
