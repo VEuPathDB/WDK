@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.report.IReporter;
 
 /**
  * Answer.java
@@ -107,7 +108,7 @@ public class Answer {
      */
     Answer(Question question, QueryInstance idsQueryInstance,
             int startRecordInstanceI, int endRecordInstanceI)
-            throws WdkUserException, WdkModelException {
+            throws WdkModelException {
         this.question = question;
         this.idsQueryInstance = idsQueryInstance;
         this.isBoolean = (idsQueryInstance instanceof BooleanQueryInstance);
@@ -227,6 +228,10 @@ public class Answer {
 
     public Map<String, AttributeField> getReportMakerAttributeFields() {
         return question.getReportMakerAttributeFields();
+    }
+
+    public Map<String, TableField> getReportMakerTableFields() {
+        return question.getReportMakerTableFields();
     }
 
     public boolean isSummaryAttribute(String attName) {
@@ -359,6 +364,45 @@ public class Answer {
         return buf.toString();
     }
 
+    public String getReport(String reporterName, Map<String, String> config)
+            throws WdkModelException {
+        // get the full answer
+        int endI = getResultSize();
+        return getReport(reporterName, config, 1, endI);
+    }
+
+    public String getReport(String reporterName, Map<String, String> config,
+            int startI, int endI) throws WdkModelException {
+        // get Reporter
+        Map<String, ReporterRef> rptMap = question.getRecordClass().getReporterMap();
+        ReporterRef rptRef = rptMap.get(reporterName);
+        String rptImp = rptRef.getImplementation();
+        if (rptImp == null)
+            throw new WdkModelException("The reporter " + reporterName + " is "
+                    + "not registered for "
+                    + question.getRecordClass().getFullName());
+
+        try {
+            Class rptClass = Class.forName(rptImp);
+            IReporter reporter = (IReporter) rptClass.newInstance();
+
+            // generate a new answer, if necessary
+            Answer answer = this;
+            if (startI != this.startRecordInstanceI
+                    || endI != this.endRecordInstanceI)
+                answer = newAnswer(startI, endI);
+
+            reporter.config(config);
+            return reporter.format(answer);
+        } catch (ClassNotFoundException ex) {
+            throw new WdkModelException(ex);
+        } catch (InstantiationException ex) {
+            throw new WdkModelException(ex);
+        } catch (IllegalAccessException ex) {
+            throw new WdkModelException(ex);
+        }
+    }
+
     // ------------------------------------------------------------------
     // Package Methods
     // ------------------------------------------------------------------
@@ -473,7 +517,7 @@ public class Answer {
      */
     private void initPageRecordInstances() throws WdkModelException {
         if (pageRecordInstances != null) return;
-        
+
         // set instance variables projectColumnName and idsColumnName
         findPrimaryKeyColumnNames();
 
@@ -538,12 +582,20 @@ public class Answer {
         return sb.toString();
     }
 
-    public Answer newAnswer() throws WdkUserException, WdkModelException {
+    public Answer newAnswer() throws WdkModelException {
         Answer answer = new Answer(question, idsQueryInstance,
                 startRecordInstanceI, endRecordInstanceI);
         // instead of cloning all parts of an answer, just initialize it as a
         // new answer, and the queries can be re-run without any assumption
         return answer;
+    }
+
+    public Answer newAnswer(int startIndex, int endIndex)
+            throws WdkModelException {
+        this.startRecordInstanceI = startIndex;
+        this.endRecordInstanceI = endIndex;
+        return new Answer(question, idsQueryInstance, startRecordInstanceI,
+                endRecordInstanceI);
     }
 
     /**

@@ -235,6 +235,15 @@ public class ModelXmlParser {
                 "setProjectParamRef");
         // end by jerric
 
+        /*    */digester.addObjectCreate(
+                "wdkModel/recordClassSet/recordClass/reporter",
+                ReporterRef.class);
+
+        /*    */digester.addSetProperties("wdkModel/recordClassSet/recordClass/reporter");
+
+        /*    */digester.addSetNext(
+                "wdkModel/recordClassSet/recordClass/reporter",
+                "addReporterRef");
 
         // load attributeQueryRef along with the attributes associated with it
         

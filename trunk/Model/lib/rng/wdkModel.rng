@@ -285,6 +285,14 @@
              <attribute name="ref" />
          </element>
       </optional>
+      
+      <zeroOrMore>  
+         <element name="reporter">
+             <attribute name="name" />
+             <attribute name="displayName" />
+             <attribute name="implementation" />
+         </element>
+      </zeroOrMore>
 
       <optional>
          <attribute name="aliasQueryRef" />

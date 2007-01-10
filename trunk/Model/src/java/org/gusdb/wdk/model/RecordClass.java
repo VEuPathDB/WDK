@@ -69,10 +69,14 @@ public class RecordClass {
     private String aliasQueryName = null;
     private Query aliasQuery = null;
 
+    private Map<String, ReporterRef> reporters;
+
     public RecordClass() {
         // make sure these keys are at the front of the list
         // it doesn't make sense, since you can't guarantee the order in a map
         attributeFieldsMap.put(PRIMARY_KEY_NAME, null);
+        
+        reporters = new LinkedHashMap<String, ReporterRef>();
     }
 
     // ////////////////////////////////////////////////////////////////////
@@ -179,6 +183,10 @@ public class RecordClass {
 
         nestedRecordListQuestionRefs.add(nrl);
     }
+    
+    public void addReporterRef(ReporterRef reporter) {
+        reporters.put(reporter.getName(), reporter);
+    }
 
     // ////////////////////////////////////////////////////////////
     // public getters
@@ -225,6 +233,16 @@ public class RecordClass {
         Set<String> names = attributeFieldsMap.keySet();
         for (String name : names) {
             AttributeField field = attributeFieldsMap.get(name);
+            if (field.getInReportMaker()) rmfields.put(name, field);
+        }
+        return rmfields;
+    }
+
+    public Map<String, TableField> getReportMakerTableFieldMap() {
+        Map<String, TableField> rmfields = new LinkedHashMap<String, TableField>();
+        Set<String> names = tableFieldsMap.keySet();
+        for (String name : names) {
+            TableField field = tableFieldsMap.get(name);
             if (field.getInReportMaker()) rmfields.put(name, field);
         }
         return rmfields;
@@ -301,6 +319,10 @@ public class RecordClass {
             throws WdkModelException {
         String sourceId = lookupSourceId(recordId);
         return new RecordInstance(this, projectId, sourceId);
+    }
+    
+    public Map<String, ReporterRef> getReporterMap() {
+        return new LinkedHashMap<String, ReporterRef>(reporters);
     }
 
     public String toString() {

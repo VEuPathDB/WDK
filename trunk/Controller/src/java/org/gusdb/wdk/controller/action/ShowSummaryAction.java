@@ -216,13 +216,13 @@ public class ShowSummaryAction extends ShowQuestionAction {
     }
 
     protected AnswerBean summaryPaging(HttpServletRequest request,
-            Object answerMaker, Map params) throws WdkModelException,
+            Object answerMaker, Map<String, Object> params) throws WdkModelException,
             WdkUserException {
         return summaryPaging(request, answerMaker, params, null);
     }
 
     private AnswerBean summaryPaging(HttpServletRequest request,
-            Object answerMaker, Map params, AnswerBean wdkAnswer)
+            Object answerMaker, Map<String, Object> params, AnswerBean wdkAnswer)
             throws WdkModelException, WdkUserException {
         UserBean wdkUser = (UserBean) request.getSession().getAttribute(
                 CConstants.WDK_USER_KEY);
