@@ -563,13 +563,16 @@ public class ResultFactory implements Serializable {
         Calendar cal = GregorianCalendar.getInstance();
 
         // decide the name of the logger file
-        int pos = queryLoggerFile.lastIndexOf('.');
+        int sepPos = queryLoggerFile.lastIndexOf(File.separator);
+        int extPos = queryLoggerFile.lastIndexOf(".");
         StringBuffer name = new StringBuffer();
-        name.append((pos < 0) ? queryLoggerFile : queryLoggerFile.substring(0,
-                pos));
-        name.append("_" + cal.get(Calendar.MONTH));
+        if(extPos > sepPos)
+            name.append(queryLoggerFile.substring(0, extPos));
+        else
+            name.append(queryLoggerFile);
+        name.append("_" + (cal.get(Calendar.MONTH) +1));
         name.append("-" + cal.get(Calendar.YEAR));
-        if (pos >= 0) name.append(queryLoggerFile.substring(pos));
+        if (extPos >= sepPos) name.append(queryLoggerFile.substring(extPos));
         File file = new File(name.toString());
         if (!file.exists()) file.createNewFile();
 
