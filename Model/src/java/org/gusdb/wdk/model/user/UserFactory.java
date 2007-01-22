@@ -9,7 +9,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.sql.Clob;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -1551,6 +1550,10 @@ public class UserFactory {
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
         }
+    }
+    
+    String getLoginSchema() {
+        return loginSchema;
     }
 
     public static void main(String[] args) {

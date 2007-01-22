@@ -97,12 +97,9 @@ public class HistoryParam extends Param {
         try {
             User user = factory.loadUserBySignature(signature);
             History history = user.getHistory(historyId);
-            Answer answer = history.getAnswer();
-            Integer datasetId = answer.getDatasetId();
-            return datasetId.toString();
+            return history.getCacheFullTable();
         } catch (WdkUserException ex) {
             throw new WdkModelException(ex);
         }
     }
-
 }

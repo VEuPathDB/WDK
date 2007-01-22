@@ -1,14 +1,6 @@
 package org.gusdb.wdk.model.jspwrap;
 
-import org.gusdb.wdk.model.Field;
-import org.gusdb.wdk.model.Question;
-import org.gusdb.wdk.model.Param;
-import org.gusdb.wdk.model.FlatVocabParam;
-import org.gusdb.wdk.model.TableField;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.BooleanQuestionNode;
-import org.gusdb.wdk.model.AttributeField;
+import org.gusdb.wdk.model.*;
 
 import java.io.Serializable;
 import java.util.LinkedHashMap;
@@ -43,6 +35,10 @@ public class QuestionBean implements Serializable {
             if (params[i] instanceof FlatVocabParam) {
                 paramBeans[i] = new FlatVocabParamBean(
                         (FlatVocabParam) params[i]);
+            } else if (params[i] instanceof HistoryParam) {
+                paramBeans[i] = new HistoryParamBean((HistoryParam) params[i]);
+            } else if (params[i] instanceof DatasetParam) {
+                paramBeans[i] = new DatasetParamBean((DatasetParam) params[i]);
             } else {
                 paramBeans[i] = new ParamBean(params[i]);
             }
@@ -164,8 +160,8 @@ public class QuestionBean implements Serializable {
      * @param end
      *            Index of the last record to include in the answer
      */
-    public AnswerBean makeAnswer(Map<String, Object> paramValues, int start, int end)
-            throws WdkModelException, WdkUserException {
+    public AnswerBean makeAnswer(Map<String, Object> paramValues, int start,
+            int end) throws WdkModelException, WdkUserException {
         return new AnswerBean(question.makeAnswer(paramValues, start, end));
     }
 

@@ -50,7 +50,9 @@ public class HistoryBean {
         return history.getCustomName();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.user.History#getBaseCustomName()
      */
     public String getBaseCustomName() {
@@ -75,7 +77,9 @@ public class HistoryBean {
         return history.getEstimateSize();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.user.History#setEstimateSize(int)
      */
     public void setEstimateSize(int estimateSize) {
@@ -207,17 +211,33 @@ public class HistoryBean {
         return history.getDescription();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.user.History#getBooleanExpression()
      */
     public String getBooleanExpression() {
         return history.getBooleanExpression();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.user.History#isDeleted()
      */
     public boolean isDeleted() {
         return history.isDeleted();
+    }
+
+    /**
+     * @param temporary
+     * @return
+     * @throws WdkModelException
+     * @throws WdkUserException
+     * @see org.gusdb.wdk.model.user.History#createDataset(boolean)
+     */
+    public DatasetBean createDataset(boolean temporary)
+            throws WdkModelException, WdkUserException {
+        return new DatasetBean(history.createDataset(temporary));
     }
 }

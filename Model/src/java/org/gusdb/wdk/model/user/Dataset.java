@@ -16,16 +16,16 @@ public class Dataset {
     private DatasetFactory factory;
 
     private int datasetId;
-    private int userId;
+    private User user;
     private String datasetName;
     private String cacheTable;
     private boolean temporary;
     private Date createTime;
     private String dataType;
 
-    public Dataset(DatasetFactory factory, int userId, int datasetId) {
+    public Dataset(DatasetFactory factory, User user, int datasetId) {
         this.factory = factory;
-        this.userId = userId;
+        this.user = user;
         this.datasetId = datasetId;
     }
 
@@ -34,6 +34,13 @@ public class Dataset {
      */
     public String getCacheTable() {
         return cacheTable;
+    }
+
+    /**
+     * @return Returns the cacheTable.
+     */
+    public String getCacheFullTable() {
+        return factory.getDatasetSchema() + cacheTable;
     }
 
     /**
@@ -105,20 +112,19 @@ public class Dataset {
         this.temporary = temporary;
     }
 
-    
     /**
      * @return Returns the userId.
      */
-    public int getUserId() {
-        return userId;
+    public User getUser() {
+        return user;
     }
 
-    
     /**
-     * @param userId The userId to set.
+     * @param userId
+     *            The userId to set.
      */
-    void setUserId(int userId) {
-        this.userId = userId;
+    void setUser(User user) {
+        this.user = user;
     }
 
     /**
@@ -147,11 +153,11 @@ public class Dataset {
      * @return returns the projectId-primaryKeyId pairs
      * @throws WdkUserException
      */
-    public String[][] getValues() throws WdkUserException {
-        return factory.loadDatasetValues(cacheTable);
+    public String[] getValues() throws WdkUserException {
+        return factory.loadDatasetValues(this);
     }
 
-    public void setValues(String[][] values) throws WdkUserException {
+    public void setValues(String[] values) throws WdkUserException {
         factory.saveDatasetValue(this, values);
     }
 

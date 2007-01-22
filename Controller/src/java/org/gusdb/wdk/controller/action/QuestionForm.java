@@ -10,9 +10,14 @@ import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
 import org.gusdb.wdk.model.jspwrap.FlatVocabParamBean;
+import org.gusdb.wdk.model.jspwrap.HistoryParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
+import org.gusdb.wdk.model.jspwrap.UserBean;
+import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
 /**
  * form bean for showing a wdk question from a question set
@@ -61,13 +66,15 @@ public class QuestionForm extends QuestionSetForm {
             ParamBean p = params[i];
             try {
                 String[] pVals = null;
-                if (p instanceof FlatVocabParamBean) {
+                if (p instanceof FlatVocabParamBean
+                        || p instanceof HistoryParamBean
+                        || p instanceof DatasetParamBean) {
                     pVals = getMyMultiProp(p.getName());
                     if (pVals == null) {
-                        pVals = new String[] { "" };
+                        pVals = new String[]{ "" };
                     }
                 } else {
-                    pVals = new String[] { getMyProp(p.getName()) };
+                    pVals = new String[]{ getMyProp(p.getName()) };
                 }
 
                 String errMsg = null;

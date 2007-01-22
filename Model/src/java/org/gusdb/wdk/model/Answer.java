@@ -499,7 +499,7 @@ public class Answer {
         }
     }
 
-    String[] findPrimaryKeyColumnNames() {
+    public String[] findPrimaryKeyColumnNames() {
         String[] names = findPrimaryKeyColumnNames(idsQueryInstance.getQuery());
         recordIdColumnName = names[0];
         recordProjectColumnName = names[1];
