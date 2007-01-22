@@ -10,12 +10,10 @@ import java.util.Set;
 
 import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.BooleanExpression;
-import org.gusdb.wdk.model.DatasetParam;
 import org.gusdb.wdk.model.HistoryParam;
 import org.gusdb.wdk.model.Param;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.DatasetParam.InputType;
 
 /**
  * @author xingao
@@ -65,7 +63,7 @@ public class History {
     public String getBaseCustomName() {
         return customName;
     }
-    
+
     /**
      * @return Returns the customName. If no custom name set before, it will
      *         return the default name provided by the underline Answer - a
@@ -74,7 +72,8 @@ public class History {
     public String getCustomName() {
         String name = customName;
         if (name == null)
-            name = (isBoolean) ? booleanExpression : answer.getQuestion().getDisplayName();
+            name = (isBoolean) ? booleanExpression
+                    : answer.getQuestion().getDisplayName();
         if (name != null) {
             // remove script injections
             name = name.replaceAll("<.+?>", " ");
@@ -226,16 +225,7 @@ public class History {
             Param[] params = answer.getQuestion().getParams();
             Map<String, Object> values = answer.getParams();
             for (Param param : params) {
-                if (param instanceof DatasetParam) {
-                    DatasetParam dsParam = (DatasetParam) param;
-                    String compound = values.get(param.getName()).toString();
-                    InputType inputType = dsParam.getInputType(compound);
-                    if (inputType == InputType.History) {
-                        // three parts: input_type, user_signature, history_id
-                        String[] parts = compound.split(":");
-                        components.add(Integer.parseInt(parts[2].trim()));
-                    }
-                } else if (param instanceof HistoryParam) {
+                if (param instanceof HistoryParam) {
                     String compound = values.get(param.getName()).toString();
                     // two parts: user_signature, history_id
                     String[] parts = compound.split(":");
@@ -263,5 +253,22 @@ public class History {
      */
     public void setDeleted(boolean isDeleted) {
         this.isDeleted = isDeleted;
+    }
+
+    public Dataset createDataset(boolean temporary) throws WdkModelException,
+            WdkUserException {
+        // get cache table full name
+        String cacheTable = answer.getIdsQueryInstance().getResultAsTableName();
+        // get primary key column name
+        String pkColumn = answer.findPrimaryKeyColumnNames()[0];
+
+        // create dataset from the cache table
+        DatasetFactory dsFactory = user.getDatasetFactory();
+        return dsFactory.createDataset(getUser(), null, getDataType(),
+                cacheTable, pkColumn, temporary);
+    }
+    
+    public String getCacheFullTable() throws WdkModelException {
+        return answer.getIdsQueryInstance().getResultAsTableName();
     }
 }

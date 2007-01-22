@@ -141,7 +141,8 @@ public class SqlResultList extends ResultList {
                 alreadySeen.put(columnName, "");
                 if (!rsCols.containsKey(columnName.toLowerCase())) {
                     String msg = "Query '" + queryName + "' declares column '"
-                            + columnName + "' but it is not in the Sql";
+                            + columnName + "' but it is not in the Sql \"" 
+                            + ((SqlQuery) query).getSql() + "\"";
 
                     throw new WdkModelException(msg);
                 }

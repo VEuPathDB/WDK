@@ -56,7 +56,7 @@ public class ResultFactory implements Serializable {
     public static final String TABLE_QUERY_INSTANCE = "QueryInstance";
  
     public static final String RESULT_TABLE_I = "result_index_column";
-    static final String CACHE_TABLE_PREFIX = "query_result_";
+    public static final String CACHE_TABLE_PREFIX = "query_result_";
 
     RDBMSPlatformI platform;
     String schemaName;
@@ -356,12 +356,11 @@ public class ResultFactory implements Serializable {
                     instance.setQueryInstanceId(getQueryInstanceId(instance));
                 
                 instance.setResultMessage(resultMessage);
-
-                resultTableFullName = platform.getTableFullName(schemaName,
-                        resultTableName);
             } else {
-                resultTableFullName = getNewResultTableName(instance);
+                resultTableName = getNewResultTableName(instance);
             }
+            resultTableFullName = platform.getTableFullName(schemaName,
+                    resultTableName);
         } catch (SQLException e) {
             throw new WdkModelException(e);
         } finally {

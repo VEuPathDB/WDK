@@ -12,7 +12,6 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.*;
-import org.gusdb.wdk.model.DatasetParam.InputType;
 
 /**
  * @author xingao
@@ -343,18 +342,12 @@ public class User {
                 + userId + "...");
 
         // merge the datasets
-        Map<String, String> datasetMap = new LinkedHashMap<String, String>();
+        Map<Integer, Integer> datasetMap = new LinkedHashMap<Integer, Integer>();
         Dataset[] dsets = user.getDatasets();
-        for (Dataset dset : dsets) {
-            String oldName = dset.getDatasetName();
-            String newName = oldName;
-            // check the name availability, in the new user domain
-            if (!datasetFactory.checkAvailability(this, oldName))
-                newName += " #" + dset.getDatasetId();
-            dset.setUserId(this.userId);
-            dset.setDatasetName(newName);
-            datasetFactory.saveDatasetInfo(dset);
-            datasetMap.put(oldName, newName);
+        for (Dataset dataset : dsets) {
+            String[] values = dataset.getValues();
+            Dataset newDataset = createDataset(dataset.getDatasetName(), dataset.getDataType(), values, dataset.isTemporary());
+            datasetMap.put(dataset.getDatasetId(), newDataset.getDatasetId());
         }
 
         // merge histories
@@ -424,23 +417,14 @@ public class User {
                             String newValue = this.signature + ":" + newId;
                             values.put(param.getName(), newValue);
                         } else if (param instanceof DatasetParam) {
-                            DatasetParam dsParam = (DatasetParam) param;
                             String compound = values.get(param.getName()).toString();
-                            InputType inputType = dsParam.getInputType(compound);
-                            String value = compound.substring(compound.indexOf(':') + 1);
-                            ;
-                            if (inputType == InputType.Dataset) {
-                                value = datasetMap.get(value);
-                            } else if (inputType == InputType.History) {
-                                // three parts: input_type, user_signature,
-                                // history_id
-                                String[] parts = compound.split(":");
-                                int histId = Integer.parseInt(parts[2].trim());
-                                value = this.signature + ":"
-                                        + historyMap.get(histId);
-                            } // otherwise keep the current value
-                            compound = inputType.name() + ":" + value;
-                            values.put(param.getName(), compound);
+                            // two parts: user_signature, dataset_id
+                            String parts[] = compound.split(":");
+                            int datasetId = Integer.parseInt(parts[1].trim());
+                            Integer newId = datasetMap.get(datasetId);
+                            // replace the signature with current user's
+                            String newValue = this.signature + ":" + newId;
+                            values.put(param.getName(), newValue);
                         }
                     }
                     answer = question.makeAnswer(values, startIndex, endIndex);
@@ -640,50 +624,47 @@ public class User {
         userFactory.changePassword(email, oldPassword, newPassword,
                 confirmPassword);
     }
+    
+    DatasetFactory getDatasetFactory() {
+        return datasetFactory;
+    }
 
-    public Map<String, Dataset> getDatasetsMap() throws WdkUserException {
+    public Map<Integer, Dataset> getDatasetsMap() throws WdkUserException {
         return datasetFactory.loadDatasets(this);
     }
 
     public Dataset[] getDatasets() throws WdkUserException {
-        Map<String, Dataset> datasets = datasetFactory.loadDatasets(this);
+        Map<Integer, Dataset> datasets = datasetFactory.loadDatasets(this);
         Dataset[] array = new Dataset[datasets.size()];
         datasets.values().toArray(array);
         return array;
     }
 
-    public Map<String, Dataset> getDatasetsMap(String dataType)
+    public Map<Integer, Dataset> getDatasetsMap(String dataType)
             throws WdkUserException {
-        Map<String, Dataset> datasets = datasetFactory.loadDatasets(this);
-        Map<String, Dataset> selected = new LinkedHashMap<String, Dataset>();
-        for (String datasetName : datasets.keySet()) {
-            Dataset dataset = datasets.get(datasetName);
-            if (dataType.equalsIgnoreCase(dataset.getDataType()))
-                selected.put(datasetName, dataset);
-        }
-        return selected;
+        return datasetFactory.loadDatasets(this, dataType);
     }
 
     public Dataset[] getDatasets(String dataType) throws WdkUserException {
-        Map<String, Dataset> datasets = getDatasetsMap(dataType);
+        Map<Integer, Dataset> datasets = datasetFactory.loadDatasets(this, dataType);
         Dataset[] array = new Dataset[datasets.size()];
         datasets.values().toArray(array);
         return array;
     }
 
-    public Dataset getDataset(String datasetName) throws WdkUserException {
-        return datasetFactory.loadDataset(this, datasetName);
+    public Dataset getDataset(int datasetId) throws WdkUserException {
+        return datasetFactory.loadDataset(this, datasetId);
     }
 
     public Dataset createDataset(String datasetName, String dataType,
-            String[][] values) throws WdkUserException {
+            String[] values, boolean temporary) throws WdkUserException {
         // the dataset name may be updated to keep the uniqueness constraint
         return datasetFactory.createDataset(this, datasetName, dataType,
-                values, false);
+                values, temporary);
     }
 
-    public void deleteDataset(String datasetName) throws WdkUserException {
-        datasetFactory.deleteDataset(this, datasetName);
+    public void deleteDataset(int datasetId) throws WdkUserException {
+        datasetFactory.deleteDataset(this, datasetId);
     }
 
     public void deleteDatasets() throws WdkUserException {

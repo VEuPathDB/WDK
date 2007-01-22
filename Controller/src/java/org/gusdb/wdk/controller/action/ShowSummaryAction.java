@@ -3,6 +3,7 @@ package org.gusdb.wdk.controller.action;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,13 +20,7 @@ import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.AnswerBean;
-import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
-import org.gusdb.wdk.model.jspwrap.HistoryBean;
-import org.gusdb.wdk.model.jspwrap.QuestionBean;
-import org.gusdb.wdk.model.jspwrap.RecordBean;
-import org.gusdb.wdk.model.jspwrap.UserBean;
-import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.model.jspwrap.*;
 
 /**
  * This Action is called by the ActionServlet when a WDK question is asked. It
@@ -85,7 +80,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
                         "Unexpected error: answer maker (wdkQuestion) is null");
             }
 
-            Map params = handleMultiPickParams(new LinkedHashMap(
+            Map<String, Object> params = handleMultiPickParams(new LinkedHashMap<String, Object>(
                     qForm.getMyProps()));
             wdkAnswer = summaryPaging(request, wdkQuestion, params);
 
@@ -188,10 +183,11 @@ public class ShowSummaryAction extends ShowQuestionAction {
         return new ActionForward(path);
     }
 
-    protected Map handleMultiPickParams(Map params) {
-        java.util.Iterator newParamNames = params.keySet().iterator();
+    protected Map<String, Object> handleMultiPickParams(
+            Map<String, Object> params) {
+        Iterator<String> newParamNames = params.keySet().iterator();
         while (newParamNames.hasNext()) {
-            String paramName = (String) newParamNames.next();
+            String paramName = newParamNames.next();
             Object paramVal = params.get(paramName);
             String paramValStr = null;
             if (paramVal instanceof String[]) {
@@ -216,8 +212,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
     }
 
     protected AnswerBean summaryPaging(HttpServletRequest request,
-            Object answerMaker, Map<String, Object> params) throws WdkModelException,
-            WdkUserException {
+            Object answerMaker, Map<String, Object> params)
+            throws WdkModelException, WdkUserException {
         return summaryPaging(request, answerMaker, params, null);
     }
 

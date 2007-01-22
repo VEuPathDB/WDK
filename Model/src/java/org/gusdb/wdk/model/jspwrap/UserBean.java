@@ -538,9 +538,9 @@ public class UserBean {
      *      java.lang.String, java.lang.String[])
      */
     public DatasetBean createDataset(String datasetName, String dataType,
-            String[][] values) throws WdkUserException {
+            String[] values, boolean temporary) throws WdkUserException {
         DatasetBean bean = new DatasetBean(user.createDataset(datasetName,
-                dataType, values));
+                dataType, values, temporary));
         return bean;
     }
 
@@ -549,8 +549,8 @@ public class UserBean {
      * 
      * @see org.gusdb.wdk.model.user.User#deleteDataset(java.lang.String)
      */
-    public void deleteDataset(String datasetName) throws WdkUserException {
-        user.deleteDataset(datasetName);
+    public void deleteDataset(int datasetId) throws WdkUserException {
+        user.deleteDataset(datasetId);
     }
 
     /*
@@ -558,8 +558,8 @@ public class UserBean {
      * 
      * @see org.gusdb.wdk.model.user.User#getDataset(java.lang.String)
      */
-    public DatasetBean getDataset(String datasetName) throws WdkUserException {
-        return new DatasetBean(user.getDataset(datasetName));
+    public DatasetBean getDataset(int datasetId) throws WdkUserException {
+        return new DatasetBean(user.getDataset(datasetId));
     }
 
     /*
