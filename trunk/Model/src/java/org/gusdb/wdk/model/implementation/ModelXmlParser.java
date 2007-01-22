@@ -487,6 +487,14 @@ public class ModelXmlParser {
         /*  */digester.addSetProperties("wdkModel/paramSet/historyParam");
 
         /*  */digester.addSetNext("wdkModel/paramSet/historyParam", "addParam");
+        
+        /*  */digester.addObjectCreate("wdkModel/paramSet/datasetParam",
+                HistoryParam.class);
+
+        /*  */digester.addSetProperties("wdkModel/paramSet/datasetParam");
+
+        /*  */digester.addSetNext("wdkModel/paramSet/datasetParam", "addParam");
+        
 
         /**/digester.addSetNext("wdkModel/paramSet", "addParamSet");
 

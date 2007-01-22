@@ -28,7 +28,6 @@ public class DatasetFactory {
     private static final String DATASET_INDEX_TABLE = "datasets";
     private static final String DATASET_TABLE_PREFIX = "dataset_";
 
-    public static final String COLUMN_PROJECT_ID = "project_id";
     public static final String COLUMN_PRIMARY_KEY = "primary_key";
 
     public static final int COLUMN_PROJECT_ID_WIDTH = 200;
@@ -42,32 +41,25 @@ public class DatasetFactory {
         this.datasetSchema = datasetSchema;
     }
 
-    public String getDatasetSchema() {
+    String getDatasetSchema() {
         return datasetSchema;
     }
 
-    Map<String, Dataset> loadDatasets(User user) throws WdkUserException {
+    Map<Integer, Dataset> loadDatasets(User user) throws WdkUserException {
         int userId = user.getUserId();
         ResultSet rsInfo = null;
-        Map<String, Dataset> datasets = new LinkedHashMap<String, Dataset>();
+        Map<Integer, Dataset> datasets = new LinkedHashMap<Integer, Dataset>();
         try {
             PreparedStatement psInfo = SqlUtils.getPreparedStatement(
                     platform.getDataSource(), "SELECT dataset_id, "
                             + "dataset_name, cache_table, temporary, "
                             + "create_time, data_type FROM " + datasetSchema
-                            + DATASET_INDEX_TABLE + " WHERE user_id = ? AND "
-                            + "temporary = 1");
+                            + DATASET_INDEX_TABLE + " WHERE user_id = ?");
             psInfo.setInt(1, userId);
             rsInfo = psInfo.executeQuery();
             while (rsInfo.next()) {
-                Dataset dataset = new Dataset(this, userId, rsInfo.getInt("dataset_id"));
-                dataset.setDatasetName(rsInfo.getString("dataset_name"));
-                dataset.setCacheTable(rsInfo.getString("cache_table"));
-                dataset.setTemporary(rsInfo.getBoolean("temporary"));
-                Timestamp createTime = rsInfo.getTimestamp("create_time");
-                dataset.setCreateTime(new Date(createTime.getTime()));
-                dataset.setDataType(rsInfo.getString("data_type"));
-                datasets.put(dataset.getDatasetName(), dataset);
+                Dataset dataset = assembleDataset(user, rsInfo);
+                datasets.put(dataset.getDatasetId(), dataset);
             }
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
@@ -81,27 +73,52 @@ public class DatasetFactory {
         return datasets;
     }
 
-    Dataset loadDataset(int datasetId) throws WdkUserException {
+    Map<Integer, Dataset> loadDatasets(User user, String dataType)
+            throws WdkUserException {
+        int userId = user.getUserId();
+        ResultSet rsInfo = null;
+        Map<Integer, Dataset> datasets = new LinkedHashMap<Integer, Dataset>();
+        try {
+            PreparedStatement psInfo = SqlUtils.getPreparedStatement(
+                    platform.getDataSource(), "SELECT dataset_id, "
+                            + "dataset_name, cache_table, temporary, "
+                            + "create_time, data_type FROM " + datasetSchema
+                            + DATASET_INDEX_TABLE + " WHERE user_id = ? AND "
+                            + "data_type = ?");
+            psInfo.setInt(1, userId);
+            psInfo.setString(2, dataType);
+            rsInfo = psInfo.executeQuery();
+            while (rsInfo.next()) {
+                Dataset dataset = assembleDataset(user, rsInfo);
+                datasets.put(dataset.getDatasetId(), dataset);
+            }
+        } catch (SQLException ex) {
+            throw new WdkUserException(ex);
+        } finally {
+            try {
+                SqlUtils.closeResultSet(rsInfo);
+            } catch (SQLException ex) {
+                throw new WdkUserException(ex);
+            }
+        }
+        return datasets;
+    }
+
+    Dataset loadDataset(User user, int datasetId) throws WdkUserException {
         Dataset dataset = null;
         ResultSet rsInfo = null;
         try {
             // get dataset information
             PreparedStatement psInfo = SqlUtils.getPreparedStatement(
-                    platform.getDataSource(), "SELECT user_id, dataset_name, "
-                            + "cache_table, temporary, create_time, "
-                            + "data_type FROM " + datasetSchema
-                            + DATASET_INDEX_TABLE + " WHERE dataset_id = ?");
+                    platform.getDataSource(), "SELECT dataset_id, "
+                            + "dataset_name, cache_table, temporary, "
+                            + "create_time, data_type FROM " + datasetSchema
+                            + DATASET_INDEX_TABLE + " WHERE user_id = ? AND "
+                            + "dataset_id = ?");
             psInfo.setInt(1, datasetId);
             rsInfo = psInfo.executeQuery();
             if (rsInfo.next()) {
-                int userId = rsInfo.getInt("user_id");
-                dataset = new Dataset(this, userId, datasetId);
-                dataset.setDatasetName(rsInfo.getString("dataset_name"));
-                dataset.setCacheTable(rsInfo.getString("cache_table"));
-                dataset.setTemporary(rsInfo.getBoolean("temporary"));
-                Timestamp createTime = rsInfo.getTimestamp("create_time");
-                dataset.setCreateTime(new Date(createTime.getTime()));
-                dataset.setDataType(rsInfo.getString("data_type"));
+                dataset = assembleDataset(user, rsInfo);
             } else throw new WdkUserException("The dataset with the given id "
                     + datasetId + " cannot be found.");
         } catch (SQLException ex) {
@@ -116,56 +133,31 @@ public class DatasetFactory {
         return dataset;
     }
 
-    Dataset loadDataset(User user, String datasetName) throws WdkUserException {
-        int userId = user.getUserId();
-        Dataset dataset = null;
-        ResultSet rsInfo = null;
-        try {
-            PreparedStatement psInfo = SqlUtils.getPreparedStatement(
-                    platform.getDataSource(), "SELECT dataset_id, cache_table,"
-                            + " temporary, create_time, data_type FROM "
-                            + datasetSchema + DATASET_INDEX_TABLE
-                            + " WHERE user_id = ? AND dataset_name = ?");
-            psInfo.setInt(1, userId);
-            psInfo.setString(2, datasetName);
-            rsInfo = psInfo.executeQuery();
-            if (rsInfo.next()) {
-                dataset = new Dataset(this,userId,  rsInfo.getInt("dataset_id"));
-                dataset.setDatasetName(datasetName);
-                dataset.setCacheTable(rsInfo.getString("cache_table"));
-                dataset.setTemporary(rsInfo.getBoolean("temporary"));
-                Timestamp createTime = rsInfo.getTimestamp("create_time");
-                dataset.setCreateTime(new Date(createTime.getTime()));
-                dataset.setDataType(rsInfo.getString("data_type"));
-            } else throw new WdkUserException(
-                    "The dataset with the given name " + datasetName
-                            + " cannot be found.");
-        } catch (SQLException ex) {
-            throw new WdkUserException(ex);
-        } finally {
-            try {
-                SqlUtils.closeResultSet(rsInfo);
-            } catch (SQLException ex) {
-                throw new WdkUserException(ex);
-            }
-        }
+    private Dataset assembleDataset(User user, ResultSet rs)
+            throws SQLException {
+        int datasetId = rs.getInt("dataset_id");
+        Dataset dataset = new Dataset(this, user, datasetId);
+        dataset.setDatasetName(rs.getString("dataset_name"));
+        dataset.setCacheTable(rs.getString("cache_table"));
+        dataset.setTemporary(rs.getBoolean("temporary"));
+        Timestamp createTime = rs.getTimestamp("create_time");
+        dataset.setCreateTime(new Date(createTime.getTime()));
+        dataset.setDataType(rs.getString("data_type"));
         return dataset;
     }
 
-    String[][] loadDatasetValues(String cacheTable) throws WdkUserException {
+    String[] loadDatasetValues(Dataset dataset) throws WdkUserException {
         ResultSet rsValue = null;
         try {
             rsValue = SqlUtils.getResultSet(platform.getDataSource(), "SELECT "
-                    + COLUMN_PROJECT_ID + ", " + COLUMN_PRIMARY_KEY + " FROM "
-                    + datasetSchema + cacheTable);
-            List<String[]> values = new ArrayList<String[]>();
+                    + COLUMN_PRIMARY_KEY + " FROM " + datasetSchema
+                    + dataset.getCacheTable());
+            List<String> values = new ArrayList<String>();
             while (rsValue.next()) {
-                String[] row = new String[2];
-                row[0] = rsValue.getString(COLUMN_PROJECT_ID);
-                row[1] = rsValue.getString(COLUMN_PRIMARY_KEY);
-                values.add(row);
+                String primaryKey = rsValue.getString(COLUMN_PRIMARY_KEY);
+                values.add(primaryKey);
             }
-            String[][] array = new String[values.size()][2];
+            String[] array = new String[values.size()];
             values.toArray(array);
             return array;
         } catch (SQLException ex) {
@@ -179,26 +171,16 @@ public class DatasetFactory {
         }
     }
 
-    public Dataset createDataset(User user, String datasetName,
-            String dataType, String[][] values, boolean temporary)
-            throws WdkUserException {
+    Dataset createDataset(User user, String datasetName, String dataType,
+            String[] values, boolean temporary) throws WdkUserException {
         int userId = user.getUserId();
-        if (datasetName.length() > 200)
-            datasetName = datasetName.substring(0, 200);
-        
+
         Dataset dataset = null;
         DataSource dataSource = platform.getDataSource();
         PreparedStatement psInfo = null;
         PreparedStatement psCreate = null;
         PreparedStatement psValue = null;
         try {
-            // get next available dataset id
-            int datasetId = Integer.parseInt(platform.getNextId(datasetSchema,
-                    DATASET_INDEX_TABLE));
-            // check if name is unique
-            if (!checkAvailability(user, datasetName))
-                datasetName += " #" + datasetId;
-            String cacheTable = DATASET_TABLE_PREFIX + datasetId;
             Date createTime = new Date();
 
             // update the info of dataset
@@ -207,6 +189,15 @@ public class DatasetFactory {
                     + "user_id, dataset_name, cache_table, temporary, "
                     + "create_time, date_type) "
                     + "VALUES (?, ?, ?, ?, ?, ?, ?)");
+            // get next available dataset id
+            int datasetId = getMaxDatasetId(userId);
+            String cacheTable = DATASET_TABLE_PREFIX + datasetId;
+            if (datasetName == null || datasetName.length() == 0) {
+                datasetName = "Dataset #" + datasetId;
+            } else if (datasetName.length() > 200) {
+                datasetName = datasetName.substring(0, 200);
+            }
+
             psInfo.setInt(1, datasetId);
             psInfo.setInt(2, userId);
             psInfo.setString(3, datasetName);
@@ -219,13 +210,12 @@ public class DatasetFactory {
             // create the dataset table
             psCreate = SqlUtils.getPreparedStatement(dataSource, "CREATE "
                     + "TABLE " + datasetSchema + cacheTable + " ("
-                    + COLUMN_PROJECT_ID + " varchar(" + COLUMN_PROJECT_ID_WIDTH
-                    + "), " + COLUMN_PRIMARY_KEY + " varchar("
+                    + COLUMN_PRIMARY_KEY + " varchar("
                     + COLUMN_PRIMARY_KEY_WIDTH + "))");
             psCreate.executeUpdate();
 
             // construct dataset
-            dataset = new Dataset(this, userId, datasetId);
+            dataset = new Dataset(this, user, datasetId);
             dataset.setDatasetName(datasetName);
             dataset.setCacheTable(cacheTable);
             dataset.setCreateTime(createTime);
@@ -250,25 +240,18 @@ public class DatasetFactory {
         return dataset;
     }
 
-    public Dataset createDataset(User user, String datasetName,
-            String dataType, String cacheFullTable, 
-            String primaryKeyColumn, boolean temporary) throws WdkUserException {
+    Dataset createDataset(User user, String datasetName, String dataType,
+            String cacheFullTable, String primaryKeyColumn, boolean temporary)
+            throws WdkUserException {
         int userId = user.getUserId();
         if (datasetName.length() > 200)
             datasetName = datasetName.substring(0, 200);
-        
+
         Dataset dataset = null;
         DataSource dataSource = platform.getDataSource();
         PreparedStatement psInfo = null;
         PreparedStatement psCreate = null;
         try {
-            // get next available dataset id
-            int datasetId = Integer.parseInt(platform.getNextId(datasetSchema,
-                    DATASET_INDEX_TABLE));
-            // check if name is unique
-            if (!checkAvailability(user, datasetName))
-                datasetName += " #" + datasetId;
-            String cacheTable = DATASET_TABLE_PREFIX + datasetId;
             Date createTime = new Date();
 
             // update the info of dataset
@@ -277,6 +260,15 @@ public class DatasetFactory {
                     + "user_id, dataset_name, cache_table, temporary, "
                     + "create_time, data_type) "
                     + "VALUES (?, ?, ?, ?, ?, ?, ?)");
+            // get next available dataset id
+            int datasetId = getMaxDatasetId(userId);
+            String cacheTable = DATASET_TABLE_PREFIX + datasetId;
+            if (datasetName == null || datasetName.length() == 0) {
+                datasetName = "Dataset #" + datasetId;
+            } else if (datasetName.length() > 200) {
+                datasetName = datasetName.substring(0, 200);
+            }
+
             psInfo.setInt(1, datasetId);
             psInfo.setInt(2, userId);
             psInfo.setString(3, datasetName);
@@ -297,7 +289,7 @@ public class DatasetFactory {
             psCreate.executeUpdate();
 
             // construct dataset
-            dataset = new Dataset(this, userId, datasetId);
+            dataset = new Dataset(this, user, datasetId);
             dataset.setDatasetName(datasetName);
             dataset.setCacheTable(cacheTable);
             dataset.setCreateTime(createTime);
@@ -318,32 +310,33 @@ public class DatasetFactory {
         return dataset;
     }
 
-    boolean checkAvailability(User user, String datasetName)
-            throws WdkUserException {
-        ResultSet rsInfo = null;
-        boolean available = false;
+    private int getMaxDatasetId(int userId) throws WdkUserException {
+        DataSource dataSource = platform.getDataSource();
+        int maxId = 0;
+        // get the max id from the history storage
+        ResultSet rsMax = null;
         try {
-            PreparedStatement psInfo = SqlUtils.getPreparedStatement(
-                    platform.getDataSource(), "SELECT dataset_id FROM "
-                            + datasetSchema + DATASET_INDEX_TABLE + " WHERE "
-                            + "user_id = ? AND dataset_name = ?");
-            psInfo.setInt(1, user.getUserId());
-            psInfo.setString(2, datasetName);
-            rsInfo = psInfo.executeQuery();
-            available = rsInfo.next();
+            PreparedStatement psMax = SqlUtils.getPreparedStatement(dataSource,
+                    "SELECT max(dataset_id) AS maxId FROM " + datasetSchema
+                            + DATASET_INDEX_TABLE + " WHERE user_id = ?");
+            psMax.setInt(1, userId);
+            rsMax = psMax.executeQuery();
+            if (rsMax.next()) maxId = rsMax.getInt("maxId");
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
         } finally {
             try {
-                SqlUtils.closeResultSet(rsInfo);
+                SqlUtils.closeResultSet(rsMax);
             } catch (SQLException ex) {
                 throw new WdkUserException(ex);
             }
         }
-        return available;
+        return maxId;
     }
 
     void saveDatasetInfo(Dataset dataset) throws WdkUserException {
+        int userId = dataset.getUser().getUserId();
+        String email = dataset.getUser().getEmail();
         int datasetId = dataset.getDatasetId();
         PreparedStatement psInfo = null;
         try {
@@ -351,15 +344,17 @@ public class DatasetFactory {
                     "UPDATE " + datasetSchema + DATASET_INDEX_TABLE + " SET "
                             + "dataset_name = ?, cache_table = ?, "
                             + "temporary = ?, data_type = ? "
-                            + "WHERE dataset_id = ?");
+                            + "WHERE user_id = ? AND dataset_id = ?");
             psInfo.setString(1, dataset.getDatasetName());
             psInfo.setString(2, dataset.getCacheTable());
             psInfo.setBoolean(3, dataset.isTemporary());
             psInfo.setString(4, dataset.getDataType());
-            psInfo.setInt(5, datasetId);
+            psInfo.setInt(5, userId);
+            psInfo.setInt(6, datasetId);
             int rows = psInfo.executeUpdate();
             if (rows == 0)
                 throw new WdkUserException("The dataset #" + datasetId
+                        + " of user " + email
                         + " cannot be found in the database.");
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
@@ -372,7 +367,7 @@ public class DatasetFactory {
         }
     }
 
-    void saveDatasetValue(Dataset dataset, String[][] values)
+    void saveDatasetValue(Dataset dataset, String[] values)
             throws WdkUserException {
         DataSource dataSource = platform.getDataSource();
         String cacheTable = dataset.getCacheTable();
@@ -386,13 +381,13 @@ public class DatasetFactory {
 
             // insert values
             psValue = SqlUtils.getPreparedStatement(dataSource, "INSERT INTO "
-                    + datasetSchema + cacheTable + " (" + COLUMN_PROJECT_ID
-                    + ", " + COLUMN_PRIMARY_KEY + ") VALUES (?, ?)");
-            for (String[] row : values) {
-                psValue.setString(1, row[0]);
-                psValue.setString(2, row[1]);
-                psValue.executeQuery();
+                    + datasetSchema + cacheTable + " (" + COLUMN_PRIMARY_KEY
+                    + ") VALUES (?)");
+            for (String value : values) {
+                psValue.setString(1, value);
+                psValue.addBatch();
             }
+            psValue.executeBatch();
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
         } finally {
@@ -405,7 +400,7 @@ public class DatasetFactory {
         }
     }
 
-    void deleteDataset(User user, String datasetName) throws WdkUserException {
+    void deleteDataset(User user, int datasetId) throws WdkUserException {
         int userId = user.getUserId();
         DataSource dataSource = platform.getDataSource();
         ResultSet rsInfo = null;
@@ -416,55 +411,13 @@ public class DatasetFactory {
             PreparedStatement psInfo = SqlUtils.getPreparedStatement(
                     dataSource, "SELECT dataset_id, cache_table FROM "
                             + datasetSchema + DATASET_INDEX_TABLE + " WHERE "
-                            + "user_id = ? AND dataset_name = ?");
+                            + "user_id = ? AND dataset_id = ?");
             psInfo.setInt(1, userId);
-            psInfo.setString(2, datasetName);
-            rsInfo = psInfo.executeQuery();
-            if (!rsInfo.next())
-                throw new WdkUserException("The dataset [" + userId + "] "
-                        + datasetName + " cannot be found in the database.");
-
-            int datasetId = rsInfo.getInt("dataset_id");
-            String cacheTable = rsInfo.getString("cache_table");
-
-            // delete dataset entry
-            psDelInfo = SqlUtils.getPreparedStatement(dataSource,
-                    "DELETE FROM " + datasetSchema + DATASET_INDEX_TABLE
-                            + " WHERE dataset_id = ?");
-            psDelInfo.setInt(1, datasetId);
-            psDelInfo.executeUpdate();
-
-            // drop the dataset cache table
-            psDelValue = SqlUtils.getPreparedStatement(dataSource,
-                    "DROP TABLE " + datasetSchema + cacheTable);
-            psDelValue.executeUpdate();
-        } catch (SQLException ex) {
-            throw new WdkUserException(ex);
-        } finally {
-            try {
-                SqlUtils.closeResultSet(rsInfo);
-                SqlUtils.closeStatement(psDelInfo);
-                SqlUtils.closeStatement(psDelValue);
-            } catch (SQLException ex) {
-                throw new WdkUserException(ex);
-            }
-        }
-    }
-
-    void deleteDataset(int datasetId) throws WdkUserException {
-        DataSource dataSource = platform.getDataSource();
-        ResultSet rsInfo = null;
-        PreparedStatement psDelInfo = null;
-        PreparedStatement psDelValue = null;
-        try {
-            // get cache table name
-            PreparedStatement psInfo = SqlUtils.getPreparedStatement(
-                    dataSource, "SELECT cache_table FROM " + datasetSchema
-                            + DATASET_INDEX_TABLE + " WHERE dataset_id = ?");
-            psInfo.setInt(1, datasetId);
+            psInfo.setInt(2, datasetId);
             rsInfo = psInfo.executeQuery();
             if (!rsInfo.next())
                 throw new WdkUserException("The dataset #" + datasetId
+                        + " from user " + user.getEmail()
                         + " cannot be found in the database.");
 
             String cacheTable = rsInfo.getString("cache_table");
@@ -496,7 +449,7 @@ public class DatasetFactory {
     void deleteDatasets(User user) throws WdkUserException {
         Dataset[] datasets = user.getDatasets();
         for (Dataset dataset : datasets) {
-            deleteDataset(dataset.getDatasetId());
+            deleteDataset(user, dataset.getDatasetId());
         }
     }
 }

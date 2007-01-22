@@ -46,6 +46,7 @@
       <ref name="stringParam" />
       <ref name="flatVocabParam" />
       <ref name="historyParam" />
+      <ref name="datasetParam" />
     </choice>
   </define>
   
@@ -243,6 +244,12 @@
     
   <define name="historyParam">
     <element name="historyParam">
+      <ref name="ParamBaseContents" />
+    </element>
+  </define>
+    
+  <define name="datasetParam">
+    <element name="datasetParam">
       <ref name="ParamBaseContents" />
     </element>
   </define>
