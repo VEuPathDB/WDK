@@ -99,6 +99,7 @@ public class SqlUtils {
             ResultSet result = multiMergeResult(dataSource, queries);
             if (debug) {
                 after = System.currentTimeMillis();
+                logger.info("getResultSet() --> 'sql'"); 
                 System.out.println("----it is a federation query and the costed time in seconds is---- "
                         + (after - before) / 1000F);
             }
@@ -322,7 +323,7 @@ public class SqlUtils {
         Statement stmt = null;
 
         // TEST
-        // if (debug) System.out.println("<==executeUpdate==>: " + sql);
+        if (debug) logger.info("executeUpdate() --> '" + sql + "'");
 
         try {
             connection = dataSource.getConnection();
@@ -352,7 +353,7 @@ public class SqlUtils {
         Statement stmt = null;
 
         // TEST
-        // if (debug) System.out.println("<==execute==>: " + sql);
+        if (debug) logger.info("execute() --> '" + sql + "'");
 
         try {
             connection = dataSource.getConnection();

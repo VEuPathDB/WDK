@@ -58,7 +58,7 @@ public class ProcessQuestionSetsFlatAction extends ShowQuestionAction {
 		qForm.getMyLabels().put(p.getName(), qSetForm.getLabels(pref + p.getName()));
 		qForm.getMyValues().put(p.getName(), qSetForm.getValues(pref + p.getName()));
 	    }
-	    qForm.getMyProps().put(p.getName(), qSetForm.getMyPropObject(pref + p.getName()));
+	    qForm.getMyProps().put(p.getName(), qSetForm.getMyProp(pref + p.getName()));
 	}
 	qForm.setQuestion(wdkQuestion);
 

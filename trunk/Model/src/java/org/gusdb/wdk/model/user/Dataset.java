@@ -17,11 +17,10 @@ public class Dataset {
 
     private int datasetId;
     private User user;
-    private String datasetName;
-    private String cacheTable;
-    private boolean temporary;
+    private String uploadFile;
     private Date createTime;
-    private String dataType;
+    private String summary;
+    private int size;
 
     public Dataset(DatasetFactory factory, User user, int datasetId) {
         this.factory = factory;
@@ -30,138 +29,100 @@ public class Dataset {
     }
 
     /**
-     * @return Returns the cacheTable.
+     * @return Returns the factory.
      */
-    public String getCacheTable() {
-        return cacheTable;
+    public DatasetFactory getFactory() {
+        return factory;
+    }
+    
+    public User getUser() {
+        return user;
+    }
+    
+    void setUser(User user) {
+        this.user = user;
+    }
+
+    public String getUploadFile() {
+        return uploadFile;
     }
 
     /**
-     * @return Returns the cacheTable.
-     */
-    public String getCacheFullTable() {
-        return factory.getDatasetSchema() + cacheTable;
-    }
-
-    /**
-     * @param cacheTable
-     *            The cacheTable to set.
-     */
-    public void setCacheTable(String cacheTable) {
-        this.cacheTable = cacheTable;
-    }
-
-    /**
-     * @return Returns the createTime.
+     * @return the createTime
      */
     public Date getCreateTime() {
         return createTime;
     }
 
     /**
-     * @param createTime
-     *            The createTime to set.
-     */
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
-
-    /**
-     * @return Returns the datasetId.
+     * @return the datasetId
      */
     public int getDatasetId() {
         return datasetId;
     }
 
     /**
-     * @param datasetId
-     *            The datasetId to set.
+     * @return the size
      */
-    public void setDatasetId(int datasetId) {
-        this.datasetId = datasetId;
+    public int getSize() {
+        return size;
     }
 
     /**
-     * @return Returns the datasetName.
+     * @return the summary
      */
-    public String getDatasetName() {
-        if (datasetName.length() > 200) return datasetName.substring(0, 200);
-        else return datasetName;
+    public String getSummary() {
+        return summary;
     }
 
     /**
-     * @param datasetName
-     *            The datasetName to set.
+     * @param createTime
+     *            the createTime to set
      */
-    public void setDatasetName(String datasetName) {
-        this.datasetName = datasetName;
+    void setCreateTime(Date createTime) {
+        this.createTime = createTime;
     }
 
     /**
-     * @return Returns the temporary.
+     * @param size
+     *            the size to set
      */
-    public boolean isTemporary() {
-        return temporary;
+    void setSize(int size) {
+        this.size = size;
     }
 
     /**
-     * @param temporary
-     *            The temporary to set.
+     * @param summary
+     *            the summary to set
      */
-    public void setTemporary(boolean temporary) {
-        this.temporary = temporary;
+    void setSummary(String summary) {
+        this.summary = summary;
     }
 
     /**
-     * @return Returns the userId.
+     * @param uploadFile
+     *            the uploadFile to set
      */
-    public User getUser() {
-        return user;
+    void setUploadFile(String uploadFile) {
+        this.uploadFile = uploadFile;
     }
+    
 
     /**
-     * @param userId
-     *            The userId to set.
-     */
-    void setUser(User user) {
-        this.user = user;
-    }
-
-    /**
-     * @return Returns the type.
-     */
-    public String getDataType() {
-        return dataType;
-    }
-
-    /**
-     * @param type
-     *            The type to set.
-     */
-    public void setDataType(String dataType) {
-        this.dataType = dataType;
-    }
-
-    /**
-     * @return Returns the factory.
-     */
-    public DatasetFactory getFactory() {
-        return factory;
-    }
-
-    /**
-     * @return returns the projectId-primaryKeyId pairs
+     * @return 
      * @throws WdkUserException
      */
     public String[] getValues() throws WdkUserException {
-        return factory.loadDatasetValues(this);
+        return factory.getDatasetValues(this);
     }
-
-    public void setValues(String[] values) throws WdkUserException {
-        factory.saveDatasetValue(this, values);
-    }
-
-    public void update() throws WdkUserException {
-        factory.saveDatasetInfo(this);
+    
+    public String getValue() throws WdkUserException {
+        String[] values = getValues();
+        StringBuffer sb = new StringBuffer();
+        for (String value : values) {
+            if (sb.length()>0) sb.append(", ");
+            sb.append(value);
+        }
+        return sb.toString();
     }
 }

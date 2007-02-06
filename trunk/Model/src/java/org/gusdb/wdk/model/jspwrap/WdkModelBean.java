@@ -153,6 +153,18 @@ public class WdkModelBean  {
         }
         return returnedBeans;
     }
+    
+    public Map<String, RecordClassBean> getRecordClassMap() {
+        Map<String, RecordClassBean> recordClassMap = new LinkedHashMap<String, RecordClassBean>();
+        RecordClassSet[] rcsets = model.getAllRecordClassSets();
+        for (RecordClassSet rcset : rcsets) {
+            RecordClass[] rcs = rcset.getRecordClasses();
+            for (RecordClass rc : rcs) {
+                recordClassMap.put(rc.getFullName(), new RecordClassBean(rc));
+            }
+        }
+        return recordClassMap;
+    }
 
     public Map<String, String> getRecordClassTypes() {
         RecordClassBean[] recClasses = getRecordClasses();

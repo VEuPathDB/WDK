@@ -27,6 +27,7 @@ public class QuestionSetForm extends ActionForm {
     private Map<String, Object> myProps = new LinkedHashMap<String, Object>();
     private Map myLabels = new LinkedHashMap();
     private Map myValues = new LinkedHashMap();
+    private Map<String, Object> myPropObjects = new LinkedHashMap<String, Object>();
 
     public void setQuestionFullName(String qFN) {
 	this.qFullName = qFN;
@@ -58,6 +59,13 @@ public class QuestionSetForm extends ActionForm {
 	myProps.put(key, val.trim());
     }
 
+    public void setMyPropObject(String key, Object val)
+    {
+        //System.err.println("*** QuestionSetForm.setMyProp: " + key + " = " + val + "\n");
+        myPropObjects.put(key, val);
+        logger.info("setMyPropObject: " + key + " = '" + val + "' (" + val.getClass().getName() + ")");
+    }
+
     public void setMyMultiProp(String key, String[] vals)
     {
 	//System.err.println("*** QuestionSetForm.setMyMultiProp: " + key + " with " + vals.length + " values\n");
@@ -77,7 +85,7 @@ public class QuestionSetForm extends ActionForm {
     }
 
     public Object getMyPropObject(String key) throws WdkModelException {
-	return getMyProps().get(key);
+	return myPropObjects.get(key);
     }
 
     /* returns a list of labels for a select box */
@@ -96,6 +104,9 @@ public class QuestionSetForm extends ActionForm {
 
     void setMyProps(Map<String, Object> props) { myProps = props; }
     public Map<String, Object> getMyProps() { return myProps; }
+
+    void setMyPropObjects(Map<String, Object> props) { myPropObjects = props; }
+    public Map<String, Object> getMyPropObjects() { return myPropObjects; }
 
     void setMyLabels (Map lbls) { myLabels = lbls; }
     Map getMyLabels () { return myLabels; }

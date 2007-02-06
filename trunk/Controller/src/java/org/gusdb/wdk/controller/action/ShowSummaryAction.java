@@ -20,7 +20,13 @@ import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.*;
+import org.gusdb.wdk.model.jspwrap.AnswerBean;
+import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
+import org.gusdb.wdk.model.jspwrap.HistoryBean;
+import org.gusdb.wdk.model.jspwrap.QuestionBean;
+import org.gusdb.wdk.model.jspwrap.RecordBean;
+import org.gusdb.wdk.model.jspwrap.UserBean;
+import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
 /**
  * This Action is called by the ActionServlet when a WDK question is asked. It
@@ -82,6 +88,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
             Map<String, Object> params = handleMultiPickParams(new LinkedHashMap<String, Object>(
                     qForm.getMyProps()));
+
             wdkAnswer = summaryPaging(request, wdkQuestion, params);
 
             request.setAttribute(CConstants.WDK_QUESTION_PARAMS_KEY, params);

@@ -19,6 +19,10 @@ public class CConstants {
     public static final String WDK_CUSTOM_PROFILE_PAGE = "customProfile.jsp";
     public static final String WDK_CUSTOM_PASSWORD_PAGE = "customPassword.jsp";
     public static final String WDK_CUSTOM_RESET_PASSWORD_PAGE = "customResetpwd.jsp";
+    public static final String WDK_CUSTOM_DATASET_LIST_PAGE = "customDatasetList.jsp";
+    public static final String WDK_CUSTOM_DATASET_PAGE = "customDataset.jsp";
+    public static final String WDK_CUSTOM_CREATE_DATASET_PAGE = "customCreateDataset.jsp";
+
     public static final String WDK_QUESTION_KEY = "wdkQuestion";
     public static final String WDK_QUESTION_PARAMS_KEY = "wdkQuestionParams";
     public static final String WDK_ANSWER_KEY = "wdkAnswer";
@@ -90,6 +94,12 @@ public class CConstants {
     public static final String SHOW_PASSWORD_MAPKEY = "show_password";
     public static final String SHOW_RESET_PASSWORD_MAPKEY = "show_reset_password";
     public static final String PROCESS_LOGOUT_MAPKEY = "process_logout";
+    public static final String SHOW_DATASET_LIST_MAPKEY = "show_dataset_list";
+    public static final String SHOW_DATASET_MAPKEY = "show_dataset";
+    public static final String UPDATE_DATASET_MAPKEY = "update_dataset";
+    public static final String DELETE_DATASET_MAPKEY = "delete_dataset";
+    public static final String SHOW_CREATE_DATASET_MAPKEY = "show_create_dataset";
+    public static final String CREATE_DATASET_MAPKEY = "create_dataset";
 
     //button click detectors, used in action, action forms, and jsp pages
     public static final String PQ_SUBMIT_KEY = "questionSubmit"; //match question.jsp

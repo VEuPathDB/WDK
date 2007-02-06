@@ -254,19 +254,6 @@ public class History {
     public void setDeleted(boolean isDeleted) {
         this.isDeleted = isDeleted;
     }
-
-    public Dataset createDataset(boolean temporary) throws WdkModelException,
-            WdkUserException {
-        // get cache table full name
-        String cacheTable = answer.getIdsQueryInstance().getResultAsTableName();
-        // get primary key column name
-        String pkColumn = answer.findPrimaryKeyColumnNames()[0];
-
-        // create dataset from the cache table
-        DatasetFactory dsFactory = user.getDatasetFactory();
-        return dsFactory.createDataset(getUser(), null, getDataType(),
-                cacheTable, pkColumn, temporary);
-    }
     
     public String getCacheFullTable() throws WdkModelException {
         return answer.getIdsQueryInstance().getResultAsTableName();

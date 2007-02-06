@@ -53,7 +53,7 @@ public class User {
      */
     private Map<String, String> globalPreferences;
     private Map<String, String> projectPreferences;
-    
+
     // cache the history count in memory
     int historyCount;
 
@@ -70,7 +70,7 @@ public class User {
 
         globalPreferences = new LinkedHashMap<String, String>();
         projectPreferences = new LinkedHashMap<String, String>();
-        
+
         historyCount = 0;
     }
 
@@ -341,15 +341,6 @@ public class User {
         logger.debug("Merging user #" + user.getUserId() + " into user #"
                 + userId + "...");
 
-        // merge the datasets
-        Map<Integer, Integer> datasetMap = new LinkedHashMap<Integer, Integer>();
-        Dataset[] dsets = user.getDatasets();
-        for (Dataset dataset : dsets) {
-            String[] values = dataset.getValues();
-            Dataset newDataset = createDataset(dataset.getDatasetName(), dataset.getDataType(), values, dataset.isTemporary());
-            datasetMap.put(dataset.getDatasetId(), newDataset.getDatasetId());
-        }
-
         // merge histories
         // a history can be merged only if its all components have been merged
         Map<Integer, Integer> historyMap = new LinkedHashMap<Integer, Integer>();
@@ -417,13 +408,20 @@ public class User {
                             String newValue = this.signature + ":" + newId;
                             values.put(param.getName(), newValue);
                         } else if (param instanceof DatasetParam) {
+                            // merge dataset, by creating new datasets with the
+                            // previous values
                             String compound = values.get(param.getName()).toString();
                             // two parts: user_signature, dataset_id
                             String parts[] = compound.split(":");
                             int datasetId = Integer.parseInt(parts[1].trim());
-                            Integer newId = datasetMap.get(datasetId);
-                            // replace the signature with current user's
-                            String newValue = this.signature + ":" + newId;
+                            Dataset dataset = user.getDataset(datasetId);
+                            String[] data = dataset.getValues();
+
+                            // now make new dataset for the new user
+                            Dataset newDataset = this.createDataset(
+                                    dataset.getUploadFile(), data);
+                            String newValue = this.signature + ":"
+                                    + newDataset.getDatasetId();
                             values.put(param.getName(), newValue);
                         }
                     }
@@ -458,8 +456,8 @@ public class User {
      */
     public Map<Integer, History> getHistoriesMap() throws WdkUserException,
             WdkModelException {
-        Map<Integer, History> histories =  userFactory.loadHistories(this);
-        
+        Map<Integer, History> histories = userFactory.loadHistories(this);
+
         // update the history count
         historyCount = 0;
         for (History history : histories.values()) {
@@ -569,12 +567,10 @@ public class User {
     public int getHistoryCount() throws WdkUserException {
         return historyCount;
     }
-    
-    
 
-    
     /**
-     * @param historyCount The historyCount to set.
+     * @param historyCount
+     *            The historyCount to set.
      */
     void setHistoryCount(int historyCount) {
         this.historyCount = historyCount;
@@ -624,51 +620,31 @@ public class User {
         userFactory.changePassword(email, oldPassword, newPassword,
                 confirmPassword);
     }
-    
+
     DatasetFactory getDatasetFactory() {
         return datasetFactory;
     }
 
-    public Map<Integer, Dataset> getDatasetsMap() throws WdkUserException {
-        return datasetFactory.loadDatasets(this);
-    }
-
-    public Dataset[] getDatasets() throws WdkUserException {
-        Map<Integer, Dataset> datasets = datasetFactory.loadDatasets(this);
-        Dataset[] array = new Dataset[datasets.size()];
-        datasets.values().toArray(array);
-        return array;
-    }
-
-    public Map<Integer, Dataset> getDatasetsMap(String dataType)
-            throws WdkUserException {
-        return datasetFactory.loadDatasets(this, dataType);
-    }
-
-    public Dataset[] getDatasets(String dataType) throws WdkUserException {
-        Map<Integer, Dataset> datasets = datasetFactory.loadDatasets(this, dataType);
-        Dataset[] array = new Dataset[datasets.size()];
-        datasets.values().toArray(array);
-        return array;
-    }
-
     public Dataset getDataset(int datasetId) throws WdkUserException {
-        return datasetFactory.loadDataset(this, datasetId);
+        return datasetFactory.getDataset(this, datasetId);
     }
 
-    public Dataset createDataset(String datasetName, String dataType,
-            String[] values, boolean temporary) throws WdkUserException {
-        // the dataset name may be updated to keep the uniqueness constraint
-        return datasetFactory.createDataset(this, datasetName, dataType,
-                values, temporary);
+    public Dataset createDataset(String uploadFile, String[] values)
+            throws WdkUserException {
+        // summary will be the first three items of the values
+        StringBuffer sb = new StringBuffer();
+        int bound = Math.min(3, values.length);
+        for (int i = 0; i < bound; i++) {
+            if (sb.length() > 0) sb.append(", ");
+            sb.append(values[i]);
+        }
+        if (values.length > 3) sb.append(" ...");
+        return datasetFactory.createDataset(this, uploadFile, sb.toString(),
+                values);
     }
 
     public void deleteDataset(int datasetId) throws WdkUserException {
         datasetFactory.deleteDataset(this, datasetId);
-    }
-
-    public void deleteDatasets() throws WdkUserException {
-        datasetFactory.deleteDatasets(this);
     }
 
     public void save() throws WdkUserException {
