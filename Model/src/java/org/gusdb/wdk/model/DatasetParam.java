@@ -22,29 +22,9 @@ public class DatasetParam extends Param {
      */
     @Override
     public String validateValue(Object value) throws WdkModelException {
-        String compound = value.toString();
-        String[] parts = compound.split(":");
-        if (parts.length != 2)
-            return "Invalid value format of DatasetParam " + name + ": "
-                    + value;
-
-        // the input have a valid user id and dataset id
-        String signature = parts[0].trim();
-        String strdsId = parts[1].trim();
-        if (strdsId.matches("\\d+")) {
-            int datasetId = Integer.parseInt(strdsId);
-            try {
-                User user = factory.loadUserBySignature(signature);
-                user.getDataset(datasetId);
-            } catch (WdkUserException ex) {
-                ex.printStackTrace();
-                return ex.getMessage();
-            }
-            return null;
-        } else {
-            return "Invalid value format of HistoryParam " + name + ": "
-                    + value;
-        }
+        // bypass the validation of DatasetParam, since there can be different
+        // inputs for it
+        return null;
     }
 
     /*
@@ -83,24 +63,39 @@ public class DatasetParam extends Param {
     }
 
     /*
-     * (non-Javadoc)
+     * (non-Javadoc) The internal value for the DatasetParam will be the
+     * dataset_id
      * 
      * @see org.gusdb.wdk.model.Param#getInternalValue(java.lang.String)
      */
     @Override
     protected String getInternalValue(String value) throws WdkModelException {
-        String[] parts = value.split(":");
-        // the input have a valid user id and history id
-        String signature = parts[0].trim();
-        String strHistId = parts[1].trim();
-        int datasetId = Integer.parseInt(strHistId);
         try {
-            User user = factory.loadUserBySignature(signature);
-            Dataset dataset = user.getDataset(datasetId);
-            return dataset.getCacheFullTable();
+            Dataset dataset = getDataset(value);
+            return Integer.toString(dataset.getDatasetId());
         } catch (WdkUserException ex) {
             throw new WdkModelException(ex);
         }
     }
 
+    public UserFactory getUserFactory() {
+        return factory;
+    }
+
+    public Dataset getDataset(String combinedId) throws WdkModelException,
+            WdkUserException {
+        // at this point, the input value should be formatted as
+        // signature:dataset_id
+        String[] parts = combinedId.split(":");
+        if (parts.length != 2)
+            throw new WdkModelException("Invalid value for DatasetParam "
+                    + name + ": '" + combinedId + "'");
+
+        String signature = parts[0].trim();
+        int datasetId = Integer.parseInt(parts[1]);
+
+        // make sure the dataset belongs to this user
+        User user = factory.loadUserBySignature(signature);
+        return user.getDataset(datasetId);
+    }
 }

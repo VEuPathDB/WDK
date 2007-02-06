@@ -10,7 +10,6 @@ import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.user.Dataset;
 import org.gusdb.wdk.model.user.History;
 import org.gusdb.wdk.model.user.User;
 
@@ -537,10 +536,9 @@ public class UserBean {
      * @see org.gusdb.wdk.model.user.User#createDataset(java.lang.String,
      *      java.lang.String, java.lang.String[])
      */
-    public DatasetBean createDataset(String datasetName, String dataType,
-            String[] values, boolean temporary) throws WdkUserException {
-        DatasetBean bean = new DatasetBean(user.createDataset(datasetName,
-                dataType, values, temporary));
+    public DatasetBean createDataset(String uploadFile,
+            String[] values) throws WdkUserException {
+        DatasetBean bean = new DatasetBean(user.createDataset(uploadFile, values));
         return bean;
     }
 
@@ -560,34 +558,6 @@ public class UserBean {
      */
     public DatasetBean getDataset(int datasetId) throws WdkUserException {
         return new DatasetBean(user.getDataset(datasetId));
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.user.User#getDatasets()
-     */
-    public DatasetBean[] getDatasets() throws WdkUserException {
-        Dataset[] datasets = user.getDatasets();
-        DatasetBean[] beans = new DatasetBean[datasets.length];
-        for (int i = 0; i < datasets.length; i++) {
-            beans[i] = new DatasetBean(datasets[i]);
-        }
-        return beans;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.user.User#getDatasets(java.lang.String)
-     */
-    public DatasetBean[] getDatasets(String dataType) throws WdkUserException {
-        Dataset[] datasets = user.getDatasets(dataType);
-        DatasetBean[] beans = new DatasetBean[datasets.length];
-        for (int i = 0; i < datasets.length; i++) {
-            beans[i] = new DatasetBean(datasets[i]);
-        }
-        return beans;
     }
 
     // =========================================================================
@@ -729,6 +699,6 @@ public class UserBean {
     public String toString() {
         return this.user.toString();
     }
-
+ 
     // ********************************* END ***********************************
 }

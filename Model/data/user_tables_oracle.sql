@@ -100,26 +100,42 @@ GRANT insert, update, delete on userlogins.histories to GUS_W;
 GRANT select on userlogins.histories to GUS_R;
 
 
-CREATE SEQUENCE userlogins.datasets_pkseq INCREMENT BY 1 START WITH 1;
+CREATE SEQUENCE userlogins.dataset_index_pkseq INCREMENT BY 1 START WITH 1;
 
-GRANT select on userlogins.datasets_pkseq to GUS_W;
-GRANT select on userlogins.datasets_pkseq to GUS_R;
+GRANT select on userlogins.dataset_index_pkseq to GUS_W;
+GRANT select on userlogins.dataset_index_pkseq to GUS_R;
 
 
-CREATE TABLE userlogins.datasets
+CREATE TABLE userlogins.dataset_index
 (
   dataset_id NUMBER(12) NOT NULL,
   user_id NUMBER(12) NOT NULL,
-  dataset_name varchar(200) NOT NULL,
-  cache_table varchar(255) NOT NULL,
-  temporary NUMBER(1),
   create_time timestamp NOT NULL,
-  data_type varchar(200) NOT NULL,
-  CONSTRAINT "DATASET_PK" PRIMARY KEY (dataset_id),
-  CONSTRAINT "DATASET_NAME_UNIQUE" UNIQUE (dataset_name),
-  CONSTRAINT "DATASET_USER_ID_FK" FOREIGN KEY (user_id)
+  upload_file varchar(2000),
+  summary varchar(2000) NOT NULL,
+  dataset_size number(12) NOT NULL,
+  CONSTRAINT "DATASET_INDEX_PK" PRIMARY KEY (dataset_id),
+  CONSTRAINT "DATASET_INDEX_USER_ID_FK" FOREIGN KEY (user_id)
       REFERENCES userlogins.users (user_id)
 );
 
-GRANT insert, update, delete on userlogins.datasets to GUS_W;
-GRANT select on userlogins.datasets to GUS_R;
+GRANT insert, update, delete on userlogins.dataset_index to GUS_W;
+GRANT select on userlogins.dataset_index to GUS_R;
+
+
+CREATE TABLE userlogins.dataset_data
+(
+  dataset_id NUMBER(12) NOT NULL,
+  user_id NUMBER(12) NOT NULL,
+  dataset_value varchar(2000) NOT NULL,
+  CONSTRAINT "DATASET_DATASET_ID_FK" FOREIGN KEY (dataset_id)
+      REFERENCES userlogins.dataset_index (dataset_id),
+  CONSTRAINT "DATASET_DATA_USER_ID_FK" FOREIGN KEY (user_id)
+      REFERENCES userlogins.users (user_id)
+);
+
+CREATE INDEX userlogins.dataset_data_id_idx on userlogins.dataset_data (dataset_id, user_id);
+
+GRANT insert, update, delete on userlogins.dataset_data to GUS_W;
+GRANT select on userlogins.dataset_data to GUS_R;
+

@@ -18,7 +18,7 @@ public class RecordInstance {
     Map<String, Map> attributesResultSetsMap;
     Map<String, Integer> summaryAttributeMap;
     Answer answer;
-    Map<String, AttributeField> dynamicAttributeFields;
+    Map<String, AttributeField> dynamicAttributeFields = new LinkedHashMap<String, AttributeField>();
     boolean timeAttributeQueries = false;
 
     public RecordInstance(RecordClass recordClass, String recordId)
@@ -71,13 +71,14 @@ public class RecordInstance {
      */
     public Object getAttributeValue(String attributeName)
             throws WdkModelException {
-        AttributeField attrField;
+        AttributeField attrField = null;
         try {
             attrField = recordClass.getAttributeField(attributeName);
         } catch (WdkModelException ex) {
             // the field is not defined in the RecordClass, then check it in the
             // DynamicAttributeSet
-            attrField = dynamicAttributeFields.get(attributeName);
+            if (dynamicAttributeFields != null)
+                attrField = dynamicAttributeFields.get(attributeName);
             if (attrField == null) {
                 String msg = "The attribute field '" + attributeName
                         + "' is not defined in the RecordClass "
@@ -303,8 +304,7 @@ public class RecordInstance {
      * if (nrLists != null){ for (int i = 0; i < nrLists.length; i++){
      * NestedRecordList nextNrList = nrLists[i]; RecordInstance riList[] =
      * nextNrList.getRecordInstances(this); nrVector.add(riList); } } return
-     * nrVector;
-     *  }
+     * nrVector; }
      */
 
     public String print() throws WdkModelException, WdkUserException {
@@ -602,8 +602,8 @@ public class RecordInstance {
             if (attrName.equals(targetAttrName)) continue;
             if (containsMacro(instantiatedText, attrName)) {
                 Object attributeValue = getAttributeValue(attrName);
-                String valString = 
-                    (attributeValue == null) ? "" : attributeValue.toString();
+                String valString = (attributeValue == null) ? ""
+                        : attributeValue.toString();
                 instantiatedText = instantiateText(instantiatedText, attrName,
                         valString);
             }
