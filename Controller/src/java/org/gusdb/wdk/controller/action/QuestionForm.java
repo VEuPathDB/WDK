@@ -67,8 +67,7 @@ public class QuestionForm extends QuestionSetForm {
             try {
                 String[] pVals = null;
                 if (p instanceof FlatVocabParamBean
-                        || p instanceof HistoryParamBean
-                        || p instanceof DatasetParamBean) {
+                        || p instanceof HistoryParamBean) {
                     pVals = getMyMultiProp(p.getName());
                     if (pVals == null) {
                         pVals = new String[]{ "" };

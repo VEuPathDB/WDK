@@ -1531,9 +1531,6 @@ public class UserFactory {
         // delete history from all projects
         user.deleteHistories(true);
 
-        // delete datasets
-        user.deleteDatasets();
-
         String where = " WHERE user_id = " + user.getUserId();
         try {
             // delete preference

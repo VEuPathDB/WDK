@@ -228,16 +228,4 @@ public class HistoryBean {
     public boolean isDeleted() {
         return history.isDeleted();
     }
-
-    /**
-     * @param temporary
-     * @return
-     * @throws WdkModelException
-     * @throws WdkUserException
-     * @see org.gusdb.wdk.model.user.History#createDataset(boolean)
-     */
-    public DatasetBean createDataset(boolean temporary)
-            throws WdkModelException, WdkUserException {
-        return new DatasetBean(history.createDataset(temporary));
-    }
 }
