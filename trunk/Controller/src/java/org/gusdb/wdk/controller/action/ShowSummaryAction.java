@@ -285,7 +285,9 @@ public class ShowSummaryAction extends ShowQuestionAction {
             }
         }
 
-        String parentUriString = (String) request.getAttribute("parentURI");
+        String parentUriString = request.getRequestURI();
+        if (parentUriString.indexOf("?")>=0) 
+            parentUriString.substring(0, parentUriString.indexOf("?"));
         request.setAttribute("wdk_paging_total", new Integer(totalSize));
         request.setAttribute("wdk_paging_pageSize", new Integer(pageSize));
         request.setAttribute("wdk_paging_start", new Integer(start));
