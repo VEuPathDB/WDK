@@ -692,4 +692,29 @@ public class User {
         }
         return null;
     }
+
+    public Map<String, Boolean> getSortingAttributes(String questionFullName) {
+        String sortKey = questionFullName + "_sort";
+        String sortingList = projectPreferences.get(sortKey);
+        Map<String, Boolean> sortingAttributes = new LinkedHashMap<String, Boolean>();
+        String[] parts = sortingList.split(";");
+        for (String combo : parts) {
+            String[] subParts = combo.split(",");
+            String attrName = subParts[0].trim();
+            String strAscend = subParts[1].trim().toLowerCase();
+            boolean ascending = strAscend.equals("asc");
+            if (!sortingAttributes.containsKey(attrName))
+                sortingAttributes.put(attrName, ascending);
+        }
+        return sortingAttributes;
+    }
+
+    public void addSortingAttribute(String questionFullName, String attrName,
+            boolean ascending) throws WdkUserException {
+        String sortKey = questionFullName + "_sort";
+        String sortingList = projectPreferences.get(sortKey);
+        sortingList = attrName + (ascending ? ",ASC;" : ",DESC;") + sortingList;
+        projectPreferences.put(sortKey, sortingList);
+        save();
+    }
 }

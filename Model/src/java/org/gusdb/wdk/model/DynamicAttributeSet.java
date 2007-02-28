@@ -34,8 +34,8 @@ public class DynamicAttributeSet implements Serializable {
 
     public void addAttributeField(AttributeField attributeField)
             throws WdkModelException {
-        //logger.debug("AttributeField: " + attributeField.getName());
-        
+        // logger.debug("AttributeField: " + attributeField.getName());
+
         String name = attributeField.getName();
         // the attribute name must be unique
         if (attributesFieldMap.containsKey(name))
@@ -48,8 +48,8 @@ public class DynamicAttributeSet implements Serializable {
         // check if it's a column attribute. this kind of attribute must be
         // matched with a column
         if (attributeField instanceof ColumnAttributeField) {
-            columnAttributeFieldNames.add(name);}
-        else {
+            columnAttributeFieldNames.add(name);
+        } else {
             noncolumnAttributeFieldNames.add(name);
         }
     }
@@ -125,7 +125,7 @@ public class DynamicAttributeSet implements Serializable {
         param = new StringParam();
         param.setName(RESULT_TABLE);
         attributesQuery.addParam(param);
-        
+
         // also add project_id into the attribute query
         if (recordClass.getPrimaryKeyField().getProjectParam() != null) {
             param = new StringParam();
@@ -160,9 +160,10 @@ public class DynamicAttributeSet implements Serializable {
             ColumnAttributeField field = (ColumnAttributeField) attributesFieldMap.get(name);
 
             // TEST
-//            logger.debug("Dyna Column '" + column.getName() + "' from Query: "
-//                    + column.getQuery().getFullName());
-            
+            // logger.debug("Dyna Column '" + column.getName() + "' from Query:
+            // "
+            // + column.getQuery().getFullName());
+
             field.setColumn(column);
         }
 
@@ -180,18 +181,19 @@ public class DynamicAttributeSet implements Serializable {
         Collection<Column> columns = columnMap.values();
         for (Column column : columns) {
             // TEST
-//            if (column.getName().equalsIgnoreCase("score"))
-//                logger.debug("DynamicAttributeSet '" + this.hashCode()
-//                        + "' is setting column.");
-            
+            // if (column.getName().equalsIgnoreCase("score"))
+            // logger.debug("DynamicAttributeSet '" + this.hashCode()
+            // + "' is setting column.");
+
             column.setQuery(getAttributesQuery());
-            addColumn(column, sqlSelectBuf, RESULT_TABLE, attributesQuery);
+            addColumn(column, sqlSelectBuf, RESULT_TABLE, attributesQuery,
+                    resultTableMacro);
         }
 
         String[] pkColNames = Answer.findPrimaryKeyColumnNames(question.getQuery());
-        
-        // add other attribute fields into the query, such as text and link attributes
-        
+
+        // add other attribute fields into the query, such as text and link
+        // attributes
 
         // last comma
         String sqlSelect = sqlSelectBuf.substring(0, sqlSelectBuf.length() - 2);
@@ -203,20 +205,29 @@ public class DynamicAttributeSet implements Serializable {
                     + " = " + "$$" + RecordClass.PROJECT_ID_NAME + "$$";
 
         // the use of "dual" causes trouble on PostgreSQL.
-        // Solution: create a "dual" table in PostgreSQL - consider putting the 
+        // Solution: create a "dual" table in PostgreSQL - consider putting the
         // table creation code into wdkCache -new
-        String sql = "SELECT " + sqlSelect + " FROM dual" + sqlWhere;
+        
+        // String sql = "SELECT " + sqlSelect + " FROM dual " + sqlWhere;
+        
+        // the dual cause another problem in PostgreSQL, if there's no row in
+        // it, the query will return nothing; if has value, then the result will
+        // be a cross product, which may not be expected.
+        // The solution is, without using dual, just remove the last comma in
+        // FROM clause in SqlMunger.
+        String sql = "SELECT " + sqlSelect + " FROM " + sqlWhere;
 
         ((SqlQuery) attributesQuery).setSql(sql);
     }
 
     private void addColumn(Column column, StringBuffer sqlSelectBuf,
-            String resultTable, Query attributesQuery) {
+            String resultTable, Query attributesQuery, String resultTableMacro) {
         attributesQuery.addColumn(column);
-        sqlSelectBuf.append(column.getName() + ", ");
-        
+        sqlSelectBuf.append(resultTableMacro + "." + column.getName() + ", ");
+
         // commented by Jerric
-        // The fields has already been in the field map, no need to add it again?
+        // The fields has already been in the field map, no need to add it
+        // again?
         // ColumnAttributeField field = new ColumnAttributeField();
         // field.setColumn(column);
         // attributesFieldMap.put(field.getName(), field);

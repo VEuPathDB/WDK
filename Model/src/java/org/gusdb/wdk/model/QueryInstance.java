@@ -1,5 +1,5 @@
 package org.gusdb.wdk.model;
- 
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -8,8 +8,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Simple implementation of QueryInstanceI; generally expects its subclasses
- * to do most of the real implementation.
+ * Simple implementation of QueryInstanceI; generally expects its subclasses to
+ * do most of the real implementation.
  */
 public abstract class QueryInstance {
 
@@ -24,47 +24,37 @@ public abstract class QueryInstance {
      * ID of this QueryInstance as defined in the QueryInstance table.
      */
     protected Integer queryInstanceId;
-    
-    /**
-     * Values that define this QueryInstance relative to others pointing to <code>query</code>
-     */
-    protected Map<String, Object> values = new LinkedHashMap<String, Object>();
 
     /**
-     * Name of the table to join with when in join mode
+     * Values that define this QueryInstance relative to others pointing to
+     * <code>query</code>
      */
-    protected String joinTableName;
+    protected Map<String, Object> values = new LinkedHashMap<String, Object>();
 
     /**
      * In the join table.
      */
     protected String primaryKeyColumnName;
-    
+
     /**
      * In the join table
      */
     protected String projectColumnName;
-    
+
     protected int startIndex;
-    
+
     protected int endIndex;
 
     protected boolean joinMode;
 
     /**
-     * the attributes query has an additional parameter, which is the
-     * name of the result table
+     * the attributes query has an additional parameter, which is the name of
+     * the result table
      */
     protected boolean isDynamic;
 
-    /**
-     * The unique name of the table in a database namespace which holds the cached 
-     * results for this Instance.
-     */
-    String resultTableName = null;
-    
     protected String checksum = null;
-    
+
     /**
      * The result message contains a description of the status of the result.
      * For example, for blast searh, if the blast returns no hit, the message
@@ -72,41 +62,61 @@ public abstract class QueryInstance {
      */
     protected String resultMessage;
 
+    protected CacheTable cacheTable;
+
+    protected Map<Column, Boolean> sortingColumns;
 
     // ------------------------------------------------------------------
     // Public Methods
     // ------------------------------------------------------------------
 
     public void setValues(Map<String, Object> values) throws WdkModelException {
-	this.values = new LinkedHashMap<String, Object>(values);
-    checksum = null;
-	query.applyDefaults(values);
-	query.validateParamValues(values);
+        this.values = new LinkedHashMap<String, Object>(values);
+        checksum = null;
+        query.applyDefaults(values);
+        query.validateParamValues(values);
     }
 
     public boolean getIsCacheable() {
-	return isCacheable;
+        return isCacheable;
+    }
+
+    /**
+     * @return the cacheTable
+     */
+    public CacheTable getCacheTable() {
+        return cacheTable;
     }
     
+    /**
+     * @param cacheTable the cacheTable to set
+     */
+    public void setCacheTable(CacheTable cacheTable) {
+        this.cacheTable = cacheTable;
+    }
+
     public boolean getJoinMode() {
-	return joinMode;
+        return joinMode;
     }
 
     public boolean getIsPersistent() {
 
-	//eventually this will include whether this can be put into history as well
-	return getIsCacheable();
+        // eventually this will include whether this can be put into history as
+        // well
+        return getIsCacheable();
     }
-    
+
     public void setIsCacheable(boolean isCacheable) throws WdkModelException {
-	if (isCacheable && !query.getIsCacheable().booleanValue()) {
-	    throw new WdkModelException(query.getFullName() + " is not cacheable, but a query instance is, which is illegal");
-	}
-	this.isCacheable = isCacheable;
+        if (isCacheable && !query.getIsCacheable().booleanValue()) {
+            throw new WdkModelException(
+                    query.getFullName()
+                            + " is not cacheable, but a query instance is, which is illegal");
+        }
+        this.isCacheable = isCacheable;
     }
 
     public Query getQuery() {
-	return this.query;
+        return this.query;
     }
 
     public ResultList getResult() throws WdkModelException {
@@ -124,8 +134,8 @@ public abstract class QueryInstance {
 
         if (!getIsCacheable())
             throw new WdkModelException(
-                    "Attempting to get persistent result page, but query " +
-                    "instance is not cacheable");
+                    "Attempting to get persistent result page, but query "
+                            + "instance is not cacheable");
 
         ResultList rl = getResultFactory().getPersistentResultPage(this,
                 startRow, endRow);
@@ -141,25 +151,33 @@ public abstract class QueryInstance {
      * @return Full name of table containing result
      */
     public String getResultAsTableName() throws WdkModelException {
-        if (resultTableName == null) 
-            resultTableName = getResultFactory().getResultAsTableName(this);
-        return resultTableName;
+        if (cacheTable == null)
+            return getResultFactory().getResultAsTableName(this);
+        else return cacheTable.getCacheTableFullName();
+    }
+
+    public Collection getValues() {
+        return values.values();
     }
 
     // ------------------------------------------------------------------
     // Package methods
     // ------------------------------------------------------------------
 
-    public Collection getValues() {
-	return values.values();
-    }
-    
     Integer getQueryInstanceId() {
-	return queryInstanceId;
+        return queryInstanceId;
     }
-    
+
+    String[] getPrimaryKeyColumns() {
+        if (projectColumnName == null || projectColumnName.length() == 0) {
+            return new String[]{ primaryKeyColumnName };
+        } else {
+            return new String[]{ projectColumnName, primaryKeyColumnName };
+        }
+    }
+
     void setQueryInstanceId(Integer queryInstanceId) {
-	this.queryInstanceId = queryInstanceId;
+        this.queryInstanceId = queryInstanceId;
     }
 
     /**
@@ -169,23 +187,29 @@ public abstract class QueryInstance {
      * @param startIndex
      * @param endIndex
      */
-    void initJoinMode(String resultTableName,String projectColumnName, String primaryKeyColumnName, int startIndex, int endIndex, boolean isDynamic){
-	if (resultTableName == null || resultTableName.equals("")) {
-	    throw new RuntimeException("resultTableName is required but not provided");
-	}
-	this.joinTableName = resultTableName;
-	this.projectColumnName = projectColumnName;
-	this.primaryKeyColumnName = primaryKeyColumnName;
-	this.startIndex = startIndex;
-	this.endIndex = endIndex;
-	this.joinMode = true;
-	this.isDynamic = isDynamic;
-    }
-
-    public Collection getCacheValues() throws WdkModelException{
-	return getValues();
+    void initJoinMode(CacheTable cacheTable, String projectColumnName,
+            String primaryKeyColumnName, int startIndex, int endIndex, 
+            boolean isDynamic) {
+        this.cacheTable = cacheTable;
+        this.projectColumnName = projectColumnName;
+        this.primaryKeyColumnName = primaryKeyColumnName;
+        this.startIndex = startIndex;
+        this.endIndex = endIndex;
+        this.joinMode = true;
+        this.isDynamic = isDynamic;
     }
     
+    /**
+     * @param sortingColumns the sortingColumns to set
+     */
+    void setSortingColumns(Map<Column, Boolean> sortingColumns) {
+        this.sortingColumns = new LinkedHashMap<Column, Boolean>(sortingColumns);
+   }
+
+    public Collection getCacheValues() throws WdkModelException {
+        return getValues();
+    }
+
     public String getClobContent() {
         // get parameter name list, and sort it
         String[] paramNames = new String[values.size()];
@@ -203,11 +227,12 @@ public abstract class QueryInstance {
         }
         return content.toString();
     }
-    
+
     public String getChecksum() throws WdkModelException {
         if (checksum == null) {
             try {
-                // get the clob content: a combination of query name, param names and values
+                // get the clob content: a combination of query name, param
+                // names and values
                 String content = getClobContent();
                 MessageDigest digest = MessageDigest.getInstance("MD5");
                 byte[] byteBuffer = digest.digest(content.getBytes());
@@ -225,14 +250,14 @@ public abstract class QueryInstance {
         }
         return checksum;
     }
-    
+
     /**
      * @return Returns the resultMessage.
      */
     public String getResultMessage() {
-        return (resultMessage == null) ? "": resultMessage;
+        return (resultMessage == null) ? "" : resultMessage;
     }
-    
+
     /**
      * @param resultMessage The resultMessage to set.
      */
@@ -250,18 +275,33 @@ public abstract class QueryInstance {
     // Protected methods
     // ------------------------------------------------------------------
 
-    protected QueryInstance (Query query) {
-	this.query = query;
-	this.isCacheable = query.getIsCacheable().booleanValue();
-	this.joinMode = false;
+    protected QueryInstance(Query query) {
+        this.query = query;
+        this.isCacheable = query.getIsCacheable().booleanValue();
+        this.joinMode = false;
     }
 
     protected ResultFactory getResultFactory() {
-	return query.getResultFactory();
+        return query.getResultFactory();
+    }
+    
+    protected int getSortingIndex() throws WdkModelException {
+
+        // get sorting tables and columns
+        Map<String[], Boolean> columns = new LinkedHashMap<String[], Boolean>();
+        for (Column column : sortingColumns.keySet()) {
+            boolean ascend = sortingColumns.get(column);
+            String[] key = new String[]{ column.getSortingTable(),
+                    column.getName() };
+            columns.put(key, ascend);
+        }
+        // get sorting index, may involve creating sorting cache
+        return cacheTable.getSortingIndex(columns);
     }
 
-    protected abstract ResultList getNonpersistentResult() throws WdkModelException;
+    protected abstract ResultList getNonpersistentResult()
+            throws WdkModelException;
 
-    protected abstract void writeResultToTable(String resultTableName, 
-					       ResultFactory rf) throws WdkModelException;
+    protected abstract void writeResultToTable(String resultTableName,
+            ResultFactory rf) throws WdkModelException;
 }
