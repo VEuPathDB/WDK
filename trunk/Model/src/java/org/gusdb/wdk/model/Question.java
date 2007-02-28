@@ -11,13 +11,14 @@ import org.apache.log4j.Logger;
 
 /**
  * Question.java
- *
+ * 
  * A class representing a binding between a RecordClass and a Query.
- *
+ * 
  * Created: Fri June 4 11:19:30 2004 EDT
- *
+ * 
  * @author David Barkan
- * @version $Revision$ $Date$ $Author$
+ * @version $Revision$ $Date: 2007-01-10 14:54:53 -0500 (Wed, 10 Jan
+ *          2007) $ $Author$
  */
 
 public class Question implements Serializable {
@@ -42,7 +43,7 @@ public class Question implements Serializable {
     private QuestionSet questionSet;
 
     private Query query;
-    
+
     protected RecordClass recordClass;
 
     private String category;
@@ -52,67 +53,83 @@ public class Question implements Serializable {
     private Map<String, AttributeField> summaryAttributeMap;
 
     private DynamicAttributeSet dynamicAttributes;
-
-    ///////////////////////////////////////////////////////////////////////
-    // setters called at initialization
-    ///////////////////////////////////////////////////////////////////////
     
-    public Question(){
-	summaryAttributeMap = new LinkedHashMap<String, AttributeField>();
+    private Map<String, Boolean> sortingAttributeMap;
+
+    // /////////////////////////////////////////////////////////////////////
+    // setters called at initialization
+    // /////////////////////////////////////////////////////////////////////
+
+    public Question() {
+        summaryAttributeMap = new LinkedHashMap<String, AttributeField>();
+        sortingAttributeMap = new LinkedHashMap<String, Boolean>();
     }
 
-
-    public void setName(String name){
-	this.name = name;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public void setDescription(String description) {
-	this.description = description;
+        this.description = description;
     }
 
     public void setSummary(String summary) {
-	this.summary = summary;
+        this.summary = summary;
     }
 
     public void setHelp(String help) {
-	this.help = help;
+        this.help = help;
     }
 
-    public void setRecordClassRef(String recordClassTwoPartName){
+    public void setRecordClassRef(String recordClassTwoPartName) {
 
-	this.recordClassTwoPartName = recordClassTwoPartName;
+        this.recordClassTwoPartName = recordClassTwoPartName;
     }
 
-    public void setQueryRef(String queryTwoPartName){
-	this.queryTwoPartName = queryTwoPartName;
+    public void setQueryRef(String queryTwoPartName) {
+        this.queryTwoPartName = queryTwoPartName;
     }
 
     public void setDisplayName(String displayName) {
-	this.displayName = displayName;
+        this.displayName = displayName;
     }
 
     public void setCategory(String category) {
-	this.category = category;
+        this.category = category;
     }
 
-    public void setSummaryAttributesList(String summaryAttributesString){
-       	// ensure that the list includes primaryKey
-	String primaryKey = RecordClass.PRIMARY_KEY_NAME;
-	if (!(summaryAttributesString.equals(primaryKey)
-	      || summaryAttributesString.startsWith(primaryKey + ",")
-	      || summaryAttributesString.endsWith("," + primaryKey)
-	      || summaryAttributesString.indexOf("," + primaryKey + ",") > 0)) {
-	    summaryAttributesString = primaryKey + "," + summaryAttributesString;
-	}
-	this.summaryAttributeNames = summaryAttributesString.split(",\\s*");
+    public void setSummaryAttributesList(String summaryAttributesString) {
+        // ensure that the list includes primaryKey
+        String primaryKey = RecordClass.PRIMARY_KEY_NAME;
+        if (!(summaryAttributesString.equals(primaryKey)
+                || summaryAttributesString.startsWith(primaryKey + ",")
+                || summaryAttributesString.endsWith("," + primaryKey) || summaryAttributesString.indexOf(","
+                + primaryKey + ",") > 0)) {
+            summaryAttributesString = primaryKey + ","
+                    + summaryAttributesString;
+        }
+        this.summaryAttributeNames = summaryAttributesString.split(",\\s*");
+    }
+    
+    public void setSortingAttributesList(String list) {
+        String[] attrCombines = list.split(",");
+        sortingAttributeMap.clear();
+        for(String attrCombine : attrCombines) {
+            String[] sorts = attrCombine.trim().split("\\s+");
+            String attrName = sorts[0].trim();
+            String strAscend = sorts[1].trim().toLowerCase();
+            boolean ascending = strAscend.equals("asc");
+            if (!sortingAttributeMap.containsKey(attrName))
+                sortingAttributeMap.put(attrName, ascending);
+        }
     }
 
     public void setDynamicAttributeSet(DynamicAttributeSet dynamicAttributes) {
-	this.dynamicAttributes = dynamicAttributes;
+        this.dynamicAttributes = dynamicAttributes;
     }
 
-    public Map<String, AttributeField> getSummaryAttributes(){
-	return summaryAttributeMap;
+    public Map<String, AttributeField> getSummaryAttributes() {
+        return summaryAttributeMap;
     }
 
     public Map<String, AttributeField> getReportMakerAttributeFields() {
@@ -126,12 +143,12 @@ public class Question implements Serializable {
         Map<String, TableField> rmfields = recordClass.getReportMakerTableFieldMap();
         return rmfields;
     }
-    
+
     public Map<String, Field> getReportMakerFields() {
         Map<String, Field> fields = new LinkedHashMap<String, Field>();
         Map<String, AttributeField> attributes = getReportMakerAttributeFields();
         Map<String, TableField> tables = getReportMakerTableFields();
-        
+
         for (String name : attributes.keySet()) {
             fields.put(name, attributes.get(name));
         }
@@ -141,110 +158,115 @@ public class Question implements Serializable {
         return fields;
     }
 
-    ///////////////////////////////////////////////////////////////////////
+    // /////////////////////////////////////////////////////////////////////
 
-
-    public Answer makeAnswer(Map<String, Object> paramValues, int i, int j)
-            throws WdkUserException, WdkModelException {
+    public Answer makeAnswer(Map<String, Object> paramValues, int i, int j) 
+    throws WdkUserException,
+            WdkModelException {
+        return makeAnswer(paramValues, i, j, sortingAttributeMap);
+    }
+    
+    public Answer makeAnswer(Map<String, Object> paramValues, int i, int j,
+            Map<String, Boolean> sortingAttributes) throws WdkUserException,
+            WdkModelException {
         QueryInstance qi = query.makeInstance();
         qi.setValues(paramValues);
-        Answer answer = new Answer(this, qi, i, j);
+        Answer answer = new Answer(this, qi, i, j, sortingAttributes);
 
         return answer;
     }
 
     public Param[] getParams() {
-	return query.getParams();
+        return query.getParams();
     }
-    
+
     public Map<String, Param> getParamMap() {
         return query.getParamMap();
     }
 
     public String getDescription() {
-	return description;
+        return description;
     }
 
     public String getSummary() {
-	return summary;
+        return summary;
     }
 
     public String getHelp() {
-	return help;
+        return help;
     }
 
     public String getDisplayName() {
-    if (displayName == null) displayName = getFullName();
-	return displayName;
+        if (displayName == null) displayName = getFullName();
+        return displayName;
     }
-	
+
     public String getCategory() {
-	return category;
+        return category;
     }
 
-    public RecordClass getRecordClass(){
-	return this.recordClass;
+    public RecordClass getRecordClass() {
+        return this.recordClass;
     }
 
-    Query getQuery(){
-	return this.query;
+    Query getQuery() {
+        return this.query;
     }
 
-    public void setRecordClass(RecordClass rc){
-	this.recordClass = rc;
-    }
-    
-    public void setQuery(Query q){
-	this.query = q;
+    public void setRecordClass(RecordClass rc) {
+        this.recordClass = rc;
     }
 
-    public String getName(){
-	return name;
+    public void setQuery(Query q) {
+        this.query = q;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public String getFullName() {
-    if (questionSet == null) return name;
-    else return questionSet.getName() + "." + name;
+        if (questionSet == null) return name;
+        else return questionSet.getName() + "." + name;
     }
 
     public String toString() {
-	String newline = System.getProperty( "line.separator" );
+        String newline = System.getProperty("line.separator");
 
-	StringBuffer saNames = new StringBuffer();
-	if (summaryAttributeNames != null) {
-	    for (String saName : summaryAttributeNames) 
-		saNames.append(saName + ", ");
-	}
-	StringBuffer buf =
-	    new StringBuffer("Question: name='" + name + "'" + newline  +
-			     "  recordClass='" + recordClassTwoPartName + "'" + newline +
-			     "  query='" + queryTwoPartName + "'" + newline +
-			    "  displayName='" + getDisplayName() + "'" + newline +
-			    "  summary='" + getSummary() + "'" + newline +
-			    "  description='" + getDescription() + "'" + newline +
-			    "  summaryAttributes='" + saNames + "'" + newline + 
-			    "  help='" + getHelp() + "'" + newline 
-			     );	    
-	if (dynamicAttributes != null) {
-	    buf.append(dynamicAttributes.toString());
-	}
-	return buf.toString();
+        StringBuffer saNames = new StringBuffer();
+        if (summaryAttributeNames != null) {
+            for (String saName : summaryAttributeNames)
+                saNames.append(saName + ", ");
+        }
+        StringBuffer buf = new StringBuffer("Question: name='" + name + "'"
+                + newline + "  recordClass='" + recordClassTwoPartName + "'"
+                + newline + "  query='" + queryTwoPartName + "'" + newline
+                + "  displayName='" + getDisplayName() + "'" + newline
+                + "  summary='" + getSummary() + "'" + newline
+                + "  description='" + getDescription() + "'" + newline
+                + "  summaryAttributes='" + saNames + "'" + newline
+                + "  help='" + getHelp() + "'" + newline);
+        if (dynamicAttributes != null) {
+            buf.append(dynamicAttributes.toString());
+        }
+        return buf.toString();
     }
 
     public boolean isDynamic() {
-	return dynamicAttributes != null;
+        return dynamicAttributes != null;
     }
-    
-    ///////////////////////////////////////////////////////////////////////
+
+    // /////////////////////////////////////////////////////////////////////
     // package methods
-    ///////////////////////////////////////////////////////////////////////
+    // /////////////////////////////////////////////////////////////////////
 
     Map<String, AttributeField> getDynamicAttributeFields() {
-	return dynamicAttributes == null ? null: dynamicAttributes.getAttributeFields();
+        return dynamicAttributes == null ? null
+                : dynamicAttributes.getAttributeFields();
     }
 
     void setResources(WdkModel model) throws WdkModelException {
-	if (dynamicAttributes != null) dynamicAttributes.setResources(model);
+        if (dynamicAttributes != null) dynamicAttributes.setResources(model);
     }
 
     Map<String, AttributeField> getAttributeFields() {
@@ -255,34 +277,35 @@ public class Question implements Serializable {
         }
         return attributeFields;
     }
-    
-    void resolveReferences(WdkModel model)throws WdkModelException{
 
-	this.query = (Query)model.resolveReference(queryTwoPartName, name, 
-						   "question", "queryRef");
-	Object rc = model.resolveReference(recordClassTwoPartName, name, 
-					   "question", "recordClassRef");
-       	setRecordClass((RecordClass)rc);
+    void resolveReferences(WdkModel model) throws WdkModelException {
+
+        this.query = (Query) model.resolveReference(queryTwoPartName, name,
+                "question", "queryRef");
+        Object rc = model.resolveReference(recordClassTwoPartName, name,
+                "question", "recordClassRef");
+        setRecordClass((RecordClass) rc);
     }
 
-    boolean isSummaryAttribute(String attName){
-	return summaryAttributeMap.get(attName) != null;
-    }
-    
-    void setSummaryAttributesMap(Map<String, AttributeField> summaryAtts){
-	this.summaryAttributeMap = summaryAtts;
+    boolean isSummaryAttribute(String attName) {
+        return summaryAttributeMap.get(attName) != null;
     }
 
-    ///////////////////////////////////////////////////////////////////////
+    void setSummaryAttributesMap(Map<String, AttributeField> summaryAtts) {
+        this.summaryAttributeMap = summaryAtts;
+    }
+
+    // /////////////////////////////////////////////////////////////////////
     // Protected Methods
-    ///////////////////////////////////////////////////////////////////////
-        
-    protected void setQuestionSet(QuestionSet questionSet) throws WdkModelException {
-	this.questionSet = questionSet;
-	if (dynamicAttributes != null) {
-	    dynamicAttributes.setQuestion(this);
-	}
-	initSummaryAttributes();
+    // /////////////////////////////////////////////////////////////////////
+
+    protected void setQuestionSet(QuestionSet questionSet)
+            throws WdkModelException {
+        this.questionSet = questionSet;
+        if (dynamicAttributes != null) {
+            dynamicAttributes.setQuestion(this);
+        }
+        initSummaryAttributes();
     }
 
     private void initSummaryAttributes() throws WdkModelException {
@@ -312,9 +335,10 @@ public class Question implements Serializable {
             }
         }
     }
-    
+
     /**
      * This method is use to clone the question, excluding dynamic attributes
+     * 
      * @return
      */
     public Question getBaseQuestion() {
@@ -330,8 +354,7 @@ public class Question implements Serializable {
         question.recordClassTwoPartName = this.recordClassTwoPartName;
 
         // needs to clone thie summary attribute as well
-        Map<String, AttributeField> sumAttributes = 
-            new LinkedHashMap<String, AttributeField>();
+        Map<String, AttributeField> sumAttributes = new LinkedHashMap<String, AttributeField>();
         Map<String, AttributeField> attributes = recordClass.getAttributeFieldMap();
         for (String attrName : summaryAttributeMap.keySet()) {
             if (attributes.containsKey(attrName))
@@ -340,11 +363,11 @@ public class Question implements Serializable {
         question.summaryAttributeMap = sumAttributes;
 
         // clone the query too, but excludes the columns in dynamic attribute
-        Set<String> excludedColumns= new LinkedHashSet<String>();
+        Set<String> excludedColumns = new LinkedHashSet<String>();
         // TEST
         StringBuffer sb = new StringBuffer();
-        
-        if (this.dynamicAttributes!= null) {
+
+        if (this.dynamicAttributes != null) {
             attributes = dynamicAttributes.getAttributeFields();
             for (AttributeField field : attributes.values()) {
                 if (field instanceof ColumnAttributeField) {
@@ -356,14 +379,18 @@ public class Question implements Serializable {
             }
         }
         logger.debug("Excluded fields: " + sb.toString());
-        
+
         Query newQuery = this.query.getBaseQuery(excludedColumns);
         question.query = newQuery;
-        
+
         return question;
     }
-    
+
     public String getSignature() throws WdkModelException {
         return query.getSignature();
+    }
+    
+    public Map<String, Boolean> getDefaultSortingColumns() {
+        return sortingAttributeMap;
     }
 }

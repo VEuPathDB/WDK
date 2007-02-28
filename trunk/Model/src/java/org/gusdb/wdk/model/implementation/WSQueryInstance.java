@@ -138,10 +138,14 @@ public class WSQueryInstance extends QueryInstance {
             insertSqlV.append("?,");
         }
         createSqlB.append(ResultFactory.RESULT_TABLE_I + " "
+                + platform.getNumberDataType() + " (12), ");
+        createSqlB.append(ResultFactory.COLUMN_SORTING_INDEX + " "
                 + platform.getNumberDataType() + " (12))");
-        insertSqlB.append(ResultFactory.RESULT_TABLE_I + ") ");
+        // set sorting index id as 0 by default
+        insertSqlB.append(ResultFactory.RESULT_TABLE_I + ", ");
+        insertSqlB.append(ResultFactory.COLUMN_SORTING_INDEX + ") ");
         insertSqlB.append(insertSqlV);
-        insertSqlB.append("?)");
+        insertSqlB.append("?, 0)");
         
         PreparedStatement pstmt = null;
         try {

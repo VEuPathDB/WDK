@@ -6,17 +6,20 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.report.IReporter;
 
 /**
  * Answer.java
- *
+ * 
  * Created: Fri June 4 13:01:30 2004 EDT
- *
+ * 
  * @author David Barkan
- * @version $Revision$ $Date$ $Author$
+ * @version $Revision$ $Date: 2007-01-22 12:33:24 -0500 (Mon, 22 Jan
+ *          2007) $ $Author$
  */
 
 /**
@@ -87,34 +90,35 @@ public class Answer {
 
     private Map<String, Integer> resultSizesByProject = null;
 
+    private Map<String, Boolean> sortingAttributes;
+
     // ------------------------------------------------------------------
     // Constructor
     // ------------------------------------------------------------------
 
     /**
-     * @param question
-     *            The <code>Question</code> to which this is the
+     * @param question The <code>Question</code> to which this is the
      *            <code>Answer</code>.
-     * @param idsQueryInstance
-     *            The <co de>QueryInstance</code> that provides a handle on the
-     *            ResultList containing all primary keys that are the result for
-     *            the question (not just one page worth).
-     * @param startRecordInstanceI
-     *            The index of the first <code>RecordInstance</code> in the
-     *            page. (>=1)
-     * @param endRecordInstanceI
-     *            The index of the last <code>RecordInstance</code> in the
-     *            page, inclusive.
+     * @param idsQueryInstance The <co de>QueryInstance</code> that provides a
+     *            handle on the ResultList containing all primary keys that are
+     *            the result for the question (not just one page worth).
+     * @param startRecordInstanceI The index of the first <code>RecordInstance</code>
+     *            in the page. (>=1)
+     * @param endRecordInstanceI The index of the last <code>RecordInstance</code>
+     *            in the page, inclusive.
      */
     Answer(Question question, QueryInstance idsQueryInstance,
-            int startRecordInstanceI, int endRecordInstanceI)
-            throws WdkModelException {
+            int startRecordInstanceI, int endRecordInstanceI,
+            Map<String, Boolean> sortingAttributes) throws WdkModelException {
         this.question = question;
         this.idsQueryInstance = idsQueryInstance;
         this.isBoolean = (idsQueryInstance instanceof BooleanQueryInstance);
         this.recordInstanceCursor = 0;
         this.startRecordInstanceI = startRecordInstanceI;
         this.endRecordInstanceI = endRecordInstanceI;
+
+        // get sorting columns
+        this.sortingAttributes = sortingAttributes;
 
         /*
          * ResultList rl =
@@ -428,8 +432,10 @@ public class Answer {
                 + attributesQueryInstance.getQuery().getFullName());
         logger.debug("isDynamic=" + isDynamic);
 
-        String idsTableName = idsQueryInstance.getResultAsTableName();
-        attributesQueryInstance.initJoinMode(idsTableName,
+        CacheTable cacheTable = idsQueryInstance.getCacheTable();
+        Map<Column, Boolean> sortingColumns = getSortingColumns(sortingAttributes);
+        attributesQueryInstance.setSortingColumns(sortingColumns);
+        attributesQueryInstance.initJoinMode(cacheTable,
                 recordProjectColumnName, recordIdColumnName,
                 startRecordInstanceI, endRecordInstanceI, isDynamic);
 
@@ -439,6 +445,10 @@ public class Answer {
             setColumnValues(recordInstance, attributesQueryInstance, isDynamic,
                     recordIdColumnName, recordProjectColumnName, null);
             PrimaryKeyValue primaryKey = recordInstance.getPrimaryKey();
+
+            // TEST
+            logger.info("PK: '" + primaryKey.getValue() + "'");
+
             recordInstanceMap.put(primaryKey, recordInstance);
         }
 
@@ -459,7 +469,8 @@ public class Answer {
                     project, id.toString());
 
             if (primaryKeySet.contains(attrPrimaryKey)) {
-                String msg = "Result Table " + idsTableName
+                String msg = "Result Table "
+                        + cacheTable.getCacheTableFullName()
                         + " for Attribute query "
                         + attributesQueryInstance.getQuery().getFullName()
                         + " " + " has more than one row for " + attrPrimaryKey;
@@ -469,6 +480,9 @@ public class Answer {
             } else {
                 primaryKeySet.add(attrPrimaryKey);
             }
+
+            // TEST
+            logger.info("AttrPK: '" + attrPrimaryKey.getValue() + "'");
 
             RecordInstance recordInstance = recordInstanceMap.get(attrPrimaryKey);
             setColumnValues(recordInstance, attributesQueryInstance, isDynamic,
@@ -520,6 +534,9 @@ public class Answer {
 
         // set instance variables projectColumnName and idsColumnName
         findPrimaryKeyColumnNames();
+        idsQueryInstance.projectColumnName = recordProjectColumnName;
+        idsQueryInstance.primaryKeyColumnName = recordIdColumnName;
+        idsQueryInstance.setSortingColumns(getSortingColumns(sortingAttributes));
 
         ResultList rl = idsQueryInstance.getPersistentResultPage(
                 startRecordInstanceI, endRecordInstanceI);
@@ -584,7 +601,7 @@ public class Answer {
 
     public Answer newAnswer() throws WdkModelException {
         Answer answer = new Answer(question, idsQueryInstance,
-                startRecordInstanceI, endRecordInstanceI);
+                startRecordInstanceI, endRecordInstanceI, sortingAttributes);
         // instead of cloning all parts of an answer, just initialize it as a
         // new answer, and the queries can be re-run without any assumption
         return answer;
@@ -595,7 +612,7 @@ public class Answer {
         this.startRecordInstanceI = startIndex;
         this.endRecordInstanceI = endIndex;
         return new Answer(question, idsQueryInstance, startRecordInstanceI,
-                endRecordInstanceI);
+                endRecordInstanceI, sortingAttributes);
     }
 
     /**
@@ -637,5 +654,93 @@ public class Answer {
             nameBuf.append(value);
         }
         return nameBuf.toString();
+    }
+
+    private Map<Column, Boolean> getSortingColumns(
+            Map<String, Boolean> sortingAttributes) throws WdkModelException {
+        Map<Column, Boolean> columns = new LinkedHashMap<Column, Boolean>();
+        for (String attrName : sortingAttributes.keySet()) {
+            boolean ascending = sortingAttributes.get(attrName);
+            Map<Column, Boolean> subColumns = findColumns(attrName, ascending);
+            for (Column column : subColumns.keySet()) {
+                if (!columns.containsKey(column))
+                // ignore the order of the children, since it should be the same
+                    // as the parent
+                    columns.put(column, ascending);
+            }
+        }
+        return columns;
+    }
+
+    private Map<Column, Boolean> findColumns(String attrName, boolean ascending)
+            throws WdkModelException {
+        AttributeField attribute = question.getAttributeFields().get(attrName);
+        Map<Column, Boolean> columns = new LinkedHashMap<Column, Boolean>();
+        if (attribute instanceof PrimaryKeyField) {
+            PrimaryKeyField primaryKey = (PrimaryKeyField) attribute;
+            Column column = null;
+            // get project column, if have
+            if (primaryKey.hasProjectParam()) {
+                column = idsQueryInstance.getQuery().getColumn(
+                        recordProjectColumnName);
+                if (column.getSortingTable() == null)
+                    column.setSortingTable(idsQueryInstance.getResultAsTableName());
+                if (!columns.containsKey(column))
+                    columns.put(column, ascending);
+            }
+            // get record id column
+            column = idsQueryInstance.getQuery().getColumn(recordIdColumnName);
+            if (column.getSortingTable() == null)
+                column.setSortingTable(idsQueryInstance.getResultAsTableName());
+            if (!columns.containsKey(column)) columns.put(column, ascending);
+        } else if (attribute instanceof ColumnAttributeField) {
+            ColumnAttributeField columnAttribute = (ColumnAttributeField) attribute;
+            Column column = columnAttribute.getColumn();
+            if (!columns.containsKey(column)) columns.put(column, ascending);
+        } else if (attribute instanceof TextAttributeField) {
+            TextAttributeField textAttribute = (TextAttributeField) attribute;
+            String text = textAttribute.getText();
+            // parse out the children
+            Set<String> children = getChildren(text);
+            for (String child : children) {
+                Map<Column, Boolean> subColumns = findColumns(child, ascending);
+                for (Column column : subColumns.keySet()) {
+                    if (!columns.containsKey(column))
+                    // ignore the order of the children, since it should be the
+                        // same as the parent
+                        columns.put(column, ascending);
+                }
+            }
+        } else if (attribute instanceof LinkAttributeField) {
+            LinkAttributeField linkAttribute = (LinkAttributeField) attribute;
+            String visible = linkAttribute.getVisible();
+            // parse out the children
+            Set<String> children = getChildren(visible);
+            for (String child : children) {
+                Map<Column, Boolean> subColumns = findColumns(child, ascending);
+                for (Column column : subColumns.keySet()) {
+                    if (!columns.containsKey(column))
+                    // ignore the order of the children, since it should be the
+                        // same as the parent
+                        columns.put(column, ascending);
+                }
+            }
+        } else {
+            throw new WdkModelException("Uknown attribute type: "
+                    + attribute.getName() + " ("
+                    + attribute.getClass().getName() + ")");
+        }
+        return columns;
+    }
+
+    private Set<String> getChildren(String text) {
+        Set<String> children = new LinkedHashSet<String>();
+        Pattern pattern = Pattern.compile("\\$\\$(.+?)\\$\\$", Pattern.DOTALL);
+        Matcher matcher = pattern.matcher(text);
+        while (matcher.find()) {
+            String child = matcher.group(1);
+            if (!children.contains(child)) children.add(child);
+        }
+        return children;
     }
 }

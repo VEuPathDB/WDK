@@ -154,8 +154,9 @@ public class PostgreSQL implements RDBMSPlatformI, Serializable {
 
         // Add "i" to the table and initialize each row in that column to be
         // rownum
-        String alterSql = "alter table " + tableName + " add "
-                + ResultFactory.RESULT_TABLE_I + " numeric(12)";
+        String alterSql = "alter table " + tableName + " ADD COLUMN "
+                + ResultFactory.RESULT_TABLE_I + " numeric(12), ADD COLUMN "
+                + ResultFactory.COLUMN_SORTING_INDEX + " numeric(12)";
 
         SqlUtils.execute(dataSource, alterSql);
 
@@ -163,9 +164,11 @@ public class PostgreSQL implements RDBMSPlatformI, Serializable {
         this.createSequence(tableName + "_sq", 1, 1);
 
         try {
+            //          initialize sorting index as 0
             String rownumSql = "update " + tableName + " set "
                     + ResultFactory.RESULT_TABLE_I + " = nextval('" + tableName
-                    + "_sq')";
+                    + "_sq'), "
+                + ResultFactory.COLUMN_SORTING_INDEX + " = 0";
             SqlUtils.execute(dataSource, rownumSql);
         } finally {
             // drop the temporary sequence
