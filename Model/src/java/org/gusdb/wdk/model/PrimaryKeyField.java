@@ -24,6 +24,10 @@ public class PrimaryKeyField extends AttributeField{
         this.idPrefix = "G."; // default value;
         this.delimiter = ":"; // default value;
     }
+    
+    public boolean hasProjectParam() {
+        return (projectParam != null);
+    }
 
     /**
      * @return Returns the delimiter.

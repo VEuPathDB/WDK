@@ -259,6 +259,9 @@
   <define name="sqlColumn">
     <element name="column">
       <ref name="ColumnBaseContents" />
+      <optional>
+        <attribute name="sortingTable" />
+      </optional>
     </element>
   </define>
     
@@ -347,6 +350,9 @@
       <optional>
            <attribute name="summaryAttributesList" />
       </optional>
+      <optional>
+           <attribute name="sortingAttributesList" />
+      </optional>
                  
       <optional>
          <element name="summary">
@@ -406,7 +412,10 @@
 
   <define name="columnAttribute">
       <element name="columnAttribute">
-          <ref name="FieldBaseContents" />
+        <ref name="FieldBaseContents" />
+        <optional>
+          <attribute name="sortable" />
+        </optional>
       </element>
   </define>
   
@@ -423,6 +432,9 @@
   <define name ="textAttribute">
     <element name="textAttribute">
       <ref name="FieldBaseContents" />
+      <optional>
+        <attribute name="sortable" />
+      </optional>
       <element name="text">
         <text />
       </element>
@@ -433,6 +445,9 @@
     <element name="linkAttribute">
       <ref name="FieldBaseContents" />
       <attribute name="visible" />
+      <optional>
+        <attribute name="sortable" />
+      </optional>
       <element name="url">
         <text />
       </element>

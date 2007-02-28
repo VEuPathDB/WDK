@@ -1,44 +1,40 @@
 package org.gusdb.wdk.model.implementation;
 
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.logging.Logger;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.DynamicAttributeSet;
 import org.gusdb.wdk.model.QueryInstance;
 import org.gusdb.wdk.model.RDBMSPlatformI;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.ResultFactory;
 import org.gusdb.wdk.model.ResultList;
-import org.gusdb.wdk.model.WdkLogManager;
 import org.gusdb.wdk.model.WdkModelException;
 
-public class SqlQueryInstance extends QueryInstance  {
+public class SqlQueryInstance extends QueryInstance {
 
-    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.model.implementation.SqlQueryInstance");
-    
+    private static final Logger logger = Logger.getLogger(SqlQueryInstance.class);
+
     // ------------------------------------------------------------------
     // Instance Variables
     // ------------------------------------------------------------------
 
-
     // ------------------------------------------------------------------
     // Constructor
     // ------------------------------------------------------------------
-    
-    public SqlQueryInstance (SqlQuery query) {
+
+    public SqlQueryInstance(SqlQuery query) {
         super(query);
-        logger.finest("I've got a new sqlQueryInstance being created");
+        logger.debug("I've got a new sqlQueryInstance being created");
     }
 
     public ResultList getPersistentResultPage(int startRow, int endRow)
             throws WdkModelException {
 
         if (!getIsCacheable())
-            throw new WdkModelException(
-                    "Attempting to get persistent result page, but query " +
-                    "instance is not cacheable");
+            throw new WdkModelException("Attempting to get persistent result "
+                    + "page, but query instance is not cacheable");
 
         SqlQuery q = (SqlQuery) query;
         ResultList rl = getResultFactory().getPersistentResultPage(this,
@@ -52,78 +48,82 @@ public class SqlQueryInstance extends QueryInstance  {
     }
 
     public String getLowLevelQuery() throws WdkModelException {
-	return getSql();
+        return getSql();
     }
 
     protected ResultList getNonpersistentResult() throws WdkModelException {
         ResultSet resultSet = null;
-        RDBMSPlatformI platform = ((SqlQuery)query).getRDBMSPlatform();
+        RDBMSPlatformI platform = ((SqlQuery) query).getRDBMSPlatform();
 
         try {
-            resultSet = SqlUtils.getResultSet(platform.getDataSource(), 
+            resultSet = SqlUtils.getResultSet(platform.getDataSource(),
                     getSql());
 
-        } catch (SQLException e) { 
-            String newline = System.getProperty( "line.separator" );
-            String msg = newline + "Failed running query:" + newline +
-            "\"" + getSql() + "\"" + newline;
+        } catch (SQLException e) {
+            String newline = System.getProperty("line.separator");
+            String msg = newline + "Failed running query:" + newline + "\""
+                    + getSql() + "\"" + newline;
             throw new WdkModelException(msg, e);
         }
         return new SqlResultList(this, null, resultSet);
     }
 
-    protected void writeResultToTable(String resultTableName, 
-            ResultFactory rf) throws WdkModelException {
-        RDBMSPlatformI platform = ((SqlQuery)query).getRDBMSPlatform();
+    protected void writeResultToTable(String resultTableName, ResultFactory rf)
+            throws WdkModelException {
+        RDBMSPlatformI platform = ((SqlQuery) query).getRDBMSPlatform();
 
         try {
             platform.createResultTable(platform.getDataSource(),
-				       resultTableName, 
-				       getSql());
+                    resultTableName, getSql());
         } catch (SQLException e) {
             throw new WdkModelException(e);
         }
     }
 
     /**
-     * @return Sql to run.  If join mode, it is modified for joining
+     * @return Sql to run. If join mode, it is modified for joining
      * @throws WdkModelException
      */
     private String getSql() throws WdkModelException {
-	return joinMode?
-	    getJoinSql() :
-	    ((SqlQuery)query).instantiateSql(query.getInternalParamValues(values));
+        return joinMode
+                ? getJoinSql()
+                : ((SqlQuery) query).instantiateSql(query.getInternalParamValues(values));
 
     }
 
+    private String getJoinSql() throws WdkModelException {
+        String sql = ((SqlQuery) query).getSql();
 
-    private String getJoinSql()  throws WdkModelException {
-	String sql = ((SqlQuery)query).getSql();
+        // resolve the references to sorting columns
+        RDBMSPlatformI platform = ((SqlQuery) query).getRDBMSPlatform();
+        String joinTableName = cacheTable.getCacheTableFullName();
+        int sortingIndex = getSortingIndex();
+        SqlClause clause = new SqlClause(sql, joinTableName, projectColumnName,
+                primaryKeyColumnName, sortingIndex, startIndex, endIndex,
+                platform);
 
-        RDBMSPlatformI platform = ((SqlQuery)query).getRDBMSPlatform();
-	SqlClause clause = new SqlClause(sql, joinTableName, 
-					 startIndex, endIndex, platform);
-
-	return instantiateSqlWithJoin(clause.getModifiedSql());
-
+        return instantiateSqlWithJoin(clause.getModifiedSql());
     }
 
-    private String instantiateSqlWithJoin(String sql) throws WdkModelException { 
-	String primaryKeyJoin = joinTableName + "." + primaryKeyColumnName;
+    private String instantiateSqlWithJoin(String sql) throws WdkModelException {
+        String joinTableName = cacheTable.getCacheTableFullName();
+        String primaryKeyJoin = joinTableName + "." + primaryKeyColumnName;
 
-    checksum = null;
-	values.put(RecordClass.PRIMARY_KEY_NAME, primaryKeyJoin); 
-	
-	if (projectColumnName != null) {
-	    String projectJoin = joinTableName + "." + projectColumnName;
-	    values.put(RecordClass.PROJECT_ID_NAME, projectJoin);
-	}
+        checksum = null;
+        values.put(RecordClass.PRIMARY_KEY_NAME, primaryKeyJoin);
 
-	if (isDynamic) {
-	    values.put(DynamicAttributeSet.RESULT_TABLE, joinTableName);
-	}
+        if (projectColumnName != null) {
+            String projectJoin = joinTableName + "." + projectColumnName;
+            values.put(RecordClass.PROJECT_ID_NAME, projectJoin);
+        }
 
-	return ((SqlQuery)query).instantiateSql(query.getInternalParamValues(values), sql);
+        if (isDynamic) {
+            values.put(DynamicAttributeSet.RESULT_TABLE, joinTableName);
+        }
+
+        return ((SqlQuery) query).instantiateSql(
+                query.getInternalParamValues(values), sql);
     }
 
+    
 }

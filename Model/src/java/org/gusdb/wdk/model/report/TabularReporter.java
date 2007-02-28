@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.AttributeField;
+import org.gusdb.wdk.model.LinkValue;
 import org.gusdb.wdk.model.RecordInstance;
 import org.gusdb.wdk.model.WdkModelException;
 
@@ -21,7 +22,7 @@ public class TabularReporter extends Reporter {
     public static final String FIELD_HAS_HEADER = "includeHeader";
     public static final String FIELD_DIVIDER = "divider";
     public static final String FIELD_SELECTED_COLUMNS = "selectedFields";
-    private boolean hasHeader = false;
+    private boolean hasHeader = true;
     private String divider = "\t";
 
     /*
@@ -33,7 +34,8 @@ public class TabularReporter extends Reporter {
         // get basic configurations
         if (config.containsKey(FIELD_HAS_HEADER)) {
             String value = config.get(FIELD_HAS_HEADER);
-            hasHeader = (value.equalsIgnoreCase("yes") || value.equalsIgnoreCase("true")) ? true
+            hasHeader = (value.equalsIgnoreCase("yes") || value.equalsIgnoreCase("true"))
+                    ? true
                     : false;
         }
 
@@ -53,7 +55,7 @@ public class TabularReporter extends Reporter {
         // the config map contains a list of column names;
         Map<String, AttributeField> summary = answer.getQuestion().getSummaryAttributes();
         Set<AttributeField> columns = new LinkedHashSet<AttributeField>();
-        
+
         String fieldsList = config.get(FIELD_SELECTED_COLUMNS);
         if (fieldsList == null) {
             columns.addAll(summary.values());
@@ -95,7 +97,11 @@ public class TabularReporter extends Reporter {
             RecordInstance record = answer.getNextRecordInstance();
             for (AttributeField column : columns) {
                 Object value = record.getAttributeValue(column);
-                result.append(value.toString());
+                if (value instanceof LinkValue) {
+                    result.append(((LinkValue) value).getValue());
+                } else {
+                    result.append(value);
+                }
                 result.append(divider);
             }
             result.append(newLine);

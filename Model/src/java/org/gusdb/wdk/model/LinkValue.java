@@ -74,7 +74,7 @@ public class LinkValue {
     public String getValue() {
         return getVisible() + "(" + getUrl() + ")";
     }
-
+    
     public String toString() {
         String newline = System.getProperty("line.separator");
         String classnm = this.getClass().getName();

@@ -5,7 +5,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Serializable;
-import java.sql.Clob;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -54,14 +53,22 @@ public class ResultFactory implements Serializable {
 
     // the following constants are used by persistent query history
     public static final String TABLE_QUERY_INSTANCE = "QueryInstance";
- 
+    public static final String TABLE_SORTING_INDEX = "sorting_index";
+
+    // public static final String RESULT_TABLE_I = "result_index_column";
     public static final String RESULT_TABLE_I = "result_index_column";
+    public static final String COLUMN_SORTING_INDEX = "sorting_index_id";
+    public static final String COLUMN_SORTING_COLUMNS = "sorting_columns";
+    public static final String COLUMN_QUERY_INSTANCE_ID = "query_instance_id";
+
     public static final String CACHE_TABLE_PREFIX = "query_result_";
 
     RDBMSPlatformI platform;
     String schemaName;
     String instanceTableName;
     String instanceTableFullName;
+    String sortingTableName;
+    String sortingTableFullName;
 
     private boolean enableQueryLogger;
     private String queryLoggerFile;
@@ -70,9 +77,14 @@ public class ResultFactory implements Serializable {
             boolean enableQueryLogger, String queryLoggerFile) {
         this.platform = platform;
         this.schemaName = schemaName;
+
         this.instanceTableName = TABLE_QUERY_INSTANCE;
         this.instanceTableFullName = platform.getTableFullName(schemaName,
                 instanceTableName);
+
+        this.sortingTableName = TABLE_SORTING_INDEX;
+        this.sortingTableFullName = platform.getTableFullName(schemaName,
+                sortingTableName);
 
         // configure query logger
         this.enableQueryLogger = enableQueryLogger;
@@ -85,7 +97,8 @@ public class ResultFactory implements Serializable {
 
     public synchronized ResultList getResult(QueryInstance instance)
             throws WdkModelException {
-        ResultList resultList = instance.getIsPersistent() ? getPersistentResult(instance)
+        ResultList resultList = instance.getIsPersistent()
+                ? getPersistentResult(instance)
                 : instance.getNonpersistentResult();
         return resultList;
     }
@@ -107,7 +120,12 @@ public class ResultFactory implements Serializable {
         }
 
         String resultTableName = getResultTableName(instance);
-        ResultSet rs = fetchCachedResultPage(resultTableName, startRow, endRow);
+        // a little bit risky here
+        // sortingIndex is initialized by SqlQueryInstance during the
+        // getResultTable(), but the variable is defined in QueryInstance
+        int sortingIndex = instance.getSortingIndex();
+        ResultSet rs = fetchCachedResultPage(resultTableName, sortingIndex,
+                startRow, endRow);
         return new SqlResultList(instance, resultTableName, rs);
     }
 
@@ -136,45 +154,74 @@ public class ResultFactory implements Serializable {
     }
 
     /**
-     * @param numParams
-     *            Number of parameters allowed in a cached query
+     * @param numParams Number of parameters allowed in a cached query
      */
     public void createCache(int numParams, boolean noSchemaOutput)
             throws WdkModelException {
         String newline = System.getProperty("line.separator");
 
-        String nameToUse = (noSchemaOutput == true ? instanceTableName
-                : instanceTableFullName);
-
         // Format sql to create table
-        StringBuffer sqlb = new StringBuffer();
-        String tblName = schemaName + "." + instanceTableName;
+        StringBuffer sqlQueryInstance = new StringBuffer();
+        StringBuffer sqlSortingIndex = new StringBuffer();
 
         String numericType = platform.getNumberDataType();
         String clobType = platform.getClobDataType();
 
-        sqlb.append("create table " + tblName + " (query_instance_id "
-                + numericType + "(12) not null, query_name varchar(100) "
-                + "not null, cached " + numericType + "(1) not null,"
-                + "result_table varchar(30), start_time date not null, "
-                + "end_time date, dataset_name varchar(100), session_id "
-                + "varchar(50), query_checksum varchar(40), result_message "
-                + clobType + ", CONSTRAINT " + instanceTableName
-                + "_pk PRIMARY KEY " + "(query_instance_id))");
+        // SQL to create the queryinstance table
+        sqlQueryInstance.append("create table " + instanceTableFullName + " (");
+        sqlQueryInstance.append(COLUMN_QUERY_INSTANCE_ID + " " + numericType
+                + "(12) not null, ");
+        sqlQueryInstance.append("query_name varchar(100) not null, ");
+        sqlQueryInstance.append("cached " + numericType + "(1) not null, ");
+        sqlQueryInstance.append("result_table varchar(30), ");
+        sqlQueryInstance.append("start_time date not null, ");
+        sqlQueryInstance.append("end_time date, ");
+        sqlQueryInstance.append("query_checksum varchar(40), ");
+        sqlQueryInstance.append("result_message " + clobType + ", ");
+        sqlQueryInstance.append("CONSTRAINT " + instanceTableName
+                + "_pk PRIMARY KEY (" + COLUMN_QUERY_INSTANCE_ID + "))");
+
+        // SQL to create the sorting index table
+        sqlSortingIndex.append("CREATE TABLE " + sortingTableFullName + " (");
+        sqlSortingIndex.append(COLUMN_SORTING_INDEX + " " + numericType
+                + "(12) NOT NULL, ");
+        sqlSortingIndex.append(COLUMN_QUERY_INSTANCE_ID + " " + numericType
+                + "(12) NOT NULL, ");
+        sqlSortingIndex.append(COLUMN_SORTING_COLUMNS
+                + " VARCHAR(4000) NOT NULL, ");
+        sqlSortingIndex.append("CONSTRAINT " + sortingTableName
+                + "_pk PRIMARY KEY (" + COLUMN_QUERY_INSTANCE_ID + ", "
+                + COLUMN_SORTING_COLUMNS + "), ");
+        sqlSortingIndex.append("CONSTRAINT " + sortingTableName
+                + "_fk FOREIGN KEY (" + COLUMN_QUERY_INSTANCE_ID
+                + ") REFERENCES " + instanceTableFullName + " ("
+                + COLUMN_QUERY_INSTANCE_ID + "))");
 
         // Execute it
-        System.out.println(newline + "Making cache table " + nameToUse
-                + newline);
-
-        logger.debug("Using sql: " + sqlb.toString());
         try {
-            SqlUtils.execute(platform.getDataSource(), sqlb.toString());
-            logger.debug("Done" + newline);
+            logger.info("Using sql: " + sqlQueryInstance.toString());
+            SqlUtils.execute(platform.getDataSource(),
+                    sqlQueryInstance.toString());
+
+            logger.info("Using sql: " + sqlSortingIndex.toString());
+            SqlUtils.execute(platform.getDataSource(),
+                    sqlSortingIndex.toString());
 
             // Create sequence
-            platform.createSequence(tblName + "_pkseq", 1, 1);
-            System.out.println("Creating sequence " + nameToUse + "_pkseq"
+            String tblQueryInstanceToUse = (noSchemaOutput == true
+                    ? instanceTableName
+                    : instanceTableFullName);
+            String tblSortingIndexToUse = (noSchemaOutput == true
+                    ? sortingTableName
+                    : sortingTableFullName);
+
+            logger.info("Creating sequence " + tblQueryInstanceToUse + "_pkseq"
                     + newline);
+            platform.createSequence(instanceTableFullName + "_pkseq", 1, 1);
+            logger.info("Creating sequence " + tblSortingIndexToUse + "_pkseq"
+                    + newline);
+            platform.createSequence(sortingTableFullName + "_pkseq", 1, 1);
+
             System.out.println("Done" + newline);
         } catch (SQLException e) {
             throw new WdkModelException(e);
@@ -195,9 +242,6 @@ public class ResultFactory implements Serializable {
             boolean forceDrop) throws WdkModelException {
 
         // Query for the names of all cached result tables
-        //
-        String nameToUse = (noSchemaOutput == true ? instanceTableName
-                : instanceTableFullName);
         StringBuffer s = new StringBuffer();
         s.append("select result_table from " + instanceTableFullName);
         String tables[] = null;
@@ -233,7 +277,19 @@ public class ResultFactory implements Serializable {
         }
 
         try {
-            System.out.println("Deleting all rows from " + nameToUse);
+            // delete sorting indices
+            String tblSortingIndexToUse = (noSchemaOutput == true
+                    ? sortingTableName
+                    : sortingTableFullName);
+            System.out.println("Deleting all rows from " + tblSortingIndexToUse);
+            SqlUtils.execute(platform.getDataSource(), "delete from "
+                    + sortingTableFullName);
+
+            String tblQueryInstanceToUse = (noSchemaOutput == true
+                    ? instanceTableName
+                    : instanceTableFullName);
+            System.out.println("Deleting all rows from "
+                    + tblQueryInstanceToUse);
             SqlUtils.execute(platform.getDataSource(), "delete from "
                     + instanceTableFullName);
 
@@ -252,12 +308,27 @@ public class ResultFactory implements Serializable {
     public synchronized void dropCache(boolean noSchemaOutput, boolean forceDrop)
             throws WdkModelException {
         try {
+            // reset cache first
             resetCache(noSchemaOutput, forceDrop);
-            String nameToUse = (noSchemaOutput == true ? instanceTableName
+
+            // drop sorting index table
+            String tblSortingIndexToUse = (noSchemaOutput == true
+                    ? sortingTableName
+                    : sortingTableFullName);
+            System.out.println("Dropping table " + tblSortingIndexToUse);
+            platform.dropTable(sortingTableFullName);
+            System.out.println("Dropping sequence " + tblSortingIndexToUse
+                    + "_pkseq");
+            platform.dropSequence(sortingTableFullName + "_pkseq");
+
+            // drop query instance table
+            String tblQueryInstanceToUse = (noSchemaOutput == true
+                    ? instanceTableName
                     : instanceTableFullName);
-            System.out.println("Dropping table " + nameToUse);
-            platform.dropTable(schemaName + "." + instanceTableName);
-            System.out.println("Dropping sequence " + nameToUse + "_pkseq");
+            System.out.println("Dropping table " + tblQueryInstanceToUse);
+            platform.dropTable(instanceTableFullName);
+            System.out.println("Dropping sequence " + tblQueryInstanceToUse
+                    + "_pkseq");
             platform.dropSequence(instanceTableFullName + "_pkseq");
         } catch (SQLException e) {
             throw new WdkModelException(e);
@@ -279,9 +350,10 @@ public class ResultFactory implements Serializable {
             throws WdkModelException {
 
         // populates cache if not already in there
-        
+
         // TEST
-        // logger.info("Getting new result table of query: " + instance.getQuery().getFullName());
+        // logger.info("Getting new result table of query: " +
+        // instance.getQuery().getFullName());
 
         // add row to QueryInstance table
         Integer queryInstanceId = getQueryInstanceId(instance);
@@ -293,7 +365,8 @@ public class ResultFactory implements Serializable {
         StringBuffer sql = new StringBuffer();
         sql.append("update " + instanceTableFullName + " set result_table = '"
                 + resultTableName + "'");
-        sql.append(" where query_instance_id = " + queryInstanceId.toString());
+        sql.append(" where " + COLUMN_QUERY_INSTANCE_ID + " = "
+                + queryInstanceId.toString());
         try {
             // int numRows =
             SqlUtils.executeUpdate(platform.getDataSource(), sql.toString());
@@ -322,8 +395,7 @@ public class ResultFactory implements Serializable {
      *         database (either because it was never there or it has been
      *         expired.)
      * 
-     * @param instance
-     *            The instance of the query
+     * @param instance The instance of the query
      */
     private String getResultTableName(QueryInstance instance)
             throws WdkModelException {
@@ -349,18 +421,25 @@ public class ResultFactory implements Serializable {
                     sqlb.toString());
             if (rsInstance.next()) {
                 resultTableName = rsInstance.getString("result_table");
-                resultMessage = platform.getClobData(rsInstance, "result_message");
+                resultMessage = platform.getClobData(rsInstance,
+                        "result_message");
 
                 // instance result is in cache but is newly created object
                 if (instance.getQueryInstanceId() == null)
                     instance.setQueryInstanceId(getQueryInstanceId(instance));
-                
+
                 instance.setResultMessage(resultMessage);
             } else {
                 resultTableName = getNewResultTableName(instance);
             }
             resultTableFullName = platform.getTableFullName(schemaName,
                     resultTableName);
+
+            // create a CacheTable object that represents the cache table
+            CacheTable cacheTable = new CacheTable(platform, schemaName,
+                    instance.getQueryInstanceId(), instance.projectColumnName,
+                    instance.primaryKeyColumnName);
+            instance.setCacheTable(cacheTable);
         } catch (SQLException e) {
             throw new WdkModelException(e);
         } finally {
@@ -417,7 +496,8 @@ public class ResultFactory implements Serializable {
         // format values
         String queryName = "'" + instance.getQuery().getFullName() + "'";
         sessionId = (sessionId != null) ? ("'" + sessionId + "'") : "null";
-        datasetName = (datasetName != null) ? ("'" + datasetName + "'")
+        datasetName = (datasetName != null)
+                ? ("'" + datasetName + "'")
                 : "null";
         int cached = instance.getIsCacheable() ? 1 : 0;
         String checksum = "'" + instance.getChecksum() + "'";
@@ -425,11 +505,11 @@ public class ResultFactory implements Serializable {
 
         // format insert statement
         StringBuffer sqlb = new StringBuffer();
-        sqlb.append("insert into " + instanceTableFullName
-                + " (query_instance_id, query_name, cached, session_id, "
-                + "dataset_name, start_time, query_checksum) values (" + nextID
-                + ", " + queryName + ", " + cached + ", " + sessionId + ", "
-                + datasetName + ", " + datefunc + ", " + checksum + ")");
+        sqlb.append("insert into " + instanceTableFullName + " ("
+                + COLUMN_QUERY_INSTANCE_ID
+                + ", query_name, cached, start_time, query_checksum) values ("
+                + nextID + ", " + queryName + ", " + cached + ", " + datefunc
+                + ", " + checksum + ")");
 
         try {
             SqlUtils.executeUpdate(platform.getDataSource(), sqlb.toString());
@@ -453,8 +533,9 @@ public class ResultFactory implements Serializable {
             throws WdkModelException {
         PreparedStatement psClob = null;
         StringBuffer sqlb = new StringBuffer();
-        sqlb.append("update " + instanceTableFullName + " set end_time = "
-                + platform.getCurrentDateFunction() + ", result_message = ? ");
+        sqlb.append("update " + instanceTableFullName + " set ");
+        sqlb.append("end_time = " + platform.getCurrentDateFunction() + ", ");
+        sqlb.append("result_message = ? ");
         sqlb.append(" where ");
         sqlb.append(instanceWhereClause(instance));
         boolean ok = false;
@@ -505,20 +586,18 @@ public class ResultFactory implements Serializable {
     }
 
     private ResultSet fetchCachedResultPage(String resultTableName,
-            int startRow, int endRow) throws WdkModelException {
+            int sortingIndex, int startRow, int endRow)
+            throws WdkModelException {
 
-        String sql;
-        // have an option to return all rows (when startRow = endRow = 0)
-        // if (startRow == 0 && endRow == 0)
-        // sql = "select * " +
-        // " from " + resultTableName +
-        // " order by " + RESULT_TABLE_I + " asc";
-        // else
-        sql = "select * " + " from " + resultTableName + " where "
-                + RESULT_TABLE_I + " >= " + startRow + " and " + RESULT_TABLE_I
-                + " <= " + endRow + " order by " + RESULT_TABLE_I + " asc";
+        StringBuffer sql = new StringBuffer();
+        sql.append("SELECT * FROM ");
+        sql.append(resultTableName + " WHERE ");
+        sql.append(RESULT_TABLE_I + " >= " + startRow);
+        sql.append(" and " + RESULT_TABLE_I + " <= " + endRow);
+        sql.append(" AND " + COLUMN_SORTING_INDEX + " = " + sortingIndex);
+        sql.append(" order by " + RESULT_TABLE_I + " asc");
 
-        return fetchCachedResultFromSql(sql);
+        return fetchCachedResultFromSql(sql.toString());
     }
 
     private ResultSet fetchCachedResultFromSql(String sql)
@@ -539,7 +618,7 @@ public class ResultFactory implements Serializable {
         if (queryInstanceId == null) {
 
             StringBuffer sqlb = new StringBuffer();
-            sqlb.append("select query_instance_id from "
+            sqlb.append("select " + COLUMN_QUERY_INSTANCE_ID + " from "
                     + instanceTableFullName + " where ");
             sqlb.append(instanceWhereClause(instance));
 
@@ -565,11 +644,9 @@ public class ResultFactory implements Serializable {
         int sepPos = queryLoggerFile.lastIndexOf(File.separator);
         int extPos = queryLoggerFile.lastIndexOf(".");
         StringBuffer name = new StringBuffer();
-        if(extPos > sepPos)
-            name.append(queryLoggerFile.substring(0, extPos));
-        else
-            name.append(queryLoggerFile);
-        name.append("_" + (cal.get(Calendar.MONTH) +1));
+        if (extPos > sepPos) name.append(queryLoggerFile.substring(0, extPos));
+        else name.append(queryLoggerFile);
+        name.append("_" + (cal.get(Calendar.MONTH) + 1));
         name.append("-" + cal.get(Calendar.YEAR));
         if (extPos >= sepPos) name.append(queryLoggerFile.substring(extPos));
         File file = new File(name.toString());

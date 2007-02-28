@@ -1,10 +1,18 @@
-create schema logins;
+create schema userlogins AUTHORIZATION postgres;
 
 
-CREATE TABLE logins.users
+CREATE SEQUENCE userlogins.users_pkseq INCREMENT BY 1 START WITH 1;
+
+
+CREATE TABLE userlogins.users
 (
+  user_id NUMERIC(12) NOT NULL,
   email varchar(255) NOT NULL,
-  "password" varchar(50),
+  passwd varchar(50) NOT NULL,
+  is_guest bool NOT NULL,
+  signature varchar(40),
+  register_time timestamp,
+  last_active timestamp,
   last_name varchar(50),
   first_name varchar(50),
   middle_name varchar(50),
@@ -17,42 +25,80 @@ CREATE TABLE logins.users
   zip_code varchar(20),
   phone_number varchar(50),
   country varchar(255),
-  CONSTRAINT "USERS_PK" PRIMARY KEY (email)
+  CONSTRAINT "USER_PK" PRIMARY KEY (user_id),
+  CONSTRAINT "USER_EMAIL_UNIQUE" UNIQUE (email)
 );
 
 
-CREATE TABLE logins.user_roles
+CREATE TABLE userlogins.user_roles
 (
-  email varchar(255) NOT NULL,
-  "role" varchar(50) NOT NULL,
-  CONSTRAINT "USER_ROLES_PK" PRIMARY KEY (email, "role"),
-  CONSTRAINT "USER_ROLES_EMAIL_FK" FOREIGN KEY (email)
-      REFERENCES logins.users (email) 
+  user_id NUMERIC(12) NOT NULL,
+  user_role varchar(50) NOT NULL,
+  CONSTRAINT "USER_ROLE_PK" PRIMARY KEY (user_id, user_role),
+  CONSTRAINT "USER_ROLE_USER_ID_FK" FOREIGN KEY (user_id)
+      REFERENCES userlogins.users (user_id) 
 );
 
 
-CREATE TABLE logins.preferences
+CREATE TABLE userlogins.preferences
 (
-  email varchar(255) NOT NULL,
+  user_id NUMERIC(12) NOT NULL,
   project_id varchar(50) NOT NULL,
   preference_name varchar(200) NOT NULL,
   preference_value varchar(4000),
-  CONSTRAINT "PREFERENCES_PK" PRIMARY KEY (email, project_id, preference_name),
-  CONSTRAINT "USER_PREFERENCE_EMAIL_FK" FOREIGN KEY (email)
-      REFERENCES logins.users (email) 
+  CONSTRAINT "PREFERENCES_PK" PRIMARY KEY (user_id, project_id, preference_name),
+  CONSTRAINT "PREFERENCE_USER_ID_FK" FOREIGN KEY (user_id)
+      REFERENCES userlogins.users (user_id) 
 );
 
 
-CREATE TABLE logins.histories
+CREATE TABLE userlogins.histories
 (
-  history_id NUMERIC(10) NOT NULL,
-  email varchar(255) NOT NULL,
+  history_id NUMERIC(12) NOT NULL,
+  user_id NUMERIC(12) NOT NULL,
   project_id varchar(50) NOT NULL,
-  full_name varchar(20) NOT NULL,
-  created_time date NOT NULL,
-  custom_name varchar(200),
-  params varchar(4000),
-  CONSTRAINT "HISTORIES_PK" PRIMARY KEY (history_id),
-  CONSTRAINT "USER_HISTORY_EMAIL_FK" FOREIGN KEY (email)
-      REFERENCES logins.users (email) 
+  question_name varchar(255) NOT NULL,
+  create_time timestamp NOT NULL,
+  last_run_time timestamp NOT NULL,
+  custom_name varchar(4000),
+  estimate_size NUMERIC(12),
+  checksum varchar(40),
+  signature varchar(40),
+  is_boolean bool,
+  is_deleted bool,
+  params text,
+  CONSTRAINT "HISTORIES_PK" PRIMARY KEY (user_id, history_id, project_id),
+  CONSTRAINT "HISTORY_USER_ID_FK" FOREIGN KEY (user_id)
+      REFERENCES userlogins.users (user_id) 
 );
+
+
+CREATE SEQUENCE userlogins.dataset_index_pkseq INCREMENT BY 1 START WITH 1;
+
+
+CREATE TABLE userlogins.dataset_index
+(
+  dataset_id NUMERIC(12) NOT NULL,
+  user_id NUMERIC(12) NOT NULL,
+  create_time timestamp NOT NULL,
+  upload_file varchar(2000),
+  summary varchar(2000) NOT NULL,
+  dataset_size NUMERIC(12) NOT NULL,
+  CONSTRAINT "DATASET_INDEX_PK" PRIMARY KEY (dataset_id),
+  CONSTRAINT "DATASET_INDEX_USER_ID_FK" FOREIGN KEY (user_id)
+      REFERENCES userlogins.users (user_id)
+);
+
+
+CREATE TABLE userlogins.dataset_data
+(
+  dataset_id NUMERIC(12) NOT NULL,
+  user_id NUMERIC(12) NOT NULL,
+  dataset_value varchar(2000) NOT NULL,
+  CONSTRAINT "DATASET_DATASET_ID_FK" FOREIGN KEY (dataset_id)
+      REFERENCES userlogins.dataset_index (dataset_id),
+  CONSTRAINT "DATASET_DATA_USER_ID_FK" FOREIGN KEY (user_id)
+      REFERENCES userlogins.users (user_id)
+);
+
+CREATE INDEX dataset_data_id_idx on userlogins.dataset_data (dataset_id, user_id);
