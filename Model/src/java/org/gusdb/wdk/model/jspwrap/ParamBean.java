@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.jspwrap;
 
+import org.gusdb.wdk.model.Group;
 import org.gusdb.wdk.model.Param;
 import org.gusdb.wdk.model.WdkModelException;
 
@@ -57,6 +58,14 @@ public class ParamBean {
         return this.param.isVisible();
     }
     
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.Param#getGroup()
+     */
+    public GroupBean getGroup() {
+        return new GroupBean(param.getGroup());
+    }
 
     /**
      * for controller

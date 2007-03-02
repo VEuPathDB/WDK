@@ -74,7 +74,7 @@ public class QuestionSetForm extends ActionForm {
 
     public String getMyProp(String key)  throws WdkModelException
     {
-	String res = (String)getMyProps().get(key);
+	String res = (String)(getMyProps().get(key));
 	return res;
     }
 
