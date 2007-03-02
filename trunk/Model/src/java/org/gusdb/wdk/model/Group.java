@@ -10,6 +10,8 @@ package org.gusdb.wdk.model;
  */
 public class Group {
     
+    private static Group empty;
+    
     private String name;
     private String displayName;
     private String description;
@@ -17,14 +19,18 @@ public class Group {
     
     private GroupSet groupSet;
     
-    public static Group Empty = new Group();
+    public static Group Empty() {
+        if (empty == null) empty = new Group();
+        return empty;
+    }
     
-    public Group() {
+    public Group( ) {
         // initialize an empty group
         name = "empty";
         displayName = "";
         description = "";
     }
+    
     /**
      * @return the description
      */
@@ -85,25 +91,31 @@ public class Group {
         this.name = name;
     }
     
+    public String getFullName() {
+        if ( groupSet != null ) return groupSet.getName() + "." + name;
+        else return name;
+    }
+    
     /**
      * @return the displayType
      */
     public String getDisplayType() {
         return displayType;
     }
-
+    
     /**
-     * @param displayType the displayType to set
+     * @param displayType
+     *            the displayType to set
      */
     public void setDisplayType( String displayType ) {
         this.displayType = displayType;
     }
-
+    
     public void resolveReferences( WdkModel model ) throws WdkModelException {
-        // do nothing
+    // do nothing
     }
     
     public void setResources( WdkModel model ) throws WdkModelException {
-        // do nothing
+    // do nothing
     }
 }

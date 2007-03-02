@@ -17,7 +17,7 @@ public abstract class Param {
     public Param( ) {
         visible = true;
         readonly = false;
-        group = Group.Empty;
+        group = Group.Empty();
     }
     
     public void setName( String name ) {
