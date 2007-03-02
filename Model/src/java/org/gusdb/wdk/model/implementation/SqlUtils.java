@@ -37,7 +37,7 @@ public class SqlUtils {
     /*
      * debug flag -- added by Jerric
      */
-    private static boolean debug = true;
+    private static boolean debug = false;
 
     /*
      * set this variable to true will start a separate thread to monitor the

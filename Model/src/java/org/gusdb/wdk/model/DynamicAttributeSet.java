@@ -157,6 +157,7 @@ public class DynamicAttributeSet implements Serializable {
 
             // associate columns with column attribute fields
             Column column = columnMap.get(name);
+            column.setDynamicColumn( true );
             ColumnAttributeField field = (ColumnAttributeField) attributesFieldMap.get(name);
 
             // TEST
