@@ -14,6 +14,7 @@ public class Reference {
     private String setName;
     private String elementName;
     private String twoPartName;
+    private String groupRef;
 
     public Reference() {}
 
@@ -52,6 +53,26 @@ public class Reference {
         setName = parts[0];
         elementName = parts[1];
         this.twoPartName = twoPartName;
+    }
+    
+    public void setGroupRef(String groupRef) throws WdkModelException {
+        
+        if (groupRef == null) {
+            throw new WdkModelException("Error: twoPartName is null");
+        }
+        if (!groupRef.matches("\\S+\\.\\S+")) {
+            throw new WdkModelException("Error: Group Reference '" + groupRef + "' is not in the form 'setName.elementName'");
+        }
+        
+        String[] parts = groupRef.split("\\.");
+        this.groupRef = groupRef;
+    }
+    
+    /**
+     * @return the groupRef
+     */
+    public String getGroupRef() {
+        return groupRef;
     }
 
     public String toString() {

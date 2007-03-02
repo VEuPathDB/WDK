@@ -650,6 +650,22 @@ public class ModelXmlParser {
         digester.addSetNext("wdkModel/xmlRecordClassSet",
                 "addXmlRecordClassSet");
 
+
+        // load GroupSet
+        digester.addObjectCreate("wdkModel/groupSet",
+                GroupSet.class);
+        digester.addSetProperties("wdkModel/groupSet");
+
+        // load XmlQuestion
+        digester.addObjectCreate("wdkModel/groupSet/group",
+                Group.class);
+        digester.addSetProperties("wdkModel/groupSet/group");
+        digester.addBeanPropertySetter("wdkModel/groupSet/group/description");
+        digester.addSetNext("wdkModel/groupSet/group",
+                "addGroup");
+
+        digester.addSetNext("wdkModel/groupSet", "addGroupSet");
+
         return digester;
 
     }

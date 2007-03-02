@@ -38,6 +38,8 @@ public class WdkModel {
     Map<String, ReferenceList> referenceLists = new LinkedHashMap<String, ReferenceList>();
     Map<String, QuestionSet> questionSets = new LinkedHashMap<String, QuestionSet>();
     Map<String, ModelSetI> allModelSets = new LinkedHashMap<String, ModelSetI>();
+    Map<String, GroupSet> groupSets = new LinkedHashMap< String, GroupSet >();
+    
     private String name;
     String displayName;
     private String version = "1.0"; // use default version
@@ -551,6 +553,9 @@ public class WdkModel {
 
         // instead, we first resolve querySets, then recordSets, and then
         // paramSets, and last on questionSets
+        for (GroupSet groupSet : groupSets.values()) {
+            groupSet.resolveReferences( this );
+        }
         Iterator itQuerySets = querySets.values().iterator();
         while (itQuerySets.hasNext()) {
             QuerySet querySet = (QuerySet) itQuerySets.next();
@@ -623,6 +628,10 @@ public class WdkModel {
 
     public void addParamSet(ParamSet paramSet) throws WdkModelException {
         addSet(paramSet, paramSets);
+    }
+    
+    public void addGroupSet(GroupSet groupSet) throws WdkModelException {
+        addSet( groupSet, groupSets );
     }
 
     // /////////////////////////////////////////////////////////////////

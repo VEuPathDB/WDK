@@ -254,6 +254,13 @@ public abstract class Query implements Serializable {
             // clone the param to have different default values
             param = param.clone();
             param.setDefault(paramRef.getDefault());
+            
+            // resolve the group reference
+            String groupRef = paramRef.getGroupRef();
+            if (groupRef != null) {
+                Group group = (Group) model.resolveReference( groupRef, this.name, "Param", "groupRef" );
+                param.setGroup( group );
+            }
             addParam(param);
             param.resolveReferences(model);
         }

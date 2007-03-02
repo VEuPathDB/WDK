@@ -60,6 +60,9 @@ public class CConstants {
     public static final String WDK_ORIGIN_URL_KEY = "originUrl";
     public static final String WDK_PREFERENCE_GLOBAL_KEY = "preference_global_";
     public static final String WDK_PREFERENCE_PROJECT_KEY = "preference_project_";
+    public static final String WDK_SORTING_QUESTION_KEY = "sortQuestion";
+    public static final String WDK_SORTING_ATTRIBUTE_KEY = "sortAttr";
+    public static final String WDK_SORTING_ORDER_KEY = "sortOrder";
 
     //key for finding action forward, from struts-config.xml, used in Action classes
     public static final String SHOW_QUESTION_MAPKEY = "show_question";
