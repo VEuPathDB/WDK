@@ -311,6 +311,23 @@ public class AnswerBean {
         return answer.getReport(reporterName, config);
     }
 
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.Answer#getSortingAttributeNames()
+     */
+    public String[ ] getSortingAttributeNames() {
+        return answer.getSortingAttributeNames();
+    }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.Answer#getSortingAttributeOrders()
+     */
+    public boolean[ ] getSortingAttributeOrders() {
+        return answer.getSortingAttributeOrders();
+    }
+
+    
     // //////////////////////////////////////////////////////////////////////
     // Inner classes
     // //////////////////////////////////////////////////////////////////////
@@ -343,9 +360,4 @@ public class AnswerBean {
         }
 
     }
-
-
-
- 
-
 }

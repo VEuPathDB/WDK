@@ -134,6 +134,14 @@ public class QuestionBean implements Serializable {
         return question.getFullName();
     }
 
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.Question#getQuestionSetName()
+     */
+    public String getQuestionSetName() {
+        return question.getQuestionSetName();
+    }
+
     public String getDisplayName() {
         return question.getDisplayName();
     }
@@ -161,8 +169,8 @@ public class QuestionBean implements Serializable {
      *            Index of the last record to include in the answer
      */
     public AnswerBean makeAnswer(Map<String, Object> paramValues, int start,
-            int end) throws WdkModelException, WdkUserException {
-        return new AnswerBean(question.makeAnswer(paramValues, start, end));
+            int end, Map<String, Boolean> sortingAttributes) throws WdkModelException, WdkUserException {
+        return new AnswerBean(question.makeAnswer(paramValues, start, end, sortingAttributes));
     }
 
     public String getDescription() {

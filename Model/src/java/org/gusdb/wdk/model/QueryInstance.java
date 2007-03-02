@@ -5,7 +5,9 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Simple implementation of QueryInstanceI; generally expects its subclasses to
@@ -64,7 +66,7 @@ public abstract class QueryInstance {
 
     protected CacheTable cacheTable;
 
-    protected Map<Column, Boolean> sortingColumns;
+    protected Set<SortingColumn> sortingColumns;
 
     // ------------------------------------------------------------------
     // Public Methods
@@ -202,8 +204,8 @@ public abstract class QueryInstance {
     /**
      * @param sortingColumns the sortingColumns to set
      */
-    void setSortingColumns(Map<Column, Boolean> sortingColumns) {
-        this.sortingColumns = new LinkedHashMap<Column, Boolean>(sortingColumns);
+    void setSortingColumns(Set<SortingColumn> sortingColumns) {
+        this.sortingColumns = sortingColumns;
    }
 
     public Collection getCacheValues() throws WdkModelException {
@@ -279,6 +281,7 @@ public abstract class QueryInstance {
         this.query = query;
         this.isCacheable = query.getIsCacheable().booleanValue();
         this.joinMode = false;
+        this.sortingColumns = new LinkedHashSet< SortingColumn >();
     }
 
     protected ResultFactory getResultFactory() {
@@ -286,17 +289,8 @@ public abstract class QueryInstance {
     }
     
     protected int getSortingIndex() throws WdkModelException {
-
-        // get sorting tables and columns
-        Map<String[], Boolean> columns = new LinkedHashMap<String[], Boolean>();
-        for (Column column : sortingColumns.keySet()) {
-            boolean ascend = sortingColumns.get(column);
-            String[] key = new String[]{ column.getSortingTable(),
-                    column.getName() };
-            columns.put(key, ascend);
-        }
         // get sorting index, may involve creating sorting cache
-        return cacheTable.getSortingIndex(columns);
+        return cacheTable.getSortingIndex(sortingColumns);
     }
 
     protected abstract ResultList getNonpersistentResult()

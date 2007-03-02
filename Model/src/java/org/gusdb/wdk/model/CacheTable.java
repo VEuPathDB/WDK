@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -23,8 +24,6 @@ import org.gusdb.wdk.model.implementation.SqlUtils;
  * with an answer.
  */
 public class CacheTable {
-
-    public static final int SORTING_LEVEL = 3;
 
     private Logger logger = Logger.getLogger(CacheTable.class);
 
@@ -71,26 +70,21 @@ public class CacheTable {
      * @return
      * @throws WdkModelException
      */
-    public int getSortingIndex(Map<String[], Boolean> sortingColumnMap)
+    public int getSortingIndex(Set<SortingColumn> sortingColumns)
             throws WdkModelException {
         // determine sorting level
         StringBuffer sbColumns = new StringBuffer();
 
         // if there is now sorting column, use the default index id, 0
-        if (sortingColumnMap.size() == 0) return 0;
+        if (sortingColumns.size() == 0) return 0;
 
-        int columnCount = 0;
-        for (String[] fullColumn : sortingColumnMap.keySet()) {
+        for (SortingColumn column : sortingColumns) {
             if (sbColumns.length() > 0) sbColumns.append(", ");
-            String column = fullColumn[1];
-            boolean ascending = sortingColumnMap.get(fullColumn);
+            String columnName = column.getColumnName();
+            boolean ascending = column.isAscending();
 
-            sbColumns.append(column);
+            sbColumns.append(columnName);
             sbColumns.append(ascending ? " ASC" : " DESC");
-
-            // only perform on predefined level
-            columnCount++;
-            if (columnCount >= SORTING_LEVEL) break;
         }
 
         // check if the index id exists
@@ -110,7 +104,7 @@ public class CacheTable {
                 sortingIndex = rsIndex.getInt(ResultFactory.COLUMN_SORTING_INDEX);
             } else { // index doesn't exist, create it along with sorting
                 // cache
-                sortingIndex = createSortingIndex(sortingColumnMap,
+                sortingIndex = createSortingIndex(sortingColumns,
                         sbColumns.toString());
             }
         } catch (SQLException ex) {
@@ -125,7 +119,7 @@ public class CacheTable {
         return sortingIndex;
     }
 
-    private int createSortingIndex(Map<String[], Boolean> sortingColumnMap,
+    private int createSortingIndex(Set<SortingColumn> sortingColumns,
             String columns) throws SQLException {
         // get next sorting index
         int sortingIndex = Integer.parseInt(platform.getNextId(schema,
@@ -160,17 +154,20 @@ public class CacheTable {
                         + ", ");
             sbSorting.append(cacheTableFullName + "." + primaryKeyColumn);
             sbSorting.append(" FROM " + cacheTableFullName);
+            
+            Map<String, String> tableMap = new LinkedHashMap<String, String>();
+            tableMap.put( cacheTableFullName, cacheTableFullName );
 
             // use default sorting (=0) as template
             StringBuffer sbWhere = new StringBuffer(" WHERE ");
-            sbWhere.append(ResultFactory.COLUMN_SORTING_INDEX + " = 0 ");
+            sbWhere.append(cacheTableFullName + "."
+                    +ResultFactory.COLUMN_SORTING_INDEX + " = 0 ");
             StringBuffer sbOrder = new StringBuffer();
-            Map<String, String> tableMap = new LinkedHashMap<String, String>();
             int columnCount = 0;
-            for (String[] fullColumn : sortingColumnMap.keySet()) {
-                String tableName = fullColumn[0];
-                String columnName = fullColumn[1];
-                boolean ascending = sortingColumnMap.get(fullColumn);
+            for (SortingColumn column : sortingColumns) {
+                String tableName = column.getTableName();
+                String columnName = column.getColumnName();
+                boolean ascending = column.isAscending();
 
                 String newTableName;
                 boolean skipTable = false;
@@ -202,8 +199,6 @@ public class CacheTable {
                 sbOrder.append(ascending ? " ASC" : " DESC");
 
                 columnCount++;
-                // only perform on predefined level
-                if (columnCount >= SORTING_LEVEL) break;
             }
             sbSorting.append(sbWhere);
             sbSorting.append(sbOrder);
