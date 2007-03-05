@@ -30,6 +30,7 @@ public class Column implements Serializable {
     
     private String sortingTable;
     private String sortingColumn;
+    private boolean lowerCase = false;
     
     public Column( ) {}
     
@@ -84,22 +85,21 @@ public class Column implements Serializable {
         this.wsName = wsName;
     }
     
-    
     /**
      * @return the dynamicColumn
      */
     public boolean isDynamicColumn() {
         return dynamicColumn;
     }
-
     
     /**
-     * @param dynamicColumn the dynamicColumn to set
+     * @param dynamicColumn
+     *            the dynamicColumn to set
      */
     void setDynamicColumn( boolean dynamicColumn ) {
         this.dynamicColumn = dynamicColumn;
     }
-
+    
     /**
      * @return the sortingTable
      */
@@ -129,6 +129,21 @@ public class Column implements Serializable {
      */
     public void setSortingColumn( String sortingColumn ) {
         this.sortingColumn = sortingColumn;
+    }
+    
+    /**
+     * @return the lowerCase
+     */
+    public boolean isLowerCase() {
+        return lowerCase;
+    }
+    
+    /**
+     * @param lowerCase
+     *            the lowerCase to set
+     */
+    public void setLowerCase( boolean lowerCase ) {
+        this.lowerCase = lowerCase;
     }
     
     public String toString() {
