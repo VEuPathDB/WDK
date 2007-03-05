@@ -269,6 +269,9 @@
       <optional>
         <attribute name="sortingColumn" />
       </optional>
+      <optional>
+        <attribute name="lowerCase" />
+      </optional>
     </element>
   </define>
     
