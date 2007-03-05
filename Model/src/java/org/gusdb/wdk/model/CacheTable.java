@@ -24,69 +24,70 @@ import org.gusdb.wdk.model.implementation.SqlUtils;
  * with an answer.
  */
 public class CacheTable {
-
-    private Logger logger = Logger.getLogger(CacheTable.class);
-
+    
+    private Logger logger = Logger.getLogger( CacheTable.class );
+    
     private RDBMSPlatformI platform;
     private String schema;
     private int queryInstanceId;
     private String cacheTableFullName;
-
+    
     private String projectIdColumn;
     private String primaryKeyColumn;
-
-    public CacheTable(RDBMSPlatformI platform, String schema,
-            int queryInstanceId, String projectIdColumn, String primaryKeyColumn) {
+    
+    public CacheTable( RDBMSPlatformI platform, String schema,
+            int queryInstanceId, String projectIdColumn, String primaryKeyColumn ) {
         this.platform = platform;
         this.schema = schema;
         this.queryInstanceId = queryInstanceId;
-        this.cacheTableFullName = platform.getTableFullName(schema,
-                ResultFactory.CACHE_TABLE_PREFIX + queryInstanceId);
-        if (projectIdColumn != null && projectIdColumn.length() == 0) this.projectIdColumn = null;
+        this.cacheTableFullName = platform.getTableFullName( schema,
+                ResultFactory.CACHE_TABLE_PREFIX + queryInstanceId );
+        if ( projectIdColumn != null && projectIdColumn.length() == 0 ) this.projectIdColumn = null;
         else this.projectIdColumn = projectIdColumn;
         this.primaryKeyColumn = primaryKeyColumn;
     }
-
+    
     public String getCacheTableFullName() {
         return cacheTableFullName;
     }
-
+    
     /**
      * @return the primaryKeyColumn
      */
     public String getPrimaryKeyColumn() {
         return primaryKeyColumn;
     }
-
+    
     /**
      * @return the projectIdColumn
      */
     public String getProjectIdColumn() {
         return projectIdColumn;
     }
-
+    
     /**
-     * @param sortingColumnMap a map of <[TableFullName, ColumnName], Ascending>
+     * @param sortingColumnMap
+     *            a map of <[TableFullName, ColumnName], Ascending>
      * @return
      * @throws WdkModelException
      */
-    public int getSortingIndex(Set<SortingColumn> sortingColumns)
+    public int getSortingIndex( Set< SortingColumn > sortingColumns )
             throws WdkModelException {
         // determine sorting level
         StringBuffer sbColumns = new StringBuffer();
-
+        
         // if there is now sorting column, use the default index id, 0
-        if (sortingColumns.size() == 0) return 0;
-
-        for (SortingColumn column : sortingColumns) {
-            if (sbColumns.length() > 0) sbColumns.append(", ");
+        if ( sortingColumns.size() == 0 ) return 0;
+        
+        for ( SortingColumn column : sortingColumns ) {
+            if ( sbColumns.length() > 0 ) sbColumns.append( ", " );
             String columnName = column.getColumnName();
             boolean ascending = column.isAscending();
-
-            sbColumns.append(columnName);
-            sbColumns.append(ascending ? " ASC" : " DESC");
+            
+            sbColumns.append( columnName );
+            sbColumns.append( ascending ? " ASC" : " DESC" );
         }
-
+        
         // check if the index id exists
         String sql = "SELECT " + ResultFactory.COLUMN_SORTING_INDEX + " FROM "
                 + schema + "." + ResultFactory.TABLE_SORTING_INDEX + " WHERE "
@@ -96,148 +97,152 @@ public class CacheTable {
         int sortingIndex = 0;
         try {
             PreparedStatement psIndex = SqlUtils.getPreparedStatement(
-                    platform.getDataSource(), sql);
-            psIndex.setInt(1, queryInstanceId);
-            psIndex.setString(2, sbColumns.toString());
+                    platform.getDataSource(), sql );
+            psIndex.setInt( 1, queryInstanceId );
+            psIndex.setString( 2, sbColumns.toString() );
             rsIndex = psIndex.executeQuery();
-            if (rsIndex.next()) { // index exist
-                sortingIndex = rsIndex.getInt(ResultFactory.COLUMN_SORTING_INDEX);
+            if ( rsIndex.next() ) { // index exist
+                sortingIndex = rsIndex.getInt( ResultFactory.COLUMN_SORTING_INDEX );
             } else { // index doesn't exist, create it along with sorting
                 // cache
-                sortingIndex = createSortingIndex(sortingColumns,
-                        sbColumns.toString());
+                sortingIndex = createSortingIndex( sortingColumns,
+                        sbColumns.toString() );
             }
-        } catch (SQLException ex) {
-            throw new WdkModelException(ex);
+        } catch ( SQLException ex ) {
+            throw new WdkModelException( ex );
         } finally {
             try {
-                SqlUtils.closeResultSet(rsIndex);
-            } catch (SQLException ex) {
-                throw new WdkModelException(ex);
+                SqlUtils.closeResultSet( rsIndex );
+            } catch ( SQLException ex ) {
+                throw new WdkModelException( ex );
             }
         }
         return sortingIndex;
     }
-
-    private int createSortingIndex(Set<SortingColumn> sortingColumns,
-            String columns) throws SQLException {
+    
+    private int createSortingIndex( Set< SortingColumn > sortingColumns,
+            String columns ) throws SQLException {
         // get next sorting index
-        int sortingIndex = Integer.parseInt(platform.getNextId(schema,
-                ResultFactory.TABLE_SORTING_INDEX));
-        String indexTableFullName = platform.getTableFullName(schema,
-                ResultFactory.TABLE_SORTING_INDEX);
+        int sortingIndex = Integer.parseInt( platform.getNextId( schema,
+                ResultFactory.TABLE_SORTING_INDEX ) );
+        String indexTableFullName = platform.getTableFullName( schema,
+                ResultFactory.TABLE_SORTING_INDEX );
         DataSource dataSource = platform.getDataSource();
-
+        
         PreparedStatement psIndex = null;
         ResultSet rsCache = null;
         PreparedStatement psCache = null;
-
+        
         // insert the index record
         StringBuffer sbIndex = new StringBuffer();
-        sbIndex.append("INSERT INTO " + indexTableFullName + "(");
-        sbIndex.append(ResultFactory.COLUMN_SORTING_INDEX + ", ");
-        sbIndex.append(ResultFactory.COLUMN_QUERY_INSTANCE_ID + ", ");
-        sbIndex.append(ResultFactory.COLUMN_SORTING_COLUMNS);
-        sbIndex.append(") VALUES (?, ?, ?)");
+        sbIndex.append( "INSERT INTO " + indexTableFullName + "(" );
+        sbIndex.append( ResultFactory.COLUMN_SORTING_INDEX + ", " );
+        sbIndex.append( ResultFactory.COLUMN_QUERY_INSTANCE_ID + ", " );
+        sbIndex.append( ResultFactory.COLUMN_SORTING_COLUMNS );
+        sbIndex.append( ") VALUES (?, ?, ?)" );
         try {
-            psIndex = SqlUtils.getPreparedStatement(dataSource,
-                    sbIndex.toString());
-            psIndex.setInt(1, sortingIndex);
-            psIndex.setInt(2, queryInstanceId);
-            psIndex.setString(3, columns);
+            psIndex = SqlUtils.getPreparedStatement( dataSource,
+                    sbIndex.toString() );
+            psIndex.setInt( 1, sortingIndex );
+            psIndex.setInt( 2, queryInstanceId );
+            psIndex.setString( 3, columns );
             psIndex.execute();
-
-            // get the sorted result
-            StringBuffer sbSorting = new StringBuffer("SELECT ");
-            if (projectIdColumn != null)
-                sbSorting.append(cacheTableFullName + "." + projectIdColumn
-                        + ", ");
-            sbSorting.append(cacheTableFullName + "." + primaryKeyColumn);
-            sbSorting.append(" FROM " + cacheTableFullName);
             
-            Map<String, String> tableMap = new LinkedHashMap<String, String>();
+            // get the sorted result
+            StringBuffer sbSorting = new StringBuffer( "SELECT " );
+            if ( projectIdColumn != null )
+                sbSorting.append( cacheTableFullName + "." + projectIdColumn
+                        + ", " );
+            sbSorting.append( cacheTableFullName + "." + primaryKeyColumn );
+            sbSorting.append( " FROM " + cacheTableFullName );
+            
+            Map< String, String > tableMap = new LinkedHashMap< String, String >();
             tableMap.put( cacheTableFullName, cacheTableFullName );
-
+            
             // use default sorting (=0) as template
-            StringBuffer sbWhere = new StringBuffer(" WHERE ");
-            sbWhere.append(cacheTableFullName + "."
-                    +ResultFactory.COLUMN_SORTING_INDEX + " = 0 ");
+            StringBuffer sbWhere = new StringBuffer( " WHERE " );
+            sbWhere.append( cacheTableFullName + "."
+                    + ResultFactory.COLUMN_SORTING_INDEX + " = 0 " );
             StringBuffer sbOrder = new StringBuffer();
             int columnCount = 0;
-            for (SortingColumn column : sortingColumns) {
+            for ( SortingColumn column : sortingColumns ) {
                 String tableName = column.getTableName();
                 String columnName = column.getColumnName();
                 boolean ascending = column.isAscending();
-
+                boolean lowerCase = column.isLowerCase();
+                
                 String newTableName;
                 boolean skipTable = false;
-                if (tableMap.containsKey(tableName)) {
-                    newTableName = tableMap.get(tableName);
+                if ( tableMap.containsKey( tableName ) ) {
+                    newTableName = tableMap.get( tableName );
                     skipTable = true;
                 } else {
                     newTableName = "sort_" + columnCount;
-                    tableMap.put(tableName, newTableName);
+                    tableMap.put( tableName, newTableName );
                 }
-                if (!skipTable) {
+                if ( !skipTable ) {
                     // add to from clause
-                    sbSorting.append(", " + tableName + " " + newTableName);
-
+                    sbSorting.append( ", " + tableName + " " + newTableName );
+                    
                     // add to where clause
-                    if (projectIdColumn != null) {
-                        sbWhere.append(" AND " + cacheTableFullName + "."
+                    if ( projectIdColumn != null ) {
+                        sbWhere.append( " AND " + cacheTableFullName + "."
                                 + projectIdColumn + " = " + newTableName + "."
-                                + projectIdColumn);
+                                + projectIdColumn );
                     }
-                    sbWhere.append(" AND " + cacheTableFullName + "."
+                    sbWhere.append( " AND " + cacheTableFullName + "."
                             + primaryKeyColumn + " = " + newTableName + "."
-                            + primaryKeyColumn);
+                            + primaryKeyColumn );
                 }
-
+                
                 // add to order by clause
-                sbOrder.append((sbOrder.length() == 0)?" ORDER BY " : ", ");
-                sbOrder.append(newTableName + "." + columnName);
-                sbOrder.append(ascending ? " ASC" : " DESC");
-
+                sbOrder.append( ( sbOrder.length() == 0 ) ? " ORDER BY " : ", " );
+                String fullColumnName = newTableName + "." + columnName;
+                if ( lowerCase ) {
+                    sbOrder.append( "LOWER(" + fullColumnName + ")" );
+                } else sbOrder.append( fullColumnName );
+                sbOrder.append( ascending ? " ASC" : " DESC" );
+                
                 columnCount++;
             }
-            sbSorting.append(sbWhere);
-            sbSorting.append(sbOrder);
-
+            sbSorting.append( sbWhere );
+            sbSorting.append( sbOrder );
+            
             // TEST
-            logger.info("get sorting result: " + sbSorting.toString());
-
-            rsCache = SqlUtils.getResultSet(dataSource, sbSorting.toString());
-
+            logger.info( "get sorting result: " + sbSorting.toString() );
+            
+            rsCache = SqlUtils.getResultSet( dataSource, sbSorting.toString() );
+            
             // insert into the cache with new sorted order
-            StringBuffer sbInsertCache = new StringBuffer("INSERT INTO ");
-            sbInsertCache.append(cacheTableFullName + "(");
-            sbInsertCache.append(ResultFactory.RESULT_TABLE_I + ", ");
-            sbInsertCache.append(primaryKeyColumn + ", ");
-            if (projectIdColumn != null)
-                sbInsertCache.append(projectIdColumn + ", ");
-            sbInsertCache.append(ResultFactory.COLUMN_SORTING_INDEX);
-            if (projectIdColumn != null) sbInsertCache.append(") VALUES (?, ?, ?, ?)");
-            else sbInsertCache.append(") VALUES (?, ?, ?)");
-            psCache = SqlUtils.getPreparedStatement(dataSource,
-                    sbInsertCache.toString());
+            StringBuffer sbInsertCache = new StringBuffer( "INSERT INTO " );
+            sbInsertCache.append( cacheTableFullName + "(" );
+            sbInsertCache.append( ResultFactory.RESULT_TABLE_I + ", " );
+            sbInsertCache.append( primaryKeyColumn + ", " );
+            if ( projectIdColumn != null )
+                sbInsertCache.append( projectIdColumn + ", " );
+            sbInsertCache.append( ResultFactory.COLUMN_SORTING_INDEX );
+            if ( projectIdColumn != null ) sbInsertCache.append( ") VALUES (?, ?, ?, ?)" );
+            else sbInsertCache.append( ") VALUES (?, ?, ?)" );
+            psCache = SqlUtils.getPreparedStatement( dataSource,
+                    sbInsertCache.toString() );
             int resultCount = 1;
-            while (rsCache.next()) {
-                psCache.setInt(1, resultCount);
-                psCache.setString(2, rsCache.getString(primaryKeyColumn));
-                if (projectIdColumn != null) {
-                    psCache.setString(3, rsCache.getString(projectIdColumn));
-                    psCache.setInt(4, sortingIndex);
+            while ( rsCache.next() ) {
+                psCache.setInt( 1, resultCount );
+                psCache.setString( 2, rsCache.getString( primaryKeyColumn ) );
+                if ( projectIdColumn != null ) {
+                    psCache.setString( 3, rsCache.getString( projectIdColumn ) );
+                    psCache.setInt( 4, sortingIndex );
                 } else {
-                    psCache.setInt(3, sortingIndex);
+                    psCache.setInt( 3, sortingIndex );
                 }
                 psCache.addBatch();
                 resultCount++;
             }
             psCache.executeBatch();
         } finally {
-            SqlUtils.closeStatement(psIndex);
-            SqlUtils.closeResultSet(rsCache);
-            SqlUtils.closeStatement(psCache);
+            SqlUtils.closeStatement( psIndex );
+            SqlUtils.closeResultSet( rsCache );
+            SqlUtils.closeStatement( psCache );
         }
         return sortingIndex;
     }

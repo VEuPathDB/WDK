@@ -13,11 +13,13 @@ class SortingColumn {
     private String tableName;
     private String columnName;
     private boolean ascending;
+    private boolean lowerCase;
     
-    public SortingColumn( String tableName, String columnName, boolean ascending ) {
+    public SortingColumn( String tableName, String columnName, boolean ascending, boolean lowerCase ) {
         this.tableName = tableName;
         this.columnName = columnName;
         this.ascending = ascending;
+        this.lowerCase = lowerCase;
     }
     
     /**
@@ -39,6 +41,14 @@ class SortingColumn {
      */
     public String getTableName() {
         return tableName;
+    }
+
+    
+    /**
+     * @return the lowerCase
+     */
+    public boolean isLowerCase() {
+        return lowerCase;
     }
 
     /* (non-Javadoc)

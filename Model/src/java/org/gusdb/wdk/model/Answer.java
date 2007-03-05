@@ -698,8 +698,9 @@ public class Answer {
                 if ( tableName == null )
                     tableName = idsQueryInstance.getResultAsTableName();
                 String columnName = column.getSortingColumn();
+                boolean lowerCase = column.isLowerCase();
                 SortingColumn sColumn = new SortingColumn( tableName,
-                        columnName, ascending );
+                        columnName, ascending, lowerCase );
                 if ( !columns.contains( sColumn ) ) columns.add( sColumn );
             }
             // get record id column
@@ -708,8 +709,9 @@ public class Answer {
             if ( tableName == null )
                 tableName = idsQueryInstance.getResultAsTableName();
             String columnName = column.getSortingColumn();
+            boolean lowerCase = column.isLowerCase();
             SortingColumn sColumn = new SortingColumn( tableName, columnName,
-                    ascending );
+                    ascending, lowerCase );
             if ( !columns.contains( sColumn ) ) columns.add( sColumn );
         } else if ( attribute instanceof ColumnAttributeField ) {
             ColumnAttributeField columnAttribute = ( ColumnAttributeField ) attribute;
@@ -728,8 +730,9 @@ public class Answer {
             }
             
             String columnName = column.getSortingColumn();
+            boolean lowerCase = column.isLowerCase();
             SortingColumn sColumn = new SortingColumn( tableName, columnName,
-                    ascending );
+                    ascending, lowerCase );
             if ( !columns.contains( sColumn ) ) columns.add( sColumn );
         } else if ( attribute instanceof TextAttributeField ) {
             TextAttributeField textAttribute = ( TextAttributeField ) attribute;
