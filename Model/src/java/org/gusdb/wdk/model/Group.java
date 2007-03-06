@@ -20,7 +20,10 @@ public class Group {
     private GroupSet groupSet;
     
     public static Group Empty() {
-        if (empty == null) empty = new Group();
+        if (empty == null) {
+            empty = new Group();
+            empty.displayType = "empty";
+        }
         return empty;
     }
     
