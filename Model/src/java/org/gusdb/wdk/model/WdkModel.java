@@ -381,7 +381,7 @@ public class WdkModel {
     public Question makeBooleanQuestion(RecordClass rc) {
 
         Question q = new Question();
-        q.setName("Combined Query");
+        q.setName(BooleanQuestionNode.BOOLEAN_QUESTION_NAME);
         q.setRecordClass(rc);
         BooleanQuery bq = makeBooleanQuery();
         q.setQuery(bq);

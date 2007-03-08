@@ -30,6 +30,7 @@ import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
 
 public class BooleanQuestionNode {
 
+    public static final String BOOLEAN_QUESTION_NAME = "CombinedQuestion";
     // ------------------------------------------------------------------
     // Instance variables
     // ------------------------------------------------------------------
