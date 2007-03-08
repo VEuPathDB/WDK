@@ -714,7 +714,10 @@ public class User {
                 count++;
                 if ( count >= SORTING_LEVEL ) break;
             }
-        } else {
+        } else if (questionFullName.equals( BooleanQuestionNode.BOOLEAN_QUESTION_NAME )) {
+            // boolean question has no sorting attributes by default
+            return new LinkedHashMap< String, Boolean >();
+        } else {    // ordinary question
             Question question = model.getQuestion( questionFullName );
             sortingAttributes = question.getDefaultSortingAttributes();
         }
