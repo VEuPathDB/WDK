@@ -418,6 +418,9 @@
     <optional>
       <attribute name="inReportMaker" />
     </optional>
+    <optional>
+      <attribute name="align" />
+    </optional>
   </define>
 
   <define name="columnAttribute">
