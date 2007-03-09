@@ -8,7 +8,7 @@ package org.gusdb.wdk.model;
  * @created Jan 17, 2006
  */
 public abstract class Field {
-
+    
     protected String name;
     protected String displayName;
     protected String help;
@@ -16,115 +16,138 @@ public abstract class Field {
     protected int truncateTo;
     protected boolean internal;
     protected boolean inReportMaker;
-
+    protected String align;
+    
     /**
      * 
      */
-    public Field() {
-    // initialize the optional properties
+    public Field( ) {
+        // initialize the optional properties
         internal = false;
         inReportMaker = true;
         truncateTo = 0;
     }
-
+    
     /**
      * @return Returns the displayName.
      */
     public String getDisplayName() {
-        return (displayName == null) ? name : displayName;
+        return ( displayName == null ) ? name : displayName;
     }
-
+    
     /**
-     * @param displayName The displayName to set.
+     * @param displayName
+     *            The displayName to set.
      */
-    public void setDisplayName(String displayName) {
+    public void setDisplayName( String displayName ) {
         this.displayName = displayName;
     }
-
+    
     /**
      * @return Returns the help.
      */
     public String getHelp() {
         return this.help;
     }
-
+    
     /**
-     * @param help The help to set.
+     * @param help
+     *            The help to set.
      */
-    public void setHelp(String help) {
+    public void setHelp( String help ) {
         this.help = help;
     }
-
+    
     /**
      * @return Returns the inReportMaker.
      */
     public boolean getInReportMaker() {
         return this.inReportMaker;
     }
-
+    
     /**
-     * @param inReportMaker The inReportMaker to set.
+     * @param inReportMaker
+     *            The inReportMaker to set.
      */
-    public void setInReportMaker(boolean inReportMaker) {
+    public void setInReportMaker( boolean inReportMaker ) {
         this.inReportMaker = inReportMaker;
     }
-
+    
     /**
      * @return Returns the internal.
      */
     public boolean getInternal() {
         return this.internal;
     }
-
+    
     /**
-     * @param internal The internal to set.
+     * @param internal
+     *            The internal to set.
      */
-    public void setInternal(boolean internal) {
+    public void setInternal( boolean internal ) {
         this.internal = internal;
     }
-
+    
     /**
      * @return Returns the name.
      */
     public String getName() {
         return this.name;
     }
-
+    
     /**
-     * @param name The name to set.
+     * @param name
+     *            The name to set.
      */
-    public void setName(String name) {
+    public void setName( String name ) {
         this.name = name;
     }
-
+    
     /**
      * @return Returns the truncateTo.
      */
     public int getTruncateTo() {
         return this.truncateTo;
     }
-
+    
     /**
-     * @param truncateTo The truncateTo to set.
+     * @param truncateTo
+     *            The truncateTo to set.
      */
-    public void setTruncateTo(int truncateTo) {
+    public void setTruncateTo( int truncateTo ) {
         this.truncateTo = truncateTo;
     }
-
+    
     /**
      * @return Returns the type.
      */
     public String getType() {
         return this.type;
     }
-
+    
     /**
-     * @param type The type to set.
+     * @param type
+     *            The type to set.
      */
-    public void setType(String type) {
+    public void setType( String type ) {
         this.type = type;
     }
-
+    
+    /**
+     * @return the align
+     */
+    public String getAlign() {
+        return align;
+    }
+    
+    /**
+     * @param align
+     *            the align to set
+     */
+    public void setAlign( String align ) {
+        this.align = align;
+    }
+    
     /*
      * (non-Javadoc)
      * 
