@@ -6,6 +6,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.log4j.Logger;
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -25,11 +26,15 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
  */
 
 public class ShowRecordAction extends Action {
+    
+    private static Logger logger = Logger.getLogger( ShowRecordAction.class );
+    
     public ActionForward execute(ActionMapping mapping,
 				 ActionForm form,
 				 HttpServletRequest request,
 				 HttpServletResponse response) throws Exception {
-
+        long start = System.currentTimeMillis();
+        
 	ServletContext svltCtx = getServlet().getServletContext();
 	WdkModelBean wdkModel = (WdkModelBean)svltCtx.getAttribute(CConstants.WDK_MODEL_KEY);
 	String customViewDir = (String)svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
@@ -63,6 +68,10 @@ public class ShowRecordAction extends Action {
 	} else {
 	    forward = mapping.findForward(CConstants.SHOW_RECORD_MAPKEY);
 	}
+    
+    long end = System.currentTimeMillis();
+    logger.info( "showRecord took total: " + ((end-start)/1000F) + " seconds.");
+    
 	return forward;
     }
 }

@@ -341,7 +341,7 @@ public class RecordInstance {
 
             if (getTimeAttributeQueries()) {
                 buf.append("TIME INFO: " + fieldName + " took "
-                        + (System.currentTimeMillis() - startTime) / 1000
+                        + (System.currentTimeMillis() - startTime) / 1000F
                         + " seconds to retrieve.\n");
             }
 
@@ -656,7 +656,7 @@ public class RecordInstance {
                             + attribute.getBriefValue()).append(newline);
             if (getTimeAttributeQueries()) {
                 buf.append("TIME INFO: " + attributeName + " took "
-                        + (System.currentTimeMillis() - startTime) / 1000
+                        + (System.currentTimeMillis() - startTime) / 1000F
                         + " seconds to retrieve.\n");
             }
         }

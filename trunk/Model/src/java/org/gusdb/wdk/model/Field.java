@@ -17,6 +17,7 @@ public abstract class Field {
     protected boolean internal;
     protected boolean inReportMaker;
     protected String align;
+    private boolean nowrap;
     
     /**
      * 
@@ -26,6 +27,7 @@ public abstract class Field {
         internal = false;
         inReportMaker = true;
         truncateTo = 0;
+        nowrap = false;
     }
     
     /**
@@ -148,6 +150,22 @@ public abstract class Field {
         this.align = align;
     }
     
+    
+    /**
+     * @return the nowrap
+     */
+    public boolean isNowrap() {
+        return nowrap;
+    }
+
+    
+    /**
+     * @param nowrap the nowrap to set
+     */
+    public void setNowrap( boolean nowrap ) {
+        this.nowrap = nowrap;
+    }
+
     /*
      * (non-Javadoc)
      * 

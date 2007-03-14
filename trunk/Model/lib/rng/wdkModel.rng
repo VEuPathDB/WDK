@@ -421,6 +421,9 @@
     <optional>
       <attribute name="align" />
     </optional>
+    <optional>
+      <attribute name="nowrap" />
+    </optional>
   </define>
 
   <define name="columnAttribute">
