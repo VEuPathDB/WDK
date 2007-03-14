@@ -125,13 +125,13 @@ public class Answer {
         this.sortingAttributes = sortingAttributes;
         
         // TEST
-        StringBuffer sb = new StringBuffer( "Use sorting list: '" );
-        for ( String attrName : sortingAttributes.keySet() ) {
-            sb.append( attrName );
-            sb.append( sortingAttributes.get( attrName ) ? " ASC, " : " DESC, " );
-        }
-        sb.append( "'" );
-        logger.info( sb.toString() );
+        //StringBuffer sb = new StringBuffer( "Use sorting list: '" );
+        //for ( String attrName : sortingAttributes.keySet() ) {
+        //    sb.append( attrName );
+        //    sb.append( sortingAttributes.get( attrName ) ? " ASC, " : " DESC, " );
+        //}
+        //sb.append( "'" );
+        //logger.info( sb.toString() );
         
         /*
          * ResultList rl =

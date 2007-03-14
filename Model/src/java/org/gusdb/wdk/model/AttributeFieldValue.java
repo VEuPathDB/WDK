@@ -70,6 +70,10 @@ public class AttributeFieldValue {
         return field.getAlign();
     }
     
+    public boolean isNowrap() {
+        return field.isNowrap();
+    }
+    
     public String toString() {
         String newline = System.getProperty( "line.separator" );
         String classnm = this.getClass().getName();
