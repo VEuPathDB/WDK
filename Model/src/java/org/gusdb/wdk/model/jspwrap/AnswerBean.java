@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.jspwrap;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
@@ -166,7 +167,7 @@ public class AnswerBean {
     }
 
     public AttributeFieldBean[] getSummaryAttributes() {
-        Map<String, AttributeField> attribs = answer.getQuestion().getSummaryAttributes();
+        Map<String, AttributeField> attribs = answer.getSummaryAttributes();
         Iterator<String> ai = attribs.keySet().iterator();
         Vector<AttributeFieldBean> v = new Vector<AttributeFieldBean>();
         while (ai.hasNext()) {
@@ -327,7 +328,25 @@ public class AnswerBean {
         return answer.getSortingAttributeOrders();
     }
 
-    
+    public AttributeFieldBean[] getSortableAttributes() {
+        List< AttributeField > fields = answer.getSortableAttributes();
+        AttributeFieldBean[] fieldBeans = new AttributeFieldBean[fields.size()];
+        int index = 0;
+        for(AttributeField field : fields) {
+           fieldBeans[index] = new AttributeFieldBean(field);
+           index++;
+        }
+        return fieldBeans;
+    }
+
+    /**
+     * @param attributeName
+     * @see org.gusdb.wdk.model.Answer#addSumaryAttribute(java.lang.String)
+     */
+    public void setSumaryAttribute( String[] attributeNames ) {
+        answer.setSumaryAttributes( attributeNames );
+    }
+
     // //////////////////////////////////////////////////////////////////////
     // Inner classes
     // //////////////////////////////////////////////////////////////////////

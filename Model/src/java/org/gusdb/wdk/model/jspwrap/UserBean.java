@@ -718,6 +718,44 @@ public class UserBean {
         return user.getSortingAttributes( questionFullName );
     }
     
+    /**
+     * @param questionFullName
+     * @param attrName
+     * @throws WdkUserException
+     * @throws WdkModelException
+     * @see org.gusdb.wdk.model.user.User#addSummaryAttribute(java.lang.String,
+     *      java.lang.String)
+     */
+    public void addSummaryAttribute( String questionFullName, String attrName )
+            throws WdkUserException, WdkModelException {
+        user.addSummaryAttribute( questionFullName, attrName );
+    }
+    
+    /**
+     * @param questionFullName
+     * @return
+     * @throws WdkUserException
+     * @throws WdkModelException
+     * @see org.gusdb.wdk.model.user.User#getSummaryAttributes(java.lang.String)
+     */
+    public String[ ] getSummaryAttributes( String questionFullName )
+            throws WdkUserException, WdkModelException {
+        return user.getSummaryAttributes( questionFullName );
+    }
+    
+    /**
+     * @param questionFullName
+     * @param attrName
+     * @throws WdkUserException
+     * @throws WdkModelException
+     * @see org.gusdb.wdk.model.user.User#removeSummaryAttribute(java.lang.String,
+     *      java.lang.String)
+     */
+    public void removeSummaryAttribute( String questionFullName, String attrName )
+            throws WdkUserException, WdkModelException {
+        user.removeSummaryAttribute( questionFullName, attrName );
+    }
+    
     /*
      * (non-Javadoc)
      * 

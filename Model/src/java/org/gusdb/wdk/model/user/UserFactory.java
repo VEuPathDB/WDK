@@ -995,8 +995,11 @@ public class UserFactory {
         
         // get the user's preferences
         
-        return question.makeAnswer( params, 1, user.getItemsPerPage(),
+        Answer answer = question.makeAnswer( params, 1, user.getItemsPerPage(),
                 user.getSortingAttributes( questionName ) );
+        String[] summaryAttributes = user.getSummaryAttributes( questionName );
+        answer.setSumaryAttributes( summaryAttributes );
+        return answer;
     }
     
     private Answer constructBooleanAnswer( User user, String expression )
