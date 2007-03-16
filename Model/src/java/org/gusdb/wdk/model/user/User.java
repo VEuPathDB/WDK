@@ -21,6 +21,9 @@ public class User {
     
     public final static String PREF_ITEMS_PER_PAGE = "preference_global_items_per_page";
     
+    public final static String SORTING_ATTRIBUTES_SUFFIX = "_sort";
+    public final static String SUMMARY_ATTRIBUTES_SUFFIX = "_summary";
+    
     public static final int SORTING_LEVEL = 3;
     
     private Logger logger = Logger.getLogger( User.class );
@@ -698,7 +701,7 @@ public class User {
     
     public Map< String, Boolean > getSortingAttributes( String questionFullName )
             throws WdkUserException, WdkModelException {
-        String sortKey = questionFullName + "_sort";
+        String sortKey = questionFullName + SORTING_ATTRIBUTES_SUFFIX;
         String sortingList = projectPreferences.get( sortKey );
         Map< String, Boolean > sortingAttributes = new LinkedHashMap< String, Boolean >();
         if ( sortingList != null ) {
@@ -714,10 +717,10 @@ public class User {
                 count++;
                 if ( count >= SORTING_LEVEL ) break;
             }
-        } else if (questionFullName.equals( BooleanQuestionNode.BOOLEAN_QUESTION_NAME )) {
+        } else if ( questionFullName.equals( BooleanQuestionNode.BOOLEAN_QUESTION_NAME ) ) {
             // boolean question has no sorting attributes by default
             return new LinkedHashMap< String, Boolean >();
-        } else {    // ordinary question
+        } else { // ordinary question
             Question question = model.getQuestion( questionFullName );
             sortingAttributes = question.getDefaultSortingAttributes();
         }
@@ -726,28 +729,93 @@ public class User {
     
     public void addSortingAttribute( String questionFullName, String attrName,
             boolean ascending ) throws WdkUserException, WdkModelException {
-        Map<String, Boolean> sortingMap = new LinkedHashMap< String, Boolean >();
+        Map< String, Boolean > sortingMap = new LinkedHashMap< String, Boolean >();
         sortingMap.put( attrName, ascending );
-        Map<String, Boolean> previousMap = getSortingAttributes( questionFullName );
-        for (String aName : previousMap.keySet()) {
-            if (!sortingMap.containsKey( aName ))
+        Map< String, Boolean > previousMap = getSortingAttributes( questionFullName );
+        for ( String aName : previousMap.keySet() ) {
+            if ( !sortingMap.containsKey( aName ) )
                 sortingMap.put( aName, previousMap.get( aName ) );
         }
         
         StringBuffer sb = new StringBuffer();
-        int count = 0;
-        for (String aName : sortingMap.keySet()) {
-            if (sb.length()> 0) sb.append( ";" );
+        for ( String aName : sortingMap.keySet() ) {
+            if ( sb.length() > 0 ) sb.append( ";" );
             sb.append( aName + "," );
-            sb.append( sortingMap.get( aName )?"ASC":"DESC" );
+            sb.append( sortingMap.get( aName ) ? "ASC" : "DESC" );
         }
         String sortingList = sb.toString();
-        String sortKey = questionFullName + "_sort";
-        
-        // TEST
-        logger.info( "Save sorting list: '" + sortingList + "'" );
+        String sortKey = questionFullName + SORTING_ATTRIBUTES_SUFFIX;
         
         projectPreferences.put( sortKey, sortingList );
-        save();
+    }
+    
+    public String[] getSummaryAttributes( String questionFullName )
+            throws WdkUserException, WdkModelException {
+        String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX;
+        String summaryList = projectPreferences.get( summaryKey );
+        String[] summary;
+        if ( summaryList != null ) {
+            String[ ] parts = summaryList.split( "," );
+            List< String > list = new ArrayList< String >();
+            for ( String attributeName : parts ) {
+                attributeName = attributeName.trim();
+                if (attributeName.length() > 0)
+                    list.add( attributeName );
+            }
+           summary = new String[list.size()];
+           list.toArray( summary );
+        } else if ( questionFullName.equals( BooleanQuestionNode.BOOLEAN_QUESTION_NAME ) ) {
+            summary = new String[0];
+        } else { // ordinary question
+            Question question = model.getQuestion( questionFullName );
+            Map<String, AttributeField> attributes = question.getSummaryAttributes();
+            summary = new String[attributes.size()];
+            attributes.keySet().toArray( summary );
+        }
+        return summary;
+    }
+    
+    public void addSummaryAttribute( String questionFullName, String attrName) throws WdkUserException, WdkModelException {
+        Set<String> summaryAttributes = new LinkedHashSet< String >();
+        String[] summary = getSummaryAttributes( questionFullName );
+        for ( String attributeName : summary ) {
+            summaryAttributes.add( attributeName );
+        }
+        summaryAttributes.add( attrName );
+        
+        StringBuffer sb = new StringBuffer();
+        for ( String attributeName : summaryAttributes ) {
+            if ( sb.length() > 0 ) sb.append( "," );
+            sb.append( attributeName);
+        }
+        String summaryList = sb.toString();
+        String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX;
+        
+        // TEST
+        logger.info( "Save summary list: '" + summaryList + "'" );
+        
+        projectPreferences.put( summaryKey, summaryList );
+    }
+    
+    public void removeSummaryAttribute( String questionFullName, String attrName) throws WdkUserException, WdkModelException {
+        Set<String> summaryAttributes = new LinkedHashSet< String >();
+        String[] summary = getSummaryAttributes( questionFullName );
+        for ( String attributeName : summary ) {
+            if (!attributeName.equals( attrName ))
+            summaryAttributes.add( attributeName );
+        }
+        
+        StringBuffer sb = new StringBuffer();
+        for ( String attributeName : summaryAttributes ) {
+            if ( sb.length() > 0 ) sb.append( "," );
+            sb.append( attributeName);
+        }
+        String summaryList = sb.toString();
+        String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX;
+        
+        // TEST
+        logger.info( "Save summary list: '" + summaryList + "'" );
+        
+        projectPreferences.put( summaryKey, summaryList );
     }
 }

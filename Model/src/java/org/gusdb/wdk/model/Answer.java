@@ -1,8 +1,11 @@
 package org.gusdb.wdk.model;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
@@ -92,6 +95,8 @@ public class Answer {
     
     private Map< String, Boolean > sortingAttributes;
     
+    private Map<String, AttributeField> summaryAttributes;
+    
     // ------------------------------------------------------------------
     // Constructor
     // ------------------------------------------------------------------
@@ -124,14 +129,17 @@ public class Answer {
         // get sorting columns
         this.sortingAttributes = sortingAttributes;
         
+        this.summaryAttributes = new LinkedHashMap< String, AttributeField >();
+        
         // TEST
-        //StringBuffer sb = new StringBuffer( "Use sorting list: '" );
-        //for ( String attrName : sortingAttributes.keySet() ) {
-        //    sb.append( attrName );
-        //    sb.append( sortingAttributes.get( attrName ) ? " ASC, " : " DESC, " );
-        //}
-        //sb.append( "'" );
-        //logger.info( sb.toString() );
+        // StringBuffer sb = new StringBuffer( "Use sorting list: '" );
+        // for ( String attrName : sortingAttributes.keySet() ) {
+        // sb.append( attrName );
+        // sb.append( sortingAttributes.get( attrName ) ? " ASC, " : " DESC, "
+        // );
+        // }
+        // sb.append( "'" );
+        // logger.info( sb.toString() );
         
         /*
          * ResultList rl =
@@ -801,5 +809,51 @@ public class Answer {
             if ( count >= size ) break;
         }
         return attributeOrders;
+    }
+    
+    public List< AttributeField > getSortableAttributes() {
+        logger.info( "Getting sortable attributes" );
+        
+        List< AttributeField > sortableAttributes = new ArrayList< AttributeField >();
+        Map< String, AttributeField > attributes = question.getAttributeFields();
+        Map<String, AttributeField> summaryAttributes = getSummaryAttributes();
+        for ( String attriName : attributes.keySet() ) {
+            AttributeField attribute = attributes.get( attriName );
+            
+            // the sortable attribute cannot be internal
+            if ( attribute.getInternal() ) continue;
+            // skip the attributes that are already displayed
+            if ( summaryAttributes.containsKey( attriName )) continue;
+            
+            // check if all associated columns are sortable
+            Map< String, Boolean > stub = new HashMap< String, Boolean >();
+            stub.put( attriName, true );
+            try {
+                // all associated columns are sortable if this call doesn't
+                // throw out exception
+                getSortingColumns( stub );
+                sortableAttributes.add( attribute );
+                //logger.info( "Attribute " + attriName + " is sortable." );
+            } catch ( WdkModelException e ) {
+                // the attribute contains unsortable column(s), skip it
+                //logger.info( "Attribute " + attriName + " is not sortable." );
+            }
+        }
+        return sortableAttributes;
+    }
+    
+    public Map<String, AttributeField> getSummaryAttributes() {
+        if (summaryAttributes.size() == 0) {
+            summaryAttributes.putAll( question.getSummaryAttributes());
+        }
+        return new LinkedHashMap< String, AttributeField >(summaryAttributes);
+    }
+    
+    public void setSumaryAttributes(String[] attributeNames) {
+        summaryAttributes.clear();
+        for (String attributeName : attributeNames) {
+        AttributeField field = question.getAttributeFields().get( attributeName );
+        summaryAttributes.put( attributeName, field );
+        }
     }
 }

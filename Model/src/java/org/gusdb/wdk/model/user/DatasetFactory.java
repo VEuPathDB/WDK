@@ -65,11 +65,14 @@ public class DatasetFactory {
             psData = SqlUtils.getPreparedStatement(dataSource, "INSERT INTO "
                     + datasetSchema + "dataset_data "
                     + "(dataset_id, user_id, dataset_value) VALUES (?, ?, ?)");
+            int count = 0;
             for (String value : values) {
                 psData.setInt(1, datasetId);
                 psData.setInt(2, userId);
                 psData.setString(3, value.trim());
                 psData.addBatch();
+                count++;
+                if (count % 1000 == 0) psData.executeBatch();
             }
             psData.executeBatch();
 
