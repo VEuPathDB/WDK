@@ -237,6 +237,7 @@ public class CacheTable {
                 }
                 psCache.addBatch();
                 resultCount++;
+                if (resultCount % 1000 == 0) psCache.executeBatch();
             }
             psCache.executeBatch();
         } finally {

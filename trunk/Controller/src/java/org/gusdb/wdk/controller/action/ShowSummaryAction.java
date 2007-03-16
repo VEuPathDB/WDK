@@ -63,6 +63,22 @@ public class ShowSummaryAction extends ShowQuestionAction {
             wdkUser.addSortingAttribute( questionName, sortingAttr, ascending );
         }
         
+        // get add summary attribute info
+        String addAttribute = request.getParameter( CConstants.WDK_ADD_ATTRIBUTE_KEY );
+        if ( addAttribute != null ) {
+            String questionName = request.getParameter( CConstants.WDK_SUMMARY_QUESTION_KEY );
+            wdkUser.addSummaryAttribute( questionName, addAttribute );
+        }
+        
+        // get remove summary attribute info
+        String removeAttribute = request.getParameter( CConstants.WDK_REMVOE_ATTRIBUTE_KEY );
+        if ( removeAttribute != null ) {
+            String questionName = request.getParameter( CConstants.WDK_SUMMARY_QUESTION_KEY );
+            wdkUser.removeSummaryAttribute( questionName, removeAttribute );
+        }        
+        
+        wdkUser.save();
+        
         String strHistId = request.getParameter( CConstants.WDK_HISTORY_ID_KEY );
         if ( strHistId == null ) {
             strHistId = ( String ) request.getAttribute( CConstants.WDK_HISTORY_ID_KEY );
@@ -271,8 +287,10 @@ public class ShowSummaryAction extends ShowQuestionAction {
         if ( answerMaker instanceof QuestionBean ) {
             QuestionBean question = ( QuestionBean ) answerMaker;
             Map< String, Boolean > sortingAttributes = wdkUser.getSortingAttributes( question.getFullName() );
+            String[] summaryAttributes = wdkUser.getSummaryAttributes( question.getFullName() );
             wdkAnswer = question.makeAnswer( params, start, end,
                     sortingAttributes );
+            wdkAnswer.setSumaryAttribute( summaryAttributes );
         } else if ( answerMaker instanceof BooleanQuestionNodeBean ) {
             wdkAnswer = ( ( BooleanQuestionNodeBean ) answerMaker ).makeAnswer(
                     start, end );
