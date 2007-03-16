@@ -88,6 +88,9 @@ public class WSQueryInstance extends QueryInstance {
             logger.debug("WSQI Result Message:" + resultMessage);
 
             String[][] result = response.getResults();
+	    
+	    logger.info("Result Array size = " + result.length);
+
             return new WSResultList(this, result);
 
         } catch (RemoteException e) {
@@ -170,7 +173,9 @@ public class WSQueryInstance extends QueryInstance {
                 }
                 pstmt.setInt(columns.length + 1, ++idx);
                 pstmt.addBatch();
+		if(idx % 1000 == 0) pstmt.executeBatch();
             }
+	    logger.info("idx = "+idx);
             // do a batch update
             pstmt.executeBatch();
         } catch (SQLException e) {
