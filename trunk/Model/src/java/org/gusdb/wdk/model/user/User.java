@@ -749,35 +749,35 @@ public class User {
         projectPreferences.put( sortKey, sortingList );
     }
     
-    public String[] getSummaryAttributes( String questionFullName )
+    public String[ ] getSummaryAttributes( String questionFullName )
             throws WdkUserException, WdkModelException {
         String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX;
         String summaryList = projectPreferences.get( summaryKey );
-        String[] summary;
+        String[ ] summary;
         if ( summaryList != null ) {
             String[ ] parts = summaryList.split( "," );
             List< String > list = new ArrayList< String >();
             for ( String attributeName : parts ) {
                 attributeName = attributeName.trim();
-                if (attributeName.length() > 0)
-                    list.add( attributeName );
+                if ( attributeName.length() > 0 ) list.add( attributeName );
             }
-           summary = new String[list.size()];
-           list.toArray( summary );
+            summary = new String[ list.size() ];
+            list.toArray( summary );
         } else if ( questionFullName.equals( BooleanQuestionNode.BOOLEAN_QUESTION_NAME ) ) {
-            summary = new String[0];
+            summary = new String[ 0 ];
         } else { // ordinary question
             Question question = model.getQuestion( questionFullName );
-            Map<String, AttributeField> attributes = question.getSummaryAttributes();
-            summary = new String[attributes.size()];
+            Map< String, AttributeField > attributes = question.getSummaryAttributes();
+            summary = new String[ attributes.size() ];
             attributes.keySet().toArray( summary );
         }
         return summary;
     }
     
-    public void addSummaryAttribute( String questionFullName, String attrName) throws WdkUserException, WdkModelException {
-        Set<String> summaryAttributes = new LinkedHashSet< String >();
-        String[] summary = getSummaryAttributes( questionFullName );
+    public void addSummaryAttribute( String questionFullName, String attrName )
+            throws WdkUserException, WdkModelException {
+        Set< String > summaryAttributes = new LinkedHashSet< String >();
+        String[ ] summary = getSummaryAttributes( questionFullName );
         for ( String attributeName : summary ) {
             summaryAttributes.add( attributeName );
         }
@@ -786,7 +786,7 @@ public class User {
         StringBuffer sb = new StringBuffer();
         for ( String attributeName : summaryAttributes ) {
             if ( sb.length() > 0 ) sb.append( "," );
-            sb.append( attributeName);
+            sb.append( attributeName );
         }
         String summaryList = sb.toString();
         String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX;
@@ -797,18 +797,19 @@ public class User {
         projectPreferences.put( summaryKey, summaryList );
     }
     
-    public void removeSummaryAttribute( String questionFullName, String attrName) throws WdkUserException, WdkModelException {
-        Set<String> summaryAttributes = new LinkedHashSet< String >();
-        String[] summary = getSummaryAttributes( questionFullName );
+    public void removeSummaryAttribute( String questionFullName, String attrName )
+            throws WdkUserException, WdkModelException {
+        Set< String > summaryAttributes = new LinkedHashSet< String >();
+        String[ ] summary = getSummaryAttributes( questionFullName );
         for ( String attributeName : summary ) {
-            if (!attributeName.equals( attrName ))
-            summaryAttributes.add( attributeName );
+            if ( !attributeName.equals( attrName ) )
+                summaryAttributes.add( attributeName );
         }
         
         StringBuffer sb = new StringBuffer();
         for ( String attributeName : summaryAttributes ) {
             if ( sb.length() > 0 ) sb.append( "," );
-            sb.append( attributeName);
+            sb.append( attributeName );
         }
         String summaryList = sb.toString();
         String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX;
@@ -819,8 +820,40 @@ public class User {
         projectPreferences.put( summaryKey, summaryList );
     }
     
-    public void resetSummaryAttribute(String questionFullName) {
+    public void resetSummaryAttribute( String questionFullName ) {
         String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX;
         projectPreferences.remove( summaryKey );
     }
+    
+    public void arrangeSummaryAttribute( String questionFullName,
+            String attrName, boolean moveLeft ) throws WdkUserException,
+            WdkModelException {
+        String[ ] summary = getSummaryAttributes( questionFullName );
+        for ( int i = 0; i < summary.length; i++ ) {
+            if ( attrName.equals( summary[ i ] ) ) {
+                if ( moveLeft && i > 0 ) {
+                    summary[ i ] = summary[ i - 1 ];
+                    summary[ i - 1 ] = attrName;
+                } else if ( !moveLeft && i < summary.length - 1 ) {
+                    summary[ i ] = summary[ i + 1 ];
+                    summary[ i + 1 ] = attrName;
+                }
+                break;
+            }
+        }
+        
+        StringBuffer sb = new StringBuffer();
+        for ( String attributeName : summary ) {
+            if ( sb.length() > 0 ) sb.append( "," );
+            sb.append( attributeName );
+        }
+        String summaryList = sb.toString();
+        String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX;
+        
+        // TEST
+        logger.info( "Save summary list: '" + summaryList + "'" );
+        
+        projectPreferences.put( summaryKey, summaryList );
+    }
+    
 }
