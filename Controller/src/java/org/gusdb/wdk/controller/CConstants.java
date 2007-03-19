@@ -64,6 +64,7 @@ public class CConstants {
     public static final String WDK_SUMMARY_QUESTION_KEY = "summaryQuestion";
     public static final String WDK_SUMMARY_ATTRIBUTE_KEY = "attribute";
     public static final String WDK_SUMMARY_SORTING_ORDER_KEY = "sortOrder";
+    public static final String WDK_SUMMARY_ARRANGE_ORDER_KEY = "left";
 
     //key for finding action forward, from struts-config.xml, used in Action classes
     public static final String SHOW_QUESTION_MAPKEY = "show_question";

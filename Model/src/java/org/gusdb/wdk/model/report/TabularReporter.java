@@ -53,7 +53,7 @@ public class TabularReporter extends Reporter {
     private Set<AttributeField> validateColumns(Answer answer)
             throws WdkModelException {
         // the config map contains a list of column names;
-        Map<String, AttributeField> summary = answer.getQuestion().getSummaryAttributes();
+        Map<String, AttributeField> summary = answer.getSummaryAttributes();
         Set<AttributeField> columns = new LinkedHashSet<AttributeField>();
 
         String fieldsList = config.get(FIELD_SELECTED_COLUMNS);

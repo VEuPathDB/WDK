@@ -294,8 +294,8 @@ public class BooleanQuestionNode {
             booleanValues.put(BooleanQuery.SECOND_ANSWER_PARAM_NAME,
                     secondChildAnswer);
 
-            Map firstSummaryAtts = firstChildAnswer.getQuestion().getSummaryAttributes();
-            Map secondSummaryAtts = secondChildAnswer.getQuestion().getSummaryAttributes();
+            Map firstSummaryAtts = firstChildAnswer.getSummaryAttributes();
+            Map secondSummaryAtts = secondChildAnswer.getSummaryAttributes();
 
             Map booleanSummaryAtts = new LinkedHashMap();
             booleanSummaryAtts.putAll(firstSummaryAtts);

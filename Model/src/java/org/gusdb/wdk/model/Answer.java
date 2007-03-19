@@ -95,7 +95,7 @@ public class Answer {
     
     private Map< String, Boolean > sortingAttributes;
     
-    private Map<String, AttributeField> summaryAttributes;
+    private Map< String, AttributeField > summaryAttributes;
     
     // ------------------------------------------------------------------
     // Constructor
@@ -364,7 +364,7 @@ public class Answer {
         
         for ( int i = -1; i < pageRecordInstances.length; i++ ) {
             
-            Iterator attributeNames = question.getSummaryAttributes().keySet().iterator();
+            Iterator attributeNames = getSummaryAttributes().keySet().iterator();
             
             // only print
             while ( attributeNames.hasNext() ) {
@@ -630,8 +630,11 @@ public class Answer {
             throws WdkModelException {
         this.startRecordInstanceI = startIndex;
         this.endRecordInstanceI = endIndex;
-        return new Answer( question, idsQueryInstance, startRecordInstanceI,
-                endRecordInstanceI, sortingAttributes );
+        Answer answer = new Answer( question, idsQueryInstance,
+                startRecordInstanceI, endRecordInstanceI, sortingAttributes );
+        answer.summaryAttributes = new LinkedHashMap< String, AttributeField >(
+                this.summaryAttributes );
+        return answer;
     }
     
     /**
@@ -816,14 +819,14 @@ public class Answer {
         
         List< AttributeField > sortableAttributes = new ArrayList< AttributeField >();
         Map< String, AttributeField > attributes = question.getAttributeFields();
-        Map<String, AttributeField> summaryAttributes = getSummaryAttributes();
+        Map< String, AttributeField > summaryAttributes = getSummaryAttributes();
         for ( String attriName : attributes.keySet() ) {
             AttributeField attribute = attributes.get( attriName );
             
             // the sortable attribute cannot be internal
             if ( attribute.getInternal() ) continue;
             // skip the attributes that are already displayed
-            if ( summaryAttributes.containsKey( attriName )) continue;
+            if ( summaryAttributes.containsKey( attriName ) ) continue;
             
             // check if all associated columns are sortable
             Map< String, Boolean > stub = new HashMap< String, Boolean >();
@@ -833,27 +836,29 @@ public class Answer {
                 // throw out exception
                 getSortingColumns( stub );
                 sortableAttributes.add( attribute );
-                //logger.info( "Attribute " + attriName + " is sortable." );
+                // logger.info( "Attribute " + attriName + " is sortable." );
             } catch ( WdkModelException e ) {
                 // the attribute contains unsortable column(s), skip it
-                //logger.info( "Attribute " + attriName + " is not sortable." );
+                // logger.info( "Attribute " + attriName + " is not sortable."
+                // );
             }
         }
         return sortableAttributes;
     }
     
-    public Map<String, AttributeField> getSummaryAttributes() {
-        if (summaryAttributes.size() == 0) {
-            summaryAttributes.putAll( question.getSummaryAttributes());
+    public Map< String, AttributeField > getSummaryAttributes() {
+        if ( summaryAttributes.size() == 0 ) {
+            summaryAttributes.putAll( question.getSummaryAttributes() );
         }
-        return new LinkedHashMap< String, AttributeField >(summaryAttributes);
+        return new LinkedHashMap< String, AttributeField >( summaryAttributes );
     }
     
-    public void setSumaryAttributes(String[] attributeNames) {
+    public void setSumaryAttributes( String[ ] attributeNames ) {
         summaryAttributes.clear();
-        for (String attributeName : attributeNames) {
-        AttributeField field = question.getAttributeFields().get( attributeName );
-        summaryAttributes.put( attributeName, field );
+        for ( String attributeName : attributeNames ) {
+            AttributeField field = question.getAttributeFields().get(
+                    attributeName );
+            summaryAttributes.put( attributeName, field );
         }
     }
 }

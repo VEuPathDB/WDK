@@ -764,6 +764,18 @@ public class UserBean {
         user.resetSummaryAttribute( questionFullName );
     }
     
+    /**
+     * @param questionFullName
+     * @param attrName
+     * @param moveLeft
+     * @throws WdkUserException
+     * @throws WdkModelException
+     * @see org.gusdb.wdk.model.user.User#arrangeSummaryAttribute(java.lang.String, java.lang.String, boolean)
+     */
+    public void arrangeSummaryAttribute( String questionFullName, String attrName, boolean moveLeft ) throws WdkUserException, WdkModelException {
+        user.arrangeSummaryAttribute( questionFullName, attrName, moveLeft );
+    }
+
     /*
      * (non-Javadoc)
      * 
