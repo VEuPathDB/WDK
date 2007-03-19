@@ -756,6 +756,14 @@ public class UserBean {
         user.removeSummaryAttribute( questionFullName, attrName );
     }
     
+    /**
+     * @param questionFullName
+     * @see org.gusdb.wdk.model.user.User#resetSummaryAttribute(java.lang.String)
+     */
+    public void resetSummaryAttribute( String questionFullName ) {
+        user.resetSummaryAttribute( questionFullName );
+    }
+    
     /*
      * (non-Javadoc)
      * 

@@ -54,29 +54,25 @@ public class ShowSummaryAction extends ShowQuestionAction {
             request.getSession().setAttribute( CConstants.WDK_USER_KEY, wdkUser );
         }
         
-        // get sorting info
-        String sortingAttr = request.getParameter( CConstants.WDK_SORTING_ATTRIBUTE_KEY );
-        if ( sortingAttr != null ) {
-            String questionName = request.getParameter( CConstants.WDK_SORTING_QUESTION_KEY );
-            String sortingOrder = request.getParameter( CConstants.WDK_SORTING_ORDER_KEY );
-            boolean ascending = !sortingOrder.equalsIgnoreCase( "DESC" );
-            wdkUser.addSortingAttribute( questionName, sortingAttr, ascending );
-        }
-        
-        // get add summary attribute info
-        String addAttribute = request.getParameter( CConstants.WDK_ADD_ATTRIBUTE_KEY );
-        if ( addAttribute != null ) {
+        // get command
+        String command = request.getParameter( CConstants.WDK_SUMMARY_COMMAND_KEY );
+        if (command != null) {
             String questionName = request.getParameter( CConstants.WDK_SUMMARY_QUESTION_KEY );
-            wdkUser.addSummaryAttribute( questionName, addAttribute );
+            if (command.equalsIgnoreCase( "sort" )) {
+                String attributeName = request.getParameter( CConstants.WDK_SUMMARY_ATTRIBUTE_KEY );
+                String sortingOrder = request.getParameter( CConstants.WDK_SUMMARY_SORTING_ORDER_KEY );
+                boolean ascending = !sortingOrder.equalsIgnoreCase( "DESC" );
+                wdkUser.addSortingAttribute( questionName, attributeName, ascending );
+            } else if (command.equalsIgnoreCase( "add" )) {
+                String attributeName = request.getParameter( CConstants.WDK_SUMMARY_ATTRIBUTE_KEY );
+                wdkUser.addSummaryAttribute( questionName, attributeName );
+            } else if (command.equalsIgnoreCase( "remove" )) {
+                String attributeName = request.getParameter( CConstants.WDK_SUMMARY_ATTRIBUTE_KEY );
+                wdkUser.removeSummaryAttribute( questionName, attributeName );
+            } else if (command.equalsIgnoreCase( "reset" )) {
+                wdkUser.resetSummaryAttribute( questionName );
+            }
         }
-        
-        // get remove summary attribute info
-        String removeAttribute = request.getParameter( CConstants.WDK_REMVOE_ATTRIBUTE_KEY );
-        if ( removeAttribute != null ) {
-            String questionName = request.getParameter( CConstants.WDK_SUMMARY_QUESTION_KEY );
-            wdkUser.removeSummaryAttribute( questionName, removeAttribute );
-        }        
-        
         wdkUser.save();
         
         String strHistId = request.getParameter( CConstants.WDK_HISTORY_ID_KEY );
