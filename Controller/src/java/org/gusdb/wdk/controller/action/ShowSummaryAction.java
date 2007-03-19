@@ -69,6 +69,11 @@ public class ShowSummaryAction extends ShowQuestionAction {
             } else if (command.equalsIgnoreCase( "remove" )) {
                 String attributeName = request.getParameter( CConstants.WDK_SUMMARY_ATTRIBUTE_KEY );
                 wdkUser.removeSummaryAttribute( questionName, attributeName );
+            } else if (command.equalsIgnoreCase( "arrange" )) {
+                String attributeName = request.getParameter( CConstants.WDK_SUMMARY_ATTRIBUTE_KEY );
+                String arrangeOrder = request.getParameter( CConstants.WDK_SUMMARY_ARRANGE_ORDER_KEY );
+                boolean moveLeft = arrangeOrder.equalsIgnoreCase( "true" );
+                wdkUser.arrangeSummaryAttribute( questionName, attributeName, moveLeft );
             } else if (command.equalsIgnoreCase( "reset" )) {
                 wdkUser.resetSummaryAttribute( questionName );
             }
