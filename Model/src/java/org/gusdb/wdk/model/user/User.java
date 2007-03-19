@@ -818,4 +818,9 @@ public class User {
         
         projectPreferences.put( summaryKey, summaryList );
     }
+    
+    public void resetSummaryAttribute(String questionFullName) {
+        String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX;
+        projectPreferences.remove( summaryKey );
+    }
 }
