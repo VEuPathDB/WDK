@@ -50,16 +50,20 @@ public class AttributeFieldValue {
         String briefValue = value.toString();
         
         int truncate = field.getTruncateTo();
-        if ( truncate == 0 ) {
-            truncate = WdkModel.TRUNCATE_DEFAULT;
-        }
+        // if ( truncate == 0 ) {
+        // truncate = WdkModel.TRUNCATE_DEFAULT;
+        // }
+        // instead of using default truncation, if the value is 0, do not
+        // truncate at all
         
-        if ( briefValue.length() <= truncate ) {
-            return briefValue;
-        } else {
-            String returned = briefValue.substring( 0, truncate ) + ". . .";
-            return returned;
-        }
+        if ( truncate > 0 ) {
+            if ( briefValue.length() <= truncate ) {
+                return briefValue;
+            } else {
+                String returned = briefValue.substring( 0, truncate ) + ". . .";
+                return returned;
+            }
+        } else return briefValue;
     }
     
     public boolean isSummary() {
