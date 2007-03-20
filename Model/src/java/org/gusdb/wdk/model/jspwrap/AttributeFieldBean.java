@@ -7,11 +7,21 @@ import org.gusdb.wdk.model.AttributeField;
 
 public class AttributeFieldBean extends FieldBean {
 
+    private AttributeField attributeField;
+    
     /**
      * 
      */
     public AttributeFieldBean(AttributeField field) {
         super(field);
+        this.attributeField = field;
     }
 
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.AttributeField#isSortable()
+     */
+    public boolean isSortable() {
+        return attributeField.isSortable();
+    }
 }

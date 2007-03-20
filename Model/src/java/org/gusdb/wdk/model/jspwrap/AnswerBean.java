@@ -328,8 +328,8 @@ public class AnswerBean {
         return answer.getSortingAttributeOrders();
     }
 
-    public AttributeFieldBean[] getSortableAttributes() {
-        List< AttributeField > fields = answer.getSortableAttributes();
+    public AttributeFieldBean[] getDisplayableAttributes() {
+        List< AttributeField > fields = answer.getDisplayableAttributes();
         AttributeFieldBean[] fieldBeans = new AttributeFieldBean[fields.size()];
         int index = 0;
         for(AttributeField field : fields) {
