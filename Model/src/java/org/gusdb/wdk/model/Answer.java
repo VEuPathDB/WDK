@@ -814,36 +814,42 @@ public class Answer {
         return attributeOrders;
     }
     
-    public List< AttributeField > getSortableAttributes() {
-        logger.info( "Getting sortable attributes" );
-        
-        List< AttributeField > sortableAttributes = new ArrayList< AttributeField >();
+    public List< AttributeField > getDisplayableAttributes() {
+        List< AttributeField > displayAttributes = new ArrayList< AttributeField >();
         Map< String, AttributeField > attributes = question.getAttributeFields();
         Map< String, AttributeField > summaryAttributes = getSummaryAttributes();
         for ( String attriName : attributes.keySet() ) {
             AttributeField attribute = attributes.get( attriName );
             
+            // if the sortable property is null, then check if all associated
+            // columns are sortable
+            if ( attribute.sortable == null ) {
+                Map< String, Boolean > stub = new HashMap< String, Boolean >();
+                stub.put( attriName, true );
+                try {
+                    // all associated columns are sortable if this call doesn't
+                    // throw out exception
+                    getSortingColumns( stub );
+                    attribute.sortable = new Boolean( true );
+                    // logger.info( "Attribute " + attriName + " is sortable."
+                    // );
+                } catch ( WdkModelException e ) {
+                    // the attribute contains unsortable column(s), skip it
+                    // logger.info( "Attribute " + attriName + " is not
+                    // sortable." );
+                    attribute.sortable = new Boolean( false );
+                }
+            }
+            
             // the sortable attribute cannot be internal
             if ( attribute.getInternal() ) continue;
+            
             // skip the attributes that are already displayed
             if ( summaryAttributes.containsKey( attriName ) ) continue;
             
-            // check if all associated columns are sortable
-            Map< String, Boolean > stub = new HashMap< String, Boolean >();
-            stub.put( attriName, true );
-            try {
-                // all associated columns are sortable if this call doesn't
-                // throw out exception
-                getSortingColumns( stub );
-                sortableAttributes.add( attribute );
-                // logger.info( "Attribute " + attriName + " is sortable." );
-            } catch ( WdkModelException e ) {
-                // the attribute contains unsortable column(s), skip it
-                // logger.info( "Attribute " + attriName + " is not sortable."
-                // );
-            }
+            displayAttributes.add( attribute );
         }
-        return sortableAttributes;
+        return displayAttributes;
     }
     
     public Map< String, AttributeField > getSummaryAttributes() {
