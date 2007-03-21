@@ -36,7 +36,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
 public class XmlConverter {
 
     public static void convert(InputStream inStream, InputStream xslStream,
-            OutputStream outStream) throws WdkModelException {
+            OutputStream outStream, String msg) throws WdkModelException {
         TransformerFactory Factory = TransformerFactory.newInstance();
 
         if (!Factory.getFeature(SAXSource.FEATURE)
@@ -61,11 +61,11 @@ public class XmlConverter {
 
             xmlFilter.parse(new InputSource(inStream));
         } catch (TransformerConfigurationException ex) {
-            throw new WdkModelException(ex);
+            throw new WdkModelException(msg, ex);
         } catch (SAXException ex) {
-            throw new WdkModelException(ex);
+            throw new WdkModelException(msg, ex);
         } catch (IOException ex) {
-            throw new WdkModelException(ex);
+            throw new WdkModelException(msg, ex);
         }
     }
 
@@ -93,7 +93,8 @@ public class XmlConverter {
             OutputStream outXmlStream = new FileOutputStream(outXmlFile);
 
             // convert the xml
-            XmlConverter.convert(inXmlStream, inXslStream, outXmlStream);
+            XmlConverter.convert(inXmlStream, inXslStream, outXmlStream,
+				 inXslFile.getName());
 
             // save the result
             outXmlStream.flush();
