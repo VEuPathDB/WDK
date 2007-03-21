@@ -229,7 +229,8 @@ public class XmlQuestion {
 
                 outXmlStream = new ByteArrayOutputStream();
 
-                XmlConverter.convert(inXmlStream, inXslStream, outXmlStream);
+                XmlConverter.convert(inXmlStream, inXslStream, outXmlStream,
+				     name);
 
                 byte[] buffer = outXmlStream.toByteArray();
 
