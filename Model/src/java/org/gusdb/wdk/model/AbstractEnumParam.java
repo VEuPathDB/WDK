@@ -99,7 +99,9 @@ public abstract class AbstractEnumParam extends Param {
 
     public String getDefault() throws WdkModelException {
         if (defaultValue != null) return defaultValue;
-	return getVocab()[0];
+	String [] vocab = getVocab();
+	if (vocab.length == 0) return null;
+	return vocab[0];
     }
 
     /////////////////////////////////////////////////////////////////////
