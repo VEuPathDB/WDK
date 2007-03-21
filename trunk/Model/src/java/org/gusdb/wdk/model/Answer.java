@@ -697,6 +697,10 @@ public class Answer {
     private Set< SortingColumn > findColumns( String attrName, boolean ascending )
             throws WdkModelException {
         AttributeField attribute = question.getAttributeFields().get( attrName );
+        if ( attribute == null )
+            throw new WdkModelException( "The sorting attribute " + attrName
+                    + " cannot be found in the record." );
+        
         Set< SortingColumn > columns = new LinkedHashSet< SortingColumn >();
         if ( attribute instanceof PrimaryKeyField ) {
             PrimaryKeyField primaryKey = ( PrimaryKeyField ) attribute;
