@@ -97,6 +97,11 @@ public abstract class AbstractEnumParam extends Param {
 	return vocabMap;
     }
 
+    public String getDefault() throws WdkModelException {
+        if (defaultValue != null) return defaultValue;
+	return getVocab()[0];
+    }
+
     /////////////////////////////////////////////////////////////////////
     /////////////  Protected properties ////////////////////////////////////
     /////////////////////////////////////////////////////////////////////

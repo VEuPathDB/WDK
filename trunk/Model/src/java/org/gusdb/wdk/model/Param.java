@@ -75,7 +75,7 @@ public abstract class Param {
         this.defaultValue = defaultValue;
     }
     
-    public String getDefault() {
+    public String getDefault() throws WdkModelException {
         return defaultValue;
     }
     
