@@ -16,6 +16,9 @@ import org.gusdb.wdk.model.*;
 import org.gusdb.wdk.model.xml.XmlAnswer;
 import org.gusdb.wdk.model.xml.XmlQuestion;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 
 /**
  * SanityTester.java " [-project project_id]" +
@@ -46,15 +49,17 @@ public class SanityTester {
     boolean verbose;
     SanityModel sanityModel;
     String modelName;
+    String suggestFileName;
 
     public static final String BANNER_LINE = "***********************************************************";
 
     public SanityTester(String modelName, SanityModel sanityModel,
-            boolean verbose) throws WdkModelException {
+            boolean verbose, String suggestFileName) throws WdkModelException {
         this.wdkModel = WdkModel.construct(modelName);
         this.sanityModel = sanityModel;
         this.verbose = verbose;
         this.modelName = modelName;
+	this.suggestFileName = suggestFileName;
     }
 
     // ------------------------------------------------------------------
@@ -67,7 +72,10 @@ public class SanityTester {
      * sanity test but not the model then that will be caught in the other
      * validation tests.
      */
-    private void existenceTest() {
+    private void existenceTest() throws IOException, WdkModelException {
+
+	BufferedWriter out = 
+	    new BufferedWriter(new FileWriter(suggestFileName));
 
         QuerySet querySets[] = wdkModel.getAllQuerySets();
         for (int i = 0; i < querySets.length; i++) {
@@ -82,6 +90,7 @@ public class SanityTester {
                             + nextQuery.getName()
                             + " is not represented in the sanity test\n");
                     queriesFailed++;
+		    out.write(nextQuery.getSanityTestSuggestion());
                 }
             }
         }
@@ -100,6 +109,7 @@ public class SanityTester {
                                 + nextRecordClass.getName()
                                 + " is not represented in the sanity test\n");
                         recordsFailed++;
+			out.write(nextRecordClass.getSanityTestSuggestion());
                     }
                 }
             }
@@ -118,6 +128,7 @@ public class SanityTester {
                             + nextQuestion.getName()
                             + " is not represented in the sanity test\n");
                     questionsFailed++;
+		    out.write(nextQuestion.getSanityTestSuggestion());
                 }
             }
         }
@@ -130,9 +141,12 @@ public class SanityTester {
                             + question.getFullName()
                             + " is not represented in the sanity test\n");
                     questionsFailed++;
+		    // out.write(question.getSanityTestSuggestion());
                 }
             }
         }
+	out.write("aString");
+	out.close();
     }
 
     /**
@@ -504,6 +518,11 @@ public class SanityTester {
                 "Print out more information while running test.");
         options.addOption(verbose);
 
+        // verbose
+        Option suggestFile = new Option("suggestFile", true,
+                "Name of file into which to write suggested additions to sanity test xml file.");
+        options.addOption(suggestFile);
+
         return options;
     }
 
@@ -529,7 +548,7 @@ public class SanityTester {
     static void usage(String cmdName, Options options) {
 
         String newline = System.getProperty("line.separator");
-        String cmdlineSyntax = cmdName + " -model model_name" + " -verbose";
+        String cmdlineSyntax = cmdName + " -model model_name" + " [-verbose] [-suggestFile filename]";
 
         String header = newline
                 + "Run a test on all queries and records in a wdk model, using a provided sanity model, to ensure that the course of development hasn't dramatically affected wdk functionality."
@@ -550,7 +569,7 @@ public class SanityTester {
 	BasicConfigurator.configure(); // logger
 	logger.setLevel(Level.ERROR);
 
-         String cmdName = System.getProperties().getProperty("cmdName");
+	String cmdName = System.getProperties().getProperty("cmdName");
         Options options = declareOptions();
         CommandLine cmdLine = parseOptions(cmdName, options, args);
 
@@ -560,6 +579,8 @@ public class SanityTester {
                 "configDir"));
         File sanityXmlFile = new File(configDir, modelName + "-sanity.xml");
         File modelPropFile = new File(configDir, modelName + ".prop");
+
+        String suggestFileName = cmdLine.getOptionValue("suggestFile");
 
         boolean verbose = cmdLine.hasOption("verbose");
 
@@ -575,7 +596,7 @@ public class SanityTester {
             sanityModel.validateQuestions();
 
             SanityTester sanityTester = new SanityTester(modelName,
-                    sanityModel, verbose);
+                    sanityModel, verbose, suggestFileName);
 
             sanityTester.existenceTest();
             sanityTester.queriesTest();

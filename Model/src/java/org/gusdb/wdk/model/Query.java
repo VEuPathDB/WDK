@@ -225,6 +225,36 @@ public abstract class Query implements Serializable {
         return signature;
     }
 
+    /*
+      <sanityQuery ref="GeneFeatureIds.GenesByGeneType"
+                   minOutputLength="30" maxOutputLength="100">
+          <sanityParam name="geneType" value="tRNA"/>
+          <sanityParam name="organism" value="Plasmodium falciparum"/>
+      </sanityQuery>
+    */
+    public String getSanityTestSuggestion () throws WdkModelException {
+	String indent = "    ";
+        String newline = System.getProperty("line.separator");
+	StringBuffer buf = new StringBuffer(
+	      newline + newline
+	    + indent + "<sanityQuery ref=\"" + getFullName() + "\"" 
+	    + newline
+	    + indent + indent + indent
+	    + "minOutputLength=\"FIX_m_i_len\" maxOutputLength=\"FIX_m_o_len\">"
+	    + newline);
+	for (Param param : getParams()) {
+	    String paramName = param.getName();
+	    String value = param.getDefault();
+	    if (value == null) value = "FIX_null_dflt";
+	    buf.append(indent + indent
+		       + "<sanityParam name=\"" + paramName 
+		       + "\" value=\"" + value + "\"/>"
+		       + newline);
+	}
+	buf.append(indent + "</sanityQuery>");
+	return buf.toString();
+    }
+
     // ///////////////////////////////////////////////////////////////////
     // /////////// Protected methods ////////////////////////////////////
     // ///////////////////////////////////////////////////////////////////
@@ -318,7 +348,7 @@ public abstract class Query implements Serializable {
         }
     }
 
-    protected void applyDefaults(Map<String, Object> values) {
+    protected void applyDefaults(Map<String, Object> values) throws WdkModelException {
         int size = paramsV.size();
         for (int i = 0; i < size; i++) {
             Param p = paramsV.elementAt(i);

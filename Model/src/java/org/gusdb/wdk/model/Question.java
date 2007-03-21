@@ -296,7 +296,42 @@ public class Question implements Serializable {
     public boolean isDynamic() {
         return dynamicAttributes != null;
     }
-    
+
+    /*
+      <sanityQuestion ref="GeneQuestions.GenesByEcNumber"
+                      minOutputLength="1" maxOutputLength="3"
+                      pageStart="1" pageEnd="20">
+          <sanityParam name="pf_organism" value="Plasmodium falciparum"/>
+          <sanityParam name="ec_number_pattern" value="6.1.1.12"/>
+      </sanityQuestion>
+    */
+    public String getSanityTestSuggestion () throws WdkModelException {
+	String indent = "    ";
+        String newline = System.getProperty("line.separator");
+	StringBuffer buf = new StringBuffer(
+	      newline + newline
+	    + indent + "<sanityQuestion ref=\"" + getFullName() + "\"" 
+	    + newline
+	    + indent + indent + indent
+	    + "minOutputLength=\"FIX_m_i_len\" maxOutputLength=\"FIX_m_o_len\""
+ 	    + indent + indent + indent
+	    + "pageStart=\"1\" pageEnd=\"20\">"
+	    + newline);
+	for (Param param : getQuery().getParams()) {
+	    String paramName = param.getName();
+	    String value = param.getDefault();
+	    if (value == null) value = "FIX_null_dflt";
+	    buf.append(indent + indent
+		       + "<sanityParam name=\"" + paramName 
+		       + "\" value=\"" + value + "\"/>"
+		       + newline);
+	}
+	buf.append(indent + "</sanityQuery>");
+	return buf.toString();
+    }
+
+
+
     // /////////////////////////////////////////////////////////////////////
     // package methods
     // /////////////////////////////////////////////////////////////////////

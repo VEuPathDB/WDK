@@ -343,6 +343,25 @@ public class RecordClass {
         return buf.toString();
     }
 
+    /*
+      <sanityRecord ref="GeneRecordClasses.GeneRecordClass"
+                    primaryKey="PF11_0344"/>
+    */
+    public String getSanityTestSuggestion () throws WdkModelException {
+	String indent = "    ";
+        String newline = System.getProperty("line.separator");
+	StringBuffer buf = new StringBuffer(
+	      newline + newline
+	    + indent + "<sanityRecord ref=\"" + getFullName() + "\"" 
+	    + newline
+	    + indent + indent + indent
+	    + "primaryKey=\"FIX_pk\">"
+	    + newline);
+	buf.append(indent + "</sanityRecord>");
+	return buf.toString();
+    }
+
+
     // /////////////////////////////////////////////////////////////////////////
     // package scope methods
     // /////////////////////////////////////////////////////////////////////////

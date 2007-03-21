@@ -37,7 +37,11 @@ public class ParamBean {
     }
 
     public String getDefault() {
-        return param.getDefault();
+	try {
+	    return param.getDefault();
+	} catch (WdkModelException e) {
+	    throw new RuntimeException(e);
+	}
     }
 
     /*
