@@ -147,6 +147,29 @@ public class XmlQuestion {
         return this.recordClass;
     }
 
+    /*
+      <sanityXmlQuestion ref="XmlQuestions.News"
+                         pageStart="1" pageEnd="20"
+                         minOutputLength="1" maxOutputLength="100"/>
+    */
+    public String getSanityTestSuggestion () throws WdkModelException {
+	String indent = "    ";
+        String newline = System.getProperty("line.separator");
+	StringBuffer buf = new StringBuffer(
+	      newline + newline
+	    + indent + "<sanityXmlQuestion ref=\"" + getFullName() + "\"" 
+	    + newline
+	    + indent + indent + indent
+	    + "minOutputLength=\"FIX_m_i_len\" maxOutputLength=\"FIX_m_o_len\""
+	    + newline
+ 	    + indent + indent + indent
+	    + "pageStart=\"1\" pageEnd=\"20\">"
+	    + newline);
+	buf.append(indent + "</sanityXmlQuestion>");
+	return buf.toString();
+    }
+
+
     /**
      * @param recordClassRef The recordClassRef to set.
      */

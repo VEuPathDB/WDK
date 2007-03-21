@@ -74,8 +74,9 @@ public class SanityTester {
      */
     private void existenceTest() throws IOException, WdkModelException {
 
-	BufferedWriter out = 
-	    new BufferedWriter(new FileWriter(suggestFileName));
+	BufferedWriter out = null;
+	if (suggestFileName != null) 
+	    out = new BufferedWriter(new FileWriter(suggestFileName));
 
         QuerySet querySets[] = wdkModel.getAllQuerySets();
         for (int i = 0; i < querySets.length; i++) {
@@ -90,7 +91,8 @@ public class SanityTester {
                             + nextQuery.getName()
                             + " is not represented in the sanity test\n");
                     queriesFailed++;
-		    out.write(nextQuery.getSanityTestSuggestion());
+		    if (out != null) 
+			out.write(nextQuery.getSanityTestSuggestion());
                 }
             }
         }
@@ -109,7 +111,8 @@ public class SanityTester {
                                 + nextRecordClass.getName()
                                 + " is not represented in the sanity test\n");
                         recordsFailed++;
-			out.write(nextRecordClass.getSanityTestSuggestion());
+			if (out != null)
+			    out.write(nextRecordClass.getSanityTestSuggestion());
                     }
                 }
             }
@@ -128,7 +131,8 @@ public class SanityTester {
                             + nextQuestion.getName()
                             + " is not represented in the sanity test\n");
                     questionsFailed++;
-		    out.write(nextQuestion.getSanityTestSuggestion());
+		    if (out != null) 
+			out.write(nextQuestion.getSanityTestSuggestion());
                 }
             }
         }
@@ -141,12 +145,12 @@ public class SanityTester {
                             + question.getFullName()
                             + " is not represented in the sanity test\n");
                     questionsFailed++;
-		    // out.write(question.getSanityTestSuggestion());
+		    if (out != null) 
+			out.write(question.getSanityTestSuggestion());
                 }
             }
         }
-	out.write("aString");
-	out.close();
+	if (out != null) out.close();
     }
 
     /**
