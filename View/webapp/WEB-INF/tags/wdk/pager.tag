@@ -43,7 +43,7 @@
 <pg:index>
   <table border="0">
     <tr>
-      <td>
+      <td nowrap>
       
   <pg:first>
     <a href="${pageUrl}">First</a>
@@ -54,15 +54,17 @@
   </pg:prev>
 
   <pg:pages>
-    <c:if test="${pageNumber < 10}">&nbsp;</c:if>
-    <c:choose>
-      <c:when test="${pageNumber==currentPageNumber}">
-        <b>${pageNumber}</b>
-      </c:when>
-      <c:otherwise>
-        <a href="${pageUrl}">${pageNumber}</a>
-      </c:otherwise>
-    </c:choose>
+    <c:set var="pageDistance" value="${currentPageNumber - pageNumber}" />
+    <c:if test="${pageDistance <= 5 && pageDistance >= -5}">
+      <c:choose>
+        <c:when test="${pageNumber==currentPageNumber}">
+          <b>${pageNumber}</b>
+        </c:when>
+        <c:otherwise>
+          <a href="${pageUrl}">${pageNumber}</a>
+        </c:otherwise>
+      </c:choose>
+    </c:if>
   </pg:pages>
 
   <pg:next>
@@ -75,15 +77,14 @@
   </pg:last>
   
       </td>
-      <td>
+      <td nowrap>
         <pg:page>
-
-          &nbsp;&nbsp;Go to page: 
+          To page: 
           <input type="text" id="${pager_id}_pageNumber" size="5" value="${currentPageNumber}"/>
           <input type="hidden" id="pageUrl" value="${pageUrl}" />
           <font size="-1">
-            [1 ... <span id="${pager_id}_pageCount">${wdkAnswer.pageCount}</span>]
-            &nbsp;page size:
+            [1..<span id="${pager_id}_pageCount">${wdkAnswer.pageCount}</span>]
+            &nbsp;per page:
           </font>
           
           <!-- display the choice of page size -->
