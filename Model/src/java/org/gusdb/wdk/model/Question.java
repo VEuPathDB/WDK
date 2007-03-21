@@ -314,6 +314,7 @@ public class Question implements Serializable {
 	    + newline
 	    + indent + indent + indent
 	    + "minOutputLength=\"FIX_m_i_len\" maxOutputLength=\"FIX_m_o_len\""
+	    + newline
  	    + indent + indent + indent
 	    + "pageStart=\"1\" pageEnd=\"20\">"
 	    + newline);
