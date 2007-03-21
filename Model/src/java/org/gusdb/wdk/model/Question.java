@@ -327,7 +327,7 @@ public class Question implements Serializable {
 		       + "\" value=\"" + value + "\"/>"
 		       + newline);
 	}
-	buf.append(indent + "</sanityQuery>");
+	buf.append(indent + "</sanityQuestion>");
 	return buf.toString();
     }
 
