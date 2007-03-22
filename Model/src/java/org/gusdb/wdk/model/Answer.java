@@ -202,8 +202,25 @@ public class Answer {
     public Map< String, Integer > getResultSizesByProject()
             throws WdkModelException {
         // fill the result size map grouped by project id
-        if ( resultSizesByProject == null ) getResultSize();
+        //if ( resultSizesByProject == null ) getResultSize();
+        //return resultSizesByProject;
+
+	// fill the result size map grouped by project id
+        //if (resultSizesByProject == null){
+	    if(idsQueryInstance.getResultMessage().equals("")){ //added by Cary P
+	         getResultSize();
+	    }else{//Added by Cary P
+		String message = idsQueryInstance.getResultMessage();
+		String[] sizes = message.split(",");
+		for(String size:sizes){
+		    String[] ss = size.split(":");
+		    resultSizesByProject.put(ss[0],Integer.parseInt(ss[1]));
+		}
+	    }//End Cary P
+	//}
         return resultSizesByProject;
+
+
     }
     
     public boolean isDynamic() {
