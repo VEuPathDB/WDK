@@ -240,7 +240,7 @@ public abstract class Query implements Serializable {
 	    + indent + "<sanityQuery ref=\"" + getFullName() + "\"" 
 	    + newline
 	    + indent + indent + indent
-	    + "minOutputLength=\"FIX_m_i_len\" maxOutputLength=\"FIX_m_o_len\">"
+	    + "minOutputLength=\"FIX_min_len\" maxOutputLength=\"FIX_max_len\">"
 	    + newline);
 	for (Param param : getParams()) {
 	    String paramName = param.getName();
