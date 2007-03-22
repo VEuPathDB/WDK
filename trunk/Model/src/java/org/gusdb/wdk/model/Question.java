@@ -313,7 +313,7 @@ public class Question implements Serializable {
 	    + indent + "<sanityQuestion ref=\"" + getFullName() + "\"" 
 	    + newline
 	    + indent + indent + indent
-	    + "minOutputLength=\"FIX_m_i_len\" maxOutputLength=\"FIX_m_o_len\""
+	    + "minOutputLength=\"FIX_min_len\" maxOutputLength=\"FIX_max_len\""
 	    + newline
  	    + indent + indent + indent
 	    + "pageStart=\"1\" pageEnd=\"20\">"
