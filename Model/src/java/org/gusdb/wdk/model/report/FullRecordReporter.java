@@ -3,6 +3,9 @@
  */
 package org.gusdb.wdk.model.report;
 
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -20,78 +23,82 @@ import org.gusdb.wdk.model.WdkModelException;
  * 
  */
 public class FullRecordReporter extends Reporter {
-
+    
     private static final String FIELD_SELECTED_COLUMNS = "selectedFields";
-    private static final String NEW_LINE = System.getProperty("line.separator");
-
+    
+    public FullRecordReporter( Answer answer ) {
+        super( answer );
+    }
+    
     /*
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.report.IReporter#format(org.gusdb.wdk.model.Answer)
      */
-    public String format(Answer answer) throws WdkModelException {
-
+    public void write( OutputStream out ) throws WdkModelException {
         // get the columns that will be in the report
-        Set<Field> fields = validateColumns(answer);
-        Set<AttributeField> attributes = new LinkedHashSet<AttributeField>();
-        Set<TableField> tables = new LinkedHashSet<TableField>();
-        for (Field field : fields) {
-            if (field instanceof AttributeField) {
-                attributes.add((AttributeField) field);
-            } else if (field instanceof TableField) {
-                tables.add((TableField) field);
+        Set< Field > fields = validateColumns( answer );
+        Set< AttributeField > attributes = new LinkedHashSet< AttributeField >();
+        Set< TableField > tables = new LinkedHashSet< TableField >();
+        for ( Field field : fields ) {
+            if ( field instanceof AttributeField ) {
+                attributes.add( ( AttributeField ) field );
+            } else if ( field instanceof TableField ) {
+                tables.add( ( TableField ) field );
             }
         }
-
+        
         // get the formatted result
-        StringBuffer result = new StringBuffer();
-        while (answer.hasMoreRecordInstances()) {
+        PrintWriter writer = new PrintWriter( new OutputStreamWriter( out ) );
+        while ( answer.hasMoreRecordInstances() ) {
             RecordInstance record = answer.getNextRecordInstance();
-            formatRecord(attributes, tables, record, result);
-            result.append("---------------------" + NEW_LINE);
+            formatRecord( attributes, tables, record, writer );
+            writer.println( "---------------------" );
+            writer.flush();
         }
-        return result.toString();
     }
-
-    private Set<Field> validateColumns(Answer answer) throws WdkModelException {
+    
+    private Set< Field > validateColumns( Answer answer )
+            throws WdkModelException {
         // get a map of report maker fields
-        Map<String, Field> fieldMap = answer.getQuestion().getReportMakerFields();
-
+        Map< String, Field > fieldMap = answer.getQuestion().getReportMakerFields();
+        
         // the config map contains a list of column names;
-        Set<Field> columns = new LinkedHashSet<Field>();
-
-        String fieldsList = config.get(FIELD_SELECTED_COLUMNS);
-        if (fieldsList == null) {
-            columns.addAll(fieldMap.values());
+        Set< Field > columns = new LinkedHashSet< Field >();
+        
+        String fieldsList = config.get( FIELD_SELECTED_COLUMNS );
+        if ( fieldsList == null ) {
+            columns.addAll( fieldMap.values() );
         } else {
-            String[] fields = fieldsList.split(",");
-            for (String column : fields) {
+            String[ ] fields = fieldsList.split( "," );
+            for ( String column : fields ) {
                 column = column.trim();
-                if (!fieldMap.containsKey(column))
-                    throw new WdkModelException("The column '" + column
-                            + "' cannot be included in the report");
-                columns.add(fieldMap.get(column));
+                if ( !fieldMap.containsKey( column ) )
+                    throw new WdkModelException( "The column '" + column
+                            + "' cannot be included in the report" );
+                columns.add( fieldMap.get( column ) );
             }
         }
         return columns;
     }
-
-    private void formatRecord(Set<AttributeField> attributes,
-            Set<TableField> tables, RecordInstance record, StringBuffer result)
+    
+    private void formatRecord( Set< AttributeField > attributes,
+            Set< TableField > tables, RecordInstance record, PrintWriter writer )
             throws WdkModelException {
         // print out attributes of the record first
-        for (AttributeField attribute : attributes) {
-            Object value = record.getAttributeValue(attribute);
-            result.append(attribute.getDisplayName() + ":");
-            result.append(value + NEW_LINE);
+        for ( AttributeField attribute : attributes ) {
+            Object value = record.getAttributeValue( attribute );
+            writer.println( attribute.getDisplayName() + ":" + value );
         }
-
+        
         // print out tables of the record
-        for (TableField table : tables) {
-            TableFieldValue value = record.getTableValue(table.getName());
-            result.append(NEW_LINE);
-            result.append("<Table> " + table.getDisplayName() + NEW_LINE);
-            value.write(result);
+        for ( TableField table : tables ) {
+            TableFieldValue value = record.getTableValue( table.getName() );
+            writer.println();
+            writer.println( "<Table> " + table.getDisplayName() );
+            StringBuffer buffer = new StringBuffer();
+            value.write( buffer );
+            writer.println( buffer );
         }
     }
 }

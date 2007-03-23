@@ -92,6 +92,12 @@
       <td><input type="radio" name="includeHeader" value="yes" checked>include
           <input type="radio" name="includeHeader" value="no">exclude
         </td></tr>
+  <tr><td valign="top"><b>Download Type: </b></td>
+      <td>
+          <input type="radio" name="downloadType" value="plain" checked>Browse Text
+          <input type="radio" name="downloadType" value="text" checked>Download Text
+          <input type="radio" name="downloadType" value="excel">Download Excel
+        </td></tr>
   <tr><td colspan="2">&nbsp;</td></tr>
   <tr><td></td>
       <td><html:submit property="downloadConfigSubmit" value="Get Report"/>
