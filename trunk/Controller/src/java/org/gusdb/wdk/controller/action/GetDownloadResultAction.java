@@ -3,9 +3,11 @@ package org.gusdb.wdk.controller.action;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.log4j.Logger;
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -14,6 +16,7 @@ import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.jspwrap.AnswerBean;
 import org.gusdb.wdk.model.jspwrap.HistoryBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
+import org.gusdb.wdk.model.report.Reporter;
 
 /**
  * This Action is called by the ActionServlet when a download submit is made. It
@@ -24,6 +27,8 @@ import org.gusdb.wdk.model.jspwrap.UserBean;
 
 public class GetDownloadResultAction extends Action {
 
+    private static Logger logger = Logger.getLogger( GetDownloadResultAction.class );
+    
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
@@ -44,7 +49,7 @@ public class GetDownloadResultAction extends Action {
         AnswerBean wdkAnswer = history.getAnswer();
 
         // get reporter name
-        String reporter = request.getParameter(CConstants.WDK_REPORT_FORMAT_KEY);
+        String reporterName = request.getParameter(CConstants.WDK_REPORT_FORMAT_KEY);
 
         // get configurations
         Map<String, String> config = new LinkedHashMap<String, String>();
@@ -68,12 +73,30 @@ public class GetDownloadResultAction extends Action {
         }
 
         // make report
-        String result = wdkAnswer.getReport(reporter, config);
+        Reporter reporter = wdkAnswer.createReport( reporterName, config );
+        reporter.configure(config);
+        
+        ServletOutputStream out = response.getOutputStream();
+        response.setHeader("Pragma", "Public");
+        response.setContentType(reporter.getHttpContentType());
+        
+        String fileName = reporter.getDownloadFileName();
+        if (fileName != null) {
+            response.setHeader("Content-disposition",
+                    "attachment; filename=" + reporter.getDownloadFileName());
+        }
+        logger.info( "content-type: " + reporter.getHttpContentType() );
+        logger.info( "file-name: " + reporter.getDownloadFileName() );
+        
+        reporter.write( out );
+        out.flush();
+        out.close();
 
-        request.setAttribute(CConstants.DOWNLOAD_RESULT_KEY, result);
-        // System.err.println("*** GDA: forward to " +
-        // CConstants.GET_DOWNLOAD_RESULT_MAPKEY);
-        ActionForward forward = mapping.findForward(CConstants.GET_DOWNLOAD_RESULT_MAPKEY);
-        return forward;
+//        request.setAttribute(CConstants.DOWNLOAD_RESULT_KEY, result);
+//        // System.err.println("*** GDA: forward to " +
+//        // CConstants.GET_DOWNLOAD_RESULT_MAPKEY);
+//        ActionForward forward = mapping.findForward(CConstants.GET_DOWNLOAD_RESULT_MAPKEY);
+//        return forward;
+        return null;
     }
 }

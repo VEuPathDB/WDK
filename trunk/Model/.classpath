@@ -29,5 +29,6 @@
 	<classpathentry kind="lib" path="lib/java/commons-collections-3.1.jar"/>
 	<classpathentry kind="lib" path="lib/java/commons-digester-1.7.jar"/>
 	<classpathentry kind="lib" path="lib/java/WSF-Client.jar"/>
+	<classpathentry kind="lib" path="lib/java/poi-2.5.1-final-20040804.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>
