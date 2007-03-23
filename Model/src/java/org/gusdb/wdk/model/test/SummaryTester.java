@@ -25,6 +25,7 @@ import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.report.Reporter;
 
 public class SummaryTester {
 
@@ -117,10 +118,11 @@ public class SummaryTester {
                 // System.out.println(answer
                 // .printAsRecords());
                 // else System.out.println(answer.printAsTable());
-
-                String result = answer.getReport(format, config, nextStartRow,
-                        nextEndRow);
-                System.out.println(result);
+                Reporter reporter = answer.createReport( format, config, nextStartRow,
+                        nextEndRow );
+                
+                reporter.write( System.out );
+                System.out.println();
 
                 pageCount++;
             }

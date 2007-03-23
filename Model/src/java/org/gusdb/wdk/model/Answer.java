@@ -1,5 +1,8 @@
 package org.gusdb.wdk.model;
 
+import java.io.OutputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -13,7 +16,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.report.IReporter;
+import org.gusdb.wdk.model.report.Reporter;
 
 /**
  * Answer.java
@@ -409,14 +412,14 @@ public class Answer {
         return buf.toString();
     }
     
-    public String getReport( String reporterName, Map< String, String > config )
+    public Reporter createReport( String reporterName, Map< String, String > config )
             throws WdkModelException {
         // get the full answer
         int endI = getResultSize();
-        return getReport( reporterName, config, 1, endI );
+        return createReport( reporterName, config,  1, endI );
     }
     
-    public String getReport( String reporterName, Map< String, String > config,
+    public Reporter createReport( String reporterName, Map< String, String > config,
             int startI, int endI ) throws WdkModelException {
         // get Reporter
         Map< String, ReporterRef > rptMap = question.getRecordClass().getReporterMap();
@@ -428,22 +431,35 @@ public class Answer {
                     + question.getRecordClass().getFullName() );
         
         try {
-            Class rptClass = Class.forName( rptImp );
-            IReporter reporter = ( IReporter ) rptClass.newInstance();
             
             // generate a new answer, if necessary
             Answer answer = this;
             if ( startI != this.startRecordInstanceI
                     || endI != this.endRecordInstanceI )
                 answer = newAnswer( startI, endI );
+
+            Class rptClass = Class.forName( rptImp );
+            Class[] paramClasses = {Answer.class};
+            Constructor constructor = rptClass.getConstructor( paramClasses );
             
-            reporter.config( config );
-            return reporter.format( answer );
+            Object[] params = {answer};
+            Reporter reporter = ( Reporter ) constructor.newInstance( params );
+            
+            reporter.configure( config );
+            return reporter;
         } catch ( ClassNotFoundException ex ) {
             throw new WdkModelException( ex );
         } catch ( InstantiationException ex ) {
             throw new WdkModelException( ex );
         } catch ( IllegalAccessException ex ) {
+            throw new WdkModelException( ex );
+        } catch ( SecurityException ex ) {
+            throw new WdkModelException( ex );
+        } catch ( NoSuchMethodException ex ) {
+            throw new WdkModelException( ex );
+        } catch ( IllegalArgumentException ex ) {
+            throw new WdkModelException( ex );
+        } catch ( InvocationTargetException ex ) {
             throw new WdkModelException( ex );
         }
     }

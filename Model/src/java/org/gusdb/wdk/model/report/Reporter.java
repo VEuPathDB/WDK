@@ -3,25 +3,50 @@
  */
 package org.gusdb.wdk.model.report;
 
+import java.io.OutputStream;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import org.gusdb.wdk.model.Answer;
+import org.gusdb.wdk.model.WdkModelException;
 
 /**
  * @author xingao
  * 
  */
-public abstract class Reporter implements IReporter {
+public abstract class Reporter {
+    
+    public static final String FIELD_FORMAT = "downloadType";
 
-    protected Map<String, String> config;
+    protected Map< String, String > config;
+    protected Answer answer;
+    
+    protected String format = "plain";
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.report.IReporter#setConfiguration(java.util.Map)
-     */
-    public void config(Map<String, String> config) {
-        this.config = (config != null) ? config
-                : new LinkedHashMap<String, String>();
+    protected Reporter( Answer answer ) {
+        this.answer = answer;
+        config = new LinkedHashMap< String, String >();
     }
+    
+    public void configure( Map< String, String > config ) {
+        if ( config != null ) {
+            this.config = config;
 
+            if ( config.containsKey( FIELD_FORMAT ) ) {
+                format = config.get( FIELD_FORMAT );
+            }
+        }
+    }
+    
+    public String getHttpContentType() {
+        // by default, generate result in plain text format
+        return "text/plain";
+    }
+    
+    public String getDownloadFileName() {
+        // by default, display the result in the browser, by seting the file name as null
+        return null;
+    }
+    
+    public abstract void write( OutputStream out ) throws WdkModelException;
 }
