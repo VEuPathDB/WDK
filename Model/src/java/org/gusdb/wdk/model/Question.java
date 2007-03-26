@@ -313,10 +313,10 @@ public class Question implements Serializable {
 	    + indent + "<sanityQuestion ref=\"" + getFullName() + "\"" 
 	    + newline
 	    + indent + indent + indent
-	    + "minOutputLength=\"FIX_min_len\" maxOutputLength=\"FIX_max_len\""
+	    + "pageStart=\"1\" pageEnd=\"20\""
 	    + newline
  	    + indent + indent + indent
-	    + "pageStart=\"1\" pageEnd=\"20\">"
+	    + "minOutputLength=\"FIX_min_len\" maxOutputLength=\"FIX_max_len\">"
 	    + newline);
 	for (Param param : getQuery().getParams()) {
 	    String paramName = param.getName();
