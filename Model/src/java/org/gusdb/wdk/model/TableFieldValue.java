@@ -53,6 +53,10 @@ public class TableFieldValue {
         return tableField.getAttributeFields();
     }
     
+    public AttributeField[] getDisplayableFields() {
+    	return tableField.getDisplayableFields();
+    }
+    
     /**
      * @return A list of rows where each row is a Map of columnName -->
      *         {@link AttributeFieldValue}

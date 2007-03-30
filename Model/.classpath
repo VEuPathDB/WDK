@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src/java"/>
+	<classpathentry excluding="**/.svn/" kind="src" path="src/java"/>
 	<classpathentry kind="lib" path="lib/java/commons-beanutils.jar"/>
 	<classpathentry kind="lib" path="lib/java/commons-cli-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/java/commons-dbcp-1.1.jar"/>
