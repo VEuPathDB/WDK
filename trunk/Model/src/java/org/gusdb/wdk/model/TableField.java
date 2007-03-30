@@ -1,6 +1,8 @@
 package org.gusdb.wdk.model;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -45,6 +47,26 @@ public class TableField extends Field {
 
     public Map<String, AttributeField> getAttributeFieldMap() {
         return new LinkedHashMap<String, AttributeField>(attributeFields);
+    }
+    
+    public AttributeField[] getReportMakerFields() {
+        List< AttributeField > fields = new ArrayList< AttributeField >();
+        for(AttributeField field : attributeFields.values()) {
+            if (field.getInReportMaker()) fields.add( field );
+        }
+        AttributeField[] array = new AttributeField[fields.size()];
+        fields.toArray( array );
+        return array;
+    }
+    
+    public AttributeField[] getDisplayableFields() {
+        List< AttributeField > fields = new ArrayList< AttributeField >();
+        for(AttributeField field : attributeFields.values()) {
+            if (!field.getInternal()) fields.add( field );
+        }
+        AttributeField[] array = new AttributeField[fields.size()];
+        fields.toArray( array );
+        return array;
     }
 
     /*

@@ -27,7 +27,7 @@ import org.gusdb.wdk.model.WdkModelException;
  */
 public class TabularReporter extends Reporter {
     
-    private Logger logger = Logger.getLogger( TabularReporter.class);
+    private static Logger logger = Logger.getLogger( TabularReporter.class );
     
     public static final String FIELD_HAS_HEADER = "includeHeader";
     public static final String FIELD_DIVIDER = "divider";
@@ -36,67 +36,69 @@ public class TabularReporter extends Reporter {
     private boolean hasHeader = true;
     private String divider = "\t";
     
-    public TabularReporter(Answer answer) {
-        super(answer);
+    public TabularReporter( Answer answer ) {
+        super( answer );
     }
-   
+    
     /*
-     *
+     * 
      */
     @Override
-    public void configure(Map<String, String> config) {
-        super.configure(config);
-
+    public void configure( Map< String, String > config ) {
+        super.configure( config );
+        
         // get basic configurations
         if ( config.containsKey( FIELD_HAS_HEADER ) ) {
             String value = config.get( FIELD_HAS_HEADER );
             hasHeader = ( value.equalsIgnoreCase( "yes" ) || value.equalsIgnoreCase( "true" ) ) ? true
                     : false;
         }
-
+        
         if ( config.containsKey( FIELD_DIVIDER ) ) {
             divider = config.get( FIELD_DIVIDER );
         }
     }
- 
-    /* (non-Javadoc)
+    
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.report.Reporter#getHttpContentType()
      */
     @Override
     public String getHttpContentType() {
-        if (format.equalsIgnoreCase( "text" )) {
+        if ( format.equalsIgnoreCase( "text" ) ) {
             return "text/plain";
-        }else if (format.equalsIgnoreCase( "excel" )) {
+        } else if ( format.equalsIgnoreCase( "excel" ) ) {
             return "appilication/vnd.ms-excel";
         } else { // use the default content type defined in the parent class
             return super.getHttpContentType();
         }
     }
-
-    /* (non-Javadoc)
+    
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.report.Reporter#getDownloadFileName()
      */
     @Override
     public String getDownloadFileName() {
-        logger.info("Internal format: " + format);
+        logger.info( "Internal format: " + format );
         String name = answer.getQuestion().getName();
-        if (format.equalsIgnoreCase( "text" )) {
-            return name + ".txt";
-        }else if (format.equalsIgnoreCase( "excel" )) {
-            return name + ".xls";
+        if ( format.equalsIgnoreCase( "text" ) ) {
+            return name + "_summary.txt";
+        } else if ( format.equalsIgnoreCase( "excel" ) ) {
+            return name + "_summary.xls";
         } else { // use the defaul file name defined in the parent
             return super.getDownloadFileName();
         }
     }
     
-
     /*
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.report.IReporter#format(org.gusdb.wdk.model.Answer)
      */
-    public void write( OutputStream out )
-            throws WdkModelException {
+    public void write( OutputStream out ) throws WdkModelException {
         
         // get the columns that will be in the report
         Set< AttributeField > columns = validateColumns( answer );
@@ -139,14 +141,12 @@ public class TabularReporter extends Reporter {
     
     private void format2Text( Set< AttributeField > columns, Answer answer,
             OutputStream out ) throws WdkModelException {
-        PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
+        PrintWriter writer = new PrintWriter( new OutputStreamWriter( out ) );
         
         // print the header
         if ( hasHeader ) {
-            writer.print( "#" );
-            writer.print( divider );
             for ( AttributeField column : columns ) {
-                writer.print( column.getDisplayName() );
+                writer.print( "[" + column.getDisplayName() + "]" );
                 writer.print( divider );
             }
             writer.println();
@@ -175,12 +175,12 @@ public class TabularReporter extends Reporter {
         HSSFSheet sheet = workbook.createSheet( answer.getQuestion().getDisplayName() );
         
         int rowIndex = 0;
-        if (hasHeader) {
+        if ( hasHeader ) {
             HSSFRow row = sheet.createRow( rowIndex++ );
             short index = 0;
-            row.createCell( index++ ).setCellValue( "#" );
             for ( AttributeField column : columns ) {
-                row.createCell( index++ ).setCellValue( column.getDisplayName() );
+                row.createCell( index++ ).setCellValue(
+                        "[" + column.getDisplayName() + "]" );
             }
         }
         
@@ -191,7 +191,8 @@ public class TabularReporter extends Reporter {
             for ( AttributeField column : columns ) {
                 Object value = record.getAttributeValue( column );
                 if ( value instanceof LinkValue ) {
-                    row.createCell( index++ ).setCellValue( ( ( LinkValue ) value ).getValue() );
+                    row.createCell( index++ ).setCellValue(
+                            ( ( LinkValue ) value ).getValue() );
                 } else {
                     row.createCell( index++ ).setCellValue( value.toString() );
                 }
@@ -201,7 +202,7 @@ public class TabularReporter extends Reporter {
             workbook.write( out );
             out.flush();
         } catch ( IOException ex ) {
-            throw new WdkModelException(ex);
+            throw new WdkModelException( ex );
         }
     }
 }

@@ -2,6 +2,7 @@
 <%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
 <%@ taglib prefix="pg" uri="http://jsptags.com/tags/navigation/pager" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
 <%@ taglib prefix="nested" uri="http://jakarta.apache.org/struts/tags-nested" %>
 
@@ -53,72 +54,78 @@ function makeSelection(state)
         <input type="hidden" name="wdk_history_id" value="${history_id}"/>
         <input type="hidden" name="wdkReportFormat" value="${format}"/>
           <table>
+
+          <c:set var="attributeFields" value="${wdkAnswer.allReportMakerAttributes}"/>
           <c:set var="numPerLine" value="2"/>
+          <c:set var="numPerColumn" value="${fn:length(attributeFields) / numPerLine}"/>
           <c:set var="i" value="0"/>
 
           <tr>
              <th colspan="${numPerLine}">Attributes</th>
           </tr>
           <tr>
-          <c:forEach items="${wdkAnswer.allReportMakerAttributes}" var="rmAttr">
-            <c:set var="i" value="${i+1}"/>
-            <c:set var="br" value=""/>
-            <c:if test="${i % numPerLine == 0}"><c:set var="br" value="</tr><tr>"/></c:if>
-            <td>
-              <input type="checkbox" name="selectedFields" value="${rmAttr.name}">
-                  <c:choose>
-                    <c:when test="${rmAttr.displayName == null || rmAttr.displayName == ''}">
-                      ${rmAttr.name}
-                    </c:when>
-                    <c:otherwise>
-                      ${rmAttr.displayName}
-                    </c:otherwise>
-                  </c:choose>
-                  <c:if test="${rmAttr.name == 'primaryKey'}">ID</c:if>
-            </td>${br}
-          </c:forEach>
-
-          <c:if test="${i % numPerLine != 0 }">
-              <c:set var="j" value="${i}"/>
-              <c:forEach begin="${i+1}" end="${i+numPerLine}" step="1">
-                  <c:set var="j" value="${j+1}"/>
-                  <c:if test="${j % numPerLine != 0}"><td></td></c:if>
+            <td nowrap>
+              <c:forEach items="${attributeFields}" var="rmAttr">
+                <input type="checkbox" name="selectedFields" value="${rmAttr.name}">
+                <c:choose>
+                  <c:when test="${rmAttr.displayName == null || rmAttr.displayName == ''}">
+                    ${rmAttr.name}
+                  </c:when>
+                  <c:otherwise>
+                    ${rmAttr.displayName}
+                  </c:otherwise>
+                </c:choose>
+                <c:if test="${rmAttr.name == 'primaryKey'}">ID</c:if>
+                <c:set var="i" value="${i+1}"/>
+                <c:choose>
+                  <c:when test="${i >= numPerColumn}">
+                    <c:set var="i" value="0"/>
+                    </td><td nowrap>
+                  </c:when>
+                  <c:otherwise>
+                    <br />
+                  </c:otherwise>
+                </c:choose>
               </c:forEach>
-              </tr>
-          </c:if>
+            </td>
+          </tr>
           
+          <c:set var="tableFields" value="${wdkAnswer.allReportMakerTables}"/>
+          <c:set var="numPerColumn" value="${fn:length(tableFields) / numPerLine}"/>
+          <c:set var="i" value="0"/>
+
           <tr>
              <th colspan="${numPerLine}">Tables</th>
           </tr>
-           <tr>
-          <c:forEach items="${wdkAnswer.allReportMakerTables}" var="rmTable">
-            <c:set var="i" value="${i+1}"/>
-            <c:set var="br" value=""/>
-            <c:if test="${i % numPerLine == 0}"><c:set var="br" value="</tr><tr>"/></c:if>
-            <td>
-              <input type="checkbox" name="selectedFields" value="${rmTable.name}">
-                  <c:choose>
-                    <c:when test="${rmTable.displayName == null || rmTable.displayName == ''}">
-                      ${rmTable.name}
-                    </c:when>
-                    <c:otherwise>
-                      ${rmTable.displayName}
-                    </c:otherwise>
-                  </c:choose>
-            </td>${br}
-          </c:forEach>
-
-          <c:if test="${i % numPerLine != 0 }">
-              <c:set var="j" value="${i}"/>
-              <c:forEach begin="${i+1}" end="${i+numPerLine}" step="1">
-                  <c:set var="j" value="${j+1}"/>
-                  <c:if test="${j % numPerLine != 0}"><td></td></c:if>
+          <tr>
+            <td nowrap>
+              <c:forEach items="${tableFields}" var="rmTable">
+                <input type="checkbox" name="selectedFields" value="${rmTable.name}">
+                <c:choose>
+                  <c:when test="${rmTable.displayName == null || rmTable.displayName == ''}">
+                    ${rmTable.name}
+                  </c:when>
+                  <c:otherwise>
+                    ${rmTable.displayName}
+                  </c:otherwise>
+                </c:choose>
+                <c:set var="i" value="${i+1}"/>
+                <c:choose>
+                  <c:when test="${i >= numPerColumn}">
+                    <c:set var="i" value="0"/>
+                    </td><td nowrap>
+                  </c:when>
+                  <c:otherwise>
+                    <br />
+                  </c:otherwise>
+                </c:choose>
               </c:forEach>
-              </tr>
-          </c:if>
+            </td>
+          </tr>
          
-          </table>
-        </td></tr>
+        </table>
+      </td>
+  </tr>
 
   <tr><td valign="top">&nbsp;</td>
       <td align="center">
@@ -126,6 +133,19 @@ function makeSelection(state)
           <input type="button" value="clear all" selected="yes" onclick="makeSelection(0)">
           <input type="button" value="select inverse" selected="yes" onclick="makeSelection(-1)">
         </td></tr>
+
+  <tr><td valign="top"><b>Download Type: </b></td>
+      <td>
+          <input type="radio" name="downloadType" value="text">Text File
+          <input type="radio" name="downloadType" value="excel">Excel File
+          <input type="radio" name="downloadType" value="plain" checked>Show in Browser
+        </td></tr>
+
+  <tr>
+    <td colspan="2" valign="top">
+        <input type="checkbox" name="hasEmptyTable" value="true" checked>Include Empty Table
+    </td>
+  </tr>
 
   <tr><td colspan="2">&nbsp;</td></tr>
   <tr><td></td>
