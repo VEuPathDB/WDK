@@ -653,6 +653,8 @@ public class ResultFactory implements Serializable {
         // try { throw new Exception("Inocation path test."); }
         // catch(Exception ex) {ex.printStackTrace();}
         
+        if ( queryLoggerFile == null || queryLoggerFile.length() == 0) return;
+        
         Calendar cal = GregorianCalendar.getInstance();
         
         // decide the name of the logger file
