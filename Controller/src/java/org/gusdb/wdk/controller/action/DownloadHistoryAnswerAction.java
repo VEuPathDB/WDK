@@ -26,83 +26,97 @@ import org.gusdb.wdk.model.jspwrap.UserBean;
  */
 
 public class DownloadHistoryAnswerAction extends Action {
-
-    private static Logger logger = Logger.getLogger(DownloadHistoryAnswerAction.class);
     
-    public ActionForward execute(ActionMapping mapping, ActionForm form,
-            HttpServletRequest request, HttpServletResponse response)
+    private static Logger logger = Logger.getLogger( DownloadHistoryAnswerAction.class );
+    
+    public ActionForward execute( ActionMapping mapping, ActionForm form,
+            HttpServletRequest request, HttpServletResponse response )
             throws Exception {
-        AnswerBean wdkAnswer = getAnswerBean(request);
-
+        AnswerBean wdkAnswer = getAnswerBean( request );
+        
         // get a list of supported reporters
         RecordClassBean recordClass = wdkAnswer.getQuestion().getRecordClass();
         String fullName = recordClass.getFullName();
-        Map<String, String> reporters = recordClass.getReporters();
-
+        Map< String, String > reporters = recordClass.getReporters();
+        
         // get the current selected reporter
-        String reporter = request.getParameter(CConstants.WDK_REPORT_FORMAT_KEY);
-        if (reporter != null && reporter.trim().length() == 0) reporter = null;
-
-        request.setAttribute(CConstants.WDK_REPORT_FORMATS_KEY, reporters);
-        if (reporter != null)
-            request.setAttribute(CConstants.WDK_REPORT_FORMAT_KEY, reporter);
-
-        request.setAttribute(CConstants.WDK_ANSWER_KEY, wdkAnswer);
-        request.setAttribute(CConstants.WDK_QUESTION_PARAMS_KEY,
-                wdkAnswer.getInternalParams());
-
+        String reporter = request.getParameter( CConstants.WDK_REPORT_FORMAT_KEY );
+        if ( reporter != null && reporter.trim().length() == 0 )
+            reporter = null;
+        
+        request.setAttribute( CConstants.WDK_REPORT_FORMATS_KEY, reporters );
+        if ( reporter != null ) {
+            request.setAttribute( CConstants.WDK_REPORT_FORMAT_KEY, reporter );
+            
+            // cache all ids, currently the id list is only used by srt reporter
+            // the "srt" reporter name is hard-coded here, to avoid loading the 
+            // ids for all reporters
+            if ( reporter.equalsIgnoreCase( "srt" ) ) {
+                String[ ] ids = wdkAnswer.getAllIds();
+                StringBuffer sbIds = new StringBuffer();
+                for ( String id : ids )
+                    sbIds.append( id + " " );
+                request.setAttribute( CConstants.WDK_ALL_RECORD_IDS_KEY,
+                        sbIds.toString() );
+            }
+        }
+        request.setAttribute( CConstants.WDK_ANSWER_KEY, wdkAnswer );
+        request.setAttribute( CConstants.WDK_QUESTION_PARAMS_KEY,
+                wdkAnswer.getInternalParams() );
+        
         // get forward
         ActionForward forward;
-
-        if (reporter == null) {
+        
+        if ( reporter == null ) {
             // get the default configuration page
-            forward = mapping.findForward(CConstants.GET_DOWNLOAD_CONFIG_MAPKEY);
+            forward = mapping.findForward( CConstants.GET_DOWNLOAD_CONFIG_MAPKEY );
         } else {
             ServletContext svltCtx = getServlet().getServletContext();
-            String customViewDir = (String) svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
+            String customViewDir = ( String ) svltCtx.getAttribute( CConstants.WDK_CUSTOMVIEWDIR_KEY );
             String customViewFile1 = customViewDir + File.separator + fullName
                     + "." + reporter + "ReporterConfig.jsp";
             String customViewFile2 = customViewDir + File.separator + reporter
                     + "ReporterConfig.jsp";
             String customViewFile3 = File.separator + reporter
                     + "ReporterConfig.jsp";
-
-            if (ApplicationInitListener.resourceExists(customViewFile1, svltCtx)) {
-                forward = new ActionForward(customViewFile1);
-            } else if (ApplicationInitListener.resourceExists(customViewFile2,
-                    svltCtx)) {
-                forward = new ActionForward(customViewFile2);
-            } else if (ApplicationInitListener.resourceExists(customViewFile3,
-                    svltCtx)) {
-                forward = new ActionForward(customViewFile3);
+            
+            if ( ApplicationInitListener.resourceExists( customViewFile1,
+                    svltCtx ) ) {
+                forward = new ActionForward( customViewFile1 );
+            } else if ( ApplicationInitListener.resourceExists(
+                    customViewFile2, svltCtx ) ) {
+                forward = new ActionForward( customViewFile2 );
+            } else if ( ApplicationInitListener.resourceExists(
+                    customViewFile3, svltCtx ) ) {
+                forward = new ActionForward( customViewFile3 );
             } else {
-                throw new WdkModelException("No configuration form can be "
-                        + "found for the selected format: " + reporter);
+                throw new WdkModelException( "No configuration form can be "
+                        + "found for the selected format: " + reporter );
             }
         }
-        logger.info("The download config: " + forward.getPath());
+        logger.info( "The download config: " + forward.getPath() );
         
         return forward;
     }
-
-    protected AnswerBean getAnswerBean(HttpServletRequest request)
+    
+    protected AnswerBean getAnswerBean( HttpServletRequest request )
             throws Exception {
-        String histIdstr = request.getParameter(CConstants.WDK_HISTORY_ID_KEY);
-        if (histIdstr == null) {
-            histIdstr = (String) request.getAttribute(CConstants.WDK_HISTORY_ID_KEY);
+        String histIdstr = request.getParameter( CConstants.WDK_HISTORY_ID_KEY );
+        if ( histIdstr == null ) {
+            histIdstr = ( String ) request.getAttribute( CConstants.WDK_HISTORY_ID_KEY );
         }
-        if (histIdstr != null) {
-            int histId = Integer.parseInt(histIdstr);
-            request.setAttribute(CConstants.WDK_HISTORY_ID_KEY, histId);
-
-            UserBean wdkUser = (UserBean) request.getSession().getAttribute(
-                    CConstants.WDK_USER_KEY);
-
-            HistoryBean history = wdkUser.getHistory(histId);
+        if ( histIdstr != null ) {
+            int histId = Integer.parseInt( histIdstr );
+            request.setAttribute( CConstants.WDK_HISTORY_ID_KEY, histId );
+            
+            UserBean wdkUser = ( UserBean ) request.getSession().getAttribute(
+                    CConstants.WDK_USER_KEY );
+            
+            HistoryBean history = wdkUser.getHistory( histId );
             return history.getAnswer();
         } else {
             throw new Exception(
-                    "no history id is given for which to download the result");
+                    "no history id is given for which to download the result" );
         }
     }
 }

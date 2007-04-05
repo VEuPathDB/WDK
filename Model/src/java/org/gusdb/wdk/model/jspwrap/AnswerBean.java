@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.jspwrap;
 
-import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Iterator;
@@ -312,8 +311,7 @@ public class AnswerBean {
      *      java.util.Map)
      */
     public Reporter createReport( String reporterName,
-            Map< String, String > config )
-            throws WdkModelException {
+            Map< String, String > config ) throws WdkModelException {
         return answer.createReport( reporterName, config );
     }
     
@@ -352,6 +350,15 @@ public class AnswerBean {
         answer.setSumaryAttributes( attributeNames );
     }
     
+    /**
+     * @return
+     * @throws WdkModelException
+     * @see org.gusdb.wdk.model.Answer#getAllIds()
+     */
+    public String[ ] getAllIds() throws WdkModelException {
+        return answer.getAllIds();
+    }
+    
     // //////////////////////////////////////////////////////////////////////
     // Inner classes
     // //////////////////////////////////////////////////////////////////////
@@ -384,4 +391,5 @@ public class AnswerBean {
         }
         
     }
+    
 }

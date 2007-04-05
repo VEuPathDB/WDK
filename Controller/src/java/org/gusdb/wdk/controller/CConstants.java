@@ -46,6 +46,7 @@ public class CConstants {
     public static final String WDK_LOGIN_URL_KEY = "wdkLoginUrl";
     public static final String WDK_PAGE_SIZE_KEY = "pageSize";
     public static final String WDK_ALT_PAGE_SIZE_KEY = "altPageSize";
+    public static final String WDK_ALL_RECORD_IDS_KEY = "allRecordIds";
 
     // the constants for user authentication/authorization
     public static final String WDK_USER_KEY = "wdkUser";
