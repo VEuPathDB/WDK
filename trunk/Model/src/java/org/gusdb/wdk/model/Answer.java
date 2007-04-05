@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model;
 
-import java.io.OutputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -205,25 +204,25 @@ public class Answer {
     public Map< String, Integer > getResultSizesByProject()
             throws WdkModelException {
         // fill the result size map grouped by project id
-        //if ( resultSizesByProject == null ) getResultSize();
-        //return resultSizesByProject;
-
-	// fill the result size map grouped by project id
-        //if (resultSizesByProject == null){
-	    if(idsQueryInstance.getResultMessage().equals("")){ //added by Cary P
-	         getResultSize();
-	    }else{//Added by Cary P
-		String message = idsQueryInstance.getResultMessage();
-		String[] sizes = message.split(",");
-		for(String size:sizes){
-		    String[] ss = size.split(":");
-		    resultSizesByProject.put(ss[0],Integer.parseInt(ss[1]));
-		}
-	    }//End Cary P
-	//}
+        // if ( resultSizesByProject == null ) getResultSize();
+        // return resultSizesByProject;
+        
+        // fill the result size map grouped by project id
+        // if (resultSizesByProject == null){
+        if ( idsQueryInstance.getResultMessage().equals( "" ) ) { // added by
+                                                                    // Cary P
+            getResultSize();
+        } else {// Added by Cary P
+            String message = idsQueryInstance.getResultMessage();
+            String[ ] sizes = message.split( "," );
+            for ( String size : sizes ) {
+                String[ ] ss = size.split( ":" );
+                resultSizesByProject.put( ss[ 0 ], Integer.parseInt( ss[ 1 ] ) );
+            }
+        }// End Cary P
+        // }
         return resultSizesByProject;
-
-
+        
     }
     
     public boolean isDynamic() {
@@ -412,15 +411,16 @@ public class Answer {
         return buf.toString();
     }
     
-    public Reporter createReport( String reporterName, Map< String, String > config )
-            throws WdkModelException {
+    public Reporter createReport( String reporterName,
+            Map< String, String > config ) throws WdkModelException {
         // get the full answer
         int endI = getResultSize();
-        return createReport( reporterName, config,  1, endI );
+        return createReport( reporterName, config, 1, endI );
     }
     
-    public Reporter createReport( String reporterName, Map< String, String > config,
-            int startI, int endI ) throws WdkModelException {
+    public Reporter createReport( String reporterName,
+            Map< String, String > config, int startI, int endI )
+            throws WdkModelException {
         // get Reporter
         Map< String, ReporterRef > rptMap = question.getRecordClass().getReporterMap();
         ReporterRef rptRef = rptMap.get( reporterName );
@@ -437,12 +437,12 @@ public class Answer {
             if ( startI != this.startRecordInstanceI
                     || endI != this.endRecordInstanceI )
                 answer = newAnswer( startI, endI );
-
+            
             Class rptClass = Class.forName( rptImp );
-            Class[] paramClasses = {Answer.class};
+            Class[ ] paramClasses = { Answer.class };
             Constructor constructor = rptClass.getConstructor( paramClasses );
             
-            Object[] params = {answer};
+            Object[ ] params = { answer };
             Reporter reporter = ( Reporter ) constructor.newInstance( params );
             
             reporter.configure( config );
@@ -903,5 +903,19 @@ public class Answer {
                     attributeName );
             summaryAttributes.put( attributeName, field );
         }
+    }
+    
+    public String[ ] getAllIds() throws WdkModelException {
+        List< String > ids = new ArrayList< String >();
+        findPrimaryKeyColumnNames();
+        ResultList rl = idsQueryInstance.getResult();
+        while ( rl.next() ) {
+            String id = rl.getValue( recordIdColumnName ).toString();
+            ids.add( id );
+        }
+        rl.close();
+        String[ ] array = new String[ ids.size() ];
+        ids.toArray( array );
+        return array;
     }
 }
