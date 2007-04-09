@@ -355,8 +355,12 @@ public class AnswerBean {
      * @throws WdkModelException
      * @see org.gusdb.wdk.model.Answer#getAllIds()
      */
-    public String[ ] getAllIds() throws WdkModelException {
-        return answer.getAllIds();
+    public String getAllIdList() throws WdkModelException {
+        String[ ] ids = answer.getAllIds();
+        StringBuffer sbIds = new StringBuffer();
+        for ( String id : ids )
+            sbIds.append( id + " " );
+        return sbIds.toString().trim();
     }
     
     // //////////////////////////////////////////////////////////////////////
