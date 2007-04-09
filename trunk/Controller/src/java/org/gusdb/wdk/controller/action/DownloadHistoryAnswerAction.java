@@ -47,18 +47,6 @@ public class DownloadHistoryAnswerAction extends Action {
         request.setAttribute( CConstants.WDK_REPORT_FORMATS_KEY, reporters );
         if ( reporter != null ) {
             request.setAttribute( CConstants.WDK_REPORT_FORMAT_KEY, reporter );
-            
-            // cache all ids, currently the id list is only used by srt reporter
-            // the "srt" reporter name is hard-coded here, to avoid loading the 
-            // ids for all reporters
-            if ( reporter.equalsIgnoreCase( "srt" ) ) {
-                String[ ] ids = wdkAnswer.getAllIds();
-                StringBuffer sbIds = new StringBuffer();
-                for ( String id : ids )
-                    sbIds.append( id + " " );
-                request.setAttribute( CConstants.WDK_ALL_RECORD_IDS_KEY,
-                        sbIds.toString() );
-            }
         }
         request.setAttribute( CConstants.WDK_ANSWER_KEY, wdkAnswer );
         request.setAttribute( CConstants.WDK_QUESTION_PARAMS_KEY,
