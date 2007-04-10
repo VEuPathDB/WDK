@@ -51,6 +51,7 @@ public class SanityTester {
     WdkModel wdkModel;
     boolean verbose;
     boolean failuresOnly;
+    boolean indexOnly;
     SanityModel sanityModel;
     String modelName;
     String suggestFileName;
@@ -58,11 +59,12 @@ public class SanityTester {
     public static final String BANNER_LINE_top = "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv";
     public static final String BANNER_LINE_bot = "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^";
 
-    public SanityTester(String modelName, SanityModel sanityModel,boolean verbose, String suggestFileName, Integer skipTo, Integer stopAfter, boolean failuresOnly) throws WdkModelException {
+    public SanityTester(String modelName, SanityModel sanityModel,boolean verbose, String suggestFileName, Integer skipTo, Integer stopAfter, boolean failuresOnly, boolean indexOnly) throws WdkModelException {
         this.wdkModel = WdkModel.construct(modelName);
         this.sanityModel = sanityModel;
         this.verbose = verbose;
         this.failuresOnly = failuresOnly;
+        this.indexOnly = indexOnly;
         this.modelName = modelName;
 	this.suggestFileName = suggestFileName;
 	this.skipTo = skipTo;
@@ -187,6 +189,13 @@ public class SanityTester {
                 //Query nextQuery = nextQuerySet.getQuery(queryRef.getElementName());
                 nextQuerySet.getQuery(queryRef.getElementName());
 
+		if (indexOnly) {
+		   System.out.println(" QUERY " + queryRef.getSetName() + "."
+				      + queryRef.getElementName() 
+				      +  " [test: " + testCount + "]");
+		 continue;
+		}
+
                 // run query
                 QueryTester queryTester = new QueryTester(wdkModel);
                 ResultList rs = queryTester.getResult(queryRef.getSetName(),
@@ -282,6 +291,13 @@ public class SanityTester {
                 // logging time
                 long end = System.currentTimeMillis();
                 
+		if (indexOnly) {
+		   System.out.println(" RECORD " + recordRef.getSetName() + "."
+				      + recordRef.getElementName() 
+				      +  " [test: " + testCount + "]");
+		 continue;
+		}
+
                 if (!failuresOnly) System.out.println(((end -start)/1000F) + " Record "
                         + recordRef.getSetName() + "."
                         + recordRef.getElementName() + " passed" 
@@ -329,6 +345,14 @@ public class SanityTester {
                 questionRef = new Reference(questions[i].getRef());
                 QuestionSet questionSet = wdkModel.getQuestionSet(questionRef.getSetName());
                 Question question = questionSet.getQuestion(questionRef.getElementName());
+
+		if (indexOnly) {
+		   System.out.println(" QUESTION " 
+				      + questionRef.getSetName() + "."
+				      + questionRef.getElementName() 
+				      +  " [test: " + testCount + "]");
+		 continue;
+		}
 
                 // run question
                 Answer answer = question.makeAnswer(
@@ -429,6 +453,14 @@ public class SanityTester {
                 String xmlData = questions[i].getXmlData();
                 if (xmlData != null) question.setXmlDataURL(xmlData);
                 
+		if (indexOnly) {
+		   System.out.println(" XML QUESTION " 
+				      + questionRef.getSetName() + "."
+				      + questionRef.getElementName() 
+				      +  " [test: " + testCount + "]");
+		 continue;
+		}
+
                 // run question
                 XmlAnswer answer = question.makeAnswer(
                         null,
@@ -577,9 +609,11 @@ public class SanityTester {
                 "Stop after this test.  Provide the integer test number.");
         options.addOption(stopAfter);
 
-        Option failuresOnly = new Option("failuresOnly", "Print failures only.");
+        Option failuresOnly = new Option("failuresOnly", "Only print failures only.");
         options.addOption(failuresOnly);
 
+        Option indexOnly = new Option("indexOnly", "Only print an index of the tests.");
+        options.addOption(indexOnly);
         return options;
     }
 
@@ -605,7 +639,7 @@ public class SanityTester {
     static void usage(String cmdName, Options options) {
 
         String newline = System.getProperty("line.separator");
-        String cmdlineSyntax = cmdName + " -model model_name" + " [-verbose] [-suggestFile filename] [-skipTo testnum] [-stopAfter testnum]  [-failuresOnly]";
+        String cmdlineSyntax = cmdName + " -model model_name" + " [-verbose] [-suggestFile filename] [-skipTo testnum] [-stopAfter testnum]  [-failuresOnly | -indexOnly]";
 
         String header = newline
                 + "Run a test on all queries and records in a wdk model, using a provided sanity model, to ensure that the course of development hasn't dramatically affected wdk functionality."
@@ -651,6 +685,8 @@ public class SanityTester {
 
         boolean failuresOnly = cmdLine.hasOption("failuresOnly");
 
+        boolean indexOnly = cmdLine.hasOption("indexOnly");
+
         try {
             File sanitySchemaFile = new File(
                     System.getProperty("sanitySchemaFile"));
@@ -663,7 +699,7 @@ public class SanityTester {
             sanityModel.validateQuestions();
 
             SanityTester sanityTester = new SanityTester(modelName,
-                    sanityModel, verbose, suggestFileName, skipTo, stopAfter, failuresOnly);
+                    sanityModel, verbose, suggestFileName, skipTo, stopAfter, failuresOnly, indexOnly);
 
             sanityTester.existenceTest();
             sanityTester.queriesTest();
