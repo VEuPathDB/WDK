@@ -536,6 +536,10 @@ public class Answer {
             }
             
             RecordInstance recordInstance = recordInstanceMap.get( attrPrimaryKey );
+	    if (recordInstance == null) {
+		throw new WdkModelException("Can't find record instance for primary key '" + attrPrimaryKey + "'");
+	    }
+
             setColumnValues( recordInstance, attributesQueryInstance,
                     isDynamic, recordIdColumnName, recordProjectColumnName,
                     attrQueryResultList );
