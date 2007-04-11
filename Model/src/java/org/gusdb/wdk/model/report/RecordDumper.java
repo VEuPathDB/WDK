@@ -65,6 +65,7 @@ public class RecordDumper {
         // get type list
         String[] types = typeArg.split(",");
         for (String type : types) {
+            type = type.trim();
             if (!type.equalsIgnoreCase("gene")
                     && !type.equalsIgnoreCase("sequence")) {
                 System.err.println("Unsupported record type: " + type);
@@ -76,7 +77,7 @@ public class RecordDumper {
         String[] organisms = organismArg.split(",");
         for (String organism : organisms) {
             for (String type : types) {
-                dumpOrganism(qset, organism.trim(), type, baseDir);
+                dumpOrganism(qset, organism.trim(), type.trim(), baseDir);
             }
         }
         System.out.println("Finished.");
