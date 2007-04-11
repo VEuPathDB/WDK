@@ -54,14 +54,13 @@ public class RecordDumper {
             System.exit(-1);
         }
         if (baseDir == null || baseDir.length() == 0) baseDir = ".";
-        
 
         // TEST
         System.out.println("Initializing....");
 
         // construct wdkModel
         WdkModel model = WdkModel.construct(modelName);
-        QuestionSet qset = model.getQuestionSet( "DataDumpQuestions" );
+        QuestionSet qset = model.getQuestionSet("DataDumpQuestions");
 
         // get type list
         String[] types = typeArg.split(",");
@@ -84,14 +83,15 @@ public class RecordDumper {
     }
 
     private static void dumpOrganism(QuestionSet qset, String organism,
-            
-            String type, String baseDir) throws WdkUserException, WdkModelException,
+
+    String type, String baseDir) throws WdkUserException, WdkModelException,
             IOException {
         long start = System.currentTimeMillis();
-        
+
         // TEST
-        System.out.println("Dumping " + type + " records for " + organism + "...");
-        
+        System.out.println("Dumping " + type + " records for " + organism
+                + "...");
+
         // decide which question to use, and the name of the parameter.
         Question question = null;
         String organismParam = null;
@@ -101,24 +101,25 @@ public class RecordDumper {
         } else if (type.equalsIgnoreCase("sequence")) {
             question = qset.getQuestion("SequenceGffQuestion");
             organismParam = "organism_with_sequences";
-        } else {        // something wrong here, not supported record type
+        } else { // something wrong here, not supported record type
             throw new WdkModelException("Unsupported Record Type: " + type);
         }
-        
+
         // get report maker attributes and tables
         Map<String, Field> fields = question.getReportMakerFields();
         StringBuffer sbFields = new StringBuffer();
         for (String fieldName : fields.keySet()) {
-            if (sbFields.length()> 0) sbFields.append(",");
+            if (sbFields.length() > 0) sbFields.append(",");
             sbFields.append(fieldName);
         }
-        
+
         // make the configuration for the reporter
         Map<String, String> config = new LinkedHashMap<String, String>();
         config.put(Reporter.FIELD_FORMAT, "text");
-        config.put(FullRecordReporter.FIELD_SELECTED_COLUMNS, sbFields.toString());
+        config.put(FullRecordReporter.FIELD_SELECTED_COLUMNS,
+                sbFields.toString());
         config.put(FullRecordReporter.FIELD_HAS_EMPTY_TABLE, "yes");
-        
+
         // ask the question
         Map<String, Object> params = new LinkedHashMap<String, Object>();
         params.put(organismParam, organism);
@@ -126,13 +127,15 @@ public class RecordDumper {
 
         // decide the path-file name
         File dir = new File(baseDir, organism.replace(' ', '_'));
-        if (!dir.exists() || !dir.isDirectory())dir.mkdirs();
+        if (!dir.exists() || !dir.isDirectory()) dir.mkdirs();
         int pos = organism.indexOf(" ");
-        String fileName =organism;
-        if (pos < 0)  fileName = organism.substring(0, 1).toLowerCase()
-                        + organism.substring(pos + 1);
+        String fileName = organism;
+        if (pos < 0)
+            fileName =
+                    organism.substring(0, 1).toLowerCase()
+                            + organism.substring(pos + 1);
         File file = new File(dir, fileName);
-        
+
         // output the result
         OutputStream out = new FileOutputStream(file);
         Reporter seqReport = sqlAnswer.createReport("fullRecord", config);
@@ -140,8 +143,7 @@ public class RecordDumper {
         out.close();
 
         // TEST
-        System.out.println("Dump file saved at " + file.getAbsolutePath()
-                + ".");
+        System.out.println("Dump file saved at " + file.getAbsolutePath() + ".");
 
         long end = System.currentTimeMillis();
         System.out.println("Time spent " + ((end - start) / 1000.0)
@@ -151,13 +153,16 @@ public class RecordDumper {
     public static void printUsage() {
         System.out.println();
         System.out.println("Usage: gff3Dump -model <model_name> -organism "
-                + "<organism_list> -type <record_type_list>");
+                + "<organism_list> -type <record_type_list> [-dir <base_dir>]");
         System.out.println();
         System.out.println("\t\t<model_name>:\tThe name of WDK supported model");
         System.out.println("\t\t<organism_list>: a list of organism names, "
                 + "delimited by a comma;");
         System.out.println("\t\t<record_type_list>: a list of record types, "
                 + "current support: gene, sequence.");
+        System.out.println("\t\t<base_dir>: Optional, the base directory for "
+                + "the output files. If not specified, the current directory "
+                + "will be used.");
         System.out.println();
     }
 }
