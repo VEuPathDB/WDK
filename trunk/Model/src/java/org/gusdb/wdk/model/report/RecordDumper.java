@@ -130,10 +130,9 @@ public class RecordDumper {
         if (!dir.exists() || !dir.isDirectory()) dir.mkdirs();
         int pos = organism.indexOf(" ");
         String fileName = organism;
-        if (pos < 0)
-            fileName =
-                    organism.substring(0, 1).toLowerCase()
-                            + organism.substring(pos + 1);
+        if (pos >= 0)
+            fileName = organism.substring(0, 1).toLowerCase()
+                    + organism.substring(pos + 1);
         File file = new File(dir, fileName);
 
         // output the result
