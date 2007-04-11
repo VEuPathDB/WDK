@@ -35,8 +35,8 @@ public class FullRecordReporter extends Reporter {
     
     private static Logger logger = Logger.getLogger( TabularReporter.class );
     
-    private static final String FIELD_SELECTED_COLUMNS = "selectedFields";
-    private static final String FIELD_HAS_EMPTY_TABLE = "hasEmptyTable";
+    public static final String FIELD_SELECTED_COLUMNS = "selectedFields";
+    public static final String FIELD_HAS_EMPTY_TABLE = "hasEmptyTable";
     
     private boolean hasEmptyTable = false;
     
