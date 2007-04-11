@@ -47,6 +47,12 @@ public class CConstants {
     public static final String WDK_PAGE_SIZE_KEY = "pageSize";
     public static final String WDK_ALT_PAGE_SIZE_KEY = "altPageSize";
     public static final String WDK_ALL_RECORD_IDS_KEY = "allRecordIds";
+    
+    // constants for remote logins
+    public static final String WDK_REMOTE_URL_KEY = "remoteUrl";
+    public static final String WDK_REMOTE_ACTION_KEY = "remoteAction";
+    public static final String WDK_REMOTE_SIGNATURE_KEY = "signature";
+    public static final String WDK_REMOTE_LOGIN_KEY = "remoteKey";
 
     // the constants for user authentication/authorization
     public static final String WDK_USER_KEY = "wdkUser";

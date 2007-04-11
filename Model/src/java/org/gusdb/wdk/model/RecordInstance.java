@@ -335,7 +335,7 @@ public class RecordInstance {
             TableFieldValue fieldValue = (TableFieldValue) tableFields.get(fieldName);
 
             buf.append(newline);
-            buf.append("<Table> " + fieldValue.getDisplayName()).append(newline);
+            buf.append("[Table]: " + fieldValue.getDisplayName()).append(newline);
             fieldValue.write(buf);
             fieldValue.closeResult();
 
