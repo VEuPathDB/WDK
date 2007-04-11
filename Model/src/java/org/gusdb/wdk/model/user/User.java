@@ -3,7 +3,9 @@
  */
 package org.gusdb.wdk.model.user;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -20,6 +22,7 @@ import org.gusdb.wdk.model.*;
 public class User {
     
     public final static String PREF_ITEMS_PER_PAGE = "preference_global_items_per_page";
+    public final static String PREF_REMOTE_KEY = "preference_remote_key";
     
     public final static String SORTING_ATTRIBUTES_SUFFIX = "_sort";
     public final static String SUMMARY_ATTRIBUTES_SUFFIX = "_summary";
@@ -684,6 +687,20 @@ public class User {
         BooleanQuestionNode root = exp.parseExpression( expression, operatorMap );
         
         Answer answer = root.makeAnswer( 1, getItemsPerPage() );
+        
+        // save summary list, if not summary list exists
+        String summaryKey = answer.getQuestion().getFullName() + SUMMARY_ATTRIBUTES_SUFFIX;
+        if (!projectPreferences.containsKey(summaryKey)) {
+            Map<String, AttributeField> summary = answer.getSummaryAttributes();
+            StringBuffer sb = new StringBuffer();
+            for (String attrName : summary.keySet()) {
+                if (sb.length() != 0) sb.append(",");
+                sb.append(attrName);
+            }
+            projectPreferences.put(summaryKey, sb.toString());
+            save();
+        }
+
         return createHistory( answer, expression, false );
     }
     
@@ -829,6 +846,14 @@ public class User {
             String attrName, boolean moveLeft ) throws WdkUserException,
             WdkModelException {
         String[ ] summary = getSummaryAttributes( questionFullName );
+        
+        // TEST
+        StringBuffer theSb = new StringBuffer();
+        for (String name : summary) {
+            theSb.append(name + ", ");
+        }
+        logger.info("Summary: " + theSb.toString());
+
         for ( int i = 0; i < summary.length; i++ ) {
             if ( attrName.equals( summary[ i ] ) ) {
                 if ( moveLeft && i > 0 ) {
@@ -856,4 +881,43 @@ public class User {
         projectPreferences.put( summaryKey, summaryList );
     }
     
+    public String createRemoteKey() throws WdkUserException {
+        // user can remote key only if he/she is logged in
+        if (isGuest()) throw new WdkUserException("Guest user cannot create remote key.");
+        
+        // the key is a combination of user id and current time
+        Date now = new Date();
+        
+        String key = Long.toString( now.getTime() ) + "->" + Integer.toString( userId );
+        try {
+            key = userFactory.encrypt( key );
+        } catch ( NoSuchAlgorithmException ex ) {
+            throw new WdkUserException(ex);
+        }
+        // save the remote key
+        String saveKey = Long.toString( now.getTime() ) + "<-" + key;
+        globalPreferences.put( PREF_REMOTE_KEY, saveKey );
+        save();
+        
+        return key;
+    }
+    
+    public void verifyRemoteKey(String remoteKey) throws WdkUserException {
+        // get save key and creating time
+        String saveKey = globalPreferences.get( PREF_REMOTE_KEY );
+        if (saveKey == null) throw new WdkUserException("Remote login failed. The remote key doesn't exist.");
+        String[] parts = saveKey.split( "<-" );
+        if (parts.length != 2) throw new WdkUserException("Remote login failed. The remote key is invalid.");
+        long createTime = Long.parseLong( parts[0] );
+        String createKey = parts[1].trim();
+        
+        // verify remote key
+        if (!createKey.equals( remoteKey )) 
+            throw new WdkUserException("Remote login failed. The remote key doesn't match.");
+        
+        // check if the remote key is expired. There is an mandatory 10 minutes expiration time for the remote key
+        long now = (new Date()).getTime();
+        if (Math.abs( now - createTime ) >= (10 * 60 * 1000))
+            throw new WdkUserException("Remote login failed. The remote key is expired.");
+    }
 }

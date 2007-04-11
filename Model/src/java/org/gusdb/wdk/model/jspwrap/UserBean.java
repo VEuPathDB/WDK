@@ -770,12 +770,33 @@ public class UserBean {
      * @param moveLeft
      * @throws WdkUserException
      * @throws WdkModelException
-     * @see org.gusdb.wdk.model.user.User#arrangeSummaryAttribute(java.lang.String, java.lang.String, boolean)
+     * @see org.gusdb.wdk.model.user.User#arrangeSummaryAttribute(java.lang.String,
+     *      java.lang.String, boolean)
      */
-    public void arrangeSummaryAttribute( String questionFullName, String attrName, boolean moveLeft ) throws WdkUserException, WdkModelException {
+    public void arrangeSummaryAttribute( String questionFullName,
+            String attrName, boolean moveLeft ) throws WdkUserException,
+            WdkModelException {
         user.arrangeSummaryAttribute( questionFullName, attrName, moveLeft );
     }
-
+    
+    /**
+     * @return
+     * @throws WdkUserException
+     * @see org.gusdb.wdk.model.user.User#createRemoteKey()
+     */
+    public String createRemoteKey() throws WdkUserException {
+        return user.createRemoteKey();
+    }
+    
+    /**
+     * @param remoteKey
+     * @throws WdkUserException
+     * @see org.gusdb.wdk.model.user.User#verifyRemoteKey(java.lang.String)
+     */
+    public void verifyRemoteKey( String remoteKey ) throws WdkUserException {
+        user.verifyRemoteKey( remoteKey );
+    }
+    
     /*
      * (non-Javadoc)
      * 
