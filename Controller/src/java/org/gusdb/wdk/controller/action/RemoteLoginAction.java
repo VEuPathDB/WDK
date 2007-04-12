@@ -3,11 +3,10 @@
  */
 package org.gusdb.wdk.controller.action;
 
-import java.io.File;
-import java.util.LinkedHashMap;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.Map;
 
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -16,7 +15,6 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
-import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.UserBean;
@@ -38,17 +36,13 @@ public class RemoteLoginAction extends Action {
         String remoteUrl = request.getParameter( CConstants.WDK_REMOTE_URL_KEY );
         String remoteAction = request.getParameter( CConstants.WDK_REMOTE_ACTION_KEY );
         
-        // get non-remote-related params
-        Map< String, String > params = new LinkedHashMap< String, String >();
-        Map paramMap = request.getParameterMap();
-        
         // determine whether is from the site or to the site
         StringBuffer sbUrl = new StringBuffer();
         if ( remoteAction == null || remoteAction.length() == 0 ) { // local
                                                                     // site
             sbUrl.append( remoteAction + "?" );
             sbUrl.append( CConstants.WDK_REMOTE_URL_KEY );
-            sbUrl.append( "=" + remoteUrl );
+            sbUrl.append( "=" + URLEncoder.encode( remoteUrl, "utf-8" ) );
             
             // create remote key, if user logged in
             UserBean user = ( UserBean ) request.getSession().getAttribute(
@@ -61,11 +55,13 @@ public class RemoteLoginAction extends Action {
                 sbUrl.append( "&" + CConstants.WDK_REMOTE_LOGIN_KEY );
                 sbUrl.append( "=" + remoteKey );
             }
+            // TEST
+            logger.info( "Local: " + sbUrl.toString() );
         } else { // remote site
             String remoteSignature = request.getParameter( CConstants.WDK_REMOTE_SIGNATURE_KEY );
             String remoteKey = request.getParameter( CConstants.WDK_REMOTE_LOGIN_KEY );
             
-            sbUrl.append( remoteUrl + "?" );
+            sbUrl.append( "/" + URLDecoder.decode( remoteUrl, "utf-8" ) + "?" );
             
             // verify remote keys
             if ( remoteSignature != null ) {
@@ -82,9 +78,12 @@ public class RemoteLoginAction extends Action {
                     logger.warn( ex );
                 }
             }
+            // TEST
+            logger.info( "Remote: " + sbUrl.toString() );
         }
         
         // append the rest of the parameters
+        Map paramMap = request.getParameterMap();
         for ( Object obj : paramMap.keySet() ) {
             String key = ( String ) obj;
             if ( !CConstants.WDK_REMOTE_LOGIN_KEY.equalsIgnoreCase( key )
@@ -96,6 +95,8 @@ public class RemoteLoginAction extends Action {
                 sbUrl.append( key + "=" + paramMap.get( obj ) );
             }
         }
-        return new ActionForward( sbUrl.toString() );
+        ActionForward forward = new ActionForward( sbUrl.toString() );
+        forward.setRedirect( true );
+        return forward;
     }
 }
