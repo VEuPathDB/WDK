@@ -92,8 +92,11 @@ public class ProcessQuestionAction extends ShowQuestionAction {
                         // do nothing, since the value is already a compound
                     } else if ( type.equalsIgnoreCase( "data" ) ) {
                         String data = request.getParameter( paramName + "_data" );
-                        data = data.replaceAll( "[,;]+", " " ).trim();
-                        String[ ] values = data.split( "\\s+" );
+                        data = data.replace( ',', ' ' );
+                        data = data.replace( ';', ' ' );
+                        data = data.replace( '\t', ' ' );
+                        data = data.replace( '\n', ' ' );
+                        String[ ] values = data.trim().split( "\\s+" );
                         DatasetBean dataset = wdkUser.createDataset( "", values );
                         params.put( paramName, wdkUser.getSignature() + ":"
                                 + dataset.getDatasetId() );
