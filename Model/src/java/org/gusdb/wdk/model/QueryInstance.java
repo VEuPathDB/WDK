@@ -9,6 +9,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+
 /**
  * Simple implementation of QueryInstanceI; generally expects its subclasses to
  * do most of the real implementation.
