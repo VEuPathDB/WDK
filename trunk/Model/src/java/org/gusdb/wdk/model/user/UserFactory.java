@@ -1567,6 +1567,33 @@ public class UserFactory {
         return loginSchema;
     }
     
+    private String addQueryChecksum(QueryInstance qinstance, boolean isBoolean) {
+    	String queryName = qinstance.getQuery().getFullName();
+        
+        return null;
+    }
+    
+    public QueryInfo getQueryInfo(String queryChecksum) {
+        
+        return null;
+    }
+    
+    public String getColumnConfigChecksum(String[] columns) {
+        return null;
+    }
+    
+    public String[] getColumnConfig(String configChecksum) {
+        return null;
+    }
+    
+    public String getSortingChecksum(Map<String, String> sortingColumns) {
+        return null;
+    }
+    
+    public String[] getSorting(String sortChecksum) {
+        return null;
+    }
+    
     public static void main( String[ ] args ) {
         StringBuffer buffer = new StringBuffer();
         Random rand = new Random();
