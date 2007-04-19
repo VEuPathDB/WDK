@@ -13,6 +13,46 @@ GRANT GUS_W TO userlogins;
 GRANT CREATE VIEW TO userlogins;
 
 
+GRANT insert, update, delete on userlogins.dataset_data to GUS_W;
+GRANT select on userlogins.dataset_data to GUS_R;
+
+
+CREATE TABLE userlogins.query_permutation
+(
+  project_id VARCHAR(50) NOT NULL,
+  query_checksum VARCHAR(40) NOT NULL,
+  query_name VARCHAR(100) NOT NULL,
+  is_boolean NUMBER(1),
+  params CLOB,
+  CONSTRAINT "QUERY_PERMUTATION_PK" PRIMARY KEY (query_checksum)
+);
+
+GRANT insert, update, delete on userlogins.query_permutation to GUS_W;
+GRANT select on userlogins.query_permutation to GUS_R;
+
+
+CREATE TABLE userlogins.config_column
+(
+  config_checksum VARCHAR(40) NOT NULL,
+  columns VARCHAR(4000) NOT NULL,
+  CONSTRAINT "CONFIG_COLUMN_PK" PRIMARY KEY (config_checksum)
+);
+
+GRANT insert, update, delete on userlogins.config_column to GUS_W;
+GRANT select on userlogins.config_column to GUS_R;
+
+
+CREATE TABLE userlogins.sort_column
+(
+  sort_checksum VARCHAR(40) NOT NULL,
+  columns VARCHAR(4000) NOT NULL,
+  CONSTRAINT "SORT_COLUMN_PK" PRIMARY KEY (sort_checksum)
+);
+
+GRANT insert, update, delete on userlogins.sort_column to GUS_W;
+GRANT select on userlogins.sort_column to GUS_R;
+
+
 CREATE SEQUENCE userlogins.users_pkseq INCREMENT BY 1 START WITH 1;
 
 GRANT select on userlogins.users_pkseq to GUS_W;
@@ -81,19 +121,17 @@ CREATE TABLE userlogins.histories
   history_id NUMBER(12) NOT NULL,
   user_id NUMBER(12) NOT NULL,
   project_id varchar(50) NOT NULL,
-  question_name varchar(255) NOT NULL,
+  query_checksum varchar(40) NOT NULL,
   create_time timestamp NOT NULL,
   last_run_time timestamp NOT NULL,
   custom_name varchar(4000),
   estimate_size NUMBER(12),
-  checksum varchar(40),
-  signature varchar(40),
-  is_boolean NUMBER(1),
   is_deleted NUMBER(1),
-  params clob,
   CONSTRAINT "HISTORIES_PK" PRIMARY KEY (user_id, history_id, project_id),
   CONSTRAINT "HISTORY_USER_ID_FK" FOREIGN KEY (user_id)
-      REFERENCES userlogins.users (user_id) 
+      REFERENCES userlogins.users (user_id),
+  CONSTRAINT "HISTORY_QUERY_CHECKSUM_FK" FOREIGN KEY (query_checksum)
+      REFERENCES userlogins.query_permutation (query_checksum) 
 );
 
 GRANT insert, update, delete on userlogins.histories to GUS_W;
@@ -135,7 +173,3 @@ CREATE TABLE userlogins.dataset_data
 );
 
 CREATE INDEX userlogins.dataset_data_id_idx on userlogins.dataset_data (dataset_id, user_id);
-
-GRANT insert, update, delete on userlogins.dataset_data to GUS_W;
-GRANT select on userlogins.dataset_data to GUS_R;
-
