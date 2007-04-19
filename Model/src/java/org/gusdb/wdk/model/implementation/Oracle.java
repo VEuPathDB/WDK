@@ -184,9 +184,11 @@ public class Oracle implements RDBMSPlatformI, Serializable {
             ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(
                     url, user, password);
 
+            String validationQuery = "select * from dual";
+            
             // create abandoned configuration
             new PoolableConnectionFactory(connectionFactory, connectionPool,
-                    null, null, false, true);
+                    null, validationQuery, false, true);
 
             PoolingDataSource dataSource = new PoolingDataSource(connectionPool);
             dataSource.setAccessToUnderlyingConnectionAllowed(true);
@@ -211,6 +213,11 @@ public class Oracle implements RDBMSPlatformI, Serializable {
         connectionPool.setMaxActive(maxActive.intValue());
         // no initial size yet
 
+        // configure validationQuery tests
+        connectionPool.setTestOnBorrow(true);
+        connectionPool.setTestOnReturn(true);
+        connectionPool.setTimeBetweenEvictionRunsMillis(10000);
+        connectionPool.setTestWhileIdle(true);
     }
 
     /*
