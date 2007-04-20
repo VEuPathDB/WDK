@@ -769,6 +769,7 @@ public class Answer {
             ColumnAttributeField columnAttribute = ( ColumnAttributeField ) attribute;
             Column column = columnAttribute.getColumn();
             // check if sortingTable presents
+	    if (column == null) throw new WdkModelException("Null column in Column Attribute: '" + columnAttribute.getName() + "'.  This may happen if you have declared a column attribute in the record, but the underlying query doesn't have that column declared");
             String tableName = column.getSortingTable();
             if ( tableName == null ) {
                 if ( column.isDynamicColumn() ) {// use cache table
