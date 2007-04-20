@@ -54,19 +54,19 @@ public class SanityTester {
     boolean indexOnly;
     SanityModel sanityModel;
     String modelName;
-    String suggestFileName;
+    boolean suggestOnly;
 
     public static final String BANNER_LINE_top = "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv";
     public static final String BANNER_LINE_bot = "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^";
 
-    public SanityTester(String modelName, SanityModel sanityModel,boolean verbose, String suggestFileName, Integer skipTo, Integer stopAfter, boolean failuresOnly, boolean indexOnly) throws WdkModelException {
+    public SanityTester(String modelName, SanityModel sanityModel,boolean verbose, boolean suggestOnly, Integer skipTo, Integer stopAfter, boolean failuresOnly, boolean indexOnly) throws WdkModelException {
         this.wdkModel = WdkModel.construct(modelName);
         this.sanityModel = sanityModel;
         this.verbose = verbose;
         this.failuresOnly = failuresOnly;
         this.indexOnly = indexOnly;
         this.modelName = modelName;
-	this.suggestFileName = suggestFileName;
+	this.suggestOnly = suggestOnly;
 	this.skipTo = skipTo;
 	this.stopAfter = stopAfter;
     }
@@ -83,10 +83,6 @@ public class SanityTester {
      */
     private void existenceTest() throws IOException, WdkModelException {
 
-	BufferedWriter out = null;
-	if (suggestFileName != null) 
-	    out = new BufferedWriter(new FileWriter(suggestFileName));
-
         QuerySet querySets[] = wdkModel.getAllQuerySets();
         for (int i = 0; i < querySets.length; i++) {
             QuerySet nextQuerySet = querySets[i];
@@ -95,13 +91,15 @@ public class SanityTester {
                 Query nextQuery = queries[j];
                 if (!sanityModel.hasSanityQuery(nextQuerySet.getName() + "."
                         + nextQuery.getName())) {
-                    System.out.println("Sanity Test Failed!  Query "
-                            + nextQuerySet.getName() + "."
-                            + nextQuery.getName()
-                            + " is not represented in the sanity test\n");
-                    queriesFailed++;
-		    if (out != null) 
-			out.write(nextQuery.getSanityTestSuggestion());
+		    if (suggestOnly) {
+			System.out.println(nextQuery.getSanityTestSuggestion());
+		    } else {
+			System.out.println("Sanity Test Failed!  Query "
+					   + nextQuerySet.getName() + "."
+					   + nextQuery.getName()
+					   + " is not represented in the sanity test\n");
+			queriesFailed++;
+		    }
                 }
             }
         }
@@ -115,13 +113,15 @@ public class SanityTester {
                     RecordClass nextRecordClass = recordClasses[j];
                     if (!sanityModel.hasSanityRecord(nextRecordClassSet.getName()
                             + "." + nextRecordClass.getName())) {
-                        System.out.println("Sanity Test Failed!  RecordClass "
-                                + nextRecordClassSet.getName() + "."
-                                + nextRecordClass.getName()
-                                + " is not represented in the sanity test\n");
-                        recordsFailed++;
-			if (out != null)
-			    out.write(nextRecordClass.getSanityTestSuggestion());
+			if (suggestOnly) {
+			    System.out.println(nextRecordClass.getSanityTestSuggestion());
+			} else {
+			    System.out.println("Sanity Test Failed!  RecordClass "
+					       + nextRecordClassSet.getName() + "."
+					       + nextRecordClass.getName()
+					       + " is not represented in the sanity test\n");
+			    recordsFailed++;
+			}
                     }
                 }
             }
@@ -135,13 +135,15 @@ public class SanityTester {
                 Question nextQuestion = questions[j];
                 if (!sanityModel.hasSanityQuestion(nextQuestionSet.getName()
                         + "." + nextQuestion.getName())) {
-                    System.out.println("Sanity Test Failed!  Question "
-                            + nextQuestionSet.getName() + "."
-                            + nextQuestion.getName()
-                            + " is not represented in the sanity test\n");
-                    questionsFailed++;
-		    if (out != null) 
-			out.write(nextQuestion.getSanityTestSuggestion());
+		    if (suggestOnly) {
+			System.out.println(nextQuestion.getSanityTestSuggestion());
+		    } else {
+			System.out.println("Sanity Test Failed!  Question "
+					   + nextQuestionSet.getName() + "."
+					   + nextQuestion.getName()
+					   + " is not represented in the sanity test\n");
+			questionsFailed++;
+		    }
                 }
             }
         }
@@ -150,16 +152,17 @@ public class SanityTester {
         for (XmlQuestionSet questionSet : wdkModel.getXmlQuestionSets()) {
             for (XmlQuestion question : questionSet.getQuestions()) {
                 if (!sanityModel.hasSanityXmlQuestion(question.getFullName())) {
-                    System.out.println("Sanity Test Failed! Xml Question "
-                            + question.getFullName()
-                            + " is not represented in the sanity test\n");
-                    questionsFailed++;
-		    if (out != null) 
-			out.write(question.getSanityTestSuggestion());
+		    if (suggestOnly) {
+			System.out.println(question.getSanityTestSuggestion());
+		    } else {
+			System.out.println("Sanity Test Failed! Xml Question "
+					   + question.getFullName()
+					   + " is not represented in the sanity test\n");
+			questionsFailed++;
+		    }
                 }
             }
         }
-	if (out != null) out.close();
     }
 
     /**
@@ -597,9 +600,9 @@ public class SanityTester {
         options.addOption(verbose);
 
         // verbose
-        Option suggestFile = new Option("suggestFile", true,
-                "Name of file into which to write suggested additions to sanity test xml file.");
-        options.addOption(suggestFile);
+        Option suggestOnly = new Option("suggestOnly",
+                "Only print the suggested templates for missing tests.");
+        options.addOption(suggestOnly);
 
         Option skipTo = new Option("skipTo", true,
                 "Skip tests before this one.  Provide the integer test number.");
@@ -639,7 +642,7 @@ public class SanityTester {
     static void usage(String cmdName, Options options) {
 
         String newline = System.getProperty("line.separator");
-        String cmdlineSyntax = cmdName + " -model model_name" + " [-verbose] [-suggestFile filename] [-skipTo testnum] [-stopAfter testnum]  [-failuresOnly | -indexOnly]";
+        String cmdlineSyntax = cmdName + " -model model_name" + " [-verbose] [-skipTo testnum] [-stopAfter testnum]  [-failuresOnly | -indexOnly | -suggestOnly]";
 
         String header = newline
                 + "Run a test on all queries and records in a wdk model, using a provided sanity model, to ensure that the course of development hasn't dramatically affected wdk functionality."
@@ -671,7 +674,7 @@ public class SanityTester {
         File sanityXmlFile = new File(configDir, modelName + "-sanity.xml");
         File modelPropFile = new File(configDir, modelName + ".prop");
 
-        String suggestFileName = cmdLine.getOptionValue("suggestFile");
+        boolean suggestOnly = cmdLine.hasOption("suggestOnly");
 
         String skipToStr = cmdLine.getOptionValue("skipTo");
 
@@ -699,18 +702,20 @@ public class SanityTester {
             sanityModel.validateQuestions();
 
             SanityTester sanityTester = new SanityTester(modelName,
-                    sanityModel, verbose, suggestFileName, skipTo, stopAfter, failuresOnly, indexOnly);
+                    sanityModel, verbose, suggestOnly, skipTo, stopAfter, failuresOnly, indexOnly);
 
             sanityTester.existenceTest();
-            sanityTester.queriesTest();
-            sanityTester.recordsTest();
-            sanityTester.questionsTest();
-            sanityTester.xmlQuestionsTest();
+	    if (!suggestOnly) {
+		sanityTester.queriesTest();
+		sanityTester.recordsTest();
+		sanityTester.questionsTest();
+		sanityTester.xmlQuestionsTest();
 
-            if (verbose) System.out.println(sanityModel.toString());
-            if (sanityTester.printSummaryLine()) {
-                System.exit(1);
-            }
+		if (verbose) System.out.println(sanityModel.toString());
+		if (sanityTester.printSummaryLine()) {
+		    System.exit(1);
+		}
+	    }
 
         } catch (Exception e) {
             System.err.println(e);
