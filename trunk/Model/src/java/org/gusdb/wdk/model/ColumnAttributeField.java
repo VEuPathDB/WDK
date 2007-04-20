@@ -35,7 +35,7 @@ public class ColumnAttributeField extends AttributeField implements Serializable
     }
     
     Query getQuery() throws WdkModelException {
-	if (column == null) throw new WdkModelException("Null column in Column Attribute: " + name);
+	if (column == null) throw new WdkModelException("Null column in Column Attribute: " + name + "   This may happen if you have declared a column attribute in the record, but the underlying query doesn't have that column declared");
         return column.getQuery();
     }
 }
