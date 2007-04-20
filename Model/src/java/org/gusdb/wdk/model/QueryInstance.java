@@ -219,10 +219,8 @@ public abstract class QueryInstance {
         values.keySet().toArray(paramNames);
         Arrays.sort(paramNames);
 
-        // query content is a concatenation of project id, query full name, and param-value paires
+        // concatenate parameter name, type, and values
         StringBuffer content = new StringBuffer();
-        content.append(WdkModel.INSTANCE.getProjectId());
-        content.append(WdkModel.PARAM_DIVIDER);
         content.append(query.getFullName());
         for (String paramName : paramNames) {
             content.append(WdkModel.PARAM_DIVIDER);
