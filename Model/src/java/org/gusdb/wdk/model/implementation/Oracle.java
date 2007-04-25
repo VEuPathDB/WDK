@@ -215,9 +215,6 @@ public class Oracle implements RDBMSPlatformI, Serializable {
 
         // configure validationQuery tests
         connectionPool.setTestOnBorrow(true);
-        connectionPool.setTestOnReturn(true);
-        connectionPool.setTimeBetweenEvictionRunsMillis(10000);
-        connectionPool.setTestWhileIdle(true);
     }
 
     /*
