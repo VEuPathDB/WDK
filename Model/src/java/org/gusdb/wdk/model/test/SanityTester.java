@@ -562,16 +562,23 @@ public class SanityTester {
         boolean failedOverall = (queriesFailed > 0 || recordsFailed > 0 || questionsFailed > 0);
         String result = failedOverall ? "FAILED" : "PASSED";
 
+	int totalPassed = queriesPassed + recordsPassed + questionsPassed;
+	int totalFailed = queriesFailed + recordsFailed + questionsFailed;
+
         StringBuffer resultLine = new StringBuffer(
                 "***Sanity test summary***\n");
         resultLine.append("Skipped to: " + skipTo + "\n");
-        resultLine.append(queriesPassed + " queries passed, " + queriesFailed
-                + " queries failed\n");
-        resultLine.append(recordsPassed + " records passed, " + recordsFailed
-                + " records failed\n");
-        resultLine.append(questionsPassed + " questions passed, "
-                + questionsFailed + " questions failed\n");
         resultLine.append("Stopped after: " + stopAfter + "\n");
+        resultLine.append("Total Passed: " + totalPassed + "\n");
+        resultLine.append("Total Failed: " + totalFailed + "\n");
+        resultLine.append("   " + queriesPassed + " queries passed, " 
+			  + queriesFailed
+			  + " queries failed\n");
+        resultLine.append("   " + recordsPassed + " records passed, " 
+			  + recordsFailed
+			  + " records failed\n");
+        resultLine.append("   " + questionsPassed + " questions passed, "
+			  + questionsFailed + " questions failed\n");
         resultLine.append("Sanity Test " + result + "\n");
         System.out.println(resultLine.toString());
         return failedOverall;
