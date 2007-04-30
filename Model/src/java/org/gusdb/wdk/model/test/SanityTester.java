@@ -667,9 +667,6 @@ public class SanityTester {
 
     public static void main(String[] args) {
 
-	BasicConfigurator.configure(); // logger
-	logger.setLevel(Level.ERROR);
-
 	String cmdName = System.getProperties().getProperty("cmdName");
         Options options = declareOptions();
         CommandLine cmdLine = parseOptions(cmdName, options, args);
