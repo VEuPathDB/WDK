@@ -69,7 +69,7 @@ public class FullRecordReporter extends Reporter {
         if ( format.equalsIgnoreCase( "text" ) ) {
             return "text/plain";
         } else if ( format.equalsIgnoreCase( "excel" ) ) {
-            return "appilication/vnd.ms-excel";
+            return "application/vnd.ms-excel";
         } else { // use the default content type defined in the parent class
             return super.getHttpContentType();
         }
