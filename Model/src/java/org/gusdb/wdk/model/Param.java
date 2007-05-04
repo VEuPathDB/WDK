@@ -1,6 +1,11 @@
 package org.gusdb.wdk.model;
 
+import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.user.QueryFactory;
+
 public abstract class Param {
+    
+    protected static Logger logger = Logger.getLogger( Param.class );
     
     protected String name;
     protected String id;
@@ -13,6 +18,8 @@ public abstract class Param {
     private boolean readonly;
     
     private Group group;
+    
+    protected QueryFactory queryFactory;
     
     public Param( ) {
         visible = true;
@@ -144,6 +151,33 @@ public abstract class Param {
     public abstract String validateValue( Object value )
             throws WdkModelException;
     
+    public String compressValue( Object value ) throws WdkModelException {
+        // check if the value is already been compressed
+        String strValue = ( value != null ) ? value.toString() : "";
+        
+        if ( strValue.startsWith( Utilities.COMPRESSED_VALUE_PREFIX ) )
+            return strValue;
+        
+        // check if the value needs to be compressed
+        if ( strValue.length() >= Utilities.MAX_PARAM_VALUE_SIZE ) {
+            String checksum = queryFactory.makeClobChecksum( strValue );
+            strValue = Utilities.COMPRESSED_VALUE_PREFIX + checksum;
+        }
+        return strValue;
+    }
+    
+    public Object decompressValue( String value ) throws WdkModelException {
+        // check if the value is compressed; that is, if it has a compression
+        // prefix
+        if ( !value.startsWith( Utilities.COMPRESSED_VALUE_PREFIX ) )
+            return value;
+        
+        // decompress the value
+        String checksum = value.substring(
+                Utilities.COMPRESSED_VALUE_PREFIX.length() ).trim();
+        return queryFactory.getClobValue( checksum );
+    }
+    
     // ////////////////////////////////////////////////////////////////////
     // protected methods
     // ////////////////////////////////////////////////////////////////////
@@ -151,18 +185,19 @@ public abstract class Param {
     /**
      * Transforms external value into internal value if needed By default
      * returns provided value
+     * 
+     * @throws WdkUserException
      */
     protected String getInternalValue( String value ) throws WdkModelException {
-        // check if the param is StringParam, then replace the escape character
-        if ( this instanceof StringParam )
-            return value.replaceAll( "'", "''" );
-        return value;
+        return (String)decompressValue( value );
     }
     
     protected abstract void resolveReferences( WdkModel model )
             throws WdkModelException;
     
-    protected void setResources( WdkModel model ) throws WdkModelException {}
+    protected void setResources( WdkModel model ) throws WdkModelException {
+        this.queryFactory = model.getQueryFactory();
+    }
     
     protected void clone( Param param ) {
         param.name = name;
@@ -173,6 +208,8 @@ public abstract class Param {
         param.fullName = fullName;
         param.visible = visible;
         param.readonly = readonly;
+        param.queryFactory = this.queryFactory;
+        param.group = this.group;
     }
     
     public abstract Param clone();

@@ -16,7 +16,16 @@ import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.*;
+import org.gusdb.wdk.model.jspwrap.DatasetBean;
+import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
+import org.gusdb.wdk.model.jspwrap.FlatVocabParamBean;
+import org.gusdb.wdk.model.jspwrap.HistoryBean;
+import org.gusdb.wdk.model.jspwrap.HistoryParamBean;
+import org.gusdb.wdk.model.jspwrap.ParamBean;
+import org.gusdb.wdk.model.jspwrap.QuestionBean;
+import org.gusdb.wdk.model.jspwrap.QuestionSetBean;
+import org.gusdb.wdk.model.jspwrap.UserBean;
+import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
 /**
  * This Action is called by the ActionServlet when a WDK question is requested.
@@ -32,12 +41,12 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
 
-        String qFullName = ((QuestionSetForm) form).getQuestionFullName();
+        String qFullName = (( QuestionSetForm ) form).getQuestionFullName();
         QuestionBean wdkQuestion = getQuestionByFullName(qFullName);
 
         QuestionForm qForm = prepareQuestionForm(wdkQuestion, request);
 
-        QuestionSetForm qSetForm = (QuestionSetForm) request.getAttribute(CConstants.QUESTIONSETFORM_KEY);
+        QuestionSetForm qSetForm = ( QuestionSetForm ) request.getAttribute(CConstants.QUESTIONSETFORM_KEY);
         if (null == qSetForm) {
             qSetForm = new QuestionSetForm();
             request.setAttribute(CConstants.QUESTIONSETFORM_KEY, qSetForm);
@@ -46,7 +55,7 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
         prepareQuestionSetForm(getServlet(), qSetForm);
 
         ServletContext svltCtx = getServlet().getServletContext();
-        String customViewDir = (String) svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
+        String customViewDir = ( String ) svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
         String customViewFile1 = customViewDir + File.separator
                 + wdkQuestion.getFullName() + ".jsp";
         String customViewFile2 = customViewDir + File.separator
@@ -82,12 +91,12 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
         String qSetName = qFullName.substring(0, dotI);
         String qName = qFullName.substring(dotI + 1, qFullName.length());
 
-        WdkModelBean wdkModel = (WdkModelBean) getServlet().getServletContext().getAttribute(
+        WdkModelBean wdkModel = ( WdkModelBean ) getServlet().getServletContext().getAttribute(
                 CConstants.WDK_MODEL_KEY);
 
-        QuestionSetBean wdkQuestionSet = (QuestionSetBean) wdkModel.getQuestionSetsMap().get(
+        QuestionSetBean wdkQuestionSet = ( QuestionSetBean ) wdkModel.getQuestionSetsMap().get(
                 qSetName);
-        QuestionBean wdkQuestion = (QuestionBean) wdkQuestionSet.getQuestionsMap().get(
+        QuestionBean wdkQuestion = ( QuestionBean ) wdkQuestionSet.getQuestionsMap().get(
                 qName);
         return wdkQuestion;
     }
@@ -105,9 +114,9 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
             HttpServletRequest request, QuestionForm qForm)
             throws WdkUserException, WdkModelException {
         // get the current user
-        WdkModelBean wdkModel = (WdkModelBean) getServlet().getServletContext().getAttribute(
+        WdkModelBean wdkModel = ( WdkModelBean ) getServlet().getServletContext().getAttribute(
                 CConstants.WDK_MODEL_KEY);
-        UserBean user = (UserBean) request.getSession().getAttribute(
+        UserBean user = ( UserBean ) request.getSession().getAttribute(
                 CConstants.WDK_USER_KEY);
         if (user == null) {
             user = wdkModel.getUserFactory().getGuestUser();
@@ -127,15 +136,20 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
             Object pVal = null;
             if (p instanceof FlatVocabParamBean) {
                 // not assuming fixed order, so call once, use twice.
-                String[] flatVocab = ((FlatVocabParamBean) p).getVocab();
+                String[] flatVocab = (( FlatVocabParamBean ) p).getVocab();
                 qForm.getMyValues().put(p.getName(), flatVocab);
                 qForm.getMyLabels().put(p.getName(),
                         getLengthBoundedLabels(flatVocab));
 
                 // get values from the request
                 String[] cgiParamValSet = request.getParameterValues(p.getName());
-                if (cgiParamValSet == null) // get values from teh form
+                if (cgiParamValSet == null) {// get values from the form
                     cgiParamValSet = qForm.getMyMultiProp(p.getName());
+                }
+                if (cgiParamValSet != null && cgiParamValSet.length == 1) {
+                    // try to decompress the value
+                    cgiParamValSet = ( String[] ) p.decompressValue(cgiParamValSet[0]);
+                }
 
                 if (cgiParamValSet != null && cgiParamValSet.length > 0) {
                     // use the user's selection from revise url
@@ -149,65 +163,45 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
                         pVal = new String[] { defaultSelection };
                     }
                 }
-            } else if (p instanceof HistoryParamBean) {
-                // get type, as in RecordClass full name
-                String dataType = wdkQuestion.getRecordClass().getFullName();
-                HistoryBean[] histories = user.getHistories(dataType);
-                String[] values = new String[histories.length];
-                String[] labels = new String[histories.length];
-                for (int idx = 0; idx < histories.length; idx++) {
-                    values[idx] = signature + ":"
-                            + histories[idx].getHistoryId();
-                    labels[idx] = "#" + histories[idx].getHistoryId() + " "
-                            + histories[idx].getCustomName();
-                }
-                qForm.getMyValues().put(p.getName(), values);
-                qForm.getMyLabels().put(p.getName(),
-                        getLengthBoundedLabels(labels));
-
-                // get values from the request
-                String[] cgiParamValSet = request.getParameterValues(p.getName());
-                if (cgiParamValSet == null) // get values from teh form
-                    cgiParamValSet = qForm.getMyMultiProp(p.getName());
-
-                if (cgiParamValSet != null && cgiParamValSet.length > 0) {
-                    // use the user's selection from revise url
-                    pVal = cgiParamValSet;
-                } else { // no selection made, then use the default ones;
-                    String defaultSelection = p.getDefault();
-                    if (defaultSelection == null) {
-                        // just select the first one as the default
-                        pVal = new String[] { values[0] };
-                    } else { // use the value by the author
-                        pVal = new String[] { defaultSelection };
+            } else {
+                if (p instanceof HistoryParamBean) {
+                    // get type, as in RecordClass full name
+                    String dataType = wdkQuestion.getRecordClass().getFullName();
+                    HistoryBean[] histories = user.getHistories(dataType);
+                    String[] values = new String[histories.length];
+                    String[] labels = new String[histories.length];
+                    for (int idx = 0; idx < histories.length; idx++) {
+                        values[idx] = signature + ":"
+                                + histories[idx].getHistoryId();
+                        labels[idx] = "#" + histories[idx].getHistoryId() + " "
+                                + histories[idx].getCustomName();
                     }
+                    qForm.getMyValues().put(p.getName(), values);
+                    qForm.getMyLabels().put(p.getName(),
+                            getLengthBoundedLabels(labels));
                 }
-            } else if (p instanceof DatasetParamBean) {
+                // get the value
                 String cgiParamVal = request.getParameter(p.getName());
                 if (cgiParamVal == null)
                     cgiParamVal = qForm.getMyProp(p.getName());
-                p.getName();
+                if (cgiParamVal != null)
+                    cgiParamVal = ( String ) p.decompressValue(cgiParamVal);
 
-                // get the dataset for this dataset param
-                if (cgiParamVal != null && cgiParamVal.length() != 0) {
+                if (p instanceof DatasetParamBean && cgiParamVal != null
+                        && cgiParamVal.length() != 0) {
                     String[] parts = cgiParamVal.split(":");
                     if (parts.length == 2) {
                         if (!parts[0].equalsIgnoreCase(signature))
                             throw new WdkUserException("Current user is not "
                                     + "the owner of this dataset #"
                                     + cgiParamVal);
-                        int datasetId = Integer.parseInt(parts[1]);
-                        DatasetBean dataset = user.getDataset(datasetId);
+                        String datasetChecksum = parts[1].trim();
+                        DatasetBean dataset = user.getDataset(datasetChecksum);
                         request.setAttribute(p.getName(), dataset);
                     }
                 }
-                pVal = cgiParamVal;
-            } else {
-                String cgiParamVal = request.getParameter(p.getName());
-                if (cgiParamVal == null)
-                    cgiParamVal = qForm.getMyProp(p.getName());
-                p.getName();
 
+                if (cgiParamVal == null) cgiParamVal = p.getDefault();
                 pVal = cgiParamVal;
             }
 

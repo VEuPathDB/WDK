@@ -20,23 +20,23 @@ import org.gusdb.wdk.model.*;
  * 
  */
 public class User {
-    
+
     public final static String PREF_ITEMS_PER_PAGE = "preference_global_items_per_page";
     public final static String PREF_REMOTE_KEY = "preference_remote_key";
-    
+
     public final static String SORTING_ATTRIBUTES_SUFFIX = "_sort";
     public final static String SUMMARY_ATTRIBUTES_SUFFIX = "_summary";
-    
+
     public static final int SORTING_LEVEL = 3;
-    
-    private Logger logger = Logger.getLogger( User.class );
-    
+
+    private Logger logger = Logger.getLogger(User.class);
+
     private WdkModel model;
     private UserFactory userFactory;
     private DatasetFactory datasetFactory;
     private int userId;
     private String signature;
-    
+
     // basic user information
     private String email;
     private String lastName;
@@ -51,21 +51,21 @@ public class User {
     private String zipCode;
     private String phoneNumber;
     private String country;
-    
-    private Set< String > userRoles;
+
+    private Set<String> userRoles;
     private boolean guest = true;
-    
+
     /**
      * the preferences for the user: <prefName, prefValue>. It only contains the
      * preferences for the current project
      */
-    private Map< String, String > globalPreferences;
-    private Map< String, String > projectPreferences;
-    
+    private Map<String, String> globalPreferences;
+    private Map<String, String> projectPreferences;
+
     // cache the history count in memory
     int historyCount;
-    
-    User( WdkModel model, int userId, String email, String signature )
+
+    User(WdkModel model, int userId, String email, String signature)
             throws WdkUserException, WdkModelException {
         this.userId = userId;
         this.email = email;
@@ -73,220 +73,220 @@ public class User {
         this.model = model;
         this.userFactory = model.getUserFactory();
         this.datasetFactory = model.getDatasetFactory();
-        
-        userRoles = new LinkedHashSet< String >();
-        
-        globalPreferences = new LinkedHashMap< String, String >();
-        projectPreferences = new LinkedHashMap< String, String >();
-        
+
+        userRoles = new LinkedHashSet<String>();
+
+        globalPreferences = new LinkedHashMap<String, String>();
+        projectPreferences = new LinkedHashMap<String, String>();
+
         historyCount = 0;
     }
-    
+
     public WdkModel getWdkModel() {
         return this.model;
     }
-    
+
     /**
      * @return Returns the userId.
      */
     public int getUserId() {
         return userId;
     }
-    
+
     /**
      * @return Returns the signature.
      */
     public String getSignature() {
         return signature;
     }
-    
+
     /**
      * @return Returns the email.
      */
     public String getEmail() {
         return email;
     }
-    
+
     /**
      * @return Returns the address.
      */
     public String getAddress() {
         return address;
     }
-    
+
     /**
      * @param address
      *            The address to set.
      */
-    public void setAddress( String address ) {
+    public void setAddress(String address) {
         this.address = address;
     }
-    
+
     /**
      * @return Returns the city.
      */
     public String getCity() {
         return city;
     }
-    
+
     /**
      * @param city
      *            The city to set.
      */
-    public void setCity( String city ) {
+    public void setCity(String city) {
         this.city = city;
     }
-    
+
     /**
      * @return Returns the country.
      */
     public String getCountry() {
         return country;
     }
-    
+
     /**
      * @param country
      *            The country to set.
      */
-    public void setCountry( String country ) {
+    public void setCountry(String country) {
         this.country = country;
     }
-    
+
     /**
      * @return Returns the department.
      */
     public String getDepartment() {
         return department;
     }
-    
+
     /**
      * @param department
      *            The department to set.
      */
-    public void setDepartment( String department ) {
+    public void setDepartment(String department) {
         this.department = department;
     }
-    
+
     /**
      * @return Returns the firstName.
      */
     public String getFirstName() {
         return firstName;
     }
-    
+
     /**
      * @param firstName
      *            The firstName to set.
      */
-    public void setFirstName( String firstName ) {
+    public void setFirstName(String firstName) {
         this.firstName = firstName;
     }
-    
+
     /**
      * @return Returns the lastName.
      */
     public String getLastName() {
         return lastName;
     }
-    
+
     /**
      * @param lastName
      *            The lastName to set.
      */
-    public void setLastName( String lastName ) {
+    public void setLastName(String lastName) {
         this.lastName = lastName;
     }
-    
+
     /**
      * @return Returns the middleName.
      */
     public String getMiddleName() {
         return middleName;
     }
-    
+
     /**
      * @param middleName
      *            The middleName to set.
      */
-    public void setMiddleName( String middleName ) {
+    public void setMiddleName(String middleName) {
         this.middleName = middleName;
     }
-    
+
     /**
      * @return Returns the organization.
      */
     public String getOrganization() {
         return organization;
     }
-    
+
     /**
      * @param organization
      *            The organization to set.
      */
-    public void setOrganization( String organization ) {
+    public void setOrganization(String organization) {
         this.organization = organization;
     }
-    
+
     /**
      * @return Returns the phoneNumber.
      */
     public String getPhoneNumber() {
         return phoneNumber;
     }
-    
+
     /**
      * @param phoneNumber
      *            The phoneNumber to set.
      */
-    public void setPhoneNumber( String phoneNumber ) {
+    public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
-    
+
     /**
      * @return Returns the state.
      */
     public String getState() {
         return state;
     }
-    
+
     /**
      * @param state
      *            The state to set.
      */
-    public void setState( String state ) {
+    public void setState(String state) {
         this.state = state;
     }
-    
+
     /**
      * @return Returns the title.
      */
     public String getTitle() {
         return title;
     }
-    
+
     /**
      * @param title
      *            The title to set.
      */
-    public void setTitle( String title ) {
+    public void setTitle(String title) {
         this.title = title;
     }
-    
+
     /**
      * @return Returns the zipCode.
      */
     public String getZipCode() {
         return zipCode;
     }
-    
+
     /**
      * @param zipCode
      *            The zipCode to set.
      */
-    public void setZipCode( String zipCode ) {
+    public void setZipCode(String zipCode) {
         this.zipCode = zipCode;
     }
-    
+
     /**
      * @return Returns the guest.
      * @throws WdkUserException
@@ -294,47 +294,47 @@ public class User {
     public boolean isGuest() throws WdkUserException {
         return guest;
     }
-    
+
     /**
      * @return Returns the userRole.
      */
-    public String[ ] getUserRoles() {
-        String[ ] roles = new String[ userRoles.size() ];
-        userRoles.toArray( roles );
+    public String[] getUserRoles() {
+        String[] roles = new String[userRoles.size()];
+        userRoles.toArray(roles);
         return roles;
     }
-    
+
     /**
      * @param userRole
      *            The userRole to set.
      */
-    public void addUserRole( String userRole ) {
-        this.userRoles.add( userRole );
+    public void addUserRole(String userRole) {
+        this.userRoles.add(userRole);
     }
-    
-    public void removeUserRole( String userRole ) {
-        userRoles.remove( userRole );
+
+    public void removeUserRole(String userRole) {
+        userRoles.remove(userRole);
     }
-    
+
     /**
      * @param guest
      *            The guest to set.
      */
-    void setGuest( boolean guest ) {
+    void setGuest(boolean guest) {
         this.guest = guest;
     }
-    
-    public History createHistory( Answer answer ) throws WdkUserException,
+
+    public History createHistory(Answer answer) throws WdkUserException,
             WdkModelException {
-        return createHistory( answer, null, false );
+        return createHistory(answer, null, false);
     }
-    
-    private History createHistory( Answer answer, String booleanExpression,
-            boolean deleted ) throws WdkUserException, WdkModelException {
-        return userFactory.createHistory( this, answer, booleanExpression,
-                deleted );
+
+    private History createHistory(Answer answer, String booleanExpression,
+            boolean deleted) throws WdkUserException, WdkModelException {
+        return userFactory.createHistory(this, answer, booleanExpression,
+                deleted);
     }
-    
+
     /**
      * this method is only called by UserFactory during the login process, it
      * merges the existing history of the current guest user into the logged-in
@@ -344,116 +344,111 @@ public class User {
      * @throws WdkUserException
      * @throws WdkModelException
      */
-    void mergeUser( User user ) throws WdkUserException, WdkModelException {
+    void mergeUser(User user) throws WdkUserException, WdkModelException {
         // TEST
-        logger.debug( "Merging user #" + user.getUserId() + " into user #"
-                + userId + "..." );
-        
+        logger.debug("Merging user #" + user.getUserId() + " into user #"
+                + userId + "...");
+
         // merge histories
         // a history can be merged only if its all components have been merged
-        Map< Integer, Integer > historyMap = new LinkedHashMap< Integer, Integer >();
-        Map< Integer, History > histories = user.getHistoriesMap();
-        while ( !histories.isEmpty() ) {
+        Map<Integer, Integer> historyMap = new LinkedHashMap<Integer, Integer>();
+        Map<Integer, History> histories = user.getHistoriesMap();
+        while (!histories.isEmpty()) {
             // for each round, only merge the histories that have no components,
             // or all of its components have been merged
-            Map< Integer, History > pendings = new LinkedHashMap< Integer, History >();
-            for ( History history : histories.values() ) {
-                Set< Integer > components = history.getComponentHistories();
-                
-                if ( components.isEmpty() ) {
+            Map<Integer, History> pendings = new LinkedHashMap<Integer, History>();
+            for (History history : histories.values()) {
+                Set<Integer> components = history.getComponentHistories();
+
+                if (components.isEmpty()) {
                     // no components, can merge
-                    History newHistory = createHistory( history.getAnswer(),
-                            null, history.isDeleted() );
-                    newHistory.setCustomName( history.getBaseCustomName() );
+                    History newHistory = createHistory(history.getAnswer(),
+                            null, history.isDeleted());
+                    newHistory.setCustomName(history.getBaseCustomName());
                     newHistory.update();
-                    historyMap.put( history.getHistoryId(),
-                            newHistory.getHistoryId() );
+                    historyMap.put(history.getHistoryId(),
+                            newHistory.getHistoryId());
                     continue;
                 }
-                
+
                 // histories with components, the components need ed to be
                 // merged first
                 boolean canMerge = true;
-                for ( Integer compId : components ) {
-                    if ( !historyMap.containsKey( compId ) ) {
+                for (Integer compId : components) {
+                    if (!historyMap.containsKey(compId)) {
                         // still have components not merged
                         canMerge = false;
                         break;
                     }
                 }
-                if ( !canMerge ) {
-                    pendings.put( history.getHistoryId(), history );
+                if (!canMerge) {
+                    pendings.put(history.getHistoryId(), history);
                     continue;
                 }
-                
+
                 // can merge, needs to repack the param values
                 History newHistory;
-                if ( history.isBoolean() ) {
+                if (history.isBoolean()) {
                     // merge boolean history
                     String expression = history.getBooleanExpression();
-                    for ( Integer compId : components ) {
-                        Integer newId = historyMap.get( compId );
-                        expression = expression.replaceAll( "\\b"
-                                + compId.toString() + "\\b", newId.toString() );
+                    for (Integer compId : components) {
+                        Integer newId = historyMap.get(compId);
+                        expression = expression.replaceAll("\\b"
+                                + compId.toString() + "\\b", newId.toString());
                     }
-                    newHistory = combineHistory( expression,
-                            history.isDeleted() );
+                    newHistory = combineHistory(expression, history.isDeleted());
                 } else {
                     // merge histories with DatasetParam/HistoryParam
                     Answer answer = history.getAnswer();
                     Question question = answer.getQuestion();
                     int startIndex = answer.getStartRecordInstanceI();
                     int endIndex = answer.getEndRecordInstanceI();
-                    Param[ ] params = question.getParams();
-                    Map< String, Object > values = answer.getParams();
-                    for ( Param param : params ) {
-                        if ( param instanceof HistoryParam ) {
-                            String compound = values.get( param.getName() ).toString();
+                    Param[] params = question.getParams();
+                    Map<String, Object> values = answer.getParams();
+                    for (Param param : params) {
+                        if (param instanceof HistoryParam) {
+                            String compound = values.get(param.getName()).toString();
                             // two parts: user_signature, history_id
-                            String parts[] = compound.split( ":" );
-                            int histId = Integer.parseInt( parts[ 1 ].trim() );
-                            Integer newId = historyMap.get( histId );
+                            String parts[] = compound.split(":");
+                            int histId = Integer.parseInt(parts[1].trim());
+                            Integer newId = historyMap.get(histId);
                             // replace the signature with current user's
                             String newValue = this.signature + ":" + newId;
-                            values.put( param.getName(), newValue );
-                        } else if ( param instanceof DatasetParam ) {
+                            values.put(param.getName(), newValue);
+                        } else if (param instanceof DatasetParam) {
                             // merge dataset, by creating new datasets with the
                             // previous values
-                            String compound = values.get( param.getName() ).toString();
+                            String compound = values.get(param.getName()).toString();
                             // two parts: user_signature, dataset_id
-                            String parts[] = compound.split( ":" );
-                            int datasetId = Integer.parseInt( parts[ 1 ].trim() );
-                            Dataset dataset = user.getDataset( datasetId );
-                            String[ ] data = dataset.getValues();
-                            
+                            String parts[] = compound.split(":");
+                            String datasetChecksum = parts[1].trim();
+
                             // now make new dataset for the new user
-                            Dataset newDataset = this.createDataset(
-                                    dataset.getUploadFile(), data );
                             String newValue = this.signature + ":"
-                                    + newDataset.getDatasetId();
-                            values.put( param.getName(), newValue );
+                                    + datasetChecksum;
+                            values.put(param.getName(), newValue);
                         }
                     }
-                    answer = question.makeAnswer( values, startIndex, endIndex );
-                    newHistory = createHistory( answer, null,
-                            history.isDeleted() );
+                    answer = question.makeAnswer(values, startIndex, endIndex);
+                    newHistory = createHistory(answer, null,
+                            history.isDeleted());
                 }
-                newHistory.setCustomName( history.getBaseCustomName() );
-                newHistory.setDeleted( history.isDeleted() );
+                newHistory.setCustomName(history.getBaseCustomName());
+                newHistory.setDeleted(history.isDeleted());
                 newHistory.update();
-                historyMap.put( history.getHistoryId(),
-                        newHistory.getHistoryId() );
+                historyMap.put(history.getHistoryId(),
+                        newHistory.getHistoryId());
             }
             histories = pendings;
         }
         // TEST
-        StringBuffer sb = new StringBuffer( "The history Mapping: " );
-        for ( int histId : historyMap.keySet() ) {
-            sb.append( "(" + histId + "-" + historyMap.get( histId ) + ") " );
+        StringBuffer sb = new StringBuffer("The history Mapping: ");
+        for (int histId : historyMap.keySet()) {
+            sb.append("(" + histId + "-" + historyMap.get(histId) + ") ");
         }
-        logger.info( sb.toString().trim() );
+        logger.info(sb.toString().trim());
     }
-    
+
     /**
      * get an array of cached histories in the current project site; if the
      * cache is expired. it will be refreshed from the database. The result
@@ -463,46 +458,46 @@ public class User {
      * @throws WdkModelException
      * @throws WdkUserException
      */
-    public Map< Integer, History > getHistoriesMap() throws WdkUserException,
+    public Map<Integer, History> getHistoriesMap() throws WdkUserException,
             WdkModelException {
-        Map< Integer, History > histories = userFactory.loadHistories( this );
-        
+        Map<Integer, History> histories = userFactory.loadHistories(this);
+
         // update the history count
         historyCount = 0;
-        for ( History history : histories.values() ) {
-            if ( !history.isDeleted() ) historyCount++;
+        for (History history : histories.values()) {
+            if (!history.isDeleted()) historyCount++;
         }
         return histories;
     }
-    
-    public History[ ] getHistories() throws WdkUserException, WdkModelException {
-        Map< Integer, History > map = getHistoriesMap();
-        History[ ] array = new History[ map.size() ];
-        map.values().toArray( array );
+
+    public History[] getHistories() throws WdkUserException, WdkModelException {
+        Map<Integer, History> map = getHistoriesMap();
+        History[] array = new History[map.size()];
+        map.values().toArray(array);
         return array;
     }
-    
-    public Map< String, List< History >> getHistoriesByCategory()
+
+    public Map<String, List<History>> getHistoriesByCategory()
             throws WdkUserException, WdkModelException {
-        Map< Integer, History > histories = getHistoriesMap();
-        Map< String, List< History >> category = new LinkedHashMap< String, List< History >>();
-        for ( History history : histories.values() ) {
+        Map<Integer, History> histories = getHistoriesMap();
+        Map<String, List<History>> category = new LinkedHashMap<String, List<History>>();
+        for (History history : histories.values()) {
             // not include the histories marked as 'deleted'
-            if ( history.isDeleted() ) continue;
-            
+            if (history.isDeleted()) continue;
+
             String type = history.getDataType();
-            List< History > list;
-            if ( category.containsKey( type ) ) {
-                list = category.get( type );
+            List<History> list;
+            if (category.containsKey(type)) {
+                list = category.get(type);
             } else {
-                list = new ArrayList< History >();
-                category.put( type, list );
+                list = new ArrayList<History>();
+                category.put(type, list);
             }
-            list.add( history );
+            list.add(history);
         }
         return category;
     }
-    
+
     /**
      * * The result array is sorted by last_run_time, the lastest at the first
      * 
@@ -511,26 +506,26 @@ public class User {
      * @throws WdkModelException
      * @throws WdkUserException
      */
-    public Map< Integer, History > getHistoriesMap( String dataType )
+    public Map<Integer, History> getHistoriesMap(String dataType)
             throws WdkUserException, WdkModelException {
-        Map< Integer, History > histories = getHistoriesMap();
-        Map< Integer, History > selected = new LinkedHashMap< Integer, History >();
-        for ( int historyId : histories.keySet() ) {
-            History history = histories.get( historyId );
-            if ( dataType.equalsIgnoreCase( history.getDataType() ) )
-                selected.put( historyId, history );
+        Map<Integer, History> histories = getHistoriesMap();
+        Map<Integer, History> selected = new LinkedHashMap<Integer, History>();
+        for (int historyId : histories.keySet()) {
+            History history = histories.get(historyId);
+            if (dataType.equalsIgnoreCase(history.getDataType()))
+                selected.put(historyId, history);
         }
         return selected;
     }
-    
-    public History[ ] getHistories( String dataType ) throws WdkUserException,
+
+    public History[] getHistories(String dataType) throws WdkUserException,
             WdkModelException {
-        Map< Integer, History > map = getHistoriesMap( dataType );
-        History[ ] array = new History[ map.size() ];
-        map.values().toArray( array );
+        Map<Integer, History> map = getHistoriesMap(dataType);
+        History[] array = new History[map.size()];
+        map.values().toArray(array);
         return array;
     }
-    
+
     /**
      * if the history of the given id doesn't exist, a null is returned
      * 
@@ -539,157 +534,149 @@ public class User {
      * @throws WdkUserException
      * @throws WdkModelException
      */
-    public History getHistory( int historyId ) throws WdkUserException,
+    public History getHistory(int historyId) throws WdkUserException,
             WdkModelException {
-        return userFactory.loadHistory( this, historyId );
+        return userFactory.loadHistory(this, historyId);
     }
-    
+
     public void deleteHistories() throws WdkUserException {
-        userFactory.deleteHistories( this, false );
+        userFactory.deleteHistories(this, false);
     }
-    
-    public void deleteHistories( boolean allProjects ) throws WdkUserException {
-        userFactory.deleteHistories( this, allProjects );
+
+    public void deleteHistories(boolean allProjects) throws WdkUserException {
+        userFactory.deleteHistories(this, allProjects);
     }
-    
-    public void deleteHistory( int historyId ) throws WdkUserException,
+
+    public void deleteHistory(int historyId) throws WdkUserException,
             WdkModelException {
         // check the dependencies of the history
-        History history = getHistory( historyId );
-        if ( history.isDepended() ) {
+        History history = getHistory(historyId);
+        if (history.isDepended()) {
             // the history is depended by other nodes, mark it as delete, but
             // don't really delete it from the database
-            history.setDeleted( true );
-            history.update( false );
-            
+            history.setDeleted(true);
+            history.update(false);
+
             // TEST
-            logger.info( "History #" + historyId + " of user " + email
-                    + " is depended by other histories. Marked as deleted." );
+            logger.info("History #" + historyId + " of user " + email
+                    + " is depended by other histories. Marked as deleted.");
         } else {
             // delete the history from the database
-            userFactory.deleteHistory( this, historyId );
+            userFactory.deleteHistory(this, historyId);
         }
         // decrement the history count
         historyCount--;
     }
-    
+
     public int getHistoryCount() throws WdkUserException {
         return historyCount;
     }
-    
+
     /**
      * @param historyCount
      *            The historyCount to set.
      */
-    void setHistoryCount( int historyCount ) {
+    void setHistoryCount(int historyCount) {
         this.historyCount = historyCount;
     }
-    
-    public void setProjectPreference( String prefName, String prefValue ) {
-        if ( prefValue == null ) prefValue = prefName;
-        projectPreferences.put( prefName, prefValue );
+
+    public void setProjectPreference(String prefName, String prefValue) {
+        if (prefValue == null) prefValue = prefName;
+        projectPreferences.put(prefName, prefValue);
     }
-    
-    public void unsetProjectPreference( String prefName ) {
-        projectPreferences.remove( prefName );
+
+    public void unsetProjectPreference(String prefName) {
+        projectPreferences.remove(prefName);
     }
-    
-    public Map< String, String > getProjectPreferences() {
-        return new LinkedHashMap< String, String >( projectPreferences );
+
+    public Map<String, String> getProjectPreferences() {
+        return new LinkedHashMap<String, String>(projectPreferences);
     }
-    
-    public String getProjectPreference( String key ) {
-        return projectPreferences.get( key );
+
+    public String getProjectPreference(String key) {
+        return projectPreferences.get(key);
     }
-    
-    public void setGlobalPreference( String prefName, String prefValue ) {
-        if ( prefValue == null ) prefValue = prefName;
-        globalPreferences.put( prefName, prefValue );
+
+    public void setGlobalPreference(String prefName, String prefValue) {
+        if (prefValue == null) prefValue = prefName;
+        globalPreferences.put(prefName, prefValue);
     }
-    
-    public String getGlobalPreference( String key ) {
-        return globalPreferences.get( key );
+
+    public String getGlobalPreference(String key) {
+        return globalPreferences.get(key);
     }
-    
-    public void unsetGlobalPreference( String prefName ) {
-        globalPreferences.remove( prefName );
+
+    public void unsetGlobalPreference(String prefName) {
+        globalPreferences.remove(prefName);
     }
-    
-    public Map< String, String > getGlobalPreferences() {
-        return new LinkedHashMap< String, String >( globalPreferences );
+
+    public Map<String, String> getGlobalPreferences() {
+        return new LinkedHashMap<String, String>(globalPreferences);
     }
-    
+
     public void clearPreferences() {
         globalPreferences.clear();
         projectPreferences.clear();
     }
-    
-    public void changePassword( String oldPassword, String newPassword,
-            String confirmPassword ) throws WdkUserException {
-        userFactory.changePassword( email, oldPassword, newPassword,
-                confirmPassword );
+
+    public void changePassword(String oldPassword, String newPassword,
+            String confirmPassword) throws WdkUserException {
+        userFactory.changePassword(email, oldPassword, newPassword,
+                confirmPassword);
     }
-    
+
     DatasetFactory getDatasetFactory() {
         return datasetFactory;
     }
-    
-    public Dataset getDataset( int datasetId ) throws WdkUserException {
-        return datasetFactory.getDataset( this, datasetId );
+
+    public Dataset getDataset(String datasetChecksum) throws WdkUserException {
+        Dataset dataset = datasetFactory.getDataset(this, datasetChecksum);
+        if (dataset == null)
+            throw new WdkUserException("Dataset of the checksum "
+                    + datasetChecksum + " cannot be found");
+        return dataset;
     }
-    
-    public Dataset createDataset( String uploadFile, String[ ] values )
-            throws WdkUserException {
-        // summary will be the first three items of the values
-        StringBuffer sb = new StringBuffer();
-        int bound = Math.min( 3, values.length );
-        for ( int i = 0; i < bound; i++ ) {
-            if ( sb.length() > 0 ) sb.append( ", " );
-            sb.append( values[ i ] );
-        }
-        if ( values.length > 3 ) sb.append( " ..." );
-        return datasetFactory.createDataset( this, uploadFile, sb.toString(),
-                values );
+
+    public Dataset createDataset(String uploadFile, String[] values)
+            throws WdkUserException, WdkModelException {
+        return datasetFactory.makeDataset(this, uploadFile, values);
     }
-    
-    public void deleteDataset( int datasetId ) throws WdkUserException {
-        datasetFactory.deleteDataset( this, datasetId );
-    }
-    
+
     public void save() throws WdkUserException {
-        userFactory.saveUser( this );
+        userFactory.saveUser(this);
     }
-    
+
     public int getItemsPerPage() {
-        String prefValue = getGlobalPreference( User.PREF_ITEMS_PER_PAGE );
-        int itemsPerPage = ( prefValue == null ) ? 20
-                : Integer.parseInt( prefValue );
+        String prefValue = getGlobalPreference(User.PREF_ITEMS_PER_PAGE);
+        int itemsPerPage = (prefValue == null) ? 20
+                : Integer.parseInt(prefValue);
         return itemsPerPage;
     }
-    
-    public void setItemsPerPage( int itemsPerPage ) throws WdkUserException {
-        if ( itemsPerPage <= 0 ) itemsPerPage = 20;
-        else if ( itemsPerPage > 100 ) itemsPerPage = 100;
-        setGlobalPreference( User.PREF_ITEMS_PER_PAGE,
-                Integer.toString( itemsPerPage ) );
+
+    public void setItemsPerPage(int itemsPerPage) throws WdkUserException {
+        if (itemsPerPage <= 0) itemsPerPage = 20;
+        else if (itemsPerPage > 100) itemsPerPage = 100;
+        setGlobalPreference(User.PREF_ITEMS_PER_PAGE,
+                Integer.toString(itemsPerPage));
         save();
     }
-    
-    public History combineHistory( String expression ) throws WdkUserException,
+
+    public History combineHistory(String expression) throws WdkUserException,
             WdkModelException {
-        return combineHistory( expression, false );
+        return combineHistory(expression, false);
     }
-    
-    private History combineHistory( String expression, boolean deleted )
+
+    private History combineHistory(String expression, boolean deleted)
             throws WdkUserException, WdkModelException {
-        BooleanExpression exp = new BooleanExpression( this );
-        Map< String, String > operatorMap = getWdkModel().getBooleanOperators();
-        BooleanQuestionNode root = exp.parseExpression( expression, operatorMap );
-        
-        Answer answer = root.makeAnswer( 1, getItemsPerPage() );
-        
+        BooleanExpression exp = new BooleanExpression(this);
+        Map<String, String> operatorMap = getWdkModel().getBooleanOperators();
+        BooleanQuestionNode root = exp.parseExpression(expression, operatorMap);
+
+        Answer answer = root.makeAnswer(1, getItemsPerPage());
+
         // save summary list, if not summary list exists
-        String summaryKey = answer.getQuestion().getFullName() + SUMMARY_ATTRIBUTES_SUFFIX;
+        String summaryKey = answer.getQuestion().getFullName()
+                + SUMMARY_ATTRIBUTES_SUFFIX;
         if (!projectPreferences.containsKey(summaryKey)) {
             Map<String, AttributeField> summary = answer.getSummaryAttributes();
             StringBuffer sb = new StringBuffer();
@@ -701,223 +688,234 @@ public class User {
             save();
         }
 
-        return createHistory( answer, expression, false );
+        return createHistory(answer, expression, false);
     }
-    
-    public String validateExpression( String expression,
-            Map< String, String > operatorMap ) throws WdkModelException {
+
+    public String validateExpression(String expression,
+            Map<String, String> operatorMap) throws WdkModelException {
         // construct BooleanQuestionNode
-        BooleanExpression be = new BooleanExpression( this );
+        BooleanExpression be = new BooleanExpression(this);
         try {
-            be.parseExpression( expression, operatorMap );
-        } catch ( WdkUserException ue ) {
+            be.parseExpression(expression, operatorMap);
+        } catch (WdkUserException ue) {
             return ue.getMessage();
         }
         return null;
     }
-    
-    public Map< String, Boolean > getSortingAttributes( String questionFullName )
+
+    public Map<String, Boolean> getSortingAttributes(String questionFullName)
             throws WdkUserException, WdkModelException {
         String sortKey = questionFullName + SORTING_ATTRIBUTES_SUFFIX;
-        String sortingList = projectPreferences.get( sortKey );
-        Map< String, Boolean > sortingAttributes = new LinkedHashMap< String, Boolean >();
-        if ( sortingList != null ) {
-            String[ ] parts = sortingList.split( ";" );
-            int count = 0;
-            for ( String combo : parts ) {
-                String[ ] subParts = combo.split( "," );
-                String attrName = subParts[ 0 ].trim();
-                String strAscend = subParts[ 1 ].trim().toLowerCase();
-                boolean ascending = strAscend.equals( "asc" );
-                if ( !sortingAttributes.containsKey( attrName ) )
-                    sortingAttributes.put( attrName, ascending );
-                count++;
-                if ( count >= SORTING_LEVEL ) break;
-            }
-        } else if ( questionFullName.equals( BooleanQuestionNode.BOOLEAN_QUESTION_NAME ) ) {
+        String sortingChecksum = projectPreferences.get(sortKey);
+        Map<String, Boolean> sortingAttributes = getSortingAttributesByChecksum(sortingChecksum);
+        if (sortingAttributes != null) return sortingAttributes;
+
+        if (questionFullName.equals(BooleanQuestionNode.BOOLEAN_QUESTION_NAME)) {
             // boolean question has no sorting attributes by default
-            return new LinkedHashMap< String, Boolean >();
+            return new LinkedHashMap<String, Boolean>();
         } else { // ordinary question
-            Question question = model.getQuestion( questionFullName );
-            sortingAttributes = question.getDefaultSortingAttributes();
+            Question question = model.getQuestion(questionFullName);
+            return question.getDefaultSortingAttributes();
         }
-        return sortingAttributes;
     }
-    
-    public void addSortingAttribute( String questionFullName, String attrName,
-            boolean ascending ) throws WdkUserException, WdkModelException {
-        Map< String, Boolean > sortingMap = new LinkedHashMap< String, Boolean >();
-        sortingMap.put( attrName, ascending );
-        Map< String, Boolean > previousMap = getSortingAttributes( questionFullName );
-        for ( String aName : previousMap.keySet() ) {
-            if ( !sortingMap.containsKey( aName ) )
-                sortingMap.put( aName, previousMap.get( aName ) );
+
+    public Map<String, Boolean> getSortingAttributesByChecksum(
+            String sortingChecksum) throws WdkUserException {
+        if (sortingChecksum == null) return null;
+        QueryFactory queryFactory = model.getQueryFactory();
+        return queryFactory.getSortingAttributes(sortingChecksum);
+    }
+
+    public String addSortingAttribute(String questionFullName, String attrName,
+            boolean ascending) throws WdkUserException, WdkModelException {
+        Map<String, Boolean> sortingMap = new LinkedHashMap<String, Boolean>();
+        sortingMap.put(attrName, ascending);
+        Map<String, Boolean> previousMap = getSortingAttributes(questionFullName);
+        for (String aName : previousMap.keySet()) {
+            if (!sortingMap.containsKey(aName))
+                sortingMap.put(aName, previousMap.get(aName));
         }
-        
-        StringBuffer sb = new StringBuffer();
-        for ( String aName : sortingMap.keySet() ) {
-            if ( sb.length() > 0 ) sb.append( ";" );
-            sb.append( aName + "," );
-            sb.append( sortingMap.get( aName ) ? "ASC" : "DESC" );
-        }
-        String sortingList = sb.toString();
+
+        // save and get sorting checksum
+        QueryFactory queryFactory = model.getQueryFactory();
+        String sortingChecksum = queryFactory.makeSortingChecksum(sortingMap);
+
+        applySortingChecksum(questionFullName, sortingChecksum);
+        return sortingChecksum;
+    }
+
+    public void applySortingChecksum(String questionFullName,
+            String sortingChecksum) {
         String sortKey = questionFullName + SORTING_ATTRIBUTES_SUFFIX;
-        
-        projectPreferences.put( sortKey, sortingList );
+        projectPreferences.put(sortKey, sortingChecksum);
     }
-    
-    public String[ ] getSummaryAttributes( String questionFullName )
+
+    public String[] getSummaryAttributes(String questionFullName)
             throws WdkUserException, WdkModelException {
         String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX;
-        String summaryList = projectPreferences.get( summaryKey );
-        String[ ] summary;
-        if ( summaryList != null ) {
-            String[ ] parts = summaryList.split( "," );
-            List< String > list = new ArrayList< String >();
-            for ( String attributeName : parts ) {
-                attributeName = attributeName.trim();
-                if ( attributeName.length() > 0 ) list.add( attributeName );
-            }
-            summary = new String[ list.size() ];
-            list.toArray( summary );
-        } else if ( questionFullName.equals( BooleanQuestionNode.BOOLEAN_QUESTION_NAME ) ) {
-            summary = new String[ 0 ];
+        String summaryChecksum = projectPreferences.get(summaryKey);
+        String[] summary = getSummaryAttributesByChecksum(summaryChecksum);
+        if (summary != null) return summary;
+
+        if (questionFullName.equals(BooleanQuestionNode.BOOLEAN_QUESTION_NAME)) {
+            summary = new String[0];
         } else { // ordinary question
-            Question question = model.getQuestion( questionFullName );
-            Map< String, AttributeField > attributes = question.getSummaryAttributes();
-            summary = new String[ attributes.size() ];
-            attributes.keySet().toArray( summary );
+            Question question = model.getQuestion(questionFullName);
+            Map<String, AttributeField> attributes = question.getSummaryAttributes();
+            summary = new String[attributes.size()];
+            attributes.keySet().toArray(summary);
         }
         return summary;
     }
-    
-    public void addSummaryAttribute( String questionFullName, String attrName )
+
+    public String[] getSummaryAttributesByChecksum(String summaryChecksum)
+            throws WdkUserException {
+        if (summaryChecksum == null) return null;
+        // get summary list
+        QueryFactory queryFactory = model.getQueryFactory();
+        return queryFactory.getSummaryAttributes(summaryChecksum);
+    }
+
+    public String addSummaryAttribute(String questionFullName, String attrName)
             throws WdkUserException, WdkModelException {
-        Set< String > summaryAttributes = new LinkedHashSet< String >();
-        String[ ] summary = getSummaryAttributes( questionFullName );
-        for ( String attributeName : summary ) {
-            summaryAttributes.add( attributeName );
+        Set<String> summaryAttributes = new LinkedHashSet<String>();
+        String[] summary = getSummaryAttributes(questionFullName);
+        for (String attributeName : summary) {
+            summaryAttributes.add(attributeName);
         }
-        summaryAttributes.add( attrName );
-        
-        StringBuffer sb = new StringBuffer();
-        for ( String attributeName : summaryAttributes ) {
-            if ( sb.length() > 0 ) sb.append( "," );
-            sb.append( attributeName );
-        }
-        String summaryList = sb.toString();
-        String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX;
-        
-        // TEST
-        logger.info( "Save summary list: '" + summaryList + "'" );
-        
-        projectPreferences.put( summaryKey, summaryList );
+        summaryAttributes.add(attrName);
+
+        // save the summary attribute list
+        String[] attributes = new String[summaryAttributes.size()];
+        summaryAttributes.toArray(attributes);
+        QueryFactory queryFactory = model.getQueryFactory();
+        String summaryChecksum = queryFactory.makeSummaryChecksum(attributes);
+
+        applySummaryChecksum(questionFullName, summaryChecksum);
+        return summaryChecksum;
     }
-    
-    public void removeSummaryAttribute( String questionFullName, String attrName )
-            throws WdkUserException, WdkModelException {
-        Set< String > summaryAttributes = new LinkedHashSet< String >();
-        String[ ] summary = getSummaryAttributes( questionFullName );
-        for ( String attributeName : summary ) {
-            if ( !attributeName.equals( attrName ) )
-                summaryAttributes.add( attributeName );
+
+    public String removeSummaryAttribute(String questionFullName,
+            String attrName) throws WdkUserException, WdkModelException {
+        Set<String> summaryAttributes = new LinkedHashSet<String>();
+        String[] summary = getSummaryAttributes(questionFullName);
+        for (String attributeName : summary) {
+            if (!attributeName.equals(attrName))
+                summaryAttributes.add(attributeName);
         }
-        
-        StringBuffer sb = new StringBuffer();
-        for ( String attributeName : summaryAttributes ) {
-            if ( sb.length() > 0 ) sb.append( "," );
-            sb.append( attributeName );
-        }
-        String summaryList = sb.toString();
-        String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX;
-        
-        // TEST
-        logger.info( "Save summary list: '" + summaryList + "'" );
-        
-        projectPreferences.put( summaryKey, summaryList );
+
+        // save the summary attribute list
+        String[] attributes = new String[summaryAttributes.size()];
+        summaryAttributes.toArray(attributes);
+        QueryFactory queryFactory = model.getQueryFactory();
+        String summaryChecksum = queryFactory.makeSummaryChecksum(attributes);
+
+        applySummaryChecksum(questionFullName, summaryChecksum);
+        return summaryChecksum;
     }
-    
-    public void resetSummaryAttribute( String questionFullName ) {
+
+    public void resetSummaryAttribute(String questionFullName) {
         String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX;
-        projectPreferences.remove( summaryKey );
+        projectPreferences.remove(summaryKey);
     }
-    
-    public void arrangeSummaryAttribute( String questionFullName,
-            String attrName, boolean moveLeft ) throws WdkUserException,
+
+    public String arrangeSummaryAttribute(String questionFullName,
+            String attrName, boolean moveLeft) throws WdkUserException,
             WdkModelException {
-        String[ ] summary = getSummaryAttributes( questionFullName );
-        
+        String[] summary = getSummaryAttributes(questionFullName);
+
         // TEST
         StringBuffer theSb = new StringBuffer();
         for (String name : summary) {
             theSb.append(name + ", ");
         }
-        logger.info("Summary: " + theSb.toString());
+        logger.info("Summary before: " + theSb.toString());
 
-        for ( int i = 0; i < summary.length; i++ ) {
-            if ( attrName.equals( summary[ i ] ) ) {
-                if ( moveLeft && i > 0 ) {
-                    summary[ i ] = summary[ i - 1 ];
-                    summary[ i - 1 ] = attrName;
-                } else if ( !moveLeft && i < summary.length - 1 ) {
-                    summary[ i ] = summary[ i + 1 ];
-                    summary[ i + 1 ] = attrName;
+        for (int i = 0; i < summary.length; i++) {
+            if (attrName.equals(summary[i])) {
+                if (moveLeft && i > 0) {
+                    summary[i] = summary[i - 1];
+                    summary[i - 1] = attrName;
+                } else if (!moveLeft && i < summary.length - 1) {
+                    summary[i] = summary[i + 1];
+                    summary[i + 1] = attrName;
                 }
                 break;
             }
         }
-        
-        StringBuffer sb = new StringBuffer();
-        for ( String attributeName : summary ) {
-            if ( sb.length() > 0 ) sb.append( "," );
-            sb.append( attributeName );
-        }
-        String summaryList = sb.toString();
-        String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX;
-        
+
         // TEST
-        logger.info( "Save summary list: '" + summaryList + "'" );
-        
-        projectPreferences.put( summaryKey, summaryList );
+        theSb = new StringBuffer();
+        for (String name : summary) {
+            theSb.append(name + ", ");
+        }
+        logger.info("Summary after: " + theSb.toString());
+
+        QueryFactory queryFactory = model.getQueryFactory();
+        String summaryChecksum = queryFactory.makeSummaryChecksum(summary);
+
+        applySummaryChecksum(questionFullName, summaryChecksum);
+
+        return summaryChecksum;
     }
-    
+
+    /**
+     * The method replace the previous checksum with the given one.
+     * 
+     * @param summaryChecksum
+     */
+    public void applySummaryChecksum(String questionFullName,
+            String summaryChecksum) {
+        String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX;
+        projectPreferences.put(summaryKey, summaryChecksum);
+    }
+
     public String createRemoteKey() throws WdkUserException {
         // user can remote key only if he/she is logged in
-        if (isGuest()) throw new WdkUserException("Guest user cannot create remote key.");
-        
+        if (isGuest())
+            throw new WdkUserException("Guest user cannot create remote key.");
+
         // the key is a combination of user id and current time
         Date now = new Date();
-        
-        String key = Long.toString( now.getTime() ) + "->" + Integer.toString( userId );
+
+        String key = Long.toString(now.getTime()) + "->"
+                + Integer.toString(userId);
         try {
-            key = userFactory.encrypt( key );
-        } catch ( NoSuchAlgorithmException ex ) {
+            key = userFactory.encrypt(key);
+        } catch (NoSuchAlgorithmException ex) {
             throw new WdkUserException(ex);
         }
         // save the remote key
-        String saveKey = Long.toString( now.getTime() ) + "<-" + key;
-        globalPreferences.put( PREF_REMOTE_KEY, saveKey );
+        String saveKey = Long.toString(now.getTime()) + "<-" + key;
+        globalPreferences.put(PREF_REMOTE_KEY, saveKey);
         save();
-        
+
         return key;
     }
-    
+
     public void verifyRemoteKey(String remoteKey) throws WdkUserException {
         // get save key and creating time
-        String saveKey = globalPreferences.get( PREF_REMOTE_KEY );
-        if (saveKey == null) throw new WdkUserException("Remote login failed. The remote key doesn't exist.");
-        String[] parts = saveKey.split( "<-" );
-        if (parts.length != 2) throw new WdkUserException("Remote login failed. The remote key is invalid.");
-        long createTime = Long.parseLong( parts[0] );
+        String saveKey = globalPreferences.get(PREF_REMOTE_KEY);
+        if (saveKey == null)
+            throw new WdkUserException(
+                    "Remote login failed. The remote key doesn't exist.");
+        String[] parts = saveKey.split("<-");
+        if (parts.length != 2)
+            throw new WdkUserException(
+                    "Remote login failed. The remote key is invalid.");
+        long createTime = Long.parseLong(parts[0]);
         String createKey = parts[1].trim();
-        
+
         // verify remote key
-        if (!createKey.equals( remoteKey )) 
-            throw new WdkUserException("Remote login failed. The remote key doesn't match.");
-        
-        // check if the remote key is expired. There is an mandatory 10 minutes expiration time for the remote key
+        if (!createKey.equals(remoteKey))
+            throw new WdkUserException(
+                    "Remote login failed. The remote key doesn't match.");
+
+        // check if the remote key is expired. There is an mandatory 10 minutes
+        // expiration time for the remote key
         long now = (new Date()).getTime();
-        if (Math.abs( now - createTime ) >= (10 * 60 * 1000))
-            throw new WdkUserException("Remote login failed. The remote key is expired.");
+        if (Math.abs(now - createTime) >= (10 * 60 * 1000))
+            throw new WdkUserException(
+                    "Remote login failed. The remote key is expired.");
     }
 }

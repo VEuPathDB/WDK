@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.jspwrap;
 
-import org.gusdb.wdk.model.Group;
 import org.gusdb.wdk.model.Param;
 import org.gusdb.wdk.model.WdkModelException;
 
@@ -37,11 +36,11 @@ public class ParamBean {
     }
 
     public String getDefault() {
-	try {
-	    return param.getDefault();
-	} catch (WdkModelException e) {
-	    throw new RuntimeException(e);
-	}
+        try {
+            return param.getDefault();
+        } catch (WdkModelException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /*
@@ -61,7 +60,6 @@ public class ParamBean {
     public boolean getIsVisible() {
         return this.param.isVisible();
     }
-    
 
     /**
      * @return
@@ -76,5 +74,25 @@ public class ParamBean {
      */
     public String validateValue(Object val) throws WdkModelException {
         return param.validateValue(val);
+    }
+
+    /**
+     * @param value
+     * @return
+     * @throws WdkModelException
+     * @see org.gusdb.wdk.model.Param#compressValue(java.lang.Object)
+     */
+    public String compressValue(Object value) throws WdkModelException {
+        return param.compressValue(value);
+    }
+    
+
+    /**
+     * @param value
+     * @return
+     * @throws WdkModelException
+     */
+    public Object decompressValue(String value) throws WdkModelException {
+        return param.decompressValue(value);
     }
 }

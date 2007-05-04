@@ -25,12 +25,7 @@ function chooseType(paramName, type) {
     var inputType = document.getElementById(paramName + '_type');
     inputType.value = type;
     // disable inputs accordingly
-    if (type == "DATASET") {
-        var inputData = document.getElementById(paramName + '_data');
-        inputData.disabled = true;
-        var inputFile = document.getElementById(paramName + '_file');
-        inputFile.disabled = true;
-    } else if (type == "DATA") {
+    if (type == "DATA") {
         var inputData = document.getElementById(paramName + '_data');
         inputData.disabled = false;
         var inputFile = document.getElementById(paramName + '_file');
@@ -52,42 +47,40 @@ function chooseType(paramName, type) {
 <c:set var="wdkUser" value="${sessionScope.wdkUser}"/>
 <c:set var="dataset" value="${requestScope[pNam]}" />  
 
-<input type="hidden" id="${pNam}_type" name="${pNam}_type" 
-       value="${(dataset != null)? 'DATASET' : 'DATA'}" />
-<input type="hidden" name="${pNam}" 
-       value="${wdkUser.signature}:${dataset.datasetId}" />
+<input type="hidden" id="${pNam}_type" name="${pNam}_type" value="DATA" />
+<c:choose>
+    <c:when test="${dataset != null}">
+        <input type="hidden" name="${pNam}" value="${wdkUser.signature}:${dataset.datasetId}" />
+    </c:when>
+    <c:otherwise>
+         <input type="hidden" name="${pNam}" value="" />
+    </c:otherwise>
+</c:choose>
 
 <table border="0" bgcolor="#EEEEEE" cellspacing="0" cellpadding="0">
     
-    <!-- display the sumamry of the dataset, if have -->
-    <c:if test="${dataset != null}">
-        <tr>
-            <td align="left" valign="top" nowrap>
-                <input type="radio" name="${pNam}_radio" checked 
-                       onclick="chooseType('${pNam}', 'DATASET');"/>
-                Choose previous list:&nbsp;
-            </td>
-            <td align="left">
-                "${dataset.summary}"
-                <c:if test='${dataset.uploadFile != null && dataset.uploadFile != ""}'>
-                    from file &lt;${dataset.uploadFile}&gt;
-                </c:if>
-            </td>
-        </tr>
-    </c:if>
     
     <!-- display an input box for user to enter data -->
     <tr>
         <td align="left" valign="top" nowrap>
-            <input type="radio" name="${pNam}_radio" 
-                   ${(dataset == null)? "checked" : ""}
+            <input type="radio" name="${pNam}_radio" checked
                    onclick="chooseType('${pNam}', 'DATA');" />
             Enter list:&nbsp;
         </td>
+        <c:set var="datasetValues">
+            <c:choose>
+                <c:when test="${dataset != null}">
+                    ${dataset.value}
+                </c:when>
+                <c:otherwise>
+                    ${qP.default}
+                </c:otherwise>
+            </c:choose>
+        </c:set>
         <td align="left">
-            <textarea id="${pNam}_data" name="${pNam}_data" 
-                      ${(dataset != null)? "disabled" : ""}
-                      rows="5" cols="30">${dataset.value}</textarea>
+            <textarea id="${pNam}_data" name="${pNam}_data" rows="5" cols="30">
+                ${datasetValues}
+            </textarea>
         </td>
     </tr>
     
@@ -99,7 +92,14 @@ function chooseType(paramName, type) {
             Upload from file:&nbsp;
         </td>
         <td align="left">
-            <html:file styleId="${pNam}_file" property="myPropObject(${pNam}_file)" value="${dataset.uploadFile}" disabled="true"/>
+            <c:choose>
+                <c:when test="${dataset != null}">
+                    <html:file styleId="${pNam}_file" property="myPropObject(${pNam}_file)" value="${dataset.uploadFile}" disabled="true"/>
+                </c:when>
+                <c:otherwise>
+                    <html:file styleId="${pNam}_file" property="myPropObject(${pNam}_file)" disabled="true"/>
+                </c:otherwise>
+            </c:choose>
         </td>
     </tr>
 </table>

@@ -21,11 +21,12 @@ public class Dataset {
     private Date createTime;
     private String summary;
     private int size;
+    private String checksum;
 
-    public Dataset(DatasetFactory factory, User user, int datasetId) {
+    public Dataset(DatasetFactory factory, int datasetId, String checksum) {
         this.factory = factory;
-        this.user = user;
         this.datasetId = datasetId;
+        this.checksum = checksum;
     }
 
     /**
@@ -34,11 +35,11 @@ public class Dataset {
     public DatasetFactory getFactory() {
         return factory;
     }
-    
+
     public User getUser() {
         return user;
     }
-    
+
     void setUser(User user) {
         this.user = user;
     }
@@ -59,6 +60,13 @@ public class Dataset {
      */
     public int getDatasetId() {
         return datasetId;
+    }
+
+    /**
+     * @return the checksum
+     */
+    public String getChecksum() {
+        return checksum;
     }
 
     /**
@@ -106,23 +114,26 @@ public class Dataset {
     void setUploadFile(String uploadFile) {
         this.uploadFile = uploadFile;
     }
-    
 
     /**
-     * @return 
+     * @return
      * @throws WdkUserException
      */
     public String[] getValues() throws WdkUserException {
         return factory.getDatasetValues(this);
     }
-    
+
     public String getValue() throws WdkUserException {
         String[] values = getValues();
         StringBuffer sb = new StringBuffer();
         for (String value : values) {
-            if (sb.length()>0) sb.append(", ");
+            if (sb.length() > 0) sb.append(", ");
             sb.append(value);
         }
         return sb.toString();
+    }
+
+    public String getCombinedId() {
+        return user.getSignature() + ":" + checksum;
     }
 }
