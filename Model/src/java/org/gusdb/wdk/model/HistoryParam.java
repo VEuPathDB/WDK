@@ -62,6 +62,7 @@ public class HistoryParam extends Param {
      */
     @Override
     protected void setResources(WdkModel model) throws WdkModelException {
+        super.setResources( model );
         try {
             factory = model.getUserFactory();
         } catch (WdkUserException ex) {

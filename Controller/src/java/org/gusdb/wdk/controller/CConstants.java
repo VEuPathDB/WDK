@@ -22,6 +22,7 @@ public class CConstants {
     public static final String WDK_CUSTOM_DATASET_LIST_PAGE = "customDatasetList.jsp";
     public static final String WDK_CUSTOM_DATASET_PAGE = "customDataset.jsp";
     public static final String WDK_CUSTOM_CREATE_DATASET_PAGE = "customCreateDataset.jsp";
+    public static final String WDK_SHOW_SUMMARY_ACTION = "showSummary.do";
 
     public static final String WDK_QUESTION_KEY = "wdkQuestion";
     public static final String WDK_QUESTION_PARAMS_KEY = "wdkQuestionParams";
@@ -68,10 +69,11 @@ public class CConstants {
     public static final String WDK_PREFERENCE_GLOBAL_KEY = "preference_global_";
     public static final String WDK_PREFERENCE_PROJECT_KEY = "preference_project_";
     public static final String WDK_SUMMARY_COMMAND_KEY = "command";
-    public static final String WDK_SUMMARY_QUESTION_KEY = "summaryQuestion";
     public static final String WDK_SUMMARY_ATTRIBUTE_KEY = "attribute";
     public static final String WDK_SUMMARY_SORTING_ORDER_KEY = "sortOrder";
     public static final String WDK_SUMMARY_ARRANGE_ORDER_KEY = "left";
+    public static final String WDK_SORTING_KEY = "sort";
+    public static final String WDK_SUMMARY_KEY = "summary";
 
     //key for finding action forward, from struts-config.xml, used in Action classes
     public static final String SHOW_QUESTION_MAPKEY = "show_question";

@@ -13,50 +13,56 @@ GRANT GUS_W TO userlogins;
 GRANT CREATE VIEW TO userlogins;
 
 
-GRANT insert, update, delete on userlogins.dataset_data to GUS_W;
-GRANT select on userlogins.dataset_data to GUS_R;
 
+DROP SEQUENCE userlogins.users_pkseq;
+DROP SEQUENCE userlogins.dataset_indices_pkseq;
 
-CREATE TABLE userlogins.query_permutation
-(
-  project_id VARCHAR(50) NOT NULL,
-  query_checksum VARCHAR(40) NOT NULL,
-  query_name VARCHAR(100) NOT NULL,
-  is_boolean NUMBER(1),
-  params CLOB,
-  CONSTRAINT "QUERY_PERMUTATION_PK" PRIMARY KEY (query_checksum)
-);
+DROP TABLE userlogins.clob_values;
+DROP TABLE userlogins.user_datasets;
+DROP TABLE userlogins.dataset_values;
+DROP TABLE userlogins.dataset_indices;
+DROP TABLE userlogins.histories;
+DROP TABLE userlogins.preferences;
+DROP TABLE userlogins.user_roles;
+DROP TABLE userlogins.users;
+DROP TABLE userlogins.sorting_attributes;
+DROP TABLE userlogins.summary_attributes;
 
-GRANT insert, update, delete on userlogins.query_permutation to GUS_W;
-GRANT select on userlogins.query_permutation to GUS_R;
-
-
-CREATE TABLE userlogins.config_column
-(
-  config_checksum VARCHAR(40) NOT NULL,
-  columns VARCHAR(4000) NOT NULL,
-  CONSTRAINT "CONFIG_COLUMN_PK" PRIMARY KEY (config_checksum)
-);
-
-GRANT insert, update, delete on userlogins.config_column to GUS_W;
-GRANT select on userlogins.config_column to GUS_R;
-
-
-CREATE TABLE userlogins.sort_column
-(
-  sort_checksum VARCHAR(40) NOT NULL,
-  columns VARCHAR(4000) NOT NULL,
-  CONSTRAINT "SORT_COLUMN_PK" PRIMARY KEY (sort_checksum)
-);
-
-GRANT insert, update, delete on userlogins.sort_column to GUS_W;
-GRANT select on userlogins.sort_column to GUS_R;
 
 
 CREATE SEQUENCE userlogins.users_pkseq INCREMENT BY 1 START WITH 1;
 
 GRANT select on userlogins.users_pkseq to GUS_W;
 GRANT select on userlogins.users_pkseq to GUS_R;
+
+
+CREATE SEQUENCE userlogins.dataset_indices_pkseq INCREMENT BY 1 START WITH 1;
+
+GRANT select on userlogins.dataset_indices_pkseq to GUS_W;
+GRANT select on userlogins.dataset_indices_pkseq to GUS_R;
+
+
+
+CREATE TABLE userlogins.summary_attributes
+(
+  summary_checksum VARCHAR(40) NOT NULL,
+  attributes VARCHAR(4000) NOT NULL,
+  CONSTRAINT "SUMMARY_ATTRIBUTES_PK" PRIMARY KEY (summary_checksum)
+);
+
+GRANT insert, update, delete on userlogins.summary_attributes to GUS_W;
+GRANT select on userlogins.summary_attributes to GUS_R;
+
+
+CREATE TABLE userlogins.sorting_attributes
+(
+  sorting_checksum VARCHAR(40) NOT NULL,
+  attributes VARCHAR(4000) NOT NULL,
+  CONSTRAINT "SORTING_ATTRIBUTES_PK" PRIMARY KEY (sorting_checksum)
+);
+
+GRANT insert, update, delete on userlogins.sorting_attributes to GUS_W;
+GRANT select on userlogins.sorting_attributes to GUS_R;
 
 
 CREATE TABLE userlogins.users
@@ -121,55 +127,76 @@ CREATE TABLE userlogins.histories
   history_id NUMBER(12) NOT NULL,
   user_id NUMBER(12) NOT NULL,
   project_id varchar(50) NOT NULL,
-  query_checksum varchar(40) NOT NULL,
+  question_name varchar(255) NOT NULL,
   create_time timestamp NOT NULL,
   last_run_time timestamp NOT NULL,
   custom_name varchar(4000),
   estimate_size NUMBER(12),
+  query_signature VARCHAR(40),
+  query_instance_checksum VARCHAR(40),
+  is_boolean NUMBER(1),
   is_deleted NUMBER(1),
+  params CLOB,
   CONSTRAINT "HISTORIES_PK" PRIMARY KEY (user_id, history_id, project_id),
   CONSTRAINT "HISTORY_USER_ID_FK" FOREIGN KEY (user_id)
-      REFERENCES userlogins.users (user_id),
-  CONSTRAINT "HISTORY_QUERY_CHECKSUM_FK" FOREIGN KEY (query_checksum)
-      REFERENCES userlogins.query_permutation (query_checksum) 
+      REFERENCES userlogins.users (user_id)
 );
 
 GRANT insert, update, delete on userlogins.histories to GUS_W;
 GRANT select on userlogins.histories to GUS_R;
 
 
-CREATE SEQUENCE userlogins.dataset_index_pkseq INCREMENT BY 1 START WITH 1;
+CREATE TABLE userlogins.dataset_indices
+(
+  dataset_id NUMBER(12) NOT NULL,
+  dataset_checksum VARCHAR(40) NOT NULL,
+  summary varchar(200) NOT NULL,
+  dataset_size number(12) NOT NULL,
+  CONSTRAINT "DATASET_INDICES_PK" PRIMARY KEY (dataset_id),
+  CONSTRAINT "DATASET_CHECKSUM_UNIQUE" UNIQUE (dataset_checksum)
+);
 
-GRANT select on userlogins.dataset_index_pkseq to GUS_W;
-GRANT select on userlogins.dataset_index_pkseq to GUS_R;
+GRANT insert, update, delete on userlogins.dataset_indices to GUS_W;
+GRANT select on userlogins.dataset_indices to GUS_R;
 
 
-CREATE TABLE userlogins.dataset_index
+CREATE TABLE userlogins.dataset_values
+(
+  dataset_id NUMBER(12) NOT NULL,
+  dataset_value varchar(4000) NOT NULL,
+  CONSTRAINT "DATASET_VALUES_DATASET_ID_FK" FOREIGN KEY (dataset_id)
+      REFERENCES userlogins.dataset_indices (dataset_id)
+);
+
+CREATE INDEX DATASET_VALUES_ID_INDEX ON userlogins.dataset_values (dataset_id);
+
+GRANT insert, update, delete on userlogins.dataset_values to GUS_W;
+GRANT select on userlogins.dataset_values to GUS_R;
+
+
+CREATE TABLE userlogins.user_datasets
 (
   dataset_id NUMBER(12) NOT NULL,
   user_id NUMBER(12) NOT NULL,
   create_time timestamp NOT NULL,
   upload_file varchar(2000),
-  summary varchar(2000) NOT NULL,
-  dataset_size number(12) NOT NULL,
-  CONSTRAINT "DATASET_INDEX_PK" PRIMARY KEY (dataset_id),
-  CONSTRAINT "DATASET_INDEX_USER_ID_FK" FOREIGN KEY (user_id)
+  CONSTRAINT "USER_DATASET_PK" PRIMARY KEY (dataset_id, user_id),
+  CONSTRAINT "USER_DATASETS_DS_ID_FK" FOREIGN KEY (dataset_id)
+      REFERENCES userlogins.dataset_indices (dataset_id),
+  CONSTRAINT "USER_DATASETS_USER_ID_FK" FOREIGN KEY (user_id)
       REFERENCES userlogins.users (user_id)
 );
 
-GRANT insert, update, delete on userlogins.dataset_index to GUS_W;
-GRANT select on userlogins.dataset_index to GUS_R;
+GRANT insert, update, delete on userlogins.user_datasets to GUS_W;
+GRANT select on userlogins.user_datasets to GUS_R;
 
 
-CREATE TABLE userlogins.dataset_data
+CREATE TABLE userlogins.clob_values
 (
-  dataset_id NUMBER(12) NOT NULL,
-  user_id NUMBER(12) NOT NULL,
-  dataset_value varchar(2000) NOT NULL,
-  CONSTRAINT "DATASET_DATASET_ID_FK" FOREIGN KEY (dataset_id)
-      REFERENCES userlogins.dataset_index (dataset_id),
-  CONSTRAINT "DATASET_DATA_USER_ID_FK" FOREIGN KEY (user_id)
-      REFERENCES userlogins.users (user_id)
+  clob_checksum VARCHAR(40) NOT NULL,
+  clob_value CLOB NOT NULL,
+  CONSTRAINT "CLOB_VALUES_PK" PRIMARY KEY (clob_checksum)
 );
 
-CREATE INDEX userlogins.dataset_data_id_idx on userlogins.dataset_data (dataset_id, user_id);
+GRANT insert, update, delete on userlogins.clob_values to GUS_W;
+GRANT select on userlogins.clob_values to GUS_R;

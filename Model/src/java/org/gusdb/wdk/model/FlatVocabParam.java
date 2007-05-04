@@ -32,6 +32,7 @@ public class FlatVocabParam extends AbstractEnumParam {
     }
 
     public void setResources(WdkModel model) throws WdkModelException {
+        super.setResources( model );
         query.setResources(model);
     }
 
