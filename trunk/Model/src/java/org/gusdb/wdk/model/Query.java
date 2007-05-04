@@ -184,7 +184,7 @@ public abstract class Query implements Serializable {
             // get a combination of parameters and types
             for (String paramName : paramNames) {
                 Param param = paramsH.get(paramName);
-                content.append(WdkModel.PARAM_DIVIDER);
+                content.append(Utilities.DATA_DIVIDER);
                 content.append(paramName);
                 content.append('|');
                 content.append(param.getClass().getName());
@@ -196,14 +196,14 @@ public abstract class Query implements Serializable {
             Arrays.sort(columnNames);
             
             for (String columnName : columnNames) {
-                content.append(WdkModel.PARAM_DIVIDER);
+                content.append(Utilities.DATA_DIVIDER);
                 content.append(columnName);
             }
             
             // get extra data for making signature
             String extra = getSignatureData();
             if (extra != null) {
-                content.append(WdkModel.PARAM_DIVIDER);
+                content.append(Utilities.DATA_DIVIDER);
                 content.append(extra);
             }
 

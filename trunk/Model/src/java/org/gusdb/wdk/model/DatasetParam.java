@@ -4,6 +4,7 @@
 package org.gusdb.wdk.model;
 
 import org.gusdb.wdk.model.user.Dataset;
+import org.gusdb.wdk.model.user.DatasetFactory;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
 
@@ -13,7 +14,8 @@ import org.gusdb.wdk.model.user.UserFactory;
  */
 public class DatasetParam extends Param {
 
-    private UserFactory factory;
+    private UserFactory userFactory;
+    private DatasetFactory datasetFactory;
 
     /*
      * (non-Javadoc)
@@ -22,9 +24,11 @@ public class DatasetParam extends Param {
      */
     @Override
     public String validateValue(Object value) throws WdkModelException {
-        // bypass the validation of DatasetParam, since there can be different
-        // inputs for it
-        return null;
+        String errmsg = null;
+
+        // validate the dataset is disabled at this time
+
+        return errmsg;
     }
 
     /*
@@ -42,8 +46,10 @@ public class DatasetParam extends Param {
      */
     @Override
     protected void setResources(WdkModel model) throws WdkModelException {
+        super.setResources(model);
         try {
-            factory = model.getUserFactory();
+            userFactory = model.getUserFactory();
+            datasetFactory = model.getDatasetFactory();
         } catch (WdkUserException ex) {
             throw new WdkModelException(ex);
         }
@@ -58,7 +64,8 @@ public class DatasetParam extends Param {
     public Param clone() {
         DatasetParam param = new DatasetParam();
         super.clone(param);
-        param.factory = this.factory;
+        param.userFactory = this.userFactory;
+        param.datasetFactory = this.datasetFactory;
         return param;
     }
 
@@ -78,12 +85,9 @@ public class DatasetParam extends Param {
         }
     }
 
-    public UserFactory getUserFactory() {
-        return factory;
-    }
-
     public Dataset getDataset(String combinedId) throws WdkModelException,
             WdkUserException {
+        combinedId = ( String ) decompressValue(combinedId);
         // at this point, the input value should be formatted as
         // signature:dataset_id
         String[] parts = combinedId.split(":");
@@ -92,10 +96,10 @@ public class DatasetParam extends Param {
                     + name + ": '" + combinedId + "'");
 
         String signature = parts[0].trim();
-        int datasetId = Integer.parseInt(parts[1]);
+        String datasetChecksum = parts[1].trim();
 
         // make sure the dataset belongs to this user
-        User user = factory.loadUserBySignature(signature);
-        return user.getDataset(datasetId);
+        User user = userFactory.loadUserBySignature(signature);
+        return user.getDataset(datasetChecksum);
     }
 }

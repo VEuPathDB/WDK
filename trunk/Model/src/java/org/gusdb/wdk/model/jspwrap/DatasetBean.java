@@ -8,10 +8,9 @@ import java.util.Date;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.Dataset;
 
-
 /**
  * @author xingao
- *
+ * 
  */
 public class DatasetBean {
 
@@ -81,10 +80,20 @@ public class DatasetBean {
     /**
      * @return
      * @throws WdkUserException
+     * @throws WdkUserException
      * @see org.gusdb.wdk.model.user.Dataset#getValue()
      */
     public String getValue() throws WdkUserException {
-        return dataset.getValue();
+        try {
+            return dataset.getValue();
+        } catch (WdkUserException ex) {
+            // TEST Auto-generated catch block
+            ex.printStackTrace();
+            throw ex;
+        }
     }
-    
+
+    public String getCombinedId() {
+        return dataset.getCombinedId();
+    }
 }

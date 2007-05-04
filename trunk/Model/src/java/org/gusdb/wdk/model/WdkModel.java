@@ -9,6 +9,7 @@ import java.util.Vector;
 
 import org.gusdb.wdk.model.implementation.ModelXmlParser;
 import org.gusdb.wdk.model.user.DatasetFactory;
+import org.gusdb.wdk.model.user.QueryFactory;
 import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
 import org.gusdb.wdk.model.xml.XmlRecordClassSet;
@@ -21,9 +22,6 @@ import org.w3c.dom.Document;
  * @modified Jan 6, 2006 - Jerric Add a historyFactory in the model
  */
 public class WdkModel {
-
-    // used to
-    public static final String PARAM_DIVIDER = "--WDK_PARAM_DIVIDER--";
 
     public static final int TRUNCATE_DEFAULT = 100;
 
@@ -66,6 +64,7 @@ public class WdkModel {
     private File xmlDataDir;
 
     private DatasetFactory datasetFactory;
+    private QueryFactory queryFactory;
 
     /**
      * Default constructor
@@ -488,6 +487,9 @@ public class WdkModel {
 
         // initialize dataset factory with the login preferences
         datasetFactory = new DatasetFactory(authenPlatform, loginSchema);
+        
+        // initialize QueryFactory in user schema too
+        queryFactory = new QueryFactory(authenPlatform, loginSchema);
     }
 
     public void configure(File modelConfigXmlFile) throws Exception {
@@ -750,6 +752,10 @@ public class WdkModel {
 
     public DatasetFactory getDatasetFactory() {
         return datasetFactory;
+    }
+    
+    public QueryFactory getQueryFactory() {
+        return queryFactory;
     }
 
     public String getProjectId() {

@@ -213,7 +213,7 @@ public abstract class QueryInstance {
         return getValues();
     }
 
-    public String getClobContent() {
+    public String getQueryInstanceContent() {
         // get parameter name list, and sort it
         String[] paramNames = new String[values.size()];
         values.keySet().toArray(paramNames);
@@ -221,9 +221,8 @@ public abstract class QueryInstance {
 
         // concatenate parameter name, type, and values
         StringBuffer content = new StringBuffer();
-        content.append(query.getFullName());
         for (String paramName : paramNames) {
-            content.append(WdkModel.PARAM_DIVIDER);
+            content.append(Utilities.DATA_DIVIDER);
             content.append(paramName);
             content.append('=');
             content.append(values.get(paramName));
@@ -236,7 +235,7 @@ public abstract class QueryInstance {
             try {
                 // get the clob content: a combination of query name, param
                 // names and values
-                String content = getClobContent();
+                String content = getQueryInstanceContent();
                 MessageDigest digest = MessageDigest.getInstance("MD5");
                 byte[] byteBuffer = digest.digest(content.getBytes());
                 // convert each byte into hex format

@@ -21,266 +21,272 @@ import org.gusdb.wdk.model.report.Reporter;
  * by a view
  */
 public class AnswerBean {
-    
+
     Answer answer;
     Map downloadConfigMap = null;
-    
+
     String customName = null;
-    
-    public AnswerBean( Answer answer ) {
+
+    public AnswerBean(Answer answer) {
         this.answer = answer;
     }
-    
+
     /**
      * @return A Map of param displayName --> param value.
      */
-    public Map< String, Object > getParams() {
+    public Map<String, Object> getParams() {
         return answer.getDisplayParams();
     }
-    
-    public Map< String, Object > getInternalParams() {
+
+    public Map<String, Object> getInternalParams() {
         return answer.getParams();
     }
-    
+
     public String getQuestionUrlParams() throws WdkModelException {
         StringBuffer sb = new StringBuffer();
-        Map< String, Object > params = getInternalParams();
-        for ( String paramName : params.keySet() ) {
-            String paramValue = params.get( paramName ).toString();
-            
+        Map<String, Object> params = getInternalParams();
+        for (String paramName : params.keySet()) {
+            String paramValue = params.get(paramName).toString();
+
             // check if the parameter is multipick param
-            Param param = answer.getQuestion().getParamMap().get( paramName );
-            String[ ] values = { paramValue };
-            if ( param instanceof FlatVocabParam )
-                values = paramValue.split( "," );
+            Param param = answer.getQuestion().getParamMap().get(paramName);
+            String[] values = { paramValue };
+            if (param instanceof FlatVocabParam)
+                values = paramValue.split(",");
             // URL encode the values
-            for ( String value : values ) {
+            for (String value : values) {
                 try {
-                    sb.append( "&" + paramName + "="
-                            + URLEncoder.encode( value, "UTF-8" ) );
-                } catch ( UnsupportedEncodingException ex ) {
-                    throw new WdkModelException( ex );
+                    sb.append("&" + paramName + "="
+                            + URLEncoder.encode(value, "UTF-8"));
+                } catch (UnsupportedEncodingException ex) {
+                    throw new WdkModelException(ex);
                 }
             }
         }
         return sb.toString();
     }
-    
+
+    public String getSummaryUrlParams() throws WdkModelException {
+        StringBuffer sb = new StringBuffer();
+        Map<String, Object> params = getInternalParams();
+        for (String paramName : params.keySet()) {
+            String paramValue = params.get(paramName).toString();
+
+            try {
+                paramName = URLEncoder.encode("myProp(" + paramName + ")",
+                        "UTF-8");
+                paramValue = URLEncoder.encode(paramValue, "UTF-8");
+                sb.append("&" + paramName + "=" + paramValue);
+            } catch (UnsupportedEncodingException ex) {
+                throw new WdkModelException(ex);
+            }
+        }
+        return sb.toString();
+    }
+
     public Integer getDatasetId() throws WdkModelException {
         return answer.getDatasetId();
     }
-    
+
     /**
      * @return opertation for boolean answer
      */
     public String getBooleanOperation() {
-        System.err.println( "the param map is: " + answer.getParams() );
-        if ( !getIsBoolean() ) {
+        System.err.println("the param map is: " + answer.getParams());
+        if (!getIsBoolean()) {
             throw new RuntimeException(
-                    "getBooleanOperation can not be called on simple AnswerBean" );
+                    "getBooleanOperation can not be called on simple AnswerBean");
         }
         return ( String ) answer.getParams().get(
-                BooleanQuery.OPERATION_PARAM_NAME );
+                BooleanQuery.OPERATION_PARAM_NAME);
     }
-    
+
     /**
      * @return first child answer for boolean answer, null if it is an answer
      *         for a simple question.
      */
     public AnswerBean getFirstChildAnswer() {
-        if ( !getIsBoolean() ) {
+        if (!getIsBoolean()) {
             throw new RuntimeException(
-                    "getFirstChildAnswer can not be called on simple AnswerBean" );
+                    "getFirstChildAnswer can not be called on simple AnswerBean");
         }
         Object childAnswer = answer.getParams().get(
-                BooleanQuery.FIRST_ANSWER_PARAM_NAME );
-        return new AnswerBean( ( Answer ) childAnswer );
+                BooleanQuery.FIRST_ANSWER_PARAM_NAME);
+        return new AnswerBean(( Answer ) childAnswer);
     }
-    
+
     /**
      * @return second child answer for boolean answer, null if it is an answer
      *         for a simple question.
      */
     public AnswerBean getSecondChildAnswer() {
-        if ( !getIsBoolean() ) {
+        if (!getIsBoolean()) {
             throw new RuntimeException(
-                    "getSecondChildAnswer can not be called on simple AnswerBean" );
+                    "getSecondChildAnswer can not be called on simple AnswerBean");
         }
         Object childAnswer = answer.getParams().get(
-                BooleanQuery.SECOND_ANSWER_PARAM_NAME );
-        return new AnswerBean( ( Answer ) childAnswer );
+                BooleanQuery.SECOND_ANSWER_PARAM_NAME);
+        return new AnswerBean(( Answer ) childAnswer);
     }
-    
+
     public int getPageSize() {
         return answer.getPageSize();
     }
-    
-    public int getPageCount() {
-        try {
-            return answer.getPageCount();
-        } catch ( WdkModelException ex ) {
-            throw new RuntimeException( ex );
-        }
+
+    public int getPageCount() throws WdkModelException {
+        return answer.getPageCount();
     }
-    
-    public int getResultSize() {
-        try {
-            return answer.getResultSize();
-        } catch ( WdkModelException e ) {
-            throw new RuntimeException( e );
-        }
+
+    public int getResultSize() throws WdkModelException {
+        return answer.getResultSize();
     }
-    
-    public Map< String, Integer > getResultSizesByProject() {
-        try {
-            return answer.getResultSizesByProject();
-        } catch ( WdkModelException ex ) {
-            ex.printStackTrace();
-            throw new RuntimeException( ex );
-        }
+
+    public Map<String, Integer> getResultSizesByProject()
+            throws WdkModelException {
+        return answer.getResultSizesByProject();
     }
-    
+
     public boolean getIsBoolean() {
         return answer.getIsBoolean();
     }
-    
+
     public boolean getIsCombinedAnswer() {
         return answer.getIsBoolean();
     }
-    
+
     public RecordClassBean getRecordClass() {
-        return new RecordClassBean( answer.getQuestion().getRecordClass() );
+        return new RecordClassBean(answer.getQuestion().getRecordClass());
     }
-    
+
     public QuestionBean getQuestion() {
-        return new QuestionBean( answer.getQuestion() );
+        return new QuestionBean(answer.getQuestion());
     }
-    
+
     /**
      * @return A list of {@link RecordBean}s.
      */
     public Iterator getRecords() {
         return new RecordBeanList();
     }
-    
-    public void setDownloadConfigMap( Map downloadConfigMap ) {
+
+    public void setDownloadConfigMap(Map downloadConfigMap) {
         this.downloadConfigMap = downloadConfigMap;
     }
-    
-    public AttributeFieldBean[ ] getSummaryAttributes() {
-        Map< String, AttributeField > attribs = answer.getSummaryAttributes();
-        Iterator< String > ai = attribs.keySet().iterator();
-        Vector< AttributeFieldBean > v = new Vector< AttributeFieldBean >();
-        while ( ai.hasNext() ) {
+
+    public AttributeFieldBean[] getSummaryAttributes() {
+        Map<String, AttributeField> attribs = answer.getSummaryAttributes();
+        Iterator<String> ai = attribs.keySet().iterator();
+        Vector<AttributeFieldBean> v = new Vector<AttributeFieldBean>();
+        while (ai.hasNext()) {
             String attribName = ai.next();
-            v.add( new AttributeFieldBean( attribs.get( attribName ) ) );
+            v.add(new AttributeFieldBean(attribs.get(attribName)));
         }
         int size = v.size();
-        AttributeFieldBean[ ] sumAttribs = new AttributeFieldBean[ size ];
-        v.copyInto( sumAttribs );
+        AttributeFieldBean[] sumAttribs = new AttributeFieldBean[size];
+        v.copyInto(sumAttribs);
         return sumAttribs;
     }
-    
-    public String[ ] getSummaryAttributeNames() {
-        AttributeFieldBean[ ] sumAttribs = getSummaryAttributes();
-        Vector< String > v = new Vector< String >();
-        for ( int i = 0; i < sumAttribs.length; i++ ) {
-            String attribName = sumAttribs[ i ].getName();
-            v.add( attribName );
+
+    public String[] getSummaryAttributeNames() {
+        AttributeFieldBean[] sumAttribs = getSummaryAttributes();
+        Vector<String> v = new Vector<String>();
+        for (int i = 0; i < sumAttribs.length; i++) {
+            String attribName = sumAttribs[i].getName();
+            v.add(attribName);
         }
         int size = v.size();
-        String[ ] sumAttribNames = new String[ size ];
-        v.copyInto( sumAttribNames );
+        String[] sumAttribNames = new String[size];
+        v.copyInto(sumAttribNames);
         return sumAttribNames;
     }
-    
-    public AttributeFieldBean[ ] getDownloadAttributes() {
-        AttributeFieldBean[ ] sumAttribs = getSummaryAttributes();
-        if ( downloadConfigMap == null || downloadConfigMap.size() == 0 ) {
+
+    public AttributeFieldBean[] getDownloadAttributes() {
+        AttributeFieldBean[] sumAttribs = getSummaryAttributes();
+        if (downloadConfigMap == null || downloadConfigMap.size() == 0) {
             return sumAttribs;
         }
-        
-        AttributeFieldBean[ ] rmAttribs = getAllReportMakerAttributes();
-        Vector< AttributeFieldBean > v = new Vector< AttributeFieldBean >();
-        for ( int i = 0; i < rmAttribs.length; i++ ) {
-            String attribName = rmAttribs[ i ].getName();
-            Object configStatus = downloadConfigMap.get( attribName );
+
+        AttributeFieldBean[] rmAttribs = getAllReportMakerAttributes();
+        Vector<AttributeFieldBean> v = new Vector<AttributeFieldBean>();
+        for (int i = 0; i < rmAttribs.length; i++) {
+            String attribName = rmAttribs[i].getName();
+            Object configStatus = downloadConfigMap.get(attribName);
             // System.err.println("DEBUG AnswerBean: configStatus for " +
             // attrName + " is " + configStatus);
-            if ( configStatus != null ) {
-                v.add( rmAttribs[ i ] );
+            if (configStatus != null) {
+                v.add(rmAttribs[i]);
             }
         }
         int size = v.size();
-        AttributeFieldBean[ ] downloadAttribs = new AttributeFieldBean[ size ];
-        v.copyInto( downloadAttribs );
+        AttributeFieldBean[] downloadAttribs = new AttributeFieldBean[size];
+        v.copyInto(downloadAttribs);
         return downloadAttribs;
     }
-    
-    public AttributeFieldBean[ ] getAllReportMakerAttributes() {
-        Map< String, AttributeField > attribs = answer.getReportMakerAttributeFields();
-        Iterator< String > ai = attribs.keySet().iterator();
-        Vector< AttributeFieldBean > v = new Vector< AttributeFieldBean >();
-        while ( ai.hasNext() ) {
+
+    public AttributeFieldBean[] getAllReportMakerAttributes() {
+        Map<String, AttributeField> attribs = answer.getReportMakerAttributeFields();
+        Iterator<String> ai = attribs.keySet().iterator();
+        Vector<AttributeFieldBean> v = new Vector<AttributeFieldBean>();
+        while (ai.hasNext()) {
             String attribName = ai.next();
-            v.add( new AttributeFieldBean( attribs.get( attribName ) ) );
+            v.add(new AttributeFieldBean(attribs.get(attribName)));
         }
         int size = v.size();
-        AttributeFieldBean[ ] rmAttribs = new AttributeFieldBean[ size ];
-        v.toArray( rmAttribs );
+        AttributeFieldBean[] rmAttribs = new AttributeFieldBean[size];
+        v.toArray(rmAttribs);
         return rmAttribs;
     }
-    
-    public TableFieldBean[ ] getAllReportMakerTables() {
-        Map< String, TableField > tables = answer.getReportMakerTableFields();
-        Iterator< String > ti = tables.keySet().iterator();
-        Vector< TableFieldBean > v = new Vector< TableFieldBean >();
-        while ( ti.hasNext() ) {
+
+    public TableFieldBean[] getAllReportMakerTables() {
+        Map<String, TableField> tables = answer.getReportMakerTableFields();
+        Iterator<String> ti = tables.keySet().iterator();
+        Vector<TableFieldBean> v = new Vector<TableFieldBean>();
+        while (ti.hasNext()) {
             String tableName = ti.next();
-            v.add( new TableFieldBean( tables.get( tableName ) ) );
+            v.add(new TableFieldBean(tables.get(tableName)));
         }
         int size = v.size();
-        TableFieldBean[ ] rmTables = new TableFieldBean[ size ];
-        v.toArray( rmTables );
+        TableFieldBean[] rmTables = new TableFieldBean[size];
+        v.toArray(rmTables);
         return rmTables;
     }
-    
-    public String[ ] getDownloadAttributeNames() {
-        AttributeFieldBean[ ] downloadAttribs = getDownloadAttributes();
-        Vector< String > v = new Vector< String >();
-        for ( int i = 0; i < downloadAttribs.length; i++ ) {
-            v.add( downloadAttribs[ i ].getName() );
+
+    public String[] getDownloadAttributeNames() {
+        AttributeFieldBean[] downloadAttribs = getDownloadAttributes();
+        Vector<String> v = new Vector<String>();
+        for (int i = 0; i < downloadAttribs.length; i++) {
+            v.add(downloadAttribs[i].getName());
         }
         int size = v.size();
-        String[ ] downloadAttribNames = new String[ size ];
-        v.copyInto( downloadAttribNames );
+        String[] downloadAttribNames = new String[size];
+        v.copyInto(downloadAttribNames);
         return downloadAttribNames;
     }
-    
-    public void setCustomName( String name ) {
+
+    public void setCustomName(String name) {
         customName = name;
     }
-    
+
     public String getCustomName() {
         return customName;
     }
-    
+
     public boolean getIsDynamic() {
         return answer.isDynamic();
     }
-    
+
     /**
      * for controller: reset counter for download purpose
      */
     public void resetAnswerRowCursor() {
         try {
             answer = answer.newAnswer();
-        } catch ( WdkModelException ex ) {
+        } catch (WdkModelException ex) {
             ex.printStackTrace();
-            throw new RuntimeException( ex );
+            throw new RuntimeException(ex);
         }
     }
-    
+
     /**
      * for controller: reset counter for download purpose
      */
@@ -288,7 +294,7 @@ public class AnswerBean {
         resetAnswerRowCursor();
         return true;
     }
-    
+
     /*
      * (non-Javadoc)
      * 
@@ -296,12 +302,12 @@ public class AnswerBean {
      */
     public String getResultMessage() {
         // TEST
-        System.out.println( "Result message from AnswerBean: "
-                + answer.getResultMessage() );
-        
+        System.out.println("Result message from AnswerBean: "
+                + answer.getResultMessage());
+
         return answer.getResultMessage();
     }
-    
+
     /**
      * @param reporterName
      * @param config
@@ -310,90 +316,90 @@ public class AnswerBean {
      * @see org.gusdb.wdk.model.Answer#getReport(java.lang.String,
      *      java.util.Map)
      */
-    public Reporter createReport( String reporterName,
-            Map< String, String > config ) throws WdkModelException {
-        return answer.createReport( reporterName, config );
+    public Reporter createReport(String reporterName, Map<String, String> config)
+            throws WdkModelException {
+        return answer.createReport(reporterName, config);
     }
-    
+
     /**
      * @return
      * @see org.gusdb.wdk.model.Answer#getSortingAttributeNames()
      */
-    public String[ ] getSortingAttributeNames() {
+    public String[] getSortingAttributeNames() {
         return answer.getSortingAttributeNames();
     }
-    
+
     /**
      * @return
      * @see org.gusdb.wdk.model.Answer#getSortingAttributeOrders()
      */
-    public boolean[ ] getSortingAttributeOrders() {
+    public boolean[] getSortingAttributeOrders() {
         return answer.getSortingAttributeOrders();
     }
-    
-    public AttributeFieldBean[ ] getDisplayableAttributes() {
-        List< AttributeField > fields = answer.getDisplayableAttributes();
-        AttributeFieldBean[ ] fieldBeans = new AttributeFieldBean[ fields.size() ];
+
+    public AttributeFieldBean[] getDisplayableAttributes() {
+        List<AttributeField> fields = answer.getDisplayableAttributes();
+        AttributeFieldBean[] fieldBeans = new AttributeFieldBean[fields.size()];
         int index = 0;
-        for ( AttributeField field : fields ) {
-            fieldBeans[ index ] = new AttributeFieldBean( field );
+        for (AttributeField field : fields) {
+            fieldBeans[index] = new AttributeFieldBean(field);
             index++;
         }
         return fieldBeans;
     }
-    
+
     /**
      * @param attributeName
      * @see org.gusdb.wdk.model.Answer#addSumaryAttribute(java.lang.String)
      */
-    public void setSumaryAttribute( String[ ] attributeNames ) {
-        answer.setSumaryAttributes( attributeNames );
+    public void setSumaryAttribute(String[] attributeNames) {
+        answer.setSumaryAttributes(attributeNames);
     }
-    
+
     /**
      * @return
      * @throws WdkModelException
      * @see org.gusdb.wdk.model.Answer#getAllIds()
      */
     public String getAllIdList() throws WdkModelException {
-        String[ ] ids = answer.getAllIds();
+        String[] ids = answer.getAllIds();
         StringBuffer sbIds = new StringBuffer();
-        for ( String id : ids )
-            sbIds.append( id + " " );
+        for (String id : ids)
+            sbIds.append(id + " ");
         return sbIds.toString().trim();
     }
-    
+
     // //////////////////////////////////////////////////////////////////////
     // Inner classes
     // //////////////////////////////////////////////////////////////////////
-    
+
     class RecordBeanList implements Iterator {
-        
+
         public int getSize() {
             return answer.getPageSize();
         }
-        
+
         public boolean hasNext() {
             try {
                 return answer.hasMoreRecordInstances();
-            } catch ( WdkModelException exp ) {
-                throw new RuntimeException( exp );
+            } catch (WdkModelException exp) {
+                throw new RuntimeException(exp);
             }
         }
-        
+
         public Object next() {
             try {
-                return new RecordBean( answer.getNextRecordInstance() );
-            } catch ( WdkModelException exp ) {
-                throw new RuntimeException( exp );
+                return new RecordBean(answer.getNextRecordInstance());
+            } catch (WdkModelException exp) {
+                throw new RuntimeException(exp);
             }
         }
-        
+
         public void remove() {
             throw new UnsupportedOperationException(
-                    "remove isn't allowed on this iterator" );
+                    "remove isn't allowed on this iterator");
         }
-        
+
     }
-    
+
 }

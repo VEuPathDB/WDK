@@ -27,15 +27,7 @@ import javax.mail.internet.MimeMessage;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.Answer;
-import org.gusdb.wdk.model.BooleanExpression;
-import org.gusdb.wdk.model.BooleanQuestionNode;
-import org.gusdb.wdk.model.QueryInstance;
-import org.gusdb.wdk.model.Question;
-import org.gusdb.wdk.model.RDBMSPlatformI;
-import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.*;
 import org.gusdb.wdk.model.implementation.SqlUtils;
 
 /**
@@ -982,7 +974,7 @@ public class UserFactory {
         Question question = ( Question ) wdkModel.resolveReference(
                 questionName, "UserFactory", "UserFactory", "question_name" );
         
-        String[ ] parts = paramsClob.split( WdkModel.PARAM_DIVIDER );
+        String[ ] parts = paramsClob.split( Utilities.DATA_DIVIDER );
         // the first element is query name, ignored
         Map< String, Object > params = new LinkedHashMap< String, Object >();
         for ( int i = 1; i < parts.length; i++ ) {
@@ -1024,10 +1016,10 @@ public class UserFactory {
         
         int estimateSize = answer.getResultSize();
         QueryInstance qinstance = answer.getIdsQueryInstance();
-        String checksum = qinstance.getChecksum();
+        String qiChecksum = qinstance.getChecksum();
         String signature = qinstance.getQuery().getSignature();
         String params = ( isBoolean ) ? booleanExpression
-                : qinstance.getClobContent();
+                : qinstance.getQueryInstanceContent();
         
         // check whether the answer exist or not
         ResultSet rsHistory = null;
@@ -1036,10 +1028,10 @@ public class UserFactory {
             PreparedStatement psCheck = SqlUtils.getPreparedStatement(
                     dataSource, "SELECT history_id FROM " + loginSchema
                             + "histories WHERE user_id = ? AND project_id = ? "
-                            + "AND checksum = ? AND is_deleted = ?" );
+                            + "AND query_instance_checksum = ? AND is_deleted = ?" );
             psCheck.setInt( 1, userId );
             psCheck.setString( 2, projectId );
-            psCheck.setString( 3, checksum );
+            psCheck.setString( 3, qiChecksum );
             psCheck.setBoolean( 4, deleted );
             rsHistory = psCheck.executeQuery();
             
@@ -1060,7 +1052,7 @@ public class UserFactory {
             psHistory = SqlUtils.getPreparedStatement( dataSource, "INSERT "
                     + "INTO " + loginSchema + "histories (history_id, user_id,"
                     + " project_id, question_name, create_time, last_run_time,"
-                    + " custom_name, estimate_size, checksum, signature, "
+                    + " custom_name, estimate_size, query_instance_checksum, query_signature, "
                     + "is_boolean, is_deleted, params) "
                     + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)" );
             psHistory.setInt( 1, historyId );
@@ -1071,7 +1063,7 @@ public class UserFactory {
             psHistory.setTimestamp( 6, new Timestamp( lastRunTime.getTime() ) );
             psHistory.setString( 7, customName );
             psHistory.setInt( 8, estimateSize );
-            psHistory.setString( 9, checksum );
+            psHistory.setString( 9, qiChecksum );
             psHistory.setString( 10, signature );
             psHistory.setBoolean( 11, isBoolean );
             // the platform set clob, and run the statement
@@ -1565,33 +1557,6 @@ public class UserFactory {
     
     String getLoginSchema() {
         return loginSchema;
-    }
-    
-    private String addQueryChecksum(QueryInstance qinstance, boolean isBoolean) {
-    	String queryName = qinstance.getQuery().getFullName();
-        
-        return null;
-    }
-    
-    public QueryInfo getQueryInfo(String queryChecksum) {
-        
-        return null;
-    }
-    
-    public String getColumnConfigChecksum(String[] columns) {
-        return null;
-    }
-    
-    public String[] getColumnConfig(String configChecksum) {
-        return null;
-    }
-    
-    public String getSortingChecksum(Map<String, String> sortingColumns) {
-        return null;
-    }
-    
-    public String[] getSorting(String sortChecksum) {
-        return null;
     }
     
     public static void main( String[ ] args ) {

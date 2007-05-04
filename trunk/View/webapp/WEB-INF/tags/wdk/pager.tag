@@ -55,7 +55,7 @@
 
   <pg:pages>
     <c:set var="pageDistance" value="${currentPageNumber - pageNumber}" />
-    <c:if test="${pageDistance <= 5 && pageDistance >= -5}">
+    <c:if test="${pageDistance < 5 && pageDistance > -5}">
       <c:choose>
         <c:when test="${pageNumber==currentPageNumber}">
           <b>${pageNumber}</b>

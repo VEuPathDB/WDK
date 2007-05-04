@@ -1,6 +1,8 @@
 package org.gusdb.wdk.controller.action;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -12,6 +14,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.upload.FormFile;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.DatasetBean;
@@ -34,93 +37,81 @@ public class ProcessQuestionAction extends ShowQuestionAction {
     public ActionForward execute( ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response )
             throws Exception {
-        ActionForward forward = null;
-        String submitAction = request.getParameter( CConstants.PQ_SUBMIT_KEY );
-        logger.info( "submitAction=" + submitAction );
-        if ( submitAction == null
-                || submitAction.equals( CConstants.PQ_SUBMIT_GET_ANSWER ) ) {
-            String qFullName = request.getParameter( CConstants.QUESTION_FULLNAME_PARAM );
-            QuestionBean wdkQuestion = getQuestionByFullName( qFullName );
-            boolean fromQS = "1".equals( request.getParameter( CConstants.FROM_QUESTIONSET_PARAM ) );
-            if ( !fromQS ) {
-                QuestionForm qForm = prepareQuestionForm( wdkQuestion, request,
-                        ( QuestionForm ) form );
-                // QuestionForm qForm = (QuestionForm)form;
-                request.setAttribute( "parentURI", request.getRequestURI() );
-                
-                // convert/handle the dataset params
-                handleDatasetParams( request, wdkQuestion, qForm );
-            }
-            /*
-             * else { QuestionForm qForm = (QuestionForm)form;
-             * qForm.setQuestion(wdkQuestion); qForm.cleanup(); }
-             */
-            forward = mapping.findForward( CConstants.PQ_SHOW_SUMMARY_MAPKEY );
-        } else if ( submitAction.equals( CConstants.PQ_SUBMIT_EXPAND_QUERY ) ) {
-            forward = mapping.findForward( CConstants.PQ_START_BOOLEAN_MAPKEY );
+        UserBean wdkUser = ( UserBean ) request.getSession().getAttribute(
+                CConstants.WDK_USER_KEY );
+        if ( wdkUser == null ) {
+            WdkModelBean wdkModel = ( WdkModelBean ) servlet.getServletContext().getAttribute(
+                    CConstants.WDK_MODEL_KEY );
+            wdkUser = wdkModel.getUserFactory().getGuestUser();
+            request.getSession().setAttribute( CConstants.WDK_USER_KEY, wdkUser );
         }
+        
+        // get question
+        String qFullName = request.getParameter( CConstants.QUESTION_FULLNAME_PARAM );
+        QuestionBean wdkQuestion = getQuestionByFullName( qFullName );
+        QuestionForm qForm = prepareQuestionForm( wdkQuestion, request,
+                ( QuestionForm ) form );
+        
+        // the params has been validated, and now is parsed, and if the size of
+        // the value is too long, ti will be replaced is checksum
+        Map< String, String > params = prepareParams( wdkUser, request, qForm );
+        
+        // construct the url to summary page
+        ActionForward showSummary = mapping.findForward( CConstants.PQ_SHOW_SUMMARY_MAPKEY );
+        StringBuffer url = new StringBuffer( showSummary.getPath() );
+        url.append( "?" + CConstants.QUESTION_FULLNAME_PARAM + "=" + qFullName );
+        for ( String paramName : params.keySet() ) {
+            String paramValue = params.get( paramName );
+            url.append( "&"
+                    + URLEncoder.encode( "myProp(" + paramName + ")", "utf-8" ) );
+            url.append( "=" + URLEncoder.encode( paramValue, "utf-8" ) );
+        }
+        
+        // construct the forward to show_summary action
+        ActionForward forward = new ActionForward( url.toString() );
+        forward.setRedirect( true );
         return forward;
     }
     
-    private void handleDatasetParams( HttpServletRequest request,
-            QuestionBean wdkQuestion, QuestionForm form )
+    private Map< String, String > prepareParams( UserBean user,
+            HttpServletRequest request, QuestionForm qform )
             throws WdkModelException, WdkUserException {
+        QuestionBean question = qform.getQuestion();
+        Map< String, Object > params = qform.getMyProps();
+        Map< String, Object > paramObjects = qform.getMyPropObjects();
+        Map< String, String > compressedParams = new LinkedHashMap< String, String >();
         
-        Map< String, Object > params = form.getMyProps();
-        Map< String, Object > paramObjects = form.getMyPropObjects();
-        
-        try {
-            UserBean wdkUser = ( UserBean ) request.getSession().getAttribute(
-                    CConstants.WDK_USER_KEY );
-            if ( wdkUser == null ) {
-                WdkModelBean wdkModel = ( WdkModelBean ) servlet.getServletContext().getAttribute(
-                        CConstants.WDK_MODEL_KEY );
-                wdkUser = wdkModel.getUserFactory().getGuestUser();
-                request.getSession().setAttribute( CConstants.WDK_USER_KEY,
-                        wdkUser );
-            }
-            
-            // check dataset params
-            ParamBean[ ] paramDefinitions = wdkQuestion.getParams();
-            for ( ParamBean param : paramDefinitions ) {
-                if ( param instanceof DatasetParamBean ) {
-                    String paramName = param.getName();
-                    // get the input type
-                    String type = request.getParameter( paramName + "_type" );
-                    
-                    if ( type.equalsIgnoreCase( "dataset" ) ) {
-                        // do nothing, since the value is already a compound
-                    } else if ( type.equalsIgnoreCase( "data" ) ) {
-                        String data = request.getParameter( paramName + "_data" );
-                        data = data.replace( ',', ' ' );
-                        data = data.replace( ';', ' ' );
-                        data = data.replace( '\t', ' ' );
-                        data = data.replace( '\n', ' ' );
-                        String[ ] values = data.trim().split( "\\s+" );
-                        DatasetBean dataset = wdkUser.createDataset( "", values );
-                        params.put( paramName, wdkUser.getSignature() + ":"
-                                + dataset.getDatasetId() );
-                    } else if ( type.equalsIgnoreCase( "file" ) ) {
-                        FormFile file = ( FormFile ) paramObjects.get( paramName
-                                + "_file" );
-                        
-                        // TEST
-                        // logger.info("FILE: " + file.getFileName() + " ("
-                        // + file.getFileSize() + ")");
-                        
-                        String[ ] values = new String( file.getFileData() ).split( "[,\t\n]+" );
-                        DatasetBean dataset = wdkUser.createDataset(
-                                file.getFileName(), values );
-                        params.put( paramName, wdkUser.getSignature() + ":"
-                                + dataset.getDatasetId() );
-                    } else {
-                        throw new WdkModelException( "Invalid input type for "
-                                + "Dataset " + paramName + ": " + type );
+        ParamBean[ ] paramDefinitions = question.getParams();
+        for ( ParamBean param : paramDefinitions ) {
+            String paramName = param.getName();
+            String paramValue = null;
+            if ( param instanceof DatasetParamBean ) {
+                // get the input type
+                String type = request.getParameter( paramName + "_type" );
+                
+                String data;
+                if ( type.equalsIgnoreCase( "data" ) ) {
+                    data = request.getParameter( paramName + "_data" );
+                } else if ( type.equalsIgnoreCase( "file" ) ) {
+                    FormFile file = ( FormFile ) paramObjects.get( paramName
+                            + "_file" );
+                    try {
+                        data = new String( file.getFileData() );
+                    } catch ( IOException ex ) {
+                        throw new WdkModelException( ex );
                     }
+                } else {
+                    throw new WdkModelException( "Invalid input type for "
+                            + "Dataset " + paramName + ": " + type );
                 }
+                String[ ] values = Utilities.toArray( data );
+                DatasetBean dataset = user.createDataset( "", values );
+                paramValue = ( ( DatasetParamBean ) param ).compressValue( dataset.getCombinedId() );
+            } else {
+                paramValue = param.compressValue( params.get( paramName ) );
             }
-        } catch ( IOException ex ) {
-            throw new WdkModelException( ex );
+            compressedParams.put( paramName, paramValue );
         }
+        return compressedParams;
     }
 }
