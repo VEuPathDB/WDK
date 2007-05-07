@@ -163,23 +163,34 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
                         pVal = new String[ ] { defaultSelection };
                     }
                 }
-            } else {
-                if ( p instanceof HistoryParamBean ) {
-                    // get type, as in RecordClass full name
-                    String dataType = wdkQuestion.getRecordClass().getFullName();
-                    HistoryBean[ ] histories = user.getHistories( dataType );
-                    String[ ] values = new String[ histories.length ];
-                    String[ ] labels = new String[ histories.length ];
-                    for ( int idx = 0; idx < histories.length; idx++ ) {
-                        values[ idx ] = signature + ":"
-                                + histories[ idx ].getHistoryId();
-                        labels[ idx ] = "#" + histories[ idx ].getHistoryId()
-                                + " " + histories[ idx ].getCustomName();
-                    }
-                    qForm.getMyValues().put( p.getName(), values );
-                    qForm.getMyLabels().put( p.getName(),
-                            getLengthBoundedLabels( labels ) );
+            } else if ( p instanceof HistoryParamBean ) {
+                // get type, as in RecordClass full name
+                String dataType = wdkQuestion.getRecordClass().getFullName();
+                HistoryBean[ ] histories = user.getHistories( dataType );
+                String[ ] values = new String[ histories.length ];
+                String[ ] labels = new String[ histories.length ];
+                for ( int idx = 0; idx < histories.length; idx++ ) {
+                    values[ idx ] = signature + ":"
+                            + histories[ idx ].getHistoryId();
+                    labels[ idx ] = "#" + histories[ idx ].getHistoryId() + " "
+                            + histories[ idx ].getCustomName();
                 }
+                qForm.getMyValues().put( p.getName(), values );
+                qForm.getMyLabels().put( p.getName(),
+                        getLengthBoundedLabels( labels ) );
+                
+                // get the value
+                String cgiParamVal = request.getParameter( p.getName() );
+                if ( cgiParamVal == null )
+                    cgiParamVal = qForm.getMyProp( p.getName() );
+                if ( cgiParamVal == null ) {
+                    // just select the first one as the default
+                    if ( values.length > 0 )
+                        pVal = new String[ ] { values[ 0 ] };
+                } else { // use the value by the author
+                    pVal = new String[ ] { cgiParamVal };
+                }
+            } else {
                 // get the value
                 String cgiParamVal = request.getParameter( p.getName() );
                 if ( cgiParamVal == null )
