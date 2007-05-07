@@ -132,8 +132,4 @@ public class Dataset {
         }
         return sb.toString();
     }
-
-    public String getCombinedId() {
-        return user.getSignature() + ":" + checksum;
-    }
 }

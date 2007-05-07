@@ -93,7 +93,11 @@ public class DatasetBean {
         }
     }
 
-    public String getCombinedId() {
-        return dataset.getCombinedId();
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.user.Dataset#getChecksum()
+     */
+    public String getChecksum() {
+        return dataset.getChecksum();
     }
 }
