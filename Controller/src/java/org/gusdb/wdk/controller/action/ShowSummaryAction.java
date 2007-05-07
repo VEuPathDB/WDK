@@ -3,7 +3,6 @@ package org.gusdb.wdk.controller.action;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,51 +58,74 @@ public class ShowSummaryAction extends ShowQuestionAction {
         // ProcessQuestionSetsFlatAction
         qForm.cleanup();
         
-        QuestionBean wdkQuestion = ( QuestionBean ) request.getAttribute( CConstants.WDK_QUESTION_KEY );
-        if ( wdkQuestion == null ) {
-            wdkQuestion = qForm.getQuestion();
-        }
-        if ( wdkQuestion == null ) {
-            String qFullName = request.getParameter( CConstants.QUESTION_FULLNAME_PARAM );
-            if ( qFullName != null )
-                wdkQuestion = getQuestionByFullName( qFullName );
-        }
-        if ( wdkQuestion == null ) {
-            throw new RuntimeException(
-                    "Unexpected error: answer maker (wdkQuestion) is null" );
-        }
-        String questionName = wdkQuestion.getFullName();
+        HistoryBean history;
+        AnswerBean wdkAnswer;
+        Map< String, Object > params;
         
-        Map< String, Object > params = handleMultiPickParams( new LinkedHashMap< String, Object >(
-                qForm.getMyProps() ) );
-        handleDatasetParams( wdkUser, wdkQuestion, params );
-        
-        // get sorting key, if have
-        String sortingChecksum = request.getParameter( CConstants.WDK_SORTING_KEY );
-        Map< String, Boolean > sortingAttributes;
-        if ( sortingChecksum != null ) {
-            sortingAttributes = wdkUser.getSortingAttributesByChecksum( sortingChecksum );
-            request.setAttribute( "wdk_sorting_checksum", sortingChecksum );
+        String strHistId = request.getParameter( CConstants.WDK_HISTORY_ID_KEY );
+        if ( strHistId == null || strHistId.length() == 0 ) {
+            QuestionBean wdkQuestion = ( QuestionBean ) request.getAttribute( CConstants.WDK_QUESTION_KEY );
+            if ( wdkQuestion == null ) {
+                wdkQuestion = qForm.getQuestion();
+            }
+            if ( wdkQuestion == null ) {
+                String qFullName = request.getParameter( CConstants.QUESTION_FULLNAME_PARAM );
+                if ( qFullName != null )
+                    wdkQuestion = getQuestionByFullName( qFullName );
+            }
+            if ( wdkQuestion == null ) {
+                throw new RuntimeException(
+                        "Unexpected error: answer maker (wdkQuestion) is null" );
+            }
+            String questionName = wdkQuestion.getFullName();
+            
+            params = handleMultiPickParams( new LinkedHashMap< String, Object >(
+                    qForm.getMyProps() ) );
+            handleDatasetParams( wdkUser, wdkQuestion, params );
+            
+            // get sorting key, if have
+            String sortingChecksum = request.getParameter( CConstants.WDK_SORTING_KEY );
+            Map< String, Boolean > sortingAttributes;
+            if ( sortingChecksum != null ) {
+                sortingAttributes = wdkUser.getSortingAttributesByChecksum( sortingChecksum );
+                request.setAttribute( "wdk_sorting_checksum", sortingChecksum );
+            } else {
+                sortingAttributes = wdkUser.getSortingAttributes( questionName );
+            }
+            
+            // get summary key, if have
+            String summaryChecksum = request.getParameter( CConstants.WDK_SUMMARY_KEY );
+            String[ ] summaryAttributes = null;
+            if ( summaryChecksum != null ) {
+                summaryAttributes = wdkUser.getSummaryAttributesByChecksum( summaryChecksum );
+                request.setAttribute( "wdk_summary_checksum", sortingChecksum );
+            } else {
+                summaryAttributes = wdkUser.getSummaryAttributes( questionName );
+            }
+            
+            // make the answer
+            wdkAnswer = summaryPaging( request, wdkQuestion, params,
+                    sortingAttributes, summaryAttributes );
+            
+            // create history
+            history = wdkUser.createHistory( wdkAnswer );
         } else {
-            sortingAttributes = wdkUser.getSortingAttributes( questionName );
+            history = wdkUser.getHistory( Integer.parseInt( strHistId ) );
+            wdkAnswer = history.getAnswer();
+            // update the estimate size, in case the database has changed
+            history.setEstimateSize( wdkAnswer.getResultSize() );
+            history.update();
+            
+            // get sorting and summary attributes
+            String questionName = wdkAnswer.getQuestion().getFullName();
+            Map< String, Boolean > sortingAttributes = wdkUser.getSortingAttributes( questionName );
+            String[ ] summaryAttributes = wdkUser.getSummaryAttributes( questionName );
+            
+            params = wdkAnswer.getInternalParams();
+            
+            wdkAnswer = summaryPaging( request, null, params,
+                    sortingAttributes, summaryAttributes, wdkAnswer );
         }
-        
-        // get summary key, if have
-        String summaryChecksum = request.getParameter( CConstants.WDK_SUMMARY_KEY );
-        String[ ] summaryAttributes = null;
-        if ( summaryChecksum != null ) {
-            summaryAttributes = wdkUser.getSummaryAttributesByChecksum( summaryChecksum );
-            request.setAttribute( "wdk_summary_checksum", sortingChecksum );
-        } else {
-            summaryAttributes = wdkUser.getSummaryAttributes( questionName );
-        }
-        
-        // make the answer
-        AnswerBean wdkAnswer = summaryPaging( request, wdkQuestion, params,
-                sortingAttributes, summaryAttributes );
-        
-        // create history
-        HistoryBean history = wdkUser.createHistory( wdkAnswer );
         
         // delete empty history
         if ( history != null && history.getEstimateSize() == 0 )
