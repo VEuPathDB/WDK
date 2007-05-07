@@ -152,6 +152,12 @@ public class ResultFactory implements Serializable {
                 + resultTableName;
     }
     
+    public void recreateCache( int numParams, boolean noSchemaOutput, boolean forceDrop )
+            throws WdkModelException {
+        dropCache(noSchemaOutput, forceDrop);
+        createCache(numParams, noSchemaOutput);
+    }
+
     /**
      * @param numParams
      *            Number of parameters allowed in a cached query
@@ -739,6 +745,7 @@ public class ResultFactory implements Serializable {
         boolean newCache = cmdLine.hasOption( "new" );
         boolean resetCache = cmdLine.hasOption( "reset" );
         boolean dropCache = cmdLine.hasOption( "drop" );
+        boolean recreateCache = cmdLine.hasOption( "recreate" );
         boolean noSchemaOutput = cmdLine.hasOption( "noSchemaOutput" );
         boolean forceDrop = cmdLine.hasOption( "forceDrop" );
         
@@ -776,6 +783,8 @@ public class ResultFactory implements Serializable {
                     forceDrop );
             else if ( dropCache )
                 factory.dropCache( noSchemaOutput, forceDrop );
+            else if ( recreateCache ) factory.recreateCache( maxQueryParams.intValue(),
+                    noSchemaOutput, forceDrop );
             long end = System.currentTimeMillis();
             System.out.println( "Command succeeded in "
                     + ( ( end - start ) / 1000.0 ) + " seconds" );
@@ -805,6 +814,8 @@ public class ResultFactory implements Serializable {
         
         Option dropQ = new Option( "drop", "drop the query cache" );
         
+        Option recreateQ = new Option( "recreate", "drop the query cache and create a new one" );
+
         Option noSchema = new Option( "noSchemaOutput",
                 "remove references to the schema when printing out messages regarding a table" );
         
@@ -816,6 +827,7 @@ public class ResultFactory implements Serializable {
         operation.addOption( newQ );
         operation.addOption( resetQ );
         operation.addOption( dropQ );
+        operation.addOption( recreateQ );
         options.addOption( noSchema );
         options.addOption( forceDrop );
         options.addOptionGroup( operation );
