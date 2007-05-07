@@ -1,5 +1,6 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
 
 <c:set value="${requestScope.wdkAnswer}" var="wdkAnswer"/>
 <c:set var="history_id" value="${requestScope.wdk_history_id}"/>
@@ -19,46 +20,7 @@ function changeFormat(e)
 </script>
 
 <!-- display question and param values and result size for wdkAnswer -->
-<table>
-
-<c:choose>
-  <c:when test="${wdkAnswer.isBoolean}">
-    <!-- combined answer from history boolean expression -->
-    <tr><td valign="top" align="left"><b>Combined Answer:</b></td>
-        <td valign="top" align="left">${wdkAnswer.customName}</td></tr>
-  </c:when>
-  <c:otherwise>
-
-    <c:choose>
-      <c:when test="${wdkAnswer.isBoolean}">
-        <!-- boolean question -->
-
-        <tr><td valign="top" align="left"><b>Expanded Question:</b></td>
-                   <td valign="top" align="left">
-                     <nested:root name="wdkAnswer">
-                       <jsp:include page="/WEB-INF/includes/bqShowNode.jsp"/>
-                     </nested:root>
-                   </td></tr>
-      </c:when>
-      <c:otherwise>
-        <!-- simple question -->
-        <c:set value="${wdkAnswer.params}" var="params"/>
-        <c:set value="${wdkAnswer.question.displayName}" var="wdkQuestionName"/>
-        <tr><td valign="top" align="left"><b>Query:</b></td>
-                   <td valign="top" align="left">${wdkQuestionName}</td></tr>
-               <tr><td valign="top" align="left"><b>Parameters:</b></td>
-                   <td valign="top" align="left">
-                     <table>
-                       <c:forEach items="${params}" var="p">
-                         <tr><td align="right">${p.key}:</td><td><i>${p.value}</i></td></tr> 
-                       </c:forEach>
-                     </table></td></tr>
-      </c:otherwise>
-    </c:choose>
-
-  </c:otherwise>
-</c:choose>
-</table>
+<wdk:showParams wdkAnswer="${wdkAnswer}" />
 
 <hr>
 

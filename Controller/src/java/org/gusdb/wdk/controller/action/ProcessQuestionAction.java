@@ -88,15 +88,21 @@ public class ProcessQuestionAction extends ShowQuestionAction {
             if ( param instanceof DatasetParamBean ) {
                 // get the input type
                 String type = request.getParameter( paramName + "_type" );
+                if ( type == null )
+                    throw new WdkModelException( "Missing input parameter: "
+                            + paramName + "_type." );
                 
                 String data;
+                String uploadFile = "";
                 if ( type.equalsIgnoreCase( "data" ) ) {
                     data = request.getParameter( paramName + "_data" );
                 } else if ( type.equalsIgnoreCase( "file" ) ) {
                     FormFile file = ( FormFile ) paramObjects.get( paramName
                             + "_file" );
+                    uploadFile = file.getFileName();
                     try {
                         data = new String( file.getFileData() );
+                        
                     } catch ( IOException ex ) {
                         throw new WdkModelException( ex );
                     }
@@ -105,8 +111,8 @@ public class ProcessQuestionAction extends ShowQuestionAction {
                             + "Dataset " + paramName + ": " + type );
                 }
                 String[ ] values = Utilities.toArray( data );
-                DatasetBean dataset = user.createDataset( "", values );
-                paramValue = ( ( DatasetParamBean ) param ).compressValue( dataset.getCombinedId() );
+                DatasetBean dataset = user.createDataset( uploadFile, values );
+                paramValue = dataset.getChecksum();
             } else {
                 paramValue = param.compressValue( params.get( paramName ) );
             }
