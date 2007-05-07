@@ -22,7 +22,7 @@ public class Utilities {
      * The maximum size for parameter values that will be displayed in thr URL
      * as plain values
      */
-    public static final int MAX_PARAM_VALUE_SIZE = 50;
+    public static final int MAX_PARAM_VALUE_SIZE = 100;
     
     /**
      * The maximum number of attributes used in sorting an answer
@@ -59,7 +59,8 @@ public class Utilities {
         data = data.replace( ';', ' ' );
         data = data.replace( '\t', ' ' );
         data = data.replace( '\n', ' ' );
-        return data.trim().split( "\\s+" );
+        data = data.replace( '\r', ' ' );
+        return data.trim().split( "\\s+?" );
     }
     
     public static String fromArray(String[] data) {

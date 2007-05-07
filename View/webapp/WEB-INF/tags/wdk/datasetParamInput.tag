@@ -48,17 +48,8 @@ function chooseType(paramName, type) {
 <c:set var="dataset" value="${requestScope[pNam]}" />  
 
 <input type="hidden" id="${pNam}_type" name="${pNam}_type" value="DATA" />
-<c:choose>
-    <c:when test="${dataset != null}">
-        <input type="hidden" name="${pNam}" value="${wdkUser.signature}:${dataset.datasetId}" />
-    </c:when>
-    <c:otherwise>
-         <input type="hidden" name="${pNam}" value="" />
-    </c:otherwise>
-</c:choose>
 
 <table border="0" bgcolor="#EEEEEE" cellspacing="0" cellpadding="0">
-    
     
     <!-- display an input box for user to enter data -->
     <tr>
@@ -78,13 +69,18 @@ function chooseType(paramName, type) {
             </c:choose>
         </c:set>
         <td align="left">
-            <textarea id="${pNam}_data" name="${pNam}_data" rows="5" cols="30">
-                ${datasetValues}
-            </textarea>
+            <textarea id="${pNam}_data" name="${pNam}_data" rows="5" cols="30">${datasetValues}</textarea>
         </td>
     </tr>
     
     <!-- display an input box and upload file button -->
+    <c:if test="${dataset != null && fn:length(dataset.uploadFile) > 0}">
+        <tr>
+            <td colspan="2" align="right">
+                <i>Data was uploaded from: ${dataset.uploadFile}</i>
+            </td>
+        </tr>
+    </c:if>
     <tr>
         <td align="left" valign="top" nowrap>
             <input type="radio" name="${pNam}_radio"  
@@ -92,14 +88,7 @@ function chooseType(paramName, type) {
             Upload from file:&nbsp;
         </td>
         <td align="left">
-            <c:choose>
-                <c:when test="${dataset != null}">
-                    <html:file styleId="${pNam}_file" property="myPropObject(${pNam}_file)" value="${dataset.uploadFile}" disabled="true"/>
-                </c:when>
-                <c:otherwise>
-                    <html:file styleId="${pNam}_file" property="myPropObject(${pNam}_file)" disabled="true"/>
-                </c:otherwise>
-            </c:choose>
+            <html:file styleId="${pNam}_file" property="myPropObject(${pNam}_file)" disabled="true"/>
         </td>
     </tr>
 </table>
