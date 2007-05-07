@@ -1,6 +1,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
+<%@ taglib prefix="nested" uri="http://jakarta.apache.org/struts/tags-nested" %>
 
 <c:set value="${requestScope.wdkAnswer}" var="wdkAnswer"/>
 <c:set var="history_id" value="${requestScope.wdk_history_id}"/>
@@ -20,7 +21,19 @@ function changeFormat(e)
 </script>
 
 <!-- display question and param values and result size for wdkAnswer -->
-<wdk:showParams wdkAnswer="${wdkAnswer}" />
+<c:choose>
+    <c:when test="${wdkAnswer.isBoolean}">
+        <div>
+            <%-- boolean question --%>
+            <nested:root name="wdkAnswer">
+                <jsp:include page="/WEB-INF/includes/bqShowNode.jsp"/>
+            </nested:root>
+	    </div>
+    </c:when>
+    <c:otherwise>
+       <wdk:showParams wdkAnswer="${wdkAnswer}" />
+    </c:otherwise>
+</c:choose>
 
 <hr>
 
