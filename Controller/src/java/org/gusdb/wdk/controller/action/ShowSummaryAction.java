@@ -205,14 +205,16 @@ public class ShowSummaryAction extends ShowQuestionAction {
             String paramValStr = null;
             if ( paramVal instanceof String[ ] ) {
                 String[ ] pVals = ( String[ ] ) paramVal;
-                paramValStr = pVals[ 0 ];
-                for ( int i = 1; i < pVals.length; i++ ) {
-                    paramValStr += "," + pVals[ i ];
+                StringBuffer sb = new StringBuffer();
+                for (String pVal : pVals) {
+                    if (sb.length()>0)sb.append( "," );
+                    sb.append( pVal );
                 }
-                params.put( paramName, paramValStr );
+                paramValStr = sb.toString();
             } else {
                 paramValStr = ( paramVal == null ? null : paramVal.toString() );
             }
+            params.put( paramName, paramValStr );
             // System.err.println("*** debug params: (k, v) = " + paramName + ",
             // " + paramValStr);
         }
