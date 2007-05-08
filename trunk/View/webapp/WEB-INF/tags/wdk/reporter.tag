@@ -3,6 +3,7 @@
 <%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
 <%@ taglib prefix="nested" uri="http://jakarta.apache.org/struts/tags-nested" %>
 
+
 <c:set value="${requestScope.wdkAnswer}" var="wdkAnswer"/>
 <c:set var="history_id" value="${requestScope.wdk_history_id}"/>
 
@@ -20,6 +21,7 @@ function changeFormat(e)
 //-->
 </script>
 
+
 <!-- display question and param values and result size for wdkAnswer -->
 <c:choose>
     <c:when test="${wdkAnswer.isBoolean}">
@@ -31,9 +33,10 @@ function changeFormat(e)
 	    </div>
     </c:when>
     <c:otherwise>
-       <wdk:showParams wdkAnswer="${wdkAnswer}" />
+        <wdk:showParams wdkAnswer="${wdkAnswer}" />
     </c:otherwise>
 </c:choose>
+
 
 <hr>
 

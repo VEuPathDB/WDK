@@ -25,37 +25,8 @@
     </div>
     </c:when>	
     <c:otherwise>
-
-         <table border="0" cellpadding="0" cellspacing="0" width="100%">
-            <!-- Print out question -->
-            <nested:define id="wdkQ" property="question"/>
-            <nested:define id="answerParams" property="params"/>
-
-            <!-- display description -->
-            <tr><td colspan="2">
-                <b><jsp:getProperty name="wdkQ" property="displayName"/></b>
-            </td></tr>
-
-            <!-- display params -->
-            <tr><td>
-               <table border="0" cellpadding="0" cellspacing="0">
-                 <c:forEach items="${answerParams}" var="aP">
-                   <tr>
-                      <td align="right" width="200"><i>${aP.key}</i></td>
-                      <td>&nbsp;=&nbsp;</td>
-                      <td>
-                         <c:set var="aPval" value="${aP.value}" />
-                         <c:if test="${fn:length(aPval) > 60}">
-                            <c:set var="aPval" value="${fn:substring(aPval, 0, 60)}..." />
-                         </c:if> 
-                         ${aPval}
-                      </td>
-                   </tr>
-                 </c:forEach>
-               </table>
-            </td></tr>
-         </table>
-
+         <nested:define id="currentAnswer" property="this/"/>
+         <wdk:showParams wdkAnswer="${currentAnswer}" />
     </c:otherwise>
   </c:choose>
 
