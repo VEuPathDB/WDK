@@ -156,7 +156,8 @@ public abstract class AbstractEnumParam extends Param {
                     Utilities.COMPRESSED_VALUE_PREFIX.length() ).trim();
             value = queryFactory.getClobValue( checksum );
         }
-        return value.split( "," );
+        if ( multiPick ) return value.split( "," );
+        else return new String[ ] { value };
     }
     
     protected abstract void initVocabMap() throws WdkModelException;
