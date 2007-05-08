@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model.jspwrap;
 
 import org.gusdb.wdk.model.Param;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 
 /**
@@ -103,6 +104,7 @@ public class ParamBean {
     public String getDecompressedValue() throws WdkModelException {
         Object object = decompressValue( paramValue );
         if ( object == null ) return null;
+        String strValue;
         if ( object instanceof String[ ] ) {
             String[ ] array = ( String[ ] ) object;
             StringBuffer sb = new StringBuffer();
@@ -110,8 +112,12 @@ public class ParamBean {
                 if ( sb.length() > 0 ) sb.append( ", " );
                 sb.append( value );
             }
-            return sb.toString();
+            strValue = sb.toString();
+        } else strValue = object.toString();
+        if ( strValue.length() > WdkModel.TRUNCATE_DEFAULT ) {
+            strValue = strValue.substring( 0, WdkModel.TRUNCATE_DEFAULT )
+                    + "...";
         }
-        return object.toString();
+        return strValue;
     }
 }
