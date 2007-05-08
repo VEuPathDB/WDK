@@ -103,4 +103,22 @@ public class HistoryParam extends Param {
             throw new WdkModelException(ex);
         }
     }
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.Param#compressValue(java.lang.Object)
+     */
+    @Override
+    public String compressValue( Object value ) throws WdkModelException {
+        if (value instanceof String[]) {
+            String[] array = (String[])value;
+            StringBuffer sb = new StringBuffer();
+            for (String strVal : array) {
+                if (sb.length()>0) sb.append( "," );
+                sb.append( strVal );
+            }
+            value = sb.toString();
+        }
+        return super.compressValue( value );
+    }
+    
 }
