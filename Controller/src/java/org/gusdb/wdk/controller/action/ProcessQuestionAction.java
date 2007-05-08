@@ -67,6 +67,13 @@ public class ProcessQuestionAction extends ShowQuestionAction {
             url.append( "=" + URLEncoder.encode( paramValue, "utf-8" ) );
         }
         
+        // check if user want to define the output size for the answer
+        String altPageSizeKey = request.getParameter( CConstants.WDK_ALT_PAGE_SIZE_KEY );
+        if ( altPageSizeKey != null && altPageSizeKey.length() > 0 ) {
+            url.append( "&" +  CConstants.WDK_ALT_PAGE_SIZE_KEY );
+            url.append( "=" + altPageSizeKey );
+        }
+
         // construct the forward to show_summary action
         ActionForward forward = new ActionForward( url.toString() );
         forward.setRedirect( true );

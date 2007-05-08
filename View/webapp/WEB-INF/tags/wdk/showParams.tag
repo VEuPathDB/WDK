@@ -18,37 +18,45 @@ display the parameter values for an non-boolean answer.
     <c:set value="${wdkAnswer.question.paramsMap}" var="qParamsMap"/>
     <c:set value="${wdkAnswer.question.displayName}" var="wdkQuestionName"/>
     <table border="0" cellspacing="0" cellpadding="0">
-       <tr>
-          <td align="right" valign="top"><i>Query</i></td>
-          <td valign="top">&nbsp;:&nbsp;</td>
-          <td>${wdkQuestionName}</td>
+        <tr>
+            <td align="right" valign="top" class="medium"><b>Query</b></td>
+            <td valign="top" class="medium">&nbsp;:&nbsp;</td>
+            <td class="medium">${wdkQuestionName}</td>
        </tr>
-       <c:forEach items="${qParamsMap}" var="p">
-          <c:set var="pNam" value="${p.key}"/>
-          <c:set var="qP" value="${p.value}"/>
-          <c:set var="aP" value="${params[pNam]}"/>
-          <c:if test="${qP.isVisible}">
-             <tr>
-                <td align="right" valign="top"><i>${qP.prompt}</i></td>
-                <td>&nbsp;:&nbsp;</td>
-                <td>
-                   <c:choose>
-                      <c:when test="${qP.class.name eq 'org.gusdb.wdk.model.jspwrap.DatasetParamBean'}">
-                         <jsp:setProperty name="qP" property="combinedId" value="${aP}" />
-                         <c:set var="dataset" value="${qP.dataset}" />  
-                         "${dataset.summary}"
-                         <c:if test='${fn:length(dataset.uploadFile) > 0}'>
-                            from file &lt;${dataset.uploadFile}&gt;
-                         </c:if>
-                      </c:when>
-                      <c:otherwise>
-                         <jsp:setProperty name="qP" property="paramValue" value="${aP}" />
-                         ${qP.decompressedValue}
-                      </c:otherwise>
-                   </c:choose>
-                </td>
-             </tr>
-          </c:if>
-       </c:forEach>
+       <tr>
+            <td align="right" valign="top" class="medium"><b>Parameter</b></td>
+            <td valign="top" class="medium">&nbsp;:&nbsp;</td>
+            <td>
+                <table border="0" cellspacing="0" cellpadding="0">
+                    <c:forEach items="${qParamsMap}" var="p">
+                       <c:set var="pNam" value="${p.key}"/>
+                       <c:set var="qP" value="${p.value}"/>
+                       <c:set var="aP" value="${params[pNam]}"/>
+                       <c:if test="${qP.isVisible}">
+                          <tr>
+                             <td align="right" valign="top" nowrap class="medium"><b><i>${qP.prompt}</i><b></td>
+                             <td valign="top" class="medium">&nbsp;:&nbsp;</td>
+                             <td class="medium">
+                                <c:choose>
+                                   <c:when test="${qP.class.name eq 'org.gusdb.wdk.model.jspwrap.DatasetParamBean'}">
+                                      <jsp:setProperty name="qP" property="combinedId" value="${aP}" />
+                                      <c:set var="dataset" value="${qP.dataset}" />  
+                                      "${dataset.summary}"
+                                      <c:if test='${fn:length(dataset.uploadFile) > 0}'>
+                                         from file &lt;${dataset.uploadFile}&gt;
+                                      </c:if>
+                                   </c:when>
+                                   <c:otherwise>
+                                      <jsp:setProperty name="qP" property="paramValue" value="${aP}" />
+                                      ${qP.decompressedValue}
+                                   </c:otherwise>
+                                </c:choose>
+                             </td>
+                          </tr>
+                       </c:if>
+                    </c:forEach>
+                </table>
+            </td>
+        </tr>
     </table>
 </div>

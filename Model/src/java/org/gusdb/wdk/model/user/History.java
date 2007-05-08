@@ -71,7 +71,7 @@ public class History {
      */
     public String getCustomName() {
         String name = customName;
-        if (name == null)
+        if (name == null || name.length() == 0)
             name = (isBoolean) ? booleanExpression
                     : answer.getQuestion().getDisplayName();
         if (name != null) {
