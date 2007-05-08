@@ -59,8 +59,10 @@ public class AnswerBean {
                     paramValue = paramValue.substring( pos + 1 ).trim();
             }
             String[ ] values = { paramValue };
-            if ( param instanceof FlatVocabParam )
-                values = paramValue.split( "," );
+            if ( param instanceof FlatVocabParam ) {
+                FlatVocabParam fvParam = ( FlatVocabParam ) param;
+                if ( fvParam.getMultiPick() ) values = paramValue.split( "," );
+            }
             // URL encode the values
             for ( String value : values ) {
                 try {
@@ -99,7 +101,7 @@ public class AnswerBean {
         }
         return sb.toString();
     }
-
+    
     public Integer getDatasetId() throws WdkModelException {
         return answer.getDatasetId();
     }
