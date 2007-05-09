@@ -30,4 +30,9 @@ public abstract class AttributeField extends Field {
     public boolean isSortable() {
         return sortable;
     }
+
+    public void setSortable(boolean sortable) {
+        // only set if user specify it as not sortable
+        if (!sortable) this.sortable = new Boolean(false);
+    }
 }

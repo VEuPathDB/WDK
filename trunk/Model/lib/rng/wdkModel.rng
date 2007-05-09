@@ -424,6 +424,9 @@
     <optional>
       <attribute name="nowrap" />
     </optional>
+    <optional>
+      <attribute name="sortable" />
+    </optional>
   </define>
 
   <define name="columnAttribute">
