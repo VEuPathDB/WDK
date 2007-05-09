@@ -368,9 +368,12 @@ public class User {
                     newHistory.update();
                     historyMap.put( history.getHistoryId(),
                             newHistory.getHistoryId() );
+
+                    logger.info("Merging history #" + history.getHistoryId() + " -> #" + newHistory.getHistoryId());
+
                     continue;
                 }
-                
+
                 // histories with components, the components need ed to be
                 // merged first
                 boolean canMerge = true;
@@ -386,6 +389,13 @@ public class User {
                     continue;
                 }
                 
+                StringBuffer sbLog = new StringBuffer();
+                sbLog.append("History #" + history.getHistoryId() + " has components: ");
+                for(int compId : components) {
+                    sbLog.append(compId + ", ");
+                }
+                logger.info(sbLog);
+
                 // can merge, needs to repack the param values
                 History newHistory;
                 if ( history.isBoolean() ) {
@@ -394,8 +404,9 @@ public class User {
                     for ( Integer compId : components ) {
                         Integer newId = historyMap.get( compId );
                         expression = expression.replaceAll( "\\b"
-                                + compId.toString() + "\\b", newId.toString() );
+                                + compId.toString() + "\\b", "WDK" + newId.toString() + "WDK");
                     }
+                    expression = expression.replaceAll("WDK", "");
                     newHistory = combineHistory( expression,
                             history.isDeleted() );
                 } else {
