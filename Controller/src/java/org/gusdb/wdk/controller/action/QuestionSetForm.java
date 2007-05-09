@@ -74,14 +74,21 @@ public class QuestionSetForm extends ActionForm {
 
     public String getMyProp(String key)  throws WdkModelException
     {
-	String res = (String)(getMyProps().get(key));
-	return res;
+        Object value = getMyProps().get(key);
+        if (value == null) return null;
+        if (value instanceof String[]) {
+            String[] array = (String[]) value;
+            if (array.length > 0) return array[0];
+            else return null;
+        } else return (String) value;
     }
 
     public String[] getMyMultiProp(String key)  throws WdkModelException
     {
-	String[] res = (String[])getMyProps().get(key);
-	return res;
+        Object value = getMyProps().get(key);
+        if (value == null) return null;
+        if (value instanceof String[]) return ( String[] )value;
+        else return new String[]{ ( String )value };
     }
 
     public Object getMyPropObject(String key) throws WdkModelException {
