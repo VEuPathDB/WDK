@@ -74,6 +74,8 @@ public class BooleanExpression {
 
         // insert a space before open parenthes; it's used when getting operator
         expression = expression.replaceAll("\\(", " (");
+        expression = expression.replaceAll("\\+", " + ");
+        expression = expression.replaceAll("\\-", " - ");
         // delete extra white spaces
         expression = expression.replaceAll("\\s", " ").trim();
 
