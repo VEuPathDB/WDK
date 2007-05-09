@@ -1019,7 +1019,7 @@ public class UserFactory {
         String qiChecksum = qinstance.getChecksum();
         String signature = qinstance.getQuery().getSignature();
         String params = ( isBoolean ) ? booleanExpression
-                : qinstance.getQueryInstanceContent();
+                : qinstance.getParamsContent();
         
         // check whether the answer exist or not
         ResultSet rsHistory = null;

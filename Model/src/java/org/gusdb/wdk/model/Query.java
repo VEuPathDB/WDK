@@ -31,6 +31,7 @@ public abstract class Query implements Serializable {
     protected ResultFactory resultFactory;
 
     protected String signature = null;
+    protected String projectId;
 
     public Query() {
         paramRefs = new LinkedHashSet<ParamReference>();
@@ -254,6 +255,10 @@ public abstract class Query implements Serializable {
 	buf.append(indent + "</sanityQuery>");
 	return buf.toString();
     }
+    
+    public String getProjectId() {
+    	return projectId;
+    }
 
     // ///////////////////////////////////////////////////////////////////
     // /////////// Protected methods ////////////////////////////////////
@@ -305,6 +310,7 @@ public abstract class Query implements Serializable {
             Param param = (Param) paramIterator.next();
             param.setResources(model);
         }
+        this.projectId = model.getProjectId();
     }
 
     protected void validateParamValues(Map<String, Object> values)
