@@ -90,18 +90,23 @@ public class HistoryParam extends Param {
      */
     @Override
     protected String getInternalValue(String value) throws WdkModelException {
-        String[] parts = value.split(":");
-        // the input have a valid user id and history id
-        String signature = parts[0].trim();
-        String strHistId = parts[1].trim();
-        int historyId = Integer.parseInt(strHistId);
         try {
-            User user = factory.loadUserBySignature(signature);
-            History history = user.getHistory(historyId);
+            History history = getHistory(value);
             return history.getCacheFullTable();
         } catch (WdkUserException ex) {
             throw new WdkModelException(ex);
         }
+    }
+
+    public History getHistory(String combinedId) throws WdkUserException, WdkModelException {
+        String[] parts = combinedId.split(":");
+        // the input have a valid user id and history id
+        String signature = parts[0].trim();
+        String strHistId = parts[1].trim();
+
+        int historyId = Integer.parseInt(strHistId);
+        User user = factory.loadUserBySignature(signature);
+        return user.getHistory(historyId);
     }
 
     /* (non-Javadoc)

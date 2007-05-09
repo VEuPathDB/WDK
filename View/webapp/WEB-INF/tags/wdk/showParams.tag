@@ -46,6 +46,11 @@ display the parameter values for an non-boolean answer.
                                          from file &lt;${dataset.uploadFile}&gt;
                                       </c:if>
                                    </c:when>
+                                   <c:when test="${qP.class.name eq 'org.gusdb.wdk.model.jspwrap.HistoryParamBean'}">
+                                      <jsp:setProperty name="qP" property="combinedId" value="${aP}" />
+                                      <c:set var="subHistory" value="${qP.history}" />
+                                      History #${subHistory.historyId}: ${subHistory.customName}
+                                   </c:when>
                                    <c:otherwise>
                                       <jsp:setProperty name="qP" property="paramValue" value="${aP}" />
                                       ${qP.decompressedValue}
