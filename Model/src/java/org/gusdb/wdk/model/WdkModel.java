@@ -63,6 +63,7 @@ public class WdkModel {
 
     private File xmlDataDir;
 
+    private UserFactory userFactory;
     private DatasetFactory datasetFactory;
     private QueryFactory queryFactory;
 
@@ -469,11 +470,11 @@ public class WdkModel {
             authenPlatform = (RDBMSPlatformI) Class.forName(authenPlatformClass).newInstance();
             authenPlatform.init(authenConnection, authenLogin, authenPassword,
                     minIdle, maxIdle, maxWait, maxActive / 2, initialSize, fileName);
-            UserFactory.initialize(this, projectId, authenPlatform,
+            userFactory = new UserFactory(this, projectId, authenPlatform,
                     loginSchema, defaultRole, smtpServer, registerEmail,
                     emailSubject, emailContent);
         } else {
-            UserFactory.initialize(this, projectId, null, null, null, null,
+            userFactory = new UserFactory(this, projectId, null, null, null, null,
                     null, null, null);
         }
 
@@ -501,7 +502,7 @@ public class WdkModel {
     }
 
     public UserFactory getUserFactory() throws WdkUserException {
-        return UserFactory.getInstance();
+        return userFactory;
     }
 
     public String getWebServiceUrl() {
