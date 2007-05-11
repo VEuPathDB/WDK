@@ -107,7 +107,6 @@ public class UserFactory {
     
     private static Logger logger = Logger.getLogger( UserFactory.class );
     
-    private static UserFactory factory;
     
     private RDBMSPlatformI platform;
     private DataSource dataSource;
@@ -126,32 +125,20 @@ public class UserFactory {
     private String emailSubject;
     private String emailContent;
     
-    public static UserFactory getInstance() throws WdkUserException {
-        if ( factory == null ) {
-            throw new WdkUserException(
-                    "UserFactory is not initialized properly. Please Initialize WdkModel first." );
-        }
-        return factory;
-    }
-    
-    public static void initialize( WdkModel wdkModel, String projectId,
+    public UserFactory( WdkModel wdkModel, String projectId,
             RDBMSPlatformI platform, String loginSchema, String defaultRole,
             String smtpServer, String registerEmail, String emailSubject,
             String emailContent ) {
-        factory = new UserFactory( platform );
-        factory.wdkModel = wdkModel;
-        factory.projectId = projectId;
-        factory.loginSchema = loginSchema;
-        factory.defaultRole = defaultRole;
-        factory.smtpServer = smtpServer;
-        factory.registerEmail = registerEmail;
-        factory.emailContent = emailContent;
-        factory.emailSubject = emailSubject;
-    }
-    
-    private UserFactory( RDBMSPlatformI platform ) {
         this.platform = platform;
         this.dataSource = platform.getDataSource();
+        this.wdkModel = wdkModel;
+        this.projectId = projectId;
+        this.loginSchema = loginSchema;
+        this.defaultRole = defaultRole;
+        this.smtpServer = smtpServer;
+        this.registerEmail = registerEmail;
+        this.emailContent = emailContent;
+        this.emailSubject = emailSubject;
     }
     
     public WdkModel getWdkModel() {
