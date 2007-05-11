@@ -58,6 +58,16 @@ public class DatasetFactory {
         return getUserDataset( user, dataset );
     }
     
+    public Dataset getDataset( User user, int datasetId )
+            throws WdkUserException {
+        // check if the dataset exist, globally
+        Dataset dataset = getDatasetIndex( datasetId );
+        if ( dataset == null ) return null;
+        
+        // check if dataset exists in the user's domain
+        return getUserDataset( user, dataset );
+    }
+    
     private Dataset putDatasetIndex( String[ ] values )
             throws WdkModelException, WdkUserException {
         // validate the value
@@ -180,6 +190,39 @@ public class DatasetFactory {
         }
     }
     
+    private Dataset getDatasetIndex( int datasetId )
+            throws WdkUserException {
+        DataSource dataSource = platform.getDataSource();
+        ResultSet rs = null;
+        try {
+            PreparedStatement ps = SqlUtils.getPreparedStatement( dataSource,
+                    "SELECT dataset_checksum, summary, dataset_size FROM "
+                            + datasetSchema + "dataset_indices "
+                            + "WHERE dataset_id = ?" );
+            ps.setInt( 1, datasetId);
+            rs = ps.executeQuery();
+            
+            if ( !rs.next() ) return null;
+            
+            String datasetChecksum = rs.getString( "dataset_checksum" );
+            String summary = rs.getString( "summary" );
+            int datasetSize = rs.getInt( "dataset_size" );
+            
+            Dataset dataset = new Dataset( this, datasetId, datasetChecksum );
+            dataset.setSummary( summary );
+            dataset.setSize( datasetSize );
+            return dataset;
+        } catch ( SQLException ex ) {
+            throw new WdkUserException( ex );
+        } finally {
+            try {
+                SqlUtils.closeResultSet( rs );
+            } catch ( SQLException ex ) {
+                throw new WdkUserException( ex );
+            }
+        }
+    }
+   
     private Dataset putUserDataset( User user, Dataset dataset,
             String uploadFile ) throws WdkUserException {
         logger.info( "save upload file: " + uploadFile );

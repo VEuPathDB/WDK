@@ -651,6 +651,16 @@ public class User {
         return dataset;
     }
     
+    public Dataset getDataset( int datasetId ) throws WdkUserException {
+        Dataset dataset = datasetFactory.getDataset( this, datasetId );
+        if ( dataset == null )
+            throw new WdkUserException( "Dataset #"
+                    + datasetId + " cannot be found" );
+        logger.info( "dataset #" + datasetId
+                + " is uploaded from: " + dataset.getUploadFile() );
+        return dataset;
+    }
+    
     public Dataset createDataset( String uploadFile, String[ ] values )
             throws WdkUserException, WdkModelException {
         return datasetFactory.makeDataset( this, uploadFile, values );
