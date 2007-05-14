@@ -368,12 +368,13 @@ public class User {
                     newHistory.update();
                     historyMap.put( history.getHistoryId(),
                             newHistory.getHistoryId() );
-
-                    logger.info("Merging history #" + history.getHistoryId() + " -> #" + newHistory.getHistoryId());
-
+                    
+                    logger.info( "Merging history #" + history.getHistoryId()
+                            + " -> #" + newHistory.getHistoryId() );
+                    
                     continue;
                 }
-
+                
                 // histories with components, the components need ed to be
                 // merged first
                 boolean canMerge = true;
@@ -390,12 +391,13 @@ public class User {
                 }
                 
                 StringBuffer sbLog = new StringBuffer();
-                sbLog.append("History #" + history.getHistoryId() + " has components: ");
-                for(int compId : components) {
-                    sbLog.append(compId + ", ");
+                sbLog.append( "History #" + history.getHistoryId()
+                        + " has components: " );
+                for ( int compId : components ) {
+                    sbLog.append( compId + ", " );
                 }
-                logger.info(sbLog);
-
+                logger.info( sbLog );
+                
                 // can merge, needs to repack the param values
                 History newHistory;
                 if ( history.isBoolean() ) {
@@ -404,9 +406,10 @@ public class User {
                     for ( Integer compId : components ) {
                         Integer newId = historyMap.get( compId );
                         expression = expression.replaceAll( "\\b"
-                                + compId.toString() + "\\b", "WDK" + newId.toString() + "WDK");
+                                + compId.toString() + "\\b", "WDK"
+                                + newId.toString() + "WDK" );
                     }
-                    expression = expression.replaceAll("WDK", "");
+                    expression = expression.replaceAll( "WDK", "" );
                     newHistory = combineHistory( expression,
                             history.isDeleted() );
                 } else {
@@ -654,10 +657,10 @@ public class User {
     public Dataset getDataset( int datasetId ) throws WdkUserException {
         Dataset dataset = datasetFactory.getDataset( this, datasetId );
         if ( dataset == null )
-            throw new WdkUserException( "Dataset #"
-                    + datasetId + " cannot be found" );
-        logger.info( "dataset #" + datasetId
-                + " is uploaded from: " + dataset.getUploadFile() );
+            throw new WdkUserException( "Dataset #" + datasetId
+                    + " cannot be found" );
+        logger.info( "dataset #" + datasetId + " is uploaded from: "
+                + dataset.getUploadFile() );
         return dataset;
     }
     
@@ -813,11 +816,8 @@ public class User {
         // save the summary attribute list
         String[ ] attributes = new String[ summaryAttributes.size() ];
         summaryAttributes.toArray( attributes );
-        QueryFactory queryFactory = model.getQueryFactory();
-        String summaryChecksum = queryFactory.makeSummaryChecksum( attributes );
         
-        applySummaryChecksum( questionFullName, summaryChecksum );
-        return summaryChecksum;
+        return applySummaryChecksum( questionFullName, attributes );
     }
     
     public String removeSummaryAttribute( String questionFullName,
@@ -832,11 +832,8 @@ public class User {
         // save the summary attribute list
         String[ ] attributes = new String[ summaryAttributes.size() ];
         summaryAttributes.toArray( attributes );
-        QueryFactory queryFactory = model.getQueryFactory();
-        String summaryChecksum = queryFactory.makeSummaryChecksum( attributes );
         
-        applySummaryChecksum( questionFullName, summaryChecksum );
-        return summaryChecksum;
+        return applySummaryChecksum( questionFullName, attributes );
     }
     
     public void resetSummaryAttribute( String questionFullName ) {
@@ -876,23 +873,24 @@ public class User {
         }
         logger.info( "Summary after: " + theSb.toString() );
         
-        QueryFactory queryFactory = model.getQueryFactory();
-        String summaryChecksum = queryFactory.makeSummaryChecksum( summary );
-        
-        applySummaryChecksum( questionFullName, summaryChecksum );
-        
-        return summaryChecksum;
+        return applySummaryChecksum( questionFullName, summary );
     }
     
     /**
      * The method replace the previous checksum with the given one.
      * 
      * @param summaryChecksum
+     * @throws WdkUserException
+     * @throws WdkModelException
      */
-    public void applySummaryChecksum( String questionFullName,
-            String summaryChecksum ) {
+    public String applySummaryChecksum( String questionFullName,
+            String[ ] attributes ) throws WdkModelException, WdkUserException {
+        QueryFactory queryFactory = model.getQueryFactory();
+        String summaryChecksum = queryFactory.makeSummaryChecksum( attributes );
+        
         String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX;
         projectPreferences.put( summaryKey, summaryChecksum );
+        return summaryChecksum;
     }
     
     public String createRemoteKey() throws WdkUserException {
