@@ -806,10 +806,12 @@ public class UserBean {
     /**
      * @param questionFullName
      * @param summaryChecksum
+     * @throws WdkUserException 
+     * @throws WdkModelException 
      */
-    public void applySummaryChecksum(String questionFullName,
-            String summaryChecksum) {
-        user.applySummaryChecksum(questionFullName, summaryChecksum);
+    public String applySummaryChecksum(String questionFullName,
+            String[] atributes) throws WdkModelException, WdkUserException {
+        return user.applySummaryChecksum(questionFullName, atributes);
     }
 
     /**
