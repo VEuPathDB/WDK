@@ -48,14 +48,14 @@ public class ShowErrorPageAction extends Action {
 
 	ActionForward forward = null;
 	if (ApplicationInitListener.resourceExists(customViewFile, svltCtx)) {
-	    System.out.println("DEBUG: SEPA: using custom page " + customViewFile);
+	    //System.out.println("DEBUG: SEPA: using custom page " + customViewFile);
 	    forward = new ActionForward(customViewFile);
 	} else {
 	    if (errorType.equals(CConstants.ERROR_TYPE_USER)) {
-		System.out.println("DEBUG: SEPA: using user error page");
+		//System.out.println("DEBUG: SEPA: using user error page");
 		forward = mapping.findForward(CConstants.SHOW_ERRORPAGE_USER_MAPKEY);
 	    } else {
-		System.out.println("DEBUG: SEPA: using model error page");
+		//System.out.println("DEBUG: SEPA: using model error page");
 		forward = mapping.findForward(CConstants.SHOW_ERRORPAGE_MODEL_MAPKEY);
 	    }
 	}
