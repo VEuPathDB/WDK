@@ -209,8 +209,8 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
                 pVal = cgiParamVal;
             }
             
-            System.out.println( "DEBUG: param " + p.getName() + " = '" + pVal
-                    + "'" );
+            /* System.out.println( "DEBUG: param " + p.getName() + " = '" + pVal
+                    + "'" ); */
             if ( pVal == null ) {
                 hasAllParams = false;
                 pVal = p.getDefault();
