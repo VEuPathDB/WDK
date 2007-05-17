@@ -134,7 +134,7 @@ public class ResultFactory implements Serializable {
 		return getResultTableName(instance);
 	}
 
-	public synchronized String getSqlForBooleanOp(QueryInstance instance,
+	public String getSqlForBooleanOp(QueryInstance instance,
 			String[] columnNames) throws WdkModelException {
 		StringBuffer selectb = new StringBuffer("select ");
 
@@ -278,7 +278,7 @@ public class ResultFactory implements Serializable {
 			} catch (SQLException ex) {
 				throw new WdkModelException(ex);
 			}
-			System.out.println("Succeeded in foreced dropping " + nDropped);
+			System.out.println("Succeeded in forced dropping " + nDropped);
 		}
 
 		try {
@@ -403,7 +403,7 @@ public class ResultFactory implements Serializable {
 		return resultTableName;
 	}
 
-	private synchronized void rollback(int queryInstanceId,
+	private void rollback(int queryInstanceId,
 			String resultTableName) throws WdkModelException {
 		DataSource dataSource = platform.getDataSource();
 
@@ -503,7 +503,7 @@ public class ResultFactory implements Serializable {
      * 
      * @return Full table name of result table
      */
-	private synchronized Integer insertQueryInstance(QueryInstance instance)
+	private Integer insertQueryInstance(QueryInstance instance)
 			throws WdkModelException {
 
 		String nextID = null;
