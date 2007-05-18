@@ -168,7 +168,11 @@ public class WSQueryInstance extends QueryInstance {
                     if (clobCols.contains(colName)) {
                         platform.updateClobData(pstmt, index + 1, val, false);
                     } else {
-                        pstmt.setString(index + 1, val);
+			int colWidth = columns[index].getWidth();
+			if (val.length() > colWidth) {
+			    val = val.substring(0, colWidth-5) + "[...]";
+			}
+                       pstmt.setString(index + 1, val);
                     }
                 }
                 pstmt.setInt(columns.length + 1, ++idx);
