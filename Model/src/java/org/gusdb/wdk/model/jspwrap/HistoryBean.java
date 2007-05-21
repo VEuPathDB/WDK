@@ -4,6 +4,7 @@
 package org.gusdb.wdk.model.jspwrap;
 
 import java.util.Date;
+import java.util.Map;
 
 import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.WdkModelException;
@@ -15,14 +16,14 @@ import org.gusdb.wdk.model.user.History;
  * 
  */
 public class HistoryBean {
-
+    
     private History history;
     private int nameTruncateTo;
-
-    public HistoryBean(History history) {
+    
+    public HistoryBean( History history ) {
         this.history = history;
     }
-
+    
     /*
      * (non-Javadoc)
      * 
@@ -31,7 +32,7 @@ public class HistoryBean {
     public String getChecksum() throws WdkModelException {
         return history.getChecksum();
     }
-
+    
     /*
      * (non-Javadoc)
      * 
@@ -40,7 +41,7 @@ public class HistoryBean {
     public Date getCreatedTime() {
         return history.getCreatedTime();
     }
-
+    
     /*
      * (non-Javadoc)
      * 
@@ -49,7 +50,7 @@ public class HistoryBean {
     public String getCustomName() {
         return history.getCustomName();
     }
-
+    
     /*
      * (non-Javadoc)
      * 
@@ -58,7 +59,7 @@ public class HistoryBean {
     public String getBaseCustomName() {
         return history.getBaseCustomName();
     }
-
+    
     /*
      * (non-Javadoc)
      * 
@@ -67,7 +68,7 @@ public class HistoryBean {
     public String getDataType() {
         return history.getDataType();
     }
-
+    
     /*
      * (non-Javadoc)
      * 
@@ -76,16 +77,16 @@ public class HistoryBean {
     public int getEstimateSize() {
         return history.getEstimateSize();
     }
-
+    
     /*
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.user.History#setEstimateSize(int)
      */
-    public void setEstimateSize(int estimateSize) {
-        history.setEstimateSize(estimateSize);
+    public void setEstimateSize( int estimateSize ) {
+        history.setEstimateSize( estimateSize );
     }
-
+    
     /*
      * (non-Javadoc)
      * 
@@ -94,7 +95,7 @@ public class HistoryBean {
     public int getHistoryId() {
         return history.getHistoryId();
     }
-
+    
     /*
      * (non-Javadoc)
      * 
@@ -103,7 +104,7 @@ public class HistoryBean {
     public Date getLastRunTime() {
         return history.getLastRunTime();
     }
-
+    
     /*
      * (non-Javadoc)
      * 
@@ -112,16 +113,16 @@ public class HistoryBean {
     public String getSignature() throws WdkModelException {
         return history.getSignature();
     }
-
+    
     /*
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.user.History#getUser()
      */
     public UserBean getUser() {
-        return new UserBean(history.getUser());
+        return new UserBean( history.getUser() );
     }
-
+    
     /*
      * (non-Javadoc)
      * 
@@ -130,7 +131,7 @@ public class HistoryBean {
     public boolean isBoolean() {
         return history.isBoolean();
     }
-
+    
     /*
      * (non-Javadoc)
      * 
@@ -139,16 +140,16 @@ public class HistoryBean {
     public void update() throws WdkUserException {
         history.update();
     }
-
+    
     /*
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.user.History#update(boolean)
      */
-    public void update(boolean updateTime) throws WdkUserException {
-        history.update(updateTime);
+    public void update( boolean updateTime ) throws WdkUserException {
+        history.update( updateTime );
     }
-
+    
     /*
      * (non-Javadoc)
      * 
@@ -157,7 +158,7 @@ public class HistoryBean {
     public boolean getDepended() throws WdkUserException, WdkModelException {
         return history.isDepended();
     }
-
+    
     /**
      * @return
      * @throws WdkUserException
@@ -165,43 +166,43 @@ public class HistoryBean {
      */
     public AnswerBean getAnswer() throws WdkUserException {
         Answer answer = history.getAnswer();
-        AnswerBean answerBean = new AnswerBean(answer);
-        if (answer.getIsBoolean())
+        AnswerBean answerBean = new AnswerBean( answer );
+        if ( answer.getIsBoolean() )
             answerBean.customName = history.getCustomName();
         return answerBean;
     }
-
+    
     /**
      * @return Returns the nameTruncateTo.
      */
     public int getNameTruncateTo() {
         return nameTruncateTo;
     }
-
+    
     /**
      * @param nameTruncateTo
      *            The nameTruncateTo to set.
      */
-    public void setNameTruncateTo(int nameTruncateTo) {
+    public void setNameTruncateTo( int nameTruncateTo ) {
         this.nameTruncateTo = nameTruncateTo;
     }
-
+    
     public String getTruncatedName() {
         String name = history.getCustomName();
-        if (name.length() > nameTruncateTo)
-            name = name.substring(0, nameTruncateTo) + "...";
+        if ( name.length() > nameTruncateTo )
+            name = name.substring( 0, nameTruncateTo ) + "...";
         return name;
     }
-
+    
     /*
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.user.History#setCustomName(java.lang.String)
      */
-    public void setCustomName(String customName) {
-        history.setCustomName(customName);
+    public void setCustomName( String customName ) {
+        history.setCustomName( customName );
     }
-
+    
     /*
      * (non-Javadoc)
      * 
@@ -210,7 +211,7 @@ public class HistoryBean {
     public String getDescription() {
         return history.getDescription();
     }
-
+    
     /*
      * (non-Javadoc)
      * 
@@ -219,7 +220,7 @@ public class HistoryBean {
     public String getBooleanExpression() {
         return history.getBooleanExpression();
     }
-
+    
     /*
      * (non-Javadoc)
      * 
@@ -227,5 +228,29 @@ public class HistoryBean {
      */
     public boolean isDeleted() {
         return history.isDeleted();
+    }
+    
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.user.History#getParamNames()
+     */
+    public Map< String, String > getParamNames() {
+        return history.getParamNames();
+    }
+    
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.user.History#getParams()
+     */
+    public Map< String, Object > getParams() {
+        return history.getParams();
+    }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.user.History#getQuestionName()
+     */
+    public String getQuestionName() {
+        return history.getQuestionName();
     }
 }

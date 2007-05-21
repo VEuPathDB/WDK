@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.test.stress.StressTestTask.ResultType;
@@ -34,6 +35,8 @@ public class StressTestRunner implements Runnable {
     private boolean running;
     private int delay;
     private boolean stopped;
+    
+    private String cookies;
 
     /**
      * 
@@ -132,7 +135,10 @@ public class StressTestRunner implements Runnable {
     private String retrievePage() {
         try {
             UrlItem urlItem = task.getUrlItem();
-            HttpURLConnection connection = urlItem.getConnection();
+            HttpURLConnection connection = urlItem.getConnection(cookies);
+            // get new cookie
+            readCookie( connection );
+            
             BufferedInputStream in = new BufferedInputStream(
                     connection.getInputStream());
 
@@ -187,6 +193,25 @@ public class StressTestRunner implements Runnable {
             task.setResultType(ResultType.ConnectionError);
             task.setResultMessage(ex.getMessage());
             return null;
+        }
+    }
+    
+    private void readCookie(HttpURLConnection connection) {
+        Map<String, List<String>> header = connection.getHeaderFields();
+        // TEST
+        for (String name : header.keySet()) {
+            System.out.println("Header: " + name);
+        }
+        List<String> cookieList = header.get( "Set-Cookie" );
+        if (cookieList != null) {
+            StringBuffer sb = new StringBuffer();
+            for (String cookie : cookieList) {
+                if (sb.length()> 0) sb.append( "," );
+                sb.append( cookie );
+            }
+            cookies = sb.toString();
+            // TEST
+            logger.info( "Got cookie: " + cookies );
         }
     }
 

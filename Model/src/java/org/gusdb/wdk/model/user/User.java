@@ -475,7 +475,9 @@ public class User {
      */
     public Map< Integer, History > getHistoriesMap() throws WdkUserException,
             WdkModelException {
-        Map< Integer, History > histories = userFactory.loadHistories( this );
+        Map< Integer, History > invalidHistories = new LinkedHashMap< Integer, History >();
+        Map< Integer, History > histories = userFactory.loadHistories( this,
+                invalidHistories );
         
         // update the history count
         historyCount = 0;
@@ -483,6 +485,16 @@ public class User {
             if ( !history.isDeleted() ) historyCount++;
         }
         return histories;
+    }
+    
+    public History[ ] getInvalidHistories() throws WdkUserException,
+            WdkModelException {
+        Map< Integer, History > histories = new LinkedHashMap< Integer, History >();
+        userFactory.loadHistories( this, histories );
+        
+        History[ ] array = new History[ histories.size() ];
+        histories.values().toArray( array );
+        return array;
     }
     
     public History[ ] getHistories() throws WdkUserException, WdkModelException {
@@ -560,6 +572,11 @@ public class User {
     
     public void deleteHistories( boolean allProjects ) throws WdkUserException {
         userFactory.deleteHistories( this, allProjects );
+    }
+    
+    public void deleteInvalidHistories() throws WdkUserException,
+            WdkModelException {
+        userFactory.deleteInvalidHistories( this );
     }
     
     public void deleteHistory( int historyId ) throws WdkUserException,
