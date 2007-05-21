@@ -169,7 +169,7 @@ public class WSQueryInstance extends QueryInstance {
                         platform.updateClobData(pstmt, index + 1, val, false);
                     } else {
 			int colWidth = columns[index].getWidth();
-			if (val.length() > colWidth) {
+			if (val != null && val.length() > colWidth) {
 			    val = val.substring(0, colWidth-5) + "[...]";
 			}
                        pstmt.setString(index + 1, val);
