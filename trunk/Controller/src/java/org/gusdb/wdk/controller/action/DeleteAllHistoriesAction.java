@@ -18,18 +18,25 @@ import org.gusdb.wdk.model.jspwrap.UserBean;
  * 
  */
 public class DeleteAllHistoriesAction extends Action {
-
-    public ActionForward execute(ActionMapping mapping, ActionForm form,
-            HttpServletRequest request, HttpServletResponse response)
+    
+    public ActionForward execute( ActionMapping mapping, ActionForm form,
+            HttpServletRequest request, HttpServletResponse response )
             throws Exception {
-
-        UserBean wdkUser = (UserBean) request.getSession().getAttribute(
-                CConstants.WDK_USER_KEY);
-        wdkUser.deleteHistories();
-
-        ActionForward forward = mapping.findForward(CConstants.DELETE_HISTORY_MAPKEY);
-
+        
+        UserBean wdkUser = ( UserBean ) request.getSession().getAttribute(
+                CConstants.WDK_USER_KEY );
+        if ( wdkUser != null ) {
+            // check if only need to delete invalid histories
+            String invalid = request.getParameter( "invalid" );
+            if ( invalid == null || !invalid.equalsIgnoreCase( "true" ) ) {
+                wdkUser.deleteHistories();
+            }
+            else wdkUser.deleteInvalidHistories();
+        }
+        
+        ActionForward forward = mapping.findForward( CConstants.DELETE_HISTORY_MAPKEY );
+        
         return forward;
     }
-
+    
 }

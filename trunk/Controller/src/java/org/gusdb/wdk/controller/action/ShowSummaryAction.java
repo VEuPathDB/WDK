@@ -74,8 +74,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
                     wdkQuestion = getQuestionByFullName( qFullName );
             }
             if ( wdkQuestion == null ) {
-                throw new RuntimeException(
-                        "Unexpected error: answer maker (wdkQuestion) is null" );
+                return showError( mapping, request, response );
             }
             String questionName = wdkQuestion.getFullName();
             
@@ -104,8 +103,16 @@ public class ShowSummaryAction extends ShowQuestionAction {
             }
             
             // make the answer
-            wdkAnswer = summaryPaging( request, wdkQuestion, params,
-                    sortingAttributes, summaryAttributes );
+            try {
+                wdkAnswer = summaryPaging( request, wdkQuestion, params,
+                        sortingAttributes, summaryAttributes );
+            } catch ( WdkModelException ex ) {
+                logger.error( ex );
+                return showError( mapping, request, response );
+            } catch ( WdkUserException ex ) {
+                logger.error( ex );
+                return showError( mapping, request, response );
+            }
             
             // create history
             history = wdkUser.createHistory( wdkAnswer );
@@ -206,8 +213,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
             if ( paramVal instanceof String[ ] ) {
                 String[ ] pVals = ( String[ ] ) paramVal;
                 StringBuffer sb = new StringBuffer();
-                for (String pVal : pVals) {
-                    if (sb.length()>0)sb.append( "," );
+                for ( String pVal : pVals ) {
+                    if ( sb.length() > 0 ) sb.append( "," );
                     sb.append( pVal );
                 }
                 paramValStr = sb.toString();
@@ -317,5 +324,37 @@ public class ShowSummaryAction extends ShowQuestionAction {
         request.setAttribute( "wdk_paging_url", request.getRequestURI() );
         request.setAttribute( "wdk_paging_params", editedParamNames );
         return wdkAnswer;
+    }
+    
+    private ActionForward showError( ActionMapping mapping,
+            HttpServletRequest request, HttpServletResponse response ) {
+        String qFullName = request.getParameter( CConstants.QUESTION_FULLNAME_PARAM );
+        
+        ServletContext svltCtx = getServlet().getServletContext();
+        String customViewDir = ( String ) svltCtx.getAttribute( CConstants.WDK_CUSTOMVIEWDIR_KEY );
+        String customViewFile1 = customViewDir + File.separator + qFullName
+                + ".summary.jsp";
+        String customViewFile2 = customViewDir + File.separator
+                + CConstants.WDK_CUSTOM_SUMMARY_PAGE;
+        
+        String url;
+        if ( ApplicationInitListener.resourceExists( customViewFile1, svltCtx ) ) {
+            url = customViewFile1;
+        } else if ( ApplicationInitListener.resourceExists( customViewFile2,
+                svltCtx ) ) {
+            url = customViewFile2;
+        } else {
+            ActionForward forward = mapping.findForward( CConstants.SHOW_ERROR_MAPKEY );
+            url = forward.getPath();
+        }
+        Map params = request.getParameterMap();
+        for (Object key : params.keySet()) {
+            Object value = params.get( key );
+            request.setAttribute( key.toString(), value.toString() );
+        }
+        
+        ActionForward forward = new ActionForward( url );
+        forward.setRedirect( false );
+        return forward;
     }
 }

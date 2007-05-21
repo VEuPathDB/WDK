@@ -19,14 +19,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.FlatVocabParam;
-import org.gusdb.wdk.model.Param;
-import org.gusdb.wdk.model.Question;
-import org.gusdb.wdk.model.QuestionSet;
-import org.gusdb.wdk.model.RecordClass;
-import org.gusdb.wdk.model.RecordClassSet;
-import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.*;
 import org.gusdb.wdk.model.implementation.ModelXmlParser;
 import org.gusdb.wdk.model.test.SanityModel;
 import org.gusdb.wdk.model.test.SanityQuestion;
@@ -134,9 +127,15 @@ public class StressTemplater {
                 
                 // list all params
                 Param[ ] params = question.getParams();
+                boolean unusable = false;
                 for ( Param param : params ) {
                     if ( param instanceof FlatVocabParam ) {
                         // skip it
+                    } else if ( param instanceof HistoryParam
+                            || param instanceof DatasetParam ) {
+                        // unusable question
+                        unusable = true;
+                        break;
                     } else { // add the param into the list
                         String paramName = param.getName();
                         String paramValue = param.getDefault();
@@ -145,7 +144,7 @@ public class StressTemplater {
                 }
                 // add the question only if it has some params that requires
                 // user's input
-                if ( questionItem.getParams().size() > 0 )
+                if ( !unusable && questionItem.getParams().size() > 0 )
                     questionItems.put( questionName, questionItem );
             }
         }
