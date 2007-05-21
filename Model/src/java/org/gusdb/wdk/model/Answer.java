@@ -424,6 +424,10 @@ public class Answer {
         // get Reporter
         Map< String, ReporterRef > rptMap = question.getRecordClass().getReporterMap();
         ReporterRef rptRef = rptMap.get( reporterName );
+        if ( rptRef == null )
+            throw new WdkModelException( "The reporter " + reporterName
+                    + " is " + "not registered for "
+                    + question.getRecordClass().getFullName() );
         String rptImp = rptRef.getImplementation();
         if ( rptImp == null )
             throw new WdkModelException( "The reporter " + reporterName

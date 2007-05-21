@@ -82,6 +82,7 @@ public class CConstants {
     public static final String SHOW_QUESTIONSETSFLAT_MAPKEY = "show_questionsetsflat";
     public static final String PROCESS_QUESTIONSETSFLAT_MAPKEY = "process_questionsetsflat";
     public static final String SHOW_SUMMARY_MAPKEY = "show_summary";
+    public static final String SHOW_ERROR_MAPKEY = "show_error";
     public static final String SKIPTO_RECORD_MAPKEY = "skip_to_record";
     public static final String SHOW_RECORD_MAPKEY = "show_record";
     public static final String PQ_SHOW_SUMMARY_MAPKEY = "pq_show_summary";

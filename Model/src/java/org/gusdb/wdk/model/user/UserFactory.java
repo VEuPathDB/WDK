@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -106,7 +107,6 @@ public class UserFactory {
     public static final String GLOBAL_PREFERENCE_KEY = "[Global]";
     
     private static Logger logger = Logger.getLogger( UserFactory.class );
-    
     
     private RDBMSPlatformI platform;
     private DataSource dataSource;
@@ -798,32 +798,8 @@ public class UserFactory {
         }
     }
     
-    private int getMaxHistoryId( int userId ) throws WdkUserException {
-        int maxId = 0;
-        // get the max id from the history storage
-        ResultSet rsMax = null;
-        try {
-            PreparedStatement psMax = SqlUtils.getPreparedStatement(
-                    dataSource, "SELECT max(history_id) AS maxId FROM "
-                            + loginSchema
-                            + "histories WHERE user_id = ? AND project_id = ?" );
-            psMax.setInt( 1, userId );
-            psMax.setString( 2, projectId );
-            rsMax = psMax.executeQuery();
-            if ( rsMax.next() ) maxId = rsMax.getInt( "maxId" );
-        } catch ( SQLException ex ) {
-            throw new WdkUserException( ex );
-        } finally {
-            try {
-                SqlUtils.closeResultSet( rsMax );
-            } catch ( SQLException ex ) {
-                throw new WdkUserException( ex );
-            }
-        }
-        return maxId;
-    }
-    
-    Map< Integer, History > loadHistories( User user ) throws WdkUserException,
+    Map< Integer, History > loadHistories( User user,
+            Map< Integer, History > invalidHistories ) throws WdkUserException,
             WdkModelException {
         Map< Integer, History > histories = new LinkedHashMap< Integer, History >();
         
@@ -854,31 +830,40 @@ public class UserFactory {
                 history.setDeleted( rsHistory.getBoolean( "is_deleted" ) );
                 
                 String paramsClob = platform.getClobData( rsHistory, "params" );
+                String questionName = rsHistory.getString( "question_name" );
+                history.setQuestionName( questionName );
                 
                 // re-construct the answer
                 Answer answer;
                 
-                // skip the invalid histories, but print out error messages
-                String errMsg = "The history #" + historyId + " of user "
-                        + user.getEmail() + " in project " + projectId
-                        + " is invalid, and won't be loaded.";
+                // get the params
+                Map< String, Object > params;
+                if ( history.isBoolean() ) {
+                    params = new LinkedHashMap< String, Object >();
+                    params.put( "Boolean Expression", paramsClob );
+                } else {
+                    params = parseParams( paramsClob );
+                }
+                history.setParams( params );
+                
+                // construct answer of the history
                 try {
                     if ( history.isBoolean() ) {
                         answer = constructBooleanAnswer( user, paramsClob );
                         history.setBooleanExpression( paramsClob );
                     } else {
-                        String questionName = rsHistory.getString( "question_name" );
-                        answer = constructAnswer( user, questionName,
-                                paramsClob );
+                        answer = constructAnswer( user, questionName, params );
                     }
                     history.setAnswer( answer );
                     histories.put( historyId, history );
                 } catch ( WdkModelException ex ) {
-                    logger.warn( errMsg );
-                    System.err.println( errMsg );
+                    // invalid history
+                    history.setValid( false );
+                    invalidHistories.put( historyId, history );
                 } catch ( WdkUserException ex ) {
-                    logger.warn( errMsg );
-                    System.err.println( errMsg );
+                    // invalid history
+                    history.setValid( false );
+                    invalidHistories.put( historyId, history );
                 }
             }
             // now compute the dependencies of the histories
@@ -899,8 +884,7 @@ public class UserFactory {
         return histories;
     }
     
-    History loadHistory( User user, int historyId ) throws WdkUserException,
-            WdkModelException {
+    History loadHistory( User user, int historyId ) throws WdkUserException {
         ResultSet rsHistory = null;
         try {
             PreparedStatement psHistory = SqlUtils.getPreparedStatement(
@@ -931,17 +915,34 @@ public class UserFactory {
             history.setDeleted( rsHistory.getBoolean( "is_deleted" ) );
             
             String paramsClob = platform.getClobData( rsHistory, "params" );
+            String questionName = rsHistory.getString( "question_name" );
+            history.setQuestionName( questionName );
+            
+            // get the params
+            Map< String, Object > params;
+            if ( history.isBoolean() ) {
+                params = new LinkedHashMap< String, Object >();
+                params.put( "Boolean Expression", paramsClob );
+            } else {
+                params = parseParams( paramsClob );
+            }
+            history.setParams( params );
             
             // re-construct the answer
-            Answer answer;
-            if ( history.isBoolean() ) {
-                answer = constructBooleanAnswer( user, paramsClob );
-                history.setBooleanExpression( paramsClob );
-            } else {
-                String questionName = rsHistory.getString( "question_name" );
-                answer = constructAnswer( user, questionName, paramsClob );
+            try {
+                Answer answer;
+                if ( history.isBoolean() ) {
+                    answer = constructBooleanAnswer( user, paramsClob );
+                    history.setBooleanExpression( paramsClob );
+                } else {
+                    answer = constructAnswer( user, questionName, params );
+                }
+                history.setAnswer( answer );
+            } catch ( WdkModelException ex ) {
+                history.setValid( false );
+            } catch ( WdkUserException ex ) {
+                history.setValid( false );
             }
-            history.setAnswer( answer );
             
             return history;
         } catch ( SQLException ex ) {
@@ -955,12 +956,7 @@ public class UserFactory {
         }
     }
     
-    private Answer constructAnswer( User user, String questionName,
-            String paramsClob ) throws WdkModelException, WdkUserException {
-        // obtain the question with full name
-        Question question = ( Question ) wdkModel.resolveReference(
-                questionName, "UserFactory", "UserFactory", "question_name" );
-        
+    private Map< String, Object > parseParams( String paramsClob ) {
         String[ ] parts = paramsClob.split( Utilities.DATA_DIVIDER );
         // the first element is query name, ignored
         Map< String, Object > params = new LinkedHashMap< String, Object >();
@@ -971,12 +967,21 @@ public class UserFactory {
             String value = pvPair.substring( index + 1 ).trim();
             params.put( paramName, value );
         }
+        return params;
+    }
+    
+    private Answer constructAnswer( User user, String questionName,
+            Map< String, Object > params ) throws WdkModelException,
+            WdkUserException {
+        // obtain the question with full name
+        Question question = ( Question ) wdkModel.resolveReference(
+                questionName, "UserFactory", "UserFactory", "question_name" );
         
         // get the user's preferences
         
         Answer answer = question.makeAnswer( params, 1, user.getItemsPerPage(),
                 user.getSortingAttributes( questionName ) );
-        String[] summaryAttributes = user.getSummaryAttributes( questionName );
+        String[ ] summaryAttributes = user.getSummaryAttributes( questionName );
         answer.setSumaryAttributes( summaryAttributes );
         return answer;
     }
@@ -1011,11 +1016,13 @@ public class UserFactory {
         // check whether the answer exist or not
         ResultSet rsHistory = null;
         PreparedStatement psHistory = null;
+        ResultSet rsMax = null;
         try {
             PreparedStatement psCheck = SqlUtils.getPreparedStatement(
                     dataSource, "SELECT history_id FROM " + loginSchema
                             + "histories WHERE user_id = ? AND project_id = ? "
-                            + "AND query_instance_checksum = ? AND is_deleted = ?" );
+                            + "AND query_instance_checksum = ? "
+                            + "AND is_deleted = ?" );
             psCheck.setInt( 1, userId );
             psCheck.setString( 2, projectId );
             psCheck.setString( 3, qiChecksum );
@@ -1033,30 +1040,57 @@ public class UserFactory {
             }
             
             // no existing ones matched, get a new history id
-            int historyId = getMaxHistoryId( userId ) + 1;
+            // int historyId = getMaxHistoryId( userId ) + 1;
+            // instead of getting a new history id, we start a transaction,
+            // insert a new history with generated id, and read it back
             Date createTime = new Date();
             Date lastRunTime = new Date( createTime.getTime() );
-            psHistory = SqlUtils.getPreparedStatement( dataSource, "INSERT "
-                    + "INTO " + loginSchema + "histories (history_id, user_id,"
-                    + " project_id, question_name, create_time, last_run_time,"
-                    + " custom_name, estimate_size, query_instance_checksum, query_signature, "
-                    + "is_boolean, is_deleted, params) "
-                    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)" );
-            psHistory.setInt( 1, historyId );
-            psHistory.setInt( 2, userId );
-            psHistory.setString( 3, projectId );
-            psHistory.setString( 4, questionName );
-            psHistory.setTimestamp( 5, new Timestamp( createTime.getTime() ) );
-            psHistory.setTimestamp( 6, new Timestamp( lastRunTime.getTime() ) );
-            psHistory.setString( 7, customName );
-            psHistory.setInt( 8, estimateSize );
-            psHistory.setString( 9, qiChecksum );
-            psHistory.setString( 10, signature );
-            psHistory.setBoolean( 11, isBoolean );
-            // the platform set clob, and run the statement
-            platform.updateClobData( psHistory, 12, params, false );
-            psHistory.executeUpdate();
             
+            Connection connection = dataSource.getConnection();
+            int historyId = 1;
+            synchronized ( connection ) {
+                
+                connection.setAutoCommit( false );
+                
+                psHistory = connection.prepareStatement( "INSERT INTO "
+                        + loginSchema + "histories (history_id, "
+                        + "user_id, project_id, question_name, create_time, "
+                        + "last_run_time, custom_name, estimate_size, "
+                        + "query_instance_checksum, query_signature, "
+                        + "is_boolean, is_deleted, params) VALUES "
+                        + "((SELECT max(max_id) + 1  FROM "
+                        + "(SELECT max(history_id) AS max_id FROM "
+                        + loginSchema + "histories WHERE user_id = " + userId
+                        + " UNION SELECT count(*) AS max_id FROM "
+                        + loginSchema + "histories WHERE user_id = ?) f), "
+                        + "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, " + "0, ?)" );
+                psHistory.setInt( 1, userId );
+                psHistory.setInt( 2, userId );
+                psHistory.setString( 3, projectId );
+                psHistory.setString( 4, questionName );
+                psHistory.setTimestamp( 5, new Timestamp( createTime.getTime() ) );
+                psHistory.setTimestamp( 6,
+                        new Timestamp( lastRunTime.getTime() ) );
+                psHistory.setString( 7, customName );
+                psHistory.setInt( 8, estimateSize );
+                psHistory.setString( 9, qiChecksum );
+                psHistory.setString( 10, signature );
+                psHistory.setBoolean( 11, isBoolean );
+                // the platform set clob, and run the statement
+                platform.updateClobData( psHistory, 12, params, false );
+                psHistory.executeUpdate();
+                
+                // query to get the new history id
+                PreparedStatement psMax = connection.prepareStatement( "SELECT"
+                        + " max(history_id) AS max_id FROM " + loginSchema
+                        + "histories WHERE user_id = ?" );
+                psMax.setInt( 1, userId );
+                rsMax = psMax.executeQuery();
+                if ( rsMax.next() ) historyId = rsMax.getInt( "max_id" );
+                
+                connection.commit();
+                connection.setAutoCommit( true );
+            }
             // create the History
             History history = new History( this, user, historyId );
             history.setAnswer( answer );
@@ -1065,6 +1099,7 @@ public class UserFactory {
             history.setCustomName( customName );
             history.setEstimateSize( estimateSize );
             history.setBoolean( answer.getIsBoolean() );
+            history.setQuestionName( questionName );
             
             // update the user's history count
             int historyCount = getHistoryCount( user );
@@ -1077,6 +1112,7 @@ public class UserFactory {
             try {
                 SqlUtils.closeStatement( psHistory );
                 SqlUtils.closeResultSet( rsHistory );
+                SqlUtils.closeResultSet( rsMax );
             } catch ( SQLException ex ) {
                 throw new WdkUserException( ex );
             }
@@ -1179,6 +1215,16 @@ public class UserFactory {
             } catch ( SQLException ex ) {
                 throw new WdkUserException( ex );
             }
+        }
+    }
+    
+    public void deleteInvalidHistories( User user ) throws WdkUserException,
+            WdkModelException {
+        // get invalid histories
+        Map< Integer, History > invalidHistories = new LinkedHashMap< Integer, History >();
+        loadHistories( user, invalidHistories );
+        for ( int historyId : invalidHistories.keySet() ) {
+            deleteHistory( user, historyId );
         }
     }
     
@@ -1542,7 +1588,7 @@ public class UserFactory {
         }
     }
     
-    String getLoginSchema() {
+    public String getLoginSchema() {
         return loginSchema;
     }
     
