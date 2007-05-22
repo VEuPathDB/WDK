@@ -1017,6 +1017,8 @@ public class UserFactory {
         ResultSet rsHistory = null;
         PreparedStatement psHistory = null;
         ResultSet rsMax = null;
+
+        Connection connection = null;
         try {
             PreparedStatement psCheck = SqlUtils.getPreparedStatement(
                     dataSource, "SELECT history_id FROM " + loginSchema
@@ -1046,8 +1048,9 @@ public class UserFactory {
             Date createTime = new Date();
             Date lastRunTime = new Date( createTime.getTime() );
             
-            Connection connection = dataSource.getConnection();
             int historyId = 1;
+
+            connection = dataSource.getConnection();
             synchronized ( connection ) {
                 
                 connection.setAutoCommit( false );
@@ -1089,7 +1092,6 @@ public class UserFactory {
                 if ( rsMax.next() ) historyId = rsMax.getInt( "max_id" );
                 
                 connection.commit();
-                connection.setAutoCommit( true );
             }
             // create the History
             History history = new History( this, user, historyId );
@@ -1110,6 +1112,7 @@ public class UserFactory {
             throw new WdkUserException( ex );
         } finally {
             try {
+                if (connection != null) connection.setAutoCommit( true );
                 SqlUtils.closeStatement( psHistory );
                 SqlUtils.closeResultSet( rsHistory );
                 SqlUtils.closeResultSet( rsMax );

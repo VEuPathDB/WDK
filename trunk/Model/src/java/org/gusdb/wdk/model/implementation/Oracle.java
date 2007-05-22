@@ -296,6 +296,7 @@ public class Oracle implements RDBMSPlatformI, Serializable {
 
     public String getClobData(ResultSet rs, String columnName) throws SQLException {
 	Clob messageClob = rs.getClob(columnName);
+        if (messageClob == null) return null;
 	return messageClob.getSubString(1, (int) messageClob.length());
 
     }
