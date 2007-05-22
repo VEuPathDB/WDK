@@ -23,6 +23,8 @@ import org.w3c.dom.Document;
  */
 public class WdkModel {
     
+    public static final String WDK_VERSION = "1.13";
+    
     public static final int TRUNCATE_DEFAULT = 100;
     
     public static WdkModel INSTANCE = new WdkModel();
