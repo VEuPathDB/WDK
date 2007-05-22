@@ -93,16 +93,15 @@ public class ResultFactory implements Serializable {
 	// ///////////// public /////////////////////////////////////////////////
 	// /////////////////////////////////////////////////////////////////////////
 
-	public synchronized ResultList getResult(QueryInstance instance)
+	public ResultList getResult(QueryInstance instance)
 			throws WdkModelException {
 		ResultList resultList = instance.getIsPersistent() ? getPersistentResult(instance)
 				: instance.getNonpersistentResult();
 		return resultList;
 	}
 
-	public synchronized ResultList getPersistentResultPage(
-			QueryInstance instance, int startRow, int endRow)
-			throws WdkModelException {
+	public ResultList getPersistentResultPage(QueryInstance instance,
+			int startRow, int endRow) throws WdkModelException {
 
 		if (!instance.getIsPersistent()) {
 			throw new WdkModelException(
@@ -129,7 +128,7 @@ public class ResultFactory implements Serializable {
 	/**
      * @return Full name of table containing result
      */
-	public synchronized String getResultAsTableName(QueryInstance instance)
+	public String getResultAsTableName(QueryInstance instance)
 			throws WdkModelException {
 		return getResultTableName(instance);
 	}
@@ -360,34 +359,46 @@ public class ResultFactory implements Serializable {
 	// /////////////////////////////////////////////////////////////////////////
 
 	/**
+     * This method is rewritten to handle competing situation. The steps include
+     * following: (1) get a new query instance id (2) create the cache table (3)
+     * insert into queryinstance table
+     * 
      * @return Full table name of the result table
      */
-	private String getNewResultTableName(QueryInstance instance)
+	private String getNewResultTableName(QueryInstance instance, String querySql)
 			throws WdkModelException {
-
-		// populates cache if not already in there
-
-		// TEST
-		// logger.info("Getting new result table of query: " +
-		// instance.getQuery().getFullName());
-
-		// add row to QueryInstance table
+		String resultTableName = null;
+		// get the query instance id
 		Integer queryInstanceId = getQueryInstanceId(instance);
-		if (queryInstanceId == null) {
-			queryInstanceId = insertQueryInstance(instance);
-		}
-
-		String resultTableName = CACHE_TABLE_PREFIX + queryInstanceId;
-		StringBuffer sql = new StringBuffer();
-		sql.append("update " + instanceTableFullName + " set result_table = '"
-				+ resultTableName + "'");
-		sql.append(" where " + COLUMN_QUERY_INSTANCE_ID + " = "
-				+ queryInstanceId.toString());
 		try {
-			// int numRows =
-			SqlUtils.executeUpdate(platform.getDataSource(), sql.toString());
+			if (queryInstanceId == null) {
+				String strID = platform.getNextId(schemaName, instanceTableName);
+				queryInstanceId = Integer.parseInt(strID);
+			}
+
+			resultTableName = CACHE_TABLE_PREFIX + queryInstanceId;
+
 			// write result into result table
 			instance.writeResultToTable(resultTableName, this);
+
+			// insert a record to the QueryInstance table. All needed fields are
+			// composed outside of the method, since the method is globally
+			// synchronized.
+			// The method returns a queryInstanceId, which can be identical (if
+			// a new row is inserted successfully), or different (if a row has
+			// already existed, and the id of that row will be returned)
+			String queryName = instance.getQuery().getFullName();
+			int cached = instance.getIsCacheable() ? 1 : 0;
+			String instanceChecksum = instance.getChecksum();
+			String resultMessage = instance.getResultMessage();
+			queryInstanceId = insertQueryInstance(querySql, queryInstanceId,
+					queryName, cached, resultTableName, instanceChecksum,
+					resultMessage);
+
+			// set the query instance id to the query instance
+			instance.setQueryInstanceId(queryInstanceId);
+
+			return resultTableName;
 		} catch (SQLException e) {
 			// need to roll back
 			rollback(queryInstanceId, resultTableName);
@@ -397,14 +408,10 @@ public class ResultFactory implements Serializable {
 			rollback(queryInstanceId, resultTableName);
 			throw ex;
 		}
-		// update row in QueryInstance table with final timestamp
-		finishQueryInstance(instance);
-
-		return resultTableName;
 	}
 
-	private void rollback(int queryInstanceId,
-			String resultTableName) throws WdkModelException {
+	private void rollback(int queryInstanceId, String resultTableName)
+			throws WdkModelException {
 		DataSource dataSource = platform.getDataSource();
 
 		// drop the cache table, if have; ignore the exception
@@ -449,8 +456,8 @@ public class ResultFactory implements Serializable {
 		// Construct SQL query to retrieve the requested table's name
 		//
 		StringBuffer sqlb = new StringBuffer();
-		sqlb.append("select result_table, result_message from "
-				+ instanceTableFullName + " where ");
+		sqlb.append("select " + COLUMN_QUERY_INSTANCE_ID + ", result_table, "
+				+ "result_message from " + instanceTableFullName + " where ");
 
 		if (instance.getIsCacheable()) {
 			sqlb.append("cached = 1 and end_time IS NOT NULL and ");
@@ -474,7 +481,8 @@ public class ResultFactory implements Serializable {
 
 				instance.setResultMessage(resultMessage);
 			} else {
-				resultTableName = getNewResultTableName(instance);
+				resultTableName = getNewResultTableName(instance,
+						sqlb.toString());
 			}
 			resultTableFullName = platform.getTableFullName(schemaName,
 					resultTableName);
@@ -497,49 +505,58 @@ public class ResultFactory implements Serializable {
 	}
 
 	/**
-     * Record in the database that a query has been started (by entering an
-     * appropriate row into the Queries table.) Returns the (automatically
-     * generated) name of a table to which the query results should be written.
+     * The method does: - see if there is a row in QueryInstance for this query
+     * instance - if so, use the cache_table from that row and throw the one we
+     * made away - if not, insert a row
      * 
-     * @return Full table name of result table
+     * @return the query instance id to be used by the query instance object
      */
-	private Integer insertQueryInstance(QueryInstance instance)
+	private synchronized Integer insertQueryInstance(String querySql,
+			Integer queryInstanceId, String queryName, int cached,
+			String cacheTable, String instanceChecksum, String resultMessage)
 			throws WdkModelException {
-
-		String nextID = null;
-		try {
-			nextID = platform.getNextId(schemaName, instanceTableName);
-
-		} catch (SQLException e) {
-			logger.error("Got an SQLException");
-			throw new WdkModelException(e);
-		}
-		if (nextID == null) {
-			nextID = "1";
-		}
-
-		// format values
-		String queryName = "'" + instance.getQuery().getFullName() + "'";
-		int cached = instance.getIsCacheable() ? 1 : 0;
-		String checksum = "'" + instance.getChecksum() + "'";
 		String datefunc = platform.getCurrentDateFunction();
 
 		// format insert statement
-		StringBuffer sqlb = new StringBuffer();
-		sqlb.append("insert into " + instanceTableFullName + " ("
-				+ COLUMN_QUERY_INSTANCE_ID
-				+ ", query_name, cached, start_time, query_checksum) values ("
-				+ nextID + ", " + queryName + ", " + cached + ", " + datefunc
-				+ ", " + checksum + ")");
-
+		DataSource dataSource = platform.getDataSource();
+		ResultSet rsSelect = null;
+		PreparedStatement psInsert = null;
 		try {
-			SqlUtils.executeUpdate(platform.getDataSource(), sqlb.toString());
+			// check if the row exists, reusing the query string composed before
+			rsSelect = SqlUtils.getResultSet(dataSource, querySql);
+			if (rsSelect.next()) {
+				// the record exists, a competing thread did that; roll back
+				rollback(queryInstanceId, cacheTable);
 
-			Integer finalId = new Integer(nextID);
-			instance.setQueryInstanceId(finalId);
-			return finalId;
+				// now use the existing instance id
+				queryInstanceId = rsSelect.getInt(COLUMN_QUERY_INSTANCE_ID);
+			} else {
+				// the record doesn't exist, no competitions - insert the row
+				psInsert = SqlUtils.getPreparedStatement(dataSource, "insert "
+						+ "into " + instanceTableFullName + " ("
+						+ COLUMN_QUERY_INSTANCE_ID + ", query_name, cached, "
+						+ "result_table, start_time, end_time, query_checksum,"
+						+ " result_message) values (?, ?, ?, ?, " + datefunc
+						+ ", " + datefunc + ", ?, ?)");
+				psInsert.setInt(1, queryInstanceId);
+				psInsert.setString(2, queryName);
+				psInsert.setInt(3, cached);
+				psInsert.setString(4, cacheTable);
+				psInsert.setString(5, instanceChecksum);
+				psInsert.setString(6, resultMessage);
+				psInsert.execute();
+			}
+			// return the queryInstanceId;
+			return queryInstanceId;
 		} catch (SQLException e) {
 			throw new WdkModelException(e);
+		} finally {
+			try {
+				SqlUtils.closeResultSet(rsSelect);
+				SqlUtils.closeStatement(psInsert);
+			} catch (SQLException ex) {
+				throw new WdkModelException(ex);
+			}
 		}
 	}
 
@@ -550,36 +567,36 @@ public class ResultFactory implements Serializable {
      * 
      * @return Whether the operation succeeded.
      */
-	private boolean finishQueryInstance(QueryInstance instance)
-			throws WdkModelException {
-		PreparedStatement psClob = null;
-		StringBuffer sqlb = new StringBuffer();
-		sqlb.append("update " + instanceTableFullName + " set ");
-		sqlb.append("end_time = " + platform.getCurrentDateFunction() + ", ");
-		sqlb.append("result_message = ? ");
-		sqlb.append(" where ");
-		sqlb.append(instanceWhereClause(instance));
-		boolean ok = false;
-
-		try {
-			// now update the clob data
-			String message = instance.getResultMessage();
-			if (message == null) message = "No Result found.";
-
-			psClob = SqlUtils.getPreparedStatement(platform.getDataSource(),
-					sqlb.toString());
-			ok = (platform.updateClobData(psClob, 1, message, true) == 1);
-		} catch (SQLException e) {
-			throw new WdkModelException(e);
-		} finally {
-			if (psClob != null) try {
-				SqlUtils.closeStatement(psClob);
-			} catch (SQLException ex) {
-				throw new WdkModelException(ex);
-			}
-		}
-		return ok;
-	}
+	// private boolean finishQueryInstance(QueryInstance instance)
+	// throws WdkModelException {
+	// PreparedStatement psClob = null;
+	// StringBuffer sqlb = new StringBuffer();
+	// sqlb.append("update " + instanceTableFullName + " set ");
+	// sqlb.append("end_time = " + platform.getCurrentDateFunction() + ", ");
+	// sqlb.append("result_message = ? ");
+	// sqlb.append(" where ");
+	// sqlb.append(instanceWhereClause(instance));
+	// boolean ok = false;
+	//
+	// try {
+	// // now update the clob data
+	// String message = instance.getResultMessage();
+	// if (message == null) message = "No Result found.";
+	//
+	// psClob = SqlUtils.getPreparedStatement(platform.getDataSource(),
+	// sqlb.toString());
+	// ok = (platform.updateClobData(psClob, 1, message, true) == 1);
+	// } catch (SQLException e) {
+	// throw new WdkModelException(e);
+	// } finally {
+	// if (psClob != null) try {
+	// SqlUtils.closeStatement(psClob);
+	// } catch (SQLException ex) {
+	// throw new WdkModelException(ex);
+	// }
+	// }
+	// return ok;
+	// }
 
 	/**
      * Create a "where" clause ("where" and/or "and" not included) that selects
@@ -635,6 +652,16 @@ public class ResultFactory implements Serializable {
 		return rs;
 	}
 
+	/**
+     * The method get the id of the given query instance. If the query instance
+     * doesn't have the id, it will select the id from the QueryInstance table;
+     * if there is no record in that table to match with the given query
+     * instance, a null is returned.
+     * 
+     * @param instance
+     * @return
+     * @throws WdkModelException
+     */
 	private Integer getQueryInstanceId(QueryInstance instance)
 			throws WdkModelException {
 
