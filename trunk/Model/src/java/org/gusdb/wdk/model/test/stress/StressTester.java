@@ -242,6 +242,9 @@ public class StressTester {
         questionCache.clear();
         QuestionSet[ ] qsets = wdkModel.getAllQuestionSets();
         for ( QuestionSet qset : qsets ) {
+            // skip the internal questions
+            if (qset.getInternal()) continue;
+            
             Question[ ] questions = qset.getQuestions();
             for ( Question question : questions ) {
                 // create question cache, and create param stub, and load the
