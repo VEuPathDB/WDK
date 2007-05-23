@@ -120,6 +120,12 @@ public class StressTemplater {
         // get questions
         QuestionSet[ ] qsets = wdkModel.getAllQuestionSets();
         for ( QuestionSet qset : qsets ) {
+            // ignore the internal questions
+            if (qset.getInternal()) {
+                logger.info( "Skip question set: " + qset.getName() );
+                continue;
+            }
+            
             Question[ ] questions = qset.getQuestions();
             for ( Question question : questions ) {
                 String questionName = question.getFullName();
