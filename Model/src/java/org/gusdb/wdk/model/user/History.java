@@ -78,9 +78,13 @@ public class History {
      */
     public String getCustomName() {
         String name = customName;
-        if ( name == null || name.length() == 0 )
-            name = ( isBoolean ) ? booleanExpression
-                    : answer.getQuestion().getDisplayName();
+        if ( name == null || name.length() == 0 ) {
+            if ( isBoolean ) name = booleanExpression;
+            else if ( answer != null ) {
+                name = answer.getQuestion().getDisplayName();
+            }
+        }
+        if ( name == null ) name = questionName;
         if ( name != null ) {
             // remove script injections
             name = name.replaceAll( "<.+?>", " " );
@@ -312,10 +316,11 @@ public class History {
             if ( displayName == null ) displayName = paramName;
             paramNames.put( paramName, displayName );
         }
+        
         return paramNames;
     }
     
-    void setQuestionName(String questionName) {
+    void setQuestionName( String questionName ) {
         this.questionName = questionName;
     }
     

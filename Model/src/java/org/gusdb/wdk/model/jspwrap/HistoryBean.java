@@ -189,7 +189,7 @@ public class HistoryBean {
     
     public String getTruncatedName() {
         String name = history.getCustomName();
-        if ( name.length() > nameTruncateTo )
+        if (name != null && name.length() > nameTruncateTo )
             name = name.substring( 0, nameTruncateTo ) + "...";
         return name;
     }
@@ -252,5 +252,13 @@ public class HistoryBean {
      */
     public String getQuestionName() {
         return history.getQuestionName();
+    }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.user.History#isValid()
+     */
+    public boolean isValid() {
+        return history.isValid();
     }
 }

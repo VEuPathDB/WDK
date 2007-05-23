@@ -222,4 +222,22 @@ public class WdkModelBean  {
     public EnumParamBean getBooleanOps() {
         return new EnumParamBean(model.getBooleanOps());
     }
+
+    /**
+     * @param paramName
+     * @return
+     * @see org.gusdb.wdk.model.WdkModel#getParamDisplayName(java.lang.String)
+     */
+    public String getParamDisplayName( String paramName ) {
+        return model.getParamDisplayName( paramName );
+    }
+
+    /**
+     * @param questionFullName
+     * @return
+     * @see org.gusdb.wdk.model.WdkModel#getQuestionDisplayName(java.lang.String)
+     */
+    public String getQuestionDisplayName( String questionFullName ) {
+        return model.getQuestionDisplayName( questionFullName );
+    }
 }
