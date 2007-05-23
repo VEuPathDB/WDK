@@ -145,7 +145,7 @@ public abstract class AbstractEnumParam extends Param {
      */
     @Override
     public Object decompressValue( String value ) throws WdkModelException {
-        logger.info( "decompressing: '" + value + "'" );
+        //logger.info( "decompressing: '" + value + "'" );
         
         // check if the value is compressed; that is, if it has a compression
         // prefix

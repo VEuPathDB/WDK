@@ -5,162 +5,58 @@
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
 <%@ taglib prefix="nested" uri="http://jakarta.apache.org/struts/tags-nested" %>
 
-<!-- get wdkAnswer from requestScope -->
-<c:set value="${requestScope.wdkAnswer}" var="wdkAnswer"/>
-
-<c:set value="${param['user_answer_id']}" var="uaId"/>
-<c:set value="${requestScore.userAnswerId}" var="altUaId"/>
-
+<%-- 
+   there are four attributes set by the showSummary action:
+   - questionDisplayName: the display name of the question; if the question doesn't
+     exist in the current model, the question's full name will be used
+   - customName: the custom name for this history; if the custom name doesn't exist, 
+     corresponding question's display name will be used; if no corresponding question,
+     the questionFullName will be used; 
+   - params: a map of paramName-paramValue tuples;
+   - paramNames: a map of paramName-paramDisplayName tuples;
+--%>
+     
 <!-- display page header with wdkAnswer's recordClass's type as banner -->
-<c:set value="${wdkAnswer.recordClass.type}" var="wdkAnswerType"/>
-<site:header banner="${wdkAnswerType} Results" />
+<site:header banner="Isolated query - ${questionDisplayName}" />
 
 <!-- display question and param values and result size for wdkAnswer -->
 <table>
-
-<c:choose>
-  <c:when test="${wdkAnswer.isCombinedAnswer}">
-    <!-- combined answer from history boolean expression -->
-    <tr><td valign="top" align="left"><b>Combined Answer:</b></td>
-        <td valign="top" align="left">${wdkAnswer.userAnswerName}</td></tr>
-  </c:when>
-  <c:otherwise>
-
-    <c:choose>
-      <c:when test="${wdkAnswer.isBoolean}">
-      <!-- boolean question -->
-
-        <tr><td valign="top" align="left"><b>Expanded Question:</b></td>
-            <td valign="top" align="left">
-              <nested:root name="wdkAnswer">
-                <jsp:include page="/WEB-INF/includes/bqShowNode.jsp"/>
-              </nested:root>
-            </td></tr>
-      </c:when>
-      <c:otherwise>
-        <!-- simple question -->
-        <c:set value="${wdkAnswer.params}" var="params"/>
-        <c:set value="${wdkAnswer.question.displayName}" var="wdkQuestionName"/>
-        <tr><td valign="top" align="left"><b>Query:</b></td>
-                   <td colspan="3" valign="top" align="left">${wdkQuestionName}</td></tr>
-               <tr><td valign="top" align="left"><b>Parameters:</b></td>
-                   <td valign="top" align="left">
-                     <table>
-                       <c:forEach items="${params}" var="p">
-                         <tr><td align="right">${p.key}:</td><td><i>${p.value}</i></td></tr> 
-                       </c:forEach>
-                     </table></td></tr>
-      </c:otherwise>
-    </c:choose>
-
-  </c:otherwise>
-</c:choose>
-
-       <tr><td valign="top" align="left"><b>Results:</b></td>
-           <td valign="top" align="left">
-               ${wdkAnswer.resultSize}
-               <c:if test="${wdkAnswer.resultSize > 0}">
-               (showing ${wdk_paging_start} to ${wdk_paging_end})</c:if></td></tr>
-       <tr><td>&nbsp;</td>
-           <td align="left">
-               <c:choose>
-                   <c:when test="${uaId == null}">
-                       <a href="downloadConfig.jsp?user_answer_id=${altUaId}">
-                   </c:when>
-                   <c:otherwise>
-                       <a href="downloadHistoryAnswer.do?user_answer_id=${uaId}">
-                   </c:otherwise>
-               </c:choose>
-               Download a report of this result</a>
-           </td></tr>
+    <tr>
+        <td align="right" nowrap><b>Query :</b></td>
+        <td>${questionDisplayName}</td>
+    </tr>
+    <tr>
+        <td align="right" valign="top" nowrap><b>Custom Name :</b></td>
+        <td>${customName}</td>
+    </tr>
+    <tr>
+        <td align="right" valign="top" nowrap><b>Parameters: </b></td>
+        <td>
+            <table border="0" cellspacing="0" cellpadding="0">
+                <c:forEach items="${params}" var="item">
+                    <c:set var="pName" value="${item.key}"/>
+                    <c:set var="pValue" value="${item.value}"/>
+                    <c:set var="pDisplay" value="${paramNames[pName]}"/>
+                    <tr>
+                        <td align="right" valign="top" nowrap class="medium"><b><i>${pDisplay}</i><b></td>
+                        <td valign="top" class="medium">&nbsp;:&nbsp;</td>
+                        <td class="medium">${pValue}</td>
+                    </tr>
+                </c:forEach>
+            </table>
+        </td>
+    </tr>
 </table>
-
 
 <hr>
 
-<!-- handle empty result set situation -->
-<c:choose>
-  <c:when test='${wdkAnswer.resultSize == 0}'>
-    No results for your query
-  </c:when>
-  <c:otherwise>
+<p>Your query from previous versions of PlasmoDB is no longer compatible 
+with the current version of PlasmoDB.  In most cases, you will be able 
+to work around the incompatibility by finding an equivalent query in this 
+version, and running it with similar parameter values.</p>
+<p>Go and <a href="<c:url value="queries_tools.jsp" />">find an equivalent query</a>.</p>
+<p>If you have problems, <a href="<c:url value="help.jsp" />">drop us a line</a>.</p>
 
-<!-- pager -->
-<pg:pager isOffset="true"
-          scope="request"
-          items="${wdk_paging_total}"
-          maxItems="${wdk_paging_total}"
-          url="${wdk_paging_url}"
-          maxPageItems="${wdk_paging_pageSize}"
-          export="currentPageNumber=pageNumber">
-  <c:forEach var="paramName" items="${wdk_paging_params}">
-    <pg:param name="${paramName}" id="pager" />
-  </c:forEach>
-  <!-- pager on top -->
-  <wdk:pager /> 
-
-<!-- content of current page -->
-<table border="0" cellpadding="2" cellspacing="0">
-<tr class="headerRow">
-
-<c:forEach items="${wdkAnswer.summaryAttributes}" var="sumAttrib">
-    <th align="left">${sumAttrib.displayName}</th>
- </c:forEach>
-
-<c:set var="i" value="0"/>
-<c:forEach items="${wdkAnswer.records}" var="record">
-
-<c:choose>
-  <c:when test="${i % 2 == 0}"><tr class="rowLight"></c:when>
-  <c:otherwise><tr class="rowMedium"></c:otherwise>
-</c:choose>
-
-  <c:set var="j" value="0"/>
-
-  <c:forEach items="${wdkAnswer.summaryAttributeNames}" var="sumAttrName">
-  <c:set value="${record.summaryAttributes[sumAttrName]}" var="recAttr"/>
- 
-    <td>
-    <c:set var="recNam" value="${record.recordClass.fullName}"/>
-    <c:set var="fieldVal" value="${recAttr.briefValue}"/>
-    <c:choose>
-      <c:when test="${j == 0}">
-
-	<!-- modified by Jerric -->
-      <!-- <a href="showRecord.do?name=${recNam}&id=${record.primaryKey}">${fieldVal}</a> -->
-	<c:set value="${record.primaryKey}" var="primaryKey"/>
-        <a href="showRecord.do?name=${recNam}&project_id=${primaryKey.projectId}&primary_key=${primaryKey.recordId}">${fieldVal}</a>
-      </c:when>
-      <c:otherwise>
-
-        <!-- need to know if fieldVal should be hot linked -->
-        <c:choose>
-          <c:when test="${fieldVal.class.name eq 'org.gusdb.wdk.model.LinkValue'}">
-            <a href="${fieldVal.url}">${fieldVal.visible}</a>
-          </c:when>
-          <c:otherwise>
-            ${fieldVal}
-          </c:otherwise>
-        </c:choose>
-
-      </c:otherwise>
-    </c:choose>
-    </td>
-    <c:set var="j" value="${j+1}"/>
-
-  </c:forEach>
-</tr>
-<c:set var="i" value="${i+1}"/>
-</c:forEach>
-
-</tr>
-</table>
-
-  <!-- pager at bottom -->
-  <wdk:pager />
-</pg:pager>
-
-  </c:otherwise>
-</c:choose>
+<!-- pager at bottom -->
 
 <site:footer/>
