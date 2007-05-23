@@ -141,8 +141,8 @@ public class Migrator1_12To1_13 extends Migrator {
 
             while (rsHistory.next()) {
                 int userId = rsHistory.getInt("user_id");
-                String projectId = rsHistory.getString("history_id");
-                int historyId = rsHistory.getInt("user_id");
+                String projectId = rsHistory.getString("project_id");
+                int historyId = rsHistory.getInt("history_id");
                 String params = platform.getClobData(rsHistory, "params");
 
                 params = params.replaceAll("--WDK_PARAM_DIVIDER--",

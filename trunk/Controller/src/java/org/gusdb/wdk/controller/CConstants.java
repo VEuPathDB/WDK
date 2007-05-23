@@ -13,6 +13,7 @@ public class CConstants {
     public static final String WDK_CUSTOM_QUESTIONSETS_PAGE = "customQuestionSets.jsp";
     public static final String WDK_CUSTOM_QUESTION_PAGE = "customQuestion.jsp";
     public static final String WDK_CUSTOM_SUMMARY_PAGE = "customSummary.jsp";
+    public static final String WDK_CUSTOM_SUMMARY_ERROR_PAGE = "customSummaryError.jsp";
     public static final String WDK_CUSTOM_RECORD_PAGE = "customRecord.jsp";
     public static final String WDK_CUSTOM_HISTORY_PAGE = "customQueryHistory.jsp";
     public static final String WDK_CUSTOM_REGISTER_PAGE = "customRegister.jsp";

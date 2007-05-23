@@ -1,6 +1,8 @@
 package org.gusdb.wdk.controller.action;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
@@ -74,7 +76,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
                     wdkQuestion = getQuestionByFullName( qFullName );
             }
             if ( wdkQuestion == null ) {
-                return showError( mapping, request, response );
+                return showError( wdkModel, wdkUser, mapping, request, response );
             }
             String questionName = wdkQuestion.getFullName();
             
@@ -108,16 +110,22 @@ public class ShowSummaryAction extends ShowQuestionAction {
                         sortingAttributes, summaryAttributes );
             } catch ( WdkModelException ex ) {
                 logger.error( ex );
-                return showError( mapping, request, response );
+                return showError( wdkModel, wdkUser, mapping, request, response );
             } catch ( WdkUserException ex ) {
                 logger.error( ex );
-                return showError( mapping, request, response );
+                return showError( wdkModel, wdkUser, mapping, request, response );
             }
             
             // create history
             history = wdkUser.createHistory( wdkAnswer );
         } else {
             history = wdkUser.getHistory( Integer.parseInt( strHistId ) );
+            
+            // check if history is still valid
+            if ( !history.isValid() ) {
+                return showError( wdkModel, wdkUser, mapping, request, response );
+            }
+            
             wdkAnswer = history.getAnswer();
             // update the estimate size, in case the database has changed
             history.setEstimateSize( wdkAnswer.getResultSize() );
@@ -326,31 +334,70 @@ public class ShowSummaryAction extends ShowQuestionAction {
         return wdkAnswer;
     }
     
-    private ActionForward showError( ActionMapping mapping,
-            HttpServletRequest request, HttpServletResponse response ) {
+    private ActionForward showError( WdkModelBean wdkModel, UserBean wdkUser,
+            ActionMapping mapping, HttpServletRequest request,
+            HttpServletResponse response ) throws WdkModelException,
+            WdkUserException {
+        // TEST
+        logger.info( "Show the details of an invalid history/question" );
+        
         String qFullName = request.getParameter( CConstants.QUESTION_FULLNAME_PARAM );
+        Map< String, Object > params;
+        Map< String, String > paramNames;
+        String customName;
+        if ( qFullName == null || qFullName.length() == 0 ) {
+            String strHistId = request.getParameter( CConstants.WDK_HISTORY_ID_KEY );
+            int historyId = Integer.parseInt( strHistId );
+            HistoryBean history = wdkUser.getHistory( historyId );
+            params = history.getParams();
+            paramNames = history.getParamNames();
+            qFullName = history.getQuestionName();
+            customName = history.getCustomName();
+        } else {
+            params = new LinkedHashMap< String, Object >();
+            paramNames = new LinkedHashMap< String, String >();
+            customName = qFullName;
+            
+            // get params from request
+            Map parameters = request.getParameterMap();
+            for ( Object object : parameters.keySet() ) {
+                try {
+                    String pName;
+                    pName = URLDecoder.decode( ( String ) object, "utf-8" );
+                    String pValue = URLDecoder.decode(
+                            ( String ) parameters.get( object ), "utf-8" );
+                    if ( pName.startsWith( "myProp(" ) ) {
+                        pName = pName.substring( 7, pName.length() - 1 ).trim();
+                        params.put( pName, pValue );
+                        
+                        String displayName = wdkModel.getParamDisplayName( pName );
+                        if ( displayName == null ) displayName = pName;
+                        paramNames.put( pName, displayName );
+                    }
+                } catch ( UnsupportedEncodingException ex ) {
+                    throw new WdkModelException( ex );
+                }
+            }
+        }
+        String qDisplayName = wdkModel.getQuestionDisplayName( qFullName );
+        if (qDisplayName == null) qDisplayName = qFullName;
+        
+        request.setAttribute( "questionDisplayName", qDisplayName );
+        request.setAttribute( "customName", customName );
+        request.setAttribute( "params", params );
+        request.setAttribute( "paramNames", paramNames );
         
         ServletContext svltCtx = getServlet().getServletContext();
         String customViewDir = ( String ) svltCtx.getAttribute( CConstants.WDK_CUSTOMVIEWDIR_KEY );
-        String customViewFile1 = customViewDir + File.separator + qFullName
-                + ".summary.jsp";
-        String customViewFile2 = customViewDir + File.separator
-                + CConstants.WDK_CUSTOM_SUMMARY_PAGE;
+        String customViewFile = customViewDir + File.separator
+                + CConstants.WDK_CUSTOM_SUMMARY_ERROR_PAGE;
         
         String url;
-        if ( ApplicationInitListener.resourceExists( customViewFile1, svltCtx ) ) {
-            url = customViewFile1;
-        } else if ( ApplicationInitListener.resourceExists( customViewFile2,
-                svltCtx ) ) {
-            url = customViewFile2;
+        if ( ApplicationInitListener.resourceExists( customViewFile, svltCtx ) ) {
+            url = customViewFile;
         } else {
             ActionForward forward = mapping.findForward( CConstants.SHOW_ERROR_MAPKEY );
             url = forward.getPath();
-        }
-        Map params = request.getParameterMap();
-        for (Object key : params.keySet()) {
-            Object value = params.get( key );
-            request.setAttribute( key.toString(), value.toString() );
         }
         
         ActionForward forward = new ActionForward( url );
