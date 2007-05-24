@@ -364,8 +364,21 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 try {
                     String pName;
                     pName = URLDecoder.decode( ( String ) object, "utf-8" );
-                    String pValue = URLDecoder.decode(
-                            ( String ) parameters.get( object ), "utf-8" );
+                    Object objValue = parameters.get( object );
+                    String pValue = null;
+                    if ( objValue != null ) {
+                        pValue = objValue.toString();
+                        if ( objValue instanceof String[ ] ) {
+                            StringBuffer sb = new StringBuffer();
+                            String[ ] array = ( String[ ] ) objValue;
+                            for ( String v : array ) {
+                                if ( sb.length() > 0 ) sb.append( ", " );
+                                sb.append( v );
+                            }
+                            pValue = sb.toString();
+                        }
+                        pValue = URLDecoder.decode( pValue, "utf-8" );
+                    }
                     if ( pName.startsWith( "myProp(" ) ) {
                         pName = pName.substring( 7, pName.length() - 1 ).trim();
                         params.put( pName, pValue );
@@ -380,7 +393,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             }
         }
         String qDisplayName = wdkModel.getQuestionDisplayName( qFullName );
-        if (qDisplayName == null) qDisplayName = qFullName;
+        if ( qDisplayName == null ) qDisplayName = qFullName;
         
         request.setAttribute( "questionDisplayName", qDisplayName );
         request.setAttribute( "customName", customName );
