@@ -15,6 +15,8 @@
    - params: a map of paramName-paramValue tuples;
    - paramNames: a map of paramName-paramDisplayName tuples;
 --%>
+
+<c:set var="wdkModel" value="${applicationScope.wdkModel}"/>
      
 <!-- display page header with wdkAnswer's recordClass's type as banner -->
 <site:header banner="Query cannot be executed - ${questionDisplayName}" />
@@ -50,10 +52,15 @@
 
 <hr>
 
-<p>Your query from previous versions of PlasmoDB is no longer compatible 
-with the current version of PlasmoDB.  In most cases, you will be able 
-to work around the incompatibility by finding an equivalent query in this 
-version, and running it with similar parameter values.</p>
+<p>  There are several possible reasons to cause this failure:</p>
+<ul>
+<li>You have entered invalid value(s) for the parameter(s) of the question. Please click 
+    the <b>BACK</b> button in your browser, and try other values.</li>
+<li>Your query may be come from previous versions of ${wdkModel.displayName} and is no longer compatible 
+    with the current version of ${wdkModel.displayName}.  In most cases, you will be able 
+    to work around the incompatibility by finding an equivalent query in this 
+    version, and running it with similar parameter values.</li>
+</ul>
 <p>Go and <a href="<c:url value="queries_tools.jsp" />">find an equivalent query</a>.</p>
 <p>If you have problems, <a href="<c:url value="help.jsp" />">drop us a line</a>.</p>
 
