@@ -35,13 +35,21 @@ public class History {
     private String booleanExpression;
     private boolean isDeleted;
     private Boolean isDepended;
-    
-    private boolean isValid = true;
+
+	private boolean isValid = true;
     private String version;
     private Map< String, Object > params;
     private String questionName;
     
-    History( UserFactory factory, User user, int historyId ) {
+    
+    /**
+     * Create a new History object.
+     * 
+     * @param factory The UserFactory that was used to load this History.
+     * @param user The user this History is for.
+     * @param historyId The id to be assigned to this History.
+     */
+    History(UserFactory factory, User user, int historyId) {
         this.factory = factory;
         this.user = user;
         this.historyId = historyId;
@@ -193,25 +201,50 @@ public class History {
     public String getChecksum() throws WdkModelException {
         return answer.getIdsQueryInstance().getChecksum();
     }
-    
+
+    /**
+     * @return The RecordClass name.
+     */
     public String getDataType() {
         return answer.getQuestion().getRecordClass().getFullName();
     }
-    
+
+    /**
+     * Update the History last used time in the database.
+     * @throws WdkUserException If the user doesn't exist.
+     */
     public void update() throws WdkUserException {
         factory.updateHistory( user, this, true );
     }
-    
-    public void update( boolean updateTime ) throws WdkUserException {
-        factory.updateHistory( user, this, updateTime );
+
+    /**
+     * Update the History.
+     * @param updateTime Update the time or not.
+     * @throws WdkUserException If the user cannot be associated with the history.
+     */
+    public void update(boolean updateTime) throws WdkUserException {
+        factory.updateHistory(user, this, updateTime);
     }
-    
+
+    /**
+     * Is this History object needed for other Histories.
+     * @return True if this History object is need for others.
+     * @throws WdkUserException If the there is a problem associating the user.
+     * @throws WdkModelException If there is a problem with History objects.
+     */
     public boolean isDepended() throws WdkUserException, WdkModelException {
         if ( isDepended == null ) computeDependencies( user.getHistories() );
         return isDepended;
     }
-    
-    void computeDependencies( History[ ] histories ) throws WdkModelException {
+
+    /**
+     * Determine whether this History object is used in any other
+     * History objects.
+     * 
+     * @param histories A list of the user History objects.
+     * @throws WdkModelException If a problem with the History objects exist.
+     */
+    void computeDependencies(History[] histories) throws WdkModelException {
         isDepended = false;
         for ( History history : histories ) {
             if ( history.historyId == this.historyId ) continue;
@@ -252,13 +285,18 @@ public class History {
     }
     
     /**
-     * @return Returns the isDeleted.
+     * This method is used when the history is requested deleted by
+     * the user but cannot be because of a dependency.
+     * @return Was the history requested deleted by the user.
      */
     public boolean isDeleted() {
         return isDeleted;
     }
     
     /**
+     * This method will set that this History was to be removed
+     * from the database but could not be at this time because of
+     * a dependency.
      * @param isDeleted
      *            The isDeleted to set.
      */
@@ -266,6 +304,13 @@ public class History {
         this.isDeleted = isDeleted;
     }
     
+    /**
+     * Get the name of the table the writeResultToTableName of the
+     * QueryInstance wrote the cache to.
+     * @return The name of the database table that was written to.
+     * @throws WdkModelException If problem exists at some point in the model
+     * 		   getting this value.
+     */
     public String getCacheFullTable() throws WdkModelException {
         return answer.getIdsQueryInstance().getResultAsTableName();
     }

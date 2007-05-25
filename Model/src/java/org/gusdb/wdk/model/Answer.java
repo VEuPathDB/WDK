@@ -162,10 +162,18 @@ public class Answer {
         return this.question;
     }
     
+    /**
+     * @return The number of available RecordInstances.
+     */
     public int getPageSize() {
         return pageRecordInstances == null ? 0 : pageRecordInstances.length;
     }
     
+    /**
+     * Does the calculation to determine the number of pages in a result.
+     * @return The number of pages in a result
+     * @throws WdkModelException If the results size cannot be determined.
+     */
     public int getPageCount() throws WdkModelException {
         int total = ( resultSize == null ) ? getResultSize() : resultSize;
         int pageSize = endRecordInstanceI - startRecordInstanceI + 1;
@@ -176,6 +184,13 @@ public class Answer {
         return pageCount;
     }
     
+    /**
+     * Goes the PrimaryKey query and determines how many rows were returned
+     * by that Query.
+     * 
+     * @return The number of results in the entire Query.
+     * @throws WdkModelException A problem with the ResultList occurs.
+     */
     public int getResultSize() throws WdkModelException {
         if ( resultSize == null || resultSizesByProject == null ) {
             resultSizesByProject = new LinkedHashMap< String, Integer >();
@@ -201,6 +216,11 @@ public class Answer {
         return resultSize.intValue();
     }
     
+    /**
+     * Return the result size split up based on the project id.
+     * @return A map of projet id and result size mappings.
+     * @throws WdkModelException If the result list reading has a problem.
+     */
     public Map< String, Integer > getResultSizesByProject()
             throws WdkModelException {
         // fill the result size map grouped by project id
@@ -225,6 +245,9 @@ public class Answer {
         
     }
     
+    /**
+     * @return True if there are dynamic attributes.
+     */
     public boolean isDynamic() {
         return getQuestion().isDynamic();
     }
@@ -251,6 +274,9 @@ public class Answer {
         return displayParamsMap;
     }
     
+    /**
+     * @return True if this a combination of other queries from the user history.
+     */
     public boolean getIsBoolean() {
         return this.isBoolean;
     }
@@ -259,18 +285,31 @@ public class Answer {
     // all the attributes query instances. this returns only the last
     // one made, which is bogus. it is used by wdkSummary --showQuery
     // which itself should be --showQueries
+    /**
+     * @return The the Attribute Query Instance.
+     */
     public QueryInstance getAttributesQueryInstance() {
         return attributesQueryInstance;
     }
     
+    /**
+     * @return QueryInstance that will get the primary keys for this Answer.
+     */
     public QueryInstance getIdsQueryInstance() {
         return idsQueryInstance;
     }
     
+    /**
+     * @return A Map of the attribute name with the attribute itself as the object.
+     */
     public Map< String, AttributeField > getAttributeFields() {
         return question.getAttributeFields();
     }
     
+    /**
+     * @return A map of the attribute name with the attribute itself that the
+     *         reporter will use to include values in a text report.
+     */
     public Map< String, AttributeField > getReportMakerAttributeFields() {
         return question.getReportMakerAttributeFields();
     }
@@ -279,6 +318,13 @@ public class Answer {
         return question.getReportMakerTableFields();
     }
     
+    /**
+     * Determine whether and Attribute is actually going to be in the
+     * summary for an Answer.
+     * 
+     * @param attName The name of the attribute.
+     * @return True if the Attribute is to be in the summary.
+     */
     public boolean isSummaryAttribute( String attName ) {
         return question.isSummaryAttribute( attName );
     }
@@ -291,6 +337,14 @@ public class Answer {
     }
     
     // Returns null if we have already returned the last instance
+    /**
+     * Not real sure why an Iterator was not given, but this
+     * method will act like an iterator.next() to give you the
+     * next RecordInstance if one exists.
+     * 
+     * @return The next RecordInstance or null if no more are available
+     * @throws WdkModelException If there exists a problem getting RecordInstances.
+     */
     public RecordInstance getNextRecordInstance() throws WdkModelException {
         try {
             initPageRecordInstances();
@@ -311,6 +365,13 @@ public class Answer {
         }
     }
     
+    /**
+     * Like the iterator.hasNext()
+     * 
+     * @return True if there are more RecordInstances available from
+     * 		   getNextRecordInstance().
+     * @throws WdkModelException If there is a problem getting RecordInstances.
+     */
     public boolean hasMoreRecordInstances() throws WdkModelException {
         try {
             initPageRecordInstances();
@@ -327,6 +388,11 @@ public class Answer {
         }
     }
     
+    /**
+     * @return The QueryInstance Id.
+     * @throws WdkModelException Thrown if no QueryInstance Id if the
+     * 		   QueryInstance does not have result table.
+     */
     public Integer getDatasetId() throws WdkModelException {
         Integer datasetId = idsQueryInstance.getQueryInstanceId();
         if ( datasetId == null ) idsQueryInstance.getResultAsTableName();
@@ -476,6 +542,8 @@ public class Answer {
      * Integrate into the page's RecordInstances the attribute values from a
      * particular attributes query. The attributes query result includes only
      * rows for this page.
+     * 
+     * This shouldn't really be done here it serves no useful purpose to do it this way.
      */
     void integrateAttributesQueryResult( QueryInstance attributesQueryInstance )
             throws WdkModelException {
@@ -551,6 +619,17 @@ public class Answer {
         attrQueryResultList.close();
     }
     
+    /**
+     * Used to set the value of a ColumnAttribute in a RecordInstance.
+     * 
+     * @param recordInstance The RecordInstance to fill in.
+     * @param attributesQueryInstance The AttributesQuery to get the value from.
+     * @param isDynamic Doesn't really do much
+     * @param recordIdColumnName The primary key column name.
+     * @param recordProjectColumnName The project key column name.
+     * @param attrQueryResultList The ResultList of the AttributeQuery.
+     * @throws WdkModelException If a problem occurs settin the Attribute value.
+     */
     private void setColumnValues( RecordInstance recordInstance,
             QueryInstance attributesQueryInstance, boolean isDynamic,
             String recordIdColumnName, String recordProjectColumnName,
@@ -573,6 +652,10 @@ public class Answer {
         }
     }
     
+    /**
+     * @return A String[] of the primary key and project key in that order.
+     * @see org.gusdb.wdk.model.Answer.findPrimaryKeyColumnNames(Query) 
+     */
     public String[ ] findPrimaryKeyColumnNames() {
         String[ ] names = findPrimaryKeyColumnNames( idsQueryInstance.getQuery() );
         recordIdColumnName = names[ 0 ];
@@ -659,6 +742,10 @@ public class Answer {
         return sb.toString();
     }
     
+    /**
+     * @return A new Answer instance that will return the same values as this one.
+     * @throws WdkModelException doesn't ever throw this.
+     */
     public Answer newAnswer() throws WdkModelException {
         Answer answer = new Answer( question, idsQueryInstance,
                 startRecordInstanceI, endRecordInstanceI, sortingAttributes );
@@ -667,6 +754,15 @@ public class Answer {
         return answer;
     }
     
+    /**
+     * Create a new Answer as in newAnswer() but change the start and end of
+     * the records.
+     * 
+     * @param startIndex The start of the RecordInstances.
+     * @param endIndex The end of the RecordInstances.
+     * @return A new Answer that will return results like this one.
+     * @throws WdkModelException doesn't ever throw this.
+     */
     public Answer newAnswer( int startIndex, int endIndex )
             throws WdkModelException {
         this.startRecordInstanceI = startIndex;
@@ -860,6 +956,9 @@ public class Answer {
         return attributeOrders;
     }
     
+    /**
+     * @return A List of AttributeFields that can be displayed to the user.
+     */
     public List< AttributeField > getDisplayableAttributes() {
         List< AttributeField > displayAttributes = new ArrayList< AttributeField >();
         Map< String, AttributeField > attributes = question.getAttributeFields();
@@ -898,6 +997,9 @@ public class Answer {
         return displayAttributes;
     }
     
+    /**
+     * @return Get the Attributes to be used in the summary.
+     */
     public Map< String, AttributeField > getSummaryAttributes() {
         if ( summaryAttributes.size() == 0 ) {
             summaryAttributes.putAll( question.getSummaryAttributes() );
@@ -905,6 +1007,10 @@ public class Answer {
         return new LinkedHashMap< String, AttributeField >( summaryAttributes );
     }
     
+    /**
+     * Set the Attributes that are to be used in the Summary for this Answer.
+     * @param attributeNames The name of the Attributes to use as the summary.
+     */
     public void setSumaryAttributes( String[ ] attributeNames ) {
         summaryAttributes.clear();
         for ( String attributeName : attributeNames ) {
@@ -914,6 +1020,11 @@ public class Answer {
         }
     }
     
+    /**
+     * Goes through the ID Query and puts them all into an Array.
+     * @return A String[] of all the IDs for this Query.
+     * @throws WdkModelException If there is a problem reading the IDs.
+     */
     public String[ ] getAllIds() throws WdkModelException {
         List< String > ids = new ArrayList< String >();
         findPrimaryKeyColumnNames();

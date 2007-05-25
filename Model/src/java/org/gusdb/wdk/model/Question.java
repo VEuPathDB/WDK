@@ -161,11 +161,33 @@ public class Question implements Serializable {
     
     // /////////////////////////////////////////////////////////////////////
     
+    /**
+     * Create an <code>Answer</code> that can provide results.
+     * 
+     * @param paramValues Param=Value pairs for the <code>QueryInstance</code>
+     * @param i The start point for the <code>ResultList</code>
+     * @param j The end point for the <code>ResultList</code>
+     * @return A new Answer for an actual instance of a Query.
+     * @throws WdkUserException If a problem occurs with the user.
+     * @throws WdkModelException If a problem occurs with parameters.
+     */
     public Answer makeAnswer( Map< String, Object > paramValues, int i, int j )
             throws WdkUserException, WdkModelException {
         return makeAnswer( paramValues, i, j, sortingAttributeMap );
     }
     
+    /**
+     * Create an <code>Answer</code> that can provide results.
+     * 
+     * @param paramValues Param=Value pairs for the <code>QueryInstance</code>
+     * @param i The start point for the <code>ResultList</code>
+     * @param j The end point for the <code>ResultList</code>
+     * @param sortingAttributes A map of <code>Column</code> on which to sort.
+     * @return An Answer that will provide a <code>ResultList</code>
+     * @throws WdkUserException If a problem with the user exists.
+     * @throws WdkModelException If a problem with the parameters or sorting
+     * 							 attributes occurs.
+     */
     public Answer makeAnswer( Map< String, Object > paramValues, int i, int j,
             Map< String, Boolean > sortingAttributes ) throws WdkUserException,
             WdkModelException {
@@ -176,14 +198,25 @@ public class Question implements Serializable {
         return answer;
     }
     
+    /**
+     * @return The <code>Param</code>s of the Query this
+     * Question references.
+     */
     public Param[ ] getParams() {
         return query.getParams();
     }
     
+    /**
+     * @return The map of <code>Param</code> names and <code>Param</code>s.
+     */
     public Map< String, Param > getParamMap() {
         return query.getParamMap();
     }
     
+    /**
+     * @return Get a Map of the Map of parameter name to params keyed
+     *         the Param group they belong to.
+     */
     public Map< Group, Map< String, Param >> getParamMapByGroups() {
         Param[ ] params = query.getParams();
         Map< Group, Map< String, Param >> paramGroups = new LinkedHashMap< Group, Map< String, Param > >();
@@ -201,6 +234,12 @@ public class Question implements Serializable {
         return paramGroups;
     }
     
+    /**
+     * Creates a Map with keys of Group and objcts of Maps of param names
+     * and Params. The displayType of a Param must match to be included.
+     * @param displayType How the param is displayed.
+     * @return A map of the paramamters keyed by their groups.
+     */
     public Map< Group, Map< String, Param >> getParamMapByGroups(
             String displayType ) {
         Param[ ] params = query.getParams();

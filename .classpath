@@ -6,7 +6,7 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="Controller/lib/java/servlet-api-2.4.jar"/>
 	<classpathentry kind="lib" path="Controller/lib/java/jstl.jar"/>
-	<classpathentry kind="lib" path="Model/lib/java/commons-digester-1.5.jar"/>
+	<classpathentry kind="lib" path="/home/twisted/programs/workspace/WDK/Model/lib/java/commons-digester-1.7.jar"/>
 	<classpathentry kind="lib" path="Model/lib/java/commons-cli-1.0.jar"/>
 	<classpathentry kind="lib" path="Model/lib/java/commons-dbcp-1.1.jar"/>
 	<classpathentry kind="lib" path="Model/lib/java/commons-pool-1.1.jar"/>
@@ -19,7 +19,7 @@
 	<classpathentry kind="lib" path="Model/lib/java/activation.jar"/>
 	<classpathentry kind="lib" path="Model/lib/java/axis.jar"/>
 	<classpathentry kind="lib" path="Model/lib/java/commons-beanutils.jar"/>
-	<classpathentry kind="lib" path="Model/lib/java/commons-collections.jar"/>
+	<classpathentry kind="lib" path="/home/twisted/programs/workspace/WDK/Model/lib/java/commons-collections-3.1.jar"/>
 	<classpathentry kind="lib" path="Model/lib/java/commons-discovery-0.2.jar"/>
 	<classpathentry kind="lib" path="Model/lib/java/commons-logging-api.jar"/>
 	<classpathentry kind="lib" path="Model/lib/java/jaxrpc.jar"/>
@@ -40,5 +40,6 @@
 	<classpathentry kind="lib" path="View/lib/java/standard.jar"/>
 	<classpathentry kind="lib" path="View/lib/java/taglibs-random.jar"/>
 	<classpathentry kind="lib" path="View/lib/java/wraptag.jar"/>
+	<classpathentry kind="lib" path="Model/lib/java/poi-2.5.1-final-20040804.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -324,6 +324,13 @@ public class User {
         this.guest = guest;
     }
     
+    /**
+     * Add an Answer to the user's history in the WDK.
+     * @param answer The answer that was just given to a user query.
+     * @return The History item that was created for this Answer.
+     * @throws WdkUserException If problem with the user occurs.
+     * @throws WdkModelException If a problem getting values from the answer occurs.
+     */
     public History createHistory( Answer answer ) throws WdkUserException,
             WdkModelException {
         return createHistory( answer, null, false );
@@ -487,7 +494,7 @@ public class User {
         return histories;
     }
     
-    public History[ ] getInvalidHistories() throws WdkUserException,
+     public History[ ] getInvalidHistories() throws WdkUserException,
             WdkModelException {
         Map< Integer, History > histories = new LinkedHashMap< Integer, History >();
         userFactory.loadHistories( this, histories );
@@ -497,6 +504,11 @@ public class User {
         return array;
     }
     
+    /**
+     * @return All History objects that a user has in the database.
+     * @throws WdkUserException If the user has a problem.
+     * @throws WdkModelException If we cannot create the History objects.
+     */
     public History[ ] getHistories() throws WdkUserException, WdkModelException {
         Map< Integer, History > map = getHistoriesMap();
         History[ ] array = new History[ map.size() ];
@@ -504,6 +516,11 @@ public class User {
         return array;
     }
     
+    /**
+     * @return A Map of category names to History lists.
+     * @throws WdkUserException A problem with user exists.
+     * @throws WdkModelException We cannot load the History objects.
+     */
     public Map< String, List< History >> getHistoriesByCategory()
             throws WdkUserException, WdkModelException {
         Map< Integer, History > histories = getHistoriesMap();
@@ -545,6 +562,13 @@ public class User {
         return selected;
     }
     
+    /**
+     * Get all the Histories that correspond to the datatype stored with the History.
+     * @param dataType The name of the RecordClass that History represents.
+     * @return All Histories that contain that RecordClass.
+     * @throws WdkUserException If a problem with the user occurs.
+     * @throws WdkModelException If the History objects cannot be created.
+     */
     public History[ ] getHistories( String dataType ) throws WdkUserException,
             WdkModelException {
         Map< Integer, History > map = getHistoriesMap( dataType );
@@ -566,10 +590,19 @@ public class User {
         return userFactory.loadHistory( this, historyId );
     }
     
+    /**
+     * Delete the entire user history for a particular project.
+     * @throws WdkUserException If the user doesn't exist.
+     */
     public void deleteHistories() throws WdkUserException {
         userFactory.deleteHistories( this, false );
     }
     
+    /**
+     * Delete the entire user history.
+     * @param allProjects If true all history is deleted no project is safe.
+     * @throws WdkUserException If the user cannot be found.
+     */
     public void deleteHistories( boolean allProjects ) throws WdkUserException {
         userFactory.deleteHistories( this, allProjects );
     }
@@ -579,6 +612,13 @@ public class User {
         userFactory.deleteInvalidHistories( this );
     }
     
+    /**
+     * Just delete a specific History object for this user.
+     * 
+     * @param historyId The ID of the History object to delete.
+     * @throws WdkUserException If the user does not exist.
+     * @throws WdkModelException If there is a problem with the History object.
+     */
     public void deleteHistory( int historyId ) throws WdkUserException,
             WdkModelException {
         // check the dependencies of the history

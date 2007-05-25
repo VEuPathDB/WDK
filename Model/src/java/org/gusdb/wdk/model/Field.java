@@ -4,6 +4,11 @@
 package org.gusdb.wdk.model;
 
 /**
+ * Base class for all Fields in RecordClass. Each field will
+ * eventually contain data when used in the context of a RecordInstance.
+ * 
+ * Each type if a Field is intended to a sub-class.
+ * 
  * @author Jerric
  * @created Jan 17, 2006
  */

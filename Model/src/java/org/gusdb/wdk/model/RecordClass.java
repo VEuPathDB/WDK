@@ -11,6 +11,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
+/**
+ * This class represents the type of results that will be output by
+ * Query and Question.
+ * 
+ */
 public class RecordClass {
 
     public static final String PRIMARY_KEY_NAME = "primaryKey";
@@ -139,6 +144,11 @@ public class RecordClass {
         attributesQueryRefs.add(attributesQueryRef);
     }
 
+    /**
+     * Add an AttributeField to this RecordClass.
+     * @param attributeField The attribute.
+     * @throws WdkModelException If the attribute is already in the RecordClass.
+     */
     public void addAttributeField(AttributeField attributeField)
             throws WdkModelException {
         // check if the name duplicates
@@ -162,6 +172,10 @@ public class RecordClass {
         tableFieldsMap.put(name, tableField);
     }
 
+    /**
+     * Add a <code>Question</code> as having a RecordClass of this type.
+     * @param q The Question which has a RecordClass of this type.
+     */
     public void addQuestion(Question q) {
         questions.put(q.getFullName(), q);
     }
@@ -192,14 +206,23 @@ public class RecordClass {
     // public getters
     // ////////////////////////////////////////////////////////////
 
+    /**
+     * @return The name of this RecordClass.
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * @return The full name of the Record Class. (e.g. EstsRecordClass.EstIds)
+     */
     public String getFullName() {
         return fullName;
     }
 
+    /**
+     * @return The first part of the full name.
+     */
     public String getIdPrefix() {
         return idPrefix;
     }

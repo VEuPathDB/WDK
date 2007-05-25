@@ -13,6 +13,14 @@ import java.util.Vector;
 
 import org.apache.log4j.Logger;
 
+/**
+ * This class holds common methods and data related to WDK Queries.
+ * Classes implementing this class are basically QueryTemplates for
+ * <code>QueryInstance</code>s.
+ * 
+ * Instances of this class are not created in code, in most cases. They
+ * are typically defined in the WDK Model XML file.
+ */
 public abstract class Query implements Serializable {
 
     private static Logger logger = Logger.getLogger(Query.class);
@@ -93,20 +101,34 @@ public abstract class Query implements Serializable {
         return (displayName != null) ? displayName : name;
     }
 
+    /**
+     * @return An array of parameters that this query has.
+     */
     public Param[] getParams() {
         Param[] paramA = new Param[paramsV.size()];
         paramsV.copyInto(paramA);
         return paramA;
     }
 
+    /**
+     * @return A Map of parmeter name to Params.
+     */
     public Map<String, Param> getParamMap() {
         return new LinkedHashMap<String, Param>(paramsH);
     }
 
+    /**
+     * This method will determine whether a QueryInstance can
+     * actually be written to the database or not.
+     * @return True if the query can be written or cached.
+     */
     public Boolean getIsCacheable() {
         return isCacheable;
     }
 
+    /**
+     * @return The human understandable description of the Query.
+     */
     public String getDescription() {
         return description;
     }
@@ -115,16 +137,28 @@ public abstract class Query implements Serializable {
         return help;
     }
 
+    /**
+     * @return An array of all the Columns.
+     */
     public Column[] getColumns() {
         Column[] columnA = new Column[columnsV.size()];
         columnsV.copyInto(columnA);
         return columnA;
     }
 
+    /**
+     * @return A map of column names to <code>Column</code>s.
+     */
     public Map<String, Column> getColumnMap() {
         return columnsH;
     }
 
+    /**
+     * Get a Column given a column name.
+     * @param columnName The name of the Column.
+     * @return A Column.
+     * @throws WdkModelException If the name is not a valid Column in this Query.
+     */
     public Column getColumn(String columnName) throws WdkModelException {
         if (columnsH.get(columnName) == null)
             throw new WdkModelException("Query " + name
@@ -172,6 +206,12 @@ public abstract class Query implements Serializable {
         return resultFactory;
     }
 
+    /**
+     * Gets a unique checksum of this query.
+     * @return The checksum of this Query.
+     * @throws WdkModelException If the checksum algorithm is not found.
+     * @see org.gusdb.wdk.model.QueryInstance.getCheckSum
+     */
     public String getSignature() throws WdkModelException {
         if (signature == null) {
             StringBuffer content = new StringBuffer();
@@ -279,6 +319,13 @@ public abstract class Query implements Serializable {
         return paramsH.get(paramName);
     }
 
+    /**
+     * Take all the references in this Query and turn them into the
+     * actual Parameters.
+     * 
+     * @param model The WdkModel that holds the actual Parameters.
+     * @throws WdkModelException Cannot find a Parameter.
+     */
     protected void resolveReferences(WdkModel model) throws WdkModelException {
         Iterator<ParamReference> paramRefsIter = paramRefs.iterator();
         while (paramRefsIter.hasNext()) {
@@ -313,6 +360,13 @@ public abstract class Query implements Serializable {
         this.projectId = model.getProjectId();
     }
 
+    /**
+     * Checks all parameters that are based from a <code>QueryInstance</code>
+     * to see if they meet the requirements of the parameter types of the Query.
+     * 
+     * @param values A map of Param=Value pairs.
+     * @throws WdkModelException If there are problems with the parameters.
+     */
     protected void validateParamValues(Map<String, Object> values)
             throws WdkModelException {
         LinkedHashMap<Param, String[]> errors = null;
@@ -354,6 +408,13 @@ public abstract class Query implements Serializable {
         }
     }
 
+    /**
+     * Applies the default values for Parmaeters such that they are
+     * stored in the Map.
+     * 
+     * @param values The place to store the default values.
+     * @throws WdkModelException never thrown.
+     */
     protected void applyDefaults(Map<String, Object> values) throws WdkModelException {
         int size = paramsV.size();
         for (int i = 0; i < size; i++) {
@@ -386,7 +447,7 @@ public abstract class Query implements Serializable {
      * The query clones its members, and only contains the allowed columns
      * 
      * @param query
-     * @param allowedColumns
+     * @param excludedColumns
      */
     protected void clone(Query query, Set<String> excludedColumns) {
         // copy allowed columns
@@ -409,5 +470,11 @@ public abstract class Query implements Serializable {
         query.resultFactory = this.resultFactory;
     }
     
+    /**
+     * The data for which the signature is to be generated for this
+     * Query.
+     * 
+     * @return A String representing the data to checksum.
+     */
     protected abstract String getSignatureData();
 }
