@@ -32,6 +32,9 @@ public abstract class AbstractEnumParam extends Param {
     }
     
     public String validateValue( Object value ) throws WdkModelException {
+        if (value == null || value.toString().length() == 0)
+            return "Missing the value";
+
         // check if the value is string, if yes, try decompres it
         if ( value instanceof String ) {
             value = decompressValue( ( String ) value );

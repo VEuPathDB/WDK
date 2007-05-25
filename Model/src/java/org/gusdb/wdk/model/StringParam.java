@@ -60,15 +60,19 @@ public class StringParam extends Param implements Serializable {
     }
     
     public String validateValue( Object value ) throws WdkModelException {
+        if (value == null || value.toString().length() == 0)
+            return "Missing the value";
+
         if ( !( value instanceof String ) )
-            throw new WdkModelException( "Value must be a String " + value );
+            return "Value must be a String " + value;
+        
         value = decompressValue( (String) value );
         String svalue = ( String ) value;
         int len = ( length == null ? -1 : length.intValue() );
         
-        if ( svalue == null ) return "Value is null";
+        if ( svalue == null ) return "Missing the value";
         if ( regex != null && !svalue.matches( regex ) )
-            return "Value '" + svalue + "'does not match regex '" + regex + "'";
+            return "Value '" + svalue + "'does not match regular expression '" + regex + "'";
         if ( length != null && svalue.length() > len )
             return "Value may be no longer than " + len
                     + " characters.  (It is " + svalue.length() + ".)";
