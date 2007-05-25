@@ -17,7 +17,7 @@
 --%>
      
 <!-- display page header with wdkAnswer's recordClass's type as banner -->
-<site:header banner="Isolated query - ${questionDisplayName}" />
+<site:header banner="Query cannot be executed - ${questionDisplayName}" />
 
 <!-- display question and param values and result size for wdkAnswer -->
 <table>

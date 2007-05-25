@@ -23,7 +23,7 @@ public class QuestionSetForm extends ActionForm {
 	super();
     }
 
-    private String qFullName = null;
+    protected String qFullName = null;
     private Map<String, Object> myProps = new LinkedHashMap<String, Object>();
     private Map myLabels = new LinkedHashMap();
     private Map myValues = new LinkedHashMap();

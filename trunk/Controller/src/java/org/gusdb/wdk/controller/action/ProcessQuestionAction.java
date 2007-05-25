@@ -37,6 +37,8 @@ public class ProcessQuestionAction extends ShowQuestionAction {
     public ActionForward execute( ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response )
             throws Exception {
+        System.out.println("Entering ProcessQuestionAction..");
+
         UserBean wdkUser = ( UserBean ) request.getSession().getAttribute(
                 CConstants.WDK_USER_KEY );
         if ( wdkUser == null ) {
