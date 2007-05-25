@@ -40,11 +40,18 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
     public ActionForward execute( ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response )
             throws Exception {
-        
+        System.out.println("Entering ShowQuestionAction..");
+ 
         String qFullName = ( ( QuestionSetForm ) form ).getQuestionFullName();
+        if (qFullName == null) {
+            qFullName = request.getParameter( CConstants.QUESTION_FULLNAME_PARAM );
+        }
+        if (qFullName == null) {
+            qFullName = (String)request.getAttribute( CConstants.QUESTION_FULLNAME_PARAM );
+        }
         QuestionBean wdkQuestion = getQuestionByFullName( qFullName );
         
-        QuestionForm qForm = prepareQuestionForm( wdkQuestion, request );
+        QuestionForm qForm = prepareQuestionForm( wdkQuestion, request, (QuestionForm) form );
         
         QuestionSetForm qSetForm = ( QuestionSetForm ) request.getAttribute( CConstants.QUESTIONSETFORM_KEY );
         if ( null == qSetForm ) {
@@ -96,6 +103,7 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
         
         QuestionSetBean wdkQuestionSet = ( QuestionSetBean ) wdkModel.getQuestionSetsMap().get(
                 qSetName );
+        if (wdkQuestionSet == null) return null;
         QuestionBean wdkQuestion = ( QuestionBean ) wdkQuestionSet.getQuestionsMap().get(
                 qName );
         return wdkQuestion;
@@ -146,6 +154,7 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
                 if ( cgiParamValSet == null ) {// get values from the form
                     cgiParamValSet = qForm.getMyMultiProp( p.getName() );
                 }
+                
                 if ( cgiParamValSet != null && cgiParamValSet.length == 1 ) {
                     // try to decompress the value
                     cgiParamValSet = ( String[ ] ) p.decompressValue( cgiParamValSet[ 0 ] );

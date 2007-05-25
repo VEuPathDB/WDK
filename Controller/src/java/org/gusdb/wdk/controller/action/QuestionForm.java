@@ -16,6 +16,7 @@ import org.gusdb.wdk.model.jspwrap.FlatVocabParamBean;
 import org.gusdb.wdk.model.jspwrap.HistoryParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
+import org.gusdb.wdk.model.jspwrap.QuestionSetBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
@@ -44,7 +45,9 @@ public class QuestionForm extends QuestionSetForm {
      */
     public ActionErrors validate(ActionMapping mapping,
             HttpServletRequest request) {
-
+        // set the question name into request
+        request.setAttribute(CConstants.QUESTION_FULLNAME_PARAM, qFullName);
+  
         ActionErrors errors = new ActionErrors();
         if (!validating) {
             return errors;
@@ -80,15 +83,20 @@ public class QuestionForm extends QuestionSetForm {
                 for (int j = 0; j < pVals.length; j++) {
                     String oneMsg = p.validateValue(pVals[j]);
                     if (oneMsg != null) {
-                        errMsg += oneMsg;
+                        if (errMsg == null) errMsg = oneMsg;
+                        else errMsg += "; " + oneMsg;
                     }
                 }
                 if (errMsg != null) {
                     errors.add(ActionErrors.GLOBAL_ERROR, new ActionError(
                             "mapped.properties", p.getPrompt(), errMsg));
+                    request.setAttribute( CConstants.QUESTIONSETFORM_KEY, this );
                 }
+                System.out.println("===== Validated " + p.getName() + ": '" + errMsg + "'");
             } catch (WdkModelException exp) {
-                throw new RuntimeException(exp);
+                errors.add(ActionErrors.GLOBAL_MESSAGE, new ActionError(
+                        "mapped.properties", p.getPrompt(), exp.getMessage()));
+                request.setAttribute( CConstants.QUESTIONSETFORM_KEY, this );
             }
         }
         return errors;
@@ -116,6 +124,20 @@ public class QuestionForm extends QuestionSetForm {
     }
 
     public QuestionBean getQuestion() {
+        if (question == null) {
+            if (qFullName == null) return null;
+            int dotI = qFullName.indexOf( '.' );
+            String qSetName = qFullName.substring( 0, dotI );
+            String qName = qFullName.substring( dotI + 1, qFullName.length() );
+        
+            WdkModelBean wdkModel = ( WdkModelBean ) getServlet().getServletContext().getAttribute(
+                    CConstants.WDK_MODEL_KEY );
+        
+            QuestionSetBean wdkQuestionSet = ( QuestionSetBean ) wdkModel.getQuestionSetsMap().get(
+                    qSetName );
+            if (wdkQuestionSet == null) return null;
+            question = ( QuestionBean ) wdkQuestionSet.getQuestionsMap().get( qName );
+        }
         return question;
     }
 
