@@ -223,7 +223,7 @@ public class StressTestRunner implements Runnable {
         content = content.toLowerCase();
         if ( content.indexOf( "unexpected error" ) >= 0
                 || content.indexOf( "exception" ) >= 0
-                || content.indexOf( "Query cannot be executed" ) >= 0 ) {
+                || content.indexOf( "query cannot be executed" ) >= 0 ) {
             task.setResultType( ResultType.ApplicationException );
             task.setResultMessage( "Web application throws out an exception.\n"
                     + content );
