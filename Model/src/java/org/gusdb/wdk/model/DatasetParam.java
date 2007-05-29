@@ -26,16 +26,18 @@ public class DatasetParam extends Param {
     public String validateValue( Object value ) throws WdkModelException {
         String errmsg = null;
         
-        if ( value == null ) {
-            errmsg = "The value to the param " + this.name + " is missing.";
-        } else {
-            // validate datasetParam by getting the dataset object
-            try {
-                getDataset( ( String ) value );
-            } catch ( WdkUserException ex ) {
-                errmsg = ex.getMessage();
-            }
-        }
+        // cannot use the validation for dataset, since the validation happens
+        // before the data transformation
+        // if ( value == null ) {
+        // errmsg = "The value to the param " + this.name + " is missing.";
+        // } else {
+        // // validate datasetParam by getting the dataset object
+        // try {
+        // getDataset( ( String ) value );
+        // } catch ( WdkUserException ex ) {
+        // errmsg = ex.getMessage();
+        // }
+        // }
         return errmsg;
     }
     
