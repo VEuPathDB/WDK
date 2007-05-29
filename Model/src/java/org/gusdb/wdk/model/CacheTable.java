@@ -225,7 +225,7 @@ public class CacheTable {
 				psIndex.execute();
 
 				// TEST
-				logger.info("get sorting result: " + sbSorting.toString());
+				// logger.info("get sorting result: " + sbSorting.toString());
 
 				// get sorted result
 				Statement stmt = connection.createStatement();
