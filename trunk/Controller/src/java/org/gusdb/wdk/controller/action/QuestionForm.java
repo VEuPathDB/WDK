@@ -92,7 +92,7 @@ public class QuestionForm extends QuestionSetForm {
                             "mapped.properties", p.getPrompt(), errMsg));
                     request.setAttribute( CConstants.QUESTIONSETFORM_KEY, this );
                 }
-                System.out.println("===== Validated " + p.getName() + ": '" + errMsg + "'");
+                // System.out.println("===== Validated " + p.getName() + ": '" + errMsg + "'");
             } catch (WdkModelException exp) {
                 errors.add(ActionErrors.GLOBAL_MESSAGE, new ActionError(
                         "mapped.properties", p.getPrompt(), exp.getMessage()));
