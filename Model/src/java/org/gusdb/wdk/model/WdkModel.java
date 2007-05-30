@@ -382,7 +382,7 @@ public class WdkModel {
         return lists;
     }
     
-    public Question makeBooleanQuestion( RecordClass rc ) {
+    public Question makeBooleanQuestion( RecordClass rc ) throws WdkModelException {
         
         Question q = new Question();
         q.setName( BooleanQuestionNode.BOOLEAN_QUESTION_NAME );
@@ -392,18 +392,11 @@ public class WdkModel {
         return q;
     }
     
-    public BooleanQuery makeBooleanQuery() {
+    public BooleanQuery makeBooleanQuery() throws WdkModelException {
         BooleanQuery booleanQuery = new BooleanQuery();
-        booleanQuery.setResultFactory( resultFactory );
-        booleanQuery.setRDBMSPlatform( platform );
+        booleanQuery.resolveReferences( this );
+        booleanQuery.setResources( this );
         return booleanQuery;
-    }
-    
-    public BooleanQueryInstance makeBooleanQueryInstance() {
-        
-        BooleanQuery booleanQuery = new BooleanQuery();
-        BooleanQueryInstance bqi = new BooleanQueryInstance( booleanQuery );
-        return bqi;
     }
     
     // ModelSetI's

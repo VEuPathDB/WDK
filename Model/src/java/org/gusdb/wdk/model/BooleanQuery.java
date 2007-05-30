@@ -73,7 +73,6 @@ public class BooleanQuery extends Query {
     // ------------------------------------------------------------------
 
     protected RDBMSPlatformI platform;
-    protected ResultFactory resultFactory;
 
 
     // ------------------------------------------------------------------
@@ -127,15 +126,7 @@ public class BooleanQuery extends Query {
     // ------------------------------------------------------------------
     // Package Methods
     // ------------------------------------------------------------------
-
-    void setRDBMSPlatform(RDBMSPlatformI platform){
-	this.platform = platform;
-    }
     
-
-    void setResultFactory(ResultFactory rf){
-	this.resultFactory = rf;
-    }
 
         
     // ------------------------------------------------------------------
@@ -176,6 +167,15 @@ public class BooleanQuery extends Query {
     @Override
     protected String getSignatureData() {
         return null;
+    }
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.Query#setResources(org.gusdb.wdk.model.WdkModel)
+     */
+    @Override
+    protected void setResources( WdkModel model ) throws WdkModelException {
+        super.setResources( model );
+        this.platform = model.getPlatform();
     }
 
 }
