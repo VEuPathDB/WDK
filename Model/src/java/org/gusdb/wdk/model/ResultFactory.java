@@ -464,6 +464,9 @@ public class ResultFactory implements Serializable {
 		}
 		sqlb.append(instanceWhereClause(instance));
 
+        // TEST
+        //logger.info( sqlb.toString() );
+        
 		String resultTableName = null;
 		String resultMessage = null;
 		ResultSet rsInstance = null;

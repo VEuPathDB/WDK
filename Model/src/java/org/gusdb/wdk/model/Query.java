@@ -407,6 +407,8 @@ public abstract class Query implements Serializable {
         query.paramsH.putAll(this.paramsH);
         query.paramsV.addAll(this.paramsV);
         query.resultFactory = this.resultFactory;
+        query.signature = signature;
+        query.projectId = projectId;
     }
     
     protected abstract String getSignatureData();
