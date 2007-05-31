@@ -114,7 +114,10 @@ public class History {
      * @return Returns the answer.
      * @throws WdkUserException
      */
-    public Answer getAnswer() {
+    public Answer getAnswer() throws WdkUserException {
+        if ( !isValid )
+            throw new WdkUserException( "The history #" + historyId
+                    + " is invalid." );
         return answer;
     }
     
