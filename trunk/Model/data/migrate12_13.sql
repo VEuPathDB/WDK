@@ -1,3 +1,16 @@
+-- delete rows
+DELETE FROM userlogins2.SUMMARY_ATTRIBUTES;
+DELETE FROM userlogins2.CLOB_VALUES;
+DELETE FROM userlogins2.USER_DATASETS;
+DELETE FROM userlogins2.DATASET_VALUES;
+DELETE FROM userlogins2.DATASET_INDICES;
+DELETE FROM userlogins2.HISTORIES;
+DELETE FROM userlogins2.PREFERENCES;
+DELETE FROM userlogins2.SORTING_ATTRIBUTES;
+DELETE FROM userlogins2.USER_ROLES;
+DELETE FROM userlogins2.USERS;
+
+
 INSERT INTO userlogins2.users 
     SELECT user_id, email, passwd, is_guest, signature, register_time, last_active timestamp, 
         last_name, first_name, middle_name, title, organization, department, address, city,
