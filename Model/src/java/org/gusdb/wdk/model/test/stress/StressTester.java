@@ -243,7 +243,7 @@ public class StressTester {
         QuestionSet[ ] qsets = wdkModel.getAllQuestionSets();
         for ( QuestionSet qset : qsets ) {
             // skip the internal questions
-            if (qset.getInternal()) continue;
+            if ( qset.getInternal() ) continue;
             
             Question[ ] questions = qset.getQuestions();
             for ( Question question : questions ) {
@@ -390,7 +390,7 @@ public class StressTester {
                     + succeededCount );
             
             try {
-                Thread.sleep( 1000 );
+                Thread.sleep( 5 * 1000 );
             } catch ( InterruptedException ex ) {}
             // print out current progress
         }

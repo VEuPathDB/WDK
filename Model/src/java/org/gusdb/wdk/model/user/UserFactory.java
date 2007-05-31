@@ -1132,6 +1132,9 @@ public class UserFactory {
             throw new WdkUserException("The user " + user.getEmail()
                     + " doesn't exist. Updating operation cancelled.");
 
+        // TEST
+        logger.info( "Save custom name: '" + history.getBaseCustomName() + "'" );
+        
         // update custom name
         Date lastRunTime = (updateTime) ? new Date() : history.getLastRunTime();
         PreparedStatement psHistory = null;
