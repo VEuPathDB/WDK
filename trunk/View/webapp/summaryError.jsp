@@ -19,7 +19,7 @@
 <c:set var="wdkModel" value="${applicationScope.wdkModel}"/>
      
 <!-- display page header with wdkAnswer's recordClass's type as banner -->
-<site:header banner="Query cannot be executed - ${questionDisplayName}" />
+<site:header banner="Query cannot be executed" />
 
 <!-- display question and param values and result size for wdkAnswer -->
 <table>
@@ -52,16 +52,16 @@
 
 <hr>
 
-<p>  There are several possible reasons to cause this failure:</p>
+<p>  This query cannot be executed.  There are several possible reasons for this failure:</p>
 <ul>
 <li>You have entered invalid value(s) for the parameter(s) of the question. Please click 
     the <b>BACK</b> button in your browser, and try other values.</li>
-<li>Your query may be come from previous versions of ${wdkModel.displayName} and is no longer compatible 
+<li>Your query may have been bookmarked or saved from a previous version of ${wdkModel.displayName} and is no longer compatible 
     with the current version of ${wdkModel.displayName}.  In most cases, you will be able 
-    to work around the incompatibility by finding an equivalent query in this 
+    to work around the incompatibility by <a href="<c:url value="queries_tools.jsp" />">finding an equivalent query</a> in this 
     version, and running it with similar parameter values.</li>
+<li>A system error.
 </ul>
-<p>Go and <a href="<c:url value="queries_tools.jsp" />">find an equivalent query</a>.</p>
 <p>If you have problems, <a href="<c:url value="help.jsp" />">drop us a line</a>.</p>
 
 <!-- pager at bottom -->
