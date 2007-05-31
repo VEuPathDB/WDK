@@ -169,7 +169,11 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
                         // just select the first one as the default
                         pVal = new String[ ] { flatVocab[ 0 ] };
                     } else { // use the value by the author
-                        pVal = new String[ ] { defaultSelection };
+                        String[] defaults = defaultSelection.split( "," );
+                        for (int idx = 0; idx < defaults.length; idx++) {
+                            defaults[idx] = defaults[idx].trim();
+                        }
+                        pVal = defaults;
                     }
                 }
             } else if ( p instanceof HistoryParamBean ) {
