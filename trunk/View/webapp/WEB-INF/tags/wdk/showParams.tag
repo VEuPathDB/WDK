@@ -53,6 +53,7 @@ display the parameter values for an non-boolean answer.
                                    </c:when>
                                    <c:otherwise>
                                       <jsp:setProperty name="qP" property="paramValue" value="${aP}" />
+                                      <jsp:setProperty name="qP" property="truncateLength" value="1000" />
                                       ${qP.decompressedValue}
                                    </c:otherwise>
                                 </c:choose>

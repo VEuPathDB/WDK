@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.jspwrap;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Param;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -10,11 +11,15 @@ import org.gusdb.wdk.model.WdkModelException;
  */
 public class ParamBean {
     
+    private static Logger logger = Logger.getLogger( ParamBean.class );
+    
     protected Param param;
     protected String paramValue;
+    protected int truncateLength;
     
     public ParamBean( Param param ) {
         this.param = param;
+        truncateLength = WdkModel.TRUNCATE_DEFAULT;
     }
     
     public String getName() {
@@ -101,6 +106,12 @@ public class ParamBean {
         this.paramValue = paramValue;
     }
     
+    public void setTruncateLength( int truncateLength ) {
+        if ( truncateLength >= 0 ) {
+            this.truncateLength = truncateLength;
+        }
+    }
+    
     public String getDecompressedValue() throws WdkModelException {
         Object object = decompressValue( paramValue );
         if ( object == null ) return null;
@@ -114,9 +125,11 @@ public class ParamBean {
             }
             strValue = sb.toString();
         } else strValue = object.toString();
-        if ( strValue.length() > WdkModel.TRUNCATE_DEFAULT ) {
-            strValue = strValue.substring( 0, WdkModel.TRUNCATE_DEFAULT )
-                    + "...";
+        
+        // truncation only happens if truncateLength is > 0; otherwise, use
+        // original value
+        if ( truncateLength > 0 && strValue.length() > truncateLength ) {
+            strValue = strValue.substring( 0, truncateLength ) + "...";
         }
         return strValue;
     }
