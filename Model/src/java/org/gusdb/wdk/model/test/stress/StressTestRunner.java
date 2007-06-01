@@ -125,7 +125,7 @@ public class StressTestRunner implements Runnable {
             logger.debug( "Finished task: " + task.getTaskId() );
             if ( task.getResultType() != ResultType.Succeeded )
                 logger.error( task.getResultType().name() + "\t"
-                        + task.getResultMessage() + "\t" + task.getUrlItem() );
+                        + task.getUrlItem() );
             
             task.setFinishTime( System.currentTimeMillis() );
             state = RunnerState.Finished;
