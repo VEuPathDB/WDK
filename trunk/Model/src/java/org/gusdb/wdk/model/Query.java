@@ -333,9 +333,16 @@ public abstract class Query implements Serializable {
         for (int i = 0; i < size; i++) {
             Param p = paramsV.elementAt(i);
             Object value = values.get(p.getName());
-            String errMsg;
-            if (value == null) {
+            String errMsg = null;
+            if (value == null || value.toString().length() == 0) {
                 errMsg = "No value supplied for param " + p.getName();
+            } else if (p instanceof DatasetParam) {
+                // validate dataset param by getting the dataset id
+                try {
+                    p.getInternalValue(value.toString());
+                } catch (WdkModelException ex) {
+                    errMsg = ex.toString();
+                }
             } else {
                 errMsg = p.validateValue(value);
             }
