@@ -139,7 +139,7 @@ public class RecordDumper {
 
         // output the result
         OutputStream out = new FileOutputStream(file);
-        Reporter seqReport = sqlAnswer.createReport("fullRecord", config);
+        Reporter seqReport = sqlAnswer.createReport("fullRecordDump", config);
         seqReport.write(out);
         out.close();
 

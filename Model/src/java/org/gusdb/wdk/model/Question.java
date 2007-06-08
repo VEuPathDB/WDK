@@ -57,6 +57,8 @@ public class Question implements Serializable {
     
     private Map< String, Boolean > sortingAttributeMap;
     
+    private WdkModel wdkModel;
+    
     // /////////////////////////////////////////////////////////////////////
     // setters called at initialization
     // /////////////////////////////////////////////////////////////////////
@@ -64,6 +66,13 @@ public class Question implements Serializable {
     public Question( ) {
         summaryAttributeMap = new LinkedHashMap< String, AttributeField >();
         sortingAttributeMap = new LinkedHashMap< String, Boolean >();
+    }
+    
+    /**
+     * @return
+     */
+    public WdkModel getWdkModel () {
+        return this.wdkModel;
     }
     
     public void setName( String name ) {
@@ -343,8 +352,9 @@ public class Question implements Serializable {
     }
     
     void setResources( WdkModel model ) throws WdkModelException {
+        this.wdkModel = model;
         if ( dynamicAttributes != null )
-            dynamicAttributes.setResources( model );
+            dynamicAttributes.setResources( wdkModel );
     }
     
     Map< String, AttributeField > getAttributeFields() {

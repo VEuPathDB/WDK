@@ -310,7 +310,21 @@
          <element name="reporter">
              <attribute name="name" />
              <attribute name="displayName" />
-             <attribute name="implementation" />
+             <optional>
+                <attribute name="inReportMaker" />
+             </optional>
+             <optional>
+                 <attribute name="implementation" /> 
+             </optional>
+             
+             <zeroOrMore>
+                <element name="property" >
+                    <attribute name="name" />
+                    <element name="value">
+                        <text />
+                    </element>
+                </element>
+             </zeroOrMore>
          </element>
       </zeroOrMore>
 
