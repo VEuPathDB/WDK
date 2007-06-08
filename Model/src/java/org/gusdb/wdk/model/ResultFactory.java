@@ -53,7 +53,6 @@ public class ResultFactory implements Serializable {
 	public static final String TABLE_QUERY_INSTANCE = "QueryInstance";
 	public static final String TABLE_SORTING_INDEX = "sorting_index";
 
-	// public static final String RESULT_TABLE_I = "result_index_column";
 	public static final String RESULT_TABLE_I = "result_index_column";
 	public static final String COLUMN_SORTING_INDEX = "sorting_index_id";
 	public static final String COLUMN_SORTING_COLUMNS = "sorting_columns";

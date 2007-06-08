@@ -137,7 +137,6 @@ function makeSelection(state)
   <tr><td valign="top"><b>Download Type: </b></td>
       <td>
           <input type="radio" name="downloadType" value="text">Text File
-          <input type="radio" name="downloadType" value="excel">Excel File
           <input type="radio" name="downloadType" value="plain" checked>Show in Browser
         </td></tr>
 

@@ -18,6 +18,7 @@ public abstract class Reporter {
     
     public static final String FIELD_FORMAT = "downloadType";
 
+    protected Map<String, String> properties;
     protected Map< String, String > config;
     protected Answer answer;
     
@@ -26,6 +27,10 @@ public abstract class Reporter {
     protected Reporter( Answer answer ) {
         this.answer = answer;
         config = new LinkedHashMap< String, String >();
+    }
+    
+    public void setProperties(Map<String, String> properties) throws WdkModelException {
+        this.properties = properties;
     }
     
     public void configure( Map< String, String > config ) {

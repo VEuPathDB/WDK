@@ -65,7 +65,7 @@ public class DownloadHistoryAnswerAction extends Action {
                     + "." + reporter + "ReporterConfig.jsp";
             String customViewFile2 = customViewDir + File.separator + reporter
                     + "ReporterConfig.jsp";
-            String customViewFile3 = File.separator + reporter
+            String customViewFile3 = "/" + reporter
                     + "ReporterConfig.jsp";
             
             if ( ApplicationInitListener.resourceExists( customViewFile1,
