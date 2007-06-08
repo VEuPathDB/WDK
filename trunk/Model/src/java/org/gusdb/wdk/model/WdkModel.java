@@ -387,6 +387,9 @@ public class WdkModel {
         Question q = new Question();
         q.setName( BooleanQuestionNode.BOOLEAN_QUESTION_NAME );
         q.setRecordClass( rc );
+        q.resolveReferences( this );
+        q.setResources( this );
+        
         BooleanQuery bq = makeBooleanQuery();
         q.setQuery( bq );
         return q;
