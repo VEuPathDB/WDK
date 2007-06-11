@@ -4,10 +4,8 @@ CREATE TABLE apidb.GeneTable
   table_name VARCHAR(80) NOT NULL,
   row_count NUMBER(4) NOT NULL,
   content CLOB,
-  CONSTRAINT "GENETABLES_PK" PRIMARY KEY (source_id)
+  CONSTRAINT "GENETABLES_PK" PRIMARY KEY (source_id, table_name)
 );
-
-CREATE INDEX GENETABLES_TABLE_NAME_IDX ON apidb.GeneTable (table_name);
 
 CREATE INDEX GENETABLES_ROW_COUNT_IDX ON apidb.GeneTable (row_count);
 
