@@ -153,7 +153,7 @@ public class RecordDumper {
 
     public static void printUsage() {
         System.out.println();
-        System.out.println("Usage: gff3Dump -model <model_name> -organism "
+        System.out.println("Usage: wdkRecordDump -model <model_name> -organism "
                 + "<organism_list> -type <record_type_list> [-dir <base_dir>]");
         System.out.println();
         System.out.println("\t\t<model_name>:\tThe name of WDK supported model");
