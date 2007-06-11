@@ -163,6 +163,7 @@ public class FullRecordReporter extends Reporter {
                 psCheck = SqlUtils.getPreparedStatement(dataSource, "SELECT "
                         + "count(*) AS cache_count FROM " + tableCache
                         + " WHERE " + recordIdColumn + " = ? "
+                        + " AND table_name NOT LIKE 'gff_%' "
                         + (hasProjectId ? " AND project_id = ?" : ""));
             }
             while (answer.hasMoreRecordInstances()) {
