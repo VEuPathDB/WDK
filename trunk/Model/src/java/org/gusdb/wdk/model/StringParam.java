@@ -60,6 +60,9 @@ public class StringParam extends Param implements Serializable {
     }
     
     public String validateValue( Object value ) throws WdkModelException {
+        // check if null value is allowed; if so, pass
+        if (allowNull && value == null) return null;
+        
         if (value == null || value.toString().length() == 0)
             return "Missing the value";
 
@@ -110,6 +113,9 @@ public class StringParam extends Param implements Serializable {
      */
     @Override
     protected String getInternalValue( String value ) throws WdkModelException {
+        // check if null value is allowed
+        if (allowNull && value == null) return nullValue;
+        
         value = (String)decompressValue( value );
         return value.replaceAll( "'", "''" );
     }

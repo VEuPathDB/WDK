@@ -288,7 +288,10 @@ public abstract class Query implements Serializable {
                     this.name, "Query", "paramRef");
             // clone the param to have different default values
             param = param.clone();
+            
             param.setDefault(paramRef.getDefault());
+            param.setAllowNull( paramRef.isAllowNull() );
+            param.setNullValue( paramRef.getNullValue() );
             
             // resolve the group reference
             String groupRef = paramRef.getGroupRef();
