@@ -166,6 +166,7 @@ public class FullRecordReporter extends Reporter {
                         + " AND table_name NOT LIKE 'gff_%' "
                         + (hasProjectId ? " AND project_id = ?" : ""));
             }
+            int recordCount = 0;
             while (answer.hasMoreRecordInstances()) {
                 RecordInstance record = answer.getNextRecordInstance();
 
@@ -195,7 +196,14 @@ public class FullRecordReporter extends Reporter {
                 writer.println("------------------------------------------------------------");
                 writer.println();
                 writer.flush();
+                
+                // count the records processed so far
+                recordCount++;
+                if (recordCount % 100 == 0) {
+                    logger.info( recordCount + " records dumped so far" );
+                }
             }
+            logger.info("Totally " + recordCount + " records dumped" );
         } catch (SQLException ex) {
             throw new WdkModelException(ex);
         } finally {
