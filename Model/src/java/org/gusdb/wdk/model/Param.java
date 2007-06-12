@@ -17,6 +17,9 @@ public abstract class Param {
     private boolean visible;
     private boolean readonly;
     
+    protected boolean allowNull;
+    protected String nullValue;
+    
     private Group group;
     
     protected QueryFactory queryFactory;
@@ -24,6 +27,7 @@ public abstract class Param {
     public Param( ) {
         visible = true;
         readonly = false;
+        allowNull = false;
         group = Group.Empty();
     }
     
@@ -116,6 +120,38 @@ public abstract class Param {
         this.visible = visible;
     }
     
+    
+    /**
+     * @return the allowNull
+     */
+    public boolean isAllowNull() {
+        return allowNull;
+    }
+
+    
+    /**
+     * @param allowNull the allowNull to set
+     */
+    public void setAllowNull( boolean allowNull ) {
+        this.allowNull = allowNull;
+    }
+
+    
+    /**
+     * @return the nullValue
+     */
+    public String getNullValue() {
+        return nullValue;
+    }
+
+    
+    /**
+     * @param nullValue the nullValue to set
+     */
+    public void setNullValue( String nullValue ) {
+        this.nullValue = nullValue;
+    }
+
     /**
      * @return the group
      */
@@ -210,6 +246,8 @@ public abstract class Param {
         param.readonly = readonly;
         param.queryFactory = this.queryFactory;
         param.group = this.group;
+        param.allowNull = allowNull;
+        param.nullValue = nullValue;
     }
     
     public abstract Param clone();

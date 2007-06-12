@@ -103,6 +103,12 @@
     <optional>
       <attribute name="default" />
     </optional>
+    <optional>
+      <attribute name="allowNull" />
+    </optional>
+    <optional>
+      <attribute name="nullValue" />
+    </optional>
   </define>
 
   <define name="QueryBaseContents">
@@ -128,6 +134,9 @@
         </optional>
         <optional>
            <attribute name="groupRef" />
+        </optional>
+        <optional>
+           <attribute name="allowNull" />
         </optional>
       </element>
     </zeroOrMore>
