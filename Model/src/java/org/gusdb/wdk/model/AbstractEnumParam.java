@@ -32,6 +32,9 @@ public abstract class AbstractEnumParam extends Param {
     }
     
     public String validateValue( Object value ) throws WdkModelException {
+        // check if null value is allowed; if so, pass
+        if (allowNull && value == null) return null;
+        
         if (value == null || value.toString().length() == 0)
             return "Missing the value";
 
@@ -54,6 +57,9 @@ public abstract class AbstractEnumParam extends Param {
      * @see org.gusdb.wdk.model.Param#getInternalValue(java.lang.String)
      */
     public String getInternalValue( String value ) throws WdkModelException {
+        // check if null value is allowed
+        if (allowNull && value == null) return nullValue;
+        
         String[ ] values = ( String[ ] ) decompressValue( value );
         initVocabMap();
         StringBuffer buf = new StringBuffer();
