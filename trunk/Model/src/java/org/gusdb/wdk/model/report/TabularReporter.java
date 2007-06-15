@@ -3,6 +3,7 @@
  */
 package org.gusdb.wdk.model.report;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -16,6 +17,16 @@ import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.LinkValue;
 import org.gusdb.wdk.model.RecordInstance;
 import org.gusdb.wdk.model.WdkModelException;
+
+import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.pdf.PdfWriter;
+import com.lowagie.text.Element;
+import com.lowagie.text.Cell;
+import com.lowagie.text.PageSize;
+import com.lowagie.text.pdf.PdfPTable;
+import com.lowagie.text.pdf.PdfPCell;
 
 /**
  * @author xingao
@@ -66,6 +77,8 @@ public class TabularReporter extends Reporter {
             return "text/plain";
         } else if (format.equalsIgnoreCase("excel")) {
             return "application/vnd.ms-excel";
+        } else if ( format.equalsIgnoreCase( "pdf" ) ) {
+            return "application/pdf";
         } else { // use the default content type defined in the parent class
             return super.getHttpContentType();
         }
@@ -84,6 +97,8 @@ public class TabularReporter extends Reporter {
             return name + "_summary.txt";
         } else if (format.equalsIgnoreCase("excel")) {
             return name + "_summary.xls";
+        } else if ( format.equalsIgnoreCase( "pdf" ) ) {
+            return name + "_summary.pdf";
         } else { // use the defaul file name defined in the parent
             return super.getDownloadFileName();
         }
@@ -103,6 +118,8 @@ public class TabularReporter extends Reporter {
         // get the formatted result
         if (format.equalsIgnoreCase("excel")) {
             format2Excel(columns, answer, writer);
+        } else if ( format.equalsIgnoreCase( "pdf" ) ) {
+            format2PDF( columns, answer, out );
         } else {
             format2Text(columns, answer, writer);
         }
@@ -163,8 +180,79 @@ public class TabularReporter extends Reporter {
             writer.flush();
         }
     }
+    
+  private void format2PDF( Set< AttributeField > columns, Answer answer,
+            OutputStream out ) throws WdkModelException {
+      logger.info( "format2PDF>>>");
+      Document document = new Document(PageSize.A4.rotate());
+      try {
+	  PdfWriter pwriter = PdfWriter.getInstance(document, out);
+	  document.open();
 
-    private void format2Excel(Set<AttributeField> columns, Answer answer,
+	int NumColumns = columns.size();
+
+	PdfPTable datatable = new PdfPTable(NumColumns);
+
+	if ( hasHeader ) {
+            for ( AttributeField column : columns ) {
+                datatable.addCell("" + column.getDisplayName() + "");
+            }
+        }
+        
+	datatable.setHeaderRows(1);
+	int count = 0;
+	while ( answer.hasMoreRecordInstances() ) {
+            RecordInstance record = answer.getNextRecordInstance();
+
+	    count++;
+	
+	    if(count % 2 == 1){
+		datatable.getDefaultCell().setGrayFill(0.9f);
+	    }
+
+            for ( AttributeField column : columns ) {
+                Object value = record.getAttributeValue( column );
+                if ( value instanceof LinkValue ) {
+                    datatable.addCell( ( ( LinkValue ) value ).getValue() );
+                } else {
+		    //PdfPCell cell = new PdfPCell(new Paragraph(""+value) );
+		    datatable.addCell(""+value);
+
+                }
+            }
+	    
+	    if(count % 2 == 1){
+		datatable.getDefaultCell().setGrayFill(1); 
+	    }
+
+	    if(count % 500 == 0){
+		pwriter.flush();
+	    }
+        }
+
+	datatable.setSplitLate(false); 
+	datatable.setWidthPercentage(100);
+	document.setMargins(10,10,10,10);
+	document.add(datatable);
+	document.close();
+	out.flush();
+      }
+
+      catch(DocumentException de) {
+	  throw new WdkModelException( de );
+	  //            de.printStackTrace();
+	  //            System.err.println("document: " + de.getMessage());
+      }
+
+      catch ( IOException ex ) {
+            throw new WdkModelException( ex );
+        }
+
+      // close the document (the outputstream is also closed internally)
+   
+  }
+
+     private void format2Excel(Set<AttributeField> columns, Answer answer,
             PrintWriter writer) throws WdkModelException {
         writer.println("<table border=\"1\">");
 
