@@ -270,9 +270,9 @@ sub getRootSpanAndCanvas {
 
     # Gene trap insertion tag sequences
     #
-    my $gtSpans = $self->getGeneTrapSpans($canvas);
-    push(@$topLevelSpans, @$gtSpans);
-    push(@$topLevelSpans, &makeSpacerSpan(3));
+#    my $gtSpans = $self->getGeneTrapSpans($canvas);
+#    push(@$topLevelSpans, @$gtSpans);
+#    push(@$topLevelSpans, &makeSpacerSpan(3));
 
     # RH markers
     #
@@ -291,8 +291,8 @@ sub getRootSpanAndCanvas {
 
 	# Graphical depiction of ESTs and mRNAs
 	#
-	my $estSpans = $self->getInputSeqSpans($canvas);
-	push(@$topLevelSpans, @$estSpans);
+	#my $estSpans = $self->getInputSeqSpans($canvas);
+	#push(@$topLevelSpans, @$estSpans);
 
     }
 
@@ -686,7 +686,7 @@ sub getTranslatedAAFeatureSpans {
     my $sql = ("select tafs.translation_score, tafs.start_pos, tafs.end_pos, tafs.aa_start_pos, tafs.aa_end_pos, " .
 	       "       taf.diana_atg_score, taf.diana_atg_position, taf.p_value, taf.number_of_segments, " .
 	       "       taf.translation_start, taf.translation_stop, taf.translation_score " .
-	       "from ${dotsDb}.NAFeature naf, ${dotsDb}.TranslatedAAFeature taf, " .
+	       "from ${dotsDb}.RNAFeature naf, ${dotsDb}.TranslatedAAFeature taf, " .
 	       "     ${dotsDb}.TranslatedAAFeatSeg tafs " .
 	       "where naf.na_sequence_id = $naSeqId " .
 	       "and naf.na_feature_id = taf.na_feature_id " .
