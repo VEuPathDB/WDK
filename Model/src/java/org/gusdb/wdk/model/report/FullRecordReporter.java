@@ -30,6 +30,16 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.implementation.SqlUtils;
 
+import java.io.IOException;
+import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.pdf.PdfWriter;
+import com.lowagie.text.Element;
+import com.lowagie.text.Cell;
+import com.lowagie.text.PageSize;
+import com.lowagie.text.pdf.PdfPTable;
+import com.lowagie.text.pdf.PdfPCell;
 /**
  * @author xingao
  * 
@@ -69,7 +79,7 @@ public class FullRecordReporter extends Reporter {
         
         // check required properties
         recordIdColumn = properties.get( PROPERTY_RECORD_ID_COLUMN );
-        
+	logger.info(" tableCache:" + tableCache + "recordIdColumn: " + recordIdColumn);
         if ( tableCache != null && recordIdColumn == null )
             throw new WdkModelException( "The required property for reporter "
                     + this.getClass().getName() + ", "
@@ -100,6 +110,8 @@ public class FullRecordReporter extends Reporter {
     public String getHttpContentType() {
         if ( format.equalsIgnoreCase( "text" ) ) {
             return "text/plain";
+        }  else if ( format.equalsIgnoreCase( "pdf" ) ) {
+            return "application/pdf";
         } else { // use the default content type defined in the parent class
             return super.getHttpContentType();
         }
@@ -116,6 +128,8 @@ public class FullRecordReporter extends Reporter {
         String name = answer.getQuestion().getName();
         if ( format.equalsIgnoreCase( "text" ) ) {
             return name + "_detail.txt";
+        } else if ( format.equalsIgnoreCase( "pdf" ) ) {
+            return name + "_detail.pdf";
         } else { // use the defaul file name defined in the parent
             return super.getDownloadFileName();
         }
@@ -142,6 +156,13 @@ public class FullRecordReporter extends Reporter {
             }
         }
         
+
+	if ( format.equalsIgnoreCase( "pdf" ) ) {
+	    formatRecord2PDF( attributes, tables, answer, out);
+	    return;
+	    
+	}
+
         // get the formatted result
         WdkModel wdkModel = answer.getQuestion().getWdkModel();
         RDBMSPlatformI platform = wdkModel.getPlatform();
@@ -323,4 +344,85 @@ public class FullRecordReporter extends Reporter {
         }
         if ( tableCache != null && !hasCached ) psCache.executeBatch();
     }
+
+   private void formatRecord2PDF( Set< AttributeField > attributes,
+            Set< TableField > tables, Answer answer, OutputStream out)
+            throws WdkModelException {
+
+       logger.info( "format2PDF>>>");
+       Document document = new Document(PageSize.A4.rotate());
+
+       try {
+	  PdfWriter pwriter = PdfWriter.getInstance(document, out);
+	  document.open();
+
+	  while ( answer.hasMoreRecordInstances() ) {
+	      RecordInstance record = answer.getNextRecordInstance();
+            // print out attributes of the record first
+	      for ( AttributeField attribute : attributes ) {
+		  Object value = record.getAttributeValue( attribute );
+		  document.add( new Paragraph (attribute.getDisplayName() + ": " + value) );
+	      }
+
+            
+            // print out tables of the record
+	      for ( TableField table : tables ) {
+		  TableFieldValue tableValue = record.getTableValue( table.getName() );
+		  Iterator rows = tableValue.getRows();
+                
+		  // check if table is empty
+		  if ( !hasEmptyTable && !rows.hasNext() ) {
+		      tableValue.getClose();
+		      continue;
+		  }
+                
+		  AttributeField[ ] fields = table.getReportMakerFields();
+                
+                // output table header
+		  document.add( new Paragraph ("Table: " + table.getDisplayName()) );
+		  int NumColumns = fields.length;
+		  PdfPTable datatable = new PdfPTable(NumColumns);
+		  for ( AttributeField attribute : fields ) {
+		      datatable.addCell( "" + attribute.getDisplayName() + "" );
+		  }
+		
+		  datatable.setHeaderRows(1);
+                
+		  while ( rows.hasNext() ) {
+		      Map rowMap = ( Map ) rows.next();
+		      Iterator colNames = rowMap.keySet().iterator();
+		      while ( colNames.hasNext() ) {
+			  String colName = ( String ) colNames.next();
+			  Object fVal = rowMap.get( colName );
+                        // depending on the types of the object, print out the
+                        // value of it
+			  if ( fVal == null ) {
+			      fVal = "";
+			  } else if ( fVal instanceof AttributeFieldValue ) {
+			      fVal = ( ( AttributeFieldValue ) fVal ).getValue();
+			  } else if ( fVal instanceof LinkValue ) {
+			      fVal = ( ( LinkValue ) fVal ).getVisible();
+			  }
+			  datatable.addCell(fVal.toString());
+		      }
+		  }
+		  tableValue.getClose();
+		  document.add(datatable);
+	      }
+	    
+	    //	    out.flush();
+	  }
+	  document.close();
+       }
+       catch(DocumentException de) {
+	   throw new WdkModelException( de );
+       }
+       //     catch ( IOException ex ) {
+       //	   throw new WdkModelException( ex );
+       //       }
+       
+   }
+
+
+
 }
