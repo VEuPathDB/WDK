@@ -266,12 +266,12 @@ sub getRootSpanAndCanvas {
     push(@$topLevelSpans, @$massSpecSpans);
     
     # Low complexity features
-    my $lowComplexitySpans = $self->getLowComplexityFeatureSpans($canvas);
-    push(@$topLevelSpans, @$lowComplexitySpans);
+#    my $lowComplexitySpans = $self->getLowComplexityFeatureSpans($canvas);
+#    push(@$topLevelSpans, @$lowComplexitySpans);
     
     # Predicted epitopes
-    my $epitopeSpans = $self->getEpitopeFeatureSpans($canvas);
-    push(@$topLevelSpans, @$epitopeSpans);
+#    my $epitopeSpans = $self->getEpitopeFeatureSpans($canvas);
+#    push(@$topLevelSpans, @$epitopeSpans);
 
     # SNPs - from SeqVariation
 #    my $snpSpans = $self->getSNPFeatureSpansFromSeqVariation($canvas);
