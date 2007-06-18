@@ -1,4 +1,55 @@
 ------------------------------------------------------------------------------
+ooooooooooooooooooooooooooo  WDK Version 1.13  ooooooooooooooooooooooooooooooo
+------------------------------------------------------------------------------
+
+Summary: In this release, several major features are added into WDK, including
+         column sorting, dynamic configuration, batch data uploading, report
+         maker framework, as well as many bug fixes
+         
+=========================== Model Features ===========================
+
+* Add optional "sortingTable", "sortingColumn" property into column tag to enable 
+  sorting ability on the given column;
+
+* Add optional "sortable" property into attribute fields into flag whether an
+  attribute field is allowed to be sorted on from the summary result page;
+
+* Add optional "sortingAttributeList" into questions to define the default sorting
+  for the given question;
+
+* Add "default" on params; author can specify default value for a param globally, or
+  query-specifically. FlatVocabParam can have mutliple default values, separated by
+  comma;
+
+* Add dataset Param to allow bulk input
+
+* Add history Param to use one history as the input of another question
+
+         
+=========================== Controller Features ===========================
+
+* Keep complete query information in the url (question, parameters, etc), so that
+  user can bookmark result summary page
+
+* Handle errors more gracefully with new error page
+
+* New report maker controllers to support different formats of output
+
+         
+=========================== View Features ===========================
+
+* Allow user to sort result in the summary page
+
+* Allow user to configure the columns in the summary page
+
+* Allow user to choose different types of downloadable reporter
+
+* Display incompatible query histories from previous version
+
+* Allow uploading of a list of ids
+
+
+------------------------------------------------------------------------------
 ooooooooooooooooooooooooooo  WDK Version 1.12  ooooooooooooooooooooooooooooooo
 ------------------------------------------------------------------------------
 
