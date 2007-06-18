@@ -1,14 +1,13 @@
 package org.gusdb.wdk.model.implementation;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -16,6 +15,15 @@ import java.util.Properties;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
@@ -25,8 +33,6 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.digester.Digester;
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.*;
 import org.gusdb.wdk.model.xml.XmlAttributeField;
@@ -36,6 +42,9 @@ import org.gusdb.wdk.model.xml.XmlRecordClass;
 import org.gusdb.wdk.model.xml.XmlRecordClassSet;
 import org.gusdb.wdk.model.xml.XmlTableField;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -49,154 +58,243 @@ import com.thaiopensource.xml.sax.ErrorHandlerImpl;
 
 public class ModelXmlParser {
     
-    static Logger logger = Logger.getRootLogger();
+    public static final String PROP_MODEL_NAME = "model";
+    public static final String PROP_CONFIG_DIR = "configDir";
+    public static final String PROP_SCHEMA_FILE = "schemaFile";
+    public static final String PROP_XML_SCHEMA_FILE = "xmlSchemaFile";
+    public static final String PROP_XML_DATA_DIR = "xmlDataDir";
     
-    private static final String DEFAULT_SCHEMA_NAME = "wdkModel.rng";
+    private static final String DEFAULT_SCHEMA = "wdkModel.rng";
+    private static final String DEFAULT_XML_SCHEMA = "xmlAnswer.rng";
+    
+    private static final Logger logger = Logger.getLogger( ModelXmlParser.class );
+    
+    public static WdkModel parseXmlFile( URL modelXmlURL, URL modelPropURL,
+            URL modelConfigXmlFileURL ) throws WdkModelException {
+        // use default value
+        URL schemaURL = WdkModel.class.getResource( DEFAULT_SCHEMA );
+        URL xmlSchemaURL = WdkModel.class.getResource( DEFAULT_XML_SCHEMA );
+        
+        return parseXmlFile( modelXmlURL, modelPropURL, schemaURL,
+                xmlSchemaURL, modelConfigXmlFileURL );
+    }
     
     public static WdkModel parseXmlFile( URL modelXmlURL, URL modelPropURL,
             URL schemaURL, URL xmlSchemaURL, URL modelConfigXmlFileURL )
             throws WdkModelException {
+        // prepare the validator, since it might be used multiple times
+        ValidationDriver validator = prepareValidator( schemaURL );
         
-        if ( schemaURL == null ) {
-            schemaURL = WdkModel.class.getResource( DEFAULT_SCHEMA_NAME );
-        }
+        // validate the master model file
+        if ( !validateModel( validator, modelXmlURL ) )
+            throw new WdkModelException( "Master model validation failed." );
         
-        // NOTE: we are validating before we substitute in the properties
-        // so that the validator will operate on a file instead of a stream.
-        // this way the validator spits out line numbers for errors
-        if ( !validModelFile( modelXmlURL, schemaURL ) ) {
-            throw new WdkModelException( "Model validation failed" );
-        }
+        // process any <import> tag in the master model, and build the master
+        // document
+        Document masterDoc = buildMasterDocument( modelXmlURL, validator );
         
+        // load property map
+        Map< String, String > properties = getPropMap( modelPropURL );
+        InputStream modelXmlStream = substituteProps( masterDoc, properties );
+        
+        // parse the model xml into java objects
         Digester digester = configureDigester();
         
-        WdkModel model = null;
-        
         try {
-            InputStream modelXmlStream = makeModelXmlStream( modelXmlURL,
-                    modelPropURL );
+            WdkModel model = ( WdkModel ) digester.parse( modelXmlStream );
             
-            model = ( WdkModel ) digester.parse( modelXmlStream );
+            model.resolveReferences();
+            model.setXmlSchema( xmlSchemaURL ); // set schema for xml data
+            // source
             
-        } catch ( SAXException e ) {
-            throw new WdkModelException( e );
-        } catch ( IOException e ) {
-            throw new WdkModelException( e );
-        }
-        
-        setModelDocument( model, modelXmlURL, modelPropURL );
-        model.resolveReferences();
-        model.setXmlSchema( xmlSchemaURL ); // set schema for xml data source
-        
-        try {
             model.configure( modelConfigXmlFileURL );
             model.setResources();
-            model.setProperties( getPropMap( modelPropURL ) );
-        } catch ( Exception e ) {
-            throw new WdkModelException( e );
-        }
-        return model;
-    }
-    
-    private static InputStream makeModelXmlStream( URL modelXmlURL,
-            URL modelPropURL ) throws WdkModelException {
-        InputStream modelXmlStream;
-        
-        if ( modelPropURL != null ) {
-            modelXmlStream = configureModelFile( modelXmlURL, modelPropURL );
-        } else {
-            try {
-                modelXmlStream = modelXmlURL.openStream();
-            } catch ( FileNotFoundException e ) {
-                throw new WdkModelException( e );
-            } catch ( IOException e ) {
-                throw new WdkModelException( e );
-            }
-        }
-        return modelXmlStream;
-    }
-    
-    private static void setModelDocument( WdkModel model, URL modelXmlURL,
-            URL modelPropURL ) throws WdkModelException {
-        try {
-            InputStream modelXmlStream = makeModelXmlStream( modelXmlURL,
-                    modelPropURL );
-            model.setDocument( buildDocument( modelXmlStream ) );
+            model.setProperties( properties );
+            
+            return model;
         } catch ( SAXException e ) {
             throw new WdkModelException( e );
         } catch ( IOException e ) {
             throw new WdkModelException( e );
-        } catch ( ParserConfigurationException e ) {
-            throw new WdkModelException( e );
         }
     }
     
-    public static Document buildDocument( InputStream modelXMLStream )
-            throws ParserConfigurationException, SAXException, IOException {
-        
-        Document doc = null;
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        // Turn on validation, and turn off namespaces
-        factory.setValidating( false );
-        factory.setNamespaceAware( false );
-        DocumentBuilder builder = factory.newDocumentBuilder();
-        // ErrorHandler errorHandler = new ErrorHandlerImpl(System.err);
-        // builder.setErrorHandler(errorHandler);
-        builder.setErrorHandler( new org.xml.sax.ErrorHandler() {
-            
-            // ignore fatal errors (an exception is guaranteed)
-            public void fatalError( SAXParseException exception )
-                    throws SAXException {
-                exception.printStackTrace( System.err );
-            }
-            
-            // treat validation errors as fatal
-            public void error( SAXParseException e ) throws SAXParseException {
-                e.printStackTrace( System.err );
-                throw e;
-            }
-            
-            // dump warnings too
-            public void warning( SAXParseException err )
-                    throws SAXParseException {
-                System.err.println( "** Warning" + ", line "
-                        + err.getLineNumber() + ", uri " + err.getSystemId() );
-                System.err.println( "   " + err.getMessage() );
-            }
-        } );
-        
-        doc = builder.parse( modelXMLStream );
-        return doc;
-    }
-    
-    private static boolean validModelFile( URL modelXmlURL, URL schemaURL )
+    private static ValidationDriver prepareValidator( URL schemaURL )
             throws WdkModelException {
         
         System.setProperty(
                 "org.apache.xerces.xni.parser.XMLParserConfiguration",
                 "org.apache.xerces.parsers.XIncludeParserConfiguration" );
         
+        ErrorHandler errorHandler = new ErrorHandlerImpl( System.err );
+        PropertyMap schemaProperties = new SinglePropertyMap(
+                ValidateProperty.ERROR_HANDLER, errorHandler );
+        ValidationDriver validator = new ValidationDriver( schemaProperties,
+                PropertyMap.EMPTY, null );
+        
         try {
-            
-            ErrorHandler errorHandler = new ErrorHandlerImpl( System.err );
-            PropertyMap schemaProperties = new SinglePropertyMap(
-                    ValidateProperty.ERROR_HANDLER, errorHandler );
-            ValidationDriver vd = new ValidationDriver( schemaProperties,
-                    PropertyMap.EMPTY, null );
-            
-            vd.loadSchema( ValidationDriver.uriOrFileInputSource( schemaURL.toExternalForm() ) );
-            
+            validator.loadSchema( ValidationDriver.uriOrFileInputSource( schemaURL.toExternalForm() ) );
+            return validator;
+        } catch ( MalformedURLException ex ) {
+            throw new WdkModelException( ex );
+        } catch ( SAXException ex ) {
+            throw new WdkModelException( ex );
+        } catch ( IOException ex ) {
+            throw new WdkModelException( ex );
+        }
+    }
+    
+    private static boolean validateModel( ValidationDriver validator,
+            URL modelXmlURL ) throws WdkModelException {
+        try {
             // System.err.println("modelXMLURL is "+modelXmlURL);
-            
             InputSource is = ValidationDriver.uriOrFileInputSource( modelXmlURL.toExternalForm() );
-            // return vd.validate(new InputSource(modelXMLStream));
-            return vd.validate( is );
+            return validator.validate( is );
+        } catch ( SAXException ex ) {
+            throw new WdkModelException( ex );
+        } catch ( IOException ex ) {
+            throw new WdkModelException( ex );
+        }
+    }
+    
+    private static Document buildMasterDocument( URL wdkModelURL,
+            ValidationDriver validator ) throws WdkModelException {
+        // get the xml document of the model
+        Document masterDoc = buildDocument( wdkModelURL );
+        Node rootNode = masterDoc.getElementsByTagName( "wdkModel" ).item( 0 );
+        
+        // get the parent url, removing the model file name from it
+        String parentURL = wdkModelURL.toExternalForm();
+        parentURL = parentURL.substring( 0, parentURL.lastIndexOf( "/" ) + 1 );
+        
+        // get all imports, and replace each of them with the sub-model
+        NodeList importNodes = masterDoc.getElementsByTagName( "import" );
+        for ( int i = 0; i < importNodes.getLength(); i++ ) {
+            // get url to the first import
+            Node importNode = importNodes.item( i );
+            String href = importNode.getAttributes().getNamedItem( "href" ).getNodeValue();
+            try {
+                URL importURL = new URL( parentURL + href );
+                
+                logger.info( "Importing: " + importURL.toExternalForm() );
+                
+                Document importDoc = buildDocument( importURL );
+                
+                // get the children nodes from imported sub-model, and add them
+                // into master document
+                Node subRoot = importDoc.getElementsByTagName( "wdkModel" ).item(
+                        0 );
+                NodeList childrenNodes = subRoot.getChildNodes();
+                for ( int j = 0; j < childrenNodes.getLength(); j++ ) {
+                    Node childNode = childrenNodes.item( j );
+                    if ( childNode instanceof Element ) {
+                        Node imported = masterDoc.importNode( childNode, true );
+                        rootNode.appendChild( imported );
+                    }
+                }
+            } catch ( MalformedURLException ex ) {
+                throw new WdkModelException( ex );
+            }
+        }
+        return masterDoc;
+    }
+    
+    private static Document buildDocument( URL modelXmlURL )
+            throws WdkModelException {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        // turn off validation here, since we don't use DTD; validation is done
+        // before this point
+        factory.setValidating( false );
+        factory.setNamespaceAware( false );
+        DocumentBuilder builder;
+        try {
+            builder = factory.newDocumentBuilder();
             
-        } catch ( SAXException e ) {
-            throw new WdkModelException( e );
+            // ErrorHandler errorHandler = new ErrorHandlerImpl(System.err);
+            // builder.setErrorHandler(errorHandler);
+            builder.setErrorHandler( new org.xml.sax.ErrorHandler() {
+                
+                // ignore fatal errors (an exception is guaranteed)
+                public void fatalError( SAXParseException exception )
+                        throws SAXException {
+                    exception.printStackTrace( System.err );
+                }
+                
+                // treat validation errors as fatal
+                public void error( SAXParseException e )
+                        throws SAXParseException {
+                    e.printStackTrace( System.err );
+                    throw e;
+                }
+                
+                // dump warnings too
+                public void warning( SAXParseException err )
+                        throws SAXParseException {
+                    System.err.println( "** Warning" + ", line "
+                            + err.getLineNumber() + ", uri "
+                            + err.getSystemId() );
+                    System.err.println( "   " + err.getMessage() );
+                }
+            } );
+            
+            Document doc = builder.parse( modelXmlURL.openStream() );
+            return doc;
+        } catch ( ParserConfigurationException ex ) {
+            throw new WdkModelException( ex );
+        } catch ( SAXException ex ) {
+            throw new WdkModelException( ex );
+        } catch ( IOException ex ) {
+            throw new WdkModelException( ex );
+        }
+    }
+    
+    private static Map< String, String > getPropMap( URL modelPropURL )
+            throws WdkModelException {
+        Map< String, String > propMap = new LinkedHashMap< String, String >();
+        try {
+            Properties properties = new Properties();
+            properties.load( modelPropURL.openStream() );
+            Iterator< Object > it = properties.keySet().iterator();
+            while ( it.hasNext() ) {
+                String propName = ( String ) it.next();
+                String value = properties.getProperty( propName );
+                propMap.put( propName, value );
+            }
         } catch ( IOException e ) {
             throw new WdkModelException( e );
         }
+        return propMap;
+    }
+    
+    private static InputStream substituteProps( Document masterDoc,
+            Map< String, String > properties ) throws WdkModelException {
+        try {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            
+            // transform the DOM doc to a string
+            Source source = new DOMSource( masterDoc );
+            Result result = new StreamResult( out );
+            Transformer transformer = TransformerFactory.newInstance().newTransformer();
+            transformer.transform( source, result );
+            String content = new String( out.toByteArray() );
+            
+            // substitute prop macros
+            for ( String propName : properties.keySet() ) {
+                String propValue = properties.get( propName );
+                content = content.replaceAll( "\\@" + propName + "\\@",
+                        propValue );
+            }
+            
+            // construct input stream
+            return new ByteArrayInputStream( content.getBytes() );
+        } catch ( TransformerConfigurationException ex ) {
+            throw new WdkModelException( ex );
+        } catch ( TransformerFactoryConfigurationError ex ) {
+            throw new WdkModelException( ex );
+        } catch ( TransformerException ex ) {
+            throw new WdkModelException( ex );
+        }
+        
     }
     
     private static Digester configureDigester() {
@@ -205,60 +303,38 @@ public class ModelXmlParser {
         digester.setValidating( false );
         
         // Root -- WDK Model
-        
         digester.addObjectCreate( "wdkModel", WdkModel.class );
         digester.addSetProperties( "wdkModel" );
+        digester.addBeanPropertySetter( "wdkModel/introduction" );
+        digester.addBeanPropertySetter( "wdkModel/historyDatasetLink" );
         
-        /**/digester.addBeanPropertySetter( "wdkModel/introduction" );
+        configureNode( digester, "wdkModel/recordClassSet",
+                RecordClassSet.class, "addRecordClassSet" );
         
-        /**/digester.addBeanPropertySetter( "wdkModel/historyDatasetLink" );
+        configureNode( digester, "wdkModel/recordClassSet/recordClass",
+                RecordClass.class, "addRecordClass" );
         
-        // RecordClassSet
-        
-        /**/digester.addObjectCreate( "wdkModel/recordClassSet",
-                RecordClassSet.class );
-        
-        /**/digester.addSetProperties( "wdkModel/recordClassSet" );
-        
-        /*  */digester.addObjectCreate( "wdkModel/recordClassSet/recordClass",
-                RecordClass.class );
-        
-        /*  */digester.addSetProperties( "wdkModel/recordClassSet/recordClass" );
-        
-        // By Jerric - parse projectParamRef
-        /*    */digester.addObjectCreate(
+        configureNode( digester,
                 "wdkModel/recordClassSet/recordClass/projectParamRef",
-                ParamReference.class );
+                ParamReference.class, "setProjectParamRef" );
         
-        /*    */digester.addSetProperties( "wdkModel/recordClassSet/recordClass/projectParamRef" );
-        
-        /*    */digester.addSetNext(
-                "wdkModel/recordClassSet/recordClass/projectParamRef",
-                "setProjectParamRef" );
-        // end by jerric
-        
-        /*    */digester.addObjectCreate(
+        configureNode( digester,
                 "wdkModel/recordClassSet/recordClass/reporter",
-                ReporterRef.class );
+                ReporterRef.class, "addReporterRef" );
         
         /*    */digester.addSetProperties( "wdkModel/recordClassSet/recordClass/reporter" );
         
         /*       */digester.addObjectCreate(
-                   "wdkModel/recordClassSet/recordClass/reporter/property",
-                   ReporterProperty.class );
+                "wdkModel/recordClassSet/recordClass/reporter/property",
+                ReporterProperty.class );
         
         /*       */digester.addSetProperties( "wdkModel/recordClassSet/recordClass/reporter/property" );
         
-        /*       */digester.addBeanPropertySetter(
-                   "wdkModel/recordClassSet/recordClass/reporter/property/value");
+        /*       */digester.addBeanPropertySetter( "wdkModel/recordClassSet/recordClass/reporter/property/value" );
         
         /*       */digester.addSetNext(
-                  "wdkModel/recordClassSet/recordClass/reporter/property",
-                  "addProperty" );
-        
-        /*    */digester.addSetNext(
-                "wdkModel/recordClassSet/recordClass/reporter",
-                "addReporterRef" );
+                "wdkModel/recordClassSet/recordClass/reporter/property",
+                "addProperty" );
         
         // load attributeQueryRef along with the attributes associated with it
         
@@ -395,17 +471,10 @@ public class ModelXmlParser {
                 "wdkModel/recordClassSet/recordClass/nestedRecordList",
                 "addNestedRecordListQuestionRef" );
         
-        /*  */digester.addSetNext( "wdkModel/recordClassSet/recordClass",
-                "addRecordClass" );
-        
-        /**/digester.addSetNext( "wdkModel/recordClassSet",
-                "addRecordClassSet" );
-        
         // QuerySet
+        configureNode( digester, "wdkModel/querySet", QuerySet.class,
+                "addQuerySet" );
         
-        /**/digester.addObjectCreate( "wdkModel/querySet", QuerySet.class );
-        
-        /**/digester.addSetProperties( "wdkModel/querySet" );
         /*  */digester.addObjectCreate( "wdkModel/querySet/sqlQuery",
                 SqlQuery.class );
         
@@ -456,8 +525,6 @@ public class ModelXmlParser {
                 "addColumn" );
         
         /*  */digester.addSetNext( "wdkModel/querySet/wsQuery", "addQuery" );
-        
-        /**/digester.addSetNext( "wdkModel/querySet", "addQuerySet" );
         
         // ParamSet
         
@@ -649,10 +716,9 @@ public class ModelXmlParser {
         digester.addSetProperties( "wdkModel/groupSet" );
         
         // load XmlQuestion
-        digester.addObjectCreate( "wdkModel/groupSet/group", Group.class );
-        digester.addSetProperties( "wdkModel/groupSet/group" );
+        configureNode( digester, "wdkModel/groupSet/group", Group.class,
+                "addGroup" );
         digester.addBeanPropertySetter( "wdkModel/groupSet/group/description" );
-        digester.addSetNext( "wdkModel/groupSet/group", "addGroup" );
         
         digester.addSetNext( "wdkModel/groupSet", "addGroupSet" );
         
@@ -660,65 +726,14 @@ public class ModelXmlParser {
         
     }
     
-    /**
-     * Substitute property values into model xml
-     */
-    public static InputStream configureModelFile( URL modelXmlURL,
-            URL modelPropURL ) throws WdkModelException {
-        
-        try {
-            StringBuffer substituted = new StringBuffer();
-            Properties properties = new Properties();
-            properties.load( modelPropURL.openStream() );
-            BufferedReader reader = new BufferedReader( new InputStreamReader(
-                    modelXmlURL.openStream() ) );
-            while ( reader.ready() ) {
-                String line = reader.readLine();
-                line = substituteProps( line, properties );
-                substituted.append( line );
-            }
-            
-            return new ByteArrayInputStream( substituted.toString().getBytes() );
-        } catch ( FileNotFoundException e ) {
-            throw new WdkModelException( e );
-        } catch ( IOException e ) {
-            throw new WdkModelException( e );
-        }
-    }
-    
-    static String substituteProps( String string, Properties properties ) {
-        Enumeration propNames = properties.propertyNames();
-        String newString = string;
-        while ( propNames.hasMoreElements() ) {
-            String propName = ( String ) propNames.nextElement();
-            String value = properties.getProperty( propName );
-            newString = newString.replaceAll( "\\@" + propName + "\\@", value );
-        }
-        return newString;
-    }
-    
-    static Map< String, String > getPropMap( URL modelPropURL )
-            throws WdkModelException {
-        Map< String, String > propMap = new LinkedHashMap< String, String >();
-        try {
-            Properties properties = new Properties();
-            properties.load( modelPropURL.openStream() );
-            Enumeration propNames = properties.propertyNames();
-            while ( propNames.hasMoreElements() ) {
-                String propName = ( String ) propNames.nextElement();
-                String value = properties.getProperty( propName );
-                propMap.put( propName, value );
-            }
-        } catch ( IOException e ) {
-            throw new WdkModelException( e );
-        }
-        return propMap;
+    private static void configureNode( Digester digester, String path,
+            Class nodeClass, String method ) {
+        digester.addObjectCreate( path, nodeClass );
+        digester.addSetProperties( path );
+        digester.addSetNext( path, method );
     }
     
     public static void main( String[ ] args ) {
-        BasicConfigurator.configure(); // logger
-        logger.setLevel( Level.ERROR );
-        
         try {
             
             String cmdName = System.getProperties().getProperty( "cmdName" );
@@ -741,9 +756,10 @@ public class ModelXmlParser {
             // load schema for xml data source
             File xmlSchemaFile = new File( System.getProperty( "xmlSchemaFile" ) );
             
-            WdkModel wdkModel = parseXmlFile( modelXmlFile.toURL(),
-                    modelPropFile.toURL(), schemaFile.toURL(),
-                    xmlSchemaFile.toURL(), modelConfigXmlFile.toURL() );
+            WdkModel wdkModel = parseXmlFile( modelXmlFile.toURI().toURL(),
+                    modelPropFile.toURI().toURL(), schemaFile.toURI().toURL(),
+                    xmlSchemaFile.toURI().toURL(),
+                    modelConfigXmlFile.toURI().toURL() );
             
             // load the xml data path
             File xmlDataDir = new File( System.getProperty( "xmlDataDir" ) );
@@ -768,7 +784,7 @@ public class ModelXmlParser {
         options.addOption( option );
     }
     
-    static Options declareOptions() {
+    private static Options declareOptions() {
         Options options = new Options();
         
         // config file
@@ -780,7 +796,7 @@ public class ModelXmlParser {
         return options;
     }
     
-    static CommandLine parseOptions( String cmdName, Options options,
+    private static CommandLine parseOptions( String cmdName, Options options,
             String[ ] args ) {
         
         CommandLineParser parser = new BasicParser();
@@ -799,7 +815,7 @@ public class ModelXmlParser {
         return cmdLine;
     }
     
-    static void usage( String cmdName, Options options ) {
+    private static void usage( String cmdName, Options options ) {
         
         String newline = System.getProperty( "line.separator" );
         String cmdlineSyntax = cmdName + " -model model_name";

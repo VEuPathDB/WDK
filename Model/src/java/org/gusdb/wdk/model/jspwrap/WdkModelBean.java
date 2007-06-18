@@ -27,6 +27,7 @@ public class WdkModelBean  {
         this.model = model;
     }
 
+    @Deprecated
     public Map getProperties() {
         return model.getProperties();
     }
