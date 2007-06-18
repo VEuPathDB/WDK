@@ -11,7 +11,6 @@ public class ModelConfig {
     String login;
     String password;
     String platformClass;
-    Integer maxQueryParams;
     Integer maxIdle;
     Integer maxWait;
     Integer maxActive;
@@ -70,14 +69,6 @@ public class ModelConfig {
 
     public String getPassword() {
         return password;
-    }
-
-    public void setMaxQueryParams(Integer maxQueryParams) {
-        this.maxQueryParams = maxQueryParams;
-    }
-
-    public Integer getMaxQueryParams() {
-        return maxQueryParams;
     }
 
     public Integer getInitialSize() {

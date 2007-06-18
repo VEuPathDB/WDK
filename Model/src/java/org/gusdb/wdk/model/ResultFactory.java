@@ -148,17 +148,17 @@ public class ResultFactory implements Serializable {
 				+ resultTableName;
 	}
 
-	public void recreateCache(int numParams, boolean noSchemaOutput,
+	public void recreateCache(boolean noSchemaOutput,
 			boolean forceDrop) throws WdkModelException {
 		dropCache(noSchemaOutput, forceDrop);
-		createCache(numParams, noSchemaOutput);
+		createCache(noSchemaOutput);
 	}
 
 	/**
      * @param numParams
      *            Number of parameters allowed in a cached query
      */
-	public void createCache(int numParams, boolean noSchemaOutput)
+	public void createCache(boolean noSchemaOutput)
 			throws WdkModelException {
 		String newline = System.getProperty("line.separator");
 
@@ -784,7 +784,6 @@ public class ResultFactory implements Serializable {
 			String connectionUrl = modelConfig.getConnectionUrl();
 			String login = modelConfig.getLogin();
 			String password = modelConfig.getPassword();
-			Integer maxQueryParams = modelConfig.getMaxQueryParams();
 			String platformClass = modelConfig.getPlatformClass();
 
 			Integer maxIdle = modelConfig.getMaxIdle();
@@ -806,13 +805,11 @@ public class ResultFactory implements Serializable {
 					enableQueryLogger, queryLoggerFile);
 
 			long start = System.currentTimeMillis();
-			if (newCache) factory.createCache(maxQueryParams.intValue(),
-					noSchemaOutput);
+			if (newCache) factory.createCache(noSchemaOutput);
 			else if (resetCache) factory.resetCache(noSchemaOutput, forceDrop);
 			else if (dropCache) factory.dropCache(noSchemaOutput, forceDrop);
 			else if (recreateCache)
-				factory.recreateCache(maxQueryParams.intValue(),
-						noSchemaOutput, forceDrop);
+				factory.recreateCache(noSchemaOutput, forceDrop);
 			long end = System.currentTimeMillis();
 			System.out.println("Command succeeded in "
 					+ ((end - start) / 1000.0) + " seconds");

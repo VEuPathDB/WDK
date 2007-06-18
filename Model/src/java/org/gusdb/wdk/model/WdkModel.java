@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model;
 
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -13,7 +14,6 @@ import org.gusdb.wdk.model.user.QueryFactory;
 import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
 import org.gusdb.wdk.model.xml.XmlRecordClassSet;
-import org.w3c.dom.Document;
 
 // why is this in impl?
 
@@ -47,10 +47,11 @@ public class WdkModel {
     String historyDatasetLink;
     String historyDatasetColumnName;
     ResultFactory resultFactory;
+    
+    @Deprecated
     Map< String, String > properties;
     
     private EnumParam booleanOps;
-    private Document document;
     String webServiceUrl;
     
     /**
@@ -177,10 +178,12 @@ public class WdkModel {
         return introduction;
     }
     
+    @Deprecated
     public Map getProperties() {
         return properties;
     }
     
+    @Deprecated
     public void setProperties( Map< String, String > properties ) {
         this.properties = properties;
     }
@@ -382,13 +385,15 @@ public class WdkModel {
         return lists;
     }
     
-    public Question makeBooleanQuestion( RecordClass rc ) throws WdkModelException {
+    public Question makeBooleanQuestion( RecordClass rc )
+            throws WdkModelException {
         
         Question q = new Question();
         q.setName( BooleanQuestionNode.BOOLEAN_QUESTION_NAME );
         q.setRecordClass( rc );
         
-        // can't call resolve references, since the underlying query is invalid yet
+        // can't call resolve references, since the underlying query is invalid
+        // yet
         // q.resolveReferences( this );
         q.setResources( this );
         
@@ -431,75 +436,90 @@ public class WdkModel {
         }
     }
     
-    public void configure( URL modelConfigXmlFileURL ) throws Exception {
-        
-        ModelConfig modelConfig = ModelConfigParser.parseXmlFile( modelConfigXmlFileURL );
-        String fileName = modelConfigXmlFileURL.getFile();
-        String connectionUrl = modelConfig.getConnectionUrl();
-        String login = modelConfig.getLogin();
-        String password = modelConfig.getPassword();
-        String platformClass = modelConfig.getPlatformClass();
-        Integer maxIdle = modelConfig.getMaxIdle();
-        Integer minIdle = modelConfig.getMinIdle();
-        Integer maxWait = modelConfig.getMaxWait();
-        Integer maxActive = modelConfig.getMaxActive();
-        Integer initialSize = modelConfig.getInitialSize();
-        
-        RDBMSPlatformI platform = ( RDBMSPlatformI ) Class.forName(
-                platformClass ).newInstance();
-        
-        // also load the connection info for authentication database
-        String authenPlatformClass = modelConfig.getAuthenticationPlatformClass();
-        String authenLogin = modelConfig.getAuthenticationLogin();
-        String authenPassword = modelConfig.getAuthenticationPassword();
-        String authenConnection = modelConfig.getAuthenticationConnectionUrl();
-        
-        String loginSchema = modelConfig.getLoginSchema();
-        
-        String defaultRole = modelConfig.getDefaultRole();
-        String smtpServer = modelConfig.getSmtpServer();
-        String registerEmail = modelConfig.getRegisterEmail();
-        String emailSubject = modelConfig.getEmailSubject();
-        String emailContent = modelConfig.getEmailContent();
-        
-        boolean enableQueryLogger = modelConfig.isEnableQueryLogger();
-        String queryLoggerFile = modelConfig.getQueryLoggerFile();
-        
-        String projectId = getProjectId();
-        
-        // initialize authentication factory
-        // set the max active as half of the model's configuration
-        if ( authenPlatformClass != null && !"".equals( authenPlatformClass ) ) {
-            authenPlatform = ( RDBMSPlatformI ) Class.forName(
-                    authenPlatformClass ).newInstance();
-            authenPlatform.init( authenConnection, authenLogin, authenPassword,
-                    minIdle, maxIdle, maxWait, maxActive / 2, initialSize,
-                    fileName );
-            userFactory = new UserFactory( this, projectId, authenPlatform,
-                    loginSchema, defaultRole, smtpServer, registerEmail,
-                    emailSubject, emailContent );
-        } else {
-            userFactory = new UserFactory( this, projectId, null, null, null,
-                    null, null, null, null );
+    public void configure( URL modelConfigXmlFileURL ) throws WdkModelException {
+        try {
+            ModelConfig modelConfig = ModelConfigParser.parseXmlFile( modelConfigXmlFileURL );
+            String fileName = modelConfigXmlFileURL.getFile();
+            String connectionUrl = modelConfig.getConnectionUrl();
+            String login = modelConfig.getLogin();
+            String password = modelConfig.getPassword();
+            String platformClass = modelConfig.getPlatformClass();
+            Integer maxIdle = modelConfig.getMaxIdle();
+            Integer minIdle = modelConfig.getMinIdle();
+            Integer maxWait = modelConfig.getMaxWait();
+            Integer maxActive = modelConfig.getMaxActive();
+            Integer initialSize = modelConfig.getInitialSize();
+            
+            RDBMSPlatformI platform = ( RDBMSPlatformI ) Class.forName(
+                    platformClass ).newInstance();
+            
+            // also load the connection info for authentication database
+            String authenPlatformClass = modelConfig.getAuthenticationPlatformClass();
+            String authenLogin = modelConfig.getAuthenticationLogin();
+            String authenPassword = modelConfig.getAuthenticationPassword();
+            String authenConnection = modelConfig.getAuthenticationConnectionUrl();
+            
+            String loginSchema = modelConfig.getLoginSchema();
+            
+            String defaultRole = modelConfig.getDefaultRole();
+            String smtpServer = modelConfig.getSmtpServer();
+            String registerEmail = modelConfig.getRegisterEmail();
+            String emailSubject = modelConfig.getEmailSubject();
+            String emailContent = modelConfig.getEmailContent();
+            
+            boolean enableQueryLogger = modelConfig.isEnableQueryLogger();
+            String queryLoggerFile = modelConfig.getQueryLoggerFile();
+            
+            String projectId = getProjectId();
+            
+            // initialize authentication factory
+            // set the max active as half of the model's configuration
+            if ( authenPlatformClass != null
+                    && !"".equals( authenPlatformClass ) ) {
+                authenPlatform = ( RDBMSPlatformI ) Class.forName(
+                        authenPlatformClass ).newInstance();
+                authenPlatform.init( authenConnection, authenLogin,
+                        authenPassword, minIdle, maxIdle, maxWait,
+                        maxActive / 2, initialSize, fileName );
+                userFactory = new UserFactory( this, projectId, authenPlatform,
+                        loginSchema, defaultRole, smtpServer, registerEmail,
+                        emailSubject, emailContent );
+            } else {
+                userFactory = new UserFactory( this, projectId, null, null,
+                        null, null, null, null, null );
+            }
+            
+            platform.init( connectionUrl, login, password, minIdle, maxIdle,
+                    maxWait, maxActive, initialSize, fileName );
+            ResultFactory resultFactory = new ResultFactory( platform, login,
+                    enableQueryLogger, queryLoggerFile );
+            this.platform = platform;
+            this.webServiceUrl = modelConfig.getWebServiceUrl();
+            this.resultFactory = resultFactory;
+            
+            // initialize dataset factory with the login preferences
+            datasetFactory = new DatasetFactory( authenPlatform, loginSchema );
+            
+            // initialize QueryFactory in user schema too
+            queryFactory = new QueryFactory( authenPlatform, loginSchema );
+        } catch ( InstantiationException ex ) {
+            // TODO Auto-generated catch block
+            ex.printStackTrace();
+        } catch ( IllegalAccessException ex ) {
+            // TODO Auto-generated catch block
+            ex.printStackTrace();
+        } catch ( ClassNotFoundException ex ) {
+            // TODO Auto-generated catch block
+            ex.printStackTrace();
         }
-        
-        platform.init( connectionUrl, login, password, minIdle, maxIdle,
-                maxWait, maxActive, initialSize, fileName );
-        ResultFactory resultFactory = new ResultFactory( platform, login,
-                enableQueryLogger, queryLoggerFile );
-        this.platform = platform;
-        this.webServiceUrl = modelConfig.getWebServiceUrl();
-        this.resultFactory = resultFactory;
-        
-        // initialize dataset factory with the login preferences
-        datasetFactory = new DatasetFactory( authenPlatform, loginSchema );
-        
-        // initialize QueryFactory in user schema too
-        queryFactory = new QueryFactory( authenPlatform, loginSchema );
     }
     
-    public void configure( File modelConfigXmlFile ) throws Exception {
-        configure( modelConfigXmlFile.toURI().toURL() );
+    public void configure( File modelConfigXmlFile ) throws WdkModelException {
+        try {
+            configure( modelConfigXmlFile.toURI().toURL() );
+        } catch ( MalformedURLException ex ) {
+            throw new WdkModelException( ex );
+        }
     }
     
     public RDBMSPlatformI getRDBMSPlatform() {
@@ -650,14 +670,6 @@ public class WdkModel {
     // TODO What's supposed to be here?
     }
     
-    public Document getDocument() {
-        return document;
-    }
-    
-    public void setDocument( Document document ) {
-        this.document = document;
-    }
-    
     public EnumParam getBooleanOps() {
         return this.booleanOps;
     }
@@ -788,30 +800,4 @@ public class WdkModel {
         map.put( "MINUS", minus );
         map.put( "not", minus );
         map.put( "NOT", minus );
-        map.put( "except", minus );
-        map.put( "EXCEPT", minus );
-        map.put( "-", minus );
-        
-        return map;
-    }
-    
-    public String getParamDisplayName( String paramName ) {
-        for ( ParamSet paramset : paramSets.values() ) {
-            Object object = paramset.getElement( paramName );
-            if ( object == null ) continue;
-            Param param = ( Param ) object;
-            return param.getPrompt();
-        }
-        return null;
-    }
-    
-    public String getQuestionDisplayName(String questionFullName) {
-        try {
-            Question question = (Question)resolveReference( questionFullName, "", "", "" );
-            return question.getDisplayName();
-        } catch ( WdkModelException ex ) {
-            // question doesn't exist, return null;
-            return null;
-        }
-    }
-}
+        map.p
