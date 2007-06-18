@@ -1,0 +1,35 @@
+<?xml version="1.0" ?>
+<grammar xmlns="http://relaxng.org/ns/structure/1.0">
+    <start>
+        <element name="modelConfig">
+            <attribute name="login" />
+            <attribute name="password" />
+            <attribute name="connectionUrl" />
+            <attribute name="webServiceUrl" />
+            <attribute name="platformClass" />
+            <attribute name="initialSize" />
+            <attribute name="maxActive" />
+            <attribute name="maxIdle" />
+            <attribute name="minIdle" />
+            <attribute name="maxWait" />
+            <attribute name="authenticationLogin" />
+            <attribute name="authenticationPassword" />
+            <attribute name="authenticationConnectionUrl" />
+            <attribute name="authenticationPlatformClass" />
+            <attribute name="loginSchema" />
+            <attribute name="defaultRole" />
+            <attribute name="smtpServer" />
+            <attribute name="enableQueryLogger" />
+            <attribute name="queryLoggerFile" />
+            <attribute name="supportEmail" />
+
+            <element name="emailSubject">
+                <text />
+            </element>        
+            <element name="emailContent">
+                <text />
+            </element>        
+        </element>
+    </start>
+
+</grammer>
