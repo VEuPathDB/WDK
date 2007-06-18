@@ -97,9 +97,9 @@ public class XmlDataLoader {
             InputSource is = ValidationDriver.uriOrFileInputSource(dataXmlURL.toExternalForm());
             return vd.validate(is);
         } catch (SAXException e) {
-            throw new WdkModelException(e);
+            throw new WdkModelException("parsing: " + dataXmlURL, e);
         } catch (IOException e) {
-            throw new WdkModelException(e);
+            throw new WdkModelException("parsing: " + dataXmlURL, e);
         }
     }
 
