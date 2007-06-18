@@ -800,4 +800,31 @@ public class WdkModel {
         map.put( "MINUS", minus );
         map.put( "not", minus );
         map.put( "NOT", minus );
-        map.p
+        map.put( "except", minus );
+        map.put( "EXCEPT", minus );
+        map.put( "-", minus );
+        
+        return map;
+    }
+    
+    public String getParamDisplayName( String paramName ) {
+        for ( ParamSet paramset : paramSets.values() ) {
+            Object object = paramset.getElement( paramName );
+            if ( object == null ) continue;
+            Param param = ( Param ) object;
+            return param.getPrompt();
+        }
+        return null;
+    }
+    
+    public String getQuestionDisplayName( String questionFullName ) {
+        try {
+            Question question = ( Question ) resolveReference(
+                    questionFullName, "", "", "" );
+            return question.getDisplayName();
+        } catch ( WdkModelException ex ) {
+            // question doesn't exist, return null;
+            return null;
+        }
+    }
+}
