@@ -20,6 +20,7 @@
       </optional>
       <oneOrMore>
         <choice>
+          <ref name="import" />
           <ref name="questionSet" />
           <ref name="querySet" />
           <ref name="queryNameList" />
@@ -33,6 +34,13 @@
     </element>
   </start>
 
+  <!-- define import tag -->
+  <define name="import">
+    <element name="import">
+      <attribute name="href"/>
+    </element>
+  </define>  
+  
 
   <!-- Schema grouping elements  -->
   <define name="queries">
