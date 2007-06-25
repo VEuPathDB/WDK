@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.test;
 
-import java.io.File;
 import java.util.Hashtable;
 
 import org.apache.commons.cli.BasicParser;
@@ -11,7 +10,17 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.gusdb.wdk.model.*;
+import org.gusdb.wdk.model.FlatVocabParam;
+import org.gusdb.wdk.model.Param;
+import org.gusdb.wdk.model.Query;
+import org.gusdb.wdk.model.QueryInstance;
+import org.gusdb.wdk.model.QuerySet;
+import org.gusdb.wdk.model.Reference;
+import org.gusdb.wdk.model.ResultList;
+import org.gusdb.wdk.model.StringParam;
+import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.implementation.ModelXmlParser;
 
 public class QueryTester {
@@ -127,21 +136,16 @@ public class QueryTester {
     // /////////// static methods /////////////////////////////////////
     // ////////////////////////////////////////////////////////////////////
 
-    public static void main(String[] args) {
-
-        String cmdName = System.getProperties().getProperty("cmdName");
-        File configDir = new File(System.getProperties().getProperty(
-                "configDir"));
+    public static void main(String[] args)
+            throws WdkModelException, WdkUserException {
+        String cmdName = System.getProperty("cmdName");
+        String gusHome = System.getProperty(ModelXmlParser.GUS_HOME);
 
         // process args
         Options options = declareOptions();
         CommandLine cmdLine = parseOptions(cmdName, options, args);
 
         String modelName = cmdLine.getOptionValue("model");
-
-        File modelConfigXmlFile = new File(configDir, modelName + "-config.xml");
-        File modelXmlFile = new File(configDir, modelName + ".xml");
-        File modelPropFile = new File(configDir, modelName + ".prop");
 
         String fullQueryName = cmdLine.getOptionValue("query");
         boolean returnResultAsTable = cmdLine.hasOption("returnTable");
@@ -151,48 +155,34 @@ public class QueryTester {
         String[] params = new String[0];
         if (haveParams) params = cmdLine.getOptionValues("params");
 
-        try {
-            Reference ref = new Reference(fullQueryName);
-            String querySetName = ref.getSetName();
-            String queryName = ref.getElementName();
+        Reference ref = new Reference(fullQueryName);
+        String querySetName = ref.getSetName();
+        String queryName = ref.getElementName();
 
-            // read config info
-            File schemaFile = new File(System.getProperty("schemaFile"));
-            File xmlSchemaFile = new File(System.getProperty("xmlSchemaFile"));
-            WdkModel wdkModel = ModelXmlParser.parseXmlFile(
-                    modelXmlFile.toURL(), modelPropFile.toURL(),
-                    schemaFile.toURL(), xmlSchemaFile.toURL(),
-                    modelConfigXmlFile.toURL());
+        // read config info
+        ModelXmlParser parser = new ModelXmlParser(gusHome);
+        WdkModel wdkModel = parser.parseModel(modelName);
 
-            QueryTester tester = new QueryTester(wdkModel);
+        QueryTester tester = new QueryTester(wdkModel);
 
-            Hashtable paramHash = tester.parseParamArgs(params);
-            if (showQuery) {
-                String query = tester.showLowLevelQuery(querySetName,
-                        queryName, paramHash);
-                String newline = System.getProperty("line.separator");
-                String newlineQuery = query.replaceAll("^\\s\\s\\s", newline);
-                newlineQuery = newlineQuery.replaceAll("(\\S)\\s\\s\\s", "$1"
-                        + newline);
-                System.out.println(newline + newlineQuery + newline);
-            } else if (returnResultAsTable) {
-                String table = tester.getResultAsTableName(querySetName,
-                        queryName, paramHash);
-                System.out.println(table);
-            } else {
-                wdkModel.getQuerySet(querySetName).getQuery(queryName);
+        Hashtable paramHash = tester.parseParamArgs(params);
+        if (showQuery) {
+            String query = tester.showLowLevelQuery(querySetName, queryName,
+                    paramHash);
+            String newline = System.getProperty("line.separator");
+            String newlineQuery = query.replaceAll("^\\s\\s\\s", newline);
+            newlineQuery = newlineQuery.replaceAll("(\\S)\\s\\s\\s", "$1"
+                    + newline);
+            System.out.println(newline + newlineQuery + newline);
+        } else if (returnResultAsTable) {
+            String table = tester.getResultAsTableName(querySetName, queryName,
+                    paramHash);
+            System.out.println(table);
+        } else {
+            wdkModel.getQuerySet(querySetName).getQuery(queryName);
 
-                ResultList rs = tester.getResult(querySetName, queryName,
-                        paramHash);
-                rs.print();
-            }
-        } catch (WdkUserException e) {
-            System.err.println(e.formatErrors());
-            System.exit(1);
-        } catch (Exception e) {
-            System.err.println(e);
-            e.printStackTrace();
-            System.exit(1);
+            ResultList rs = tester.getResult(querySetName, queryName, paramHash);
+            rs.print();
         }
     }
 

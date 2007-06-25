@@ -298,8 +298,7 @@ public class StressTestAnalyzer {
     public static void main(String[] args)
             throws InvalidPropertiesFormatException, IOException,
             WdkModelException, URISyntaxException, WdkUserException, SQLException {
-
-        String cmdName = System.getProperties().getProperty("cmdName");
+        String cmdName = System.getProperty("cmdName");
 
         // process args
         Options options = declareOptions();

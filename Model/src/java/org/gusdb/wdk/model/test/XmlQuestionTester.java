@@ -1,15 +1,12 @@
 package org.gusdb.wdk.model.test;
 
-import java.io.File;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.implementation.ModelXmlParser;
 import org.gusdb.wdk.model.xml.XmlAnswer;
 import org.gusdb.wdk.model.xml.XmlQuestion;
@@ -19,12 +16,9 @@ public class XmlQuestionTester {
 
     static Logger logger = Logger.getRootLogger();
 
-    public static void main(String[] args) {
-
-	BasicConfigurator.configure(); // logger
-	logger.setLevel(Level.ERROR);
-
-        String cmdName = System.getProperties().getProperty("cmdName");
+    public static void main(String[] args) throws WdkModelException {
+        String cmdName = System.getProperty("cmdName");
+        String gusHome = System.getProperty(ModelXmlParser.GUS_HOME);
 
         // process args
         Options options = declareOptions();
@@ -38,55 +32,33 @@ public class XmlQuestionTester {
 
         validateRowCount(rows);
 
-        try {
-            String modelName = cmdLine.getOptionValue("model");
-            File configDir = new File(System.getProperties().getProperty(
-                    "configDir"));
+        String modelName = cmdLine.getOptionValue("model");
 
-            File modelConfigXmlFile = new File(configDir, modelName
-                    + "-config.xml");
-            File modelXmlFile = new File(configDir, modelName + ".xml");
-            File modelPropFile = new File(configDir, modelName + ".prop");
+        Reference ref = new Reference(questionFullName);
+        String questionSetName = ref.getSetName();
+        String questionName = ref.getElementName();
 
-            File schemaFile = new File(System.getProperty("schemaFile"));
-            File xmlSchemaFile = new File(System.getProperty("xmlSchemaFile"));
+        ModelXmlParser parser = new ModelXmlParser(gusHome);
+        WdkModel wdkModel = parser.parseModel(modelName);
 
-            Reference ref = new Reference(questionFullName);
-            String questionSetName = ref.getSetName();
-            String questionName = ref.getElementName();
+        XmlQuestionSet questionSet = wdkModel.getXmlQuestionSet(questionSetName);
+        XmlQuestion question = questionSet.getQuestion(questionName);
 
-            WdkModel wdkModel = ModelXmlParser.parseXmlFile(
-                    modelXmlFile.toURL(), modelPropFile.toURL(),
-                    schemaFile.toURL(), xmlSchemaFile.toURL(),
-                    modelConfigXmlFile.toURL());
-            
-            // use the config dir as Xml data path
-            File xmlDataDir = new File(System.getProperty("xmlDataDir"));
-            wdkModel.setXmlDataDir(xmlDataDir);
+        // use external data source
+        if (xmlData != null) question.setXmlDataURL(xmlData);
 
-            XmlQuestionSet questionSet = wdkModel.getXmlQuestionSet(questionSetName);
-            XmlQuestion question = questionSet.getQuestion(questionName);
-            
-            // use external data source
-            if (xmlData != null) question.setXmlDataURL(xmlData);
-            
-            int pageCount = 1;
+        int pageCount = 1;
 
-            for (int i = 0; i < rows.length; i += 2) {
-                int nextStartRow = Integer.parseInt(rows[i]);
-                int nextEndRow = Integer.parseInt(rows[i + 1]);
+        for (int i = 0; i < rows.length; i += 2) {
+            int nextStartRow = Integer.parseInt(rows[i]);
+            int nextEndRow = Integer.parseInt(rows[i + 1]);
 
-                XmlAnswer answer = question.makeAnswer(null, nextStartRow,
-                        nextEndRow);
+            XmlAnswer answer = question.makeAnswer(null, nextStartRow,
+                    nextEndRow);
 
-                System.out.println("Printing Record Instances on page "
-                        + pageCount);
-                System.out.println(answer.print());
-                pageCount++;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.exit(1);
+            System.out.println("Printing Record Instances on page " + pageCount);
+            System.out.println(answer.print());
+            pageCount++;
         }
     }
 

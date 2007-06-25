@@ -12,6 +12,7 @@ import org.gusdb.wdk.model.QuestionSet;
 import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.implementation.ModelXmlParser;
 
 
 public class JUnitSqlUtilsTester extends TestCase {
@@ -30,14 +31,6 @@ public class JUnitSqlUtilsTester extends TestCase {
 	}
 	
 	public JUnitSqlUtilsTester(){
-		String GUS_HOME = System.getenv("GUS_HOME");
-		if(GUS_HOME == null) GUS_HOME = "/home/samwzm/WDK/WDK_WEB/GUS_HOME";
-		System.setProperty("cmdName", "wdkSummaryTest");
-		System.setProperty("GUS_HOME", GUS_HOME);
-		System.setProperty("configDir", GUS_HOME + "/config/apidb_lime");
-		System.setProperty("schemaFile", GUS_HOME + "/lib/rng/wdkModel.rng");
-		System.setProperty("xmlSchemaFile", GUS_HOME + "/lib/xml/wdkModelSchema.xsd");
-		System.setProperty("xmlDataDir", GUS_HOME + "/lib/xml");
 		modelName = "model";
 		questionFullName = "GeneQuestions.GeneByAnnotatedKeyword";
 		params = new String[4];

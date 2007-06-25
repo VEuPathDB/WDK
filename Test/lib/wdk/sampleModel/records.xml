@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<wdkModel name="SingleModel" displayName="Single Test Model" version="1.0">
+
+
+    <!-- *************** -->
+    <!-- recordClassSets -->
+    <!-- *************** -->
+
+    <!--
+    A "record" is an object that gathers together data about an entity in the
+    database.  The entity is defined as data associated with a primary key,
+    and data in the record is based on that key. The data comes in three forms:
+    attributes, text attributes and tables.  An attribute is a single value
+    that describes the entity, such as "size."  A text attribute is similar,
+    but the value is created by defining a text string and optionally embedding
+    into that string the values of other attributes.  A table is a value
+    in the form of columns and rows, such as a table describing related
+    publications.
+
+    A record class is a template for creating records from a given primary key.
+    It includes "attribute queries," "table queries" and "text attributes."
+
+    An attribute query must have only one parameter, the primary key.  It must
+    return exactly zero or one rows.  The columns in the query are interpreted
+    as attributes of the record.
+
+    A text attribute has a body of text with the values of other attributes
+    optionally embedded in it.  The other attribute values are referred to
+    as variables of the form "$$name_of_attribute$$".
+
+    A table query must have only one parameter, the primary key.  It may
+    return any number of rows (but typically not a huge number).  The result
+    of the query is interpreted as being a table that
+
+    A "record set" is a grouping of records. It is useful in organizing the
+    model xml file.
+
+    The full name of a record is is of the form "set_name.name."
+    -->
+
+    <recordClassSet name="SampleRecords">
+
+        <recordClass name="StatisticsRecord" 
+          idPrefix="" type="Infrastructure"
+          attributeOrdering="query_instance_id">
+
+          <reporter name="tabular" displayName="Summary - tab delimited"
+                    implementation="org.gusdb.wdk.model.report.TabularReporter"/>
+                    
+          <attributeQueryRef ref="SampleQueries.QueryAttributes">
+            <columnAttribute displayName="Query ID" name="query_instance_id"/>
+            <columnAttribute displayName="Query Name" name="query_name"/>
+            <columnAttribute displayName="Is Cached" name="cached"/>
+            <columnAttribute displayName="Result Table" name="result_table"/>
+            <columnAttribute displayName="start Time" name="start_time"/>
+            <columnAttribute displayName="Query Checksum" name="query_checksum"/>
+            <columnAttribute displayName="Result Message" name="result_message"/>
+          </attributeQueryRef>
+
+        </recordClass>
+
+    </recordClassSet>
+        
+</wdkModel>
