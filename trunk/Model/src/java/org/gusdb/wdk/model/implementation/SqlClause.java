@@ -381,8 +381,8 @@ public class SqlClause {
     // /////////////////////////////////////////////////////////////////////////
 
     public static void main(String[] args) {
-        String cmdName = System.getProperties().getProperty("cmdName");
-        String gusHome = System.getProperties().getProperty("gusHome");
+        String cmdName = System.getProperty("cmdName");
+        String gusHome = System.getProperty(ModelXmlParser.GUS_HOME);
         Options options = declareOptions();
         CommandLine cmdLine = parseOptions(cmdName, options, args);
 
@@ -465,7 +465,6 @@ public class SqlClause {
         System.out.println("Result: ");
 
         RDBMSPlatformI platform = new PostgreSQL();
-        int sortingIndex = 1;
         SqlClause clause = new SqlClause(sql, "Result_Table", null,
                 "source_id", 1, 1, 20, platform);
         System.out.println(clause.getModifiedSql());

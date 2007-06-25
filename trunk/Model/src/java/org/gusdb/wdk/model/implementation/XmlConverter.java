@@ -76,8 +76,7 @@ public class XmlConverter {
             System.exit(-1);
         }
 
-        File xmlDataDir = new File(System.getProperties().getProperty(
-                "xmlDataDir"));
+        File xmlDataDir = new File(System.getProperty("xmlDataDir"));
         File inXmlFile = new File(xmlDataDir, args[0]);
         File inXslFile = new File(xmlDataDir, args[1]);
         File outXmlFile = new File(xmlDataDir, args[2]);
@@ -94,7 +93,7 @@ public class XmlConverter {
 
             // convert the xml
             XmlConverter.convert(inXmlStream, inXslStream, outXmlStream,
-				 inXslFile.getName());
+                    inXslFile.getName());
 
             // save the result
             outXmlStream.flush();

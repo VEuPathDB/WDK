@@ -3,9 +3,6 @@
  */
 package org.gusdb.wdk.model.migrate;
 
-import java.io.File;
-import java.net.MalformedURLException;
-
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -24,7 +21,7 @@ import org.gusdb.wdk.model.implementation.ModelXmlParser;
  * @modified May 22, 2007
  */
 public class Migrator {
-    
+
     /**
      * Before running this command, the preparation steps are expected to be
      * performed, such as setting up the new table schema, running the SQL
@@ -44,167 +41,153 @@ public class Migrator {
      * @throws WdkModelException
      * @throws WdkUserException
      */
-    public static void main( String[ ] args ) throws WdkModelException,
-            WdkUserException {
+    public static void main(String[] args)
+            throws WdkModelException, WdkUserException {
         // determine which version of the migrator to be used
         Migrator migrator = new Migrator();
-        migrator.parseOptions( args );
+        migrator.parseOptions(args);
         String oldVersion = migrator.getOldVersion();
         String newVersion = migrator.getNewVersion();
-        oldVersion = oldVersion.replace( '.', '_' );
-        newVersion = newVersion.replace( '.', '_' );
-        
+        oldVersion = oldVersion.replace('.', '_');
+        newVersion = newVersion.replace('.', '_');
+
         // construct the migrator class to do the real work
         String className = Migrator.class.getName() + oldVersion + "To"
                 + newVersion;
         try {
-            Class migratorClass = Class.forName( className );
-            migrator = ( Migrator ) migratorClass.newInstance();
-            migrator.parseOptions( args );
+            Class migratorClass = Class.forName(className);
+            migrator = (Migrator) migratorClass.newInstance();
+            migrator.parseOptions(args);
             migrator.migrate();
-            
-            System.out.println( "Migration from " + oldVersion + " to "
-                    + newVersion + " is finished" );
-        } catch ( ClassNotFoundException ex ) {
-            throw new WdkModelException( ex );
-        } catch ( InstantiationException ex ) {
-            throw new WdkModelException( ex );
-        } catch ( IllegalAccessException ex ) {
-            throw new WdkModelException( ex );
+
+            System.out.println("Migration from " + oldVersion + " to "
+                    + newVersion + " is finished");
+        } catch (ClassNotFoundException ex) {
+            throw new WdkModelException(ex);
+        } catch (InstantiationException ex) {
+            throw new WdkModelException(ex);
+        } catch (IllegalAccessException ex) {
+            throw new WdkModelException(ex);
         }
     }
-    
+
     private String commandName;
-    
+
     protected String helpHeader;
     protected String helpFooter;
     protected Options options;
-    
+
     protected String oldVersion;
     protected String oldSchema;
     protected WdkModel wdkModel;
-    
-    public Migrator( ) {
+
+    public Migrator() {
         options = new Options();
         helpHeader = "Migrate user data from previous release into current release";
         helpFooter = "";
         declareOptions();
     }
-    
-    public void parseOptions( String[ ] args ) throws WdkModelException {
-        commandName = System.getProperties().getProperty( "cmdName" );
-        
+
+    public void parseOptions(String[] args) throws WdkModelException {
+        commandName = System.getProperty("cmdName");
+
         CommandLineParser parser = new BasicParser();
         String modelName = null;
         try {
             // parse the command line arguments
-            CommandLine commandLine = parser.parse( options, args );
-            modelName = commandLine.getOptionValue( "model" );
-            oldVersion = commandLine.getOptionValue( "version" );
-            oldSchema = commandLine.getOptionValue( "schema" );
-        } catch ( ParseException exp ) {
+            CommandLine commandLine = parser.parse(options, args);
+            modelName = commandLine.getOptionValue("model");
+            oldVersion = commandLine.getOptionValue("version");
+            oldSchema = commandLine.getOptionValue("schema");
+        } catch (ParseException exp) {
             // oops, something went wrong
-            System.err.println( "" );
-            System.err.println( "Parsing failed.  Reason: " + exp.getMessage() );
-            System.err.println( "" );
+            System.err.println("");
+            System.err.println("Parsing failed.  Reason: " + exp.getMessage());
+            System.err.println("");
             printUsage();
         }
-        
+
         // parse the wdk model
-        File configDir = new File( System.getProperties().getProperty(
-                "configDir" ) );
-        File modelConfigXmlFile = new File( configDir, modelName
-                + "-config.xml" );
-        File modelXmlFile = new File( configDir, modelName + ".xml" );
-        File modelPropFile = new File( configDir, modelName + ".prop" );
-        File schemaFile = new File( System.getProperty( "schemaFile" ) );
-        File xmlSchemaFile = new File( System.getProperty( "xmlSchemaFile" ) );
-        try {
-            wdkModel = ModelXmlParser.parseXmlFile(
-                    modelXmlFile.toURI().toURL(),
-                    modelPropFile.toURI().toURL(), schemaFile.toURI().toURL(),
-                    xmlSchemaFile.toURI().toURL(),
-                    modelConfigXmlFile.toURI().toURL() );
-        } catch ( MalformedURLException ex ) {
-            throw new WdkModelException( ex );
-        }
+        String gusHome = System.getProperty(ModelXmlParser.GUS_HOME);
+        ModelXmlParser modelParser = new ModelXmlParser(gusHome);
+        wdkModel = modelParser.parseModel(modelName);
     }
-    
+
     public String getOldVersion() {
         return oldVersion;
     }
-    
+
     public String getNewVersion() {
         return WdkModel.WDK_VERSION;
     }
-    
+
     public String getOldSchema() {
         return oldSchema;
     }
-    
+
     public String getNewSchema() throws WdkUserException {
         return wdkModel.getUserFactory().getLoginSchema();
     }
-    
+
     public WdkModel getWdkModel() {
         return wdkModel;
     }
-    
+
     protected void declareOptions() {
-        Option option = new Option( "model", true,
+        Option option = new Option("model", true,
                 "the name of the model.  This is used to find the Model XML "
                         + "file ($GUS_HOME/config/model_name.xml) the Model "
                         + "property file ($GUS_HOME/config/model_name.prop) "
                         + "and the Model config file "
-                        + "($GUS_HOME/config/model_name-config.xml)" );
-        option.setRequired( true );
-        option.setArgName( "model" );
-        options.addOption( option );
-        
-        option = new Option( "version", true,
+                        + "($GUS_HOME/config/model_name-config.xml)");
+        option.setRequired(true);
+        option.setArgName("model");
+        options.addOption(option);
+
+        option = new Option("version", true,
                 "the version of the model to be migrated from; the version is "
                         + "used to determine which migration code to be "
-                        + "executed" );
-        option.setRequired( true );
-        option.setArgName( "version" );
-        options.addOption( option );
-        
-        option = new Option( "schema", true,
+                        + "executed");
+        option.setRequired(true);
+        option.setArgName("version");
+        options.addOption(option);
+
+        option = new Option("schema", true,
                 "the old user login schema, where the user data is migrated "
-                        + "from" );
-        option.setRequired( true );
-        option.setArgName( "schema" );
-        options.addOption( option );
+                        + "from");
+        option.setRequired(true);
+        option.setArgName("schema");
+        options.addOption(option);
     }
-    
+
     protected void printUsage() {
-        String newline = System.getProperty( "line.separator" );
-        
+        String newline = System.getProperty("line.separator");
+
         // print command syntax
-        StringBuffer syntax = new StringBuffer( commandName );
-        for ( Object object : options.getOptions() ) {
-            Option option = ( Option ) object;
-            syntax.append( option.isRequired() ? " -" : " [-" );
-            syntax.append( option.getArgName() );
-            if ( option.hasArg() ) {
-                syntax.append( " <" + option.getArgName() );
-                syntax.append( option.hasArgs() ? " ...>" : ">" );
+        StringBuffer syntax = new StringBuffer(commandName);
+        for (Object object : options.getOptions()) {
+            Option option = (Option) object;
+            syntax.append(option.isRequired() ? " -" : " [-");
+            syntax.append(option.getArgName());
+            if (option.hasArg()) {
+                syntax.append(" <" + option.getArgName());
+                syntax.append(option.hasArgs() ? " ...>" : ">");
             }
-            if ( !option.isRequired() ) syntax.append( ']' );
+            if (!option.isRequired()) syntax.append(']');
         }
-        syntax.append( newline );
-        
+        syntax.append(newline);
+
         // PrintWriter stderr = new PrintWriter(System.err);
         HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp( 75, syntax.toString(), helpHeader, options,
-                helpFooter );
-        System.exit( 1 );
+        formatter.printHelp(75, syntax.toString(), helpHeader, options,
+                helpFooter);
+        System.exit(1);
     }
-    
+
     /**
      * start migration. This method will be overridden by sub-classes
      */
     public void migrate() throws WdkModelException, WdkUserException {
-        System.out.println( "Do nothing" );
+        System.out.println("Do nothing");
     }
 }
