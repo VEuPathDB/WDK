@@ -31,7 +31,7 @@ public class SummaryTester {
 
     public static void main(String[] args) {
 
-        String cmdName = System.getProperties().getProperty("cmdName");
+        String cmdName = System.getProperty("cmdName");
 
         // process args
         Options options = declareOptions();

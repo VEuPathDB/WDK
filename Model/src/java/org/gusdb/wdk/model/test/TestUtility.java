@@ -15,6 +15,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.implementation.ModelXmlParser;
 
 /**
  * @author Jerric
@@ -109,14 +110,15 @@ public class TestUtility {
     private SanityModel loadSanityModel()
             throws MalformedURLException, WdkModelException {
         String modelName = System.getProperty("model");
-        File configDir = new File(System.getProperty("configDir"));
-        File sanityXmlFile = new File(configDir, modelName + "-sanity.xml");
-        File modelPropFile = new File(configDir, modelName + ".prop");
-        File sanitySchemaFile = new File(System.getProperty("sanitySchemaFile"));
+        String gusHome = System.getProperty(ModelXmlParser.GUS_HOME);
+        File sanityXmlFile = new File(gusHome, "/lib/xml/" + modelName
+                + "-sanity.xml");
+        File modelPropFile = new File(gusHome, "/config/" + modelName + ".prop");
+        File sanitySchemaFile = new File(gusHome + "/lib/rng/sanityModel.rng");
 
         SanityModel sanityModel = SanityTestXmlParser.parseXmlFile(
-                sanityXmlFile.toURL(), modelPropFile.toURL(),
-                sanitySchemaFile.toURL());
+                sanityXmlFile.toURI().toURL(), modelPropFile.toURI().toURL(),
+                sanitySchemaFile.toURI().toURL());
         return sanityModel;
     }
 

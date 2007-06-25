@@ -21,7 +21,6 @@
 	<classpathentry kind="lib" path="lib/java/saaj.jar"/>
 	<classpathentry kind="lib" path="lib/java/wsdl4j-1.5.1.jar"/>
 	<classpathentry kind="lib" path="lib/java/activation.jar"/>
-	<classpathentry kind="lib" path="lib/java/log4j-1.2.13.jar"/>
 	<classpathentry kind="lib" path="lib/java/db_driver/ojdbc14.jar"/>
 	<classpathentry kind="lib" path="lib/java/servlet-api-2.4.jar"/>
 	<classpathentry kind="lib" path="lib/java/mail.jar"/>
@@ -30,5 +29,6 @@
 	<classpathentry kind="lib" path="lib/java/WSF-Client.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3.8.1"/>
 	<classpathentry kind="lib" path="lib/java/itext-2.0.4.jar"/>
+	<classpathentry kind="lib" path="lib/java/log4j-1.2.14.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>

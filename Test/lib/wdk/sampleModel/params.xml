@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<wdkModel name="SingleModel" displayName="Single Test Model" version="1.0">
+
+<!-- //////////  PARAMETERS //////////// -->
+
+    <!-- parameters used by queries -->
+    <paramSet name="params">
+
+        <stringParam name="primaryKey"
+                     prompt="Primary Key"
+                     help="primary key"/>
+
+        <stringParam name="query_name"
+                     prompt="Query Name"
+                     help="can use wild card"
+                     substitute="yes"
+                     default="query*"/>
+
+    </paramSet>
+        
+</wdkModel>

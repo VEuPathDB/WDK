@@ -12,6 +12,7 @@ import org.gusdb.wdk.model.QuestionSet;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.implementation.ModelXmlParser;
 import org.gusdb.wdk.model.user.UserFactory;
 
 /**
@@ -42,7 +43,8 @@ public class HistoryRecycler implements Runnable {
                 long start = System.currentTimeMillis();
                 recycle();
                 long end = System.currentTimeMillis();
-                System.out.println("spent " + ((end - start)/1000.0) + " seconds.");
+                System.out.println("spent " + ((end - start) / 1000.0)
+                        + " seconds.");
 
                 // then sleep for a total interval time, but quit if necessary
                 for (int i = 0; i < interval * 12; i++) {
@@ -63,10 +65,8 @@ public class HistoryRecycler implements Runnable {
     }
 
     private boolean isStopping() {
-        File configDir = new File(System.getProperties().getProperty(
-                "configDir"));
-        if (!configDir.exists()) return false;
-        File stopFile = new File(configDir, STOP_SIGNAL_FILE);
+        String gusHome = System.getProperty(ModelXmlParser.GUS_HOME);
+        File stopFile = new File(gusHome, "/config/" + STOP_SIGNAL_FILE);
         return stopFile.exists();
     }
 

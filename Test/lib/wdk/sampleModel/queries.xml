@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<wdkModel name="SingleModel" displayName="Single Test Model" version="1.0">
+
+
+    <!-- ************ -->
+    <!-- querySets -->
+    <!-- ************ -->
+    
+    <!--
+    A query fetchs the data from database or some other sources to a question or recordClass.
+    -->
+
+    <querySet name="SampleQueries">
+    
+        <sqlQuery name="QueryIdsByName" displayName="Get Query Ids by query name"
+                  isCacheable="true">
+            <paramRef ref="params.query_name"/>
+            <column name="query_instance_id"/>
+            <sql>
+                <![CDATA[
+                SELECT qi.query_instance_id
+                FROM queryinstance qi
+                WHERE qi.query_name LIKE REPLACE(LOWER('$$query_name$$'), '*', '%')
+                ]]>
+            </sql>
+        </sqlQuery>
+
+    
+        <sqlQuery name="QueryAttributes" displayName="Get Query Attributes"
+                  isCacheable="true">
+            <paramRef ref="params.primaryKey"/>
+            <column name="query_instance_id" sortingTable="queryinstance"/>
+            <column name="query_name" sortingTable="queryinstance"/>
+            <column name="cached" sortingTable="queryinstance"/>
+            <column name="result_table" sortingTable="queryinstance"/>
+            <column name="start_time" sortingTable="queryinstance"/>
+            <column name="query_checksum" sortingTable="queryinstance"/>
+            <column name="result_message" sortingTable="queryinstance"/>
+            <sql>
+                <![CDATA[
+                SELECT qi.query_instance_id
+                       qi.query_name
+                       qi.cached
+                       qi.result_table
+                       qi.start_time
+                       qi.query_checksum
+                       qi.result_message
+                FROM queryinstance qa
+                WHERE qi.query_instance_id = '$$primaryKey$$'
+                ]]>
+            </sql>
+        </sqlQuery>
+    
+    </querySet>
+        
+</wdkModel>
