@@ -8,24 +8,27 @@
 
 <c:if test="${err != null || exp != null}"><br></c:if>
 
-<!--html:errors/-->
+<!-- html:errors/ -->
 
 <logic:messagesPresent> 
 <EM><b>Please correct the following error(s): </b></EM><br>
-<UL>
- <html:messages id="msg"> 
- <LI><EM>${msg}</EM></LI>
- </html:messages> 
-</UL> 
+
+    <UL>
+        <html:messages id="error" message="false">
+            <LI><bean:write name="error"/></LI>
+        </html:messages>
+    </UL>
+
 </logic:messagesPresent>
 
 
 <c:if test="${exp != null}">
-  Exception: ${exp} <br>
-  Exception message: ${exp.message} <br>
-  Stacktrace: <br>
-  <c:forEach items="${exp.stackTrace}" var="st">
-    ${st} <br>
-  </c:forEach>
+  <c:set var="site" value="${initParam.wdkDevelopmentSite}" />
+  <c:if test="${site eq 'Yes' || site eq 'yes' || site eq 'YES'}">
+     Stacktrace: <br>
+     <c:forEach items="${exp.stackTrace}" var="st">
+        ${st} <br>
+     </c:forEach>
+  </c:if>
   <br><br>
 </c:if>
