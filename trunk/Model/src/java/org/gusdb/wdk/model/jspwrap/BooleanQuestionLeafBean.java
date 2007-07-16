@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.jspwrap;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -78,7 +77,7 @@ public class BooleanQuestionLeafBean {
 	return parent;
     }
 
-    public void setValues(LinkedHashMap values){
+    public void setValues(Map<String, Object> values){
 	bqn.setValues(values);
     }
 

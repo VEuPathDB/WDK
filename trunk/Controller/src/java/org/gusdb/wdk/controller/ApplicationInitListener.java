@@ -1,17 +1,23 @@
 package org.gusdb.wdk.controller;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import javax.xml.bind.ValidationException;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import org.gusdb.wdk.model.RDBMSPlatformI;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.implementation.ModelXmlParser;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.xml.sax.SAXException;
 
 /**
  * A class that is initialised at the start of the web application. This makes
@@ -71,17 +77,31 @@ public class ApplicationInitListener implements ServletContextListener {
     private void initMemberVars(ServletContext application, String gusHome,
             String modelName, String customViewDir, String alwaysGoToSummary,
             String loginUrl) throws WdkModelException {
-        ModelXmlParser parser = new ModelXmlParser(gusHome);
-        WdkModel wdkModelRaw = parser.parseModel(modelName);
+        try {
+            ModelXmlParser parser = new ModelXmlParser(gusHome);
+            WdkModel wdkModelRaw = parser.parseModel(modelName);
 
-        WdkModelBean wdkModel = new WdkModelBean(wdkModelRaw);
+            WdkModelBean wdkModel = new WdkModelBean(wdkModelRaw);
 
-        setPlatform(wdkModelRaw.getRDBMSPlatform());
-        application.setAttribute(CConstants.WDK_MODEL_KEY, wdkModel);
-        application.setAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY,
-                customViewDir);
-        application.setAttribute(CConstants.WDK_ALWAYSGOTOSUMMARY_KEY,
-                alwaysGoToSummary);
-        application.setAttribute(CConstants.WDK_LOGIN_URL_KEY, loginUrl);
+            setPlatform(wdkModelRaw.getRDBMSPlatform());
+            application.setAttribute(CConstants.WDK_MODEL_KEY, wdkModel);
+            application.setAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY,
+                    customViewDir);
+            application.setAttribute(CConstants.WDK_ALWAYSGOTOSUMMARY_KEY,
+                    alwaysGoToSummary);
+            application.setAttribute(CConstants.WDK_LOGIN_URL_KEY, loginUrl);
+        } catch (SAXException ex) {
+            throw new WdkModelException(ex);
+        } catch (IOException ex) {
+            throw new WdkModelException(ex);
+        } catch (ValidationException ex) {
+            throw new WdkModelException(ex);
+        } catch (ParserConfigurationException ex) {
+            throw new WdkModelException(ex);
+        } catch (TransformerFactoryConfigurationError ex) {
+            throw new WdkModelException(ex);
+        } catch (TransformerException ex) {
+            throw new WdkModelException(ex);
+        }
     }
 }

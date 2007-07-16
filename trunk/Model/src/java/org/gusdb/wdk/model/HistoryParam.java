@@ -62,7 +62,7 @@ public class HistoryParam extends Param {
      */
     @Override
     protected void setResources(WdkModel model) throws WdkModelException {
-        super.setResources( model );
+        super.setResources(model);
         try {
             factory = model.getUserFactory();
         } catch (WdkUserException ex) {
@@ -98,7 +98,8 @@ public class HistoryParam extends Param {
         }
     }
 
-    public History getHistory(String combinedId) throws WdkUserException, WdkModelException {
+    public History getHistory(String combinedId)
+            throws WdkUserException, WdkModelException {
         String[] parts = combinedId.split(":");
         // the input have a valid user id and history id
         String signature = parts[0].trim();
@@ -109,21 +110,22 @@ public class HistoryParam extends Param {
         return user.getHistory(historyId);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.Param#compressValue(java.lang.Object)
      */
     @Override
-    public String compressValue( Object value ) throws WdkModelException {
+    public String compressValue(Object value) throws WdkModelException {
         if (value instanceof String[]) {
-            String[] array = (String[])value;
+            String[] array = (String[]) value;
             StringBuffer sb = new StringBuffer();
             for (String strVal : array) {
-                if (sb.length()>0) sb.append( "," );
-                sb.append( strVal );
+                if (sb.length() > 0) sb.append(",");
+                sb.append(strVal);
             }
             value = sb.toString();
         }
-        return super.compressValue( value );
+        return super.compressValue(value);
     }
-    
 }

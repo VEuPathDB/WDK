@@ -63,4 +63,12 @@ public class PrimaryKeyField extends AttributeField{
     FlatVocabParam getProjectParam() {
         return projectParam;
     }
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
+     */
+    @Override
+    public void excludeResources(String projectId) {
+        // do nothing
+    }
 }

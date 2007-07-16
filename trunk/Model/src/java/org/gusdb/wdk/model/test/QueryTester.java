@@ -1,6 +1,13 @@
 package org.gusdb.wdk.model.test;
 
-import java.util.Hashtable;
+import java.io.IOException;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import javax.xml.bind.ValidationException;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
@@ -22,6 +29,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.implementation.ModelXmlParser;
+import org.xml.sax.SAXException;
 
 public class QueryTester {
 
@@ -36,19 +44,19 @@ public class QueryTester {
     // ////////////////////////////////////////////////////////////////////
 
     public ResultList getResult(String querySetName, String queryName,
-            Hashtable paramHash) throws WdkModelException, WdkUserException {
+            Map<String, Object> paramHash) throws WdkModelException, WdkUserException {
         QueryInstance instance = getInstance(querySetName, queryName, paramHash);
         return instance.getResult();
     }
 
     public String getResultAsTableName(String querySetName, String queryName,
-            Hashtable paramHash) throws WdkModelException, WdkUserException {
+            Map<String, Object> paramHash) throws WdkModelException, WdkUserException {
         QueryInstance instance = getInstance(querySetName, queryName, paramHash);
         return instance.getResultAsTableName();
     }
 
     public String showLowLevelQuery(String querySetName, String queryName,
-            Hashtable paramHash) throws WdkModelException, WdkUserException {
+            Map<String, Object> paramHash) throws WdkModelException, WdkUserException {
         QueryInstance instance = getInstance(querySetName, queryName, paramHash);
         return instance.getLowLevelQuery();
     }
@@ -62,7 +70,7 @@ public class QueryTester {
     // ////////////////////////////////////////////////////////////////////
 
     QueryInstance getInstance(String querySetName, String queryName,
-            Hashtable paramHash) throws WdkModelException, WdkUserException {
+            Map<String, Object> paramHash) throws WdkModelException, WdkUserException {
         QuerySet querySet = wdkModel.getQuerySet(querySetName);
         Query query = querySet.getQuery(queryName);
         QueryInstance instance = query.makeInstance();
@@ -85,9 +93,9 @@ public class QueryTester {
         System.out.println("");
     }
 
-    Hashtable<String, String> parseParamArgs(String[] params) {
+    Map<String, Object> parseParamArgs(String[] params) {
 
-        Hashtable<String, String> h = new Hashtable<String, String>();
+        Map<String, Object> h = new LinkedHashMap<String, Object>();
 
         if (params.length % 2 != 0) {
             throw new IllegalArgumentException(
@@ -151,7 +159,7 @@ public class QueryTester {
         boolean returnResultAsTable = cmdLine.hasOption("returnTable");
         boolean showQuery = cmdLine.hasOption("showQuery");
         boolean haveParams = cmdLine.hasOption("params");
-        boolean paging = cmdLine.hasOption("rows");
+        //boolean paging = cmdLine.hasOption("rows");
         String[] params = new String[0];
         if (haveParams) params = cmdLine.getOptionValues("params");
 
@@ -160,29 +168,44 @@ public class QueryTester {
         String queryName = ref.getElementName();
 
         // read config info
-        ModelXmlParser parser = new ModelXmlParser(gusHome);
-        WdkModel wdkModel = parser.parseModel(modelName);
+        try {
+            ModelXmlParser parser = new ModelXmlParser(gusHome);
+            WdkModel wdkModel = parser.parseModel(modelName);
 
-        QueryTester tester = new QueryTester(wdkModel);
+            QueryTester tester = new QueryTester(wdkModel);
 
-        Hashtable paramHash = tester.parseParamArgs(params);
-        if (showQuery) {
-            String query = tester.showLowLevelQuery(querySetName, queryName,
-                    paramHash);
-            String newline = System.getProperty("line.separator");
-            String newlineQuery = query.replaceAll("^\\s\\s\\s", newline);
-            newlineQuery = newlineQuery.replaceAll("(\\S)\\s\\s\\s", "$1"
-                    + newline);
-            System.out.println(newline + newlineQuery + newline);
-        } else if (returnResultAsTable) {
-            String table = tester.getResultAsTableName(querySetName, queryName,
-                    paramHash);
-            System.out.println(table);
-        } else {
-            wdkModel.getQuerySet(querySetName).getQuery(queryName);
+            Map<String, Object> paramHash = tester.parseParamArgs(params);
+            if (showQuery) {
+                String query = tester.showLowLevelQuery(querySetName,
+                        queryName, paramHash);
+                String newline = System.getProperty("line.separator");
+                String newlineQuery = query.replaceAll("^\\s\\s\\s", newline);
+                newlineQuery = newlineQuery.replaceAll("(\\S)\\s\\s\\s", "$1"
+                        + newline);
+                System.out.println(newline + newlineQuery + newline);
+            } else if (returnResultAsTable) {
+                String table = tester.getResultAsTableName(querySetName,
+                        queryName, paramHash);
+                System.out.println(table);
+            } else {
+                wdkModel.getQuerySet(querySetName).getQuery(queryName);
 
-            ResultList rs = tester.getResult(querySetName, queryName, paramHash);
-            rs.print();
+                ResultList rs = tester.getResult(querySetName, queryName,
+                        paramHash);
+                rs.print();
+            }
+        } catch (SAXException ex) {
+            throw new WdkModelException(ex);
+        } catch (IOException ex) {
+            throw new WdkModelException(ex);
+        } catch (ValidationException ex) {
+            throw new WdkModelException(ex);
+        } catch (ParserConfigurationException ex) {
+            throw new WdkModelException(ex);
+        } catch (TransformerFactoryConfigurationError ex) {
+            throw new WdkModelException(ex);
+        } catch (TransformerException ex) {
+            throw new WdkModelException(ex);
         }
     }
 

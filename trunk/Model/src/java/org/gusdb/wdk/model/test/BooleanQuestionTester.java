@@ -1,8 +1,14 @@
 package org.gusdb.wdk.model.test;
 
+import java.io.IOException;
 import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import javax.xml.bind.ValidationException;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
@@ -19,6 +25,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.implementation.ModelXmlParser;
 import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
+import org.xml.sax.SAXException;
 
 /**
  * BooleanQuestionTester.java
@@ -64,34 +71,49 @@ public class BooleanQuestionTester {
 
         validateRowCount(rows);
 
-        //create model
-        ModelXmlParser parser = new ModelXmlParser(gusHome);
-        WdkModel wdkModel = parser.parseModel(modelName);
+        try {
+            //create model
+            ModelXmlParser parser = new ModelXmlParser(gusHome);
+            WdkModel wdkModel = parser.parseModel(modelName);
 
-        int startRow = Integer.parseInt(rows[0]);
-        int endRow = Integer.parseInt(rows[1]);
+            int startRow = Integer.parseInt(rows[0]);
+            int endRow = Integer.parseInt(rows[1]);
 
-        //create recursive question tree
-        BooleanQuestionNode topNode = TestBooleanTree.getTestTree(wdkModel);
-        System.err.println(topNode.toString());
-        //init recursive method
-        topNode.makeAnswer(startRow, endRow);
-        //BooleanQuestionNode.setAllValues(topNode);
+            //create recursive question tree
+            BooleanQuestionNode topNode = TestBooleanTree.getTestTree(wdkModel);
+            System.err.println(topNode.toString());
+            //init recursive method
+            topNode.makeAnswer(startRow, endRow);
+            //BooleanQuestionNode.setAllValues(topNode);
 
-        //runGrowTest(topNode, "01", wdkModel);
+            //runGrowTest(topNode, "01", wdkModel);
 
-        Question topQuestion = topNode.getQuestion();
-        int pageCount = 1;
-        for (int i = 0; i < rows.length; i += 2) {
+            Question topQuestion = topNode.getQuestion();
+            int pageCount = 1;
+            for (int i = 0; i < rows.length; i += 2) {
 
-            int nextStartRow = Integer.parseInt(rows[i]);
-            int nextEndRow = Integer.parseInt(rows[i + 1]);
+                int nextStartRow = Integer.parseInt(rows[i]);
+                int nextEndRow = Integer.parseInt(rows[i + 1]);
 
-            Answer answer = topQuestion.makeAnswer(topNode.getValues(),
-                    nextStartRow, nextEndRow);
-            System.out.println("Printing Record Instances on page " + pageCount);
-            System.out.println(answer.printAsTable());
-            pageCount++;
+                Answer answer = topQuestion.makeAnswer(topNode.getValues(),
+                        nextStartRow, nextEndRow);
+                System.out.println("Printing Record Instances on page "
+                        + pageCount);
+                System.out.println(answer.printAsTable());
+                pageCount++;
+            }
+        } catch (SAXException ex) {
+            throw new WdkModelException(ex);
+        } catch (IOException ex) {
+            throw new WdkModelException(ex);
+        } catch (ValidationException ex) {
+            throw new WdkModelException(ex);
+        } catch (ParserConfigurationException ex) {
+            throw new WdkModelException(ex);
+        } catch (TransformerFactoryConfigurationError ex) {
+            throw new WdkModelException(ex);
+        } catch (TransformerException ex) {
+            throw new WdkModelException(ex);
         }
     }
 

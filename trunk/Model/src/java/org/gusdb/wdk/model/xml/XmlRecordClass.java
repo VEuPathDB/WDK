@@ -3,17 +3,20 @@
  */
 package org.gusdb.wdk.model.xml;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 
 /**
  * @author Jerric
  * @created Oct 11, 2005
  */
-public class XmlRecordClass {
+public class XmlRecordClass extends WdkModelBase {
 
     private String name;
     private String type;
@@ -21,18 +24,13 @@ public class XmlRecordClass {
     private String delimiter;
     private String attributeOrdering;
 
-    private Map<String, XmlAttributeField> attributeFields;
-    private Map<String, XmlTableField> tableFields;
+    private List<XmlAttributeField> attributeFieldList = new ArrayList<XmlAttributeField>();
+    private Map<String, XmlAttributeField> attributeFields = new LinkedHashMap<String, XmlAttributeField>();
+
+    private List<XmlTableField> tableFieldList = new ArrayList<XmlTableField>();
+    private Map<String, XmlTableField> tableFields = new LinkedHashMap<String, XmlTableField>();
 
     private XmlRecordClassSet recordClassSet;
-
-    /**
-     * 
-     */
-    public XmlRecordClass() {
-        attributeFields = new LinkedHashMap<String, XmlAttributeField>();
-        tableFields = new LinkedHashMap<String, XmlTableField>();
-    }
 
     /**
      * @return Returns the attributeOrdering.
@@ -42,7 +40,8 @@ public class XmlRecordClass {
     }
 
     /**
-     * @param attributeOrdering The attributeOrdering to set.
+     * @param attributeOrdering
+     * The attributeOrdering to set.
      */
     public void setAttributeOrdering(String attributeOrdering) {
         this.attributeOrdering = attributeOrdering;
@@ -56,7 +55,8 @@ public class XmlRecordClass {
     }
 
     /**
-     * @param delimiter The delimiter to set.
+     * @param delimiter
+     * The delimiter to set.
      */
     public void setDelimiter(String delimiter) {
         this.delimiter = delimiter;
@@ -70,7 +70,8 @@ public class XmlRecordClass {
     }
 
     /**
-     * @param idPrefix The idPrefix to set.
+     * @param idPrefix
+     * The idPrefix to set.
      */
     public void setIdPrefix(String idPrefix) {
         this.idPrefix = idPrefix;
@@ -89,7 +90,8 @@ public class XmlRecordClass {
     }
 
     /**
-     * @param name The name to set.
+     * @param name
+     * The name to set.
      */
     public void setName(String name) {
         this.name = name;
@@ -103,23 +105,24 @@ public class XmlRecordClass {
     }
 
     /**
-     * @param type The type to set.
+     * @param type
+     * The type to set.
      */
     public void setType(String type) {
         this.type = type;
     }
 
     public void addAttributeField(XmlAttributeField field) {
-        attributeFields.put(field.getName(), field);
+        attributeFieldList.add(field);
     }
 
     public XmlAttributeField getAttributeField(String name)
             throws WdkModelException {
         XmlAttributeField field = attributeFields.get(name);
         if (field == null)
-            throw new WdkModelException("Attempting to access an attribute '" +
-					name + "' of XmlRecordClass " + 
-					getFullName() + " but it has none.");
+            throw new WdkModelException("Attempting to access an attribute '"
+                    + name + "' of XmlRecordClass " + getFullName()
+                    + " but it has none.");
         return field;
     }
 
@@ -130,7 +133,7 @@ public class XmlRecordClass {
     }
 
     public void addTableField(XmlTableField field) {
-        tableFields.put(field.getName(), field);
+        tableFieldList.add(field);
     }
 
     public XmlTableField getTableField(String name) throws WdkModelException {
@@ -184,5 +187,41 @@ public class XmlRecordClass {
         }
         buf.append("\r\n");
         return buf.toString();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
+     */
+    @Override
+    public void excludeResources(String projectId) throws WdkModelException {
+        // exclude attribute field
+        for (XmlAttributeField field : attributeFieldList) {
+            if (field.include(projectId)) {
+                field.excludeResources(projectId);
+                String fieldName = field.getName();
+                if (attributeFields.containsKey(fieldName))
+                    throw new WdkModelException("The xmlAttributeField "
+                            + fieldName + " is duplicated in xmlRecordClass "
+                            + this.getFullName());
+                attributeFields.put(fieldName, field);
+            }
+        }
+        attributeFieldList = null;
+
+        // exclude table fields
+        for (XmlTableField field : tableFieldList) {
+            if (field.include(projectId)) {
+                field.excludeResources(projectId);
+                String fieldName = field.getName();
+                if (tableFields.containsKey(fieldName))
+                    throw new WdkModelException("The xmlTableField "
+                            + fieldName + " is duplicated in xmlRecordClass "
+                            + this.getFullName());
+                tableFields.put(fieldName, field);
+            }
+        }
+        tableFieldList = null;
     }
 }

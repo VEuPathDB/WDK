@@ -44,11 +44,11 @@ public class WSQuery extends Query implements Serializable {
         signature = null;
     }
 
-    String getProcessName() {
+    public String getProcessName() {
         return processName;
     }
 
-    String getWebServiceUrl() {
+    public String getWebServiceUrl() {
         return webServiceUrl;
     }
 

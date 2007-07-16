@@ -25,7 +25,7 @@ import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
  * 
  * @author David Barkan
  * @version $Revision$ $Date: 2005-08-23 23:03:25 -0400 (Tue, 23 Aug
- *          2005) $Author$
+ * 2005) $Author$
  */
 
 public class BooleanQuestionNode {
@@ -58,7 +58,7 @@ public class BooleanQuestionNode {
      * <code>setAllValues</code> is called, the exception being any values for
      * Answer parameters.
      */
-    private LinkedHashMap values;
+    private Map<String, Object> values;
 
     /**
      * Back-pointer to parent of this BooleanQuestionNode; null if this node is
@@ -72,9 +72,10 @@ public class BooleanQuestionNode {
 
     /**
      * Constructor for a BooleanQuestionNode representing a boolean Question.
+     * @throws WdkModelException 
      */
     public BooleanQuestionNode(Question q, BooleanQuestionNode firstChild,
-            BooleanQuestionNode secondChild, BooleanQuestionNode parent) {
+            BooleanQuestionNode secondChild, BooleanQuestionNode parent) throws WdkModelException {
         this.question = (q == null) ? q : q.getBaseQuestion();
         this.firstChild = firstChild;
         this.secondChild = secondChild;
@@ -87,10 +88,12 @@ public class BooleanQuestionNode {
      * Constructor for a BooleanQuestionNode representing a leaf in a boolean
      * Query tree containing a Question that is not boolean.
      * 
-     * @param parent If the supplied parent is null; that implies that this node
-     *        represents a single-node tree.
+     * @param parent
+     * If the supplied parent is null; that implies that this node represents a
+     * single-node tree.
+     * @throws WdkModelException 
      */
-    public BooleanQuestionNode(Question q, BooleanQuestionNode parent) {
+    public BooleanQuestionNode(Question q, BooleanQuestionNode parent) throws WdkModelException {
         this.question = (q == null) ? q : q.getBaseQuestion();
         this.firstChild = null;
         this.secondChild = null;
@@ -154,7 +157,7 @@ public class BooleanQuestionNode {
 
         operator = translateOperator(operator, operatorMap,
                 model.getRDBMSPlatform());
-        LinkedHashMap values = new LinkedHashMap();
+        Map<String, Object> values = new LinkedHashMap<String, Object>();
         values.put(BooleanQuery.OPERATION_PARAM_NAME, operator);
         newBooleanNode.setValues(values);
         if (tempParent != null) {
@@ -192,7 +195,7 @@ public class BooleanQuestionNode {
         // store operation
         operator = translateOperator(operator, operatorMap,
                 model.getRDBMSPlatform());
-        LinkedHashMap values = new LinkedHashMap();
+        Map<String, Object> values = new LinkedHashMap<String, Object>();
         values.put(BooleanQuery.OPERATION_PARAM_NAME, operator);
         root.setValues(values);
         return root;
@@ -214,11 +217,11 @@ public class BooleanQuestionNode {
     /**
      * Recursive method to find a node in the tree.
      * 
-     * @param nodeId Binary number representing path to take to find node. The
-     *        number is read left to right. A 1 in the number will traverse to
-     *        the left child and a 0 in the number will traverse to the right.
-     *        When the end of the number is reached, the current node is
-     *        returned.
+     * @param nodeId
+     * Binary number representing path to take to find node. The number is read
+     * left to right. A 1 in the number will traverse to the left child and a 0
+     * in the number will traverse to the right. When the end of the number is
+     * reached, the current node is returned.
      * 
      * @return the BooleanQuestionNode which is being sought.
      */
@@ -258,9 +261,9 @@ public class BooleanQuestionNode {
      * Question.
      * 
      * @return the Answer of <code>bqn</code>. The answer should not be used
-     *         as the answer returned by the top (recursive initializer) node;
-     *         that should be retrieved by calling makeAnswer() on that node's
-     *         Question after running this method.
+     * as the answer returned by the top (recursive initializer) node; that
+     * should be retrieved by calling makeAnswer() on that node's Question after
+     * running this method.
      */
     public Answer makeAnswer(int startIndex, int endIndex)
             throws WdkUserException, WdkModelException {
@@ -273,7 +276,7 @@ public class BooleanQuestionNode {
         if (isLeaf()) {
 
             Question question = getQuestion();
-            LinkedHashMap leafValues = getValues();
+            Map<String, Object> leafValues = getValues();
             answer = question.makeAnswer(leafValues, startIndex, endIndex);
         } else { // bqn is boolean question
 
@@ -287,17 +290,17 @@ public class BooleanQuestionNode {
             Answer secondChildAnswer = secondChild.makeAnswer(startIndex,
                     endIndex);
 
-            LinkedHashMap booleanValues = getValues();
+            Map<String, Object> booleanValues = getValues();
 
             booleanValues.put(BooleanQuery.FIRST_ANSWER_PARAM_NAME,
                     firstChildAnswer);
             booleanValues.put(BooleanQuery.SECOND_ANSWER_PARAM_NAME,
                     secondChildAnswer);
 
-            Map firstSummaryAtts = firstChildAnswer.getSummaryAttributes();
-            Map secondSummaryAtts = secondChildAnswer.getSummaryAttributes();
+            Map<String, AttributeField> firstSummaryAtts = firstChildAnswer.getSummaryAttributes();
+            Map<String, AttributeField> secondSummaryAtts = secondChildAnswer.getSummaryAttributes();
 
-            Map booleanSummaryAtts = new LinkedHashMap();
+            Map<String, AttributeField> booleanSummaryAtts = new LinkedHashMap<String, AttributeField>();
             booleanSummaryAtts.putAll(firstSummaryAtts);
             booleanSummaryAtts.putAll(secondSummaryAtts);
 
@@ -319,7 +322,7 @@ public class BooleanQuestionNode {
 
     /**
      * @return whether the node is a leaf in a boolean Question tree; that is,
-     *         if it is a normal Question without a Boolean Query as its Query.
+     * if it is a normal Question without a Boolean Query as its Query.
      */
 
     public boolean isLeaf() {
@@ -329,11 +332,11 @@ public class BooleanQuestionNode {
         return false;
     }
 
-    public void setValues(LinkedHashMap values) {
+    public void setValues(Map<String, Object> values) {
         this.values = values;
     }
 
-    public LinkedHashMap getValues() {
+    public Map<String, Object> getValues() {
         return values;
     }
 
@@ -387,10 +390,10 @@ public class BooleanQuestionNode {
     }
 
     private void removeDynamicAtributes(Map booleanSummaryAtts, Map dynaAtts) {
-	Iterator dynaI = dynaAtts.keySet().iterator();
-	while (dynaI.hasNext()) {
-	    String attribName = (String)dynaI.next();
-	    booleanSummaryAtts.remove(attribName);
-	}
+        Iterator dynaI = dynaAtts.keySet().iterator();
+        while (dynaI.hasNext()) {
+            String attribName = (String) dynaI.next();
+            booleanSummaryAtts.remove(attribName);
+        }
     }
 }

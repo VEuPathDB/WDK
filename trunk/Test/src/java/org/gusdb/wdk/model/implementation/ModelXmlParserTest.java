@@ -3,18 +3,18 @@
  */
 package org.gusdb.wdk.model.implementation;
 
-import java.net.MalformedURLException;
+import java.io.IOException;
 
-import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.Query;
-import org.gusdb.wdk.model.QuerySet;
-import org.gusdb.wdk.model.Question;
-import org.gusdb.wdk.model.QuestionSet;
-import org.gusdb.wdk.model.RecordClass;
-import org.gusdb.wdk.model.RecordClassSet;
+import javax.xml.bind.ValidationException;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkModelTestBase;
 import org.junit.Assert;
+import org.xml.sax.SAXException;
 
 /**
  * @author Jerric
@@ -38,11 +38,6 @@ import org.junit.Assert;
 public class ModelXmlParserTest {
 
     /**
-     * the correct, multi-part model
-     */
-    public static final String SAMPLE_MODEL = "sampleModel";
-
-    /**
      * The RNG validation fails on master model
      */
     public static final String SAMPLE_MODEL_BAD_SYNTAX = "sampleModel_bad_syntax";
@@ -62,11 +57,15 @@ public class ModelXmlParserTest {
      */
     public static final String SAMPLE_MODEL_BAD_REF = "sampleModel_bad_ref";
 
-    private static final Logger logger = Logger.getLogger(ModelXmlParserTest.class);
+    //private static final Logger logger = Logger.getLogger(ModelXmlParserTest.class);
 
     private String modelName;
     private String gusHome;
 
+    /**
+     * get and validate the input
+     * @throws WdkModelException
+     */
     @org.junit.Before
     public void getInput() throws WdkModelException {
         // get input from the system environment
@@ -80,135 +79,109 @@ public class ModelXmlParserTest {
 
         // model name is optional
         if (modelName == null || modelName.length() == 0)
-            modelName = SAMPLE_MODEL;
+            modelName = WdkModelTestBase.SAMPLE_MODEL;
     }
 
     /**
      * a test to parse a model file, and construct the model object
      * @throws WdkModelException 
-     * @throws MalformedURLException 
+     * @throws SAXException 
+     * @throws IOException 
+     * @throws TransformerException 
+     * @throws TransformerFactoryConfigurationError 
+     * @throws ParserConfigurationException 
+     * @throws ValidationException 
      */
     @org.junit.Test
     public void testParseModel()
-            throws WdkModelException, MalformedURLException {
+            throws WdkModelException, ValidationException,
+            ParserConfigurationException, TransformerFactoryConfigurationError,
+            TransformerException, IOException, SAXException {
         ModelXmlParser parser = new ModelXmlParser(gusHome);
         WdkModel wdkModel = parser.parseModel(modelName);
         Assert.assertNotNull(wdkModel);
-
-        // validate the references to questions
-        QuestionSet[] questionSets = wdkModel.getAllQuestionSets();
-        Assert.assertTrue("there must be at least one question set",
-                questionSets.length > 0);
-        for (QuestionSet questionSet : questionSets) {
-            Question[] questions = questionSet.getQuestions();
-            Assert.assertTrue("There must be at leasr one question in each "
-                    + "question set", questions.length > 0);
-            for (Question question : questions) {
-                // the question must have reference to record class
-                Assert.assertNotNull("The question must have reference to an "
-                        + "record class", question.getRecordClass());
-            }
-        }
-
-        // validate the references to the queries
-        QuerySet[] querySets = wdkModel.getAllQuerySets();
-        Assert.assertTrue("There must be at least one query set",
-                querySets.length > 0);
-        for (QuerySet querySet : querySets) {
-            Query[] queries = querySet.getQueries();
-            Assert.assertTrue("There must be at least one query in each query "
-                    + "set", queries.length > 0);
-            for (Query query : queries) {
-                // the query must have at least one column
-                Assert.assertTrue("The query must define at least one column",
-                        query.getColumns().length > 0);
-            }
-        }
-
-        // validate the references to the record classes
-        RecordClassSet[] rcSets = wdkModel.getAllRecordClassSets();
-        Assert.assertTrue("There must be at least one record class set",
-                rcSets.length > 0);
-        for (RecordClassSet rcSet : rcSets) {
-            RecordClass[] recordClasses = rcSet.getRecordClasses();
-            Assert.assertTrue("There must be at least one Record class in "
-                    + "each query set", recordClasses.length > 0);
-            for (RecordClass recordClass : recordClasses) {
-                // the record class must have at least one attribute
-                Assert.assertTrue(
-                        "The record class must define at least one field",
-                        recordClass.getFields().length > 0);
-            }
-        }
     }
 
     /**
      * test parsing an invalid model file. The RNG syntax should fail on the 
      * master model.
      * @throws WdkModelException 
+     * @throws SAXException 
+     * @throws IOException 
+     * @throws TransformerException 
+     * @throws TransformerFactoryConfigurationError 
+     * @throws ParserConfigurationException 
+     * @throws ValidationException 
      */
-    @org.junit.Test(expected = WdkModelException.class)
-    public void testParseModelBadSyntax() throws WdkModelException {
+    @org.junit.Test(expected = ValidationException.class)
+    public void testParseModelBadSyntax()
+            throws WdkModelException, ValidationException,
+            ParserConfigurationException, TransformerFactoryConfigurationError,
+            TransformerException, IOException, SAXException {
         String modelName = SAMPLE_MODEL_BAD_SYNTAX;
         ModelXmlParser parser = new ModelXmlParser(gusHome);
-        try {
-            parser.parseModel(modelName);
-        } catch (WdkModelException ex) {
-            logger.info("Expected: master model parsing failed - "
-                    + ex.getMessage());
-            throw ex;
-        }
+        parser.parseModel(modelName);
     }
 
     /**
      * test parsing a invalid model file. The <import> is pointing to a 
      * non-existing file.
      * @throws WdkModelException 
+     * @throws SAXException 
+     * @throws IOException 
+     * @throws TransformerException 
+     * @throws TransformerFactoryConfigurationError 
+     * @throws ParserConfigurationException 
+     * @throws ValidationException 
      */
-    @org.junit.Test(expected = WdkModelException.class)
-    public void testParseModelBadImport() throws WdkModelException {
+    @org.junit.Test(expected = IOException.class)
+    public void testParseModelBadImport()
+            throws WdkModelException, ValidationException,
+            ParserConfigurationException, TransformerFactoryConfigurationError,
+            TransformerException, IOException, SAXException {
         String modelName = SAMPLE_MODEL_BAD_IMPORT;
         ModelXmlParser parser = new ModelXmlParser(gusHome);
-        try {
-            parser.parseModel(modelName);
-        } catch (WdkModelException ex) {
-            logger.info("Expected: sub-model file missing - " + ex.getMessage());
-            throw ex;
-        }
+        parser.parseModel(modelName);
     }
 
     /**
      * test parsing an invalid model file. The sub model failed on RNG validation
      * @throws WdkModelException 
+     * @throws SAXException 
+     * @throws IOException 
+     * @throws TransformerException 
+     * @throws TransformerFactoryConfigurationError 
+     * @throws ParserConfigurationException 
+     * @throws ValidationException 
      */
-    @org.junit.Test(expected = WdkModelException.class)
-    public void testParseModelBadSub() throws WdkModelException {
+    @org.junit.Test(expected = ValidationException.class)
+    public void testParseModelBadSub()
+            throws WdkModelException, ValidationException,
+            ParserConfigurationException, TransformerFactoryConfigurationError,
+            TransformerException, IOException, SAXException {
         String modelName = SAMPLE_MODEL_BAD_SUB;
         ModelXmlParser parser = new ModelXmlParser(gusHome);
-        try {
-            parser.parseModel(modelName);
-        } catch (WdkModelException ex) {
-            logger.info("Expected: sub-model parsing failed - "
-                    + ex.getMessage());
-            throw ex;
-        }
+        parser.parseModel(modelName);
     }
 
     /**
      * test parsing an invalid model file. The sub model has an invalid reference
      * to another object.
      * @throws WdkModelException 
+     * @throws SAXException 
+     * @throws IOException 
+     * @throws TransformerException 
+     * @throws TransformerFactoryConfigurationError 
+     * @throws ParserConfigurationException 
+     * @throws ValidationException 
      */
     @org.junit.Test(expected = WdkModelException.class)
-    public void testParseModelBadRef() throws WdkModelException {
+    public void testParseModelBadRef()
+            throws WdkModelException, ValidationException,
+            ParserConfigurationException, TransformerFactoryConfigurationError,
+            TransformerException, IOException, SAXException {
         String modelName = SAMPLE_MODEL_BAD_REF;
         ModelXmlParser parser = new ModelXmlParser(gusHome);
-        try {
-            parser.parseModel(modelName);
-        } catch (WdkModelException ex) {
-            logger.info("Expected: sub-model has invalid reference - "
-                    + ex.getMessage());
-            throw ex;
-        }
+        parser.parseModel(modelName);
     }
 }

@@ -217,13 +217,6 @@ public class WdkModelBean  {
         return model.getBooleanOperators();
     }
 
-    /* (non-Javadoc)
-     * @see org.gusdb.wdk.model.WdkModel#getBooleanOps()
-     */
-    public EnumParamBean getBooleanOps() {
-        return new EnumParamBean(model.getBooleanOps());
-    }
-
     /**
      * @param paramName
      * @return

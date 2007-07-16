@@ -19,19 +19,11 @@ public class FlatVocabParamBean extends ParamBean {
         return ((FlatVocabParam) param).getMultiPick();
     }
 
-    public String[] getVocab() {
-        try {
-            return ((FlatVocabParam) param).getVocab();
-        } catch (WdkModelException e) {
-            throw new RuntimeException(e);
-        }
+    public String[] getVocab() throws WdkModelException {
+        return ((FlatVocabParam) param).getVocab();
     }
 
-    public Map getVocabMap() {
-        try {
-            return ((FlatVocabParam) param).getVocabMap();
-        } catch (WdkModelException e) {
-            throw new RuntimeException(e);
-        }
+    public Map getVocabMap() throws WdkModelException {
+        return ((FlatVocabParam) param).getVocabMap();
     }
 }

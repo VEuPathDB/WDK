@@ -1,12 +1,19 @@
 package org.gusdb.wdk.model;
 
 import java.io.File;
-import java.net.MalformedURLException;
+import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Vector;
+
+import javax.xml.bind.ValidationException;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import org.gusdb.wdk.model.implementation.ModelXmlParser;
 import org.gusdb.wdk.model.user.DatasetFactory;
@@ -14,6 +21,7 @@ import org.gusdb.wdk.model.user.QueryFactory;
 import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
 import org.gusdb.wdk.model.xml.XmlRecordClassSet;
+import org.xml.sax.SAXException;
 
 // why is this in impl?
 
@@ -27,32 +35,50 @@ public class WdkModel {
 
     public static final int TRUNCATE_DEFAULT = 100;
 
+    @Deprecated
     public static WdkModel INSTANCE = new WdkModel();
 
-    protected RDBMSPlatformI platform;
+    private String projectId;
+
+    private RDBMSPlatformI platform;
     private RDBMSPlatformI authenPlatform;
 
-    Map<String, QuerySet> querySets = new LinkedHashMap<String, QuerySet>();
-    Map<String, ParamSet> paramSets = new LinkedHashMap<String, ParamSet>();
-    Map<String, RecordClassSet> recordClassSets = new LinkedHashMap<String, RecordClassSet>();
-    Map<String, ReferenceList> referenceLists = new LinkedHashMap<String, ReferenceList>();
-    Map<String, QuestionSet> questionSets = new LinkedHashMap<String, QuestionSet>();
-    Map<String, ModelSetI> allModelSets = new LinkedHashMap<String, ModelSetI>();
-    Map<String, GroupSet> groupSets = new LinkedHashMap<String, GroupSet>();
+    private List<QuerySet> querySetList = new ArrayList<QuerySet>();
+    private Map<String, QuerySet> querySets = new LinkedHashMap<String, QuerySet>();
 
+    private List<ParamSet> paramSetList = new ArrayList<ParamSet>();
+    private Map<String, ParamSet> paramSets = new LinkedHashMap<String, ParamSet>();
+
+    private List<RecordClassSet> recordClassSetList = new ArrayList<RecordClassSet>();
+    private Map<String, RecordClassSet> recordClassSets = new LinkedHashMap<String, RecordClassSet>();
+
+    private List<QuestionSet> questionSetList = new ArrayList<QuestionSet>();
+    private Map<String, QuestionSet> questionSets = new LinkedHashMap<String, QuestionSet>();
+
+    private Map<String, ModelSetI> allModelSets = new LinkedHashMap<String, ModelSetI>();
+
+    private List<GroupSet> groupSetList = new ArrayList<GroupSet>();
+    private Map<String, GroupSet> groupSets = new LinkedHashMap<String, GroupSet>();
+
+    private List<XmlQuestionSet> xmlQuestionSetList = new ArrayList<XmlQuestionSet>();
+    private Map<String, XmlQuestionSet> xmlQuestionSets = new LinkedHashMap<String, XmlQuestionSet>();
+
+    private List<XmlRecordClassSet> xmlRecordClassSetList = new ArrayList<XmlRecordClassSet>();
+    private Map<String, XmlRecordClassSet> xmlRecordClassSets = new LinkedHashMap<String, XmlRecordClassSet>();
+
+    private List<WdkModelName> wdkModelNames = new ArrayList<WdkModelName>();
     private String name;
-    String displayName;
-    private String version = "1.0"; // use default version
-    String introduction;
-    String historyDatasetLink;
-    String historyDatasetColumnName;
-    ResultFactory resultFactory;
+    private String displayName;
+    private String version; // use default version
+
+    private List<WdkModelText> introductions = new ArrayList<WdkModelText>();
+    private String introduction;
+    private ResultFactory resultFactory;
 
     @Deprecated
-    Map<String, String> properties;
+    private Map<String, String> properties;
 
-    private EnumParam booleanOps;
-    String webServiceUrl;
+    private String webServiceUrl;
 
     /**
      * xmlSchemaURL is used by the XmlQuestions. This is the only place where
@@ -60,23 +86,20 @@ public class WdkModel {
      */
     private URL xmlSchemaURL;
 
-    private Map<String, XmlQuestionSet> xmlQuestionSets;
-
-    private Map<String, XmlRecordClassSet> xmlRecordClassSets;
-
     private File xmlDataDir;
 
     private UserFactory userFactory;
     private DatasetFactory datasetFactory;
     private QueryFactory queryFactory;
 
+    private List<PropertyList> defaultPropertyLists = new ArrayList<PropertyList>();
+    private Map<String, String[]> defaultPropertyListMap = new LinkedHashMap<String, String[]>();
+
     /**
      * Default constructor
      */
     public WdkModel() {
         INSTANCE = this;
-        xmlQuestionSets = new LinkedHashMap<String, XmlQuestionSet>();
-        xmlRecordClassSets = new LinkedHashMap<String, XmlRecordClassSet>();
     }
 
     /**
@@ -86,10 +109,24 @@ public class WdkModel {
     public static WdkModel construct(String modelName) throws WdkModelException {
         String gusHome = System.getProperty(ModelXmlParser.GUS_HOME);
 
-        ModelXmlParser parser = new ModelXmlParser(gusHome);
-        WdkModel model = parser.parseModel(modelName);
+        try {
+            ModelXmlParser parser = new ModelXmlParser(gusHome);
+            WdkModel model = parser.parseModel(modelName);
 
-        return model;
+            return model;
+        } catch (SAXException ex) {
+            throw new WdkModelException(ex);
+        } catch (IOException ex) {
+            throw new WdkModelException(ex);
+        } catch (ValidationException ex) {
+            throw new WdkModelException(ex);
+        } catch (ParserConfigurationException ex) {
+            throw new WdkModelException(ex);
+        } catch (TransformerFactoryConfigurationError ex) {
+            throw new WdkModelException(ex);
+        } catch (TransformerException ex) {
+            throw new WdkModelException(ex);
+        }
     }
 
     /**
@@ -116,8 +153,8 @@ public class WdkModel {
         return resultFactory;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void addWdkModelName(WdkModelName wdkModelName) {
+        this.wdkModelNames.add(wdkModelName);
     }
 
     public String getName() {
@@ -131,24 +168,12 @@ public class WdkModel {
         return version;
     }
 
-    /**
-     * @param version
-     *            The version to set.
-     */
-    public void setVersion(String version) {
-        this.version = version;
-    }
-
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
-
     public String getDisplayName() {
         return displayName;
     }
 
-    public void setIntroduction(String introduction) {
-        this.introduction = introduction;
+    public void addIntroduction(WdkModelText introduction) {
+        introductions.add(introduction);
     }
 
     public String getIntroduction() {
@@ -165,27 +190,7 @@ public class WdkModel {
         this.properties = properties;
     }
 
-    public void setHistoryDataset(String historyDatasetLink) {
-        this.historyDatasetLink = historyDatasetLink;
-    }
-
-    public String getHistoryDatasetLink() {
-        return historyDatasetLink;
-    }
-
-    public void setHistoryDatasetColumnName(String historyDatasetColumnName) {
-        this.historyDatasetColumnName = historyDatasetColumnName;
-    }
-
-    public String getHistoryDatasetColumnName() {
-        return historyDatasetColumnName;
-    }
-
     // RecordClass Sets
-    public void addRecordClassSet(RecordClassSet recordClassSet)
-            throws WdkModelException {
-        addSet(recordClassSet, recordClassSets);
-    }
 
     public RecordClassSet getRecordClassSet(String recordClassSetName)
             throws WdkModelException {
@@ -201,29 +206,18 @@ public class WdkModel {
     }
 
     public RecordClassSet[] getAllRecordClassSets() {
-
         RecordClassSet sets[] = new RecordClassSet[recordClassSets.size()];
-        Iterator keys = recordClassSets.keySet().iterator();
-        int counter = 0;
-        while (keys.hasNext()) {
-            String name = (String) keys.next();
-            RecordClassSet nextRecordClassSet = (RecordClassSet) recordClassSets.get(name);
-            sets[counter] = nextRecordClassSet;
-            counter++;
-        }
+        recordClassSets.values().toArray(sets);
         return sets;
     }
 
     // Query Sets
-    public void addQuerySet(QuerySet querySet) throws WdkModelException {
-        addSet(querySet, querySets);
-    }
 
-    public QuerySet getQuerySet(String setName) throws WdkUserException {
+    public QuerySet getQuerySet(String setName) throws WdkModelException {
         if (!querySets.containsKey(setName)) {
             String err = "WDK Model " + name
                     + " does not contain a query set with name " + setName;
-            throw new WdkUserException(err);
+            throw new WdkModelException(err);
         }
         return (QuerySet) querySets.get(setName);
     }
@@ -233,42 +227,23 @@ public class WdkModel {
     }
 
     public QuerySet[] getAllQuerySets() {
-
         QuerySet sets[] = new QuerySet[querySets.size()];
-        Iterator keys = querySets.keySet().iterator();
-        int counter = 0;
-        while (keys.hasNext()) {
-            String name = (String) keys.next();
-            sets[counter] = (QuerySet) querySets.get(name);
-            counter++;
-        }
+        querySets.values().toArray(sets);
         return sets;
     }
 
     public QuestionSet[] getAllQuestionSets() {
-
         QuestionSet sets[] = new QuestionSet[questionSets.size()];
-        Iterator keys = questionSets.keySet().iterator();
-        int counter = 0;
-        while (keys.hasNext()) {
-            String name = (String) keys.next();
-            sets[counter] = (QuestionSet) questionSets.get(name);
-            counter++;
-        }
+        questionSets.values().toArray(sets);
         return sets;
     }
 
     // Question Sets
-    public void addQuestionSet(QuestionSet questionSet)
-            throws WdkModelException {
-        addSet(questionSet, questionSets);
-    }
-
-    public QuestionSet getQuestionSet(String setName) throws WdkUserException {
+    public QuestionSet getQuestionSet(String setName) throws WdkModelException {
         if (!questionSets.containsKey(setName)) {
             String err = "WDK Model " + name
                     + " does not contain a Question set with name " + setName;
-            throw new WdkUserException(err);
+            throw new WdkModelException(err);
         }
         return (QuestionSet) questionSets.get(setName);
     }
@@ -330,36 +305,33 @@ public class WdkModel {
         return qArrayByCat;
     }
 
-    // ReferenceLists
-    public void addReferenceList(ReferenceList referenceList)
-            throws WdkModelException {
-        addSet(referenceList, referenceLists);
-    }
-
-    public ReferenceList getReferenceList(String referenceListName)
-            throws WdkUserException {
-
-        if (!referenceLists.containsKey(referenceListName)) {
+    public ParamSet getParamSet(String setName) throws WdkModelException {
+        if (!paramSets.containsKey(setName)) {
             String err = "WDK Model " + name
-                    + " does not contain a  query set with name "
-                    + referenceListName;
-            throw new WdkUserException(err);
+                    + " does not contain a param set with name " + setName;
+            throw new WdkModelException(err);
         }
-        return (ReferenceList) referenceLists.get(referenceListName);
+        return (ParamSet) paramSets.get(setName);
     }
 
-    public ReferenceList[] getAllReferenceLists() {
+    public ParamSet[] getAllParamSets() {
+        ParamSet[] sets = new ParamSet[paramSets.size()];
+        paramSets.values().toArray(sets);
+        return sets;
+    }
 
-        ReferenceList lists[] = new ReferenceList[referenceLists.size()];
-        Iterator keys = referenceLists.keySet().iterator();
-        int counter = 0;
-        while (keys.hasNext()) {
-            String name = (String) keys.next();
-            ReferenceList nextReferenceList = (ReferenceList) referenceLists.get(name);
-            lists[counter] = nextReferenceList;
-            counter++;
-        }
-        return lists;
+    public GroupSet[] getAllGroupSets() {
+        GroupSet[] array = new GroupSet[groupSets.size()];
+        groupSets.values().toArray(array);
+        return array;
+    }
+
+    public GroupSet getGroupSet(String setName) throws WdkModelException {
+        GroupSet groupSet = groupSets.get(setName);
+        if (groupSet == null)
+            throw new WdkModelException("The Model does not "
+                    + "have a groupSet named " + setName);
+        return groupSet;
     }
 
     public Question makeBooleanQuestion(RecordClass rc)
@@ -403,9 +375,6 @@ public class WdkModel {
      * Set whatever resources the model needs. It will pass them to its kids
      */
     public void setResources() throws WdkModelException {
-
-        makeBooleanOps();
-
         Iterator modelSets = allModelSets.values().iterator();
         while (modelSets.hasNext()) {
             ModelSetI modelSet = (ModelSetI) modelSets.next();
@@ -413,10 +382,24 @@ public class WdkModel {
         }
     }
 
-    public void configure(URL modelConfigXmlFileURL) throws WdkModelException {
+    /**
+     * This method should happen after the resolveReferences, since projectId is
+     * set by this method from modelConfig
+     * 
+     * @param gusHome
+     * @throws WdkModelException
+     */
+    public void configure(String gusHome, String modelName)
+            throws WdkModelException {
         try {
-            ModelConfig modelConfig = ModelConfigParser.parseXmlFile(modelConfigXmlFileURL);
-            String fileName = modelConfigXmlFileURL.getFile();
+            ModelConfigParser parser = new ModelConfigParser(gusHome);
+            ModelConfig modelConfig = parser.parseConfig(modelName);
+
+            // assign projectId
+            this.projectId = modelConfig.getProjectId();
+
+            String fileName = gusHome + "/config/" + modelName + "-config.xml";
+
             String connectionUrl = modelConfig.getConnectionUrl();
             String login = modelConfig.getLogin();
             String password = modelConfig.getPassword();
@@ -478,22 +461,20 @@ public class WdkModel {
 
             // initialize QueryFactory in user schema too
             queryFactory = new QueryFactory(authenPlatform, loginSchema);
-        } catch (InstantiationException ex) {
-            // TODO Auto-generated catch block
-            ex.printStackTrace();
-        } catch (IllegalAccessException ex) {
-            // TODO Auto-generated catch block
-            ex.printStackTrace();
-        } catch (ClassNotFoundException ex) {
-            // TODO Auto-generated catch block
-            ex.printStackTrace();
-        }
-    }
 
-    public void configure(File modelConfigXmlFile) throws WdkModelException {
-        try {
-            configure(modelConfigXmlFile.toURI().toURL());
-        } catch (MalformedURLException ex) {
+            // resolve references in the model objects
+            resolveReferences();
+        } catch (InstantiationException ex) {
+            throw new WdkModelException(ex);
+        } catch (IllegalAccessException ex) {
+            throw new WdkModelException(ex);
+        } catch (ClassNotFoundException ex) {
+            throw new WdkModelException(ex);
+        } catch (SAXException ex) {
+            throw new WdkModelException(ex);
+        } catch (IOException ex) {
+            throw new WdkModelException(ex);
+        } catch (ValidationException ex) {
             throw new WdkModelException(ex);
         }
     }
@@ -510,12 +491,8 @@ public class WdkModel {
         return webServiceUrl;
     }
 
-    public Object resolveReference(String twoPartName, String refererName,
-            String refererClassName, String refererAttributeName)
-            throws WdkModelException {
-        String s = "Invalid reference in " + refererClassName + " '"
-                + refererName + "' at " + refererAttributeName + "=\""
-                + twoPartName + "\".";
+    public Object resolveReference(String twoPartName) throws WdkModelException {
+        String s = "Invalid reference '" + twoPartName + "'. ";
 
         // ensures <code>twoPartName</code> is formatted correctly
         Reference reference = new Reference(twoPartName);
@@ -542,10 +519,13 @@ public class WdkModel {
      * Some elements within the set may refer to others by name. Resolve those
      * references into real object references.
      */
-    public void resolveReferences() throws WdkModelException {
+    private void resolveReferences() throws WdkModelException {
         // set the exception header
         WdkModelException.modelName = getProjectId();
         WdkUserException.modelName = getProjectId();
+
+        // exclude resources that are not used by this project
+        excludeResources();
 
         // Since we use Map here, the order of the sets in allModelSets are
         // random. However, if QuestionSet is resolved before a RecordSet, and
@@ -593,6 +573,101 @@ public class WdkModel {
         }
     }
 
+    private void excludeResources() throws WdkModelException {
+        // decide model name, display name, and version
+        for (WdkModelName wdkModelName : wdkModelNames) {
+            if (wdkModelName.include(projectId)) {
+                this.name = wdkModelName.getName();
+                this.displayName = wdkModelName.getDisplayName();
+                this.version = wdkModelName.getVersion();
+                break;
+            }
+        }
+        wdkModelNames = null; // no more use of modelNames
+
+        // decide the introduction
+        for (WdkModelText intro : introductions) {
+            if (intro.include(projectId)) {
+                this.introduction = intro.getText();
+                break;
+            }
+        }
+        introductions = null;
+
+        // exclude the property list
+        for (PropertyList propList : defaultPropertyLists) {
+            if (propList.include(projectId)) {
+                propList.excludeResources(projectId);
+                defaultPropertyListMap.put(propList.getName(),
+                        propList.getValues());
+            }
+        }
+        defaultPropertyLists = null;
+
+        // remove question sets
+        for (QuestionSet questionSet : questionSetList) {
+            if (questionSet.include(projectId)) {
+                questionSet.excludeResources(projectId);
+                addSet(questionSet, questionSets);
+            }
+        }
+        questionSetList = null;
+
+        // remove param sets
+        for (ParamSet paramSet : paramSetList) {
+            if (paramSet.include(projectId)) {
+                paramSet.excludeResources(projectId);
+                addSet(paramSet, paramSets);
+            }
+        }
+        paramSetList = null;
+
+        // remove query sets
+        for (QuerySet querySet : querySetList) {
+            if (querySet.include(projectId)) {
+                querySet.excludeResources(projectId);
+                addSet(querySet, querySets);
+            }
+        }
+        querySetList = null;
+
+        // remove record class sets
+        for (RecordClassSet recordClassSet : recordClassSetList) {
+            if (recordClassSet.include(projectId)) {
+                recordClassSet.excludeResources(projectId);
+                addSet(recordClassSet, recordClassSets);
+            } 
+        }
+        recordClassSetList = null;
+
+        // remove group sets
+        for (GroupSet groupSet : groupSetList) {
+            if (groupSet.include(projectId)) {
+                groupSet.excludeResources(projectId);
+                addSet(groupSet, groupSets);
+            } 
+        }
+        groupSetList = null;
+        
+        // remove xml question sets
+        for (XmlQuestionSet xmlQSet : xmlQuestionSetList) {
+            if (xmlQSet.include(projectId)) {
+                xmlQSet.excludeResources(projectId);
+                addSet(xmlQSet, xmlQuestionSets);
+            } 
+        }
+        xmlQuestionSetList = null;
+        
+        // remove xml record class sets
+        for (XmlRecordClassSet xmlRSet : xmlRecordClassSetList) {
+            if (xmlRSet.include(projectId)) {
+                xmlRSet.excludeResources(projectId);
+                addSet(xmlRSet, xmlRecordClassSets);
+            } 
+        }
+        xmlRecordClassSetList = null;
+    }
+
     public String toString() {
         String newline = System.getProperty("line.separator");
         StringBuffer buf = new StringBuffer("WdkModel: name='" + name + "'"
@@ -629,63 +704,37 @@ public class WdkModel {
         return buf.toString();
     }
 
-    // Param Sets
-    public void addQuerySet(ParamSet paramSet) throws WdkModelException {
-        addSet(paramSet, paramSets);
+    public void addQuestionSet(QuestionSet questionSet) {
+        questionSetList.add(questionSet);
     }
 
-    public void addParamSet(ParamSet paramSet) throws WdkModelException {
-        addSet(paramSet, paramSets);
+    public void addRecordClassSet(RecordClassSet recordClassSet) {
+        recordClassSetList.add(recordClassSet);
     }
 
-    public void addGroupSet(GroupSet groupSet) throws WdkModelException {
-        addSet(groupSet, groupSets);
+    public void addQuerySet(QuerySet querySet) {
+        querySetList.add(querySet);
     }
 
-    // /////////////////////////////////////////////////////////////////
-    // ///// Protected methods
-    // /////////////////////////////////////////////////////////////////
-
-    void checkName(String setName) throws WdkModelException {
-    // TODO What's supposed to be here?
+    public void addParamSet(ParamSet paramSet) {
+        paramSetList.add(paramSet);
     }
 
-    public EnumParam getBooleanOps() {
-        return this.booleanOps;
+    public void addGroupSet(GroupSet groupSet) {
+        groupSetList.add(groupSet);
     }
 
-    private void makeBooleanOps() {
+    public void addXmlQuestionSet(XmlQuestionSet questionSet) {
+        xmlQuestionSetList.add(questionSet);
+    }
 
-        EnumItem union = new EnumItem();
-        union.setTerm("Union With");
-        union.setInternal("union");
-
-        EnumItem intersect = new EnumItem();
-        intersect.setTerm("Intersect With");
-        intersect.setInternal("intersect");
-
-        EnumItem subtract = new EnumItem();
-        subtract.setTerm("Subtract");
-        subtract.setInternal("minus");
-
-        EnumParam booleanOpsEnum = new EnumParam();
-        booleanOpsEnum.addItem(union);
-        booleanOpsEnum.addItem(intersect);
-        booleanOpsEnum.addItem(subtract);
-
-        booleanOpsEnum.setMultiPick(new Boolean(false));
-
-        this.booleanOps = booleanOpsEnum;
+    public void addXmlRecordClassSet(XmlRecordClassSet recordClassSet) {
+        xmlRecordClassSetList.add(recordClassSet);
     }
 
     // =========================================================================
     // Xml data source related methods
     // =========================================================================
-
-    public void addXmlQuestionSet(XmlQuestionSet questionSet)
-            throws WdkModelException {
-        addSet(questionSet, xmlQuestionSets);
-    }
 
     public XmlQuestionSet[] getXmlQuestionSets() {
         XmlQuestionSet[] qsets = new XmlQuestionSet[xmlQuestionSets.size()];
@@ -701,11 +750,6 @@ public class WdkModel {
                     + " does not contain an Xml Question set with name "
                     + setName);
         return qset;
-    }
-
-    public void addXmlRecordClassSet(XmlRecordClassSet recordClassSet)
-            throws WdkModelException {
-        addSet(recordClassSet, xmlRecordClassSets);
     }
 
     public XmlRecordClassSet[] getXmlRecordClassSets() {
@@ -757,7 +801,7 @@ public class WdkModel {
     }
 
     public String getProjectId() {
-        return this.name;
+        return projectId;
     }
 
     public Map<String, String> getBooleanOperators() {
@@ -799,12 +843,44 @@ public class WdkModel {
 
     public String getQuestionDisplayName(String questionFullName) {
         try {
-            Question question = (Question) resolveReference(questionFullName,
-                    "", "", "");
+            Question question = (Question) resolveReference(questionFullName);
             return question.getDisplayName();
         } catch (WdkModelException ex) {
             // question doesn't exist, return null;
             return null;
         }
+    }
+
+    /**
+     * This method is supposed to be called by the digester
+     * 
+     * @param propertyList
+     */
+    public void addDefaultPropertyList(PropertyList propertyList) {
+        this.defaultPropertyLists.add(propertyList);
+    }
+
+    /**
+     * if the property list of the given name doesn't exist, an empty string
+     * array will be returned.
+     * 
+     * @param propertyListName
+     * @return
+     */
+    public String[] getDefaultPropertyList(String propertyListName) {
+        if (!defaultPropertyListMap.containsKey(propertyListName))
+            return new String[0];
+        return defaultPropertyListMap.get(propertyListName);
+    }
+
+    public Map<String, String[]> getDefaultPropertyLists() {
+        Map<String, String[]> propLists = new LinkedHashMap<String, String[]>();
+        for (String plName : defaultPropertyListMap.keySet()) {
+            String[] values = defaultPropertyListMap.get(plName);
+            String[] array = new String[values.length];
+            System.arraycopy(values, 0, array, 0, array.length);
+            propLists.put(plName, array);
+        }
+        return propLists;
     }
 }

@@ -1,5 +1,12 @@
 package org.gusdb.wdk.model.test;
 
+import java.io.IOException;
+
+import javax.xml.bind.ValidationException;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -16,6 +23,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.implementation.ModelXmlParser;
+import org.xml.sax.SAXException;
 
 public class RecordTester {
 
@@ -74,6 +82,18 @@ public class RecordTester {
 
             System.out.println("Fields retrieval took: "
                     + ((System.currentTimeMillis() - st) / 1000F) + " seconds.");
+        } catch (SAXException ex) {
+            throw new WdkModelException(ex);
+        } catch (IOException ex) {
+            throw new WdkModelException(ex);
+        } catch (ValidationException ex) {
+            throw new WdkModelException(ex);
+        } catch (ParserConfigurationException ex) {
+            throw new WdkModelException(ex);
+        } catch (TransformerFactoryConfigurationError ex) {
+            throw new WdkModelException(ex);
+        } catch (TransformerException ex) {
+            throw new WdkModelException(ex);
         } finally {
             long end = System.currentTimeMillis();
             System.out.println("Total time spent: " + ((end - start) / 1000F)

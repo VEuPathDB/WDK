@@ -1,90 +1,95 @@
 package org.gusdb.wdk.model;
 
-import java.util.Iterator;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
-public class QuerySet implements ModelSetI {
+public class QuerySet extends WdkModelBase implements ModelSetI {
 
-    Map<String, Query> querySet;
-    String name;
-    ResultFactory resultFactory;
-
-    public QuerySet() {
-	querySet = new LinkedHashMap<String, Query>();
-    }
+    private List<Query> queryList = new ArrayList<Query>();
+    private Map<String, Query> queries = new LinkedHashMap<String, Query>();
+    private String name;
 
     public void setName(String name) {
-	this.name = name;
+        this.name = name;
     }
 
     public String getName() {
-	return name;
+        return name;
     }
 
-   public Query getQuery(String name) throws WdkUserException {
-	Query q = querySet.get(name);
-	if (q == null) throw new WdkUserException("Query Set " + getName() + " does not include query " + name);
-	return q;
+    public Query getQuery(String name) throws WdkModelException {
+        Query q = queries.get(name);
+        if (q == null)
+            throw new WdkModelException("Query Set " + getName()
+                    + " does not include query " + name);
+        return q;
     }
 
     public Object getElement(String name) {
-	return querySet.get(name);
+        return queries.get(name);
     }
 
     public Query[] getQueries() {
-	Query[] queries = new Query[querySet.size()];
-	Iterator<Query> queryIterator = querySet.values().iterator();
-	int i = 0;
-	while (queryIterator.hasNext()) {
-	    queries[i++] = queryIterator.next();
-	}
-	return queries;
+        Query[] array = new Query[queries.size()];
+        queries.values().toArray(array);
+        return array;
     }
 
     public void addQuery(Query query) throws WdkModelException {
-	if (querySet.get(query.getName()) != null) 
-	    throw new WdkModelException("Query named " 
-					+ query.getName() 
-					+ " already exists in query set "
-					+ getName());
-	querySet.put(query.getName(), query);
+        queryList.add(query);
     }
 
     public void resolveReferences(WdkModel model) throws WdkModelException {
-	Iterator<Query> queryIterator = querySet.values().iterator();
-	while (queryIterator.hasNext()) {
-	    Query query = queryIterator.next();
-	    query.resolveReferences(model);
-	}
+        for (Query query : queries.values()) {
+            query.resolveReferences(model);
+        }
     }
 
     public void setResources(WdkModel model) throws WdkModelException {
-	Iterator<Query> queryIterator = querySet.values().iterator();
-	while (queryIterator.hasNext()) {
-	    Query query = queryIterator.next();
-	    query.setResources(model);
-	    query.setSetName(this.getName());
-	}
+        for (Query query : queries.values()) {
+            query.setResources(model);
+            query.setSetName(this.getName());
+        }
     }
 
     public String toString() {
-	String newline = System.getProperty( "line.separator" );
-	StringBuffer buf = new StringBuffer("QuerySet: name='" + name 
-					   + "'");
-	buf.append( newline );
-	Iterator<Query> queryIterator = querySet.values().iterator();
-	while (queryIterator.hasNext()) {
-	    buf.append( newline );
-	    buf.append( ":::::::::::::::::::::::::::::::::::::::::::::" );
-	    buf.append( newline );
-	    buf.append( queryIterator.next() ).append( newline );	
-	}
-	return buf.toString();
+        String newline = System.getProperty("line.separator");
+        StringBuffer buf = new StringBuffer("QuerySet: name='" + name + "'");
+        buf.append(newline);
+        for (Query query : queries.values()) {
+            buf.append(newline);
+            buf.append(":::::::::::::::::::::::::::::::::::::::::::::");
+            buf.append(newline);
+            buf.append(query);
+            buf.append(newline);
+        }
+        return buf.toString();
     }
 
-    /////////////////////////////////////////////////////////////////
-    ///////  protected
-    /////////////////////////////////////////////////////////////////
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
+     */
+    @Override
+    public void excludeResources(String projectId) throws WdkModelException {
+        // exclude queries
+        for (Query query : queryList) {
+            if (query.include(projectId)) {
+                query.excludeResources(projectId);
+                String queryName = query.getName();
+                if (queries.containsKey(queryName))
+                    throw new WdkModelException("Query named " + queryName
+                            + " already exists in query set " + getName());
+                queries.put(queryName, query);
+            }
+        }
+        queryList = null;
+    }
+    // ///////////////////////////////////////////////////////////////
+    // ///// protected
+    // ///////////////////////////////////////////////////////////////
 
 }

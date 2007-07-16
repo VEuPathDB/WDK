@@ -1,5 +1,12 @@
 package org.gusdb.wdk.model.test;
 
+import java.io.IOException;
+
+import javax.xml.bind.ValidationException;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
@@ -11,6 +18,7 @@ import org.gusdb.wdk.model.implementation.ModelXmlParser;
 import org.gusdb.wdk.model.xml.XmlAnswer;
 import org.gusdb.wdk.model.xml.XmlQuestion;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
+import org.xml.sax.SAXException;
 
 public class XmlQuestionTester {
 
@@ -38,27 +46,42 @@ public class XmlQuestionTester {
         String questionSetName = ref.getSetName();
         String questionName = ref.getElementName();
 
-        ModelXmlParser parser = new ModelXmlParser(gusHome);
-        WdkModel wdkModel = parser.parseModel(modelName);
+        try {
+            ModelXmlParser parser = new ModelXmlParser(gusHome);
+            WdkModel wdkModel = parser.parseModel(modelName);
 
-        XmlQuestionSet questionSet = wdkModel.getXmlQuestionSet(questionSetName);
-        XmlQuestion question = questionSet.getQuestion(questionName);
+            XmlQuestionSet questionSet = wdkModel.getXmlQuestionSet(questionSetName);
+            XmlQuestion question = questionSet.getQuestion(questionName);
 
-        // use external data source
-        if (xmlData != null) question.setXmlDataURL(xmlData);
+            // use external data source
+            if (xmlData != null) question.setXmlDataURL(xmlData);
 
-        int pageCount = 1;
+            int pageCount = 1;
 
-        for (int i = 0; i < rows.length; i += 2) {
-            int nextStartRow = Integer.parseInt(rows[i]);
-            int nextEndRow = Integer.parseInt(rows[i + 1]);
+            for (int i = 0; i < rows.length; i += 2) {
+                int nextStartRow = Integer.parseInt(rows[i]);
+                int nextEndRow = Integer.parseInt(rows[i + 1]);
 
-            XmlAnswer answer = question.makeAnswer(null, nextStartRow,
-                    nextEndRow);
+                XmlAnswer answer = question.makeAnswer(null, nextStartRow,
+                        nextEndRow);
 
-            System.out.println("Printing Record Instances on page " + pageCount);
-            System.out.println(answer.print());
-            pageCount++;
+                System.out.println("Printing Record Instances on page "
+                        + pageCount);
+                System.out.println(answer.print());
+                pageCount++;
+            }
+        } catch (SAXException ex) {
+            throw new WdkModelException(ex);
+        } catch (IOException ex) {
+            throw new WdkModelException(ex);
+        } catch (ValidationException ex) {
+            throw new WdkModelException(ex);
+        } catch (ParserConfigurationException ex) {
+            throw new WdkModelException(ex);
+        } catch (TransformerFactoryConfigurationError ex) {
+            throw new WdkModelException(ex);
+        } catch (TransformerException ex) {
+            throw new WdkModelException(ex);
         }
     }
 

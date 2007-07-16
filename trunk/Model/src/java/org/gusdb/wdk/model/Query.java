@@ -3,17 +3,17 @@ package org.gusdb.wdk.model;
 import java.io.Serializable;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Vector;
 
 import org.apache.log4j.Logger;
 
-public abstract class Query implements Serializable {
+public abstract class Query extends WdkModelBase implements Serializable {
 
     private static Logger logger = Logger.getLogger(Query.class);
 
@@ -23,23 +23,16 @@ public abstract class Query implements Serializable {
     protected String description;
     protected String help;
     protected Boolean isCacheable = new Boolean(true);
-    protected LinkedHashSet<ParamReference> paramRefs;
-    protected Map<String, Param> paramsH;
-    protected Vector<Param> paramsV;
-    protected Map<String, Column> columnsH;
-    protected Vector<Column> columnsV;
+    protected List<ParamReference> paramRefs = new ArrayList<ParamReference>();
+
+    protected Map<String, Param> params = new LinkedHashMap<String, Param>();
+    private List<Column> columnList = new ArrayList<Column>();
+    protected Map<String, Column> columns = new LinkedHashMap<String, Column>();
+
     protected ResultFactory resultFactory;
 
     protected String signature = null;
     protected String projectId;
-
-    public Query() {
-        paramRefs = new LinkedHashSet<ParamReference>();
-        paramsH = new LinkedHashMap<String, Param>();
-        paramsV = new Vector<Param>();
-        columnsH = new LinkedHashMap<String, Column>();
-        columnsV = new Vector<Column>();
-    }
 
     // ///////////////////////////////////////////////////////////////////
     // /////////// Setters for initialization ///////////////////////////
@@ -71,9 +64,7 @@ public abstract class Query implements Serializable {
     }
 
     public void addColumn(Column column) {
-        column.setQuery(this);
-        columnsV.add(column);
-        columnsH.put(column.getName(), column);
+        columnList.add(column);
         signature = null;
     }
 
@@ -94,13 +85,13 @@ public abstract class Query implements Serializable {
     }
 
     public Param[] getParams() {
-        Param[] paramA = new Param[paramsV.size()];
-        paramsV.copyInto(paramA);
+        Param[] paramA = new Param[params.size()];
+        params.values().toArray(paramA);
         return paramA;
     }
 
     public Map<String, Param> getParamMap() {
-        return new LinkedHashMap<String, Param>(paramsH);
+        return new LinkedHashMap<String, Param>(params);
     }
 
     public Boolean getIsCacheable() {
@@ -116,20 +107,21 @@ public abstract class Query implements Serializable {
     }
 
     public Column[] getColumns() {
-        Column[] columnA = new Column[columnsV.size()];
-        columnsV.copyInto(columnA);
+        Column[] columnA = new Column[columns.size()];
+        columns.values().toArray(columnA);
         return columnA;
     }
 
     public Map<String, Column> getColumnMap() {
-        return columnsH;
+        return new LinkedHashMap<String, Column>(columns);
     }
 
     public Column getColumn(String columnName) throws WdkModelException {
-        if (columnsH.get(columnName) == null)
+        Column column = columns.get(columnName);
+        if (column == null)
             throw new WdkModelException("Query " + name
                     + " does not have a column '" + columnName + "'");
-        return (Column) columnsH.get(columnName);
+        return column;
     }
 
     public abstract QueryInstance makeInstance();
@@ -144,7 +136,7 @@ public abstract class Query implements Serializable {
         Iterator<String> paramNames = values.keySet().iterator();
         while (paramNames.hasNext()) {
             String paramName = paramNames.next();
-            Param param = paramsH.get(paramName);
+            Param param = params.get(paramName);
             internalValues.put(paramName, param.getInternalValue(values.get(
                     paramName).toString()));
         }
@@ -156,13 +148,15 @@ public abstract class Query implements Serializable {
         StringBuffer buf = formatHeader();
 
         buf.append("--- Columns ---").append(newline);
-        for (int i = 0; i < columnsV.size(); i++) {
-            buf.append(columnsV.elementAt(i)).append(newline);
+        for (Column column : columns.values()) {
+            buf.append(column);
+            buf.append(newline);
         }
 
         buf.append("--- Params ---").append(newline);
-        for (int i = 0; i < paramsV.size(); i++) {
-            buf.append(paramsV.elementAt(i)).append(newline);
+        for (Param param : params.values()) {
+            buf.append(param);
+            buf.append(newline);
         }
 
         return buf.toString();
@@ -178,29 +172,29 @@ public abstract class Query implements Serializable {
             content.append(fullName);
 
             // get parameter name list, and sort it
-            String[] paramNames = new String[paramsH.size()];
-            paramsH.keySet().toArray(paramNames);
+            String[] paramNames = new String[params.size()];
+            params.keySet().toArray(paramNames);
             Arrays.sort(paramNames);
 
             // get a combination of parameters and types
             for (String paramName : paramNames) {
-                Param param = paramsH.get(paramName);
+                Param param = params.get(paramName);
                 content.append(Utilities.DATA_DIVIDER);
                 content.append(paramName);
                 content.append('|');
                 content.append(param.getClass().getName());
             }
-            
+
             // get the columns
-            String[] columnNames = new String[columnsH.size()];
-            columnsH.keySet().toArray(columnNames);
+            String[] columnNames = new String[columns.size()];
+            columns.keySet().toArray(columnNames);
             Arrays.sort(columnNames);
-            
+
             for (String columnName : columnNames) {
                 content.append(Utilities.DATA_DIVIDER);
                 content.append(columnName);
             }
-            
+
             // get extra data for making signature
             String extra = getSignatureData();
             if (extra != null) {
@@ -227,37 +221,31 @@ public abstract class Query implements Serializable {
     }
 
     /*
-      <sanityQuery ref="GeneFeatureIds.GenesByGeneType"
-                   minOutputLength="30" maxOutputLength="100">
-          <sanityParam name="geneType" value="tRNA"/>
-          <sanityParam name="organism" value="Plasmodium falciparum"/>
-      </sanityQuery>
-    */
-    public String getSanityTestSuggestion () throws WdkModelException {
-	String indent = "    ";
+     * <sanityQuery ref="GeneFeatureIds.GenesByGeneType" minOutputLength="30"
+     * maxOutputLength="100"> <sanityParam name="geneType" value="tRNA"/>
+     * <sanityParam name="organism" value="Plasmodium falciparum"/>
+     * </sanityQuery>
+     */
+    public String getSanityTestSuggestion() throws WdkModelException {
+        String indent = "    ";
         String newline = System.getProperty("line.separator");
-	StringBuffer buf = new StringBuffer(
-	      newline + newline
-	    + indent + "<sanityQuery ref=\"" + getFullName() + "\"" 
-	    + newline
-	    + indent + indent + indent
-	    + "minOutputLength=\"FIX_min_len\" maxOutputLength=\"FIX_max_len\">"
-	    + newline);
-	for (Param param : getParams()) {
-	    String paramName = param.getName();
-	    String value = param.getDefault();
-	    if (value == null) value = "FIX_null_dflt";
-	    buf.append(indent + indent
-		       + "<sanityParam name=\"" + paramName 
-		       + "\" value=\"" + value + "\"/>"
-		       + newline);
-	}
-	buf.append(indent + "</sanityQuery>");
-	return buf.toString();
+        StringBuffer buf = new StringBuffer(newline + newline + indent
+                + "<sanityQuery ref=\"" + getFullName() + "\"" + newline
+                + indent + indent + indent + "minOutputLength=\"FIX_min_len\" "
+                + "maxOutputLength=\"FIX_max_len\">" + newline);
+        for (Param param : getParams()) {
+            String paramName = param.getName();
+            String value = param.getDefault();
+            if (value == null) value = "FIX_null_dflt";
+            buf.append(indent + indent + "<sanityParam name=\"" + paramName
+                    + "\" value=\"" + value + "\"/>" + newline);
+        }
+        buf.append(indent + "</sanityQuery>");
+        return buf.toString();
     }
-    
+
     public String getProjectId() {
-    	return projectId;
+        return projectId;
     }
 
     // ///////////////////////////////////////////////////////////////////
@@ -269,35 +257,66 @@ public abstract class Query implements Serializable {
         signature = null;
     }
 
-    protected void addParam(Param param) {
-        paramsV.add(param);
-        paramsH.put(param.getName(), param);
+    protected void addParam(Param param) throws WdkModelException {
+        String paramName = param.getName();
+        if (params.containsKey(paramName))
+            throw new WdkModelException("The param " + paramName
+                    + " is duplicated in query " + getFullName());
+        params.put(paramName, param);
         signature = null;
     }
 
     Param getParam(String paramName) {
-        return paramsH.get(paramName);
+        return params.get(paramName);
     }
 
     protected void resolveReferences(WdkModel model) throws WdkModelException {
-        Iterator<ParamReference> paramRefsIter = paramRefs.iterator();
-        while (paramRefsIter.hasNext()) {
-            ParamReference paramRef = paramRefsIter.next();
+        for (ParamReference paramRef : paramRefs) {
             String twoPartName = paramRef.getTwoPartName();
-            Param param = (Param) model.resolveReference(twoPartName,
-                    this.name, "Query", "paramRef");
+            Param param = (Param) model.resolveReference(twoPartName);
             // clone the param to have different default values
             param = param.clone();
-            
-            param.setDefault(paramRef.getDefault());
-            param.setAllowNull( paramRef.isAllowNull() );
-            param.setNullValue( paramRef.getNullValue() );
-            
+
+            // if the param has customized default value
+            String defaultValue = paramRef.getDefault();
+            if (defaultValue != null) param.setDefault(defaultValue);
+
+            // if the param has customized allowEmpty
+            Boolean allowEmpty = paramRef.isAllowEmpty();
+            if (allowEmpty != null) param.setAllowEmpty(allowEmpty);
+
+            Boolean multiPick = paramRef.isMultiPick();
+            Boolean useTermOnly = paramRef.getUseTermOnly();
+            String queryRef = paramRef.getQueryRef();
+            if (param instanceof FlatVocabParam || param instanceof EnumParam) {
+                // if the param has customized multi pick
+                if (multiPick != null)
+                    ((AbstractEnumParam) param).setMultiPick(multiPick);
+
+                // if the useTermOnly is set
+                if (useTermOnly != null)
+                    ((AbstractEnumParam) param).setUseTermOnly(useTermOnly);
+
+                // if the queryRef is set for FlatVocabParam
+                if (queryRef != null) {
+                    if (param instanceof FlatVocabParam) {
+                        ((FlatVocabParam) param).setQueryRef(queryRef);
+                    } else throw new WdkModelException("The paramRef to '"
+                            + twoPartName + "' is not a flatVocabParam. The "
+                            + "'queryRef' property can only be applied to "
+                            + "paramRefs of flatVocabParams.");
+                }
+            } else if (multiPick != null || useTermOnly != null)
+                throw new WdkModelException("The paramRef to '" + twoPartName
+                        + "' is not a flatVocabParam nor enumParam. The "
+                        + "'queryRef' property can only be applied to "
+                        + "paramRefs of flatVocabParams or enumParams.");
+
             // resolve the group reference
             String groupRef = paramRef.getGroupRef();
             if (groupRef != null) {
-                Group group = (Group) model.resolveReference( groupRef, this.name, "Param", "groupRef" );
-                param.setGroup( group );
+                Group group = (Group) model.resolveReference(groupRef);
+                param.setGroup(group);
             }
             addParam(param);
             param.resolveReferences(model);
@@ -308,9 +327,7 @@ public abstract class Query implements Serializable {
 
         this.resultFactory = model.getResultFactory();
 
-        Iterator paramIterator = paramsH.values().iterator();
-        while (paramIterator.hasNext()) {
-            Param param = (Param) paramIterator.next();
+        for (Param param : params.values()) {
             param.setResources(model);
         }
         this.projectId = model.getProjectId();
@@ -321,40 +338,36 @@ public abstract class Query implements Serializable {
         LinkedHashMap<Param, String[]> errors = null;
 
         // first confirm that all supplied values have legal names
-        Iterator<String> valueNames = values.keySet().iterator();
-        while (valueNames.hasNext()) {
-            String valueName = valueNames.next();
-            if (paramsH.get(valueName) == null) {
-                throw new WdkModelException("'" + valueName
+        for (String paramName : values.keySet()) {
+            if (params.get(paramName) == null) {
+                throw new WdkModelException("'" + paramName
                         + "' is not a legal parameter name for query '"
                         + getFullName() + "'");
             }
         }
 
         // then check that all params have supplied values
-        int size = paramsV.size();
-        for (int i = 0; i < size; i++) {
-            Param p = paramsV.elementAt(i);
-            Object value = values.get(p.getName());
+        for (Param param : params.values()) {
+            Object value = values.get(param.getName());
             String errMsg = null;
             if (value == null || value.toString().length() == 0) {
-                errMsg = "No value supplied for param " + p.getName();
-            } else if (p instanceof DatasetParam) {
+                errMsg = "No value supplied for param " + param.getName();
+            } else if (param instanceof DatasetParam) {
                 // validate dataset param by getting the dataset id
                 try {
-                    p.getInternalValue(value.toString());
+                    param.getInternalValue(value.toString());
                 } catch (WdkModelException ex) {
                     errMsg = ex.toString();
                 }
             } else {
-                errMsg = p.validateValue(value);
+                errMsg = param.validateValue(value);
             }
             if (errMsg != null) {
                 if (errors == null)
                     errors = new LinkedHashMap<Param, String[]>();
                 String booBoo[] = { value == null ? "" : value.toString(),
                         errMsg };
-                errors.put(p, booBoo);
+                errors.put(param, booBoo);
             }
         }
         if (errors != null) {
@@ -364,12 +377,12 @@ public abstract class Query implements Serializable {
         }
     }
 
-    protected void applyDefaults(Map<String, Object> values) throws WdkModelException {
-        int size = paramsV.size();
-        for (int i = 0; i < size; i++) {
-            Param p = paramsV.elementAt(i);
-            if (values.get(p.getName()) == null && p.getDefault() != null)
-                values.put(p.getName(), p.getDefault());
+    protected void applyDefaults(Map<String, Object> values)
+            throws WdkModelException {
+        for (Param param : params.values()) {
+            if (values.get(param.getName()) == null
+                    && param.getDefault() != null)
+                values.put(param.getName(), param.getDefault());
         }
     }
 
@@ -387,10 +400,12 @@ public abstract class Query implements Serializable {
      * doesn't contain any dynamic attribute. The base query shouldn't contain
      * any columns associated with dynamic attributes either.
      * 
-     * @param allowedColumns The column names that are allowed in the base query
+     * @param allowedColumns
+     * The column names that are allowed in the base query
      * @return returns a cloned base query.
      */
-    public abstract Query getBaseQuery(Set<String> excludedColumns);
+    public abstract Query getBaseQuery(Set<String> excludedColumns)
+            throws WdkModelException;
 
     /**
      * The query clones its members, and only contains the allowed columns
@@ -400,7 +415,7 @@ public abstract class Query implements Serializable {
      */
     protected void clone(Query query, Set<String> excludedColumns) {
         // copy allowed columns
-        for (Column column : this.columnsV) {
+        for (Column column : this.columns.values()) {
             if (!excludedColumns.contains(column.getName())) {
                 Column newColumn = column.clone();
                 query.addColumn(newColumn);
@@ -414,12 +429,43 @@ public abstract class Query implements Serializable {
         query.isCacheable = this.isCacheable;
         query.name = this.name;
         query.paramRefs.addAll(this.paramRefs);
-        query.paramsH.putAll(this.paramsH);
-        query.paramsV.addAll(this.paramsV);
+        query.params.putAll(this.params);
         query.resultFactory = this.resultFactory;
         query.signature = signature;
         query.projectId = projectId;
     }
-    
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
+     */
+    @Override
+    public void excludeResources(String projectId) throws WdkModelException {
+        // exclude paramRefs
+        List<ParamReference> newParamRefs = new ArrayList<ParamReference>();
+        for (ParamReference paramRef : paramRefs) {
+            if (paramRef.include(projectId)) {
+                paramRef.excludeResources(projectId);
+                newParamRefs.add(paramRef);
+            }
+        }
+        paramRefs = newParamRefs;
+
+        // exclude columns
+        for (Column column : columnList) {
+            if (column.include(projectId)) {
+                column.setQuery(this);
+                column.excludeResources(projectId);
+                String columnName = column.getName();
+                if (columns.containsKey(columnName))
+                    throw new WdkModelException("The column " + columnName
+                            + " is duplicated in query " + getFullName());
+                columns.put(column.getName(), column);
+            }
+        }
+        columnList = null;
+    }
+
     protected abstract String getSignatureData();
 }

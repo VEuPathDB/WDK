@@ -10,7 +10,6 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.Query;
 import org.gusdb.wdk.model.QuerySet;
@@ -43,7 +42,7 @@ import org.gusdb.wdk.model.xml.XmlQuestionSet;
  * 
  * @author David Barkan
  * @version $Revision$ $Date: 2005-08-23 12:31:12 -0400 (Tue, 23 Aug
- *          2005) $Author$
+ * 2005) $Author$
  */
 public class SanityTester {
 
@@ -202,7 +201,8 @@ public class SanityTester {
                 queryRef = new Reference(queries[i].getRef());
                 QuerySet nextQuerySet = wdkModel.getQuerySet(queryRef.getSetName());
                 // variable never used
-                //Query nextQuery = nextQuerySet.getQuery(queryRef.getElementName());
+                // Query nextQuery =
+                // nextQuerySet.getQuery(queryRef.getElementName());
                 nextQuerySet.getQuery(queryRef.getElementName());
 
                 if (indexOnly) {
@@ -424,8 +424,9 @@ public class SanityTester {
             }
             // check the connection usage
             RDBMSPlatformI platform = wdkModel.getPlatform();
-            //            System.out.println("Connection: " + platform.getActiveCount() + "/" 
-            //                    + platform.getIdleCount());
+            // System.out.println("Connection: " + platform.getActiveCount() +
+            // "/"
+            // + platform.getIdleCount());
             if (platform.getActiveCount() > 0) {
                 System.err.println("Connection leak ("
                         + platform.getActiveCount() + ") for question: "
@@ -551,15 +552,16 @@ public class SanityTester {
     }
 
     /**
-     * @param queryResult a two-value array where the first entry is the number
-     *        of queries that passed the test and the second is the number of
-     *        queries that failed.
+     * @param queryResult
+     * a two-value array where the first entry is the number of queries that
+     * passed the test and the second is the number of queries that failed.
      * 
-     * @param recordResult a two-value array where the first entry is the number
-     *        of records that passed the test and the second is the number of
-     *        records that failed.
+     * @param recordResult
+     * a two-value array where the first entry is the number of records that
+     * passed the test and the second is the number of records that failed.
      * 
-     * @param return true if one or more tests failed; false otherwise.
+     * @param return
+     * true if one or more tests failed; false otherwise.
      */
 
     private boolean printSummaryLine() {
@@ -670,7 +672,7 @@ public class SanityTester {
         System.exit(1);
     }
 
-    private static Logger logger = Logger.getLogger(SanityTester.class);
+    // private static Logger logger = Logger.getLogger(SanityTester.class);
 
     public static void main(String[] args) {
         String cmdName = System.getProperty("cmdName");

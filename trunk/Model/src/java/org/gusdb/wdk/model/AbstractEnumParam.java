@@ -2,198 +2,202 @@ package org.gusdb.wdk.model;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Vector;
 
 public abstract class AbstractEnumParam extends Param {
-    
+
     protected boolean multiPick = false;
-    protected Map vocabMap;
-    protected Vector orderedKeySet = new Vector();
+    protected Map<String, String> vocabMap;
     protected boolean quoteInternalValue;
-    
+
+    protected boolean useTermOnly;
+
+    public AbstractEnumParam() {
+        useTermOnly = false;
+    }
+
     // ///////////////////////////////////////////////////////////////////
     // /////////// Public properties ////////////////////////////////////
     // ///////////////////////////////////////////////////////////////////
-    
-    public void setMultiPick( Boolean multiPick ) {
+
+    public void setMultiPick(Boolean multiPick) {
         this.multiPick = multiPick.booleanValue();
     }
-    
+
     public Boolean getMultiPick() {
-        return new Boolean( multiPick );
+        return new Boolean(multiPick);
     }
-    
-    public void setQuoteInternalValue( Boolean quote ) {
+
+    public void setQuoteInternalValue(Boolean quote) {
         this.quoteInternalValue = quote.booleanValue();
     }
-    
+
     public Boolean getQuoteInternalValue() {
-        return new Boolean( quoteInternalValue );
+        return new Boolean(quoteInternalValue);
     }
-    
-    public String validateValue( Object value ) throws WdkModelException {
+
+    public String validateValue(Object value) throws WdkModelException {
         // check if null value is allowed; if so, pass
-        if (allowNull && value == null) return null;
-        
+        if (allowEmpty && value == null) return null;
+
         if (value == null || value.toString().length() == 0)
             return "Missing the value";
 
         // check if the value is string, if yes, try decompres it
-        if ( value instanceof String ) {
-            value = decompressValue( ( String ) value );
+        if (value instanceof String) {
+            value = decompressValue((String) value);
         }
         String err = null;
-        String[ ] values = ( String[ ] ) value;
-        for ( String val : values ) {
-            err = validateSingleValue( val );
-            if ( err != null ) break;
+        String[] values = (String[]) value;
+        for (String val : values) {
+            err = validateSingleValue(val);
+            if (err != null) break;
         }
         return err;
     }
-    
+
     /*
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.Param#getInternalValue(java.lang.String)
      */
-    public String getInternalValue( String value ) throws WdkModelException {
+    public String getInternalValue(String value) throws WdkModelException {
         // check if null value is allowed
-        if (allowNull && value == null) return nullValue;
-        
-        String[ ] values = ( String[ ] ) decompressValue( value );
+        if (allowEmpty && value == null) return defaultValue;
+
+        String[] values = (String[]) decompressValue(value);
         initVocabMap();
         StringBuffer buf = new StringBuffer();
-        
-        for ( int i = 0; i < values.length; i++ ) {
-            String v = vocabMap.get( values[ i ] ).toString();
-            if ( i > 0 ) buf.append( "," );
-            if ( quoteInternalValue ) buf.append( "'" + v + "'" );
-            else buf.append( v );
+
+        for (int i = 0; i < values.length; i++) {
+            String v = vocabMap.get(values[i]).toString();
+            if (i > 0) buf.append(",");
+            if (quoteInternalValue) buf.append("'" + v + "'");
+            else buf.append(v);
         }
         return buf.toString();
     }
-    
+
     /*
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.Param#resolveReferences(org.gusdb.wdk.model.WdkModel)
      */
     @Override
-    protected void resolveReferences( WdkModel model ) throws WdkModelException {
+    protected void resolveReferences(WdkModel model) throws WdkModelException {
     // TODO Auto-generated method stub
-    
+
     }
-    
-    public String[ ] getVocab() throws WdkModelException {
-        
+
+    public String[] getVocab() throws WdkModelException {
         initVocabMap();
-        int keySize = orderedKeySet.size();
-        String[ ] a = new String[ keySize ];
-        for ( int i = 0; i < keySize; i++ ) {
-            a[ i ] = orderedKeySet.elementAt( i ).toString();
+        String[] array = new String[vocabMap.size()];
+        vocabMap.keySet().toArray(array);
+        return array;
+    }
+
+    public String[] getVocabInternal() throws WdkModelException {
+        initVocabMap();
+        String[] array = new String[vocabMap.size()];
+        if (useTermOnly) vocabMap.keySet().toArray(array);
+        else vocabMap.values().toArray(array);
+        return array;
+    }
+
+    public Map<String, String> getVocabMap() throws WdkModelException {
+        initVocabMap();
+        Map<String, String> newVocabMap = new LinkedHashMap<String, String>();
+        for (String term : vocabMap.keySet()) {
+            newVocabMap.put(term, useTermOnly ? term : vocabMap.get(term));
         }
-        return a;
+        return newVocabMap;
     }
-    
-    public String[ ] getVocabInternal() throws WdkModelException {
-        initVocabMap();
-        int keySize = orderedKeySet.size();
-        String[ ] a = new String[ keySize ];
-        for ( int i = 0; i < keySize; i++ ) {
-            Object nextKey = orderedKeySet.elementAt( i );
-            a[ i ] = vocabMap.get( nextKey ).toString();
-        }
-        return a;
-    }
-    
-    public Map getVocabMap() throws WdkModelException {
-        initVocabMap();
-        return vocabMap;
-    }
-    
+
     public String getDefault() throws WdkModelException {
-        if ( defaultValue != null ) return defaultValue;
-        String[ ] vocab = getVocab();
-        if ( vocab.length == 0 ) return null;
-        return vocab[ 0 ];
+        if (defaultValue != null) return defaultValue;
+        String[] vocab = getVocab();
+        if (vocab.length == 0) return null;
+        return vocab[0];
     }
-    
+
+    /**
+     * @return the useTermOnly
+     */
+    public boolean isUseTermOnly() {
+        return this.useTermOnly;
+    }
+
+    /**
+     * @param useTermOnly
+     */
+    public void setUseTermOnly(boolean useTermOnly) {
+        this.useTermOnly = useTermOnly;
+    }
+
     // ///////////////////////////////////////////////////////////////////
     // /////////// Protected properties ////////////////////////////////////
     // ///////////////////////////////////////////////////////////////////
-    
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.Param#clone()
-     */
-    @Override
-    public Param clone() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-    
+
     /*
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.Param#compressValue(java.lang.Object)
      */
     @Override
-    public String compressValue( Object value ) throws WdkModelException {
-        if ( value instanceof String[ ] ) {
-            String[ ] values = ( String[ ] ) value;
-            value = Utilities.fromArray( values );
+    public String compressValue(Object value) throws WdkModelException {
+        if (value instanceof String[]) {
+            String[] values = (String[]) value;
+            value = Utilities.fromArray(values);
         }
-        return super.compressValue( value );
+        return super.compressValue(value);
     }
-    
+
     /*
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.Param#decompressValue(java.lang.String)
      */
     @Override
-    public Object decompressValue( String value ) throws WdkModelException {
-        //logger.info( "decompressing: '" + value + "'" );
-        
+    public Object decompressValue(String value) throws WdkModelException {
+        // logger.info( "decompressing: '" + value + "'" );
+
         // check if the value is compressed; that is, if it has a compression
         // prefix
-        if ( value.startsWith( Utilities.COMPRESSED_VALUE_PREFIX ) ) {
-            
+        if (value.startsWith(Utilities.COMPRESSED_VALUE_PREFIX)) {
+
             // decompress the value
             String checksum = value.substring(
-                    Utilities.COMPRESSED_VALUE_PREFIX.length() ).trim();
-            value = queryFactory.getClobValue( checksum );
+                    Utilities.COMPRESSED_VALUE_PREFIX.length()).trim();
+            value = queryFactory.getClobValue(checksum);
         }
-        if ( multiPick ) return value.split( "," );
-        else return new String[ ] { value };
+        if (multiPick) return value.split(",");
+        else return new String[] { value };
     }
-    
+
     protected abstract void initVocabMap() throws WdkModelException;
-    
-    protected String validateSingleValue( Object value )
-            throws WdkModelException {
+
+    protected String validateSingleValue(Object value) throws WdkModelException {
         initVocabMap();
-        
-        if ( vocabMap.containsKey( value ) ) {
+
+        if (vocabMap.containsKey(value)) {
             return null;
         }
-        if ( value == null || value.toString().trim().length() == 0 ) {
+        if (value == null || value.toString().trim().length() == 0) {
             return " - Please choose value(s) for parameter '" + name + "'";
         } else {
             return " - Invalid value '" + value + "' for parameter '" + name
                     + "'";
         }
     }
-    
-    protected void clone( AbstractEnumParam param ) {
-        super.clone( param );
+
+    protected void clone(AbstractEnumParam param) {
+        super.clone(param);
         param.multiPick = multiPick;
-        if ( vocabMap != null ) {
-            if ( param.vocabMap == null ) param.vocabMap = new LinkedHashMap();
-            param.vocabMap.putAll( vocabMap );
+        if (vocabMap != null) {
+            if (param.vocabMap == null)
+                param.vocabMap = new LinkedHashMap<String, String>();
+            param.vocabMap.putAll(vocabMap);
         }
-        param.orderedKeySet.addAll( orderedKeySet );
         param.quoteInternalValue = quoteInternalValue;
+        param.useTermOnly = useTermOnly;
     }
 }

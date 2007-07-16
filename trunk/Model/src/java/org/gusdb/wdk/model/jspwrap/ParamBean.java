@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.jspwrap;
 
-import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Param;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -11,7 +10,7 @@ import org.gusdb.wdk.model.WdkModelException;
  */
 public class ParamBean {
     
-    private static Logger logger = Logger.getLogger( ParamBean.class );
+    //private static Logger logger = Logger.getLogger( ParamBean.class );
     
     protected Param param;
     protected String paramValue;

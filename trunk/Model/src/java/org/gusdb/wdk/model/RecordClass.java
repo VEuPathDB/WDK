@@ -4,25 +4,27 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
 
-public class RecordClass {
+public class RecordClass extends WdkModelBase {
 
     public static final String PRIMARY_KEY_NAME = "primaryKey";
     public static final String PROJECT_ID_NAME = "projectId";
     public static final String PRIMARY_KEY_MACRO = "\\$\\$primaryKey\\$\\$";
     public static final String PROJECT_ID_MACRO = "\\$\\$projectId\\$\\$";
 
-    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.model.RecordClass");
+    // private static final Logger logger = Logger.getLogger(RecordClass.class);
 
-    private Set<AttributeQueryReference> attributesQueryRefs = new LinkedHashSet<AttributeQueryReference>();
+    private List<AttributeQueryReference> attributesQueryRefs = new ArrayList<AttributeQueryReference>();
+
+    private List<AttributeField> attributeFieldList = new ArrayList<AttributeField>();
     private Map<String, AttributeField> attributeFieldsMap = new LinkedHashMap<String, AttributeField>();
+
+    private List<TableField> tableFieldList = new ArrayList<TableField>();
     private Map<String, TableField> tableFieldsMap = new LinkedHashMap<String, TableField>();
+
     private String name;
     private String type;
     private String idPrefix;
@@ -69,14 +71,13 @@ public class RecordClass {
     private String aliasQueryName = null;
     private Query aliasQuery = null;
 
-    private Map<String, ReporterRef> reporters;
+    private List<ReporterRef> reporterList = new ArrayList<ReporterRef>();
+    private Map<String, ReporterRef> reporterMap = new LinkedHashMap<String, ReporterRef>();
 
     public RecordClass() {
         // make sure these keys are at the front of the list
         // it doesn't make sense, since you can't guarantee the order in a map
         attributeFieldsMap.put(PRIMARY_KEY_NAME, null);
-        
-        reporters = new LinkedHashMap<String, ReporterRef>();
     }
 
     // ////////////////////////////////////////////////////////////////////
@@ -115,8 +116,8 @@ public class RecordClass {
 
     /**
      * @param attList
-     *            comma separated list of attributes in a summary containing
-     *            this recordClass.
+     * comma separated list of attributes in a summary containing this
+     * recordClass.
      */
     /*
      * public void setSummaryAttributeList (String attList){
@@ -133,7 +134,7 @@ public class RecordClass {
 
     /**
      * @param attributesQueryRef
-     *            two part query name (set.name)
+     * two part query name (set.name)
      */
     public void addAttributesQueryRef(AttributeQueryReference attributesQueryRef) {
         attributesQueryRefs.add(attributesQueryRef);
@@ -141,25 +142,22 @@ public class RecordClass {
 
     public void addAttributeField(AttributeField attributeField)
             throws WdkModelException {
-        // check if the name duplicates
-        String name = attributeField.getName();
-        if (attributeFieldsMap.containsKey(name)) {
-            String message = "Duplicates in name of AttributeField: " + name;
-            logger.finest(message);
-            throw new WdkModelException(message);
+        if (attributeFieldList != null) {
+            // invoked by the model parser, the excludeResources() hasn't been
+            // called yet
+            attributeFieldList.add(attributeField);
+        } else {
+            // invoked when resolving references. Add directlly into the map
+            String fieldName = attributeField.getName();
+            if (attributeFieldsMap.containsKey(fieldName))
+                throw new WdkModelException("The AttributeField " + fieldName
+                        + " is duplicated in the recordClass " + getFullName());
+            attributeFieldsMap.put(fieldName, attributeField);
         }
-        attributeFieldsMap.put(name, attributeField);
     }
 
-    public void addTableField(TableField tableField) throws WdkModelException {
-        // check if the name duplicates
-        String name = tableField.getName();
-        if (tableFieldsMap.containsKey(name)) {
-            String message = "Duplicates in name of TableField: " + name;
-            logger.finest(message);
-            throw new WdkModelException(message);
-        }
-        tableFieldsMap.put(name, tableField);
+    public void addTableField(TableField tableField) {
+        tableFieldList.add(tableField);
     }
 
     public void addQuestion(Question q) {
@@ -183,9 +181,9 @@ public class RecordClass {
 
         nestedRecordListQuestionRefs.add(nrl);
     }
-    
+
     public void addReporterRef(ReporterRef reporter) {
-        reporters.put(reporter.getName(), reporter);
+        reporterList.add(reporter);
     }
 
     // ////////////////////////////////////////////////////////////
@@ -268,7 +266,7 @@ public class RecordClass {
         nestedRecordQuestions.values().toArray(returnedNq);
         return returnedNq;
     }
-
+    
     public Question[] getNestedRecordListQuestions() {
         if (nestedRecordListQuestions == null) {
             initNestedRecords();
@@ -280,7 +278,7 @@ public class RecordClass {
 
     /**
      * @return all Questions in the current model that are using this record
-     *         class as their return type.
+     * class as their return type.
      */
     public Question[] getQuestions() {
         Question[] returnedQuestions = new Question[questions.size()];
@@ -320,9 +318,9 @@ public class RecordClass {
         String sourceId = lookupSourceId(recordId);
         return new RecordInstance(this, projectId, sourceId);
     }
-    
+
     public Map<String, ReporterRef> getReporterMap() {
-        return new LinkedHashMap<String, ReporterRef>(reporters);
+        return new LinkedHashMap<String, ReporterRef>(reporterMap);
     }
 
     public String toString() {
@@ -344,23 +342,18 @@ public class RecordClass {
     }
 
     /*
-      <sanityRecord ref="GeneRecordClasses.GeneRecordClass"
-                    primaryKey="PF11_0344"/>
-    */
-    public String getSanityTestSuggestion () throws WdkModelException {
-	String indent = "    ";
+     * <sanityRecord ref="GeneRecordClasses.GeneRecordClass"
+     * primaryKey="PF11_0344"/>
+     */
+    public String getSanityTestSuggestion() throws WdkModelException {
+        String indent = "    ";
         String newline = System.getProperty("line.separator");
-	StringBuffer buf = new StringBuffer(
-	      newline + newline
-	    + indent + "<sanityRecord ref=\"" + getFullName() + "\"" 
-	    + newline
-	    + indent + indent + indent
-	    + "primaryKey=\"FIX_pk\">"
-	    + newline);
-	buf.append(indent + "</sanityRecord>");
-	return buf.toString();
+        StringBuffer buf = new StringBuffer(newline + newline + indent
+                + "<sanityRecord ref=\"" + getFullName() + "\"" + newline
+                + indent + indent + indent + "primaryKey=\"FIX_pk\">" + newline);
+        buf.append(indent + "</sanityRecord>");
+        return buf.toString();
     }
-
 
     // /////////////////////////////////////////////////////////////////////////
     // package scope methods
@@ -368,7 +361,7 @@ public class RecordClass {
 
     /**
      * @param recordSetName
-     *            name of the recordSet to which this record belongs.
+     * name of the recordSet to which this record belongs.
      */
     void setFullName(String recordSetName) {
         this.fullName = recordSetName + "." + name;
@@ -381,7 +374,6 @@ public class RecordClass {
             String message = "RecordClass " + getName()
                     + " doesn't have an attribute field with name '"
                     + attributeName + "'.";
-            logger.finest(message);
             throw new WdkModelException(message);
         }
         return attributeField;
@@ -393,7 +385,6 @@ public class RecordClass {
             String message = "Record " + getName()
                     + " does not have a table field with name '" + tableName
                     + "'.";
-            logger.finest(message);
             throw new WdkModelException(message);
         }
         return tableField;
@@ -404,9 +395,7 @@ public class RecordClass {
         // resolve projectParam
         FlatVocabParam projectParam = null;
         if (projectParamRef != null) {
-            projectParam = (FlatVocabParam) model.resolveReference(
-                    projectParamRef.getTwoPartName(), getName(),
-                    this.getClass().getName(), "projectParamRef");
+            projectParam = (FlatVocabParam) model.resolveReference(projectParamRef.getTwoPartName());
             projectParam = (FlatVocabParam) projectParam.clone();
             projectParam.setDefault(projectParamRef.getDefault());
         }
@@ -429,9 +418,7 @@ public class RecordClass {
             }
 
             // resolve Query and associate columns with the attribute fields
-            Query query = (Query) model.resolveReference(
-                    reference.getTwoPartName(), getName(),
-                    this.getClass().getName(), "attributesQueryRef");
+            Query query = (Query) model.resolveReference(reference.getTwoPartName());
             Column[] columns = query.getColumns();
             for (Column column : columns) {
                 AttributeField field = fieldMap.get(column.getName());
@@ -462,8 +449,7 @@ public class RecordClass {
 
         // resolve reference for alias query
         if (aliasQueryName != null) {
-            aliasQuery = (Query) model.resolveReference(aliasQueryName, name,
-                    RecordClass.class.getName(), "aliasQueryRef");
+            aliasQuery = (Query) model.resolveReference(aliasQueryName);
         }
     }
 
@@ -510,16 +496,13 @@ public class RecordClass {
                             + " defined attribute " + nextAtt
                             + " in its attribute ordering, but that is not a "
                             + "valid attribute for this RecordClass";
-                    logger.finest(message);
                     throw new WdkModelException(message);
                 }
                 orderedAttsMap.put(nextAtt, nextAttField);
             }
         }
         // add all attributes not in the ordering
-        Iterator<String> allAttNames = attributeFieldsMap.keySet().iterator();
-        while (allAttNames.hasNext()) {
-            String nextAtt = allAttNames.next();
+        for (String nextAtt : attributeFieldsMap.keySet()) {
             if (!orderedAttsMap.containsKey(nextAtt)) {
                 AttributeField nextField = attributeFieldsMap.get(nextAtt);
                 orderedAttsMap.put(nextAtt, nextField);
@@ -527,7 +510,7 @@ public class RecordClass {
         }
         return orderedAttsMap;
     }
-    
+
     private String lookupSourceId(String aliasName) throws WdkModelException {
         // nothing to look up
         if (aliasQuery == null) return aliasName;
@@ -546,5 +529,84 @@ public class RecordClass {
         }
         resultList.close();
         return aliasName;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
+     */
+    @Override
+    public void excludeResources(String projectId) throws WdkModelException {
+        // exclude reporters
+        for (ReporterRef reporter : reporterList) {
+            if (reporter.include(projectId)) {
+                reporter.excludeResources(projectId);
+                String reporterName = reporter.getName();
+                if (reporterMap.containsKey(reporterName))
+                    throw new WdkModelException("The reporter " + reporterName
+                            + " is duplicated in recordClass "
+                            + this.getFullName());
+                reporterMap.put(reporterName, reporter);
+            }
+        }
+        reporterList = null;
+
+        // exclude attributes
+        for (AttributeField field : attributeFieldList) {
+            if (field.include(projectId)) {
+                field.excludeResources(projectId);
+                String fieldName = field.getName();
+                if (attributeFieldsMap.containsKey(fieldName))
+                    throw new WdkModelException("The attributeField "
+                            + fieldName + " is duplicated in recordClass "
+                            + getFullName());
+                attributeFieldsMap.put(fieldName, field);
+            }
+        }
+        attributeFieldList = null;
+
+        // exclude table fields
+        for (TableField field : tableFieldList) {
+            if (field.include(projectId)) {
+                field.excludeResources(projectId);
+                String fieldName = field.getName();
+                if (attributeFieldsMap.containsKey(fieldName))
+                    throw new WdkModelException("The table " + fieldName
+                            + " is duplicated in recordClass " + getFullName());
+                tableFieldsMap.put(fieldName, field);
+            }
+        }
+        tableFieldList = null;
+
+        // exclude query refs
+        List<AttributeQueryReference> newQueryRefs = new ArrayList<AttributeQueryReference>();
+        for (AttributeQueryReference queryRef : attributesQueryRefs) {
+            if (queryRef.include(projectId)) {
+                queryRef.excludeResources(projectId);
+                newQueryRefs.add(queryRef);
+            }
+        }
+        attributesQueryRefs = newQueryRefs;
+
+        // exclude nested records
+        List<NestedRecord> newNestedRecords = new ArrayList<NestedRecord>();
+        for (NestedRecord nestedRecord : nestedRecordQuestionRefs) {
+            if (nestedRecord.include(projectId)) {
+                nestedRecord.excludeResources(projectId);
+                newNestedRecords.add(nestedRecord);
+            }
+        }
+        nestedRecordQuestionRefs = newNestedRecords;
+
+        // exclude nested record lists
+        List<NestedRecordList> newNestedRecordLists = new ArrayList<NestedRecordList>();
+        for (NestedRecordList recordList : nestedRecordListQuestionRefs) {
+            if (recordList.include(projectId)) {
+                recordList.excludeResources(projectId);
+                newNestedRecordLists.add(recordList);
+            }
+        }
+        nestedRecordListQuestionRefs = newNestedRecordLists;
     }
 }
