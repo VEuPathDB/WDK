@@ -3,27 +3,28 @@ package org.gusdb.wdk.model;
 /**
  * @author
  * @modified Jan 6, 2006 - Jerric add a property for the name of query history
- *           table
+ * table
  */
 public class ModelConfig {
 
-    String connectionUrl;
-    String login;
-    String password;
-    String platformClass;
-    Integer maxIdle;
-    Integer maxWait;
-    Integer maxActive;
-    Integer minIdle;
-    Integer initialSize;
-    String webServiceUrl;
+    private String projectId;
+    private String connectionUrl;
+    private String login;
+    private String password;
+    private String platformClass;
+    private Integer maxIdle;
+    private Integer maxWait;
+    private Integer maxActive;
+    private Integer minIdle;
+    private Integer initialSize;
+    private String webServiceUrl;
 
     // the fields for authentication use
     private String authenticationLogin;
     private String authenticationPassword;
     private String authenticationConnectionUrl;
     private String authenticationPlatformClass;
-    
+
     private String loginSchema;
     private String defaultRole;
     private String smtpServer;
@@ -37,7 +38,20 @@ public class ModelConfig {
     private boolean enableQueryLogger = false;
     private String queryLoggerFile;
 
-    public ModelConfig() {}
+    /**
+     * @return the projectId
+     */
+    public String getProjectId() {
+        return this.projectId;
+    }
+
+    /**
+     * @param projectId
+     * the projectId to set
+     */
+    public void setProjectId(String projectId) {
+        this.projectId = projectId;
+    }
 
     public void setPlatformClass(String platformClass) {
         this.platformClass = platformClass;
@@ -127,8 +141,8 @@ public class ModelConfig {
     }
 
     /**
-     * @param authenticationConnectionUrl The authenticationConnectionUrl to
-     *            set.
+     * @param authenticationConnectionUrl
+     * The authenticationConnectionUrl to set.
      */
     public void setAuthenticationConnectionUrl(
             String authenticationConnectionUrl) {
@@ -143,7 +157,8 @@ public class ModelConfig {
     }
 
     /**
-     * @param authenticationLogin The authenticationLogin to set.
+     * @param authenticationLogin
+     * The authenticationLogin to set.
      */
     public void setAuthenticationLogin(String authenticationLogin) {
         this.authenticationLogin = authenticationLogin;
@@ -157,13 +172,13 @@ public class ModelConfig {
     }
 
     /**
-     * @param authenticationPassword The authenticationPassword to set.
+     * @param authenticationPassword
+     * The authenticationPassword to set.
      */
     public void setAuthenticationPassword(String authenticationPassword) {
         this.authenticationPassword = authenticationPassword;
     }
 
-    
     /**
      * @return Returns the loginSchema.
      */
@@ -171,9 +186,9 @@ public class ModelConfig {
         return loginSchema;
     }
 
-    
     /**
-     * @param loginSchema The loginSchema to set.
+     * @param loginSchema
+     * The loginSchema to set.
      */
     public void setLoginSchema(String loginSchema) {
         this.loginSchema = loginSchema;
@@ -187,7 +202,8 @@ public class ModelConfig {
     }
 
     /**
-     * @param defaultRole The defaultRole to set.
+     * @param defaultRole
+     * The defaultRole to set.
      */
     public void setDefaultRole(String defaultRole) {
         this.defaultRole = defaultRole;
@@ -201,8 +217,8 @@ public class ModelConfig {
     }
 
     /**
-     * @param authenticationPlatformClass The authenticationPlatformClass to
-     *            set.
+     * @param authenticationPlatformClass
+     * The authenticationPlatformClass to set.
      */
     public void setAuthenticationPlatformClass(
             String authenticationPlatformClass) {
@@ -217,7 +233,8 @@ public class ModelConfig {
     }
 
     /**
-     * @param smtpServer The smtpServer to set.
+     * @param smtpServer
+     * The smtpServer to set.
      */
     public void setSmtpServer(String smtpServer) {
         this.smtpServer = smtpServer;
@@ -231,7 +248,8 @@ public class ModelConfig {
     }
 
     /**
-     * @param emailContent The emailContent to set.
+     * @param emailContent
+     * The emailContent to set.
      */
     public void setEmailContent(String emailContent) {
         this.emailContent = emailContent;
@@ -245,7 +263,8 @@ public class ModelConfig {
     }
 
     /**
-     * @param emailSubject The emailSubject to set.
+     * @param emailSubject
+     * The emailSubject to set.
      */
     public void setEmailSubject(String emailSubject) {
         this.emailSubject = emailSubject;
@@ -259,7 +278,8 @@ public class ModelConfig {
     }
 
     /**
-     * @param registerEmail The registerEmail to set.
+     * @param registerEmail
+     * The registerEmail to set.
      */
     public void setRegisterEmail(String registerEmail) {
         this.registerEmail = registerEmail;
@@ -273,7 +293,8 @@ public class ModelConfig {
     }
 
     /**
-     * @param enableQueryLogger the enableQueryLogger to set
+     * @param enableQueryLogger
+     * the enableQueryLogger to set
      */
     public void setEnableQueryLogger(boolean enableQueryLogger) {
         this.enableQueryLogger = enableQueryLogger;
@@ -287,7 +308,8 @@ public class ModelConfig {
     }
 
     /**
-     * @param queryLoggerFile the queryLoggerFile to set
+     * @param queryLoggerFile
+     * the queryLoggerFile to set
      */
     public void setQueryLoggerFile(String queryLoggerFile) {
         this.queryLoggerFile = queryLoggerFile;

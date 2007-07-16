@@ -3,6 +3,13 @@
  */
 package org.gusdb.wdk.model.migrate;
 
+import java.io.IOException;
+
+import javax.xml.bind.ValidationException;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -14,6 +21,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.implementation.ModelXmlParser;
+import org.xml.sax.SAXException;
 
 /**
  * @author Jerric
@@ -109,8 +117,22 @@ public class Migrator {
 
         // parse the wdk model
         String gusHome = System.getProperty(ModelXmlParser.GUS_HOME);
-        ModelXmlParser modelParser = new ModelXmlParser(gusHome);
-        wdkModel = modelParser.parseModel(modelName);
+        try {
+            ModelXmlParser modelParser = new ModelXmlParser(gusHome);
+            wdkModel = modelParser.parseModel(modelName);
+        } catch (SAXException ex) {
+            throw new WdkModelException(ex);
+        } catch (IOException ex) {
+            throw new WdkModelException(ex);
+        } catch (ValidationException ex) {
+            throw new WdkModelException(ex);
+        } catch (ParserConfigurationException ex) {
+            throw new WdkModelException(ex);
+        } catch (TransformerFactoryConfigurationError ex) {
+            throw new WdkModelException(ex);
+        } catch (TransformerException ex) {
+            throw new WdkModelException(ex);
+        }
     }
 
     public String getOldVersion() {

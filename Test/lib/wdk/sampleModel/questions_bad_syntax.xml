@@ -5,7 +5,7 @@
     record class
 -->
 
-<wdkModel name="SingleModel" displayName="Single Test Model" version="1.0">
+<wdkModel>
 
 
     <!-- ************ -->
@@ -24,26 +24,12 @@
     -->
     
     <questionSet name="SampleQuestions"
-                 displayName="Search genes">
+                 displayName="Sample Question Set">
     
-        <description>
-            Sample questions
-        </description>
-        
-        <question name="StatisticsQuestion"
-                  category="Infrastructure"
-                  displayName="System Statistics"
-                  queryRef="SampleQueries.QueryIdsByName"
-                  summaryAttributesList="query_name, start_time"
-                  sortingAttributesList="start_time desc">
-            <summary>
-                Find queries by name.
-            </summary>
-            <description>
-                <![CDATA[
-                find queries by query name.
-                ]]>
-            </description>
+        <question name="SampleQuestion"
+                  category="sample"
+                  displayName="Sample Question"
+                  queryRef="SampleQueries.SampleIdQuery">
         </question>
     
     </questionSet>

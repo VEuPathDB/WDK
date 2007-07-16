@@ -11,6 +11,11 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.xml.bind.ValidationException;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -25,6 +30,7 @@ import org.gusdb.wdk.model.test.SanityModel;
 import org.gusdb.wdk.model.test.SanityQuestion;
 import org.gusdb.wdk.model.test.SanityRecord;
 import org.gusdb.wdk.model.test.SanityTestXmlParser;
+import org.xml.sax.SAXException;
 
 public class StressTemplater {
 
@@ -323,22 +329,37 @@ public class StressTemplater {
         // TODO - consider refactoring it
         File modelPropFile = new File(gusHome, "/config/" + modelName + ".prop");
 
-        ModelXmlParser parser = new ModelXmlParser(gusHome);
-        WdkModel wdkModel = parser.parseModel(modelName);
-        SanityModel sanityModel = SanityTestXmlParser.parseXmlFile(
-                sanityXmlFile.toURI().toURL(), modelPropFile.toURI().toURL(),
-                sanitySchemaFile.toURI().toURL());
+        try {
+            ModelXmlParser parser = new ModelXmlParser(gusHome);
+            WdkModel wdkModel = parser.parseModel(modelName);
+            SanityModel sanityModel = SanityTestXmlParser.parseXmlFile(
+                    sanityXmlFile.toURI().toURL(),
+                    modelPropFile.toURI().toURL(),
+                    sanitySchemaFile.toURI().toURL());
 
-        StressTemplater tester = new StressTemplater(wdkModel, sanityModel);
+            StressTemplater tester = new StressTemplater(wdkModel, sanityModel);
 
-        // open the input/output file
-        File outFile = new File(gusHome, "/config/" + modelName
-                + "-stress.template");
-        tester.makeTemplate(outFile);
+            // open the input/output file
+            File outFile = new File(gusHome, "/config/" + modelName
+                    + "-stress.template");
+            tester.makeTemplate(outFile);
 
-        System.out.println("The template file for " + modelName
-                + " has been saved at " + outFile.getAbsolutePath());
-        System.exit(0);
+            System.out.println("The template file for " + modelName
+                    + " has been saved at " + outFile.getAbsolutePath());
+            System.exit(0);
+        } catch (SAXException ex) {
+            throw new WdkModelException(ex);
+        } catch (IOException ex) {
+            throw new WdkModelException(ex);
+        } catch (ValidationException ex) {
+            throw new WdkModelException(ex);
+        } catch (ParserConfigurationException ex) {
+            throw new WdkModelException(ex);
+        } catch (TransformerFactoryConfigurationError ex) {
+            throw new WdkModelException(ex);
+        } catch (TransformerException ex) {
+            throw new WdkModelException(ex);
+        }
     }
 
     private static void addOption(Options options, String argName, String desc) {

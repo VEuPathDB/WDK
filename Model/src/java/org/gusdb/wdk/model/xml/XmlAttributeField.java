@@ -33,4 +33,12 @@ public class XmlAttributeField extends AttributeField {
         buf.append("'\r\n");
         return buf.toString();
     }
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
+     */
+    @Override
+    public void excludeResources(String projectId) {
+        // do nothing
+    }
 }

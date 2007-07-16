@@ -205,8 +205,8 @@ public class UserFactory {
             String department, String address, String city, String state,
             String zipCode, String phoneNumber, String country,
             Map<String, String> globalPreferences,
-            Map<String, String> projectPreferences) throws WdkUserException,
-            WdkModelException {
+            Map<String, String> projectPreferences)
+            throws WdkUserException, WdkModelException {
         return createUser(email, lastName, firstName, middleName, title,
                 organization, department, address, city, state, zipCode,
                 phoneNumber, country, globalPreferences, projectPreferences,
@@ -416,8 +416,8 @@ public class UserFactory {
      * @throws WdkUserException
      * @throws WdkModelException
      */
-    public User loadUser(String email) throws WdkUserException,
-            WdkModelException {
+    public User loadUser(String email)
+            throws WdkUserException, WdkModelException {
         email = email.trim();
 
         ResultSet rsUser = null;
@@ -446,8 +446,8 @@ public class UserFactory {
         }
     }
 
-    public User loadUserBySignature(String signature) throws WdkUserException,
-            WdkModelException {
+    public User loadUserBySignature(String signature)
+            throws WdkUserException, WdkModelException {
         ResultSet rsUser = null;
         try {
             // get user information
@@ -534,8 +534,8 @@ public class UserFactory {
         }
     }
 
-    public User[] queryUsers(String emailPattern) throws WdkUserException,
-            WdkModelException {
+    public User[] queryUsers(String emailPattern)
+            throws WdkUserException, WdkModelException {
         String sql = "SELECT user_id, email FROM " + loginSchema + "users";
 
         if (emailPattern != null && emailPattern.length() > 0) {
@@ -796,8 +796,8 @@ public class UserFactory {
     }
 
     Map<Integer, History> loadHistories(User user,
-            Map<Integer, History> invalidHistories) throws WdkUserException,
-            WdkModelException {
+            Map<Integer, History> invalidHistories)
+            throws WdkUserException, WdkModelException {
         Map<Integer, History> histories = new LinkedHashMap<Integer, History>();
 
         ResultSet rsHistory = null;
@@ -968,11 +968,10 @@ public class UserFactory {
     }
 
     private Answer constructAnswer(User user, String questionName,
-            Map<String, Object> params) throws WdkModelException,
-            WdkUserException {
+            Map<String, Object> params)
+            throws WdkModelException, WdkUserException {
         // obtain the question with full name
-        Question question = (Question) wdkModel.resolveReference(questionName,
-                "UserFactory", "UserFactory", "question_name");
+        Question question = (Question) wdkModel.resolveReference(questionName);
 
         // get the user's preferences
 
@@ -1007,7 +1006,8 @@ public class UserFactory {
         QueryInstance qinstance = answer.getIdsQueryInstance();
         String qiChecksum = qinstance.getChecksum();
         String signature = qinstance.getQuery().getSignature();
-        String params = (isBoolean) ? booleanExpression
+        String params = (isBoolean)
+                ? booleanExpression
                 : (qinstance.getQuery().getFullName() + qinstance.getParamsContent());
 
         // check whether the answer exist or not
@@ -1133,8 +1133,8 @@ public class UserFactory {
                     + " doesn't exist. Updating operation cancelled.");
 
         // TEST
-        logger.info( "Save custom name: '" + history.getBaseCustomName() + "'" );
-        
+        logger.info("Save custom name: '" + history.getBaseCustomName() + "'");
+
         // update custom name
         Date lastRunTime = (updateTime) ? new Date() : history.getLastRunTime();
         PreparedStatement psHistory = null;
@@ -1219,8 +1219,8 @@ public class UserFactory {
         }
     }
 
-    public void deleteInvalidHistories(User user) throws WdkUserException,
-            WdkModelException {
+    public void deleteInvalidHistories(User user)
+            throws WdkUserException, WdkModelException {
         // get invalid histories
         Map<Integer, History> invalidHistories = new LinkedHashMap<Integer, History>();
         loadHistories(user, invalidHistories);
@@ -1416,14 +1416,14 @@ public class UserFactory {
         }
     }
 
-    public void resetPassword(String email) throws WdkUserException,
-            WdkModelException {
+    public void resetPassword(String email)
+            throws WdkUserException, WdkModelException {
         User user = loadUser(email);
         resetPassword(user);
     }
 
-    private void resetPassword(User user) throws WdkUserException,
-            WdkModelException {
+    private void resetPassword(User user)
+            throws WdkUserException, WdkModelException {
         String email = user.getEmail();
 
         // generate a random password of 8 characters long, the range will be
@@ -1559,8 +1559,8 @@ public class UserFactory {
         return buffer.toString();
     }
 
-    public void deleteUser(String email) throws WdkUserException,
-            WdkModelException {
+    public void deleteUser(String email)
+            throws WdkUserException, WdkModelException {
         // get user id
         User user = loadUser(email);
 

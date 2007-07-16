@@ -10,74 +10,100 @@ import java.io.Serializable;
  * @created Feb 16, 2006
  */
 public class ParamReference extends Reference implements Serializable {
-    
+
     /**
      * 
      */
     private static final long serialVersionUID = -7829729638618781482L;
     private String defaultValue;
-    private boolean allowNull;
-    private String nullValue;
-    
-    /**
-     * 
-     */
-    public ParamReference( ) {
-        super();
-        // TODO Auto-generated constructor stub
-    }
-    
+    private Boolean allowEmpty;
+    private Boolean multiPick;
+    private Boolean useTermOnly;
+    private String queryRef;
+
+    public ParamReference() {}
+
     /**
      * @param twoPartName
      * @throws WdkModelException
      */
-    public ParamReference( String twoPartName ) throws WdkModelException {
-        super( twoPartName );
+    public ParamReference(String twoPartName) throws WdkModelException {
+        super(twoPartName);
         // TODO Auto-generated constructor stub
     }
-    
+
     /**
      * @return Returns the defaultValue.
      */
     public String getDefault() {
         return this.defaultValue;
     }
-    
+
     /**
      * @param defaultValue
-     *            The defaultValue to set.
+     * The defaultValue to set.
      */
-    public void setDefault( String defaultValue ) {
+    public void setDefault(String defaultValue) {
         this.defaultValue = defaultValue;
     }
-    
+
     /**
-     * @return the allowNull
+     * @return the allowEmpty
      */
-    public boolean isAllowNull() {
-        return allowNull;
+    public Boolean isAllowEmpty() {
+        return this.allowEmpty;
     }
-    
+
     /**
-     * @param allowNull
-     *            the allowNull to set
+     * @param allowEmpty
+     * the allowEmpty to set
      */
-    public void setAllowNull( boolean allowNull ) {
-        this.allowNull = allowNull;
+    public void setAllowEmpty(boolean allowEmpty) {
+        this.allowEmpty = allowEmpty;
     }
-    
+
     /**
-     * @return the nullValue
+     * @return the multiPick
      */
-    public String getNullValue() {
-        return nullValue;
+    public Boolean isMultiPick() {
+        return this.multiPick;
     }
-    
+
     /**
-     * @param nullValue
-     *            the nullValue to set
+     * @param multiPick
+     * the multiPick to set
      */
-    public void setNullValue( String nullValue ) {
-        this.nullValue = nullValue;
+    public void setMultiPick(boolean multiPick) {
+        this.multiPick = multiPick;
+    }
+
+    /**
+     * @return the useTermOnly
+     */
+    public Boolean getUseTermOnly() {
+        return this.useTermOnly;
+    }
+
+    /**
+     * @param useTermOnly
+     * the useTermOnly to set
+     */
+    public void setUseTermOnly(Boolean useTermOnly) {
+        this.useTermOnly = useTermOnly;
+    }
+
+    /**
+     * @return the queryRef
+     */
+    public String getQueryRef() {
+        return this.queryRef;
+    }
+
+    /**
+     * @param queryRef
+     * the queryRef to set
+     */
+    public void setQueryRef(String queryRef) {
+        this.queryRef = queryRef;
     }
 }

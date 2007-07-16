@@ -3,7 +3,9 @@
  */
 package org.gusdb.wdk.model.xml;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.gusdb.wdk.model.Field;
@@ -15,19 +17,19 @@ import org.gusdb.wdk.model.WdkModelException;
  */
 public class XmlTableField extends Field {
 
-    private Map<String, XmlAttributeField> attributeFields;
+    private List<XmlAttributeField> attributeFieldList = new ArrayList<XmlAttributeField>();
+    private Map<String, XmlAttributeField> attributeFields = new LinkedHashMap<String, XmlAttributeField>();
 
     public XmlTableField() {
-        super();
         internal = false;
-        attributeFields = new LinkedHashMap<String, XmlAttributeField>();
     }
 
     public void addAttributeField(XmlAttributeField attributeField) {
-        attributeFields.put(attributeField.getName(), attributeField);
+        attributeFieldList.add(attributeField);
     }
 
-    public XmlAttributeField getAttributeField(String name) throws WdkModelException {
+    public XmlAttributeField getAttributeField(String name)
+            throws WdkModelException {
         XmlAttributeField attributeField = attributeFields.get(name);
         if (attributeField == null)
             throw new WdkModelException("The AttributeField '" + name
@@ -62,5 +64,27 @@ public class XmlTableField extends Field {
         if (sb.toString().endsWith(", "))
             sb.delete(sb.length() - 2, sb.length());
         return sb.toString();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
+     */
+    @Override
+    public void excludeResources(String projectId) throws WdkModelException {
+        // exclude attribute fields
+        for (XmlAttributeField field : attributeFieldList) {
+            if (field.include(projectId)) {
+                field.excludeResources(projectId);
+                String fieldName = field.getName();
+                if (attributeFields.containsKey(fieldName))
+                    throw new WdkModelException("The xmlAttributeField "
+                            + fieldName + " is duplicated in xmlTable "
+                            + this.name);
+                attributeFields.put(fieldName, field);
+            }
+        }
+        attributeFieldList = null;
     }
 }

@@ -1,17 +1,12 @@
 package org.gusdb.wdk.model;
 
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.LinkedHashSet;
-import java.util.Collection;
-import java.util.Iterator;
-
-import java.util.logging.Logger;
 
 public class FieldValueMap implements Map {
 
-    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.view.FieldValueMap");
-    
     private RecordClass recordClass;
     private RecordInstance recordInstance;
     private String mapType;
@@ -20,18 +15,18 @@ public class FieldValueMap implements Map {
     static final String ATTRIBUTE_MAP = "attribute_map";
     static final String SUMMARY_ATTRIBUTE_MAP = "summary_attribute_map";
 
-    public FieldValueMap(RecordClass recordClass, RecordInstance recordInstance,
-			 String mapType, Map<String, AttributeField> dynamicAttributeFields) {
-	this.recordInstance = recordInstance;
-	this.recordClass = recordClass;
-	this.mapType = mapType;
-	this.dynamicAttributeFields = dynamicAttributeFields;
+    public FieldValueMap(RecordClass recordClass,
+            RecordInstance recordInstance, String mapType,
+            Map<String, AttributeField> dynamicAttributeFields) {
+        this.recordInstance = recordInstance;
+        this.recordClass = recordClass;
+        this.mapType = mapType;
+        this.dynamicAttributeFields = dynamicAttributeFields;
     }
 
-       
-    ////////////////////////////////////////////////////////////////////
-    //  implementation of Map
-    ////////////////////////////////////////////////////////////////////
+    // //////////////////////////////////////////////////////////////////
+    // implementation of Map
+    // //////////////////////////////////////////////////////////////////
 
     /**
      * @see java.util.Map#size()
@@ -51,13 +46,13 @@ public class FieldValueMap implements Map {
      * @see java.util.Map#containsKey(java.lang.Object)
      */
     public boolean containsKey(Object key) {
-	return keySet().contains(key);
+        return keySet().contains(key);
     }
 
     /**
      * @see java.util.Map#keySet()
      */
-    public Set keySet() {
+    public Set<String> keySet() {
         Set<String> keySet = null;
         if (TABLE_MAP.equals(mapType)) {
             keySet = recordClass.getTableFieldMap().keySet();
@@ -77,8 +72,8 @@ public class FieldValueMap implements Map {
     }
 
     /**
-     * @see java.util.Map#get(java.lang.Object)
-     * If this method creates and returns a TableFieldValue, be sure to close the wrapped ResultList when 
+     * @see java.util.Map#get(java.lang.Object) If this method creates and
+     * returns a TableFieldValue, be sure to close the wrapped ResultList when
      * finished with it.
      */
     public Object get(Object key) {
@@ -125,75 +120,79 @@ public class FieldValueMap implements Map {
      * @see java.util.Map#containsValue(java.lang.Object)
      */
     public boolean containsValue(Object value) {
-	throw new UnsupportedOperationException("Illegal operation 'containsValue' on FieldValueMap");
+        throw new UnsupportedOperationException(
+                "Illegal operation 'containsValue' on FieldValueMap");
     }
 
     /**
      * @see java.util.Map#put(java.lang.Object, java.lang.Object)
      */
     public Object put(Object key, Object value) {
-	throw new UnsupportedOperationException("Illegal operation 'put' on FieldValueMap");
+        throw new UnsupportedOperationException(
+                "Illegal operation 'put' on FieldValueMap");
     }
 
     /**
      * @see java.util.Map#remove(java.lang.Object)
      */
     public Object remove(Object key) {
-	throw new UnsupportedOperationException("Illegal operation 'remove' on FieldValueMap");
+        throw new UnsupportedOperationException(
+                "Illegal operation 'remove' on FieldValueMap");
     }
 
     /**
      * @see java.util.Map#putAll(java.util.Map)
      */
     public void putAll(Map t) {
-	throw new UnsupportedOperationException("Illegal operation 'putAll' on FieldValueMap");
+        throw new UnsupportedOperationException(
+                "Illegal operation 'putAll' on FieldValueMap");
     }
 
     /**
      * @see java.util.Map#clear()
      */
-    public void clear() {
-    }
+    public void clear() {}
 
     /**
      * @see java.util.Map#values()
      */
     public Collection values() {
-	throw new UnsupportedOperationException("Illegal operation 'values' on FieldValueMap");
+        throw new UnsupportedOperationException(
+                "Illegal operation 'values' on FieldValueMap");
     }
 
     /**
      * @see java.util.Map#entrySet()
      */
-    public Set entrySet() {
-	LinkedHashSet entrySet = new LinkedHashSet();
-	Iterator iterator = keySet().iterator();
-	while (iterator.hasNext()) {
-	    Object key = iterator.next();
-	    entrySet.add(new OurEntry(key, get(key)));
-	}
-	return entrySet;
+    public Set<OurEntry> entrySet() {
+        Set<OurEntry> entrySet = new LinkedHashSet<OurEntry>();
+        for (String key : keySet()) {
+            entrySet.add(new OurEntry(key, get(key)));
+        }
+        return entrySet;
     }
-    
+
     public class OurEntry implements Map.Entry {
-	Object key;
-	Object value;
 
-	OurEntry(Object key, Object value) {
-	    this.key = key;
-	    this.value = value;
-	}
-	public Object getKey() {
-	    return key;
-	}
-	public Object getValue() {
-	    return value;
-	}
-	public Object setValue(Object value) {
-	    this.value = value;
-	    return value;
-	}
+        String key;
+        Object value;
+
+        OurEntry(String key, Object value) {
+            this.key = key;
+            this.value = value;
+        }
+
+        public String getKey() {
+            return key;
+        }
+
+        public Object getValue() {
+            return value;
+        }
+
+        public Object setValue(Object value) {
+            this.value = value;
+            return value;
+        }
     }
-
-}   
-    
+}

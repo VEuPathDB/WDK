@@ -9,7 +9,7 @@ package org.gusdb.wdk.model;
  * @version $Revision$ $Date$ $Author$
  */
 
-public class Reference {
+public class Reference extends WdkModelBase {
 
     private String setName;
     private String elementName;
@@ -64,7 +64,6 @@ public class Reference {
             throw new WdkModelException("Error: Group Reference '" + groupRef + "' is not in the form 'setName.elementName'");
         }
         
-        String[] parts = groupRef.split("\\.");
         this.groupRef = groupRef;
     }
     
@@ -78,5 +77,12 @@ public class Reference {
     public String toString() {
         return "Reference: "+twoPartName;
     }
-    
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
+     */
+    @Override
+    public void excludeResources(String projectId) throws WdkModelException {
+        // do nothing
+    }
 }

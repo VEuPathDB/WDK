@@ -1,160 +1,172 @@
 package org.gusdb.wdk.model;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.Iterator;
-import java.util.Vector;
+import java.util.List;
 import java.util.Map;
-
 
 /**
  * QuestionSet.java
- *
+ * 
  * Created: Fri June 4 15:05:30 2004 EDT
- *
+ * 
  * @author David Barkan
- * @version $Revision$ $Date$ $Author$
+ * @version $Revision$ $Date: 2006-03-09 23:02:31 -0500 (Thu, 09 Mar
+ * 2006) $ $Author$
  */
 
+public class QuestionSet extends WdkModelBase implements ModelSetI {
 
-public class QuestionSet implements ModelSetI {
+    private List<Question> questionList = new ArrayList<Question>();
+    private Map<String, Question> questions = new LinkedHashMap<String, Question>();
+    private String name;
+    private String displayName;
 
-    LinkedHashMap questionSet;
-    String name;
-    String displayName;
-    String description;
+    private List<WdkModelText> descriptions = new ArrayList<WdkModelText>();
+    private String description;
 
-    Boolean internal = new Boolean(false);
-
-    public QuestionSet() {
-	questionSet = new LinkedHashMap();
-    }
+    private boolean internal = false;
 
     public void setName(String name) {
-	this.name = name;
+        this.name = name;
     }
 
     public String getName() {
-	return name;
+        return name;
     }
 
     public void setDisplayName(String displayName) {
-	this.displayName = displayName;
+        this.displayName = displayName;
     }
 
     public String getDisplayName() {
-	return (displayName != null)? displayName : name;
+        return (displayName != null) ? displayName : name;
     }
 
-     public void setDescription(String description) {
-	this.description = description;
+    public void addDescription(WdkModelText description) {
+        this.descriptions.add(description);
     }
 
     public String getDescription() {
-	return description;
+        return description;
     }
 
-    public Boolean getInternal(){
-	return this.internal;
-    }
-    
-    public void setInternal(Boolean internal){
-	this.internal = internal;
+    public Boolean getInternal() {
+        return this.internal;
     }
 
-    public Question getQuestion(String name) throws WdkUserException {
+    public void setInternal(Boolean internal) {
+        this.internal = internal;
+    }
 
-	Question s = (Question)questionSet.get(name);
-	if (s == null) throw new WdkUserException("Question Set " + getName() + " does not include question " + name);
-	return s;
+    public Question getQuestion(String name) throws WdkModelException {
+        Question question = questions.get(name);
+        if (question == null)
+            throw new WdkModelException("Question Set " + getName()
+                    + " does not include question " + name);
+        return question;
     }
 
     public Object getElement(String name) {
-	return questionSet.get(name);
+        return questions.get(name);
     }
 
     public Question[] getQuestions() {
-	Question[] questions = new Question[questionSet.size()];
-	Iterator questionIterator = questionSet.values().iterator();
-	int i = 0;
-	while (questionIterator.hasNext()) {
-	    questions[i++] = (Question)questionIterator.next();
-	}
-	return questions;
+        Question[] array = new Question[questions.size()];
+        questions.values().toArray(array);
+        return array;
     }
 
     public Map<String, Question[]> getQuestionsByCategory() {
-	Question[] allQuestions = getQuestions();
-	Map<String, Vector<Question>> questionVectorsByCategory = new LinkedHashMap();
-	for (Question question : allQuestions) {
-	    String category = question.getCategory();
-	    if (null == category) { category = ""; }
-	    if (null == questionVectorsByCategory.get(category)) {
-		questionVectorsByCategory.put(category, new Vector()); }
-	    questionVectorsByCategory.get(category).add(question);
-	}
+        Map<String, List<Question>> questionsByCategory = new LinkedHashMap<String, List<Question>>();
+        for (Question question : questions.values()) {
+            String category = question.getCategory();
+            List<Question> questionList = questionsByCategory.get(category);
+            if (questionList == null) {
+                questionList = new ArrayList<Question>();
+                questionsByCategory.put(category, questionList);
+            }
+            questionList.add(question);
+        }
 
-	Map<String, Question[]> questionArraysByCategory = new LinkedHashMap();
-	Iterator categoryIterator = questionVectorsByCategory.keySet().iterator();
-	while(categoryIterator.hasNext()) {
-	    String category = (String)categoryIterator.next();
-	    Vector<Question> questionVector = questionVectorsByCategory.get(category);
-	    Question[] questions = new Question[questionVector.size()];
-	    questionVector.toArray(questions);
-	    questionArraysByCategory.put(category, questions);
-	}
-	return questionArraysByCategory;
+        Map<String, Question[]> questionArraysByCategory = new LinkedHashMap<String, Question[]>();
+        for (String category : questionsByCategory.keySet()) {
+            List<Question> questionList = questionsByCategory.get(category);
+            Question[] questions = new Question[questionList.size()];
+            questionList.toArray(questions);
+            questionArraysByCategory.put(category, questions);
+        }
+        return questionArraysByCategory;
     }
 
     public void addQuestion(Question question) throws WdkModelException {
-
-	if (questionSet.get(question.getName()) != null) 
-	    throw new WdkModelException("Question named " 
-					+ question.getName() 
-					+ " already exists in question set "
-					+ getName());
-	
-	questionSet.put(question.getName(), question);
+        questionList.add(question);
     }
 
-    public void resolveReferences(WdkModel model) throws WdkModelException{
-	Iterator questionIterator = questionSet.values().iterator();
-	while (questionIterator.hasNext()){
-	    Question question = (Question)questionIterator.next();
-	    question.resolveReferences(model);
-	}
+    public void resolveReferences(WdkModel model) throws WdkModelException {
+        for (Question question : questions.values()) {
+            question.resolveReferences(model);
+        }
     }
 
     public void setResources(WdkModel model) throws WdkModelException {
-	Iterator questionIterator = questionSet.values().iterator();
-	while (questionIterator.hasNext()){
-	    Question question = (Question)questionIterator.next();
-	    question.setQuestionSet(this);
-	    RecordClass rc = question.getRecordClass();
-	    rc.addQuestion(question);
-	    question.setResources(model);
-	}
-	
+        for (Question question : questions.values()) {
+            question.setResources(model);
+            RecordClass rc = question.getRecordClass();
+            rc.addQuestion(question);
+        }
+
     }
 
     public String toString() {
-       String newline = System.getProperty( "line.separator" );
-       StringBuffer buf = 
-	   new StringBuffer("QuestionSet: name='" + getName() + "'" + newline +
-			    "  displayName='" + getDisplayName() + "'" + newline +
-			    "  description='" + getDescription() + "'" + newline +
-			    "  internal='" + getInternal() + "'" + newline);
-       buf.append( newline );
+        String newline = System.getProperty("line.separator");
+        StringBuffer buf = new StringBuffer("QuestionSet: name='" + getName()
+                + "'" + newline + "  displayName='" + getDisplayName() + "'"
+                + newline + "  description='" + getDescription() + "'"
+                + newline + "  internal='" + getInternal() + "'" + newline);
+        buf.append(newline);
 
-       Iterator questionIterator = questionSet.values().iterator();
-       while (questionIterator.hasNext()) {
-	   buf.append( newline );
-	   buf.append( ":::::::::::::::::::::::::::::::::::::::::::::" );
-	   buf.append( newline );
-	   buf.append(questionIterator.next()).append( newline );
-       }
+        for (Question question : questions.values()) {
+            buf.append(newline);
+            buf.append(":::::::::::::::::::::::::::::::::::::::::::::");
+            buf.append(newline);
+            buf.append(question);
+            buf.append(newline);
+        }
 
-       return buf.toString();
-	
+        return buf.toString();
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
+     */
+    @Override
+    public void excludeResources(String projectId) throws WdkModelException {
+        // resolve the description
+        for (WdkModelText desc : descriptions) {
+            if (desc.include(projectId)) {
+                this.description = desc.getText();
+                break;
+            }
+        }
+        descriptions.clear();
+
+        // exclude resources in each question
+        for (Question question : questionList) {
+            if (question.include(projectId)) {
+                question.setQuestionSet(this);
+                question.excludeResources(projectId);
+                String questionName = question.getName();
+                if (questions.containsKey(questionName))
+                    throw new WdkModelException("Question named "
+                            + questionName + " already exists in question set "
+                            + getName());
+
+                questions.put(questionName, question);
+            }
+        }
+        questionList = null;
+    }
 }

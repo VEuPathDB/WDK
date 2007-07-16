@@ -37,12 +37,14 @@ public class TestDBManager {
         File modelConfigXmlFile = new File(gusHome, "/config/" + modelName
                 + "-config.xml");
 
-        ModelConfig modelConfig = ModelConfigParser.parseXmlFile(modelConfigXmlFile);
+        ModelConfigParser parser = new ModelConfigParser(gusHome);
+        ModelConfig modelConfig = parser.parseConfig(modelName);
+
         String connectionUrl = modelConfig.getConnectionUrl();
         String login = modelConfig.getLogin();
         String password = modelConfig.getPassword();
         // variable never used
-        //String instanceTable = modelConfig.getQueryInstanceTable();
+        // String instanceTable = modelConfig.getQueryInstanceTable();
         String platformClass = modelConfig.getPlatformClass();
 
         Integer maxIdle = modelConfig.getMaxIdle();
@@ -59,9 +61,14 @@ public class TestDBManager {
         boolean drop = cmdLine.hasOption("drop");
         boolean create = cmdLine.hasOption("create");
 
-        String[] tables = cmdLine.getOptionValues("tables");
+        String[] tables;
+        if (cmdLine.hasOption("tables")) {
+            tables = cmdLine.getOptionValues("tables");
+        } else {
+            tables = getDefaultTables(gusHome);
+        }
 
-        if (drop == false && create == false) { //valid option
+        if (drop == false && create == false) { // valid option
             System.err.println("Test Database Manager:  user has not specified any database management operations");
             System.exit(0);
         }
@@ -89,7 +96,8 @@ public class TestDBManager {
 
                     String noReturn = "select * from " + tableName;
 
-                    //HACK -- query empty table to get MetaData for use later (we will need column types, etc.)
+                    // HACK -- query empty table to get MetaData for use later
+                    // (we will need column types, etc.)
                     ResultSet empty = SqlUtils.getResultSet(
                             platform.getDataSource(), noReturn);
                     ResultSetMetaData rsmd = empty.getMetaData();
@@ -126,6 +134,16 @@ public class TestDBManager {
                 }
             }
         }
+    }
+
+    private static String[] getDefaultTables(String gusHome) {
+        File tableDir = new File(gusHome + "/data/testTables");
+        File[] files = tableDir.listFiles();
+        String[] tables = new String[files.length];
+        for (int i = 0; i < files.length; i++) {
+            tables[i] = files[i].getAbsolutePath();
+        }
+        return tables;
     }
 
     private static void createTable(String tableName, String firstLine,
@@ -201,7 +219,7 @@ public class TestDBManager {
         Option tables = new Option("tables",
                 "a list of files to be parsed and created as tables in the database");
         tables.setArgs(Option.UNLIMITED_VALUES);
-        tables.setRequired(true);
+        tables.setRequired(false);
         options.addOption(tables);
 
         Option dropDb = new Option("drop", false, "Drop existing test database");
@@ -235,8 +253,9 @@ public class TestDBManager {
     }
 
     /**
-     * As it currently stands, TestDBManager is called from the command line with wdkTestDb.  That file has its
-     * own command line arguments (different from these) so this usage() method will not be called.
+     * As it currently stands, TestDBManager is called from the command line
+     * with wdkTestDb. That file has its own command line arguments (different
+     * from these) so this usage() method will not be called.
      */
 
     static void usage(String cmdName, Options options) {
@@ -251,7 +270,7 @@ public class TestDBManager {
 
         String footer = "";
 
-        //	PrintWriter stderr = new PrintWriter(System.err);
+        // PrintWriter stderr = new PrintWriter(System.err);
         HelpFormatter formatter = new HelpFormatter();
         formatter.printHelp(75, cmdlineSyntax, header, options, footer);
         System.exit(1);

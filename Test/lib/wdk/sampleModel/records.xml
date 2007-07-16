@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<wdkModel name="SingleModel" displayName="Single Test Model" version="1.0">
+<wdkModel>
 
 
     <!-- *************** -->
@@ -39,27 +39,200 @@
     The full name of a record is is of the form "set_name.name."
     -->
 
-    <recordClassSet name="SampleRecords">
+    <recordClassSet name="SampleRecords" includeProjects="SampleDB">
 
-        <recordClass name="StatisticsRecord" 
+        <recordClass name="SampleRecord" 
           idPrefix="" type="Infrastructure"
-          attributeOrdering="query_instance_id">
+          attributeOrdering="query_instance_id"
+          excludeProjects="ToyDB">
 
-          <reporter name="tabular" displayName="Summary - tab delimited"
-                    implementation="org.gusdb.wdk.model.report.TabularReporter"/>
+          <reporter name="tabular" 
+                    displayName="Summary - Tab delimited"
+                    implementation="org.gusdb.wdk.model.report.TabularReporter"
+                    includeProjects="SampleDB">
+              <property name="sample_property">Sample Value</property>
+              <property name="toydb_property" includeProjects="ToyDB">Sample Value</property>
+          </reporter>
+          
+          <reporter name="tabular" 
+                    displayName="Summary - Tab delimited"
+                    implementation="org.gusdb.wdk.model.report.TabularReporter"
+                    excludeProjects="SampleDB" />
+          
+          <reporter name="fullRecord" displayName="Detailed"
+                    implementation="org.gusdb.wdk.model.report.FullRecordReporter"/>
                     
-          <attributeQueryRef ref="SampleQueries.QueryAttributes">
-            <columnAttribute displayName="Query ID" name="query_instance_id"/>
-            <columnAttribute displayName="Query Name" name="query_name"/>
-            <columnAttribute displayName="Is Cached" name="cached"/>
-            <columnAttribute displayName="Result Table" name="result_table"/>
-            <columnAttribute displayName="start Time" name="start_time"/>
-            <columnAttribute displayName="Query Checksum" name="query_checksum"/>
-            <columnAttribute displayName="Result Message" name="result_message"/>
-          </attributeQueryRef>
+            <attributeQueryRef ref="SampleQueries.SampleAttributeQuery" excludeProjects="ToyDB">
+                <columnAttribute displayName="Query ID" name="query_instance_id"/>
+                <columnAttribute displayName="Query Name" name="query_name" excludeProjects="ToyDB"/>
+                <columnAttribute displayName="Query Name" name="query_name" includeProjects="ToyDB"/>
+                <columnAttribute displayName="Is Cached" name="cached"/>
+                <columnAttribute displayName="Result Table" name="result_table"/>
+                <columnAttribute displayName="Query Checksum" name="query_checksum"/>
+                <columnAttribute displayName="Result Message" name="result_message" includeProjects="SampleDB"/>
+
+                <linkAttribute name="sample_query_link"
+                               displayName="Sample Link in Query Ref" 
+                               visible="$$source_id$$"
+                               includeProjects="SampleDB">
+                    <url excludeProjects="ToyDB">
+                        <![CDATA[@SAMPLE_URL@]]>
+                    </url>
+                    <url includeProjects="ToyDB">
+                        <![CDATA[@SAMPLE_URL@]]>
+                    </url>
+                </linkAttribute>
+
+                <textAttribute name="sample_query_text"
+                               displayName="Sample Text in Query Ref"
+                               excludeProjects="ToyDB">
+                    <text includeProjects="SampleDB">
+                        <![CDATA[The Query ID is $$query_instance_id$$]]>
+                    </text>
+                    <text excludeProjects="SampleDB">
+                        <![CDATA[The ToyDB Query ID is $$query_instance_id$$]]>
+                    </text>
+                </textAttribute>
+            </attributeQueryRef>
+
+            <attributeQueryRef ref="SampleQueries.SampleAttributeQuery" includeProjects="ToyDB">
+                <columnAttribute displayName="Query ID" name="query_instance_id"/>
+            </attributeQueryRef>
+
+            <linkAttribute name="sample_link"
+                           displayName="Sample Link in Record Class" 
+                           visible="$$source_id$$"
+                           includeProjects="SampleDB">
+                <url>
+                    <![CDATA[@SAMPLE_URL@]]>
+                </url>
+            </linkAttribute>
+
+            <linkAttribute name="sample_link"
+                           displayName="Sample Link in Record Class" 
+                           visible="$$source_id$$"
+                           excludeProjects="SampleDB">
+                <url>
+                    <![CDATA[@SAMPLE_URL@]]>
+                </url>
+            </linkAttribute>
+
+            <textAttribute name="sample_text"
+                           displayName="Sample Text in Query Ref"
+                           excludeProjects="ToyDB">
+                <text>
+                    <![CDATA[The Query ID is $$query_instance_id$$]]>
+                </text>
+            </textAttribute>
+
+            <table name="SampleTable" excludeProjects="ToyDB"
+                   displayName="Notes"
+                   queryRef="SampleQueries.SampleTableQuery">
+                <columnAttribute displayName="Query ID" name="query_instance_id"/>
+                <columnAttribute displayName="Query Name" name="query_name" excludeProjects="ToyDB"/>
+                <columnAttribute displayName="Query Name" name="query_name" includeProjects="ToyDB"/>
+                
+                <linkAttribute name="sample_table_link"
+                               displayName="Sample Link in Record Class" 
+                               visible="$$source_id$$">
+                    <url>
+                        <![CDATA[@SAMPLE_URL@]]>
+                    </url>
+                </linkAttribute>
+    
+                <textAttribute name="sample_table_text"
+                               displayName="Sample Text in Query Ref"
+                               excludeProjects="ToyDB">
+                    <text>
+                        <![CDATA[The Query ID is $$query_instance_id$$]]>
+                    </text>
+                </textAttribute>
+            </table>
+
+            <table name="SampleTable" includeProjects="ToyDB"
+                   displayName="Notes"
+                   queryRef="SampleQueries.SampleTableQuery">
+                <columnAttribute displayName="Query ID" name="query_instance_id"/>
+            </table>
+            
+            <nestedRecord questionRef="SampleQuestions.NestedQuestion" excludeProjects="ToyDB"/>
+            
+            <nestedRecord questionRef="SampleQuestions.NestedQuestion" includeProjects="ToyDB"/>
+            
+            <nestedRecordList questionRef="SampleQuestions.NestedListQuestion" excludeProjects="ToyDB"/>
+            
+            <nestedRecordList questionRef="SampleQuestions.NestedListQuestion" includeProjects="ToyDB"/>
 
         </recordClass>
 
+        <recordClass name="SampleRecord"  
+                     idPrefix="" 
+                     type="Infrastructure" 
+                     includeProjects="ToyDB" />
+
+        <recordClass name="NestedRecord" 
+          idPrefix="" type="Infrastructure"
+          attributeOrdering="query_instance_id"
+          excludeProjects="ToyDB">
+
+          <reporter name="tabular" 
+                    displayName="Summary - Tab delimited"
+                    implementation="org.gusdb.wdk.model.report.TabularReporter"
+                    includeProjects="SampleDB">
+          </reporter>
+                    
+            <attributeQueryRef ref="SampleQueries.SampleAttributeQuery" excludeProjects="ToyDB">
+                <columnAttribute displayName="Query ID" name="query_instance_id"/>
+                <columnAttribute displayName="Query Name" name="query_name" excludeProjects="ToyDB"/>
+                <columnAttribute displayName="Query Name" name="query_name" includeProjects="ToyDB"/>
+                <columnAttribute displayName="Is Cached" name="cached"/>
+                <columnAttribute displayName="Result Table" name="result_table"/>
+                <columnAttribute displayName="Query Checksum" name="query_checksum"/>
+                <columnAttribute displayName="Result Message" name="result_message" includeProjects="SampleDB"/>
+            </attributeQueryRef>
+            
+        </recordClass>
+
     </recordClassSet>
-        
+
+    <recordClassSet name="SampleRecords" excludeProjects="SampleDB">
+        <recordClass name="SampleRecord"  
+                     idPrefix="" 
+                     type="Infrastructure" 
+                     includeProjects="ToyDB" />
+    </recordClassSet>
+
+    
+    <xmlRecordClassSet name="XmlRecordClasses" includeProjects="SampleDB">
+
+        <xmlRecordClass 
+        	name="NewsRecord" 
+        	type="Sample News"
+        	idPrefix="NEWS."
+        	delimiter="@">
+            <xmlAttribute name="headline" includeProjects="SampleDB"/>  
+            <xmlAttribute name="headline" excludeProjects="SampleDB"/>  
+            <xmlAttribute name="date"/>  
+            <xmlAttribute name="item"/>
+            <xmlTable name="relatedLinks" includeProjects="SampleDB">
+                <xmlAttribute name="displayName" includeProjects="SampleDB"/>
+                <xmlAttribute name="displayName" excludeProjects="SampleDB"/>
+                <xmlAttribute name="url"/>
+            </xmlTable>
+            <xmlTable name="relatedLinks" excludeProjects="SampleDB">
+                <xmlAttribute name="displayName"/>
+            </xmlTable>
+         </xmlRecordClass>
+
+    </xmlRecordClassSet>
+    
+    <xmlRecordClassSet name="XmlRecordClasses" excludeProjects="SampleDB">
+
+        <xmlRecordClass name="NewsRecord" 
+        	type="Sample News"
+        	idPrefix="NEWS."
+        	delimiter="@" />
+
+    </xmlRecordClassSet>
+            
 </wdkModel>

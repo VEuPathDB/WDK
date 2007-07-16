@@ -779,7 +779,9 @@ public class ResultFactory implements Serializable {
 
         try {
             // read config info
-            ModelConfig modelConfig = ModelConfigParser.parseXmlFile(modelConfigFile);
+            ModelConfigParser configParser = new ModelConfigParser(gusHome);
+            ModelConfig modelConfig = configParser.parseConfig(modelName);
+            
             String connectionUrl = modelConfig.getConnectionUrl();
             String login = modelConfig.getLogin();
             String password = modelConfig.getPassword();

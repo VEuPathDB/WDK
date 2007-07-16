@@ -2,6 +2,7 @@
 <grammar xmlns="http://relaxng.org/ns/structure/1.0">
     <start>
         <element name="modelConfig">
+            <attribute name="projectId" />
             <attribute name="login" />
             <attribute name="password" />
             <attribute name="connectionUrl" />
@@ -32,4 +33,4 @@
         </element>
     </start>
 
-</grammer>
+</grammar>

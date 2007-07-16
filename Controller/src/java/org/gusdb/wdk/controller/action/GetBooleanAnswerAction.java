@@ -1,8 +1,9 @@
 package org.gusdb.wdk.controller.action;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -45,11 +46,11 @@ public class GetBooleanAnswerAction extends ShowSummaryAction {
 	    answer = summaryPaging(request, leafQuestion, params, null, null);
 	} else {
 	    BooleanQuestionNodeBean rootNode = (BooleanQuestionNodeBean)root;
-	    Vector allNodes = new Vector();
+	    List<Object> allNodes = new ArrayList<Object>();
 	    allNodes = rootNode.getAllNodes(allNodes);
 	
 	    for (int i = 0; i < allNodes.size(); i++){
-		Object nextNode = allNodes.elementAt(i);
+		Object nextNode = allNodes.get(i);
 		if (nextNode instanceof BooleanQuestionLeafBean){
 		
 		    BooleanQuestionLeafBean nextLeaf = (BooleanQuestionLeafBean)nextNode;
@@ -92,7 +93,7 @@ public class GetBooleanAnswerAction extends ShowSummaryAction {
 
 
     private void processNode(BooleanQuestionForm bqf, BooleanQuestionNodeBean node){
-        LinkedHashMap<String, String> values = new LinkedHashMap<String, String>();
+        Map<String, Object> values = new LinkedHashMap<String, Object>();
 	String opInternalName = node.getOperation();
 	
 	//	String value = (String)bqf.getMyProps().get(opDisplayName);

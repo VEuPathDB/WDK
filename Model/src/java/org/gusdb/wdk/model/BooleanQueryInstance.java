@@ -54,7 +54,7 @@ public class BooleanQueryInstance extends QueryInstance {
      * IDs of the respective QueryInstances. The ResultFactory uses these in its
      * logic to return a result for the BooleanQueryInstance.
      */
-    protected Map operandIds = new LinkedHashMap();
+    protected Map<String, String> operandIds = new LinkedHashMap<String, String>();
 
     /**
      * Query that created this BooleanQueryInstance; BooleanQueryInstances and
@@ -269,8 +269,8 @@ public class BooleanQueryInstance extends QueryInstance {
         return answer.toArray(new String[1]);
     }
 
-    private void setOperandIds(Map values) {
-        this.operandIds = new LinkedHashMap(values);
+    private void setOperandIds(Map<String, String> values) {
+        this.operandIds = new LinkedHashMap<String, String>(values);
     }
 
     /**

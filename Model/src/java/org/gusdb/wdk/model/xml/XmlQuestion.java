@@ -6,18 +6,22 @@ package org.gusdb.wdk.model.xml;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.implementation.XmlConverter;
 
 /**
  * @author Jerric
  * @created Oct 11, 2005
  */
-public class XmlQuestion {
+public class XmlQuestion extends WdkModelBase {
 
     private String name;
     private String displayName;
@@ -26,20 +30,17 @@ public class XmlQuestion {
     private String xsl;
     private String summaryAttributeNames;
     private XmlAttributeField[] summaryAttributes;
+
+    private List<WdkModelText> descriptions = new ArrayList<WdkModelText>();
     private String description;
+
+    private List<WdkModelText> helps = new ArrayList<WdkModelText>();
     private String help;
 
     private XmlQuestionSet questionSet;
     private XmlRecordClass recordClass;
     private XmlDataLoader loader;
     private WdkModel model;
-
-    /**
-     * 
-     */
-    public XmlQuestion() {
-    // Initialize member variables
-    }
 
     /**
      * @return Returns the description.
@@ -49,10 +50,11 @@ public class XmlQuestion {
     }
 
     /**
-     * @param description The description to set.
+     * @param description
+     * The description to set.
      */
-    public void setDescription(String description) {
-        this.description = description;
+    public void addDescription(WdkModelText description) {
+        this.descriptions.add(description);
     }
 
     /**
@@ -63,7 +65,8 @@ public class XmlQuestion {
     }
 
     /**
-     * @param displayName The displayName to set.
+     * @param displayName
+     * The displayName to set.
      */
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
@@ -77,10 +80,11 @@ public class XmlQuestion {
     }
 
     /**
-     * @param help The help to set.
+     * @param help
+     * The help to set.
      */
-    public void setHelp(String help) {
-        this.help = help;
+    public void addHelp(WdkModelText help) {
+        this.helps.add(help);
     }
 
     /**
@@ -96,14 +100,16 @@ public class XmlQuestion {
     }
 
     /**
-     * @param name The name to set.
+     * @param name
+     * The name to set.
      */
     public void setName(String name) {
         this.name = name;
     }
 
     /**
-     * @param summaryAttributesRef The summaryAttributesRef to set.
+     * @param summaryAttributesRef
+     * The summaryAttributesRef to set.
      */
     public void setSummaryAttributes(String summaryAttributeNames) {
         this.summaryAttributeNames = summaryAttributeNames;
@@ -148,30 +154,24 @@ public class XmlQuestion {
     }
 
     /*
-      <sanityXmlQuestion ref="XmlQuestions.News"
-                         pageStart="1" pageEnd="20"
-                         minOutputLength="1" maxOutputLength="100"/>
-    */
-    public String getSanityTestSuggestion () throws WdkModelException {
-	String indent = "    ";
+     * <sanityXmlQuestion ref="XmlQuestions.News" pageStart="1" pageEnd="20"
+     * minOutputLength="1" maxOutputLength="100"/>
+     */
+    public String getSanityTestSuggestion() throws WdkModelException {
+        String indent = "    ";
         String newline = System.getProperty("line.separator");
-	StringBuffer buf = new StringBuffer(
-	      newline + newline
-	    + indent + "<sanityXmlQuestion ref=\"" + getFullName() + "\"" 
-	    + newline
-	    + indent + indent + indent
-	    + "minOutputLength=\"FIX_m_i_len\" maxOutputLength=\"FIX_m_o_len\""
-	    + newline
- 	    + indent + indent + indent
-	    + "pageStart=\"1\" pageEnd=\"20\">"
-	    + newline);
-	buf.append(indent + "</sanityXmlQuestion>");
-	return buf.toString();
+        StringBuffer buf = new StringBuffer(newline + newline + indent
+                + "<sanityXmlQuestion ref=\"" + getFullName() + "\"" + newline
+                + indent + indent + indent + "minOutputLength=\"FIX_m_i_len\" "
+                + "maxOutputLength=\"FIX_m_o_len\"" + newline + indent + indent
+                + indent + "pageStart=\"1\" pageEnd=\"20\">" + newline);
+        buf.append(indent + "</sanityXmlQuestion>");
+        return buf.toString();
     }
 
-
     /**
-     * @param recordClassRef The recordClassRef to set.
+     * @param recordClassRef
+     * The recordClassRef to set.
      */
     public void setRecordClassRef(String recordClassRef) {
         this.recordClassRef = recordClassRef;
@@ -179,8 +179,7 @@ public class XmlQuestion {
 
     public void resolveReferences(WdkModel model) throws WdkModelException {
         // resolve the reference to XmlRecordClass
-        recordClass = (XmlRecordClass) model.resolveReference(recordClassRef,
-                name, "question", "recordClassRef");
+        recordClass = (XmlRecordClass) model.resolveReference(recordClassRef);
 
         // resolve the references to summary attributes
         if (summaryAttributeNames == null) { // default use all attribute
@@ -230,7 +229,7 @@ public class XmlQuestion {
                 outXmlStream = new ByteArrayOutputStream();
 
                 XmlConverter.convert(inXmlStream, inXslStream, outXmlStream,
-				     name);
+                        name);
 
                 byte[] buffer = outXmlStream.toByteArray();
 
@@ -249,10 +248,10 @@ public class XmlQuestion {
             throw new WdkModelException(ex);
         } finally {
             try {
-                if (inXmlStream != null)  inXmlStream.close();
-                if (inXslStream != null)  inXslStream.close();
-                if (outXmlStream != null)  outXmlStream.close();
-                if (convertedStream != null)  convertedStream.close();
+                if (inXmlStream != null) inXmlStream.close();
+                if (inXslStream != null) inXslStream.close();
+                if (outXmlStream != null) outXmlStream.close();
+                if (convertedStream != null) convertedStream.close();
             } catch (IOException ex) {
                 throw new WdkModelException(ex);
             }
@@ -261,8 +260,8 @@ public class XmlQuestion {
         answer.setStartIndex((startIndex <= endIndex) ? startIndex : endIndex);
         answer.setEndIndex((startIndex <= endIndex) ? endIndex : startIndex);
         answer.setQuestion(this);
-        answer.resolveReferences(WdkModel.INSTANCE);
-        answer.setResources(WdkModel.INSTANCE);
+        answer.resolveReferences(this.model);
+        answer.setResources(this.model);
 
         return answer;
     }
@@ -274,7 +273,7 @@ public class XmlQuestion {
         } else {
             File xmlDataDir = model.getXmlDataDir();
             File xmlDataFile = new File(xmlDataDir, data);
-            return xmlDataFile.toURL();
+            return xmlDataFile.toURI().toURL();
         }
     }
 
@@ -299,5 +298,31 @@ public class XmlQuestion {
         buf.append(getHelp());
         buf.append("'\r\n");
         return buf.toString();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
+     */
+    @Override
+    public void excludeResources(String projectId) throws WdkModelException {
+        // exclude the descriptions
+        for (WdkModelText description : descriptions) {
+            if (description.include(projectId)) {
+                this.description = description.getText();
+                break;
+            }
+        }
+        descriptions = null;
+
+        // exclude the helps
+        for (WdkModelText help : helps) {
+            if (help.include(projectId)) {
+                this.help = help.getText();
+                break;
+            }
+        }
+        helps = null;
     }
 }

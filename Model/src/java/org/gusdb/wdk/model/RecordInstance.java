@@ -15,7 +15,7 @@ public class RecordInstance {
 
     PrimaryKeyValue primaryKey;
     RecordClass recordClass;
-    Map<String, Map> attributesResultSetsMap;
+    Map<String, Map<String, Object>> attributesResultSetsMap;
     Map<String, Integer> summaryAttributeMap;
     Answer answer;
     Map<String, AttributeField> dynamicAttributeFields = new LinkedHashMap<String, AttributeField>();
@@ -29,7 +29,7 @@ public class RecordInstance {
     public RecordInstance(RecordClass recordClass, String projectId,
             String recordId) throws WdkModelException {
         this.recordClass = recordClass;
-        attributesResultSetsMap = new LinkedHashMap<String, Map>();
+        attributesResultSetsMap = new LinkedHashMap<String, Map<String, Object>>();
         summaryAttributeMap = new LinkedHashMap<String, Integer>();
         setPrimaryKey(projectId, recordId);
     }
@@ -182,7 +182,6 @@ public class RecordInstance {
     public Map<String, AttributeFieldValue> getAttributes() {
         return new FieldValueMap(recordClass, this,
                 FieldValueMap.ATTRIBUTE_MAP, dynamicAttributeFields);
-
     }
 
     /**
@@ -490,9 +489,9 @@ public class RecordInstance {
             Object attributeValue, Query query) throws WdkModelException {
 
         String queryName = query.getName();
-        Map resultMap = attributesResultSetsMap.get(queryName);
+        Map<String, Object> resultMap = attributesResultSetsMap.get(queryName);
         if (resultMap == null) {
-            resultMap = new LinkedHashMap();
+            resultMap = new LinkedHashMap<String, Object>();
             attributesResultSetsMap.put(queryName, resultMap);
         }
         resultMap.put(attributeName, attributeValue);
@@ -596,9 +595,9 @@ public class RecordInstance {
         String instantiatedText = rawText;
 
         Map<String, AttributeFieldValue> attributes = getAttributes();
-        Iterator attributeNames = attributes.keySet().iterator();
+        Iterator<String> attributeNames = attributes.keySet().iterator();
         while (attributeNames.hasNext()) {
-            String attrName = (String) attributeNames.next();
+            String attrName = attributeNames.next();
             if (attrName.equals(targetAttrName)) continue;
             if (containsMacro(instantiatedText, attrName)) {
                 Object attributeValue = getAttributeValue(attrName);
@@ -632,8 +631,8 @@ public class RecordInstance {
         Iterator<String> fieldNames = attributes.keySet().iterator();
         // if (fieldNames
         while (fieldNames.hasNext()) {
-            String fieldName = (String) fieldNames.next();
-            AttributeFieldValue attribute = (AttributeFieldValue) attributes.get(fieldName);
+            String fieldName = fieldNames.next();
+            AttributeFieldValue attribute = attributes.get(fieldName);
             if (attribute.isSummary()) {
                 summaryAttributes.put(fieldName, attribute);
             } else {

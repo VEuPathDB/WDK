@@ -1,7 +1,9 @@
 package org.gusdb.wdk.model.implementation;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -10,6 +12,7 @@ import org.gusdb.wdk.model.QueryInstance;
 import org.gusdb.wdk.model.RDBMSPlatformI;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkModelText;
 
 public class SqlQuery extends Query implements Serializable {
 
@@ -20,11 +23,12 @@ public class SqlQuery extends Query implements Serializable {
 
     static final String RESULT_TABLE_MACRO = "%%RESULT_TABLE%%";
 
+    private List<WdkModelText> sqls;
     private String sql;
     private RDBMSPlatformI platform;
 
     public SqlQuery() {
-        super();
+        sqls = new ArrayList<WdkModelText>();
     }
 
     // ///////////////////////////////////////////////////////////////////
@@ -40,6 +44,10 @@ public class SqlQuery extends Query implements Serializable {
         signature = null;
     }
 
+    public void addSql(WdkModelText sql) {
+        this.sqls.add(sql);
+    }
+
     // ///////////////////////////////////////////////////////////////////
     // /////////// Protected ////////////////////////////////////////////
     // ///////////////////////////////////////////////////////////////////
@@ -50,15 +58,18 @@ public class SqlQuery extends Query implements Serializable {
     }
 
     /**
-     * @param values These values are assumed to be pre-validated
+     * @param values
+     * These values are assumed to be pre-validated
      */
     protected String instantiateSql(Map<String, String> values) {
         return instantiateSql(values, sql);
     }
 
     /**
-     * @param values These values are assumed to be pre-validated
-     * @param inputSql Sql to use (may be modified from this.sql)
+     * @param values
+     * These values are assumed to be pre-validated
+     * @param inputSql
+     * Sql to use (may be modified from this.sql)
      */
     protected String instantiateSql(Map<String, String> values, String inputSql) {
         Iterator<String> keySet = values.keySet().iterator();
@@ -80,7 +91,7 @@ public class SqlQuery extends Query implements Serializable {
         return buf;
     }
 
-    String getSql() {
+    public String getSql() {
         return sql;
     }
 
@@ -112,5 +123,24 @@ public class SqlQuery extends Query implements Serializable {
     @Override
     protected String getSignatureData() {
         return sql.replaceAll("\\s+", " ");
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.Query#excludeResources(java.lang.String)
+     */
+    @Override
+    public void excludeResources(String projectId) throws WdkModelException {
+        super.excludeResources(projectId);
+        
+        // exclude sql
+        for (WdkModelText sql : sqls) {
+            if (sql.include(projectId)) {
+                this.sql = sql.getText();
+                break;
+            }
+        }
+        sqls = null;
     }
 }

@@ -276,8 +276,8 @@ public class SanityTestXmlParser {
                 modelPropFile = new File(args[1]);
             }
             File schemaFile = new File(System.getProperty("schemaFile"));
-            SanityModel sanityModel = parseXmlFile(modelXmlFile.toURL(),
-                    modelPropFile.toURL(), schemaFile.toURL());
+            SanityModel sanityModel = parseXmlFile(modelXmlFile.toURI().toURL(),
+                    modelPropFile.toURI().toURL(), schemaFile.toURI().toURL());
 
             System.out.println(sanityModel.toString());
 

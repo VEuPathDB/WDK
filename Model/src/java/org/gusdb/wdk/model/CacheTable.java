@@ -12,7 +12,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.implementation.SqlUtils;
 
 /**
@@ -23,7 +22,7 @@ import org.gusdb.wdk.model.implementation.SqlUtils;
  */
 public class CacheTable {
 
-	private Logger logger = Logger.getLogger(CacheTable.class);
+	//private Logger logger = Logger.getLogger(CacheTable.class);
 
 	private RDBMSPlatformI platform;
 	private String schema;

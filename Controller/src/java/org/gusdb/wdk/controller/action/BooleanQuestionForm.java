@@ -1,8 +1,9 @@
 package org.gusdb.wdk.controller.action;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -66,7 +67,7 @@ public class BooleanQuestionForm extends QuestionForm {
 	    throw new RuntimeException("expect BooleanQuestion Leaf or Node Bean but got " + root);
 	}
 
-	Vector allNodes = new Vector();
+	List<Object> allNodes = new ArrayList<Object>();
 	if (root instanceof BooleanQuestionLeafBean) {
 	    allNodes.add(root);
 	} else {
@@ -75,7 +76,7 @@ public class BooleanQuestionForm extends QuestionForm {
 	}
 	
 	for (int i = 0; i < allNodes.size(); i++){
-	    Object nextNode = allNodes.elementAt(i);
+	    Object nextNode = allNodes.get(i);
 	    if (nextNode instanceof BooleanQuestionLeafBean){		
 		BooleanQuestionLeafBean nextLeaf = (BooleanQuestionLeafBean)nextNode;
 		Integer leafId = nextLeaf.getLeafId();
