@@ -12,12 +12,8 @@ public class TableField extends Field {
 
     private String queryTwoPartName;
     private Query query;
-    private Map<String, AttributeField> attributeFields;
-
-    public TableField() {
-        super();
-        attributeFields = new LinkedHashMap<String, AttributeField>();
-    }
+    private List<AttributeField> attributeFieldList = new ArrayList<AttributeField>();
+    private Map<String, AttributeField> attributeFieldMap = new LinkedHashMap<String, AttributeField>();
 
     Query getQuery() {
         return query;
@@ -36,36 +32,36 @@ public class TableField extends Field {
     }
 
     public void addAttributeField(AttributeField attributeField) {
-        attributeFields.put(attributeField.getName(), attributeField);
+        attributeFieldList.add(attributeField);
     }
 
     public AttributeField[] getAttributeFields() {
-        AttributeField[] array = new AttributeField[attributeFields.size()];
-        attributeFields.values().toArray(array);
+        AttributeField[] array = new AttributeField[attributeFieldMap.size()];
+        attributeFieldMap.values().toArray(array);
         return array;
     }
 
     public Map<String, AttributeField> getAttributeFieldMap() {
-        return new LinkedHashMap<String, AttributeField>(attributeFields);
+        return new LinkedHashMap<String, AttributeField>(attributeFieldMap);
     }
-    
+
     public AttributeField[] getReportMakerFields() {
-        List< AttributeField > fields = new ArrayList< AttributeField >();
-        for(AttributeField field : attributeFields.values()) {
-            if (field.getInReportMaker()) fields.add( field );
+        List<AttributeField> fields = new ArrayList<AttributeField>();
+        for (AttributeField field : attributeFieldMap.values()) {
+            if (field.getInReportMaker()) fields.add(field);
         }
         AttributeField[] array = new AttributeField[fields.size()];
-        fields.toArray( array );
+        fields.toArray(array);
         return array;
     }
-    
+
     public AttributeField[] getDisplayableFields() {
-        List< AttributeField > fields = new ArrayList< AttributeField >();
-        for(AttributeField field : attributeFields.values()) {
-            if (!field.getInternal()) fields.add( field );
+        List<AttributeField> fields = new ArrayList<AttributeField>();
+        for (AttributeField field : attributeFieldMap.values()) {
+            if (!field.getInternal()) fields.add(field);
         }
         AttributeField[] array = new AttributeField[fields.size()];
-        fields.toArray( array );
+        fields.toArray(array);
         return array;
     }
 
@@ -81,11 +77,10 @@ public class TableField extends Field {
 
     void resolveReferences(WdkModel model) throws WdkModelException {
         // resolve Query
-        query = (Query) model.resolveReference(queryTwoPartName,
-                getName(), this.getClass().getName(), "tableQueryRef");
+        query = (Query) model.resolveReference(queryTwoPartName);
         Column[] columns = query.getColumns();
         for (Column column : columns) {
-            AttributeField field = attributeFields.get(column.getName());
+            AttributeField field = attributeFieldMap.get(column.getName());
             if (field != null && field instanceof ColumnAttributeField) {
                 ((ColumnAttributeField) field).setColumn(column);
             } else {
@@ -96,5 +91,27 @@ public class TableField extends Field {
                 throw new WdkModelException(message);
             }
         }
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
+     */
+    @Override
+    public void excludeResources(String projectId) throws WdkModelException {
+        // exclude attributes
+        for (AttributeField field : attributeFieldList) {
+            if (field.include(projectId)) {
+                field.excludeResources(projectId);
+                String fieldName = field.getName();
+                if (attributeFieldMap.containsKey(fieldName))
+                    throw new WdkModelException("The attributeField "
+                            + fieldName + " is duplicated in table "
+                            + this.name);
+                attributeFieldMap.put(fieldName, field);
+            }
+        }
+        attributeFieldList = null;
     }
 }

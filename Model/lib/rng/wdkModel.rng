@@ -2,44 +2,248 @@
 <grammar xmlns="http://relaxng.org/ns/structure/1.0">
   <start>
     <element name="wdkModel">
-      <attribute name="name" />
-      <attribute name="displayName" />
-      <optional>
-          <attribute name="version"/>
-      </optional>
-      <optional>
-          <attribute name="historyDatasetColumnName"/>
-      </optional>
-      <optional>
-          <element name="introduction">
-              <text />
-          </element>
-      </optional>
-      <optional>
-          <attribute name="historyDatasetLink"/>
-      </optional>
       <oneOrMore>
         <choice>
-          <ref name="import" />
+        
+		  <element name="modelName">
+		      <attribute name="name" />
+		      <attribute name="displayName" />
+		      <attribute name="version"/>
+		      <ref name="IncludeExclude"/>
+		  </element>
+		  
+          <element name="introduction">
+              <ref name="IncludeExclude"/>
+              <text />
+          </element>
+          
+		  <element name="import">
+		      <attribute name="file"/>
+		  </element>
+          
+          <element name="defaultPropertyList">
+              <ref name="PropertyListContent"/>
+          </element>
+          
           <ref name="questionSet" />
+          
           <ref name="querySet" />
-          <ref name="queryNameList" />
+          
           <ref name="recordClassSet" />
+          
           <ref name="paramSet" />
-          <ref name="xmlQuestionSet" />
-          <ref name="xmlRecordClassSet" />
+          
           <ref name="groupSet" />
+          
+          <ref name="xmlQuestionSet" />
+          
+          <ref name="xmlRecordClassSet" />
+          
         </choice>
       </oneOrMore>
     </element>
   </start>
 
-  <!-- define import tag -->
-  <define name="import">
-    <element name="import">
-      <attribute name="href"/>
-    </element>
+  <!-- define inclusion/exclusion attributes -->
+  <define name="IncludeExclude">
+    <optional>
+      <attribute name="includeProjects" />
+    </optional>
+    <optional>
+      <attribute name="excludeProjects" />
+    </optional>
   </define>  
+
+    <!-- define base property list content -->
+    <define name="PropertyListContent">
+        <attribute name="name"/>
+        <ref name="IncludeExclude"/>
+        <oneOrMore>
+            <element name="value">
+                <text />
+            </element>
+        </oneOrMore>
+    </define>  
+
+    <!-- define default property list -->
+    <define name="propertyList">
+        <element name="propertyList">
+            <ref name="PropertyListContent"/>
+        </element>
+    </define>  
+
+  
+  <!-- Params -->
+
+	<define name="paramSet">
+    	<element name="paramSet">
+      		<attribute name="name" />
+      		<ref name="IncludeExclude" />
+      		<oneOrMore>
+      			<choice>
+      				<ref name="useTermOnly" />
+					<ref name="stringParam" />
+					<ref name="enumParam" />
+					<ref name="flatVocabParam" />
+					<ref name="historyParam" />
+					<ref name="datasetParam" />
+        		</choice>
+      		</oneOrMore>
+    	</element>
+  	</define>
+  
+	<define name="stringParam">
+		<element name="stringParam">
+		  	<ref name="ParamBaseContents" />
+		  	<optional>
+		    	<attribute name="regex" />
+		  	</optional>
+		  	<optional>
+		    	<attribute name="length" />
+		  	</optional>
+		  	<optional>
+		    	<attribute name="substitute" />
+		  	</optional> 
+		  	<zeroOrMore>
+			    <element name="suggest">
+			        <ref name="SuggestContent" />
+			        <optional>
+			        	<attribute name="sample" />
+			        </optional>
+			        <optional>
+			          	<attribute name="default" />
+			        </optional>
+			    </element>
+		  	</zeroOrMore>
+		</element>
+	</define>
+    
+  	<define name="historyParam">
+    	<element name="historyParam">
+      		<ref name="ParamBaseContents" />
+      		<oneOrMore>
+        		<element name="suggest">
+            		<ref name="SuggestContent" />
+        		</element>
+      		</oneOrMore>
+    	</element>
+  	</define>
+    
+  	<define name="datasetParam">
+    	<element name="datasetParam">
+      		<ref name="ParamBaseContents" />
+      		<zeroOrMore>
+        		<element name="suggest">
+            		<ref name="SuggestContent" />
+			        <optional>
+			        	<attribute name="sample" />
+			        </optional>
+			        <optional>
+			          	<attribute name="default" />
+			        </optional>
+        		</element>
+      		</zeroOrMore>
+    	</element>
+  	</define>
+    
+	<define name="enumParam">
+		<element name="enumParam">
+		  	<ref name="ParamBaseContents" />
+		  	<optional>
+		    	<attribute name="multiPick" />
+		  	</optional>
+		  	<zeroOrMore>
+			    <element name="suggest">
+			    	<ref name="SuggestContent" />
+			    </element>
+		  	</zeroOrMore>
+		  	<oneOrMore>
+			    <element name="enumList">
+			    	<ref name="IncludeExclude" />
+			    	<oneOrMore>
+			    		<choice>
+				    		<ref name="useTermOnly" />
+				    		<element name="enumValue">
+		    					<ref name="IncludeExclude" />
+						        <optional>
+						          	<element name="display">
+						          	    <text />
+						          	</element>
+						        </optional>
+					          	<element name="term">
+					          	    <text />
+					          	</element>
+					          	<element name="internal">
+					          	    <text />
+					          	</element>
+				    		</element>
+			    		</choice>
+			    	</oneOrMore>
+			    </element>
+		  	</oneOrMore>
+		</element>
+	</define>
+    
+	<define name="flatVocabParam">
+		<element name="flatVocabParam">
+		  	<ref name="ParamBaseContents" />
+		  	<optional>
+		    	<attribute name="multiPick" />
+		  	</optional>
+		  	<attribute name="queryRef" />
+		  	<zeroOrMore>
+		  		<choice>
+				    <element name="suggest">
+				    	<ref name="SuggestContent" />
+				        <optional>
+				          	<attribute name="default" />
+				        </optional>
+				    </element>
+				    <ref name="useTermOnly" />
+			    </choice>
+		  	</zeroOrMore>
+		</element>
+	</define>
+
+  	<define name="ParamBaseContents">
+    	<attribute name="name" />
+    	<ref name="IncludeExclude" />
+    	<optional>
+      		<attribute name="id" />
+    	</optional>
+    	<optional>
+      		<attribute name="prompt" />
+    	</optional>
+    	<optional>
+      		<attribute name="visible" />
+    	</optional>
+    	<optional>
+      		<attribute name="readonly" />
+    	</optional>
+    	<optional>
+      		<attribute name="default" />
+    	</optional>
+    	<zeroOrMore>
+  			<element name="help">
+    			<ref name="IncludeExclude" />
+    			<text />
+  			</element>
+    	</zeroOrMore>            
+  	</define>
+  
+	<define name="useTermOnly">
+    	<element name="useTermOnly">
+      		<attribute name="value" />
+      		<ref name="IncludeExclude" />
+    	</element>
+  	</define>  
+  
+	<define name="SuggestContent">
+    	<optional>
+    		<attribute name="allowEmpty" />
+    	</optional>
+    	<ref name="IncludeExclude" />
+  	</define>  
   
 
   <!-- Schema grouping elements  -->
@@ -49,15 +253,6 @@
       <ref name="wsQuery" />
     </choice>
   </define>  
-  
-  <define name="params">
-    <choice>
-      <ref name="stringParam" />
-      <ref name="flatVocabParam" />
-      <ref name="historyParam" />
-      <ref name="datasetParam" />
-    </choice>
-  </define>
   
   <define name="sqlColumns">
     <choice>
@@ -83,6 +278,7 @@
   <!-- Schema subtype shared elements -->
   <define name="ColumnBaseContents">
     <attribute name="name" />
+    <ref name="IncludeExclude" />
     <optional>
       <attribute name="specialType" />
     </optional>
@@ -91,35 +287,8 @@
     </optional>
   </define>
 
-  <define name="ParamBaseContents">
-    <attribute name="name" />
-    <optional>
-      <attribute name="id" />
-    </optional>
-    <optional>
-      <attribute name="prompt" />
-    </optional>
-    <optional>
-      <attribute name="help" />
-    </optional>
-    <optional>
-      <attribute name="visible" />
-    </optional>
-    <optional>
-      <attribute name="readonly" />
-    </optional>
-    <optional>
-      <attribute name="default" />
-    </optional>
-    <optional>
-      <attribute name="allowNull" />
-    </optional>
-    <optional>
-      <attribute name="nullValue" />
-    </optional>
-  </define>
-
   <define name="QueryBaseContents">
+    <ref name="IncludeExclude" />
     <optional>
       <attribute name="name" />
     </optional>
@@ -129,22 +298,27 @@
     <optional>
       <attribute name="isCacheable" />
     </optional>
-    <optional>
-        <element name="description">
-            <text />
-        </element>        
-    </optional>
     <zeroOrMore>
       <element name="paramRef">
         <attribute name="ref" />
+        <ref name="IncludeExclude" />
         <optional>
            <attribute name="default" />
+        </optional>
+        <optional>
+           <attribute name="multiPick" />
         </optional>
         <optional>
            <attribute name="groupRef" />
         </optional>
         <optional>
-           <attribute name="allowNull" />
+           <attribute name="allowEmpty" />
+        </optional>
+        <optional>
+           <attribute name="useTermOnly" />
+        </optional>
+        <optional>
+           <attribute name="queryRef" />
         </optional>
       </element>
     </zeroOrMore>
@@ -154,6 +328,7 @@
   <define name="querySet">
     <element name="querySet">
       <attribute name="name" />
+      <ref name="IncludeExclude" />
       <oneOrMore>
         <ref name="queries" />
       </oneOrMore>
@@ -163,6 +338,7 @@
   <define name="recordClassSet">
     <element name="recordClassSet">
       <attribute name="name" />
+      <ref name="IncludeExclude" />
       <oneOrMore>
         <ref name="recordClass" />
       </oneOrMore>
@@ -173,37 +349,18 @@
     <element name="questionSet">
       <attribute name="name" />
       <attribute name="displayName" />
-      <optional>
-          <element name="description">
-              <text />
-          </element>        
-      </optional>
+      <ref name="IncludeExclude" />
       <optional>
           <attribute name="internal" />
       </optional>
+      <zeroOrMore>
+          <element name="description">
+              <ref name="IncludeExclude"/>
+              <text />
+          </element>        
+      </zeroOrMore>
       <oneOrMore>
         <ref name="question" />
-      </oneOrMore>
-    </element>
-  </define>
-
-  <define name="paramSet">
-    <element name="paramSet">
-      <attribute name="name" />
-      <oneOrMore>
-        <ref name="params" />
-      </oneOrMore>
-    </element>
-  </define>
-
-
-  <define name="queryNameList">
-    <element name="queryNameList">
-      <attribute name="name" />
-      <oneOrMore>
-        <element name="fullQueryName">
-          <attribute name="fullQueryName" />
-        </element>
       </oneOrMore>
     </element>
   </define>
@@ -214,11 +371,15 @@
     <element name="sqlQuery">
       <ref name="QueryBaseContents" />
       <oneOrMore>
-        <ref name="sqlColumns" />
+        <choice>
+            <ref name="sqlColumns" />
+            
+            <element name="sql">
+                <ref name="IncludeExclude"/>
+                <text />
+            </element>
+        </choice>
       </oneOrMore>
-      <element name="sql">
-        <text />
-      </element>
     </element>
   </define>
 
@@ -232,49 +393,6 @@
       <attribute name="processName"/>
     </element>
   </define>
-
-  
-  <!-- Params -->
-  <define name="stringParam">
-    <element name="stringParam">
-      <ref name="ParamBaseContents" />
-      <optional>
-        <attribute name="regex" />
-      </optional>
-      <optional>
-        <attribute name="length" />
-      </optional>
-      <optional>
-        <attribute name="sample" />
-      </optional>
-            <optional>
-        <attribute name="substitute" />
-      </optional> 
-    </element>
-  </define>
-    
-  <define name="flatVocabParam">
-    <element name="flatVocabParam">
-      <ref name="ParamBaseContents" />
-      <optional>
-        <attribute name="multiPick" />
-      </optional>
-      <attribute name="queryRef" />
-    </element>
-  </define>
-    
-  <define name="historyParam">
-    <element name="historyParam">
-      <ref name="ParamBaseContents" />
-    </element>
-  </define>
-    
-  <define name="datasetParam">
-    <element name="datasetParam">
-      <ref name="ParamBaseContents" />
-    </element>
-  </define>
-
       
   <!-- Columns -->
   <define name="sqlColumn">
@@ -308,6 +426,7 @@
       <attribute name="name" />
       <attribute name="type" />
       <attribute name="idPrefix" />
+      <ref name="IncludeExclude" />
       <optional>
          <attribute name="attributeOrdering" />
       </optional>
@@ -323,10 +442,16 @@
          </element>
       </optional>
       
+      <optional>
+         <attribute name="aliasQueryRef" />
+      </optional>
+
       <zeroOrMore>  
-         <element name="reporter">
+        <choice>
+           <element name="reporter">
              <attribute name="name" />
              <attribute name="displayName" />
+             <ref name="IncludeExclude" />
              <optional>
                 <attribute name="inReportMaker" />
              </optional>
@@ -337,41 +462,34 @@
              <zeroOrMore>
                 <element name="property" >
                     <attribute name="name" />
-                    <element name="value">
+                    <ref name="IncludeExclude" />
                         <text />
-                    </element>
                 </element>
              </zeroOrMore>
-         </element>
-      </zeroOrMore>
-
-      <optional>
-         <attribute name="aliasQueryRef" />
-      </optional>
-
-      <zeroOrMore>  
-        <choice>
+           </element>
+           
           <element name="attributeQueryRef">
               <attribute name="ref" />
+              <ref name="IncludeExclude" />
               <zeroOrMore>
                   <ref name="attributes" />
               </zeroOrMore>
           </element>
 
           <ref name="table" />
-
           <ref name="linkAttribute" />
-
           <ref name="textAttribute" />
 
           <element name="nestedRecord">
             <attribute name="questionRef" />
+            <ref name="IncludeExclude" />
           </element>
 
           <element name="nestedRecordList">
             <attribute name="questionRef" />
+            <ref name="IncludeExclude" />
           </element>
-	</choice>
+	    </choice>
       </zeroOrMore>
     </element>
   </define>
@@ -385,43 +503,48 @@
       <attribute name="displayName" />
       <attribute name="recordClassRef" />
       <attribute name="queryRef" />
+      <ref name="IncludeExclude" />
       <optional>
            <attribute name="category" />
       </optional>
-      <optional>
-           <attribute name="summaryAttributesList" />
-      </optional>
-      <optional>
-           <attribute name="sortingAttributesList" />
-      </optional>
                  
-      <optional>
-         <element name="summary">
-            <text/>
-         </element>        
-      </optional>
-
-      <element name="description">
-         <text />   
-      </element>
- 
-      <optional>
-         <element name="help">
-            <text />
-         </element>
-      </optional>
-
-      <optional>
-         <element name="dynamicAttributes">
-            <zeroOrMore>
-               <choice>
-                  <ref name="columnAttribute" />
-                  <ref name="linkAttribute" />
-                  <ref name="textAttribute" />
-               </choice>
-            </zeroOrMore>
-         </element>
-      </optional>
+      <zeroOrMore>
+        <choice>
+             <ref name="propertyList"/>
+             
+             <element name="summary">
+                 <ref name="IncludeExclude"/>
+                 <text />
+             </element>
+             
+             <element name="description">
+                 <ref name="IncludeExclude"/>
+                 <text />
+             </element>
+             
+             <element name="help">
+                 <ref name="IncludeExclude"/>
+                 <text />
+             </element>
+             
+             <element name="attributeList">
+                <ref name="IncludeExclude" />
+                <attribute name="summary" />
+                <attribute name="sorting" />
+             </element>
+             
+             <element name="dynamicAttributes">
+                <ref name="IncludeExclude" />
+                <zeroOrMore>
+                   <choice>
+                      <ref name="columnAttribute" />
+                      <ref name="linkAttribute" />
+                      <ref name="textAttribute" />
+                   </choice>
+                </zeroOrMore>
+             </element>
+        </choice>     
+      </zeroOrMore>
       
     </element>
   </define>
@@ -431,6 +554,7 @@
   <!-- Schema subtype shared elements -->
   <define name="FieldBaseContents">
     <attribute name="name" />
+    <ref name="IncludeExclude" />
     <optional>
       <attribute name="truncateTo" />
     </optional>
@@ -460,11 +584,11 @@
     </optional>
   </define>
 
-  <define name="columnAttribute">
-      <element name="columnAttribute">
-        <ref name="FieldBaseContents" />
-      </element>
-  </define>
+    <define name="columnAttribute">
+        <element name="columnAttribute">
+            <ref name="FieldBaseContents" />
+        </element>
+    </define>
   
   <define name="table">
     <element name="table">
@@ -476,24 +600,30 @@
     </element>
   </define>
   
-  <define name ="textAttribute">
-    <element name="textAttribute">
-      <ref name="FieldBaseContents" />
-      <element name="text">
-        <text />
-      </element>
-    </element>
-  </define>
-
-  <define name ="linkAttribute">
-    <element name="linkAttribute">
-      <ref name="FieldBaseContents" />
-      <attribute name="visible" />
-      <element name="url">
-        <text />
-      </element>
-    </element>
-  </define>
+    <define name ="textAttribute">
+        <element name="textAttribute">
+            <ref name="FieldBaseContents" />
+            <oneOrMore>
+                <element name="text">
+                    <ref name="IncludeExclude" />
+                    <text />
+                </element>
+            </oneOrMore>
+        </element>
+    </define>
+    
+    <define name ="linkAttribute">
+        <element name="linkAttribute">
+            <ref name="FieldBaseContents" />
+            <attribute name="visible" />
+            <oneOrMore>
+                <element name="url">
+                    <ref name="IncludeExclude" />
+                    <text />
+                </element>
+            </oneOrMore>
+        </element>
+    </define>
 
 
   <!-- Set for xmlAnswers -->
@@ -501,6 +631,7 @@
   <define name="xmlRecordClassSet">
     <element name="xmlRecordClassSet">
       <attribute name="name" />
+      <ref name="IncludeExclude" />
       <oneOrMore>
         <ref name="xmlRecordClass" />
       </oneOrMore>
@@ -511,14 +642,15 @@
     <element name="xmlQuestionSet">
       <attribute name="name" />
       <attribute name="displayName" />
-      <optional>
-          <element name="description">
-              <text />
-          </element>        
-      </optional>
+      <ref name="IncludeExclude" />
       <optional>
           <attribute name="isInternal" />
       </optional>
+      <zeroOrMore>
+          <element name="description">
+              <text />
+          </element>        
+      </zeroOrMore>
       <oneOrMore>
         <ref name="xmlQuestion" />
       </oneOrMore>
@@ -531,20 +663,23 @@
         <attribute name="displayName" />
         <attribute name="recordClassRef" />
         <attribute name="xmlDataURL" />
-        <optional>
+        <ref name="IncludeExclude" />
+       <optional>
            <attribute name="xslURL" />
         </optional>
         <optional>
            <attribute name="summaryAttributesList" />
         </optional>
-        <element name="description">
-           <text />
-        </element>        
-        <optional>          
-           <element name="help">
-              <text />
-           </element>        
-        </optional>
+        <zeroOrMore>
+            <choice>
+                <element name="description">
+                    <text />
+                </element>        
+                <element name="help">
+                    <text />
+                </element>        
+            </choice>
+        </zeroOrMore>
      </element>
   </define>
 
@@ -553,6 +688,7 @@
         <attribute name="name" />
         <attribute name="type" />
         <attribute name="idPrefix" />
+        <ref name="IncludeExclude" />
         <optional>
            <attribute name="delimiter" />
         </optional>
@@ -587,6 +723,7 @@
   <define name="groupSet">
     <element name="groupSet">
       <attribute name="name" />
+      <ref name="IncludeExclude" />
       <oneOrMore>
         <ref name="group" />
       </oneOrMore>
@@ -597,12 +734,16 @@
      <element name="group">
         <attribute name="name" />
         <attribute name="displayName" />
+        <ref name="IncludeExclude" />
         <optional>
             <attribute name="displayType" />
         </optional>
-        <element name="description">
-           <text />
-        </element>        
+        <zeroOrMore>
+            <element name="description">
+                <ref name="IncludeExclude" />
+                <text />
+            </element>        
+        </zeroOrMore>
      </element>
   </define>
   

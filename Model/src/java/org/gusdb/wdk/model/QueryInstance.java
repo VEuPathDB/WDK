@@ -7,15 +7,13 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
-
 /**
  * Simple implementation of QueryInstanceI; generally expects its subclasses to
  * do most of the real implementation.
  */
 public abstract class QueryInstance {
 
-    private static Logger logger = Logger.getLogger( QueryInstance.class );
+    //private static Logger logger = Logger.getLogger( QueryInstance.class );
     
 	protected boolean isCacheable;
 

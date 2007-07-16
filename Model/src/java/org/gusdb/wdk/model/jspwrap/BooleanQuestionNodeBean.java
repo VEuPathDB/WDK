@@ -1,8 +1,7 @@
 package org.gusdb.wdk.model.jspwrap;
 
-import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 
 import org.gusdb.wdk.model.BooleanQuery;
 import org.gusdb.wdk.model.BooleanQuestionNode;
@@ -74,16 +73,16 @@ public class BooleanQuestionNodeBean {
         return leaf;
     }
 
-    public Vector getAllNodes(Vector nodesSoFar) {
+    public List<Object> getAllNodes(List<Object> nodesSoFar) {
 
-        nodesSoFar.addElement(this);
+        nodesSoFar.add(this);
         if (firstChild instanceof org.gusdb.wdk.model.jspwrap.BooleanQuestionLeafBean) {
-            nodesSoFar.addElement(firstChild);
+            nodesSoFar.add(firstChild);
         } else {
             ((BooleanQuestionNodeBean) firstChild).getAllNodes(nodesSoFar);
         }
         if (secondChild instanceof org.gusdb.wdk.model.jspwrap.BooleanQuestionLeafBean) {
-            nodesSoFar.addElement(secondChild);
+            nodesSoFar.add(secondChild);
         } else {
             ((BooleanQuestionNodeBean) secondChild).getAllNodes(nodesSoFar);
         }
@@ -116,7 +115,7 @@ public class BooleanQuestionNodeBean {
         this.secondChild = secondChild;
     }
 
-    public void setValues(LinkedHashMap values) {
+    public void setValues(Map<String, Object> values) {
         bqn.setValues(values);
     }
 

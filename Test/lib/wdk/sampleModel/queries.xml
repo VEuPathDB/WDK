@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<wdkModel name="SingleModel" displayName="Single Test Model" version="1.0">
+<wdkModel>
 
 
     <!-- ************ -->
@@ -11,30 +11,55 @@
     A query fetchs the data from database or some other sources to a question or recordClass.
     -->
 
-    <querySet name="SampleQueries">
+    <querySet name="SampleQueries" excludeProjects="ToyDB">
     
-        <sqlQuery name="QueryIdsByName" displayName="Get Query Ids by query name"
-                  isCacheable="true">
-            <paramRef ref="params.query_name"/>
+        <sqlQuery name="SampleIdQuery" displayName="Get Query Ids by query name"
+                  isCacheable="true" excludeProjects="ToyDB">
+            <paramRef ref="params.query_name" excludeProjects="ToyDB"/>
+            <paramRef ref="params.query_name" includeProjects="ToyDB" 
+                      default="SampleToyQuery" allowEmpty="true"/>
+            <paramRef ref="params.booleanParam" useTermOnly="true"/>
+            <paramRef ref="params.flatVocabParam" useTermOnly="false"/>
             <column name="query_instance_id"/>
-            <sql>
+            <column name="start_time" includeProjects="ToyDB"/>
+            <column name="start_time" excludeProjects="ToyDB"/>
+            <column name="end_time" includeProjects="ToyDB"/>
+            <sql includeProjects="ToyDB">
                 <![CDATA[
-                SELECT qi.query_instance_id
+                SELECT qi.query_instance_id, qi.start_time
+                FROM queryinstance qi
+                WHERE qi.query_name LIKE REPLACE(LOWER('$$query_name$$'), '*', '%')
+                ]]>
+            </sql>
+            <sql excludeProjects="ToyDB">
+                <![CDATA[
+                SELECT qi.query_instance_id, qi.start_time
                 FROM queryinstance qi
                 WHERE qi.query_name LIKE REPLACE(LOWER('$$query_name$$'), '*', '%')
                 ]]>
             </sql>
         </sqlQuery>
-
     
-        <sqlQuery name="QueryAttributes" displayName="Get Query Attributes"
+        <sqlQuery name="SampleIdQuery" displayName="Get Query Ids by query name"
+                  isCacheable="true" includeProjects="ToyDB">
+            <paramRef ref="params.flatVocabParam" useTermOnly="false"/>
+            <column name="query_instance_id"/>
+            <sql excludeProjects="ToyDB">
+                <![CDATA[
+                SELECT qi.query_instance_id, qi.start_time
+                FROM queryinstance qi
+                WHERE qi.query_name LIKE REPLACE(LOWER('$$query_name$$'), '*', '%')
+                ]]>
+            </sql>
+        </sqlQuery>
+    
+        <sqlQuery name="SampleAttributeQuery" displayName="Get Query Attributes"
                   isCacheable="true">
             <paramRef ref="params.primaryKey"/>
             <column name="query_instance_id" sortingTable="queryinstance"/>
             <column name="query_name" sortingTable="queryinstance"/>
             <column name="cached" sortingTable="queryinstance"/>
             <column name="result_table" sortingTable="queryinstance"/>
-            <column name="start_time" sortingTable="queryinstance"/>
             <column name="query_checksum" sortingTable="queryinstance"/>
             <column name="result_message" sortingTable="queryinstance"/>
             <sql>
@@ -43,11 +68,88 @@
                        qi.query_name
                        qi.cached
                        qi.result_table
-                       qi.start_time
                        qi.query_checksum
                        qi.result_message
                 FROM queryinstance qa
                 WHERE qi.query_instance_id = '$$primaryKey$$'
+                ]]>
+            </sql>
+        </sqlQuery>
+    
+        <sqlQuery name="SampleTableQuery" displayName="Get Query Attributes"
+                  isCacheable="true">
+            <paramRef ref="params.primaryKey"/>
+            <column name="query_instance_id" sortingTable="queryinstance"/>
+            <column name="query_name" sortingTable="queryinstance"/>
+            <sql>
+                <![CDATA[
+                SELECT qi.query_instance_id
+                       qi.query_name
+                FROM queryinstance qa
+                WHERE qi.query_instance_id < '$$primaryKey$$'
+                ]]>
+            </sql>
+        </sqlQuery>
+    
+        <sqlQuery name="SampleVocabQuery" displayName="Get Query Ids by query name"
+                  isCacheable="true">
+            <column name="term"/>
+            <column name="internal"/>
+            <sql>
+                <![CDATA[
+                SELECT 'Optional 1' AS term, 1 AS internal
+                UNION
+                SELECT 'Optional 2' AS term, 2 AS internal
+                UNION
+                SELECT 'Optional 3' AS term, 3 AS internal
+                ]]>
+            </sql>
+        </sqlQuery>
+        
+        <wsQuery name="SampleWsQuery" displayName="Sample Process Query" 
+                 processName="org.apidb.apicomplexa.wsfplugin.ncbiblast.NcbiBlastPlugin"
+                 excludeProjects="ToyDB">
+            <paramRef ref="params.query_instance_id" excludeProjects="ToyDB"/>
+            <paramRef ref="params.query_instance_id" includeProjects="ToyDB"/>
+            <wsColumn name="query_instance_id" excludeProjects="ToyDB"/>
+            <wsColumn name="query_instance_id" includeProjects="ToyDB"/>
+        </wsQuery>
+        
+        <wsQuery name="SampleWsQuery" displayName="Sample Process Query" 
+                 processName="org.apidb.apicomplexa.wsfplugin.ncbiblast.NcbiBlastPlugin" 
+                 includeProjects="ToyDB">
+            <paramRef ref="params.query_instance_id"/>
+            <wsColumn name="query_instance_id"/>
+        </wsQuery>
+
+        <sqlQuery name="NestedListQuery" displayName="Get Query Attributes"
+                  isCacheable="true">
+            <paramRef ref="params.query_instance_id"/>
+            <column name="query_instance_id"/>
+            <sql>
+                <![CDATA[
+                SELECT qi.query_instance_id
+                       qi.query_name
+                FROM queryinstance qa
+                WHERE qi.query_instance_id < '$$query_instance_id$$'
+                ]]>
+            </sql>
+        </sqlQuery>
+    
+    </querySet>
+
+
+    <querySet name="SampleQueries" includeProjects="ToyDB">
+    
+        <sqlQuery name="SampleIdQuery" displayName="Get Query Ids by query name"
+                  isCacheable="true">
+            <paramRef ref="params.query_name" excludeProjects="ToyDB"/>
+            <column name="end_time" includeProjects="ToyDB"/>
+            <sql excludeProjects="ToyDB">
+                <![CDATA[
+                SELECT qi.query_instance_id, qi.start_time
+                FROM queryinstance qi
+                WHERE qi.query_name LIKE REPLACE(LOWER('$$query_name$$'), '*', '%')
                 ]]>
             </sql>
         </sqlQuery>

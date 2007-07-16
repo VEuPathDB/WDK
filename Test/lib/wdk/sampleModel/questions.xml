@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<wdkModel name="SingleModel" displayName="Single Test Model" version="1.0">
+<wdkModel>
 
 
     <!-- ************ -->
@@ -19,29 +19,196 @@
     -->
     
     <questionSet name="SampleQuestions"
-                 displayName="Search genes">
+                 displayName="Sample Question Set"
+                 includeProjects="SampleDB">
     
         <description>
-            Sample questions
+                <![CDATA[
+                Sample DB questions
+                ]]>
+        </description>
+    
+        <description excludeProjects="SampleDB">
+                <![CDATA[
+                This description is not in Sample DB
+                ]]>
         </description>
         
-        <question name="StatisticsQuestion"
-                  category="Infrastructure"
-                  displayName="System Statistics"
-                  queryRef="SampleQueries.QueryIdsByName"
-                  summaryAttributesList="query_name, start_time"
-                  sortingAttributesList="start_time desc"
-                  recordClassRef="SampleRecords.StatisticsRecord">
-            <summary>
-                Find queries by name.
+        <question name="SampleQuestion"
+                  category="sample"
+                  displayName="Sample Question"
+                  queryRef="SampleQueries.SampleIdQuery"
+                  recordClassRef="SampleRecords.SampleRecord"
+                  includeProjects="SampleDB, ToyDB">
+                  
+            <attributeList summary="query_name, start_time"
+                           sorting="start_time desc"
+                           includeProjects="SampleDB"/>
+                           
+            <attributeList summary="query_name, start_time"
+                           sorting="start_time desc"
+                           includeProjects="ToyDB"/>
+    
+            <dynamicAttributes includeProjects="SampleDB,ToyDB">
+            
+                <columnAttribute displayName="start Time" name="start_time" excludeProjects="ToyDB"/>
+                <columnAttribute displayName="start Time" name="start_time" includeProjects="ToyDB"/>
+                <columnAttribute displayName="end Time" name="end_time"
+                                 includeProjects="ToyDB"/>
+
+                <textAttribute name="run_time" displayName="Run Time">
+                    <text includeProjects="SampleDB">
+                        <![CDATA[
+                        Query starts at $$start_time$$.
+                        ]]>
+                    </text>
+                    <text includeProjects="ToyDB">
+                        <![CDATA[
+                        Query starts at $$start_time$$.
+                        ]]>
+                    </text>
+                </textAttribute>
+    
+                <linkAttribute name="url" displayName="URL" visible="Url">
+                    <url excludeProjects="ToyDB">
+                        <![CDATA[@SAMPLE_URL@]]>
+                    </url>
+                    <url includeProjects="ToyDB">
+                        <![CDATA[@SAMPLE_URL@]]>
+                    </url>
+                </linkAttribute>
+                
+            </dynamicAttributes>
+
+            <dynamicAttributes excludeProjects="SampleDB,ToyDB">
+                <columnAttribute displayName="start Time" name="start_time"/>
+            </dynamicAttributes>
+                  
+            <summary excludeProjects="ToyDB">
+                    <![CDATA[
+                    the summary of sample question for all sites, except ToyDB
+                    ]]>
             </summary>
-            <description>
-                <![CDATA[
-                find queries by query name.
-                ]]>
+            <summary includeProjects="ToyDB">
+                    <![CDATA[
+                    the summary of sample question for Toy DB
+                    ]]>
+            </summary>
+            
+            <description includeProjects="SampleDB">
+                    <![CDATA[
+                    the description of sample question for Sample DB
+                    ]]>
             </description>
+            <description excludeProjects="SampleDB">
+                    <![CDATA[
+                    the description of sample question for Sample DB
+                    ]]>
+            </description>
+            
+            <help>
+                    <![CDATA[
+                    the help of sample question for all sites
+                    ]]>
+            </help>
+            <help excludeProjects="SampleDB">
+                    <![CDATA[
+                    the help of sample question for all sites
+                    ]]>
+            </help>
+
+              <propertyList includeProjects="SampleDB" name="organisms">
+                <value>P. falciparum</value>
+                <value>P. vivax</value>
+                <value>P. chabaudi</value>
+                <value>P. knowlesi</value>
+              </propertyList>
+              
+              <propertyList includeProjects="ToyDB" name="organisms">
+                <value>P. falciparum</value>
+              </propertyList>
+        </question>
+        
+        <question name="SampleQuestion"
+                  category="sample"
+                  displayName="Toy Sample Question"
+                  queryRef="SampleQueries.SampleIdQuery"
+                  recordClassRef="SampleRecords.SampleRecord"
+                  excludeProjects="TestDB,SampleDB">
+        </question>
+        
+        <question name="ToyQuestion"
+                  category="sample"
+                  displayName="Toy Sample Question"
+                  queryRef="SampleQueries.SampleIdQuery"
+                  recordClassRef="SampleRecords.SampleRecord"
+                  excludeProjects="TestDB,SampleDB">
+        </question>
+        
+         <question name="NestedQuestion" 
+                   queryRef="SampleQueries.SampleWsQuery" 
+                   recordClassRef="SampleRecords.NestedRecord" 
+                   displayName="Nested Record">
+              <description> Question that returns a single Nested Record</description>
+         </question>
+
+        
+         <question name="NestedListQuestion" 
+                   queryRef="SampleQueries.NestedListQuery" 
+                   recordClassRef="SampleRecords.NestedRecord" 
+                   displayName="Nested Record List">
+              <description> Question that returns a list of Nested Record</description>
+         </question>
+
+    </questionSet>
+
+    
+    <questionSet name="SampleQuestions"
+                 displayName="Toy Question Set"
+                 includeProjects="ToyDB">
+    
+        <question name="SampleQuestion"
+                  category="sample"
+                  displayName="Sample Question"
+                  queryRef="SampleQueries.SampleIdQuery"
+                  recordClassRef="SampleRecords.SampleRecord">
         </question>
     
     </questionSet>
+
+    
+    <questionSet name="ToyQuestions"
+                 displayName="Toy Question Set"
+                 includeProjects="ToyDB">
+    
+        <question name="SampleQuestion"
+                  category="sample"
+                  displayName="Sample Question"
+                  queryRef="SampleQueries.SampleIdQuery"
+                  recordClassRef="SampleRecords.SampleRecord">
+        </question>
+    
+    </questionSet>
+
+    <xmlQuestionSet name="XmlQuestions"
+                 displayName="Data contents from XML data sources">
+
+        <description>
+          Data contents from XML data sources
+        </description>
+
+        <xmlQuestion name="News"
+                  displayName="Sample News"
+                  recordClassRef="XmlRecordClasses.NewsRecord"
+                  xmlDataURL="sampleNews.xml">
+            <help>
+              Sample Xml Question Help
+            </help>
+            <description>
+                Retrieve news from XML data source
+            </description>
+        </xmlQuestion>
+
+    </xmlQuestionSet>
         
 </wdkModel>

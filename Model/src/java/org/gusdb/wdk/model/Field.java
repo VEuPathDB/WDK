@@ -7,7 +7,7 @@ package org.gusdb.wdk.model;
  * @author Jerric
  * @created Jan 17, 2006
  */
-public abstract class Field {
+public abstract class Field extends WdkModelBase {
     
     protected String name;
     protected String displayName;

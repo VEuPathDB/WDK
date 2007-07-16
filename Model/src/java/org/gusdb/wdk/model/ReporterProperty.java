@@ -8,7 +8,7 @@ package org.gusdb.wdk.model;
  * @created: Jun 6, 2007
  * @updated: Jun 6, 2007
  */
-public class ReporterProperty {
+public class ReporterProperty extends WdkModelBase {
     
     private String name;
     private String value;
@@ -27,19 +27,29 @@ public class ReporterProperty {
     public void setName( String name ) {
         this.name = name;
     }
+
     
     /**
      * @return the value
      */
     public String getValue() {
-        return value;
+        return this.value;
     }
+
     
     /**
-     * @param value
-     *            the value to set
+     * @param value the value to set
      */
-    public void setValue( String value ) {
+    public void setValue(String value) {
         this.value = value;
     }
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
+     */
+    @Override
+    public void excludeResources(String projectId) {
+        // do nothing
+    }
+    
 }

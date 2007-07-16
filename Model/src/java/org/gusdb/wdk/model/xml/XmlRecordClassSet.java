@@ -3,28 +3,26 @@
  */
 package org.gusdb.wdk.model.xml;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.gusdb.wdk.model.ModelSetI;
 import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 
 /**
  * @author Jerric
  * @created Oct 14, 2005
  */
-public class XmlRecordClassSet implements ModelSetI {
+public class XmlRecordClassSet extends WdkModelBase implements ModelSetI {
 
     private String name;
-    private Map<String, XmlRecordClass> recordClasses;
 
-    /**
-     * 
-     */
-    public XmlRecordClassSet() {
-        recordClasses = new LinkedHashMap<String, XmlRecordClass>();
-    }
+    private List<XmlRecordClass> recordClassList = new ArrayList<XmlRecordClass>();
+    private Map<String, XmlRecordClass> recordClasses = new LinkedHashMap<String, XmlRecordClass>();
 
     /*
      * (non-Javadoc)
@@ -54,7 +52,7 @@ public class XmlRecordClassSet implements ModelSetI {
     }
 
     public void addRecordClass(XmlRecordClass recordClass) {
-        recordClasses.put(recordClass.getName(), recordClass);
+        recordClassList.add(recordClass);
     }
 
     /*
@@ -103,5 +101,28 @@ public class XmlRecordClassSet implements ModelSetI {
             buf.append("\r\n");
         }
         return buf.toString();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
+     */
+    @Override
+    public void excludeResources(String projectId) throws WdkModelException {
+        // exclude recordClasses
+        for (XmlRecordClass recordClass : recordClassList) {
+            if (recordClass.include(projectId)) {
+                recordClass.setRecordClassSet(this);
+                recordClass.excludeResources(projectId);
+                String rcName = recordClass.getName();
+                if (recordClasses.containsKey(rcName))
+                    throw new WdkModelException("The xmlRecordClass " + rcName
+                            + " is duplicated in xmlRecordClassSet "
+                            + this.name);
+                recordClasses.put(rcName, recordClass);
+            }
+        }
+        recordClassList = null;
     }
 }

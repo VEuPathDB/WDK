@@ -3,31 +3,33 @@
  */
 package org.gusdb.wdk.model.xml;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.gusdb.wdk.model.ModelSetI;
 import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkModelText;
 
 /**
  * @author Jerric
  * @created Oct 14, 2005
  */
-public class XmlQuestionSet implements ModelSetI {
+public class XmlQuestionSet extends WdkModelBase implements ModelSetI {
 
     private String name;
     private String displayName;
-    private String description;
-    private boolean isInternal;
-    private Map<String, XmlQuestion> questions;
 
-    /**
-     * 
-     */
-    public XmlQuestionSet() {
-        questions = new LinkedHashMap<String, XmlQuestion>();
-    }
+    private List<WdkModelText> descriptions = new ArrayList<WdkModelText>();
+    private String description;
+
+    private boolean isInternal;
+
+    private List<XmlQuestion> questionList = new ArrayList<XmlQuestion>();
+    private Map<String, XmlQuestion> questions = new LinkedHashMap<String, XmlQuestion>();
 
     /*
      * (non-Javadoc)
@@ -50,10 +52,11 @@ public class XmlQuestionSet implements ModelSetI {
     }
 
     /**
-     * @param description The description to set.
+     * @param description
+     * The description to set.
      */
-    public void setDescription(String description) {
-        this.description = description;
+    public void addDescription(WdkModelText description) {
+        this.descriptions.add(description);
     }
 
     /**
@@ -64,7 +67,8 @@ public class XmlQuestionSet implements ModelSetI {
     }
 
     /**
-     * @param displayName The displayName to set.
+     * @param displayName
+     * The displayName to set.
      */
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
@@ -78,7 +82,8 @@ public class XmlQuestionSet implements ModelSetI {
     }
 
     /**
-     * @param isInternal The isInternal to set.
+     * @param isInternal
+     * The isInternal to set.
      */
     public void setInternal(boolean isInternal) {
         this.isInternal = isInternal;
@@ -99,7 +104,7 @@ public class XmlQuestionSet implements ModelSetI {
     }
 
     public void addQuestion(XmlQuestion question) {
-        questions.put(question.getName(), question);
+        questionList.add(question);
     }
 
     /*
@@ -157,5 +162,38 @@ public class XmlQuestionSet implements ModelSetI {
             buf.append("\r\n");
         }
         return buf.toString();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
+     */
+    @Override
+    public void excludeResources(String projectId) throws WdkModelException {
+        // exclude descriptions
+        for (WdkModelText description : descriptions) {
+            if (description.include(projectId)) {
+                this.description = description.getText();
+                break;
+            }
+        }
+        descriptions = null;
+
+        // exclude xml questions
+        for (XmlQuestion question : questionList) {
+            if (question.include(projectId)) {
+                question.setQuestionSet(this);
+                question.excludeResources(projectId);
+                String questionName = question.getName();
+                if (questions.containsKey(questionName))
+                    throw new WdkModelException("The xmlQuestion "
+                            + questionName
+                            + " is duplicated in the xmlQuestionSet "
+                            + this.name);
+                questions.put(questionName, question);
+            }
+        }
+        questionList = null;
     }
 }

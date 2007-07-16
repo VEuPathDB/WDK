@@ -10,39 +10,39 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-
 /**
  * @author art
- *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Generation - Code and Comments
+ * 
+ * TODO To change the template for this generated type comment go to Window -
+ * Preferences - Java - Code Generation - Code and Comments
  */
 public class WdkLogManager {
 
     public static final WdkLogManager INSTANCE = new WdkLogManager();
-    
-    private List loggers = new ArrayList();
-    
+
+    private List<String> loggers = new ArrayList<String>();
+
     private String logFilename;
-    
+
     /**
      * @return Returns the logFilename.
      */
     public String getLogFilename() {
         return logFilename;
     }
-    
+
     /**
-     * @param logFilename The logFilename to set.
+     * @param logFilename
+     * The logFilename to set.
      */
     public void setLogFilename(String logFilename) {
         this.logFilename = logFilename;
     }
-    
+
     private WdkLogManager() {
-        // Hide constructor
+    // Hide constructor
     }
-    
+
     /**
      * @param string
      * @return
@@ -58,7 +58,4 @@ public class WdkLogManager {
     private void addLoggerName(String name) {
         loggers.add(name);
     }
-
-    
-    
 }

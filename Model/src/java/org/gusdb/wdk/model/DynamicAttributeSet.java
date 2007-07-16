@@ -1,57 +1,36 @@
 package org.gusdb.wdk.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.implementation.SqlQuery;
 
-public class DynamicAttributeSet implements Serializable {
+public class DynamicAttributeSet extends WdkModelBase implements Serializable {
 
     /**
      * 
      */
     private static final long serialVersionUID = -1373806354317917813L;
-    private static Logger logger = Logger.getLogger(DynamicAttributeSet.class);
+    // private static Logger logger =
+    // Logger.getLogger(DynamicAttributeSet.class);
 
     public final static String RESULT_TABLE = "RESULTTABLE";
 
-    private Map<String, AttributeField> attributesFieldMap;
+    private List<AttributeField> attributeFieldList = new ArrayList<AttributeField>();
+    private Map<String, AttributeField> attributeFieldMap = new LinkedHashMap<String, AttributeField>();
     private RecordClass recordClass;
     private Query attributesQuery;
-    private Set<String> columnAttributeFieldNames;
-    private Set<String> noncolumnAttributeFieldNames;
+    private Set<String> columnAttributeFieldNames = new LinkedHashSet<String>();
+    private Set<String> noncolumnAttributeFieldNames = new LinkedHashSet<String>();
 
-    public DynamicAttributeSet() {
-        attributesFieldMap = new LinkedHashMap<String, AttributeField>();
-        columnAttributeFieldNames = new LinkedHashSet<String>();
-        noncolumnAttributeFieldNames = new LinkedHashSet<String>();
-    }
-
-    public void addAttributeField(AttributeField attributeField)
-            throws WdkModelException {
-        // logger.debug("AttributeField: " + attributeField.getName());
-
-        String name = attributeField.getName();
-        // the attribute name must be unique
-        if (attributesFieldMap.containsKey(name))
-            throw new WdkModelException(
-                    "DynamicAttributes contain a duplicate attribute '" + name
-                            + "'");
-
-        attributesFieldMap.put(name, attributeField);
-
-        // check if it's a column attribute. this kind of attribute must be
-        // matched with a column
-        if (attributeField instanceof ColumnAttributeField) {
-            columnAttributeFieldNames.add(name);
-        } else {
-            noncolumnAttributeFieldNames.add(name);
-        }
+    public void addAttributeField(AttributeField attributeField) {
+        attributeFieldList.add(attributeField);
     }
 
     public String toString() {
@@ -59,7 +38,7 @@ public class DynamicAttributeSet implements Serializable {
         StringBuffer buf = new StringBuffer();
         buf.append("  dynamicAttributes:" + newline);
 
-        for (String attrName : attributesFieldMap.keySet()) {
+        for (String attrName : attributeFieldMap.keySet()) {
             buf.append("    " + attrName + newline);
         }
         return buf.toString();
@@ -80,7 +59,7 @@ public class DynamicAttributeSet implements Serializable {
         String message = "dynamicAttributes of question "
                 + question.getFullName();
         Map<String, AttributeField> rsAttributeFields = recordClass.getAttributeFieldMap();
-        for (String attributeName : attributesFieldMap.keySet()) {
+        for (String attributeName : attributeFieldMap.keySet()) {
             // check the uniqueness of attributeFields in the RecordClass level
             if (rsAttributeFields.containsKey(attributeName))
                 throw new WdkModelException(message
@@ -94,14 +73,14 @@ public class DynamicAttributeSet implements Serializable {
     }
 
     Map<String, AttributeField> getAttributeFields() {
-        return new LinkedHashMap<String, AttributeField>(attributesFieldMap);
+        return new LinkedHashMap<String, AttributeField>(attributeFieldMap);
     }
 
     Map<String, AttributeField> getReportMakerAttributeFieldMap() {
         Map<String, AttributeField> rmfields = new LinkedHashMap<String, AttributeField>();
-        Set<String> names = attributesFieldMap.keySet();
+        Set<String> names = attributeFieldMap.keySet();
         for (String name : names) {
-            AttributeField field = attributesFieldMap.get(name);
+            AttributeField field = attributeFieldMap.get(name);
             if (field.getInReportMaker()) rmfields.put(name, field);
         }
         return rmfields;
@@ -137,6 +116,7 @@ public class DynamicAttributeSet implements Serializable {
         String message = "dynamicAttributes of question "
                 + question.getFullName();
         Map<String, Column> columnMap = question.getQuery().getColumnMap();
+
         // // check if all column names appear in column attributes
         // The column may contain pk_column, which may not appear in attributes
         // Set<String> names = columnMap.keySet();
@@ -147,6 +127,7 @@ public class DynamicAttributeSet implements Serializable {
         // + "' that appears in query "
         // + question.getQuery().getFullName());
         // }
+
         // check if all column attribute names appear in columns
         for (String name : columnAttributeFieldNames) {
             if (!columnMap.containsKey(name))
@@ -157,8 +138,8 @@ public class DynamicAttributeSet implements Serializable {
 
             // associate columns with column attribute fields
             Column column = columnMap.get(name);
-            column.setDynamicColumn( true );
-            ColumnAttributeField field = (ColumnAttributeField) attributesFieldMap.get(name);
+            column.setDynamicColumn(true);
+            ColumnAttributeField field = (ColumnAttributeField) attributeFieldMap.get(name);
 
             // TEST
             // logger.debug("Dyna Column '" + column.getName() + "' from Query:
@@ -208,9 +189,9 @@ public class DynamicAttributeSet implements Serializable {
         // the use of "dual" causes trouble on PostgreSQL.
         // Solution: create a "dual" table in PostgreSQL - consider putting the
         // table creation code into wdkCache -new
-        
+
         // String sql = "SELECT " + sqlSelect + " FROM dual " + sqlWhere;
-        
+
         // the dual cause another problem in PostgreSQL, if there's no row in
         // it, the query will return nothing; if has value, then the result will
         // be a cross product, which may not be expected.
@@ -232,5 +213,36 @@ public class DynamicAttributeSet implements Serializable {
         // ColumnAttributeField field = new ColumnAttributeField();
         // field.setColumn(column);
         // attributesFieldMap.put(field.getName(), field);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
+     */
+    @Override
+    public void excludeResources(String projectId) throws WdkModelException {
+        // exclude the attribute fields
+        for (AttributeField field : attributeFieldList) {
+            if (field.include(projectId)) {
+                field.excludeResources(projectId);
+                String fieldName = field.getName();
+
+                // the attribute name must be unique
+                if (attributeFieldMap.containsKey(fieldName))
+                    throw new WdkModelException("DynamicAttributes contain a "
+                            + "duplicate attribute '" + fieldName + "'");
+
+                attributeFieldMap.put(fieldName, field);
+
+                // check if it's a column attribute.
+                if (field instanceof ColumnAttributeField) {
+                    columnAttributeFieldNames.add(fieldName);
+                } else {
+                    noncolumnAttributeFieldNames.add(fieldName);
+                }
+            }
+        }
+        attributeFieldList = null;
     }
 }

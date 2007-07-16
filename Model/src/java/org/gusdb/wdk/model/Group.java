@@ -3,22 +3,28 @@
  */
 package org.gusdb.wdk.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author: xingao
  * @created: Mar 1, 2007
  * @updated: Mar 1, 2007
  */
-public class Group {
-    
+public class Group extends WdkModelBase {
+
     private static Group empty;
-    
+
     private String name;
     private String displayName;
+
+    private List<WdkModelText> descriptions;
     private String description;
+
     private String displayType;
-    
+
     private GroupSet groupSet;
-    
+
     public static Group Empty() {
         if (empty == null) {
             empty = new Group();
@@ -26,99 +32,117 @@ public class Group {
         }
         return empty;
     }
-    
-    public Group( ) {
+
+    public Group() {
         // initialize an empty group
         name = "empty";
         displayName = "";
         description = "";
+        descriptions = new ArrayList<WdkModelText>();
     }
-    
+
     /**
      * @return the description
      */
     public String getDescription() {
         return description;
     }
-    
+
     /**
      * @param description
-     *            the description to set
+     * the description to set
      */
-    public void setDescription( String description ) {
-        this.description = description;
+    public void addDescription(WdkModelText description) {
+        this.descriptions.add(description);
     }
-    
+
     /**
      * @return the displayName
      */
     public String getDisplayName() {
         return displayName;
     }
-    
+
     /**
      * @param displayName
-     *            the displayName to set
+     * the displayName to set
      */
-    public void setDisplayName( String displayName ) {
+    public void setDisplayName(String displayName) {
         this.displayName = displayName;
     }
-    
+
     /**
      * @return the groupSet
      */
     public GroupSet getGroupSet() {
         return groupSet;
     }
-    
+
     /**
      * @param groupSet
-     *            the groupSet to set
+     * the groupSet to set
      */
-    public void setGroupSet( GroupSet groupSet ) {
+    public void setGroupSet(GroupSet groupSet) {
         this.groupSet = groupSet;
     }
-    
+
     /**
      * @return the name
      */
     public String getName() {
         return name;
     }
-    
+
     /**
      * @param name
-     *            the name to set
+     * the name to set
      */
-    public void setName( String name ) {
+    public void setName(String name) {
         this.name = name;
     }
-    
+
     public String getFullName() {
-        if ( groupSet != null ) return groupSet.getName() + "." + name;
+        if (groupSet != null) return groupSet.getName() + "." + name;
         else return name;
     }
-    
+
     /**
      * @return the displayType
      */
     public String getDisplayType() {
         return displayType;
     }
-    
+
     /**
      * @param displayType
-     *            the displayType to set
+     * the displayType to set
      */
-    public void setDisplayType( String displayType ) {
+    public void setDisplayType(String displayType) {
         this.displayType = displayType;
     }
-    
-    public void resolveReferences( WdkModel model ) throws WdkModelException {
+
+    public void resolveReferences(WdkModel model) throws WdkModelException {
     // do nothing
     }
-    
-    public void setResources( WdkModel model ) throws WdkModelException {
+
+    public void setResources(WdkModel model) throws WdkModelException {
     // do nothing
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
+     */
+    @Override
+    public void excludeResources(String projectId) {
+        // exclude descriptions
+        for (WdkModelText desc : descriptions) {
+            if (desc.include(projectId)) {
+                this.description = desc.getText();
+                break;
+            }
+        }
+        descriptions = null;
     }
 }

@@ -5,20 +5,17 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.bind.ValidationException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
@@ -34,7 +31,42 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.digester.Digester;
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.*;
+import org.gusdb.wdk.model.AttributeList;
+import org.gusdb.wdk.model.AttributeQueryReference;
+import org.gusdb.wdk.model.Column;
+import org.gusdb.wdk.model.ColumnAttributeField;
+import org.gusdb.wdk.model.DatasetParam;
+import org.gusdb.wdk.model.DynamicAttributeSet;
+import org.gusdb.wdk.model.EnumItem;
+import org.gusdb.wdk.model.EnumItemList;
+import org.gusdb.wdk.model.EnumParam;
+import org.gusdb.wdk.model.FlatVocabParam;
+import org.gusdb.wdk.model.Group;
+import org.gusdb.wdk.model.GroupSet;
+import org.gusdb.wdk.model.HistoryParam;
+import org.gusdb.wdk.model.LinkAttributeField;
+import org.gusdb.wdk.model.NestedRecord;
+import org.gusdb.wdk.model.NestedRecordList;
+import org.gusdb.wdk.model.ParamConfiguration;
+import org.gusdb.wdk.model.ParamReference;
+import org.gusdb.wdk.model.ParamSet;
+import org.gusdb.wdk.model.ParamSuggestion;
+import org.gusdb.wdk.model.PropertyList;
+import org.gusdb.wdk.model.QuerySet;
+import org.gusdb.wdk.model.Question;
+import org.gusdb.wdk.model.QuestionSet;
+import org.gusdb.wdk.model.RecordClass;
+import org.gusdb.wdk.model.RecordClassSet;
+import org.gusdb.wdk.model.ReporterProperty;
+import org.gusdb.wdk.model.ReporterRef;
+import org.gusdb.wdk.model.StringParam;
+import org.gusdb.wdk.model.TableField;
+import org.gusdb.wdk.model.TextAttributeField;
+import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkModelName;
+import org.gusdb.wdk.model.WdkModelText;
+import org.gusdb.wdk.model.XmlParser;
 import org.gusdb.wdk.model.xml.XmlAttributeField;
 import org.gusdb.wdk.model.xml.XmlQuestion;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
@@ -45,125 +77,59 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
 
-import com.thaiopensource.util.PropertyMap;
-import com.thaiopensource.util.SinglePropertyMap;
-import com.thaiopensource.validate.ValidateProperty;
-import com.thaiopensource.validate.ValidationDriver;
-import com.thaiopensource.xml.sax.ErrorHandlerImpl;
-
-public class ModelXmlParser {
+public class ModelXmlParser extends XmlParser {
 
     public static final String MODEL_NAME = "model";
-    public static final String GUS_HOME = "GUS_HOME";
 
     private static final Logger logger = Logger.getLogger(ModelXmlParser.class);
 
-    private ValidationDriver validator;
-    private Digester digester;
-
-    private String gusHome;
     private URL xmlSchemaURL;
     private String xmlDataDir;
 
-    public ModelXmlParser(String gusHome) throws WdkModelException {
-        try {
-            // transform gusHome into valid format
-            gusHome = (new File(gusHome)).toURI().toURL().toExternalForm();
-            this.gusHome = gusHome;
+    public ModelXmlParser(String gusHome) throws SAXException, IOException {
+        super(gusHome, "lib/rng/wdkModel.rng");
 
-            // get model schema file and xml schema file
-            URL schemaURL = new URL(gusHome + "/lib/rng/wdkModel.rng");
-            xmlSchemaURL = new URL(gusHome + "/lib/rng/xmlAnswer.rng");
-            xmlDataDir = gusHome + "/lib/xml/";
-
-            // config validator and digester
-            validator = configureValidator(schemaURL);
-            digester = configureDigester();
-        } catch (MalformedURLException ex) {
-            throw new WdkModelException(ex);
-        }
+        // get model schema file and xml schema file
+        xmlSchemaURL = makeURL(gusHome, "lib/rng/xmlAnswer.rng");
+        xmlDataDir = gusHome + "/lib/xml/";
     }
 
-    public WdkModel parseModel(String modelName) throws WdkModelException {
-        try {
-            // construct urls to model file, prop file, and config file
-            URL modelURL = new URL(gusHome + "/lib/wdk/" + modelName + ".xml");
-            URL modelPropURL = new URL(gusHome + "/config/" + modelName
-                    + ".prop");
-            URL modelConfigURL = new URL(gusHome + "/config/" + modelName
-                    + "-config.xml");
+    public WdkModel parseModel(String modelName)
+            throws ParserConfigurationException,
+            TransformerFactoryConfigurationError, TransformerException,
+            IOException, SAXException, ValidationException, WdkModelException {
+        // construct urls to model file, prop file, and config file
+        URL modelURL = makeURL(gusHome, "lib/wdk/" + modelName + ".xml");
+        URL modelPropURL = makeURL(gusHome, "config/" + modelName + ".prop");
 
-            // validate the master model file
-            if (!validateModel(modelURL))
-                throw new WdkModelException("Master model validation failed.");
+        // validate the master model file
+        if (!validate(modelURL))
+            throw new ValidationException("Master model validation failed.");
 
-            // replace any <import> tag with content from sub-models in the 
-            // master model, and build the master document
-            Document masterDoc = buildMasterDocument(modelURL);
+        // replace any <import> tag with content from sub-models in the
+        // master model, and build the master document
+        Document masterDoc = buildMasterDocument(modelURL);
 
-            // load property map
-            Map<String, String> properties = getPropMap(modelPropURL);
-            InputStream modelXmlStream = substituteProps(masterDoc, properties);
+        // load property map
+        Map<String, String> properties = getPropMap(modelPropURL);
+        InputStream modelXmlStream = substituteProps(masterDoc, properties);
 
-            WdkModel model = (WdkModel) digester.parse(modelXmlStream);
+        WdkModel model = (WdkModel) digester.parse(modelXmlStream);
 
-            model.resolveReferences();
-            model.configure(modelConfigURL);
-            model.setResources();
-            model.setProperties(properties); // consider removing it
-            model.setXmlSchema(xmlSchemaURL); // set schema for xml data
-            model.setXmlDataDir(new File(xmlDataDir)); // consider refactoring
+        model.configure(gusHome, modelName);
+        model.setResources();
+        model.setProperties(properties); // consider removing it
+        model.setXmlSchema(xmlSchemaURL); // set schema for xml data
+        model.setXmlDataDir(new File(xmlDataDir)); // consider refactoring
 
-            return model;
-        } catch (SAXException e) {
-            throw new WdkModelException(e);
-        } catch (IOException e) {
-            throw new WdkModelException(e);
-        }
-    }
-
-    private ValidationDriver configureValidator(URL schemaURL)
-            throws WdkModelException {
-        System.setProperty(
-                "org.apache.xerces.xni.parser.XMLParserConfiguration",
-                "org.apache.xerces.parsers.XIncludeParserConfiguration");
-
-        ErrorHandler errorHandler = new ErrorHandlerImpl(System.err);
-        PropertyMap schemaProperties = new SinglePropertyMap(
-                ValidateProperty.ERROR_HANDLER, errorHandler);
-        ValidationDriver validator = new ValidationDriver(schemaProperties,
-                PropertyMap.EMPTY, null);
-        try {
-            validator.loadSchema(ValidationDriver.uriOrFileInputSource(schemaURL.toExternalForm()));
-            return validator;
-        } catch (MalformedURLException ex) {
-            throw new WdkModelException(ex);
-        } catch (SAXException ex) {
-            throw new WdkModelException(ex);
-        } catch (IOException ex) {
-            throw new WdkModelException(ex);
-        }
-    }
-
-    private boolean validateModel(URL modelXmlURL) throws WdkModelException {
-        try {
-            // System.err.println("modelXMLURL is "+modelXmlURL);
-            InputSource is = ValidationDriver.uriOrFileInputSource(modelXmlURL.toExternalForm());
-            return validator.validate(is);
-        } catch (SAXException ex) {
-            throw new WdkModelException(ex);
-        } catch (IOException ex) {
-            throw new WdkModelException(ex);
-        }
+        return model;
     }
 
     private Document buildMasterDocument(URL wdkModelURL)
-            throws WdkModelException {
+            throws SAXException, IOException, ParserConfigurationException,
+            ValidationException {
         // get the xml document of the model
         Document masterDoc = buildDocument(wdkModelURL);
         Node rootNode = masterDoc.getElementsByTagName("wdkModel").item(0);
@@ -173,149 +139,119 @@ public class ModelXmlParser {
         for (int i = 0; i < importNodes.getLength(); i++) {
             // get url to the first import
             Node importNode = importNodes.item(i);
-            String href = importNode.getAttributes().getNamedItem("href").getNodeValue();
-            try {
-                URL importURL = new URL(gusHome + "/lib/wdk/" + href);
+            String href = importNode.getAttributes().getNamedItem("file").getNodeValue();
+            URL importURL = makeURL(gusHome, "lib/wdk/" + href);
 
-                // validate the sub-model
-                if (!validateModel(importURL))
-                    throw new WdkModelException("sub model "
-                            + importURL.toExternalForm()
-                            + " validation failed.");
+            // validate the sub-model
+            if (!validate(importURL))
+                throw new ValidationException("sub model "
+                        + importURL.toExternalForm() + " validation failed.");
 
-                logger.info("Importing: " + importURL.toExternalForm());
+            logger.debug("Importing: " + importURL.toExternalForm());
 
-                Document importDoc = buildDocument(importURL);
+            Document importDoc = buildDocument(importURL);
 
-                // get the children nodes from imported sub-model, and add them
-                // into master document
-                Node subRoot = importDoc.getElementsByTagName("wdkModel").item(
-                        0);
-                NodeList childrenNodes = subRoot.getChildNodes();
-                for (int j = 0; j < childrenNodes.getLength(); j++) {
-                    Node childNode = childrenNodes.item(j);
-                    if (childNode instanceof Element) {
-                        Node imported = masterDoc.importNode(childNode, true);
-                        rootNode.appendChild(imported);
-                    }
+            // get the children nodes from imported sub-model, and add them
+            // into master document
+            Node subRoot = importDoc.getElementsByTagName("wdkModel").item(0);
+            NodeList childrenNodes = subRoot.getChildNodes();
+            for (int j = 0; j < childrenNodes.getLength(); j++) {
+                Node childNode = childrenNodes.item(j);
+                if (childNode instanceof Element) {
+                    Node imported = masterDoc.importNode(childNode, true);
+                    rootNode.appendChild(imported);
                 }
-            } catch (MalformedURLException ex) {
-                throw new WdkModelException(ex);
             }
         }
         return masterDoc;
     }
 
-    private Document buildDocument(URL modelXmlURL) throws WdkModelException {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        // turn off validation here, since we don't use DTD; validation is done
-        // before this point
-        factory.setValidating(false);
-        factory.setNamespaceAware(false);
-        DocumentBuilder builder;
-        try {
-            builder = factory.newDocumentBuilder();
-
-            // ErrorHandler errorHandler = new ErrorHandlerImpl(System.err);
-            // builder.setErrorHandler(errorHandler);
-            builder.setErrorHandler(new org.xml.sax.ErrorHandler() {
-
-                // ignore fatal errors (an exception is guaranteed)
-                public void fatalError(SAXParseException exception)
-                        throws SAXException {
-                    exception.printStackTrace(System.err);
-                }
-
-                // treat validation errors as fatal
-                public void error(SAXParseException e) throws SAXParseException {
-                    e.printStackTrace(System.err);
-                    throw e;
-                }
-
-                // dump warnings too
-                public void warning(SAXParseException err)
-                        throws SAXParseException {
-                    System.err.println("** Warning" + ", line "
-                            + err.getLineNumber() + ", uri "
-                            + err.getSystemId());
-                    System.err.println("   " + err.getMessage());
-                }
-            });
-
-            Document doc = builder.parse(modelXmlURL.openStream());
-            return doc;
-        } catch (ParserConfigurationException ex) {
-            throw new WdkModelException(ex);
-        } catch (SAXException ex) {
-            throw new WdkModelException(ex);
-        } catch (IOException ex) {
-            throw new WdkModelException(ex);
-        }
-    }
-
-    private Map<String, String> getPropMap(URL modelPropURL)
-            throws WdkModelException {
+    private Map<String, String> getPropMap(URL modelPropURL) throws IOException {
         Map<String, String> propMap = new LinkedHashMap<String, String>();
-        try {
-            Properties properties = new Properties();
-            properties.load(modelPropURL.openStream());
-            Iterator<Object> it = properties.keySet().iterator();
-            while (it.hasNext()) {
-                String propName = (String) it.next();
-                String value = properties.getProperty(propName);
-                propMap.put(propName, value);
-            }
-        } catch (IOException e) {
-            throw new WdkModelException(e);
+        Properties properties = new Properties();
+        properties.load(modelPropURL.openStream());
+        Iterator<Object> it = properties.keySet().iterator();
+        while (it.hasNext()) {
+            String propName = (String) it.next();
+            String value = properties.getProperty(propName);
+            propMap.put(propName, value);
         }
         return propMap;
     }
 
     private InputStream substituteProps(Document masterDoc,
-            Map<String, String> properties) throws WdkModelException {
-        try {
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            Map<String, String> properties)
+            throws TransformerFactoryConfigurationError, TransformerException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-            // transform the DOM doc to a string
-            Source source = new DOMSource(masterDoc);
-            Result result = new StreamResult(out);
-            Transformer transformer = TransformerFactory.newInstance().newTransformer();
-            transformer.transform(source, result);
-            String content = new String(out.toByteArray());
+        // transform the DOM doc to a string
+        Source source = new DOMSource(masterDoc);
+        Result result = new StreamResult(out);
+        Transformer transformer = TransformerFactory.newInstance().newTransformer();
+        transformer.transform(source, result);
+        String content = new String(out.toByteArray());
 
-            // substitute prop macros
-            for (String propName : properties.keySet()) {
-                String propValue = properties.get(propName);
-                content = content.replaceAll("\\@" + propName + "\\@",
-                        propValue);
-            }
-
-            // construct input stream
-            return new ByteArrayInputStream(content.getBytes());
-        } catch (TransformerConfigurationException ex) {
-            throw new WdkModelException(ex);
-        } catch (TransformerFactoryConfigurationError ex) {
-            throw new WdkModelException(ex);
-        } catch (TransformerException ex) {
-            throw new WdkModelException(ex);
+        // substitute prop macros
+        for (String propName : properties.keySet()) {
+            String propValue = properties.get(propName);
+            content = content.replaceAll("\\@" + propName + "\\@", propValue);
         }
 
+        // construct input stream
+        return new ByteArrayInputStream(content.getBytes());
     }
 
-    private Digester configureDigester() {
-
+    protected Digester configureDigester() {
         Digester digester = new Digester();
         digester.setValidating(false);
 
         // Root -- WDK Model
         digester.addObjectCreate("wdkModel", WdkModel.class);
         digester.addSetProperties("wdkModel");
-        digester.addBeanPropertySetter("wdkModel/introduction");
-        digester.addBeanPropertySetter("wdkModel/historyDatasetLink");
 
+        configureNode(digester, "wdkModel/modelName", WdkModelName.class,
+                "addWdkModelName");
+
+        configureNode(digester, "wdkModel/introduction", WdkModelText.class,
+                "addIntroduction");
+        digester.addCallMethod("wdkModel/introduction", "setText", 0);
+
+        // default property list
+        configureNode(digester, "wdkModel/defaultPropertyList",
+                PropertyList.class, "addDefaultPropertyList");
+        digester.addCallMethod("wdkModel/defaultPropertyList/value",
+                "addValue", 0);
+
+        // configure all sub nodes of recordClassSet
+        configureRecordClassSet(digester);
+
+        // configure all sub nodes of querySet
+        configureQuerySet(digester);
+
+        // configure all sub nodes of paramSet
+        configureParamSet(digester);
+
+        // configure all sub nodes of questionSet
+        configureQuestionSet(digester);
+
+        // configure all sub nodes of xmlQuestionSet
+        configureXmlQuestionSet(digester);
+
+        // configure all sub nodes of xmlRecordSet
+        configureXmlRecordClassSet(digester);
+
+        // configure all sub nodes of xmlRecordSet
+        configureGroupSet(digester);
+
+        return digester;
+    }
+
+    private void configureRecordClassSet(Digester digester) {
+        // record class set
         configureNode(digester, "wdkModel/recordClassSet",
                 RecordClassSet.class, "addRecordClassSet");
 
+        // record class
         configureNode(digester, "wdkModel/recordClassSet/recordClass",
                 RecordClass.class, "addRecordClass");
 
@@ -323,408 +259,304 @@ public class ModelXmlParser {
                 "wdkModel/recordClassSet/recordClass/projectParamRef",
                 ParamReference.class, "setProjectParamRef");
 
+        // reporter
         configureNode(digester, "wdkModel/recordClassSet/recordClass/reporter",
                 ReporterRef.class, "addReporterRef");
-
-        /*    */digester.addSetProperties("wdkModel/recordClassSet/recordClass/reporter");
-
-        /*       */digester.addObjectCreate(
+        configureNode(digester,
                 "wdkModel/recordClassSet/recordClass/reporter/property",
-                ReporterProperty.class);
-
-        /*       */digester.addSetProperties("wdkModel/recordClassSet/recordClass/reporter/property");
-
-        /*       */digester.addBeanPropertySetter("wdkModel/recordClassSet/recordClass/reporter/property/value");
-
-        /*       */digester.addSetNext(
+                ReporterProperty.class, "addProperty");
+        digester.addCallMethod(
                 "wdkModel/recordClassSet/recordClass/reporter/property",
-                "addProperty");
+                "setValue", 0);
 
-        // load attributeQueryRef along with the attributes associated with it
-
-        /*    */digester.addObjectCreate(
+        // attribute query ref
+        configureNode(digester,
                 "wdkModel/recordClassSet/recordClass/attributeQueryRef",
-                AttributeQueryReference.class);
+                AttributeQueryReference.class, "addAttributesQueryRef");
 
-        /*    */digester.addSetProperties("wdkModel/recordClassSet/recordClass/attributeQueryRef");
-
-        /*      */digester.addObjectCreate(
+        configureNode(
+                digester,
                 "wdkModel/recordClassSet/recordClass/attributeQueryRef/columnAttribute",
-                ColumnAttributeField.class);
+                ColumnAttributeField.class, "addAttributeField");
 
-        /*      */digester.addSetProperties("wdkModel/recordClassSet/recordClass/attributeQueryRef/columnAttribute");
+        configureLinkTextFields(digester,
+                "wdkModel/recordClassSet/recordClass/attributeQueryRef/");
 
-        /*      */digester.addSetNext(
-                "wdkModel/recordClassSet/recordClass/attributeQueryRef/columnAttribute",
-                "addAttributeField");
+        // tables
+        configureNode(digester, "wdkModel/recordClassSet/recordClass/table",
+                TableField.class, "addTableField");
 
-        /*    */digester.addObjectCreate(
-                "wdkModel/recordClassSet/recordClass/attributeQueryRef/linkAttribute",
-                LinkAttributeField.class);
-
-        /*    */digester.addSetProperties("wdkModel/recordClassSet/recordClass/attributeQueryRef/linkAttribute");
-
-        /*    */digester.addBeanPropertySetter("wdkModel/recordClassSet/recordClass/attributeQueryRef/linkAttribute/url");
-
-        /*    */digester.addSetNext(
-                "wdkModel/recordClassSet/recordClass/attributeQueryRef/linkAttribute",
-                "addAttributeField");
-
-        /*    */digester.addObjectCreate(
-                "wdkModel/recordClassSet/recordClass/attributeQueryRef/textAttribute",
-                TextAttributeField.class);
-
-        /*    */digester.addSetProperties("wdkModel/recordClassSet/recordClass/attributeQueryRef/textAttribute");
-
-        /*      */digester.addBeanPropertySetter("wdkModel/recordClassSet/recordClass/attributeQueryRef/textAttribute/text");
-
-        /*    */digester.addSetNext(
-                "wdkModel/recordClassSet/recordClass/attributeQueryRef/textAttribute",
-                "addAttributeField");
-
-        /*    */digester.addSetNext(
-                "wdkModel/recordClassSet/recordClass/attributeQueryRef",
-                "addAttributesQueryRef");
-
-        // load the table field along with the attribute associated with it
-        /*    */digester.addObjectCreate(
-                "wdkModel/recordClassSet/recordClass/table", TableField.class);
-
-        /*    */digester.addSetProperties("wdkModel/recordClassSet/recordClass/table");
-
-        /*      */digester.addObjectCreate(
+        configureNode(digester,
                 "wdkModel/recordClassSet/recordClass/table/columnAttribute",
-                ColumnAttributeField.class);
+                ColumnAttributeField.class, "addAttributeField");
 
-        /*      */digester.addSetProperties("wdkModel/recordClassSet/recordClass/table/columnAttribute");
+        configureLinkTextFields(digester,
+                "wdkModel/recordClassSet/recordClass/table/");
 
-        /*      */digester.addSetNext(
-                "wdkModel/recordClassSet/recordClass/table/columnAttribute",
-                "addAttributeField");
+        // direct attribute fields in teh record class
+        configureLinkTextFields(digester,
+                "wdkModel/recordClassSet/recordClass/");
 
-        /*    */digester.addObjectCreate(
-                "wdkModel/recordClassSet/recordClass/table/linkAttribute",
-                LinkAttributeField.class);
-
-        /*    */digester.addSetProperties("wdkModel/recordClassSet/recordClass/table/linkAttribute");
-
-        /*    */digester.addBeanPropertySetter("wdkModel/recordClassSet/recordClass/table/linkAttribute/url");
-
-        /*    */digester.addSetNext(
-                "wdkModel/recordClassSet/recordClass/table/linkAttribute",
-                "addAttributeField");
-
-        /*    */digester.addObjectCreate(
-                "wdkModel/recordClassSet/recordClass/table/textAttribute",
-                TextAttributeField.class);
-
-        /*    */digester.addSetProperties("wdkModel/recordClassSet/recordClass/table/textAttribute");
-
-        /*      */digester.addBeanPropertySetter("wdkModel/recordClassSet/recordClass/table/textAttribute/text");
-
-        /*    */digester.addSetNext(
-                "wdkModel/recordClassSet/recordClass/table/textAttribute",
-                "addAttributeField");
-
-        /*    */digester.addSetNext(
-                "wdkModel/recordClassSet/recordClass/table", "addTableField");
-
-        // load link attribute & text attribute directly belong to RecordClass
-
-        /*    */digester.addObjectCreate(
-                "wdkModel/recordClassSet/recordClass/linkAttribute",
-                LinkAttributeField.class);
-
-        /*    */digester.addSetProperties("wdkModel/recordClassSet/recordClass/linkAttribute");
-
-        /*    */digester.addBeanPropertySetter("wdkModel/recordClassSet/recordClass/linkAttribute/url");
-
-        /*    */digester.addSetNext(
-                "wdkModel/recordClassSet/recordClass/linkAttribute",
-                "addAttributeField");
-
-        /*    */digester.addObjectCreate(
-                "wdkModel/recordClassSet/recordClass/textAttribute",
-                TextAttributeField.class);
-
-        /*    */digester.addSetProperties("wdkModel/recordClassSet/recordClass/textAttribute");
-
-        /*      */digester.addBeanPropertySetter("wdkModel/recordClassSet/recordClass/textAttribute/text");
-
-        /*    */digester.addSetNext(
-                "wdkModel/recordClassSet/recordClass/textAttribute",
-                "addAttributeField");
-
-        /*    */digester.addObjectCreate(
+        // nested record and record list
+        configureNode(digester,
                 "wdkModel/recordClassSet/recordClass/nestedRecord",
-                NestedRecord.class);
+                NestedRecord.class, "addNestedRecordQuestionRef");
 
-        /*    */digester.addSetProperties("wdkModel/recordClassSet/recordClass/nestedRecord");
-
-        /*    */digester.addSetNext(
-                "wdkModel/recordClassSet/recordClass/nestedRecord",
-                "addNestedRecordQuestionRef");
-
-        /*    */digester.addObjectCreate(
+        configureNode(digester,
                 "wdkModel/recordClassSet/recordClass/nestedRecordList",
-                NestedRecordList.class);
+                NestedRecordList.class, "addNestedRecordListQuestionRef");
+    }
 
-        /*    */digester.addSetProperties("wdkModel/recordClassSet/recordClass/nestedRecordList");
-
-        /*    */digester.addSetNext(
-                "wdkModel/recordClassSet/recordClass/nestedRecordList",
-                "addNestedRecordListQuestionRef");
-
+    private void configureQuerySet(Digester digester) {
         // QuerySet
         configureNode(digester, "wdkModel/querySet", QuerySet.class,
                 "addQuerySet");
 
-        /*  */digester.addObjectCreate("wdkModel/querySet/sqlQuery",
-                SqlQuery.class);
+        // sqlQuery
+        configureNode(digester, "wdkModel/querySet/sqlQuery", SqlQuery.class,
+                "addQuery");
 
-        /*  */digester.addSetProperties("wdkModel/querySet/sqlQuery");
+        configureNode(digester, "wdkModel/querySet/sqlQuery/sql",
+                WdkModelText.class, "addSql");
+        digester.addCallMethod("wdkModel/querySet/sqlQuery/sql", "setText", 0);
 
-        /*  */digester.addBeanPropertySetter("wdkModel/querySet/sqlQuery/sql");
-        /*  */digester.addBeanPropertySetter("wdkModel/querySet/sqlQuery/description");
+        configureNode(digester, "wdkModel/querySet/sqlQuery/paramRef",
+                ParamReference.class, "addParamRef");
 
-        /*    */digester.addObjectCreate(
-                "wdkModel/querySet/sqlQuery/paramRef", ParamReference.class);
+        configureNode(digester, "wdkModel/querySet/sqlQuery/column",
+                Column.class, "addColumn");
 
-        /*    */digester.addSetProperties("wdkModel/querySet/sqlQuery/paramRef");
+        // wsQuery
+        configureNode(digester, "wdkModel/querySet/wsQuery", WSQuery.class,
+                "addQuery");
 
-        /*    */digester.addSetNext("wdkModel/querySet/sqlQuery/paramRef",
-                "addParamRef");
+        configureNode(digester, "wdkModel/querySet/wsQuery/paramRef",
+                ParamReference.class, "addParamRef");
 
-        /*    */digester.addObjectCreate("wdkModel/querySet/sqlQuery/column",
-                Column.class);
+        configureNode(digester, "wdkModel/querySet/wsQuery/wsColumn",
+                Column.class, "addColumn");
+    }
 
-        /*    */digester.addSetProperties("wdkModel/querySet/sqlQuery/column");
-
-        /*    */digester.addSetNext("wdkModel/querySet/sqlQuery/column",
-                "addColumn");
-
-        /*  */digester.addSetNext("wdkModel/querySet/sqlQuery", "addQuery");
-
-        /*  */digester.addObjectCreate("wdkModel/querySet/wsQuery",
-                WSQuery.class);
-
-        /*  */digester.addSetProperties("wdkModel/querySet/wsQuery");
-
-        /*  */digester.addBeanPropertySetter("wdkModel/querySet/wsQuery/description");
-
-        /*    */digester.addObjectCreate("wdkModel/querySet/wsQuery/paramRef",
-                ParamReference.class);
-
-        /*    */digester.addSetProperties("wdkModel/querySet/wsQuery/paramRef");
-
-        /*    */digester.addSetNext("wdkModel/querySet/wsQuery/paramRef",
-                "addParamRef");
-
-        /*    */digester.addObjectCreate("wdkModel/querySet/wsQuery/wsColumn",
-                Column.class);
-
-        /*    */digester.addSetProperties("wdkModel/querySet/wsQuery/wsColumn");
-
-        /*    */digester.addSetNext("wdkModel/querySet/wsQuery/wsColumn",
-                "addColumn");
-
-        /*  */digester.addSetNext("wdkModel/querySet/wsQuery", "addQuery");
-
+    private void configureParamSet(Digester digester) {
         // ParamSet
+        configureNode(digester, "wdkModel/paramSet", ParamSet.class,
+                "addParamSet");
 
-        /**/digester.addObjectCreate("wdkModel/paramSet", ParamSet.class);
+        configureNode(digester, "wdkModel/paramSet/useTermOnly",
+                ParamConfiguration.class, "addUseTermOnly");
 
-        /**/digester.addSetProperties("wdkModel/paramSet");
+        // string param
+        configureNode(digester, "wdkModel/paramSet/stringParam",
+                StringParam.class, "addParam");
 
-        /*  */digester.addObjectCreate("wdkModel/paramSet/stringParam",
-                StringParam.class);
+        configureNode(digester, "wdkModel/paramSet/stringParam/help",
+                WdkModelText.class, "addHelp");
+        digester.addCallMethod("wdkModel/paramSet/stringParam/help", "setText",
+                0);
 
-        /*  */digester.addSetProperties("wdkModel/paramSet/stringParam");
+        configureNode(digester, "wdkModel/paramSet/stringParam/suggest",
+                ParamSuggestion.class, "addSuggest");
 
-        /*  */digester.addSetNext("wdkModel/paramSet/stringParam", "addParam");
+        // flatVocabParam
+        configureNode(digester, "wdkModel/paramSet/flatVocabParam",
+                FlatVocabParam.class, "addParam");
 
-        /*  */digester.addObjectCreate("wdkModel/paramSet/flatVocabParam",
-                FlatVocabParam.class);
+        configureNode(digester, "wdkModel/paramSet/flatVocabParam/help",
+                WdkModelText.class, "addHelp");
+        digester.addCallMethod("wdkModel/paramSet/flatVocabParam/help",
+                "setText", 0);
 
-        /*  */digester.addSetProperties("wdkModel/paramSet/flatVocabParam");
+        configureNode(digester, "wdkModel/paramSet/flatVocabParam/suggest",
+                ParamSuggestion.class, "addSuggest");
 
-        /*  */digester.addSetNext("wdkModel/paramSet/flatVocabParam",
+        configureNode(digester, "wdkModel/paramSet/flatVocabParam/useTermOnly",
+                ParamConfiguration.class, "addUseTermOnly");
+
+        // history param
+        configureNode(digester, "wdkModel/paramSet/historyParam",
+                HistoryParam.class, "addParam");
+
+        configureNode(digester, "wdkModel/paramSet/historyParam/help",
+                WdkModelText.class, "addHelp");
+        digester.addCallMethod("wdkModel/paramSet/historyParam/help",
+                "setText", 0);
+
+        configureNode(digester, "wdkModel/paramSet/historyParam/suggest",
+                ParamSuggestion.class, "addSuggest");
+
+        // dataset param
+        configureNode(digester, "wdkModel/paramSet/datasetParam",
+                DatasetParam.class, "addParam");
+
+        configureNode(digester, "wdkModel/paramSet/datasetParam/help",
+                WdkModelText.class, "addHelp");
+        digester.addCallMethod("wdkModel/paramSet/datasetParam/help",
+                "setText", 0);
+
+        configureNode(digester, "wdkModel/paramSet/datasetParam/suggest",
+                ParamSuggestion.class, "addSuggest");
+
+        // enum param
+        configureNode(digester, "wdkModel/paramSet/enumParam", EnumParam.class,
                 "addParam");
 
-        /*  */digester.addObjectCreate("wdkModel/paramSet/historyParam",
-                HistoryParam.class);
+        configureNode(digester, "wdkModel/paramSet/enumParam/help",
+                WdkModelText.class, "addHelp");
+        digester.addCallMethod("wdkModel/paramSet/enumParam/help", "setText", 0);
 
-        /*  */digester.addSetProperties("wdkModel/paramSet/historyParam");
+        configureNode(digester, "wdkModel/paramSet/enumParam/suggest",
+                ParamSuggestion.class, "addSuggest");
 
-        /*  */digester.addSetNext("wdkModel/paramSet/historyParam", "addParam");
+        configureNode(digester, "wdkModel/paramSet/enumParam/enumList",
+                EnumItemList.class, "addItemList");
 
-        /*  */digester.addObjectCreate("wdkModel/paramSet/datasetParam",
-                DatasetParam.class);
+        configureNode(digester,
+                "wdkModel/paramSet/enumParam/enumList/useTermOnly",
+                ParamConfiguration.class, "addUseTermOnly");
 
-        /*  */digester.addSetProperties("wdkModel/paramSet/datasetParam");
+        configureNode(digester,
+                "wdkModel/paramSet/enumParam/enumList/enumValue",
+                EnumItem.class, "addEnumItem");
+        digester.addBeanPropertySetter("wdkModel/paramSet/enumParam/enumList/enumValue/display");
+        digester.addBeanPropertySetter("wdkModel/paramSet/enumParam/enumList/enumValue/term");
+        digester.addBeanPropertySetter("wdkModel/paramSet/enumParam/enumList/enumValue/internal");
+    }
 
-        /*  */digester.addSetNext("wdkModel/paramSet/datasetParam", "addParam");
-
-        /**/digester.addSetNext("wdkModel/paramSet", "addParamSet");
-
-        // ReferenceList
-
-        /**/digester.addObjectCreate("wdkModel/referenceList",
-                ReferenceList.class);
-
-        /*  */digester.addSetProperties("wdkModel/referenceList");
-
-        /*  */digester.addObjectCreate("wdkModel/referenceList/reference",
-                Reference.class);
-
-        /*  */digester.addSetProperties("wdkModel/referenceList/reference");
-
-        /*  */digester.addSetNext("wdkModel/referenceList/reference",
-                "addReference");
-
-        /**/digester.addSetNext("wdkModel/referenceList", "addReferenceList");
-
+    private void configureQuestionSet(Digester digester) {
         // QuestionSet
+        configureNode(digester, "wdkModel/questionSet", QuestionSet.class,
+                "addQuestionSet");
 
-        /**/digester.addObjectCreate("wdkModel/questionSet", QuestionSet.class);
+        configureNode(digester, "wdkModel/questionSet/description",
+                WdkModelText.class, "addDescription");
+        digester.addCallMethod("wdkModel/questionSet/description", "setText", 0);
 
-        /*  */digester.addSetProperties("wdkModel/questionSet");
+        // question
+        configureNode(digester, "wdkModel/questionSet/question",
+                Question.class, "addQuestion");
 
-        /*  */digester.addBeanPropertySetter("wdkModel/questionSet/description");
-        /*  */digester.addObjectCreate("wdkModel/questionSet/question",
-                Question.class);
+        configureNode(digester, "wdkModel/questionSet/question/description",
+                WdkModelText.class, "addDescription");
+        digester.addCallMethod("wdkModel/questionSet/question/description",
+                "setText", 0);
 
-        /*    */digester.addSetProperties("wdkModel/questionSet/question");
+        configureNode(digester, "wdkModel/questionSet/question/summary",
+                WdkModelText.class, "addSummary");
+        digester.addCallMethod("wdkModel/questionSet/question/summary",
+                "setText", 0);
 
-        /*    */digester.addBeanPropertySetter("wdkModel/questionSet/question/description");
+        configureNode(digester, "wdkModel/questionSet/question/help",
+                WdkModelText.class, "addHelp");
+        digester.addCallMethod("wdkModel/questionSet/question/help", "setText",
+                0);
 
-        /*    */digester.addBeanPropertySetter("wdkModel/questionSet/question/summary");
+        // question's property list
+        configureNode(digester, "wdkModel/questionSet/question/propertyList",
+                PropertyList.class, "addPropertyList");
+        digester.addCallMethod(
+                "wdkModel/questionSet/question/propertyList/value", "addValue",
+                0);
 
-        /*    */digester.addBeanPropertySetter("wdkModel/questionSet/question/help");
+        // dynamic attribute set
+        configureNode(digester, "wdkModel/questionSet/question/attributeList",
+                AttributeList.class, "addAttributeList");
 
-        /*    */digester.addObjectCreate(
+        configureNode(digester,
                 "wdkModel/questionSet/question/dynamicAttributes",
-                DynamicAttributeSet.class);
+                DynamicAttributeSet.class, "addDynamicAttributeSet");
 
-        /*      */digester.addSetProperties("wdkModel/questionSet/question/dynamicAttributes");
-
-        /*      */digester.addObjectCreate(
+        configureNode(
+                digester,
                 "wdkModel/questionSet/question/dynamicAttributes/columnAttribute",
-                ColumnAttributeField.class);
+                ColumnAttributeField.class, "addAttributeField");
 
-        /*        */digester.addSetProperties("wdkModel/questionSet/question/dynamicAttributes/columnAttribute");
+        configureLinkTextFields(digester,
+                "wdkModel/questionSet/question/dynamicAttributes/");
+    }
 
-        /*      */digester.addSetNext(
-                "wdkModel/questionSet/question/dynamicAttributes/columnAttribute",
-                "addAttributeField");
-
-        /*      */digester.addObjectCreate(
-                "wdkModel/questionSet/question/dynamicAttributes/linkAttribute",
-                LinkAttributeField.class);
-
-        /*        */digester.addSetProperties("wdkModel/questionSet/question/dynamicAttributes/linkAttribute");
-
-        /*        */digester.addBeanPropertySetter("wdkModel/questionSet/question/dynamicAttributes/linkAttribute/url");
-
-        /*      */digester.addSetNext(
-                "wdkModel/questionSet/question/dynamicAttributes/linkAttribute",
-                "addAttributeField");
-
-        /*      */digester.addObjectCreate(
-                "wdkModel/questionSet/question/dynamicAttributes/textAttribute",
-                TextAttributeField.class);
-
-        /*        */digester.addSetProperties("wdkModel/questionSet/question/dynamicAttributes/textAttribute");
-
-        /*        */digester.addBeanPropertySetter("wdkModel/questionSet/question/dynamicAttributes/textAttribute/text");
-
-        /*      */digester.addSetNext(
-                "wdkModel/questionSet/question/dynamicAttributes/textAttribute",
-                "addAttributeField");
-
-        /*    */digester.addSetNext(
-                "wdkModel/questionSet/question/dynamicAttributes",
-                "setDynamicAttributeSet");
-
-        /*  */digester.addSetNext("wdkModel/questionSet/question",
-                "addQuestion");
-
-        /**/digester.addSetNext("wdkModel/questionSet", "addQuestionSet");
-
+    private void configureXmlQuestionSet(Digester digester) {
         // load XmlQuestionSet
-        digester.addObjectCreate("wdkModel/xmlQuestionSet",
-                XmlQuestionSet.class);
-        digester.addSetProperties("wdkModel/xmlQuestionSet");
-        digester.addBeanPropertySetter("wdkModel/xmlQuestionSet/description");
+        configureNode(digester, "wdkModel/xmlQuestionSet",
+                XmlQuestionSet.class, "addXmlQuestionSet");
+
+        configureNode(digester, "wdkModel/xmlQuestionSet/description",
+                WdkModelText.class, "addDescription");
+        digester.addCallMethod("wdkModel/xmlQuestionSet/description",
+                "setText", 0);
 
         // load XmlQuestion
-        digester.addObjectCreate("wdkModel/xmlQuestionSet/xmlQuestion",
-                XmlQuestion.class);
-        digester.addSetProperties("wdkModel/xmlQuestionSet/xmlQuestion");
-        digester.addBeanPropertySetter("wdkModel/xmlQuestionSet/xmlQuestion/description");
-        digester.addBeanPropertySetter("wdkModel/xmlQuestionSet/xmlQuestion/help");
-        digester.addSetNext("wdkModel/xmlQuestionSet/xmlQuestion",
-                "addQuestion");
+        configureNode(digester, "wdkModel/xmlQuestionSet/xmlQuestion",
+                XmlQuestion.class, "addQuestion");
 
-        digester.addSetNext("wdkModel/xmlQuestionSet", "addXmlQuestionSet");
+        configureNode(digester,
+                "wdkModel/xmlQuestionSet/xmlQuestion/description",
+                WdkModelText.class, "addDescription");
+        digester.addCallMethod(
+                "wdkModel/xmlQuestionSet/xmlQuestion/description", "setText", 0);
 
+        configureNode(digester, "wdkModel/xmlQuestionSet/xmlQuestion/help",
+                WdkModelText.class, "addHelp");
+        digester.addCallMethod("wdkModel/xmlQuestionSet/xmlQuestion/help",
+                "setText", 0);
+    }
+
+    private void configureXmlRecordClassSet(Digester digester) {
         // load XmlRecordClassSet
-        digester.addObjectCreate("wdkModel/xmlRecordClassSet",
-                XmlRecordClassSet.class);
-        digester.addSetProperties("wdkModel/xmlRecordClassSet");
+        configureNode(digester, "wdkModel/xmlRecordClassSet",
+                XmlRecordClassSet.class, "addXmlRecordClassSet");
 
         // load XmlRecordClass
-        digester.addObjectCreate("wdkModel/xmlRecordClassSet/xmlRecordClass",
-                XmlRecordClass.class);
-        digester.addSetProperties("wdkModel/xmlRecordClassSet/xmlRecordClass");
+        configureNode(digester, "wdkModel/xmlRecordClassSet/xmlRecordClass",
+                XmlRecordClass.class, "addRecordClass");
 
         // load XmlAttributeField
-        digester.addObjectCreate(
+        configureNode(digester,
                 "wdkModel/xmlRecordClassSet/xmlRecordClass/xmlAttribute",
-                XmlAttributeField.class);
-        digester.addSetProperties("wdkModel/xmlRecordClassSet/xmlRecordClass/xmlAttribute");
-        digester.addSetNext(
-                "wdkModel/xmlRecordClassSet/xmlRecordClass/xmlAttribute",
-                "addAttributeField");
+                XmlAttributeField.class, "addAttributeField");
 
         // load XmlTableField
-        digester.addObjectCreate(
+        configureNode(digester,
                 "wdkModel/xmlRecordClassSet/xmlRecordClass/xmlTable",
-                XmlTableField.class);
-        digester.addSetProperties("wdkModel/xmlRecordClassSet/xmlRecordClass/xmlTable");
+                XmlTableField.class, "addTableField");
 
         // load XmlAttributeField within table
-        digester.addObjectCreate(
+        configureNode(
+                digester,
                 "wdkModel/xmlRecordClassSet/xmlRecordClass/xmlTable/xmlAttribute",
-                XmlAttributeField.class);
-        digester.addSetProperties("wdkModel/xmlRecordClassSet/xmlRecordClass/xmlTable/xmlAttribute");
-        digester.addSetNext(
-                "wdkModel/xmlRecordClassSet/xmlRecordClass/xmlTable/xmlAttribute",
-                "addAttributeField");
+                XmlAttributeField.class, "addAttributeField");
+    }
 
-        digester.addSetNext(
-                "wdkModel/xmlRecordClassSet/xmlRecordClass/xmlTable",
-                "addTableField");
-
-        digester.addSetNext("wdkModel/xmlRecordClassSet/xmlRecordClass",
-                "addRecordClass");
-
-        digester.addSetNext("wdkModel/xmlRecordClassSet",
-                "addXmlRecordClassSet");
-
+    private void configureGroupSet(Digester digester) {
         // load GroupSet
-        digester.addObjectCreate("wdkModel/groupSet", GroupSet.class);
-        digester.addSetProperties("wdkModel/groupSet");
+        configureNode(digester, "wdkModel/groupSet", GroupSet.class,
+                "addGroupSet");
 
-        // load XmlQuestion
+        // load group
         configureNode(digester, "wdkModel/groupSet/group", Group.class,
                 "addGroup");
-        digester.addBeanPropertySetter("wdkModel/groupSet/group/description");
 
-        digester.addSetNext("wdkModel/groupSet", "addGroupSet");
+        configureNode(digester, "wdkModel/groupSet/group/description",
+                WdkModelText.class, "addDescription");
+        digester.addCallMethod("wdkModel/groupSet/group/description",
+                "setText", 0);
+    }
 
-        return digester;
+    private void configureLinkTextFields(Digester digester, String prefix) {
+        // link attribute
+        configureNode(digester, prefix + "linkAttribute",
+                LinkAttributeField.class, "addAttributeField");
 
+        configureNode(digester, prefix + "linkAttribute/url",
+                WdkModelText.class, "addUrl");
+        digester.addCallMethod(prefix + "linkAttribute/url", "setText", 0);
+
+        // text attribute
+        configureNode(digester, prefix + "textAttribute",
+                TextAttributeField.class, "addAttributeField");
+
+        configureNode(digester, prefix + "textAttribute/text",
+                WdkModelText.class, "addText");
+        digester.addCallMethod(prefix + "textAttribute/text", "setText", 0);
     }
 
     private void configureNode(Digester digester, String path, Class nodeClass,
@@ -734,7 +566,10 @@ public class ModelXmlParser {
         digester.addSetNext(path, method);
     }
 
-    public static void main(String[] args) throws WdkModelException {
+    public static void main(String[] args)
+            throws SAXException, IOException, ParserConfigurationException,
+            TransformerFactoryConfigurationError, TransformerException,
+            ValidationException, WdkModelException {
         String cmdName = System.getProperty("cmdName");
         String gusHome = System.getProperty(GUS_HOME);
 
@@ -764,10 +599,11 @@ public class ModelXmlParser {
         Options options = new Options();
 
         // config file
-        addOption(
-                options,
-                "model",
-                "the name of the model.  This is used to find the Model XML file ($GUS_HOME/config/model_name.xml) the Model property file ($GUS_HOME/config/model_name.prop) and the Model config file ($GUS_HOME/config/model_name-config.xml)");
+        addOption(options, "model", "the name of the model.  This is used to "
+                + "find the Model XML file ($GUS_HOME/lib/wdk/model_name.xml) "
+                + "the Model property file ($GUS_HOME/config/model_name.prop) "
+                + "and the Model config file "
+                + "($GUS_HOME/config/model_name-config.xml)");
 
         return options;
     }
@@ -806,5 +642,4 @@ public class ModelXmlParser {
         formatter.printHelp(75, cmdlineSyntax, header, options, footer);
         System.exit(1);
     }
-
 }

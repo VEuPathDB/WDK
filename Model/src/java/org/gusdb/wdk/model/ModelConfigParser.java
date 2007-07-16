@@ -1,60 +1,42 @@
 package org.gusdb.wdk.model;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+
+import javax.xml.bind.ValidationException;
 
 import org.apache.commons.digester.Digester;
 import org.xml.sax.SAXException;
 
-public class ModelConfigParser {
-    
-    public static ModelConfig parseXmlFile( File modelConfigXmlFile )
-            throws WdkModelException {
-        Digester digester = configureDigester();
-        try {
-            return ( ModelConfig ) digester.parse( modelConfigXmlFile );
-        } catch ( IOException ex ) {
-            throw new WdkModelException( ex );
-        } catch ( SAXException ex ) {
-            throw new WdkModelException( ex );
-        }
+public class ModelConfigParser extends XmlParser {
+
+    //private static final Logger logger = Logger.getLogger(ModelConfigParser.class);
+
+    public ModelConfigParser(String gusHome) throws SAXException, IOException {
+        super(gusHome, "lib/rng/wdkModel-config.rng");
     }
-    
-    public static ModelConfig parseXmlFile( URL modelConfigXmlURL )
-            throws WdkModelException {
-        Digester digester = configureDigester();
-        try {
-            return ( ModelConfig ) digester.parse( modelConfigXmlURL.openStream() );
-        } catch ( IOException ex ) {
-            throw new WdkModelException( ex );
-        } catch ( SAXException ex ) {
-            throw new WdkModelException( ex );
-        }
+
+    public ModelConfig parseConfig(String modelName)
+            throws SAXException, IOException, ValidationException {
+        // validate the configuration file
+        URL configURL = makeURL(gusHome, "config/" + modelName + "-config.xml");
+        if (!validate(configURL))
+            throw new ValidationException("Relax-NG validation failed on "
+                    + configURL.toExternalForm());
+
+        return (ModelConfig) digester.parse(configURL.openStream());
     }
-    
-    static Digester configureDigester() {
-        
+
+    protected Digester configureDigester() {
+
         Digester digester = new Digester();
-        digester.setValidating( false );
-        
-        digester.addObjectCreate( "modelConfig", ModelConfig.class );
-        digester.addSetProperties( "modelConfig" );
-        digester.addBeanPropertySetter( "modelConfig/emailSubject" );
-        digester.addBeanPropertySetter( "modelConfig/emailContent" );
-        
+        digester.setValidating(false);
+
+        digester.addObjectCreate("modelConfig", ModelConfig.class);
+        digester.addSetProperties("modelConfig");
+        digester.addBeanPropertySetter("modelConfig/emailSubject");
+        digester.addBeanPropertySetter("modelConfig/emailContent");
+
         return digester;
-    }
-    
-    public static void main( String[ ] args ) {
-        try {
-            File modelConfigXmlFile = new File( args[ 0 ] );
-            ModelConfig modelConfig = parseXmlFile( modelConfigXmlFile );
-            
-            System.out.println( modelConfig.toString() );
-            
-        } catch ( Exception exc ) {
-            exc.printStackTrace();
-        }
     }
 }
