@@ -7,7 +7,6 @@ import java.net.URL;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
-import javax.xml.bind.ValidationException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
@@ -93,8 +92,6 @@ public class ApplicationInitListener implements ServletContextListener {
         } catch (SAXException ex) {
             throw new WdkModelException(ex);
         } catch (IOException ex) {
-            throw new WdkModelException(ex);
-        } catch (ValidationException ex) {
             throw new WdkModelException(ex);
         } catch (ParserConfigurationException ex) {
             throw new WdkModelException(ex);

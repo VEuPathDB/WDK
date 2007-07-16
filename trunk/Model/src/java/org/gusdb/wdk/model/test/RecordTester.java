@@ -2,7 +2,6 @@ package org.gusdb.wdk.model.test;
 
 import java.io.IOException;
 
-import javax.xml.bind.ValidationException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
@@ -85,8 +84,6 @@ public class RecordTester {
         } catch (SAXException ex) {
             throw new WdkModelException(ex);
         } catch (IOException ex) {
-            throw new WdkModelException(ex);
-        } catch (ValidationException ex) {
             throw new WdkModelException(ex);
         } catch (ParserConfigurationException ex) {
             throw new WdkModelException(ex);
