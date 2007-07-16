@@ -1,19 +1,11 @@
 package org.gusdb.wdk.model;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 
 public class FlatVocabParam extends AbstractEnumParam {
 
     protected Query query;
     protected String queryTwoPartName;
-
-    private List<ParamConfiguration> useTermOnlies;
-
-    public FlatVocabParam() {
-        useTermOnlies = new ArrayList<ParamConfiguration>();
-    }
 
     // ///////////////////////////////////////////////////////////////////
     // /////////// Public properties ////////////////////////////////////
@@ -26,10 +18,6 @@ public class FlatVocabParam extends AbstractEnumParam {
 
     public Query getQuery() {
         return query;
-    }
-
-    public void addUseTermOnly(ParamConfiguration paramConfig) {
-        this.useTermOnlies.add(paramConfig);
     }
 
     // ///////////////////////////////////////////////////////////////////
@@ -73,28 +61,5 @@ public class FlatVocabParam extends AbstractEnumParam {
         param.query = query;
         param.queryTwoPartName = queryTwoPartName;
         return param;
-    }
-
-    /**
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.Param#excludeResources(java.lang.String)
-     */
-    @Override
-    public void excludeResources(String projectId) {
-        super.excludeResources(projectId);
-
-        // exclude userTermOnly
-        boolean hasUseTermOnly = false;
-        for (ParamConfiguration paramConfig : useTermOnlies) {
-            if (paramConfig.include(projectId)) {
-                this.useTermOnly = paramConfig.isValue();
-                hasUseTermOnly = true;
-                break;
-            }
-        }
-        // if no useTermOnly setting, use parent's
-        if (!hasUseTermOnly) useTermOnly = paramSet.isUseTermOnly();
-        useTermOnlies = null;
     }
 }

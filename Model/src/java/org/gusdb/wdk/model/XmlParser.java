@@ -27,7 +27,7 @@ import com.thaiopensource.xml.sax.ErrorHandlerImpl;
 
 /**
  * @author Jerric
- *
+ * 
  */
 public abstract class XmlParser {
 
@@ -38,7 +38,8 @@ public abstract class XmlParser {
     protected ValidationDriver validator;
     protected Digester digester;
 
-    public XmlParser(String gusHome, String schemaPath) throws SAXException, IOException {
+    public XmlParser(String gusHome, String schemaPath)
+            throws SAXException, IOException {
         this.gusHome = gusHome;
 
         // get model schema file and xml schema file
@@ -80,7 +81,7 @@ public abstract class XmlParser {
 
     protected boolean validate(URL modelXmlURL)
             throws SAXException, IOException {
-        // System.err.println("modelXMLURL is "+modelXmlURL);
+        System.out.println("Validating model " + modelXmlURL);
         InputSource is = ValidationDriver.uriOrFileInputSource(modelXmlURL.toExternalForm());
         return validator.validate(is);
     }

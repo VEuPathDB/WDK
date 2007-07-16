@@ -22,7 +22,7 @@ public class PrimaryKeyValue {
         // resolve project name
         this.projectName = null;
         if (projectId != null) {
-            FlatVocabParam projectParam = field.getProjectParam();
+            AbstractEnumParam projectParam = field.getProjectParam();
             String[] keys = projectParam.getVocab();
             for (int i = 0; i < keys.length; i++) {
                 String value = (String) projectParam.getInternalValue(keys[i]);

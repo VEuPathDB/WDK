@@ -153,34 +153,31 @@
 		    	<attribute name="multiPick" />
 		  	</optional>
 		  	<zeroOrMore>
-			    <element name="suggest">
-			    	<ref name="SuggestContent" />
-			    </element>
+		  	    <choice>
+			        <element name="suggest">
+			    	    <ref name="SuggestContent" />
+			        </element>
+		    	    <ref name="useTermOnly" />
+		    	</choice>
 		  	</zeroOrMore>
-		  	<oneOrMore>
-			    <element name="enumList">
-			    	<ref name="IncludeExclude" />
-			    	<oneOrMore>
-			    		<choice>
-				    		<ref name="useTermOnly" />
-				    		<element name="enumValue">
-		    					<ref name="IncludeExclude" />
-						        <optional>
-						          	<element name="display">
-						          	    <text />
-						          	</element>
-						        </optional>
-					          	<element name="term">
-					          	    <text />
-					          	</element>
-					          	<element name="internal">
-					          	    <text />
-					          	</element>
-				    		</element>
-			    		</choice>
-			    	</oneOrMore>
-			    </element>
-		  	</oneOrMore>
+	    	<oneOrMore>
+	    		<choice>
+		    		<element name="enumValue">
+    					<ref name="IncludeExclude" />
+				        <optional>
+				          	<element name="display">
+				          	    <text />
+				          	</element>
+				        </optional>
+			          	<element name="term">
+			          	    <text />
+			          	</element>
+			          	<element name="internal">
+			          	    <text />
+			          	</element>
+		    		</element>
+	    		</choice>
+	    	</oneOrMore>
 		</element>
 	</define>
     
@@ -527,10 +524,14 @@
                  <text />
              </element>
              
-             <element name="attributeList">
+             <element name="attributesList">
                 <ref name="IncludeExclude" />
-                <attribute name="summary" />
-                <attribute name="sorting" />
+                <optional>
+                    <attribute name="summary" />
+                </optional>
+                <optional>
+                    <attribute name="sorting" />
+                </optional>
              </element>
              
              <element name="dynamicAttributes">
