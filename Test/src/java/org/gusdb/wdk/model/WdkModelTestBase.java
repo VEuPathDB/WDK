@@ -5,7 +5,6 @@ package org.gusdb.wdk.model;
 
 import java.io.IOException;
 
-import javax.xml.bind.ValidationException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
@@ -15,7 +14,7 @@ import org.xml.sax.SAXException;
 
 /**
  * @author Jerric
- *
+ * 
  */
 public abstract class WdkModelTestBase {
 
@@ -28,19 +27,19 @@ public abstract class WdkModelTestBase {
 
     /**
      * load the model
+     * 
      * @throws WdkModelException
-     * @throws SAXException 
-     * @throws IOException 
-     * @throws TransformerException 
-     * @throws TransformerFactoryConfigurationError 
-     * @throws ParserConfigurationException 
-     * @throws ValidationException 
+     * @throws SAXException
+     * @throws IOException
+     * @throws TransformerException
+     * @throws TransformerFactoryConfigurationError
+     * @throws ParserConfigurationException
      */
     @org.junit.BeforeClass
     public static void initializeModel()
-            throws WdkModelException, ValidationException,
-            ParserConfigurationException, TransformerFactoryConfigurationError,
-            TransformerException, IOException, SAXException {
+            throws WdkModelException, ParserConfigurationException,
+            TransformerFactoryConfigurationError, TransformerException,
+            IOException, SAXException {
         // get input from the system environment
         String modelName = System.getProperty(ModelXmlParser.MODEL_NAME);
         String gusHome = System.getProperty(ModelXmlParser.GUS_HOME);

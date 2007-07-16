@@ -5,15 +5,13 @@ package org.gusdb.wdk.model;
 
 import java.io.IOException;
 
-import javax.xml.bind.ValidationException;
-
 import org.gusdb.wdk.model.implementation.ModelXmlParser;
 import org.junit.Assert;
 import org.xml.sax.SAXException;
 
 /**
  * @author Jerric
- *
+ * 
  */
 public class ModelConfigParserTest {
 
@@ -22,6 +20,7 @@ public class ModelConfigParserTest {
 
     /**
      * get and validate the input
+     * 
      * @throws WdkModelException
      */
     @org.junit.Before
@@ -42,14 +41,14 @@ public class ModelConfigParserTest {
 
     /**
      * test parsing a valid config file
-     * @throws IOException 
-     * @throws SAXException 
-     * @throws ValidationException 
-     * @throws WdkModelException 
+     * 
+     * @throws IOException
+     * @throws SAXException
+     * @throws WdkModelException
      */
     @org.junit.Test
     public void testParseConfig()
-            throws ValidationException, SAXException, IOException {
+            throws SAXException, IOException, WdkModelException {
         ModelConfigParser parser = new ModelConfigParser(gusHome);
         ModelConfig config = parser.parseConfig(modelName);
         Assert.assertNotNull(config);
@@ -57,14 +56,14 @@ public class ModelConfigParserTest {
 
     /**
      * parse an invalid configuration file
-     * @throws IOException 
-     * @throws SAXException 
-     * @throws ValidationException 
-     * @throws WdkModelException 
+     * 
+     * @throws IOException
+     * @throws SAXException
+     * @throws WdkModelException
      */
-    @org.junit.Test(expected = ValidationException.class)
+    @org.junit.Test(expected = WdkModelException.class)
     public void testParseInvalidConfig()
-            throws ValidationException, SAXException, IOException {
+            throws SAXException, IOException, WdkModelException {
         String modelName = "sampleModel_bad_config_syntax";
         ModelConfigParser parser = new ModelConfigParser(gusHome);
         parser.parseConfig(modelName);

@@ -11,7 +11,6 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.xml.bind.ValidationException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
@@ -24,7 +23,16 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.*;
+import org.gusdb.wdk.model.DatasetParam;
+import org.gusdb.wdk.model.FlatVocabParam;
+import org.gusdb.wdk.model.HistoryParam;
+import org.gusdb.wdk.model.Param;
+import org.gusdb.wdk.model.Question;
+import org.gusdb.wdk.model.QuestionSet;
+import org.gusdb.wdk.model.RecordClass;
+import org.gusdb.wdk.model.RecordClassSet;
+import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.implementation.ModelXmlParser;
 import org.gusdb.wdk.model.test.SanityModel;
 import org.gusdb.wdk.model.test.SanityQuestion;
@@ -350,8 +358,6 @@ public class StressTemplater {
         } catch (SAXException ex) {
             throw new WdkModelException(ex);
         } catch (IOException ex) {
-            throw new WdkModelException(ex);
-        } catch (ValidationException ex) {
             throw new WdkModelException(ex);
         } catch (ParserConfigurationException ex) {
             throw new WdkModelException(ex);

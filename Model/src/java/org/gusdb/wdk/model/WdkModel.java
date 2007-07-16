@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
-import javax.xml.bind.ValidationException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
@@ -117,8 +116,6 @@ public class WdkModel {
         } catch (SAXException ex) {
             throw new WdkModelException(ex);
         } catch (IOException ex) {
-            throw new WdkModelException(ex);
-        } catch (ValidationException ex) {
             throw new WdkModelException(ex);
         } catch (ParserConfigurationException ex) {
             throw new WdkModelException(ex);
@@ -474,8 +471,6 @@ public class WdkModel {
             throw new WdkModelException(ex);
         } catch (IOException ex) {
             throw new WdkModelException(ex);
-        } catch (ValidationException ex) {
-            throw new WdkModelException(ex);
         }
     }
 
@@ -636,7 +631,7 @@ public class WdkModel {
             if (recordClassSet.include(projectId)) {
                 recordClassSet.excludeResources(projectId);
                 addSet(recordClassSet, recordClassSets);
-            } 
+            }
         }
         recordClassSetList = null;
 
@@ -645,25 +640,25 @@ public class WdkModel {
             if (groupSet.include(projectId)) {
                 groupSet.excludeResources(projectId);
                 addSet(groupSet, groupSets);
-            } 
+            }
         }
         groupSetList = null;
-        
+
         // remove xml question sets
         for (XmlQuestionSet xmlQSet : xmlQuestionSetList) {
             if (xmlQSet.include(projectId)) {
                 xmlQSet.excludeResources(projectId);
                 addSet(xmlQSet, xmlQuestionSets);
-            } 
+            }
         }
         xmlQuestionSetList = null;
-        
+
         // remove xml record class sets
         for (XmlRecordClassSet xmlRSet : xmlRecordClassSetList) {
             if (xmlRSet.include(projectId)) {
                 xmlRSet.excludeResources(projectId);
                 addSet(xmlRSet, xmlRecordClassSets);
-            } 
+            }
         }
         xmlRecordClassSetList = null;
     }
