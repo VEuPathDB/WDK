@@ -1,6 +1,8 @@
 package org.gusdb.wdk.model;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 public abstract class AbstractEnumParam extends Param {
@@ -9,11 +11,8 @@ public abstract class AbstractEnumParam extends Param {
     protected Map<String, String> vocabMap;
     protected boolean quoteInternalValue;
 
-    protected boolean useTermOnly;
-
-    public AbstractEnumParam() {
-        useTermOnly = false;
-    }
+    private List<ParamConfiguration> useTermOnlies = new ArrayList<ParamConfiguration>();
+    protected boolean useTermOnly = false;
 
     // ///////////////////////////////////////////////////////////////////
     // /////////// Public properties ////////////////////////////////////
@@ -33,6 +32,10 @@ public abstract class AbstractEnumParam extends Param {
 
     public Boolean getQuoteInternalValue() {
         return new Boolean(quoteInternalValue);
+    }
+
+    public void addUseTermOnly(ParamConfiguration paramConfig) {
+        this.useTermOnlies.add(paramConfig);
     }
 
     public String validateValue(Object value) throws WdkModelException {
@@ -199,5 +202,28 @@ public abstract class AbstractEnumParam extends Param {
         }
         param.quoteInternalValue = quoteInternalValue;
         param.useTermOnly = useTermOnly;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.Param#excludeResources(java.lang.String)
+     */
+    @Override
+    public void excludeResources(String projectId) {
+        super.excludeResources(projectId);
+
+        // exclude userTermOnly
+        boolean hasUseTermOnly = false;
+        for (ParamConfiguration paramConfig : useTermOnlies) {
+            if (paramConfig.include(projectId)) {
+                this.useTermOnly = paramConfig.isValue();
+                hasUseTermOnly = true;
+                break;
+            }
+        }
+        // if no useTermOnly setting, use parent's
+        if (!hasUseTermOnly) useTermOnly = paramSet.isUseTermOnly();
+        useTermOnlies = null;
     }
 }

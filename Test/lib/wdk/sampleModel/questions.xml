@@ -41,13 +41,13 @@
                   recordClassRef="SampleRecords.SampleRecord"
                   includeProjects="SampleDB, ToyDB">
                   
-            <attributeList summary="query_name, start_time"
-                           sorting="start_time desc"
-                           includeProjects="SampleDB"/>
+            <attributesList summary="query_name, start_time"
+                            sorting="start_time desc"
+                            includeProjects="SampleDB"/>
                            
-            <attributeList summary="query_name, start_time"
-                           sorting="start_time desc"
-                           includeProjects="ToyDB"/>
+            <attributesList summary="query_name, start_time"
+                            sorting="start_time desc"
+                            includeProjects="ToyDB"/>
     
             <dynamicAttributes includeProjects="SampleDB,ToyDB">
             

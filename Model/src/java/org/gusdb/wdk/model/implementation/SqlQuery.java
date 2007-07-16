@@ -133,7 +133,7 @@ public class SqlQuery extends Query implements Serializable {
     @Override
     public void excludeResources(String projectId) throws WdkModelException {
         super.excludeResources(projectId);
-        
+
         // exclude sql
         for (WdkModelText sql : sqls) {
             if (sql.include(projectId)) {
@@ -142,5 +142,9 @@ public class SqlQuery extends Query implements Serializable {
             }
         }
         sqls = null;
+        // check if the sql is assigned
+        if (sql == null)
+            throw new WdkModelException(
+                    "The required SQL is missing for project " + projectId);
     }
 }
