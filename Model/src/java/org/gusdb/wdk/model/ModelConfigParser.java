@@ -3,8 +3,6 @@ package org.gusdb.wdk.model;
 import java.io.IOException;
 import java.net.URL;
 
-import javax.xml.bind.ValidationException;
-
 import org.apache.commons.digester.Digester;
 import org.xml.sax.SAXException;
 
@@ -17,11 +15,11 @@ public class ModelConfigParser extends XmlParser {
     }
 
     public ModelConfig parseConfig(String modelName)
-            throws SAXException, IOException, ValidationException {
+            throws SAXException, IOException, WdkModelException  {
         // validate the configuration file
         URL configURL = makeURL(gusHome, "config/" + modelName + "-config.xml");
         if (!validate(configURL))
-            throw new ValidationException("Relax-NG validation failed on "
+            throw new WdkModelException("Relax-NG validation failed on "
                     + configURL.toExternalForm());
 
         return (ModelConfig) digester.parse(configURL.openStream());

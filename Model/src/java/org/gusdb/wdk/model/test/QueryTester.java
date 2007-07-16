@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import javax.xml.bind.ValidationException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
@@ -197,8 +196,6 @@ public class QueryTester {
         } catch (SAXException ex) {
             throw new WdkModelException(ex);
         } catch (IOException ex) {
-            throw new WdkModelException(ex);
-        } catch (ValidationException ex) {
             throw new WdkModelException(ex);
         } catch (ParserConfigurationException ex) {
             throw new WdkModelException(ex);

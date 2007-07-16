@@ -11,7 +11,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.xml.bind.ValidationException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -99,14 +98,14 @@ public class ModelXmlParser extends XmlParser {
     public WdkModel parseModel(String modelName)
             throws ParserConfigurationException,
             TransformerFactoryConfigurationError, TransformerException,
-            IOException, SAXException, ValidationException, WdkModelException {
+            IOException, SAXException, WdkModelException {
         // construct urls to model file, prop file, and config file
         URL modelURL = makeURL(gusHome, "lib/wdk/" + modelName + ".xml");
         URL modelPropURL = makeURL(gusHome, "config/" + modelName + ".prop");
 
         // validate the master model file
         if (!validate(modelURL))
-            throw new ValidationException("Master model validation failed.");
+            throw new WdkModelException("Master model validation failed.");
 
         // replace any <import> tag with content from sub-models in the
         // master model, and build the master document
@@ -129,7 +128,7 @@ public class ModelXmlParser extends XmlParser {
 
     private Document buildMasterDocument(URL wdkModelURL)
             throws SAXException, IOException, ParserConfigurationException,
-            ValidationException {
+            WdkModelException {
         // get the xml document of the model
         Document masterDoc = buildDocument(wdkModelURL);
         Node rootNode = masterDoc.getElementsByTagName("wdkModel").item(0);
@@ -144,7 +143,7 @@ public class ModelXmlParser extends XmlParser {
 
             // validate the sub-model
             if (!validate(importURL))
-                throw new ValidationException("sub model "
+                throw new WdkModelException("sub model "
                         + importURL.toExternalForm() + " validation failed.");
 
             logger.debug("Importing: " + importURL.toExternalForm());
@@ -569,7 +568,7 @@ public class ModelXmlParser extends XmlParser {
     public static void main(String[] args)
             throws SAXException, IOException, ParserConfigurationException,
             TransformerFactoryConfigurationError, TransformerException,
-            ValidationException, WdkModelException {
+            WdkModelException {
         String cmdName = System.getProperty("cmdName");
         String gusHome = System.getProperty(GUS_HOME);
 
