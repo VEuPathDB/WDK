@@ -57,32 +57,23 @@
             <suggest allowEmpty="true" includeProjects="toyDB"/>
             <suggest allowEmpty="true" excludeProjects="toyDB"/>
  
-        	<enumList excludeProjects="ToyDB">
-          		<useTermOnly value="false" includeProjects="SampleDB"/>
-          		<useTermOnly value="true" excludeProjects="SampleDB"/>
-                <enumValue>
-                    <display>True Value</display>
-                    <term>True</term>
-                    <internal>true</internal>
-                </enumValue>
-                <enumValue>
-                    <display>False Value</display>
-                    <term>False</term>
-                    <internal>false</internal>
-                </enumValue>
-                <enumValue includeProjects="ToyDB">
-                    <display>Unknown Value</display>
-                    <term>Unknown</term>
-                    <internal>unknown</internal>
-                </enumValue>
-        	</enumList>
-        	<enumList includeProjects="ToyDB">
-                <enumValue>
-                    <display>Unknown Value</display>
-                    <term>Unknown</term>
-                    <internal>unknown</internal>
-                </enumValue>
-        	</enumList>
+      		<useTermOnly value="false" includeProjects="SampleDB"/>
+      		<useTermOnly value="true" excludeProjects="SampleDB"/>
+            <enumValue>
+                <display>True Value</display>
+                <term>True</term>
+                <internal>true</internal>
+            </enumValue>
+            <enumValue>
+                <display>False Value</display>
+                <term>False</term>
+                <internal>false</internal>
+            </enumValue>
+            <enumValue includeProjects="ToyDB">
+                <display>Unknown Value</display>
+                <term>Unknown</term>
+                <internal>unknown</internal>
+            </enumValue>
       	</enumParam>
 
 	    <flatVocabParam name="flatVocabParam"

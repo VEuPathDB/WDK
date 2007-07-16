@@ -6,26 +6,20 @@ import java.util.List;
 
 public class EnumParam extends AbstractEnumParam {
 
-    private List<EnumItemList> itemLists;
-    private EnumItemList itemList;
-
-    public EnumParam() {
-        itemLists = new ArrayList<EnumItemList>();
-    }
+    private List<EnumItem> enumItems = new ArrayList<EnumItem>();
 
     // ///////////////////////////////////////////////////////////////////
     // /////////// Public properties ////////////////////////////////////
     // ///////////////////////////////////////////////////////////////////
 
-    public void addItemList(EnumItemList itemList) {
-        this.itemLists.add(itemList);
+    public void addEnumItem(EnumItem enumItem) {
+        this.enumItems.add(enumItem);
     }
-    
+
     public String[] getDisplay() {
-        EnumItem[] items = itemList.getEnumItems();
-        String[] displays = new String[items.length];
-        for (int i = 0; i < items.length;i++) {
-            displays[i] = items[i].getDisplay();
+        String[] displays = new String[enumItems.size()];
+        for (int i = 0; i < displays.length; i++) {
+            displays[i] = enumItems.get(i).getDisplay();
         }
         return displays;
     }
@@ -37,8 +31,7 @@ public class EnumParam extends AbstractEnumParam {
     protected void initVocabMap() throws WdkModelException {
         if (vocabMap == null) {
             vocabMap = new LinkedHashMap<String, String>();
-            EnumItem[] items = itemList.getEnumItems();
-            for (EnumItem item : items) {
+            for (EnumItem item : enumItems) {
                 vocabMap.put(item.getTerm(), item.getInternal());
             }
         }
@@ -53,7 +46,7 @@ public class EnumParam extends AbstractEnumParam {
     public Param clone() {
         EnumParam param = new EnumParam();
         super.clone(param);
-        param.itemList = new EnumItemList(this.itemList);
+        param.enumItems = new ArrayList<EnumItem>(enumItems);
         return param;
     }
 
@@ -66,17 +59,14 @@ public class EnumParam extends AbstractEnumParam {
     public void excludeResources(String projectId) {
         super.excludeResources(projectId);
 
-        // exclude enum item list
-        for (EnumItemList list : itemLists) {
-            if (list.include(projectId)) {
-                // set param set, since the list might the default value from it
-                list.setParamSet(paramSet);
-                list.excludeResources(projectId);
-                useTermOnly = list.isUseTermOnly();
-                this.itemList = list;
-                break;
+        // exclude enum items
+        List<EnumItem> newItems = new ArrayList<EnumItem>();
+        for (EnumItem item : enumItems) {
+            if (item.include(projectId)) {
+                item.excludeResources(projectId);
+                newItems.add(item);
             }
         }
-        itemLists = null;
+        enumItems = newItems;
     }
 }

@@ -266,7 +266,7 @@ public class RecordClass extends WdkModelBase {
         nestedRecordQuestions.values().toArray(returnedNq);
         return returnedNq;
     }
-    
+
     public Question[] getNestedRecordListQuestions() {
         if (nestedRecordListQuestions == null) {
             initNestedRecords();
@@ -393,10 +393,10 @@ public class RecordClass extends WdkModelBase {
     void resolveReferences(WdkModel model) throws WdkModelException {
         // Added by Jerric
         // resolve projectParam
-        FlatVocabParam projectParam = null;
+        AbstractEnumParam projectParam = null;
         if (projectParamRef != null) {
-            projectParam = (FlatVocabParam) model.resolveReference(projectParamRef.getTwoPartName());
-            projectParam = (FlatVocabParam) projectParam.clone();
+            projectParam = (AbstractEnumParam) model.resolveReference(projectParamRef.getTwoPartName());
+            projectParam = (AbstractEnumParam) projectParam.clone();
             projectParam.setDefault(projectParamRef.getDefault());
         }
 

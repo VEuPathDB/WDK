@@ -1,10 +1,10 @@
 package org.gusdb.wdk.model;
 
-public class PrimaryKeyField extends AttributeField{
+public class PrimaryKeyField extends AttributeField {
 
     private String idPrefix;
     private String delimiter;
-    private FlatVocabParam projectParam;
+    private AbstractEnumParam projectParam;
 
     /**
      * Modified by Jerric
@@ -12,10 +12,11 @@ public class PrimaryKeyField extends AttributeField{
      * @param name
      * @param displayName
      * @param help
-     * @param projectParam this is a part of combined PK for federation
+     * @param projectParam
+     * this is a part of combined PK for federation
      */
     public PrimaryKeyField(String name, String displayName, String help,
-            FlatVocabParam projectParam) {
+            AbstractEnumParam projectParam) {
         super();
         this.name = name;
         this.displayName = displayName;
@@ -24,7 +25,7 @@ public class PrimaryKeyField extends AttributeField{
         this.idPrefix = "G."; // default value;
         this.delimiter = ":"; // default value;
     }
-    
+
     public boolean hasProjectParam() {
         return (projectParam != null);
     }
@@ -37,7 +38,8 @@ public class PrimaryKeyField extends AttributeField{
     }
 
     /**
-     * @param delimiter The delimiter to set.
+     * @param delimiter
+     * The delimiter to set.
      */
     public void setDelimiter(String delimiter) {
         this.delimiter = delimiter;
@@ -51,7 +53,8 @@ public class PrimaryKeyField extends AttributeField{
     }
 
     /**
-     * @param idPrefix The idPrefix to set.
+     * @param idPrefix
+     * The idPrefix to set.
      */
     public void setIdPrefix(String idPrefix) {
         this.idPrefix = idPrefix;
@@ -60,15 +63,17 @@ public class PrimaryKeyField extends AttributeField{
     /**
      * @return Returns the project.
      */
-    FlatVocabParam getProjectParam() {
+    AbstractEnumParam getProjectParam() {
         return projectParam;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
      */
     @Override
     public void excludeResources(String projectId) {
-        // do nothing
+    // do nothing
     }
 }

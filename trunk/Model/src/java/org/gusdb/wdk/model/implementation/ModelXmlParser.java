@@ -37,7 +37,6 @@ import org.gusdb.wdk.model.ColumnAttributeField;
 import org.gusdb.wdk.model.DatasetParam;
 import org.gusdb.wdk.model.DynamicAttributeSet;
 import org.gusdb.wdk.model.EnumItem;
-import org.gusdb.wdk.model.EnumItemList;
 import org.gusdb.wdk.model.EnumParam;
 import org.gusdb.wdk.model.FlatVocabParam;
 import org.gusdb.wdk.model.Group;
@@ -406,19 +405,14 @@ public class ModelXmlParser extends XmlParser {
         configureNode(digester, "wdkModel/paramSet/enumParam/suggest",
                 ParamSuggestion.class, "addSuggest");
 
-        configureNode(digester, "wdkModel/paramSet/enumParam/enumList",
-                EnumItemList.class, "addItemList");
-
-        configureNode(digester,
-                "wdkModel/paramSet/enumParam/enumList/useTermOnly",
+        configureNode(digester, "wdkModel/paramSet/enumParam/useTermOnly",
                 ParamConfiguration.class, "addUseTermOnly");
 
-        configureNode(digester,
-                "wdkModel/paramSet/enumParam/enumList/enumValue",
+        configureNode(digester, "wdkModel/paramSet/enumParam/enumValue",
                 EnumItem.class, "addEnumItem");
-        digester.addBeanPropertySetter("wdkModel/paramSet/enumParam/enumList/enumValue/display");
-        digester.addBeanPropertySetter("wdkModel/paramSet/enumParam/enumList/enumValue/term");
-        digester.addBeanPropertySetter("wdkModel/paramSet/enumParam/enumList/enumValue/internal");
+        digester.addBeanPropertySetter("wdkModel/paramSet/enumParam/enumValue/display");
+        digester.addBeanPropertySetter("wdkModel/paramSet/enumParam/enumValue/term");
+        digester.addBeanPropertySetter("wdkModel/paramSet/enumParam/enumValue/internal");
     }
 
     private void configureQuestionSet(Digester digester) {
@@ -457,7 +451,7 @@ public class ModelXmlParser extends XmlParser {
                 0);
 
         // dynamic attribute set
-        configureNode(digester, "wdkModel/questionSet/question/attributeList",
+        configureNode(digester, "wdkModel/questionSet/question/attributesList",
                 AttributeList.class, "addAttributeList");
 
         configureNode(digester,
