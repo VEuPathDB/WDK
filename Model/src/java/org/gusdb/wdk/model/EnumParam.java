@@ -52,11 +52,32 @@ public class EnumParam extends AbstractEnumParam {
 
     /*
      * (non-Javadoc)
+     * the default is always the terms
+     * @see org.gusdb.wdk.model.AbstractEnumParam#getDefault()
+     */
+    @Override
+    public String getDefault() throws WdkModelException {
+        StringBuffer sb = new StringBuffer();
+        for (EnumItem item : enumItems) {
+            if (item.isDefault()) {
+                if (sb.length() > 0) sb.append(",");
+                sb.append(item.getTerm());
+            }
+        }
+        if (sb.length() == 0) {
+            // get the first item as the default
+            EnumItem item = enumItems.get(0);
+            return item.getTerm();
+        } else return sb.toString();
+    }
+
+    /*
+     * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.Param#excludeResources(java.lang.String)
      */
     @Override
-    public void excludeResources(String projectId) {
+    public void excludeResources(String projectId) throws WdkModelException {
         super.excludeResources(projectId);
 
         // exclude enum items
@@ -68,5 +89,9 @@ public class EnumParam extends AbstractEnumParam {
             }
         }
         enumItems = newItems;
+        if (enumItems.size() == 0)
+            throw new WdkModelException(
+                    "None of the enum values is available in enumParam "
+                            + this.name);
     }
 }
