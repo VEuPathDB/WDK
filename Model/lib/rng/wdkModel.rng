@@ -101,9 +101,6 @@
 		  	<optional>
 		    	<attribute name="length" />
 		  	</optional>
-		  	<optional>
-		    	<attribute name="substitute" />
-		  	</optional> 
 		  	<zeroOrMore>
 			    <element name="suggest">
 			        <ref name="SuggestContent" />
@@ -121,11 +118,11 @@
   	<define name="historyParam">
     	<element name="historyParam">
       		<ref name="ParamBaseContents" />
-      		<oneOrMore>
+      		<zeroOrMore>
         		<element name="suggest">
             		<ref name="SuggestContent" />
         		</element>
-      		</oneOrMore>
+      		</zeroOrMore>
     	</element>
   	</define>
     
@@ -164,6 +161,9 @@
 	    		<choice>
 		    		<element name="enumValue">
     					<ref name="IncludeExclude" />
+    					<optional>
+				            <attribute name="default" />
+				        </optional>
 				        <optional>
 				          	<element name="display">
 				          	    <text />

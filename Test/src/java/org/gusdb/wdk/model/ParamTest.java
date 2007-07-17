@@ -119,6 +119,9 @@ public class ParamTest extends WdkModelTestBase {
 
         // terms and internals are equal, since the useTermOnly is true
         Assert.assertArrayEquals(terms, internals);
+        
+        // get the default value
+        Assert.assertEquals("Optional 1,Optional 3", param.getDefault());
     }
 
     /**
@@ -150,5 +153,8 @@ public class ParamTest extends WdkModelTestBase {
         for (String display : displays) {
             Assert.assertNotNull(display);
         }
+        
+        // verify the default value
+        Assert.assertEquals("False", param.getDefault());
     }
 }

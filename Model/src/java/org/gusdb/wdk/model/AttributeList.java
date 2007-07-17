@@ -8,6 +8,7 @@ import java.util.Map;
 
 /**
  * This class represents the <attributeList> tag in <question>
+ * 
  * @author Jerric
  *
  */
@@ -32,10 +33,13 @@ public class AttributeList extends WdkModelBase {
         this.summaryAttributeNames = summaryList.split(",\\s*");
     }
 
-    public void setSorting(String sortList) {
+    public void setSorting(String sortList) throws WdkModelException {
         String[] attrCombines = sortList.split(",");
         for (String attrCombine : attrCombines) {
             String[] sorts = attrCombine.trim().split("\\s+");
+            if (sorts.length != 2)
+                throw new WdkModelException("The sorting format is wrong: "
+                        + sortList);
             String attrName = sorts[0].trim();
             String strAscend = sorts[1].trim().toLowerCase();
             boolean ascending = strAscend.equals("asc");
@@ -58,7 +62,9 @@ public class AttributeList extends WdkModelBase {
         return this.summaryAttributeNames;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
      */
     @Override
