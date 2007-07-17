@@ -64,7 +64,7 @@
                 <term>True</term>
                 <internal>true</internal>
             </enumValue>
-            <enumValue>
+            <enumValue default="true">
                 <display>False Value</display>
                 <term>False</term>
                 <internal>false</internal>
@@ -88,7 +88,7 @@
 	        </help>
 
 	        <suggest default="one,seven,nine" includeProjects="ToyDB"/>
-	        <suggest default="one,seven,nine" excludeProjects="ToyDB"/>
+	        <suggest default="Optional 1,Optional 3" excludeProjects="ToyDB"/>
 
 	        <useTermOnly value="true" includeProjects="ToyDB" />
 	        <useTermOnly value="true" excludeProjects="ToyDB" />

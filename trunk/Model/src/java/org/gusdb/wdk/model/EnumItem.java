@@ -5,12 +5,14 @@ public class EnumItem extends WdkModelBase {
     private String display;
     private String term;
     private String internal;
-    private boolean isDefault;
+    private boolean isDefault = false;
 
-    public EnumItem() {
-        isDefault = false;
-    }
-
+    
+    /**
+     * default constructor called by digester
+     */
+    public EnumItem() {}
+    
     /**
      * Copy constructor
      * 

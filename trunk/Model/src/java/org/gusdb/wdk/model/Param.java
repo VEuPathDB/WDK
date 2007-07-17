@@ -222,7 +222,7 @@ public abstract class Param extends WdkModelBase {
      * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
      */
     @Override
-    public void excludeResources(String projectId) {
+    public void excludeResources(String projectId) throws WdkModelException {
         // exclude helps
         for (WdkModelText help : helps) {
             if (help.include(projectId)) {

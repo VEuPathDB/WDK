@@ -210,7 +210,7 @@ public abstract class AbstractEnumParam extends Param {
      * @see org.gusdb.wdk.model.Param#excludeResources(java.lang.String)
      */
     @Override
-    public void excludeResources(String projectId) {
+    public void excludeResources(String projectId) throws WdkModelException {
         super.excludeResources(projectId);
 
         // exclude userTermOnly
