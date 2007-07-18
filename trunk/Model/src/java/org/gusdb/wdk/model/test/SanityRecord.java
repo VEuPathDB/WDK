@@ -1,102 +1,115 @@
 package org.gusdb.wdk.model.test;
 
+import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 
 /**
  * SanityRecord.java
- *
- * Object used in running a sanity test; represents a record in a wdk model.  
- *
+ * 
+ * Object used in running a sanity test; represents a record in a wdk model.
+ * 
  * Created: Mon August 23 12:00:00 2004 EDT
- *
+ * 
  * @author David Barkan
- * @version $Revision$ $Date$Author: sfischer $
+ * @version $Revision$ $Date: 2006-01-13 13:40:47 -0500 (Fri, 13 Jan
+ *          2006) $Author$
  */
 
-
-public class SanityRecord implements SanityElementI {
+public class SanityRecord extends WdkModelBase implements SanityElementI {
 
     // ------------------------------------------------------------------
     // Instance variables
     // ------------------------------------------------------------------
-    
+
     /**
-     * Name of the wdk record (in recordSetName.recordName format) represented by this
-     * SanityRecord.
+     * Name of the wdk record (in recordSetName.recordName format) represented
+     * by this SanityRecord.
      */
     protected String twoPartName;
-    
+
     /**
-     * Modified by Jerric
-     * Primary key of the element that this record represents.
+     * Modified by Jerric Primary key of the element that this record
+     * represents.
      */
     protected String projectID;
     protected String primaryKey;
-    //protected PrimaryKeyValue primaryKey;
+
+    // protected PrimaryKeyValue primaryKey;
 
     // ------------------------------------------------------------------
     // Constructor
     // ------------------------------------------------------------------
-    public SanityRecord(){
+    public SanityRecord() {
 
     }
 
     // ------------------------------------------------------------------
     // Public Methods
     // ------------------------------------------------------------------
-    public void setRef(String twoPartName){
-	this.twoPartName = twoPartName;
-    }
-    
-    public String getRef(){
-	return this.twoPartName;
+    public void setRef(String twoPartName) {
+        this.twoPartName = twoPartName;
     }
 
-    public void setPrimaryKey(String primaryKey){
-	this.primaryKey = primaryKey;
+    public String getRef() {
+        return this.twoPartName;
     }
-    
-    public String getPrimaryKey(){
-	return this.primaryKey;
+
+    public void setPrimaryKey(String primaryKey) {
+        this.primaryKey = primaryKey;
     }
-    
+
+    public String getPrimaryKey() {
+        return this.primaryKey;
+    }
+
     // Added by Jerric
     public void setProjectID(String projectID) {
-    	this.projectID = projectID;
-    }
-    
-    public String getProjectID() {
-    	return this.projectID;
+        this.projectID = projectID;
     }
 
-    public String toString(){
-	return "SanityRecord twoPartName = " + twoPartName + " pk = " + primaryKey;
+    public String getProjectID() {
+        return this.projectID;
+    }
+
+    public String toString() {
+        return "SanityRecord twoPartName = " + twoPartName + " pk = "
+                + primaryKey;
     }
 
     // ------------------------------------------------------------------
     // SanityElementI
     // ------------------------------------------------------------------
-    
-    public String getName(){
-	return twoPartName;
+
+    public String getName() {
+        return twoPartName;
     }
 
-    public String getType(){
-	return "record";
+    public String getType() {
+        return "record";
     }
 
-    public String getCommand(String globalArgs) throws WdkModelException{
+    public String getCommand(String globalArgs) throws WdkModelException {
 
         String projectID = getProjectID();
         String pk = getPrimaryKey();
 
-	StringBuffer command = new StringBuffer ("wdkRecord " + globalArgs);
+        StringBuffer command = new StringBuffer("wdkRecord " + globalArgs);
 
-	command.append(" -record " + getRef()  + " -primaryKey " + pk);
-	
-	if (projectID != null) command.append(" -project " + projectID);
- 
-	return command.toString();
+        command.append(" -record " + getRef() + " -primaryKey " + pk);
+
+        if (projectID != null) command.append(" -project " + projectID);
+
+        return command.toString();
+    }
+
+    /**
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
+     */
+    @Override
+    public void excludeResources(String projectId) throws WdkModelException {
+    // no nothing
     }
 
 }
