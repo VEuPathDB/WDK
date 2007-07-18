@@ -2,10 +2,9 @@ package org.gusdb.wdk.model.test;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
 
-import org.w3c.dom.Document;
-
+import org.gusdb.wdk.model.Question;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -250,5 +249,24 @@ public class SanityModel extends WdkModelBase {
             }
         }
         sanityXmlQuestions = newXmlQuestions;
+    }
+
+    void resolveReferences(WdkModel wdkModel) throws WdkModelException {
+        // create sanity queries from sanity questions
+        for (SanityQuestion sanityQuestion : sanityQuestions) {
+            String questionName = sanityQuestion.getName();
+            Question question = (Question) wdkModel.resolveReference(questionName);
+            String queryName = question.getQuery().getFullName();
+            // construct sanity query
+            SanityQuery sanityQuery = new SanityQuery();
+            sanityQuery.setRef(queryName);
+            sanityQuery.setMinOutputLength(sanityQuestion.getMinOutputLength());
+            sanityQuery.setMaxOutputLength(sanityQuestion.getMaxOutputLength());
+            SanityParam[] params = sanityQuestion.getParams();
+            for (SanityParam param : params) {
+                sanityQuery.addParam(param);
+            }
+            sanityQueries.add(sanityQuery);
+        }
     }
 }
