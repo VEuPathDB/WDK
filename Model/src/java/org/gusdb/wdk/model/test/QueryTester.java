@@ -295,11 +295,11 @@ public class QueryTester {
                 + "Run a query found in a WDK Model xml file.  If run without -params, displays the parameters for the specified query"
                 + newline + newline + "Options:";
 
-        String footer = "";
+        String footer = " ";
 
         // PrintWriter stderr = new PrintWriter(System.err);
         HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp(75, cmdlineSyntax, header, options, footer);
+        formatter.printHelp(cmdlineSyntax, header, options, footer);
         System.exit(1);
     }
 }
