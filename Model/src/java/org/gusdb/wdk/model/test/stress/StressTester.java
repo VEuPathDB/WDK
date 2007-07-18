@@ -104,7 +104,7 @@ public class StressTester {
         finishedCount = succeededCount = 0;
 
         this.modelName = modelName;
-        gusHome = System.getProperty(ModelXmlParser.GUS_HOME);
+        gusHome = System.getProperty(Utilities.SYS_PROP_GUS_HOME);
 
         // load the model
         WdkModel wdkModel = WdkModel.construct(modelName);

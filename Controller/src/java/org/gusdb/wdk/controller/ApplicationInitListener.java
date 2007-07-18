@@ -12,6 +12,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import org.gusdb.wdk.model.RDBMSPlatformI;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.implementation.ModelXmlParser;
@@ -39,8 +40,8 @@ public class ApplicationInitListener implements ServletContextListener {
 
         ServletContext application = sce.getServletContext();
 
-        String gusHome = application.getRealPath(application.getInitParameter(ModelXmlParser.GUS_HOME));
-        String modelName = application.getInitParameter(ModelXmlParser.MODEL_NAME);
+        String gusHome = application.getRealPath(application.getInitParameter(Utilities.SYS_PROP_GUS_HOME));
+        String modelName = application.getInitParameter(Utilities.ARGUMENT_MODEL);
 
         String customViewDir = application.getInitParameter(CConstants.WDK_CUSTOMVIEWDIR_PARAM);
         String alwaysGoToSummary = application.getInitParameter(CConstants.WDK_ALWAYSGOTOSUMMARY_PARAM);

@@ -3,9 +3,12 @@
  */
 package org.gusdb.wdk.model.test;
 
-import java.io.File;
-import java.net.MalformedURLException;
+import java.io.IOException;
 import java.util.Random;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -13,9 +16,11 @@ import junit.textui.TestRunner;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.implementation.ModelXmlParser;
+import org.xml.sax.SAXException;
 
 /**
  * @author Jerric
@@ -63,17 +68,26 @@ public class TestUtility {
     }
 
     public static TestUtility getInstance()
-            throws WdkModelException, MalformedURLException {
+            throws WdkModelException, SAXException, IOException,
+            ParserConfigurationException, TransformerFactoryConfigurationError,
+            TransformerException {
         if (utility == null) utility = new TestUtility();
         return utility;
     }
 
     /**
      * @throws WdkModelException
-     * @throws MalformedURLException
+     * @throws TransformerException
+     * @throws TransformerFactoryConfigurationError
+     * @throws ParserConfigurationException
+     * @throws IOException
+     * @throws SAXException
      * 
      */
-    public TestUtility() throws WdkModelException, MalformedURLException {
+    public TestUtility()
+            throws WdkModelException, SAXException, IOException,
+            ParserConfigurationException, TransformerFactoryConfigurationError,
+            TransformerException {
         super();
         wdkModel = loadWdkModel();
         sanityModel = loadSanityModel();
@@ -108,18 +122,14 @@ public class TestUtility {
     }
 
     private SanityModel loadSanityModel()
-            throws MalformedURLException, WdkModelException {
+            throws WdkModelException, SAXException, IOException,
+            ParserConfigurationException, TransformerFactoryConfigurationError,
+            TransformerException {
         String modelName = System.getProperty("model");
-        String gusHome = System.getProperty(ModelXmlParser.GUS_HOME);
-        File sanityXmlFile = new File(gusHome, "/lib/xml/" + modelName
-                + "-sanity.xml");
-        File modelPropFile = new File(gusHome, "/config/" + modelName + ".prop");
-        File sanitySchemaFile = new File(gusHome + "/lib/rng/sanityModel.rng");
+        String gusHome = System.getProperty(Utilities.SYS_PROP_GUS_HOME);
 
-        SanityModel sanityModel = SanityTestXmlParser.parseXmlFile(
-                sanityXmlFile.toURI().toURL(), modelPropFile.toURI().toURL(),
-                sanitySchemaFile.toURI().toURL());
-        return sanityModel;
+        SanityTestXmlParser parser = new SanityTestXmlParser(gusHome);
+        return parser.parseModel(modelName);
     }
 
     private static Options declareOptions() {

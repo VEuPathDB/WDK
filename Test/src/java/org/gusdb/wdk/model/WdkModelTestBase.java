@@ -41,12 +41,12 @@ public abstract class WdkModelTestBase {
             TransformerFactoryConfigurationError, TransformerException,
             IOException, SAXException {
         // get input from the system environment
-        String modelName = System.getProperty(ModelXmlParser.MODEL_NAME);
-        String gusHome = System.getProperty(ModelXmlParser.GUS_HOME);
+        String modelName = System.getProperty(Utilities.ARGUMENT_MODEL);
+        String gusHome = System.getProperty(Utilities.SYS_PROP_GUS_HOME);
 
         // GUS_HOME is required
         if (gusHome == null || gusHome.length() == 0)
-            throw new WdkModelException("Required " + ModelXmlParser.GUS_HOME
+            throw new WdkModelException("Required " + Utilities.SYS_PROP_GUS_HOME
                     + " property is missing.");
 
         // model name is optional

@@ -11,6 +11,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Reference;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.implementation.ModelXmlParser;
@@ -25,7 +26,7 @@ public class XmlQuestionTester {
 
     public static void main(String[] args) throws WdkModelException {
         String cmdName = System.getProperty("cmdName");
-        String gusHome = System.getProperty(ModelXmlParser.GUS_HOME);
+        String gusHome = System.getProperty(Utilities.SYS_PROP_GUS_HOME);
 
         // process args
         Options options = declareOptions();
