@@ -31,8 +31,6 @@ import com.thaiopensource.xml.sax.ErrorHandlerImpl;
  */
 public abstract class XmlParser {
 
-    public static final String GUS_HOME = "GUS_HOME";
-
     protected String gusHome;
 
     protected ValidationDriver validator;
@@ -122,6 +120,13 @@ public abstract class XmlParser {
 
         Document doc = builder.parse(modelXmlURL.openStream());
         return doc;
+    }
+
+    protected void configureNode(Digester digester, String path, Class nodeClass,
+            String method) {
+        digester.addObjectCreate(path, nodeClass);
+        digester.addSetProperties(path);
+        digester.addSetNext(path, method);
     }
 
     protected abstract Digester configureDigester();

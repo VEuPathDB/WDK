@@ -8,16 +8,30 @@
           <ref name="sanityRecord" />
           <ref name="sanityQuestion" />
           <ref name="sanityXmlQuestion" />
+		  <element name="import">
+		      <attribute name="file"/>
+		  </element>
         </choice>
       </oneOrMore>
     </element>
   </start>
+
+  <!-- define inclusion/exclusion attributes -->
+  <define name="IncludeExclude">
+    <optional>
+      <attribute name="includeProjects" />
+    </optional>
+    <optional>
+      <attribute name="excludeProjects" />
+    </optional>
+  </define>  
 
   <define name="sanityQuery">
     <element name="sanityQuery">
       <attribute name="ref" />
       <attribute name="minOutputLength" />
       <attribute name="maxOutputLength" />
+      <ref name="IncludeExclude"/>
       <zeroOrMore>
         <element name="sanityParam">
           <attribute name="name" />
@@ -34,6 +48,7 @@
       <attribute name="maxOutputLength" />
       <attribute name="pageStart" />
       <attribute name="pageEnd" />
+      <ref name="IncludeExclude"/>
       <zeroOrMore>
         <element name="sanityParam">
           <attribute name="name" />
@@ -50,6 +65,7 @@
       <optional>
         <attribute name="projectID" />
       </optional>
+      <ref name="IncludeExclude"/>
     </element>
     
   </define>
@@ -64,6 +80,7 @@
       <zeroOrMore>
         <attribute name="xmlData" />
       </zeroOrMore>
+      <ref name="IncludeExclude"/>
      </element>
   </define>
 

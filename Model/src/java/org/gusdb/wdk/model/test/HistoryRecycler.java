@@ -9,6 +9,7 @@ import java.util.Map;
 
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -65,7 +66,7 @@ public class HistoryRecycler implements Runnable {
     }
 
     private boolean isStopping() {
-        String gusHome = System.getProperty(ModelXmlParser.GUS_HOME);
+        String gusHome = System.getProperty(Utilities.SYS_PROP_GUS_HOME);
         File stopFile = new File(gusHome, "/config/" + STOP_SIGNAL_FILE);
         return stopFile.exists();
     }

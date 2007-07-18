@@ -5,7 +5,6 @@ package org.gusdb.wdk.model;
 
 import java.io.IOException;
 
-import org.gusdb.wdk.model.implementation.ModelXmlParser;
 import org.junit.Assert;
 import org.xml.sax.SAXException;
 
@@ -26,13 +25,13 @@ public class ModelConfigParserTest {
     @org.junit.Before
     public void getInput() throws WdkModelException {
         // get input from the system environment
-        modelName = System.getProperty(ModelXmlParser.MODEL_NAME);
-        gusHome = System.getProperty(ModelXmlParser.GUS_HOME);
+        modelName = System.getProperty(Utilities.ARGUMENT_MODEL);
+        gusHome = System.getProperty(Utilities.SYS_PROP_GUS_HOME);
 
         // GUS_HOME is required
         if (gusHome == null || gusHome.length() == 0)
-            throw new WdkModelException("Required " + ModelXmlParser.GUS_HOME
-                    + " property is missing.");
+            throw new WdkModelException("Required "
+                    + Utilities.SYS_PROP_GUS_HOME + " property is missing.");
 
         // model name is optional
         if (modelName == null || modelName.length() == 0)

@@ -31,6 +31,7 @@ import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.RecordClassSet;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.implementation.ModelXmlParser;
@@ -323,7 +324,7 @@ public class StressTemplater {
             throws IOException, WdkModelException {
 
         String cmdName = System.getProperty("cmdName");
-        String gusHome = System.getProperty(ModelXmlParser.GUS_HOME);
+        String gusHome = System.getProperty(Utilities.SYS_PROP_GUS_HOME);
 
         // process args
         Options options = declareOptions();
@@ -331,19 +332,11 @@ public class StressTemplater {
 
         String modelName = cmdLine.getOptionValue("model");
 
-        File sanityXmlFile = new File(gusHome, "/lib/xml/" + modelName
-                + "-sanity.xml");
-        File sanitySchemaFile = new File(gusHome, "/lib/rng/sanityModel.rng");
-        // TODO - consider refactoring it
-        File modelPropFile = new File(gusHome, "/config/" + modelName + ".prop");
-
         try {
             ModelXmlParser parser = new ModelXmlParser(gusHome);
             WdkModel wdkModel = parser.parseModel(modelName);
-            SanityModel sanityModel = SanityTestXmlParser.parseXmlFile(
-                    sanityXmlFile.toURI().toURL(),
-                    modelPropFile.toURI().toURL(),
-                    sanitySchemaFile.toURI().toURL());
+            SanityTestXmlParser sanityParser = new SanityTestXmlParser(gusHome);
+            SanityModel sanityModel = sanityParser.parseModel(modelName);
 
             StressTemplater tester = new StressTemplater(wdkModel, sanityModel);
 

@@ -19,6 +19,7 @@ import org.apache.commons.cli.ParseException;
 import org.gusdb.wdk.model.RDBMSPlatformI;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.ResultFactory;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 
 /**
@@ -382,7 +383,7 @@ public class SqlClause {
 
     public static void main(String[] args) {
         String cmdName = System.getProperty("cmdName");
-        String gusHome = System.getProperty(ModelXmlParser.GUS_HOME);
+        String gusHome = System.getProperty(Utilities.SYS_PROP_GUS_HOME);
         Options options = declareOptions();
         CommandLine cmdLine = parseOptions(cmdName, options, args);
 
