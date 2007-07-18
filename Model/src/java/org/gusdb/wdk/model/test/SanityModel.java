@@ -6,6 +6,7 @@ import java.util.Vector;
 
 import org.w3c.dom.Document;
 
+import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 
@@ -23,7 +24,7 @@ import org.gusdb.wdk.model.WdkUserException;
  *          2005) $Author$
  */
 
-public class SanityModel {
+public class SanityModel extends WdkModelBase {
 
     // ------------------------------------------------------------------
     // Instance variables
@@ -32,25 +33,19 @@ public class SanityModel {
     /**
      * SanityRecords contained in this model.
      */
-    Vector<SanityRecord> sanityRecords = new Vector<SanityRecord>();
+    private List<SanityRecord> sanityRecords = new ArrayList<SanityRecord>();
 
     /**
      * SanityQueries contained in this model.
      */
-    Vector<SanityQueryOrQuestion> sanityQueries = new Vector<SanityQueryOrQuestion>();
+    private List<SanityQuery> sanityQueries = new ArrayList<SanityQuery>();
 
     /**
      * SanityQuestions contained in this model.
      */
-    Vector<SanityQueryOrQuestion> sanityQuestions = new Vector<SanityQueryOrQuestion>();
+    private List<SanityQuestion> sanityQuestions = new ArrayList<SanityQuestion>();
 
-    List<SanityXmlQuestion> sanityXmlQuestions = new ArrayList<SanityXmlQuestion>();
-
-    /**
-     * Document set by the xml parser that creates this model. (DTB -- not sure
-     * where document is ever used!).
-     */
-    private Document document;
+    private List<SanityXmlQuestion> sanityXmlQuestions = new ArrayList<SanityXmlQuestion>();
 
     /**
      * Instance object used by SanityTestXmlParser to create a SanityModel if no
@@ -71,53 +66,56 @@ public class SanityModel {
     public SanityRecord[] getAllSanityRecords() {
 
         SanityRecord records[] = new SanityRecord[sanityRecords.size()];
-        sanityRecords.copyInto(records);
+        sanityRecords.toArray(records);
         return records;
     }
 
     /**
-     * @param recordName Two-part name (recordSetName.recordName) of the record
-     *        in question.
-     * @param return True if the model contains one or more SanityRecords for
-     *        the given recordName.
+     * @param recordName
+     *        Two-part name (recordSetName.recordName) of the record in
+     *        question.
+     * @param return
+     *        True if the model contains one or more SanityRecords for the given
+     *        recordName.
      */
     public boolean hasSanityRecord(String recordName) {
 
         for (int i = 0; i < sanityRecords.size(); i++) {
-            SanityRecord nextRecord = (SanityRecord) sanityRecords.elementAt(i);
+            SanityRecord nextRecord = (SanityRecord) sanityRecords.get(i);
             if (nextRecord.getRef().equals(recordName)) return true;
         }
         return false;
     }
 
     // SanityQuery Sets
-    public void addSanityQuery(SanityQueryOrQuestion sanityQuery)
+    public void addSanityQuery(SanityQuery sanityQuery)
             throws WdkModelException {
         sanityQueries.add(sanityQuery);
     }
 
     public SanityQuery[] getAllSanityQueries() {
         SanityQuery queries[] = new SanityQuery[sanityQueries.size()];
-        sanityQueries.copyInto(queries);
+        sanityQueries.toArray(queries);
         return queries;
     }
 
     /**
-     * @param queryName Two-part name (querySetName.queryName) of the query in
-     *        question.
-     * @param return True if the model contains one or more SanityQueries for
-     *        the given queryName.
+     * @param queryName
+     *        Two-part name (querySetName.queryName) of the query in question.
+     * @param return
+     *        True if the model contains one or more SanityQueries for the given
+     *        queryName.
      */
     public boolean hasSanityQuery(String queryName) {
 
         for (int i = 0; i < sanityQueries.size(); i++) {
-            SanityQueryOrQuestion nextQuery = (SanityQueryOrQuestion) sanityQueries.elementAt(i);
+            SanityQueryOrQuestion nextQuery = (SanityQueryOrQuestion) sanityQueries.get(i);
             if (nextQuery.getRef().equals(queryName)) return true;
         }
         return false;
     }
 
-    public void addSanityQuestion(SanityQueryOrQuestion sanityQuestion)
+    public void addSanityQuestion(SanityQuestion sanityQuestion)
             throws WdkModelException {
 
         sanityQuestions.add(sanityQuestion);
@@ -126,20 +124,21 @@ public class SanityModel {
     public SanityQuestion[] getAllSanityQuestions() {
 
         SanityQuestion questions[] = new SanityQuestion[sanityQuestions.size()];
-        sanityQuestions.copyInto(questions);
+        sanityQuestions.toArray(questions);
         return questions;
     }
 
     /**
-     * @param queryName Two-part name (querySetName.queryName) of the query in
-     *        question.
-     * @param return True if the model contains one or more SanityQuestions for
-     *        the given queryName.
+     * @param queryName
+     *        Two-part name (querySetName.queryName) of the query in question.
+     * @param return
+     *        True if the model contains one or more SanityQuestions for the
+     *        given queryName.
      */
     public boolean hasSanityQuestion(String queryName) {
 
         for (int i = 0; i < sanityQuestions.size(); i++) {
-            SanityQueryOrQuestion nextQuery = (SanityQueryOrQuestion) sanityQuestions.elementAt(i);
+            SanityQueryOrQuestion nextQuery = (SanityQueryOrQuestion) sanityQuestions.get(i);
             if (nextQuery.getRef().equals(queryName)) return true;
         }
         return false;
@@ -190,30 +189,66 @@ public class SanityModel {
         validateQueriesOrQuestions(sanityQuestions);
     }
 
-    public Document getDocument() {
-        return document;
-    }
-
-    public void setDocument(Document document) {
-        this.document = document;
-    }
-
     // ------------------------------------------------------------------
     // Protected Methods
     // ------------------------------------------------------------------
-    private void validateQueriesOrQuestions(Vector v) throws WdkUserException {
+    private void validateQueriesOrQuestions(List v) throws WdkUserException {
 
         for (int i = 0; i < v.size(); i++) {
-            SanityQueryOrQuestion q = (SanityQueryOrQuestion) v.elementAt(i);
+            SanityQueryOrQuestion q = (SanityQueryOrQuestion) v.get(i);
             if (q.getMinOutputLength().intValue() < 0) {
-                throw new WdkUserException(
-                        "Sanity"
-                                + q.getTypeCap()
-                                + " "
-                                + q.getRef()
-                                + " must return at least 0 rows.  Please set its minOutputLength attribute to reflect this");
+                throw new WdkUserException("Sanity" + q.getTypeCap() + " "
+                        + q.getRef() + " must return at least 0 rows. Please "
+                        + "set its minOutputLength attribute to reflect this");
             }
         }
     }
 
+    /**
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
+     */
+    @Override
+    public void excludeResources(String projectId) throws WdkModelException {
+        // exclude queries
+        List<SanityQuery> newQueries = new ArrayList<SanityQuery>();
+        for (SanityQuery query : sanityQueries) {
+            if (query.include(projectId)) {
+                query.excludeResources(projectId);
+                newQueries.add(query);
+            }
+        }
+        sanityQueries = newQueries;
+
+        // exclude questions
+        List<SanityQuestion> newQuestions = new ArrayList<SanityQuestion>();
+        for (SanityQuestion question : sanityQuestions) {
+            if (question.include(projectId)) {
+                question.excludeResources(projectId);
+                newQuestions.add(question);
+            }
+        }
+        sanityQuestions = newQuestions;
+
+        // exclude records
+        List<SanityRecord> newRecords = new ArrayList<SanityRecord>();
+        for (SanityRecord record : sanityRecords) {
+            if (record.include(projectId)) {
+                record.excludeResources(projectId);
+                newRecords.add(record);
+            }
+        }
+        sanityRecords = newRecords;
+
+        // exclude xml questions
+        List<SanityXmlQuestion> newXmlQuestions = new ArrayList<SanityXmlQuestion>();
+        for (SanityXmlQuestion question : sanityXmlQuestions) {
+            if (question.include(projectId)) {
+                question.excludeResources(projectId);
+                newXmlQuestions.add(question);
+            }
+        }
+        sanityXmlQuestions = newXmlQuestions;
+    }
 }

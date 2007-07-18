@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.test;
 
+import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 
 /**
@@ -13,7 +14,7 @@ import org.gusdb.wdk.model.WdkModelException;
  *          $Author: sfischer $
  */
 
-public class SanityXmlQuestion implements SanityElementI {
+public class SanityXmlQuestion extends WdkModelBase implements SanityElementI {
 
     private String ref;
     private int pageStart;
@@ -144,5 +145,14 @@ public class SanityXmlQuestion implements SanityElementI {
      */
     public String getName() {
         return ref;
+    }
+
+    /**
+     * (non-Javadoc)
+     * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
+     */
+    @Override
+    public void excludeResources(String projectId) throws WdkModelException {
+        // do nothing
     }
 }
