@@ -28,7 +28,6 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.implementation.ModelXmlParser;
 import org.gusdb.wdk.model.xml.XmlAnswer;
 import org.gusdb.wdk.model.xml.XmlQuestion;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
@@ -48,7 +47,7 @@ import org.xml.sax.SAXException;
  * 
  * @author David Barkan
  * @version $Revision$ $Date: 2005-08-23 12:31:12 -0400 (Tue, 23 Aug
- * 2005) $Author$
+ *          2005) $Author$
  */
 public class SanityTester {
 
@@ -76,9 +75,8 @@ public class SanityTester {
     public SanityTester(String modelName, SanityModel sanityModel,
             boolean verbose, boolean suggestOnly, Integer skipTo,
             Integer stopAfter, boolean failuresOnly, boolean indexOnly)
-            throws WdkModelException {
+            throws WdkModelException, WdkUserException {
         this.wdkModel = WdkModel.construct(modelName);
-        this.sanityModel = sanityModel;
         this.verbose = verbose;
         this.failuresOnly = failuresOnly;
         this.indexOnly = indexOnly;
@@ -86,6 +84,14 @@ public class SanityTester {
         this.suggestOnly = suggestOnly;
         this.skipTo = skipTo;
         this.stopAfter = stopAfter;
+
+        // resolve the reference of the sanity model
+        sanityModel.excludeResources(wdkModel.getProjectId());
+        sanityModel.resolveReferences(wdkModel);
+
+        sanityModel.validateQueries();
+        sanityModel.validateQuestions();
+        this.sanityModel = sanityModel;
     }
 
     // ------------------------------------------------------------------
@@ -559,15 +565,17 @@ public class SanityTester {
 
     /**
      * @param queryResult
-     * a two-value array where the first entry is the number of queries that
-     * passed the test and the second is the number of queries that failed.
+     *        a two-value array where the first entry is the number of queries
+     *        that passed the test and the second is the number of queries that
+     *        failed.
      * 
      * @param recordResult
-     * a two-value array where the first entry is the number of records that
-     * passed the test and the second is the number of records that failed.
+     *        a two-value array where the first entry is the number of records
+     *        that passed the test and the second is the number of records that
+     *        failed.
      * 
      * @param return
-     * true if one or more tests failed; false otherwise.
+     *        true if one or more tests failed; false otherwise.
      */
 
     private boolean printSummaryLine() {
@@ -680,10 +688,10 @@ public class SanityTester {
 
     // private static Logger logger = Logger.getLogger(SanityTester.class);
 
-    public static void main(String[] args)
-            throws WdkModelException, SAXException, IOException,
-            ParserConfigurationException, TransformerFactoryConfigurationError,
-            TransformerException, WdkUserException {
+    public static void main(String[] args) throws WdkModelException,
+            SAXException, IOException, ParserConfigurationException,
+            TransformerFactoryConfigurationError, TransformerException,
+            WdkUserException {
         String cmdName = System.getProperty("cmdName");
         String gusHome = System.getProperty(Utilities.SYS_PROP_GUS_HOME);
 
@@ -711,9 +719,6 @@ public class SanityTester {
 
         SanityTestXmlParser parser = new SanityTestXmlParser(gusHome);
         SanityModel sanityModel = parser.parseModel(modelName);
-
-        sanityModel.validateQueries();
-        sanityModel.validateQuestions();
 
         SanityTester sanityTester = new SanityTester(modelName, sanityModel,
                 verbose, suggestOnly, skipTo, stopAfter, failuresOnly,
