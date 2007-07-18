@@ -19,6 +19,7 @@ import org.apache.commons.cli.ParseException;
 import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.BooleanQuestionNode;
 import org.gusdb.wdk.model.Question;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -58,7 +59,7 @@ public class BooleanQuestionTester {
             throws WdkModelException, WdkUserException {
 
         String cmdName = System.getProperty("cmdName");
-        String gusHome = System.getProperty(ModelXmlParser.GUS_HOME);
+        String gusHome = System.getProperty(Utilities.SYS_PROP_GUS_HOME);
 
         // process args
         Options options = declareOptions();

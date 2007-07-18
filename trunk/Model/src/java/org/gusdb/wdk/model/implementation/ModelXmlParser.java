@@ -60,6 +60,7 @@ import org.gusdb.wdk.model.ReporterRef;
 import org.gusdb.wdk.model.StringParam;
 import org.gusdb.wdk.model.TableField;
 import org.gusdb.wdk.model.TextAttributeField;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelName;
@@ -78,8 +79,6 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 public class ModelXmlParser extends XmlParser {
-
-    public static final String MODEL_NAME = "model";
 
     private static final Logger logger = Logger.getLogger(ModelXmlParser.class);
 
@@ -552,24 +551,17 @@ public class ModelXmlParser extends XmlParser {
         digester.addCallMethod(prefix + "textAttribute/text", "setText", 0);
     }
 
-    private void configureNode(Digester digester, String path, Class nodeClass,
-            String method) {
-        digester.addObjectCreate(path, nodeClass);
-        digester.addSetProperties(path);
-        digester.addSetNext(path, method);
-    }
-
     public static void main(String[] args)
             throws SAXException, IOException, ParserConfigurationException,
             TransformerFactoryConfigurationError, TransformerException,
             WdkModelException {
         String cmdName = System.getProperty("cmdName");
-        String gusHome = System.getProperty(GUS_HOME);
+        String gusHome = System.getProperty(Utilities.SYS_PROP_GUS_HOME);
 
         // process args
         Options options = declareOptions();
         CommandLine cmdLine = parseOptions(cmdName, options, args);
-        String modelName = cmdLine.getOptionValue(MODEL_NAME);
+        String modelName = cmdLine.getOptionValue(Utilities.ARGUMENT_MODEL);
 
         // create a parser, and parse the model file
         ModelXmlParser parser = new ModelXmlParser(gusHome);

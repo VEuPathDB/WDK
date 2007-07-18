@@ -1,7 +1,10 @@
 package org.gusdb.wdk.model.test;
 
-import java.io.File;
 import java.io.IOException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
@@ -21,12 +24,15 @@ import org.gusdb.wdk.model.RecordClassSet;
 import org.gusdb.wdk.model.RecordInstance;
 import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.ResultList;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.implementation.ModelXmlParser;
 import org.gusdb.wdk.model.xml.XmlAnswer;
 import org.gusdb.wdk.model.xml.XmlQuestion;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
+import org.xml.sax.SAXException;
 
 /**
  * SanityTester.java " [-project project_id]" +
@@ -674,20 +680,17 @@ public class SanityTester {
 
     // private static Logger logger = Logger.getLogger(SanityTester.class);
 
-    public static void main(String[] args) {
+    public static void main(String[] args)
+            throws WdkModelException, SAXException, IOException,
+            ParserConfigurationException, TransformerFactoryConfigurationError,
+            TransformerException, WdkUserException {
         String cmdName = System.getProperty("cmdName");
-        String gusHome = System.getProperty(ModelXmlParser.GUS_HOME);
+        String gusHome = System.getProperty(Utilities.SYS_PROP_GUS_HOME);
 
         Options options = declareOptions();
         CommandLine cmdLine = parseOptions(cmdName, options, args);
 
         String modelName = cmdLine.getOptionValue("model");
-
-        File sanityXmlFile = new File(gusHome, "/lib/xml/" + modelName
-                + "-sanity.xml");
-        File sanitySchemaFile = new File(gusHome, "/lib/rng/sanityModel.rng");
-        // TODO - consider refactoring it
-        File modelPropFile = new File(gusHome, "/config/" + modelName + ".prop");
 
         boolean suggestOnly = cmdLine.hasOption("suggestOnly");
 
@@ -706,36 +709,27 @@ public class SanityTester {
 
         boolean indexOnly = cmdLine.hasOption("indexOnly");
 
-        try {
-            SanityModel sanityModel = SanityTestXmlParser.parseXmlFile(
-                    sanityXmlFile.toURI().toURL(),
-                    modelPropFile.toURI().toURL(),
-                    sanitySchemaFile.toURI().toURL());
+        SanityTestXmlParser parser = new SanityTestXmlParser(gusHome);
+        SanityModel sanityModel = parser.parseModel(modelName);
 
-            sanityModel.validateQueries();
-            sanityModel.validateQuestions();
+        sanityModel.validateQueries();
+        sanityModel.validateQuestions();
 
-            SanityTester sanityTester = new SanityTester(modelName,
-                    sanityModel, verbose, suggestOnly, skipTo, stopAfter,
-                    failuresOnly, indexOnly);
+        SanityTester sanityTester = new SanityTester(modelName, sanityModel,
+                verbose, suggestOnly, skipTo, stopAfter, failuresOnly,
+                indexOnly);
 
-            sanityTester.existenceTest();
-            if (!suggestOnly) {
-                sanityTester.queriesTest();
-                sanityTester.recordsTest();
-                sanityTester.questionsTest();
-                sanityTester.xmlQuestionsTest();
+        sanityTester.existenceTest();
+        if (!suggestOnly) {
+            sanityTester.queriesTest();
+            sanityTester.recordsTest();
+            sanityTester.questionsTest();
+            sanityTester.xmlQuestionsTest();
 
-                if (verbose) System.out.println(sanityModel.toString());
-                if (sanityTester.printSummaryLine()) {
-                    System.exit(1);
-                }
+            if (verbose) System.out.println(sanityModel.toString());
+            if (sanityTester.printSummaryLine()) {
+                System.exit(1);
             }
-
-        } catch (Exception e) {
-            System.err.println(e);
-            e.printStackTrace();
-            System.exit(1);
         }
     }
 }

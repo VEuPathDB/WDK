@@ -3,9 +3,14 @@
  */
 package org.gusdb.wdk.model.test;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import junit.framework.TestCase;
 
@@ -14,6 +19,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
+import org.xml.sax.SAXException;
 
 /**
  * @author xingao
@@ -74,8 +80,10 @@ public class UserFactoryTest extends TestCase {
     private String email = "jerric@uga.edu";
     private String password = "jerric";
 
-    public static void main(String[] args) throws MalformedURLException,
-            WdkModelException, WdkUserException {
+    public static void main(String[] args)
+            throws WdkModelException, WdkUserException, SAXException,
+            IOException, ParserConfigurationException,
+            TransformerFactoryConfigurationError, TransformerException {
         if (args.length < 1) {
             printUsage("Command is missing.");
             System.exit(-1);

@@ -106,7 +106,7 @@ public class WdkModel {
      * information
      */
     public static WdkModel construct(String modelName) throws WdkModelException {
-        String gusHome = System.getProperty(ModelXmlParser.GUS_HOME);
+        String gusHome = System.getProperty(Utilities.SYS_PROP_GUS_HOME);
 
         try {
             ModelXmlParser parser = new ModelXmlParser(gusHome);
