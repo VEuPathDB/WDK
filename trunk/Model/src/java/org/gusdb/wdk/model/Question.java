@@ -271,7 +271,7 @@ public class Question extends WdkModelBase implements Serializable {
         return this.recordClass;
     }
 
-    Query getQuery() {
+    public Query getQuery() {
         return this.query;
     }
 
