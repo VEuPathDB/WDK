@@ -115,11 +115,11 @@ public class ModelXmlParser extends XmlParser {
 
         WdkModel model = (WdkModel) digester.parse(modelXmlStream);
 
+        model.setXmlSchema(xmlSchemaURL); // set schema for xml data
+        model.setXmlDataDir(new File(xmlDataDir)); // consider refactoring
         model.configure(gusHome, modelName);
         model.setResources();
         model.setProperties(properties); // consider removing it
-        model.setXmlSchema(xmlSchemaURL); // set schema for xml data
-        model.setXmlDataDir(new File(xmlDataDir)); // consider refactoring
 
         return model;
     }
