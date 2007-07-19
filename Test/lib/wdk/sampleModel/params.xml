@@ -57,23 +57,38 @@
             <suggest allowEmpty="true" includeProjects="toyDB"/>
             <suggest allowEmpty="true" excludeProjects="toyDB"/>
  
-      		<useTermOnly value="false" includeProjects="SampleDB"/>
-      		<useTermOnly value="true" excludeProjects="SampleDB"/>
-            <enumValue>
-                <display>True Value</display>
-                <term>True</term>
-                <internal>true</internal>
-            </enumValue>
-            <enumValue default="true">
-                <display>False Value</display>
-                <term>False</term>
-                <internal>false</internal>
-            </enumValue>
-            <enumValue includeProjects="ToyDB">
-                <display>Unknown Value</display>
-                <term>Unknown</term>
-                <internal>unknown</internal>
-            </enumValue>
+      		<useTermOnly value="true" includeProjects="SampleDB"/>
+      		<useTermOnly value="false" excludeProjects="SampleDB"/>
+
+      		<enumList includeProjects="SampleDB">
+          		<useTermOnly value="false" includeProjects="SampleDB"/>
+          		<useTermOnly value="true" excludeProjects="SampleDB"/>
+
+                <enumValue>
+                    <display>True Value</display>
+                    <term>True</term>
+                    <internal>true</internal>
+                </enumValue>
+                <enumValue default="true">
+                    <display>False Value</display>
+                    <term>False</term>
+                    <internal>false</internal>
+                </enumValue>
+                <enumValue includeProjects="ToyDB">
+                    <display>Unknown Value</display>
+                    <term>Unknown</term>
+                    <internal>unknown</internal>
+                </enumValue>
+      		</enumList>
+
+      		<enumList excludeProjects="SampleDB">
+                <enumValue>
+                    <display>True Value</display>
+                    <term>True</term>
+                    <internal>true</internal>
+                </enumValue>
+      		</enumList>
+
       	</enumParam>
 
 	    <flatVocabParam name="flatVocabParam"

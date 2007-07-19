@@ -6,20 +6,22 @@ import java.util.List;
 
 public class EnumParam extends AbstractEnumParam {
 
-    private List<EnumItem> enumItems = new ArrayList<EnumItem>();
+    private List<EnumItemList> enumItemLists = new ArrayList<EnumItemList>();
+    private EnumItemList enumItemList;
 
     // ///////////////////////////////////////////////////////////////////
     // /////////// Public properties ////////////////////////////////////
     // ///////////////////////////////////////////////////////////////////
 
-    public void addEnumItem(EnumItem enumItem) {
-        this.enumItems.add(enumItem);
+    public void addEnumItemList(EnumItemList enumItemList) {
+        this.enumItemLists.add(enumItemList);
     }
 
     public String[] getDisplay() {
-        String[] displays = new String[enumItems.size()];
+        EnumItem[] enumItems = enumItemList.getEnumItems();
+        String[] displays = new String[enumItems.length];
         for (int i = 0; i < displays.length; i++) {
-            displays[i] = enumItems.get(i).getDisplay();
+            displays[i] = enumItems[i].getDisplay();
         }
         return displays;
     }
@@ -31,6 +33,7 @@ public class EnumParam extends AbstractEnumParam {
     protected void initVocabMap() throws WdkModelException {
         if (vocabMap == null) {
             vocabMap = new LinkedHashMap<String, String>();
+            EnumItem[] enumItems = enumItemList.getEnumItems();
             for (EnumItem item : enumItems) {
                 vocabMap.put(item.getTerm(), item.getInternal());
             }
@@ -46,18 +49,19 @@ public class EnumParam extends AbstractEnumParam {
     public Param clone() {
         EnumParam param = new EnumParam();
         super.clone(param);
-        param.enumItems = new ArrayList<EnumItem>(enumItems);
+        param.enumItemList = new EnumItemList(this.enumItemList);
         return param;
     }
 
     /*
-     * (non-Javadoc)
-     * the default is always the terms
+     * (non-Javadoc) the default is always the terms
+     * 
      * @see org.gusdb.wdk.model.AbstractEnumParam#getDefault()
      */
     @Override
     public String getDefault() throws WdkModelException {
         StringBuffer sb = new StringBuffer();
+        EnumItem[] enumItems = enumItemList.getEnumItems();
         for (EnumItem item : enumItems) {
             if (item.isDefault()) {
                 if (sb.length() > 0) sb.append(",");
@@ -66,7 +70,7 @@ public class EnumParam extends AbstractEnumParam {
         }
         if (sb.length() == 0) {
             // get the first item as the default
-            EnumItem item = enumItems.get(0);
+            EnumItem item = enumItems[0];
             return item.getTerm();
         } else return sb.toString();
     }
@@ -81,17 +85,18 @@ public class EnumParam extends AbstractEnumParam {
         super.excludeResources(projectId);
 
         // exclude enum items
-        List<EnumItem> newItems = new ArrayList<EnumItem>();
-        for (EnumItem item : enumItems) {
-            if (item.include(projectId)) {
-                item.excludeResources(projectId);
-                newItems.add(item);
+        for (EnumItemList itemList : enumItemLists) {
+            if (itemList.include(projectId)) {
+                itemList.excludeResources(projectId);
+                this.enumItemList = itemList;
+                // apply the use term only from enumList
+                Boolean useTermOnly = itemList.isUseTermOnly();
+                if (useTermOnly != null) this.useTermOnly = useTermOnly;
+                break;
             }
         }
-        enumItems = newItems;
-        if (enumItems.size() == 0)
+        if (enumItemList == null)
             throw new WdkModelException(
-                    "None of the enum values is available in enumParam "
-                            + this.name);
+                    "No EnumItemList available in enumParam " + this.name);
     }
 }

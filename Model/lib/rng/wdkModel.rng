@@ -158,25 +158,31 @@
 		    	</choice>
 		  	</zeroOrMore>
 	    	<oneOrMore>
-	    		<choice>
-		    		<element name="enumValue">
-    					<ref name="IncludeExclude" />
-    					<optional>
-				            <attribute name="default" />
-				        </optional>
-				        <optional>
-				          	<element name="display">
-				          	    <text />
-				          	</element>
-				        </optional>
-			          	<element name="term">
-			          	    <text />
-			          	</element>
-			          	<element name="internal">
-			          	    <text />
-			          	</element>
-		    		</element>
-	    		</choice>
+	    		<element name="enumList">
+	    		    <ref name="IncludeExclude" />
+        		  	<zeroOrMore>
+        		        <ref name="useTermOnly" />
+        		  	</zeroOrMore>
+        	        <oneOrMore>
+    		    		<element name="enumValue">
+        					<ref name="IncludeExclude" />
+        					<optional>
+    				            <attribute name="default" />
+    				        </optional>
+    				        <optional>
+    				          	<element name="display">
+    				          	    <text />
+    				          	</element>
+    				        </optional>
+    			          	<element name="term">
+    			          	    <text />
+    			          	</element>
+    			          	<element name="internal">
+    			          	    <text />
+    			          	</element>
+    		    		</element>
+    		    	</oneOrMore>
+    		    </element>
 	    	</oneOrMore>
 		</element>
 	</define>
