@@ -85,10 +85,6 @@ public class SanityTester {
         this.skipTo = skipTo;
         this.stopAfter = stopAfter;
 
-        // resolve the reference of the sanity model
-        sanityModel.excludeResources(wdkModel.getProjectId());
-        sanityModel.resolveReferences(wdkModel);
-
         sanityModel.validateQueries();
         sanityModel.validateQuestions();
         this.sanityModel = sanityModel;

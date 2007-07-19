@@ -23,7 +23,9 @@ public abstract class WdkModelTestBase {
      */
     public static final String SAMPLE_MODEL = "sampleModel";
 
-    protected static WdkModel wdkModel;
+    protected String gusHome;
+    protected String modelName;
+    protected WdkModel wdkModel;
 
     /**
      * load the model
@@ -35,19 +37,19 @@ public abstract class WdkModelTestBase {
      * @throws TransformerFactoryConfigurationError
      * @throws ParserConfigurationException
      */
-    @org.junit.BeforeClass
-    public static void initializeModel()
+    @org.junit.Before
+    public void initializeModel()
             throws WdkModelException, ParserConfigurationException,
             TransformerFactoryConfigurationError, TransformerException,
             IOException, SAXException {
         // get input from the system environment
-        String modelName = System.getProperty(Utilities.ARGUMENT_MODEL);
-        String gusHome = System.getProperty(Utilities.SYS_PROP_GUS_HOME);
+        modelName = System.getProperty(Utilities.ARGUMENT_MODEL);
+        gusHome = System.getProperty(Utilities.SYS_PROP_GUS_HOME);
 
         // GUS_HOME is required
         if (gusHome == null || gusHome.length() == 0)
-            throw new WdkModelException("Required " + Utilities.SYS_PROP_GUS_HOME
-                    + " property is missing.");
+            throw new WdkModelException("Required "
+                    + Utilities.SYS_PROP_GUS_HOME + " property is missing.");
 
         // model name is optional
         if (modelName == null || modelName.length() == 0)
@@ -57,5 +59,4 @@ public abstract class WdkModelTestBase {
         ModelXmlParser parser = new ModelXmlParser(gusHome);
         wdkModel = parser.parseModel(modelName);
     }
-
 }

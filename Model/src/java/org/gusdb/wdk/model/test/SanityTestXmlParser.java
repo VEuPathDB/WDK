@@ -30,8 +30,10 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.digester.Digester;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Utilities;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.XmlParser;
+import org.gusdb.wdk.model.implementation.ModelXmlParser;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -47,6 +49,16 @@ public class SanityTestXmlParser extends XmlParser {
     }
 
     public SanityModel parseModel(String modelName)
+            throws SAXException, IOException, ParserConfigurationException,
+            TransformerFactoryConfigurationError, TransformerException,
+            WdkModelException {
+        // load model
+        ModelXmlParser parser = new ModelXmlParser(gusHome);
+        WdkModel wdkModel = parser.parseModel(modelName);
+        return parseModel(modelName, wdkModel);
+    }
+
+    public SanityModel parseModel(String modelName, WdkModel wdkModel)
             throws WdkModelException, SAXException, IOException,
             ParserConfigurationException, TransformerFactoryConfigurationError,
             TransformerException {
@@ -68,7 +80,12 @@ public class SanityTestXmlParser extends XmlParser {
         Map<String, String> properties = getPropMap(modelPropURL);
         InputStream inStream = substituteProps(masterDoc, properties);
 
-        return (SanityModel) digester.parse(inStream);
+        SanityModel sanityModel = (SanityModel) digester.parse(inStream);
+
+        // resolve the reference of the sanity model
+        sanityModel.resolveReferences(wdkModel);
+
+        return sanityModel;
     }
 
     private Document buildMasterDocument(URL wdkModelURL)

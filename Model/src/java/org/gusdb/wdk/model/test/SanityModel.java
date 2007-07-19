@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 
@@ -23,7 +22,7 @@ import org.gusdb.wdk.model.WdkUserException;
  *          2005) $Author$
  */
 
-public class SanityModel extends WdkModelBase {
+public class SanityModel {
 
     // ------------------------------------------------------------------
     // Instance variables
@@ -204,12 +203,10 @@ public class SanityModel extends WdkModelBase {
     }
 
     /**
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
+     * @param projectId
+     * @throws WdkModelException
      */
-    @Override
-    public void excludeResources(String projectId) throws WdkModelException {
+    private void excludeResources(String projectId) throws WdkModelException {
         // exclude queries
         List<SanityQuery> newQueries = new ArrayList<SanityQuery>();
         for (SanityQuery query : sanityQueries) {
@@ -252,6 +249,9 @@ public class SanityModel extends WdkModelBase {
     }
 
     void resolveReferences(WdkModel wdkModel) throws WdkModelException {
+        // exclude resources that are not in the current project
+        excludeResources(wdkModel.getProjectId());
+        
         // create sanity queries from sanity questions
         for (SanityQuestion sanityQuestion : sanityQuestions) {
             String questionName = sanityQuestion.getName();
