@@ -336,7 +336,8 @@ public class StressTemplater {
             ModelXmlParser parser = new ModelXmlParser(gusHome);
             WdkModel wdkModel = parser.parseModel(modelName);
             SanityTestXmlParser sanityParser = new SanityTestXmlParser(gusHome);
-            SanityModel sanityModel = sanityParser.parseModel(modelName);
+            SanityModel sanityModel = sanityParser.parseModel(modelName,
+                    wdkModel);
 
             StressTemplater tester = new StressTemplater(wdkModel, sanityModel);
 
