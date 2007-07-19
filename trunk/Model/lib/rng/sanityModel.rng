@@ -63,7 +63,7 @@
       <attribute name="ref" />
       <attribute name="primaryKey" />
       <optional>
-        <attribute name="projectID" />
+        <attribute name="projectId" />
       </optional>
       <ref name="IncludeExclude"/>
     </element>

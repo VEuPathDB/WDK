@@ -31,7 +31,7 @@ public class SanityRecord extends WdkModelBase implements SanityElementI {
      * Modified by Jerric Primary key of the element that this record
      * represents.
      */
-    protected String projectID;
+    protected String projectId;
     protected String primaryKey;
 
     // protected PrimaryKeyValue primaryKey;
@@ -63,12 +63,12 @@ public class SanityRecord extends WdkModelBase implements SanityElementI {
     }
 
     // Added by Jerric
-    public void setProjectID(String projectID) {
-        this.projectID = projectID;
+    public void setProjectId(String projectId) {
+        this.projectId = projectId;
     }
 
-    public String getProjectID() {
-        return this.projectID;
+    public String getProjectId() {
+        return this.projectId;
     }
 
     public String toString() {
@@ -90,14 +90,14 @@ public class SanityRecord extends WdkModelBase implements SanityElementI {
 
     public String getCommand(String globalArgs) throws WdkModelException {
 
-        String projectID = getProjectID();
+        String projectId = getProjectId();
         String pk = getPrimaryKey();
 
         StringBuffer command = new StringBuffer("wdkRecord " + globalArgs);
 
         command.append(" -record " + getRef() + " -primaryKey " + pk);
 
-        if (projectID != null) command.append(" -project " + projectID);
+        if (projectId != null) command.append(" -project " + projectId);
 
         return command.toString();
     }
