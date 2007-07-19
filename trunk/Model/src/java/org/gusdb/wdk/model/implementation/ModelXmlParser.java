@@ -37,6 +37,7 @@ import org.gusdb.wdk.model.ColumnAttributeField;
 import org.gusdb.wdk.model.DatasetParam;
 import org.gusdb.wdk.model.DynamicAttributeSet;
 import org.gusdb.wdk.model.EnumItem;
+import org.gusdb.wdk.model.EnumItemList;
 import org.gusdb.wdk.model.EnumParam;
 import org.gusdb.wdk.model.FlatVocabParam;
 import org.gusdb.wdk.model.Group;
@@ -407,11 +408,19 @@ public class ModelXmlParser extends XmlParser {
         configureNode(digester, "wdkModel/paramSet/enumParam/useTermOnly",
                 ParamConfiguration.class, "addUseTermOnly");
 
-        configureNode(digester, "wdkModel/paramSet/enumParam/enumValue",
+        configureNode(digester, "wdkModel/paramSet/enumParam/enumList",
+                EnumItemList.class, "addEnumItemList");
+
+        configureNode(digester,
+                "wdkModel/paramSet/enumParam/enumList/useTermOnly",
+                ParamConfiguration.class, "addUseTermOnly");
+
+        configureNode(digester,
+                "wdkModel/paramSet/enumParam/enumList/enumValue",
                 EnumItem.class, "addEnumItem");
-        digester.addBeanPropertySetter("wdkModel/paramSet/enumParam/enumValue/display");
-        digester.addBeanPropertySetter("wdkModel/paramSet/enumParam/enumValue/term");
-        digester.addBeanPropertySetter("wdkModel/paramSet/enumParam/enumValue/internal");
+        digester.addBeanPropertySetter("wdkModel/paramSet/enumParam/enumList/enumValue/display");
+        digester.addBeanPropertySetter("wdkModel/paramSet/enumParam/enumList/enumValue/term");
+        digester.addBeanPropertySetter("wdkModel/paramSet/enumParam/enumList/enumValue/internal");
     }
 
     private void configureQuestionSet(Digester digester) {
