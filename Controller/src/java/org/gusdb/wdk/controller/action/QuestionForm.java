@@ -12,6 +12,7 @@ import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
+import org.gusdb.wdk.model.jspwrap.EnumParamBean;
 import org.gusdb.wdk.model.jspwrap.FlatVocabParamBean;
 import org.gusdb.wdk.model.jspwrap.HistoryParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
@@ -69,8 +70,8 @@ public class QuestionForm extends QuestionSetForm {
             ParamBean p = params[i];
             try {
                 String[] pVals = null;
-                if (p instanceof FlatVocabParamBean
-                        || p instanceof HistoryParamBean) {
+                if ((p instanceof FlatVocabParamBean) || (p instanceof EnumParamBean)
+                        || (p instanceof HistoryParamBean)) {
                     pVals = getMyMultiProp(p.getName());
                     if (pVals == null) {
                         pVals = new String[]{ "" };

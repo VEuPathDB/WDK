@@ -91,6 +91,8 @@ public class QuestionBean implements Serializable {
     private ParamBean getParam(Param param) {
         if (param instanceof FlatVocabParam) {
             return new FlatVocabParamBean((FlatVocabParam) param);
+        } else if (param instanceof EnumParam) {
+            return new EnumParamBean((EnumParam) param);
         } else if (param instanceof HistoryParam) {
             return new HistoryParamBean((HistoryParam) param);
         } else if (param instanceof DatasetParam) {
