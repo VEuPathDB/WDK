@@ -87,7 +87,7 @@ public class PrimaryKeyValue {
 
             if (pk.recordId.equalsIgnoreCase(recordId)) {
                 if (projectId == null) return true;
-                return pk.getProjectName().equalsIgnoreCase(projectName);
+                return projectName.equalsIgnoreCase(pk.getProjectName());
             }
         }
         return false;

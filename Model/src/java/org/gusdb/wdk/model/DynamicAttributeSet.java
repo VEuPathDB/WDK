@@ -203,8 +203,8 @@ public class DynamicAttributeSet extends WdkModelBase implements Serializable {
     }
 
     private void addColumn(Column column, StringBuffer sqlSelectBuf,
-            String resultTable, Query attributesQuery, String resultTableMacro) {
-        attributesQuery.addColumn(column);
+            String resultTable, Query attributesQuery, String resultTableMacro) throws WdkModelException {
+        attributesQuery.addColumnToMap(column);
         sqlSelectBuf.append(resultTableMacro + "." + column.getName() + ", ");
 
         // commented by Jerric
