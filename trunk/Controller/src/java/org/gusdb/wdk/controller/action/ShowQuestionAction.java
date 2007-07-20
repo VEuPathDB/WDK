@@ -16,16 +16,7 @@ import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.DatasetBean;
-import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
-import org.gusdb.wdk.model.jspwrap.FlatVocabParamBean;
-import org.gusdb.wdk.model.jspwrap.HistoryBean;
-import org.gusdb.wdk.model.jspwrap.HistoryParamBean;
-import org.gusdb.wdk.model.jspwrap.ParamBean;
-import org.gusdb.wdk.model.jspwrap.QuestionBean;
-import org.gusdb.wdk.model.jspwrap.QuestionSetBean;
-import org.gusdb.wdk.model.jspwrap.UserBean;
-import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.model.jspwrap.*;
 
 /**
  * This Action is called by the ActionServlet when a WDK question is requested.
@@ -40,57 +31,65 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
     public ActionForward execute( ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response )
             throws Exception {
-        System.out.println("Entering ShowQuestionAction..");
- 
-        String qFullName = ( ( QuestionSetForm ) form ).getQuestionFullName();
-        if (qFullName == null) {
-            qFullName = request.getParameter( CConstants.QUESTION_FULLNAME_PARAM );
+        System.out.println( "Entering ShowQuestionAction.." );
+        
+        try {
+            String qFullName = ( ( QuestionSetForm ) form ).getQuestionFullName();
+            if ( qFullName == null ) {
+                qFullName = request.getParameter( CConstants.QUESTION_FULLNAME_PARAM );
+            }
+            if ( qFullName == null ) {
+                qFullName = ( String ) request.getAttribute( CConstants.QUESTION_FULLNAME_PARAM );
+            }
+            QuestionBean wdkQuestion = getQuestionByFullName( qFullName );
+            
+            QuestionForm qForm = prepareQuestionForm( wdkQuestion, request,
+                    ( QuestionForm ) form );
+            
+            QuestionSetForm qSetForm = ( QuestionSetForm ) request.getAttribute( CConstants.QUESTIONSETFORM_KEY );
+            if ( null == qSetForm ) {
+                qSetForm = new QuestionSetForm();
+                request.setAttribute( CConstants.QUESTIONSETFORM_KEY, qSetForm );
+            }
+            qSetForm.setQuestionFullName( qFullName );
+            prepareQuestionSetForm( getServlet(), qSetForm );
+            
+            ServletContext svltCtx = getServlet().getServletContext();
+            String customViewDir = ( String ) svltCtx.getAttribute( CConstants.WDK_CUSTOMVIEWDIR_KEY );
+            String customViewFile1 = customViewDir + File.separator
+                    + wdkQuestion.getFullName() + ".jsp";
+            String customViewFile2 = customViewDir + File.separator
+                    + wdkQuestion.getRecordClass().getFullName()
+                    + ".question.jsp";
+            String customViewFile3 = customViewDir + File.separator
+                    + CConstants.WDK_CUSTOM_QUESTION_PAGE;
+            ActionForward forward = null;
+            if ( ApplicationInitListener.resourceExists( customViewFile1,
+                    svltCtx ) ) {
+                forward = new ActionForward( customViewFile1 );
+            } else if ( ApplicationInitListener.resourceExists(
+                    customViewFile2, svltCtx ) ) {
+                forward = new ActionForward( customViewFile2 );
+            } else if ( ApplicationInitListener.resourceExists(
+                    customViewFile3, svltCtx ) ) {
+                forward = new ActionForward( customViewFile3 );
+            } else {
+                forward = mapping.findForward( CConstants.SHOW_QUESTION_MAPKEY );
+            }
+            
+            String gotoSum = request.getParameter( CConstants.GOTO_SUMMARY_PARAM );
+            if ( qForm.getParamsFilled() && "1".equals( gotoSum ) ) {
+                forward = mapping.findForward( CConstants.SKIPTO_SUMMARY_MAPKEY );
+                // System.out.println("SQA: form has all param vals, go to
+                // summary
+                // page " + forward.getPath() + " directly");
+            }
+            
+            return forward;
+        } catch ( Exception ex ) {
+            ex.printStackTrace();
+            throw ex;
         }
-        if (qFullName == null) {
-            qFullName = (String)request.getAttribute( CConstants.QUESTION_FULLNAME_PARAM );
-        }
-        QuestionBean wdkQuestion = getQuestionByFullName( qFullName );
-        
-        QuestionForm qForm = prepareQuestionForm( wdkQuestion, request, (QuestionForm) form );
-        
-        QuestionSetForm qSetForm = ( QuestionSetForm ) request.getAttribute( CConstants.QUESTIONSETFORM_KEY );
-        if ( null == qSetForm ) {
-            qSetForm = new QuestionSetForm();
-            request.setAttribute( CConstants.QUESTIONSETFORM_KEY, qSetForm );
-        }
-        qSetForm.setQuestionFullName( qFullName );
-        prepareQuestionSetForm( getServlet(), qSetForm );
-        
-        ServletContext svltCtx = getServlet().getServletContext();
-        String customViewDir = ( String ) svltCtx.getAttribute( CConstants.WDK_CUSTOMVIEWDIR_KEY );
-        String customViewFile1 = customViewDir + File.separator
-                + wdkQuestion.getFullName() + ".jsp";
-        String customViewFile2 = customViewDir + File.separator
-                + wdkQuestion.getRecordClass().getFullName() + ".question.jsp";
-        String customViewFile3 = customViewDir + File.separator
-                + CConstants.WDK_CUSTOM_QUESTION_PAGE;
-        ActionForward forward = null;
-        if ( ApplicationInitListener.resourceExists( customViewFile1, svltCtx ) ) {
-            forward = new ActionForward( customViewFile1 );
-        } else if ( ApplicationInitListener.resourceExists( customViewFile2,
-                svltCtx ) ) {
-            forward = new ActionForward( customViewFile2 );
-        } else if ( ApplicationInitListener.resourceExists( customViewFile3,
-                svltCtx ) ) {
-            forward = new ActionForward( customViewFile3 );
-        } else {
-            forward = mapping.findForward( CConstants.SHOW_QUESTION_MAPKEY );
-        }
-        
-        String gotoSum = request.getParameter( CConstants.GOTO_SUMMARY_PARAM );
-        if ( qForm.getParamsFilled() && "1".equals( gotoSum ) ) {
-            forward = mapping.findForward( CConstants.SKIPTO_SUMMARY_MAPKEY );
-            // System.out.println("SQA: form has all param vals, go to summary
-            // page " + forward.getPath() + " directly");
-        }
-        
-        return forward;
-        
     }
     
     protected QuestionBean getQuestionByFullName( String qFullName ) {
@@ -103,7 +102,7 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
         
         QuestionSetBean wdkQuestionSet = ( QuestionSetBean ) wdkModel.getQuestionSetsMap().get(
                 qSetName );
-        if (wdkQuestionSet == null) return null;
+        if ( wdkQuestionSet == null ) return null;
         QuestionBean wdkQuestion = ( QuestionBean ) wdkQuestionSet.getQuestionsMap().get(
                 qName );
         return wdkQuestion;
@@ -142,12 +141,21 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
         for ( int i = 0; i < params.length; i++ ) {
             ParamBean p = params[ i ];
             Object pVal = null;
-            if ( p instanceof FlatVocabParamBean ) {
+            if ( ( p instanceof FlatVocabParamBean )
+                    || ( p instanceof EnumParamBean ) ) {
                 // not assuming fixed order, so call once, use twice.
-                String[ ] flatVocab = ( ( FlatVocabParamBean ) p ).getVocab();
+                String[ ] flatVocab;
+                String[ ] labels;
+                if ( p instanceof FlatVocabParamBean ) {
+                    flatVocab = ( ( FlatVocabParamBean ) p ).getVocab();
+                    labels = flatVocab;
+                } else {
+                    flatVocab = ( ( EnumParamBean ) p ).getVocab();
+                    labels = ( ( EnumParamBean ) p ).getDisplay();
+                }
                 qForm.getMyValues().put( p.getName(), flatVocab );
                 qForm.getMyLabels().put( p.getName(),
-                        getLengthBoundedLabels( flatVocab ) );
+                        getLengthBoundedLabels( labels ) );
                 
                 // get values from the request
                 String[ ] cgiParamValSet = request.getParameterValues( p.getName() );
@@ -169,9 +177,9 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
                         // just select the first one as the default
                         pVal = new String[ ] { flatVocab[ 0 ] };
                     } else { // use the value by the author
-                        String[] defaults = defaultSelection.split( "," );
-                        for (int idx = 0; idx < defaults.length; idx++) {
-                            defaults[idx] = defaults[idx].trim();
+                        String[ ] defaults = defaultSelection.split( "," );
+                        for ( int idx = 0; idx < defaults.length; idx++ ) {
+                            defaults[ idx ] = defaults[ idx ].trim();
                         }
                         pVal = defaults;
                     }
@@ -222,8 +230,10 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
                 pVal = cgiParamVal;
             }
             
-            /* System.out.println( "DEBUG: param " + p.getName() + " = '" + pVal
-                    + "'" ); */
+            /*
+             * System.out.println( "DEBUG: param " + p.getName() + " = '" + pVal +
+             * "'" );
+             */
             if ( pVal == null ) {
                 hasAllParams = false;
                 pVal = p.getDefault();

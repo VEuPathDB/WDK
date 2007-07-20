@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.jspwrap;
 
+import java.util.Map;
+
 import org.gusdb.wdk.model.EnumParam;
 import org.gusdb.wdk.model.WdkModelException;
 
@@ -8,25 +10,28 @@ import org.gusdb.wdk.model.WdkModelException;
  * consumption by a view
  */
 public class EnumParamBean extends ParamBean {
-
-    public EnumParamBean(EnumParam param) {
-        super(param);
+    
+    public EnumParamBean( EnumParam param ) {
+        super( param );
     }
-
+    
     public Boolean getMultiPick() {
-        return ((EnumParam) param).getMultiPick();
+        return ( ( EnumParam ) param ).getMultiPick();
     }
-
-    public String[] getVocabInternal() throws WdkModelException {
-        return ((EnumParam) param).getVocabInternal();
+    
+    public String[ ] getVocabInternal() throws WdkModelException {
+        return ( ( EnumParam ) param ).getVocabInternal();
     }
-
-    public String[] getVocab() throws WdkModelException {
-        return ((EnumParam) param).getVocab();
+    
+    public String[ ] getVocab() throws WdkModelException {
+        return ( ( EnumParam ) param ).getVocab();
     }
-
-    public String[] getDsplay() {
-        return ((EnumParam) param).getDisplay();
+    
+    public String[ ] getDisplay() {
+        return ( ( EnumParam ) param ).getDisplay();
     }
-
+    
+    public Map< String, String > getTermDisplayMap() {
+        return ( ( EnumParam ) param ).getTermDisplayMap();
+    }
 }
