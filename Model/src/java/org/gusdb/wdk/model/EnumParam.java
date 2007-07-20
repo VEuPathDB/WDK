@@ -3,6 +3,7 @@ package org.gusdb.wdk.model;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class EnumParam extends AbstractEnumParam {
 
@@ -24,6 +25,15 @@ public class EnumParam extends AbstractEnumParam {
             displays[i] = enumItems[i].getDisplay();
         }
         return displays;
+    }
+    
+    public Map<String, String> getTermDisplayMap() {
+        Map<String, String> map = new LinkedHashMap< String, String >();
+        EnumItem[] enumItems = enumItemList.getEnumItems();
+        for (EnumItem item : enumItems) {
+            map.put( item.getTerm(), item.getDisplay() );
+        }
+        return map;
     }
 
     // ///////////////////////////////////////////////////////////////////
