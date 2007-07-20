@@ -67,6 +67,14 @@ public abstract class Query extends WdkModelBase implements Serializable {
         columnList.add(column);
         signature = null;
     }
+    
+    void addColumnToMap(Column column) throws WdkModelException {
+        String columnName = column.getName();
+        if (columns.containsKey(columnName))
+            throw new WdkModelException("The column " + columnName
+                    + " is duplicated in query " + getFullName());
+        columns.put(column.getName(), column);
+    }
 
     // ///////////////////////////////////////////////////////////////////////
     // public getters
@@ -457,11 +465,7 @@ public abstract class Query extends WdkModelBase implements Serializable {
             if (column.include(projectId)) {
                 column.setQuery(this);
                 column.excludeResources(projectId);
-                String columnName = column.getName();
-                if (columns.containsKey(columnName))
-                    throw new WdkModelException("The column " + columnName
-                            + " is duplicated in query " + getFullName());
-                columns.put(column.getName(), column);
+                addColumnToMap(column);
             }
         }
         columnList = null;
