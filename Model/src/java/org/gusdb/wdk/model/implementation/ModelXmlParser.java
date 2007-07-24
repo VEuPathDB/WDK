@@ -44,6 +44,8 @@ import org.gusdb.wdk.model.Group;
 import org.gusdb.wdk.model.GroupSet;
 import org.gusdb.wdk.model.HistoryParam;
 import org.gusdb.wdk.model.LinkAttributeField;
+import org.gusdb.wdk.model.ModelConfig;
+import org.gusdb.wdk.model.ModelConfigParser;
 import org.gusdb.wdk.model.NestedRecord;
 import org.gusdb.wdk.model.NestedRecordList;
 import org.gusdb.wdk.model.ParamConfiguration;
@@ -94,13 +96,17 @@ public class ModelXmlParser extends XmlParser {
         xmlDataDir = gusHome + "/lib/xml/";
     }
 
-    public WdkModel parseModel(String modelName)
+    public WdkModel parseModel(String projectId)
             throws ParserConfigurationException,
             TransformerFactoryConfigurationError, TransformerException,
             IOException, SAXException, WdkModelException {
+        // get model config
+        ModelConfig config = getModelConfig(projectId);
+        String modelName = config.getModelName();
+        
         // construct urls to model file, prop file, and config file
         URL modelURL = makeURL(gusHome, "lib/wdk/" + modelName + ".xml");
-        URL modelPropURL = makeURL(gusHome, "config/" + modelName + ".prop");
+        URL modelPropURL = makeURL(gusHome, "config/" + projectId + "Model.prop");
 
         // validate the master model file
         if (!validate(modelURL))
@@ -118,13 +124,18 @@ public class ModelXmlParser extends XmlParser {
 
         model.setXmlSchema(xmlSchemaURL); // set schema for xml data
         model.setXmlDataDir(new File(xmlDataDir)); // consider refactoring
-        model.configure(gusHome, modelName);
+        model.configure(config);
         model.setResources();
         model.setProperties(properties); // consider removing it
 
         return model;
     }
-
+    
+    private ModelConfig getModelConfig(String projectId) throws SAXException, IOException, WdkModelException {
+        ModelConfigParser parser = new ModelConfigParser(gusHome);
+        return parser.parseConfig(projectId);
+    }
+    
     private Document buildMasterDocument(URL wdkModelURL)
             throws SAXException, IOException, ParserConfigurationException,
             WdkModelException {
@@ -565,16 +576,16 @@ public class ModelXmlParser extends XmlParser {
             TransformerFactoryConfigurationError, TransformerException,
             WdkModelException {
         String cmdName = System.getProperty("cmdName");
-        String gusHome = System.getProperty(Utilities.SYS_PROP_GUS_HOME);
+        String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
 
         // process args
         Options options = declareOptions();
         CommandLine cmdLine = parseOptions(cmdName, options, args);
-        String modelName = cmdLine.getOptionValue(Utilities.ARGUMENT_MODEL);
+        String projectId = cmdLine.getOptionValue(Utilities.ARGUMENT_PROJECT_ID);
 
         // create a parser, and parse the model file
         ModelXmlParser parser = new ModelXmlParser(gusHome);
-        WdkModel wdkModel = parser.parseModel(modelName);
+        WdkModel wdkModel = parser.parseModel(projectId);
 
         // print out the model content
         System.out.println(wdkModel.toString());

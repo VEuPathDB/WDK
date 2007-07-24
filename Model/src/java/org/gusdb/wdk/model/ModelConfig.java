@@ -3,11 +3,11 @@ package org.gusdb.wdk.model;
 /**
  * @author
  * @modified Jan 6, 2006 - Jerric add a property for the name of query history
- * table
+ *           table
  */
 public class ModelConfig {
 
-    private String projectId;
+    private String modelName;
     private String connectionUrl;
     private String login;
     private String password;
@@ -39,18 +39,26 @@ public class ModelConfig {
     private String queryLoggerFile;
 
     /**
-     * @return the projectId
+     * The projectId is not part of the config file content, it is input by the
+     * user
      */
-    public String getProjectId() {
-        return this.projectId;
+    private String projectId;
+
+    private String gusHome;
+
+    /**
+     * @return the modelName
+     */
+    public String getModelName() {
+        return this.modelName;
     }
 
     /**
-     * @param projectId
-     * the projectId to set
+     * @param modelName
+     *        the modelName to set
      */
-    public void setProjectId(String projectId) {
-        this.projectId = projectId;
+    public void setModelName(String modelName) {
+        this.modelName = modelName;
     }
 
     public void setPlatformClass(String platformClass) {
@@ -142,7 +150,7 @@ public class ModelConfig {
 
     /**
      * @param authenticationConnectionUrl
-     * The authenticationConnectionUrl to set.
+     *        The authenticationConnectionUrl to set.
      */
     public void setAuthenticationConnectionUrl(
             String authenticationConnectionUrl) {
@@ -158,7 +166,7 @@ public class ModelConfig {
 
     /**
      * @param authenticationLogin
-     * The authenticationLogin to set.
+     *        The authenticationLogin to set.
      */
     public void setAuthenticationLogin(String authenticationLogin) {
         this.authenticationLogin = authenticationLogin;
@@ -173,7 +181,7 @@ public class ModelConfig {
 
     /**
      * @param authenticationPassword
-     * The authenticationPassword to set.
+     *        The authenticationPassword to set.
      */
     public void setAuthenticationPassword(String authenticationPassword) {
         this.authenticationPassword = authenticationPassword;
@@ -188,7 +196,7 @@ public class ModelConfig {
 
     /**
      * @param loginSchema
-     * The loginSchema to set.
+     *        The loginSchema to set.
      */
     public void setLoginSchema(String loginSchema) {
         this.loginSchema = loginSchema;
@@ -203,7 +211,7 @@ public class ModelConfig {
 
     /**
      * @param defaultRole
-     * The defaultRole to set.
+     *        The defaultRole to set.
      */
     public void setDefaultRole(String defaultRole) {
         this.defaultRole = defaultRole;
@@ -218,7 +226,7 @@ public class ModelConfig {
 
     /**
      * @param authenticationPlatformClass
-     * The authenticationPlatformClass to set.
+     *        The authenticationPlatformClass to set.
      */
     public void setAuthenticationPlatformClass(
             String authenticationPlatformClass) {
@@ -234,7 +242,7 @@ public class ModelConfig {
 
     /**
      * @param smtpServer
-     * The smtpServer to set.
+     *        The smtpServer to set.
      */
     public void setSmtpServer(String smtpServer) {
         this.smtpServer = smtpServer;
@@ -249,7 +257,7 @@ public class ModelConfig {
 
     /**
      * @param emailContent
-     * The emailContent to set.
+     *        The emailContent to set.
      */
     public void setEmailContent(String emailContent) {
         this.emailContent = emailContent;
@@ -264,7 +272,7 @@ public class ModelConfig {
 
     /**
      * @param emailSubject
-     * The emailSubject to set.
+     *        The emailSubject to set.
      */
     public void setEmailSubject(String emailSubject) {
         this.emailSubject = emailSubject;
@@ -279,7 +287,7 @@ public class ModelConfig {
 
     /**
      * @param registerEmail
-     * The registerEmail to set.
+     *        The registerEmail to set.
      */
     public void setRegisterEmail(String registerEmail) {
         this.registerEmail = registerEmail;
@@ -294,7 +302,7 @@ public class ModelConfig {
 
     /**
      * @param enableQueryLogger
-     * the enableQueryLogger to set
+     *        the enableQueryLogger to set
      */
     public void setEnableQueryLogger(boolean enableQueryLogger) {
         this.enableQueryLogger = enableQueryLogger;
@@ -309,10 +317,39 @@ public class ModelConfig {
 
     /**
      * @param queryLoggerFile
-     * the queryLoggerFile to set
+     *        the queryLoggerFile to set
      */
     public void setQueryLoggerFile(String queryLoggerFile) {
         this.queryLoggerFile = queryLoggerFile;
     }
 
+    /**
+     * @return the projectId
+     */
+    public String getProjectId() {
+        return this.projectId;
+    }
+
+    /**
+     * @param projectId
+     *        the projectId to set
+     */
+    public void setProjectId(String projectId) {
+        this.projectId = projectId;
+    }
+
+    /**
+     * @return the gusHome
+     */
+    public String getGusHome() {
+        return this.gusHome;
+    }
+
+    /**
+     * @param gusHome
+     *        the gusHome to set
+     */
+    public void setGusHome(String gusHome) {
+        this.gusHome = gusHome;
+    }
 }

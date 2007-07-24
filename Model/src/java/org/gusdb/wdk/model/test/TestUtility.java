@@ -126,7 +126,7 @@ public class TestUtility {
             ParserConfigurationException, TransformerFactoryConfigurationError,
             TransformerException {
         String modelName = System.getProperty("model");
-        String gusHome = System.getProperty(Utilities.SYS_PROP_GUS_HOME);
+        String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
 
         SanityTestXmlParser parser = new SanityTestXmlParser(gusHome);
         return parser.parseModel(modelName);

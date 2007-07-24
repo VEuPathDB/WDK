@@ -14,7 +14,7 @@ import org.xml.sax.SAXException;
  */
 public class ModelConfigParserTest {
 
-    private String modelName;
+    private String projectId;
     private String gusHome;
 
     /**
@@ -25,17 +25,18 @@ public class ModelConfigParserTest {
     @org.junit.Before
     public void getInput() throws WdkModelException {
         // get input from the system environment
-        modelName = System.getProperty(Utilities.ARGUMENT_MODEL);
-        gusHome = System.getProperty(Utilities.SYS_PROP_GUS_HOME);
+        projectId = System.getProperty(Utilities.ARGUMENT_PROJECT_ID);
+        gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
 
         // GUS_HOME is required
         if (gusHome == null || gusHome.length() == 0)
             throw new WdkModelException("Required "
-                    + Utilities.SYS_PROP_GUS_HOME + " property is missing.");
+                    + Utilities.SYSTEM_PROPERTY_GUS_HOME
+                    + " property is missing.");
 
-        // model name is optional
-        if (modelName == null || modelName.length() == 0)
-            modelName = WdkModelTestBase.SAMPLE_MODEL;
+        // project id is optional
+        if (projectId == null || projectId.length() == 0)
+            projectId = WdkModelTestBase.SAMPLE_PROJECT_ID;
     }
 
     /**
@@ -46,10 +47,10 @@ public class ModelConfigParserTest {
      * @throws WdkModelException
      */
     @org.junit.Test
-    public void testParseConfig()
-            throws SAXException, IOException, WdkModelException {
+    public void testParseConfig() throws SAXException, IOException,
+            WdkModelException {
         ModelConfigParser parser = new ModelConfigParser(gusHome);
-        ModelConfig config = parser.parseConfig(modelName);
+        ModelConfig config = parser.parseConfig(projectId);
         Assert.assertNotNull(config);
     }
 
@@ -61,10 +62,10 @@ public class ModelConfigParserTest {
      * @throws WdkModelException
      */
     @org.junit.Test(expected = WdkModelException.class)
-    public void testParseInvalidConfig()
-            throws SAXException, IOException, WdkModelException {
-        String modelName = "sampleModel_bad_config_syntax";
+    public void testParseInvalidConfig() throws SAXException, IOException,
+            WdkModelException {
+        String projectId = "SampleDB_bad_config_syntax";
         ModelConfigParser parser = new ModelConfigParser(gusHome);
-        parser.parseConfig(modelName);
+        parser.parseConfig(projectId);
     }
 }

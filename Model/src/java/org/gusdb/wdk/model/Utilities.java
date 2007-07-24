@@ -32,12 +32,12 @@ public class Utilities {
     /**
      * command-line argument: -model
      */
-    public static final String ARGUMENT_MODEL = "model";
+    public static final String ARGUMENT_PROJECT_ID = "model";
 
     /**
      * system property: gusHome
      */
-    public static final String SYS_PROP_GUS_HOME = "GUS_HOME";
+    public static final String SYSTEM_PROPERTY_GUS_HOME = "GUS_HOME";
 
     public static String encrypt(String data) throws WdkModelException {
         // cannot encrypt null value

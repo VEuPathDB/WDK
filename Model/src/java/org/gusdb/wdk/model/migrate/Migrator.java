@@ -116,7 +116,7 @@ public class Migrator {
         }
 
         // parse the wdk model
-        String gusHome = System.getProperty(Utilities.SYS_PROP_GUS_HOME);
+        String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
         try {
             ModelXmlParser modelParser = new ModelXmlParser(gusHome);
             wdkModel = modelParser.parseModel(modelName);
