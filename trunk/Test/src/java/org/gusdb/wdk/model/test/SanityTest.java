@@ -31,7 +31,7 @@ public class SanityTest extends WdkModelTestBase {
             TransformerException {
         // create sanity model parser
         SanityTestXmlParser parser = new SanityTestXmlParser(gusHome);
-        sanityModel = parser.parseModel(modelName, wdkModel);
+        sanityModel = parser.parseModel(projectId, wdkModel);
     }
     
     @Test

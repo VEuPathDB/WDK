@@ -689,7 +689,7 @@ public class SanityTester {
             TransformerFactoryConfigurationError, TransformerException,
             WdkUserException {
         String cmdName = System.getProperty("cmdName");
-        String gusHome = System.getProperty(Utilities.SYS_PROP_GUS_HOME);
+        String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
 
         Options options = declareOptions();
         CommandLine cmdLine = parseOptions(cmdName, options, args);

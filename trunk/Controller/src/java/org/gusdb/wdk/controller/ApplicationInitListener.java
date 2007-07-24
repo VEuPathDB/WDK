@@ -40,8 +40,8 @@ public class ApplicationInitListener implements ServletContextListener {
 
         ServletContext application = sce.getServletContext();
 
-        String gusHome = application.getRealPath(application.getInitParameter(Utilities.SYS_PROP_GUS_HOME));
-        String modelName = application.getInitParameter(Utilities.ARGUMENT_MODEL);
+        String gusHome = application.getRealPath(application.getInitParameter(Utilities.SYSTEM_PROPERTY_GUS_HOME));
+        String modelName = application.getInitParameter(Utilities.ARGUMENT_PROJECT_ID);
 
         String customViewDir = application.getInitParameter(CConstants.WDK_CUSTOMVIEWDIR_PARAM);
         String alwaysGoToSummary = application.getInitParameter(CConstants.WDK_ALWAYSGOTOSUMMARY_PARAM);
