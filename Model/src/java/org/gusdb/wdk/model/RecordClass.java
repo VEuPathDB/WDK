@@ -116,8 +116,8 @@ public class RecordClass extends WdkModelBase {
 
     /**
      * @param attList
-     * comma separated list of attributes in a summary containing this
-     * recordClass.
+     *        comma separated list of attributes in a summary containing this
+     *        recordClass.
      */
     /*
      * public void setSummaryAttributeList (String attList){
@@ -134,7 +134,7 @@ public class RecordClass extends WdkModelBase {
 
     /**
      * @param attributesQueryRef
-     * two part query name (set.name)
+     *        two part query name (set.name)
      */
     public void addAttributesQueryRef(AttributeQueryReference attributesQueryRef) {
         attributesQueryRefs.add(attributesQueryRef);
@@ -278,7 +278,7 @@ public class RecordClass extends WdkModelBase {
 
     /**
      * @return all Questions in the current model that are using this record
-     * class as their return type.
+     *         class as their return type.
      */
     public Question[] getQuestions() {
         Question[] returnedQuestions = new Question[questions.size()];
@@ -315,7 +315,7 @@ public class RecordClass extends WdkModelBase {
 
     public RecordInstance makeRecordInstance(String projectId, String recordId)
             throws WdkModelException {
-        String sourceId = lookupSourceId(recordId);
+        String sourceId = lookupSourceId(projectId, recordId);
         return new RecordInstance(this, projectId, sourceId);
     }
 
@@ -361,7 +361,7 @@ public class RecordClass extends WdkModelBase {
 
     /**
      * @param recordSetName
-     * name of the recordSet to which this record belongs.
+     *        name of the recordSet to which this record belongs.
      */
     void setFullName(String recordSetName) {
         this.fullName = recordSetName + "." + name;
@@ -394,7 +394,7 @@ public class RecordClass extends WdkModelBase {
         // Added by Jerric
         // resolve projectParam
         AbstractEnumParam projectParam = null;
-        if (projectParamRef != null) {
+        if (hasProjectId()) {
             projectParam = (AbstractEnumParam) model.resolveReference(projectParamRef.getTwoPartName());
             projectParam = (AbstractEnumParam) projectParam.clone();
             projectParam.setDefault(projectParamRef.getDefault());
@@ -511,7 +511,8 @@ public class RecordClass extends WdkModelBase {
         return orderedAttsMap;
     }
 
-    private String lookupSourceId(String aliasName) throws WdkModelException {
+    private String lookupSourceId(String projectId, String aliasName)
+            throws WdkModelException {
         // nothing to look up
         if (aliasQuery == null) return aliasName;
 
@@ -520,6 +521,10 @@ public class RecordClass extends WdkModelBase {
         qinstance.setIsCacheable(false);
         Map<String, Object> params = new LinkedHashMap<String, Object>();
         params.put(PRIMARY_KEY_NAME, aliasName);
+
+        // check if we need to add projectId too
+        if (hasProjectId()) params.put(PROJECT_ID_NAME, projectId);
+
         qinstance.setValues(params);
         ResultList resultList = qinstance.getResult();
         if (resultList.next()) {
@@ -608,5 +613,9 @@ public class RecordClass extends WdkModelBase {
             }
         }
         nestedRecordListQuestionRefs = newNestedRecordLists;
+    }
+
+    public boolean hasProjectId() {
+        return (projectParamRef != null);
     }
 }
