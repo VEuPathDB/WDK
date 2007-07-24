@@ -66,7 +66,7 @@ public class HistoryRecycler implements Runnable {
     }
 
     private boolean isStopping() {
-        String gusHome = System.getProperty(Utilities.SYS_PROP_GUS_HOME);
+        String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
         File stopFile = new File(gusHome, "/config/" + STOP_SIGNAL_FILE);
         return stopFile.exists();
     }

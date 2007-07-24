@@ -21,10 +21,10 @@ public abstract class WdkModelTestBase {
     /**
      * the correct, multi-part model
      */
-    public static final String SAMPLE_MODEL = "sampleModel";
+    public static final String SAMPLE_PROJECT_ID = "SampleDB";
 
     protected String gusHome;
-    protected String modelName;
+    protected String projectId;
     protected WdkModel wdkModel;
 
     /**
@@ -43,20 +43,20 @@ public abstract class WdkModelTestBase {
             TransformerFactoryConfigurationError, TransformerException,
             IOException, SAXException {
         // get input from the system environment
-        modelName = System.getProperty(Utilities.ARGUMENT_MODEL);
-        gusHome = System.getProperty(Utilities.SYS_PROP_GUS_HOME);
+        projectId = System.getProperty(Utilities.ARGUMENT_PROJECT_ID);
+        gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
 
         // GUS_HOME is required
         if (gusHome == null || gusHome.length() == 0)
             throw new WdkModelException("Required "
-                    + Utilities.SYS_PROP_GUS_HOME + " property is missing.");
+                    + Utilities.SYSTEM_PROPERTY_GUS_HOME + " property is missing.");
 
-        // model name is optional
-        if (modelName == null || modelName.length() == 0)
-            modelName = SAMPLE_MODEL;
+        // project id is optional
+        if (projectId == null || projectId.length() == 0)
+            projectId = SAMPLE_PROJECT_ID;
 
         // initialize the model
         ModelXmlParser parser = new ModelXmlParser(gusHome);
-        wdkModel = parser.parseModel(modelName);
+        wdkModel = parser.parseModel(projectId);
     }
 }

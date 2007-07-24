@@ -37,6 +37,7 @@ public class WdkModel {
     @Deprecated
     public static WdkModel INSTANCE = new WdkModel();
 
+    private ModelConfig modelConfig;
     private String projectId;
 
     private RDBMSPlatformI platform;
@@ -106,7 +107,7 @@ public class WdkModel {
      * information
      */
     public static WdkModel construct(String modelName) throws WdkModelException {
-        String gusHome = System.getProperty(Utilities.SYS_PROP_GUS_HOME);
+        String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
 
         try {
             ModelXmlParser parser = new ModelXmlParser(gusHome);
@@ -386,16 +387,13 @@ public class WdkModel {
      * @param gusHome
      * @throws WdkModelException
      */
-    public void configure(String gusHome, String modelName)
+    public void configure(ModelConfig  modelConfig)
             throws WdkModelException {
         try {
-            ModelConfigParser parser = new ModelConfigParser(gusHome);
-            ModelConfig modelConfig = parser.parseConfig(modelName);
 
             // assign projectId
             this.projectId = modelConfig.getProjectId();
-
-            String fileName = gusHome + "/config/" + modelName + "-config.xml";
+            this.modelConfig = modelConfig;
 
             String connectionUrl = modelConfig.getConnectionUrl();
             String login = modelConfig.getLogin();
@@ -426,8 +424,8 @@ public class WdkModel {
 
             boolean enableQueryLogger = modelConfig.isEnableQueryLogger();
             String queryLoggerFile = modelConfig.getQueryLoggerFile();
-
-            String projectId = getProjectId();
+            
+            String configFile = modelConfig.getGusHome() + "/config/" + projectId + "Model-config.xml";
 
             // initialize authentication factory
             // set the max active as half of the model's configuration
@@ -436,7 +434,7 @@ public class WdkModel {
                         authenPlatformClass).newInstance();
                 authenPlatform.init(authenConnection, authenLogin,
                         authenPassword, minIdle, maxIdle, maxWait,
-                        maxActive / 2, initialSize, fileName);
+                        maxActive / 2, initialSize, configFile);
                 userFactory = new UserFactory(this, projectId, authenPlatform,
                         loginSchema, defaultRole, smtpServer, registerEmail,
                         emailSubject, emailContent);
@@ -446,7 +444,7 @@ public class WdkModel {
             }
 
             platform.init(connectionUrl, login, password, minIdle, maxIdle,
-                    maxWait, maxActive, initialSize, fileName);
+                    maxWait, maxActive, initialSize, configFile);
             ResultFactory resultFactory = new ResultFactory(platform, login,
                     enableQueryLogger, queryLoggerFile);
             this.platform = platform;
@@ -467,11 +465,11 @@ public class WdkModel {
             throw new WdkModelException(ex);
         } catch (ClassNotFoundException ex) {
             throw new WdkModelException(ex);
-        } catch (SAXException ex) {
-            throw new WdkModelException(ex);
-        } catch (IOException ex) {
-            throw new WdkModelException(ex);
         }
+    }
+    
+    public ModelConfig getModelConfig() {
+        return modelConfig;
     }
 
     public RDBMSPlatformI getRDBMSPlatform() {

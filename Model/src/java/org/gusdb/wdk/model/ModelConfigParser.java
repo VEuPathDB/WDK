@@ -8,21 +8,26 @@ import org.xml.sax.SAXException;
 
 public class ModelConfigParser extends XmlParser {
 
-    //private static final Logger logger = Logger.getLogger(ModelConfigParser.class);
+    // private static final Logger logger =
+    // Logger.getLogger(ModelConfigParser.class);
 
     public ModelConfigParser(String gusHome) throws SAXException, IOException {
         super(gusHome, "lib/rng/wdkModel-config.rng");
     }
 
-    public ModelConfig parseConfig(String modelName)
-            throws SAXException, IOException, WdkModelException  {
+    public ModelConfig parseConfig(String projectId) throws SAXException,
+            IOException, WdkModelException {
         // validate the configuration file
-        URL configURL = makeURL(gusHome, "config/" + modelName + "-config.xml");
+        URL configURL = makeURL(gusHome, "config/" + projectId
+                + "Model-config.xml");
         if (!validate(configURL))
             throw new WdkModelException("Relax-NG validation failed on "
                     + configURL.toExternalForm());
 
-        return (ModelConfig) digester.parse(configURL.openStream());
+        ModelConfig modelConfig = (ModelConfig) digester.parse(configURL.openStream());
+        modelConfig.setGusHome(gusHome);
+        modelConfig.setProjectId(projectId);
+        return modelConfig;
     }
 
     protected Digester configureDigester() {

@@ -59,7 +59,7 @@ public class BooleanQuestionTester {
             throws WdkModelException, WdkUserException {
 
         String cmdName = System.getProperty("cmdName");
-        String gusHome = System.getProperty(Utilities.SYS_PROP_GUS_HOME);
+        String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
 
         // process args
         Options options = declareOptions();

@@ -48,24 +48,27 @@ public class SanityTestXmlParser extends XmlParser {
         super(gusHome, "lib/rng/sanityModel.rng");
     }
 
-    public SanityModel parseModel(String modelName)
-            throws SAXException, IOException, ParserConfigurationException,
+    public SanityModel parseModel(String projectId) throws SAXException,
+            IOException, ParserConfigurationException,
             TransformerFactoryConfigurationError, TransformerException,
             WdkModelException {
         // load model
         ModelXmlParser parser = new ModelXmlParser(gusHome);
-        WdkModel wdkModel = parser.parseModel(modelName);
-        return parseModel(modelName, wdkModel);
+        WdkModel wdkModel = parser.parseModel(projectId);
+        return parseModel(projectId, wdkModel);
     }
 
-    public SanityModel parseModel(String modelName, WdkModel wdkModel)
+    public SanityModel parseModel(String projectId, WdkModel wdkModel)
             throws WdkModelException, SAXException, IOException,
             ParserConfigurationException, TransformerFactoryConfigurationError,
             TransformerException {
+        String modelName = wdkModel.getModelConfig().getModelName();
+
         // construct urls to model file, prop file, and config file
         URL sanityModelURL = makeURL(gusHome, "lib/wdk/" + modelName
                 + "-sanity.xml");
-        URL modelPropURL = makeURL(gusHome, "config/" + modelName + ".prop");
+        URL modelPropURL = makeURL(gusHome, "config/" + projectId
+                + "Model.prop");
 
         // validate the master model file
         if (!validate(sanityModelURL))
@@ -88,9 +91,8 @@ public class SanityTestXmlParser extends XmlParser {
         return sanityModel;
     }
 
-    private Document buildMasterDocument(URL wdkModelURL)
-            throws SAXException, IOException, ParserConfigurationException,
-            WdkModelException {
+    private Document buildMasterDocument(URL wdkModelURL) throws SAXException,
+            IOException, ParserConfigurationException, WdkModelException {
         // get the xml document of the model
         Document masterDoc = buildDocument(wdkModelURL);
         Node rootNode = masterDoc.getElementsByTagName("sanityModel").item(0);
@@ -193,17 +195,16 @@ public class SanityTestXmlParser extends XmlParser {
         return digester;
     }
 
-    public static void main(String[] args)
-            throws SAXException, IOException, WdkModelException,
-            ParserConfigurationException, TransformerFactoryConfigurationError,
-            TransformerException {
+    public static void main(String[] args) throws SAXException, IOException,
+            WdkModelException, ParserConfigurationException,
+            TransformerFactoryConfigurationError, TransformerException {
         String cmdName = System.getProperty("cmdName");
-        String gusHome = System.getProperty(Utilities.SYS_PROP_GUS_HOME);
+        String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
 
         // process args
         Options options = declareOptions();
         CommandLine cmdLine = parseOptions(cmdName, options, args);
-        String modelName = cmdLine.getOptionValue(Utilities.ARGUMENT_MODEL);
+        String modelName = cmdLine.getOptionValue(Utilities.ARGUMENT_PROJECT_ID);
 
         // create a parser, and parse the model file
         SanityTestXmlParser parser = new SanityTestXmlParser(gusHome);
