@@ -99,6 +99,9 @@
 		    	<attribute name="regex" />
 		  	</optional>
 		  	<optional>
+		    	<attribute name="substitute" />
+		  	</optional>
+		  	<optional>
 		    	<attribute name="length" />
 		  	</optional>
 		  	<zeroOrMore>
