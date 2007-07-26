@@ -97,11 +97,11 @@
             <column name="internal"/>
             <sql>
                 <![CDATA[
-                SELECT 'Optional 1' AS term, 1 AS internal
+                SELECT 'Optional 1' AS term, 1 AS internal FROM dual
                 UNION
-                SELECT 'Optional 2' AS term, 2 AS internal
+                SELECT 'Optional 2' AS term, 2 AS internal FROM dual
                 UNION
-                SELECT 'Optional 3' AS term, 3 AS internal
+                SELECT 'Optional 3' AS term, 3 AS internal FROM dual
                 ]]>
             </sql>
         </sqlQuery>
