@@ -5,21 +5,21 @@
       <oneOrMore>
         <choice>
         
-		  <element name="modelName">
-		      <attribute name="name" />
-		      <attribute name="displayName" />
-		      <attribute name="version"/>
-		      <ref name="IncludeExclude"/>
-		  </element>
-		  
+          <element name="modelName">
+              <attribute name="name" />
+              <attribute name="displayName" />
+              <attribute name="version"/>
+              <ref name="IncludeExclude"/>
+          </element>
+          
           <element name="introduction">
               <ref name="IncludeExclude"/>
               <text />
           </element>
           
-		  <element name="import">
-		      <attribute name="file"/>
-		  </element>
+          <element name="import">
+              <attribute name="file"/>
+          </element>
           
           <element name="defaultPropertyList">
               <ref name="PropertyListContent"/>
@@ -75,181 +75,187 @@
   
   <!-- Params -->
 
-	<define name="paramSet">
-    	<element name="paramSet">
-      		<attribute name="name" />
-      		<ref name="IncludeExclude" />
-      		<oneOrMore>
-      			<choice>
-      				<ref name="useTermOnly" />
-					<ref name="stringParam" />
-					<ref name="enumParam" />
-					<ref name="flatVocabParam" />
-					<ref name="historyParam" />
-					<ref name="datasetParam" />
-        		</choice>
-      		</oneOrMore>
-    	</element>
-  	</define>
+    <define name="paramSet">
+        <element name="paramSet">
+              <attribute name="name" />
+              <ref name="IncludeExclude" />
+              <oneOrMore>
+                  <choice>
+                      <ref name="useTermOnly" />
+                    <ref name="stringParam" />
+                    <ref name="enumParam" />
+                    <ref name="flatVocabParam" />
+                    <ref name="historyParam" />
+                    <ref name="datasetParam" />
+                </choice>
+              </oneOrMore>
+        </element>
+      </define>
   
-	<define name="stringParam">
-		<element name="stringParam">
-		  	<ref name="ParamBaseContents" />
-		  	<optional>
-		    	<attribute name="regex" />
-		  	</optional>
-		  	<optional>
-		    	<attribute name="substitute" />
-		  	</optional>
-		  	<optional>
-		    	<attribute name="length" />
-		  	</optional>
-		  	<zeroOrMore>
-			    <element name="suggest">
-			        <ref name="SuggestContent" />
-			        <optional>
-			        	<attribute name="sample" />
-			        </optional>
-			        <optional>
-			          	<attribute name="default" />
-			        </optional>
-			    </element>
-		  	</zeroOrMore>
-		</element>
-	</define>
+    <define name="stringParam">
+        <element name="stringParam">
+              <ref name="ParamBaseContents" />
+              <optional>
+                <attribute name="regex" />
+              </optional>
+              <optional>
+                <attribute name="substitute" />
+              </optional>
+              <optional>
+                <attribute name="length" />
+              </optional>
+              <zeroOrMore>
+                <element name="suggest">
+                    <ref name="SuggestContent" />
+                    <optional>
+                        <attribute name="sample" />
+                    </optional>
+                    <optional>
+                          <attribute name="default" />
+                    </optional>
+                </element>
+              </zeroOrMore>
+        </element>
+    </define>
     
-  	<define name="historyParam">
-    	<element name="historyParam">
-      		<ref name="ParamBaseContents" />
-      		<zeroOrMore>
-        		<element name="suggest">
-            		<ref name="SuggestContent" />
-        		</element>
-      		</zeroOrMore>
-    	</element>
-  	</define>
+      <define name="historyParam">
+        <element name="historyParam">
+              <ref name="ParamBaseContents" />
+              <zeroOrMore>
+                <element name="suggest">
+                    <ref name="SuggestContent" />
+                </element>
+              </zeroOrMore>
+        </element>
+      </define>
     
-  	<define name="datasetParam">
-    	<element name="datasetParam">
-      		<ref name="ParamBaseContents" />
-      		<zeroOrMore>
-        		<element name="suggest">
-            		<ref name="SuggestContent" />
-			        <optional>
-			        	<attribute name="sample" />
-			        </optional>
-			        <optional>
-			          	<attribute name="default" />
-			        </optional>
-        		</element>
-      		</zeroOrMore>
-    	</element>
-  	</define>
+      <define name="datasetParam">
+        <element name="datasetParam">
+              <ref name="ParamBaseContents" />
+              <zeroOrMore>
+                <element name="suggest">
+                    <ref name="SuggestContent" />
+                    <optional>
+                        <attribute name="sample" />
+                    </optional>
+                    <optional>
+                          <attribute name="default" />
+                    </optional>
+                </element>
+              </zeroOrMore>
+        </element>
+      </define>
     
-	<define name="enumParam">
-		<element name="enumParam">
-		  	<ref name="ParamBaseContents" />
-		  	<optional>
-		    	<attribute name="multiPick" />
-		  	</optional>
-		  	<zeroOrMore>
-		  	    <choice>
-			        <element name="suggest">
-			    	    <ref name="SuggestContent" />
-			        </element>
-		    	    <ref name="useTermOnly" />
-		    	</choice>
-		  	</zeroOrMore>
-	    	<oneOrMore>
-	    		<element name="enumList">
-	    		    <ref name="IncludeExclude" />
-        		  	<zeroOrMore>
-        		        <ref name="useTermOnly" />
-        		  	</zeroOrMore>
-        	        <oneOrMore>
-    		    		<element name="enumValue">
-        					<ref name="IncludeExclude" />
-        					<optional>
-    				            <attribute name="default" />
-    				        </optional>
-    				        <optional>
-    				          	<element name="display">
-    				          	    <text />
-    				          	</element>
-    				        </optional>
-    			          	<element name="term">
-    			          	    <text />
-    			          	</element>
-    			          	<element name="internal">
-    			          	    <text />
-    			          	</element>
-    		    		</element>
-    		    	</oneOrMore>
-    		    </element>
-	    	</oneOrMore>
-		</element>
-	</define>
+    <define name="enumParam">
+        <element name="enumParam">
+            <ref name="EnumParamBaseContents" />
+            <zeroOrMore>
+                <choice>
+                    <element name="suggest">
+                        <ref name="SuggestContent" />
+                    </element>
+                    <ref name="useTermOnly" />
+                </choice>
+            </zeroOrMore>
+            <oneOrMore>
+                <element name="enumList">
+                    <ref name="IncludeExclude" />
+                    <zeroOrMore>
+                        <ref name="useTermOnly" />
+                    </zeroOrMore>
+                    <oneOrMore>
+                        <element name="enumValue">
+                            <ref name="IncludeExclude" />
+                            <optional>
+                                <attribute name="default" />
+                            </optional>
+                            <optional>
+                                  <element name="display">
+                                      <text />
+                                  </element>
+                            </optional>
+                              <element name="term">
+                                  <text />
+                              </element>
+                              <element name="internal">
+                                  <text />
+                              </element>
+                        </element>
+                    </oneOrMore>
+                </element>
+            </oneOrMore>
+        </element>
+    </define>
     
-	<define name="flatVocabParam">
-		<element name="flatVocabParam">
-		  	<ref name="ParamBaseContents" />
-		  	<optional>
-		    	<attribute name="multiPick" />
-		  	</optional>
-		  	<attribute name="queryRef" />
-		  	<zeroOrMore>
-		  		<choice>
-				    <element name="suggest">
-				    	<ref name="SuggestContent" />
-				        <optional>
-				          	<attribute name="default" />
-				        </optional>
-				    </element>
-				    <ref name="useTermOnly" />
-			    </choice>
-		  	</zeroOrMore>
-		</element>
-	</define>
+    
+    <define name="flatVocabParam">
+        <element name="flatVocabParam">
+              <ref name="EnumParamBaseContents" />
+              <attribute name="queryRef" />
+              <zeroOrMore>
+                <choice>
+                   <element name="suggest">
+                      <ref name="SuggestContent" />
+                      <optional>
+                            <attribute name="default" />
+                      </optional>
+                   </element>
+                   <ref name="useTermOnly" />
+                </choice>
+              </zeroOrMore>
+        </element>
+    </define>
 
-  	<define name="ParamBaseContents">
-    	<attribute name="name" />
-    	<ref name="IncludeExclude" />
-    	<optional>
-      		<attribute name="id" />
-    	</optional>
-    	<optional>
-      		<attribute name="prompt" />
-    	</optional>
-    	<optional>
-      		<attribute name="visible" />
-    	</optional>
-    	<optional>
-      		<attribute name="readonly" />
-    	</optional>
-    	<optional>
-      		<attribute name="default" />
-    	</optional>
-    	<zeroOrMore>
-  			<element name="help">
-    			<ref name="IncludeExclude" />
-    			<text />
-  			</element>
-    	</zeroOrMore>            
-  	</define>
+
+    <define name="EnumParamBaseContents">
+        <ref name="ParamBaseContents" />
+        <optional>
+            <attribute name="multiPick" />
+        </optional>
+        <optional>
+            <attribute name="quoteInternalValue" />
+        </optional>
+    </define>
+
+    <define name="ParamBaseContents">
+        <attribute name="name" />
+        <ref name="IncludeExclude" />
+        <optional>
+              <attribute name="id" />
+        </optional>
+        <optional>
+              <attribute name="prompt" />
+        </optional>
+        <optional>
+              <attribute name="visible" />
+        </optional>
+        <optional>
+              <attribute name="readonly" />
+        </optional>
+        <optional>
+              <attribute name="default" />
+        </optional>
+        <zeroOrMore>
+              <element name="help">
+                <ref name="IncludeExclude" />
+                <text />
+              </element>
+        </zeroOrMore>            
+    </define>
   
-	<define name="useTermOnly">
-    	<element name="useTermOnly">
-      		<attribute name="value" />
-      		<ref name="IncludeExclude" />
-    	</element>
-  	</define>  
+    <define name="useTermOnly">
+        <element name="useTermOnly">
+              <attribute name="value" />
+              <ref name="IncludeExclude" />
+        </element>
+      </define>  
   
-	<define name="SuggestContent">
-    	<optional>
-    		<attribute name="allowEmpty" />
-    	</optional>
-    	<ref name="IncludeExclude" />
-  	</define>  
+    <define name="SuggestContent">
+        <optional>
+            <attribute name="allowEmpty" />
+        </optional>
+        <ref name="IncludeExclude" />
+      </define>  
   
 
   <!-- Schema grouping elements  -->
@@ -495,7 +501,7 @@
             <attribute name="questionRef" />
             <ref name="IncludeExclude" />
           </element>
-	    </choice>
+        </choice>
       </zeroOrMore>
     </element>
   </define>
@@ -706,10 +712,10 @@
            <attribute name="attributeOrdering" />
         </optional>
         <zeroOrMore>
-	   <choice>
+       <choice>
               <ref name="xmlAttribute" />
               <ref name="xmlTable" />
-	   </choice>
+       </choice>
         </zeroOrMore>
      </element>
   </define>

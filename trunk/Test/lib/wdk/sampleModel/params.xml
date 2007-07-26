@@ -94,6 +94,7 @@
 	    <flatVocabParam name="flatVocabParam"
 	                    queryRef="SampleQueries.SampleVocabQuery"
 	                    prompt="Sample Vocabulary Query"
+                        quoteInternalValue="false"
 	                    multiPick="true">
 	        <help excludeProjects="ToyDB">
 	             Choose one or more strain/day combination
