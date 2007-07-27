@@ -9,7 +9,7 @@ public abstract class AbstractEnumParam extends Param {
     
     protected boolean multiPick = false;
     protected Map< String, String > vocabMap;
-    protected boolean quoteInternalValue = true;
+    protected boolean quote = true;
     
     private List< ParamConfiguration > useTermOnlies = new ArrayList< ParamConfiguration >();
     protected boolean useTermOnly = false;
@@ -26,12 +26,12 @@ public abstract class AbstractEnumParam extends Param {
         return new Boolean( multiPick );
     }
     
-    public void setQuoteInternalValue( boolean quote ) {
-        this.quoteInternalValue = quote;
+    public void setQuote( boolean quote ) {
+        this.quote = quote;
     }
     
-    public boolean getQuoteInternalValue() {
-        return quoteInternalValue;
+    public boolean getQuote() {
+        return quote;
     }
     
     public void addUseTermOnly( ParamConfiguration paramConfig ) {
@@ -77,14 +77,8 @@ public abstract class AbstractEnumParam extends Param {
                 throw new WdkModelException( "The term " + term
                         + " does not exist in param " + getFullName() );
             
-            String internal;
-            if ( useTermOnly ) {// the term is always quoted
-                internal = "'" + term + "'";
-            } else if ( quoteInternalValue ) {
-                internal = "'" + vocabMap.get( term ) + "'";
-            } else {
-                internal = vocabMap.get( term );
-            }
+            String internal = useTermOnly ? term : vocabMap.get( term );
+            if ( quote ) internal = "'" + internal + "'";
             if ( buf.length() != 0 ) buf.append( ". " );
             buf.append( internal );
         }
@@ -217,7 +211,7 @@ public abstract class AbstractEnumParam extends Param {
                 param.vocabMap = new LinkedHashMap< String, String >();
             param.vocabMap.putAll( vocabMap );
         }
-        param.quoteInternalValue = quoteInternalValue;
+        param.quote = quote;
         param.useTermOnly = useTermOnly;
     }
     

@@ -79,7 +79,7 @@ public abstract class XmlParser {
 
     protected boolean validate(URL modelXmlURL)
             throws SAXException, IOException {
-        System.out.println("Validating model " + modelXmlURL);
+        //System.out.println("Validating model " + modelXmlURL);
         InputSource is = ValidationDriver.uriOrFileInputSource(modelXmlURL.toExternalForm());
         return validator.validate(is);
     }
