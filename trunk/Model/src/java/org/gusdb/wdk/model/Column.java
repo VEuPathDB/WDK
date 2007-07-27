@@ -14,7 +14,7 @@ public class Column extends WdkModelBase implements Serializable {
     private String name;
     private Query query;
     private String dataTypeName;
-    private int width; // for wsColumns (width of datatype)
+    private int width = 100; // for wsColumns (width of datatype)
 
     /**
      * The name is used by WSF service.

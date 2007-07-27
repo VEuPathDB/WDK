@@ -10,7 +10,7 @@ import java.io.Serializable;
  * @created Feb 16, 2006
  */
 public class ParamReference extends Reference implements Serializable {
-
+    
     /**
      * 
      */
@@ -20,90 +20,106 @@ public class ParamReference extends Reference implements Serializable {
     private Boolean multiPick;
     private Boolean useTermOnly;
     private String queryRef;
-
-    public ParamReference() {}
-
+    private Boolean quote;
+    
+    public ParamReference( ) {}
+    
     /**
      * @param twoPartName
      * @throws WdkModelException
      */
-    public ParamReference(String twoPartName) throws WdkModelException {
-        super(twoPartName);
+    public ParamReference( String twoPartName ) throws WdkModelException {
+        super( twoPartName );
         // TODO Auto-generated constructor stub
     }
-
+    
     /**
      * @return Returns the defaultValue.
      */
     public String getDefault() {
         return this.defaultValue;
     }
-
+    
     /**
      * @param defaultValue
-     * The defaultValue to set.
+     *            The defaultValue to set.
      */
-    public void setDefault(String defaultValue) {
+    public void setDefault( String defaultValue ) {
         this.defaultValue = defaultValue;
     }
-
+    
     /**
      * @return the allowEmpty
      */
     public Boolean isAllowEmpty() {
         return this.allowEmpty;
     }
-
+    
     /**
      * @param allowEmpty
-     * the allowEmpty to set
+     *            the allowEmpty to set
      */
-    public void setAllowEmpty(boolean allowEmpty) {
+    public void setAllowEmpty( boolean allowEmpty ) {
         this.allowEmpty = allowEmpty;
     }
-
+    
     /**
      * @return the multiPick
      */
     public Boolean isMultiPick() {
         return this.multiPick;
     }
-
+    
     /**
      * @param multiPick
-     * the multiPick to set
+     *            the multiPick to set
      */
-    public void setMultiPick(boolean multiPick) {
+    public void setMultiPick( boolean multiPick ) {
         this.multiPick = multiPick;
     }
-
+    
     /**
      * @return the useTermOnly
      */
     public Boolean getUseTermOnly() {
         return this.useTermOnly;
     }
-
+    
     /**
      * @param useTermOnly
-     * the useTermOnly to set
+     *            the useTermOnly to set
      */
-    public void setUseTermOnly(Boolean useTermOnly) {
+    public void setUseTermOnly( Boolean useTermOnly ) {
         this.useTermOnly = useTermOnly;
     }
-
+    
     /**
      * @return the queryRef
      */
     public String getQueryRef() {
         return this.queryRef;
     }
-
+    
     /**
      * @param queryRef
-     * the queryRef to set
+     *            the queryRef to set
      */
-    public void setQueryRef(String queryRef) {
+    public void setQueryRef( String queryRef ) {
         this.queryRef = queryRef;
+    }
+  
+    /**
+     * @return the quote
+     */
+    public Boolean getQuote() {
+        return quote;
+    }
+    
+    /**
+     * @param quote
+     *            the quote to set
+     */
+    public void setQuote( Boolean quote ) {
+        this.quote = quote;
     }
 }
