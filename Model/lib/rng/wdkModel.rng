@@ -104,6 +104,9 @@
               <optional>
                 <attribute name="length" />
               </optional>
+              <optional>
+                  <attribute name="quote" />
+              </optional>
               <zeroOrMore>
                 <element name="suggest">
                     <ref name="SuggestContent" />
@@ -213,7 +216,7 @@
             <attribute name="multiPick" />
         </optional>
         <optional>
-            <attribute name="quoteInternalValue" />
+            <attribute name="quote" />
         </optional>
     </define>
 
@@ -328,6 +331,9 @@
         </optional>
         <optional>
            <attribute name="useTermOnly" />
+        </optional>
+        <optional>
+           <attribute name="quote" />
         </optional>
         <optional>
            <attribute name="queryRef" />

@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.implementation;
 import java.io.Serializable;
 import java.util.Set;
 
+import org.gusdb.wdk.model.ParamReference;
 import org.gusdb.wdk.model.Query;
 import org.gusdb.wdk.model.QueryInstance;
 import org.gusdb.wdk.model.WdkModel;
@@ -84,4 +85,15 @@ public class WSQuery extends Query implements Serializable {
     protected String getSignatureData() {
         return processName;
     }
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.Query#addParamRef(org.gusdb.wdk.model.ParamReference)
+     */
+    @Override
+    public void addParamRef( ParamReference paramRef ) {
+        // force the default value of quote to be false in WsQuery
+        paramRef.setQuote( false );
+        super.addParamRef( paramRef );
+    }
+    
 }

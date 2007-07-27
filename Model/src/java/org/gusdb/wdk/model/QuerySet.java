@@ -38,6 +38,7 @@ public class QuerySet extends WdkModelBase implements ModelSetI {
     }
 
     public void addQuery(Query query) throws WdkModelException {
+        query.setSetName(this.getName());
         queryList.add(query);
     }
 
@@ -50,7 +51,6 @@ public class QuerySet extends WdkModelBase implements ModelSetI {
     public void setResources(WdkModel model) throws WdkModelException {
         for (Query query : queries.values()) {
             query.setResources(model);
-            query.setSetName(this.getName());
         }
     }
 

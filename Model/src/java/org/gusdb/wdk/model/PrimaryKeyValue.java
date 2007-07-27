@@ -26,8 +26,12 @@ public class PrimaryKeyValue {
             String[] keys = projectParam.getVocab();
             for (int i = 0; i < keys.length; i++) {
                 String value = (String) projectParam.getInternalValue(keys[i]);
-                if (value.equalsIgnoreCase(projectId)) projectName = keys[i];
+                if (value.equalsIgnoreCase(projectId)) {
+                    projectName = keys[i];
+                    break;
+                }
             }
+            if (projectName == null) projectName = projectId;
         }
     }
 
