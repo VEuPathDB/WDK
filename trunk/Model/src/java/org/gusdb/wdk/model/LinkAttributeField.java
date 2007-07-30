@@ -36,7 +36,7 @@ public class LinkAttributeField extends AttributeField {
      * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
      */
     @Override
-    public void excludeResources(String projectId) {
+    public void excludeResources(String projectId) throws WdkModelException {
         // exclude urls
         for (WdkModelText url : urls) {
             if (url.include(projectId)) {
@@ -44,6 +44,11 @@ public class LinkAttributeField extends AttributeField {
                 break;
             }
         }
+        // check if all texts are excluded
+        if ( this.url == null )
+            throw new WdkModelException( "The link attribute " + this.getName()
+                    + " does not have a <url> tag. Maybe it's excluded from "
+                    + "the project: " + projectId );
         urls = null;
     }
 }
