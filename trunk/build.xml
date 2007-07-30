@@ -4,8 +4,8 @@
   <!-- oooooooooooooooooooooooooo  Dependencies  oooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
-  <target name="WSF/Client-Installation">
-    <ant antfile="../WSF/build.xml" target="WSF/Client-Installation">
+  <target name="WSF-Installation">
+    <ant antfile="../WSF/build.xml" target="WSF-Installation">
       <property name="project" value="WSF"/>
       <property name="version" value="WDK_version_1-14"/>
     </ant>
@@ -43,7 +43,8 @@
   <!-- oooooooooooooooooooooooooo  Installation  oooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
-  <target name="WDK-Installation" depends="WDK/Model-Installation,
+  <target name="WDK-Installation" depends="WSF-Installation,
+                                           WDK/Model-Installation,
                                            WDK/Controller-Installation,
                                            WDK/View-Installation">
 
@@ -77,7 +78,7 @@
     </ant>
   </target>  
 
-  <target name="WDK/Model-Installation" depends="WSF/Client-Installation">
+  <target name="WDK/Model-Installation">
 
     <!-- copy the WSF-Clisnt.jar, which will be used by IDE -->
     <copy  file="${targetDir}/lib/java/WSF-Client.jar"
