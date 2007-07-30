@@ -142,6 +142,7 @@ public class RecordClass extends WdkModelBase {
 
     public void addAttributeField(AttributeField attributeField)
             throws WdkModelException {
+        attributeField.setRecordClass( this );
         if (attributeFieldList != null) {
             // invoked by the model parser, the excludeResources() hasn't been
             // called yet
@@ -157,6 +158,7 @@ public class RecordClass extends WdkModelBase {
     }
 
     public void addTableField(TableField tableField) {
+        tableField.setRecordClass( this );
         tableFieldList.add(tableField);
     }
 

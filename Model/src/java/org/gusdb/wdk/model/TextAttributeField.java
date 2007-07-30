@@ -36,7 +36,8 @@ public class TextAttributeField extends AttributeField {
         }
         // check if all texts are excluded
         if ( this.text == null )
-            throw new WdkModelException( "The text attribute " + this.getName()
+            throw new WdkModelException( "The text attribute "
+                    + this.recordClass.getFullName() + "." +this.getName()
                     + " does not have a <text> tag. Maybe it's excluded from "
                     + "the project: " + projectId );
         texts = null;

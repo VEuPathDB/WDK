@@ -20,6 +20,11 @@ public abstract class Field extends WdkModelBase {
     private boolean nowrap;
     
     /**
+     * a reference to the recordClass which holds this field
+     */
+    protected RecordClass recordClass;
+    
+    /**
      * 
      */
     public Field( ) {
@@ -150,22 +155,36 @@ public abstract class Field extends WdkModelBase {
         this.align = align;
     }
     
-    
     /**
      * @return the nowrap
      */
     public boolean isNowrap() {
         return nowrap;
     }
-
     
     /**
-     * @param nowrap the nowrap to set
+     * @param nowrap
+     *            the nowrap to set
      */
     public void setNowrap( boolean nowrap ) {
         this.nowrap = nowrap;
     }
-
+    
+    /**
+     * @return the recordClass
+     */
+    public RecordClass getRecordClass() {
+        return recordClass;
+    }
+    
+    /**
+     * @param recordClass
+     *            the recordClass to set
+     */
+    public void setRecordClass( RecordClass recordClass ) {
+        this.recordClass = recordClass;
+    }
+    
     /*
      * (non-Javadoc)
      * 
