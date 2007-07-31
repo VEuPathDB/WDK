@@ -159,7 +159,7 @@ public abstract class QueryInstance {
 		else return cacheTable.getCacheTableFullName();
 	}
 
-	public Collection getValues() {
+	public Collection<Object> getValues() {
 		return values.values();
 	}
 
@@ -210,7 +210,7 @@ public abstract class QueryInstance {
 		this.sortingColumns = sortingColumns;
 	}
 
-	public Collection getCacheValues() throws WdkModelException {
+	public Collection<Object> getCacheValues() throws WdkModelException {
 		return getValues();
 	}
 
