@@ -23,7 +23,6 @@ import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.implementation.ModelXmlParser;
 import org.gusdb.wdk.model.implementation.SqlResultList;
 import org.gusdb.wdk.model.implementation.SqlUtils;
 

@@ -4,7 +4,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -105,18 +104,18 @@ public class Answer {
 
     /**
      * @param question
-     *            The <code>Question</code> to which this is the
-     *            <code>Answer</code>.
+     *                The <code>Question</code> to which this is the
+     *                <code>Answer</code>.
      * @param idsQueryInstance
-     *            The <co de>QueryInstance</code> that provides a handle on the
-     *            ResultList containing all primary keys that are the result for
-     *            the question (not just one page worth).
+     *                The <co de>QueryInstance</code> that provides a handle on
+     *                the ResultList containing all primary keys that are the
+     *                result for the question (not just one page worth).
      * @param startRecordInstanceI
-     *            The index of the first <code>RecordInstance</code> in the
-     *            page. (>=1)
+     *                The index of the first <code>RecordInstance</code> in
+     *                the page. (>=1)
      * @param endRecordInstanceI
-     *            The index of the last <code>RecordInstance</code> in the
-     *            page, inclusive.
+     *                The index of the last <code>RecordInstance</code> in the
+     *                page, inclusive.
      */
     Answer(Question question, QueryInstance idsQueryInstance,
             int startRecordInstanceI, int endRecordInstanceI,
@@ -187,7 +186,8 @@ public class Answer {
                 counter++;
                 // get the project id
                 if (recordProjectColumnName != null) {
-                    String project = rl.getValue(recordProjectColumnName).toString();
+                    String project = rl.getValue(recordProjectColumnName)
+                            .toString();
                     int subCounter = 0;
                     if (resultSizesByProject.containsKey(project))
                         subCounter = resultSizesByProject.get(project);
@@ -244,8 +244,8 @@ public class Answer {
         Param[] params = question.getParams();
         for (int i = 0; i < params.length; i++) {
             Param param = params[i];
-            displayParamsMap.put(param.getPrompt(),
-                    paramsMap.get(param.getName()));
+            displayParamsMap.put(param.getPrompt(), paramsMap.get(param
+                    .getName()));
         }
         return displayParamsMap;
     }
@@ -319,7 +319,8 @@ public class Answer {
             }
             if (recordInstanceCursor >= pageRecordInstances.length) {
                 return false;
-            } else return true;
+            } else
+                return true;
         } catch (WdkModelException ex) {
             releaseRecordInstances();
             throw ex;
@@ -328,7 +329,8 @@ public class Answer {
 
     public Integer getDatasetId() throws WdkModelException {
         Integer datasetId = idsQueryInstance.getQueryInstanceId();
-        if (datasetId == null) idsQueryInstance.getResultAsTableName();
+        if (datasetId == null)
+            idsQueryInstance.getResultAsTableName();
         return idsQueryInstance.getQueryInstanceId();
     }
 
@@ -378,27 +380,29 @@ public class Answer {
                 + getPageCount() + ",\t# Records per Page: " + getPageSize()
                 + newline);
 
-        if (pageRecordInstances.length == 0) return buf.toString();
+        if (pageRecordInstances.length == 0)
+            return buf.toString();
 
         for (int i = -1; i < pageRecordInstances.length; i++) {
 
-            Iterator attributeNames = getSummaryAttributes().keySet().iterator();
-
             // only print
-            while (attributeNames.hasNext()) {
-                String nextAttName = (String) attributeNames.next();
-
+            for (String nextAttName : getSummaryAttributes().keySet()) {
                 // make header
-                if (i == -1) buf.append(nextAttName + "\t");
+                if (i == -1)
+                    buf.append(nextAttName + "\t");
 
                 // make data row
                 else {
-                    AttributeField field = getAttributeFields().get(nextAttName);
-                    Object value = pageRecordInstances[i].getAttributeValue(field);
-                    if (value == null) value = "";
+                    AttributeField field = getAttributeFields()
+                            .get(nextAttName);
+                    Object value = pageRecordInstances[i]
+                            .getAttributeValue(field);
+                    if (value == null)
+                        value = "";
                     // only print part of the string
                     String str = value.toString().trim();
-                    if (str.length() > 50) str = str.substring(0, 47) + "...";
+                    if (str.length() > 50)
+                        str = str.substring(0, 47) + "...";
                     buf.append(str + "\t");
                 }
             }
@@ -419,7 +423,8 @@ public class Answer {
             Map<String, String> config, int startI, int endI)
             throws WdkModelException {
         // get Reporter
-        Map<String, ReporterRef> rptMap = question.getRecordClass().getReporterMap();
+        Map<String, ReporterRef> rptMap = question.getRecordClass()
+                .getReporterMap();
         ReporterRef rptRef = rptMap.get(reporterName);
         if (rptRef == null)
             throw new WdkModelException("The reporter " + reporterName + " is "
@@ -439,9 +444,9 @@ public class Answer {
                     || endI != this.endRecordInstanceI)
                 answer = newAnswer(startI, endI);
 
-            Class rptClass = Class.forName(rptImp);
-            Class[] paramClasses = { Answer.class };
-            Constructor constructor = rptClass.getConstructor(paramClasses);
+            Class<?> rptClass = Class.forName(rptImp);
+            Class<?>[] paramClasses = { Answer.class };
+            Constructor<?> constructor = rptClass.getConstructor(paramClasses);
 
             Object[] params = { answer };
             Reporter reporter = (Reporter) constructor.newInstance(params);
@@ -512,15 +517,17 @@ public class Answer {
         ResultList attrQueryResultList = attributesQueryInstance.getResult();
         while (attrQueryResultList.next()) {
 
-            String id = attrQueryResultList.getValue(recordIdColumnName).toString();
+            String id = attrQueryResultList.getValue(recordIdColumnName)
+                    .toString();
             String project = null;
             if (recordProjectColumnName != null) {
-                project = attrQueryResultList.getValue(recordProjectColumnName).toString();
+                project = attrQueryResultList.getValue(recordProjectColumnName)
+                        .toString();
             }
 
-            PrimaryKeyValue attrPrimaryKey = new PrimaryKeyValue(
-                    getQuestion().getRecordClass().getPrimaryKeyField(),
-                    project, id.toString());
+            PrimaryKeyValue attrPrimaryKey = new PrimaryKeyValue(getQuestion()
+                    .getRecordClass().getPrimaryKeyField(), project, id
+                    .toString());
 
             if (primaryKeySet.contains(attrPrimaryKey)) {
                 String msg = "Result Table "
@@ -535,7 +542,8 @@ public class Answer {
                 primaryKeySet.add(attrPrimaryKey);
             }
 
-            RecordInstance recordInstance = recordInstanceMap.get(attrPrimaryKey);
+            RecordInstance recordInstance = recordInstanceMap
+                    .get(attrPrimaryKey);
             if (recordInstance == null) {
                 throw new WdkModelException(
                         "Can't find record instance for primary key '"
@@ -558,15 +566,19 @@ public class Answer {
 
         for (int i = 0; i < columns.length; i++) {
             String colName = columns[i].getName();
-            if (colName.equalsIgnoreCase(recordIdColumnName)) continue;
-            if (colName.equalsIgnoreCase(recordProjectColumnName)) continue;
+            if (colName.equalsIgnoreCase(recordIdColumnName))
+                continue;
+            if (colName.equalsIgnoreCase(recordProjectColumnName))
+                continue;
             Object value = null;
             if (attrQueryResultList != null)
                 value = attrQueryResultList.getValue(colName);
 
-            if (isDynamic) recordInstance.setAttributeValue(colName, value,
-                    attributesQueryInstance.getQuery());
-            else recordInstance.setAttributeValue(colName, value);
+            if (isDynamic)
+                recordInstance.setAttributeValue(colName, value,
+                        attributesQueryInstance.getQuery());
+            else
+                recordInstance.setAttributeValue(colName, value);
         }
     }
 
@@ -587,13 +599,15 @@ public class Answer {
      * using a federated data source).
      */
     private void initPageRecordInstances() throws WdkModelException {
-        if (pageRecordInstances != null) return;
+        if (pageRecordInstances != null)
+            return;
 
         // set instance variables projectColumnName and idsColumnName
         findPrimaryKeyColumnNames();
         idsQueryInstance.projectColumnName = recordProjectColumnName;
         idsQueryInstance.primaryKeyColumnName = recordIdColumnName;
-        idsQueryInstance.setSortingColumns(getSortingColumns(sortingAttributes));
+        idsQueryInstance
+                .setSortingColumns(getSortingColumns(sortingAttributes));
 
         ResultList rl = idsQueryInstance.getPersistentResultPage(
                 startRecordInstanceI, endRecordInstanceI);
@@ -608,7 +622,8 @@ public class Answer {
             RecordClass recordClass = question.getRecordClass();
             RecordInstance nextRecordInstance = recordClass.makeRecordInstance(
                     project, id);
-            nextRecordInstance.setDynamicAttributeFields(question.getDynamicAttributeFields());
+            nextRecordInstance.setDynamicAttributeFields(question
+                    .getDynamicAttributeFields());
 
             nextRecordInstance.setAnswer(this);
             tempRecordInstances.add(nextRecordInstance);
@@ -648,7 +663,7 @@ public class Answer {
     public String toString() {
         StringBuffer sb = new StringBuffer(question.getDisplayName());
 
-        Map params = getParams();
+        Map<String, Object> params = getParams();
 
         for (Object key : params.keySet()) {
             sb.append(" " + key + ":" + params.get(key));
@@ -708,8 +723,10 @@ public class Answer {
         for (String paramName : paramValues.keySet()) {
             Param param = params.get(paramName);
             Object value = paramValues.get(paramName);
-            if (!first) nameBuf.append(", ");
-            else first = false;
+            if (!first)
+                nameBuf.append(", ");
+            else
+                first = false;
             nameBuf.append(param.getPrompt() + " = ");
             nameBuf.append(value);
         }
@@ -724,7 +741,8 @@ public class Answer {
             Set<SortingColumn> subColumns = findColumns(attrName, ascending);
             for (SortingColumn column : subColumns) {
                 if (!columns.contains(column))
-                // ignore the order of the children, since it should be the same
+                    // ignore the order of the children, since it should be the
+                    // same
                     // as the parent
                     columns.add(column);
             }
@@ -754,7 +772,8 @@ public class Answer {
                 boolean lowerCase = column.isLowerCase();
                 SortingColumn sColumn = new SortingColumn(tableName,
                         columnName, ascending, lowerCase);
-                if (!columns.contains(sColumn)) columns.add(sColumn);
+                if (!columns.contains(sColumn))
+                    columns.add(sColumn);
             }
             // get record id column
             column = idsQueryInstance.getQuery().getColumn(recordIdColumnName);
@@ -765,7 +784,8 @@ public class Answer {
             boolean lowerCase = column.isLowerCase();
             SortingColumn sColumn = new SortingColumn(tableName, columnName,
                     ascending, lowerCase);
-            if (!columns.contains(sColumn)) columns.add(sColumn);
+            if (!columns.contains(sColumn))
+                columns.add(sColumn);
         } else if (attribute instanceof ColumnAttributeField) {
             ColumnAttributeField columnAttribute = (ColumnAttributeField) attribute;
             Column column = columnAttribute.getColumn();
@@ -791,7 +811,8 @@ public class Answer {
             boolean lowerCase = column.isLowerCase();
             SortingColumn sColumn = new SortingColumn(tableName, columnName,
                     ascending, lowerCase);
-            if (!columns.contains(sColumn)) columns.add(sColumn);
+            if (!columns.contains(sColumn))
+                columns.add(sColumn);
         } else if (attribute instanceof TextAttributeField) {
             TextAttributeField textAttribute = (TextAttributeField) attribute;
             String text = textAttribute.getText();
@@ -801,7 +822,8 @@ public class Answer {
                 Set<SortingColumn> subColumns = findColumns(child, ascending);
                 for (SortingColumn column : subColumns) {
                     if (!columns.contains(column))
-                    // ignore the order of the children, since it should be the
+                        // ignore the order of the children, since it should be
+                        // the
                         // same as the parent
                         columns.add(column);
                 }
@@ -815,7 +837,8 @@ public class Answer {
                 Set<SortingColumn> subColumns = findColumns(child, ascending);
                 for (SortingColumn column : subColumns) {
                     if (!columns.contains(column))
-                    // ignore the order of the children, since it should be the
+                        // ignore the order of the children, since it should be
+                        // the
                         // same as the parent
                         columns.add(column);
                 }
@@ -834,7 +857,8 @@ public class Answer {
         Matcher matcher = pattern.matcher(text);
         while (matcher.find()) {
             String child = matcher.group(1);
-            if (!children.contains(child)) children.add(child);
+            if (!children.contains(child))
+                children.add(child);
         }
         return children;
     }
@@ -845,7 +869,8 @@ public class Answer {
         int count = 0;
         for (String attrName : sortingAttributes.keySet()) {
             attributeNames[count++] = attrName;
-            if (count >= size) break;
+            if (count >= size)
+                break;
         }
         return attributeNames;
     }
@@ -856,7 +881,8 @@ public class Answer {
         int count = 0;
         for (String attrName : sortingAttributes.keySet()) {
             attributeOrders[count++] = sortingAttributes.get(attrName);
-            if (count >= size) break;
+            if (count >= size)
+                break;
         }
         return attributeOrders;
     }
@@ -889,10 +915,12 @@ public class Answer {
             }
 
             // the sortable attribute cannot be internal
-            if (attribute.getInternal()) continue;
+            if (attribute.getInternal())
+                continue;
 
             // skip the attributes that are already displayed
-            if (summaryAttributes.containsKey(attriName)) continue;
+            if (summaryAttributes.containsKey(attriName))
+                continue;
 
             displayAttributes.add(attribute);
         }
@@ -942,7 +970,8 @@ public class Answer {
     }
 
     public int getSortingIndex() throws WdkModelException {
-        idsQueryInstance.setSortingColumns(getSortingColumns(sortingAttributes));
+        idsQueryInstance
+                .setSortingColumns(getSortingColumns(sortingAttributes));
         return idsQueryInstance.getSortingIndex();
     }
 

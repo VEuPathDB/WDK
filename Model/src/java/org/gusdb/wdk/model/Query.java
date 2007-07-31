@@ -274,7 +274,7 @@ public abstract class Query extends WdkModelBase implements Serializable {
         signature = null;
     }
     
-    Param getParam( String paramName ) {
+    public Param getParam( String paramName ) {
         return params.get( paramName );
     }
     

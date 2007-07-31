@@ -2,7 +2,6 @@ package org.gusdb.wdk.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -116,8 +115,8 @@ public class RecordClass extends WdkModelBase {
 
     /**
      * @param attList
-     *        comma separated list of attributes in a summary containing this
-     *        recordClass.
+     *                comma separated list of attributes in a summary containing
+     *                this recordClass.
      */
     /*
      * public void setSummaryAttributeList (String attList){
@@ -134,7 +133,7 @@ public class RecordClass extends WdkModelBase {
 
     /**
      * @param attributesQueryRef
-     *        two part query name (set.name)
+     *                two part query name (set.name)
      */
     public void addAttributesQueryRef(AttributeQueryReference attributesQueryRef) {
         attributesQueryRefs.add(attributesQueryRef);
@@ -142,7 +141,7 @@ public class RecordClass extends WdkModelBase {
 
     public void addAttributeField(AttributeField attributeField)
             throws WdkModelException {
-        attributeField.setRecordClass( this );
+        attributeField.setRecordClass(this);
         if (attributeFieldList != null) {
             // invoked by the model parser, the excludeResources() hasn't been
             // called yet
@@ -158,7 +157,7 @@ public class RecordClass extends WdkModelBase {
     }
 
     public void addTableField(TableField tableField) {
-        tableField.setRecordClass( this );
+        tableField.setRecordClass(this);
         tableFieldList.add(tableField);
     }
 
@@ -233,7 +232,8 @@ public class RecordClass extends WdkModelBase {
         Set<String> names = attributeFieldsMap.keySet();
         for (String name : names) {
             AttributeField field = attributeFieldsMap.get(name);
-            if (field.getInReportMaker()) rmfields.put(name, field);
+            if (field.getInReportMaker())
+                rmfields.put(name, field);
         }
         return rmfields;
     }
@@ -243,7 +243,8 @@ public class RecordClass extends WdkModelBase {
         Set<String> names = tableFieldsMap.keySet();
         for (String name : names) {
             TableField field = tableFieldsMap.get(name);
-            if (field.getInReportMaker()) rmfields.put(name, field);
+            if (field.getInReportMaker())
+                rmfields.put(name, field);
         }
         return rmfields;
     }
@@ -330,15 +331,13 @@ public class RecordClass extends WdkModelBase {
         StringBuffer buf = new StringBuffer("Record: name='" + name + "'").append(newline);
 
         buf.append("--- Attributes ---").append(newline);
-        Iterator attributes = attributeFieldsMap.values().iterator();
-        while (attributes.hasNext()) {
-            buf.append(attributes.next()).append(newline);
+        for (AttributeField attribute : attributeFieldsMap.values()) {
+            buf.append(attribute).append(newline);
         }
 
         buf.append("--- Tables ---").append(newline);
-        Iterator tables = tableFieldsMap.values().iterator();
-        while (tables.hasNext()) {
-            buf.append(tables.next()).append(newline);
+        for (TableField table : tableFieldsMap.values()) {
+            buf.append(table).append(newline);
         }
         return buf.toString();
     }
@@ -363,7 +362,7 @@ public class RecordClass extends WdkModelBase {
 
     /**
      * @param recordSetName
-     *        name of the recordSet to which this record belongs.
+     *                name of the recordSet to which this record belongs.
      */
     void setFullName(String recordSetName) {
         this.fullName = recordSetName + "." + name;
@@ -516,7 +515,8 @@ public class RecordClass extends WdkModelBase {
     private String lookupSourceId(String projectId, String aliasName)
             throws WdkModelException {
         // nothing to look up
-        if (aliasQuery == null) return aliasName;
+        if (aliasQuery == null)
+            return aliasName;
 
         // create a query instance with alias as the primaryKey
         QueryInstance qinstance = aliasQuery.makeInstance();
@@ -525,7 +525,8 @@ public class RecordClass extends WdkModelBase {
         params.put(PRIMARY_KEY_NAME, aliasName);
 
         // check if we need to add projectId too
-        if (hasProjectId()) params.put(PROJECT_ID_NAME, projectId);
+        if (hasProjectId())
+            params.put(PROJECT_ID_NAME, projectId);
 
         qinstance.setValues(params);
         ResultList resultList = qinstance.getResult();

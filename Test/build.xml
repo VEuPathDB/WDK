@@ -12,8 +12,8 @@
             description
     </description>
 
-    <property name="gus_home" value="${eclipse.gus_home}"/>
-    <property name="project_home" value="${eclipse.project_home}"/>
+    <property name="gus_home" value="${GUS_HOME}"/>
+    <property name="project_home" value="${PROJECT_HOME}"/>
     
     <!-- ================================= 
           target: install              
