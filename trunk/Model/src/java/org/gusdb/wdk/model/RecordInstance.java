@@ -128,7 +128,7 @@ public class RecordInstance {
             if (!attributesResultSetsMap.containsKey(queryName)) {
                 runAttributesQuery(query);
             }
-            Map resultMap = attributesResultSetsMap.get(queryName);
+            Map<String, Object> resultMap = attributesResultSetsMap.get(queryName);
             if (resultMap == null) {
                 throw new WdkModelException(
                         "Attempting to find a value for attribute '"

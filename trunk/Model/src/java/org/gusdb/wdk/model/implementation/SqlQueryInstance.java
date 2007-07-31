@@ -10,11 +10,13 @@ import org.gusdb.wdk.model.RDBMSPlatformI;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.ResultFactory;
 import org.gusdb.wdk.model.ResultList;
+import org.gusdb.wdk.model.StringParam;
 import org.gusdb.wdk.model.WdkModelException;
 
 public class SqlQueryInstance extends QueryInstance {
 
-    private static final Logger logger = Logger.getLogger(SqlQueryInstance.class);
+    private static final Logger logger = Logger
+            .getLogger(SqlQueryInstance.class);
 
     // ------------------------------------------------------------------
     // Instance Variables
@@ -85,9 +87,8 @@ public class SqlQueryInstance extends QueryInstance {
      * @throws WdkModelException
      */
     private String getSql() throws WdkModelException {
-        return joinMode
-                ? getJoinSql()
-                : ((SqlQuery) query).instantiateSql(query.getInternalParamValues(values));
+        return joinMode ? getJoinSql() : ((SqlQuery) query)
+                .instantiateSql(query.getInternalParamValues(values));
 
     }
 
@@ -108,12 +109,28 @@ public class SqlQueryInstance extends QueryInstance {
     private String instantiateSqlWithJoin(String sql) throws WdkModelException {
         String joinTableName = cacheTable.getCacheTableFullName();
         String primaryKeyJoin = joinTableName + "." + primaryKeyColumnName;
-
         checksum = null;
+
+        // in the join mode, we have to force the "use quote" of primaryKey and
+        // project_id to be false, since the values of them are column names.
+        
+        // backup the quote flag of primary key
+        StringParam primaryKey = (StringParam)query.getParam(RecordClass.PRIMARY_KEY_NAME);
+        boolean primaryKeyQuote = primaryKey.isQuote();
+        primaryKey.setQuote(false);
+        
         values.put(RecordClass.PRIMARY_KEY_NAME, primaryKeyJoin);
 
+        StringParam projectId = null;
+        boolean projectIdQuote = true;;
         if (projectColumnName != null) {
             String projectJoin = joinTableName + "." + projectColumnName;
+
+            // backup the quote flag of primary key
+            projectId = (StringParam)query.getParam(RecordClass.PROJECT_ID_NAME);
+            projectIdQuote = projectId.isQuote();
+            projectId.setQuote(false);
+            
             values.put(RecordClass.PROJECT_ID_NAME, projectJoin);
         }
 
@@ -121,9 +138,14 @@ public class SqlQueryInstance extends QueryInstance {
             values.put(DynamicAttributeSet.RESULT_TABLE, joinTableName);
         }
 
-        return ((SqlQuery) query).instantiateSql(
-                query.getInternalParamValues(values), sql);
+        sql = ((SqlQuery) query).instantiateSql(query
+                .getInternalParamValues(values), sql);
+        
+        // restore the quote flags
+        primaryKey.setQuote(primaryKeyQuote);
+        if (projectId != null) projectId.setQuote(projectIdQuote);
+        
+        return sql;
     }
 
-    
 }
