@@ -138,7 +138,7 @@ public abstract class XmlParser {
     }
     
     protected void configureNode( Digester digester, String path,
-            Class nodeClass, String method ) {
+            Class<?> nodeClass, String method ) {
         digester.addObjectCreate( path, nodeClass );
         digester.addSetProperties( path );
         digester.addSetNext( path, method );

@@ -353,7 +353,7 @@ public abstract class Query extends WdkModelBase implements Serializable {
     
     protected void validateParamValues( Map< String, Object > values )
             throws WdkModelException {
-        LinkedHashMap< Param, String[ ] > errors = null;
+        Map< Param, String[ ] > errors = null;
         
         // first confirm that all supplied values have legal names
         for ( String paramName : values.keySet() ) {
