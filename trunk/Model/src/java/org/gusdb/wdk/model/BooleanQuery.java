@@ -104,6 +104,7 @@ public class BooleanQuery extends Query {
         operation.setName(OPERATION_PARAM_NAME);
         operation.setFullName(BOOLEAN_PARAM_SET_NAME);
         operation.setPrompt(OPERATION_PARAM_NAME);
+        operation.setQuote(false);
         addParam(operation);
     }
 

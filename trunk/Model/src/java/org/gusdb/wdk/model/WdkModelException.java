@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model;
 
-import java.util.Iterator;
 import java.util.Map;
 
 public class WdkModelException extends Exception {
@@ -11,9 +10,9 @@ public class WdkModelException extends Exception {
      * 
      */
     private static final long serialVersionUID = 877548355767390313L;
-    Map booBoos = null;
+    Map< Param, String[ ] > booBoos = null;
 
-    public WdkModelException(Map booBoos) {
+    public WdkModelException(Map< Param, String[ ] > booBoos) {
         super();
         this.booBoos = booBoos;
     }
@@ -34,17 +33,17 @@ public class WdkModelException extends Exception {
 	super(cause);
     }
 
-    public WdkModelException(String message, Map booBoos) {
+    public WdkModelException(String message, Map< Param, String[ ] > booBoos) {
         super(message);
         this.booBoos = booBoos;
     }
 
-    public WdkModelException(Throwable cause, Map booBoos) {
+    public WdkModelException(Throwable cause, Map< Param, String[ ] > booBoos) {
         super(cause);
         this.booBoos = booBoos;
     }
 
-    public WdkModelException(String message, Throwable cause, Map booBoos) {
+    public WdkModelException(String message, Throwable cause, Map< Param, String[ ] > booBoos) {
         super(message, cause);
         this.booBoos = booBoos;
     }
@@ -53,7 +52,7 @@ public class WdkModelException extends Exception {
      * @return Map where keys are Params and values are an tuple of (value,
      *         errMsg), one for each error param value
      */
-    public Map getBooBoos() {
+    public Map< Param, String[ ] > getBooBoos() {
         return booBoos;
     }
 
@@ -77,10 +76,8 @@ public class WdkModelException extends Exception {
             buf.append(message + newline);
         }
         if (booBoos != null) {
-            Iterator keys = booBoos.keySet().iterator();
-            while (keys.hasNext()) {
-                Param param = (Param) keys.next();
-                String[] details = (String[]) booBoos.get(param);
+            for (Param param:booBoos.keySet()) {
+                String[] details = booBoos.get(param);
                 buf.append(param.getName() + " value '" + details[0]
                         + "' has an error: " + details[1] + newline);
             }

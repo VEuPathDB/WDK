@@ -280,13 +280,9 @@ public class WdkModel {
         }
 
         Map<String, Map<String, Question[]>> qArrayByCat = new LinkedHashMap<String, Map<String, Question[]>>();
-        Iterator recI = qVecByCat.keySet().iterator();
-        while (recI.hasNext()) {
-            String recType = (String) recI.next();
+        for (String recType: qArrayByCat.keySet()) {
             Map<String, Vector<Question>> recMap = qVecByCat.get(recType);
-            Iterator catI = recMap.keySet().iterator();
-            while (catI.hasNext()) {
-                String cat = (String) catI.next();
+            for (String cat : recMap.keySet()) {
                 Vector<Question> qVec = recMap.get(cat);
                 Question[] qArray = new Question[qVec.size()];
                 qVec.toArray(qArray);
@@ -373,9 +369,7 @@ public class WdkModel {
      * Set whatever resources the model needs. It will pass them to its kids
      */
     public void setResources() throws WdkModelException {
-        Iterator modelSets = allModelSets.values().iterator();
-        while (modelSets.hasNext()) {
-            ModelSetI modelSet = (ModelSetI) modelSets.next();
+        for (ModelSetI modelSet: allModelSets.values()) {
             modelSet.setResources(this);
         }
     }
@@ -537,24 +531,16 @@ public class WdkModel {
         for (GroupSet groupSet : groupSets.values()) {
             groupSet.resolveReferences(this);
         }
-        Iterator itQuerySets = querySets.values().iterator();
-        while (itQuerySets.hasNext()) {
-            QuerySet querySet = (QuerySet) itQuerySets.next();
+        for (QuerySet querySet: querySets.values()) {
             querySet.resolveReferences(this);
         }
-        Iterator itParamSets = paramSets.values().iterator();
-        while (itParamSets.hasNext()) {
-            ParamSet paramSet = (ParamSet) itParamSets.next();
+        for (ParamSet paramSet:paramSets.values()) {
             paramSet.resolveReferences(this);
         }
-        Iterator itRecordSets = recordClassSets.values().iterator();
-        while (itRecordSets.hasNext()) {
-            RecordClassSet recordClassSet = (RecordClassSet) itRecordSets.next();
+        for (RecordClassSet recordClassSet:recordClassSets.values()) {
             recordClassSet.resolveReferences(this);
         }
-        Iterator itQuestionSets = questionSets.values().iterator();
-        while (itQuestionSets.hasNext()) {
-            QuestionSet questionSet = (QuestionSet) itQuestionSets.next();
+        for (QuestionSet questionSet:questionSets.values()) {
             questionSet.resolveReferences(this);
         }
         // resolve references for xml record classes and questions
@@ -685,9 +671,8 @@ public class WdkModel {
                 + " Sets oooooooooooooooooooooooooo" + newline);
         buf.append("ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
                 + newline + newline);
-        Iterator setIterator = setMap.values().iterator();
-        while (setIterator.hasNext()) {
-            ModelSetI set = (ModelSetI) setIterator.next();
+        for (Object objSet: setMap.values()) {
+            ModelSetI set = (ModelSetI) objSet;
             buf.append("=========================== " + set.getName()
                     + " ===============================" + newline + newline);
             buf.append(set).append(newline);
