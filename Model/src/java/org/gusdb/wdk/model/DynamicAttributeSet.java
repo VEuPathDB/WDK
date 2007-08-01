@@ -81,7 +81,8 @@ public class DynamicAttributeSet extends WdkModelBase implements Serializable {
         Set<String> names = attributeFieldMap.keySet();
         for (String name : names) {
             AttributeField field = attributeFieldMap.get(name);
-            if (field.getInReportMaker()) rmfields.put(name, field);
+            if (field.getInReportMaker())
+                rmfields.put(name, field);
         }
         return rmfields;
     }
@@ -101,8 +102,11 @@ public class DynamicAttributeSet extends WdkModelBase implements Serializable {
         StringParam param = new StringParam();
         param.setName(RecordClass.PRIMARY_KEY_NAME);
         attributesQuery.addParam(param);
+        
+        // a param for result table name. the "quote" is forced to be false, since the param value is used as a table name
         param = new StringParam();
         param.setName(RESULT_TABLE);
+        param.setQuote(false);
         attributesQuery.addParam(param);
 
         // also add project_id into the attribute query
@@ -168,8 +172,7 @@ public class DynamicAttributeSet extends WdkModelBase implements Serializable {
             // + "' is setting column.");
 
             column.setQuery(getAttributesQuery());
-            addColumn(column, sqlSelectBuf, RESULT_TABLE, attributesQuery,
-                    resultTableMacro);
+            addColumn(column, sqlSelectBuf, attributesQuery, resultTableMacro);
         }
 
         String[] pkColNames = Answer.findPrimaryKeyColumnNames(question.getQuery());
@@ -203,7 +206,8 @@ public class DynamicAttributeSet extends WdkModelBase implements Serializable {
     }
 
     private void addColumn(Column column, StringBuffer sqlSelectBuf,
-            String resultTable, Query attributesQuery, String resultTableMacro) throws WdkModelException {
+            Query attributesQuery, String resultTableMacro)
+            throws WdkModelException {
         attributesQuery.addColumnToMap(column);
         sqlSelectBuf.append(resultTableMacro + "." + column.getName() + ", ");
 

@@ -20,7 +20,6 @@ import org.gusdb.wdk.model.ModelConfig;
 import org.gusdb.wdk.model.ModelConfigParser;
 import org.gusdb.wdk.model.RDBMSPlatformI;
 import org.gusdb.wdk.model.Utilities;
-import org.gusdb.wdk.model.implementation.ModelXmlParser;
 import org.gusdb.wdk.model.implementation.SqlUtils;
 
 public class TestDBManager {
@@ -62,12 +61,13 @@ public class TestDBManager {
         boolean drop = cmdLine.hasOption("drop");
         boolean create = cmdLine.hasOption("create");
 
-        String[] tables;
-        if (cmdLine.hasOption("tables")) {
-            tables = cmdLine.getOptionValues("tables");
+        String tableDir;
+        if (cmdLine.hasOption("tableDir")) {
+            tableDir = cmdLine.getOptionValue("tableDir");
         } else {
-            tables = getDefaultTables(gusHome);
+            tableDir = "data/testTables";
         }
+        String[] tables = getTableNames(gusHome + "/" + tableDir);
 
         if (drop == false && create == false) { // valid option
             System.err.println("Test Database Manager:  user has not specified any database management operations");
@@ -137,9 +137,9 @@ public class TestDBManager {
         }
     }
 
-    private static String[] getDefaultTables(String gusHome) {
-        File tableDir = new File(gusHome + "/data/testTables");
-        File[] files = tableDir.listFiles();
+    private static String[] getTableNames(String tableDir) {
+        File dir = new File(tableDir);
+        File[] files = dir.listFiles();
         String[] tables = new String[files.length];
         for (int i = 0; i < files.length; i++) {
             tables[i] = files[i].getAbsolutePath();
@@ -198,10 +198,11 @@ public class TestDBManager {
         return prepStmt;
     }
 
-    private static void addOption(Options options, String argName, String desc) {
+    private static void addOption(Options options, String argName,
+            boolean hasValue, boolean required, String desc) {
 
-        Option option = new Option(argName, true, desc);
-        option.setRequired(true);
+        Option option = new Option(argName, hasValue, desc);
+        option.setRequired(required);
         option.setArgName(argName);
 
         options.addOption(option);
@@ -211,24 +212,19 @@ public class TestDBManager {
         Options options = new Options();
 
         // model name
-        addOption(
-                options,
-                "model",
-                "the name of the model.  This is used to find the config file ($GUS_HOME/config/model_name-config.xml)");
+        addOption(options, "model", true, true, "the name of the model.  This "
+                + "is used to find the config file "
+                + "($GUS_HOME/config/model_name-config.xml)");
 
-        // tables
-        Option tables = new Option("tables",
-                "a list of files to be parsed and created as tables in the database");
-        tables.setArgs(Option.UNLIMITED_VALUES);
-        tables.setRequired(false);
-        options.addOption(tables);
+        // tableDir
+        addOption(options, "tableDir", true, true, "the path to a directory "
+                + "that contains the data files to be created at tables in the"
+                + " database. The path can be absolute path (starts with '/'),"
+                + " or relative path from $GUS_HOME (not starting with '/').");
 
-        Option dropDb = new Option("drop", false, "Drop existing test database");
-        options.addOption(dropDb);
+        addOption(options, "drop", false, false, "Drop existing test database");
 
-        Option createDb = new Option("create", false,
-                "Create new test database");
-        options.addOption(createDb);
+        addOption(options, "create", false, false, "Create new test database");
 
         return options;
     }
@@ -263,11 +259,11 @@ public class TestDBManager {
 
         String newline = System.getProperty("line.separator");
         String cmdlineSyntax = cmdName + " -model model_name"
-                + " tables table_list " + " [-create | -drop] ";
+                + " tableDir <table_dir> [-create | -drop] ";
 
-        String header = newline
-                + "Parse flat files representing database tables and insert into database."
-                + newline + newline + "Options:";
+        String header = newline + "Parse flat files representing database "
+                + "tables and insert into database." + newline + newline
+                + "Options:";
 
         String footer = "";
 
