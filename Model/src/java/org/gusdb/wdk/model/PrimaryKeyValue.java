@@ -23,6 +23,9 @@ public class PrimaryKeyValue {
         this.projectName = null;
         if (projectId != null) {
             AbstractEnumParam projectParam = field.getProjectParam();
+	    if (projectParam == null)
+		throw new WdkModelException("Record '" + recordId 
+					    + "' must declare a <projectParamRef>" );
             String[] keys = projectParam.getVocab();
             for (int i = 0; i < keys.length; i++) {
                 String value = (String) projectParam.getInternalValue(keys[i]);
