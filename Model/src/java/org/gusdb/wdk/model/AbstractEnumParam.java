@@ -79,7 +79,7 @@ public abstract class AbstractEnumParam extends Param {
             
             String internal = useTermOnly ? term : vocabMap.get( term );
             if ( quote ) internal = "'" + internal + "'";
-            if ( buf.length() != 0 ) buf.append( ". " );
+            if ( buf.length() != 0 ) buf.append( ", " );
             buf.append( internal );
         }
         return buf.toString();
