@@ -335,6 +335,10 @@ public class ModelXmlParser extends XmlParser {
         configureNode(digester, "wdkModel/querySet/sqlQuery/column",
                 Column.class, "addColumn");
 
+        configureNode(digester, "wdkModel/querySet/sqlQuery/sqlParamValue",
+                SqlParamValue.class, "addSqlParamValue");
+        digester.addCallMethod("wdkModel/querySet/sqlQuery/sqlParamValue", "setText", 0);
+
         // wsQuery
         configureNode(digester, "wdkModel/querySet/wsQuery", WSQuery.class,
                 "addQuery");

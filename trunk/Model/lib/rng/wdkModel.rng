@@ -392,6 +392,12 @@
         <choice>
             <ref name="sqlColumns" />
             
+            <element name="sqlParamValue">
+                <ref name="IncludeExclude"/>
+                <attribute name="name" />
+                <text />
+            </element>
+            
             <element name="sql">
                 <ref name="IncludeExclude"/>
                 <text />

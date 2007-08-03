@@ -24,18 +24,30 @@
             <column name="start_time" includeProjects="ToyDB"/>
             <column name="start_time" excludeProjects="ToyDB"/>
             <column name="end_time" includeProjects="ToyDB"/>
+            <sqlParamValue name="paramMacro" includeProjects="SampleDB">
+            	<![CDATA[
+            	AND qi.query_name LIKE '%Q%'
+            	]]>
+            </sqlParamValue>
+            <sqlParamValue name="paramMacro" excludeProjects="SampleDB">
+            	<![CDATA[
+            	AND qi.query_name LIKE '%P%'
+            	]]>
+            </sqlParamValue>
+
             <sql includeProjects="ToyDB">
                 <![CDATA[
                 SELECT qi.query_instance_id, qi.start_time
                 FROM queryinstance qi
-                WHERE qi.query_name LIKE REPLACE(LOWER('$$query_name$$'), '*', '%')
+                WHERE qi.query_name LIKE REPLACE('$$query_name$$', '*', '%')
                 ]]>
             </sql>
             <sql excludeProjects="ToyDB">
                 <![CDATA[
                 SELECT qi.query_instance_id, qi.start_time
                 FROM queryinstance qi
-                WHERE qi.query_name LIKE REPLACE(LOWER('$$query_name$$'), '*', '%')
+                WHERE qi.query_name LIKE REPLACE('$$query_name$$', '*', '%')
+                &&paramMacro&&
                 ]]>
             </sql>
         </sqlQuery>
