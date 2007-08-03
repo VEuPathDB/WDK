@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,27 +43,38 @@ public class WdkModel {
     private RDBMSPlatformI authenPlatform;
 
     private List<QuerySet> querySetList = new ArrayList<QuerySet>();
-    private Map<String, QuerySet> querySets = new LinkedHashMap<String, QuerySet>();
+    private Map<String, QuerySet> querySets =
+            new LinkedHashMap<String, QuerySet>();
 
     private List<ParamSet> paramSetList = new ArrayList<ParamSet>();
-    private Map<String, ParamSet> paramSets = new LinkedHashMap<String, ParamSet>();
+    private Map<String, ParamSet> paramSets =
+            new LinkedHashMap<String, ParamSet>();
 
-    private List<RecordClassSet> recordClassSetList = new ArrayList<RecordClassSet>();
-    private Map<String, RecordClassSet> recordClassSets = new LinkedHashMap<String, RecordClassSet>();
+    private List<RecordClassSet> recordClassSetList =
+            new ArrayList<RecordClassSet>();
+    private Map<String, RecordClassSet> recordClassSets =
+            new LinkedHashMap<String, RecordClassSet>();
 
     private List<QuestionSet> questionSetList = new ArrayList<QuestionSet>();
-    private Map<String, QuestionSet> questionSets = new LinkedHashMap<String, QuestionSet>();
+    private Map<String, QuestionSet> questionSets =
+            new LinkedHashMap<String, QuestionSet>();
 
-    private Map<String, ModelSetI> allModelSets = new LinkedHashMap<String, ModelSetI>();
+    private Map<String, ModelSetI> allModelSets =
+            new LinkedHashMap<String, ModelSetI>();
 
     private List<GroupSet> groupSetList = new ArrayList<GroupSet>();
-    private Map<String, GroupSet> groupSets = new LinkedHashMap<String, GroupSet>();
+    private Map<String, GroupSet> groupSets =
+            new LinkedHashMap<String, GroupSet>();
 
-    private List<XmlQuestionSet> xmlQuestionSetList = new ArrayList<XmlQuestionSet>();
-    private Map<String, XmlQuestionSet> xmlQuestionSets = new LinkedHashMap<String, XmlQuestionSet>();
+    private List<XmlQuestionSet> xmlQuestionSetList =
+            new ArrayList<XmlQuestionSet>();
+    private Map<String, XmlQuestionSet> xmlQuestionSets =
+            new LinkedHashMap<String, XmlQuestionSet>();
 
-    private List<XmlRecordClassSet> xmlRecordClassSetList = new ArrayList<XmlRecordClassSet>();
-    private Map<String, XmlRecordClassSet> xmlRecordClassSets = new LinkedHashMap<String, XmlRecordClassSet>();
+    private List<XmlRecordClassSet> xmlRecordClassSetList =
+            new ArrayList<XmlRecordClassSet>();
+    private Map<String, XmlRecordClassSet> xmlRecordClassSets =
+            new LinkedHashMap<String, XmlRecordClassSet>();
 
     private List<WdkModelName> wdkModelNames = new ArrayList<WdkModelName>();
     private String name;
@@ -92,8 +102,10 @@ public class WdkModel {
     private DatasetFactory datasetFactory;
     private QueryFactory queryFactory;
 
-    private List<PropertyList> defaultPropertyLists = new ArrayList<PropertyList>();
-    private Map<String, String[]> defaultPropertyListMap = new LinkedHashMap<String, String[]>();
+    private List<PropertyList> defaultPropertyLists =
+            new ArrayList<PropertyList>();
+    private Map<String, String[]> defaultPropertyListMap =
+            new LinkedHashMap<String, String[]>();
 
     /**
      * Default constructor
@@ -194,9 +206,10 @@ public class WdkModel {
             throws WdkModelException {
 
         if (!recordClassSets.containsKey(recordClassSetName)) {
-            String err = "WDK Model " + name
-                    + " does not contain a recordClass set with name "
-                    + recordClassSetName;
+            String err =
+                    "WDK Model " + name
+                            + " does not contain a recordClass set with name "
+                            + recordClassSetName;
 
             throw new WdkModelException(err);
         }
@@ -213,8 +226,10 @@ public class WdkModel {
 
     public QuerySet getQuerySet(String setName) throws WdkModelException {
         if (!querySets.containsKey(setName)) {
-            String err = "WDK Model " + name
-                    + " does not contain a query set with name " + setName;
+            String err =
+                    "WDK Model " + name
+                            + " does not contain a query set with name "
+                            + setName;
             throw new WdkModelException(err);
         }
         return (QuerySet) querySets.get(setName);
@@ -239,8 +254,10 @@ public class WdkModel {
     // Question Sets
     public QuestionSet getQuestionSet(String setName) throws WdkModelException {
         if (!questionSets.containsKey(setName)) {
-            String err = "WDK Model " + name
-                    + " does not contain a Question set with name " + setName;
+            String err =
+                    "WDK Model " + name
+                            + " does not contain a Question set with name "
+                            + setName;
             throw new WdkModelException(err);
         }
         return (QuestionSet) questionSets.get(setName);
@@ -257,7 +274,8 @@ public class WdkModel {
     public Map<String, Map<String, Question[]>> getQuestionsByCategory() {
         QuestionSet[] qSets = getAllQuestionSets();
 
-        Map<String, Map<String, Vector<Question>>> qVecByCat = new LinkedHashMap<String, Map<String, Vector<Question>>>();
+        Map<String, Map<String, Vector<Question>>> qVecByCat =
+                new LinkedHashMap<String, Map<String, Vector<Question>>>();
         for (QuestionSet qSet : qSets) {
             if (true == qSet.getInternal()) continue;
             Question[] questions = qSet.getQuestions();
@@ -279,8 +297,9 @@ public class WdkModel {
             }
         }
 
-        Map<String, Map<String, Question[]>> qArrayByCat = new LinkedHashMap<String, Map<String, Question[]>>();
-        for (String recType: qArrayByCat.keySet()) {
+        Map<String, Map<String, Question[]>> qArrayByCat =
+                new LinkedHashMap<String, Map<String, Question[]>>();
+        for (String recType : qArrayByCat.keySet()) {
             Map<String, Vector<Question>> recMap = qVecByCat.get(recType);
             for (String cat : recMap.keySet()) {
                 Vector<Question> qVec = recMap.get(cat);
@@ -301,8 +320,10 @@ public class WdkModel {
 
     public ParamSet getParamSet(String setName) throws WdkModelException {
         if (!paramSets.containsKey(setName)) {
-            String err = "WDK Model " + name
-                    + " does not contain a param set with name " + setName;
+            String err =
+                    "WDK Model " + name
+                            + " does not contain a param set with name "
+                            + setName;
             throw new WdkModelException(err);
         }
         return (ParamSet) paramSets.get(setName);
@@ -356,8 +377,9 @@ public class WdkModel {
     private void addSet(ModelSetI set, Map setMap) throws WdkModelException {
         String setName = set.getName();
         if (allModelSets.containsKey(setName)) {
-            String err = "WDK Model " + name
-                    + " already contains a set with name " + setName;
+            String err =
+                    "WDK Model " + name + " already contains a set with name "
+                            + setName;
 
             throw new WdkModelException(err);
         }
@@ -369,7 +391,7 @@ public class WdkModel {
      * Set whatever resources the model needs. It will pass them to its kids
      */
     public void setResources() throws WdkModelException {
-        for (ModelSetI modelSet: allModelSets.values()) {
+        for (ModelSetI modelSet : allModelSets.values()) {
             modelSet.setResources(this);
         }
     }
@@ -381,8 +403,7 @@ public class WdkModel {
      * @param gusHome
      * @throws WdkModelException
      */
-    public void configure(ModelConfig  modelConfig)
-            throws WdkModelException {
+    public void configure(ModelConfig modelConfig) throws WdkModelException {
         try {
 
             // assign projectId
@@ -399,14 +420,16 @@ public class WdkModel {
             Integer maxActive = modelConfig.getMaxActive();
             Integer initialSize = modelConfig.getInitialSize();
 
-            RDBMSPlatformI platform = (RDBMSPlatformI) Class.forName(
-                    platformClass).newInstance();
+            RDBMSPlatformI platform =
+                    (RDBMSPlatformI) Class.forName(platformClass).newInstance();
 
             // also load the connection info for authentication database
-            String authenPlatformClass = modelConfig.getAuthenticationPlatformClass();
+            String authenPlatformClass =
+                    modelConfig.getAuthenticationPlatformClass();
             String authenLogin = modelConfig.getAuthenticationLogin();
             String authenPassword = modelConfig.getAuthenticationPassword();
-            String authenConnection = modelConfig.getAuthenticationConnectionUrl();
+            String authenConnection =
+                    modelConfig.getAuthenticationConnectionUrl();
 
             String loginSchema = modelConfig.getLoginSchema();
 
@@ -418,29 +441,34 @@ public class WdkModel {
 
             boolean enableQueryLogger = modelConfig.isEnableQueryLogger();
             String queryLoggerFile = modelConfig.getQueryLoggerFile();
-            
-            String configFile = modelConfig.getGusHome() + "/config/" + projectId + "Model-config.xml";
+
+            String configFile =
+                    modelConfig.getGusHome() + "/config/" + projectId
+                            + "Model-config.xml";
 
             // initialize authentication factory
             // set the max active as half of the model's configuration
             if (authenPlatformClass != null && !"".equals(authenPlatformClass)) {
-                authenPlatform = (RDBMSPlatformI) Class.forName(
-                        authenPlatformClass).newInstance();
+                authenPlatform =
+                        (RDBMSPlatformI) Class.forName(authenPlatformClass).newInstance();
                 authenPlatform.init(authenConnection, authenLogin,
                         authenPassword, minIdle, maxIdle, maxWait,
                         maxActive / 2, initialSize, configFile);
-                userFactory = new UserFactory(this, projectId, authenPlatform,
-                        loginSchema, defaultRole, smtpServer, registerEmail,
-                        emailSubject, emailContent);
+                userFactory =
+                        new UserFactory(this, projectId, authenPlatform,
+                                loginSchema, defaultRole, smtpServer,
+                                registerEmail, emailSubject, emailContent);
             } else {
-                userFactory = new UserFactory(this, projectId, null, null,
-                        null, null, null, null, null);
+                userFactory =
+                        new UserFactory(this, projectId, null, null, null,
+                                null, null, null, null);
             }
 
             platform.init(connectionUrl, login, password, minIdle, maxIdle,
                     maxWait, maxActive, initialSize, configFile);
-            ResultFactory resultFactory = new ResultFactory(platform, login,
-                    enableQueryLogger, queryLoggerFile);
+            ResultFactory resultFactory =
+                    new ResultFactory(platform, login, enableQueryLogger,
+                            queryLoggerFile);
             this.platform = platform;
             this.webServiceUrl = modelConfig.getWebServiceUrl();
             this.resultFactory = resultFactory;
@@ -461,7 +489,7 @@ public class WdkModel {
             throw new WdkModelException(ex);
         }
     }
-    
+
     public ModelConfig getModelConfig() {
         return modelConfig;
     }
@@ -495,8 +523,9 @@ public class WdkModel {
         }
         Object element = set.getElement(elementName);
         if (element == null) {
-            String s4 = s + " Set '" + setName + "' returned null for '"
-                    + elementName + "'";
+            String s4 =
+                    s + " Set '" + setName + "' returned null for '"
+                            + elementName + "'";
             throw new WdkModelException(s4);
         }
         return element;
@@ -531,16 +560,16 @@ public class WdkModel {
         for (GroupSet groupSet : groupSets.values()) {
             groupSet.resolveReferences(this);
         }
-        for (QuerySet querySet: querySets.values()) {
+        for (QuerySet querySet : querySets.values()) {
             querySet.resolveReferences(this);
         }
-        for (ParamSet paramSet:paramSets.values()) {
+        for (ParamSet paramSet : paramSets.values()) {
             paramSet.resolveReferences(this);
         }
-        for (RecordClassSet recordClassSet:recordClassSets.values()) {
+        for (RecordClassSet recordClassSet : recordClassSets.values()) {
             recordClassSet.resolveReferences(this);
         }
-        for (QuestionSet questionSet:questionSets.values()) {
+        for (QuestionSet questionSet : questionSets.values()) {
             questionSet.resolveReferences(this);
         }
         // resolve references for xml record classes and questions
@@ -554,21 +583,33 @@ public class WdkModel {
 
     private void excludeResources() throws WdkModelException {
         // decide model name, display name, and version
+        boolean hasModelName = false;
         for (WdkModelName wdkModelName : wdkModelNames) {
             if (wdkModelName.include(projectId)) {
-                this.name = wdkModelName.getName();
-                this.displayName = wdkModelName.getDisplayName();
-                this.version = wdkModelName.getVersion();
-                break;
+                if (hasModelName) {
+                    throw new WdkModelException("The model has more than one "
+                            + "<modelName> for project " + projectId);
+                } else {
+                    this.name = wdkModelName.getName();
+                    this.displayName = wdkModelName.getDisplayName();
+                    this.version = wdkModelName.getVersion();
+                    hasModelName = true;
+                }
             }
         }
         wdkModelNames = null; // no more use of modelNames
 
         // decide the introduction
+        boolean hasIntroduction = false;
         for (WdkModelText intro : introductions) {
             if (intro.include(projectId)) {
-                this.introduction = intro.getText();
-                break;
+                if (hasIntroduction) {
+                    throw new WdkModelException("The model has more than one "
+                            + "<introduction> for project " + projectId);
+                } else {
+                    this.introduction = intro.getText();
+                    hasIntroduction = true;
+                }
             }
         }
         introductions = null;
@@ -576,9 +617,15 @@ public class WdkModel {
         // exclude the property list
         for (PropertyList propList : defaultPropertyLists) {
             if (propList.include(projectId)) {
-                propList.excludeResources(projectId);
-                defaultPropertyListMap.put(propList.getName(),
-                        propList.getValues());
+                String listName = propList.getName();
+                if (defaultPropertyListMap.containsKey(listName)) {
+                    throw new WdkModelException("The model has more than one "
+                            + "defaultPropertyList \"" + listName
+                            + "\" for project " + projectId);
+                } else {
+                    propList.excludeResources(projectId);
+                    defaultPropertyListMap.put(listName, propList.getValues());
+                }
             }
         }
         defaultPropertyLists = null;
@@ -649,9 +696,10 @@ public class WdkModel {
 
     public String toString() {
         String newline = System.getProperty("line.separator");
-        StringBuffer buf = new StringBuffer("WdkModel: name='" + name + "'"
-                + newline + "displayName='" + displayName + "'" + newline
-                + "introduction='" + introduction + "'");
+        StringBuffer buf =
+                new StringBuffer("WdkModel: name='" + name + "'" + newline
+                        + "displayName='" + displayName + "'" + newline
+                        + "introduction='" + introduction + "'");
         buf.append(showSet("Param", paramSets));
         buf.append(showSet("Query", querySets));
         buf.append(showSet("RecordClass", recordClassSets));
@@ -671,7 +719,7 @@ public class WdkModel {
                 + " Sets oooooooooooooooooooooooooo" + newline);
         buf.append("ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
                 + newline + newline);
-        for (Object objSet: setMap.values()) {
+        for (Object objSet : setMap.values()) {
             ModelSetI set = (ModelSetI) objSet;
             buf.append("=========================== " + set.getName()
                     + " ===============================" + newline + newline);
@@ -731,7 +779,8 @@ public class WdkModel {
     }
 
     public XmlRecordClassSet[] getXmlRecordClassSets() {
-        XmlRecordClassSet[] rcsets = new XmlRecordClassSet[xmlRecordClassSets.size()];
+        XmlRecordClassSet[] rcsets =
+                new XmlRecordClassSet[xmlRecordClassSets.size()];
         xmlRecordClassSets.values().toArray(rcsets);
         return rcsets;
     }

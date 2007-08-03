@@ -14,6 +14,10 @@ public class NestedRecord extends WdkModelBase {
     public void setQuestionRef(String questionTwoPartName) {
         this.questionTwoPartName = questionTwoPartName;
     }
+    
+    public String getTwoPartName() {
+        return questionTwoPartName;
+    }
 
     public Question getQuestion() {
         return this.question;

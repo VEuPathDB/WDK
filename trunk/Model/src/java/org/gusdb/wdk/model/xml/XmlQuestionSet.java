@@ -29,7 +29,8 @@ public class XmlQuestionSet extends WdkModelBase implements ModelSetI {
     private boolean isInternal;
 
     private List<XmlQuestion> questionList = new ArrayList<XmlQuestion>();
-    private Map<String, XmlQuestion> questions = new LinkedHashMap<String, XmlQuestion>();
+    private Map<String, XmlQuestion> questions =
+            new LinkedHashMap<String, XmlQuestion>();
 
     /*
      * (non-Javadoc)
@@ -53,7 +54,7 @@ public class XmlQuestionSet extends WdkModelBase implements ModelSetI {
 
     /**
      * @param description
-     * The description to set.
+     *                The description to set.
      */
     public void addDescription(WdkModelText description) {
         this.descriptions.add(description);
@@ -68,7 +69,7 @@ public class XmlQuestionSet extends WdkModelBase implements ModelSetI {
 
     /**
      * @param displayName
-     * The displayName to set.
+     *                The displayName to set.
      */
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
@@ -83,7 +84,7 @@ public class XmlQuestionSet extends WdkModelBase implements ModelSetI {
 
     /**
      * @param isInternal
-     * The isInternal to set.
+     *                The isInternal to set.
      */
     public void setInternal(boolean isInternal) {
         this.isInternal = isInternal;
@@ -172,10 +173,17 @@ public class XmlQuestionSet extends WdkModelBase implements ModelSetI {
     @Override
     public void excludeResources(String projectId) throws WdkModelException {
         // exclude descriptions
+        boolean hasDescription = false;
         for (WdkModelText description : descriptions) {
             if (description.include(projectId)) {
-                this.description = description.getText();
-                break;
+                if (hasDescription) {
+                    throw new WdkModelException("The xmlQuestionSet "
+                            + getName() + " has more than one description "
+                            + "for project " + projectId);
+                } else {
+                    this.description = description.getText();
+                    hasDescription = true;
+                }
             }
         }
         descriptions = null;
@@ -188,9 +196,8 @@ public class XmlQuestionSet extends WdkModelBase implements ModelSetI {
                 String questionName = question.getName();
                 if (questions.containsKey(questionName))
                     throw new WdkModelException("The xmlQuestion "
-                            + questionName
-                            + " is duplicated in the xmlQuestionSet "
-                            + this.name);
+                            + questionName + " is duplicated in the "
+                            + "xmlQuestionSet " + this.name);
                 questions.put(questionName, question);
             }
         }

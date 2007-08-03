@@ -30,7 +30,7 @@ public abstract class Param extends WdkModelBase {
 
     private List<ParamSuggestion> suggestions;
     protected boolean allowEmpty;
-    
+
     protected ParamSet paramSet;
 
     public Param() {
@@ -49,7 +49,7 @@ public abstract class Param extends WdkModelBase {
     public String getName() {
         return name;
     }
-    
+
     void setParamSet(ParamSet paramSet) {
         this.paramSet = paramSet;
     }
@@ -72,7 +72,7 @@ public abstract class Param extends WdkModelBase {
      * param is <code>paramSetName</code> concatenated with ".paramName".
      * 
      * @param paramSetName
-     *        name of the paramSet to which this param belongs.
+     *                name of the paramSet to which this param belongs.
      */
     public void setFullName(String paramSetName) {
         this.fullName = paramSetName + "." + name;
@@ -121,7 +121,7 @@ public abstract class Param extends WdkModelBase {
 
     /**
      * @param readonly
-     *        The readonly to set.
+     *                The readonly to set.
      */
     public void setReadonly(boolean readonly) {
         this.readonly = readonly;
@@ -136,7 +136,7 @@ public abstract class Param extends WdkModelBase {
 
     /**
      * @param visible
-     *        The visible to set.
+     *                The visible to set.
      */
     public void setVisible(boolean visible) {
         this.visible = visible;
@@ -148,7 +148,7 @@ public abstract class Param extends WdkModelBase {
     public boolean isAllowEmpty() {
         return this.allowEmpty;
     }
-    
+
     void setAllowEmpty(boolean allowEmpty) {
         this.allowEmpty = allowEmpty;
     }
@@ -162,7 +162,7 @@ public abstract class Param extends WdkModelBase {
 
     /**
      * @param group
-     *        the group to set
+     *                the group to set
      */
     public void setGroup(Group group) {
         this.group = group;
@@ -175,11 +175,13 @@ public abstract class Param extends WdkModelBase {
     public String toString() {
         String newline = System.getProperty("line.separator");
         String classnm = this.getClass().getName();
-        StringBuffer buf = new StringBuffer(classnm + ": name='" + name + "'"
-                + ": id='" + id + "'" + newline + "  prompt='" + prompt + "'"
-                + newline + "  help='" + help + "'" + newline + "  default='"
-                + defaultValue + "'" + newline + "  readonly=" + readonly
-                + newline + "  visible=" + visible + newline);
+        StringBuffer buf =
+                new StringBuffer(classnm + ": name='" + name + "'" + ": id='"
+                        + id + "'" + newline + "  prompt='" + prompt + "'"
+                        + newline + "  help='" + help + "'" + newline
+                        + "  default='" + defaultValue + "'" + newline
+                        + "  readonly=" + readonly + newline + "  visible="
+                        + visible + newline);
         if (group != null) buf.append("  group=" + group.getName() + newline);
 
         return buf.toString();
@@ -211,8 +213,8 @@ public abstract class Param extends WdkModelBase {
         if (!value.startsWith(Utilities.COMPRESSED_VALUE_PREFIX)) return value;
 
         // decompress the value
-        String checksum = value.substring(
-                Utilities.COMPRESSED_VALUE_PREFIX.length()).trim();
+        String checksum =
+                value.substring(Utilities.COMPRESSED_VALUE_PREFIX.length()).trim();
         return queryFactory.getClobValue(checksum);
     }
 
@@ -223,23 +225,36 @@ public abstract class Param extends WdkModelBase {
      */
     @Override
     public void excludeResources(String projectId) throws WdkModelException {
-        // exclude helps
+        boolean hasHelp = false;
         for (WdkModelText help : helps) {
             if (help.include(projectId)) {
-                this.help = help.getText();
-                break;
+                if (hasHelp) {
+                    throw new WdkModelException("The param " + getFullName()
+                            + " has more than one help for project "
+                            + projectId);
+                } else {
+                    this.help = help.getText();
+                    hasHelp = true;
+                }
             }
         }
         helps = null;
 
         // exclude suggestions
+        boolean hasSuggest = false;
         for (ParamSuggestion suggest : suggestions) {
             if (suggest.include(projectId)) {
-                suggest.excludeResources(projectId);
-                defaultValue = suggest.getDefault();
-                sample = suggest.getSample();
-                allowEmpty = suggest.isAllowEmpty();
-                break;
+                if (hasSuggest) {
+                    throw new WdkModelException("The param " + getFullName()
+                            + " has more than one <suggest> for project "
+                            + projectId);
+                } else {
+                    suggest.excludeResources(projectId);
+                    defaultValue = suggest.getDefault();
+                    sample = suggest.getSample();
+                    allowEmpty = suggest.isAllowEmpty();
+                    hasSuggest = true;
+                }
             }
         }
         suggestions = null;

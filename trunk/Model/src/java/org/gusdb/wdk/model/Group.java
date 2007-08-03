@@ -50,7 +50,7 @@ public class Group extends WdkModelBase {
 
     /**
      * @param description
-     * the description to set
+     *                the description to set
      */
     public void addDescription(WdkModelText description) {
         this.descriptions.add(description);
@@ -65,7 +65,7 @@ public class Group extends WdkModelBase {
 
     /**
      * @param displayName
-     * the displayName to set
+     *                the displayName to set
      */
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
@@ -80,7 +80,7 @@ public class Group extends WdkModelBase {
 
     /**
      * @param groupSet
-     * the groupSet to set
+     *                the groupSet to set
      */
     public void setGroupSet(GroupSet groupSet) {
         this.groupSet = groupSet;
@@ -95,7 +95,7 @@ public class Group extends WdkModelBase {
 
     /**
      * @param name
-     * the name to set
+     *                the name to set
      */
     public void setName(String name) {
         this.name = name;
@@ -115,7 +115,7 @@ public class Group extends WdkModelBase {
 
     /**
      * @param displayType
-     * the displayType to set
+     *                the displayType to set
      */
     public void setDisplayType(String displayType) {
         this.displayType = displayType;
@@ -135,12 +135,19 @@ public class Group extends WdkModelBase {
      * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
      */
     @Override
-    public void excludeResources(String projectId) {
+    public void excludeResources(String projectId) throws WdkModelException {
         // exclude descriptions
-        for (WdkModelText desc : descriptions) {
-            if (desc.include(projectId)) {
-                this.description = desc.getText();
-                break;
+        boolean hasDescription = false;
+        for (WdkModelText description : descriptions) {
+            if (description.include(projectId)) {
+                if (hasDescription) {
+                    throw new WdkModelException("The group " + getFullName()
+                            + " has more than one description for project "
+                            + projectId);
+                } else {
+                    this.description = description.getText();
+                    hasDescription = true;
+                }
             }
         }
         descriptions = null;
