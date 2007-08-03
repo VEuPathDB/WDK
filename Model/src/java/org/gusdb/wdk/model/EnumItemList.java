@@ -13,7 +13,7 @@ import java.util.List;
 public class EnumItemList extends WdkModelBase {
 
     // need to get default value from param set
-    private ParamSet paramSet;
+    private EnumParam param;
 
     private List<EnumItem> items;
 
@@ -26,7 +26,7 @@ public class EnumItemList extends WdkModelBase {
     }
 
     public EnumItemList(EnumItemList itemList) {
-        this.paramSet = itemList.paramSet;
+        this.param = itemList.param;
         this.items = new ArrayList<EnumItem>(itemList.items);
         this.useTermOnly = itemList.useTermOnly;
     }
@@ -52,8 +52,8 @@ public class EnumItemList extends WdkModelBase {
         return this.useTermOnly;
     }
 
-    void setParamSet(ParamSet paramSet) {
-        this.paramSet = paramSet;
+    void setParam(EnumParam param) {
+        this.param = param;
     }
 
     /*
@@ -62,12 +62,19 @@ public class EnumItemList extends WdkModelBase {
      * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
      */
     @Override
-    public void excludeResources(String projectId) {
+    public void excludeResources(String projectId) throws WdkModelException {
         // exclude use term only
+        boolean hasUseTermOnly = false;
         for (ParamConfiguration paramConfig : useTermOnlies) {
             if (paramConfig.include(projectId)) {
-                this.useTermOnly = paramConfig.isValue();
-                break;
+                if (hasUseTermOnly) {
+                    throw new WdkModelException("the <enumList> of enumParam "
+                            + param.getFullName() + " has more <useTermOnly> "
+                            + "for project " + projectId);
+                } else {
+                    this.useTermOnly = paramConfig.isValue();
+                    hasUseTermOnly = true;
+                }
             }
         }
         useTermOnlies = null;

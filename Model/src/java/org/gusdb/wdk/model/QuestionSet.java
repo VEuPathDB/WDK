@@ -12,13 +12,14 @@ import java.util.Map;
  * 
  * @author David Barkan
  * @version $Revision$ $Date: 2006-03-09 23:02:31 -0500 (Thu, 09 Mar
- * 2006) $ $Author$
+ *          2006) $ $Author$
  */
 
 public class QuestionSet extends WdkModelBase implements ModelSetI {
 
     private List<Question> questionList = new ArrayList<Question>();
-    private Map<String, Question> questions = new LinkedHashMap<String, Question>();
+    private Map<String, Question> questions =
+            new LinkedHashMap<String, Question>();
     private String name;
     private String displayName;
 
@@ -78,7 +79,8 @@ public class QuestionSet extends WdkModelBase implements ModelSetI {
     }
 
     public Map<String, Question[]> getQuestionsByCategory() {
-        Map<String, List<Question>> questionsByCategory = new LinkedHashMap<String, List<Question>>();
+        Map<String, List<Question>> questionsByCategory =
+                new LinkedHashMap<String, List<Question>>();
         for (Question question : questions.values()) {
             String category = question.getCategory();
             List<Question> questionList = questionsByCategory.get(category);
@@ -89,7 +91,8 @@ public class QuestionSet extends WdkModelBase implements ModelSetI {
             questionList.add(question);
         }
 
-        Map<String, Question[]> questionArraysByCategory = new LinkedHashMap<String, Question[]>();
+        Map<String, Question[]> questionArraysByCategory =
+                new LinkedHashMap<String, Question[]>();
         for (String category : questionsByCategory.keySet()) {
             List<Question> questionList = questionsByCategory.get(category);
             Question[] questions = new Question[questionList.size()];
@@ -120,10 +123,12 @@ public class QuestionSet extends WdkModelBase implements ModelSetI {
 
     public String toString() {
         String newline = System.getProperty("line.separator");
-        StringBuffer buf = new StringBuffer("QuestionSet: name='" + getName()
-                + "'" + newline + "  displayName='" + getDisplayName() + "'"
-                + newline + "  description='" + getDescription() + "'"
-                + newline + "  internal='" + getInternal() + "'" + newline);
+        StringBuffer buf =
+                new StringBuffer("QuestionSet: name='" + getName() + "'"
+                        + newline + "  displayName='" + getDisplayName() + "'"
+                        + newline + "  description='" + getDescription() + "'"
+                        + newline + "  internal='" + getInternal() + "'"
+                        + newline);
         buf.append(newline);
 
         for (Question question : questions.values()) {
@@ -144,14 +149,21 @@ public class QuestionSet extends WdkModelBase implements ModelSetI {
      */
     @Override
     public void excludeResources(String projectId) throws WdkModelException {
-        // resolve the description
-        for (WdkModelText desc : descriptions) {
-            if (desc.include(projectId)) {
-                this.description = desc.getText();
-                break;
+        // exclude descriptions
+        boolean hasDescription = false;
+        for (WdkModelText description : descriptions) {
+            if (description.include(projectId)) {
+                if (hasDescription) {
+                    throw new WdkModelException("The questionSet " + getName()
+                            + " has more than one description for project "
+                            + projectId);
+                } else {
+                    this.description = description.getText();
+                    hasDescription = true;
+                }
             }
         }
-        descriptions.clear();
+        descriptions = null;
 
         // exclude resources in each question
         for (Question question : questionList) {

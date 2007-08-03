@@ -51,7 +51,7 @@ public class XmlQuestion extends WdkModelBase {
 
     /**
      * @param description
-     * The description to set.
+     *                The description to set.
      */
     public void addDescription(WdkModelText description) {
         this.descriptions.add(description);
@@ -66,7 +66,7 @@ public class XmlQuestion extends WdkModelBase {
 
     /**
      * @param displayName
-     * The displayName to set.
+     *                The displayName to set.
      */
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
@@ -81,7 +81,7 @@ public class XmlQuestion extends WdkModelBase {
 
     /**
      * @param help
-     * The help to set.
+     *                The help to set.
      */
     public void addHelp(WdkModelText help) {
         this.helps.add(help);
@@ -101,7 +101,7 @@ public class XmlQuestion extends WdkModelBase {
 
     /**
      * @param name
-     * The name to set.
+     *                The name to set.
      */
     public void setName(String name) {
         this.name = name;
@@ -109,7 +109,7 @@ public class XmlQuestion extends WdkModelBase {
 
     /**
      * @param summaryAttributesRef
-     * The summaryAttributesRef to set.
+     *                The summaryAttributesRef to set.
      */
     public void setSummaryAttributes(String summaryAttributeNames) {
         this.summaryAttributeNames = summaryAttributeNames;
@@ -160,18 +160,21 @@ public class XmlQuestion extends WdkModelBase {
     public String getSanityTestSuggestion() throws WdkModelException {
         String indent = "    ";
         String newline = System.getProperty("line.separator");
-        StringBuffer buf = new StringBuffer(newline + newline + indent
-                + "<sanityXmlQuestion ref=\"" + getFullName() + "\"" + newline
-                + indent + indent + indent + "minOutputLength=\"FIX_m_i_len\" "
-                + "maxOutputLength=\"FIX_m_o_len\"" + newline + indent + indent
-                + indent + "pageStart=\"1\" pageEnd=\"20\">" + newline);
+        StringBuffer buf =
+                new StringBuffer(newline + newline + indent
+                        + "<sanityXmlQuestion ref=\"" + getFullName() + "\""
+                        + newline + indent + indent + indent
+                        + "minOutputLength=\"FIX_m_i_len\" "
+                        + "maxOutputLength=\"FIX_m_o_len\"" + newline + indent
+                        + indent + indent + "pageStart=\"1\" pageEnd=\"20\">"
+                        + newline);
         buf.append(indent + "</sanityXmlQuestion>");
         return buf.toString();
     }
 
     /**
      * @param recordClassRef
-     * The recordClassRef to set.
+     *                The recordClassRef to set.
      */
     public void setRecordClassRef(String recordClassRef) {
         this.recordClassRef = recordClassRef;
@@ -186,11 +189,13 @@ public class XmlQuestion extends WdkModelBase {
             // fields
             summaryAttributes = recordClass.getAttributeFields();
         } else { // use a subset of attribute fields
-            Map<String, XmlAttributeField> summaries = new LinkedHashMap<String, XmlAttributeField>();
+            Map<String, XmlAttributeField> summaries =
+                    new LinkedHashMap<String, XmlAttributeField>();
             String[] names = summaryAttributeNames.split(",");
             for (String name : names) {
                 try {
-                    XmlAttributeField field = recordClass.getAttributeField(name);
+                    XmlAttributeField field =
+                            recordClass.getAttributeField(name);
                     summaries.put(field.getName(), field);
                 } catch (WdkModelException ex) {
                     // TODO Auto-generated catch block
@@ -308,19 +313,33 @@ public class XmlQuestion extends WdkModelBase {
     @Override
     public void excludeResources(String projectId) throws WdkModelException {
         // exclude the descriptions
+        boolean hasDescription = false;
         for (WdkModelText description : descriptions) {
             if (description.include(projectId)) {
-                this.description = description.getText();
-                break;
+                if (hasDescription) {
+                    throw new WdkModelException("The xmlQuestion "
+                            + getFullName() + " has more than one description "
+                            + "for project " + projectId);
+                } else {
+                    this.description = description.getText();
+                    hasDescription = true;
+                }
             }
         }
         descriptions = null;
 
         // exclude the helps
+        boolean hasHelp = false;
         for (WdkModelText help : helps) {
             if (help.include(projectId)) {
-                this.help = help.getText();
-                break;
+                if (hasHelp) {
+                    throw new WdkModelException("The xmlQuestion "
+                            + getFullName() + " has more than one help "
+                            + "for project " + projectId);
+                } else {
+                    this.help = help.getText();
+                    hasHelp = true;
+                }
             }
         }
         helps = null;
