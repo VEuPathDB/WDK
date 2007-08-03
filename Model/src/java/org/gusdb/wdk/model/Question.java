@@ -21,7 +21,7 @@ import org.gusdb.wdk.model.user.User;
  * 
  * @author David Barkan
  * @version $Revision$ $Date: 2007-01-10 14:54:53 -0500 (Wed, 10 Jan
- * 2007) $ $Author$
+ *          2007) $ $Author$
  */
 
 public class Question extends WdkModelBase implements Serializable {
@@ -58,14 +58,18 @@ public class Question extends WdkModelBase implements Serializable {
     private List<AttributeList> attributeLists = new ArrayList<AttributeList>();
 
     private String[] summaryAttributeNames;
-    private Map<String, AttributeField> summaryAttributeMap = new LinkedHashMap<String, AttributeField>();
-    private Map<String, Boolean> sortingAttributeMap = new LinkedHashMap<String, Boolean>();
+    private Map<String, AttributeField> summaryAttributeMap =
+            new LinkedHashMap<String, AttributeField>();
+    private Map<String, Boolean> sortingAttributeMap =
+            new LinkedHashMap<String, Boolean>();
 
-    private List<DynamicAttributeSet> dynamicAttributeSets = new ArrayList<DynamicAttributeSet>();
+    private List<DynamicAttributeSet> dynamicAttributeSets =
+            new ArrayList<DynamicAttributeSet>();
     private DynamicAttributeSet dynamicAttributeSet;
 
     private List<PropertyList> propertyLists = new ArrayList<PropertyList>();
-    private Map<String, String[]> propertyListMap = new LinkedHashMap<String, String[]>();
+    private Map<String, String[]> propertyListMap =
+            new LinkedHashMap<String, String[]>();
 
     private WdkModel wdkModel;
 
@@ -76,24 +80,24 @@ public class Question extends WdkModelBase implements Serializable {
     /**
      * default constructor used by model parser
      */
-    public Question() {
-    }
-    
+    public Question() {}
+
     /**
      * copy constructor
+     * 
      * @param question
      */
     public Question(Question question) {
         this.category = question.category;
         this.description = question.description;
         this.displayName = question.displayName;
-        
+
         // TODO - need to deep-copy dynamicAttributeSet as well
         this.dynamicAttributeSet = question.dynamicAttributeSet;
-        
+
         this.help = question.help;
         this.propertyListMap.putAll(question.propertyListMap);
-        
+
         // need to deep-copy query as well
         this.query = question.query;
         this.queryTwoPartName = question.queryTwoPartName;
@@ -160,20 +164,23 @@ public class Question extends WdkModelBase implements Serializable {
     }
 
     public Map<String, AttributeField> getReportMakerAttributeFields() {
-        Map<String, AttributeField> rmfields = recordClass.getReportMakerAttributeFieldMap();
+        Map<String, AttributeField> rmfields =
+                recordClass.getReportMakerAttributeFieldMap();
         if (dynamicAttributeSet != null)
             rmfields.putAll(dynamicAttributeSet.getReportMakerAttributeFieldMap());
         return rmfields;
     }
 
     public Map<String, TableField> getReportMakerTableFields() {
-        Map<String, TableField> rmfields = recordClass.getReportMakerTableFieldMap();
+        Map<String, TableField> rmfields =
+                recordClass.getReportMakerTableFieldMap();
         return rmfields;
     }
 
     public Map<String, Field> getReportMakerFields() {
         Map<String, Field> fields = new LinkedHashMap<String, Field>();
-        Map<String, AttributeField> attributes = getReportMakerAttributeFields();
+        Map<String, AttributeField> attributes =
+                getReportMakerAttributeFields();
         Map<String, TableField> tables = getReportMakerTableFields();
 
         for (String name : attributes.keySet()) {
@@ -193,8 +200,8 @@ public class Question extends WdkModelBase implements Serializable {
     }
 
     public Answer makeAnswer(Map<String, Object> paramValues, int i, int j,
-            Map<String, Boolean> sortingAttributes)
-            throws WdkUserException, WdkModelException {
+            Map<String, Boolean> sortingAttributes) throws WdkUserException,
+            WdkModelException {
         QueryInstance qi = query.makeInstance();
         qi.setValues(paramValues);
         Answer answer = new Answer(this, qi, i, j, sortingAttributes);
@@ -212,7 +219,8 @@ public class Question extends WdkModelBase implements Serializable {
 
     public Map<Group, Map<String, Param>> getParamMapByGroups() {
         Param[] params = query.getParams();
-        Map<Group, Map<String, Param>> paramGroups = new LinkedHashMap<Group, Map<String, Param>>();
+        Map<Group, Map<String, Param>> paramGroups =
+                new LinkedHashMap<Group, Map<String, Param>>();
         for (Param param : params) {
             Group group = param.getGroup();
             Map<String, Param> paramGroup;
@@ -229,7 +237,8 @@ public class Question extends WdkModelBase implements Serializable {
 
     public Map<Group, Map<String, Param>> getParamMapByGroups(String displayType) {
         Param[] params = query.getParams();
-        Map<Group, Map<String, Param>> paramGroups = new LinkedHashMap<Group, Map<String, Param>>();
+        Map<Group, Map<String, Param>> paramGroups =
+                new LinkedHashMap<Group, Map<String, Param>>();
         for (Param param : params) {
             Group group = param.getGroup();
             if (!group.getDisplayType().equalsIgnoreCase(displayType))
@@ -303,14 +312,15 @@ public class Question extends WdkModelBase implements Serializable {
         for (String saName : summaryAttributeMap.keySet()) {
             saNames.append(saName + ", ");
         }
-        StringBuffer buf = new StringBuffer("Question: name='" + name + "'"
-                + newline + "  recordClass='" + recordClassTwoPartName + "'"
-                + newline + "  query='" + queryTwoPartName + "'" + newline
-                + "  displayName='" + getDisplayName() + "'" + newline
-                + "  summary='" + getSummary() + "'" + newline
-                + "  description='" + getDescription() + "'" + newline
-                + "  summaryAttributes='" + saNames + "'" + newline
-                + "  help='" + getHelp() + "'" + newline);
+        StringBuffer buf =
+                new StringBuffer("Question: name='" + name + "'" + newline
+                        + "  recordClass='" + recordClassTwoPartName + "'"
+                        + newline + "  query='" + queryTwoPartName + "'"
+                        + newline + "  displayName='" + getDisplayName() + "'"
+                        + newline + "  summary='" + getSummary() + "'"
+                        + newline + "  description='" + getDescription() + "'"
+                        + newline + "  summaryAttributes='" + saNames + "'"
+                        + newline + "  help='" + getHelp() + "'" + newline);
         if (dynamicAttributeSet != null) {
             buf.append(dynamicAttributeSet.toString());
         }
@@ -330,12 +340,13 @@ public class Question extends WdkModelBase implements Serializable {
     public String getSanityTestSuggestion() throws WdkModelException {
         String indent = "    ";
         String newline = System.getProperty("line.separator");
-        StringBuffer buf = new StringBuffer(newline + newline + indent
-                + "<sanityQuestion ref=\"" + getFullName() + "\"" + newline
-                + indent + indent + indent + "pageStart=\"1\" pageEnd=\"20\""
-                + newline + indent + indent + indent
-                + "minOutputLength=\"FIX_min_len\" "
-                + "maxOutputLength=\"FIX_max_len\">" + newline);
+        StringBuffer buf =
+                new StringBuffer(newline + newline + indent
+                        + "<sanityQuestion ref=\"" + getFullName() + "\""
+                        + newline + indent + indent + indent
+                        + "pageStart=\"1\" pageEnd=\"20\"" + newline + indent
+                        + indent + indent + "minOutputLength=\"FIX_min_len\" "
+                        + "maxOutputLength=\"FIX_max_len\">" + newline);
         for (Param param : getQuery().getParams()) {
             String paramName = param.getName();
             String value = param.getDefault();
@@ -366,8 +377,9 @@ public class Question extends WdkModelBase implements Serializable {
     }
 
     Map<String, AttributeField> getAttributeFields() {
-        Map<String, AttributeField> attributeFields = new LinkedHashMap<String, AttributeField>(
-                recordClass.getAttributeFieldMap());
+        Map<String, AttributeField> attributeFields =
+                new LinkedHashMap<String, AttributeField>(
+                        recordClass.getAttributeFieldMap());
         if (dynamicAttributeSet != null) {
             attributeFields.putAll(dynamicAttributeSet.getAttributeFields());
         }
@@ -411,9 +423,10 @@ public class Question extends WdkModelBase implements Serializable {
                 summaryAttributeMap.put(name, attMap.get(name));
             }
         } else {
-            Map<String, AttributeField> recAttrsMap = getRecordClass().getAttributeFieldMap();
-            summaryAttributeMap = new LinkedHashMap<String, AttributeField>(
-                    recAttrsMap);
+            Map<String, AttributeField> recAttrsMap =
+                    getRecordClass().getAttributeFieldMap();
+            summaryAttributeMap =
+                    new LinkedHashMap<String, AttributeField>(recAttrsMap);
             Iterator<String> ramI = recAttrsMap.keySet().iterator();
             String attribName = null;
             while (ramI.hasNext()) {
@@ -430,7 +443,7 @@ public class Question extends WdkModelBase implements Serializable {
      * This method is use to clone the question, excluding dynamic attributes
      * 
      * @return
-     * @throws WdkModelException 
+     * @throws WdkModelException
      */
     public Question getBaseQuestion() throws WdkModelException {
         Question question = new Question();
@@ -443,11 +456,12 @@ public class Question extends WdkModelBase implements Serializable {
         question.questionSet = this.questionSet;
         question.recordClass = this.recordClass;
         question.recordClassTwoPartName = this.recordClassTwoPartName;
-        
 
         // needs to clone thie summary attribute as well
-        Map<String, AttributeField> sumAttributes = new LinkedHashMap<String, AttributeField>();
-        Map<String, AttributeField> attributes = recordClass.getAttributeFieldMap();
+        Map<String, AttributeField> sumAttributes =
+                new LinkedHashMap<String, AttributeField>();
+        Map<String, AttributeField> attributes =
+                recordClass.getAttributeFieldMap();
         for (String attrName : summaryAttributeMap.keySet()) {
             if (attributes.containsKey(attrName))
                 sumAttributes.put(attrName, summaryAttributeMap.get(attrName));
@@ -552,48 +566,85 @@ public class Question extends WdkModelBase implements Serializable {
     @Override
     public void excludeResources(String projectId) throws WdkModelException {
         // exclude descriptions
-        for (WdkModelText desc : descriptions) {
-            if (desc.include(projectId)) {
-                this.description = desc.getText();
-                break;
+        boolean hasDescription = false;
+        for (WdkModelText description : descriptions) {
+            if (description.include(projectId)) {
+                if (hasDescription) {
+                    throw new WdkModelException("The question " + getFullName()
+                            + " has more than one description for project "
+                            + projectId);
+                } else {
+                    this.description = description.getText();
+                    hasDescription = true;
+                }
             }
         }
         descriptions = null;
 
         // exclude summaries
+        boolean hasSummary = false;
         for (WdkModelText summ : summaries) {
             if (summ.include(projectId)) {
-                this.summary = summ.getText();
-                break;
+                if (hasSummary) {
+                    throw new WdkModelException("The question " + getFullName()
+                            + " has more than one summary for project "
+                            + projectId);
+                } else {
+                    this.summary = summ.getText();
+                    hasSummary = true;
+                }
             }
         }
         summaries = null;
 
         // exclude helps
+        boolean hasHelp = false;
         for (WdkModelText help : helps) {
             if (help.include(projectId)) {
-                this.help = help.getText();
-                break;
+                if (hasHelp) {
+                    throw new WdkModelException("The question " + getFullName()
+                            + " has more than one help for project "
+                            + projectId);
+                } else {
+                    this.help = help.getText();
+                    hasHelp = true;
+                }
             }
         }
         helps = null;
 
         // exclude summary and sorting attribute list
+        boolean hasAttributeList = false;
         for (AttributeList attributeList : attributeLists) {
             if (attributeList.include(projectId)) {
-                this.summaryAttributeNames = attributeList.getSummaryAttributeNames();
-                this.sortingAttributeMap = attributeList.getSortingAttributeMap();
-                break;
+                if (hasAttributeList) {
+                    throw new WdkModelException("The question " + getFullName()
+                            + " has more than one <attributesList> for "
+                            + "project " + projectId);
+                } else {
+                    this.summaryAttributeNames =
+                            attributeList.getSummaryAttributeNames();
+                    this.sortingAttributeMap =
+                            attributeList.getSortingAttributeMap();
+                    hasAttributeList = true;
+                }
             }
         }
         attributeLists = null;
 
         // exclude dynamic attribute set
+        boolean hasDynamicAttributes = false;
         for (DynamicAttributeSet dynamicAttributeSet : dynamicAttributeSets) {
             if (dynamicAttributeSet.include(projectId)) {
-                dynamicAttributeSet.excludeResources(projectId);
-                this.dynamicAttributeSet = dynamicAttributeSet;
-                break;
+                if (hasDynamicAttributes) {
+                    throw new WdkModelException("The question " + getFullName()
+                            + " has more than one <dynamicAttributes> for "
+                            + "project " + projectId);
+                } else {
+                    dynamicAttributeSet.excludeResources(projectId);
+                    this.dynamicAttributeSet = dynamicAttributeSet;
+                    hasDynamicAttributes = true;
+                }
             }
         }
         dynamicAttributeSets = null;
@@ -601,8 +652,16 @@ public class Question extends WdkModelBase implements Serializable {
         // exclude property lists
         for (PropertyList propList : propertyLists) {
             if (propList.include(projectId)) {
-                propList.excludeResources(projectId);
-                propertyListMap.put(propList.getName(), propList.getValues());
+                String listName = propList.getName();
+                if (propertyListMap.containsKey(listName)) {
+                    throw new WdkModelException("The question " + getFullName()
+                            + " has more than one propertyList \"" + listName
+                            + "\" for project " + projectId);
+                } else {
+                    propList.excludeResources(projectId);
+                    propertyListMap.put(propList.getName(),
+                            propList.getValues());
+                }
             }
         }
         propertyLists = null;

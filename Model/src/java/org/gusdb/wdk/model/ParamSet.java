@@ -11,7 +11,8 @@ public class ParamSet extends WdkModelBase implements ModelSetI {
     private Map<String, Param> paramMap = new LinkedHashMap<String, Param>();
     private String name;
 
-    private List<ParamConfiguration> useTermOnlies = new ArrayList<ParamConfiguration>();
+    private List<ParamConfiguration> useTermOnlies =
+            new ArrayList<ParamConfiguration>();
     private boolean useTermOnly = false;
 
     public void setName(String name) {
@@ -88,10 +89,17 @@ public class ParamSet extends WdkModelBase implements ModelSetI {
     public void excludeResources(String projectId) throws WdkModelException {
         // exclude use term only. this must happen before processing params,
         // since enum/vocab params will use the value as default
+        boolean hasUseTermOnly = false;
         for (ParamConfiguration paramConfig : useTermOnlies) {
             if (paramConfig.include(projectId)) {
-                useTermOnly = paramConfig.isValue();
-                break;
+                if (hasUseTermOnly) {
+                    throw new WdkModelException("paramSet " + getName()
+                            + " has more than one <useTermOnly> tag "
+                            + "for project " + projectId);
+                } else {
+                    useTermOnly = paramConfig.isValue();
+                    hasUseTermOnly = true;
+                }
             }
         }
         useTermOnlies = null;

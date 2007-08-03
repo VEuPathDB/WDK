@@ -8,8 +8,8 @@ public class NestedRecordList extends WdkModelBase {
     protected String questionTwoPartName;
     protected Question question;
 
-    //todo:
-    //validate links between nested record query and parent record instance
+    // todo:
+    // validate links between nested record query and parent record instance
 
     public NestedRecordList() {
 
@@ -17,6 +17,10 @@ public class NestedRecordList extends WdkModelBase {
 
     public void setQuestionRef(String questionTwoPartName) {
         this.questionTwoPartName = questionTwoPartName;
+    }
+
+    public String getTwoPartName() {
+        return questionTwoPartName;
     }
 
     public Question getQuestion() {
@@ -27,11 +31,13 @@ public class NestedRecordList extends WdkModelBase {
         this.question = (Question) model.resolveReference(questionTwoPartName);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
      */
     @Override
     public void excludeResources(String projectId) throws WdkModelException {
-        // do nothing
+    // do nothing
     }
 }

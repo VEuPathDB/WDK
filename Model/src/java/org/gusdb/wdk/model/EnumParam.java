@@ -26,12 +26,12 @@ public class EnumParam extends AbstractEnumParam {
         }
         return displays;
     }
-    
+
     public Map<String, String> getTermDisplayMap() {
-        Map<String, String> map = new LinkedHashMap< String, String >();
+        Map<String, String> map = new LinkedHashMap<String, String>();
         EnumItem[] enumItems = enumItemList.getEnumItems();
         for (EnumItem item : enumItems) {
-            map.put( item.getTerm(), item.getDisplay() );
+            map.put(item.getTerm(), item.getDisplay());
         }
         return map;
     }
@@ -95,18 +95,28 @@ public class EnumParam extends AbstractEnumParam {
         super.excludeResources(projectId);
 
         // exclude enum items
+        boolean hasEnumList = false;
         for (EnumItemList itemList : enumItemLists) {
             if (itemList.include(projectId)) {
-                itemList.excludeResources(projectId);
-                this.enumItemList = itemList;
-                // apply the use term only from enumList
-                Boolean useTermOnly = itemList.isUseTermOnly();
-                if (useTermOnly != null) this.useTermOnly = useTermOnly;
-                break;
+                if (hasEnumList) {
+                    throw new WdkModelException("enumParam " + getFullName()
+                            + " has more than one <enumList> for project "
+                            + projectId);
+                } else {
+                    itemList.setParam(this);
+                    itemList.excludeResources(projectId);
+                    this.enumItemList = itemList;
+
+                    // apply the use term only from enumList
+                    Boolean useTermOnly = itemList.isUseTermOnly();
+                    if (useTermOnly != null) this.useTermOnly = useTermOnly;
+
+                    hasEnumList = true;
+                }
             }
         }
         if (enumItemList == null)
-            throw new WdkModelException(
-                    "No EnumItemList available in enumParam " + this.name);
+            throw new WdkModelException("No enumList available in enumParam "
+                    + getFullName());
     }
 }
