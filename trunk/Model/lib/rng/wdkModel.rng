@@ -257,6 +257,9 @@
         <optional>
             <attribute name="allowEmpty" />
         </optional>
+        <optional>
+            <attribute name="emptyValue" />
+        </optional>
         <ref name="IncludeExclude" />
       </define>  
   
