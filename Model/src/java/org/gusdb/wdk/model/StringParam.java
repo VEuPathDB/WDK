@@ -105,7 +105,7 @@ public class StringParam extends Param implements Serializable {
     @Override
     protected String getInternalValue( String value ) throws WdkModelException {
         // check if null value is allowed
-        if ( allowEmpty && value == null ) return defaultValue;
+        if ( allowEmpty && value == null ) return getEmptyValue();
         
         value = ( String ) decompressValue( value );
         value = value.replaceAll( "'", "''" );
