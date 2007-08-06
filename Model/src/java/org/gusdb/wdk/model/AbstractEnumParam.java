@@ -66,7 +66,7 @@ public abstract class AbstractEnumParam extends Param {
      */
     public String getInternalValue(String termList) throws WdkModelException {
         // check if null value is allowed
-        if (allowEmpty && termList == null) return defaultValue;
+        if (allowEmpty && termList == null) return getEmptyValue();
 
         // the input is a list of terms
         String[] terms = (String[]) decompressValue(termList);

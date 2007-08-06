@@ -30,6 +30,7 @@ public abstract class Param extends WdkModelBase {
 
     private List<ParamSuggestion> suggestions;
     protected boolean allowEmpty;
+    protected String emptyValue;
 
     protected ParamSet paramSet;
 
@@ -152,6 +153,23 @@ public abstract class Param extends WdkModelBase {
     void setAllowEmpty(boolean allowEmpty) {
         this.allowEmpty = allowEmpty;
     }
+
+    
+    /**
+     * @return the emptyValue
+     */
+    public String getEmptyValue() {
+        return (emptyValue == null)?defaultValue :emptyValue;
+    }
+
+    
+    /**
+     * @param emptyValue the emptyValue to set
+     */
+    public void setEmptyValue(String emptyValue) {
+        this.emptyValue = emptyValue;
+    }
+    
 
     /**
      * @return the group
