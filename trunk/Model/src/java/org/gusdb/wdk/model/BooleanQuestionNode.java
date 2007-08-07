@@ -94,7 +94,7 @@ public class BooleanQuestionNode {
      * @throws WdkModelException 
      */
     public BooleanQuestionNode(Question q, BooleanQuestionNode parent) throws WdkModelException {
-        this.question = (q == null) ? q : q.getBaseQuestion();
+        this.question = (q == null) ? null : q.getBaseQuestion();
         this.firstChild = null;
         this.secondChild = null;
         this.parent = parent;

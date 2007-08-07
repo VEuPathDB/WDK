@@ -436,13 +436,22 @@ public abstract class Query extends WdkModelBase implements Serializable {
      * 
      * @param query
      * @param allowedColumns
+     * @throws WdkModelException 
      */
-    protected void clone(Query query, Set<String> excludedColumns) {
+    protected void clone(Query query, Set<String> excludedColumns) throws WdkModelException {
+        // TEST print out excluded columns
+        StringBuffer sb = new StringBuffer();
+        for (String exCol : excludedColumns) {
+            if (sb.length()> 0) sb.append(", ");
+            sb.append(exCol);
+        }
+        logger.debug("Excluded Columns["+excludedColumns.size()+"]: " + sb.toString());
+        
         // copy allowed columns
         for (Column column : this.columns.values()) {
+            logger.debug("Source Column: " + column.getName());
             if (!excludedColumns.contains(column.getName())) {
-                Column newColumn = column.clone();
-                query.addColumn(newColumn);
+                query.addColumnToMap(column.clone());
             }
         }
         // clone other attributes
@@ -455,6 +464,7 @@ public abstract class Query extends WdkModelBase implements Serializable {
         query.paramRefs =
                 new LinkedHashMap<String, ParamReference>(this.paramRefs);
         query.params = new LinkedHashMap<String, Param>(this.params);
+        
         query.resultFactory = this.resultFactory;
         query.signature = signature;
         query.projectId = projectId;

@@ -66,7 +66,7 @@ public class WSQuery extends Query implements Serializable {
      * @see org.gusdb.wdk.model.Query#getBaseQuery(java.util.Set)
      */
     @Override
-    public Query getBaseQuery(Set<String> excludedColumns) {
+    public Query getBaseQuery(Set<String> excludedColumns) throws WdkModelException {
         WSQuery query = new WSQuery();
         // clone the base part
         clone(query, excludedColumns);
