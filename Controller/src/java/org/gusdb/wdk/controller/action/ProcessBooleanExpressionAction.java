@@ -20,34 +20,42 @@ import org.gusdb.wdk.model.jspwrap.UserBean;
 
 public class ProcessBooleanExpressionAction extends Action {
 
-    public ActionForward execute(ActionMapping mapping, ActionForm form,
-            HttpServletRequest request, HttpServletResponse response)
-            throws Exception {
-        BooleanExpressionForm beForm = (BooleanExpressionForm) form;
-        String userAnswerIdStr = processBooleanExpression(request, beForm);
+	public ActionForward execute(ActionMapping mapping, ActionForm form,
+			HttpServletRequest request, HttpServletResponse response)
+			throws Exception {
+		try {
+			BooleanExpressionForm beForm = (BooleanExpressionForm) form;
+			String userAnswerIdStr = processBooleanExpression(request, beForm);
 
-        ActionForward fwd = mapping.findForward(CConstants.PROCESS_BOOLEAN_EXPRESSION_MAPKEY);
-        String path = fwd.getPath();
-        if (path.indexOf("?") > 0) {
-            if (path.indexOf(CConstants.WDK_HISTORY_ID_KEY) < 0) {
-                path += "&" + CConstants.WDK_HISTORY_ID_KEY + "="
-                        + userAnswerIdStr;
-            }
-        } else {
-            path += "?" + CConstants.WDK_HISTORY_ID_KEY + "=" + userAnswerIdStr;
-        }
+			ActionForward fwd = mapping
+					.findForward(CConstants.PROCESS_BOOLEAN_EXPRESSION_MAPKEY);
+			String path = fwd.getPath();
+			if (path.indexOf("?") > 0) {
+				if (path.indexOf(CConstants.WDK_HISTORY_ID_KEY) < 0) {
+					path += "&" + CConstants.WDK_HISTORY_ID_KEY + "="
+							+ userAnswerIdStr;
+				}
+			} else {
+				path += "?" + CConstants.WDK_HISTORY_ID_KEY + "="
+						+ userAnswerIdStr;
+			}
 
-        return new ActionForward(path);
-    }
+			return new ActionForward(path);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			throw ex;
+		}
+	}
 
-    private String processBooleanExpression(HttpServletRequest request,
-            BooleanExpressionForm beForm) throws WdkModelException,
-            WdkUserException {
-        UserBean wdkUser = (UserBean) request.getSession().getAttribute(
-                CConstants.WDK_USER_KEY);
-        HistoryBean history = wdkUser.combineHistory(beForm.getBooleanExpression());
-        int historyId = history.getHistoryId();
-        request.setAttribute(CConstants.WDK_HISTORY_ID_KEY, historyId);
-        return Integer.toString(historyId);
-    }
+	private String processBooleanExpression(HttpServletRequest request,
+			BooleanExpressionForm beForm) throws WdkModelException,
+			WdkUserException {
+		UserBean wdkUser = (UserBean) request.getSession().getAttribute(
+				CConstants.WDK_USER_KEY);
+		HistoryBean history = wdkUser.combineHistory(beForm
+				.getBooleanExpression());
+		int historyId = history.getHistoryId();
+		request.setAttribute(CConstants.WDK_HISTORY_ID_KEY, historyId);
+		return Integer.toString(historyId);
+	}
 }

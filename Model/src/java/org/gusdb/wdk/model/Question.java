@@ -457,7 +457,7 @@ public class Question extends WdkModelBase implements Serializable {
         question.recordClass = this.recordClass;
         question.recordClassTwoPartName = this.recordClassTwoPartName;
 
-        // needs to clone thie summary attribute as well
+        // needs to clone this summary attribute as well
         Map<String, AttributeField> sumAttributes =
                 new LinkedHashMap<String, AttributeField>();
         Map<String, AttributeField> attributes =
