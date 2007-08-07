@@ -712,11 +712,14 @@ public class User {
     
     private History combineHistory( String expression, boolean deleted )
             throws WdkUserException, WdkModelException {
+    	logger.debug("Boolean expression: " + expression);
         BooleanExpression exp = new BooleanExpression( this );
         Map< String, String > operatorMap = getWdkModel().getBooleanOperators();
         BooleanQuestionNode root = exp.parseExpression( expression, operatorMap );
         
         Answer answer = root.makeAnswer( 1, getItemsPerPage() );
+        
+        logger.debug("Boolean answer: " + answer.getResultSize());
         
         // save summary list, if not summary list exists
         String summaryKey = answer.getQuestion().getFullName()

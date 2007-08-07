@@ -107,7 +107,7 @@ public class BooleanQueryInstance extends QueryInstance {
         for (int i = 0; i < columns.length; i++) {
 
             if (booleanQuery.getColumnMap().get(columns[i].getName()) == null) {
-                booleanQuery.addColumn(columns[i]);
+                booleanQuery.addColumnToMap(columns[i]);
             }
         }
     }

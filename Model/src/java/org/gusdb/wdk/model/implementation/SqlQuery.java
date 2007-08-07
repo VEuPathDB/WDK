@@ -110,7 +110,7 @@ public class SqlQuery extends Query implements Serializable {
      * @see org.gusdb.wdk.model.Query#getBaseQuery(java.util.Set)
      */
     @Override
-    public Query getBaseQuery(Set<String> excludedColumns) {
+    public Query getBaseQuery(Set<String> excludedColumns) throws WdkModelException {
         SqlQuery query = new SqlQuery();
         // clone the base query
         clone(query, excludedColumns);
