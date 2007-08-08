@@ -435,7 +435,7 @@ public class WdkModel {
 
             String defaultRole = modelConfig.getDefaultRole();
             String smtpServer = modelConfig.getSmtpServer();
-            String registerEmail = modelConfig.getRegisterEmail();
+            String supportEmail = modelConfig.getSupportEmail();
             String emailSubject = modelConfig.getEmailSubject();
             String emailContent = modelConfig.getEmailContent();
 
@@ -457,7 +457,7 @@ public class WdkModel {
                 userFactory =
                         new UserFactory(this, projectId, authenPlatform,
                                 loginSchema, defaultRole, smtpServer,
-                                registerEmail, emailSubject, emailContent);
+                                supportEmail, emailSubject, emailContent);
             } else {
                 userFactory =
                         new UserFactory(this, projectId, null, null, null,

@@ -30,7 +30,7 @@ public class ModelConfig {
     private String smtpServer;
 
     // the information for registration email
-    private String registerEmail;
+    private String supportEmail;
     private String emailSubject;
     private String emailContent;
 
@@ -278,19 +278,12 @@ public class ModelConfig {
         this.emailSubject = emailSubject;
     }
 
-    /**
-     * @return Returns the registerEmail.
-     */
-    public String getRegisterEmail() {
-        return registerEmail;
+    public String getSupportEmail() {
+        return supportEmail;
     }
 
-    /**
-     * @param registerEmail
-     *        The registerEmail to set.
-     */
-    public void setRegisterEmail(String registerEmail) {
-        this.registerEmail = registerEmail;
+    public void setSupportEmail(String supportEmail) {
+        this.supportEmail = supportEmail;
     }
 
     /**
