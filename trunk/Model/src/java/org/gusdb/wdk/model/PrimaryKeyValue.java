@@ -40,11 +40,12 @@ public class PrimaryKeyValue {
 
     public String getValue() throws WdkModelException {
         StringBuffer sb = new StringBuffer();
-        if (projectName != null) {
-            sb.append(projectName);
-            sb.append(field.getDelimiter());
-        }
-        sb.append(field.getIdPrefix());
+        // always display recordId only.
+        //        if (projectName != null) {
+        //            sb.append(projectName);
+        //            sb.append(field.getDelimiter());
+        //        }
+        //        sb.append(field.getIdPrefix());
         sb.append(recordId);
         return sb.toString();
     }
