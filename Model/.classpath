@@ -22,12 +22,13 @@
 	<classpathentry kind="lib" path="lib/java/activation.jar"/>
 	<classpathentry kind="lib" path="lib/java/db_driver/ojdbc14.jar"/>
 	<classpathentry kind="lib" path="lib/java/servlet-api-2.4.jar"/>
-	<classpathentry kind="lib" path="lib/java/mail.jar"/>
 	<classpathentry kind="lib" path="lib/java/commons-collections-3.1.jar"/>
 	<classpathentry kind="lib" path="lib/java/commons-digester-1.7.jar"/>
 	<classpathentry kind="lib" path="lib/java/WSF-Client.jar"/>
 	<classpathentry kind="lib" path="lib/java/itext-2.0.4.jar"/>
 	<classpathentry kind="lib" path="lib/java/log4j-1.2.14.jar"/>
 	<classpathentry kind="lib" path="lib/java/junit-4.3.1.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/WSF - Service"/>
+	<classpathentry kind="lib" path="/WSF - Service/lib/java/javamail-1.4.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>

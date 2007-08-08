@@ -51,7 +51,8 @@ public class UserFactory {
         // Return html string in an InputStream.
         // A new stream must be returned each time.
         public InputStream getInputStream() throws IOException {
-            if (html == null) throw new IOException("Null HTML");
+            if (html == null)
+                throw new IOException("Null HTML");
             return new ByteArrayInputStream(html.getBytes());
         }
 
@@ -88,7 +89,8 @@ public class UserFactory {
             if (obj instanceof HistoryKey) {
                 HistoryKey hkey = (HistoryKey) obj;
                 return ((this.userId == hkey.userId) && (this.historyId == hkey.historyId));
-            } else return false;
+            } else
+                return false;
         }
 
         /*
@@ -121,13 +123,13 @@ public class UserFactory {
     private WdkModel wdkModel;
 
     // the information for registration email
-    private String registerEmail;
+    private String supportEmail;
     private String emailSubject;
     private String emailContent;
 
     public UserFactory(WdkModel wdkModel, String projectId,
             RDBMSPlatformI platform, String loginSchema, String defaultRole,
-            String smtpServer, String registerEmail, String emailSubject,
+            String smtpServer, String supportEmail, String emailSubject,
             String emailContent) {
         this.platform = platform;
         this.dataSource = platform.getDataSource();
@@ -136,7 +138,7 @@ public class UserFactory {
         this.loginSchema = loginSchema;
         this.defaultRole = defaultRole;
         this.smtpServer = smtpServer;
-        this.registerEmail = registerEmail;
+        this.supportEmail = supportEmail;
         this.emailContent = emailContent;
         this.emailSubject = emailSubject;
     }
@@ -147,6 +149,9 @@ public class UserFactory {
 
     public void sendEmail(String email, String reply, String subject,
             String content) throws WdkUserException {
+        logger.debug("Sending message to: " + email + ", reply: " + reply
+                + ", using SMPT: " + smtpServer);
+
         // create properties and get the session
         Properties props = new Properties();
         props.put("mail.smtp.host", smtpServer);
@@ -163,7 +168,8 @@ public class UserFactory {
             message.setSubject(subject);
             message.setSentDate(new Date());
             // set html content
-            message.setDataHandler(new DataHandler(new HTMLDataSource(content)));
+            message
+                    .setDataHandler(new DataHandler(new HTMLDataSource(content)));
 
             // send email
             Transport.send(message);
@@ -205,8 +211,8 @@ public class UserFactory {
             String department, String address, String city, String state,
             String zipCode, String phoneNumber, String country,
             Map<String, String> globalPreferences,
-            Map<String, String> projectPreferences)
-            throws WdkUserException, WdkModelException {
+            Map<String, String> projectPreferences) throws WdkUserException,
+            WdkModelException {
         return createUser(email, lastName, firstName, middleName, title,
                 organization, department, address, city, state, zipCode,
                 phoneNumber, country, globalPreferences, projectPreferences,
@@ -297,7 +303,8 @@ public class UserFactory {
             savePreferences(user);
 
             // generate a random password, and send to the user via email
-            if (resetPwd) resetPassword(user);
+            if (resetPwd)
+                resetPassword(user);
 
             return user;
         } catch (SQLException ex) {
@@ -416,8 +423,8 @@ public class UserFactory {
      * @throws WdkUserException
      * @throws WdkModelException
      */
-    public User loadUser(String email)
-            throws WdkUserException, WdkModelException {
+    public User loadUser(String email) throws WdkUserException,
+            WdkModelException {
         email = email.trim();
 
         ResultSet rsUser = null;
@@ -446,8 +453,8 @@ public class UserFactory {
         }
     }
 
-    public User loadUserBySignature(String signature)
-            throws WdkUserException, WdkModelException {
+    public User loadUserBySignature(String signature) throws WdkUserException,
+            WdkModelException {
         ResultSet rsUser = null;
         try {
             // get user information
@@ -534,8 +541,8 @@ public class UserFactory {
         }
     }
 
-    public User[] queryUsers(String emailPattern)
-            throws WdkUserException, WdkModelException {
+    public User[] queryUsers(String emailPattern) throws WdkUserException,
+            WdkModelException {
         String sql = "SELECT user_id, email FROM " + loginSchema + "users";
 
         if (emailPattern != null && emailPattern.length() > 0) {
@@ -588,8 +595,9 @@ public class UserFactory {
                     + "been updated");
 
             // update user's signature
-            psUser = SqlUtils.getPreparedStatement(dataSource, "Update "
-                    + loginSchema + "users SET signature = ? WHERE user_id = ?");
+            psUser = SqlUtils
+                    .getPreparedStatement(dataSource, "Update " + loginSchema
+                            + "users SET signature = ? WHERE user_id = ?");
 
             rs = SqlUtils.getResultSet(dataSource, sql);
             while (rs.next()) {
@@ -796,8 +804,8 @@ public class UserFactory {
     }
 
     Map<Integer, History> loadHistories(User user,
-            Map<Integer, History> invalidHistories)
-            throws WdkUserException, WdkModelException {
+            Map<Integer, History> invalidHistories) throws WdkUserException,
+            WdkModelException {
         Map<Integer, History> histories = new LinkedHashMap<Integer, History>();
 
         ResultSet rsHistory = null;
@@ -968,8 +976,8 @@ public class UserFactory {
     }
 
     private Answer constructAnswer(User user, String questionName,
-            Map<String, Object> params)
-            throws WdkModelException, WdkUserException {
+            Map<String, Object> params) throws WdkModelException,
+            WdkUserException {
         // obtain the question with full name
         Question question = (Question) wdkModel.resolveReference(questionName);
 
@@ -1006,9 +1014,8 @@ public class UserFactory {
         QueryInstance qinstance = answer.getIdsQueryInstance();
         String qiChecksum = qinstance.getChecksum();
         String signature = qinstance.getQuery().getSignature();
-        String params = (isBoolean)
-                ? booleanExpression
-                : (qinstance.getQuery().getFullName() + qinstance.getParamsContent());
+        String params = (isBoolean) ? booleanExpression : (qinstance.getQuery()
+                .getFullName() + qinstance.getParamsContent());
 
         // check whether the answer exist or not
         ResultSet rsHistory = null;
@@ -1085,7 +1092,8 @@ public class UserFactory {
                         + "histories WHERE user_id = ?");
                 psMax.setInt(1, userId);
                 rsMax = psMax.executeQuery();
-                if (rsMax.next()) historyId = rsMax.getInt("max_id");
+                if (rsMax.next())
+                    historyId = rsMax.getInt("max_id");
 
                 connection.commit();
             }
@@ -1108,7 +1116,8 @@ public class UserFactory {
             throw new WdkUserException(ex);
         } finally {
             try {
-                if (connection != null) connection.setAutoCommit(true);
+                if (connection != null)
+                    connection.setAutoCommit(true);
                 SqlUtils.closeStatement(psHistory);
                 SqlUtils.closeResultSet(rsHistory);
                 SqlUtils.closeResultSet(rsMax);
@@ -1139,10 +1148,14 @@ public class UserFactory {
         Date lastRunTime = (updateTime) ? new Date() : history.getLastRunTime();
         PreparedStatement psHistory = null;
         try {
-            psHistory = SqlUtils.getPreparedStatement(dataSource, "UPDATE "
-                    + loginSchema + "histories SET custom_name = ?, "
-                    + "last_run_time = ?, is_deleted = ?, estimate_size = ?"
-                    + "WHERE user_id = ? AND project_id = ? AND history_id = ?");
+            psHistory = SqlUtils
+                    .getPreparedStatement(
+                            dataSource,
+                            "UPDATE "
+                                    + loginSchema
+                                    + "histories SET custom_name = ?, "
+                                    + "last_run_time = ?, is_deleted = ?, estimate_size = ?"
+                                    + "WHERE user_id = ? AND project_id = ? AND history_id = ?");
             psHistory.setString(1, history.getBaseCustomName());
             psHistory.setTimestamp(2, new Timestamp(lastRunTime.getTime()));
             psHistory.setBoolean(3, history.isDeleted());
@@ -1201,12 +1214,14 @@ public class UserFactory {
             StringBuffer sql = new StringBuffer();
             sql.append("DELETE FROM " + loginSchema + "histories "
                     + "WHERE user_id = ? ");
-            if (!allProjects) sql.append("AND project_id = ?");
-            psHistory = SqlUtils.getPreparedStatement(dataSource,
-                    sql.toString());
+            if (!allProjects)
+                sql.append("AND project_id = ?");
+            psHistory = SqlUtils.getPreparedStatement(dataSource, sql
+                    .toString());
 
             psHistory.setInt(1, user.getUserId());
-            if (!allProjects) psHistory.setString(2, projectId);
+            if (!allProjects)
+                psHistory.setString(2, projectId);
             psHistory.executeUpdate();
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
@@ -1219,8 +1234,8 @@ public class UserFactory {
         }
     }
 
-    public void deleteInvalidHistories(User user)
-            throws WdkUserException, WdkModelException {
+    public void deleteInvalidHistories(User user) throws WdkUserException,
+            WdkModelException {
         // get invalid histories
         Map<Integer, History> invalidHistories = new LinkedHashMap<Integer, History>();
         loadHistories(user, invalidHistories);
@@ -1416,14 +1431,14 @@ public class UserFactory {
         }
     }
 
-    public void resetPassword(String email)
-            throws WdkUserException, WdkModelException {
+    public void resetPassword(String email) throws WdkUserException,
+            WdkModelException {
         User user = loadUser(email);
         resetPassword(user);
     }
 
-    private void resetPassword(User user)
-            throws WdkUserException, WdkModelException {
+    private void resetPassword(User user) throws WdkUserException,
+            WdkModelException {
         String email = user.getEmail();
 
         // generate a random password of 8 characters long, the range will be
@@ -1443,11 +1458,11 @@ public class UserFactory {
         savePassword(email, password);
 
         // send an email to the user
-        String message = emailContent.replaceAll("\\$\\$FIRST_NAME\\$\\$",
-                user.getFirstName());
+        String message = emailContent.replaceAll("\\$\\$FIRST_NAME\\$\\$", user
+                .getFirstName());
         message = message.replaceAll("\\$\\$EMAIL\\$\\$", email);
         message = message.replaceAll("\\$\\$PASSWORD\\$\\$", password);
-        sendEmail(user.getEmail(), registerEmail, emailSubject, message);
+        sendEmail(user.getEmail(), supportEmail, emailSubject, message);
     }
 
     void changePassword(String email, String oldPassword, String newPassword,
@@ -1504,8 +1519,9 @@ public class UserFactory {
         try {
             // encrypt the password, and save it
             String encrypted = encrypt(password);
-            ps = SqlUtils.getPreparedStatement(dataSource, "UPDATE "
-                    + loginSchema + "users SET passwd = ? " + "WHERE email = ?");
+            ps = SqlUtils
+                    .getPreparedStatement(dataSource, "UPDATE " + loginSchema
+                            + "users SET passwd = ? " + "WHERE email = ?");
             ps.setString(1, encrypted);
             ps.setString(2, email);
             ps.execute();
@@ -1559,8 +1575,8 @@ public class UserFactory {
         return buffer.toString();
     }
 
-    public void deleteUser(String email)
-            throws WdkUserException, WdkModelException {
+    public void deleteUser(String email) throws WdkUserException,
+            WdkModelException {
         // get user id
         User user = loadUser(email);
 
