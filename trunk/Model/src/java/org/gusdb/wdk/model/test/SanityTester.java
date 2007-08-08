@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model.test;
 
 import java.io.IOException;
+import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -13,7 +14,9 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Answer;
+import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.Query;
 import org.gusdb.wdk.model.QuerySet;
 import org.gusdb.wdk.model.Question;
@@ -32,6 +35,8 @@ import org.gusdb.wdk.model.xml.XmlAnswer;
 import org.gusdb.wdk.model.xml.XmlQuestion;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
 import org.xml.sax.SAXException;
+
+import com.sun.org.apache.bcel.internal.classfile.Attribute;
 
 /**
  * SanityTester.java " [-project project_id]" +
@@ -72,6 +77,8 @@ public class SanityTester {
     public static final String BANNER_LINE_top = "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv";
     public static final String BANNER_LINE_bot = "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^";
 
+    private static final Logger logger = Logger.getLogger(SanityTester.class);
+    
     public SanityTester(String modelName, SanityModel sanityModel,
             boolean verbose, boolean suggestOnly, Integer skipTo,
             Integer stopAfter, boolean failuresOnly, boolean indexOnly)
@@ -381,6 +388,20 @@ public class SanityTester {
                         questions[i].getPageStart(), questions[i].getPageEnd());
 
                 int resultSize = answer.getResultSize();
+                
+                // get the summary attribute list
+                Map<String, AttributeField> summary = answer.getSummaryAttributes();
+                // iterate through the page and try every summary attribute of 
+                // each record
+                while (answer.hasMoreRecordInstances()) {
+                    RecordInstance record = answer.getNextRecordInstance();
+                    StringBuffer sb = new StringBuffer();
+                    for (String attrName : summary.keySet()) {
+                        sb.append(record.getAttributeValue(attrName));
+                        sb.append('\t');
+                    }
+                    logger.debug("Record: " + sb.toString());
+                }
 
                 // count results; check if sane
                 int sanityMin = questions[i].getMinOutputLength().intValue();
