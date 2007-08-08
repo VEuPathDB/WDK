@@ -12,6 +12,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import javax.sql.DataSource;
+
 import org.gusdb.wdk.model.implementation.SqlUtils;
 
 /**
@@ -118,7 +120,9 @@ public class CacheTable {
 	}
 
 	private int createSortingIndex(Set<SortingColumn> sortingColumns,
-			String columns) throws SQLException {
+			String columns) throws SQLException, WdkModelException {
+	    DataSource dataSource = platform.getDataSource();
+	    
 		// get next sorting index
 		int sortingIndex = Integer.parseInt(platform.getNextId(schema,
 				ResultFactory.TABLE_SORTING_INDEX));
@@ -208,7 +212,7 @@ public class CacheTable {
 		PreparedStatement psIndex = null;
 		ResultSet rsCache = null;
 		PreparedStatement psCache = null;
-		Connection connection = platform.getDataSource().getConnection();
+		Connection connection = dataSource.getConnection();
 		synchronized (connection) {
 			// start a transaction for it, and since the attribute of the
 			// connection is set, need to make sure this connection is used
@@ -248,6 +252,15 @@ public class CacheTable {
 				}
 				psCache.executeBatch();
 
+				// verify the insertion of the sorted cache
+				// get the size of the result
+				int cacheSize = SqlUtils.runIntegerQuery(dataSource, "SELECT " 
+				        + "count(*) FROM " +cacheTableFullName + " WHERE " 
+				        + ResultFactory.COLUMN_SORTING_INDEX + " = 0");
+				if (cacheSize != (resultCount - 1))
+				    throw new WdkModelException("Not all cached records are " +
+				    		"sorted. Cached: " + cacheSize + ", sorted: " 
+				    		+ (resultCount-1));
                                 connection.commit();
 			} finally {
                                 connection.setAutoCommit(true);

@@ -70,7 +70,6 @@ public class SummaryTester {
 
         try {
             // variable never used
-            // File schemaFile = new File(System.getProperty("schemaFile"));
             Reference ref = new Reference(questionFullName);
             String questionSetName = ref.getSetName();
             String questionName = ref.getElementName();
@@ -110,14 +109,14 @@ public class SummaryTester {
 
                 if (rows.length != 2) System.out.println("page " + pageCount);
 
+
+                // print the size of the answer
+                System.out.println("Total # of records: " + answer.getResultSize());
+                
                 // load configuration for output format
                 if (!hasFormat) format = "tabular";
                 Map<String, String> config = loadConfiguration(configFile);
-
-                // if (cmdLine.hasOption("fullRecords"))
-                // System.out.println(answer
-                // .printAsRecords());
-                // else System.out.println(answer.printAsTable());
+                
                 Reporter reporter = answer.createReport( format, config, nextStartRow,
                         nextEndRow );
                 
