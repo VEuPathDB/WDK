@@ -78,7 +78,8 @@ public class ParamBean {
     /**
      * for controller
      */
-    public String validateValue( Object val ) throws WdkModelException {
+    public String validateValue( String val ) throws WdkModelException {
+        if (val != null && val.trim().length() == 0) val = null;
         return param.validateValue( val );
     }
     

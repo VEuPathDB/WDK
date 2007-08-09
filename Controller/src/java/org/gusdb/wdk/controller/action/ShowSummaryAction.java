@@ -110,9 +110,11 @@ public class ShowSummaryAction extends ShowQuestionAction {
                         sortingAttributes, summaryAttributes );
             } catch ( WdkModelException ex ) {
                 logger.error( ex );
+                ex.printStackTrace();
                 return showError( wdkModel, wdkUser, mapping, request, response );
             } catch ( WdkUserException ex ) {
                 logger.error( ex );
+                ex.printStackTrace();
                 return showError( wdkModel, wdkUser, mapping, request, response );
             }
             
