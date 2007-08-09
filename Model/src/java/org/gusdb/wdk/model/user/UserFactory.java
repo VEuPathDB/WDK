@@ -15,6 +15,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.regex.Matcher;
 
 import javax.activation.DataHandler;
 import javax.mail.Address;
@@ -1458,10 +1459,10 @@ public class UserFactory {
         savePassword(email, password);
 
         // send an email to the user
-        String message = emailContent.replaceAll("\\$\\$FIRST_NAME\\$\\$", user
-                .getFirstName());
-        message = message.replaceAll("\\$\\$EMAIL\\$\\$", email);
-        message = message.replaceAll("\\$\\$PASSWORD\\$\\$", password);
+        String message = emailContent.replaceAll("\\$\\$FIRST_NAME\\$\\$", Matcher.quoteReplacement(user
+                .getFirstName()));
+        message = message.replaceAll("\\$\\$EMAIL\\$\\$", Matcher.quoteReplacement(email));
+        message = message.replaceAll("\\$\\$PASSWORD\\$\\$", Matcher.quoteReplacement(password));
         sendEmail(user.getEmail(), supportEmail, emailSubject, message);
     }
 

@@ -83,7 +83,7 @@ public class SqlQuery extends Query implements Serializable {
             String key = keySet.next();
             String regex = "\\$\\$" + key + "\\$\\$";
             // also escape all single quotes in the value
-            s = s.replaceAll(regex, values.get(key));
+            s = s.replaceAll(regex, Matcher.quoteReplacement(values.get(key)));
         }
 
         return s;
@@ -178,7 +178,8 @@ public class SqlQuery extends Query implements Serializable {
         for (String paramName : paramValueMap.keySet()) {
             String pattern = "&&" + paramName + "&&";
             String value = paramValueMap.get(paramName);
-            sql = sql.replaceAll(pattern, value);
+            // escape the & $ \ chars in the value
+            sql = sql.replaceAll(pattern, Matcher.quoteReplacement(value));
         }
         // verify the all param macros have been replaced
         Matcher matcher = Pattern.compile("&&([^&]+)&&").matcher(sql);

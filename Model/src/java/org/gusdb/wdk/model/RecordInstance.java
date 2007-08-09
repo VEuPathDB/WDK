@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Vector;
+import java.util.regex.Matcher;
 
 import org.apache.log4j.Logger;
 
@@ -681,7 +682,7 @@ public class RecordInstance {
         String macro = "$$" + macroName + "$$";
         String macroRegex = "\\$\\$" + macroName + "\\$\\$";
         if (text.indexOf(macro) != -1) {
-            text = text.replaceAll(macroRegex, value);
+            text = text.replaceAll(macroRegex, Matcher.quoteReplacement(value));
         }
         return text;
     }
