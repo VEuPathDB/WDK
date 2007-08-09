@@ -373,9 +373,7 @@ public abstract class Query extends WdkModelBase implements Serializable {
         for (Param param : params.values()) {
             Object value = values.get(param.getName());
             String errMsg = null;
-            if (value == null || value.toString().length() == 0) {
-                errMsg = "No value supplied for param " + param.getName();
-            } else if (param instanceof DatasetParam) {
+            if (param instanceof DatasetParam) {
                 // validate dataset param by getting the dataset id
                 try {
                     param.getInternalValue(value.toString());
@@ -403,9 +401,15 @@ public abstract class Query extends WdkModelBase implements Serializable {
     protected void applyDefaults(Map<String, Object> values)
             throws WdkModelException {
         for (Param param : params.values()) {
-            if (values.get(param.getName()) == null
-                    && param.getDefault() != null)
-                values.put(param.getName(), param.getDefault());
+            String paramName = param.getName();
+            Object paramValue = values.get(paramName);
+            if (paramValue == null || paramValue.toString().length() == 0) {
+                if (param.isAllowEmpty() ){
+                    values.put(paramName, param.getEmptyValue());
+                } else if (param.getDefault() != null) {
+                    values.put(paramName, param.getDefault());
+                }
+            }
         }
     }
 
