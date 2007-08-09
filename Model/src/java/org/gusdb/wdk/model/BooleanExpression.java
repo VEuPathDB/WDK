@@ -73,7 +73,7 @@ public class BooleanExpression {
             throw new WdkUserException( "Bad parentheses: " + orgExp );
         
         // insert a space before open parenthes; it's used when getting operator
-        expression = expression.replaceAll( "\\(", " (" );
+        expression = expression.replaceAll( "\\(", Matcher.quoteReplacement(" (") );
         expression = expression.replaceAll( "\\+", " + " );
         expression = expression.replaceAll( "\\-", " - " );
         // delete extra white spaces

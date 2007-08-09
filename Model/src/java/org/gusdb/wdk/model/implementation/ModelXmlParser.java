@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Matcher;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Result;
@@ -203,7 +204,7 @@ public class ModelXmlParser extends XmlParser {
         // substitute prop macros
         for (String propName : properties.keySet()) {
             String propValue = properties.get(propName);
-            content = content.replaceAll("\\@" + propName + "\\@", propValue);
+            content = content.replaceAll("\\@" + propName + "\\@", Matcher.quoteReplacement(propValue));
         }
 
         // construct input stream
