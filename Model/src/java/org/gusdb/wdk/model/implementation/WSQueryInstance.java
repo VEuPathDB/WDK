@@ -124,9 +124,14 @@ public class WSQueryInstance extends QueryInstance {
                 + resultTableName + " (");
         StringBuffer insertSqlV = new StringBuffer(" values (");
 
+        boolean hasProjectId = false;
+        
         for (Column column : columns) {
             String colName = column.getName();
             int cw = column.getWidth();
+            
+            // check if it is a project_id column
+            if (colName.equals(projectColumnName)) hasProjectId = true;
 
             // the clob datatype is DBMS specific
             String clobType = platform.getClobDataType();
@@ -140,10 +145,18 @@ public class WSQueryInstance extends QueryInstance {
             insertSqlB.append(colName + ", ");
             insertSqlV.append("?,");
         }
+        // check if we need to add a project_id column
+        if (projectColumnName != null && !hasProjectId) {
+            createSqlB.append(projectColumnName + " varchar(50), ");
+            insertSqlB.append(projectColumnName + ", ");
+            insertSqlV.append(query.getProjectId() + ", ");
+        }
+        
         createSqlB.append(ResultFactory.RESULT_TABLE_I + " "
                 + platform.getNumberDataType() + " (12), ");
         createSqlB.append(ResultFactory.COLUMN_SORTING_INDEX + " "
                 + platform.getNumberDataType() + " (12))");
+        
         // set sorting index id as 0 by default
         insertSqlB.append(ResultFactory.RESULT_TABLE_I + ", ");
         insertSqlB.append(ResultFactory.COLUMN_SORTING_INDEX + ") ");
