@@ -28,7 +28,7 @@ public class SqlQueryInstance extends QueryInstance {
 
     public SqlQueryInstance(SqlQuery query) {
         super(query);
-        logger.debug("I've got a new sqlQueryInstance being created");
+        // logger.debug("I've got a new sqlQueryInstance being created");
     }
 
     public ResultList getPersistentResultPage(int startRow, int endRow)
