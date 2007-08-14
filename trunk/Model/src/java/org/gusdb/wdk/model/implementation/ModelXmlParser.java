@@ -157,7 +157,7 @@ public class ModelXmlParser extends XmlParser {
                 throw new WdkModelException("sub model "
                         + importURL.toExternalForm() + " validation failed.");
 
-            logger.debug("Importing: " + importURL.toExternalForm());
+            // logger.debug("Importing: " + importURL.toExternalForm());
 
             Document importDoc = buildDocument(importURL);
 
