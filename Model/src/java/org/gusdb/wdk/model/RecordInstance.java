@@ -192,7 +192,7 @@ public class RecordInstance {
      * @return Map of summaryAttributeName -> AttributeFieldValue
      */
 
-    public Map getSummaryAttributes() {
+    public Map<String, AttributeFieldValue> getSummaryAttributes() {
         return new FieldValueMap(recordClass, this,
                 FieldValueMap.SUMMARY_ATTRIBUTE_MAP, dynamicAttributeFields);
     }

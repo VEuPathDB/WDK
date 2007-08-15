@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model;
 
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -25,7 +24,7 @@ import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
  * 
  * @author David Barkan
  * @version $Revision$ $Date: 2005-08-23 23:03:25 -0400 (Tue, 23 Aug
- * 2005) $Author$
+ *          2005) $Author$
  */
 
 public class BooleanQuestionNode {
@@ -72,10 +71,12 @@ public class BooleanQuestionNode {
 
     /**
      * Constructor for a BooleanQuestionNode representing a boolean Question.
-     * @throws WdkModelException 
+     * 
+     * @throws WdkModelException
      */
     public BooleanQuestionNode(Question q, BooleanQuestionNode firstChild,
-            BooleanQuestionNode secondChild, BooleanQuestionNode parent) throws WdkModelException {
+            BooleanQuestionNode secondChild, BooleanQuestionNode parent)
+            throws WdkModelException {
         this.question = (q == null) ? q : q.getBaseQuestion();
         this.firstChild = firstChild;
         this.secondChild = secondChild;
@@ -89,11 +90,12 @@ public class BooleanQuestionNode {
      * Query tree containing a Question that is not boolean.
      * 
      * @param parent
-     * If the supplied parent is null; that implies that this node represents a
-     * single-node tree.
-     * @throws WdkModelException 
+     *            If the supplied parent is null; that implies that this node
+     *            represents a single-node tree.
+     * @throws WdkModelException
      */
-    public BooleanQuestionNode(Question q, BooleanQuestionNode parent) throws WdkModelException {
+    public BooleanQuestionNode(Question q, BooleanQuestionNode parent)
+            throws WdkModelException {
         this.question = (q == null) ? null : q.getBaseQuestion();
         this.firstChild = null;
         this.secondChild = null;
@@ -173,8 +175,8 @@ public class BooleanQuestionNode {
 
     public static BooleanQuestionNode combine(BooleanQuestionNode firstChild,
             BooleanQuestionNode secondChild, String operator, WdkModel model,
-            Map<String, String> operatorMap)
-            throws WdkModelException, WdkUserException {
+            Map<String, String> operatorMap) throws WdkModelException,
+            WdkUserException {
         // check if the two nodes are of the same type
         if (!secondChild.getType().equalsIgnoreCase(firstChild.getType()))
             throw new WdkModelException(
@@ -218,10 +220,11 @@ public class BooleanQuestionNode {
      * Recursive method to find a node in the tree.
      * 
      * @param nodeId
-     * Binary number representing path to take to find node. The number is read
-     * left to right. A 1 in the number will traverse to the left child and a 0
-     * in the number will traverse to the right. When the end of the number is
-     * reached, the current node is returned.
+     *            Binary number representing path to take to find node. The
+     *            number is read left to right. A 1 in the number will traverse
+     *            to the left child and a 0 in the number will traverse to the
+     *            right. When the end of the number is reached, the current node
+     *            is returned.
      * 
      * @return the BooleanQuestionNode which is being sought.
      */
@@ -261,9 +264,9 @@ public class BooleanQuestionNode {
      * Question.
      * 
      * @return the Answer of <code>bqn</code>. The answer should not be used
-     * as the answer returned by the top (recursive initializer) node; that
-     * should be retrieved by calling makeAnswer() on that node's Question after
-     * running this method.
+     *         as the answer returned by the top (recursive initializer) node;
+     *         that should be retrieved by calling makeAnswer() on that node's
+     *         Question after running this method.
      */
     public Answer makeAnswer(int startIndex, int endIndex)
             throws WdkUserException, WdkModelException {
@@ -304,10 +307,10 @@ public class BooleanQuestionNode {
             booleanSummaryAtts.putAll(firstSummaryAtts);
             booleanSummaryAtts.putAll(secondSummaryAtts);
 
-            Map firstDynaAtts = firstChildAnswer.getQuestion().getDynamicAttributeFields();
+            Map<String, AttributeField> firstDynaAtts = firstChildAnswer.getQuestion().getDynamicAttributeFields();
             if (firstDynaAtts != null)
                 removeDynamicAtributes(booleanSummaryAtts, firstDynaAtts);
-            Map secondDynaAtts = secondChildAnswer.getQuestion().getDynamicAttributeFields();
+            Map<String, AttributeField> secondDynaAtts = secondChildAnswer.getQuestion().getDynamicAttributeFields();
             if (secondDynaAtts != null)
                 removeDynamicAtributes(booleanSummaryAtts, secondDynaAtts);
 
@@ -322,7 +325,7 @@ public class BooleanQuestionNode {
 
     /**
      * @return whether the node is a leaf in a boolean Question tree; that is,
-     * if it is a normal Question without a Boolean Query as its Query.
+     *         if it is a normal Question without a Boolean Query as its Query.
      */
 
     public boolean isLeaf() {
@@ -389,10 +392,10 @@ public class BooleanQuestionNode {
         this.parent = p;
     }
 
-    private void removeDynamicAtributes(Map booleanSummaryAtts, Map dynaAtts) {
-        Iterator dynaI = dynaAtts.keySet().iterator();
-        while (dynaI.hasNext()) {
-            String attribName = (String) dynaI.next();
+    private void removeDynamicAtributes(
+            Map<String, AttributeField> booleanSummaryAtts,
+            Map<String, AttributeField> dynaAtts) {
+        for (String attribName : dynaAtts.keySet()) {
             booleanSummaryAtts.remove(attribName);
         }
     }
