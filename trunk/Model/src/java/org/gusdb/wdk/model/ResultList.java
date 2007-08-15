@@ -66,12 +66,10 @@ public abstract class ResultList {
 
     public void write(StringBuffer buf) throws WdkModelException {
         String newline = System.getProperty("line.separator");
-        Iterator rows = getRows();
+        Iterator<Map<String, Object>> rows = getRows();
         while (rows.hasNext()) {
-            Map rowMap = (Map) rows.next();
-            Iterator colNames = rowMap.keySet().iterator();
-            while (colNames.hasNext()) {
-                Object colName = colNames.next();
+            Map<String, Object> rowMap = rows.next();
+            for (String colName : rowMap.keySet()) {
                 Object fVal = rowMap.get(colName);
                 buf.append(fVal);
                 buf.append("\t");
@@ -103,7 +101,7 @@ public abstract class ResultList {
     /**
      * @return Iterator of Maps as returned by getRow()
      */
-    Iterator getRows() {
+    Iterator<Map<String, Object>> getRows() {
         return new ResultListIterator(this);
     }
 
@@ -133,10 +131,10 @@ public abstract class ResultList {
     // Inner classes
     // ///////////////////////////////////////////////////////////////////
 
-    public class ResultListIterator implements Iterator {
+    public class ResultListIterator implements Iterator<Map<String, Object>> {
 
         ResultList rl;
-        Map nextCache = null;
+        Map<String, Object> nextCache = null;
 
         ResultListIterator(ResultList rl) {
             this.rl = rl;
@@ -164,11 +162,11 @@ public abstract class ResultList {
             return hasNext;
         }
 
-        public Object next() throws NoSuchElementException {
+        public Map<String, Object> next() throws NoSuchElementException {
             // if the next thing is already in the cache, return it and clear
             // cache
             if (nextCache != null) {
-                Map theNext = nextCache;
+                Map<String, Object> theNext = nextCache;
                 nextCache = null;
                 return theNext;
             }

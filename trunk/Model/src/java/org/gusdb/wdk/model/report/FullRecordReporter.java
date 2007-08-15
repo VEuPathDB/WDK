@@ -58,8 +58,8 @@ public class FullRecordReporter extends Reporter {
 
     private boolean hasEmptyTable = true;
 
-    public FullRecordReporter(Answer answer) {
-        super(answer);
+    public FullRecordReporter(Answer answer, int startIndex, int endIndex) {
+        super(answer, startIndex, endIndex);
     }
 
     /**
@@ -123,12 +123,12 @@ public class FullRecordReporter extends Reporter {
     @Override
     public String getDownloadFileName() {
         logger.info("Internal format: " + format);
-        String name = answer.getQuestion().getName();
+        String name = getQuestion().getName();
         if (format.equalsIgnoreCase("text")) {
             return name + "_detail.txt";
         } else if (format.equalsIgnoreCase("pdf")) {
             return name + "_detail.pdf";
-        } else { // use the defaul file name defined in the parent
+        } else { // use the default file name defined in the parent
             return super.getDownloadFileName();
         }
     }
@@ -142,7 +142,7 @@ public class FullRecordReporter extends Reporter {
         PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
 
         // get the columns that will be in the report
-        Set<Field> fields = validateColumns(answer);
+        Set<Field> fields = validateColumns();
 
         Set<AttributeField> attributes = new LinkedHashSet<AttributeField>();
         Set<TableField> tables = new LinkedHashSet<TableField>();
@@ -155,17 +155,17 @@ public class FullRecordReporter extends Reporter {
         }
 
         if (format.equalsIgnoreCase("pdf")) {
-            formatRecord2PDF(attributes, tables, answer, out);
+            formatRecord2PDF(attributes, tables, out);
             return;
 
         }
 
         // get the formatted result
-        WdkModel wdkModel = answer.getQuestion().getWdkModel();
+        WdkModel wdkModel = getQuestion().getWdkModel();
         RDBMSPlatformI platform = wdkModel.getPlatform();
 
         // check if we need to use project id
-        boolean hasProjectId = answer.hasProjectId();
+        boolean hasProjectId = hasProjectId();
 
         PreparedStatement psCache = null;
         PreparedStatement psCheck = null;
@@ -185,41 +185,48 @@ public class FullRecordReporter extends Reporter {
                         + (hasProjectId ? " AND project_id = ?" : ""));
             }
             int recordCount = 0;
-            while (answer.hasMoreRecordInstances()) {
-                RecordInstance record = answer.getNextRecordInstance();
 
-                // print out attributes of the record first
-                formatAttributes(record, attributes, writer);
+            // get page based answers with a maximum size (defined in
+            // PageAnswerIterator)
+            for (Answer pageAnswer : this) {
+                while (pageAnswer.hasMoreRecordInstances()) {
+                    RecordInstance record = pageAnswer.getNextRecordInstance();
 
-                // check if the record has been cached
-                boolean hasCached = false;
-                if (tableCache != null) {
-                    psCheck.setString(1, record.getPrimaryKey().getRecordId());
-                    if (hasProjectId) {
-                        String projectId = record.getPrimaryKey().getProjectId();
-                        psCheck.setString(2, projectId);
+                    // print out attributes of the record first
+                    formatAttributes(record, attributes, writer);
+
+                    // check if the record has been cached
+                    boolean hasCached = false;
+                    if (tableCache != null) {
+                        psCheck.setString(1,
+                                record.getPrimaryKey().getRecordId());
+                        if (hasProjectId) {
+                            String projectId = record.getPrimaryKey().getProjectId();
+                            psCheck.setString(2, projectId);
+                        }
+                        ResultSet rs = psCheck.executeQuery();
+                        try {
+                            rs.next();
+                            int count = rs.getInt("cache_count");
+                            if (count > 0) hasCached = true;
+                        } finally {
+                            rs.close();
+                        }
                     }
-                    ResultSet rs = psCheck.executeQuery();
-                    try {
-                        rs.next();
-                        int count = rs.getInt("cache_count");
-                        if (count > 0) hasCached = true;
-                    } finally {
-                        rs.close();
+                    // print out tables
+                    formatTables(record, tables, writer, pageAnswer, psCache,
+                            hasCached);
+
+                    writer.println();
+                    writer.println("------------------------------------------------------------");
+                    writer.println();
+                    writer.flush();
+
+                    // count the records processed so far
+                    recordCount++;
+                    if (recordCount % 100 == 0) {
+                        logger.info(recordCount + " records dumped so far");
                     }
-                }
-                // print out tables
-                formatTables(record, tables, writer, answer, psCache, hasCached);
-
-                writer.println();
-                writer.println("------------------------------------------------------------");
-                writer.println();
-                writer.flush();
-
-                // count the records processed so far
-                recordCount++;
-                if (recordCount % 100 == 0) {
-                    logger.info(recordCount + " records dumped so far");
                 }
             }
             logger.info("Totally " + recordCount + " records dumped");
@@ -235,9 +242,9 @@ public class FullRecordReporter extends Reporter {
         }
     }
 
-    private Set<Field> validateColumns(Answer answer) throws WdkModelException {
+    private Set<Field> validateColumns() throws WdkModelException {
         // get a map of report maker fields
-        Map<String, Field> fieldMap = answer.getQuestion().getReportMakerFields();
+        Map<String, Field> fieldMap = getQuestion().getReportMakerFields();
 
         // the config map contains a list of column names;
         Set<Field> columns = new LinkedHashSet<Field>();
@@ -340,8 +347,7 @@ public class FullRecordReporter extends Reporter {
     }
 
     private void formatRecord2PDF(Set<AttributeField> attributes,
-            Set<TableField> tables, Answer answer, OutputStream out)
-            throws WdkModelException {
+            Set<TableField> tables, OutputStream out) throws WdkModelException {
 
         logger.info("format2PDF>>>");
         Document document = new Document(PageSize.LETTER.rotate());
@@ -351,63 +357,69 @@ public class FullRecordReporter extends Reporter {
             PdfWriter.getInstance(document, out);
             document.open();
 
-            while (answer.hasMoreRecordInstances()) {
-                RecordInstance record = answer.getNextRecordInstance();
-                // print out attributes of the record first
-                for (AttributeField attribute : attributes) {
-                    Object value = record.getAttributeValue(attribute);
-                    document.add(new Paragraph(attribute.getDisplayName()
-                            + ": " + value));
-                }
-
-                // print out tables of the record
-                for (TableField table : tables) {
-                    TableFieldValue tableValue = record.getTableValue(table.getName());
-                    Iterator rows = tableValue.getRows();
-
-                    // check if table is empty
-                    if (!hasEmptyTable && !rows.hasNext()) {
-                        tableValue.getClose();
-                        continue;
+            // get page based answers with a maximum size (defined in
+            // PageAnswerIterator)
+            for (Answer answer : this) {
+                while (answer.hasMoreRecordInstances()) {
+                    RecordInstance record = answer.getNextRecordInstance();
+                    // print out attributes of the record first
+                    for (AttributeField attribute : attributes) {
+                        Object value = record.getAttributeValue(attribute);
+                        document.add(new Paragraph(attribute.getDisplayName()
+                                + ": " + value));
                     }
 
-                    AttributeField[] fields = table.getReportMakerFields();
+                    // print out tables of the record
+                    for (TableField table : tables) {
+                        TableFieldValue tableValue = record.getTableValue(table.getName());
+                        Iterator rows = tableValue.getRows();
 
-                    // output table header
-                    document.add(new Paragraph("Table: "
-                            + table.getDisplayName()));
-                    int NumColumns = fields.length;
-                    PdfPTable datatable = new PdfPTable(NumColumns);
-                    for (AttributeField attribute : fields) {
-                        datatable.addCell("" + attribute.getDisplayName() + "");
-                    }
-
-                    datatable.setHeaderRows(1);
-
-                    while (rows.hasNext()) {
-                        Map rowMap = (Map) rows.next();
-                        Iterator colNames = rowMap.keySet().iterator();
-                        while (colNames.hasNext()) {
-                            String colName = (String) colNames.next();
-                            Object fVal = rowMap.get(colName);
-                            // depending on the types of the object, print out
-                            // the
-                            // value of it
-                            if (fVal == null) {
-                                fVal = "";
-                            } else if (fVal instanceof AttributeFieldValue) {
-                                fVal = ((AttributeFieldValue) fVal).getValue();
-                            } else if (fVal instanceof LinkValue) {
-                                fVal = ((LinkValue) fVal).getVisible();
-                            }
-                            datatable.addCell(fVal.toString());
+                        // check if table is empty
+                        if (!hasEmptyTable && !rows.hasNext()) {
+                            tableValue.getClose();
+                            continue;
                         }
-                    }
-                    tableValue.getClose();
-                    document.add(datatable);
-                }
 
-                // out.flush();
+                        AttributeField[] fields = table.getReportMakerFields();
+
+                        // output table header
+                        document.add(new Paragraph("Table: "
+                                + table.getDisplayName()));
+                        int NumColumns = fields.length;
+                        PdfPTable datatable = new PdfPTable(NumColumns);
+                        for (AttributeField attribute : fields) {
+                            datatable.addCell("" + attribute.getDisplayName()
+                                    + "");
+                        }
+
+                        datatable.setHeaderRows(1);
+
+                        while (rows.hasNext()) {
+                            Map rowMap = (Map) rows.next();
+                            Iterator colNames = rowMap.keySet().iterator();
+                            while (colNames.hasNext()) {
+                                String colName = (String) colNames.next();
+                                Object fVal = rowMap.get(colName);
+                                // depending on the types of the object, print
+                                // out
+                                // the
+                                // value of it
+                                if (fVal == null) {
+                                    fVal = "";
+                                } else if (fVal instanceof AttributeFieldValue) {
+                                    fVal = ((AttributeFieldValue) fVal).getValue();
+                                } else if (fVal instanceof LinkValue) {
+                                    fVal = ((LinkValue) fVal).getVisible();
+                                }
+                                datatable.addCell(fVal.toString());
+                            }
+                        }
+                        tableValue.getClose();
+                        document.add(datatable);
+                    }
+
+                    // out.flush();
+                }
             }
             document.close();
         } catch (DocumentException de) {

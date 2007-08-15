@@ -191,7 +191,7 @@ public class WdkModel {
     }
 
     @Deprecated
-    public Map getProperties() {
+    public Map<String, String> getProperties() {
         return properties;
     }
 
