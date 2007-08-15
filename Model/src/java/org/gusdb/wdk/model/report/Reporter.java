@@ -46,13 +46,11 @@ public abstract class Reporter implements Iterable<Answer> {
             this.startIndex = startIndex;
         }
 
-        @Override
         public boolean hasNext() {
             // if the current
             return (startIndex <= endIndex);
         }
 
-        @Override
         public Answer next() {
             // decide the new end index for the page answer
             int pageEndIndex = Math.min(endIndex, startIndex + MAX_PAGE_SIZE
@@ -79,7 +77,6 @@ public abstract class Reporter implements Iterable<Answer> {
             return answer;
         }
 
-        @Override
         public void remove() {
             throw new NotImplementedException();
         }
@@ -189,7 +186,6 @@ public abstract class Reporter implements Iterable<Answer> {
         return answer.getSortingIndexColumn();
     }
 
-    @Override
     public Iterator<Answer> iterator() {
         try {
             return new PageAnswerIterator(answer, startIndex, endIndex);
