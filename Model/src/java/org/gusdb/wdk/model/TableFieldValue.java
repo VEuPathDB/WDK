@@ -4,7 +4,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Set;
 
 public class TableFieldValue {
@@ -61,7 +60,7 @@ public class TableFieldValue {
      * @return A list of rows where each row is a Map of columnName -->
      * {@link AttributeFieldValue}
      */
-    public Iterator getRows() {
+    public Iterator<Map<String, Object>> getRows() {
         return new TableFieldValueIterator(resultList.getRows(), false);
     }
 
@@ -69,7 +68,7 @@ public class TableFieldValue {
      * @return A list of rows where each row is a Map of columnName -->
      * {@link AttributeFieldValue} for noninternal columns
      */
-    public Iterator getVisibleRows() {
+    public Iterator<Map<String, Object>> getVisibleRows() {
         return new TableFieldValueIterator(resultList.getRows(), true);
     }
 
@@ -107,12 +106,10 @@ public class TableFieldValue {
         }
         buf.append(newline);
         // print rows
-        Iterator rows = getRows();
+        Iterator<Map<String, Object>> rows = getRows();
         while (rows.hasNext()) {
-            Map rowMap = (Map) rows.next();
-            Iterator colNames = rowMap.keySet().iterator();
-            while (colNames.hasNext()) {
-                String colName = (String) colNames.next();
+            Map<String, Object> rowMap = rows.next();
+            for (String colName: rowMap.keySet()) {
                 Object fVal = rowMap.get(colName);
                 buf.append("'");
                 // depending on the types of the object, print out the value of
@@ -157,13 +154,11 @@ public class TableFieldValue {
     public void toXML(StringBuffer buf, String rowTag, String ident)
             throws WdkModelException {
         String newline = System.getProperty("line.separator");
-        Iterator rows = getRows();
+        Iterator<Map<String, Object>> rows = getRows();
         while (rows.hasNext()) {
             buf.append(ident + "<" + rowTag + ">" + newline);
-            Map rowMap = (Map) rows.next();
-            Iterator colNames = rowMap.keySet().iterator();
-            while (colNames.hasNext()) {
-                String colName = (String) colNames.next();
+            Map<String, Object> rowMap = rows.next();
+            for (String colName : rowMap.keySet() ) {
                 // get the field
                 AttributeField attributeField = tableField.getAttributeFieldMap().get(
                         colName);
@@ -186,7 +181,7 @@ public class TableFieldValue {
         resultList.close();
     }
 
-    public class TableFieldValueIterator implements Iterator {
+    public class TableFieldValueIterator implements Iterator<Map<String, Object>> {
 
         Iterator<Map<String, Object>> resultListRows;
         boolean visibleOnly;
@@ -202,7 +197,7 @@ public class TableFieldValue {
             return resultListRows.hasNext();
         }
 
-        public Map<String, Object> next() throws NoSuchElementException {
+        public Map<String, Object> next() {
             Map<String, Object> resultListRow = resultListRows.next();
             Set<String> columnNames = resultListRow.keySet();
             // the map contains <attributeFieldName, AttributeFieldValue> tuples

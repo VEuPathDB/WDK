@@ -39,8 +39,8 @@ public class TabularReporter extends Reporter {
     private boolean hasHeader = true;
     private String divider = "\t";
 
-    public TabularReporter(Answer answer) {
-        super(answer);
+    public TabularReporter(Answer answer, int startIndex, int endIndex) {
+        super(answer, startIndex, endIndex);
     }
 
     /*
@@ -88,14 +88,14 @@ public class TabularReporter extends Reporter {
     @Override
     public String getDownloadFileName() {
         logger.info("Internal format: " + format);
-        String name = answer.getQuestion().getName();
+        String name = getQuestion().getName();
         if (format.equalsIgnoreCase("text")) {
             return name + "_summary.txt";
         } else if (format.equalsIgnoreCase("excel")) {
             return name + "_summary.xls";
         } else if (format.equalsIgnoreCase("pdf")) {
             return name + "_summary.pdf";
-        } else { // use the defaul file name defined in the parent
+        } else { // use the default file name defined in the parent
             return super.getDownloadFileName();
         }
     }
@@ -109,29 +109,29 @@ public class TabularReporter extends Reporter {
         PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
 
         // get the columns that will be in the report
-        Set<AttributeField> columns = validateColumns(answer);
+        Set<AttributeField> columns = validateColumns();
 
         // get the formatted result
         if (format.equalsIgnoreCase("excel")) {
-            format2Excel(columns, answer, writer);
+            format2Excel(columns, writer);
         } else if (format.equalsIgnoreCase("pdf")) {
-            format2PDF(columns, answer, out);
+            format2PDF(columns, out);
         } else {
-            format2Text(columns, answer, writer);
+            format2Text(columns, writer);
         }
     }
 
-    private Set<AttributeField> validateColumns(Answer answer)
+    private Set<AttributeField> validateColumns()
             throws WdkModelException {
         // the config map contains a list of column names;
-        Map<String, AttributeField> summary = answer.getSummaryAttributes();
+        Map<String, AttributeField> summary = getSummaryAttributes();
         Set<AttributeField> columns = new LinkedHashSet<AttributeField>();
 
         String fieldsList = config.get(FIELD_SELECTED_COLUMNS);
         if (fieldsList == null) {
             columns.addAll(summary.values());
         } else {
-            Map<String, AttributeField> attributes = answer.getQuestion().getReportMakerAttributeFields();
+            Map<String, AttributeField> attributes = getQuestion().getReportMakerAttributeFields();
             String[] fields = fieldsList.split(",");
             for (String column : fields) {
                 column = column.trim();
@@ -149,8 +149,8 @@ public class TabularReporter extends Reporter {
         return columns;
     }
 
-    private void format2Text(Set<AttributeField> columns, Answer answer,
-            PrintWriter writer) throws WdkModelException {
+    private void format2Text(Set<AttributeField> columns, PrintWriter writer)
+            throws WdkModelException {
         // print the header
         if (hasHeader) {
             for (AttributeField column : columns) {
@@ -161,26 +161,30 @@ public class TabularReporter extends Reporter {
             writer.flush();
         }
 
-        while (answer.hasMoreRecordInstances()) {
-            RecordInstance record = answer.getNextRecordInstance();
-            for (AttributeField column : columns) {
-                Object value = record.getAttributeValue(column);
-                if (value instanceof LinkValue) {
-                    writer.print(((LinkValue) value).getValue());
-                } else {
-                    writer.print(value);
+        // get page based answers with a maximum size (defined in
+        // PageAnswerIterator)
+        for (Answer answer : this) {
+            while (answer.hasMoreRecordInstances()) {
+                RecordInstance record = answer.getNextRecordInstance();
+                for (AttributeField column : columns) {
+                    Object value = record.getAttributeValue(column);
+                    if (value instanceof LinkValue) {
+                        writer.print(((LinkValue) value).getValue());
+                    } else {
+                        writer.print(value);
+                    }
+                    writer.print(divider);
                 }
-                writer.print(divider);
+                writer.println();
+                writer.flush();
             }
-            writer.println();
-            writer.flush();
         }
     }
 
-    private void format2PDF(Set<AttributeField> columns, Answer answer,
-            OutputStream out) throws WdkModelException {
+    private void format2PDF(Set<AttributeField> columns, OutputStream out)
+            throws WdkModelException {
         logger.info("format2PDF>>>");
-        Document document = new Document(PageSize.A4.rotate());
+        Document document = new Document(PageSize.LETTER.rotate());
         try {
             PdfWriter pwriter = PdfWriter.getInstance(document, out);
             document.open();
@@ -197,33 +201,39 @@ public class TabularReporter extends Reporter {
 
             datatable.setHeaderRows(1);
             int count = 0;
-            while (answer.hasMoreRecordInstances()) {
-                RecordInstance record = answer.getNextRecordInstance();
+            
+            // get page based answers with a maximum size (defined in
+            // PageAnswerIterator)
+            for (Answer answer : this) {
+                while (answer.hasMoreRecordInstances()) {
+                    RecordInstance record = answer.getNextRecordInstance();
 
-                count++;
+                    count++;
 
-                if (count % 2 == 1) {
-                    datatable.getDefaultCell().setGrayFill(0.9f);
-                }
-
-                for (AttributeField column : columns) {
-                    Object value = record.getAttributeValue(column);
-                    if (value instanceof LinkValue) {
-                        datatable.addCell(((LinkValue) value).getValue());
-                    } else {
-                        // PdfPCell cell = new PdfPCell(new Paragraph(""+value)
-                        // );
-                        datatable.addCell("" + value);
-
+                    if (count % 2 == 1) {
+                        datatable.getDefaultCell().setGrayFill(0.9f);
                     }
-                }
 
-                if (count % 2 == 1) {
-                    datatable.getDefaultCell().setGrayFill(1);
-                }
+                    for (AttributeField column : columns) {
+                        Object value = record.getAttributeValue(column);
+                        if (value instanceof LinkValue) {
+                            datatable.addCell(((LinkValue) value).getValue());
+                        } else {
+                            // PdfPCell cell = new PdfPCell(new
+                            // Paragraph(""+value)
+                            // );
+                            datatable.addCell("" + value);
 
-                if (count % 500 == 0) {
-                    pwriter.flush();
+                        }
+                    }
+
+                    if (count % 2 == 1) {
+                        datatable.getDefaultCell().setGrayFill(1);
+                    }
+
+                    if (count % 500 == 0) {
+                        pwriter.flush();
+                    }
                 }
             }
 
@@ -249,8 +259,8 @@ public class TabularReporter extends Reporter {
 
     }
 
-    private void format2Excel(Set<AttributeField> columns, Answer answer,
-            PrintWriter writer) throws WdkModelException {
+    private void format2Excel(Set<AttributeField> columns, PrintWriter writer)
+            throws WdkModelException {
         writer.println("<table border=\"1\">");
 
         // print the header
@@ -264,22 +274,26 @@ public class TabularReporter extends Reporter {
             writer.flush();
         }
 
-        while (answer.hasMoreRecordInstances()) {
-            RecordInstance record = answer.getNextRecordInstance();
-            writer.println("<tr>");
-            for (AttributeField column : columns) {
-                Object value = record.getAttributeValue(column);
-                writer.print("<td>");
-                if (value instanceof LinkValue) {
-                    writer.print(((LinkValue) value).getValue());
-                } else {
-                    writer.print(value);
+        // get page based answers with a maximum size (defined in
+        // PageAnswerIterator)
+        for (Answer answer : this) {
+            while (answer.hasMoreRecordInstances()) {
+                RecordInstance record = answer.getNextRecordInstance();
+                writer.println("<tr>");
+                for (AttributeField column : columns) {
+                    Object value = record.getAttributeValue(column);
+                    writer.print("<td>");
+                    if (value instanceof LinkValue) {
+                        writer.print(((LinkValue) value).getValue());
+                    } else {
+                        writer.print(value);
+                    }
+                    writer.print("</td>");
                 }
-                writer.print("</td>");
+                writer.println();
+                writer.println("</tr>");
+                writer.flush();
             }
-            writer.println();
-            writer.println("</tr>");
-            writer.flush();
         }
         writer.println("</table>");
         writer.flush();
