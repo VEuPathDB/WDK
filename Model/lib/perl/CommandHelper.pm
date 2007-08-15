@@ -55,6 +55,8 @@ sub getJavaArgs {
 
 sub getSystemArgs {
   my @args = @_;
+  # the first arg is GUS_HOME
+  my $GUS_HOME = @args[0];
   my $sysargs = "";
   foreach my $arg (@args) {
     if ($arg =~ /\-/) {
@@ -64,12 +66,17 @@ sub getSystemArgs {
         $sysargs .= "\"$arg\"";
     }
   }
+  
   return $sysargs;
 }
 
 sub getSystemProps {
   my ($GUS_HOME, $cmdName) = @_;
   my $sysProps = "-DcmdName=$cmdName -DGUS_HOME=$GUS_HOME";
+  
+  #set the log4j configuration
+  $sysProps .= " -Dlog4j.configuration=\"file://$GUS_HOME/config/log4j.properties\"";
+
   return $sysProps;
 }
 
