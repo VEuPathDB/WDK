@@ -59,22 +59,14 @@ public abstract class Reporter implements Iterable<Answer> {
             logger.debug("Getting records #" + startIndex + " to #"
                     + pageEndIndex);
 
-            // check if we need to create a new answer
-            Answer answer;
-            if (startIndex == baseAnswer.getStartRecordInstanceI()
-                    && pageEndIndex == baseAnswer.getEndRecordInstanceI()) {
-                // no need to generate a new answer
-                answer = baseAnswer;
-            } else { // need to generate a new answer
-                try {
-                    answer = baseAnswer.newAnswer(startIndex, pageEndIndex);
-                } catch (WdkModelException ex) {
-                    throw new RuntimeException(ex);
-                }
+            try {
+                Answer answer = baseAnswer.newAnswer(startIndex, pageEndIndex);
+                // update the current index
+                startIndex = pageEndIndex + 1;
+                return answer;
+            } catch (WdkModelException ex) {
+                throw new RuntimeException(ex);
             }
-            // update the current index
-            startIndex = pageEndIndex + 1;
-            return answer;
         }
 
         public void remove() {
