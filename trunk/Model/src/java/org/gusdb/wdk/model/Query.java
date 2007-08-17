@@ -324,7 +324,7 @@ public abstract class Query extends WdkModelBase implements Serializable {
                 }
 
                 // if quote is set, it overrides the value of the param
-                if (quote != null) ((AbstractEnumParam) param).setQuote(false);
+                if (quote != null) ((AbstractEnumParam) param).setQuote(quote);
             } else if (multiPick != null || useTermOnly != null) {
                 throw new WdkModelException("The paramRef to '" + twoPartName
                         + "' is not a flatVocabParam nor enumParam. The "
@@ -332,7 +332,7 @@ public abstract class Query extends WdkModelBase implements Serializable {
                         + "paramRefs of flatVocabParams or enumParams.");
             } else if (param instanceof StringParam) {
                 // if quote is set, it overrides the value of the param
-                if (quote != null) ((StringParam) param).setQuote(false);
+                if (quote != null) ((StringParam) param).setQuote(quote);
             }
 
             // resolve the group reference
