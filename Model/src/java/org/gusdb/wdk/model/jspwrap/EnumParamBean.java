@@ -10,28 +10,32 @@ import org.gusdb.wdk.model.WdkModelException;
  * consumption by a view
  */
 public class EnumParamBean extends ParamBean {
-    
-    public EnumParamBean( EnumParam param ) {
-        super( param );
+
+    public EnumParamBean(EnumParam param) {
+        super(param);
     }
-    
+
     public Boolean getMultiPick() {
-        return ( ( EnumParam ) param ).getMultiPick();
+        return ((EnumParam) param).getMultiPick();
     }
-    
-    public String[ ] getVocabInternal() throws WdkModelException {
-        return ( ( EnumParam ) param ).getVocabInternal();
+
+    public String[] getVocabInternal() throws WdkModelException {
+        return ((EnumParam) param).getVocabInternal();
     }
-    
-    public String[ ] getVocab() throws WdkModelException {
-        return ( ( EnumParam ) param ).getVocab();
+
+    public String[] getVocab() throws WdkModelException {
+        return ((EnumParam) param).getVocab();
     }
-    
-    public String[ ] getDisplay() {
-        return ( ( EnumParam ) param ).getDisplay();
+
+    public Map<String, String> getVocabMap() throws WdkModelException {
+        return ((EnumParam) param).getVocabMap();
     }
-    
-    public Map< String, String > getTermDisplayMap() {
-        return ( ( EnumParam ) param ).getTermDisplayMap();
+
+    public String[] getDisplay() {
+        return ((EnumParam) param).getDisplay();
+    }
+
+    public Map<String, String> getTermDisplayMap() {
+        return ((EnumParam) param).getTermDisplayMap();
     }
 }
