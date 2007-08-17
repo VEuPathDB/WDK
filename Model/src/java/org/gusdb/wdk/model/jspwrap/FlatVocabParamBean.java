@@ -23,7 +23,7 @@ public class FlatVocabParamBean extends ParamBean {
         return ((FlatVocabParam) param).getVocab();
     }
 
-    public Map getVocabMap() throws WdkModelException {
+    public Map<String, String> getVocabMap() throws WdkModelException {
         return ((FlatVocabParam) param).getVocabMap();
     }
 }
