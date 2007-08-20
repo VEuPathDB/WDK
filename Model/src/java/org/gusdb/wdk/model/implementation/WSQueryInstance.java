@@ -14,6 +14,7 @@ import javax.xml.rpc.ServiceException;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Column;
+import org.gusdb.wdk.model.Query;
 import org.gusdb.wdk.model.QueryInstance;
 import org.gusdb.wdk.model.RDBMSPlatformI;
 import org.gusdb.wdk.model.ResultFactory;
@@ -131,7 +132,7 @@ public class WSQueryInstance extends QueryInstance {
             int cw = column.getWidth();
             
             // check if it is a project_id column
-            if (colName.equals(projectColumnName)) hasProjectId = true;
+            if (colName.equals(Query.PROJECT_ID_COLUMN)) hasProjectId = true;
 
             // the clob datatype is DBMS specific
             String clobType = platform.getClobDataType();
@@ -146,10 +147,10 @@ public class WSQueryInstance extends QueryInstance {
             insertSqlV.append("?,");
         }
         // check if we need to add a project_id column
-        if (projectColumnName != null && !hasProjectId) {
-            createSqlB.append(projectColumnName + " varchar(50), ");
-            insertSqlB.append(projectColumnName + ", ");
-            insertSqlV.append(query.getProjectId() + ", ");
+        if (!hasProjectId) {
+            createSqlB.append(Query.PROJECT_ID_COLUMN + " varchar(50), ");
+            insertSqlB.append(Query.PROJECT_ID_COLUMN + ", ");
+            insertSqlV.append("'" + query.getProjectId() + "', ");
         }
         
         createSqlB.append(ResultFactory.RESULT_TABLE_I + " "
@@ -176,6 +177,10 @@ public class WSQueryInstance extends QueryInstance {
                 for (int index = 0; index < columns.length; index++) {
                     String colName = columns[index].getName();
                     String val = (String) resultList.getValueFromResult(colName);
+                    
+                    // check if we need to fill the project id
+                    if (colName.equals(Query.PROJECT_ID_COLUMN) && (val == null || val.trim().length() == 0))
+                        val = query.getProjectId();
 
                     // check if it's clob field or not
                     if (clobCols.contains(colName)) {
