@@ -15,6 +15,8 @@ import org.apache.log4j.Logger;
 
 public abstract class Query extends WdkModelBase implements Serializable {
 
+    public static final String PROJECT_ID_COLUMN = "project_id";
+    
     private static Logger logger = Logger.getLogger(Query.class);
 
     protected String name;
