@@ -88,6 +88,11 @@
       <property name="project" value="WDK"/>
       <property name="component" value="Model"/>
     </ant>
+
+    <property environment="env"/>
+    <available file="${env.ORACLE_HOME}/jdbc/lib/ojdbc14.jar" type="file"  property="ojdbc.present" />
+    <antcall target="copyLocalDbDriver"/>
+
   </target>  
 
   <target name="WDK/View-Installation">
@@ -96,6 +101,14 @@
       <property name="component" value="View"/>
     </ant>
   </target>  
+
+  <target name="copyLocalDbDriver" if="ojdbc.present">
+    <echo>Installing local ojdbc14.jar from ${env.ORACLE_HOME}/jdbc/lib/ojdbc14.jar</echo>
+    <copy  file="${env.ORACLE_HOME}/jdbc/lib/ojdbc14.jar"
+     toDir="${targetDir}/lib/java/db_driver"
+     overwrite="true"/>
+  </target>
+
 
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooo  Web Installation  oooooooooooooooooooooooo -->
