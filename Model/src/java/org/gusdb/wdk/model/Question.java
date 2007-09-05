@@ -55,21 +55,19 @@ public class Question extends WdkModelBase implements Serializable {
 
     private String category;
 
+    private boolean fullAnswer = false;
+
     private List<AttributeList> attributeLists = new ArrayList<AttributeList>();
 
     private String[] summaryAttributeNames;
-    private Map<String, AttributeField> summaryAttributeMap =
-            new LinkedHashMap<String, AttributeField>();
-    private Map<String, Boolean> sortingAttributeMap =
-            new LinkedHashMap<String, Boolean>();
+    private Map<String, AttributeField> summaryAttributeMap = new LinkedHashMap<String, AttributeField>();
+    private Map<String, Boolean> sortingAttributeMap = new LinkedHashMap<String, Boolean>();
 
-    private List<DynamicAttributeSet> dynamicAttributeSets =
-            new ArrayList<DynamicAttributeSet>();
+    private List<DynamicAttributeSet> dynamicAttributeSets = new ArrayList<DynamicAttributeSet>();
     private DynamicAttributeSet dynamicAttributeSet;
 
     private List<PropertyList> propertyLists = new ArrayList<PropertyList>();
-    private Map<String, String[]> propertyListMap =
-            new LinkedHashMap<String, String[]>();
+    private Map<String, String[]> propertyListMap = new LinkedHashMap<String, String[]>();
 
     private WdkModel wdkModel;
 
@@ -164,23 +162,20 @@ public class Question extends WdkModelBase implements Serializable {
     }
 
     public Map<String, AttributeField> getReportMakerAttributeFields() {
-        Map<String, AttributeField> rmfields =
-                recordClass.getReportMakerAttributeFieldMap();
+        Map<String, AttributeField> rmfields = recordClass.getReportMakerAttributeFieldMap();
         if (dynamicAttributeSet != null)
             rmfields.putAll(dynamicAttributeSet.getReportMakerAttributeFieldMap());
         return rmfields;
     }
 
     public Map<String, TableField> getReportMakerTableFields() {
-        Map<String, TableField> rmfields =
-                recordClass.getReportMakerTableFieldMap();
+        Map<String, TableField> rmfields = recordClass.getReportMakerTableFieldMap();
         return rmfields;
     }
 
     public Map<String, Field> getReportMakerFields() {
         Map<String, Field> fields = new LinkedHashMap<String, Field>();
-        Map<String, AttributeField> attributes =
-                getReportMakerAttributeFields();
+        Map<String, AttributeField> attributes = getReportMakerAttributeFields();
         Map<String, TableField> tables = getReportMakerTableFields();
 
         for (String name : attributes.keySet()) {
@@ -194,11 +189,69 @@ public class Question extends WdkModelBase implements Serializable {
 
     // /////////////////////////////////////////////////////////////////////
 
+    /**
+     * make an answer that returns all records in one page.
+     * 
+     * @param paramValues
+     * @return
+     * @throws WdkModelException
+     * @throws WdkUserException
+     */
+    public Answer makeAnswer(Map<String, Object> paramValues)
+            throws WdkUserException, WdkModelException {
+        return makeAnswer(paramValues, sortingAttributeMap);
+    }
+
+    /**
+     * make an answer that returns all records in one page, sorted by the given
+     * attribute list.
+     * 
+     * @param paramValues
+     * @param sortingAttributes
+     * @return
+     * @throws WdkModelException
+     * @throws WdkUserException
+     */
+    public Answer makeAnswer(Map<String, Object> paramValues,
+            Map<String, Boolean> sortingAttributes) throws WdkUserException,
+            WdkModelException {
+        // get the result size by making a temp answer
+        Answer answer = makeAnswer(paramValues, 1, 1, sortingAttributes);
+        int resultSize = answer.getResultSize();
+
+        // skip empty answers and one-record answers
+        if (resultSize <= 1) return answer;
+
+        // make an answer containing all records
+        return makeAnswer(paramValues, 1, resultSize, sortingAttributes);
+    }
+
+    /**
+     * make an answer by given page range.
+     * 
+     * @param paramValues
+     * @param i
+     * @param j
+     * @return
+     * @throws WdkUserException
+     * @throws WdkModelException
+     */
     public Answer makeAnswer(Map<String, Object> paramValues, int i, int j)
             throws WdkUserException, WdkModelException {
         return makeAnswer(paramValues, i, j, sortingAttributeMap);
     }
 
+    /**
+     * make an answer by given page range, sorted by the given attribute list.
+     * 
+     * @param paramValues
+     * @param i
+     * @param j
+     * @param sortingAttributes
+     * @return
+     * @throws WdkUserException
+     * @throws WdkModelException
+     */
     public Answer makeAnswer(Map<String, Object> paramValues, int i, int j,
             Map<String, Boolean> sortingAttributes) throws WdkUserException,
             WdkModelException {
@@ -219,8 +272,7 @@ public class Question extends WdkModelBase implements Serializable {
 
     public Map<Group, Map<String, Param>> getParamMapByGroups() {
         Param[] params = query.getParams();
-        Map<Group, Map<String, Param>> paramGroups =
-                new LinkedHashMap<Group, Map<String, Param>>();
+        Map<Group, Map<String, Param>> paramGroups = new LinkedHashMap<Group, Map<String, Param>>();
         for (Param param : params) {
             Group group = param.getGroup();
             Map<String, Param> paramGroup;
@@ -237,8 +289,7 @@ public class Question extends WdkModelBase implements Serializable {
 
     public Map<Group, Map<String, Param>> getParamMapByGroups(String displayType) {
         Param[] params = query.getParams();
-        Map<Group, Map<String, Param>> paramGroups =
-                new LinkedHashMap<Group, Map<String, Param>>();
+        Map<Group, Map<String, Param>> paramGroups = new LinkedHashMap<Group, Map<String, Param>>();
         for (Param param : params) {
             Group group = param.getGroup();
             if (!group.getDisplayType().equalsIgnoreCase(displayType))
@@ -312,15 +363,14 @@ public class Question extends WdkModelBase implements Serializable {
         for (String saName : summaryAttributeMap.keySet()) {
             saNames.append(saName + ", ");
         }
-        StringBuffer buf =
-                new StringBuffer("Question: name='" + name + "'" + newline
-                        + "  recordClass='" + recordClassTwoPartName + "'"
-                        + newline + "  query='" + queryTwoPartName + "'"
-                        + newline + "  displayName='" + getDisplayName() + "'"
-                        + newline + "  summary='" + getSummary() + "'"
-                        + newline + "  description='" + getDescription() + "'"
-                        + newline + "  summaryAttributes='" + saNames + "'"
-                        + newline + "  help='" + getHelp() + "'" + newline);
+        StringBuffer buf = new StringBuffer("Question: name='" + name + "'"
+                + newline + "  recordClass='" + recordClassTwoPartName + "'"
+                + newline + "  query='" + queryTwoPartName + "'" + newline
+                + "  displayName='" + getDisplayName() + "'" + newline
+                + "  summary='" + getSummary() + "'" + newline
+                + "  description='" + getDescription() + "'" + newline
+                + "  summaryAttributes='" + saNames + "'" + newline
+                + "  help='" + getHelp() + "'" + newline);
         if (dynamicAttributeSet != null) {
             buf.append(dynamicAttributeSet.toString());
         }
@@ -340,13 +390,12 @@ public class Question extends WdkModelBase implements Serializable {
     public String getSanityTestSuggestion() throws WdkModelException {
         String indent = "    ";
         String newline = System.getProperty("line.separator");
-        StringBuffer buf =
-                new StringBuffer(newline + newline + indent
-                        + "<sanityQuestion ref=\"" + getFullName() + "\""
-                        + newline + indent + indent + indent
-                        + "pageStart=\"1\" pageEnd=\"20\"" + newline + indent
-                        + indent + indent + "minOutputLength=\"FIX_min_len\" "
-                        + "maxOutputLength=\"FIX_max_len\">" + newline);
+        StringBuffer buf = new StringBuffer(newline + newline + indent
+                + "<sanityQuestion ref=\"" + getFullName() + "\"" + newline
+                + indent + indent + indent + "pageStart=\"1\" pageEnd=\"20\""
+                + newline + indent + indent + indent
+                + "minOutputLength=\"FIX_min_len\" "
+                + "maxOutputLength=\"FIX_max_len\">" + newline);
         for (Param param : getQuery().getParams()) {
             String paramName = param.getName();
             String value = param.getDefault();
@@ -356,6 +405,27 @@ public class Question extends WdkModelBase implements Serializable {
         }
         buf.append(indent + "</sanityQuestion>");
         return buf.toString();
+    }
+
+    /**
+     * A indicator to the controller whether this question should make answers
+     * that contains all records in one page or not.
+     * 
+     * @return the fullAnswer
+     */
+    public boolean isFullAnswer() {
+        return fullAnswer;
+    }
+
+    /**
+     * Set the indicator to the controller that suggests this question to make
+     * answers containing all records in one page, or not.
+     * 
+     * @param fullAnswer
+     *            the fullAnswer to set
+     */
+    public void setFullAnswer(boolean fullAnswer) {
+        this.fullAnswer = fullAnswer;
     }
 
     // /////////////////////////////////////////////////////////////////////
@@ -377,9 +447,8 @@ public class Question extends WdkModelBase implements Serializable {
     }
 
     Map<String, AttributeField> getAttributeFields() {
-        Map<String, AttributeField> attributeFields =
-                new LinkedHashMap<String, AttributeField>(
-                        recordClass.getAttributeFieldMap());
+        Map<String, AttributeField> attributeFields = new LinkedHashMap<String, AttributeField>(
+                recordClass.getAttributeFieldMap());
         if (dynamicAttributeSet != null) {
             attributeFields.putAll(dynamicAttributeSet.getAttributeFields());
         }
@@ -423,10 +492,9 @@ public class Question extends WdkModelBase implements Serializable {
                 summaryAttributeMap.put(name, attMap.get(name));
             }
         } else {
-            Map<String, AttributeField> recAttrsMap =
-                    getRecordClass().getAttributeFieldMap();
-            summaryAttributeMap =
-                    new LinkedHashMap<String, AttributeField>(recAttrsMap);
+            Map<String, AttributeField> recAttrsMap = getRecordClass().getAttributeFieldMap();
+            summaryAttributeMap = new LinkedHashMap<String, AttributeField>(
+                    recAttrsMap);
             Iterator<String> ramI = recAttrsMap.keySet().iterator();
             String attribName = null;
             while (ramI.hasNext()) {
@@ -458,10 +526,8 @@ public class Question extends WdkModelBase implements Serializable {
         question.recordClassTwoPartName = this.recordClassTwoPartName;
 
         // needs to clone this summary attribute as well
-        Map<String, AttributeField> sumAttributes =
-                new LinkedHashMap<String, AttributeField>();
-        Map<String, AttributeField> attributes =
-                recordClass.getAttributeFieldMap();
+        Map<String, AttributeField> sumAttributes = new LinkedHashMap<String, AttributeField>();
+        Map<String, AttributeField> attributes = recordClass.getAttributeFieldMap();
         for (String attrName : summaryAttributeMap.keySet()) {
             if (attributes.containsKey(attrName))
                 sumAttributes.put(attrName, summaryAttributeMap.get(attrName));
@@ -622,10 +688,8 @@ public class Question extends WdkModelBase implements Serializable {
                             + " has more than one <attributesList> for "
                             + "project " + projectId);
                 } else {
-                    this.summaryAttributeNames =
-                            attributeList.getSummaryAttributeNames();
-                    this.sortingAttributeMap =
-                            attributeList.getSortingAttributeMap();
+                    this.summaryAttributeNames = attributeList.getSummaryAttributeNames();
+                    this.sortingAttributeMap = attributeList.getSortingAttributeMap();
                     hasAttributeList = true;
                 }
             }
