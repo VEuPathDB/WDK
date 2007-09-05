@@ -166,9 +166,12 @@ public class FullRecordCachedReporter extends Reporter {
             throws WdkModelException {
         // construct in clause
         StringBuffer sqlIn = new StringBuffer();
+        
+        // add a dummy table name to make sure the constructed sql is valid, in 
+        // case none of the table names are selected.
+        sqlIn.append("'WDK_DUMMY_TABLE'");
         for (TableField table : tables) {
-            if (sqlIn.length() > 0) sqlIn.append(", ");
-            sqlIn.append("'" + table.getName() + "'");
+            sqlIn.append(", '" + table.getName() + "'");
         }
 
         // construct the SQL to retrieve table cache
