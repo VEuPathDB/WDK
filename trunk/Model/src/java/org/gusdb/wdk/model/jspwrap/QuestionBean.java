@@ -158,7 +158,7 @@ public class QuestionBean implements Serializable {
         return rmfMap;
     }
 
-    public Map getAdditionalSummaryAttributesMap() {
+    public Map<String, AttributeFieldBean> getAdditionalSummaryAttributesMap() {
         Map<String, AttributeFieldBean> all = getReportMakerAttributesMap();
         Map<String, AttributeFieldBean> dft = getSummaryAttributesMap();
         Map<String, AttributeFieldBean> opt = new LinkedHashMap<String, AttributeFieldBean>();
@@ -208,11 +208,11 @@ public class QuestionBean implements Serializable {
      * Called by the controller
      * 
      * @param paramValues
-     * Map of paramName-->value
+     *            Map of paramName-->value
      * @param start
-     * Index of the first record to include in the answer
+     *            Index of the first record to include in the answer
      * @param end
-     * Index of the last record to include in the answer
+     *            Index of the last record to include in the answer
      */
     public AnswerBean makeAnswer(Map<String, Object> paramValues, int start,
             int end, Map<String, Boolean> sortingAttributes)
@@ -237,4 +237,49 @@ public class QuestionBean implements Serializable {
     public String getCategory() {
         return question.getCategory();
     }
+
+    /**
+     * A indicator to the controller whether this question bean should make 
+     * answer beans that contains all records in one page or not.
+     * 
+     * @return
+     * @see org.gusdb.wdk.model.Question#isFullAnswer()
+     */
+    public boolean isFullAnswer() {
+        return question.isFullAnswer();
+    }
+
+    /**
+     * make an answer bean that returns all record beans in one page.
+     * 
+     * @param paramValues
+     * @param sortingAttributes
+     * @return
+     * @throws WdkUserException
+     * @throws WdkModelException
+     * @see org.gusdb.wdk.model.Question#makeAnswer(java.util.Map,
+     *      java.util.Map)
+     */
+    public AnswerBean makeAnswer(Map<String, Object> paramValues,
+            Map<String, Boolean> sortingAttributes) throws WdkUserException,
+            WdkModelException {
+        return new AnswerBean(question.makeAnswer(paramValues,
+                sortingAttributes));
+    }
+
+    /**
+     * make an answer bean that returns all record beans in one page, sorted by 
+     * the given attribute list.
+     * 
+     * @param paramValues
+     * @return
+     * @throws WdkUserException
+     * @throws WdkModelException
+     * @see org.gusdb.wdk.model.Question#makeAnswer(java.util.Map)
+     */
+    public AnswerBean makeAnswer(Map<String, Object> paramValues)
+            throws WdkUserException, WdkModelException {
+        return new AnswerBean(question.makeAnswer(paramValues));
+    }
+
 }

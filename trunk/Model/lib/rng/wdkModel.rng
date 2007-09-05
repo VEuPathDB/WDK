@@ -534,6 +534,11 @@
       <optional>
            <attribute name="category" />
       </optional>
+      <optional>
+          <attribute name="fullAnswer">
+              <data type="boolean" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes"/>
+          </attribute>
+      </optional>
                  
       <zeroOrMore>
         <choice>
