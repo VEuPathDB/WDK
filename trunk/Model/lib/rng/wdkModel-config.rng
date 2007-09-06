@@ -8,11 +8,21 @@
             <attribute name="connectionUrl" />
             <attribute name="webServiceUrl" />
             <attribute name="platformClass" />
-            <attribute name="initialSize" />
-            <attribute name="maxActive" />
-            <attribute name="maxIdle" />
-            <attribute name="minIdle" />
-            <attribute name="maxWait" />
+            <attribute name="initialSize">
+                <data type="unsignedShort" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes" />
+            </attribute>
+            <attribute name="maxActive">
+                <data type="unsignedShort" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes" />
+            </attribute>
+            <attribute name="maxIdle">
+                <data type="unsignedShort" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes" />
+            </attribute>
+            <attribute name="minIdle">
+                <data type="unsignedShort" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes" />
+            </attribute>
+            <attribute name="maxWait">
+                <data type="unsignedShort" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes" />
+            </attribute>
             <attribute name="authenticationLogin" />
             <attribute name="authenticationPassword" />
             <attribute name="authenticationConnectionUrl" />
@@ -20,7 +30,9 @@
             <attribute name="loginSchema" />
             <attribute name="defaultRole" />
             <attribute name="smtpServer" />
-            <attribute name="enableQueryLogger" />
+            <attribute name="enableQueryLogger">
+                <data type="boolean" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes" />
+            </attribute>
             <attribute name="queryLoggerFile" />
             <attribute name="supportEmail" />
 
