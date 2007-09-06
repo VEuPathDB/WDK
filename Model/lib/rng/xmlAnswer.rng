@@ -13,28 +13,25 @@
          <optional>
             <attribute name="id" />
          </optional>
-         <zeroOrMore>  
-            <ref name="attribute" />
-         </zeroOrMore>
-         <zeroOrMore>
-            <ref name="table" />
-         </zeroOrMore>
-         <zeroOrMore>
-            <ref name="record" />
-         </zeroOrMore>
+         <oneOrMore>
+            <choice>
+                <ref name="attribute" />
+                <ref name="table" />
+            </choice>
+         </oneOrMore>
       </element>
    </define>
 
    <define name="table">
       <element name="table">
          <attribute name="name" />
-         <zeroOrMore>
-            <element name="row">
-	       <oneOrMore>
+         <oneOrMore>
+           <element name="row">
+	           <oneOrMore>
                   <ref name="attribute" />
                </oneOrMore>
-	    </element>
-         </zeroOrMore>
+	       </element>
+         </oneOrMore>
       </element>
    </define>
 
