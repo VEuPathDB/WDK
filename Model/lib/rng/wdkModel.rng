@@ -1,5 +1,6 @@
 <?xml version="1.0" ?>
-<grammar xmlns="http://relaxng.org/ns/structure/1.0">
+<grammar xmlns="http://relaxng.org/ns/structure/1.0"
+         datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
   <start>
     <element name="wdkModel">
       <oneOrMore>
@@ -60,6 +61,7 @@
         <ref name="IncludeExclude"/>
         <oneOrMore>
             <element name="value">
+                <ref name="IncludeExclude"/>
                 <text />
             </element>
         </oneOrMore>
@@ -81,7 +83,7 @@
               <ref name="IncludeExclude" />
               <oneOrMore>
                   <choice>
-                      <ref name="useTermOnly" />
+                    <ref name="useTermOnly" />
                     <ref name="stringParam" />
                     <ref name="enumParam" />
                     <ref name="flatVocabParam" />
@@ -102,10 +104,14 @@
                 <attribute name="substitute" />
               </optional>
               <optional>
-                <attribute name="length" />
+                <attribute name="length">
+                    <data type="positiveInteger" />
+                </attribute>
               </optional>
               <optional>
-                  <attribute name="quote" />
+                  <attribute name="quote">
+                    <data type="boolean" />
+                  </attribute>
               </optional>
               <zeroOrMore>
                 <element name="suggest">
@@ -213,10 +219,14 @@
     <define name="EnumParamBaseContents">
         <ref name="ParamBaseContents" />
         <optional>
-            <attribute name="multiPick" />
+            <attribute name="multiPick">
+                <data type="boolean" />
+            </attribute>
         </optional>
         <optional>
-            <attribute name="quote" />
+            <attribute name="quote">
+                <data type="boolean" />
+            </attribute>
         </optional>
     </define>
 
@@ -536,11 +546,8 @@
       </optional>
       <optional>
           <attribute name="fullAnswer">
-              <data type="boolean" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes"/>
+              <data type="boolean" />
           </attribute>
-      </optional>
-      <optional>
-          <attribute name="attribution" />
       </optional>
                  
       <zeroOrMore>

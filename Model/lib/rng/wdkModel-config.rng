@@ -1,5 +1,6 @@
 <?xml version="1.0" ?>
-<grammar xmlns="http://relaxng.org/ns/structure/1.0">
+<grammar xmlns="http://relaxng.org/ns/structure/1.0"
+         datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
     <start>
         <element name="modelConfig">
             <attribute name="modelName" />
@@ -9,19 +10,19 @@
             <attribute name="webServiceUrl" />
             <attribute name="platformClass" />
             <attribute name="initialSize">
-                <data type="unsignedShort" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes" />
+                <data type="unsignedShort"/>
             </attribute>
             <attribute name="maxActive">
-                <data type="unsignedShort" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes" />
+                <data type="unsignedShort" />
             </attribute>
             <attribute name="maxIdle">
-                <data type="unsignedShort" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes" />
+                <data type="unsignedShort" />
             </attribute>
             <attribute name="minIdle">
-                <data type="unsignedShort" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes" />
+                <data type="unsignedShort" />
             </attribute>
             <attribute name="maxWait">
-                <data type="unsignedShort" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes" />
+                <data type="unsignedShort" />
             </attribute>
             <attribute name="authenticationLogin" />
             <attribute name="authenticationPassword" />
@@ -31,7 +32,7 @@
             <attribute name="defaultRole" />
             <attribute name="smtpServer" />
             <attribute name="enableQueryLogger">
-                <data type="boolean" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes" />
+                <data type="boolean" />
             </attribute>
             <attribute name="queryLoggerFile" />
             <attribute name="supportEmail" />

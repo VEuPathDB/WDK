@@ -6,6 +6,7 @@ package org.gusdb.wdk.model.jspwrap;
 import org.gusdb.wdk.model.xml.XmlAnswer;
 import org.gusdb.wdk.model.xml.XmlRecordInstance;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -64,8 +65,14 @@ public class XmlAnswerBean {
         return recordBeans;
     }
 
-    public Map getRecordInstanceMap() {
-	return answer.getRecordInstanceMap();
+    public Map<String, XmlRecordBean> getRecordInstanceMap() {
+        Map<String, XmlRecordInstance> records = answer.getRecordInstanceMap();
+        Map<String, XmlRecordBean> recordBeans = new LinkedHashMap<String, XmlRecordBean>(
+                records.size());
+        for (String recordId : records.keySet()) {
+            recordBeans.put(recordId, new XmlRecordBean(records.get(recordId)));
+        }
+        return recordBeans;
     }
 
     /*
