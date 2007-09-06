@@ -282,4 +282,20 @@ public class QuestionBean implements Serializable {
         return new AnswerBean(question.makeAnswer(paramValues));
     }
 
+    /**
+     * @param propertyListName
+     * @return
+     * @see org.gusdb.wdk.model.Question#getPropertyList(java.lang.String)
+     */
+    public String[] getPropertyList(String propertyListName) {
+        return question.getPropertyList(propertyListName);
+    }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.Question#getPropertyLists()
+     */
+    public Map<String, String[]> getPropertyLists() {
+        return question.getPropertyLists();
+    }
 }

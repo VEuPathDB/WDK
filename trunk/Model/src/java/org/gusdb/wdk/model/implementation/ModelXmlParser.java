@@ -104,10 +104,11 @@ public class ModelXmlParser extends XmlParser {
         // get model config
         ModelConfig config = getModelConfig(projectId);
         String modelName = config.getModelName();
-        
+
         // construct urls to model file, prop file, and config file
         URL modelURL = makeURL(gusHome, "lib/wdk/" + modelName + ".xml");
-        URL modelPropURL = makeURL(gusHome, "config/" + projectId + "Model.prop");
+        URL modelPropURL = makeURL(gusHome, "config/" + projectId
+                + "Model.prop");
 
         // validate the master model file
         if (!validate(modelURL))
@@ -131,15 +132,15 @@ public class ModelXmlParser extends XmlParser {
 
         return model;
     }
-    
-    private ModelConfig getModelConfig(String projectId) throws SAXException, IOException, WdkModelException {
+
+    private ModelConfig getModelConfig(String projectId) throws SAXException,
+            IOException, WdkModelException {
         ModelConfigParser parser = new ModelConfigParser(gusHome);
         return parser.parseConfig(projectId);
     }
-    
-    private Document buildMasterDocument(URL wdkModelURL)
-            throws SAXException, IOException, ParserConfigurationException,
-            WdkModelException {
+
+    private Document buildMasterDocument(URL wdkModelURL) throws SAXException,
+            IOException, ParserConfigurationException, WdkModelException {
         // get the xml document of the model
         Document masterDoc = buildDocument(wdkModelURL);
         Node rootNode = masterDoc.getElementsByTagName("wdkModel").item(0);
@@ -204,7 +205,8 @@ public class ModelXmlParser extends XmlParser {
         // substitute prop macros
         for (String propName : properties.keySet()) {
             String propValue = properties.get(propName);
-            content = content.replaceAll("\\@" + propName + "\\@", Matcher.quoteReplacement(propValue));
+            content = content.replaceAll("\\@" + propName + "\\@",
+                    Matcher.quoteReplacement(propValue));
         }
 
         // construct input stream
@@ -229,8 +231,11 @@ public class ModelXmlParser extends XmlParser {
         // default property list
         configureNode(digester, "wdkModel/defaultPropertyList",
                 PropertyList.class, "addDefaultPropertyList");
-        digester.addCallMethod("wdkModel/defaultPropertyList/value",
-                "addValue", 0);
+
+        configureNode(digester, "wdkModel/defaultPropertyList/value",
+                WdkModelText.class, "addValue");
+        digester.addCallMethod("wdkModel/defaultPropertyList/value", "setText",
+                0);
 
         // configure all sub nodes of recordClassSet
         configureRecordClassSet(digester);
@@ -338,7 +343,8 @@ public class ModelXmlParser extends XmlParser {
 
         configureNode(digester, "wdkModel/querySet/sqlQuery/sqlParamValue",
                 SqlParamValue.class, "addSqlParamValue");
-        digester.addCallMethod("wdkModel/querySet/sqlQuery/sqlParamValue", "setText", 0);
+        digester.addCallMethod("wdkModel/querySet/sqlQuery/sqlParamValue",
+                "setText", 0);
 
         // wsQuery
         configureNode(digester, "wdkModel/querySet/wsQuery", WSQuery.class,
@@ -470,8 +476,12 @@ public class ModelXmlParser extends XmlParser {
         // question's property list
         configureNode(digester, "wdkModel/questionSet/question/propertyList",
                 PropertyList.class, "addPropertyList");
+
+        configureNode(digester,
+                "wdkModel/questionSet/question/propertyList/value",
+                WdkModelText.class, "addValue");
         digester.addCallMethod(
-                "wdkModel/questionSet/question/propertyList/value", "addValue",
+                "wdkModel/questionSet/question/propertyList/value", "setText",
                 0);
 
         // dynamic attribute set
@@ -576,10 +586,9 @@ public class ModelXmlParser extends XmlParser {
         digester.addCallMethod(prefix + "textAttribute/text", "setText", 0);
     }
 
-    public static void main(String[] args)
-            throws SAXException, IOException, ParserConfigurationException,
-            TransformerFactoryConfigurationError, TransformerException,
-            WdkModelException {
+    public static void main(String[] args) throws SAXException, IOException,
+            ParserConfigurationException, TransformerFactoryConfigurationError,
+            TransformerException, WdkModelException {
         String cmdName = System.getProperty("cmdName");
         String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
 
