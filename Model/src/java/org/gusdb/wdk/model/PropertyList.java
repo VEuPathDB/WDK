@@ -3,7 +3,9 @@
  */
 package org.gusdb.wdk.model;
 
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -13,11 +15,8 @@ import java.util.Set;
 public class PropertyList extends WdkModelBase {
 
     private String name;
-    private Set<String> values;
-
-    public PropertyList() {
-        values = new LinkedHashSet<String>();
-    }
+    private List<WdkModelText> valueTexts = new ArrayList<WdkModelText>();
+    private Set<String> values = new LinkedHashSet<String>();
 
     /**
      * @return the name
@@ -28,16 +27,16 @@ public class PropertyList extends WdkModelBase {
 
     /**
      * @param name
-     * the name to set
+     *            the name to set
      */
     public void setName(String name) {
         this.name = name;
     }
 
-    public void addValue(String value) {
-        values.add(value);
+    public void addValue(WdkModelText value) {
+        valueTexts.add(value);
     }
-    
+
     public String[] getValues() {
         String[] array = new String[values.size()];
         values.toArray(array);
@@ -50,7 +49,21 @@ public class PropertyList extends WdkModelBase {
      * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
      */
     @Override
-    public void excludeResources(String projectId) {
-        // nothing to do
+    public void excludeResources(String projectId) throws WdkModelException {
+        // exclude property values
+        for (WdkModelText valueText : valueTexts) {
+            if (valueText.include(projectId)) {
+                valueText.excludeResources(projectId);
+                String value = valueText.getText();
+                if (values.contains(value)) {
+                    throw new WdkModelException("The property value \"" + value
+                            + "\" is included more than once in property " +
+                            		"list: " + name);
+                } else {
+                    values.add(value);
+                }
+            }
+        }
+        valueTexts = null;
     }
 }

@@ -614,7 +614,9 @@ public class Question extends WdkModelBase implements Serializable {
     }
 
     public Map<String, String[]> getPropertyLists() {
-        Map<String, String[]> propLists = new LinkedHashMap<String, String[]>();
+        // get the default property lists
+        Map<String, String[]> propLists = wdkModel.getDefaultPropertyLists();
+        // replace the default ones with the ones defined in the question
         for (String plName : propertyListMap.keySet()) {
             String[] values = propertyListMap.get(plName);
             String[] array = new String[values.length];
