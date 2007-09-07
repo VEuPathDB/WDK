@@ -70,6 +70,8 @@ public class Question extends WdkModelBase implements Serializable {
     private Map<String, String[]> propertyListMap = new LinkedHashMap<String, String[]>();
 
     private WdkModel wdkModel;
+    
+    private boolean noSummaryOnSingleRecord = false;
 
     // /////////////////////////////////////////////////////////////////////
     // setters called at initialization
@@ -107,6 +109,8 @@ public class Question extends WdkModelBase implements Serializable {
         this.summaryAttributeMap.putAll(question.summaryAttributeMap);
         this.summaryAttributeNames = question.summaryAttributeNames;
         this.wdkModel = question.wdkModel;
+        
+        this.noSummaryOnSingleRecord = question.noSummaryOnSingleRecord;
     }
 
     /**
@@ -426,6 +430,22 @@ public class Question extends WdkModelBase implements Serializable {
      */
     public void setFullAnswer(boolean fullAnswer) {
         this.fullAnswer = fullAnswer;
+    }
+
+    
+    /**
+     * @return the noSummaryOnSingleRecord
+     */
+    public boolean isNoSummaryOnSingleRecord() {
+        return noSummaryOnSingleRecord;
+    }
+
+    
+    /**
+     * @param noSummaryOnSingleRecord the noSummaryOnSingleRecord to set
+     */
+    public void setNoSummaryOnSingleRecord(boolean noSummaryOnSingleRecord) {
+        this.noSummaryOnSingleRecord = noSummaryOnSingleRecord;
     }
 
     // /////////////////////////////////////////////////////////////////////

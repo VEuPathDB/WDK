@@ -159,25 +159,31 @@ public class ShowSummaryAction extends ShowQuestionAction {
         request.setAttribute("wdk_summary_url", requestUrl);
         request.setAttribute("wdk_query_string", request.getQueryString());
 
-        boolean alwaysGoToSummary = false;
-        if (CConstants.YES.equalsIgnoreCase((String) getServlet().getServletContext().getAttribute(
-                CConstants.WDK_ALWAYSGOTOSUMMARY_KEY))
-                || CConstants.YES.equalsIgnoreCase(request.getParameter(CConstants.ALWAYS_GOTO_SUMMARY_PARAM))) {
-            alwaysGoToSummary = true;
-        }
-        if (CConstants.NO.equalsIgnoreCase(request.getParameter(CConstants.ALWAYS_GOTO_SUMMARY_PARAM))) {
-            alwaysGoToSummary = false;
-        }
+        // TODO - the alwaysGoToSummary is deprecated by
+        // "noSummaryOnSingleRecord" attribute of question bean
+        //
+        // boolean alwaysGoToSummary = false;
+        // if (CConstants.YES.equalsIgnoreCase((String)
+        // getServlet().getServletContext().getAttribute(
+        // CConstants.WDK_ALWAYSGOTOSUMMARY_KEY))
+        // ||
+        // CConstants.YES.equalsIgnoreCase(request.getParameter(CConstants.ALWAYS_GOTO_SUMMARY_PARAM)))
+        // {
+        // alwaysGoToSummary = true;
+        // }
+        // if
+        // (CConstants.NO.equalsIgnoreCase(request.getParameter(CConstants.ALWAYS_GOTO_SUMMARY_PARAM)))
+        // {
+        // alwaysGoToSummary = false;
+        // }
 
         // make ActionForward
-        ActionForward forward = getForward(wdkAnswer, mapping, historyId,
-                alwaysGoToSummary);
+        ActionForward forward = getForward(wdkAnswer, mapping, historyId);
         return forward;
     }
 
     private ActionForward getForward(AnswerBean wdkAnswer,
-            ActionMapping mapping, int historyId, boolean alwaysGoToSummary)
-            throws WdkModelException {
+            ActionMapping mapping, int historyId) throws WdkModelException {
         ServletContext svltCtx = getServlet().getServletContext();
         String customViewDir = (String) svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
         String customViewFile1 = customViewDir + File.separator
@@ -189,7 +195,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
         ActionForward forward = null;
 
         if (wdkAnswer.getResultSize() == 1 && !wdkAnswer.getIsDynamic()
-                && !alwaysGoToSummary) {
+                && wdkAnswer.getQuestion().isNoSummaryOnSingleRecord()) {
             RecordBean rec = (RecordBean) wdkAnswer.getRecords().next();
             forward = mapping.findForward(CConstants.SKIPTO_RECORD_MAPKEY);
             String path = forward.getPath() + "?name="
@@ -224,7 +230,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 String[] pVals = (String[]) paramVal;
                 StringBuffer sb = new StringBuffer();
                 for (String pVal : pVals) {
-                    if (sb.length() > 0) sb.append(",");
+                    if (sb.length() > 0)
+                        sb.append(",");
                     sb.append(pVal);
                 }
                 paramValStr = sb.toString();
@@ -377,7 +384,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
                             StringBuffer sb = new StringBuffer();
                             String[] array = (String[]) objValue;
                             for (String v : array) {
-                                if (sb.length() > 0) sb.append(", ");
+                                if (sb.length() > 0)
+                                    sb.append(", ");
                                 sb.append(v);
                             }
                             pValue = sb.toString();
@@ -389,7 +397,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
                         params.put(pName, pValue);
 
                         String displayName = wdkModel.getParamDisplayName(pName);
-                        if (displayName == null) displayName = pName;
+                        if (displayName == null)
+                            displayName = pName;
                         paramNames.put(pName, displayName);
                     }
                 } catch (UnsupportedEncodingException ex) {
@@ -398,7 +407,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
             }
         }
         String qDisplayName = wdkModel.getQuestionDisplayName(qFullName);
-        if (qDisplayName == null) qDisplayName = qFullName;
+        if (qDisplayName == null)
+            qDisplayName = qFullName;
 
         request.setAttribute("questionDisplayName", qDisplayName);
         request.setAttribute("customName", customName);
