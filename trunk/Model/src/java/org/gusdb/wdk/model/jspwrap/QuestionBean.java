@@ -298,4 +298,13 @@ public class QuestionBean implements Serializable {
     public Map<String, String[]> getPropertyLists() {
         return question.getPropertyLists();
     }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.Question#isNoSummaryOnSingleRecord()
+     */
+    public boolean isNoSummaryOnSingleRecord() {
+        return question.isNoSummaryOnSingleRecord();
+    }
+    
 }

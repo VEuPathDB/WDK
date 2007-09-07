@@ -549,6 +549,11 @@
               <data type="boolean" />
           </attribute>
       </optional>
+      <optional>
+          <attribute name="noSummaryOnSingleRecord">
+              <data type="boolean" />
+          </attribute>
+      </optional>
                  
       <zeroOrMore>
         <choice>
