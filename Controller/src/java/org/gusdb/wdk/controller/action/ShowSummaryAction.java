@@ -153,7 +153,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
         String requestUrl = request.getRequestURI() + "?"
                 + request.getQueryString();
 
-        request.setAttribute(CConstants.WDK_QUESTION_PARAMS_KEY, params);
+        request.setAttribute(CConstants.WDK_QUESTION_PARAMS_KEY, wdkAnswer.getInternalParams());
         request.setAttribute(CConstants.WDK_ANSWER_KEY, wdkAnswer);
         request.setAttribute(CConstants.WDK_HISTORY_KEY, history);
         request.setAttribute("wdk_summary_url", requestUrl);

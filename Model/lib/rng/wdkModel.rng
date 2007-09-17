@@ -265,7 +265,9 @@
   
     <define name="SuggestContent">
         <optional>
-            <attribute name="allowEmpty" />
+            <attribute name="allowEmpty">
+              <data type="boolean" />
+            </attribute>
         </optional>
         <optional>
             <attribute name="emptyValue" />
@@ -340,7 +342,12 @@
            <attribute name="groupRef" />
         </optional>
         <optional>
-           <attribute name="allowEmpty" />
+           <attribute name="allowEmpty">
+              <data type="boolean" />
+           </attribute>
+        </optional>
+        <optional>
+           <attribute name="emptyValue" />
         </optional>
         <optional>
            <attribute name="useTermOnly" />
