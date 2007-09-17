@@ -16,7 +16,7 @@ import org.apache.log4j.Logger;
 public abstract class Query extends WdkModelBase implements Serializable {
 
     public static final String PROJECT_ID_COLUMN = "project_id";
-    
+
     private static Logger logger = Logger.getLogger(Query.class);
 
     protected String name;
@@ -25,10 +25,8 @@ public abstract class Query extends WdkModelBase implements Serializable {
     protected String description;
     protected String help;
     protected Boolean isCacheable = new Boolean(true);
-    protected List<ParamReference> paramRefList =
-            new ArrayList<ParamReference>();
-    protected Map<String, ParamReference> paramRefs =
-            new LinkedHashMap<String, ParamReference>();
+    protected List<ParamReference> paramRefList = new ArrayList<ParamReference>();
+    protected Map<String, ParamReference> paramRefs = new LinkedHashMap<String, ParamReference>();
 
     protected Map<String, Param> params = new LinkedHashMap<String, Param>();
     private List<Column> columnList = new ArrayList<Column>();
@@ -145,8 +143,7 @@ public abstract class Query extends WdkModelBase implements Serializable {
     public Map<String, String> getInternalParamValues(Map<String, Object> values)
             throws WdkModelException {
 
-        Map<String, String> internalValues =
-                new LinkedHashMap<String, String>();
+        Map<String, String> internalValues = new LinkedHashMap<String, String>();
         Iterator<String> paramNames = values.keySet().iterator();
         while (paramNames.hasNext()) {
             String paramName = paramNames.next();
@@ -218,8 +215,8 @@ public abstract class Query extends WdkModelBase implements Serializable {
 
             try {
                 MessageDigest digest = MessageDigest.getInstance("MD5");
-                byte[] byteBuffer =
-                        digest.digest(content.toString().getBytes());
+                byte[] byteBuffer = digest
+                        .digest(content.toString().getBytes());
                 // convert each byte into hex format
                 StringBuffer buffer = new StringBuffer();
                 for (int i = 0; i < byteBuffer.length; i++) {
@@ -244,12 +241,10 @@ public abstract class Query extends WdkModelBase implements Serializable {
     public String getSanityTestSuggestion() throws WdkModelException {
         String indent = "    ";
         String newline = System.getProperty("line.separator");
-        StringBuffer buf =
-                new StringBuffer(newline + newline + indent
-                        + "<sanityQuery ref=\"" + getFullName() + "\""
-                        + newline + indent + indent + indent
-                        + "minOutputLength=\"FIX_min_len\" "
-                        + "maxOutputLength=\"FIX_max_len\">" + newline);
+        StringBuffer buf = new StringBuffer(newline + newline + indent
+                + "<sanityQuery ref=\"" + getFullName() + "\"" + newline
+                + indent + indent + indent + "minOutputLength=\"FIX_min_len\" "
+                + "maxOutputLength=\"FIX_max_len\">" + newline);
         for (Param param : getParams()) {
             String paramName = param.getName();
             String value = param.getDefault();
@@ -300,7 +295,13 @@ public abstract class Query extends WdkModelBase implements Serializable {
 
             // if the param has customized allowEmpty
             Boolean allowEmpty = paramRef.isAllowEmpty();
-            if (allowEmpty != null) param.setAllowEmpty(allowEmpty);
+            if (allowEmpty != null) {
+                param.setAllowEmpty(allowEmpty);
+
+                // if the param has customized allowEmpty
+                String emptyValue = paramRef.getEmptyValue();
+                if (emptyValue != null) param.setEmptyValue(emptyValue);
+            }
 
             Boolean quote = paramRef.getQuote();
             Boolean multiPick = paramRef.isMultiPick();
@@ -388,8 +389,8 @@ public abstract class Query extends WdkModelBase implements Serializable {
             if (errMsg != null) {
                 if (errors == null)
                     errors = new LinkedHashMap<Param, String[]>();
-                String booBoo[] =
-                        { value == null ? "" : value.toString(), errMsg };
+                String booBoo[] = { value == null ? "" : value.toString(),
+                        errMsg };
                 errors.put(param, booBoo);
             }
         }
@@ -406,7 +407,7 @@ public abstract class Query extends WdkModelBase implements Serializable {
             String paramName = param.getName();
             Object paramValue = values.get(paramName);
             if (paramValue == null || paramValue.toString().length() == 0) {
-                if (param.isAllowEmpty() ){
+                if (param.isAllowEmpty()) {
                     values.put(paramName, param.getEmptyValue());
                 } else if (param.getDefault() != null) {
                     values.put(paramName, param.getDefault());
@@ -417,11 +418,10 @@ public abstract class Query extends WdkModelBase implements Serializable {
 
     protected StringBuffer formatHeader() {
         String newline = System.getProperty("line.separator");
-        StringBuffer buf =
-                new StringBuffer("Query: name='" + getName() + "'" + newline
-                        + "  displayName='" + getDisplayName() + "'" + newline
-                        + "  description='" + getDescription() + "'" + newline
-                        + "  help='" + getHelp() + "'" + newline);
+        StringBuffer buf = new StringBuffer("Query: name='" + getName() + "'"
+                + newline + "  displayName='" + getDisplayName() + "'"
+                + newline + "  description='" + getDescription() + "'"
+                + newline + "  help='" + getHelp() + "'" + newline);
         return buf;
     }
 
@@ -431,7 +431,7 @@ public abstract class Query extends WdkModelBase implements Serializable {
      * any columns associated with dynamic attributes either.
      * 
      * @param allowedColumns
-     *                The column names that are allowed in the base query
+     *          The column names that are allowed in the base query
      * @return returns a cloned base query.
      */
     public abstract Query getBaseQuery(Set<String> excludedColumns)
@@ -442,17 +442,19 @@ public abstract class Query extends WdkModelBase implements Serializable {
      * 
      * @param query
      * @param allowedColumns
-     * @throws WdkModelException 
+     * @throws WdkModelException
      */
-    protected void clone(Query query, Set<String> excludedColumns) throws WdkModelException {
+    protected void clone(Query query, Set<String> excludedColumns)
+            throws WdkModelException {
         // TEST print out excluded columns
         StringBuffer sb = new StringBuffer();
         for (String exCol : excludedColumns) {
-            if (sb.length()> 0) sb.append(", ");
+            if (sb.length() > 0) sb.append(", ");
             sb.append(exCol);
         }
-        logger.debug("Excluded Columns["+excludedColumns.size()+"]: " + sb.toString());
-        
+        logger.debug("Excluded Columns[" + excludedColumns.size() + "]: "
+                + sb.toString());
+
         // copy allowed columns
         for (Column column : this.columns.values()) {
             logger.debug("Source Column: " + column.getName());
@@ -467,10 +469,10 @@ public abstract class Query extends WdkModelBase implements Serializable {
         query.help = this.help;
         query.isCacheable = this.isCacheable;
         query.name = this.name;
-        query.paramRefs =
-                new LinkedHashMap<String, ParamReference>(this.paramRefs);
+        query.paramRefs = new LinkedHashMap<String, ParamReference>(
+                this.paramRefs);
         query.params = new LinkedHashMap<String, Param>(this.params);
-        
+
         query.resultFactory = this.resultFactory;
         query.signature = signature;
         query.projectId = projectId;
