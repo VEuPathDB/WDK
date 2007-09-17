@@ -21,6 +21,7 @@ public class ParamReference extends Reference implements Serializable {
     private Boolean useTermOnly;
     private String queryRef;
     private Boolean quote;
+    private String emptyValue;
     
     public ParamReference( ) {}
     
@@ -122,4 +123,12 @@ public class ParamReference extends Reference implements Serializable {
     public void setQuote( Boolean quote ) {
         this.quote = quote;
     }
+
+	public String getEmptyValue() {
+		return emptyValue;
+	}
+
+	public void setEmptyValue(String emptyValue) {
+		this.emptyValue = emptyValue;
+	}
 }
