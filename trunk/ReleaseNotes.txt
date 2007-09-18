@@ -1,4 +1,51 @@
 ------------------------------------------------------------------------------
+ooooooooooooooooooooooooooo  WDK Version 1.14  ooooooooooooooooooooooooooooooo
+------------------------------------------------------------------------------
+
+Summary: In this release, the architecture of WDK Model has major changes. We
+         now allow multiple projects sharing the same model, and use ProjectId
+         to configure the project specific sections.
+         
+=========================== Model Features ===========================
+
+* Re-organize the layout of the model file, and the model can be distributed 
+  into multiple files with <import> tag;
+  
+* "includeProjects" & "excludeProjects" properties can be applied to all levels of
+  tags in the model file (except <import> tag);
+  
+* new <defaultPropertyList> (in the model level) and <propertyList> (in the 
+  question level) defines the properties consumable by the question. The
+  <propertyList> overrides the <defaultPropertyList> of the same name;
+  
+* new <suggest> tag for the params. It separates the "default", "allowEmpty",
+  "emptyValue" from the param tag. 
+    * "default" property defines the default value for the param.
+    * If "allowEmpty" is true, the value to the param can be omitted from the
+      web UI, and the assigned "emptyValue" will be used (if defined), or the
+      "default" will be used if "emptyValue" is not defined.
+      
+* new <attributeList> tag for params that separates "sumamry" and "sorting"
+  attribute list from <param> tag
+  
+* new "quote" property (true/false) in the param to determine whether a param 
+  should be quoted in the SQL.
+  
+* new <enumParam> that allows author to define enumerations. The "default" is 
+  defined directly into the <enumValue> as "true/false".
+  
+* the "quote", "default", "allowEmpty", "emptyValue" can be override by the values
+  defined in the <paramRef> tag. The <paramRef> can also override the sql
+  reference in the <flatVocabParam>.
+  
+* new <sqlParamValue> provides a macro to construct SQL statements that are
+  specific to each project. The substitution markers are &&macro_name&& in SQL.
+
+* Strong type enforcement are put into many properties of the tags, such as
+  boolean, enumeration values.
+  
+
+------------------------------------------------------------------------------
 ooooooooooooooooooooooooooo  WDK Version 1.13  ooooooooooooooooooooooooooooooo
 ------------------------------------------------------------------------------
 
