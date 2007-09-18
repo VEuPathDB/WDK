@@ -31,7 +31,7 @@ public class WdkModelBean  {
     public Map getProperties() {
         return model.getProperties();
     }
-
+    
     public String getName() {
         return model.getName();
     }
@@ -233,5 +233,9 @@ public class WdkModelBean  {
      */
     public String getQuestionDisplayName( String questionFullName ) {
         return model.getQuestionDisplayName( questionFullName );
+    }
+
+    public String getProjectId() {
+        return model.getProjectId();
     }
 }
