@@ -86,6 +86,7 @@ CREATE TABLE userlogins.users
   zip_code varchar(20),
   phone_number varchar(50),
   country varchar(255),
+  PREV_USER_ID number(12),
   CONSTRAINT "USER_PK" PRIMARY KEY (user_id),
   CONSTRAINT "USER_EMAIL_UNIQUE" UNIQUE (email)
 );
@@ -152,6 +153,7 @@ CREATE TABLE userlogins.dataset_indices
   dataset_checksum VARCHAR(40) NOT NULL,
   summary varchar(200) NOT NULL,
   dataset_size number(12) NOT NULL,
+  PREV_DATASET_ID number(12),
   CONSTRAINT "DATASET_INDICES_PK" PRIMARY KEY (dataset_id),
   CONSTRAINT "DATASET_CHECKSUM_UNIQUE" UNIQUE (dataset_checksum)
 );
