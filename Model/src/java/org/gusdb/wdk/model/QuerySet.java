@@ -63,6 +63,7 @@ public class QuerySet extends WdkModelBase implements ModelSetI {
             buf.append(":::::::::::::::::::::::::::::::::::::::::::::");
             buf.append(newline);
             buf.append(query);
+            buf.append("----------------");
             buf.append(newline);
         }
         return buf.toString();
