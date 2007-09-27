@@ -41,7 +41,22 @@ public class WSQueryInstance extends QueryInstance {
     }
 
     public String getLowLevelQuery() throws WdkModelException {
-        return null;
+        StringBuffer sb = new StringBuffer();
+        sb.append("Web Service: " + getServiceUrl() + "\n");
+        // print out the param internal values
+        sb.append("Params {");
+        Map<String, String> paramMap = query.getInternalParamValues(values);
+        for (String param : paramMap.keySet()) {
+            sb.append(param + "=" + paramMap.get(param) + "; ");
+        }
+        sb.append("}\n");
+        //print out the columns
+        sb.append("Columns {");
+        for (Column column : query.getColumns()) {
+            sb.append(column.getName() +", ");
+        }
+        sb.append("}\n");
+        return sb.toString();
     }
 
     protected ResultList getNonpersistentResult() throws WdkModelException {

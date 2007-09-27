@@ -527,7 +527,8 @@ public class Answer {
             if (recordInstance == null) {
                 throw new WdkModelException(
                         "Can't find record instance for primary key '"
-                                + attrPrimaryKey + "'");
+                                + attrPrimaryKey + "' from attribute query " 
+                                + attributesQueryInstance.getQuery().getFullName());
             }
 
             setColumnValues(recordInstance, attributesQueryInstance, isDynamic,
