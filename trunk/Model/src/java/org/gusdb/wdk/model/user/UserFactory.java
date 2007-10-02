@@ -424,8 +424,7 @@ public class UserFactory {
      * @throws WdkUserException
      * @throws WdkModelException
      */
-    public User loadUser(String email) throws WdkUserException,
-            WdkModelException {
+    public User loadUser(String email) throws WdkUserException {
         email = email.trim();
 
         ResultSet rsUser = null;
@@ -482,7 +481,7 @@ public class UserFactory {
         }
     }
 
-    public User loadUser(int userId) throws WdkUserException, WdkModelException {
+    public User loadUser(int userId) throws WdkUserException {
         ResultSet rsUser = null;
         try {
             // get user information

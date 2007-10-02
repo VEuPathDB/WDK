@@ -25,6 +25,7 @@
 <c:if test="${exp != null}">
   <c:set var="site" value="${initParam.wdkDevelopmentSite}" />
   <c:if test="${site eq 'Yes' || site eq 'yes' || site eq 'YES'}">
+     <b>${exp}</b><br>
      Stacktrace: <br>
      <c:forEach items="${exp.stackTrace}" var="st">
         ${st} <br>
