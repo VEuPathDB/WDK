@@ -15,6 +15,10 @@
 <!-- display page header -->
 <site:header banner="Select a format for the download data" />
 
+<table border="0" width="100%" cellpadding="1" cellspacing="0" bgcolor="white" class="thinTopBorders">
+<tr><td bgcolor="white" valign="top">
+
+
 <!-- display description for page -->
 <p><b>Please select a format from the dropdown list to create the download report.</b></p>
 
@@ -25,5 +29,10 @@
 <c:if test='${wdkAnswer.resultSize == 0}'>
     No results for your query
 </c:if>
+
+
+<%-- CLOSE TABLE that sets the red line on top --%>
+</td></tr></table>
+
 
 <site:footer/>
