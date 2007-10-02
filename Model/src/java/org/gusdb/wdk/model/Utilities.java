@@ -39,6 +39,8 @@ public class Utilities {
      */
     public static final String SYSTEM_PROPERTY_GUS_HOME = "GUS_HOME";
 
+    public static final String SYSTEM_PROPERTY_PROJECT_ID = "projectId";
+    
     public static String encrypt(String data) throws WdkModelException {
         // cannot encrypt null value
         if (data == null || data.length() == 0)

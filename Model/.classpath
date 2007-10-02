@@ -28,6 +28,10 @@
 	<classpathentry kind="lib" path="/WSF - Service/lib/java/xalan-2.7.0.jar"/>
 	<classpathentry kind="lib" path="/WSF - Service/lib/java/xercesImpl-2.9.0.jar"/>
 	<classpathentry kind="lib" path="/WSF - Service/lib/java/xml-apis-2.9.0.jar"/>
-	<classpathentry kind="lib" path="lib/java/db_driver/ojdbc14.jar"/>
+	<classpathentry kind="lib" path="lib/java/db_driver/ojdbc14.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/usr/local/oracle/lib"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="classes"/>
 </classpath>

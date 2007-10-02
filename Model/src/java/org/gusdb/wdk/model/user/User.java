@@ -66,7 +66,7 @@ public class User {
     int historyCount;
     
     User( WdkModel model, int userId, String email, String signature )
-            throws WdkUserException, WdkModelException {
+            throws WdkUserException {
         this.userId = userId;
         this.email = email;
         this.signature = signature;
