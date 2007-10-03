@@ -46,7 +46,8 @@ public class XmlRecordInstance {
     /**
      * this method is called by the XmlAnswer in setting resource stage
      * 
-     * @param recordClass The recordClass to set.
+     * @param recordClass
+     *          The recordClass to set.
      */
     public void setRecordClass(XmlRecordClass recordClass) {
         this.recordClass = recordClass;
@@ -60,7 +61,8 @@ public class XmlRecordInstance {
     }
 
     /**
-     * @param recordID The recordID to set.
+     * @param recordID
+     *          The recordID to set.
      */
     public void setId(String recordID) {
         this.recordID = recordID;
@@ -136,7 +138,8 @@ public class XmlRecordInstance {
         for (XmlAttributeValue attribute : attributes.values()) {
             if (!attribute.isSummary()) nonSummaries.add(attribute);
         }
-        XmlAttributeValue[] attrArray = new XmlAttributeValue[nonSummaries.size()];
+        XmlAttributeValue[] attrArray = new XmlAttributeValue[nonSummaries
+                .size()];
         nonSummaries.toArray(attrArray);
         return attrArray;
     }
@@ -148,10 +151,10 @@ public class XmlRecordInstance {
         for (XmlAttributeField attributeField : attributeFields) {
             String name = attributeField.getName();
             XmlAttributeValue attributeValue = attributes.get(name);
-            if (attributeValue == null) 
-            	throw new WdkModelException("The defined XML Attribute "
-					    + name + " is missing in the xml source for xml record "
-					    + recordClass.getName() + " .");
+            if (attributeValue == null)
+                throw new WdkModelException("The defined XML Attribute " + name
+                        + " is missing in the xml source for xml record "
+                        + recordClass.getName() + " .");
             attributeValue.setAttributeField(attributeField);
             orderedAttributes.put(name, attributeValue);
         }
@@ -164,7 +167,8 @@ public class XmlRecordInstance {
         for (XmlTableField tableField : tableFields) {
             String tableName = tableField.getName();
             XmlTableValue tableValue = tables.get(tableName);
-            // check if the table exist, if not, create a empty table with no rows
+            // check if the table exist, if not, create a empty table with no
+            // rows
             if (tableValue == null) {
                 tableValue = new XmlTableValue();
                 tableValue.setName(tableName);
@@ -180,6 +184,10 @@ public class XmlRecordInstance {
                 for (XmlAttributeField columnField : columnFields) {
                     String columnName = columnField.getName();
                     XmlAttributeValue columnValue = row.columns.get(columnName);
+                    if (columnValue == null)
+                        throw new WdkModelException("The column '" + columnName
+                                + "' is missing in Xml record "
+                                + recordClass.getFullName());
                     columnValue.setAttributeField(columnField);
                     orderedRow.put(columnName, columnValue);
                 }
