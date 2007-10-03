@@ -108,7 +108,7 @@ public class ModelXmlParser extends XmlParser {
         // construct urls to model file, prop file, and config file
         URL modelURL = makeURL(gusHome, "lib/wdk/" + modelName + ".xml");
         URL modelPropURL = makeURL(gusHome, "config/" + projectId
-                + "Model.prop");
+                + "/model.prop");
 
         // validate the master model file
         if (!validate(modelURL))
