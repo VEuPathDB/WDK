@@ -204,7 +204,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             if (rec.getPrimaryKey().getProjectId() != null) {
                 path += "&project_id=" + rec.getPrimaryKey().getProjectId();
             }
-            return new ActionForward(path);
+            return new ActionForward(path,true);
         }
 
         if (ApplicationInitListener.resourceExists(customViewFile1, svltCtx)) {
