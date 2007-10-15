@@ -15,15 +15,32 @@ import java.net.URLEncoder;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.InvalidPropertiesFormatException;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Random;
+import java.util.Set;
 
 import javax.sql.DataSource;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.*;
-import org.gusdb.wdk.model.implementation.ModelXmlParser;
+import org.gusdb.wdk.model.DatasetParam;
+import org.gusdb.wdk.model.FlatVocabParam;
+import org.gusdb.wdk.model.HistoryParam;
+import org.gusdb.wdk.model.Param;
+import org.gusdb.wdk.model.Question;
+import org.gusdb.wdk.model.QuestionSet;
+import org.gusdb.wdk.model.RDBMSPlatformI;
+import org.gusdb.wdk.model.Utilities;
+import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.implementation.SqlUtils;
 import org.gusdb.wdk.model.test.CommandHelper;
 import org.gusdb.wdk.model.test.stress.StressTestRunner.RunnerState;
@@ -179,7 +196,7 @@ public class StressTester {
 
         // load stress test configuration file
         File stressConfigFile = new File(gusHome, "/config/" + modelName
-                + "-stress-config.xml");
+                + "/stress-config.xml");
         InputStream in = new FileInputStream(stressConfigFile);
         Properties properties = new Properties();
         properties.loadFromXML(in);
@@ -278,7 +295,7 @@ public class StressTester {
     private void composeFromTemplate() throws WdkModelException {
         logger.info("Loading test cases from template files");
         File templateFile = new File(gusHome, "/config/" + modelName
-                + "-stress.template");
+                + "/stress.template");
 
         try {
             BufferedReader reader = new BufferedReader(new FileReader(
@@ -429,7 +446,7 @@ public class StressTester {
         // check if the exit condition is met; that is, if a "model-stress.stop"
         // file is present
         File stopFile = new File(gusHome, "/config/" + modelName
-                + "-stress.stop");
+                + "/stress.stop");
         return (stopFile.exists());
     }
 
@@ -505,11 +522,7 @@ public class StressTester {
     private static Options declareOptions() {
         String[] names = { "model", "threads" };
         String[] descs = {
-                "the name of the model.  This is used to find the Model XML "
-                        + "file ($GUS_HOME/config/model_name.xml) the Model "
-                        + "property file ($GUS_HOME/config/model_name.prop) "
-                        + "and the Model config file "
-                        + "($GUS_HOME/config/model_name-config.xml)",
+                "The project id. For example, ToyDB, PlasmoDB",
                 "The number of threads used to run the tasks." };
         boolean[] required = { true, true };
         int[] args = { 0, 0 };

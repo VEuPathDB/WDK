@@ -343,7 +343,7 @@ public class StressTemplater {
 
             // open the input/output file
             File outFile = new File(gusHome, "/config/" + modelName
-                    + "-stress.template");
+                    + "/stress.template");
             tester.makeTemplate(outFile);
 
             System.out.println("The template file for " + modelName
