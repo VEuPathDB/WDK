@@ -68,7 +68,7 @@ public class SanityTestXmlParser extends XmlParser {
         URL sanityModelURL = makeURL(gusHome, "lib/wdk/" + modelName
                 + "-sanity.xml");
         URL modelPropURL = makeURL(gusHome, "config/" + projectId
-                + "Model.prop");
+                + "/model.prop");
 
         // validate the master model file
         if (!validate(sanityModelURL))

@@ -1,6 +1,7 @@
 package org.gusdb.wdk.controller.action;
 
 import java.io.File;
+import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
@@ -152,6 +153,13 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
         String requestUrl = request.getRequestURI() + "?"
                 + request.getQueryString();
+        
+        // return only the result size, if requested
+        if (request.getParameterMap().containsKey(CConstants.WDK_RESULT_SIZE_ONLY_KEY)) {
+            PrintWriter writer = response.getWriter();
+            writer.print(wdkAnswer.getResultSize());
+            return null;
+        }
 
         request.setAttribute(CConstants.WDK_QUESTION_PARAMS_KEY, wdkAnswer.getInternalParams());
         request.setAttribute(CConstants.WDK_ANSWER_KEY, wdkAnswer);
