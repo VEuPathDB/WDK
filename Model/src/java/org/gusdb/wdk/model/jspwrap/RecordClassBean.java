@@ -18,6 +18,9 @@ public class RecordClassBean {
     
     RecordClass recordClass;
     
+    private String projectId;
+    private String recordId;
+    
     public RecordClassBean( RecordClass recordClass ) {
         this.recordClass = recordClass;
     }
@@ -95,5 +98,21 @@ public class RecordClassBean {
                 reporters.put( name, ref.getDisplayName() );
         }
         return reporters;
+    }
+    
+    public void setProjectId(String projectId) {
+        this.projectId = projectId;
+    }
+    
+    public void setRecordId(String recordId) {
+        this.recordId = recordId;
+    }
+    
+    public RecordBean getRecord() {
+        RecordBean record = (projectId == null) ?
+            makeRecord(recordId) :
+            makeRecord(projectId, recordId);
+        projectId = recordId = null;
+        return record;
     }
 }
