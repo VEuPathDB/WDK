@@ -25,7 +25,7 @@ import org.gusdb.wsf.client.WsfService;
 import org.gusdb.wsf.client.WsfServiceServiceLocator;
 
 public class WSQueryInstance extends QueryInstance {
-    
+
     /**
      * The threshold for the width of the columns that are stored as CLOBs; If
      * the column width is defined < 4000, a varchar(width) will be used,
@@ -50,10 +50,10 @@ public class WSQueryInstance extends QueryInstance {
             sb.append(param + "=" + paramMap.get(param) + "; ");
         }
         sb.append("}\n");
-        //print out the columns
+        // print out the columns
         sb.append("Columns {");
         for (Column column : query.getColumns()) {
-            sb.append(column.getName() +", ");
+            sb.append(column.getName() + ", ");
         }
         sb.append("}\n");
         return sb.toString();
@@ -63,10 +63,6 @@ public class WSQueryInstance extends QueryInstance {
         WSQuery wsQuery = (WSQuery) query;
 
         try {
-            // get a WSF Service client stub
-            WsfServiceServiceLocator locator = new WsfServiceServiceLocator();
-            WsfService client = locator.getWsfService(getServiceUrl());
-
             // prepare parameters and columns
             Map<String, String> paramMap = query.getInternalParamValues(values);
             String[] params = new String[paramMap.size()];
@@ -84,28 +80,17 @@ public class WSQueryInstance extends QueryInstance {
                 if (columns[i].getWsName() != null)
                     columnNames[i] = columns[i].getWsName();
             }
-            
+
             String invokeKey = query.getFullName();
 
-            // TEST
-            logger.info("Invoking " + wsQuery.getProcessName() + " at "
-                    + getServiceUrl());
-            long start = System.currentTimeMillis();
-            
-            // get the response from the web service
-            WsfResponse response = client.invoke(wsQuery.getProcessName(), invokeKey,
-                    params, columnNames);
-            this.resultMessage = response.getMessage();
-            
-            long end = System.currentTimeMillis();
-            logger.debug("Invoking on client takes " + ((end - start)/1000.0) + " seconds.");
+            StringBuffer resultMessage = new StringBuffer();
+            String[][] result = getResult(wsQuery.getProcessName(), invokeKey,
+                    params, columnNames, wsQuery.isLocal(), resultMessage);
+            this.resultMessage = resultMessage.toString();
 
             // TEST
             logger.debug("WSQI Result Message:" + resultMessage);
-
-            String[][] result = response.getResults();
-	    
-	    logger.info("Result Array size = " + result.length);
+            logger.info("Result Array size = " + result.length);
 
             return new WSResultList(this, result);
 
@@ -116,11 +101,47 @@ public class WSQueryInstance extends QueryInstance {
         }
     }
 
+    private String[][] getResult(String processName, String invokeKey,
+            String[] params, String[] columnNames, boolean local,
+            StringBuffer resultMessage) throws ServiceException,
+            WdkModelException, RemoteException {
+        // TEST
+        logger.info("Invoking " + processName + " at " + getServiceUrl());
+        long start = System.currentTimeMillis();
+
+        String[][] results;
+        if (local) { // invoke the process query locally
+            org.gusdb.wsf.service.WsfService service = new org.gusdb.wsf.service.WsfService();
+            
+            // get the response from the local service
+            org.gusdb.wsf.service.WsfResponse response = service.invoke(
+                    processName, invokeKey, params, columnNames);
+            results = response.getResults();
+            resultMessage.append(response.getMessage());
+        } else { // invoke the process query via web service
+            // get a WSF Service client stub
+            WsfServiceServiceLocator locator = new WsfServiceServiceLocator();
+            WsfService client = locator.getWsfService(getServiceUrl());
+
+            // get the response from the web service
+            WsfResponse response = client.invoke(processName, invokeKey,
+                    params, columnNames);
+            results = response.getResults();
+            resultMessage.append(response.getMessage());
+        }
+
+        long end = System.currentTimeMillis();
+        logger.debug("Invoking on client takes " + ((end - start) / 1000.0)
+                + " seconds.");
+
+        return results;
+    }
+
     protected void writeResultToTable(String resultTableName, ResultFactory rf)
             throws WdkModelException {
 
         long start = System.currentTimeMillis();
-        
+
         // invoke web service to get the result
         ResultList resultList = getNonpersistentResult();
 
@@ -141,11 +162,11 @@ public class WSQueryInstance extends QueryInstance {
         StringBuffer insertSqlV = new StringBuffer(" values (");
 
         boolean hasProjectId = false;
-        
+
         for (Column column : columns) {
             String colName = column.getName();
             int cw = column.getWidth();
-            
+
             // check if it is a project_id column
             if (colName.equals(Query.PROJECT_ID_COLUMN)) hasProjectId = true;
 
@@ -167,18 +188,18 @@ public class WSQueryInstance extends QueryInstance {
             insertSqlB.append(Query.PROJECT_ID_COLUMN + ", ");
             insertSqlV.append("'" + query.getProjectId() + "', ");
         }
-        
+
         createSqlB.append(ResultFactory.RESULT_TABLE_I + " "
                 + platform.getNumberDataType() + " (12), ");
         createSqlB.append(ResultFactory.COLUMN_SORTING_INDEX + " "
                 + platform.getNumberDataType() + " (12))");
-        
+
         // set sorting index id as 0 by default
         insertSqlB.append(ResultFactory.RESULT_TABLE_I + ", ");
         insertSqlB.append(ResultFactory.COLUMN_SORTING_INDEX + ") ");
         insertSqlB.append(insertSqlV);
         insertSqlB.append("?, 0)");
-        
+
         PreparedStatement pstmt = null;
         try {
             // create cache table
@@ -192,27 +213,28 @@ public class WSQueryInstance extends QueryInstance {
                 for (int index = 0; index < columns.length; index++) {
                     String colName = columns[index].getName();
                     String val = (String) resultList.getValueFromResult(colName);
-                    
+
                     // check if we need to fill the project id
-                    if (colName.equals(Query.PROJECT_ID_COLUMN) && (val == null || val.trim().length() == 0))
+                    if (colName.equals(Query.PROJECT_ID_COLUMN)
+                            && (val == null || val.trim().length() == 0))
                         val = query.getProjectId();
 
                     // check if it's clob field or not
                     if (clobCols.contains(colName)) {
                         platform.updateClobData(pstmt, index + 1, val, false);
                     } else {
-			int colWidth = columns[index].getWidth();
-			if (val != null && val.length() > colWidth) {
-			    val = val.substring(0, colWidth-5) + "[...]";
-			}
-                       pstmt.setString(index + 1, val);
+                        int colWidth = columns[index].getWidth();
+                        if (val != null && val.length() > colWidth) {
+                            val = val.substring(0, colWidth - 5) + "[...]";
+                        }
+                        pstmt.setString(index + 1, val);
                     }
                 }
                 pstmt.setInt(columns.length + 1, ++idx);
                 pstmt.addBatch();
-		if(idx % 1000 == 0) pstmt.executeBatch();
+                if (idx % 1000 == 0) pstmt.executeBatch();
             }
-	    logger.info("idx = "+idx);
+            logger.info("idx = " + idx);
             // do a batch update
             pstmt.executeBatch();
         } catch (SQLException e) {

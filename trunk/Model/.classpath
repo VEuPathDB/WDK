@@ -33,5 +33,7 @@
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/usr/local/oracle/lib"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry combineaccessrules="false" kind="src" path="/WSF - Plugin"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/WSF - Service"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>
