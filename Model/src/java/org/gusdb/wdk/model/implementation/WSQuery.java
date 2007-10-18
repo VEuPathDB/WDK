@@ -18,6 +18,14 @@ public class WSQuery extends Query implements Serializable {
     private String processName;
     private String webServiceUrl;
 
+    /**
+     * If the process query is from local. If it is local, WDK will invoke the
+     * process query directly (WDK and the process implementation (the
+     * WSFPlugin) must be deployed into the same webapp; otherwise, WDK will
+     * invoke the process query via web service. Default is not local.
+     */
+    private boolean local = false;
+
     public WSQuery() {
         super();
     }
@@ -66,7 +74,8 @@ public class WSQuery extends Query implements Serializable {
      * @see org.gusdb.wdk.model.Query#getBaseQuery(java.util.Set)
      */
     @Override
-    public Query getBaseQuery(Set<String> excludedColumns) throws WdkModelException {
+    public Query getBaseQuery(Set<String> excludedColumns)
+            throws WdkModelException {
         WSQuery query = new WSQuery();
         // clone the base part
         clone(query, excludedColumns);
@@ -86,14 +95,29 @@ public class WSQuery extends Query implements Serializable {
         return processName;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.Query#addParamRef(org.gusdb.wdk.model.ParamReference)
      */
     @Override
-    public void addParamRef( ParamReference paramRef ) {
+    public void addParamRef(ParamReference paramRef) {
         // force the default value of quote to be false in WsQuery
-        paramRef.setQuote( false );
-        super.addParamRef( paramRef );
+        paramRef.setQuote(false);
+        super.addParamRef(paramRef);
     }
-    
+
+    /**
+     * @return the local
+     */
+    public boolean isLocal() {
+        return local;
+    }
+
+    /**
+     * @param local the local to set
+     */
+    public void setLocal(boolean local) {
+        this.local = local;
+    }
 }
