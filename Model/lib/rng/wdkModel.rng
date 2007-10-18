@@ -435,6 +435,11 @@
         <ref name="wsColumns" />
       </oneOrMore>
       <attribute name="processName"/>
+      <optional>
+          <attribute name="local">
+              <data type="boolean" />
+          </attribute>
+      </optional>
     </element>
   </define>
       
