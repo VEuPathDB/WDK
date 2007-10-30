@@ -59,12 +59,12 @@
     <define name="PropertyListContent">
         <attribute name="name"/>
         <ref name="IncludeExclude"/>
-        <oneOrMore>
+        <zeroOrMore>
             <element name="value">
                 <ref name="IncludeExclude"/>
                 <text />
             </element>
-        </oneOrMore>
+        </zeroOrMore>
     </define>  
 
     <!-- define default property list -->
