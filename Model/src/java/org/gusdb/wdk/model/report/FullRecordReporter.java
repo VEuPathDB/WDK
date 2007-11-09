@@ -316,7 +316,7 @@ public class FullRecordReporter extends Reporter {
                     } else if (fVal instanceof LinkValue) {
                         fVal = ((LinkValue) fVal).getVisible();
                     }
-                    sb.append(fVal.toString() + "\t");
+                    sb.append(fVal + "\t");
                 }
                 sb.append(NEW_LINE);
             }
