@@ -21,6 +21,8 @@ public class UserFactoryBean {
 
     private UserFactory userFactory;
 
+    private volatile String signature;
+
     /**
      * 
      */
@@ -129,17 +131,28 @@ public class UserFactoryBean {
      * @throws WdkModelException
      * @see org.gusdb.wdk.model.user.UserFactory#loadUserBySignature(java.lang.String)
      */
-    public UserBean loadUserBySignature( String signature ) throws WdkUserException, WdkModelException {
-        User user = userFactory.loadUserBySignature( signature );
+    public UserBean loadUserBySignature(String signature)
+            throws WdkUserException, WdkModelException {
+        User user = userFactory.loadUserBySignature(signature);
         return new UserBean(user);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.user.UserFactory#loadUser(int)
      */
-    public UserBean loadUser(int userId) throws WdkUserException, WdkModelException {
+    public UserBean loadUser(int userId) throws WdkUserException,
+            WdkModelException {
         User user = userFactory.loadUser(userId);
         return new UserBean(user);
     }
-    
+
+    public void setSignature(String signature) {
+        this.signature = signature;
+    }
+
+    public UserBean getUser() throws WdkUserException, WdkModelException {
+        return (signature == null) ? null : loadUserBySignature(signature);
+    }
 }
