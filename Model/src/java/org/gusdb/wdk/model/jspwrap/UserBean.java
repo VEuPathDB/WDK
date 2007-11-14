@@ -3,11 +3,13 @@
  */
 package org.gusdb.wdk.model.jspwrap;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.History;
@@ -20,14 +22,24 @@ import org.gusdb.wdk.model.user.User;
  * @modified at: May 25, 2006
  * 
  */
-public class UserBean {
+public class UserBean implements Serializable {
+    
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -4296379954371247236L;
+    
+    private static final Logger logger = Logger.getLogger(UserBean.class);
     
     private User user;
+    
+    public UserBean() {}
     
     /**
      * 
      */
     public UserBean( User user ) {
+        logger.info("Creating user: #" + user.getUserId());
         this.user = user;
     }
     
@@ -35,6 +47,17 @@ public class UserBean {
         return user;
     }
     
+    /**
+     * @param wdkModel
+     * @throws WdkUserException
+     * @see org.gusdb.wdk.model.user.User#setWdkModel(org.gusdb.wdk.model.WdkModel)
+     */
+    public void setWdkModel(WdkModelBean wdkModel) throws WdkUserException {
+        logger.info("Setting WdkModel");
+        user.setWdkModel(wdkModel.getModel());
+    }
+    
+
     /*
      * (non-Javadoc)
      * 

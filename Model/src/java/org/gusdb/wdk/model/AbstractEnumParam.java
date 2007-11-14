@@ -14,6 +14,8 @@ public abstract class AbstractEnumParam extends Param {
     private List<ParamConfiguration> useTermOnlies =
             new ArrayList<ParamConfiguration>();
     protected boolean useTermOnly = false;
+    
+    private String displayType;
 
     // ///////////////////////////////////////////////////////////////////
     // /////////// Public properties ////////////////////////////////////
@@ -142,6 +144,20 @@ public abstract class AbstractEnumParam extends Param {
         this.useTermOnly = useTermOnly;
     }
 
+    /**
+     * @return the displayType
+     */
+    public String getDisplayType() {
+        return displayType;
+    }
+
+    /**
+     * @param displayType the displayType to set
+     */
+    public void setDisplayType(String displayType) {
+        this.displayType = displayType;
+    }
+
     // ///////////////////////////////////////////////////////////////////
     // /////////// Protected properties ////////////////////////////////////
     // ///////////////////////////////////////////////////////////////////
@@ -213,6 +229,7 @@ public abstract class AbstractEnumParam extends Param {
         }
         param.quote = quote;
         param.useTermOnly = useTermOnly;
+        param.displayType = displayType;
     }
 
     /*

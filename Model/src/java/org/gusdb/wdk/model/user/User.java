@@ -3,6 +3,7 @@
  */
 package org.gusdb.wdk.model.user;
 
+import java.io.Serializable;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -19,7 +20,12 @@ import org.gusdb.wdk.model.*;
  * @author xingao
  * 
  */
-public class User {
+public class User implements Serializable {
+    
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 6276406938881110742L;
     
     public final static String PREF_ITEMS_PER_PAGE = "preference_global_items_per_page";
     public final static String PREF_REMOTE_KEY = "preference_remote_key";
@@ -31,9 +37,9 @@ public class User {
     
     private Logger logger = Logger.getLogger( User.class );
     
-    private WdkModel model;
-    private UserFactory userFactory;
-    private DatasetFactory datasetFactory;
+    private transient WdkModel model;
+    private transient UserFactory userFactory;
+    private transient DatasetFactory datasetFactory;
     private int userId;
     private String signature;
     
@@ -65,21 +71,34 @@ public class User {
     // cache the history count in memory
     int historyCount;
     
-    User( WdkModel model, int userId, String email, String signature )
-            throws WdkUserException {
-        this.userId = userId;
-        this.email = email;
-        this.signature = signature;
-        this.model = model;
-        this.userFactory = model.getUserFactory();
-        this.datasetFactory = model.getDatasetFactory();
-        
+    public User() {
         userRoles = new LinkedHashSet< String >();
         
         globalPreferences = new LinkedHashMap< String, String >();
         projectPreferences = new LinkedHashMap< String, String >();
         
         historyCount = 0;
+    }
+    
+    User( WdkModel model, int userId, String email, String signature )
+            throws WdkUserException {
+        this();
+        this.userId = userId;
+        this.email = email;
+        this.signature = signature;
+        
+        setWdkModel(model);
+    }
+    
+    /**
+     * The setter is called when the session is restored (deserialized)
+     * @param wdkModel
+     * @throws WdkUserException
+     */
+    public void setWdkModel(WdkModel wdkModel) throws WdkUserException {
+        this.model = wdkModel;
+        this.userFactory = model.getUserFactory();
+        this.datasetFactory = model.getDatasetFactory();
     }
     
     public WdkModel getWdkModel() {
