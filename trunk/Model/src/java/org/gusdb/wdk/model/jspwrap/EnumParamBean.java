@@ -38,4 +38,8 @@ public class EnumParamBean extends ParamBean {
     public Map<String, String> getTermDisplayMap() {
         return ((EnumParam) param).getTermDisplayMap();
     }
+    
+    public String getDisplayType() {
+        return ((EnumParam) param).getDisplayType();
+    }
 }

@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.jspwrap;
 
+import org.gusdb.wdk.model.EnumParam;
 import org.gusdb.wdk.model.FlatVocabParam;
 import org.gusdb.wdk.model.WdkModelException;
 
@@ -25,5 +26,9 @@ public class FlatVocabParamBean extends ParamBean {
 
     public Map<String, String> getVocabMap() throws WdkModelException {
         return ((FlatVocabParam) param).getVocabMap();
+    }
+    
+    public String getDisplayType() {
+        return ((FlatVocabParam) param).getDisplayType();
     }
 }

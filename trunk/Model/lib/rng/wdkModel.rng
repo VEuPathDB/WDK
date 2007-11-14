@@ -228,6 +228,15 @@
                 <data type="boolean" />
             </attribute>
         </optional>
+        <optional>
+            <attribute name="displayType">
+               <choice>
+                  <value>listBox</value>
+                  <value>checkBox</value>
+               </choice>
+           </attribute>
+       </optional>
+
     </define>
 
     <define name="ParamBaseContents">
