@@ -367,6 +367,14 @@
         <optional>
            <attribute name="queryRef" />
         </optional>
+        <optional>
+            <attribute name="displayType">
+               <choice>
+                  <value>listBox</value>
+                  <value>checkBox</value>
+               </choice>
+           </attribute>
+       </optional>
       </element>
     </zeroOrMore>
   </define>

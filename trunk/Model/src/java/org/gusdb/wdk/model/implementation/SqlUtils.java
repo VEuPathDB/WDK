@@ -43,7 +43,7 @@ public class SqlUtils {
      * set this variable to true will start a separate thread to monitor the
      * connection usage
      */
-    private static boolean createShowThread = false;
+    private static boolean createShowThread = true;
 
     // private static final Logger logger =
     // WdkLogManager.getLogger("org.gusdb.wdk.model.implementation.SqlUtils");

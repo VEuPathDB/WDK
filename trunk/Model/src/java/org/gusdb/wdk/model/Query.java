@@ -215,8 +215,7 @@ public abstract class Query extends WdkModelBase implements Serializable {
 
             try {
                 MessageDigest digest = MessageDigest.getInstance("MD5");
-                byte[] byteBuffer = digest
-                        .digest(content.toString().getBytes());
+                byte[] byteBuffer = digest.digest(content.toString().getBytes());
                 // convert each byte into hex format
                 StringBuffer buffer = new StringBuffer();
                 for (int i = 0; i < byteBuffer.length; i++) {
@@ -307,6 +306,7 @@ public abstract class Query extends WdkModelBase implements Serializable {
             Boolean multiPick = paramRef.isMultiPick();
             Boolean useTermOnly = paramRef.getUseTermOnly();
             String queryRef = paramRef.getQueryRef();
+            String displayType = paramRef.getDisplayType();
             if (param instanceof FlatVocabParam || param instanceof EnumParam) {
                 // if the param has customized multi pick
                 if (multiPick != null)
@@ -328,10 +328,16 @@ public abstract class Query extends WdkModelBase implements Serializable {
 
                 // if quote is set, it overrides the value of the param
                 if (quote != null) ((AbstractEnumParam) param).setQuote(quote);
-            } else if (multiPick != null || useTermOnly != null) {
+
+                // if displayType is set, overrides the value in param
+                if (displayType != null)
+                    ((AbstractEnumParam) param).setDisplayType(displayType);
+            } else if (multiPick != null || useTermOnly != null
+                    || displayType != null) {
                 throw new WdkModelException("The paramRef to '" + twoPartName
                         + "' is not a flatVocabParam nor enumParam. The "
-                        + "'queryRef' property can only be applied to "
+                        + "'multiPick', 'useTermOnly', 'displayType' property "
+                        + "can only be applied to "
                         + "paramRefs of flatVocabParams or enumParams.");
             } else if (param instanceof StringParam) {
                 // if quote is set, it overrides the value of the param
