@@ -23,7 +23,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.RDBMSPlatformI;
 import org.gusdb.wdk.model.WdkModel;
 
-import oracle.jdbc.rowset.OracleCachedRowSet;
+//import oracle.jdbc.rowset.OracleCachedRowSet;
 
 /**
  * this class is used to execute the low-level sql query
@@ -89,6 +89,7 @@ public class SqlUtils {
         // decompose it and union according to three results
         // if (sql.contains("FEDERATION")){ //to use federation alternative
         // reverse the commented out line
+	/*   not in active use, and relies on oracle libraries that are not in our standard ojdbc14.jar file
         if (sql.contains("UNION ALL --")) {
 
             // decompose sql according to the position of FEDERATION
@@ -106,6 +107,7 @@ public class SqlUtils {
 
             return result;
         }
+	*/
 
         // the following deals query without "FEDERATION"
 
@@ -546,6 +548,7 @@ public class SqlUtils {
      * @param queries
      * @return
      */
+    /* not in active use and relies on libraries that are not in our standard ojdbc14.jar
     private static ResultSet multiMergeResult(DataSource dataSource,
             String[][] queries) {
         // inner class to indicate if thread is finished or not
@@ -873,18 +876,18 @@ public class SqlUtils {
             after = System.currentTimeMillis();
             System.out.println("the time for merging results is "
                     + (after - before) / 1000 + " seconds");
-            /*
-             * try {
-             * System.out.println("***************************************");
-             * System.out.println("stopping running for 10 secondes");
-             * System.out.println("look at memory usage of OracleCachedRowSet");
-             * Thread.sleep(10000); } catch (InterruptedException e) { // TODO
-             * Auto-generated catch block e.printStackTrace(); }
-             * System.out.println("sleeping is over, next will be the memory of
-             * cachedrowset plus recordinstance");
-             */
+            //
+            // try {
+            // System.out.println("***************************************");
+            // System.out.println("stopping running for 10 secondes");
+            // System.out.println("look at memory usage of OracleCachedRowSet");
+            // Thread.sleep(10000); } catch (InterruptedException e) { // TODO
+            // Auto-generated catch block e.printStackTrace(); }
+            // System.out.println("sleeping is over, next will be the memory of
+            // cachedrowset plus recordinstance");
+            //
         }
         return (ResultSet) results[0];
     }// end method multiMergeResult
-
+    */
 }
