@@ -442,7 +442,7 @@ public class SqlUtils {
                                     + ")");
                         }
                         try {
-                            Thread.sleep(10 * 1000);
+                            Thread.sleep(5 * 60 * 1000);
                         } catch (InterruptedException ex) {
                             // TODO Auto-generated catch block
                             ex.printStackTrace();
