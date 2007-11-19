@@ -20,7 +20,7 @@ import org.gusdb.wdk.model.*;
  * @author xingao
  * 
  */
-public class User implements Serializable {
+public class User /* implements Serializable */ {
     
     /**
      * 
@@ -37,9 +37,9 @@ public class User implements Serializable {
     
     private Logger logger = Logger.getLogger( User.class );
     
-    private transient WdkModel model;
-    private transient UserFactory userFactory;
-    private transient DatasetFactory datasetFactory;
+    private /* transient */ WdkModel model;
+    private /* transient */ UserFactory userFactory;
+    private /* transient */ DatasetFactory datasetFactory;
     private int userId;
     private String signature;
     
