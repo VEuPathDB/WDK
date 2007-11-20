@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model;
 
-import java.io.Serializable;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -13,7 +12,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-public abstract class Query extends WdkModelBase implements Serializable {
+public abstract class Query extends WdkModelBase {
 
     public static final String PROJECT_ID_COLUMN = "project_id";
 

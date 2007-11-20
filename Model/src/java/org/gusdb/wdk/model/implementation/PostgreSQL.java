@@ -1,24 +1,22 @@
 package org.gusdb.wdk.model.implementation;
 
-import org.gusdb.wdk.model.RDBMSPlatformI;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkLogManager;
-import org.gusdb.wdk.model.ResultFactory;
-
-import java.io.Serializable;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.logging.Logger;
+
+import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.ConnectionFactory;
 import org.apache.commons.dbcp.DriverManagerConnectionFactory;
 import org.apache.commons.dbcp.PoolableConnectionFactory;
 import org.apache.commons.dbcp.PoolingDataSource;
 import org.apache.commons.pool.impl.GenericObjectPool;
-
-import javax.sql.DataSource;
+import org.gusdb.wdk.model.RDBMSPlatformI;
+import org.gusdb.wdk.model.ResultFactory;
+import org.gusdb.wdk.model.WdkLogManager;
+import org.gusdb.wdk.model.WdkModelException;
 
 /**
  * An implementation of RDBMSPlatformI for PostgreSQL
@@ -27,7 +25,7 @@ import javax.sql.DataSource;
  * @version $Revision$ $Date: 2006-09-07 10:55:59 -0400 (Thu, 07 Sep
  *          2006) $ $Author$
  */
-public class PostgreSQL implements RDBMSPlatformI, Serializable {
+public class PostgreSQL implements RDBMSPlatformI {
 
     /**
      * 

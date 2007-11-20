@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.implementation;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -17,7 +16,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
 
-public class SqlQuery extends Query implements Serializable {
+public class SqlQuery extends Query {
 
     /**
      * 

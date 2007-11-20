@@ -1,9 +1,7 @@
 package org.gusdb.wdk.model;
 
-import java.io.Serializable;
 
-public class ColumnAttributeField extends AttributeField
-        implements Serializable {
+public class ColumnAttributeField extends AttributeField {
 
     private static final long serialVersionUID = 6599899173932240144L;
     // private static Logger logger =

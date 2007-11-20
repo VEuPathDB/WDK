@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -11,7 +10,7 @@ import java.util.Set;
 
 import org.gusdb.wdk.model.implementation.SqlQuery;
 
-public class DynamicAttributeSet extends WdkModelBase implements Serializable {
+public class DynamicAttributeSet extends WdkModelBase {
 
     /**
      * 
