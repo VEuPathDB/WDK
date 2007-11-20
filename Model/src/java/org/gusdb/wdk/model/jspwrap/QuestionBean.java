@@ -1,17 +1,28 @@
 package org.gusdb.wdk.model.jspwrap;
 
-import org.gusdb.wdk.model.*;
-
-import java.io.Serializable;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Iterator;
+
+import org.gusdb.wdk.model.AttributeField;
+import org.gusdb.wdk.model.BooleanQuestionNode;
+import org.gusdb.wdk.model.DatasetParam;
+import org.gusdb.wdk.model.EnumParam;
+import org.gusdb.wdk.model.Field;
+import org.gusdb.wdk.model.FlatVocabParam;
+import org.gusdb.wdk.model.Group;
+import org.gusdb.wdk.model.HistoryParam;
+import org.gusdb.wdk.model.Param;
+import org.gusdb.wdk.model.Question;
+import org.gusdb.wdk.model.TableField;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 
 /**
  * A wrapper on a {@link Question} that provides simplified access for
  * consumption by a view
  */
-public class QuestionBean implements Serializable {
+public class QuestionBean {
 
     /**
      * Added by Jerric - to make QuestionBean serializable

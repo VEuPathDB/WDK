@@ -3,13 +3,12 @@
  */
 package org.gusdb.wdk.model;
 
-import java.io.Serializable;
 
 /**
  * @author Jerric
  * @created Feb 16, 2006
  */
-public class ParamReference extends Reference implements Serializable {
+public class ParamReference extends Reference {
 
     /**
      * 

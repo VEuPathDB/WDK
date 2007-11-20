@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.Serializable;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -40,7 +39,7 @@ import org.gusdb.wdk.model.implementation.SqlUtils;
  * "shared for all users."
  */
 
-public class ResultFactory implements Serializable {
+public class ResultFactory {
 
     /**
      * 

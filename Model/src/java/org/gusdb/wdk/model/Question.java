@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -24,7 +23,7 @@ import org.gusdb.wdk.model.user.User;
  *          2007) $ $Author$
  */
 
-public class Question extends WdkModelBase implements Serializable {
+public class Question extends WdkModelBase {
 
     private static final long serialVersionUID = -446811404645317117L;
 
