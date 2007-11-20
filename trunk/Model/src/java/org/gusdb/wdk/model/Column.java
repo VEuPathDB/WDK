@@ -1,8 +1,7 @@
 package org.gusdb.wdk.model;
 
-import java.io.Serializable;
 
-public class Column extends WdkModelBase implements Serializable {
+public class Column extends WdkModelBase {
 
     /**
      * 

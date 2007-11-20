@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.implementation;
 
-import java.io.Serializable;
 import java.util.Set;
 
 import org.gusdb.wdk.model.ParamReference;
@@ -9,7 +8,7 @@ import org.gusdb.wdk.model.QueryInstance;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 
-public class WSQuery extends Query implements Serializable {
+public class WSQuery extends Query {
 
     /**
      * 

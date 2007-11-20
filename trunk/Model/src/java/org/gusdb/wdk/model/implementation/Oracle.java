@@ -1,6 +1,6 @@
 package org.gusdb.wdk.model.implementation;
 
-import java.io.Serializable;
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -9,7 +9,6 @@ import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 
-import java.sql.Clob;
 import oracle.sql.CLOB;
 
 import org.apache.commons.dbcp.ConnectionFactory;
@@ -30,7 +29,7 @@ import org.gusdb.wdk.model.WdkModelException;
  * @version $Revision$ $Date: 2006-04-21 10:19:13 -0400 (Fri, 21 Apr
  *          2006) $ $Author$
  */
-public class Oracle implements RDBMSPlatformI, Serializable {
+public class Oracle implements RDBMSPlatformI {
 
     /**
      * 

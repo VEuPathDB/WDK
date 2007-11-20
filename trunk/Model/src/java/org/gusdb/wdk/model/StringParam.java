@@ -1,8 +1,7 @@
 package org.gusdb.wdk.model;
 
-import java.io.Serializable;
 
-public class StringParam extends Param implements Serializable {
+public class StringParam extends Param {
     
     /**
      * 
