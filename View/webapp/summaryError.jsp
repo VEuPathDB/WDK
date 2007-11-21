@@ -62,7 +62,8 @@
     version, and running it with similar parameter values.</li>
 <li>A system error.
 </ul>
-<p>If you have problems, <a href="<c:url value="help.jsp" />">drop us a line</a>.</p>
+<p>Please for any questions   
+<a href="<c:url value="/help.jsp"/>"  target="_blank" onClick="poptastic(this.href); return false;">drop us a line</a>.</p>
 
 <!-- pager at bottom -->
 
