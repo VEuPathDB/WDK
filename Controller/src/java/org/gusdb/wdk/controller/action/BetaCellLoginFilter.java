@@ -104,6 +104,14 @@ public class BetaCellLoginFilter implements Filter {
 		log.error(ex.getMessage());
 	    }
 	}
+	else{
+	    try{
+		logOutUser(hsRequest, hsResponse);
+	    }catch(Exception ex){
+		log.error(ex.getMessage());
+	    }
+	}
+	
 	fc.doFilter(request, response);
 	log.info("returning from doFilter()");
     }
@@ -115,6 +123,14 @@ public class BetaCellLoginFilter implements Filter {
 	this.config = null;
     }
 
+
+
+    private void logOutUser (HttpServletRequest hsRequest, HttpServletResponse hsResponse) throws Exception{
+	WdkModelBean wdkModel = (WdkModelBean) this.config.getServletContext().getAttribute(CConstants.WDK_MODEL_KEY);	
+	UserFactoryBean factory = wdkModel.getUserFactory();
+	UserBean guest = factory.getGuestUser();
+	hsRequest.getSession().setAttribute(CConstants.WDK_USER_KEY, guest);
+    }
 
     private void creatWDKUser (String genomicsCookie, HttpServletRequest hsRequest, HttpServletResponse hsResponse) throws Exception{
 	String[] cookieValues = decrypt(genomicsCookie).split("\\|");
