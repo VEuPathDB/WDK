@@ -128,8 +128,16 @@ public class BetaCellLoginFilter implements Filter {
     private void logOutUser (HttpServletRequest hsRequest, HttpServletResponse hsResponse) throws Exception{
 	WdkModelBean wdkModel = (WdkModelBean) this.config.getServletContext().getAttribute(CConstants.WDK_MODEL_KEY);	
 	UserFactoryBean factory = wdkModel.getUserFactory();
-	UserBean guest = factory.getGuestUser();
-	hsRequest.getSession().setAttribute(CConstants.WDK_USER_KEY, guest);
+
+	// get the current user
+	UserBean guest = (UserBean) hsRequest.getSession().getAttribute(CConstants.WDK_USER_KEY);
+	// if guest is null, means the session is timed out, create the guest
+	// again
+	if (guest == null || !guest.getGuest()) {
+	    guest = factory.getGuestUser();
+	    hsRequest.getSession().setAttribute(CConstants.WDK_USER_KEY, guest);
+	}
+
     }
 
     private void creatWDKUser (String genomicsCookie, HttpServletRequest hsRequest, HttpServletResponse hsResponse) throws Exception{
