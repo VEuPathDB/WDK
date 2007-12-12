@@ -56,7 +56,7 @@ public class FullRecordReporter extends Reporter {
     private String tableCache;
     private String recordIdColumn;
 
-    private boolean hasEmptyTable = true;
+    private boolean hasEmptyTable = false;
 
     public FullRecordReporter(Answer answer, int startIndex, int endIndex) {
         super(answer, startIndex, endIndex);

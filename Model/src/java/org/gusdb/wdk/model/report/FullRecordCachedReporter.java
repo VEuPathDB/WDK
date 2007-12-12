@@ -40,7 +40,7 @@ public class FullRecordCachedReporter extends Reporter {
     private String tableCache;
     private String recordIdColumn;
 
-    private boolean hasEmptyTable = true;
+    private boolean hasEmptyTable = false;
 
     public FullRecordCachedReporter(Answer answer, int startIndex, int endIndex) {
         super(answer, startIndex, endIndex);
@@ -166,6 +166,8 @@ public class FullRecordCachedReporter extends Reporter {
     private void formatRecord2Text(Set<AttributeField> attributes,
             Set<TableField> tables, PrintWriter writer)
             throws WdkModelException {
+        logger.debug("Include empty table: " + hasEmptyTable);
+        
         // construct in clause
         StringBuffer sqlIn = new StringBuffer();
         // add a dummy table name to make sure the constructed sql is valid, in 
@@ -194,7 +196,6 @@ public class FullRecordCachedReporter extends Reporter {
         sql.append(" AND tc.table_name IN (" + sqlIn.toString() + ")");
         sql.append(" AND ac." + sortingColumn + " = " + sortingIndex);
         if (hasProjectId) sql.append(" AND tc.project_id = ac.project_id");
-        if (!hasEmptyTable) sql.append(" AND tc.row_count > 0 ");
         sql.append(" ORDER BY ac." + indexColumn);
 
         // get the result from database
@@ -222,6 +223,9 @@ public class FullRecordCachedReporter extends Reporter {
                     }
                     writer.println();
                     writer.flush();
+                    
+                    // skip he following section if no table field is selected
+                    if (tables.size() == 0) continue;
 
                     // print out cached table values of the record
                     if (!advanced) {
