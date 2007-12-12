@@ -153,7 +153,8 @@ public class SummaryTester {
         } else properties.load(stream);
         stream.close();
         
-        for (String key : properties.stringPropertyNames()) {
+        for (Object obj : properties.keySet()) {
+            String key = (String)obj;
             config.put(key, properties.getProperty(key));
         }
         return config;
