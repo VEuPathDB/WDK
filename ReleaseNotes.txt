@@ -1,4 +1,36 @@
 ------------------------------------------------------------------------------
+ooooooooooooooooooooooooooo  WDK Version 1.15  ooooooooooooooooooooooooooooooo
+------------------------------------------------------------------------------
+
+Summary: This is a minor release with lots of bug fixes, as well as some new
+         features in the model.
+         
+=========================== Model Features ===========================
+
+* new optional "displaType" for enumParam and flatVocabParam. It enforces the
+  display style of the list: checkBox or listBox
+ 
+* Support local process query. If the "local" property in wsQuery is set to true,
+  the Process query will invoke the WSF Plugin directly, bypassing all web 
+  service steps. It requires that the Plugin is deployed into the same webapp
+  with WDK.
+  
+* "resultSizeOnly" param for showSummary.do will ask the action to return the
+  size of the answer in plain text; all html info is truncated. This param is
+  useful to the clients who need to process the result size programatically.
+  
+* The directory layout for config file has be changed. Now the config and prop
+  file are: $GUS_HOME/<ProjectID>/model-config.xml, 
+  and $GUS_HOME/<ProjectID>/model.prop, respectively.
+  
+============================= Bug Fixes ==============================
+  
+* Fixed a bug that truncates the result in detailed cached report;
+* Corrected the behavior of "include empty table" option;
+* Improved error messages and verbiage.
+
+
+------------------------------------------------------------------------------
 ooooooooooooooooooooooooooo  WDK Version 1.14  ooooooooooooooooooooooooooooooo
 ------------------------------------------------------------------------------
 
