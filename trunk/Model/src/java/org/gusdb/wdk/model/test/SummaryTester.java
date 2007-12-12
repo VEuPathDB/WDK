@@ -1,13 +1,13 @@
 package org.gusdb.wdk.model.test;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.InputStream;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
@@ -109,18 +109,18 @@ public class SummaryTester {
 
                 if (rows.length != 2) System.out.println("page " + pageCount);
 
-
                 // print the size of the answer
-                System.out.println("Total # of records: " + answer.getResultSize());
-                
+                System.out.println("Total # of records: "
+                        + answer.getResultSize());
+
                 // load configuration for output format
                 if (!hasFormat) format = "tabular";
                 Map<String, String> config = loadConfiguration(configFile);
-                
-                Reporter reporter = answer.createReport( format, config, nextStartRow,
-                        nextEndRow );
-                
-                reporter.write( System.out );
+
+                Reporter reporter = answer.createReport(format, config,
+                        nextStartRow, nextEndRow);
+
+                reporter.write(System.out);
                 System.out.println();
 
                 pageCount++;
@@ -146,23 +146,22 @@ public class SummaryTester {
         if (configFileName == null || configFileName.length() == 0)
             return config;
 
-        File configFile = new File(configFileName);
-        BufferedReader in = new BufferedReader(new InputStreamReader(
-                new FileInputStream(configFile)));
-        String line;
-        while ((line = in.readLine()) != null) {
-            if (line.trim().length() == 0) continue;
-            if (line.charAt(0) == '#') continue;
-            int pos = line.indexOf("=");
-            if (pos < 0) config.put(line, null);
-            else config.put(line.substring(0, pos), line.substring(pos + 1));
+        InputStream stream = new FileInputStream(configFileName);
+        Properties properties = new Properties();
+        if (configFileName.toLowerCase().endsWith(".xml")) {
+            properties.loadFromXML(stream);
+        } else properties.load(stream);
+        stream.close();
+        
+        for (String key : properties.stringPropertyNames()) {
+            config.put(key, properties.getProperty(key));
         }
         return config;
     }
 
     private static void writeSummaryAsXml(Question question,
-            Map<String, Object> paramValues, String xmlFile) throws WdkModelException,
-            WdkUserException, IOException {
+            Map<String, Object> paramValues, String xmlFile)
+            throws WdkModelException, WdkUserException, IOException {
         Answer answer = question.makeAnswer(paramValues, 1, 10);
         int resultSize = answer.getResultSize();
         answer = question.makeAnswer(paramValues, 1, resultSize);
@@ -185,7 +184,7 @@ public class SummaryTester {
     private static String getLowLevelQuery(Answer answer)
             throws WdkModelException {
         // QueryInstance instance = answer.getAttributesQueryInstance();
-         QueryInstance instance = answer.getIdsQueryInstance();
+        QueryInstance instance = answer.getIdsQueryInstance();
         String query = instance.getLowLevelQuery();
         String newline = System.getProperty("line.separator");
         String newlineQuery = query.replaceAll("^\\s\\s\\s", newline);
