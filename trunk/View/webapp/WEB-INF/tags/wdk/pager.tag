@@ -7,11 +7,13 @@
               description="the unique identifier for the included pager"
 %>
 
+<c:set var="resultSize" value="${wdkAnswer.resultSize}" />
+
 <script language="JavaScript">
 <!--
 
     function updatePageCount(pager_id) {
-        var resultSize = ${wdkAnswer.resultSize};
+        var resultSize = ${resultSize};
         var psSelect = document.getElementById(pager_id + "_pageSize");
         var index = psSelect.selectedIndex;
         var pageSize = psSelect.options[index].value;
@@ -77,6 +79,14 @@
   </pg:last>
   
       </td>
+      
+      <td>
+        <%-- 'All' link to display all results --%>
+        <pg:page>
+           &nbsp;<a href="${pageUrl}&altPageSize=${resultSize}">All</a> 
+        </pg:page>
+      </td>
+      
       <td nowrap>
         <pg:page>
           To page: 
