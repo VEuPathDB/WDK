@@ -79,14 +79,16 @@
   </pg:last>
   
       </td>
-      
+     
+   <%-- 'All' link to display all results, if the result set is not too big --%>
+   <c:if test="${resultSize < 1000}">
       <td>
-        <%-- 'All' link to display all results --%>
         <pg:page>
            &nbsp;<a href="${pageUrl}&altPageSize=${resultSize}">All</a> 
         </pg:page>
       </td>
-      
+   </c:if>
+   
       <td nowrap>
         <pg:page>
           To page: 
