@@ -444,7 +444,7 @@ public class WdkModel {
 
             String configFile =
                     modelConfig.getGusHome() + "/config/" + projectId
-                            + "Model-config.xml";
+                            + "/model-config.xml";
 
             // initialize authentication factory
             // set the max active as half of the model's configuration
