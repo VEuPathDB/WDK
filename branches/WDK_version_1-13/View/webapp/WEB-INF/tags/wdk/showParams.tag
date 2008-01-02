@@ -23,6 +23,7 @@ display the parameter values for an non-boolean answer.
             <td valign="top" class="medium">&nbsp;:&nbsp;</td>
             <td class="medium">${wdkQuestionName}</td>
        </tr>
+       <c:if test="${qParamsMap ne '{}'}">
        <tr>
             <td align="right" valign="top" class="medium"><b>Parameter</b></td>
             <td valign="top" class="medium">&nbsp;:&nbsp;</td>
@@ -64,5 +65,6 @@ display the parameter values for an non-boolean answer.
                 </table>
             </td>
         </tr>
+        </c:if>
     </table>
 </div>
