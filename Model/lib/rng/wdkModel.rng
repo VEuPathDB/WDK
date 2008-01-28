@@ -328,9 +328,7 @@
 
   <define name="QueryBaseContents">
     <ref name="IncludeExclude" />
-    <optional>
-      <attribute name="name" />
-    </optional>
+    <attribute name="name" />
     <optional>
       <attribute name="displayName" />
     </optional>
