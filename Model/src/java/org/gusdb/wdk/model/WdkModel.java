@@ -470,6 +470,7 @@ public class WdkModel {
                     new ResultFactory(platform, login, enableQueryLogger,
                             queryLoggerFile);
             this.platform = platform;
+	    this.authenPlatform = authenPlatform;  // Added by Cary P. Feb 7, 2008
             this.webServiceUrl = modelConfig.getWebServiceUrl();
             this.resultFactory = resultFactory;
 
@@ -496,6 +497,10 @@ public class WdkModel {
 
     public RDBMSPlatformI getRDBMSPlatform() {
         return platform;
+    }
+    // Function Added by Cary P. Feb 7, 2008
+    public RDBMSPlatformI getAuthRDBMSPlatform() {
+        return authenPlatform;
     }
 
     public UserFactory getUserFactory() throws WdkUserException {
