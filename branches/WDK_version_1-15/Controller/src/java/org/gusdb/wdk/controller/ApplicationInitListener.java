@@ -27,10 +27,12 @@ import org.xml.sax.SAXException;
 public class ApplicationInitListener implements ServletContextListener {
 
     private RDBMSPlatformI platform;
+    private RDBMSPlatformI authPlatform;
 
     public void contextDestroyed(ServletContextEvent sce) {
         try {
             getPlatform().close();
+	    getAuthPlatform().close();
         } catch (WdkModelException exp) {
             throw new RuntimeException(exp);
         }
@@ -70,8 +72,16 @@ public class ApplicationInitListener implements ServletContextListener {
         return platform;
     }
 
+    protected RDBMSPlatformI getAuthPlatform() {
+        return authPlatform;
+    }
+
     protected void setPlatform(RDBMSPlatformI platform) {
         this.platform = platform;
+    }
+
+    protected void setAuthPlatform(RDBMSPlatformI authPlatform) {
+        this.authPlatform = authPlatform;
     }
 
     private void initMemberVars(ServletContext application, String gusHome,
@@ -84,6 +94,9 @@ public class ApplicationInitListener implements ServletContextListener {
             WdkModelBean wdkModel = new WdkModelBean(wdkModelRaw);
 
             setPlatform(wdkModelRaw.getRDBMSPlatform());
+
+            setAuthPlatform(wdkModelRaw.getAuthRDBMSPlatform());
+
             application.setAttribute(CConstants.WDK_MODEL_KEY, wdkModel);
             application.setAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY,
                     customViewDir);
