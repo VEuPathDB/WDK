@@ -148,7 +148,7 @@
                         <attribute name="sample" />
                     </optional>
                     <optional>
-                          <attribute name="default" />
+                        <attribute name="default" />
                     </optional>
                 </element>
               </zeroOrMore>
@@ -176,19 +176,21 @@
                         <element name="enumValue">
                             <ref name="IncludeExclude" />
                             <optional>
-                                <attribute name="default" />
+                                <attribute name="default">
+                                    <data type="boolean" />
+                                </attribute>
                             </optional>
                             <optional>
-                                  <element name="display">
-                                      <text />
-                                  </element>
+                                <element name="display">
+                                    <text />
+                                </element>
                             </optional>
-                              <element name="term">
-                                  <text />
-                              </element>
-                              <element name="internal">
-                                  <text />
-                              </element>
+                            <element name="term">
+                                <text />
+                            </element>
+                            <element name="internal">
+                                <text />
+                            </element>
                         </element>
                     </oneOrMore>
                 </element>
@@ -243,34 +245,38 @@
         <attribute name="name" />
         <ref name="IncludeExclude" />
         <optional>
-              <attribute name="id" />
+            <attribute name="id" />
         </optional>
         <optional>
-              <attribute name="prompt" />
+            <attribute name="prompt" />
         </optional>
         <optional>
-              <attribute name="visible" />
+            <attribute name="visible">
+                <data type="boolean" />
+            </attribute>
         </optional>
         <optional>
-              <attribute name="readonly" />
+            <attribute name="readonly">
+                <data type="boolean" />
+            </attribute>
         </optional>
         <optional>
-              <attribute name="default" />
+            <attribute name="default" />
         </optional>
         <zeroOrMore>
-              <element name="help">
+            <element name="help">
                 <ref name="IncludeExclude" />
                 <text />
-              </element>
+            </element>
         </zeroOrMore>            
     </define>
   
     <define name="useTermOnly">
         <element name="useTermOnly">
-              <attribute name="value" />
-              <ref name="IncludeExclude" />
+            <attribute name="value" />
+            <ref name="IncludeExclude" />
         </element>
-      </define>  
+    </define>  
   
     <define name="SuggestContent">
         <optional>
@@ -322,7 +328,9 @@
       <attribute name="specialType" />
     </optional>
     <optional>
-      <attribute name="width" />
+      <attribute name="width">
+          <data type="unsignedShort" />
+      </attribute>
     </optional>
   </define>
 
@@ -333,7 +341,9 @@
       <attribute name="displayName" />
     </optional>
     <optional>
-      <attribute name="isCacheable" />
+      <attribute name="isCacheable">
+          <data type="boolean" />
+      </attribute>
     </optional>
     <zeroOrMore>
       <element name="paramRef">
@@ -343,7 +353,9 @@
            <attribute name="default" />
         </optional>
         <optional>
-           <attribute name="multiPick" />
+            <attribute name="multiPick">
+                <data type="boolean" />
+            </attribute>
         </optional>
         <optional>
            <attribute name="groupRef" />
@@ -357,10 +369,14 @@
            <attribute name="emptyValue" />
         </optional>
         <optional>
-           <attribute name="useTermOnly" />
+            <attribute name="useTermOnly">
+                <data type="boolean" />
+            </attribute>
         </optional>
         <optional>
-           <attribute name="quote" />
+            <attribute name="quote">
+                <data type="boolean" />
+            </attribute>
         </optional>
         <optional>
            <attribute name="queryRef" />
@@ -404,7 +420,9 @@
       <attribute name="displayName" />
       <ref name="IncludeExclude" />
       <optional>
-          <attribute name="internal" />
+          <attribute name="internal">
+              <data type="boolean" />
+          </attribute>
       </optional>
       <zeroOrMore>
           <element name="description">
@@ -469,7 +487,9 @@
         <attribute name="sortingColumn" />
       </optional>
       <optional>
-        <attribute name="lowerCase" />
+        <attribute name="lowerCase">
+            <data type="boolean" />
+        </attribute>
       </optional>
     </element>
   </define>
@@ -517,7 +537,9 @@
              <attribute name="displayName" />
              <ref name="IncludeExclude" />
              <optional>
-                <attribute name="inReportMaker" />
+                <attribute name="inReportMaker">
+                    <data type="boolean" />
+                </attribute>
              </optional>
              <optional>
                  <attribute name="implementation" /> 
@@ -646,19 +668,33 @@
       <attribute name="type" />
     </optional>
     <optional>
-      <attribute name="internal" />
+        <attribute name="internal">
+            <data type="boolean" />
+        </attribute>
     </optional>
     <optional>
-      <attribute name="inReportMaker" />
+        <attribute name="inReportMaker">
+            <data type="boolean" />
+        </attribute>
     </optional>
     <optional>
-      <attribute name="align" />
+       <attribute name="align">
+           <choice>
+              <value>left</value>
+              <value>center</value>
+              <value>right</value>
+           </choice>
+       </attribute>
     </optional>
     <optional>
-      <attribute name="nowrap" />
+        <attribute name="nowrap">
+            <data type="boolean" />
+        </attribute>
     </optional>
     <optional>
-      <attribute name="sortable" />
+        <attribute name="sortable">
+            <data type="boolean" />
+        </attribute>
     </optional>
   </define>
 
@@ -722,7 +758,9 @@
       <attribute name="displayName" />
       <ref name="IncludeExclude" />
       <optional>
-          <attribute name="isInternal" />
+          <attribute name="isInternal">
+              <data type="boolean" />
+          </attribute>
       </optional>
       <zeroOrMore>
           <element name="description">
