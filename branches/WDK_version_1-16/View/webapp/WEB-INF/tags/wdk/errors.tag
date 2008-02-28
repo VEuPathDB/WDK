@@ -2,6 +2,7 @@
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
 <%@ taglib prefix="logic" uri="http://jakarta.apache.org/struts/tags-logic" %>
 <%@ taglib prefix="bean" uri="http://jakarta.apache.org/struts/tags-bean" %>
+<%@ attribute name="showStackTrace" required="false" %>
 
 <c:set var="err" scope="request" value="${requestScope['org.apache.struts.action.ERROR']}"/>
 <c:set var="exp" scope="request" value="${requestScope['org.apache.struts.action.EXCEPTION']}"/>
@@ -24,7 +25,8 @@
 
 <c:if test="${exp != null}">
   <c:set var="site" value="${initParam.wdkDevelopmentSite}" />
-  <c:if test="${site eq 'Yes' || site eq 'yes' || site eq 'YES'}">
+  <c:if test="${(site eq 'Yes' || site eq 'yes' || site eq 'YES' || 
+                 showStackTrace eq 'true') && showStackTrace ne 'false'}">
      <b>${exp}</b><br>
      Stacktrace: <br>
      <c:forEach items="${exp.stackTrace}" var="st">
