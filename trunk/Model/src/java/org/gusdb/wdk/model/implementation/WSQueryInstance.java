@@ -20,9 +20,9 @@ import org.gusdb.wdk.model.RDBMSPlatformI;
 import org.gusdb.wdk.model.ResultFactory;
 import org.gusdb.wdk.model.ResultList;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wsf.client.WsfResponse;
 import org.gusdb.wsf.client.WsfService;
 import org.gusdb.wsf.client.WsfServiceServiceLocator;
+import org.gusdb.wsf.plugin.WsfResult;
 
 public class WSQueryInstance extends QueryInstance {
 
@@ -84,15 +84,16 @@ public class WSQueryInstance extends QueryInstance {
             String invokeKey = query.getFullName();
 
             StringBuffer resultMessage = new StringBuffer();
-            String[][] result = getResult(wsQuery.getProcessName(), invokeKey,
-                    params, columnNames, wsQuery.isLocal(), resultMessage);
-            this.resultMessage = resultMessage.toString();
+            WsfResult result = getResult(wsQuery.getProcessName(), invokeKey,
+                    params, columnNames, wsQuery.isLocal());
+            this.resultMessage = result.getMessage();
+            this.signal = result.getSignal();
 
             // TEST
             logger.debug("WSQI Result Message:" + resultMessage);
-            logger.info("Result Array size = " + result.length);
+            logger.info("Result Array size = " + result.getResult().length);
 
-            return new WSResultList(this, result);
+            return new WSResultList(this, result.getResult());
 
         } catch (RemoteException e) {
             throw new WdkModelException(e);
@@ -101,40 +102,31 @@ public class WSQueryInstance extends QueryInstance {
         }
     }
 
-    private String[][] getResult(String processName, String invokeKey,
-            String[] params, String[] columnNames, boolean local,
-            StringBuffer resultMessage) throws ServiceException,
-            WdkModelException, RemoteException {
+    private WsfResult getResult(String processName, String invokeKey,
+            String[] params, String[] columnNames, boolean local)
+            throws ServiceException, WdkModelException, RemoteException {
         // TEST
         logger.info("Invoking " + processName + " at " + getServiceUrl());
         long start = System.currentTimeMillis();
 
-        String[][] results;
+        WsfResult result;
         if (local) { // invoke the process query locally
             org.gusdb.wsf.service.WsfService service = new org.gusdb.wsf.service.WsfService();
-            
+
             // get the response from the local service
-            org.gusdb.wsf.service.WsfResponse response = service.invoke(
-                    processName, invokeKey, params, columnNames);
-            results = response.getResults();
-            resultMessage.append(response.getMessage());
+            result = service.invoke(processName, invokeKey, params, columnNames);
         } else { // invoke the process query via web service
             // get a WSF Service client stub
             WsfServiceServiceLocator locator = new WsfServiceServiceLocator();
             WsfService client = locator.getWsfService(getServiceUrl());
 
             // get the response from the web service
-            WsfResponse response = client.invoke(processName, invokeKey,
-                    params, columnNames);
-            results = response.getResults();
-            resultMessage.append(response.getMessage());
+            result = client.invoke(processName, invokeKey, params, columnNames);
         }
-
         long end = System.currentTimeMillis();
-        logger.debug("Invoking on client takes " + ((end - start) / 1000.0)
-                + " seconds.");
+        logger.debug("Client took " + ((end - start) / 1000.0) + " seconds.");
 
-        return results;
+        return result;
     }
 
     protected void writeResultToTable(String resultTableName, ResultFactory rf)
