@@ -63,6 +63,7 @@ public abstract class QueryInstance {
      * will contain the warning information provided by blast program.
      */
     protected String resultMessage;
+    protected int signal;
 
     protected CacheTable cacheTable;
 
