@@ -52,6 +52,10 @@
     
     <!-- remove conflicting jar file -->
     <!-- delete file="${targetDir}/lib/java/servlet-api-2.4.jar" / -->
+
+    <!-- copy the WSF-Clisnt.jar, which will be used by IDE -->
+    <copy  file="${targetDir}/lib/java/WSF-Client.jar"
+           toDir="../WDK/Model/lib/java" />
   </target>  
    
 
