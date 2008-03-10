@@ -36,14 +36,23 @@ public class FlatVocabParam extends AbstractEnumParam {
     }
 
     protected void initVocabMap() throws WdkModelException {
-        if (vocabMap == null) {
-            vocabMap = new LinkedHashMap<String, String>();
+
+        if (termInternalMap == null) {
+            termInternalMap = new LinkedHashMap<String, String>();
+            termDisplayMap = new LinkedHashMap<String, String>();
+
+            // check if the query has "display" column
+            boolean hasDisplay = query.getColumnMap().containsKey("display");
+
             QueryInstance instance = query.makeInstance();
             ResultList result = instance.getResult();
             while (result.next()) {
                 String term = result.getValue("term").toString();
                 String value = result.getValue("internal").toString();
-                vocabMap.put(term, value);
+                String display = hasDisplay ? result.getValue("display").toString()
+                        : term;
+                termInternalMap.put(term, value);
+                termDisplayMap.put(term, display);
             }
             result.close();
         }

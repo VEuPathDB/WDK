@@ -4,12 +4,12 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.gusdb.wdk.model.AbstractEnumParam;
 import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.BooleanQuestionNode;
 import org.gusdb.wdk.model.DatasetParam;
 import org.gusdb.wdk.model.EnumParam;
 import org.gusdb.wdk.model.Field;
-import org.gusdb.wdk.model.FlatVocabParam;
 import org.gusdb.wdk.model.Group;
 import org.gusdb.wdk.model.HistoryParam;
 import org.gusdb.wdk.model.Param;
@@ -100,10 +100,8 @@ public class QuestionBean {
     }
 
     private ParamBean getParam(Param param) {
-        if (param instanceof FlatVocabParam) {
-            return new FlatVocabParamBean((FlatVocabParam) param);
-        } else if (param instanceof EnumParam) {
-            return new EnumParamBean((EnumParam) param);
+        if (param instanceof AbstractEnumParam) {
+            return new EnumParamBean((AbstractEnumParam) param);
         } else if (param instanceof HistoryParam) {
             return new HistoryParamBean((HistoryParam) param);
         } else if (param instanceof DatasetParam) {
@@ -317,5 +315,5 @@ public class QuestionBean {
     public boolean isNoSummaryOnSingleRecord() {
         return question.isNoSummaryOnSingleRecord();
     }
-    
+
 }

@@ -3,7 +3,6 @@ package org.gusdb.wdk.model;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 public class EnumParam extends AbstractEnumParam {
 
@@ -18,34 +17,19 @@ public class EnumParam extends AbstractEnumParam {
         this.enumItemLists.add(enumItemList);
     }
 
-    public String[] getDisplay() {
-        EnumItem[] enumItems = enumItemList.getEnumItems();
-        String[] displays = new String[enumItems.length];
-        for (int i = 0; i < displays.length; i++) {
-            displays[i] = enumItems[i].getDisplay();
-        }
-        return displays;
-    }
-
-    public Map<String, String> getTermDisplayMap() {
-        Map<String, String> map = new LinkedHashMap<String, String>();
-        EnumItem[] enumItems = enumItemList.getEnumItems();
-        for (EnumItem item : enumItems) {
-            map.put(item.getTerm(), item.getDisplay());
-        }
-        return map;
-    }
-
     // ///////////////////////////////////////////////////////////////////
     // /////////// Protected properties ////////////////////////////////////
     // ///////////////////////////////////////////////////////////////////
 
     protected void initVocabMap() throws WdkModelException {
-        if (vocabMap == null) {
-            vocabMap = new LinkedHashMap<String, String>();
+        if (termInternalMap == null) {
+            termInternalMap = new LinkedHashMap<String, String>();
+            termDisplayMap = new LinkedHashMap<String, String>();
+
             EnumItem[] enumItems = enumItemList.getEnumItems();
             for (EnumItem item : enumItems) {
-                vocabMap.put(item.getTerm(), item.getInternal());
+                termInternalMap.put(item.getTerm(), item.getInternal());
+                termDisplayMap.put(item.getTerm(), item.getDisplay());
             }
         }
     }
@@ -118,5 +102,13 @@ public class EnumParam extends AbstractEnumParam {
         if (enumItemList == null)
             throw new WdkModelException("No enumList available in enumParam "
                     + getFullName());
+    }
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.Param#resolveReferences(org.gusdb.wdk.model.WdkModel)
+     */
+    @Override
+    protected void resolveReferences(WdkModel model) throws WdkModelException {
+        // nothing to resolve
     }
 }
