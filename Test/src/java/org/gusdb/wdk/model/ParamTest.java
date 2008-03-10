@@ -139,7 +139,7 @@ public class ParamTest extends WdkModelTestBase {
         // get terms and internals
         String[] terms = param.getVocab();
         String[] internals = param.getVocabInternal();
-        String[] displays = param.getDisplay();
+        String[] displays = param.getDisplays();
         Assert.assertTrue(terms.length == 2 && terms.length == internals.length);
 
         // terms and internals are not equal, since the useTermOnly is false

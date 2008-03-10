@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.jspwrap;
 
 import java.util.Map;
 
+import org.gusdb.wdk.model.AbstractEnumParam;
 import org.gusdb.wdk.model.EnumParam;
 import org.gusdb.wdk.model.WdkModelException;
 
@@ -11,35 +12,35 @@ import org.gusdb.wdk.model.WdkModelException;
  */
 public class EnumParamBean extends ParamBean {
 
-    public EnumParamBean(EnumParam param) {
+    public EnumParamBean(AbstractEnumParam param) {
         super(param);
     }
 
     public Boolean getMultiPick() {
-        return ((EnumParam) param).getMultiPick();
+        return ((AbstractEnumParam) param).getMultiPick();
     }
 
     public String[] getVocabInternal() throws WdkModelException {
-        return ((EnumParam) param).getVocabInternal();
+        return ((AbstractEnumParam) param).getVocabInternal();
     }
 
     public String[] getVocab() throws WdkModelException {
-        return ((EnumParam) param).getVocab();
+        return ((AbstractEnumParam) param).getVocab();
     }
 
     public Map<String, String> getVocabMap() throws WdkModelException {
-        return ((EnumParam) param).getVocabMap();
+        return ((AbstractEnumParam) param).getVocabMap();
     }
 
-    public String[] getDisplay() {
-        return ((EnumParam) param).getDisplay();
+    public String[] getDisplays() throws WdkModelException {
+        return ((AbstractEnumParam) param).getDisplays();
     }
 
-    public Map<String, String> getTermDisplayMap() {
-        return ((EnumParam) param).getTermDisplayMap();
+    public Map<String, String> getDisplayMap() throws WdkModelException {
+        return ((AbstractEnumParam) param).getDisplayMap();
     }
     
     public String getDisplayType() {
-        return ((EnumParam) param).getDisplayType();
+        return ((AbstractEnumParam) param).getDisplayType();
     }
 }

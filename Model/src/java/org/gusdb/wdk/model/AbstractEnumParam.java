@@ -8,13 +8,13 @@ import java.util.Map;
 public abstract class AbstractEnumParam extends Param {
 
     protected boolean multiPick = false;
-    protected Map<String, String> vocabMap;
+    protected Map<String, String> termInternalMap;
+    protected Map<String, String> termDisplayMap;
     protected boolean quote = true;
 
-    private List<ParamConfiguration> useTermOnlies =
-            new ArrayList<ParamConfiguration>();
+    private List<ParamConfiguration> useTermOnlies = new ArrayList<ParamConfiguration>();
     protected boolean useTermOnly = false;
-    
+
     private String displayType;
 
     // ///////////////////////////////////////////////////////////////////
@@ -76,11 +76,11 @@ public abstract class AbstractEnumParam extends Param {
         StringBuffer buf = new StringBuffer();
         for (String term : terms) {
             // verify the term
-            if (!vocabMap.containsKey(term))
+            if (!termInternalMap.containsKey(term))
                 throw new WdkModelException("The term " + term
                         + " does not exist in param " + getFullName());
 
-            String internal = useTermOnly ? term : vocabMap.get(term);
+            String internal = useTermOnly ? term : termInternalMap.get(term);
             if (quote) internal = "'" + internal + "'";
             if (buf.length() != 0) buf.append(", ");
             buf.append(internal);
@@ -88,39 +88,45 @@ public abstract class AbstractEnumParam extends Param {
         return buf.toString();
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.Param#resolveReferences(org.gusdb.wdk.model.WdkModel)
-     */
-    @Override
-    protected void resolveReferences(WdkModel model) throws WdkModelException {
-    // TODO Auto-generated method stub
-
-    }
-
     public String[] getVocab() throws WdkModelException {
         initVocabMap();
-        String[] array = new String[vocabMap.size()];
-        vocabMap.keySet().toArray(array);
+        String[] array = new String[termInternalMap.size()];
+        termInternalMap.keySet().toArray(array);
         return array;
     }
 
     public String[] getVocabInternal() throws WdkModelException {
         initVocabMap();
-        String[] array = new String[vocabMap.size()];
-        if (useTermOnly) vocabMap.keySet().toArray(array);
-        else vocabMap.values().toArray(array);
+        String[] array = new String[termInternalMap.size()];
+        if (useTermOnly) termInternalMap.keySet().toArray(array);
+        else termInternalMap.values().toArray(array);
         return array;
+    }
+
+    public String[] getDisplays() throws WdkModelException {
+        Map<String, String> displayMap = getDisplayMap();
+        String[] displays = new String[displayMap.size()];
+        displayMap.values().toArray(displays);
+        return displays;
     }
 
     public Map<String, String> getVocabMap() throws WdkModelException {
         initVocabMap();
         Map<String, String> newVocabMap = new LinkedHashMap<String, String>();
-        for (String term : vocabMap.keySet()) {
-            newVocabMap.put(term, useTermOnly ? term : vocabMap.get(term));
+        for (String term : termInternalMap.keySet()) {
+            newVocabMap.put(term, useTermOnly ? term
+                    : termInternalMap.get(term));
         }
         return newVocabMap;
+    }
+
+    public Map<String, String> getDisplayMap() throws WdkModelException {
+        initVocabMap();
+        Map<String, String> newDisplayMap = new LinkedHashMap<String, String>();
+        for (String term : termDisplayMap.keySet()) {
+            newDisplayMap.put(term, termDisplayMap.get(term));
+        }
+        return newDisplayMap;
     }
 
     public String getDefault() throws WdkModelException {
@@ -190,8 +196,8 @@ public abstract class AbstractEnumParam extends Param {
         if (value.startsWith(Utilities.COMPRESSED_VALUE_PREFIX)) {
 
             // decompress the value
-            String checksum =
-                    value.substring(Utilities.COMPRESSED_VALUE_PREFIX.length()).trim();
+            String checksum = value.substring(
+                    Utilities.COMPRESSED_VALUE_PREFIX.length()).trim();
             value = queryFactory.getClobValue(checksum);
         }
         String[] values;
@@ -208,7 +214,7 @@ public abstract class AbstractEnumParam extends Param {
     protected String validateSingleValue(Object value) throws WdkModelException {
         initVocabMap();
 
-        if (vocabMap.containsKey(value)) {
+        if (termInternalMap.containsKey(value)) {
             return null;
         }
         if (value == null || value.toString().trim().length() == 0) {
@@ -222,10 +228,15 @@ public abstract class AbstractEnumParam extends Param {
     protected void clone(AbstractEnumParam param) {
         super.clone(param);
         param.multiPick = multiPick;
-        if (vocabMap != null) {
-            if (param.vocabMap == null)
-                param.vocabMap = new LinkedHashMap<String, String>();
-            param.vocabMap.putAll(vocabMap);
+        if (termInternalMap != null) {
+            if (param.termInternalMap == null)
+                param.termInternalMap = new LinkedHashMap<String, String>();
+            param.termInternalMap.putAll(termInternalMap);
+        }
+        if (termDisplayMap != null) {
+            if (param.termDisplayMap == null)
+                param.termDisplayMap = new LinkedHashMap<String, String>();
+            param.termDisplayMap.putAll(termDisplayMap);
         }
         param.quote = quote;
         param.useTermOnly = useTermOnly;

@@ -32,43 +32,58 @@
 <c:forEach items="${qParams}" var="qP">
 
   <!-- an individual param (can not use fullName, w/ '.', for mapped props) -->
-  <c:set value="${qP.name}" var="pNam"/>
-  <tr><td align="right"><b><jsp:getProperty name="qP" property="prompt"/></b></td>
+    <c:set var="pNam" value="${paramItem.key}" />
+    <c:set var="qP" value="${paramItem.value}" />
+    <c:set var="isHidden" value="${qP.isVisible == false}"/>
+    <c:set var="isReadonly" value="${qP.isReadonly == true}"/>
+    
+    <tr><td align="right"><b><jsp:getProperty name="qP" property="prompt"/></b></td>
 
-  <!-- choose between flatVocabParam and straight text or number param -->
-  <c:choose>
-    <c:when test="${qP.class.name eq 'org.gusdb.wdk.model.jspwrap.FlatVocabParamBean'}">
-      <td>
-        <c:set var="opt" value="0"/>
-
-        <c:choose>
-          <c:when test="${qP.multiPick}">
-            <!-- multiPick is true, use scroll pane -->
-            <html:select  property="myMultiProp(${pNam})" multiple="1">
-              <c:set var="opt" value="${opt+1}"/>
-              <c:set var="sel" value=""/>
-              <c:if test="${opt == 1}"><c:set var="sel" value="selected"/></c:if>      
-              <html:options property="values(${pNam})" labelProperty="labels(${pNam})"/>
-            </html:select>
-          </c:when>
-          <c:otherwise>
-            <!-- multiPick is false, use pull down menu -->
-            <html:select  property="myMultiProp(${pNam})">
-              <c:set var="opt" value="${opt+1}"/>
-              <c:set var="sel" value=""/>
-              <c:if test="${opt == 1}"><c:set var="sel" value="selected"/></c:if>      
-              <html:options property="values(${pNam})" labelProperty="labels(${pNam})"/>
-            </html:select>
-          </c:otherwise>
-        </c:choose>
-      </td>
-    </c:when>
-    <c:otherwise>
-      <td>
-        <html:text property="myProp(${pNam})"/>
-      </td>
-    </c:otherwise>
-  </c:choose>
+    <!-- choose between flatVocabParam and straight text or number param -->
+    <choose>
+        <c:when test="${isHidden}">
+            <html:hidden property="myProp(${pNam})"/>
+        </c:when>
+        <c:otherwise>
+            <c:choose>
+                <c:when test="${qP.class.name eq 'org.gusdb.wdk.model.jspwrap.EnumParamBean'}">
+                    <td align="right" valign="top"><b>${qP.prompt}</b></td>
+                    <td valign="top">
+                        <wdk:enumParamInput qp="${qP}" />
+                    </td>
+                </c:when>
+                <c:when test="${qP.class.name eq 'org.gusdb.wdk.model.jspwrap.HistoryParamBean'}">
+                    <td align="right" valign="top"><b>${qP.prompt}</b></td>
+                    <td valign="top">
+                        <wdk:historyParamInput qp="${qP}" />
+                    </td>
+                </c:when>
+                <c:when test="${qP.class.name eq 'org.gusdb.wdk.model.jspwrap.DatasetParamBean'}">
+                    <td align="right" valign="top"><b>${qP.prompt}</b></td>
+                    <td valign="top">
+                        <wdk:datasetParamInput qp="${qP}" />
+                    </td>
+                </c:when>
+                <c:otherwise>  <%-- not flatvocab --%>
+                    <c:choose>
+                        <c:when test="${isReadonly}">
+                            <td align="right" valign="top"><b>${qP.prompt}</b></td>
+                            <td valign="top">
+                                <bean:write name="qForm" property="myProp(${pNam})"/>
+                                <html:hidden property="myProp(${pNam})"/>
+                            </td>
+                        </c:when>
+                        <c:otherwise>
+                            <td align="right" valign="top"><b>${qP.prompt}</b></td>
+                            <td valign="top">
+                                <html:text property="myProp(${pNam})" size="35" />
+                            </td>
+                        </c:otherwise>
+                    </c:choose>
+                </c:otherwise>
+            </c:choose>
+         </c:otherwise>
+      </c:choose>
 
       <td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
       <td>
