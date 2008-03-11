@@ -114,14 +114,15 @@ public class WSQueryInstance extends QueryInstance {
             org.gusdb.wsf.service.WsfService service = new org.gusdb.wsf.service.WsfService();
 
             // get the response from the local service
-            result = service.invoke(processName, invokeKey, params, columnNames);
+            result = service.invokeEx(processName, invokeKey, params,
+                    columnNames);
         } else { // invoke the process query via web service
             // get a WSF Service client stub
             WsfServiceServiceLocator locator = new WsfServiceServiceLocator();
             WsfService client = locator.getWsfService(getServiceUrl());
 
             // get the response from the web service
-            result = client.invoke(processName, invokeKey, params, columnNames);
+            result = client.invokeEx(processName, invokeKey, params, columnNames);
         }
         long end = System.currentTimeMillis();
         logger.debug("Client took " + ((end - start) / 1000.0) + " seconds.");
