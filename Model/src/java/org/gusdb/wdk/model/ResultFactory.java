@@ -10,17 +10,11 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.cli.BasicParser;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionGroup;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.implementation.SqlResultList;
 import org.gusdb.wdk.model.implementation.SqlUtils;
@@ -93,8 +87,7 @@ public class ResultFactory {
 
     public ResultList getResult(QueryInstance instance)
             throws WdkModelException {
-        ResultList resultList = instance.getIsPersistent()
-                ? getPersistentResult(instance)
+        ResultList resultList = instance.getIsPersistent() ? getPersistentResult(instance)
                 : instance.getNonpersistentResult();
         return resultList;
     }
@@ -213,10 +206,10 @@ public class ResultFactory {
                     sqlSortingIndex.toString());
 
             // Create sequence
-            String tblQueryInstanceToUse = (noSchemaOutput == true
-                    ? instanceTableName : instanceTableFullName);
-            String tblSortingIndexToUse = (noSchemaOutput == true
-                    ? sortingTableName : sortingTableFullName);
+            String tblQueryInstanceToUse = (noSchemaOutput == true ? instanceTableName
+                    : instanceTableFullName);
+            String tblSortingIndexToUse = (noSchemaOutput == true ? sortingTableName
+                    : sortingTableFullName);
 
             logger.info("Creating sequence " + tblQueryInstanceToUse + "_pkseq"
                     + newline);
@@ -280,14 +273,14 @@ public class ResultFactory {
 
         try {
             // delete sorting indices
-            String tblSortingIndexToUse = (noSchemaOutput == true
-                    ? sortingTableName : sortingTableFullName);
+            String tblSortingIndexToUse = (noSchemaOutput == true ? sortingTableName
+                    : sortingTableFullName);
             System.out.println("Deleting all rows from " + tblSortingIndexToUse);
             SqlUtils.execute(platform.getDataSource(), "delete from "
                     + sortingTableFullName);
 
-            String tblQueryInstanceToUse = (noSchemaOutput == true
-                    ? instanceTableName : instanceTableFullName);
+            String tblQueryInstanceToUse = (noSchemaOutput == true ? instanceTableName
+                    : instanceTableFullName);
             System.out.println("Deleting all rows from "
                     + tblQueryInstanceToUse);
             SqlUtils.execute(platform.getDataSource(), "delete from "
@@ -314,8 +307,8 @@ public class ResultFactory {
         }
 
         // drop sorting index table
-        String tblSortingIndexToUse = (noSchemaOutput == true
-                ? sortingTableName : sortingTableFullName);
+        String tblSortingIndexToUse = (noSchemaOutput == true ? sortingTableName
+                : sortingTableFullName);
         System.out.println("Dropping table " + tblSortingIndexToUse);
         try {
             platform.dropTable(sortingTableFullName);
@@ -331,8 +324,8 @@ public class ResultFactory {
         }
 
         // drop query instance table
-        String tblQueryInstanceToUse = (noSchemaOutput == true
-                ? instanceTableName : instanceTableFullName);
+        String tblQueryInstanceToUse = (noSchemaOutput == true ? instanceTableName
+                : instanceTableFullName);
         System.out.println("Dropping table " + tblQueryInstanceToUse);
         try {
             platform.dropTable(instanceTableFullName);
@@ -345,6 +338,97 @@ public class ResultFactory {
             platform.dropSequence(instanceTableFullName + "_pkseq");
         } catch (SQLException e) {
             System.err.println("WARNING: " + e);
+        }
+    }
+
+    public void dropCache(int cacheId, boolean noSchemaOutput) {
+        // drop the cache table
+        String cacheTableName = CACHE_TABLE_PREFIX + cacheId;
+        System.out.print("Dropping cache table: ");
+        if (!noSchemaOutput) System.out.print(schemaName + ".");
+        System.out.println(cacheTableName);
+        try {
+            platform.dropTable(cacheTableName);
+        } catch (SQLException ex) {
+            System.err.println(ex);
+        }
+
+        // delete the sorting info from the index tables
+        System.out.print("Deleting sorting index from ");
+        if (!noSchemaOutput) System.out.println(schemaName + ".");
+        System.out.println(sortingTableName);
+        try {
+            SqlUtils.execute(platform.getDataSource(), "DELETE FROM "
+                    + sortingTableFullName + " WHERE query_instance_id = "
+                    + cacheId);
+        } catch (SQLException ex) {
+            System.err.println(ex);
+        }
+
+        // delete the record from the index tables
+        System.out.print("Deleting index from ");
+        if (!noSchemaOutput) System.out.println(schemaName + ".");
+        System.out.println(instanceTableName);
+        try {
+            SqlUtils.execute(platform.getDataSource(), "DELETE FROM "
+                    + instanceTableFullName + " WHERE query_instance_id = "
+                    + cacheId);
+        } catch (SQLException ex) {
+            System.err.println(ex);
+        }
+    }
+
+    public void dropCache(String queryName, boolean noSchemaOutput)
+            throws SQLException {
+        // get all cache ids of the given query name
+        ResultSet rs = SqlUtils.getResultSet(platform.getDataSource(),
+                "SELECT query_instance_id, result_table FROM "
+                        + instanceTableFullName + " WHERE query_name = '"
+                        + queryName + "'");
+        Map<Integer, String> cacheTables = new HashMap<Integer, String>();
+        while (rs.next()) {
+            cacheTables.put(rs.getInt("query_instance_id"),
+                    rs.getString("result_table"));
+        }
+        SqlUtils.closeResultSet(rs);
+
+        // delete cache tables
+        System.out.println("Dropping " + cacheTables.size() + " cache tables.");
+        int count = 0;
+        for (int cacheId : cacheTables.keySet()) {
+            String tableName = cacheTables.get(cacheId);
+            try {
+                platform.dropSequence(tableName);
+                count++;
+            } catch (SQLException ex) {
+                System.err.println(ex);
+            }
+        }
+        System.out.println(count + "  cache tables dropped.");
+
+        // delete the sorting info from the index tables
+        System.out.print("Deleting sorting index from ");
+        if (!noSchemaOutput) System.out.println(schemaName + ".");
+        System.out.println(sortingTableName);
+        try {
+            SqlUtils.execute(platform.getDataSource(), "DELETE FROM "
+                    + sortingTableFullName + " WHERE query_instance_id IN ("
+                    + "SELECT query_instance_id FROM " + instanceTableFullName
+                    + " WHERE query_name = '" + queryName + "')");
+        } catch (SQLException ex) {
+            System.err.println(ex);
+        }
+
+        // delete the record from the index tables
+        System.out.print("Deleting index from ");
+        if (!noSchemaOutput) System.out.println(schemaName + ".");
+        System.out.println(instanceTableName);
+        try {
+            SqlUtils.execute(platform.getDataSource(), "DELETE FROM "
+                    + instanceTableFullName + " WHERE query_name = '"
+                    + queryName + "'");
+        } catch (SQLException ex) {
+            System.err.println(ex);
         }
     }
 
@@ -463,7 +547,7 @@ public class ResultFactory {
         sqlb.append(instanceWhereClause(instance));
 
         // TEST
-        //logger.info( sqlb.toString() );
+        // logger.info( sqlb.toString() );
 
         String resultTableName = null;
         String resultMessage = null;
@@ -683,8 +767,8 @@ public class ResultFactory {
         return queryInstanceId;
     }
 
-    private void logQuery(QueryInstance instance)
-            throws WdkModelException, IOException {
+    private void logQuery(QueryInstance instance) throws WdkModelException,
+            IOException {
         // // TEST
         // try { throw new Exception("Inocation path test."); }
         // catch(Exception ex) {ex.printStackTrace();}
@@ -750,159 +834,5 @@ public class ResultFactory {
     private boolean validateDrop() throws SQLException {
         String pattern = CACHE_TABLE_PREFIX.toUpperCase() + "%";
         return (0 == platform.getTableCount(pattern));
-    }
-
-    // ////////////////////////////////////////////////////////////////////
-    // /// Static methods
-    // ////////////////////////////////////////////////////////////////////
-
-    public static void main(String[] args) {
-        String cmdName = System.getProperty("cmdName");
-        String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
-
-        // process args
-        Options options = declareOptions();
-        CommandLine cmdLine = parseOptions(cmdName, options, args);
-
-        String modelName = cmdLine.getOptionValue("model");
-
-        File modelConfigFile = new File(gusHome, "/config/" + modelName
-                + "-config.xml");
-        boolean newCache = cmdLine.hasOption("new");
-        boolean resetCache = cmdLine.hasOption("reset");
-        boolean dropCache = cmdLine.hasOption("drop");
-        boolean recreateCache = cmdLine.hasOption("recreate");
-        boolean noSchemaOutput = cmdLine.hasOption("noSchemaOutput");
-        boolean forceDrop = cmdLine.hasOption("forceDrop");
-
-        try {
-            // read config info
-            ModelConfigParser configParser = new ModelConfigParser(gusHome);
-            ModelConfig modelConfig = configParser.parseConfig(modelName);
-            
-            String connectionUrl = modelConfig.getConnectionUrl();
-            String login = modelConfig.getLogin();
-            String password = modelConfig.getPassword();
-            String platformClass = modelConfig.getPlatformClass();
-
-            Integer maxIdle = modelConfig.getMaxIdle();
-            Integer minIdle = modelConfig.getMinIdle();
-            Integer maxWait = modelConfig.getMaxWait();
-            Integer maxActive = modelConfig.getMaxActive();
-            Integer initialSize = modelConfig.getInitialSize();
-
-            boolean enableQueryLogger = modelConfig.isEnableQueryLogger();
-            String queryLoggerFile = modelConfig.getQueryLoggerFile();
-
-            RDBMSPlatformI platform = (RDBMSPlatformI) Class.forName(
-                    platformClass).newInstance();
-            platform.init(connectionUrl, login, password, minIdle, maxIdle,
-                    maxWait, maxActive, initialSize,
-                    modelConfigFile.getAbsolutePath());
-
-            ResultFactory factory = new ResultFactory(platform, login,
-                    enableQueryLogger, queryLoggerFile);
-
-            long start = System.currentTimeMillis();
-            if (newCache) factory.createCache(noSchemaOutput);
-            else if (resetCache) factory.resetCache(noSchemaOutput, forceDrop);
-            else if (dropCache) factory.dropCache(noSchemaOutput, forceDrop);
-            else if (recreateCache)
-                factory.recreateCache(noSchemaOutput, forceDrop);
-            long end = System.currentTimeMillis();
-            System.out.println("Command succeeded in "
-                    + ((end - start) / 1000.0) + " seconds");
-
-        } catch (Exception e) {
-            System.err.println("FAILED");
-            System.err.println("");
-            e.printStackTrace();
-            System.exit(1);
-        }
-        System.exit(0);
-    }
-
-    static Options declareOptions() {
-        Options options = new Options();
-
-        // config file
-        addOption(
-                options,
-                "model",
-                "the name of the model.  This is used to find the Model config file ($GUS_HOME/config/model_name-config.xml)");
-
-        // operation
-        Option newQ = new Option("new", "create a new query cache");
-
-        Option resetQ = new Option("reset", "reset the query cache");
-
-        Option dropQ = new Option("drop", "drop the query cache");
-
-        Option recreateQ = new Option("recreate",
-                "drop the query cache and create a new one");
-
-        Option noSchema = new Option("noSchemaOutput",
-                "remove references to the schema when printing out messages regarding a table");
-
-        Option forceDrop = new Option("forceDrop",
-                "drop all cache tables even if the cache is not listed in query instance table");
-
-        OptionGroup operation = new OptionGroup();
-        operation.setRequired(true);
-        operation.addOption(newQ);
-        operation.addOption(resetQ);
-        operation.addOption(dropQ);
-        operation.addOption(recreateQ);
-        options.addOption(noSchema);
-        options.addOption(forceDrop);
-        options.addOptionGroup(operation);
-
-        return options;
-    }
-
-    private static void addOption(Options options, String argName, String desc) {
-
-        Option option = new Option(argName, true, desc);
-        option.setRequired(true);
-        option.setArgName(argName);
-
-        options.addOption(option);
-    }
-
-    static CommandLine parseOptions(String cmdName, Options options,
-            String[] args) {
-
-        CommandLineParser parser = new BasicParser();
-        CommandLine cmdLine = null;
-        try {
-            // parse the command line arguments
-            cmdLine = parser.parse(options, args);
-        } catch (ParseException exp) {
-            // oops, something went wrong
-            System.err.println("");
-            System.err.println("Parsing failed.  Reason: " + exp.getMessage());
-            System.err.println("");
-            usage(cmdName, options);
-        }
-
-        return cmdLine;
-    }
-
-    static void usage(String cmdName, Options options) {
-
-        String newline = System.getProperty("line.separator");
-        String cmdlineSyntax = cmdName
-                + " -model model_name -new|-reset|-drop [-noSchemaOutput] -[forceDrop]";
-
-        String header = newline
-                + "Create, reset or drop a query cache. The name of the cache table is found in the Model config file (the table is placed in the schema owned by login).  Resetting the cache drops all results tables and deletes all rows from the cache table.  Dropping the cache first resets it then drops the cache table and sequence."
-                + newline + newline + "Options:";
-
-        String footer = "";
-
-        // PrintWriter stderr = new PrintWriter(System.err);
-        HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp(75, cmdlineSyntax, header, options, footer);
-        System.exit(1);
     }
 }
