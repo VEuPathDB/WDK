@@ -45,7 +45,7 @@ public class PrimaryKeyValue {
         //            sb.append(projectName);
         //            sb.append(field.getDelimiter());
         //        }
-        //        sb.append(field.getIdPrefix());
+                sb.append(field.getIdPrefix());
         sb.append(recordId);
         return sb.toString();
     }
