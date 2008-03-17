@@ -17,6 +17,14 @@ public class DatasetParam extends Param {
     private UserFactory userFactory;
     private DatasetFactory datasetFactory;
     
+    public DatasetParam() { }
+    
+    public DatasetParam(DatasetParam param) {
+        super(param);
+        this.userFactory = param.userFactory;
+        this.datasetFactory = param.datasetFactory;
+    }
+    
     /*
      * (non-Javadoc)
      * 
@@ -66,20 +74,6 @@ public class DatasetParam extends Param {
     }
     
     /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.Param#clone()
-     */
-    @Override
-    public Param clone() {
-        DatasetParam param = new DatasetParam();
-        super.clone( param );
-        param.userFactory = this.userFactory;
-        param.datasetFactory = this.datasetFactory;
-        return param;
-    }
-    
-    /*
      * (non-Javadoc) The internal value for the DatasetParam will be the
      * dataset_id
      * 
@@ -111,5 +105,13 @@ public class DatasetParam extends Param {
         // make sure the dataset belongs to this user
         User user = userFactory.loadUserBySignature( signature );
         return user.getDataset( datasetChecksum );
+    }
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.Param#clone()
+     */
+    @Override
+    public Param clone() {
+        return new DatasetParam(this);
     }
 }

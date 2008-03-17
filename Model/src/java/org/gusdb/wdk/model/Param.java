@@ -10,8 +10,8 @@ public abstract class Param extends WdkModelBase {
 
     protected static Logger logger = Logger.getLogger(Param.class);
 
-    protected String name;
     protected String id;
+    protected String name;
     protected String prompt;
 
     private List<WdkModelText> helps;
@@ -43,6 +43,39 @@ public abstract class Param extends WdkModelBase {
         allowEmpty = false;
     }
 
+    public Param(Param param) {
+        this.id = param.id;
+        this.name = param.name;
+        this.prompt = param.prompt;
+        this.help = param.help;
+        this.defaultValue = param.defaultValue;
+        this.sample = param.sample;
+        this.fullName = param.fullName;
+        this.visible = param.visible;
+        this.readonly = param.readonly;
+        this.group = param.group;
+        this.queryFactory = param.queryFactory;
+        this.allowEmpty = param.allowEmpty;
+        this.emptyValue = param.emptyValue;
+        this.paramSet = param.paramSet;
+    }
+
+    public abstract Param clone();
+
+    /**
+     * @return the id
+     */
+    public String getId() {
+        return id;
+    }
+
+    /**
+     * @param id the id to set
+     */
+    public void setId(String id) {
+        this.id = id;
+    }
+
     public void setName(String name) {
         this.name = name;
     }
@@ -57,14 +90,6 @@ public abstract class Param extends WdkModelBase {
 
     public String getFullName() {
         return fullName;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getId() {
-        return id;
     }
 
     /**
@@ -154,22 +179,19 @@ public abstract class Param extends WdkModelBase {
         this.allowEmpty = allowEmpty;
     }
 
-    
     /**
      * @return the emptyValue
      */
     public String getEmptyValue() {
-        return (emptyValue == null)?defaultValue :emptyValue;
+        return (emptyValue == null) ? defaultValue : emptyValue;
     }
 
-    
     /**
      * @param emptyValue the emptyValue to set
      */
     public void setEmptyValue(String emptyValue) {
         this.emptyValue = emptyValue;
     }
-    
 
     /**
      * @return the group
@@ -193,13 +215,11 @@ public abstract class Param extends WdkModelBase {
     public String toString() {
         String newline = System.getProperty("line.separator");
         String classnm = this.getClass().getName();
-        StringBuffer buf =
-                new StringBuffer(classnm + ": name='" + name + "'" + ": id='"
-                        + id + "'" + newline + "  prompt='" + prompt + "'"
-                        + newline + "  help='" + help + "'" + newline
-                        + "  default='" + defaultValue + "'" + newline
-                        + "  readonly=" + readonly + newline + "  visible="
-                        + visible + newline);
+        StringBuffer buf = new StringBuffer(classnm + ": name='" + name + "'"
+                + newline + "  prompt='" + prompt + "'" + newline + "  help='"
+                + help + "'" + newline + "  default='" + defaultValue + "'"
+                + newline + "  readonly=" + readonly + newline + "  visible="
+                + visible + newline);
         if (group != null) buf.append("  group=" + group.getName() + newline);
 
         return buf.toString();
@@ -231,8 +251,8 @@ public abstract class Param extends WdkModelBase {
         if (!value.startsWith(Utilities.COMPRESSED_VALUE_PREFIX)) return value;
 
         // decompress the value
-        String checksum =
-                value.substring(Utilities.COMPRESSED_VALUE_PREFIX.length()).trim();
+        String checksum = value.substring(
+                Utilities.COMPRESSED_VALUE_PREFIX.length()).trim();
         return queryFactory.getClobValue(checksum);
     }
 
@@ -298,22 +318,4 @@ public abstract class Param extends WdkModelBase {
     protected void setResources(WdkModel model) throws WdkModelException {
         this.queryFactory = model.getQueryFactory();
     }
-
-    protected void clone(Param param) {
-        param.name = name;
-        param.id = id;
-        param.prompt = prompt;
-        param.help = help;
-        param.defaultValue = defaultValue;
-        param.sample = sample;
-        param.fullName = fullName;
-        param.visible = visible;
-        param.readonly = readonly;
-        param.queryFactory = this.queryFactory;
-        param.group = this.group;
-        param.allowEmpty = this.allowEmpty;
-        param.paramSet = this.paramSet;
-    }
-
-    public abstract Param clone();
 }

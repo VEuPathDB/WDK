@@ -16,6 +16,20 @@ public abstract class AbstractEnumParam extends Param {
     protected boolean useTermOnly = false;
 
     private String displayType;
+    
+    public AbstractEnumParam() {}
+    
+    public AbstractEnumParam(AbstractEnumParam param) {
+        super(param);
+        this.multiPick = param.multiPick;
+        if (param.termDisplayMap != null)
+            this.termDisplayMap = new LinkedHashMap<String, String>(param.termDisplayMap);
+        if (param.termInternalMap != null)
+            this.termInternalMap = new LinkedHashMap<String, String>(param.termInternalMap);
+        this.quote = param.quote;
+        this.useTermOnly = param.useTermOnly;
+        this.displayType = param.displayType;
+    }
 
     // ///////////////////////////////////////////////////////////////////
     // /////////// Public properties ////////////////////////////////////
@@ -223,24 +237,6 @@ public abstract class AbstractEnumParam extends Param {
             return " - Invalid value '" + value + "' for parameter '" + name
                     + "'";
         }
-    }
-
-    protected void clone(AbstractEnumParam param) {
-        super.clone(param);
-        param.multiPick = multiPick;
-        if (termInternalMap != null) {
-            if (param.termInternalMap == null)
-                param.termInternalMap = new LinkedHashMap<String, String>();
-            param.termInternalMap.putAll(termInternalMap);
-        }
-        if (termDisplayMap != null) {
-            if (param.termDisplayMap == null)
-                param.termDisplayMap = new LinkedHashMap<String, String>();
-            param.termDisplayMap.putAll(termDisplayMap);
-        }
-        param.quote = quote;
-        param.useTermOnly = useTermOnly;
-        param.displayType = displayType;
     }
 
     /*

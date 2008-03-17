@@ -15,6 +15,15 @@ public class StringParam extends Param {
     private Integer length;
     private boolean quote = true;
     
+    public StringParam(){}
+    
+    public StringParam(StringParam param) {
+        super(param);
+        this.regex = param.regex;
+        this.length = param.length;
+        this.quote = param.quote;
+    }
+    
     // ///////////////////////////////////////////////////////////////////
     // /////////// Public properties ////////////////////////////////////
     // ///////////////////////////////////////////////////////////////////
@@ -118,11 +127,6 @@ public class StringParam extends Param {
      * @see java.lang.Object#clone()
      */
     public Param clone() {
-        StringParam param = new StringParam();
-        super.clone( param );
-        param.regex = regex;
-        param.length = length;
-        param.quote = quote;
-        return param;
+        return new StringParam(this);
     }
 }
