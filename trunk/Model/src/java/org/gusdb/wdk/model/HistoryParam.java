@@ -15,6 +15,13 @@ public class HistoryParam extends Param {
 
     private UserFactory factory;
 
+    public HistoryParam() {}
+    
+    public HistoryParam(HistoryParam param) {
+        super(param);
+        this.factory = param.factory;
+    }
+    
     /*
      * (non-Javadoc)
      * 
@@ -73,19 +80,6 @@ public class HistoryParam extends Param {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.Param#clone()
-     */
-    @Override
-    public Param clone() {
-        HistoryParam param = new HistoryParam();
-        super.clone(param);
-        param.factory = this.factory;
-        return param;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
      * @see org.gusdb.wdk.model.Param#getInternalValue(java.lang.String)
      */
     @Override
@@ -127,5 +121,13 @@ public class HistoryParam extends Param {
             value = sb.toString();
         }
         return super.compressValue(value);
+    }
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.Param#clone()
+     */
+    @Override
+    public Param clone() {
+        return new HistoryParam(this);
     }
 }

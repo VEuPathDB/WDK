@@ -6,9 +6,18 @@ import java.util.List;
 
 public class EnumParam extends AbstractEnumParam {
 
-    private List<EnumItemList> enumItemLists = new ArrayList<EnumItemList>();
+    private List<EnumItemList> enumItemLists;
     private EnumItemList enumItemList;
 
+    public EnumParam () {
+        enumItemLists = new ArrayList<EnumItemList>();
+    }
+    
+    public EnumParam(EnumParam param) {
+        super(param);
+        this.enumItemList = param.enumItemList;
+    }
+    
     // ///////////////////////////////////////////////////////////////////
     // /////////// Public properties ////////////////////////////////////
     // ///////////////////////////////////////////////////////////////////
@@ -32,19 +41,6 @@ public class EnumParam extends AbstractEnumParam {
                 termDisplayMap.put(item.getTerm(), item.getDisplay());
             }
         }
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.Param#clone()
-     */
-    @Override
-    public Param clone() {
-        EnumParam param = new EnumParam();
-        super.clone(param);
-        param.enumItemList = new EnumItemList(this.enumItemList);
-        return param;
     }
 
     /*
@@ -110,5 +106,13 @@ public class EnumParam extends AbstractEnumParam {
     @Override
     protected void resolveReferences(WdkModel model) throws WdkModelException {
         // nothing to resolve
+    }
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.Param#clone()
+     */
+    @Override
+    public Param clone() {
+        return new EnumParam(this);
     }
 }
