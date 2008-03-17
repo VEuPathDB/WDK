@@ -6,6 +6,14 @@ public class FlatVocabParam extends AbstractEnumParam {
 
     protected Query query;
     protected String queryTwoPartName;
+    
+    public FlatVocabParam() {}
+    
+    public FlatVocabParam(FlatVocabParam param) {
+        super(param);
+        this.query = param.query;
+        this.queryTwoPartName = param.queryTwoPartName;
+    }
 
     // ///////////////////////////////////////////////////////////////////
     // /////////// Public properties ////////////////////////////////////
@@ -58,17 +66,11 @@ public class FlatVocabParam extends AbstractEnumParam {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * 
+    /* (non-Javadoc)
      * @see org.gusdb.wdk.model.Param#clone()
      */
     @Override
     public Param clone() {
-        FlatVocabParam param = new FlatVocabParam();
-        super.clone(param);
-        param.query = query;
-        param.queryTwoPartName = queryTwoPartName;
-        return param;
+        return new FlatVocabParam(this);
     }
 }

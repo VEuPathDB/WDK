@@ -92,42 +92,102 @@
                 </choice>
               </oneOrMore>
         </element>
-      </define>
+    </define>
+
+    <define name="ParamBaseContents">
+        <attribute name="name" />
+        <ref name="IncludeExclude" />
+        <optional>
+            <attribute name="id" />
+        </optional>
+        <optional>
+            <attribute name="prompt" />
+        </optional>
+        <optional>
+            <attribute name="visible">
+                <data type="boolean" />
+            </attribute>
+        </optional>
+        <optional>
+            <attribute name="readonly">
+                <data type="boolean" />
+            </attribute>
+        </optional>
+        <optional>
+            <attribute name="default" />
+        </optional>
+        <zeroOrMore>
+            <element name="help">
+                <ref name="IncludeExclude" />
+                <text />
+            </element>
+        </zeroOrMore>            
+    </define>
+  
+    <define name="useTermOnly">
+        <element name="useTermOnly">
+            <attribute name="value" />
+            <ref name="IncludeExclude" />
+        </element>
+    </define>  
+  
+    <define name="SuggestContent">
+        <optional>
+            <attribute name="allowEmpty">
+              <data type="boolean" />
+            </attribute>
+        </optional>
+        <optional>
+            <attribute name="emptyValue" />
+        </optional>
+        <ref name="IncludeExclude" />
+    </define>  
+    
+    <define name="stringParamContent">
+        <ref name="ParamBaseContents" />
+        <optional>
+            <attribute name="regex" />
+        </optional>
+        <optional>
+            <attribute name="substitute" />
+        </optional>
+        <optional>
+            <attribute name="length">
+                <data type="positiveInteger" />
+            </attribute>
+        </optional>
+        <optional>
+          <attribute name="quote">
+            <data type="boolean" />
+          </attribute>
+        </optional>
+        <zeroOrMore>
+            <element name="suggest">
+                <ref name="SuggestContent" />
+                <optional>
+                    <attribute name="sample" />
+                </optional>
+                <optional>
+                      <attribute name="default" />
+                </optional>
+            </element>
+        </zeroOrMore>
+    </define>
   
     <define name="stringParam">
         <element name="stringParam">
-              <ref name="ParamBaseContents" />
-              <optional>
-                <attribute name="regex" />
-              </optional>
-              <optional>
-                <attribute name="substitute" />
-              </optional>
-              <optional>
-                <attribute name="length">
-                    <data type="positiveInteger" />
-                </attribute>
-              </optional>
-              <optional>
-                  <attribute name="quote">
-                    <data type="boolean" />
-                  </attribute>
-              </optional>
-              <zeroOrMore>
-                <element name="suggest">
-                    <ref name="SuggestContent" />
-                    <optional>
-                        <attribute name="sample" />
-                    </optional>
-                    <optional>
-                          <attribute name="default" />
-                    </optional>
-                </element>
-              </zeroOrMore>
+            <ref name="stringParamContent" />
+        </element>
+    </define>
+  
+    <define name="hintParam">
+        <element name="hintParam">
+            <ref name="stringParamContent" />
+            <attribute name="queryRef" />
         </element>
     </define>
     
-      <define name="historyParam">
+    <define name="historyParam">
         <element name="historyParam">
               <ref name="ParamBaseContents" />
               <zeroOrMore>
@@ -136,9 +196,9 @@
                 </element>
               </zeroOrMore>
         </element>
-      </define>
+    </define>
     
-      <define name="datasetParam">
+    <define name="datasetParam">
         <element name="datasetParam">
               <ref name="ParamBaseContents" />
               <zeroOrMore>
@@ -153,7 +213,7 @@
                 </element>
               </zeroOrMore>
         </element>
-      </define>
+    </define>
     
     <define name="enumParam">
         <element name="enumParam">
@@ -240,55 +300,6 @@
        </optional>
 
     </define>
-
-    <define name="ParamBaseContents">
-        <attribute name="name" />
-        <ref name="IncludeExclude" />
-        <optional>
-            <attribute name="id" />
-        </optional>
-        <optional>
-            <attribute name="prompt" />
-        </optional>
-        <optional>
-            <attribute name="visible">
-                <data type="boolean" />
-            </attribute>
-        </optional>
-        <optional>
-            <attribute name="readonly">
-                <data type="boolean" />
-            </attribute>
-        </optional>
-        <optional>
-            <attribute name="default" />
-        </optional>
-        <zeroOrMore>
-            <element name="help">
-                <ref name="IncludeExclude" />
-                <text />
-            </element>
-        </zeroOrMore>            
-    </define>
-  
-    <define name="useTermOnly">
-        <element name="useTermOnly">
-            <attribute name="value" />
-            <ref name="IncludeExclude" />
-        </element>
-    </define>  
-  
-    <define name="SuggestContent">
-        <optional>
-            <attribute name="allowEmpty">
-              <data type="boolean" />
-            </attribute>
-        </optional>
-        <optional>
-            <attribute name="emptyValue" />
-        </optional>
-        <ref name="IncludeExclude" />
-      </define>  
   
 
   <!-- Schema grouping elements  -->
@@ -677,46 +688,40 @@
             <data type="boolean" />
         </attribute>
     </optional>
-    <optional>
-       <attribute name="align">
-           <choice>
-              <value>left</value>
-              <value>center</value>
-              <value>right</value>
-           </choice>
-       </attribute>
-    </optional>
-    <optional>
-        <attribute name="nowrap">
-            <data type="boolean" />
-        </attribute>
-    </optional>
-    <optional>
-        <attribute name="sortable">
-            <data type="boolean" />
-        </attribute>
-    </optional>
   </define>
 
+    <define name="AttributeFieldCotent">
+        <ref name="FieldBaseContents" />
+        <optional>
+           <attribute name="align">
+               <choice>
+                  <value>left</value>
+                  <value>center</value>
+                  <value>right</value>
+               </choice>
+           </attribute>
+        </optional>
+        <optional>
+            <attribute name="nowrap">
+                <data type="boolean" />
+            </attribute>
+        </optional>
+        <optional>
+            <attribute name="sortable">
+                <data type="boolean" />
+            </attribute>
+        </optional>
+    </define>
+    
     <define name="columnAttribute">
         <element name="columnAttribute">
-            <ref name="FieldBaseContents" />
+            <ref name="AttributeFieldCotent" />
         </element>
     </define>
   
-  <define name="table">
-    <element name="table">
-      <attribute name="queryRef" />
-      <ref name="FieldBaseContents" />
-      <oneOrMore>
-         <ref name="attributes" />
-      </oneOrMore>
-    </element>
-  </define>
-  
     <define name ="textAttribute">
         <element name="textAttribute">
-            <ref name="FieldBaseContents" />
+            <ref name="AttributeFieldCotent" />
             <oneOrMore>
                 <element name="text">
                     <ref name="IncludeExclude" />
@@ -728,7 +733,7 @@
     
     <define name ="linkAttribute">
         <element name="linkAttribute">
-            <ref name="FieldBaseContents" />
+            <ref name="AttributeFieldCotent" />
             <attribute name="visible" />
             <oneOrMore>
                 <element name="url">
@@ -738,7 +743,16 @@
             </oneOrMore>
         </element>
     </define>
-
+ 
+    <define name="table">
+        <element name="table">
+          <attribute name="queryRef" />
+          <ref name="FieldBaseContents" />
+          <oneOrMore>
+             <ref name="attributes" />
+          </oneOrMore>
+        </element>
+    </define>
 
   <!-- Set for xmlAnswers -->
 
