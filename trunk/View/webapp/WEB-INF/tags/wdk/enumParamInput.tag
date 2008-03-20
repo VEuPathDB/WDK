@@ -38,11 +38,11 @@ Otherwise a standard select menu is used.
         <c:choose>
         <%-- test for param labels to italicize --%>
         <c:when test="${pNam == 'organism' or pNam == 'ecorganism'}">
-          <html:multibox property="myMultiProp(${pNam})" value="${enumItem.key}" styleId="${qP.id}" />
+          <html:multibox property="myMultiProp(${pNam})" value="${enumItem.key}" styleId="${pNam}" />
           <i>${enumItem.value}</i>&nbsp;
         </c:when>
         <c:otherwise> <%-- use multiselect menu --%>
-          <html:multibox property="myMultiProp(${pNam})" value="${enumItem.key}" styleId="${qP.id}" />
+          <html:multibox property="myMultiProp(${pNam})" value="${enumItem.key}" styleId="${pNam}" />
           ${enumItem.value}&nbsp;
         </c:otherwise>
         </c:choose> 
@@ -58,7 +58,7 @@ Otherwise a standard select menu is used.
       </table>
     </c:when>
     <c:otherwise>
-      <html:select  property="myMultiProp(${pNam})" multiple="1" styleId="${qP.id}">
+      <html:select  property="myMultiProp(${pNam})" multiple="1" styleId="${pNam}">
         <c:set var="opt" value="${opt+1}"/>
         <c:set var="sel" value=""/>
         <c:if test="${opt == 1}"><c:set var="sel" value="selected"/></c:if>      
@@ -72,7 +72,7 @@ Otherwise a standard select menu is used.
 </c:when>
 <c:otherwise>
   <%-- multiPick is false, use pull down menu --%>
-  <html:select  property="myMultiProp(${pNam})" styleId="${qP.id}">
+  <html:select  property="myMultiProp(${pNam})" styleId="${pNam}">
     <c:set var="opt" value="${opt+1}"/>
     <c:set var="sel" value=""/>
     <c:if test="${opt == 1}"><c:set var="sel" value="selected"/></c:if>      
