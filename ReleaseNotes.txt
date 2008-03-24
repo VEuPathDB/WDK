@@ -1,4 +1,42 @@
 ------------------------------------------------------------------------------
+ooooooooooooooooooooooooooo  WDK Version 1.17  ooooooooooooooooooooooooooooooo
+------------------------------------------------------------------------------
+
+Summary: Unified EnumParam and FlatVocabParam
+
+        
+=========================== Model Features ===========================
+
+* Unified EnumParam & FlatVocabParam to use identical interfaces, and thus use
+  only one EnumParamBean and enumParamInput.tag
+  
+* As part of the unification, FlatVocabParam supports optional "Display" column;
+  If "Display" is not defined, Enum/FlatVocabParam will use "Term" by default.
+  
+* Add more constraints into model definition; the valid values for all boolean 
+  properties should be choose from "true" or "false", and enum values are listed
+  in wdkModel.rng as well;
+  
+* add new option, "dropSingle" to wdkCache command, which drops a single cache,
+  or a group of caches of same query;
+  
+* add documentations for model syntax and allowed values;
+  
+        
+=========================== View Features ===========================
+
+* added display "All" button in summary that lists all records when the size is
+  less than 1000; when all records are display for an answer, it won't be set
+  as the default page size for the similar answers from same question.
+  
+  
+============================= Bug Fixes ==============================
+  
+* solved a connection leak when reloading webapps;
+* display IdPrefix correctly for record.
+
+
+------------------------------------------------------------------------------
 ooooooooooooooooooooooooooo  WDK Version 1.15  ooooooooooooooooooooooooooooooo
 ------------------------------------------------------------------------------
 
