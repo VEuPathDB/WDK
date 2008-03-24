@@ -16,9 +16,6 @@
       <property name="svnurl" value="https://www.cbil.upenn.edu/svn/gus/WSF"/>
       <property name="project" value="WSF"/>
       <property name="version" value="WDK_version_1-17"/>
-      <condition property="useBranch">
-        <isset property="useBranch"/>
-      </condition>
     </ant>
   </target>
   
