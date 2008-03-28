@@ -306,7 +306,10 @@ public abstract class Query extends WdkModelBase {
             Boolean useTermOnly = paramRef.getUseTermOnly();
             String queryRef = paramRef.getQueryRef();
             String displayType = paramRef.getDisplayType();
-            if (param instanceof FlatVocabParam || param instanceof EnumParam) {
+            if (param instanceof AbstractEnumParam) {
+                if (param instanceof FlatVocabParam)
+                    ((FlatVocabParam) param).setServedQueryName(this.fullName);
+
                 // if the param has customized multi pick
                 if (multiPick != null)
                     ((AbstractEnumParam) param).setMultiPick(multiPick);
