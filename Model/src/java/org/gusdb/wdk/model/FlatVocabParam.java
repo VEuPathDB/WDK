@@ -1,11 +1,14 @@
 package org.gusdb.wdk.model;
 
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class FlatVocabParam extends AbstractEnumParam {
 
-    protected Query query;
-    protected String queryTwoPartName;
+    public static final String PARAM_SERVED_QUERY = "ServedQuery";
+    private Query query;
+    private String queryTwoPartName;
+    private String servedQueryName;
     
     public FlatVocabParam() {}
     
@@ -28,6 +31,13 @@ public class FlatVocabParam extends AbstractEnumParam {
         return query;
     }
 
+    /**
+     * @param servedQueryName the servedQueryName to set
+     */
+    public void setServedQueryName(String servedQueryName) {
+        this.servedQueryName = servedQueryName;
+    }
+
     // ///////////////////////////////////////////////////////////////////
     // /////////// Protected properties ////////////////////////////////////
     // ///////////////////////////////////////////////////////////////////
@@ -35,7 +45,15 @@ public class FlatVocabParam extends AbstractEnumParam {
     protected void resolveReferences(WdkModel model) throws WdkModelException {
         query = (Query) model.resolveReference(queryTwoPartName);
         query.resolveReferences(model);
-        // here check query's columns
+        
+        // add a served query param into flatVocabQuery, if it doesn't exist
+        if (null == query.getParam(PARAM_SERVED_QUERY)) {
+            StringParam param = new StringParam();
+            param.setName(PARAM_SERVED_QUERY);
+            param.setDefault(servedQueryName);
+            param.setAllowEmpty(true);
+            query.addParam(param);
+        }
     }
 
     public void setResources(WdkModel model) throws WdkModelException {
@@ -53,6 +71,11 @@ public class FlatVocabParam extends AbstractEnumParam {
             boolean hasDisplay = query.getColumnMap().containsKey("display");
 
             QueryInstance instance = query.makeInstance();
+            
+            // assign param value
+            Map<String, Object> values = new LinkedHashMap<String, Object>();
+            values.put(PARAM_SERVED_QUERY, servedQueryName);
+            instance.setValues(values);
             ResultList result = instance.getResult();
             while (result.next()) {
                 String term = result.getValue("term").toString();
