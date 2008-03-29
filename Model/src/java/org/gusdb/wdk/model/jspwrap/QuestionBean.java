@@ -118,8 +118,9 @@ public class QuestionBean {
         Map<String, AttributeFieldBean> saMap = new LinkedHashMap<String, AttributeFieldBean>();
         while (ai.hasNext()) {
             String attribName = ai.next();
-            saMap.put(attribName, new AttributeFieldBean(
-                    attribs.get(attribName)));
+            AttributeField field = attribs.get(attribName);
+            if (field == null) throw new RuntimeException("Attribute field '" + attribName + "' is missing.");
+            saMap.put(attribName, new AttributeFieldBean(field));
         }
         return saMap;
     }
