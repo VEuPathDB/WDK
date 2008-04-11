@@ -578,11 +578,14 @@ public class Answer {
     private void initPageRecordInstances() throws WdkModelException {
         if (pageRecordInstances != null) return;
 
+        RecordClass recordClass = question.getRecordClass();
+        
         // set instance variables projectColumnName and idsColumnName
         findPrimaryKeyColumnNames();
         idsQueryInstance.projectColumnName = recordProjectColumnName;
         idsQueryInstance.primaryKeyColumnName = recordIdColumnName;
         idsQueryInstance.setSortingColumns(getSortingColumns(sortingAttributes));
+        idsQueryInstance.SetRecordClass(recordClass);
 
         ResultList rl = idsQueryInstance.getPersistentResultPage(
                 startRecordInstanceI, endRecordInstanceI);
@@ -594,7 +597,6 @@ public class Answer {
             if (recordProjectColumnName != null)
                 project = rl.getValue(recordProjectColumnName).toString();
             String id = rl.getValue(recordIdColumnName).toString();
-            RecordClass recordClass = question.getRecordClass();
             RecordInstance nextRecordInstance = recordClass.makeRecordInstance(
                     project, id);
             nextRecordInstance.setDynamicAttributeFields(question.getDynamicAttributeFields());

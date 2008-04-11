@@ -69,6 +69,11 @@ public abstract class QueryInstance {
 
     protected Set<SortingColumn> sortingColumns;
 
+    /**
+     * The type of the records the query returns. Only applied to id query
+     */
+    protected RecordClass recordClass;
+
     // ------------------------------------------------------------------
     // Public Methods
     // ------------------------------------------------------------------
@@ -273,6 +278,10 @@ public abstract class QueryInstance {
 
     public Map<String, Object> getValuesMap() {
         return values;
+    }
+
+    public void SetRecordClass(RecordClass recordClass) {
+        this.recordClass = recordClass;
     }
 
     public abstract String getLowLevelQuery() throws WdkModelException;

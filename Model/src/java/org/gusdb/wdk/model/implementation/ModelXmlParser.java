@@ -62,6 +62,7 @@ import org.gusdb.wdk.model.RecordClassSet;
 import org.gusdb.wdk.model.ReporterProperty;
 import org.gusdb.wdk.model.ReporterRef;
 import org.gusdb.wdk.model.StringParam;
+import org.gusdb.wdk.model.SubType;
 import org.gusdb.wdk.model.TableField;
 import org.gusdb.wdk.model.TextAttributeField;
 import org.gusdb.wdk.model.Utilities;
@@ -283,6 +284,10 @@ public class ModelXmlParser extends XmlParser {
         digester.addCallMethod(
                 "wdkModel/recordClassSet/recordClass/reporter/property",
                 "setValue", 0);
+
+        // subType
+        configureNode(digester, "wdkModel/recordClassSet/recordClass/subType",
+                SubType.class, "addSubType");
 
         // attribute query ref
         configureNode(digester,
