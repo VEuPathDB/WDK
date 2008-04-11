@@ -543,7 +543,7 @@
 
       <zeroOrMore>  
         <choice>
-           <element name="reporter">
+          <element name="reporter">
              <attribute name="name" />
              <attribute name="displayName" />
              <ref name="IncludeExclude" />
@@ -560,10 +560,24 @@
                 <element name="property" >
                     <attribute name="name" />
                     <ref name="IncludeExclude" />
-                        <text />
+                    <text />
                 </element>
              </zeroOrMore>
-           </element>
+          </element>
+
+          <!-- a record can define zero to many sub types within a project, and
+               sub types are ignored if there's zero or one sub type -->
+          <element name="subType">
+            <attribute name="name" />
+            <attribute name="displayName" />
+            <ref name="IncludeExclude" />
+         </element>
+
+         <!-- the sqlFilter -->
+         <element name="sqlFilter">
+            <ref name="IncludeExclude" />
+            <text />
+         </element>
            
           <element name="attributeQueryRef">
               <attribute name="ref" />

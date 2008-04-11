@@ -94,10 +94,10 @@ public class ResultFactory {
 
     public ResultList getPersistentResultPage(QueryInstance instance,
             int startRow, int endRow) throws WdkModelException {
-
         if (!instance.getIsPersistent()) {
-            throw new WdkModelException(
-                    "Attempting to get a page a fgetNonpersistentResultrom non-perstent result");
+            throw new WdkModelException("Attempting to get a page from a "
+                    + "non-perstent result: "
+                    + instance.getQuery().getFullName());
         }
 
         // enable query logger
