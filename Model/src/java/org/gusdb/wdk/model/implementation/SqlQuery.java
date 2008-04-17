@@ -65,7 +65,7 @@ public class SqlQuery extends Query {
      * @param values
      *                These values are assumed to be pre-validated
      */
-    protected String instantiateSql(Map<String, String> values) {
+    public String instantiateSql(Map<String, String> values) {
         return instantiateSql(values, sql);
     }
 

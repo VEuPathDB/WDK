@@ -14,6 +14,7 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionServlet;
 import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.model.SubType;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.DatasetBean;
@@ -24,6 +25,7 @@ import org.gusdb.wdk.model.jspwrap.HistoryParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.QuestionSetBean;
+import org.gusdb.wdk.model.jspwrap.SubTypeBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
@@ -239,8 +241,26 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
             }
             qForm.getMyProps().put(p.getName(), pVal);
         }
+
         qForm.setQuestion(wdkQuestion);
         qForm.setParamsFilled(hasAllParams);
+
+        // set sub type default value
+        SubTypeBean subType = wdkQuestion.getRecordClass().getSubType();
+        if (subType != null) {
+            EnumParamBean subTypeParam = subType.getSubTypeParam();
+            String subTypeName = subTypeParam.getName();
+
+            qForm.getMyValues().put(subTypeName, subTypeParam.getVocab());
+            qForm.getMyLabels().put(subTypeName,
+                    getLengthBoundedLabels(subTypeParam.getDisplays()));
+
+            String subTypeValue = request.getParameter(subTypeName);
+            if (subTypeValue == null)
+                subTypeValue = qForm.getMyProp(subTypeName);
+            if (subTypeValue == null) subTypeValue = subTypeParam.getDefault();
+            qForm.getMyProps().put(subTypeName, subTypeValue);
+        }
 
         if (request.getParameter(CConstants.VALIDATE_PARAM) == "0") {
             qForm.setNonValidating();

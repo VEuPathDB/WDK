@@ -10,6 +10,8 @@ public class Utilities {
      */
     public static final String DATA_DIVIDER = "--WDK_DATA_DIVIDER--";
 
+    public static final String SUB_TYPE = "WDK_SUB_TYPE";
+
     /**
      * param values with is prefix means the result of that value is a checksum
      * for the real value. if the param is a datasetParam, then the checksum is
