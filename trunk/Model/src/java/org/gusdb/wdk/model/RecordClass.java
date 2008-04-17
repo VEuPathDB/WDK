@@ -78,11 +78,8 @@ public class RecordClass extends WdkModelBase {
     private List<ReporterRef> reporterList = new ArrayList<ReporterRef>();
     private Map<String, ReporterRef> reporterMap = new LinkedHashMap<String, ReporterRef>();
 
-    private String subTypeQueryRef;
-    private Query subTypeQuery;
-
     private List<SubType> subTypeList = new ArrayList<SubType>();
-    private Map<String, SubType> subTypeMap = new LinkedHashMap<String, SubType>();
+    private SubType subType;
 
     public RecordClass() {
         // make sure these keys are at the front of the list
@@ -140,10 +137,6 @@ public class RecordClass extends WdkModelBase {
 
     public void setAliasQueryRef(String queryRef) {
         this.aliasQueryName = queryRef;
-    }
-
-    public void setSubTypeQueryRef(String queryRef) {
-        this.subTypeQueryRef = queryRef;
     }
 
     /**
@@ -328,12 +321,8 @@ public class RecordClass extends WdkModelBase {
         return primaryKeyField;
     }
 
-    public Map<String, SubType> getSubTypes() {
-        return new LinkedHashMap<String, SubType>(subTypeMap);
-    }
-    
-    public Query getSubTypeQuery() {
-        return this.subTypeQuery;
+    public SubType getSubType() {
+        return subType;
     }
 
     public RecordInstance makeRecordInstance(String recordId)
@@ -479,8 +468,7 @@ public class RecordClass extends WdkModelBase {
         }
 
         // resolve reference for sub type query
-        if (subTypeQueryRef != null)
-            subTypeQuery = (Query) model.resolveReference(subTypeQueryRef);
+        if (subType != null) subType.resolveReferences(model);
     }
 
     /**
@@ -589,21 +577,11 @@ public class RecordClass extends WdkModelBase {
         for (SubType subType : subTypeList) {
             if (subType.include(projectId)) {
                 subType.excludeResources(projectId);
-                String subTypeName = subType.getName();
-                if (subTypeMap.containsKey(subTypeName))
-                    throw new WdkModelException("The SubType " + subTypeName
-                            + " is duplicated in recordClass "
-                            + this.getFullName());
-                subTypeMap.put(subTypeName, subType);
+                this.subType = subType;
+                break;
             }
         }
         subTypeList = null;
-
-        // verify if subTypeQueryRef is specified when #subtypes > 1
-        if (subTypeMap.size() > 1 && subTypeQueryRef == null)
-            throw new WdkModelException("There are more than one sub type "
-                    + "defined in " + getFullName() + ", but subTypeQueryRef "
-                    + "is missing.");
 
         // exclude attributes
         for (AttributeField field : attributeFieldList) {

@@ -224,10 +224,10 @@ public class QuestionBean {
      *            Index of the last record to include in the answer
      */
     public AnswerBean makeAnswer(Map<String, Object> paramValues, int start,
-            int end, Map<String, Boolean> sortingAttributes)
+            int end, Map<String, Boolean> sortingAttributes, Object subTypeValues)
             throws WdkModelException, WdkUserException {
         return new AnswerBean(question.makeAnswer(paramValues, start, end,
-                sortingAttributes));
+                sortingAttributes, subTypeValues));
     }
 
     public String getDescription() {

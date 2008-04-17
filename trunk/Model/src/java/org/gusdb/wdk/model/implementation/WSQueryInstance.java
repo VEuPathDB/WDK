@@ -19,6 +19,7 @@ import org.gusdb.wdk.model.QueryInstance;
 import org.gusdb.wdk.model.RDBMSPlatformI;
 import org.gusdb.wdk.model.ResultFactory;
 import org.gusdb.wdk.model.ResultList;
+import org.gusdb.wdk.model.SubType;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wsf.client.WsfService;
 import org.gusdb.wsf.client.WsfServiceServiceLocator;
@@ -122,7 +123,8 @@ public class WSQueryInstance extends QueryInstance {
             WsfService client = locator.getWsfService(getServiceUrl());
 
             // get the response from the web service
-            result = client.invokeEx(processName, invokeKey, params, columnNames);
+            result = client.invokeEx(processName, invokeKey, params,
+                    columnNames);
         }
         long end = System.currentTimeMillis();
         logger.debug("Client took " + ((end - start) / 1000.0) + " seconds.");
@@ -131,6 +133,38 @@ public class WSQueryInstance extends QueryInstance {
     }
 
     protected void writeResultToTable(String resultTableName, ResultFactory rf)
+            throws WdkModelException {
+        if (recordClass != null && recordClass.getSubType() != null) {
+            SubType subType = recordClass.getSubType();
+
+            // check if the value indicate to skip filter
+            if (subTypeValue == null
+                    || ((String) subTypeValue).equals(subType.getSubTypeIgnoreValue())) {
+                // skip subType filter
+                writeResultToTempTable(resultTableName, rf);
+                return;
+            }
+
+            // has sub type
+            String tempTable = resultTableName + "_t";
+            writeResultToTempTable(tempTable, rf);
+
+            String sql = getFilterSql(subType, tempTable);
+
+            RDBMSPlatformI platform = rf.getRDBMSPlatform();
+            try {
+                platform.createResultTable(platform.getDataSource(),
+                        resultTableName, sql);
+            } catch (SQLException e) {
+                throw new WdkModelException(e);
+            }
+        } else {
+            // no sub type, proceed as normal
+            writeResultToTempTable(resultTableName, rf);
+        }
+    }
+
+    private void writeResultToTempTable(String resultTableName, ResultFactory rf)
             throws WdkModelException {
 
         long start = System.currentTimeMillis();

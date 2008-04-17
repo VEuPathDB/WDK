@@ -19,17 +19,8 @@ public class SubTypeBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.SubType#getDisplayName()
      */
-    public String getDisplayName() {
-        return subType.getDisplayName();
-    }
-
-    /**
-     * @return
-     * @see org.gusdb.wdk.model.SubType#getName()
-     */
-    public String getName() {
-        return subType.getName();
+    public EnumParamBean getSubTypeParam() {
+        return new EnumParamBean(subType.getSubTypeParam());
     }
 }

@@ -14,11 +14,7 @@
 	<classpathentry kind="lib" path="lib/java/WSF-Client.jar"/>
 	<classpathentry kind="lib" path="lib/java/itext-2.0.4.jar"/>
 	<classpathentry kind="lib" path="lib/java/junit-4.3.1.jar"/>
-	<classpathentry kind="lib" path="lib/java/db_driver/ojdbc14.jar">
-		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/usr/local/oracle/lib"/>
-		</attributes>
-	</classpathentry>
+	<classpathentry kind="lib" path="lib/java/db_driver/ojdbc14.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/WSF Plugin"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/WSF Service"/>
 	<classpathentry kind="lib" path="/WSF Plugin/lib/java/commons-cli-1.0.jar"/>

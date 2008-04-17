@@ -7,6 +7,7 @@ import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.ReporterRef;
+import org.gusdb.wdk.model.SubType;
 import org.gusdb.wdk.model.TableField;
 import org.gusdb.wdk.model.WdkModelException;
 
@@ -125,5 +126,19 @@ public class RecordClassBean {
      */
     public RecordBean getRecord() {
         return makeRecord(projectId, recordId);
+    }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.RecordClass#getSubType()
+     */
+    public SubTypeBean getSubType() {
+        SubType subType = recordClass.getSubType();
+        if (subType == null) return null;
+        else return new SubTypeBean(subType);
+    }
+    
+    public boolean isHasSubType() {
+        return (recordClass.getSubType() != null);
     }
 }

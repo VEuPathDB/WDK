@@ -131,6 +131,8 @@ public class Answer {
         this.sortingAttributes = sortingAttributes;
 
         this.summaryAttributes = new LinkedHashMap<String, AttributeField>();
+        
+        this.idsQueryInstance.setRecordClass(question.getRecordClass());
 
         // TEST
         // StringBuffer sb = new StringBuffer( "Use sorting list: '" );
@@ -585,7 +587,6 @@ public class Answer {
         idsQueryInstance.projectColumnName = recordProjectColumnName;
         idsQueryInstance.primaryKeyColumnName = recordIdColumnName;
         idsQueryInstance.setSortingColumns(getSortingColumns(sortingAttributes));
-        idsQueryInstance.SetRecordClass(recordClass);
 
         ResultList rl = idsQueryInstance.getPersistentResultPage(
                 startRecordInstanceI, endRecordInstanceI);
@@ -943,5 +944,9 @@ public class Answer {
     public boolean hasProjectId() {
         String[] pkColumns = findPrimaryKeyColumnNames();
         return (pkColumns[1] != null);
+    }
+    
+    public Object getSubTypeValue() {
+        return idsQueryInstance.getSubTypeValue();
     }
 }

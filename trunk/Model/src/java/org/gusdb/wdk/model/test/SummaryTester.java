@@ -68,6 +68,11 @@ public class SummaryTester {
             validateRowCount(rows);
         }
 
+        // get subType, if any
+        String subTypeValue = null;
+        if (cmdLine.hasOption("subType"))
+            subTypeValue = cmdLine.getOptionValue("subType");
+
         try {
             // variable never used
             Reference ref = new Reference(questionFullName);
@@ -89,7 +94,7 @@ public class SummaryTester {
             int pageCount = 1;
 
             if (toXml) {
-                writeSummaryAsXml(question, paramValues, xmlFileName);
+                writeSummaryAsXml(question, paramValues, xmlFileName, subTypeValue);
                 return;
             }
 
@@ -98,7 +103,7 @@ public class SummaryTester {
                 int nextEndRow = Integer.parseInt(rows[i + 1]);
 
                 Answer answer = question.makeAnswer(paramValues, nextStartRow,
-                        nextEndRow);
+                        nextEndRow, subTypeValue);
 
                 // this is wrong. it only shows one attribute query, not
                 // all. Fix this in Answer by saving a list of attribute
@@ -152,18 +157,18 @@ public class SummaryTester {
             properties.loadFromXML(stream);
         } else properties.load(stream);
         stream.close();
-        
+
         for (Object obj : properties.keySet()) {
-            String key = (String)obj;
+            String key = (String) obj;
             config.put(key, properties.getProperty(key));
         }
         return config;
     }
 
     private static void writeSummaryAsXml(Question question,
-            Map<String, Object> paramValues, String xmlFile)
+            Map<String, Object> paramValues, String xmlFile, String subTypeValue)
             throws WdkModelException, WdkUserException, IOException {
-        Answer answer = question.makeAnswer(paramValues, 1, 10);
+        Answer answer = question.makeAnswer(paramValues, 1, 10, subTypeValue);
         int resultSize = answer.getResultSize();
         answer = question.makeAnswer(paramValues, 1, resultSize);
         FileWriter fw = new FileWriter(new File(xmlFile), false);
@@ -206,30 +211,31 @@ public class SummaryTester {
         Options options = new Options();
 
         // model name
-        addOption(
-                options,
-                "model",
-                "the name of the model.  This is used to find the Model XML file ($GUS_HOME/config/model_name.xml) the Model property file ($GUS_HOME/config/model_name.prop) and the Model config file ($GUS_HOME/config/model_name-config.xml)");
+        addOption(options, "model", "the name of the model.  This is used to "
+                + "find the Model XML file ($GUS_HOME/config/model_name.xml) "
+                + "the Model property file ($GUS_HOME/config/model_name.prop) "
+                + "and the Model config file "
+                + "($GUS_HOME/config/model_name-config.xml)");
 
         // question name
-        addOption(options, "question",
-                "The full name (set.element) of the question to run.");
+        addOption(options, "question", "The full name (set.element) of the "
+                + "question to run.");
 
         // rows to return
-        Option rows = new Option(
-                "rows",
-                "The start and end pairs of the summary rows to return. Ignored when toXml is turned on, but required otherwise.");
+        Option rows = new Option("rows", "The start and end pairs of the "
+                + "summary rows to return. Ignored when toXml is turned on, "
+                + "but required otherwise.");
         rows.setArgs(Option.UNLIMITED_VALUES);
         options.addOption(rows);
 
         // show query
-        Option showQuery = new Option("showQuery",
-                "Show the query as it will be run (with parameter values in place).");
+        Option showQuery = new Option("showQuery", "Show the query as it will "
+                + "be run (with parameter values in place).");
         options.addOption(showQuery);
 
         // output XML
-        Option toXml = new Option("toXml", true,
-                "output summary in XML format to given file");
+        Option toXml = new Option("toXml", true, "output summary in XML format"
+                + " to given file");
         options.addOption(toXml);
 
         // output XML
@@ -242,9 +248,14 @@ public class SummaryTester {
         options.addOption(format);
 
         // the config file for output format
-        Option config = new Option("config", true,
-                "The configuration file for " + "the output format");
+        Option config = new Option("config", true, "The configuration file "
+                + "for the output format");
         options.addOption(config);
+
+        // the sub type input
+        Option subType = new Option("subType", true, "The subType term used "
+                + "to filter (or not filter the result");
+        options.addOption(subType);
 
         // params
         Option params = new Option("params", true,
@@ -308,6 +319,7 @@ public class SummaryTester {
                 + " [-showQuery]"
                 + " [-toXml <xmlFile>|-fullRecords]"
                 + " [-format tabular | gff3 | fullRecords [-config <config_file>]]"
+                + " [-subType <subType term>]"
                 + " -params param_1_name param_1_value ...";
 
         String header = newline

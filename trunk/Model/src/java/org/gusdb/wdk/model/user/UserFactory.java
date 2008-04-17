@@ -52,8 +52,7 @@ public class UserFactory {
         // Return html string in an InputStream.
         // A new stream must be returned each time.
         public InputStream getInputStream() throws IOException {
-            if (html == null)
-                throw new IOException("Null HTML");
+            if (html == null) throw new IOException("Null HTML");
             return new ByteArrayInputStream(html.getBytes());
         }
 
@@ -90,8 +89,7 @@ public class UserFactory {
             if (obj instanceof HistoryKey) {
                 HistoryKey hkey = (HistoryKey) obj;
                 return ((this.userId == hkey.userId) && (this.historyId == hkey.historyId));
-            } else
-                return false;
+            } else return false;
         }
 
         /*
@@ -304,8 +302,7 @@ public class UserFactory {
             savePreferences(user);
 
             // generate a random password, and send to the user via email
-            if (resetPwd)
-                resetPassword(user);
+            if (resetPwd) resetPassword(user);
 
             return user;
         } catch (SQLException ex) {
@@ -842,12 +839,13 @@ public class UserFactory {
                 Answer answer;
 
                 // get the params
+                StringBuffer subTypeValues = new StringBuffer();
                 Map<String, Object> params;
                 if (history.isBoolean()) {
                     params = new LinkedHashMap<String, Object>();
                     params.put("Boolean Expression", paramsClob);
                 } else {
-                    params = parseParams(paramsClob);
+                    params = parseParams(paramsClob, subTypeValues);
                 }
                 history.setParams(params);
 
@@ -857,7 +855,8 @@ public class UserFactory {
                         answer = constructBooleanAnswer(user, paramsClob);
                         history.setBooleanExpression(paramsClob);
                     } else {
-                        answer = constructAnswer(user, questionName, params);
+                        answer = constructAnswer(user, questionName, params,
+                                subTypeValues);
                     }
                     history.setAnswer(answer);
                     histories.put(historyId, history);
@@ -924,12 +923,13 @@ public class UserFactory {
             history.setQuestionName(questionName);
 
             // get the params
+            StringBuffer subTypeValues = new StringBuffer();
             Map<String, Object> params;
             if (history.isBoolean()) {
                 params = new LinkedHashMap<String, Object>();
                 params.put("Boolean Expression", paramsClob);
             } else {
-                params = parseParams(paramsClob);
+                params = parseParams(paramsClob, subTypeValues);
             }
             history.setParams(params);
 
@@ -940,7 +940,8 @@ public class UserFactory {
                     answer = constructBooleanAnswer(user, paramsClob);
                     history.setBooleanExpression(paramsClob);
                 } else {
-                    answer = constructAnswer(user, questionName, params);
+                    answer = constructAnswer(user, questionName, params,
+                            subTypeValues);
                 }
                 history.setAnswer(answer);
             } catch (WdkModelException ex) {
@@ -961,11 +962,21 @@ public class UserFactory {
         }
     }
 
-    private Map<String, Object> parseParams(String paramsClob) {
+    private Map<String, Object> parseParams(String paramsClob,
+            StringBuffer subTypeValues) {
         String[] parts = paramsClob.split(Utilities.DATA_DIVIDER);
-        // the first element is query name, ignored
+        int base = 1;
+
+        // the first element is query name, ignored; the second and third params
+        // may be subtype label and subtype values associated with the query
+        // instance
+        if (parts[1].equals(Utilities.SUB_TYPE)) {
+            base = 3;
+            subTypeValues.append(parts[2]);
+        }
+
         Map<String, Object> params = new LinkedHashMap<String, Object>();
-        for (int i = 1; i < parts.length; i++) {
+        for (int i = base; i < parts.length; i++) {
             String pvPair = parts[i];
             int index = pvPair.indexOf('=');
             String paramName = pvPair.substring(0, index).trim();
@@ -976,15 +987,16 @@ public class UserFactory {
     }
 
     private Answer constructAnswer(User user, String questionName,
-            Map<String, Object> params) throws WdkModelException,
-            WdkUserException {
+            Map<String, Object> params, StringBuffer subTypeValues)
+            throws WdkModelException, WdkUserException {
         // obtain the question with full name
         Question question = (Question) wdkModel.resolveReference(questionName);
 
         // get the user's preferences
-
+        String subTypes = (subTypeValues.length() == 0) ? null : subTypeValues
+                .toString();
         Answer answer = question.makeAnswer(params, 1, user.getItemsPerPage(),
-                user.getSortingAttributes(questionName));
+                user.getSortingAttributes(questionName), subTypes);
         String[] summaryAttributes = user.getSummaryAttributes(questionName);
         answer.setSumaryAttributes(summaryAttributes);
         return answer;
@@ -1092,8 +1104,7 @@ public class UserFactory {
                         + "histories WHERE user_id = ?");
                 psMax.setInt(1, userId);
                 rsMax = psMax.executeQuery();
-                if (rsMax.next())
-                    historyId = rsMax.getInt("max_id");
+                if (rsMax.next()) historyId = rsMax.getInt("max_id");
 
                 connection.commit();
             }
@@ -1116,8 +1127,7 @@ public class UserFactory {
             throw new WdkUserException(ex);
         } finally {
             try {
-                if (connection != null)
-                    connection.setAutoCommit(true);
+                if (connection != null) connection.setAutoCommit(true);
                 SqlUtils.closeStatement(psHistory);
                 SqlUtils.closeResultSet(rsHistory);
                 SqlUtils.closeResultSet(rsMax);
@@ -1214,14 +1224,12 @@ public class UserFactory {
             StringBuffer sql = new StringBuffer();
             sql.append("DELETE FROM " + loginSchema + "histories "
                     + "WHERE user_id = ? ");
-            if (!allProjects)
-                sql.append("AND project_id = ?");
+            if (!allProjects) sql.append("AND project_id = ?");
             psHistory = SqlUtils.getPreparedStatement(dataSource, sql
                     .toString());
 
             psHistory.setInt(1, user.getUserId());
-            if (!allProjects)
-                psHistory.setString(2, projectId);
+            if (!allProjects) psHistory.setString(2, projectId);
             psHistory.executeUpdate();
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
@@ -1458,10 +1466,12 @@ public class UserFactory {
         savePassword(email, password);
 
         // send an email to the user
-        String message = emailContent.replaceAll("\\$\\$FIRST_NAME\\$\\$", Matcher.quoteReplacement(user
-                .getFirstName()));
-        message = message.replaceAll("\\$\\$EMAIL\\$\\$", Matcher.quoteReplacement(email));
-        message = message.replaceAll("\\$\\$PASSWORD\\$\\$", Matcher.quoteReplacement(password));
+        String message = emailContent.replaceAll("\\$\\$FIRST_NAME\\$\\$",
+                Matcher.quoteReplacement(user.getFirstName()));
+        message = message.replaceAll("\\$\\$EMAIL\\$\\$", Matcher
+                .quoteReplacement(email));
+        message = message.replaceAll("\\$\\$PASSWORD\\$\\$", Matcher
+                .quoteReplacement(password));
         sendEmail(user.getEmail(), supportEmail, emailSubject, message);
     }
 
