@@ -104,11 +104,20 @@ public class ShowSummaryAction extends ShowQuestionAction {
             } else {
                 summaryAttributes = wdkUser.getSummaryAttributes(questionName);
             }
+            
+            // get subType input, if any
+            String subTypeValue = null;
+            if (wdkQuestion.getRecordClass().isHasSubType()) {
+                String subTypeName = wdkQuestion.getRecordClass().getSubType().getSubTypeParam().getName();
+                subTypeValue = qForm.getMyProp(subTypeName);
+                // remove the subtype param
+                params.remove(subTypeName);
+            }
 
             // make the answer
             try {
                 wdkAnswer = summaryPaging(request, wdkQuestion, params,
-                        sortingAttributes, summaryAttributes);
+                        sortingAttributes, summaryAttributes, subTypeValue);
             } catch (WdkModelException ex) {
                 logger.error(ex);
                 ex.printStackTrace();
@@ -142,7 +151,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             params = wdkAnswer.getInternalParams();
 
             wdkAnswer = summaryPaging(request, null, params, sortingAttributes,
-                    summaryAttributes, wdkAnswer);
+                    summaryAttributes, wdkAnswer, null);
         }
 
         // delete empty history
@@ -268,21 +277,21 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
     protected AnswerBean booleanAnswerPaging(HttpServletRequest request,
             Object answerMaker) throws WdkModelException, WdkUserException {
-        return summaryPaging(request, answerMaker, null, null, null, null);
+        return summaryPaging(request, answerMaker, null, null, null, null, null);
     }
 
     protected AnswerBean summaryPaging(HttpServletRequest request,
             Object answerMaker, Map<String, Object> params,
-            Map<String, Boolean> sortingAttributes, String[] summaryAttributes)
+            Map<String, Boolean> sortingAttributes, String[] summaryAttributes, String subTypeValue)
             throws WdkModelException, WdkUserException {
         return summaryPaging(request, answerMaker, params, sortingAttributes,
-                summaryAttributes, null);
+                summaryAttributes, null, subTypeValue);
     }
 
     private AnswerBean summaryPaging(HttpServletRequest request,
             Object answerMaker, Map<String, Object> params,
             Map<String, Boolean> sortingAttributes, String[] summaryAttributes,
-            AnswerBean wdkAnswer) throws WdkModelException, WdkUserException {
+            AnswerBean wdkAnswer, Object subTypeValue) throws WdkModelException, WdkUserException {
         UserBean wdkUser = (UserBean) request.getSession().getAttribute(
                 CConstants.WDK_USER_KEY);
         int start = 1;
@@ -304,6 +313,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
         if (wdkAnswer != null) {
             answerMaker = wdkAnswer.getQuestion();
             params = wdkAnswer.getInternalParams();
+            subTypeValue = wdkAnswer.getSubTypeValue();
         }
         if (start < 1) {
             start = 1;
@@ -319,8 +329,9 @@ public class ShowSummaryAction extends ShowQuestionAction {
             if (question.isFullAnswer()) {
                 wdkAnswer = question.makeAnswer(params, sortingAttributes);
             } else {
+                
                 wdkAnswer = question.makeAnswer(params, start, end,
-                        sortingAttributes);
+                        sortingAttributes, subTypeValue);
             }
             wdkAnswer.setSumaryAttribute(summaryAttributes);
         } else if (answerMaker instanceof BooleanQuestionNodeBean) {

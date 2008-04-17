@@ -69,7 +69,7 @@ public class Question extends WdkModelBase {
     private Map<String, String[]> propertyListMap = new LinkedHashMap<String, String[]>();
 
     private WdkModel wdkModel;
-    
+
     private boolean noSummaryOnSingleRecord = false;
 
     // /////////////////////////////////////////////////////////////////////
@@ -79,7 +79,8 @@ public class Question extends WdkModelBase {
     /**
      * default constructor used by model parser
      */
-    public Question() {}
+    public Question() {
+    }
 
     /**
      * copy constructor
@@ -108,7 +109,7 @@ public class Question extends WdkModelBase {
         this.summaryAttributeMap.putAll(question.summaryAttributeMap);
         this.summaryAttributeNames = question.summaryAttributeNames;
         this.wdkModel = question.wdkModel;
-        
+
         this.noSummaryOnSingleRecord = question.noSummaryOnSingleRecord;
     }
 
@@ -165,14 +166,17 @@ public class Question extends WdkModelBase {
     }
 
     public Map<String, AttributeField> getReportMakerAttributeFields() {
-        Map<String, AttributeField> rmfields = recordClass.getReportMakerAttributeFieldMap();
+        Map<String, AttributeField> rmfields = recordClass
+                .getReportMakerAttributeFieldMap();
         if (dynamicAttributeSet != null)
-            rmfields.putAll(dynamicAttributeSet.getReportMakerAttributeFieldMap());
+            rmfields.putAll(dynamicAttributeSet
+                    .getReportMakerAttributeFieldMap());
         return rmfields;
     }
 
     public Map<String, TableField> getReportMakerTableFields() {
-        Map<String, TableField> rmfields = recordClass.getReportMakerTableFieldMap();
+        Map<String, TableField> rmfields = recordClass
+                .getReportMakerTableFieldMap();
         return rmfields;
     }
 
@@ -219,14 +223,14 @@ public class Question extends WdkModelBase {
             Map<String, Boolean> sortingAttributes) throws WdkUserException,
             WdkModelException {
         // get the result size by making a temp answer
-        Answer answer = makeAnswer(paramValues, 1, 1, sortingAttributes);
+        Answer answer = makeAnswer(paramValues, 1, 1, sortingAttributes, null);
         int resultSize = answer.getResultSize();
 
         // skip empty answers and one-record answers
         if (resultSize <= 1) return answer;
 
         // make an answer containing all records
-        return makeAnswer(paramValues, 1, resultSize, sortingAttributes);
+        return makeAnswer(paramValues, 1, resultSize, sortingAttributes, null);
     }
 
     /**
@@ -241,9 +245,13 @@ public class Question extends WdkModelBase {
      */
     public Answer makeAnswer(Map<String, Object> paramValues, int i, int j)
             throws WdkUserException, WdkModelException {
-        return makeAnswer(paramValues, i, j, sortingAttributeMap);
+        return makeAnswer(paramValues, i, j, sortingAttributeMap, null);
     }
 
+    public Answer makeAnswer(Map<String, Object> paramValues, int i, int j, String subTypeValue)
+            throws WdkUserException, WdkModelException {
+        return makeAnswer(paramValues, i, j, sortingAttributeMap, subTypeValue);
+    }
     /**
      * make an answer by given page range, sorted by the given attribute list.
      * 
@@ -256,10 +264,11 @@ public class Question extends WdkModelBase {
      * @throws WdkModelException
      */
     public Answer makeAnswer(Map<String, Object> paramValues, int i, int j,
-            Map<String, Boolean> sortingAttributes) throws WdkUserException,
-            WdkModelException {
+            Map<String, Boolean> sortingAttributes, Object subTypeValue)
+            throws WdkUserException, WdkModelException {
         QueryInstance qi = query.makeInstance();
         qi.setValues(paramValues);
+        qi.setSubTypeValue(subTypeValue);
         Answer answer = new Answer(this, qi, i, j, sortingAttributes);
 
         return answer;
@@ -431,7 +440,6 @@ public class Question extends WdkModelBase {
         this.fullAnswer = fullAnswer;
     }
 
-    
     /**
      * @return the noSummaryOnSingleRecord
      */
@@ -439,9 +447,9 @@ public class Question extends WdkModelBase {
         return noSummaryOnSingleRecord;
     }
 
-    
     /**
-     * @param noSummaryOnSingleRecord the noSummaryOnSingleRecord to set
+     * @param noSummaryOnSingleRecord
+     *            the noSummaryOnSingleRecord to set
      */
     public void setNoSummaryOnSingleRecord(boolean noSummaryOnSingleRecord) {
         this.noSummaryOnSingleRecord = noSummaryOnSingleRecord;
@@ -452,8 +460,8 @@ public class Question extends WdkModelBase {
     // /////////////////////////////////////////////////////////////////////
 
     Map<String, AttributeField> getDynamicAttributeFields() {
-        return dynamicAttributeSet == null ? null
-                : dynamicAttributeSet.getAttributeFields();
+        return dynamicAttributeSet == null ? null : dynamicAttributeSet
+                .getAttributeFields();
     }
 
     void setResources(WdkModel model) throws WdkModelException {
@@ -511,7 +519,8 @@ public class Question extends WdkModelBase {
                 summaryAttributeMap.put(name, attMap.get(name));
             }
         } else {
-            Map<String, AttributeField> recAttrsMap = getRecordClass().getAttributeFieldMap();
+            Map<String, AttributeField> recAttrsMap = getRecordClass()
+                    .getAttributeFieldMap();
             summaryAttributeMap = new LinkedHashMap<String, AttributeField>(
                     recAttrsMap);
             Iterator<String> ramI = recAttrsMap.keySet().iterator();
@@ -546,7 +555,8 @@ public class Question extends WdkModelBase {
 
         // needs to clone this summary attribute as well
         Map<String, AttributeField> sumAttributes = new LinkedHashMap<String, AttributeField>();
-        Map<String, AttributeField> attributes = recordClass.getAttributeFieldMap();
+        Map<String, AttributeField> attributes = recordClass
+                .getAttributeFieldMap();
         for (String attrName : summaryAttributeMap.keySet()) {
             if (attributes.containsKey(attrName))
                 sumAttributes.put(attrName, summaryAttributeMap.get(attrName));
@@ -709,8 +719,10 @@ public class Question extends WdkModelBase {
                             + " has more than one <attributesList> for "
                             + "project " + projectId);
                 } else {
-                    this.summaryAttributeNames = attributeList.getSummaryAttributeNames();
-                    this.sortingAttributeMap = attributeList.getSortingAttributeMap();
+                    this.summaryAttributeNames = attributeList
+                            .getSummaryAttributeNames();
+                    this.sortingAttributeMap = attributeList
+                            .getSortingAttributeMap();
                     hasAttributeList = true;
                 }
             }
@@ -744,8 +756,8 @@ public class Question extends WdkModelBase {
                             + "\" for project " + projectId);
                 } else {
                     propList.excludeResources(projectId);
-                    propertyListMap.put(propList.getName(),
-                            propList.getValues());
+                    propertyListMap.put(propList.getName(), propList
+                            .getValues());
                 }
             }
         }

@@ -7,6 +7,8 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.gusdb.wdk.model.implementation.SqlQuery;
+
 /**
  * Simple implementation of QueryInstanceI; generally expects its subclasses to
  * do most of the real implementation.
@@ -74,6 +76,8 @@ public abstract class QueryInstance {
      */
     protected RecordClass recordClass;
 
+    protected Object subTypeValue;
+
     // ------------------------------------------------------------------
     // Public Methods
     // ------------------------------------------------------------------
@@ -83,6 +87,10 @@ public abstract class QueryInstance {
         query.applyDefaults(values);
         query.validateParamValues(values);
         this.values = new LinkedHashMap<String, Object>(values);
+    }
+
+    public void setSubTypeValue(Object values) {
+        this.subTypeValue = values;
     }
 
     public boolean getIsCacheable() {
@@ -98,7 +106,7 @@ public abstract class QueryInstance {
 
     /**
      * @param cacheTable
-     *          the cacheTable to set
+     *            the cacheTable to set
      */
     public void setCacheTable(CacheTable cacheTable) {
         this.cacheTable = cacheTable;
@@ -210,7 +218,7 @@ public abstract class QueryInstance {
 
     /**
      * @param sortingColumns
-     *          the sortingColumns to set
+     *            the sortingColumns to set
      */
     void setSortingColumns(Set<SortingColumn> sortingColumns) {
         this.sortingColumns = sortingColumns;
@@ -243,6 +251,15 @@ public abstract class QueryInstance {
         sb.append(Utilities.DATA_DIVIDER);
         sb.append(query.getFullName());
         sb.append(Utilities.DATA_DIVIDER);
+        
+        // append sub types, if presented
+        if (recordClass != null && recordClass.getSubType() != null) {
+            sb.append(Utilities.SUB_TYPE);
+            sb.append(Utilities.DATA_DIVIDER);
+            sb.append(subTypeValue);
+            sb.append(Utilities.DATA_DIVIDER);
+        }
+        
         sb.append(getParamsContent());
         return sb.toString();
     }
@@ -270,7 +287,7 @@ public abstract class QueryInstance {
 
     /**
      * @param resultMessage
-     *          The resultMessage to set.
+     *            The resultMessage to set.
      */
     public void setResultMessage(String resultMessage) {
         this.resultMessage = resultMessage;
@@ -280,8 +297,12 @@ public abstract class QueryInstance {
         return values;
     }
 
-    public void SetRecordClass(RecordClass recordClass) {
+    public void setRecordClass(RecordClass recordClass) {
         this.recordClass = recordClass;
+    }
+    
+    public Object getSubTypeValue() {
+        return subTypeValue;
     }
 
     public abstract String getLowLevelQuery() throws WdkModelException;
@@ -304,6 +325,22 @@ public abstract class QueryInstance {
     protected int getSortingIndex() throws WdkModelException {
         // get sorting index, may involve creating sorting cache
         return cacheTable.getSortingIndex(sortingColumns);
+    }
+
+    protected String getFilterSql(SubType subType, String resultValue)
+            throws WdkModelException {
+        SqlQuery filterQuery = subType.getFilterQuery();
+        
+        Map<String, Object> filterValues = new LinkedHashMap<String, Object>();
+        filterValues.put(subType.getResultParam().getName(), "temp");
+        filterValues.put(subType.getSubTypeParam().getName(), subTypeValue);
+
+        Map<String, String> values = filterQuery.getInternalParamValues(filterValues);
+        // set the resultValue here to avoid the SQL being transformed incorrectly
+        values.put(subType.getResultParam().getName(), resultValue);
+        
+        String sql =  filterQuery.instantiateSql(values);
+        return sql;
     }
 
     protected abstract ResultList getNonpersistentResult()

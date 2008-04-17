@@ -564,21 +564,22 @@
                 </element>
              </zeroOrMore>
           </element>
-
-          <!-- a record can define zero to many sub types within a project, and
-               sub types are ignored if there's zero or one sub type -->
+          
           <element name="subType">
-            <attribute name="name" />
-            <attribute name="displayName" />
-            <ref name="IncludeExclude" />
+             <!-- a filter query for the sub types. There should be two params for the
+		           query, and the name should be matched with subTypeParamRef and
+		           cacheTableParamRef. the subType param should be a Enum or FlatVocab
+		           param; the value for cacheTable param will be the cache table name
+		           fetched by WDK at run time.
+		     -->
+             <ref name="IncludeExclude" />
+	         <attribute name="filterQueryRef" />
+             <optional>
+	             <attribute name="tranformQueryRef" />
+	         </optional>
+ 	         <attribute name="subTypeIgnoreValue" />
          </element>
-
-         <!-- the sqlFilter -->
-         <element name="sqlFilter">
-            <ref name="IncludeExclude" />
-            <text />
-         </element>
-           
+          
           <element name="attributeQueryRef">
               <attribute name="ref" />
               <ref name="IncludeExclude" />
