@@ -5,6 +5,7 @@ import java.io.PrintWriter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
@@ -52,7 +53,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
     public ActionForward execute( ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response )
             throws Exception {
-        System.out.println("Entering ProcessQuestionAction..");
+        System.out.println("Entering ProcessFilterAction...");
 
 	WdkModelBean wdkModel = ( WdkModelBean ) servlet.getServletContext().getAttribute(CConstants.WDK_MODEL_KEY );
         UserBean wdkUser = ( UserBean ) request.getSession().getAttribute(
@@ -72,30 +73,28 @@ public class ProcessFilterAction extends ProcessQuestionAction {
         // the value is too long, ti will be replaced is checksum
         Map< String, String > params = prepareParams( wdkUser, request, fForm );
         
-        HistoryBean history;
+	HistoryBean history;
         AnswerBean wdkAnswer;
-        Map<String, Object> internalParams;
+
+	// This seems really hacked in.  Should make it nicer.
+        Map<String, Object> internalParams = fForm.getMyProps();
+	fForm.setBooleanExpression(internalParams.remove("booleanExpression").toString());
+	fForm.setMyProps(internalParams);
+
 
         String strHistId = request.getParameter(CConstants.WDK_HISTORY_ID_KEY);
+       
         if (strHistId == null || strHistId.length() == 0) {
-	    if (wdkQuestion == null) {
-                wdkQuestion = fForm.getQuestion();
-            }
-            if (wdkQuestion == null) {
-                qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
-                if (qFullName != null)
-                    wdkQuestion = getQuestionByFullName(qFullName);
-            }
-            if (wdkQuestion == null) {
-                return showError(wdkModel, wdkUser, mapping, request, response);
-            }
-            String questionName = wdkQuestion.getFullName();
+	    String questionName = wdkQuestion.getFullName();
 	    
             internalParams = handleMultiPickParams(new LinkedHashMap<String, Object>(
                     fForm.getMyProps()));
             handleDatasetParams(wdkUser, wdkQuestion, internalParams);
 
-            // get sorting key, if have
+	    // This is pretty hacked in, how to make it better?
+	    //String booleanExpression = internalParams.remove("booleanExpression").toString();
+            
+	    // get sorting key, if have
             String sortingChecksum = request.getParameter(CConstants.WDK_SORTING_KEY);
             Map<String, Boolean> sortingAttributes;
             if (sortingChecksum != null) {
@@ -115,7 +114,6 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 summaryAttributes = wdkUser.getSummaryAttributes(questionName);
             }
 
-            // make the answer
             try {
                 wdkAnswer = summaryPaging(request, wdkQuestion, internalParams,
                         sortingAttributes, summaryAttributes);
@@ -161,29 +159,26 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 
         int historyId = history.getHistoryId();
 
+
+       	//NOTE:  booleanExpression wasn't coming in from FilterForm...why?
 	// Modify booleanExpression on FilterForm
 	String booleanExpression = fForm.getBooleanExpression();
 
-	if (booleanExpression.matches("^\\d+")) {
-	    booleanExpression += " " + historyId;
-	}
-	else if (booleanExpression.matches("\\d$")) {
-	    booleanExpression = historyId + " " + booleanExpression;
-	}
-	else {
-	    // The partial booleanExpression needs to either start w/ a historyId or end with one
-	    return showError(wdkModel, wdkUser, mapping, request, response);
-	}
+	booleanExpression += " " + historyId;
+	
 	fForm.setBooleanExpression(booleanExpression);
-		
-	// Cast to (BEForm) and forward control to ProcessBEAction
+	
+	/*
+	// Run boolean expression and forward control to ShowSummary
 	try {
-	    BooleanExpressionForm beForm = (BooleanExpressionForm) fForm;
-	    String userAnswerIdStr = processBooleanExpression(request, beForm);
+	    String userAnswerIdStr = processBooleanExpression(request, (BooleanExpressionForm) fForm);
 	    
+	    System.out.println("Building ActionForward...");
 	    ActionForward fwd = mapping
-		.findForward(CConstants.PROCESS_BOOLEAN_EXPRESSION_MAPKEY);
+		.findForward(CConstants.SHOW_SUMMARY_MAPKEY);
+	    System.out.println("Getting path from forward...");
 	    String path = fwd.getPath();
+	    System.out.println("Path: " + path);
 	    if (path.indexOf("?") > 0) {
 		if (path.indexOf(CConstants.WDK_HISTORY_ID_KEY) < 0) {
 		    path += "&" + CConstants.WDK_HISTORY_ID_KEY + "="
@@ -193,26 +188,41 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 		path += "?" + CConstants.WDK_HISTORY_ID_KEY + "="
 		    + userAnswerIdStr;
 	    }
-	    
+	    System.out.println("Returning ActionForward...");
 	    return new ActionForward(path);
 	} catch (Exception ex) {
 	    ex.printStackTrace();
 	    throw ex;
 	}
+	*/
+    
+	// forward to ProcessBooleanExpressionAction
+        ActionForward processBoolean = mapping.findForward( CConstants.PROCESS_BOOLEAN_EXPRESSION_MAPKEY );
+        StringBuffer url = new StringBuffer( processBoolean.getPath() );
+        url.append( "?booleanExpression=" + URLEncoder.encode(booleanExpression ));
+	url.append("&historySectionId=" + URLEncoder.encode(wdkQuestion.getRecordClass().getFullName()) + "&submit=Get+Combined+Result");
+	
+        logger.info(url);
+
+        // construct the forward to show_summary action
+        ActionForward forward = new ActionForward( url.toString() );
+        forward.setRedirect( true );
+        return forward;
     }
     
+    /*
     private String processBooleanExpression(HttpServletRequest request,
 		   BooleanExpressionForm beForm) throws WdkModelException,
 							WdkUserException {
 	UserBean wdkUser = (UserBean) request.getSession().getAttribute(
 									CConstants.WDK_USER_KEY);
-	HistoryBean history = wdkUser.combineHistory(beForm
-						     .getBooleanExpression());
+	HistoryBean history = wdkUser.combineHistory(beForm.getBooleanExpression());
 	int historyId = history.getHistoryId();
 	request.setAttribute(CConstants.WDK_HISTORY_ID_KEY, historyId);
 	return Integer.toString(historyId);
     }
-    
+    */
+
     private Map< String, String > prepareParams( UserBean user,
             HttpServletRequest request, FilterForm fform )
             throws WdkModelException, WdkUserException {
@@ -373,17 +383,15 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 if (cgiParamVal == null) cgiParamVal = p.getDefault();
                 pVal = cgiParamVal;
             }
-
-            /*
-             * System.out.println( "DEBUG: param " + p.getName() + " = '" + pVal +
-             * "'" );
-             */
+	    
+	    //System.out.println( "DEBUG: param " + p.getName() + " = '" + pVal + "'" );
+           
             if (pVal == null) {
                 hasAllParams = false;
                 pVal = p.getDefault();
             }
-            fForm.getMyProps().put(p.getName(), pVal);
-        }
+	    fForm.getMyProps().put(p.getName(), pVal);
+	}
         fForm.setQuestion(wdkQuestion);
         fForm.setParamsFilled(hasAllParams);
 
