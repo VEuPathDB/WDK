@@ -42,9 +42,9 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
 /**
  * This Action is called by the ActionServlet when a WDK filter is requested.  It
- * 1) reads param values from input form bean, 2) runs the filter query 3) performs
- * the requested boolean action and 3) forwards control to a jsp page that displays
- * a summary.
+ * 1) reads param values from input form bean, 2) runs the filter query 3) completes
+ * the partial boolean expression that was passed in 4) forwards control to
+ * ProcessBooleanExpressionAction
  */
 
 public class ProcessFilterAction extends ProcessQuestionAction {
@@ -53,7 +53,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
     public ActionForward execute( ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response )
             throws Exception {
-        System.out.println("Entering ProcessFilterAction...");
+        System.out.println("Entering ProcessFilterAction BLAH...");
 
 	WdkModelBean wdkModel = ( WdkModelBean ) servlet.getServletContext().getAttribute(CConstants.WDK_MODEL_KEY );
         UserBean wdkUser = ( UserBean ) request.getSession().getAttribute(
@@ -69,89 +69,60 @@ public class ProcessFilterAction extends ProcessQuestionAction {
         FilterForm fForm = prepareFilterForm( wdkQuestion, request,
                 ( FilterForm ) form );
         
-        // the params has been validated, and now is parsed, and if the size of
-        // the value is too long, ti will be replaced is checksum
+	// validate & parse params
         Map< String, String > params = prepareParams( wdkUser, request, fForm );
         
 	HistoryBean history;
         AnswerBean wdkAnswer;
 
-	// This seems really hacked in.  Should make it nicer.
+	// Having booleanExpression present causes question to break (due to unrecognized
+	// parameter).  Remove booleanExpression from params, and set using inherited method
+	// from BooleanExpressionForm.
         Map<String, Object> internalParams = fForm.getMyProps();
 	fForm.setBooleanExpression(internalParams.remove("booleanExpression").toString());
 	fForm.setMyProps(internalParams);
 
-
-        String strHistId = request.getParameter(CConstants.WDK_HISTORY_ID_KEY);
-       
-        if (strHistId == null || strHistId.length() == 0) {
-	    String questionName = wdkQuestion.getFullName();
-	    
-            internalParams = handleMultiPickParams(new LinkedHashMap<String, Object>(
-                    fForm.getMyProps()));
-            handleDatasetParams(wdkUser, wdkQuestion, internalParams);
-
-	    // This is pretty hacked in, how to make it better?
-	    //String booleanExpression = internalParams.remove("booleanExpression").toString();
-            
-	    // get sorting key, if have
-            String sortingChecksum = request.getParameter(CConstants.WDK_SORTING_KEY);
-            Map<String, Boolean> sortingAttributes;
-            if (sortingChecksum != null) {
-                sortingAttributes = wdkUser.getSortingAttributesByChecksum(sortingChecksum);
-                request.setAttribute("wdk_sorting_checksum", sortingChecksum);
-            } else {
-                sortingAttributes = wdkUser.getSortingAttributes(questionName);
-            }
-
-            // get summary key, if have
-            String summaryChecksum = request.getParameter(CConstants.WDK_SUMMARY_KEY);
-            String[] summaryAttributes = null;
-            if (summaryChecksum != null) {
-                summaryAttributes = wdkUser.getSummaryAttributesByChecksum(summaryChecksum);
-                request.setAttribute("wdk_summary_checksum", sortingChecksum);
-            } else {
-                summaryAttributes = wdkUser.getSummaryAttributes(questionName);
-            }
-
-            try {
-                wdkAnswer = summaryPaging(request, wdkQuestion, internalParams,
-                        sortingAttributes, summaryAttributes);
-            } catch (WdkModelException ex) {
-                logger.error(ex);
-                ex.printStackTrace();
-                return showError(wdkModel, wdkUser, mapping, request, response);
-            } catch (WdkUserException ex) {
-                logger.error(ex);
-                ex.printStackTrace();
-                return showError(wdkModel, wdkUser, mapping, request, response);
-            }
-
-            // create history
-            history = wdkUser.createHistory(wdkAnswer);
-        } else {
-            history = wdkUser.getHistory(Integer.parseInt(strHistId));
-
-            // check if history is still valid
-            if (!history.isValid()) {
-                return showError(wdkModel, wdkUser, mapping, request, response);
-            }
-
-            wdkAnswer = history.getAnswer();
-            // update the estimate size, in case the database has changed
-            history.setEstimateSize(wdkAnswer.getResultSize());
-            history.update();
-
-            // get sorting and summary attributes
-            String questionName = wdkAnswer.getQuestion().getFullName();
-            Map<String, Boolean> sortingAttributes = wdkUser.getSortingAttributes(questionName);
-            String[] summaryAttributes = wdkUser.getSummaryAttributes(questionName);
-
-            internalParams = wdkAnswer.getInternalParams();
-
-            wdkAnswer = summaryPaging(request, null, internalParams, sortingAttributes,
-                    summaryAttributes, wdkAnswer);
-        }
+	// Get question name
+	String questionName = wdkQuestion.getFullName();
+	
+	internalParams = handleMultiPickParams(new LinkedHashMap<String, Object>(fForm.getMyProps()));
+	handleDatasetParams(wdkUser, wdkQuestion, internalParams);
+	
+	// get sorting key, if have
+	String sortingChecksum = request.getParameter(CConstants.WDK_SORTING_KEY);
+	Map<String, Boolean> sortingAttributes;
+	if (sortingChecksum != null) {
+	    sortingAttributes = wdkUser.getSortingAttributesByChecksum(sortingChecksum);
+	    request.setAttribute("wdk_sorting_checksum", sortingChecksum);
+	} else {
+	    sortingAttributes = wdkUser.getSortingAttributes(questionName);
+	}
+	
+	// get summary key, if have
+	String summaryChecksum = request.getParameter(CConstants.WDK_SUMMARY_KEY);
+	String[] summaryAttributes = null;
+	if (summaryChecksum != null) {
+	    summaryAttributes = wdkUser.getSummaryAttributesByChecksum(summaryChecksum);
+	    request.setAttribute("wdk_summary_checksum", sortingChecksum);
+	} else {
+	    summaryAttributes = wdkUser.getSummaryAttributes(questionName);
+	}
+	
+	try {
+	    wdkAnswer = summaryPaging(request, wdkQuestion, internalParams,
+				      sortingAttributes, summaryAttributes);
+	} catch (WdkModelException ex) {
+	    logger.error(ex);
+	    ex.printStackTrace();
+	    return showError(wdkModel, wdkUser, mapping, request, response);
+	} catch (WdkUserException ex) {
+	    logger.error(ex);
+	    ex.printStackTrace();
+	    return showError(wdkModel, wdkUser, mapping, request, response);
+	}
+	
+	// create history
+	history = wdkUser.createHistory(wdkAnswer);
 
         // delete empty history
         if (history != null && history.getEstimateSize() == 0)
@@ -159,69 +130,32 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 
         int historyId = history.getHistoryId();
 
-
-       	//NOTE:  booleanExpression wasn't coming in from FilterForm...why?
-	// Modify booleanExpression on FilterForm
+	// Get partial booleanExpression from form, complete it with history id
+	// of filter question results, and set the complete expression on the form
 	String booleanExpression = fForm.getBooleanExpression();
-
 	booleanExpression += " " + historyId;
-	
 	fForm.setBooleanExpression(booleanExpression);
-	
-	/*
-	// Run boolean expression and forward control to ShowSummary
-	try {
-	    String userAnswerIdStr = processBooleanExpression(request, (BooleanExpressionForm) fForm);
-	    
-	    System.out.println("Building ActionForward...");
-	    ActionForward fwd = mapping
-		.findForward(CConstants.SHOW_SUMMARY_MAPKEY);
-	    System.out.println("Getting path from forward...");
-	    String path = fwd.getPath();
-	    System.out.println("Path: " + path);
-	    if (path.indexOf("?") > 0) {
-		if (path.indexOf(CConstants.WDK_HISTORY_ID_KEY) < 0) {
-		    path += "&" + CConstants.WDK_HISTORY_ID_KEY + "="
-			+ userAnswerIdStr;
-		}
-	    } else {
-		path += "?" + CConstants.WDK_HISTORY_ID_KEY + "="
-		    + userAnswerIdStr;
-	    }
-	    System.out.println("Returning ActionForward...");
-	    return new ActionForward(path);
-	} catch (Exception ex) {
-	    ex.printStackTrace();
-	    throw ex;
-	}
-	*/
     
 	// forward to ProcessBooleanExpressionAction
         ActionForward processBoolean = mapping.findForward( CConstants.PROCESS_BOOLEAN_EXPRESSION_MAPKEY );
         StringBuffer url = new StringBuffer( processBoolean.getPath() );
-        url.append( "?booleanExpression=" + URLEncoder.encode(booleanExpression ));
+        url.append( "?booleanExpression=" + URLEncoder.encode(fForm.getBooleanExpression()));
 	url.append("&historySectionId=" + URLEncoder.encode(wdkQuestion.getRecordClass().getFullName()) + "&submit=Get+Combined+Result");
 	
         logger.info(url);
 
-        // construct the forward to show_summary action
+        // construct the forward to ProcessBoolean action
         ActionForward forward = new ActionForward( url.toString() );
         forward.setRedirect( true );
         return forward;
     }
-    
+
     /*
-    private String processBooleanExpression(HttpServletRequest request,
-		   BooleanExpressionForm beForm) throws WdkModelException,
-							WdkUserException {
-	UserBean wdkUser = (UserBean) request.getSession().getAttribute(
-									CConstants.WDK_USER_KEY);
-	HistoryBean history = wdkUser.combineHistory(beForm.getBooleanExpression());
-	int historyId = history.getHistoryId();
-	request.setAttribute(CConstants.WDK_HISTORY_ID_KEY, historyId);
-	return Integer.toString(historyId);
-    }
-    */
+     *
+     *  These methods were scavenged from ProcessQuestionAction, and modified to accept
+     *  a FilterForm instead of a QuestionForm.
+     *
+     */
 
     private Map< String, String > prepareParams( UserBean user,
             HttpServletRequest request, FilterForm fform )
