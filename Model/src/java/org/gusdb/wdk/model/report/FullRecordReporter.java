@@ -94,8 +94,8 @@ public class FullRecordReporter extends Reporter {
         // get basic configurations
         if (config.containsKey(FIELD_HAS_EMPTY_TABLE)) {
             String value = config.get(FIELD_HAS_EMPTY_TABLE);
-            hasEmptyTable = (value.equalsIgnoreCase("yes") || value.equalsIgnoreCase("true"))
-                    ? true : false;
+            hasEmptyTable = (value.equalsIgnoreCase("yes") || value.equalsIgnoreCase("true")) ? true
+                    : false;
         }
     }
 
@@ -181,7 +181,7 @@ public class FullRecordReporter extends Reporter {
                 psCheck = SqlUtils.getPreparedStatement(dataSource, "SELECT "
                         + "count(*) AS cache_count FROM " + tableCache
                         + " WHERE " + recordIdColumn + " = ? "
-                        + " AND table_name NOT LIKE 'gff_%' "
+                        + " AND table_name = ? "
                         + (hasProjectId ? " AND project_id = ?" : ""));
             }
             int recordCount = 0;
@@ -195,27 +195,9 @@ public class FullRecordReporter extends Reporter {
                     // print out attributes of the record first
                     formatAttributes(record, attributes, writer);
 
-                    // check if the record has been cached
-                    boolean hasCached = false;
-                    if (tableCache != null) {
-                        psCheck.setString(1,
-                                record.getPrimaryKey().getRecordId());
-                        if (hasProjectId) {
-                            String projectId = record.getPrimaryKey().getProjectId();
-                            psCheck.setString(2, projectId);
-                        }
-                        ResultSet rs = psCheck.executeQuery();
-                        try {
-                            rs.next();
-                            int count = rs.getInt("cache_count");
-                            if (count > 0) hasCached = true;
-                        } finally {
-                            rs.close();
-                        }
-                    }
                     // print out tables
                     formatTables(record, tables, writer, pageAnswer, psCache,
-                            hasCached);
+                            psCheck);
 
                     writer.println();
                     writer.println("------------------------------------------------------------");
@@ -280,11 +262,12 @@ public class FullRecordReporter extends Reporter {
 
     private void formatTables(RecordInstance record, Set<TableField> tables,
             PrintWriter writer, Answer answer, PreparedStatement psCache,
-            boolean hasCached) throws WdkModelException, SQLException {
+            PreparedStatement psCheck) throws WdkModelException, SQLException {
         RDBMSPlatformI platform = answer.getQuestion().getWdkModel().getPlatform();
         boolean hasProjectId = answer.hasProjectId();
 
         // print out tables of the record
+        boolean needUpdate = false;
         for (TableField table : tables) {
             TableFieldValue tableValue = record.getTableValue(table.getName());
             Iterator rows = tableValue.getRows();
@@ -323,18 +306,32 @@ public class FullRecordReporter extends Reporter {
             tableValue.getClose();
             String content = sb.toString();
 
-            if (tableCache != null && !hasCached) {
-                // save into table cache
+            // check if the record has been cached
+            if (tableCache != null) {
                 String recordId = record.getPrimaryKey().getRecordId();
-                psCache.setString(1, recordId);
-                psCache.setString(2, table.getName());
-                psCache.setInt(3, tableSize);
-                platform.updateClobData(psCache, 4, content, false);
+                String projectId = record.getPrimaryKey().getProjectId();
+
+                psCheck.setString(1, recordId);
+                psCheck.setString(2, table.getName());
                 if (hasProjectId) {
-                    String projectId = record.getPrimaryKey().getProjectId();
-                    psCache.setString(5, projectId);
+                    psCheck.setString(3, projectId);
                 }
-                psCache.addBatch();
+                ResultSet rs = psCheck.executeQuery();
+                rs.next();
+                int count = rs.getInt("cache_count");
+                if (count == 0) {
+                    // save into table cache
+                    psCache.setString(1, recordId);
+                    psCache.setString(2, table.getName());
+                    psCache.setInt(3, tableSize);
+                    platform.updateClobData(psCache, 4, content, false);
+                    if (hasProjectId) {
+                        psCache.setString(5, projectId);
+                    }
+                    psCache.addBatch();
+                    needUpdate = true;
+                }
+                rs.close();
             }
 
             // write to the stream
@@ -343,7 +340,7 @@ public class FullRecordReporter extends Reporter {
                 writer.flush();
             }
         }
-        if (tableCache != null && !hasCached) psCache.executeBatch();
+        if (tableCache != null && needUpdate) psCache.executeBatch();
     }
 
     private void formatRecord2PDF(Set<AttributeField> attributes,
