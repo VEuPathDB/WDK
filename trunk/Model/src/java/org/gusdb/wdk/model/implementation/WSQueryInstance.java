@@ -141,13 +141,13 @@ public class WSQueryInstance extends QueryInstance {
             if (subTypeValue == null
                     || ((String) subTypeValue).equals(subType.getSubTypeIgnoreValue())) {
                 // skip subType filter
-                writeResultToTempTable(resultTableName, rf);
+                writeResultToTempTable(resultTableName, rf, true);
                 return;
             }
 
             // has sub type
             String tempTable = resultTableName + "_t";
-            writeResultToTempTable(tempTable, rf);
+            writeResultToTempTable(tempTable, rf, false);
 
             String sql = getFilterSql(subType, tempTable);
 
@@ -155,17 +155,19 @@ public class WSQueryInstance extends QueryInstance {
             try {
                 platform.createResultTable(platform.getDataSource(),
                         resultTableName, sql);
+                // delete the temp table
+                platform.dropTable(tempTable);
             } catch (SQLException e) {
                 throw new WdkModelException(e);
             }
         } else {
             // no sub type, proceed as normal
-            writeResultToTempTable(resultTableName, rf);
+            writeResultToTempTable(resultTableName, rf, true);
         }
     }
 
-    private void writeResultToTempTable(String resultTableName, ResultFactory rf)
-            throws WdkModelException {
+    private void writeResultToTempTable(String resultTableName,
+            ResultFactory rf, boolean addHelpColumns) throws WdkModelException {
 
         long start = System.currentTimeMillis();
 
@@ -186,46 +188,58 @@ public class WSQueryInstance extends QueryInstance {
                 + resultTableName + "(");
         StringBuffer insertSqlB = new StringBuffer("insert into "
                 + resultTableName + " (");
-        StringBuffer insertSqlV = new StringBuffer(" values (");
+        StringBuffer insertSqlV = new StringBuffer(") values (");
 
+        String clobType = platform.getClobDataType();
         boolean hasProjectId = false;
-
+        boolean firstColumn = true;
         for (Column column : columns) {
             String colName = column.getName();
-            int cw = column.getWidth();
 
             // check if it is a project_id column
             if (colName.equals(Query.PROJECT_ID_COLUMN)) hasProjectId = true;
 
-            // the clob datatype is DBMS specific
-            String clobType = platform.getClobDataType();
+            if (firstColumn) firstColumn = false;
+            else {
+                createSqlB.append(", ");
+                insertSqlB.append(", ");
+                insertSqlV.append(", ");
+            }
             createSqlB.append(colName + " ");
+
+            // the clob datatype is DBMS specific
+            int cw = column.getWidth();
             if (cw >= CLOB_WIDTH_THRESHOLD) {
-                createSqlB.append(clobType + ", ");
+                createSqlB.append(clobType);
                 clobCols.add(colName);
             } else {
-                createSqlB.append("varchar(" + cw + "), ");
+                createSqlB.append("varchar(" + cw + ")");
             }
-            insertSqlB.append(colName + ", ");
-            insertSqlV.append("?,");
+            insertSqlB.append(colName);
+            insertSqlV.append("?");
         }
         // check if we need to add a project_id column
         if (!hasProjectId) {
-            createSqlB.append(Query.PROJECT_ID_COLUMN + " varchar(50), ");
-            insertSqlB.append(Query.PROJECT_ID_COLUMN + ", ");
-            insertSqlV.append("'" + query.getProjectId() + "', ");
+            // ASSUME: project_id will never be the only column
+            createSqlB.append(", " + Query.PROJECT_ID_COLUMN + " varchar(50)");
+            insertSqlB.append(", " + Query.PROJECT_ID_COLUMN);
+            insertSqlV.append(", '" + query.getProjectId() + "'");
         }
 
-        createSqlB.append(ResultFactory.RESULT_TABLE_I + " "
-                + platform.getNumberDataType() + " (12), ");
-        createSqlB.append(ResultFactory.COLUMN_SORTING_INDEX + " "
-                + platform.getNumberDataType() + " (12))");
+        if (addHelpColumns) {
+            createSqlB.append(ResultFactory.RESULT_TABLE_I + " "
+                    + platform.getNumberDataType() + " (12), ");
+            createSqlB.append(ResultFactory.COLUMN_SORTING_INDEX + " "
+                    + platform.getNumberDataType() + " (12)");
 
-        // set sorting index id as 0 by default
-        insertSqlB.append(ResultFactory.RESULT_TABLE_I + ", ");
-        insertSqlB.append(ResultFactory.COLUMN_SORTING_INDEX + ") ");
+            // set sorting index id as 0 by default
+            insertSqlB.append(", " +ResultFactory.RESULT_TABLE_I);
+            insertSqlB.append(", " + ResultFactory.COLUMN_SORTING_INDEX);
+            insertSqlV.append("?, 0");
+        }
+        createSqlB.append(")");
         insertSqlB.append(insertSqlV);
-        insertSqlB.append("?, 0)");
+        insertSqlB.append(")");
 
         PreparedStatement pstmt = null;
         try {
