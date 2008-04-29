@@ -227,7 +227,7 @@ public class WSQueryInstance extends QueryInstance {
         }
 
         if (addHelpColumns) {
-            createSqlB.append(ResultFactory.RESULT_TABLE_I + " "
+            createSqlB.append(", " + ResultFactory.RESULT_TABLE_I + " "
                     + platform.getNumberDataType() + " (12), ");
             createSqlB.append(ResultFactory.COLUMN_SORTING_INDEX + " "
                     + platform.getNumberDataType() + " (12)");
@@ -235,11 +235,14 @@ public class WSQueryInstance extends QueryInstance {
             // set sorting index id as 0 by default
             insertSqlB.append(", " +ResultFactory.RESULT_TABLE_I);
             insertSqlB.append(", " + ResultFactory.COLUMN_SORTING_INDEX);
-            insertSqlV.append("?, 0");
+            insertSqlV.append(", ?, 0");
         }
         createSqlB.append(")");
         insertSqlB.append(insertSqlV);
         insertSqlB.append(")");
+
+	logger.info("caryP::: " + createSqlB.toString());
+	logger.info("cary_::: " + insertSqlB.toString());
 
         PreparedStatement pstmt = null;
         try {
