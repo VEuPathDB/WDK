@@ -163,6 +163,7 @@ public class BooleanExpression {
         BooleanQuestionNode leaf = new BooleanQuestionNode(
                 answer.getQuestion(), null );
         leaf.setValues( new LinkedHashMap< String, Object >( answer.getParams() ) );
+        leaf.setSubTypeValue((String)answer.getSubTypeValue());
         return leaf;
     }
     

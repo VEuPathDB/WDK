@@ -139,7 +139,7 @@ public class WSQueryInstance extends QueryInstance {
 
             // check if the value indicate to skip filter
             if (subTypeValue == null
-                    || ((String) subTypeValue).equals(subType.getSubTypeIgnoreValue())) {
+                    || ((String) subTypeValue).equals(subType.getTermToSkip())) {
                 // skip subType filter
                 writeResultToTempTable(resultTableName, rf, true);
                 return;
@@ -149,7 +149,7 @@ public class WSQueryInstance extends QueryInstance {
             String tempTable = resultTableName + "_t";
             writeResultToTempTable(tempTable, rf, false);
 
-            String sql = getFilterSql(subType, tempTable);
+            String sql = getFilterSql(tempTable);
 
             RDBMSPlatformI platform = rf.getRDBMSPlatform();
             try {

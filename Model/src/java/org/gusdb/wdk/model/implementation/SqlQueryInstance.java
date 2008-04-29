@@ -96,8 +96,8 @@ public class SqlQueryInstance extends QueryInstance {
                 SubType subType = recordClass.getSubType();
                 // skip if the value equals the ignore subType value.
                 if (subTypeValue != null
-                        && !((String) subTypeValue).equals(subType.getSubTypeIgnoreValue())) {
-                    sql = getFilterSql(subType, sql);
+                        && !((String) subTypeValue).equals(subType.getTermToSkip())) {
+                    sql = getFilterSql(sql);
                 }
             }
             return sql;
