@@ -133,23 +133,6 @@ public class Answer {
         this.summaryAttributes = new LinkedHashMap<String, AttributeField>();
         
         this.idsQueryInstance.setRecordClass(question.getRecordClass());
-
-        // TEST
-        // StringBuffer sb = new StringBuffer( "Use sorting list: '" );
-        // for ( String attrName : sortingAttributes.keySet() ) {
-        // sb.append( attrName );
-        // sb.append( sortingAttributes.get( attrName ) ? " ASC, " : " DESC, "
-        // );
-        // }
-        // sb.append( "'" );
-        // logger.info( sb.toString() );
-
-        /*
-         * ResultList rl =
-         * idsQueryInstance.getPersistentResultPage(startRecordInstanceI,
-         * endRecordI nstanceI); rl.close(); // rl only needed to close
-         * connection
-         */
     }
 
     // ------------------------------------------------------------------
@@ -649,19 +632,15 @@ public class Answer {
     }
 
     public Answer newAnswer() throws WdkModelException {
-        Answer answer = new Answer(question, idsQueryInstance,
-                startRecordInstanceI, endRecordInstanceI, sortingAttributes);
         // instead of cloning all parts of an answer, just initialize it as a
         // new answer, and the queries can be re-run without any assumption
-        return answer;
+        return newAnswer(startRecordInstanceI, endRecordInstanceI);
     }
 
     public Answer newAnswer(int startIndex, int endIndex)
             throws WdkModelException {
-        this.startRecordInstanceI = startIndex;
-        this.endRecordInstanceI = endIndex;
         Answer answer = new Answer(question, idsQueryInstance,
-                startRecordInstanceI, endRecordInstanceI, sortingAttributes);
+                startIndex, endIndex, sortingAttributes);
         answer.summaryAttributes = new LinkedHashMap<String, AttributeField>(
                 this.summaryAttributes);
         return answer;
@@ -948,5 +927,13 @@ public class Answer {
     
     public Object getSubTypeValue() {
         return idsQueryInstance.getSubTypeValue();
+    }
+
+    /**
+     * @param expandSubType
+     * @see org.gusdb.wdk.model.QueryInstance#setExpandSubType(boolean)
+     */
+    public void setExpandSubType(boolean expandSubType) {
+        idsQueryInstance.setExpandSubType(expandSubType);
     }
 }

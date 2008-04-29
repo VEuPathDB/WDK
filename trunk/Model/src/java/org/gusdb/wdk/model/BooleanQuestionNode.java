@@ -65,6 +65,10 @@ public class BooleanQuestionNode {
      */
     private BooleanQuestionNode parent;
 
+    private String subTypeValue;
+
+    private boolean expandSubType;
+
     // ------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------
@@ -280,7 +284,8 @@ public class BooleanQuestionNode {
 
             Question question = getQuestion();
             Map<String, Object> leafValues = getValues();
-            answer = question.makeAnswer(leafValues, startIndex, endIndex);
+            answer = question.makeAnswer(leafValues, startIndex, endIndex,
+                    subTypeValue);
         } else { // bqn is boolean question
 
             Question booleanQuestion = getQuestion();
@@ -319,6 +324,7 @@ public class BooleanQuestionNode {
             answer = booleanQuestion.makeAnswer(booleanValues, startIndex,
                     endIndex);
         }
+        answer.setExpandSubType(expandSubType);
         return answer;
 
     }
@@ -341,6 +347,38 @@ public class BooleanQuestionNode {
 
     public Map<String, Object> getValues() {
         return values;
+    }
+
+    /**
+     * @return the subTypeValue
+     */
+    public String getSubTypeValue() {
+        return subTypeValue;
+    }
+
+    /**
+     * @param subTypeValue
+     *            the subTypeValue to set
+     */
+    public void setSubTypeValue(String subTypeValue) {
+        this.subTypeValue = subTypeValue;
+    }
+
+    /**
+     * @return the expandSubType
+     */
+    public boolean isExpandSubType() {
+        return expandSubType;
+    }
+
+    /**
+     * @param expandSubType
+     *            the expandSubType to set
+     */
+    public void setExpandSubType(boolean expandSubType) {
+        this.expandSubType = expandSubType;
+        if (firstChild != null) firstChild.setExpandSubType(expandSubType);
+        if (secondChild != null) secondChild.setExpandSubType(expandSubType);
     }
 
     /**

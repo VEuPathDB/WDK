@@ -13,7 +13,7 @@ public class SubType extends WdkModelBase {
 
     private String filterQueryRef;
     private String transformQueryRef;
-    private String subTypeIgnoreValue;
+    private String termToSkip;
 
     private SqlQuery filterQuery;
     private SqlQuery transformQuery;
@@ -57,16 +57,16 @@ public class SubType extends WdkModelBase {
     /**
      * @return the subTypeIgnoreValue
      */
-    public String getSubTypeIgnoreValue() {
-        return subTypeIgnoreValue;
+    public String getTermToSkip() {
+        return termToSkip;
     }
 
     /**
      * @param subTypeIgnoreValue
      *            the subTypeIgnoreValue to set
      */
-    public void setSubTypeIgnoreValue(String subTypeIgnoreValue) {
-        this.subTypeIgnoreValue = subTypeIgnoreValue;
+    public void setTermToSkip(String termToSkip) {
+        this.termToSkip = termToSkip;
     }
 
     public AbstractEnumParam getSubTypeParam() {
@@ -110,10 +110,9 @@ public class SubType extends WdkModelBase {
         } else throw new WdkModelException(errmsg);
 
         // make sure the ignore value exists
-        if (!subTypeParam.getVocabMap().containsKey(subTypeIgnoreValue))
-            throw new WdkModelException("The ignoreValue, '"
-                    + subTypeIgnoreValue + "', is not a term in param '"
-                    + subTypeParam.getName());
+        if (!subTypeParam.getVocabMap().containsKey(termToSkip))
+            throw new WdkModelException("The ignoreValue, '" + termToSkip
+                    + "', is not a term in param '" + subTypeParam.getName());
 
         // resolve the transform query reference if exists
         if (transformQueryRef != null) {
@@ -121,17 +120,11 @@ public class SubType extends WdkModelBase {
 
             // make sure it has those two params too
             errmsg = "The transform query '" + transformQueryRef + "' must "
-                    + "have at least two params, and one of them is an "
-                    + "enumParam or flatVocabParam named as '"
-                    + subTypeParam.getName() + "', and the other is a "
-                    + "stringParam named as '" + resultParam.getName() + "'."
-                    + " The rest of the params should allow empty values.";
+                    + "have at least one string param named as '"
+                    + resultParam.getName() + "'.The rest of the params "
+                    + "should allow empty values.";
 
-            Param param = transformQuery.getParam(subTypeParam.getName());
-            if (param == null || !(param instanceof AbstractEnumParam))
-                throw new WdkModelException(errmsg);
-
-            param = transformQuery.getParam(resultParam.getName());
+            Param param = transformQuery.getParam(resultParam.getName());
             if (param == null || !(param instanceof StringParam))
                 throw new WdkModelException(errmsg);
         }

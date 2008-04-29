@@ -23,4 +23,12 @@ public class SubTypeBean {
     public EnumParamBean getSubTypeParam() {
         return new EnumParamBean(subType.getSubTypeParam());
     }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.SubType#isQuestionOnly()
+     */
+    public boolean isQuestionOnly() {
+        return subType.isQuestionOnly();
+    }
 }

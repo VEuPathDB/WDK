@@ -14,7 +14,6 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionServlet;
 import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
-import org.gusdb.wdk.model.SubType;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.DatasetBean;
@@ -188,8 +187,8 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
                 }
             } else if (p instanceof HistoryParamBean) {
                 // get type, as in RecordClass full name
-                String dataType = wdkQuestion.getRecordClass().getFullName();
-                HistoryBean[] histories = user.getHistories(dataType);
+                HistoryParamBean historyParam = (HistoryParamBean)p;
+                HistoryBean[] histories = historyParam.getHistories(user);
                 String[] values = new String[histories.length];
                 String[] labels = new String[histories.length];
                 for (int idx = 0; idx < histories.length; idx++) {

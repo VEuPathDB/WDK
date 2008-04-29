@@ -15,13 +15,33 @@ public class HistoryParam extends Param {
 
     private UserFactory factory;
 
-    public HistoryParam() {}
-    
+    private String recordClassRef;
+    private RecordClass recordClass;
+
+    public HistoryParam() {
+    }
+
     public HistoryParam(HistoryParam param) {
         super(param);
         this.factory = param.factory;
+        this.recordClass = param.recordClass;
     }
-    
+
+    /**
+     * @param recordClassRef
+     *            the recordClassRef to set
+     */
+    public void setRecordClassRef(String recordClassRef) {
+        this.recordClassRef = recordClassRef;
+    }
+
+    /**
+     * @return the recordClass
+     */
+    public RecordClass getRecordClass() {
+        return recordClass;
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -60,7 +80,9 @@ public class HistoryParam extends Param {
      * @see org.gusdb.wdk.model.Param#resolveReferences(org.gusdb.wdk.model.WdkModel)
      */
     @Override
-    protected void resolveReferences(WdkModel model) throws WdkModelException {}
+    protected void resolveReferences(WdkModel model) throws WdkModelException {
+        recordClass = (RecordClass) model.resolveReference(recordClassRef);
+    }
 
     /*
      * (non-Javadoc)
@@ -92,8 +114,8 @@ public class HistoryParam extends Param {
         }
     }
 
-    public History getHistory(String combinedId)
-            throws WdkUserException, WdkModelException {
+    public History getHistory(String combinedId) throws WdkUserException,
+            WdkModelException {
         String[] parts = combinedId.split(":");
         // the input have a valid user id and history id
         String signature = parts[0].trim();
@@ -123,11 +145,18 @@ public class HistoryParam extends Param {
         return super.compressValue(value);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.Param#clone()
      */
     @Override
     public Param clone() {
         return new HistoryParam(this);
+    }
+
+    public History[] getHistories(User user) throws WdkUserException,
+            WdkModelException {
+        return user.getHistories(recordClassRef);
     }
 }

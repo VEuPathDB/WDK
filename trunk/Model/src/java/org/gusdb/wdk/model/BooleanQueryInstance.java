@@ -184,31 +184,39 @@ public class BooleanQueryInstance extends QueryInstance {
      * operands joined by the boolean operation.
      */
     protected String getSql() throws WdkModelException {
+        StringBuffer buffer = new StringBuffer("SELECT * FROM (");
 
         String[] commonColumns = findCommonColumnNames();
-
-        String sql = getResultFactory().getSqlForBooleanOp(firstQueryInstance,
-                commonColumns)
-                + " "
-                + operation
-                + " "
-                + getResultFactory().getSqlForBooleanOp(secondQueryInstance,
-                        commonColumns);
+        buffer.append(getSqlForBooleanOp(commonColumns));
 
         // order by project id, and then primary key, the first item in the
         // array is primary key, and the second is project id. If the second is
         // null then only sort on primary key (lower case)
         String[] names = Answer.findPrimaryKeyColumnNames(booleanQuery);
-
-        // add sorting clause
-        sql = "SELECT * FROM (" + sql + ") temp ORDER BY ";
-        if (names[1] != null) sql += names[1] + ", ";
-        sql += "LOWER(" + names[0] + ")";
+        buffer.append(") temp ORDER BY ");
+        if (names[1] != null) buffer.append(names[1] + ", ");
+        buffer.append("LOWER(" + names[0] + ")");
 
         // TEST
-        logger.debug("Boolean Id Query: " + sql);
+        logger.debug("Boolean Id Query: " + buffer);
 
-        return sql;
+        return buffer.toString();
+    }
+    
+    /* (non-Javadoc)
+     * override the method from parent to avoid creating a a cache table for it
+     * @see org.gusdb.wdk.model.QueryInstance#getSqlForBooleanOp(java.lang.String[])
+     */
+    @Override
+    protected String getSqlForBooleanOp(String[] commonColumns)
+            throws WdkModelException {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append(firstQueryInstance.getSqlForBooleanOp(commonColumns));
+        buffer.append(" ");
+        buffer.append(operation);
+        buffer.append(" ");
+        buffer.append(secondQueryInstance.getSqlForBooleanOp(commonColumns));
+        return buffer.toString();
     }
 
     // ------------------------------------------------------------------

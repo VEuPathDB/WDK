@@ -78,6 +78,15 @@ public abstract class QueryInstance {
 
     protected Object subTypeValue;
 
+    protected boolean expandSubType = false;
+
+    protected QueryInstance(Query query) {
+        this.query = query;
+        this.isCacheable = query.getIsCacheable().booleanValue();
+        this.joinMode = false;
+        this.sortingColumns = new LinkedHashSet<SortingColumn>();
+    }
+
     // ------------------------------------------------------------------
     // Public Methods
     // ------------------------------------------------------------------
@@ -229,13 +238,22 @@ public abstract class QueryInstance {
     }
 
     public String getParamsContent() {
+        StringBuffer content = new StringBuffer();
+        content.append(query.getFullName());
+
+        // append sub types, if presented
+        if (recordClass != null && recordClass.getSubType() != null) {
+            content.append(Utilities.DATA_DIVIDER);
+            content.append(Utilities.SUB_TYPE);
+            content.append(Utilities.DATA_DIVIDER);
+            content.append(subTypeValue);
+        }
         // get parameter name list, and sort it
         String[] paramNames = new String[values.size()];
         values.keySet().toArray(paramNames);
         Arrays.sort(paramNames);
 
         // concatenate parameter name, type, and values
-        StringBuffer content = new StringBuffer();
         for (String paramName : paramNames) {
             content.append(Utilities.DATA_DIVIDER);
             content.append(paramName);
@@ -249,17 +267,7 @@ public abstract class QueryInstance {
         StringBuffer sb = new StringBuffer();
         sb.append(query.getProjectId());
         sb.append(Utilities.DATA_DIVIDER);
-        sb.append(query.getFullName());
-        sb.append(Utilities.DATA_DIVIDER);
-        
-        // append sub types, if presented
-        if (recordClass != null && recordClass.getSubType() != null) {
-            sb.append(Utilities.SUB_TYPE);
-            sb.append(Utilities.DATA_DIVIDER);
-            sb.append(subTypeValue);
-            sb.append(Utilities.DATA_DIVIDER);
-        }
-        
+
         sb.append(getParamsContent());
         return sb.toString();
     }
@@ -300,9 +308,45 @@ public abstract class QueryInstance {
     public void setRecordClass(RecordClass recordClass) {
         this.recordClass = recordClass;
     }
-    
+
     public Object getSubTypeValue() {
         return subTypeValue;
+    }
+
+    /**
+     * @return the expandSubType
+     */
+    public boolean isExpandSubType() {
+        return expandSubType;
+    }
+
+    /**
+     * @param expandSubType the expandSubType to set
+     */
+    public void setExpandSubType(boolean expandSubType) {
+        this.expandSubType = expandSubType;
+    }
+
+    protected String getSqlForBooleanOp(String[] commonColumns) throws WdkModelException {
+        ResultFactory resultFactory = query.getResultFactory();
+        String resultTableName = resultFactory.getResultAsTableName(this); // ensures
+
+        // check if the expanding needs to be performed
+        SubType subType = recordClass.getSubType();
+        if (subType != null && expandSubType && !subType.isQuestionOnly()) {
+                return getTransformerSql(resultTableName);
+        }
+
+        // no need to transform
+        StringBuffer selectb = new StringBuffer("SELECT ");
+        boolean first = true;
+        for (String name : commonColumns) {
+            if (first) first = false;
+            else selectb.append(", ");
+            selectb.append(name);
+        }
+        selectb.append(" FROM " + resultTableName);
+        return selectb.toString();
     }
 
     public abstract String getLowLevelQuery() throws WdkModelException;
@@ -310,13 +354,6 @@ public abstract class QueryInstance {
     // ------------------------------------------------------------------
     // Protected methods
     // ------------------------------------------------------------------
-
-    protected QueryInstance(Query query) {
-        this.query = query;
-        this.isCacheable = query.getIsCacheable().booleanValue();
-        this.joinMode = false;
-        this.sortingColumns = new LinkedHashSet<SortingColumn>();
-    }
 
     protected ResultFactory getResultFactory() {
         return query.getResultFactory();
@@ -327,20 +364,33 @@ public abstract class QueryInstance {
         return cacheTable.getSortingIndex(sortingColumns);
     }
 
-    protected String getFilterSql(SubType subType, String resultValue)
+    protected String getFilterSql(String resultValue)
             throws WdkModelException {
+        SubType subType = recordClass.getSubType();
         SqlQuery filterQuery = subType.getFilterQuery();
-        
+
         Map<String, Object> filterValues = new LinkedHashMap<String, Object>();
         filterValues.put(subType.getResultParam().getName(), "temp");
         filterValues.put(subType.getSubTypeParam().getName(), subTypeValue);
 
         Map<String, String> values = filterQuery.getInternalParamValues(filterValues);
-        // set the resultValue here to avoid the SQL being transformed incorrectly
+        // set the resultValue here to avoid the SQL being transformed
+        // incorrectly
         values.put(subType.getResultParam().getName(), resultValue);
+
+        return filterQuery.instantiateSql(values);
+    }
+    
+    private String getTransformerSql(String resultTable) throws WdkModelException {
+        SubType subType = recordClass.getSubType();
+        SqlQuery transformQuery = subType.getTransformQuery();
+
+        Map<String, Object> transfomrerValues = new LinkedHashMap<String, Object>();
+        transfomrerValues.put(subType.getResultParam().getName(), resultTable);
         
-        String sql =  filterQuery.instantiateSql(values);
-        return sql;
+        Map<String, String> values = transformQuery.getInternalParamValues(transfomrerValues);
+        
+        return transformQuery.instantiateSql(values);
     }
 
     protected abstract ResultList getNonpersistentResult()

@@ -26,6 +26,9 @@ public class BooleanExpressionForm extends ActionForm {
     private static final long serialVersionUID = -6371621860440022826L;
     private String booleanExpression = null;
     private String historySectionId = null;
+    
+    private boolean expandSubType = false;
+    private String subTypeValue = null;
 
     public void setBooleanExpression(String be) {
         booleanExpression = be;
@@ -41,6 +44,34 @@ public class BooleanExpressionForm extends ActionForm {
 
     public String getHistorySectionId() {
         return historySectionId;
+    }
+
+    /**
+     * @return the expandSubType
+     */
+    public boolean isExpandSubType() {
+        return expandSubType;
+    }
+
+    /**
+     * @param expandSubType the expandSubType to set
+     */
+    public void setExpandSubType(boolean expandSubType) {
+        this.expandSubType = expandSubType;
+    }
+
+    /**
+     * @return the subTypeValue
+     */
+    public String getSubTypeValue() {
+        return subTypeValue;
+    }
+
+    /**
+     * @param subTypeValue the subTypeValue to set
+     */
+    public void setSubTypeValue(String subTypeValue) {
+        this.subTypeValue = subTypeValue;
     }
 
     /**
