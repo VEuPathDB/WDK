@@ -125,22 +125,6 @@ public class ResultFactory {
         return getResultTableName(instance);
     }
 
-    public String getSqlForBooleanOp(QueryInstance instance,
-            String[] columnNames) throws WdkModelException {
-        StringBuffer selectb = new StringBuffer("select ");
-
-        for (String name : columnNames)
-            selectb.append(name + ", ");
-
-        String resultTableName = getResultTableName(instance); // ensures
-        // instance is
-        // inserted into
-        // cache
-
-        return selectb.substring(0, selectb.length() - 2) + " from "
-                + resultTableName;
-    }
-
     public void recreateCache(boolean noSchemaOutput, boolean forceDrop)
             throws WdkModelException {
         dropCache(noSchemaOutput, forceDrop);

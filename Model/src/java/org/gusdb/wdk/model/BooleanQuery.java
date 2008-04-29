@@ -67,11 +67,19 @@ public class BooleanQuery extends Query {
      */
     // DTB -- we should make this come from a controlled vocabulary
     public static final String OPERATION_PARAM_NAME = "operation";
+    
+    /**
+     * The param name for subType expandFlag; it'll be ignored if the subType is
+     * not defined, or if isQuestionOnly is true
+     */
+    public static final String EXPAND_FLAG_PARAM_NAME = "expandFlag";
 
     /**
      * ParamSet for all boolean parameters.
      */
     public static final String BOOLEAN_PARAM_SET_NAME = "booleanParamSet";
+    
+    
 
     // ------------------------------------------------------------------
     // Instance Variables

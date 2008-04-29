@@ -1026,8 +1026,7 @@ public class UserFactory {
         QueryInstance qinstance = answer.getIdsQueryInstance();
         String qiChecksum = qinstance.getChecksum();
         String signature = qinstance.getQuery().getSignature();
-        String params = (isBoolean) ? booleanExpression : (qinstance.getQuery()
-                .getFullName() + qinstance.getParamsContent());
+        String params = (isBoolean) ? booleanExpression : qinstance.getParamsContent();
 
         // check whether the answer exist or not
         ResultSet rsHistory = null;

@@ -189,12 +189,14 @@
     
     <define name="historyParam">
         <element name="historyParam">
-              <ref name="ParamBaseContents" />
-              <zeroOrMore>
+            <ref name="ParamBaseContents" />
+            <!-- defines the type of the values of this historyParam -->
+            <attribute name="recordClassRef" />
+            <zeroOrMore>
                 <element name="suggest">
                     <ref name="SuggestContent" />
                 </element>
-              </zeroOrMore>
+            </zeroOrMore>
         </element>
     </define>
     
@@ -575,9 +577,12 @@
              <ref name="IncludeExclude" />
 	         <attribute name="filterQueryRef" />
              <optional>
-	             <attribute name="tranformQueryRef" />
+	             <attribute name="transformQueryRef" />
 	         </optional>
- 	         <attribute name="subTypeIgnoreValue" />
+	         <!-- A term from subType enum/flatvocab Param. if the user inputs
+	              this term, the filter will be skipped
+	         -->
+ 	         <attribute name="termToSkip" />
          </element>
           
           <element name="attributeQueryRef">

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.BooleanQuery;
@@ -18,12 +19,15 @@ import org.gusdb.wdk.model.TableField;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.report.Reporter;
 
+import sun.util.logging.resources.logging;
+
 /**
  * A wrapper on a {@link Answer} that provides simplified access for consumption
  * by a view
  */
 public class AnswerBean {
 
+    private static Logger logger = Logger.getLogger(AnswerBean.class);
     Answer answer;
     Map downloadConfigMap = null;
 
@@ -107,9 +111,13 @@ public class AnswerBean {
 
     private void composeSubTypeUrl(StringBuffer sb) throws WdkModelException {
         SubType subType = answer.getQuestion().getRecordClass().getSubType();
+
+        logger.info("SubType: '" + subType + "', value '"
+                + answer.getSubTypeValue() + "'");
+
         if (subType != null && answer.getSubTypeValue() != null) {
             String subTypeName = subType.getSubTypeParam().getName();
-            String subTypeValue = (String)answer.getSubTypeValue();
+            String subTypeValue = (String) answer.getSubTypeValue();
             try {
                 subTypeName = URLEncoder.encode("myProp(" + subTypeName + ")",
                         "UTF-8");

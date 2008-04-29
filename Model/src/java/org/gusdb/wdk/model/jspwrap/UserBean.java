@@ -22,28 +22,29 @@ import org.gusdb.wdk.model.user.User;
  * @modified at: May 25, 2006
  * 
  */
-public class UserBean /* implements Serializable */ {
-    
+public class UserBean /* implements Serializable */{
+
     /**
      * 
      */
     private static final long serialVersionUID = -4296379954371247236L;
-    
+
     private User user;
-    
-    public UserBean() {}
-    
+
+    public UserBean() {
+    }
+
     /**
      * 
      */
-    public UserBean( User user ) {
+    public UserBean(User user) {
         this.user = user;
     }
-    
+
     User getUser() {
         return user;
     }
-    
+
     /**
      * @param wdkModel
      * @throws WdkUserException
@@ -52,7 +53,6 @@ public class UserBean /* implements Serializable */ {
     public void setWdkModel(WdkModelBean wdkModel) throws WdkUserException {
         user.setWdkModel(wdkModel.getModel());
     }
-    
 
     /*
      * (non-Javadoc)
@@ -62,16 +62,16 @@ public class UserBean /* implements Serializable */ {
     public int getUserId() {
         return user.getUserId();
     }
-    
+
     /*
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.user.User#addUserRole(java.lang.String)
      */
-    public void addUserRole( String userRole ) {
-        user.addUserRole( userRole );
+    public void addUserRole(String userRole) {
+        user.addUserRole(userRole);
     }
-    
+
     /*
      * (non-Javadoc)
      * 
@@ -80,7 +80,7 @@ public class UserBean /* implements Serializable */ {
     public String getAddress() {
         return user.getAddress();
     }
-    
+
     /*
      * (non-Javadoc)
      * 
@@ -89,7 +89,7 @@ public class UserBean /* implements Serializable */ {
     public String getCity() {
         return user.getCity();
     }
-    
+
     /*
      * (non-Javadoc)
      * 
@@ -98,7 +98,7 @@ public class UserBean /* implements Serializable */ {
     public String getCountry() {
         return user.getCountry();
     }
-    
+
     /*
      * (non-Javadoc)
      * 
@@ -107,7 +107,7 @@ public class UserBean /* implements Serializable */ {
     public String getDepartment() {
         return user.getDepartment();
     }
-    
+
     /*
      * (non-Javadoc)
      * 
@@ -116,7 +116,7 @@ public class UserBean /* implements Serializable */ {
     public String getEmail() {
         return user.getEmail();
     }
-    
+
     /*
      * (non-Javadoc)
      * 
@@ -125,7 +125,7 @@ public class UserBean /* implements Serializable */ {
     public String getFirstName() {
         return user.getFirstName();
     }
-    
+
     /*
      * (non-Javadoc)
      * 
@@ -134,7 +134,7 @@ public class UserBean /* implements Serializable */ {
     public String getLastName() {
         return user.getLastName();
     }
-    
+
     /*
      * (non-Javadoc)
      * 
@@ -143,7 +143,7 @@ public class UserBean /* implements Serializable */ {
     public String getMiddleName() {
         return user.getMiddleName();
     }
-    
+
     /*
      * (non-Javadoc)
      * 
@@ -152,7 +152,7 @@ public class UserBean /* implements Serializable */ {
     public String getOrganization() {
         return user.getOrganization();
     }
-    
+
     /*
      * (non-Javadoc)
      * 
@@ -161,7 +161,7 @@ public class UserBean /* implements Serializable */ {
     public String getPhoneNumber() {
         return user.getPhoneNumber();
     }
-    
+
     /*
      * (non-Javadoc)
      * 
@@ -170,7 +170,7 @@ public class UserBean /* implements Serializable */ {
     public String getState() {
         return user.getState();
     }
-    
+
     /*
      * (non-Javadoc)
      * 
@@ -179,16 +179,16 @@ public class UserBean /* implements Serializable */ {
     public String getTitle() {
         return user.getTitle();
     }
-    
+
     /*
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.user.User#getUserRoles()
      */
-    public String[ ] getUserRoles() {
+    public String[] getUserRoles() {
         return user.getUserRoles();
     }
-    
+
     /*
      * (non-Javadoc)
      * 
@@ -197,7 +197,7 @@ public class UserBean /* implements Serializable */ {
     public String getZipCode() {
         return user.getZipCode();
     }
-    
+
     /*
      * (non-Javadoc)
      * 
@@ -206,124 +206,124 @@ public class UserBean /* implements Serializable */ {
     public boolean getGuest() throws WdkUserException {
         return user.isGuest();
     }
-    
+
     /*
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.user.User#removeUserRole(java.lang.String)
      */
-    public void removeUserRole( String userRole ) {
-        user.removeUserRole( userRole );
+    public void removeUserRole(String userRole) {
+        user.removeUserRole(userRole);
     }
-    
+
     /*
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.user.User#setAddress(java.lang.String)
      */
-    public void setAddress( String address ) {
-        user.setAddress( address );
+    public void setAddress(String address) {
+        user.setAddress(address);
     }
-    
+
     /*
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.user.User#setCity(java.lang.String)
      */
-    public void setCity( String city ) {
-        user.setCity( city );
+    public void setCity(String city) {
+        user.setCity(city);
     }
-    
+
     /*
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.user.User#setCountry(java.lang.String)
      */
-    public void setCountry( String country ) {
-        user.setCountry( country );
+    public void setCountry(String country) {
+        user.setCountry(country);
     }
-    
+
     /*
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.user.User#setDepartment(java.lang.String)
      */
-    public void setDepartment( String department ) {
-        user.setDepartment( department );
+    public void setDepartment(String department) {
+        user.setDepartment(department);
     }
-    
+
     /*
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.user.User#setFirstName(java.lang.String)
      */
-    public void setFirstName( String firstName ) {
-        user.setFirstName( firstName );
+    public void setFirstName(String firstName) {
+        user.setFirstName(firstName);
     }
-    
+
     /*
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.user.User#setLastName(java.lang.String)
      */
-    public void setLastName( String lastName ) {
-        user.setLastName( lastName );
+    public void setLastName(String lastName) {
+        user.setLastName(lastName);
     }
-    
+
     /*
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.user.User#setMiddleName(java.lang.String)
      */
-    public void setMiddleName( String middleName ) {
-        user.setMiddleName( middleName );
+    public void setMiddleName(String middleName) {
+        user.setMiddleName(middleName);
     }
-    
+
     /*
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.user.User#setOrganization(java.lang.String)
      */
-    public void setOrganization( String organization ) {
-        user.setOrganization( organization );
+    public void setOrganization(String organization) {
+        user.setOrganization(organization);
     }
-    
+
     /*
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.user.User#setPhoneNumber(java.lang.String)
      */
-    public void setPhoneNumber( String phoneNumber ) {
-        user.setPhoneNumber( phoneNumber );
+    public void setPhoneNumber(String phoneNumber) {
+        user.setPhoneNumber(phoneNumber);
     }
-    
+
     /*
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.user.User#setState(java.lang.String)
      */
-    public void setState( String state ) {
-        user.setState( state );
+    public void setState(String state) {
+        user.setState(state);
     }
-    
+
     /*
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.user.User#setTitle(java.lang.String)
      */
-    public void setTitle( String title ) {
-        user.setTitle( title );
+    public void setTitle(String title) {
+        user.setTitle(title);
     }
-    
+
     /*
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.user.User#setZipCode(java.lang.String)
      */
-    public void setZipCode( String zipCode ) {
-        user.setZipCode( zipCode );
+    public void setZipCode(String zipCode) {
+        user.setZipCode(zipCode);
     }
-    
+
     /*
      * (non-Javadoc)
      * 
@@ -332,18 +332,18 @@ public class UserBean /* implements Serializable */ {
     public String getSignature() {
         return user.getSignature();
     }
-    
+
     /*
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.user.User#changePassword(java.lang.String,
      *      java.lang.String, java.lang.String)
      */
-    public void changePassword( String oldPassword, String newPassword,
-            String confirmPassword ) throws WdkUserException {
-        user.changePassword( oldPassword, newPassword, confirmPassword );
+    public void changePassword(String oldPassword, String newPassword,
+            String confirmPassword) throws WdkUserException {
+        user.changePassword(oldPassword, newPassword, confirmPassword);
     }
-    
+
     //
     // //
     // *************************************************************************
@@ -502,31 +502,31 @@ public class UserBean /* implements Serializable */ {
     // throws WdkUserException {
     // this.user.renameUserAnswer(answerID, name);
     // }
-    
-    public Map< String, String > getGlobalPreferences() {
+
+    public Map<String, String> getGlobalPreferences() {
         return user.getGlobalPreferences();
     }
-    
-    public Map< String, String > getProjectPreferences() {
+
+    public Map<String, String> getProjectPreferences() {
         return user.getProjectPreferences();
     }
-    
-    public void setGlobalPreference( String prefName, String prefValue ) {
-        user.setGlobalPreference( prefName, prefValue );
+
+    public void setGlobalPreference(String prefName, String prefValue) {
+        user.setGlobalPreference(prefName, prefValue);
     }
-    
-    public void setProjectPreference( String prefName, String prefValue ) {
-        user.setProjectPreference( prefName, prefValue );
+
+    public void setProjectPreference(String prefName, String prefValue) {
+        user.setProjectPreference(prefName, prefValue);
     }
-    
-    public void unsetGlobalPreference( String prefName ) {
-        user.unsetGlobalPreference( prefName );
+
+    public void unsetGlobalPreference(String prefName) {
+        user.unsetGlobalPreference(prefName);
     }
-    
-    public void unsetProjectPreference( String prefName ) {
-        user.unsetProjectPreference( prefName );
+
+    public void unsetProjectPreference(String prefName) {
+        user.unsetProjectPreference(prefName);
     }
-    
+
     /*
      * (non-Javadoc)
      * 
@@ -535,7 +535,7 @@ public class UserBean /* implements Serializable */ {
     public void clearPreferences() {
         user.clearPreferences();
     }
-    
+
     /*
      * (non-Javadoc)
      * 
@@ -544,38 +544,38 @@ public class UserBean /* implements Serializable */ {
     public void save() throws WdkUserException {
         user.save();
     }
-    
+
     // =========================================================================
     // Methods for dataset operations
     // =========================================================================
-    
+
     /*
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.user.User#createDataset(java.lang.String,
      *      java.lang.String, java.lang.String[])
      */
-    public DatasetBean createDataset( String uploadFile, String[ ] values )
+    public DatasetBean createDataset(String uploadFile, String[] values)
             throws WdkUserException, WdkModelException {
-        DatasetBean bean = new DatasetBean( user.createDataset( uploadFile,
-                values ) );
+        DatasetBean bean = new DatasetBean(user.createDataset(uploadFile,
+                values));
         return bean;
     }
-    
+
     /*
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.user.User#getDataset(java.lang.String)
      */
-    public DatasetBean getDataset( String datasetChecksum )
+    public DatasetBean getDataset(String datasetChecksum)
             throws WdkUserException {
-        return new DatasetBean( user.getDataset( datasetChecksum ) );
+        return new DatasetBean(user.getDataset(datasetChecksum));
     }
-    
+
     // =========================================================================
     // Methods for Persistent history operations
     // =========================================================================
-    
+
     /*
      * (non-Javadoc)
      * 
@@ -584,118 +584,119 @@ public class UserBean /* implements Serializable */ {
     public void deleteHistories() throws WdkUserException {
         user.deleteHistories();
     }
-    
+
     /*
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.user.User#createHistory(org.gusdb.wdk.model.Answer)
      */
-    public HistoryBean createHistory( AnswerBean answer )
+    public HistoryBean createHistory(AnswerBean answer)
             throws WdkUserException, WdkModelException {
-        History history = user.createHistory( answer.answer );
-        return new HistoryBean( history );
+        History history = user.createHistory(answer.answer);
+        return new HistoryBean(history);
     }
-    
+
     /*
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.user.User#deleteHistory(int)
      */
-    public void deleteHistory( int historyId ) throws WdkUserException,
+    public void deleteHistory(int historyId) throws WdkUserException,
             WdkModelException {
-        user.deleteHistory( historyId );
+        user.deleteHistory(historyId);
     }
-    
+
     /*
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.user.User#getHistories()
      */
-    public HistoryBean[ ] getHistories() throws WdkUserException,
+    public HistoryBean[] getHistories() throws WdkUserException,
             WdkModelException {
-        History[ ] histories = user.getHistories();
-        HistoryBean[ ] beans = new HistoryBean[ histories.length ];
-        for ( int i = 0; i < histories.length; i++ ) {
-            beans[ i ] = new HistoryBean( histories[ i ] );
+        History[] histories = user.getHistories();
+        HistoryBean[] beans = new HistoryBean[histories.length];
+        for (int i = 0; i < histories.length; i++) {
+            beans[i] = new HistoryBean(histories[i]);
         }
         return beans;
     }
-    
+
     /*
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.user.User#getHistories()
      */
-    public HistoryBean[ ] getInvalidHistories() throws WdkUserException,
+    public HistoryBean[] getInvalidHistories() throws WdkUserException,
             WdkModelException {
-        History[ ] histories = user.getInvalidHistories();
-        HistoryBean[ ] beans = new HistoryBean[ histories.length ];
-        for ( int i = 0; i < histories.length; i++ ) {
-            beans[ i ] = new HistoryBean( histories[ i ] );
+        History[] histories = user.getInvalidHistories();
+        HistoryBean[] beans = new HistoryBean[histories.length];
+        for (int i = 0; i < histories.length; i++) {
+            beans[i] = new HistoryBean(histories[i]);
         }
         return beans;
     }
-    
+
     public void deleteInvalidHistories() throws WdkUserException,
             WdkModelException {
         user.deleteInvalidHistories();
     }
-    
-    public Map< String, List< HistoryBean >> getHistoriesByCategory()
+
+    public Map<String, List<HistoryBean>> getHistoriesByCategory()
             throws WdkUserException, WdkModelException {
-        Map< String, List< History >> histories = user.getHistoriesByCategory();
-        Map< String, List< HistoryBean >> category = new LinkedHashMap< String, List< HistoryBean >>();
-        for ( String type : histories.keySet() ) {
-            List< History > list = histories.get( type );
-            List< HistoryBean > beans = new ArrayList< HistoryBean >();
-            for ( History history : list ) {
-                beans.add( new HistoryBean( history ) );
+        Map<String, List<History>> histories = user.getHistoriesByCategory();
+        Map<String, List<HistoryBean>> category = new LinkedHashMap<String, List<HistoryBean>>();
+        for (String type : histories.keySet()) {
+            List<History> list = histories.get(type);
+            List<HistoryBean> beans = new ArrayList<HistoryBean>();
+            for (History history : list) {
+                beans.add(new HistoryBean(history));
             }
-            category.put( type, beans );
+            category.put(type, beans);
         }
         return category;
     }
-    
+
     /*
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.user.User#getHistories(java.lang.String)
      */
-    public HistoryBean[ ] getHistories( String dataType )
-            throws WdkUserException, WdkModelException {
-        History[ ] histories = user.getHistories( dataType );
-        HistoryBean[ ] beans = new HistoryBean[ histories.length ];
-        for ( int i = 0; i < histories.length; i++ ) {
-            beans[ i ] = new HistoryBean( histories[ i ] );
+    public HistoryBean[] getHistories(String dataType) throws WdkUserException,
+            WdkModelException {
+        History[] histories = user.getHistories(dataType);
+        HistoryBean[] beans = new HistoryBean[histories.length];
+        for (int i = 0; i < histories.length; i++) {
+            beans[i] = new HistoryBean(histories[i]);
         }
         return beans;
     }
-    
+
     /*
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.user.User#getHistory(int)
      */
-    public HistoryBean getHistory( int historyId ) throws WdkUserException,
+    public HistoryBean getHistory(int historyId) throws WdkUserException,
             WdkModelException {
-        return new HistoryBean( user.getHistory( historyId ) );
+        return new HistoryBean(user.getHistory(historyId));
     }
-    
-    public String validateExpression( String expression,
-            Map< String, String > operatorMap ) throws WdkModelException {
-        return this.user.validateExpression( expression, operatorMap );
+
+    public String validateExpression(String expression,
+            Map<String, String> operatorMap) throws WdkModelException {
+        return this.user.validateExpression(expression, operatorMap);
     }
-    
+
     /*
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.user.User#combineHistory(java.lang.String)
      */
-    public HistoryBean combineHistory( String expression )
-            throws WdkUserException, WdkModelException {
-        return new HistoryBean( user.combineHistory( expression ) );
+    public HistoryBean combineHistory(String expression, String subTypeValue,
+            boolean expandSubType) throws WdkUserException, WdkModelException {
+        return new HistoryBean(user.combineHistory(expression, false,
+                subTypeValue, expandSubType));
     }
-    
+
     /*
      * (non-Javadoc)
      * 
@@ -704,7 +705,7 @@ public class UserBean /* implements Serializable */ {
     public int getHistoryCount() throws WdkUserException {
         return user.getHistoryCount();
     }
-    
+
     /*
      * (non-Javadoc)
      * 
@@ -713,16 +714,16 @@ public class UserBean /* implements Serializable */ {
     public int getItemsPerPage() {
         return user.getItemsPerPage();
     }
-    
+
     /*
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.user.User#setItemsPerPage(int)
      */
-    public void setItemsPerPage( int itemsPerPage ) throws WdkUserException {
-        user.setItemsPerPage( itemsPerPage );
+    public void setItemsPerPage(int itemsPerPage) throws WdkUserException {
+        user.setItemsPerPage(itemsPerPage);
     }
-    
+
     /**
      * @param questionFullName
      * @param attrName
@@ -732,21 +733,20 @@ public class UserBean /* implements Serializable */ {
      * @see org.gusdb.wdk.model.user.User#addSortingAttribute(java.lang.String,
      *      java.lang.String, boolean)
      */
-    public String addSortingAttribute( String questionFullName,
-            String attrName, boolean ascending ) throws WdkUserException,
-            WdkModelException {
-        return user.addSortingAttribute( questionFullName, attrName, ascending );
+    public String addSortingAttribute(String questionFullName, String attrName,
+            boolean ascending) throws WdkUserException, WdkModelException {
+        return user.addSortingAttribute(questionFullName, attrName, ascending);
     }
-    
+
     /**
      * @param questionFullName
      * @param sortingChecksum
      */
-    public void applySortingChecksum( String questionFullName,
-            String sortingChecksum ) {
-        user.applySortingChecksum( questionFullName, sortingChecksum );
+    public void applySortingChecksum(String questionFullName,
+            String sortingChecksum) {
+        user.applySortingChecksum(questionFullName, sortingChecksum);
     }
-    
+
     /**
      * @param questionFullName
      * @return
@@ -754,22 +754,22 @@ public class UserBean /* implements Serializable */ {
      * @throws WdkModelException
      * @see org.gusdb.wdk.model.user.User#getSortingAttributes(java.lang.String)
      */
-    public Map< String, Boolean > getSortingAttributes( String questionFullName )
+    public Map<String, Boolean> getSortingAttributes(String questionFullName)
             throws WdkUserException, WdkModelException {
-        return user.getSortingAttributes( questionFullName );
+        return user.getSortingAttributes(questionFullName);
     }
-    
+
     /**
      * @param sortingChecksum
      * @return
      * @throws WdkUserException
      * @see org.gusdb.wdk.model.user.User#getSortingAttributesByChecksum(java.lang.String)
      */
-    public Map< String, Boolean > getSortingAttributesByChecksum(
-            String sortingChecksum ) throws WdkUserException {
-        return user.getSortingAttributesByChecksum( sortingChecksum );
+    public Map<String, Boolean> getSortingAttributesByChecksum(
+            String sortingChecksum) throws WdkUserException {
+        return user.getSortingAttributesByChecksum(sortingChecksum);
     }
-    
+
     /**
      * @param questionFullName
      * @param attrName
@@ -778,11 +778,11 @@ public class UserBean /* implements Serializable */ {
      * @see org.gusdb.wdk.model.user.User#addSummaryAttribute(java.lang.String,
      *      java.lang.String)
      */
-    public String addSummaryAttribute( String questionFullName, String attrName )
+    public String addSummaryAttribute(String questionFullName, String attrName)
             throws WdkUserException, WdkModelException {
-        return user.addSummaryAttribute( questionFullName, attrName );
+        return user.addSummaryAttribute(questionFullName, attrName);
     }
-    
+
     /**
      * @param questionFullName
      * @return
@@ -790,22 +790,22 @@ public class UserBean /* implements Serializable */ {
      * @throws WdkModelException
      * @see org.gusdb.wdk.model.user.User#getSummaryAttributes(java.lang.String)
      */
-    public String[ ] getSummaryAttributes( String questionFullName )
+    public String[] getSummaryAttributes(String questionFullName)
             throws WdkUserException, WdkModelException {
-        return user.getSummaryAttributes( questionFullName );
+        return user.getSummaryAttributes(questionFullName);
     }
-    
+
     /**
      * @param summaryChecksum
      * @return
      * @throws WdkUserException
      * @see org.gusdb.wdk.model.user.User#getSummaryAttributesByChecksum(java.lang.String)
      */
-    public String[ ] getSummaryAttributesByChecksum( String summaryChecksum )
+    public String[] getSummaryAttributesByChecksum(String summaryChecksum)
             throws WdkUserException {
-        return user.getSummaryAttributesByChecksum( summaryChecksum );
+        return user.getSummaryAttributesByChecksum(summaryChecksum);
     }
-    
+
     /**
      * @param questionFullName
      * @param attrName
@@ -814,19 +814,19 @@ public class UserBean /* implements Serializable */ {
      * @see org.gusdb.wdk.model.user.User#removeSummaryAttribute(java.lang.String,
      *      java.lang.String)
      */
-    public String removeSummaryAttribute( String questionFullName,
-            String attrName ) throws WdkUserException, WdkModelException {
-        return user.removeSummaryAttribute( questionFullName, attrName );
+    public String removeSummaryAttribute(String questionFullName,
+            String attrName) throws WdkUserException, WdkModelException {
+        return user.removeSummaryAttribute(questionFullName, attrName);
     }
-    
+
     /**
      * @param questionFullName
      * @see org.gusdb.wdk.model.user.User#resetSummaryAttribute(java.lang.String)
      */
-    public void resetSummaryAttribute( String questionFullName ) {
-        user.resetSummaryAttribute( questionFullName );
+    public void resetSummaryAttribute(String questionFullName) {
+        user.resetSummaryAttribute(questionFullName);
     }
-    
+
     /**
      * @param questionFullName
      * @param attrName
@@ -836,24 +836,24 @@ public class UserBean /* implements Serializable */ {
      * @see org.gusdb.wdk.model.user.User#arrangeSummaryAttribute(java.lang.String,
      *      java.lang.String, boolean)
      */
-    public String arrangeSummaryAttribute( String questionFullName,
-            String attrName, boolean moveLeft ) throws WdkUserException,
+    public String arrangeSummaryAttribute(String questionFullName,
+            String attrName, boolean moveLeft) throws WdkUserException,
             WdkModelException {
-        return user.arrangeSummaryAttribute( questionFullName, attrName,
-                moveLeft );
+        return user.arrangeSummaryAttribute(questionFullName, attrName,
+                moveLeft);
     }
-    
+
     /**
      * @param questionFullName
      * @param summaryChecksum
      * @throws WdkUserException
      * @throws WdkModelException
      */
-    public String applySummaryChecksum( String questionFullName,
-            String[ ] atributes ) throws WdkModelException, WdkUserException {
-        return user.applySummaryChecksum( questionFullName, atributes );
+    public String applySummaryChecksum(String questionFullName,
+            String[] atributes) throws WdkModelException, WdkUserException {
+        return user.applySummaryChecksum(questionFullName, atributes);
     }
-    
+
     /**
      * @return
      * @throws WdkUserException
@@ -862,16 +862,16 @@ public class UserBean /* implements Serializable */ {
     public String createRemoteKey() throws WdkUserException {
         return user.createRemoteKey();
     }
-    
+
     /**
      * @param remoteKey
      * @throws WdkUserException
      * @see org.gusdb.wdk.model.user.User#verifyRemoteKey(java.lang.String)
      */
-    public void verifyRemoteKey( String remoteKey ) throws WdkUserException {
-        user.verifyRemoteKey( remoteKey );
+    public void verifyRemoteKey(String remoteKey) throws WdkUserException {
+        user.verifyRemoteKey(remoteKey);
     }
-    
+
     /*
      * (non-Javadoc)
      * 
@@ -880,6 +880,6 @@ public class UserBean /* implements Serializable */ {
     public String toString() {
         return this.user.toString();
     }
-    
+
     // ********************************* END ***********************************
 }

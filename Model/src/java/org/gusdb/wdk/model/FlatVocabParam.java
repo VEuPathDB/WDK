@@ -44,7 +44,6 @@ public class FlatVocabParam extends AbstractEnumParam {
 
     protected void resolveReferences(WdkModel model) throws WdkModelException {
         query = (Query) model.resolveReference(queryTwoPartName);
-        query.resolveReferences(model);
         
         // add a served query param into flatVocabQuery, if it doesn't exist
         if (null == query.getParam(PARAM_SERVED_QUERY)) {
