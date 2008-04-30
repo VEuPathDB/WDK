@@ -274,7 +274,7 @@ public class WSQueryInstance extends QueryInstance {
                         pstmt.setString(index + 1, val);
                     }
                 }
-                pstmt.setInt(columns.length + 1, ++idx);
+                if (addHelpColumns) pstmt.setInt(columns.length + 1, ++idx);
                 pstmt.addBatch();
                 if (idx % 1000 == 0) pstmt.executeBatch();
             }
