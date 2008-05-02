@@ -7,6 +7,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.implementation.SqlQuery;
 
 /**
@@ -15,6 +16,8 @@ import org.gusdb.wdk.model.implementation.SqlQuery;
  */
 public abstract class QueryInstance {
 
+    private static Logger logger = Logger.getLogger(QueryInstance.class);
+    
     // private static Logger logger = Logger.getLogger( QueryInstance.class );
 
     protected boolean isCacheable;
@@ -333,6 +336,7 @@ public abstract class QueryInstance {
 
         // check if the expanding needs to be performed
         SubType subType = recordClass.getSubType();
+        
         if (subType != null && expandSubType && !subType.isQuestionOnly()) {
                 return getTransformerSql(resultTableName);
         }

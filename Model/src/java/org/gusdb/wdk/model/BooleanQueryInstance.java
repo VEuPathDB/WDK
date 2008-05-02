@@ -171,7 +171,6 @@ public class BooleanQueryInstance extends QueryInstance {
 
     public String getResultAsTableName() throws WdkModelException {
         return booleanQuery.getResultFactory().getResultAsTableName(this);
-
     }
 
     // ------------------------------------------------------------------
@@ -196,15 +195,28 @@ public class BooleanQueryInstance extends QueryInstance {
         buffer.append(") temp ORDER BY ");
         if (names[1] != null) buffer.append(names[1] + ", ");
         buffer.append("LOWER(" + names[0] + ")");
+        String sql = buffer.toString();
+
+        // filter the result with subTypes, if presented
+        if (recordClass != null && recordClass.getSubType() != null) {
+            SubType subType = recordClass.getSubType();
+            // skip if the value equals the ignore subType value.
+            if (subTypeValue != null
+                    && !((String) subTypeValue).equals(subType.getTermToSkip())) {
+                sql = getFilterSql(sql);
+            }
+        }
 
         // TEST
-        logger.debug("Boolean Id Query: " + buffer);
+        logger.debug("Boolean Id Query: " + sql);
 
-        return buffer.toString();
+        return sql;
     }
-    
-    /* (non-Javadoc)
-     * override the method from parent to avoid creating a a cache table for it
+
+    /*
+     * (non-Javadoc) override the method from parent to avoid creating a a cache
+     * table for it
+     * 
      * @see org.gusdb.wdk.model.QueryInstance#getSqlForBooleanOp(java.lang.String[])
      */
     @Override
@@ -240,15 +252,10 @@ public class BooleanQueryInstance extends QueryInstance {
         boolean prjIdMisMatch = cols1[1] != cols2[1]
                 && !cols1[1].equals(cols2[1]);
         if (recIdMisMatch || prjIdMisMatch) {
-            String errMsg = "Primary key columns don't match in Boolean Query for "
-                    + firstAnswer.getQuestion().getFullName()
-                    + " ("
-                    + cols1[0]
-                    + ", "
-                    + cols1[1]
-                    + ") and "
-                    + secondAnswer.getQuestion().getFullName()
-                    + " ("
+            String errMsg = "Primary key columns don't match in Boolean Query"
+                    + " for " + firstAnswer.getQuestion().getFullName() + " ("
+                    + cols1[0] + ", " + cols1[1] + ") and "
+                    + secondAnswer.getQuestion().getFullName() + " ("
                     + cols2[0] + ", " + cols2[1] + ")";
             throw new WdkModelException(errMsg);
         }

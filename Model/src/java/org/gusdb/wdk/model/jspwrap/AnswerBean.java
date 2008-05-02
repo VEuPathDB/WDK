@@ -112,7 +112,7 @@ public class AnswerBean {
     private void composeSubTypeUrl(StringBuffer sb) throws WdkModelException {
         SubType subType = answer.getQuestion().getRecordClass().getSubType();
 
-        logger.info("SubType: '" + subType + "', value '"
+        logger.debug("SubType: '" + subType + "', value '"
                 + answer.getSubTypeValue() + "'");
 
         if (subType != null && answer.getSubTypeValue() != null) {
