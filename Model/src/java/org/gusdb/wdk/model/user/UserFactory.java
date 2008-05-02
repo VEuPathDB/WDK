@@ -1004,11 +1004,23 @@ public class UserFactory {
 
     private Answer constructBooleanAnswer(User user, String expression)
             throws WdkUserException, WdkModelException {
+        // parse and extract subType value, if having one
+        String subTypeValue = null;
+        boolean expandSubType = false;
+        String[] params = expression.split(Utilities.DATA_DIVIDER);
+        if (params[0].equals(Utilities.SUB_TYPE)) {
+            subTypeValue = params[1];
+            expandSubType = Boolean.parseBoolean(params[2]);
+            expression = params[3];
+        }
         BooleanExpression exp = new BooleanExpression(user);
         Map<String, String> operatorMap = getWdkModel().getBooleanOperators();
         BooleanQuestionNode root = exp.parseExpression(expression, operatorMap);
 
-        return root.makeAnswer(1, user.getItemsPerPage());
+        Answer answer = root.makeAnswer(1, user.getItemsPerPage());
+        answer.setSubTypeValue(subTypeValue);
+        answer.setExpandSubType(expandSubType);
+        return answer;
     }
 
     History createHistory(User user, Answer answer, String booleanExpression,
@@ -1026,7 +1038,20 @@ public class UserFactory {
         QueryInstance qinstance = answer.getIdsQueryInstance();
         String qiChecksum = qinstance.getChecksum();
         String signature = qinstance.getQuery().getSignature();
-        String params = (isBoolean) ? booleanExpression : qinstance.getParamsContent();
+        String params = qinstance.getParamsContent();
+        if (isBoolean) {
+            StringBuffer buffer = new StringBuffer();
+            if (answer.getSubTypeValue() != null) {
+                buffer.append(Utilities.SUB_TYPE);
+                buffer.append(Utilities.DATA_DIVIDER);
+                buffer.append(answer.getSubTypeValue());
+                buffer.append(Utilities.DATA_DIVIDER);
+                buffer.append(answer.isExpandSubType());
+                buffer.append(Utilities.DATA_DIVIDER);
+            }
+            buffer.append(booleanExpression);
+            params = buffer.toString();
+        }
 
         // check whether the answer exist or not
         ResultSet rsHistory = null;

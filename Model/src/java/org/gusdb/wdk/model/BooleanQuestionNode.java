@@ -323,6 +323,7 @@ public class BooleanQuestionNode {
 
             answer = booleanQuestion.makeAnswer(booleanValues, startIndex,
                     endIndex);
+            answer.setSubTypeValue(subTypeValue);
         }
         answer.setExpandSubType(expandSubType);
         return answer;
