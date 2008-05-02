@@ -388,6 +388,8 @@ public abstract class QueryInstance {
         Map<String, Object> transfomrerValues = new LinkedHashMap<String, Object>();
         transfomrerValues.put(subType.getResultParam().getName(), resultTable);
         
+        transformQuery.applyDefaults(transfomrerValues);
+        
         Map<String, String> values = transformQuery.getInternalParamValues(transfomrerValues);
         
         return transformQuery.instantiateSql(values);

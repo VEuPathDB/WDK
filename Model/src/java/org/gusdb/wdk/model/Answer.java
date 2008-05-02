@@ -928,6 +928,10 @@ public class Answer {
     public Object getSubTypeValue() {
         return idsQueryInstance.getSubTypeValue();
     }
+    
+    public void setSubTypeValue(Object subTypeValue) {
+        idsQueryInstance.setSubTypeValue(subTypeValue);
+    }
 
     /**
      * @param expandSubType
@@ -935,5 +939,9 @@ public class Answer {
      */
     public void setExpandSubType(boolean expandSubType) {
         idsQueryInstance.setExpandSubType(expandSubType);
+    }
+    
+    public boolean isExpandSubType() {
+        return idsQueryInstance.isExpandSubType();
     }
 }
