@@ -1176,7 +1176,7 @@ public class UserFactory {
                     + " doesn't exist. Updating operation cancelled.");
 
         // TEST
-        logger.info("Save custom name: '" + history.getBaseCustomName() + "'");
+        logger.debug("Save custom name: '" + history.getBaseCustomName() + "'");
 
         // update custom name
         Date lastRunTime = (updateTime) ? new Date() : history.getLastRunTime();
