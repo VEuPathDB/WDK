@@ -134,49 +134,6 @@ public class BooleanQuestionNode {
         return this == getParent().getFirstChild();
     }
 
-    /**
-     * This method can only be performed on a leaf node and assumes that none of
-     * the nodes in the tree has had any parameter values set yet.
-     * 
-     * @throws WdkUserException
-     */
-    public BooleanQuestionNode grow(BooleanQuestionNode newSecondChild,
-            String operator, WdkModel model, Map<String, String> operatorMap)
-            throws WdkModelException, WdkUserException {
-
-        if (!isLeaf()) {
-            throw new WdkModelException(
-                    "Cannot grow an internal node; can only grow a leaf");
-        }
-
-        BooleanQuestionNode tempParent = parent;
-
-        RecordClass rc = this.question.getRecordClass();
-        Question question = model.makeBooleanQuestion(rc);
-        boolean wasFirstChild = isFirstChild();
-
-        // sets my new parent to be <code>newBooleanNode</code> by side effect
-        // if old parent was null then <code>newBooleanNode</code> will be the
-        // new root
-        BooleanQuestionNode newBooleanNode = new BooleanQuestionNode(question,
-                this, newSecondChild, parent);
-
-        operator = translateOperator(operator, operatorMap,
-                model.getRDBMSPlatform());
-        Map<String, Object> values = new LinkedHashMap<String, Object>();
-        values.put(BooleanQuery.OPERATION_PARAM_NAME, operator);
-        newBooleanNode.setValues(values);
-        if (tempParent != null) {
-            if (wasFirstChild) {
-                tempParent.setFirstChild(newBooleanNode);
-            } else {
-                tempParent.setSecondChild(newBooleanNode);
-            }
-        }
-
-        return newBooleanNode;
-    }
-
     public static BooleanQuestionNode combine(BooleanQuestionNode firstChild,
             BooleanQuestionNode secondChild, String operator, WdkModel model,
             Map<String, String> operatorMap) throws WdkModelException,
