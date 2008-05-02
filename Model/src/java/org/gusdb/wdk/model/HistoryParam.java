@@ -24,6 +24,7 @@ public class HistoryParam extends Param {
     public HistoryParam(HistoryParam param) {
         super(param);
         this.factory = param.factory;
+        this.recordClassRef = param.recordClassRef;
         this.recordClass = param.recordClass;
     }
 
@@ -81,6 +82,7 @@ public class HistoryParam extends Param {
      */
     @Override
     protected void resolveReferences(WdkModel model) throws WdkModelException {
+    	if (recordClass == null)
         recordClass = (RecordClass) model.resolveReference(recordClassRef);
     }
 
