@@ -422,6 +422,31 @@ public class AnswerBean {
         return answer.getSubTypeValue();
     }
 
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.Answer#isExpandSubType()
+     */
+    public boolean isExpandSubType() {
+        return answer.isExpandSubType();
+    }
+
+    /**
+     * @param expandSubType
+     * @see org.gusdb.wdk.model.Answer#setExpandSubType(boolean)
+     */
+    public void setExpandSubType(boolean expandSubType) {
+        answer.setExpandSubType(expandSubType);
+    }
+
+    /**
+     * @return
+     * @throws WdkModelException
+     * @see org.gusdb.wdk.model.Answer#getCacheTableName()
+     */
+    public String getCacheTableName() throws WdkModelException {
+        return answer.getCacheTableName();
+    }
+
     // //////////////////////////////////////////////////////////////////////
     // Inner classes
     // //////////////////////////////////////////////////////////////////////

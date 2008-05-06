@@ -186,7 +186,7 @@ public class BooleanQueryInstance extends QueryInstance {
         StringBuffer buffer = new StringBuffer("SELECT * FROM (");
 
         String[] commonColumns = findCommonColumnNames();
-        buffer.append(getSqlForBooleanOp(commonColumns));
+        buffer.append(getSqlForBooleanOp(commonColumns, expandSubType));
 
         // order by project id, and then primary key, the first item in the
         // array is primary key, and the second is project id. If the second is
@@ -208,7 +208,7 @@ public class BooleanQueryInstance extends QueryInstance {
         }
 
         // TEST
-        logger.debug("Boolean Id Query: " + sql);
+        logger.info("Boolean Id Query: " + sql);
 
         return sql;
     }
@@ -220,14 +220,14 @@ public class BooleanQueryInstance extends QueryInstance {
      * @see org.gusdb.wdk.model.QueryInstance#getSqlForBooleanOp(java.lang.String[])
      */
     @Override
-    protected String getSqlForBooleanOp(String[] commonColumns)
+    protected String getSqlForBooleanOp(String[] commonColumns, boolean expandSubType)
             throws WdkModelException {
         StringBuffer buffer = new StringBuffer();
-        buffer.append(firstQueryInstance.getSqlForBooleanOp(commonColumns));
+        buffer.append(firstQueryInstance.getSqlForBooleanOp(commonColumns, expandSubType));
         buffer.append(" ");
         buffer.append(operation);
         buffer.append(" ");
-        buffer.append(secondQueryInstance.getSqlForBooleanOp(commonColumns));
+        buffer.append(secondQueryInstance.getSqlForBooleanOp(commonColumns, expandSubType));
         return buffer.toString();
     }
 
@@ -328,5 +328,4 @@ public class BooleanQueryInstance extends QueryInstance {
             setOperandIds(h);
         }
     }
-
 }

@@ -29,6 +29,8 @@ import org.gusdb.wdk.model.jspwrap.HistoryBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.RecordBean;
+import org.gusdb.wdk.model.jspwrap.RecordClassBean;
+import org.gusdb.wdk.model.jspwrap.SubTypeBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
@@ -90,7 +92,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
             Map<String, Boolean> sortingAttributes;
             if (sortingChecksum != null) {
                 sortingAttributes = wdkUser.getSortingAttributesByChecksum(sortingChecksum);
-                //request.setAttribute("wdk_sorting_checksum", sortingChecksum);
+                // request.setAttribute("wdk_sorting_checksum",
+                // sortingChecksum);
             } else {
                 sortingAttributes = wdkUser.getSortingAttributes(questionName);
             }
@@ -100,24 +103,37 @@ public class ShowSummaryAction extends ShowQuestionAction {
             String[] summaryAttributes = null;
             if (summaryChecksum != null) {
                 summaryAttributes = wdkUser.getSummaryAttributesByChecksum(summaryChecksum);
-                //request.setAttribute("wdk_summary_checksum", sortingChecksum);
+                // request.setAttribute("wdk_summary_checksum",
+                // sortingChecksum);
             } else {
                 summaryAttributes = wdkUser.getSummaryAttributes(questionName);
             }
-            
+
             // get subType input, if any
             String subTypeValue = null;
-            if (wdkQuestion.getRecordClass().isHasSubType()) {
-                String subTypeName = wdkQuestion.getRecordClass().getSubType().getSubTypeParam().getName();
+            boolean expandSubType = false;
+            RecordClassBean recordClass = wdkQuestion.getRecordClass();
+            if (recordClass.isHasSubType()) {
+                SubTypeBean subType = recordClass.getSubType();
+                String subTypeName = subType.getSubTypeParam().getName();
                 subTypeValue = qForm.getMyProp(subTypeName);
+
+                if (subTypeValue == null)
+                    subTypeValue = request.getParameter(subTypeName);
+
                 // remove the subtype param
                 params.remove(subTypeName);
+
+                // get expandSubType, if needed
+                if (subType.isQuestionOnly())
+                    expandSubType = Boolean.parseBoolean(request.getParameter(CConstants.WDK_EXPAND_SUBTYPE_PARAM));
             }
 
             // make the answer
             try {
                 wdkAnswer = summaryPaging(request, wdkQuestion, params,
-                        sortingAttributes, summaryAttributes, subTypeValue);
+                        sortingAttributes, summaryAttributes, subTypeValue,
+                        expandSubType);
             } catch (WdkModelException ex) {
                 logger.error(ex);
                 ex.printStackTrace();
@@ -130,7 +146,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
             // create history
             history = wdkUser.createHistory(wdkAnswer);
-        } else {
+        } else {    // given a history id, load it
             history = wdkUser.getHistory(Integer.parseInt(strHistId));
 
             // check if history is still valid
@@ -151,7 +167,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             params = wdkAnswer.getInternalParams();
 
             wdkAnswer = summaryPaging(request, null, params, sortingAttributes,
-                    summaryAttributes, wdkAnswer, null);
+                    summaryAttributes, wdkAnswer, null, false);
         }
 
         // delete empty history
@@ -162,15 +178,17 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
         String requestUrl = request.getRequestURI() + "?"
                 + request.getQueryString();
-        
+
         // return only the result size, if requested
-        if (request.getParameterMap().containsKey(CConstants.WDK_RESULT_SIZE_ONLY_KEY)) {
+        if (request.getParameterMap().containsKey(
+                CConstants.WDK_RESULT_SIZE_ONLY_KEY)) {
             PrintWriter writer = response.getWriter();
             writer.print(wdkAnswer.getResultSize());
             return null;
         }
 
-        request.setAttribute(CConstants.WDK_QUESTION_PARAMS_KEY, wdkAnswer.getInternalParams());
+        request.setAttribute(CConstants.WDK_QUESTION_PARAMS_KEY,
+                wdkAnswer.getInternalParams());
         request.setAttribute(CConstants.WDK_ANSWER_KEY, wdkAnswer);
         request.setAttribute(CConstants.WDK_HISTORY_KEY, history);
         request.setAttribute("wdk_summary_url", requestUrl);
@@ -221,7 +239,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             if (rec.getPrimaryKey().getProjectId() != null) {
                 path += "&project_id=" + rec.getPrimaryKey().getProjectId();
             }
-            return new ActionForward(path,true);
+            return new ActionForward(path, true);
         }
 
         if (ApplicationInitListener.resourceExists(customViewFile1, svltCtx)) {
@@ -247,8 +265,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 String[] pVals = (String[]) paramVal;
                 StringBuffer sb = new StringBuffer();
                 for (String pVal : pVals) {
-                    if (sb.length() > 0)
-                        sb.append(",");
+                    if (sb.length() > 0) sb.append(",");
                     sb.append(pVal);
                 }
                 paramValStr = sb.toString();
@@ -277,21 +294,24 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
     protected AnswerBean booleanAnswerPaging(HttpServletRequest request,
             Object answerMaker) throws WdkModelException, WdkUserException {
-        return summaryPaging(request, answerMaker, null, null, null, null, null);
+        return summaryPaging(request, answerMaker, null, null, null, null,
+                null, false);
     }
 
     protected AnswerBean summaryPaging(HttpServletRequest request,
             Object answerMaker, Map<String, Object> params,
-            Map<String, Boolean> sortingAttributes, String[] summaryAttributes, String subTypeValue)
+            Map<String, Boolean> sortingAttributes, String[] summaryAttributes,
+            String subTypeValue, boolean expandSubType)
             throws WdkModelException, WdkUserException {
         return summaryPaging(request, answerMaker, params, sortingAttributes,
-                summaryAttributes, null, subTypeValue);
+                summaryAttributes, null, subTypeValue, expandSubType);
     }
 
     private AnswerBean summaryPaging(HttpServletRequest request,
             Object answerMaker, Map<String, Object> params,
             Map<String, Boolean> sortingAttributes, String[] summaryAttributes,
-            AnswerBean wdkAnswer, Object subTypeValue) throws WdkModelException, WdkUserException {
+            AnswerBean wdkAnswer, Object subTypeValue, boolean expandSubType)
+            throws WdkModelException, WdkUserException {
         UserBean wdkUser = (UserBean) request.getSession().getAttribute(
                 CConstants.WDK_USER_KEY);
         int start = 1;
@@ -314,6 +334,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             answerMaker = wdkAnswer.getQuestion();
             params = wdkAnswer.getInternalParams();
             subTypeValue = wdkAnswer.getSubTypeValue();
+            expandSubType = wdkAnswer.isExpandSubType();
         }
         if (start < 1) {
             start = 1;
@@ -329,10 +350,11 @@ public class ShowSummaryAction extends ShowQuestionAction {
             if (question.isFullAnswer()) {
                 wdkAnswer = question.makeAnswer(params, sortingAttributes);
             } else {
-                
+
                 wdkAnswer = question.makeAnswer(params, start, end,
                         sortingAttributes, subTypeValue);
             }
+            wdkAnswer.setExpandSubType(expandSubType);
             wdkAnswer.setSumaryAttribute(summaryAttributes);
         } else if (answerMaker instanceof BooleanQuestionNodeBean) {
             wdkAnswer = ((BooleanQuestionNodeBean) answerMaker).makeAnswer(
@@ -403,8 +425,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
                             StringBuffer sb = new StringBuffer();
                             String[] array = (String[]) objValue;
                             for (String v : array) {
-                                if (sb.length() > 0)
-                                    sb.append(", ");
+                                if (sb.length() > 0) sb.append(", ");
                                 sb.append(v);
                             }
                             pValue = sb.toString();
@@ -416,8 +437,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
                         params.put(pName, pValue);
 
                         String displayName = wdkModel.getParamDisplayName(pName);
-                        if (displayName == null)
-                            displayName = pName;
+                        if (displayName == null) displayName = pName;
                         paramNames.put(pName, displayName);
                     }
                 } catch (UnsupportedEncodingException ex) {
@@ -426,8 +446,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             }
         }
         String qDisplayName = wdkModel.getQuestionDisplayName(qFullName);
-        if (qDisplayName == null)
-            qDisplayName = qFullName;
+        if (qDisplayName == null) qDisplayName = qFullName;
 
         request.setAttribute("questionDisplayName", qDisplayName);
         request.setAttribute("customName", customName);

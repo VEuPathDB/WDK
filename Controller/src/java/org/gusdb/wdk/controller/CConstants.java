@@ -156,6 +156,7 @@ public class CConstants {
     protected static final String WDK_XMLSCHEMA_PARAM = "wdkXmlSchema_param";   // the schema for xml data source
     protected static final String WDK_XMLDATA_DIR_PARAM = "wdkXmlDataDir_param";
     protected static final String WDK_LOGIN_URL_PARAM = "wdkLoginUrl_param";
+    public static final String WDK_EXPAND_SUBTYPE_PARAM = "expandSubType";
     
 
     //default value of webapp init params, from web.xml, used in ApplicationInitListener.java

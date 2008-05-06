@@ -17,7 +17,7 @@ import org.gusdb.wdk.model.implementation.SqlQuery;
 public abstract class QueryInstance {
 
     private static Logger logger = Logger.getLogger(QueryInstance.class);
-    
+
     // private static Logger logger = Logger.getLogger( QueryInstance.class );
 
     protected boolean isCacheable;
@@ -240,8 +240,9 @@ public abstract class QueryInstance {
         return getValues();
     }
 
-    public String getParamsContent() {
+    public String getQueryInstanceContent(boolean withParams) {
         StringBuffer content = new StringBuffer();
+
         content.append(query.getFullName());
 
         // append sub types, if presented
@@ -250,7 +251,18 @@ public abstract class QueryInstance {
             content.append(Utilities.SUB_TYPE);
             content.append(Utilities.DATA_DIVIDER);
             content.append(subTypeValue);
+            content.append(Utilities.DATA_DIVIDER);
+            content.append(expandSubType);
         }
+
+        if (withParams) content.append(getParamsContent());
+
+        return content.toString();
+    }
+
+    protected String getParamsContent() {
+        StringBuffer content = new StringBuffer();
+
         // get parameter name list, and sort it
         String[] paramNames = new String[values.size()];
         values.keySet().toArray(paramNames);
@@ -266,25 +278,22 @@ public abstract class QueryInstance {
         return content.toString();
     }
 
-    public String getQueryInstanceContent() {
-        StringBuffer sb = new StringBuffer();
-        sb.append(query.getProjectId());
-        sb.append(Utilities.DATA_DIVIDER);
-
-        sb.append(getParamsContent());
-        return sb.toString();
-    }
-
     public String getChecksum() throws WdkModelException {
         if (checksum == null) {
-            // get the clob content: a combination of query name, param
-            // names and values
-            String content = getQueryInstanceContent();
+            // get the clob content
+            StringBuffer content = new StringBuffer();
+
+            // the project id is a part of the content for hash code, but not in
+            // the query instance content being cached.
+            content.append(query.getProjectId());
+            content.append(Utilities.DATA_DIVIDER);
+
+            content.append(getQueryInstanceContent(true));
 
             // TEST
-            // logger.info( content );
+            logger.info( content );
 
-            checksum = Utilities.encrypt(content);
+            checksum = Utilities.encrypt(content.toString());
         }
         return checksum;
     }
@@ -324,21 +333,23 @@ public abstract class QueryInstance {
     }
 
     /**
-     * @param expandSubType the expandSubType to set
+     * @param expandSubType
+     *            the expandSubType to set
      */
     public void setExpandSubType(boolean expandSubType) {
         this.expandSubType = expandSubType;
     }
 
-    protected String getSqlForBooleanOp(String[] commonColumns) throws WdkModelException {
+    protected String getSqlForBooleanOp(String[] commonColumns, boolean expandSubType)
+            throws WdkModelException {
         ResultFactory resultFactory = query.getResultFactory();
         String resultTableName = resultFactory.getResultAsTableName(this); // ensures
 
         // check if the expanding needs to be performed
         SubType subType = recordClass.getSubType();
-        
+
         if (subType != null && expandSubType && !subType.isQuestionOnly()) {
-                return getTransformerSql(resultTableName);
+            return getTransformerSql(resultTableName);
         }
 
         // no need to transform
@@ -368,8 +379,7 @@ public abstract class QueryInstance {
         return cacheTable.getSortingIndex(sortingColumns);
     }
 
-    protected String getFilterSql(String resultValue)
-            throws WdkModelException {
+    protected String getFilterSql(String resultValue) throws WdkModelException {
         SubType subType = recordClass.getSubType();
         SqlQuery filterQuery = subType.getFilterQuery();
 
@@ -384,18 +394,19 @@ public abstract class QueryInstance {
 
         return filterQuery.instantiateSql(values);
     }
-    
-    private String getTransformerSql(String resultTable) throws WdkModelException {
+
+    private String getTransformerSql(String resultTable)
+            throws WdkModelException {
         SubType subType = recordClass.getSubType();
         SqlQuery transformQuery = subType.getTransformQuery();
 
         Map<String, Object> transfomrerValues = new LinkedHashMap<String, Object>();
         transfomrerValues.put(subType.getResultParam().getName(), resultTable);
-        
+
         transformQuery.applyDefaults(transfomrerValues);
-        
+
         Map<String, String> values = transformQuery.getInternalParamValues(transfomrerValues);
-        
+
         return transformQuery.instantiateSql(values);
     }
 
