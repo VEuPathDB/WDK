@@ -43,6 +43,8 @@ public class Utilities {
 
     public static final String SYSTEM_PROPERTY_PROJECT_ID = "projectId";
     
+    public static final String BOOLEAN_EXPRESSION_PARAM_KEY = "booleanExpression";
+    
     public static String encrypt(String data) throws WdkModelException {
         // cannot encrypt null value
         if (data == null || data.length() == 0)

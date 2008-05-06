@@ -3,6 +3,7 @@ package org.gusdb.wdk.controller.action;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.log4j.Logger;
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -20,6 +21,8 @@ import org.gusdb.wdk.model.jspwrap.UserBean;
 
 public class ProcessBooleanExpressionAction extends Action {
 
+    private static Logger logger = Logger.getLogger(ProcessBooleanExpressionAction.class);
+    
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
@@ -54,7 +57,9 @@ public class ProcessBooleanExpressionAction extends Action {
         String expression = beForm.getBooleanExpression();
         String subTypeValue = beForm.getSubTypeValue();
         boolean expandSubType = beForm.isExpandSubType();
-
+        
+        logger.info("expand: " + expandSubType);
+        
         HistoryBean history = wdkUser.combineHistory(expression, subTypeValue,
                 expandSubType);
         int historyId = history.getHistoryId();

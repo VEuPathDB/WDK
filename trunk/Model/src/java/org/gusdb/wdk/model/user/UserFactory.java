@@ -167,8 +167,7 @@ public class UserFactory {
             message.setSubject(subject);
             message.setSentDate(new Date());
             // set html content
-            message
-                    .setDataHandler(new DataHandler(new HTMLDataSource(content)));
+            message.setDataHandler(new DataHandler(new HTMLDataSource(content)));
 
             // send email
             Transport.send(message);
@@ -592,9 +591,8 @@ public class UserFactory {
                     + "been updated");
 
             // update user's signature
-            psUser = SqlUtils
-                    .getPreparedStatement(dataSource, "Update " + loginSchema
-                            + "users SET signature = ? WHERE user_id = ?");
+            psUser = SqlUtils.getPreparedStatement(dataSource, "Update "
+                    + loginSchema + "users SET signature = ? WHERE user_id = ?");
 
             rs = SqlUtils.getResultSet(dataSource, sql);
             while (rs.next()) {
@@ -820,55 +818,11 @@ public class UserFactory {
             while (rsHistory.next()) {
                 // load history info
                 int historyId = rsHistory.getInt("history_id");
-                Timestamp createTime = rsHistory.getTimestamp("create_time");
-                Timestamp lastRunTime = rsHistory.getTimestamp("last_run_time");
 
-                History history = new History(this, user, historyId);
-                history.setCreatedTime(new Date(createTime.getTime()));
-                history.setLastRunTime(new Date(lastRunTime.getTime()));
-                history.setCustomName(rsHistory.getString("custom_name"));
-                history.setEstimateSize(rsHistory.getInt("estimate_size"));
-                history.setBoolean(rsHistory.getBoolean("is_boolean"));
-                history.setDeleted(rsHistory.getBoolean("is_deleted"));
+                History history = loadHistory(user, historyId, rsHistory);
 
-                String paramsClob = platform.getClobData(rsHistory, "params");
-                String questionName = rsHistory.getString("question_name");
-                history.setQuestionName(questionName);
-
-                // re-construct the answer
-                Answer answer;
-
-                // get the params
-                StringBuffer subTypeValues = new StringBuffer();
-                Map<String, Object> params;
-                if (history.isBoolean()) {
-                    params = new LinkedHashMap<String, Object>();
-                    params.put("Boolean Expression", paramsClob);
-                } else {
-                    params = parseParams(paramsClob, subTypeValues);
-                }
-                history.setParams(params);
-
-                // construct answer of the history
-                try {
-                    if (history.isBoolean()) {
-                        answer = constructBooleanAnswer(user, paramsClob);
-                        history.setBooleanExpression(paramsClob);
-                    } else {
-                        answer = constructAnswer(user, questionName, params,
-                                subTypeValues);
-                    }
-                    history.setAnswer(answer);
-                    histories.put(historyId, history);
-                } catch (WdkModelException ex) {
-                    // invalid history
-                    history.setValid(false);
-                    invalidHistories.put(historyId, history);
-                } catch (WdkUserException ex) {
-                    // invalid history
-                    history.setValid(false);
-                    invalidHistories.put(historyId, history);
-                }
+                if (history.isValid()) histories.put(historyId, history);
+                else invalidHistories.put(historyId, history);
             }
             // now compute the dependencies of the histories
             History[] array = new History[histories.size()];
@@ -906,51 +860,7 @@ public class UserFactory {
                 throw new SQLException("The history #" + historyId
                         + " of user " + user.getEmail() + " doesn't exist.");
 
-            // load history info
-            Timestamp createTime = rsHistory.getTimestamp("create_time");
-            Timestamp lastRunTime = rsHistory.getTimestamp("last_run_time");
-
-            History history = new History(this, user, historyId);
-            history.setCreatedTime(new Date(createTime.getTime()));
-            history.setLastRunTime(new Date(lastRunTime.getTime()));
-            history.setCustomName(rsHistory.getString("custom_name"));
-            history.setEstimateSize(rsHistory.getInt("estimate_size"));
-            history.setBoolean(rsHistory.getBoolean("is_boolean"));
-            history.setDeleted(rsHistory.getBoolean("is_deleted"));
-
-            String paramsClob = platform.getClobData(rsHistory, "params");
-            String questionName = rsHistory.getString("question_name");
-            history.setQuestionName(questionName);
-
-            // get the params
-            StringBuffer subTypeValues = new StringBuffer();
-            Map<String, Object> params;
-            if (history.isBoolean()) {
-                params = new LinkedHashMap<String, Object>();
-                params.put("Boolean Expression", paramsClob);
-            } else {
-                params = parseParams(paramsClob, subTypeValues);
-            }
-            history.setParams(params);
-
-            // re-construct the answer
-            try {
-                Answer answer;
-                if (history.isBoolean()) {
-                    answer = constructBooleanAnswer(user, paramsClob);
-                    history.setBooleanExpression(paramsClob);
-                } else {
-                    answer = constructAnswer(user, questionName, params,
-                            subTypeValues);
-                }
-                history.setAnswer(answer);
-            } catch (WdkModelException ex) {
-                history.setValid(false);
-            } catch (WdkUserException ex) {
-                history.setValid(false);
-            }
-
-            return history;
+            return loadHistory(user, historyId, rsHistory);
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
         } finally {
@@ -962,65 +872,99 @@ public class UserFactory {
         }
     }
 
-    private Map<String, Object> parseParams(String paramsClob,
-            StringBuffer subTypeValues) {
+    private History loadHistory(User user, int historyId, ResultSet rsHistory)
+            throws SQLException {
+        History history = new History(this, user, historyId);
+
+        // load history info
+        Timestamp createTime = rsHistory.getTimestamp("create_time");
+        Timestamp lastRunTime = rsHistory.getTimestamp("last_run_time");
+
+        history.setCreatedTime(new Date(createTime.getTime()));
+        history.setLastRunTime(new Date(lastRunTime.getTime()));
+        history.setCustomName(rsHistory.getString("custom_name"));
+        history.setEstimateSize(rsHistory.getInt("estimate_size"));
+        history.setBoolean(rsHistory.getBoolean("is_boolean"));
+        history.setDeleted(rsHistory.getBoolean("is_deleted"));
+
+        String instanceContent = platform.getClobData(rsHistory, "params");
+        history.setQuestionName(rsHistory.getString("question_name"));
+
+        // re-construct the answer
+        try {
+            constructAnswer(history, instanceContent);
+        } catch (WdkModelException ex) {
+            history.setValid(false);
+        } catch (WdkUserException ex) {
+            history.setValid(false);
+        }
+
+        return history;
+    }
+
+    private Map<String, Object> parseParams(boolean isBoolean,
+            String paramsClob, Object[] subTypeInfo) {
         String[] parts = paramsClob.split(Utilities.DATA_DIVIDER);
         int base = 1;
 
-        // the first element is query name, ignored; the second and third params
-        // may be subtype label and subtype values associated with the query
-        // instance
+        // the first element is query name, ignored;
+        // the second could be subtype label or the first param-value pair
+        // if the second is subtype label then:
+        // * the third is subtype value, and
+        // * the fourth is expand flag, and
+        // * param-value pair starts from the fifth item
         if (parts[1].equals(Utilities.SUB_TYPE)) {
-            base = 3;
-            subTypeValues.append(parts[2]);
+            base = 4;
+            subTypeInfo[0] = parts[2];
+            subTypeInfo[1] = Boolean.parseBoolean(parts[3]);
         }
 
         Map<String, Object> params = new LinkedHashMap<String, Object>();
-        for (int i = base; i < parts.length; i++) {
-            String pvPair = parts[i];
-            int index = pvPair.indexOf('=');
-            String paramName = pvPair.substring(0, index).trim();
-            String value = pvPair.substring(index + 1).trim();
-            params.put(paramName, value);
+        if (isBoolean) {// the last part for boolean is a boolean expression
+            params.put(Utilities.BOOLEAN_EXPRESSION_PARAM_KEY, parts[base]);
+        } else {
+            for (int i = base; i < parts.length; i++) {
+                String pvPair = parts[i];
+                int index = pvPair.indexOf('=');
+                String paramName = pvPair.substring(0, index).trim();
+                String value = pvPair.substring(index + 1).trim();
+                params.put(paramName, value);
+            }
         }
         return params;
     }
 
-    private Answer constructAnswer(User user, String questionName,
-            Map<String, Object> params, StringBuffer subTypeValues)
+    private void constructAnswer(History history, String instanceContent)
             throws WdkModelException, WdkUserException {
-        // obtain the question with full name
-        Question question = (Question) wdkModel.resolveReference(questionName);
+        User user = history.getUser();
+        Object[] subTypeInfo = { null, false };
+        Map<String, Object> params = parseParams(history.isBoolean(),
+                instanceContent, subTypeInfo);
+        Answer answer;
+        if (history.isBoolean()) {
+            String expression = (String) params.get(Utilities.BOOLEAN_EXPRESSION_PARAM_KEY);
+            history.setBooleanExpression(expression);
 
-        // get the user's preferences
-        String subTypes = (subTypeValues.length() == 0) ? null : subTypeValues
-                .toString();
-        Answer answer = question.makeAnswer(params, 1, user.getItemsPerPage(),
-                user.getSortingAttributes(questionName), subTypes);
-        String[] summaryAttributes = user.getSummaryAttributes(questionName);
-        answer.setSumaryAttributes(summaryAttributes);
-        return answer;
-    }
+            BooleanExpression exp = new BooleanExpression(user);
+            Map<String, String> operatorMap = getWdkModel().getBooleanOperators();
+            BooleanQuestionNode root = exp.parseExpression(expression,
+                    operatorMap);
+            answer = root.makeAnswer(1, user.getItemsPerPage());
+            answer.setSubTypeValue(subTypeInfo[0]);
+            answer.setExpandSubType((Boolean) subTypeInfo[1]);
+        } else {
+            // obtain the question with full name
+            String questionName = history.getQuestionName();
+            Question question = (Question) wdkModel.resolveReference(questionName);
 
-    private Answer constructBooleanAnswer(User user, String expression)
-            throws WdkUserException, WdkModelException {
-        // parse and extract subType value, if having one
-        String subTypeValue = null;
-        boolean expandSubType = false;
-        String[] params = expression.split(Utilities.DATA_DIVIDER);
-        if (params[0].equals(Utilities.SUB_TYPE)) {
-            subTypeValue = params[1];
-            expandSubType = Boolean.parseBoolean(params[2]);
-            expression = params[3];
+            // get the user's preferences
+            answer = question.makeAnswer(params, 1, user.getItemsPerPage(),
+                    user.getSortingAttributes(questionName), subTypeInfo[0]);
+            String[] summaryAttributes = user.getSummaryAttributes(questionName);
+            answer.setSumaryAttributes(summaryAttributes);
         }
-        BooleanExpression exp = new BooleanExpression(user);
-        Map<String, String> operatorMap = getWdkModel().getBooleanOperators();
-        BooleanQuestionNode root = exp.parseExpression(expression, operatorMap);
-
-        Answer answer = root.makeAnswer(1, user.getItemsPerPage());
-        answer.setSubTypeValue(subTypeValue);
-        answer.setExpandSubType(expandSubType);
-        return answer;
+        history.setParams(params);
+        history.setAnswer(answer);
     }
 
     History createHistory(User user, Answer answer, String booleanExpression,
@@ -1038,20 +982,9 @@ public class UserFactory {
         QueryInstance qinstance = answer.getIdsQueryInstance();
         String qiChecksum = qinstance.getChecksum();
         String signature = qinstance.getQuery().getSignature();
-        String params = qinstance.getParamsContent();
-        if (isBoolean) {
-            StringBuffer buffer = new StringBuffer();
-            if (answer.getSubTypeValue() != null) {
-                buffer.append(Utilities.SUB_TYPE);
-                buffer.append(Utilities.DATA_DIVIDER);
-                buffer.append(answer.getSubTypeValue());
-                buffer.append(Utilities.DATA_DIVIDER);
-                buffer.append(answer.isExpandSubType());
-                buffer.append(Utilities.DATA_DIVIDER);
-            }
-            buffer.append(booleanExpression);
-            params = buffer.toString();
-        }
+        String instanceContent = qinstance.getQueryInstanceContent(!isBoolean);
+        if (isBoolean)
+            instanceContent += Utilities.DATA_DIVIDER + booleanExpression;
 
         // check whether the answer exist or not
         ResultSet rsHistory = null;
@@ -1119,7 +1052,7 @@ public class UserFactory {
                 psHistory.setString(10, signature);
                 psHistory.setBoolean(11, isBoolean);
                 // the platform set clob, and run the statement
-                platform.updateClobData(psHistory, 12, params, false);
+                platform.updateClobData(psHistory, 12, instanceContent, false);
                 psHistory.executeUpdate();
 
                 // query to get the new history id
@@ -1182,14 +1115,10 @@ public class UserFactory {
         Date lastRunTime = (updateTime) ? new Date() : history.getLastRunTime();
         PreparedStatement psHistory = null;
         try {
-            psHistory = SqlUtils
-                    .getPreparedStatement(
-                            dataSource,
-                            "UPDATE "
-                                    + loginSchema
-                                    + "histories SET custom_name = ?, "
-                                    + "last_run_time = ?, is_deleted = ?, estimate_size = ?"
-                                    + "WHERE user_id = ? AND project_id = ? AND history_id = ?");
+            psHistory = SqlUtils.getPreparedStatement(dataSource, "UPDATE "
+                    + loginSchema + "histories SET custom_name = ?, "
+                    + "last_run_time = ?, is_deleted = ?, estimate_size = ?"
+                    + "WHERE user_id = ? AND project_id = ? AND history_id = ?");
             psHistory.setString(1, history.getBaseCustomName());
             psHistory.setTimestamp(2, new Timestamp(lastRunTime.getTime()));
             psHistory.setBoolean(3, history.isDeleted());
@@ -1249,8 +1178,8 @@ public class UserFactory {
             sql.append("DELETE FROM " + loginSchema + "histories "
                     + "WHERE user_id = ? ");
             if (!allProjects) sql.append("AND project_id = ?");
-            psHistory = SqlUtils.getPreparedStatement(dataSource, sql
-                    .toString());
+            psHistory = SqlUtils.getPreparedStatement(dataSource,
+                    sql.toString());
 
             psHistory.setInt(1, user.getUserId());
             if (!allProjects) psHistory.setString(2, projectId);
@@ -1492,10 +1421,10 @@ public class UserFactory {
         // send an email to the user
         String message = emailContent.replaceAll("\\$\\$FIRST_NAME\\$\\$",
                 Matcher.quoteReplacement(user.getFirstName()));
-        message = message.replaceAll("\\$\\$EMAIL\\$\\$", Matcher
-                .quoteReplacement(email));
-        message = message.replaceAll("\\$\\$PASSWORD\\$\\$", Matcher
-                .quoteReplacement(password));
+        message = message.replaceAll("\\$\\$EMAIL\\$\\$",
+                Matcher.quoteReplacement(email));
+        message = message.replaceAll("\\$\\$PASSWORD\\$\\$",
+                Matcher.quoteReplacement(password));
         sendEmail(user.getEmail(), supportEmail, emailSubject, message);
     }
 
@@ -1553,9 +1482,8 @@ public class UserFactory {
         try {
             // encrypt the password, and save it
             String encrypted = encrypt(password);
-            ps = SqlUtils
-                    .getPreparedStatement(dataSource, "UPDATE " + loginSchema
-                            + "users SET passwd = ? " + "WHERE email = ?");
+            ps = SqlUtils.getPreparedStatement(dataSource, "UPDATE "
+                    + loginSchema + "users SET passwd = ? " + "WHERE email = ?");
             ps.setString(1, encrypted);
             ps.setString(2, email);
             ps.execute();

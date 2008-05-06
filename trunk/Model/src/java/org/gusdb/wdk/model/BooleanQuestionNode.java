@@ -335,8 +335,6 @@ public class BooleanQuestionNode {
      */
     public void setExpandSubType(boolean expandSubType) {
         this.expandSubType = expandSubType;
-        if (firstChild != null) firstChild.setExpandSubType(expandSubType);
-        if (secondChild != null) secondChild.setExpandSubType(expandSubType);
     }
 
     /**

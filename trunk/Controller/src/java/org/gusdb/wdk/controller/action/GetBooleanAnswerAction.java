@@ -43,7 +43,7 @@ public class GetBooleanAnswerAction extends ShowSummaryAction {
 	    BooleanQuestionLeafBean rootLeaf = (BooleanQuestionLeafBean)root;
 	    QuestionBean leafQuestion = rootLeaf.getQuestion();
 	    Map params = getParamsFromForm(bqf, rootLeaf);
-	    answer = summaryPaging(request, leafQuestion, params, null, null, null);
+	    answer = summaryPaging(request, leafQuestion, params, null, null, null, false);
 	} else {
 	    BooleanQuestionNodeBean rootNode = (BooleanQuestionNodeBean)root;
 	    List<Object> allNodes = new ArrayList<Object>();
