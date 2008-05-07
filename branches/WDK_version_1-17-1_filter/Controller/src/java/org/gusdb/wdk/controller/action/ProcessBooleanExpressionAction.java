@@ -11,6 +11,8 @@ import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.HistoryBean;
+import org.gusdb.wdk.model.jspwrap.ProtocolBean;
+import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 
 /**
@@ -55,6 +57,16 @@ public class ProcessBooleanExpressionAction extends Action {
 		HistoryBean history = wdkUser.combineHistory(beForm
 				.getBooleanExpression());
 		int historyId = history.getHistoryId();
+
+		// 1. Check for ProtocolBean
+		// 2. If exists, update latest step w/ filter history
+		ProtocolBean protocol = (ProtocolBean) request.getAttribute(CConstants.WDK_PROTOCOL_KEY);
+		if (protocol != null) {
+		    StepBean step = protocol.getLatestStep();
+		    step.setFilterHistory(history);
+		    protocol.setLatestStep(step);
+		}
+
 		request.setAttribute(CConstants.WDK_HISTORY_ID_KEY, historyId);
 		return Integer.toString(historyId);
 	}

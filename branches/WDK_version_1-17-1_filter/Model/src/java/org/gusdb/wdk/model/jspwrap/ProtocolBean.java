@@ -7,6 +7,9 @@ public class ProtocolBean {
     StepBean latestStep;
     String name;
 
+    public ProtocolBean() {
+    }
+
     public ProtocolBean(StepBean latestStep, String name) {
 	this.latestStep = latestStep;
 	this.name = name;
@@ -18,6 +21,10 @@ public class ProtocolBean {
     
     public String getName() {
 	return name;
+    }
+
+    public StepBean getLatestStep() {
+	return latestStep;
     }
 
     public StepBean getStep(int index) {
@@ -45,11 +52,16 @@ public class ProtocolBean {
 	return array;
     }
 
-    public void addStep(StepBean newStep) {
-	newStep.setPreviousStep(latestStep);
-	latestStep.setNextStep(newStep);
-	latestStep = newStep;
+    public void addStep(StepBean step) {
+	if (latestStep != null) {
+	    step.setPreviousStep(latestStep);
+	    latestStep.setNextStep(step);
+	}
+	setLatestStep(step);
     }
     
+    public void setLatestStep(StepBean step) {
+	this.latestStep = step;
+    }
 
 }

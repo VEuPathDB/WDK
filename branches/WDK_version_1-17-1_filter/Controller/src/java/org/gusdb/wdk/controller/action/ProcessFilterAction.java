@@ -32,6 +32,8 @@ import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
 import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
 import org.gusdb.wdk.model.jspwrap.DatasetBean;
 import org.gusdb.wdk.model.jspwrap.HistoryBean;
+import org.gusdb.wdk.model.jspwrap.ProtocolBean;
+import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.HistoryParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.EnumParamBean;
@@ -53,7 +55,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
     public ActionForward execute( ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response )
             throws Exception {
-        System.out.println("Entering ProcessFilterAction BLAH...");
+        System.out.println("Entering ProcessFilterAction...");
 
 	WdkModelBean wdkModel = ( WdkModelBean ) servlet.getServletContext().getAttribute(CConstants.WDK_MODEL_KEY );
         UserBean wdkUser = ( UserBean ) request.getSession().getAttribute(
@@ -68,6 +70,12 @@ public class ProcessFilterAction extends ProcessQuestionAction {
         QuestionBean wdkQuestion = getQuestionByFullName( qFullName );
         FilterForm fForm = prepareFilterForm( wdkQuestion, request,
                 ( FilterForm ) form );
+
+	// get protocol; throw exception if doesn't exist (we have to have a protocol to filter)
+	ProtocolBean protocol = (ProtocolBean) request.getAttribute(CConstants.WDK_PROTOCOL_KEY);
+	if ( protocol == null ) {
+	    throw new WdkModelException("ProcessFilterAction has no ProtocolBean.");
+	}
         
 	// validate & parse params
         Map< String, String > params = prepareParams( wdkUser, request, fForm );
@@ -121,8 +129,15 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	    return showError(wdkModel, wdkUser, mapping, request, response);
 	}
 	
-	// create history
+	// create history for filter subquery
 	history = wdkUser.createHistory(wdkAnswer);
+
+	// 1. create a new StepBean
+	// 2. add subquery history to StepBean
+	// 3. add StepBean to ProtocolBean
+	StepBean newStep = new StepBean();
+        newStep.setSubQueryHistory(history);
+	protocol.addStep(newStep);
 
         // delete empty history
         if (history != null && history.getEstimateSize() == 0)

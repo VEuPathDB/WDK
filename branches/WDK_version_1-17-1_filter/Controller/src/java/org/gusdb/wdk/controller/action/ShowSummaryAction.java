@@ -26,6 +26,8 @@ import org.gusdb.wdk.model.jspwrap.AnswerBean;
 import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
 import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
 import org.gusdb.wdk.model.jspwrap.HistoryBean;
+import org.gusdb.wdk.model.jspwrap.ProtocolBean;
+import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.RecordBean;
@@ -37,6 +39,8 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
  * 1) reads param values from input form bean, 2) runs the query and saves the
  * answer 3) forwards control to a jsp page that displays a summary
  */
+
+// TO DO:  Somewhere in here, need to check for ProtocolBean and handle it
 
 public class ShowSummaryAction extends ShowQuestionAction {
 
@@ -64,6 +68,10 @@ public class ShowSummaryAction extends ShowQuestionAction {
         HistoryBean history;
         AnswerBean wdkAnswer;
         Map<String, Object> params;
+
+	// Check for ProtocolBean.  If exists, do nothing for now.  If not exists, create.
+	ProtocolBean protocol = (ProtocolBean) request.getAttribute(CConstants.WDK_PROTOCOL_KEY);
+
 
         String strHistId = request.getParameter(CConstants.WDK_HISTORY_ID_KEY);
         if (strHistId == null || strHistId.length() == 0) {
@@ -148,6 +156,15 @@ public class ShowSummaryAction extends ShowQuestionAction {
         // delete empty history
         if (history != null && history.getEstimateSize() == 0)
             wdkUser.deleteHistory(history.getHistoryId());
+
+
+	if (protocol == null) {
+	    protocol = new ProtocolBean();
+	    StepBean step = new StepBean();
+	    step.setFilterHistory(history);
+	    protocol.addStep(step);
+	    request.setAttribute(CConstants.WDK_PROTOCOL_KEY, protocol);
+	}
 
         int historyId = history.getHistoryId();
 
