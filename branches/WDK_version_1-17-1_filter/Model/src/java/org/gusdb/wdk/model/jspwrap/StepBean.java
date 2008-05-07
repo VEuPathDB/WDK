@@ -67,6 +67,13 @@ public class StepBean {
 	return filterHistory.getAnswer().getBooleanOperation();
     }
     
+    public String getDetails() {
+	if (isFirstStep()) {
+	    return filterHistory.getDescription();
+	}
+	return subQueryHistory.getDescription();
+    }
+
     protected void setNextStep(StepBean newNextStep) {
         this.nextStep = newNextStep;
     }
@@ -78,6 +85,4 @@ public class StepBean {
     public boolean isFirstStep() {
 	return (previousStep == null);
     }
-
-    // Need function to return query details
 }
