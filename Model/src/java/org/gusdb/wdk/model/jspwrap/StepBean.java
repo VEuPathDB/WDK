@@ -21,6 +21,9 @@ public class StepBean {
     HistoryBean filterHistory;
     HistoryBean subQueryHistory;
 
+    public StepBean() {
+    }
+
     public StepBean(HistoryBean filterHistory, HistoryBean subQueryHistory,
 		    StepBean previousStep, StepBean nextStep) {
 	this.previousStep = previousStep;
@@ -72,6 +75,16 @@ public class StepBean {
 	    return filterHistory.getDescription();
 	}
 	return subQueryHistory.getDescription();
+    }
+
+
+    // Not sure if these mutators are safe, is there a better way to do this?
+    public void setFilterHistory(HistoryBean history) {
+	this.filterHistory = history;
+    }
+    
+    public void setSubQueryHistory(HistoryBean history) {
+	this.subQueryHistory = history;
     }
 
     protected void setNextStep(StepBean newNextStep) {
