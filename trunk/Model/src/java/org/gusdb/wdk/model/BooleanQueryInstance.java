@@ -222,12 +222,13 @@ public class BooleanQueryInstance extends QueryInstance {
     @Override
     protected String getSqlForBooleanOp(String[] commonColumns, boolean expandSubType)
             throws WdkModelException {
-        StringBuffer buffer = new StringBuffer();
+        StringBuffer buffer = new StringBuffer("(");
         buffer.append(firstQueryInstance.getSqlForBooleanOp(commonColumns, expandSubType));
         buffer.append(" ");
         buffer.append(operation);
         buffer.append(" ");
         buffer.append(secondQueryInstance.getSqlForBooleanOp(commonColumns, expandSubType));
+        buffer.append(")");
         return buffer.toString();
     }
 
