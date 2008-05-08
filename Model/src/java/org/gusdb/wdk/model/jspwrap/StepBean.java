@@ -50,6 +50,9 @@ public class StepBean {
     }
 
     public String getCustomName() {
+	if (isFirstStep()) {
+	    return filterHistory.getCustomName();
+	}
 	return subQueryHistory.getCustomName();
     }
 
@@ -76,7 +79,6 @@ public class StepBean {
 	}
 	return subQueryHistory.getDescription();
     }
-
 
     // Not sure if these mutators are safe, is there a better way to do this?
     public void setFilterHistory(HistoryBean history) {
