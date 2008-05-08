@@ -159,10 +159,9 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
 
 	if (protocol == null) {
-	    protocol = new ProtocolBean();
 	    StepBean step = new StepBean();
 	    step.setFilterHistory(history);
-	    protocol.addStep(step);
+	    protocol = new ProtocolBean(step, "Put a default name here");
 	    request.setAttribute(CConstants.WDK_PROTOCOL_KEY, protocol);
 	}
 

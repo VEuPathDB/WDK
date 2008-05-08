@@ -7,11 +7,8 @@ public class ProtocolBean {
     StepBean latestStep;
     String name;
 
-    public ProtocolBean() {
-    }
-
-    public ProtocolBean(StepBean latestStep, String name) {
-	this.latestStep = latestStep;
+    public ProtocolBean(StepBean step, String name) {
+	this.latestStep = step;
 	this.name = name;
     }
 
@@ -38,7 +35,7 @@ public class ProtocolBean {
     public StepBean[] getAllSteps() {
 	ArrayList<StepBean> allSteps = new ArrayList<StepBean>();
 	allSteps = buildAllStepsArray(allSteps, latestStep);
-	return (StepBean[]) allSteps.toArray();
+	return allSteps.toArray(new StepBean[allSteps.size()]);
     }
 
     private ArrayList<StepBean> buildAllStepsArray(ArrayList<StepBean> array, StepBean step) {
@@ -57,11 +54,14 @@ public class ProtocolBean {
 	    step.setPreviousStep(latestStep);
 	    latestStep.setNextStep(step);
 	}
-	setLatestStep(step);
+	this.latestStep = step;
+	//setLatestStep(step);
     }
     
+    /*
     public void setLatestStep(StepBean step) {
 	this.latestStep = step;
     }
+    */
 
 }
