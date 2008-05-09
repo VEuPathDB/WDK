@@ -621,14 +621,7 @@ public class Answer {
     }
 
     public String toString() {
-        StringBuffer sb = new StringBuffer(question.getDisplayName());
-
-        Map<String, Object> params = getParams();
-
-        for (Object key : params.keySet()) {
-            sb.append(" " + key + ":" + params.get(key));
-        }
-        return sb.toString();
+        return idsQueryInstance.getQueryInstanceContent(true);
     }
 
     public Answer newAnswer() throws WdkModelException {
