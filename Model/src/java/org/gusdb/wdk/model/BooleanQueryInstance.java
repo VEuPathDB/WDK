@@ -208,7 +208,7 @@ public class BooleanQueryInstance extends QueryInstance {
         }
 
         // TEST
-        logger.info("Boolean Id Query: " + sql);
+        logger.debug("Boolean Id Query: " + sql);
 
         return sql;
     }
