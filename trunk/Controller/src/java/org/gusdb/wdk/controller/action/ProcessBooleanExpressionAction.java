@@ -58,7 +58,7 @@ public class ProcessBooleanExpressionAction extends Action {
         String subTypeValue = beForm.getSubTypeValue();
         boolean expandSubType = beForm.isExpandSubType();
         
-        logger.info("expand: " + expandSubType);
+        logger.debug("expand: " + expandSubType);
         
         HistoryBean history = wdkUser.combineHistory(expression, subTypeValue,
                 expandSubType);

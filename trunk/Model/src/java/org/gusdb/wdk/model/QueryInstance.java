@@ -291,7 +291,7 @@ public abstract class QueryInstance {
             content.append(getQueryInstanceContent(true));
 
             // TEST
-            logger.info( content );
+            logger.debug( content );
 
             checksum = Utilities.encrypt(content.toString());
         }
