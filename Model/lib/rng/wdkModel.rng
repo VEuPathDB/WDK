@@ -634,6 +634,11 @@
               <data type="boolean" />
           </attribute>
       </optional>
+      <optional>
+          <attribute name="ignoreSubType">
+              <data type="boolean" />
+          </attribute>
+      </optional>
                  
       <zeroOrMore>
         <choice>

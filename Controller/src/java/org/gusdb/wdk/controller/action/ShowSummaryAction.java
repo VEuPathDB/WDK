@@ -113,7 +113,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             String subTypeValue = null;
             boolean expandSubType = false;
             RecordClassBean recordClass = wdkQuestion.getRecordClass();
-            if (recordClass.isHasSubType()) {
+            if (recordClass.isHasSubType() && !wdkQuestion.isIgnoreSubType()) {
                 SubTypeBean subType = recordClass.getSubType();
                 String subTypeName = subType.getSubTypeParam().getName();
                 subTypeValue = qForm.getMyProp(subTypeName);

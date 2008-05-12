@@ -224,8 +224,8 @@ public class QuestionBean {
      *            Index of the last record to include in the answer
      */
     public AnswerBean makeAnswer(Map<String, Object> paramValues, int start,
-            int end, Map<String, Boolean> sortingAttributes, Object subTypeValues)
-            throws WdkModelException, WdkUserException {
+            int end, Map<String, Boolean> sortingAttributes,
+            Object subTypeValues) throws WdkModelException, WdkUserException {
         return new AnswerBean(question.makeAnswer(paramValues, start, end,
                 sortingAttributes, subTypeValues));
     }
@@ -248,7 +248,7 @@ public class QuestionBean {
     }
 
     /**
-     * A indicator to the controller whether this question bean should make 
+     * A indicator to the controller whether this question bean should make
      * answer beans that contains all records in one page or not.
      * 
      * @return
@@ -277,7 +277,7 @@ public class QuestionBean {
     }
 
     /**
-     * make an answer bean that returns all record beans in one page, sorted by 
+     * make an answer bean that returns all record beans in one page, sorted by
      * the given attribute list.
      * 
      * @param paramValues
@@ -316,4 +316,11 @@ public class QuestionBean {
         return question.isNoSummaryOnSingleRecord();
     }
 
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.Question#isIgnoreSubType()
+     */
+    public boolean isIgnoreSubType() {
+        return question.isIgnoreSubType();
+    }
 }
