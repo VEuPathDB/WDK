@@ -70,7 +70,8 @@ public class ProcessQuestionAction extends ShowQuestionAction {
         }
 
         // get subType input, and compose it into url
-        if (wdkQuestion.getRecordClass().isHasSubType()) {
+        if (wdkQuestion.getRecordClass().isHasSubType()
+                && !wdkQuestion.isIgnoreSubType()) {
             String subTypeName = wdkQuestion.getRecordClass().getSubType().getSubTypeParam().getName();
             String subTypeValue = request.getParameter(subTypeName);
             if (subTypeValue == null)

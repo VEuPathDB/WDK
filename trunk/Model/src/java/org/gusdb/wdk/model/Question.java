@@ -72,6 +72,8 @@ public class Question extends WdkModelBase {
 
     private boolean noSummaryOnSingleRecord = false;
 
+    private boolean ignoreSubType = false;
+
     // /////////////////////////////////////////////////////////////////////
     // setters called at initialization
     // /////////////////////////////////////////////////////////////////////
@@ -166,17 +168,14 @@ public class Question extends WdkModelBase {
     }
 
     public Map<String, AttributeField> getReportMakerAttributeFields() {
-        Map<String, AttributeField> rmfields = recordClass
-                .getReportMakerAttributeFieldMap();
+        Map<String, AttributeField> rmfields = recordClass.getReportMakerAttributeFieldMap();
         if (dynamicAttributeSet != null)
-            rmfields.putAll(dynamicAttributeSet
-                    .getReportMakerAttributeFieldMap());
+            rmfields.putAll(dynamicAttributeSet.getReportMakerAttributeFieldMap());
         return rmfields;
     }
 
     public Map<String, TableField> getReportMakerTableFields() {
-        Map<String, TableField> rmfields = recordClass
-                .getReportMakerTableFieldMap();
+        Map<String, TableField> rmfields = recordClass.getReportMakerTableFieldMap();
         return rmfields;
     }
 
@@ -248,10 +247,11 @@ public class Question extends WdkModelBase {
         return makeAnswer(paramValues, i, j, sortingAttributeMap, null);
     }
 
-    public Answer makeAnswer(Map<String, Object> paramValues, int i, int j, String subTypeValue)
-            throws WdkUserException, WdkModelException {
+    public Answer makeAnswer(Map<String, Object> paramValues, int i, int j,
+            String subTypeValue) throws WdkUserException, WdkModelException {
         return makeAnswer(paramValues, i, j, sortingAttributeMap, subTypeValue);
     }
+
     /**
      * make an answer by given page range, sorted by the given attribute list.
      * 
@@ -266,6 +266,8 @@ public class Question extends WdkModelBase {
     public Answer makeAnswer(Map<String, Object> paramValues, int i, int j,
             Map<String, Boolean> sortingAttributes, Object subTypeValue)
             throws WdkUserException, WdkModelException {
+        if (ignoreSubType) subTypeValue = null;
+        
         QueryInstance qi = query.makeInstance();
         qi.setValues(paramValues);
         qi.setSubTypeValue(subTypeValue);
@@ -460,8 +462,8 @@ public class Question extends WdkModelBase {
     // /////////////////////////////////////////////////////////////////////
 
     Map<String, AttributeField> getDynamicAttributeFields() {
-        return dynamicAttributeSet == null ? null : dynamicAttributeSet
-                .getAttributeFields();
+        return dynamicAttributeSet == null ? null
+                : dynamicAttributeSet.getAttributeFields();
     }
 
     void setResources(WdkModel model) throws WdkModelException {
@@ -519,8 +521,7 @@ public class Question extends WdkModelBase {
                 summaryAttributeMap.put(name, attMap.get(name));
             }
         } else {
-            Map<String, AttributeField> recAttrsMap = getRecordClass()
-                    .getAttributeFieldMap();
+            Map<String, AttributeField> recAttrsMap = getRecordClass().getAttributeFieldMap();
             summaryAttributeMap = new LinkedHashMap<String, AttributeField>(
                     recAttrsMap);
             Iterator<String> ramI = recAttrsMap.keySet().iterator();
@@ -555,8 +556,7 @@ public class Question extends WdkModelBase {
 
         // needs to clone this summary attribute as well
         Map<String, AttributeField> sumAttributes = new LinkedHashMap<String, AttributeField>();
-        Map<String, AttributeField> attributes = recordClass
-                .getAttributeFieldMap();
+        Map<String, AttributeField> attributes = recordClass.getAttributeFieldMap();
         for (String attrName : summaryAttributeMap.keySet()) {
             if (attributes.containsKey(attrName))
                 sumAttributes.put(attrName, summaryAttributeMap.get(attrName));
@@ -655,6 +655,23 @@ public class Question extends WdkModelBase {
         return propLists;
     }
 
+    /**
+     * @return the ignoreSubType
+     */
+    public boolean isIgnoreSubType() {
+        return ignoreSubType;
+    }
+    
+
+    /**
+     * @param ignoreSubType
+     *            the ignoreSubType to set
+     */
+    public void setIgnoreSubType(boolean ignoreSubType) {
+        this.ignoreSubType = ignoreSubType;
+    }
+    
+
     /*
      * (non-Javadoc)
      * 
@@ -719,10 +736,8 @@ public class Question extends WdkModelBase {
                             + " has more than one <attributesList> for "
                             + "project " + projectId);
                 } else {
-                    this.summaryAttributeNames = attributeList
-                            .getSummaryAttributeNames();
-                    this.sortingAttributeMap = attributeList
-                            .getSortingAttributeMap();
+                    this.summaryAttributeNames = attributeList.getSummaryAttributeNames();
+                    this.sortingAttributeMap = attributeList.getSortingAttributeMap();
                     hasAttributeList = true;
                 }
             }
@@ -756,8 +771,8 @@ public class Question extends WdkModelBase {
                             + "\" for project " + projectId);
                 } else {
                     propList.excludeResources(projectId);
-                    propertyListMap.put(propList.getName(), propList
-                            .getValues());
+                    propertyListMap.put(propList.getName(),
+                            propList.getValues());
                 }
             }
         }
