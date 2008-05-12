@@ -60,7 +60,7 @@ public class ProcessBooleanExpressionAction extends Action {
 
 		// 1. Check for StepBean
 		// 2. If exists, update step w/ filter history
-		String stepKey = request.getParameter("step");
+		String stepKey = request.getParameter("addStep");
 		if (stepKey != null && stepKey.length() != 0) {
 		    StepBean step = (StepBean) request.getSession().getAttribute(stepKey);
 		    step.setFilterHistory(history);

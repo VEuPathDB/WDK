@@ -29,11 +29,8 @@ public class ProtocolBean {
     }
 
     public StepBean getStep(int index) {
-	StepBean returnStep = latestStep;
-	for (int i = 0; i < index; ++i) {
-	    returnStep = returnStep.getPreviousStep();
-	}
-	return returnStep;
+	StepBean[] steps = getAllSteps();
+	return steps[index];
     }
 
     public StepBean[] getAllSteps() {
