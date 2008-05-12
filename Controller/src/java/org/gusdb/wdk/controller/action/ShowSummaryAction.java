@@ -40,8 +40,6 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
  * answer 3) forwards control to a jsp page that displays a summary
  */
 
-// TO DO:  Somewhere in here, need to check for ProtocolBean and handle it
-
 public class ShowSummaryAction extends ShowQuestionAction {
 
     private static Logger logger = Logger.getLogger(ShowSummaryAction.class);
@@ -67,11 +65,29 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
         HistoryBean history;
         AnswerBean wdkAnswer;
+	ProtocolBean protocol = null;
+	StepBean step;
         Map<String, Object> params;
 
 	// Check for ProtocolBean.  If exists, do nothing for now.  If not exists, create.
-	ProtocolBean protocol = (ProtocolBean) request.getAttribute(CConstants.WDK_PROTOCOL_KEY);
+	String strProtoId = request.getParameter("protocol");
+ 	
+	System.out.println("strProtoId: " + strProtoId);
+	if (strProtoId != null && strProtoId.length() != 0) {
+	    // Maybe move getProtocol into ProtocolBean?
+	    System.out.println("Rebuilding existing protocol...");
+	    protocol = getProtocol(strProtoId, protocol, wdkUser);
+	    String stepKey = request.getParameter("step");
+	    if (stepKey != null && stepKey.length() != 0) {
+		step = (StepBean) request.getSession().getAttribute(stepKey);
+		System.out.println("Step is not null.");
+		protocol.addStep(step);
+		request.getSession().removeAttribute(stepKey);
+	    }
+	    System.out.println("Protocol now has: " + protocol.getAllSteps().length + " steps.");
+	}
 
+	System.out.println("Yes, we're in the new ShowSummary.");
 
         String strHistId = request.getParameter(CConstants.WDK_HISTORY_ID_KEY);
         if (strHistId == null || strHistId.length() == 0) {
@@ -159,10 +175,9 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
 
 	if (protocol == null) {
-	    StepBean step = new StepBean();
+	    step = new StepBean();
 	    step.setFilterHistory(history);
 	    protocol = new ProtocolBean(step, "Put a default name here");
-	    request.setAttribute(CConstants.WDK_PROTOCOL_KEY, protocol);
 	}
 
         int historyId = history.getHistoryId();
@@ -180,6 +195,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
         request.setAttribute(CConstants.WDK_QUESTION_PARAMS_KEY, wdkAnswer.getInternalParams());
         request.setAttribute(CConstants.WDK_ANSWER_KEY, wdkAnswer);
         request.setAttribute(CConstants.WDK_HISTORY_KEY, history);
+	request.setAttribute(CConstants.WDK_PROTOCOL_KEY, protocol);
         request.setAttribute("wdk_summary_url", requestUrl);
         request.setAttribute("wdk_query_string", request.getQueryString());
 
@@ -455,5 +471,38 @@ public class ShowSummaryAction extends ShowQuestionAction {
         ActionForward forward = new ActionForward(url);
         forward.setRedirect(false);
         return forward;
+    }
+
+    private ProtocolBean getProtocol(String protocolId, ProtocolBean protocol, UserBean wdkUser) 
+	throws WdkModelException, WdkUserException {
+	HistoryBean filterHistory = wdkUser.getHistory(Integer.parseInt(protocolId));
+	
+	StepBean step = new StepBean();
+	step.setFilterHistory(filterHistory);
+
+	if (filterHistory.isBoolean()) {
+	    System.out.println("Breaking exp into Parts...");
+	    String[] expParts = filterHistory.getBooleanExpression().split("\\s+");
+	    System.out.println("Expression: " + filterHistory.getBooleanExpression());
+	    System.out.println("expParts: " + expParts);
+	    if (expParts.length != 3) {
+		throw new WdkModelException("Protocol boolean expression must have two arguments and one operation.  Received: " + filterHistory.getBooleanExpression());
+	    }
+	    System.out.println("parts:  " + expParts[0] + ", " + expParts[1] + ", " + expParts[2]);
+	    HistoryBean subQueryHistory = wdkUser.getHistory(Integer.parseInt(expParts[2]));
+	    System.out.println("Setting subquery history...");
+	    step.setSubQueryHistory(subQueryHistory);
+	    if (protocol == null) {
+		System.out.println("Recurring...");
+		protocol = getProtocol(expParts[0], protocol, wdkUser);
+	    }
+	    System.out.println("Adding step to protocol in rebuild...");
+	    protocol.addStep(step);
+	}
+	else if (protocol == null) {
+	    protocol = new ProtocolBean(step, "Load name here.");
+	}
+
+	return protocol;
     }
 }
