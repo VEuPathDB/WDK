@@ -11,6 +11,7 @@ import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -70,12 +71,6 @@ public class ProcessFilterAction extends ProcessQuestionAction {
         QuestionBean wdkQuestion = getQuestionByFullName( qFullName );
         FilterForm fForm = prepareFilterForm( wdkQuestion, request,
                 ( FilterForm ) form );
-
-	// get protocol; throw exception if doesn't exist (we have to have a protocol to filter)
-	ProtocolBean protocol = (ProtocolBean) request.getAttribute(CConstants.WDK_PROTOCOL_KEY);
-	if ( protocol == null ) {
-	    throw new WdkModelException("ProcessFilterAction has no ProtocolBean.");
-	}
         
 	// validate & parse params
         Map< String, String > params = prepareParams( wdkUser, request, fForm );
@@ -87,7 +82,18 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	// parameter).  Remove booleanExpression from params, and set using inherited method
 	// from BooleanExpressionForm.
         Map<String, Object> internalParams = fForm.getMyProps();
+	System.out.println(internalParams);
 	fForm.setBooleanExpression(internalParams.remove("booleanExpression").toString());
+
+
+	// Make sure a protocol is specified
+	Object protocol = internalParams.remove("protocol");
+
+	System.out.println("Filter protocol: " + protocol);
+	if (protocol == null || protocol.toString().length() == 0) {
+	    throw new WdkModelException("No protocol was specified for filtering!");
+	}
+
 	fForm.setMyProps(internalParams);
 
 	// Get question name
@@ -132,18 +138,21 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	// create history for filter subquery
 	history = wdkUser.createHistory(wdkAnswer);
 
-	// 1. create a new StepBean
-	// 2. add subquery history to StepBean
-	// 3. add StepBean to ProtocolBean
-	StepBean newStep = new StepBean();
-        newStep.setSubQueryHistory(history);
-	protocol.addStep(newStep);
-
         // delete empty history
         if (history != null && history.getEstimateSize() == 0)
             wdkUser.deleteHistory(history.getHistoryId());
 
         int historyId = history.getHistoryId();
+
+	// 1. create a new StepBean
+	// 2. add subquery history to StepBean
+	StepBean step = new StepBean();
+        step.setSubQueryHistory(history);
+
+	String stepKey = UUID.randomUUID().toString();
+
+	request.getSession().setAttribute(stepKey, step);
+	//System.out.println("Filter step: " + request.getAttribute(CConstants.WDK_STEP_KEY));
 
 	// Get partial booleanExpression from form, complete it with history id
 	// of filter question results, and set the complete expression on the form
@@ -156,6 +165,8 @@ public class ProcessFilterAction extends ProcessQuestionAction {
         StringBuffer url = new StringBuffer( processBoolean.getPath() );
         url.append( "?booleanExpression=" + URLEncoder.encode(fForm.getBooleanExpression()));
 	url.append("&historySectionId=" + URLEncoder.encode(wdkQuestion.getRecordClass().getFullName()) + "&submit=Get+Combined+Result");
+	url.append("&protocol=" + URLEncoder.encode(protocol.toString()));
+	url.append("&step=" + URLEncoder.encode(stepKey));
 	
         logger.info(url);
 
@@ -216,6 +227,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 paramValue = param.compressValue( params.get( paramName ) );
             }
             compressedParams.put( paramName, paramValue );
+	    System.out.println("prepareParams: " + paramName + ", " + paramValue);
         }
         return compressedParams;
     }
@@ -333,7 +345,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 pVal = cgiParamVal;
             }
 	    
-	    //System.out.println( "DEBUG: param " + p.getName() + " = '" + pVal + "'" );
+	    System.out.println( "DEBUG: param " + p.getName() + " = '" + pVal + "'" );
            
             if (pVal == null) {
                 hasAllParams = false;

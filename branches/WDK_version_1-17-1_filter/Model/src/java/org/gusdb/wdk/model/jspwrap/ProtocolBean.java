@@ -23,6 +23,10 @@ public class ProtocolBean {
     public StepBean getLatestStep() {
 	return latestStep;
     }
+    
+    public int getProtocolId() {
+	return latestStep.getFilterHistory().getHistoryId();
+    }
 
     public StepBean getStep(int index) {
 	StepBean returnStep = latestStep;
@@ -54,14 +58,12 @@ public class ProtocolBean {
 	    step.setPreviousStep(latestStep);
 	    latestStep.setNextStep(step);
 	}
-	this.latestStep = step;
-	//setLatestStep(step);
+	//this.latestStep = step;
+	setLatestStep(step);
     }
     
-    /*
     public void setLatestStep(StepBean step) {
 	this.latestStep = step;
     }
-    */
 
 }

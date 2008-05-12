@@ -58,13 +58,13 @@ public class ProcessBooleanExpressionAction extends Action {
 				.getBooleanExpression());
 		int historyId = history.getHistoryId();
 
-		// 1. Check for ProtocolBean
-		// 2. If exists, update latest step w/ filter history
-		ProtocolBean protocol = (ProtocolBean) request.getAttribute(CConstants.WDK_PROTOCOL_KEY);
-		if (protocol != null) {
-		    StepBean step = protocol.getLatestStep();
+		// 1. Check for StepBean
+		// 2. If exists, update step w/ filter history
+		String stepKey = request.getParameter("step");
+		if (stepKey != null && stepKey.length() != 0) {
+		    StepBean step = (StepBean) request.getSession().getAttribute(stepKey);
 		    step.setFilterHistory(history);
-		    protocol.setLatestStep(step);
+		    request.getSession().setAttribute(stepKey, step);
 		}
 
 		request.setAttribute(CConstants.WDK_HISTORY_ID_KEY, historyId);
