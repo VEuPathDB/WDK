@@ -69,27 +69,31 @@ public class ShowSummaryAction extends ShowQuestionAction {
 	StepBean step;
         Map<String, Object> params;
 
-	// Check for ProtocolBean.  If exists, do nothing for now.  If not exists, create.
+	// Get history id & protocol id from request (if they exist)
+        String strHistId = request.getParameter(CConstants.WDK_HISTORY_ID_KEY);
 	String strProtoId = request.getParameter("protocol");
  	
-	System.out.println("strProtoId: " + strProtoId);
 	if (strProtoId != null && strProtoId.length() != 0) {
 	    // Maybe move getProtocol into ProtocolBean?
-	    System.out.println("Rebuilding existing protocol...");
 	    protocol = getProtocol(strProtoId, protocol, wdkUser);
-	    String stepKey = request.getParameter("step");
+	    String stepIndex = request.getParameter("step");
+	    String stepKey = request.getParameter("addStep");
 	    if (stepKey != null && stepKey.length() != 0) {
 		step = (StepBean) request.getSession().getAttribute(stepKey);
-		System.out.println("Step is not null.");
 		protocol.addStep(step);
 		request.getSession().removeAttribute(stepKey);
 	    }
-	    System.out.println("Protocol now has: " + protocol.getAllSteps().length + " steps.");
+	    else {
+		StepBean[] steps = protocol.getAllSteps();
+		if (stepIndex != null && stepIndex.length() != 0)
+		    step = steps[Integer.parseInt(stepIndex)];
+		else
+		    step = steps[steps.length - 1];
+		strHistId = Integer.toString(step.getFilterHistory().getHistoryId());
+	    }
+		
 	}
 
-	System.out.println("Yes, we're in the new ShowSummary.");
-
-        String strHistId = request.getParameter(CConstants.WDK_HISTORY_ID_KEY);
         if (strHistId == null || strHistId.length() == 0) {
             QuestionBean wdkQuestion = (QuestionBean) request.getAttribute(CConstants.WDK_QUESTION_KEY);
             if (wdkQuestion == null) {
@@ -481,22 +485,15 @@ public class ShowSummaryAction extends ShowQuestionAction {
 	step.setFilterHistory(filterHistory);
 
 	if (filterHistory.isBoolean()) {
-	    System.out.println("Breaking exp into Parts...");
 	    String[] expParts = filterHistory.getBooleanExpression().split("\\s+");
-	    System.out.println("Expression: " + filterHistory.getBooleanExpression());
-	    System.out.println("expParts: " + expParts);
 	    if (expParts.length != 3) {
 		throw new WdkModelException("Protocol boolean expression must have two arguments and one operation.  Received: " + filterHistory.getBooleanExpression());
 	    }
-	    System.out.println("parts:  " + expParts[0] + ", " + expParts[1] + ", " + expParts[2]);
 	    HistoryBean subQueryHistory = wdkUser.getHistory(Integer.parseInt(expParts[2]));
-	    System.out.println("Setting subquery history...");
 	    step.setSubQueryHistory(subQueryHistory);
 	    if (protocol == null) {
-		System.out.println("Recurring...");
 		protocol = getProtocol(expParts[0], protocol, wdkUser);
 	    }
-	    System.out.println("Adding step to protocol in rebuild...");
 	    protocol.addStep(step);
 	}
 	else if (protocol == null) {

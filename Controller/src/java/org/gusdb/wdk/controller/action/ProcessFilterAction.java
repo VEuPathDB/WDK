@@ -166,7 +166,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
         url.append( "?booleanExpression=" + URLEncoder.encode(fForm.getBooleanExpression()));
 	url.append("&historySectionId=" + URLEncoder.encode(wdkQuestion.getRecordClass().getFullName()) + "&submit=Get+Combined+Result");
 	url.append("&protocol=" + URLEncoder.encode(protocol.toString()));
-	url.append("&step=" + URLEncoder.encode(stepKey));
+	url.append("&addStep=" + URLEncoder.encode(stepKey));
 	
         logger.info(url);
 
