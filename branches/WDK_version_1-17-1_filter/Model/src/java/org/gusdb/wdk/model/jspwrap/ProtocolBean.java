@@ -2,6 +2,9 @@ package org.gusdb.wdk.model.jspwrap;
 
 import java.util.ArrayList;
 
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
+
 public class ProtocolBean {
     
     StepBean latestStep;
@@ -63,4 +66,35 @@ public class ProtocolBean {
 	this.latestStep = step;
     }
 
+    /*
+     *
+     * Static methods
+     *
+     */
+
+    public static ProtocolBean getProtocol(String protocolId, ProtocolBean protocol, UserBean wdkUser) 
+	throws WdkModelException, WdkUserException {
+	HistoryBean filterHistory = wdkUser.getHistory(Integer.parseInt(protocolId));
+	
+	StepBean step = new StepBean();
+	step.setFilterHistory(filterHistory);
+
+	if (filterHistory.isBoolean()) {
+	    String[] expParts = filterHistory.getBooleanExpression().split("\\s+");
+	    if (expParts.length != 3) {
+		throw new WdkModelException("Protocol boolean expression must have two arguments and one operation.  Received: " + filterHistory.getBooleanExpression());
+	    }
+	    HistoryBean subQueryHistory = wdkUser.getHistory(Integer.parseInt(expParts[2]));
+	    step.setSubQueryHistory(subQueryHistory);
+	    if (protocol == null) {
+		protocol = getProtocol(expParts[0], protocol, wdkUser);
+	    }
+	    protocol.addStep(step);
+	}
+	else if (protocol == null) {
+	    protocol = new ProtocolBean(step, "Load name here.");
+	}
+
+	return protocol;
+    }
 }

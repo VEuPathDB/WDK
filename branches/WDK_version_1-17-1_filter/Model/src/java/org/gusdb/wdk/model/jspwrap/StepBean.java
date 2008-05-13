@@ -1,8 +1,5 @@
 package org.gusdb.wdk.model.jspwrap;
 
-import java.util.List;
-import java.util.Map;
-
 import org.gusdb.wdk.model.BooleanQuery;
 import org.gusdb.wdk.model.BooleanQuestionNode;
 import org.gusdb.wdk.model.WdkModelException;

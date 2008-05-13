@@ -74,8 +74,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
 	String strProtoId = request.getParameter("protocol");
  	
 	if (strProtoId != null && strProtoId.length() != 0) {
-	    // Maybe move getProtocol into ProtocolBean?
-	    protocol = getProtocol(strProtoId, protocol, wdkUser);
+	    protocol = ProtocolBean.getProtocol(strProtoId, protocol, wdkUser);
 	    String stepIndex = request.getParameter("step");
 	    String stepKey = request.getParameter("addStep");
 	    if (stepKey != null && stepKey.length() != 0) {
@@ -476,7 +475,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
         forward.setRedirect(false);
         return forward;
     }
-
+    
+    /* Moved to public static method in ProtocolBean
     private ProtocolBean getProtocol(String protocolId, ProtocolBean protocol, UserBean wdkUser) 
 	throws WdkModelException, WdkUserException {
 	HistoryBean filterHistory = wdkUser.getHistory(Integer.parseInt(protocolId));
@@ -502,4 +502,5 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
 	return protocol;
     }
+    */
 }
