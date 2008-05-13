@@ -17,6 +17,8 @@ import org.gusdb.wdk.model.jspwrap.AnswerBean;
 import org.gusdb.wdk.model.jspwrap.HistoryBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.model.jspwrap.ProtocolBean;
+import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.user.User;
 
 /**
@@ -48,9 +50,17 @@ public class ProcessSummaryAction extends Action {
         if ( questionName == null || questionName.length() == 0 ) {
             // for boolean questions only; get history id
             String historyId = request.getParameter( CConstants.WDK_HISTORY_ID_KEY );
-            if ( historyId == null || historyId.length() == 0 )
-                throw new WdkModelException(
-                        "Missing parameters for this action" );
+            if ( historyId == null || historyId.length() == 0 ) {
+		// Check for protocol in here?  Sure, why not.
+		String protocolId = request.getParameter("protocol");
+		String stepId = request.getParameter("step");
+		if (protocolId == null || protocolId.length() == 0 || stepId == null || stepId.length() == 0) 
+		    throw new WdkModelException("Missing parameters for this action" );
+		ProtocolBean protocol = null;
+		protocol = ProtocolBean.getProtocol(protocolId, protocol, wdkUser);
+		StepBean step = protocol.getStep(Integer.parseInt(stepId));
+		historyId = Integer.toString(step.getFilterHistory().getHistoryId());
+	    }
             HistoryBean history = wdkUser.getHistory( Integer.parseInt( historyId ) );
             AnswerBean answer = history.getAnswer();
             questionName = answer.getQuestion().getFullName();
