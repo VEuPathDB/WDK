@@ -43,7 +43,7 @@ public class ProtocolBean {
     }
 
     private ArrayList<StepBean> buildAllStepsArray(ArrayList<StepBean> array, StepBean step) {
-	if (step.isFirstStep()) {
+	if (step.getIsFirstStep()) {
 	    array.add(step);
 	}
 	else {
@@ -79,6 +79,7 @@ public class ProtocolBean {
 	StepBean step = new StepBean();
 	step.setFilterHistory(filterHistory);
 
+	// Will be changed as appropriate when we implement transform ops.
 	if (filterHistory.isBoolean()) {
 	    String[] expParts = filterHistory.getBooleanExpression().split("\\s+");
 	    if (expParts.length != 3) {
@@ -86,13 +87,14 @@ public class ProtocolBean {
 	    }
 	    HistoryBean subQueryHistory = wdkUser.getHistory(Integer.parseInt(expParts[2]));
 	    step.setSubQueryHistory(subQueryHistory);
-	    if (protocol == null) {
-		protocol = getProtocol(expParts[0], protocol, wdkUser);
-	    }
+	    protocol = getProtocol(expParts[0], protocol, wdkUser);
 	    protocol.addStep(step);
 	}
 	else if (protocol == null) {
 	    protocol = new ProtocolBean(step, "Load name here.");
+	}
+	else {
+	    throw new WdkModelException("Unexpected error while building protocol, using history id: " + protocolId);
 	}
 
 	return protocol;
