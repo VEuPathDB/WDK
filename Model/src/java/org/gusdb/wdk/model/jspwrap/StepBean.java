@@ -47,7 +47,7 @@ public class StepBean {
     }
 
     public String getCustomName() {
-	if (isFirstStep()) {
+	if (getIsFirstStep()) {
 	    return filterHistory.getCustomName();
 	}
 	return subQueryHistory.getCustomName();
@@ -64,17 +64,17 @@ public class StepBean {
     }
 
     public String getOperation() throws WdkUserException {
-	if (isFirstStep()) {
+	if (getIsFirstStep()) {
 	    throw new RuntimeException("getOperation cannot be called on the first StepBean.");
 	}
 	return filterHistory.getAnswer().getBooleanOperation();
     }
     
     public String getDetails() {
-	if (isFirstStep()) {
-	    return filterHistory.getDescription();
+	if (getIsFirstStep()) {
+	    return filterHistory.getDescription().replace(",", "\n").replace(":", ":\n");
 	}
-	return subQueryHistory.getDescription();
+	return subQueryHistory.getDescription().replace(",", "\n").replace(":", ":\n");
     }
 
     // Not sure if these mutators are safe, is there a better way to do this?
@@ -94,7 +94,7 @@ public class StepBean {
         this.previousStep = previousStep;
     }
 
-    public boolean isFirstStep() {
+    public boolean getIsFirstStep() {
 	return (previousStep == null);
     }
 }
