@@ -29,6 +29,7 @@ public class RecordClass extends WdkModelBase {
     private String type;
     private String idPrefix;
     private String fullName;
+    private String displayName;
     private String attributeOrdering;
     private Map<String, Question> questions = new LinkedHashMap<String, Question>();
 
@@ -103,7 +104,15 @@ public class RecordClass extends WdkModelBase {
         this.type = type;
     }
 
-    /**
+    public String getDisplayName() {
+		return (displayName == null)? getFullName() : displayName;
+	}
+
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
+	}
+
+	/**
      * Added by Jerric
      * 
      * @param delimiter

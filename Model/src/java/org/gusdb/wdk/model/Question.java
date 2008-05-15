@@ -337,6 +337,10 @@ public class Question extends WdkModelBase {
         return displayName;
     }
 
+    
+    /**
+     * @deprecated
+     */
     public String getCategory() {
         return (category == null) ? "" : category;
     }
