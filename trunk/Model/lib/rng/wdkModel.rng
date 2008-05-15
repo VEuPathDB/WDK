@@ -39,6 +39,8 @@
           <ref name="xmlQuestionSet" />
           
           <ref name="xmlRecordClassSet" />
+
+          <ref name="categories" />
           
         </choice>
       </oneOrMore>
@@ -74,6 +76,26 @@
         </element>
     </define>  
 
+    <!-- define category list -->
+    <define name="categories">
+        <element name="categories">
+            <attribute name="recordClassRef"/>
+            <ref name="IncludeExclude"/>
+            <oneOrMore>
+                <element name="category">
+                    <attribute name="name"/>
+                    <attribute name="displayName"/>
+                    <ref name="IncludeExclude"/>
+                    <zeroOrMore>
+                        <element name="questionRef">
+                            <ref name="IncludeExclude"/>
+                            <text />
+                        </element>
+                    </zeroOrMore>
+                </element>
+            </oneOrMore>
+        </element>
+    </define>  
   
   <!-- Params -->
 
@@ -523,6 +545,9 @@
       <attribute name="name" />
       <attribute name="type" />
       <attribute name="idPrefix" />
+      <optional>
+        <attribute name="displayName" />
+      </optional>
       <ref name="IncludeExclude" />
       <optional>
          <attribute name="attributeOrdering" />
