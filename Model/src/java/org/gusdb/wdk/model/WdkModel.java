@@ -532,6 +532,9 @@ public class WdkModel {
         for (XmlQuestionSet qSet : xmlQuestionSets.values()) {
             qSet.resolveReferences(this);
         }
+        for(Categories categories : this.categories) {
+        	categories.resolveReferences(this);
+        }
     }
 
     private void excludeResources() throws WdkModelException {
@@ -645,6 +648,17 @@ public class WdkModel {
             }
         }
         xmlRecordClassSetList = null;
+        
+        // exclude categories
+        List<Categories> tempCategories = new ArrayList<Categories>();
+        for(Categories categories : this.categories) {
+        	if (categories.include(projectId)) {
+        		categories.excludeResources(projectId);
+        		tempCategories.add(categories);
+        	}
+        }
+        this.categories.clear();
+        this.categories = tempCategories;
     }
 
     public String toString() {
