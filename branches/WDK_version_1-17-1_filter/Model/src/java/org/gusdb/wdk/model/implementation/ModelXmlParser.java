@@ -33,6 +33,8 @@ import org.apache.commons.digester.Digester;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.AttributeList;
 import org.gusdb.wdk.model.AttributeQueryReference;
+import org.gusdb.wdk.model.Categories;
+import org.gusdb.wdk.model.Category;
 import org.gusdb.wdk.model.Column;
 import org.gusdb.wdk.model.ColumnAttributeField;
 import org.gusdb.wdk.model.DatasetParam;
@@ -62,6 +64,7 @@ import org.gusdb.wdk.model.RecordClassSet;
 import org.gusdb.wdk.model.ReporterProperty;
 import org.gusdb.wdk.model.ReporterRef;
 import org.gusdb.wdk.model.StringParam;
+import org.gusdb.wdk.model.SubType;
 import org.gusdb.wdk.model.TableField;
 import org.gusdb.wdk.model.TextAttributeField;
 import org.gusdb.wdk.model.Utilities;
@@ -237,6 +240,18 @@ public class ModelXmlParser extends XmlParser {
         digester.addCallMethod("wdkModel/defaultPropertyList/value", "setText",
                 0);
 
+        // default property list
+        configureNode(digester, "wdkModel/categories", Categories.class,
+                "addCategories");
+
+        configureNode(digester, "wdkModel/categories/category", Category.class,
+                "addCategory");
+
+        configureNode(digester, "wdkModel/categories/category/questionRef",
+                WdkModelText.class, "addQuestionRef");
+        digester.addCallMethod("wdkModel/categories/category/questionRef",
+                "setText", 0);
+
         // configure all sub nodes of recordClassSet
         configureRecordClassSet(digester);
 
@@ -283,6 +298,10 @@ public class ModelXmlParser extends XmlParser {
         digester.addCallMethod(
                 "wdkModel/recordClassSet/recordClass/reporter/property",
                 "setValue", 0);
+
+        // subType
+        configureNode(digester, "wdkModel/recordClassSet/recordClass/subType",
+                SubType.class, "addSubType");
 
         // attribute query ref
         configureNode(digester,

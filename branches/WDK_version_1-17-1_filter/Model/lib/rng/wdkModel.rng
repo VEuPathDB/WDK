@@ -39,6 +39,8 @@
           <ref name="xmlQuestionSet" />
           
           <ref name="xmlRecordClassSet" />
+
+          <ref name="categories" />
           
         </choice>
       </oneOrMore>
@@ -74,6 +76,26 @@
         </element>
     </define>  
 
+    <!-- define category list -->
+    <define name="categories">
+        <element name="categories">
+            <attribute name="recordClassRef"/>
+            <ref name="IncludeExclude"/>
+            <oneOrMore>
+                <element name="category">
+                    <attribute name="name"/>
+                    <attribute name="displayName"/>
+                    <ref name="IncludeExclude"/>
+                    <zeroOrMore>
+                        <element name="questionRef">
+                            <ref name="IncludeExclude"/>
+                            <text />
+                        </element>
+                    </zeroOrMore>
+                </element>
+            </oneOrMore>
+        </element>
+    </define>  
   
   <!-- Params -->
 
@@ -189,12 +211,14 @@
     
     <define name="historyParam">
         <element name="historyParam">
-              <ref name="ParamBaseContents" />
-              <zeroOrMore>
+            <ref name="ParamBaseContents" />
+            <!-- defines the type of the values of this historyParam -->
+            <attribute name="recordClassRef" />
+            <zeroOrMore>
                 <element name="suggest">
                     <ref name="SuggestContent" />
                 </element>
-              </zeroOrMore>
+            </zeroOrMore>
         </element>
     </define>
     
@@ -521,6 +545,9 @@
       <attribute name="name" />
       <attribute name="type" />
       <attribute name="idPrefix" />
+      <optional>
+        <attribute name="displayName" />
+      </optional>
       <ref name="IncludeExclude" />
       <optional>
          <attribute name="attributeOrdering" />
@@ -543,7 +570,7 @@
 
       <zeroOrMore>  
         <choice>
-           <element name="reporter">
+          <element name="reporter">
              <attribute name="name" />
              <attribute name="displayName" />
              <ref name="IncludeExclude" />
@@ -560,11 +587,29 @@
                 <element name="property" >
                     <attribute name="name" />
                     <ref name="IncludeExclude" />
-                        <text />
+                    <text />
                 </element>
              </zeroOrMore>
-           </element>
-           
+          </element>
+          
+          <element name="subType">
+             <!-- a filter query for the sub types. There should be two params for the
+		           query, and the name should be matched with subTypeParamRef and
+		           cacheTableParamRef. the subType param should be a Enum or FlatVocab
+		           param; the value for cacheTable param will be the cache table name
+		           fetched by WDK at run time.
+		     -->
+             <ref name="IncludeExclude" />
+	         <attribute name="filterQueryRef" />
+             <optional>
+	             <attribute name="transformQueryRef" />
+	         </optional>
+	         <!-- A term from subType enum/flatvocab Param. if the user inputs
+	              this term, the filter will be skipped
+	         -->
+ 	         <attribute name="termToSkip" />
+         </element>
+          
           <element name="attributeQueryRef">
               <attribute name="ref" />
               <ref name="IncludeExclude" />
@@ -611,6 +656,11 @@
       </optional>
       <optional>
           <attribute name="noSummaryOnSingleRecord">
+              <data type="boolean" />
+          </attribute>
+      </optional>
+      <optional>
+          <attribute name="ignoreSubType">
               <data type="boolean" />
           </attribute>
       </optional>

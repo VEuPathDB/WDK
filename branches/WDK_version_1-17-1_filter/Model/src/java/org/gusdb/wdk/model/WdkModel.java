@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -43,38 +42,27 @@ public class WdkModel {
     private RDBMSPlatformI authenPlatform;
 
     private List<QuerySet> querySetList = new ArrayList<QuerySet>();
-    private Map<String, QuerySet> querySets =
-            new LinkedHashMap<String, QuerySet>();
+    private Map<String, QuerySet> querySets = new LinkedHashMap<String, QuerySet>();
 
     private List<ParamSet> paramSetList = new ArrayList<ParamSet>();
-    private Map<String, ParamSet> paramSets =
-            new LinkedHashMap<String, ParamSet>();
+    private Map<String, ParamSet> paramSets = new LinkedHashMap<String, ParamSet>();
 
-    private List<RecordClassSet> recordClassSetList =
-            new ArrayList<RecordClassSet>();
-    private Map<String, RecordClassSet> recordClassSets =
-            new LinkedHashMap<String, RecordClassSet>();
+    private List<RecordClassSet> recordClassSetList = new ArrayList<RecordClassSet>();
+    private Map<String, RecordClassSet> recordClassSets = new LinkedHashMap<String, RecordClassSet>();
 
     private List<QuestionSet> questionSetList = new ArrayList<QuestionSet>();
-    private Map<String, QuestionSet> questionSets =
-            new LinkedHashMap<String, QuestionSet>();
+    private Map<String, QuestionSet> questionSets = new LinkedHashMap<String, QuestionSet>();
 
-    private Map<String, ModelSetI> allModelSets =
-            new LinkedHashMap<String, ModelSetI>();
+    private Map<String, ModelSetI> allModelSets = new LinkedHashMap<String, ModelSetI>();
 
     private List<GroupSet> groupSetList = new ArrayList<GroupSet>();
-    private Map<String, GroupSet> groupSets =
-            new LinkedHashMap<String, GroupSet>();
+    private Map<String, GroupSet> groupSets = new LinkedHashMap<String, GroupSet>();
 
-    private List<XmlQuestionSet> xmlQuestionSetList =
-            new ArrayList<XmlQuestionSet>();
-    private Map<String, XmlQuestionSet> xmlQuestionSets =
-            new LinkedHashMap<String, XmlQuestionSet>();
+    private List<XmlQuestionSet> xmlQuestionSetList = new ArrayList<XmlQuestionSet>();
+    private Map<String, XmlQuestionSet> xmlQuestionSets = new LinkedHashMap<String, XmlQuestionSet>();
 
-    private List<XmlRecordClassSet> xmlRecordClassSetList =
-            new ArrayList<XmlRecordClassSet>();
-    private Map<String, XmlRecordClassSet> xmlRecordClassSets =
-            new LinkedHashMap<String, XmlRecordClassSet>();
+    private List<XmlRecordClassSet> xmlRecordClassSetList = new ArrayList<XmlRecordClassSet>();
+    private Map<String, XmlRecordClassSet> xmlRecordClassSets = new LinkedHashMap<String, XmlRecordClassSet>();
 
     private List<WdkModelName> wdkModelNames = new ArrayList<WdkModelName>();
     private String name;
@@ -102,10 +90,11 @@ public class WdkModel {
     private DatasetFactory datasetFactory;
     private QueryFactory queryFactory;
 
-    private List<PropertyList> defaultPropertyLists =
-            new ArrayList<PropertyList>();
-    private Map<String, String[]> defaultPropertyListMap =
-            new LinkedHashMap<String, String[]>();
+    private List<PropertyList> defaultPropertyLists = new ArrayList<PropertyList>();
+    private Map<String, String[]> defaultPropertyListMap = new LinkedHashMap<String, String[]>();
+
+    private List<Categories> categoriesList = new ArrayList<Categories>();
+    private Map<String, Categories> categoriesMap = new LinkedHashMap<String, Categories>();
 
     /**
      * Default constructor
@@ -206,10 +195,9 @@ public class WdkModel {
             throws WdkModelException {
 
         if (!recordClassSets.containsKey(recordClassSetName)) {
-            String err =
-                    "WDK Model " + name
-                            + " does not contain a recordClass set with name "
-                            + recordClassSetName;
+            String err = "WDK Model " + name
+                    + " does not contain a recordClass set with name "
+                    + recordClassSetName;
 
             throw new WdkModelException(err);
         }
@@ -226,10 +214,8 @@ public class WdkModel {
 
     public QuerySet getQuerySet(String setName) throws WdkModelException {
         if (!querySets.containsKey(setName)) {
-            String err =
-                    "WDK Model " + name
-                            + " does not contain a query set with name "
-                            + setName;
+            String err = "WDK Model " + name
+                    + " does not contain a query set with name " + setName;
             throw new WdkModelException(err);
         }
         return (QuerySet) querySets.get(setName);
@@ -254,10 +240,8 @@ public class WdkModel {
     // Question Sets
     public QuestionSet getQuestionSet(String setName) throws WdkModelException {
         if (!questionSets.containsKey(setName)) {
-            String err =
-                    "WDK Model " + name
-                            + " does not contain a Question set with name "
-                            + setName;
+            String err = "WDK Model " + name
+                    + " does not contain a Question set with name " + setName;
             throw new WdkModelException(err);
         }
         return (QuestionSet) questionSets.get(setName);
@@ -271,59 +255,27 @@ public class WdkModel {
         return new LinkedHashMap<String, QuestionSet>(questionSets);
     }
 
-    public Map<String, Map<String, Question[]>> getQuestionsByCategory() {
-        QuestionSet[] qSets = getAllQuestionSets();
-
-        Map<String, Map<String, Vector<Question>>> qVecByCat =
-                new LinkedHashMap<String, Map<String, Vector<Question>>>();
-        for (QuestionSet qSet : qSets) {
-            if (true == qSet.getInternal()) continue;
-            Question[] questions = qSet.getQuestions();
-            for (Question q : questions) {
-                String recType = q.getRecordClass().getFullName();
-                String cat = q.getCategory();
-                if (null == cat) cat = "";
-
-                if (null == qVecByCat.get(recType)) {
-                    qVecByCat.put(recType,
-                            new LinkedHashMap<String, Vector<Question>>());
-                }
-
-                if (null == qVecByCat.get(recType).get(cat)) {
-                    qVecByCat.get(recType).put(cat, new Vector<Question>());
-                }
-
-                qVecByCat.get(recType).get(cat).add(q);
+    public Map<String, Map<String, Question[]>> getQuestionsByCategories() {
+        Map<String, Map<String, Question[]>> allQuestions = new LinkedHashMap<String, Map<String, Question[]>>();
+        for (String recordClassName : categoriesMap.keySet()) {
+            Categories categories = categoriesMap.get(recordClassName);
+            Map<String, Question[]> subQuestions = new LinkedHashMap<String, Question[]>();
+            for (Category category : categories.getCategories()) {
+                String categoryName = category.getDisplayName();
+                Question[] questions = category.getQuestions();
+                if (questions.length > 0)
+                    subQuestions.put(categoryName, questions);
             }
+            if (subQuestions.size() > 0)
+                allQuestions.put(recordClassName, subQuestions);
         }
-
-        Map<String, Map<String, Question[]>> qArrayByCat =
-                new LinkedHashMap<String, Map<String, Question[]>>();
-        for (String recType : qArrayByCat.keySet()) {
-            Map<String, Vector<Question>> recMap = qVecByCat.get(recType);
-            for (String cat : recMap.keySet()) {
-                Vector<Question> qVec = recMap.get(cat);
-                Question[] qArray = new Question[qVec.size()];
-                qVec.toArray(qArray);
-
-                if (null == qArrayByCat.get(recType)) {
-                    qArrayByCat.put(recType,
-                            new LinkedHashMap<String, Question[]>());
-                }
-
-                qArrayByCat.get(recType).put(cat, qArray);
-            }
-        }
-
-        return qArrayByCat;
+        return allQuestions;
     }
 
     public ParamSet getParamSet(String setName) throws WdkModelException {
         if (!paramSets.containsKey(setName)) {
-            String err =
-                    "WDK Model " + name
-                            + " does not contain a param set with name "
-                            + setName;
+            String err = "WDK Model " + name
+                    + " does not contain a param set with name " + setName;
             throw new WdkModelException(err);
         }
         return (ParamSet) paramSets.get(setName);
@@ -377,9 +329,8 @@ public class WdkModel {
     private void addSet(ModelSetI set, Map setMap) throws WdkModelException {
         String setName = set.getName();
         if (allModelSets.containsKey(setName)) {
-            String err =
-                    "WDK Model " + name + " already contains a set with name "
-                            + setName;
+            String err = "WDK Model " + name
+                    + " already contains a set with name " + setName;
 
             throw new WdkModelException(err);
         }
@@ -420,16 +371,14 @@ public class WdkModel {
             Integer maxActive = modelConfig.getMaxActive();
             Integer initialSize = modelConfig.getInitialSize();
 
-            RDBMSPlatformI platform =
-                    (RDBMSPlatformI) Class.forName(platformClass).newInstance();
+            RDBMSPlatformI platform = (RDBMSPlatformI) Class.forName(
+                    platformClass).newInstance();
 
             // also load the connection info for authentication database
-            String authenPlatformClass =
-                    modelConfig.getAuthenticationPlatformClass();
+            String authenPlatformClass = modelConfig.getAuthenticationPlatformClass();
             String authenLogin = modelConfig.getAuthenticationLogin();
             String authenPassword = modelConfig.getAuthenticationPassword();
-            String authenConnection =
-                    modelConfig.getAuthenticationConnectionUrl();
+            String authenConnection = modelConfig.getAuthenticationConnectionUrl();
 
             String loginSchema = modelConfig.getLoginSchema();
 
@@ -442,35 +391,32 @@ public class WdkModel {
             boolean enableQueryLogger = modelConfig.isEnableQueryLogger();
             String queryLoggerFile = modelConfig.getQueryLoggerFile();
 
-            String configFile =
-                    modelConfig.getGusHome() + "/config/" + projectId
-                            + "/model-config.xml";
+            String configFile = modelConfig.getGusHome() + "/config/"
+                    + projectId + "/model-config.xml";
 
             // initialize authentication factory
             // set the max active as half of the model's configuration
             if (authenPlatformClass != null && !"".equals(authenPlatformClass)) {
-                authenPlatform =
-                        (RDBMSPlatformI) Class.forName(authenPlatformClass).newInstance();
+                authenPlatform = (RDBMSPlatformI) Class.forName(
+                        authenPlatformClass).newInstance();
                 authenPlatform.init(authenConnection, authenLogin,
                         authenPassword, minIdle, maxIdle, maxWait,
                         maxActive / 2, initialSize, configFile);
-                userFactory =
-                        new UserFactory(this, projectId, authenPlatform,
-                                loginSchema, defaultRole, smtpServer,
-                                supportEmail, emailSubject, emailContent);
+                userFactory = new UserFactory(this, projectId, authenPlatform,
+                        loginSchema, defaultRole, smtpServer, supportEmail,
+                        emailSubject, emailContent);
             } else {
-                userFactory =
-                        new UserFactory(this, projectId, null, null, null,
-                                null, null, null, null);
+                userFactory = new UserFactory(this, projectId, null, null,
+                        null, null, null, null, null);
             }
 
             platform.init(connectionUrl, login, password, minIdle, maxIdle,
                     maxWait, maxActive, initialSize, configFile);
-            ResultFactory resultFactory =
-                    new ResultFactory(platform, login, enableQueryLogger,
-                            queryLoggerFile);
+            ResultFactory resultFactory = new ResultFactory(platform, login,
+                    enableQueryLogger, queryLoggerFile);
             this.platform = platform;
-	    this.authenPlatform = authenPlatform;  // Added by Cary P. Feb 7, 2008
+            this.authenPlatform = authenPlatform; // Added by Cary P. Feb 7,
+            // 2008
             this.webServiceUrl = modelConfig.getWebServiceUrl();
             this.resultFactory = resultFactory;
 
@@ -498,6 +444,7 @@ public class WdkModel {
     public RDBMSPlatformI getRDBMSPlatform() {
         return platform;
     }
+
     // Function Added by Cary P. Feb 7, 2008
     public RDBMSPlatformI getAuthRDBMSPlatform() {
         return authenPlatform;
@@ -528,9 +475,8 @@ public class WdkModel {
         }
         Object element = set.getElement(elementName);
         if (element == null) {
-            String s4 =
-                    s + " Set '" + setName + "' returned null for '"
-                            + elementName + "'";
+            String s4 = s + " Set '" + setName + "' returned null for '"
+                    + elementName + "'";
             throw new WdkModelException(s4);
         }
         return element;
@@ -583,6 +529,9 @@ public class WdkModel {
         }
         for (XmlQuestionSet qSet : xmlQuestionSets.values()) {
             qSet.resolveReferences(this);
+        }
+        for (Categories categories : this.categoriesMap.values()) {
+            categories.resolveReferences(this);
         }
     }
 
@@ -697,14 +646,26 @@ public class WdkModel {
             }
         }
         xmlRecordClassSetList = null;
+
+        // exclude categories
+        for (Categories categories : this.categoriesList) {
+            if (categories.include(projectId)) {
+                String recordClassRef = categories.getRecordClassRef();
+                if (categoriesMap.containsKey(recordClassRef))
+                    throw new WdkModelException("More than one categories have"
+                            + " recordClassRef '" + recordClassRef + "'");
+                categories.excludeResources(projectId);
+                categoriesMap.put(recordClassRef, categories);
+            }
+        }
+        categoriesList = null;
     }
 
     public String toString() {
         String newline = System.getProperty("line.separator");
-        StringBuffer buf =
-                new StringBuffer("WdkModel: name='" + name + "'" + newline
-                        + "displayName='" + displayName + "'" + newline
-                        + "introduction='" + introduction + "'");
+        StringBuffer buf = new StringBuffer("WdkModel: name='" + name + "'"
+                + newline + "displayName='" + displayName + "'" + newline
+                + "introduction='" + introduction + "'");
         buf.append(showSet("Param", paramSets));
         buf.append(showSet("Query", querySets));
         buf.append(showSet("RecordClass", recordClassSets));
@@ -784,8 +745,7 @@ public class WdkModel {
     }
 
     public XmlRecordClassSet[] getXmlRecordClassSets() {
-        XmlRecordClassSet[] rcsets =
-                new XmlRecordClassSet[xmlRecordClassSets.size()];
+        XmlRecordClassSet[] rcsets = new XmlRecordClassSet[xmlRecordClassSets.size()];
         xmlRecordClassSets.values().toArray(rcsets);
         return rcsets;
     }
@@ -914,5 +874,15 @@ public class WdkModel {
             propLists.put(plName, array);
         }
         return propLists;
+    }
+
+    public void addCategories(Categories categories) {
+        this.categoriesList.add(categories);
+    }
+
+    public Categories[] getCategories() {
+        Categories[] array = new Categories[categoriesMap.size()];
+        categoriesMap.values().toArray(array);
+        return array;
     }
 }
