@@ -479,6 +479,10 @@ public class RecordClass extends WdkModelBase {
         // resolve reference for sub type query
         if (subType != null) subType.resolveReferences(model);
     }
+    
+    public void setResources(WdkModel wdkModel) {
+        // do nothing
+    }
 
     /**
      * Called when the RecordClass is asked for a NestedRecordQuestion or

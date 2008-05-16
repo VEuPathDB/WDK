@@ -71,7 +71,7 @@ public class WdkModelBean  {
      */
     public Map getQuestionsByCategory() {
         Map<String, Map<String, Question[]>> qByCat = model
-                .getQuestionsByCategory();
+                .getQuestionsByCategories();
 
         Map<String, Map<String, QuestionBean[]>> qBeanByCat = new LinkedHashMap<String, Map<String, QuestionBean[]>>();
         Iterator recI = qByCat.keySet().iterator();
