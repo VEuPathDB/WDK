@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -94,7 +93,8 @@ public class WdkModel {
     private List<PropertyList> defaultPropertyLists = new ArrayList<PropertyList>();
     private Map<String, String[]> defaultPropertyListMap = new LinkedHashMap<String, String[]>();
 
-    private List<Categories> categories = new ArrayList<Categories>();
+    private List<Categories> categoriesList = new ArrayList<Categories>();
+    private Map<String, Categories> categoriesMap = new LinkedHashMap<String, Categories>();
 
     /**
      * Default constructor
@@ -255,10 +255,10 @@ public class WdkModel {
         return new LinkedHashMap<String, QuestionSet>(questionSets);
     }
 
-    public Map<String, Map<String, Question[]>> getQuestionsByCategory() {
+    public Map<String, Map<String, Question[]>> getQuestionsByCategories() {
         Map<String, Map<String, Question[]>> allQuestions = new LinkedHashMap<String, Map<String, Question[]>>();
-        for (Categories categories : this.categories) {
-            String recordClassName = categories.getRecordClass().getFullName();
+        for (String recordClassName : categoriesMap.keySet()) {
+            Categories categories = categoriesMap.get(recordClassName);
             Map<String, Question[]> subQuestions = new LinkedHashMap<String, Question[]>();
             for (Category category : categories.getCategories()) {
                 String categoryName = category.getDisplayName();
@@ -375,12 +375,10 @@ public class WdkModel {
                     platformClass).newInstance();
 
             // also load the connection info for authentication database
-            String authenPlatformClass = modelConfig
-                    .getAuthenticationPlatformClass();
+            String authenPlatformClass = modelConfig.getAuthenticationPlatformClass();
             String authenLogin = modelConfig.getAuthenticationLogin();
             String authenPassword = modelConfig.getAuthenticationPassword();
-            String authenConnection = modelConfig
-                    .getAuthenticationConnectionUrl();
+            String authenConnection = modelConfig.getAuthenticationConnectionUrl();
 
             String loginSchema = modelConfig.getLoginSchema();
 
@@ -418,7 +416,7 @@ public class WdkModel {
                     enableQueryLogger, queryLoggerFile);
             this.platform = platform;
             this.authenPlatform = authenPlatform; // Added by Cary P. Feb 7,
-                                                    // 2008
+            // 2008
             this.webServiceUrl = modelConfig.getWebServiceUrl();
             this.resultFactory = resultFactory;
 
@@ -532,8 +530,8 @@ public class WdkModel {
         for (XmlQuestionSet qSet : xmlQuestionSets.values()) {
             qSet.resolveReferences(this);
         }
-        for(Categories categories : this.categories) {
-        	categories.resolveReferences(this);
+        for (Categories categories : this.categoriesMap.values()) {
+            categories.resolveReferences(this);
         }
     }
 
@@ -648,17 +646,19 @@ public class WdkModel {
             }
         }
         xmlRecordClassSetList = null;
-        
+
         // exclude categories
-        List<Categories> tempCategories = new ArrayList<Categories>();
-        for(Categories categories : this.categories) {
-        	if (categories.include(projectId)) {
-        		categories.excludeResources(projectId);
-        		tempCategories.add(categories);
-        	}
+        for (Categories categories : this.categoriesList) {
+            if (categories.include(projectId)) {
+                String recordClassRef = categories.getRecordClassRef();
+                if (categoriesMap.containsKey(recordClassRef))
+                    throw new WdkModelException("More than one categories have"
+                            + " recordClassRef '" + recordClassRef + "'");
+                categories.excludeResources(projectId);
+                categoriesMap.put(recordClassRef, categories);
+            }
         }
-        this.categories.clear();
-        this.categories = tempCategories;
+        categoriesList = null;
     }
 
     public String toString() {
@@ -679,14 +679,12 @@ public class WdkModel {
         StringBuffer buf = new StringBuffer();
         String newline = System.getProperty("line.separator");
         buf.append(newline);
-        buf
-                .append("ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
-                        + newline);
+        buf.append("ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
+                + newline);
         buf.append("ooooooooooooooooooooooooooooo " + setType
                 + " Sets oooooooooooooooooooooooooo" + newline);
-        buf
-                .append("ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
-                        + newline + newline);
+        buf.append("ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
+                + newline + newline);
         for (Object objSet : setMap.values()) {
             ModelSetI set = (ModelSetI) objSet;
             buf.append("=========================== " + set.getName()
@@ -747,8 +745,7 @@ public class WdkModel {
     }
 
     public XmlRecordClassSet[] getXmlRecordClassSets() {
-        XmlRecordClassSet[] rcsets = new XmlRecordClassSet[xmlRecordClassSets
-                .size()];
+        XmlRecordClassSet[] rcsets = new XmlRecordClassSet[xmlRecordClassSets.size()];
         xmlRecordClassSets.values().toArray(rcsets);
         return rcsets;
     }
@@ -829,8 +826,7 @@ public class WdkModel {
     public String getParamDisplayName(String paramName) {
         for (ParamSet paramset : paramSets.values()) {
             Object object = paramset.getElement(paramName);
-            if (object == null)
-                continue;
+            if (object == null) continue;
             Param param = (Param) object;
             return param.getPrompt();
         }
@@ -880,9 +876,13 @@ public class WdkModel {
         return propLists;
     }
 
+    public void addCategories(Categories categories) {
+        this.categoriesList.add(categories);
+    }
+
     public Categories[] getCategories() {
-        Categories[] array = new Categories[categories.size()];
-        categories.toArray(array);
+        Categories[] array = new Categories[categoriesMap.size()];
+        categoriesMap.values().toArray(array);
         return array;
     }
 }
