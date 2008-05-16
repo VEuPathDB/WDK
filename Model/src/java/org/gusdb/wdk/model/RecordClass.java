@@ -16,37 +16,28 @@ public class RecordClass extends WdkModelBase {
 
     // private static final Logger logger = Logger.getLogger(RecordClass.class);
 
-    private List<AttributeQueryReference> attributesQueryRefList =
-            new ArrayList<AttributeQueryReference>();
-    private Map<String, AttributeQueryReference> attributesQueryRefs =
-            new LinkedHashMap<String, AttributeQueryReference>();
+    private List<AttributeQueryReference> attributesQueryRefList = new ArrayList<AttributeQueryReference>();
+    private Map<String, AttributeQueryReference> attributesQueryRefs = new LinkedHashMap<String, AttributeQueryReference>();
 
-    private List<AttributeField> attributeFieldList =
-            new ArrayList<AttributeField>();
-    private Map<String, AttributeField> attributeFieldsMap =
-            new LinkedHashMap<String, AttributeField>();
+    private List<AttributeField> attributeFieldList = new ArrayList<AttributeField>();
+    private Map<String, AttributeField> attributeFieldsMap = new LinkedHashMap<String, AttributeField>();
 
     private List<TableField> tableFieldList = new ArrayList<TableField>();
-    private Map<String, TableField> tableFieldsMap =
-            new LinkedHashMap<String, TableField>();
+    private Map<String, TableField> tableFieldsMap = new LinkedHashMap<String, TableField>();
 
     private String name;
     private String type;
     private String idPrefix;
     private String fullName;
+    private String displayName;
     private String attributeOrdering;
-    private Map<String, Question> questions =
-            new LinkedHashMap<String, Question>();
+    private Map<String, Question> questions = new LinkedHashMap<String, Question>();
 
-    private List<NestedRecord> nestedRecordQuestionRefList =
-            new ArrayList<NestedRecord>();
-    private Map<String, NestedRecord> nestedRecordQuestionRefs =
-            new LinkedHashMap<String, NestedRecord>();
+    private List<NestedRecord> nestedRecordQuestionRefList = new ArrayList<NestedRecord>();
+    private Map<String, NestedRecord> nestedRecordQuestionRefs = new LinkedHashMap<String, NestedRecord>();
 
-    private List<NestedRecordList> nestedRecordListQuestionRefList =
-            new ArrayList<NestedRecordList>();
-    private Map<String, NestedRecordList> nestedRecordListQuestionRefs =
-            new LinkedHashMap<String, NestedRecordList>();
+    private List<NestedRecordList> nestedRecordListQuestionRefList = new ArrayList<NestedRecordList>();
+    private Map<String, NestedRecordList> nestedRecordListQuestionRefs = new LinkedHashMap<String, NestedRecordList>();
 
     /**
      * This object is not initialized until the first time the RecordClass is
@@ -86,8 +77,10 @@ public class RecordClass extends WdkModelBase {
     private Query aliasQuery = null;
 
     private List<ReporterRef> reporterList = new ArrayList<ReporterRef>();
-    private Map<String, ReporterRef> reporterMap =
-            new LinkedHashMap<String, ReporterRef>();
+    private Map<String, ReporterRef> reporterMap = new LinkedHashMap<String, ReporterRef>();
+
+    private List<SubType> subTypeList = new ArrayList<SubType>();
+    private SubType subType;
 
     public RecordClass() {
         // make sure these keys are at the front of the list
@@ -111,7 +104,15 @@ public class RecordClass extends WdkModelBase {
         this.type = type;
     }
 
-    /**
+    public String getDisplayName() {
+		return (displayName == null)? getFullName() : displayName;
+	}
+
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
+	}
+
+	/**
      * Added by Jerric
      * 
      * @param delimiter
@@ -203,6 +204,10 @@ public class RecordClass extends WdkModelBase {
         reporterList.add(reporter);
     }
 
+    public void addSubType(SubType subType) {
+        subTypeList.add(subType);
+    }
+
     // ////////////////////////////////////////////////////////////
     // public getters
     // ////////////////////////////////////////////////////////////
@@ -238,15 +243,13 @@ public class RecordClass extends WdkModelBase {
     }
 
     public AttributeField[] getAttributeFields() {
-        AttributeField[] attributeFields =
-                new AttributeField[attributeFieldsMap.size()];
+        AttributeField[] attributeFields = new AttributeField[attributeFieldsMap.size()];
         attributeFieldsMap.values().toArray(attributeFields);
         return attributeFields;
     }
 
     public Map<String, AttributeField> getReportMakerAttributeFieldMap() {
-        Map<String, AttributeField> rmfields =
-                new LinkedHashMap<String, AttributeField>();
+        Map<String, AttributeField> rmfields = new LinkedHashMap<String, AttributeField>();
         Set<String> names = attributeFieldsMap.keySet();
         for (String name : names) {
             AttributeField field = attributeFieldsMap.get(name);
@@ -256,8 +259,7 @@ public class RecordClass extends WdkModelBase {
     }
 
     public Map<String, TableField> getReportMakerTableFieldMap() {
-        Map<String, TableField> rmfields =
-                new LinkedHashMap<String, TableField>();
+        Map<String, TableField> rmfields = new LinkedHashMap<String, TableField>();
         Set<String> names = tableFieldsMap.keySet();
         for (String name : names) {
             TableField field = tableFieldsMap.get(name);
@@ -328,6 +330,10 @@ public class RecordClass extends WdkModelBase {
         return primaryKeyField;
     }
 
+    public SubType getSubType() {
+        return subType;
+    }
+
     public RecordInstance makeRecordInstance(String recordId)
             throws WdkModelException {
         return new RecordInstance(this, recordId);
@@ -345,8 +351,7 @@ public class RecordClass extends WdkModelBase {
 
     public String toString() {
         String newline = System.getProperty("line.separator");
-        StringBuffer buf =
-                new StringBuffer("Record: name='" + name + "'").append(newline);
+        StringBuffer buf = new StringBuffer("Record: name='" + name + "'").append(newline);
 
         buf.append("--- Attributes ---").append(newline);
         for (AttributeField attribute : attributeFieldsMap.values()) {
@@ -367,11 +372,9 @@ public class RecordClass extends WdkModelBase {
     public String getSanityTestSuggestion() throws WdkModelException {
         String indent = "    ";
         String newline = System.getProperty("line.separator");
-        StringBuffer buf =
-                new StringBuffer(newline + newline + indent
-                        + "<sanityRecord ref=\"" + getFullName() + "\""
-                        + newline + indent + indent + indent
-                        + "primaryKey=\"FIX_pk\">" + newline);
+        StringBuffer buf = new StringBuffer(newline + newline + indent
+                + "<sanityRecord ref=\"" + getFullName() + "\"" + newline
+                + indent + indent + indent + "primaryKey=\"FIX_pk\">" + newline);
         buf.append(indent + "</sanityRecord>");
         return buf.toString();
     }
@@ -392,10 +395,9 @@ public class RecordClass extends WdkModelBase {
             throws WdkModelException {
         AttributeField attributeField = attributeFieldsMap.get(attributeName);
         if (attributeField == null) {
-            String message =
-                    "RecordClass " + getName()
-                            + " doesn't have an attribute field with name '"
-                            + attributeName + "'.";
+            String message = "RecordClass " + getName()
+                    + " doesn't have an attribute field with name '"
+                    + attributeName + "'.";
             throw new WdkModelException(message);
         }
         return attributeField;
@@ -404,10 +406,9 @@ public class RecordClass extends WdkModelBase {
     TableField getTableField(String tableName) throws WdkModelException {
         TableField tableField = tableFieldsMap.get(tableName);
         if (tableField == null) {
-            String message =
-                    "Record " + getName()
-                            + " does not have a table field with name '"
-                            + tableName + "'.";
+            String message = "Record " + getName()
+                    + " does not have a table field with name '" + tableName
+                    + "'.";
             throw new WdkModelException(message);
         }
         return tableField;
@@ -418,16 +419,14 @@ public class RecordClass extends WdkModelBase {
         // resolve projectParam
         AbstractEnumParam projectParam = null;
         if (hasProjectId()) {
-            projectParam =
-                    (AbstractEnumParam) model.resolveReference(projectParamRef.getTwoPartName());
+            projectParam = (AbstractEnumParam) model.resolveReference(projectParamRef.getTwoPartName());
             projectParam = (AbstractEnumParam) projectParam.clone();
             projectParam.setDefault(projectParamRef.getDefault());
         }
 
         // create PrimaryKeyField
-        primaryKeyField =
-                new PrimaryKeyField(PRIMARY_KEY_NAME, getType(),
-                        "Some help here", projectParam);
+        primaryKeyField = new PrimaryKeyField(PRIMARY_KEY_NAME, getType(),
+                "Some help here", projectParam);
         primaryKeyField.setIdPrefix(this.idPrefix);
         primaryKeyField.setDelimiter(this.delimiter);
         attributeFieldsMap.put(PRIMARY_KEY_NAME, primaryKeyField);
@@ -436,16 +435,14 @@ public class RecordClass extends WdkModelBase {
         for (AttributeQueryReference reference : attributesQueryRefs.values()) {
             // add attributes to the record class. it must be performed before
             // next step.
-            Map<String, AttributeField> fieldMap =
-                    reference.getAttributeFieldMap();
+            Map<String, AttributeField> fieldMap = reference.getAttributeFieldMap();
             Collection<AttributeField> fields = fieldMap.values();
             for (AttributeField field : fields) {
                 addAttributeField(field);
             }
 
             // resolve Query and associate columns with the attribute fields
-            Query query =
-                    (Query) model.resolveReference(reference.getTwoPartName());
+            Query query = (Query) model.resolveReference(reference.getTwoPartName());
             Column[] columns = query.getColumns();
             for (Column column : columns) {
                 AttributeField field = fieldMap.get(column.getName());
@@ -478,6 +475,13 @@ public class RecordClass extends WdkModelBase {
         if (aliasQueryName != null) {
             aliasQuery = (Query) model.resolveReference(aliasQueryName);
         }
+
+        // resolve reference for sub type query
+        if (subType != null) subType.resolveReferences(model);
+    }
+    
+    public void setResources(WdkModel wdkModel) {
+        // do nothing
     }
 
     /**
@@ -505,8 +509,7 @@ public class RecordClass extends WdkModelBase {
     private Map<String, AttributeField> sortAllAttributes()
             throws WdkModelException {
         String orderedAtts[] = attributeOrdering.split(",");
-        Map<String, AttributeField> orderedAttsMap =
-                new LinkedHashMap<String, AttributeField>();
+        Map<String, AttributeField> orderedAttsMap = new LinkedHashMap<String, AttributeField>();
 
         // primaryKey first
         String primaryKey = "primaryKey";
@@ -518,13 +521,10 @@ public class RecordClass extends WdkModelBase {
                 AttributeField nextAttField = attributeFieldsMap.get(nextAtt);
 
                 if (nextAttField == null) {
-                    String message =
-                            "RecordClass "
-                                    + getName()
-                                    + " defined attribute "
-                                    + nextAtt
-                                    + " in its attribute ordering, but that is not a "
-                                    + "valid attribute for this RecordClass";
+                    String message = "RecordClass " + getName()
+                            + " defined attribute " + nextAtt
+                            + " in its attribute ordering, but that is not a "
+                            + "valid attribute for this RecordClass";
                     throw new WdkModelException(message);
                 }
                 orderedAttsMap.put(nextAtt, nextAttField);
@@ -585,6 +585,16 @@ public class RecordClass extends WdkModelBase {
             }
         }
         reporterList = null;
+
+        // exclude subTypes
+        for (SubType subType : subTypeList) {
+            if (subType.include(projectId)) {
+                subType.excludeResources(projectId);
+                this.subType = subType;
+                break;
+            }
+        }
+        subTypeList = null;
 
         // exclude attributes
         for (AttributeField field : attributeFieldList) {
