@@ -9,7 +9,7 @@ import java.util.Map;
 public class RecordClassSet extends WdkModelBase implements ModelSetI {
 
     private List<RecordClass> recordClassList = new ArrayList<RecordClass>();
-    private Map<String, RecordClass> recordClasses = new LinkedHashMap<String, RecordClass>();
+    private Map<String, RecordClass> recordClassMap = new LinkedHashMap<String, RecordClass>();
     private String name;
 
     public void setName(String name) {
@@ -21,7 +21,7 @@ public class RecordClassSet extends WdkModelBase implements ModelSetI {
     }
 
     public RecordClass getRecordClass(String name) throws WdkModelException {
-        RecordClass s = recordClasses.get(name);
+        RecordClass s = recordClassMap.get(name);
         if (s == null)
             throw new WdkModelException("RecordClass Set " + getName()
                     + " does not include recordClass " + name);
@@ -29,20 +29,21 @@ public class RecordClassSet extends WdkModelBase implements ModelSetI {
     }
 
     public Object getElement(String name) {
-        return recordClasses.get(name);
+        return recordClassMap.get(name);
     }
 
     public RecordClass[] getRecordClasses() {
-        RecordClass[] array = new RecordClass[recordClasses.size()];
-        recordClasses.values().toArray(array);
+        RecordClass[] array = new RecordClass[recordClassMap.size()];
+        recordClassMap.values().toArray(array);
         return array;
     }
 
     boolean hasRecordClass(RecordClass recordClass) {
-        return recordClasses.containsKey(recordClass.getName());
+        return recordClassMap.containsKey(recordClass.getName());
     }
 
     public void addRecordClass(RecordClass recordClass) {
+        recordClass.setFullName(name);
         recordClassList.add(recordClass);
     }
 
@@ -51,7 +52,7 @@ public class RecordClassSet extends WdkModelBase implements ModelSetI {
         StringBuffer buf = new StringBuffer("RecordClassSet: name='" + name
                 + "'");
         buf.append(newline);
-        Iterator<RecordClass> recordClassIterator = recordClasses.values().iterator();
+        Iterator<RecordClass> recordClassIterator = recordClassMap.values().iterator();
         while (recordClassIterator.hasNext()) {
             buf.append(newline);
             buf.append(":::::::::::::::::::::::::::::::::::::::::::::");
@@ -63,7 +64,7 @@ public class RecordClassSet extends WdkModelBase implements ModelSetI {
     }
 
     public void resolveReferences(WdkModel model) throws WdkModelException {
-        Iterator<RecordClass> recordClassIterator = recordClasses.values().iterator();
+        Iterator<RecordClass> recordClassIterator = recordClassMap.values().iterator();
         while (recordClassIterator.hasNext()) {
             RecordClass recordClass = recordClassIterator.next();
             recordClass.resolveReferences(model);
@@ -71,10 +72,8 @@ public class RecordClassSet extends WdkModelBase implements ModelSetI {
     }
 
     public void setResources(WdkModel model) throws WdkModelException {
-        Iterator<RecordClass> recordClassIterator = recordClasses.values().iterator();
-        while (recordClassIterator.hasNext()) {
-            RecordClass recordClass = recordClassIterator.next();
-            recordClass.setFullName(this.getName());
+        for (RecordClass recordClass : recordClassMap.values()) {
+            recordClass.setResources(model);
         }
     }
 
@@ -90,10 +89,10 @@ public class RecordClassSet extends WdkModelBase implements ModelSetI {
             if (recordClass.include(projectId)) {
                 recordClass.excludeResources(projectId);
                 String rcName = recordClass.getName();
-                if (recordClasses.containsKey(rcName))
+                if (recordClassMap.containsKey(rcName))
                     throw new WdkModelException("RecordClass " + rcName
                             + " already exists in recordClass set " + getName());
-                recordClasses.put(rcName, recordClass);
+                recordClassMap.put(rcName, recordClass);
             }
         }
         recordClassList = null;
