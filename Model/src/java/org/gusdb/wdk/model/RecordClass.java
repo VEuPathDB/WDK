@@ -79,9 +79,6 @@ public class RecordClass extends WdkModelBase {
     private List<ReporterRef> reporterList = new ArrayList<ReporterRef>();
     private Map<String, ReporterRef> reporterMap = new LinkedHashMap<String, ReporterRef>();
 
-    private List<SubType> subTypeList = new ArrayList<SubType>();
-    private SubType subType;
-
     public RecordClass() {
         // make sure these keys are at the front of the list
         // it doesn't make sense, since you can't guarantee the order in a map
@@ -204,10 +201,6 @@ public class RecordClass extends WdkModelBase {
         reporterList.add(reporter);
     }
 
-    public void addSubType(SubType subType) {
-        subTypeList.add(subType);
-    }
-
     // ////////////////////////////////////////////////////////////
     // public getters
     // ////////////////////////////////////////////////////////////
@@ -328,10 +321,6 @@ public class RecordClass extends WdkModelBase {
      */
     public PrimaryKeyField getPrimaryKeyField() {
         return primaryKeyField;
-    }
-
-    public SubType getSubType() {
-        return subType;
     }
 
     public RecordInstance makeRecordInstance(String recordId)
@@ -475,9 +464,6 @@ public class RecordClass extends WdkModelBase {
         if (aliasQueryName != null) {
             aliasQuery = (Query) model.resolveReference(aliasQueryName);
         }
-
-        // resolve reference for sub type query
-        if (subType != null) subType.resolveReferences(model);
     }
     
     public void setResources(WdkModel wdkModel) {
@@ -585,16 +571,6 @@ public class RecordClass extends WdkModelBase {
             }
         }
         reporterList = null;
-
-        // exclude subTypes
-        for (SubType subType : subTypeList) {
-            if (subType.include(projectId)) {
-                subType.excludeResources(projectId);
-                this.subType = subType;
-                break;
-            }
-        }
-        subTypeList = null;
 
         // exclude attributes
         for (AttributeField field : attributeFieldList) {
