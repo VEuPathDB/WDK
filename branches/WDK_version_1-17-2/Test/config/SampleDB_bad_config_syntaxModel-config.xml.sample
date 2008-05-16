@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+
+<!-- this configuration file is invalid, since it misses 'projectId' attribute. The 
+     config file does not have a corresponding model file, and it's only used by unit
+     test -->
+     
+<modelConfig 
+        login="yourLogin"
+        password="yourPassword"
+        connectionUrl="jdbc:oracle:thin:@cbildb.pcbi.upenn.edu:1521:tbld1"
+        webServiceUrl="http://your.webservice.server:port/yourWsWebApp/services/WsfService"
+        maxQueryParams="50"
+        platformClass="org.gusdb.wdk.model.implementation.Oracle"
+        initialSize="3"
+        maxActive="20"
+        maxIdle="3"
+        minIdle="3"
+        maxWait="500"
+        authenticationLogin="yourAuthenticationDBLogin"
+        authenticationPassword="yourAuthenticationDBPassword"
+        authenticationConnectionUrl="yourLoginServerConnectionString"
+        authenticationPlatformClass="org.gusdb.wdk.model.implementation.Oracle"
+        userTable="logins.users"
+        roleTable="logins.user_roles"
+        historyTable="logins.histories"
+        preferenceTable="logins.preferences"
+        defaultRole="wdk_user"
+        smtpServer="127.0.0.1"
+        enableQueryLogger="true"
+        queryLoggerFile="full_path_plasmodb.log"
+        supportEmail="register@plasmodb.org">
+            <emailSubject>
+                 <![CDATA[
+                     Your PlasmoDB Password
+                 ]]>
+            </emailSubject>
+            <emailContent>
+                 <![CDATA[
+                     <p>Thank you for registering at PlasmoDB.</p>
+                     <p>Your temporary password is: $$PASSWORD$$</p>
+                     <p>You may now login to <a href="http://plasmodb.org">PlasmoDB</a>.</p>
+                     <p>Thanks,</p>
+                     <p>PlasmoDB</p>
+                 ]]>
+            </emailContent>
+
+</modelConfig>

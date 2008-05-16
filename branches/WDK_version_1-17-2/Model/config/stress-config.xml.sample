@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<comment>
+  <![CDATA[
+  The configuration file for stress test. The stress-config.xml should be put under $GUS_HOME/config/<roject_id>/.
+  ]]>  
+</comment>
+
+<!-- the dynamical urls to be tested with -->
+<entry key="QuestionUrl">http://your-server/you-webapp/showSummary.do</entry>
+<entry key="XmlQuestionUrl">http://your-server/you-webapp/showXmlDataContent.do</entry>
+<entry key="RecordUrl">http://your-server/you-webapp/showRecord.do</entry>
+<entry key="HomeUrl">http://your-server/you-webapp/</entry>
+
+<!-- other static urls to be tested with. the key must be started with prefix "url" -->
+<entry key="urlGBrowser">http://your-server/you-webapp/cgi-bin/gbrowse/plasmodb/?name=MAL11%3A1288854-1300722;enable=AnnotatedGenes;h_feat=PF11_0344@thistle</entry>
+
+<!-- the maximum and minimum possible time between a new request in a thread, in seconds. -->
+<entry key="MaxDelayTime">300</entry>
+<entry key="MinDelayTime">60</entry>
+</properties>
