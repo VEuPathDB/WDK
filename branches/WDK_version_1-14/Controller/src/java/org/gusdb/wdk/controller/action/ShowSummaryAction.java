@@ -89,7 +89,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             Map<String, Boolean> sortingAttributes;
             if (sortingChecksum != null) {
                 sortingAttributes = wdkUser.getSortingAttributesByChecksum(sortingChecksum);
-                request.setAttribute("wdk_sorting_checksum", sortingChecksum);
+                //request.setAttribute("wdk_sorting_checksum", sortingChecksum);
             } else {
                 sortingAttributes = wdkUser.getSortingAttributes(questionName);
             }
@@ -99,7 +99,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             String[] summaryAttributes = null;
             if (summaryChecksum != null) {
                 summaryAttributes = wdkUser.getSummaryAttributesByChecksum(summaryChecksum);
-                request.setAttribute("wdk_summary_checksum", sortingChecksum);
+                //request.setAttribute("wdk_summary_checksum", sortingChecksum);
             } else {
                 summaryAttributes = wdkUser.getSummaryAttributes(questionName);
             }
