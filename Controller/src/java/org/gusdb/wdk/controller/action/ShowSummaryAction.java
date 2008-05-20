@@ -88,7 +88,13 @@ public class ShowSummaryAction extends ShowQuestionAction {
 		    step = steps[Integer.parseInt(stepIndex)];
 		else
 		    step = steps[steps.length - 1];
-		strHistId = Integer.toString(step.getFilterHistory().getHistoryId());
+		String subQuery = request.getParameter("subquery");
+		if (subQuery != null && subQuery.length() != 0 && Boolean.valueOf(subQuery)) {
+		    strHistId = Integer.toString(step.getSubQueryHistory().getHistoryId());
+		}
+		else {
+		    strHistId = Integer.toString(step.getFilterHistory().getHistoryId());
+		}
 	    }
 		
 	}
