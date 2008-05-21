@@ -10,6 +10,11 @@ public class ProtocolBean {
     StepBean latestStep;
     String name;
 
+    public ProtocolBean(StepBean step) {
+	this.latestStep = step;
+	this.name = "Unnamed Strategy";
+    }
+
     public ProtocolBean(StepBean step, String name) {
 	this.latestStep = step;
 	this.name = name;
@@ -91,7 +96,9 @@ public class ProtocolBean {
 	    protocol.addStep(step);
 	}
 	else if (protocol == null) {
-	    protocol = new ProtocolBean(step, "Load name here.");
+	    // Once we can save protocols, name will be loaded from DB (?)
+	    //protocol = new ProtocolBean(step, "Load name here.");
+	    protocol = new ProtocolBean(step);
 	}
 	else {
 	    throw new WdkModelException("Unexpected error while building protocol, using history id: " + protocolId);

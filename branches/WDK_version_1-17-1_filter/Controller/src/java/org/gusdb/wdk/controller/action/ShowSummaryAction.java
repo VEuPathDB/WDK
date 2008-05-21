@@ -186,7 +186,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
 	if (protocol == null) {
 	    step = new StepBean();
 	    step.setFilterHistory(history);
-	    protocol = new ProtocolBean(step, "Put a default name here");
+	    protocol = new ProtocolBean(step);
 	}
 
         int historyId = history.getHistoryId();
@@ -481,32 +481,4 @@ public class ShowSummaryAction extends ShowQuestionAction {
         forward.setRedirect(false);
         return forward;
     }
-    
-    /* Moved to public static method in ProtocolBean
-    private ProtocolBean getProtocol(String protocolId, ProtocolBean protocol, UserBean wdkUser) 
-	throws WdkModelException, WdkUserException {
-	HistoryBean filterHistory = wdkUser.getHistory(Integer.parseInt(protocolId));
-	
-	StepBean step = new StepBean();
-	step.setFilterHistory(filterHistory);
-
-	if (filterHistory.isBoolean()) {
-	    String[] expParts = filterHistory.getBooleanExpression().split("\\s+");
-	    if (expParts.length != 3) {
-		throw new WdkModelException("Protocol boolean expression must have two arguments and one operation.  Received: " + filterHistory.getBooleanExpression());
-	    }
-	    HistoryBean subQueryHistory = wdkUser.getHistory(Integer.parseInt(expParts[2]));
-	    step.setSubQueryHistory(subQueryHistory);
-	    if (protocol == null) {
-		protocol = getProtocol(expParts[0], protocol, wdkUser);
-	    }
-	    protocol.addStep(step);
-	}
-	else if (protocol == null) {
-	    protocol = new ProtocolBean(step, "Load name here.");
-	}
-
-	return protocol;
-    }
-    */
 }
