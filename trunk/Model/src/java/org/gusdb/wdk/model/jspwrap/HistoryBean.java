@@ -69,6 +69,15 @@ public class HistoryBean {
         return history.getDataType();
     }
     
+     /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.History#getVersion()
+     */   
+    public String getVersion() {
+        return history.getVersion();
+    }
+
     /*
      * (non-Javadoc)
      * 
