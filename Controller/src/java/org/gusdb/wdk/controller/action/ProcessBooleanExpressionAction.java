@@ -31,24 +31,32 @@ public class ProcessBooleanExpressionAction extends Action {
 
 			ActionForward fwd = mapping
 					.findForward(CConstants.PROCESS_BOOLEAN_EXPRESSION_MAPKEY);
+			String stepKey = request.getParameter("addStep").toString();
 			String path = fwd.getPath();
 			if (path.indexOf("?") > 0) {
-				if (path.indexOf(CConstants.WDK_HISTORY_ID_KEY) < 0) {
-					path += "&" + CConstants.WDK_HISTORY_ID_KEY + "="
-							+ userAnswerIdStr;
-				}
+			    if (path.indexOf(CConstants.WDK_HISTORY_ID_KEY) < 0) {
+				path += "&" + CConstants.WDK_HISTORY_ID_KEY + "="
+				    + userAnswerIdStr;
+			    }
 			} else {
-				path += "?" + CConstants.WDK_HISTORY_ID_KEY + "="
-						+ userAnswerIdStr;
+			    path += "?" + CConstants.WDK_HISTORY_ID_KEY + "="
+				+ userAnswerIdStr;
 			}
 
+			if (stepKey != null && stepKey.length() != 0) {
+			    path += "&protocol=" + Integer.parseInt(request.getAttribute(CConstants.WDK_PROTOCOL_ID_KEY).toString());
+			    request.removeAttribute(CConstants.WDK_PROTOCOL_ID_KEY);
+			    fwd = new ActionForward(path);
+			    fwd.setRedirect(true);
+			    return fwd;
+			}
 			return new ActionForward(path);
 		} catch (Exception ex) {
-			ex.printStackTrace();
-			throw ex;
+		    ex.printStackTrace();
+		    throw ex;
 		}
 	}
-
+    
 	private String processBooleanExpression(HttpServletRequest request,
 			BooleanExpressionForm beForm) throws WdkModelException,
 			WdkUserException {
@@ -58,13 +66,25 @@ public class ProcessBooleanExpressionAction extends Action {
 				.getBooleanExpression());
 		int historyId = history.getHistoryId();
 
-		// 1. Check for StepBean
-		// 2. If exists, update step w/ filter history
-		String stepKey = request.getParameter("addStep");
-		if (stepKey != null && stepKey.length() != 0) {
-		    StepBean step = (StepBean) request.getSession().getAttribute(stepKey);
-		    step.setFilterHistory(history);
-		    request.getSession().setAttribute(stepKey, step);
+		// 1. Check for protocol id
+		// 2. If exists, load protocol
+		//    i. Check for Step object
+		//   ii. If exists, add filter history & add step to protocol
+		//  iii. Remove attributes for Step object
+
+		String strProtoId = request.getParameter("protocol");
+ 	
+		if (strProtoId != null && strProtoId.length() != 0) {
+		    ProtocolBean protocol = null;
+		    protocol = ProtocolBean.getProtocol(strProtoId, protocol, wdkUser);
+		    String stepKey = request.getParameter("addStep").toString();
+		    if (stepKey != null && stepKey.length() != 0) {
+			StepBean step = (StepBean) request.getSession().getAttribute(stepKey);
+			step.setFilterHistory(history);
+			protocol.addStep(step);
+			request.getSession().removeAttribute(stepKey);
+			request.setAttribute(CConstants.WDK_PROTOCOL_ID_KEY, protocol.getProtocolId());
+		    }
 		}
 
 		request.setAttribute(CConstants.WDK_HISTORY_ID_KEY, historyId);
