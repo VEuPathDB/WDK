@@ -76,27 +76,18 @@ public class ShowSummaryAction extends ShowQuestionAction {
 	if (strProtoId != null && strProtoId.length() != 0) {
 	    protocol = ProtocolBean.getProtocol(strProtoId, protocol, wdkUser);
 	    String stepIndex = request.getParameter("step");
-	    String stepKey = request.getParameter("addStep");
-	    if (stepKey != null && stepKey.length() != 0) {
-		step = (StepBean) request.getSession().getAttribute(stepKey);
-		protocol.addStep(step);
-		request.getSession().removeAttribute(stepKey);
+	    StepBean[] steps = protocol.getAllSteps();
+	    if (stepIndex != null && stepIndex.length() != 0)
+		step = steps[Integer.parseInt(stepIndex)];
+	    else
+		step = steps[steps.length - 1];
+	    String subQuery = request.getParameter("subquery");
+	    if (subQuery != null && subQuery.length() != 0 && Boolean.valueOf(subQuery)) {
+		strHistId = Integer.toString(step.getSubQueryHistory().getHistoryId());
 	    }
 	    else {
-		StepBean[] steps = protocol.getAllSteps();
-		if (stepIndex != null && stepIndex.length() != 0)
-		    step = steps[Integer.parseInt(stepIndex)];
-		else
-		    step = steps[steps.length - 1];
-		String subQuery = request.getParameter("subquery");
-		if (subQuery != null && subQuery.length() != 0 && Boolean.valueOf(subQuery)) {
-		    strHistId = Integer.toString(step.getSubQueryHistory().getHistoryId());
-		}
-		else {
-		    strHistId = Integer.toString(step.getFilterHistory().getHistoryId());
-		}
+		strHistId = Integer.toString(step.getFilterHistory().getHistoryId());
 	    }
-		
 	}
 
         if (strHistId == null || strHistId.length() == 0) {
@@ -179,8 +170,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
         }
 
         // delete empty history
-        if (history != null && history.getEstimateSize() == 0)
-            wdkUser.deleteHistory(history.getHistoryId());
+        //if (history != null && history.getEstimateSize() == 0)
+        //    wdkUser.deleteHistory(history.getHistoryId());
 
 
 	if (protocol == null) {

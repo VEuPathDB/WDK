@@ -139,8 +139,8 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	history = wdkUser.createHistory(wdkAnswer);
 
         // delete empty history
-        if (history != null && history.getEstimateSize() == 0)
-            wdkUser.deleteHistory(history.getHistoryId());
+        //if (history != null && history.getEstimateSize() == 0)
+        //    wdkUser.deleteHistory(history.getHistoryId());
 
         int historyId = history.getHistoryId();
 
