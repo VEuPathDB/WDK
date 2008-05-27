@@ -316,4 +316,7 @@ public class QuestionBean {
         return question.isNoSummaryOnSingleRecord();
     }
 
+    public String getShortDisplayName() {
+        return question.getShortDisplayName();
+    }
 }

@@ -71,6 +71,8 @@ public class Question extends WdkModelBase {
     private WdkModel wdkModel;
     
     private boolean noSummaryOnSingleRecord = false;
+    
+    private String shortDisplayName;
 
     // /////////////////////////////////////////////////////////////////////
     // setters called at initialization
@@ -750,5 +752,13 @@ public class Question extends WdkModelBase {
             }
         }
         propertyLists = null;
+    }
+    
+    public void setShortDisplayName(String shortDisplayName) {
+        this.shortDisplayName = shortDisplayName;
+    }
+    
+    public String getShortDisplayName() {
+        return (shortDisplayName == null) ? getDisplayName() : shortDisplayName;
     }
 }
