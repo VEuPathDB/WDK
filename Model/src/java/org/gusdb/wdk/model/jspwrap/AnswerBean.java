@@ -410,7 +410,7 @@ public class AnswerBean {
         String[] ids = answer.getAllIds();
         StringBuffer sbIds = new StringBuffer();
         for (String id : ids)
-            sbIds.append(id + " ");
+            sbIds.append(id + "\n");
         return sbIds.toString().trim();
     }
 
