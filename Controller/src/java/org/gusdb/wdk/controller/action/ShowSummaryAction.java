@@ -171,8 +171,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
         }
 
         // delete empty history
-        if (history != null && history.getEstimateSize() == 0)
-            wdkUser.deleteHistory(history.getHistoryId());
+        //if (history != null && history.getEstimateSize() == 0)
+        //    wdkUser.deleteHistory(history.getHistoryId());
 
         int historyId = history.getHistoryId();
 
