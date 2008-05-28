@@ -47,6 +47,10 @@ public class ProtocolBean {
 	return allSteps.toArray(new StepBean[allSteps.size()]);
     }
 
+    public int getLength() {
+	return getAllSteps().length;
+    }
+
     private ArrayList<StepBean> buildAllStepsArray(ArrayList<StepBean> array, StepBean step) {
 	if (step.getIsFirstStep()) {
 	    array.add(step);
