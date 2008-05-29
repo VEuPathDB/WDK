@@ -69,12 +69,12 @@ public class ResultFactory {
         this.schemaName = schemaName;
 
         this.instanceTableName = TABLE_QUERY_INSTANCE;
-        this.instanceTableFullName = platform.getTableFullName(schemaName,
-                instanceTableName);
+        this.instanceTableFullName =
+                platform.getTableFullName(schemaName, instanceTableName);
 
         this.sortingTableName = TABLE_SORTING_INDEX;
-        this.sortingTableFullName = platform.getTableFullName(schemaName,
-                sortingTableName);
+        this.sortingTableFullName =
+                platform.getTableFullName(schemaName, sortingTableName);
 
         // configure query logger
         this.enableQueryLogger = enableQueryLogger;
@@ -87,18 +87,17 @@ public class ResultFactory {
 
     public ResultList getResult(QueryInstance instance)
             throws WdkModelException {
-        ResultList resultList = instance.getIsPersistent() ? getPersistentResult(instance)
-                : instance.getNonpersistentResult();
+        ResultList resultList =
+                instance.getIsPersistent() ? getPersistentResult(instance)
+                        : instance.getNonpersistentResult();
         return resultList;
     }
 
     public ResultList getPersistentResultPage(QueryInstance instance,
             int startRow, int endRow) throws WdkModelException {
 
-        if (!instance.getIsPersistent()) {
-            throw new WdkModelException(
-                    "Attempting to get a page a fgetNonpersistentResultrom non-perstent result");
-        }
+        if (!instance.getIsPersistent()) { throw new WdkModelException(
+                "Attempting to get a page a fgetNonpersistentResultrom non-perstent result"); }
 
         // enable query logger
         if (enableQueryLogger) try {
@@ -112,8 +111,9 @@ public class ResultFactory {
         // sortingIndex is initialized by SqlQueryInstance during the
         // getResultTable(), but the variable is defined in QueryInstance
         int sortingIndex = instance.getSortingIndex();
-        ResultSet rs = fetchCachedResultPage(resultTableName, sortingIndex,
-                startRow, endRow);
+        ResultSet rs =
+                fetchCachedResultPage(resultTableName, sortingIndex, startRow,
+                        endRow);
         return new SqlResultList(instance, resultTableName, rs);
     }
 
@@ -127,18 +127,25 @@ public class ResultFactory {
 
     public String getSqlForBooleanOp(QueryInstance instance,
             String[] columnNames) throws WdkModelException {
-        StringBuffer selectb = new StringBuffer("select ");
+        // always rerun the boolean query
+        if (instance instanceof BooleanQueryInstance)
+            return ((BooleanQueryInstance) instance).getSql();
 
-        for (String name : columnNames)
-            selectb.append(name + ", ");
+        // for non-boolean query, use the cache table
+        StringBuffer selectb = new StringBuffer("SELECT ");
 
-        String resultTableName = getResultTableName(instance); // ensures
-        // instance is
-        // inserted into
-        // cache
+        boolean firstColumn = true;
+        for (String name : columnNames) {
+            if (firstColumn) firstColumn = false;
+            else selectb.append(", ");
+            selectb.append(name);
+        }
 
-        return selectb.substring(0, selectb.length() - 2) + " from "
-                + resultTableName;
+        // ensures instance is inserted into cache
+        selectb.append(" FROM ");
+        selectb.append(getResultTableName(instance));
+
+        return selectb.toString();
     }
 
     public void recreateCache(boolean noSchemaOutput, boolean forceDrop)
@@ -206,10 +213,12 @@ public class ResultFactory {
                     sqlSortingIndex.toString());
 
             // Create sequence
-            String tblQueryInstanceToUse = (noSchemaOutput == true ? instanceTableName
-                    : instanceTableFullName);
-            String tblSortingIndexToUse = (noSchemaOutput == true ? sortingTableName
-                    : sortingTableFullName);
+            String tblQueryInstanceToUse =
+                    (noSchemaOutput == true ? instanceTableName
+                            : instanceTableFullName);
+            String tblSortingIndexToUse =
+                    (noSchemaOutput == true ? sortingTableName
+                            : sortingTableFullName);
 
             logger.info("Creating sequence " + tblQueryInstanceToUse + "_pkseq"
                     + newline);
@@ -241,8 +250,9 @@ public class ResultFactory {
         s.append("select result_table from " + instanceTableFullName);
         String tables[] = null;
         try {
-            tables = SqlUtils.runStringArrayQuery(platform.getDataSource(),
-                    s.toString());
+            tables =
+                    SqlUtils.runStringArrayQuery(platform.getDataSource(),
+                            s.toString());
         } catch (SQLException e) {
             throw new WdkModelException(e);
         }
@@ -263,8 +273,9 @@ public class ResultFactory {
         if (forceDrop) {
             System.out.println("Force to drop all cache tables");
             try {
-                nDropped = platform.forceDropTables(CACHE_TABLE_PREFIX.toUpperCase()
-                        + "%");
+                nDropped =
+                        platform.forceDropTables(CACHE_TABLE_PREFIX.toUpperCase()
+                                + "%");
             } catch (SQLException ex) {
                 throw new WdkModelException(ex);
             }
@@ -273,14 +284,16 @@ public class ResultFactory {
 
         try {
             // delete sorting indices
-            String tblSortingIndexToUse = (noSchemaOutput == true ? sortingTableName
-                    : sortingTableFullName);
+            String tblSortingIndexToUse =
+                    (noSchemaOutput == true ? sortingTableName
+                            : sortingTableFullName);
             System.out.println("Deleting all rows from " + tblSortingIndexToUse);
             SqlUtils.execute(platform.getDataSource(), "delete from "
                     + sortingTableFullName);
 
-            String tblQueryInstanceToUse = (noSchemaOutput == true ? instanceTableName
-                    : instanceTableFullName);
+            String tblQueryInstanceToUse =
+                    (noSchemaOutput == true ? instanceTableName
+                            : instanceTableFullName);
             System.out.println("Deleting all rows from "
                     + tblQueryInstanceToUse);
             SqlUtils.execute(platform.getDataSource(), "delete from "
@@ -307,8 +320,9 @@ public class ResultFactory {
         }
 
         // drop sorting index table
-        String tblSortingIndexToUse = (noSchemaOutput == true ? sortingTableName
-                : sortingTableFullName);
+        String tblSortingIndexToUse =
+                (noSchemaOutput == true ? sortingTableName
+                        : sortingTableFullName);
         System.out.println("Dropping table " + tblSortingIndexToUse);
         try {
             platform.dropTable(sortingTableFullName);
@@ -324,8 +338,9 @@ public class ResultFactory {
         }
 
         // drop query instance table
-        String tblQueryInstanceToUse = (noSchemaOutput == true ? instanceTableName
-                : instanceTableFullName);
+        String tblQueryInstanceToUse =
+                (noSchemaOutput == true ? instanceTableName
+                        : instanceTableFullName);
         System.out.println("Dropping table " + tblQueryInstanceToUse);
         try {
             platform.dropTable(instanceTableFullName);
@@ -381,10 +396,11 @@ public class ResultFactory {
     public void dropCache(String queryName, boolean noSchemaOutput)
             throws SQLException {
         // get all cache ids of the given query name
-        ResultSet rs = SqlUtils.getResultSet(platform.getDataSource(),
-                "SELECT query_instance_id, result_table FROM "
-                        + instanceTableFullName + " WHERE query_name = '"
-                        + queryName + "'");
+        ResultSet rs =
+                SqlUtils.getResultSet(platform.getDataSource(),
+                        "SELECT query_instance_id, result_table FROM "
+                                + instanceTableFullName
+                                + " WHERE query_name = '" + queryName + "'");
         Map<Integer, String> cacheTables = new HashMap<Integer, String>();
         while (rs.next()) {
             cacheTables.put(rs.getInt("query_instance_id"),
@@ -454,7 +470,8 @@ public class ResultFactory {
         Integer queryInstanceId = getQueryInstanceId(instance);
         try {
             if (queryInstanceId == null) {
-                String strID = platform.getNextId(schemaName, instanceTableName);
+                String strID =
+                        platform.getNextId(schemaName, instanceTableName);
                 queryInstanceId = Integer.parseInt(strID);
             }
 
@@ -473,9 +490,10 @@ public class ResultFactory {
             int cached = instance.getIsCacheable() ? 1 : 0;
             String instanceChecksum = instance.getChecksum();
             String resultMessage = instance.getResultMessage();
-            queryInstanceId = insertQueryInstance(querySql, queryInstanceId,
-                    queryName, cached, resultTableName, instanceChecksum,
-                    resultMessage);
+            queryInstanceId =
+                    insertQueryInstance(querySql, queryInstanceId, queryName,
+                            cached, resultTableName, instanceChecksum,
+                            resultMessage);
 
             // set the query instance id to the query instance
             instance.setQueryInstanceId(queryInstanceId);
@@ -553,12 +571,13 @@ public class ResultFactory {
         String resultMessage = null;
         ResultSet rsInstance = null;
         try {
-            rsInstance = SqlUtils.getResultSet(platform.getDataSource(),
-                    sqlb.toString());
+            rsInstance =
+                    SqlUtils.getResultSet(platform.getDataSource(),
+                            sqlb.toString());
             if (rsInstance.next()) {
                 resultTableName = rsInstance.getString("result_table");
-                resultMessage = platform.getClobData(rsInstance,
-                        "result_message");
+                resultMessage =
+                        platform.getClobData(rsInstance, "result_message");
 
                 // instance result is in cache but is newly created object
                 if (instance.getQueryInstanceId() == null)
@@ -566,16 +585,18 @@ public class ResultFactory {
 
                 instance.setResultMessage(resultMessage);
             } else {
-                resultTableName = getNewResultTableName(instance,
-                        sqlb.toString());
+                resultTableName =
+                        getNewResultTableName(instance, sqlb.toString());
             }
-            resultTableFullName = platform.getTableFullName(schemaName,
-                    resultTableName);
+            resultTableFullName =
+                    platform.getTableFullName(schemaName, resultTableName);
 
             // create a CacheTable object that represents the cache table
-            CacheTable cacheTable = new CacheTable(platform, schemaName,
-                    instance.getQueryInstanceId(), instance.projectColumnName,
-                    instance.primaryKeyColumnName);
+            CacheTable cacheTable =
+                    new CacheTable(platform, schemaName,
+                            instance.getQueryInstanceId(),
+                            instance.projectColumnName,
+                            instance.primaryKeyColumnName);
             instance.setCacheTable(cacheTable);
         } catch (SQLException e) {
             throw new WdkModelException(e);
@@ -617,12 +638,19 @@ public class ResultFactory {
                 queryInstanceId = rsSelect.getInt(COLUMN_QUERY_INSTANCE_ID);
             } else {
                 // the record doesn't exist, no competitions - insert the row
-                psInsert = SqlUtils.getPreparedStatement(dataSource, "insert "
-                        + "into " + instanceTableFullName + " ("
-                        + COLUMN_QUERY_INSTANCE_ID + ", query_name, cached, "
-                        + "result_table, start_time, end_time, query_checksum,"
-                        + " result_message) values (?, ?, ?, ?, " + datefunc
-                        + ", " + datefunc + ", ?, ?)");
+                psInsert =
+                        SqlUtils.getPreparedStatement(
+                                dataSource,
+                                "insert "
+                                        + "into "
+                                        + instanceTableFullName
+                                        + " ("
+                                        + COLUMN_QUERY_INSTANCE_ID
+                                        + ", query_name, cached, "
+                                        + "result_table, start_time, end_time, query_checksum,"
+                                        + " result_message) values (?, ?, ?, ?, "
+                                        + datefunc + ", " + datefunc
+                                        + ", ?, ?)");
                 psInsert.setInt(1, queryInstanceId);
                 psInsert.setString(2, queryName);
                 psInsert.setInt(3, cached);
@@ -758,8 +786,9 @@ public class ResultFactory {
             sqlb.append(instanceWhereClause(instance));
 
             try {
-                queryInstanceId = SqlUtils.runIntegerQuery(
-                        platform.getDataSource(), sqlb.toString());
+                queryInstanceId =
+                        SqlUtils.runIntegerQuery(platform.getDataSource(),
+                                sqlb.toString());
             } catch (SQLException e) {
                 throw new WdkModelException(e);
             }
