@@ -52,8 +52,7 @@ public class UserFactory {
         // Return html string in an InputStream.
         // A new stream must be returned each time.
         public InputStream getInputStream() throws IOException {
-            if (html == null)
-                throw new IOException("Null HTML");
+            if (html == null) throw new IOException("Null HTML");
             return new ByteArrayInputStream(html.getBytes());
         }
 
@@ -90,8 +89,7 @@ public class UserFactory {
             if (obj instanceof HistoryKey) {
                 HistoryKey hkey = (HistoryKey) obj;
                 return ((this.userId == hkey.userId) && (this.historyId == hkey.historyId));
-            } else
-                return false;
+            } else return false;
         }
 
         /*
@@ -169,8 +167,7 @@ public class UserFactory {
             message.setSubject(subject);
             message.setSentDate(new Date());
             // set html content
-            message
-                    .setDataHandler(new DataHandler(new HTMLDataSource(content)));
+            message.setDataHandler(new DataHandler(new HTMLDataSource(content)));
 
             // send email
             Transport.send(message);
@@ -304,8 +301,7 @@ public class UserFactory {
             savePreferences(user);
 
             // generate a random password, and send to the user via email
-            if (resetPwd)
-                resetPassword(user);
+            if (resetPwd) resetPassword(user);
 
             return user;
         } catch (SQLException ex) {
@@ -595,9 +591,8 @@ public class UserFactory {
                     + "been updated");
 
             // update user's signature
-            psUser = SqlUtils
-                    .getPreparedStatement(dataSource, "Update " + loginSchema
-                            + "users SET signature = ? WHERE user_id = ?");
+            psUser = SqlUtils.getPreparedStatement(dataSource, "Update "
+                    + loginSchema + "users SET signature = ? WHERE user_id = ?");
 
             rs = SqlUtils.getResultSet(dataSource, sql);
             while (rs.next()) {
@@ -1014,8 +1009,10 @@ public class UserFactory {
         QueryInstance qinstance = answer.getIdsQueryInstance();
         String qiChecksum = qinstance.getChecksum();
         String signature = qinstance.getQuery().getSignature();
-        String params = (isBoolean) ? booleanExpression : (qinstance.getQuery()
-                .getFullName() + qinstance.getParamsContent());
+        String params = booleanExpression;
+        if (!isBoolean)
+            params = qinstance.getQuery().getFullName()
+                    + qinstance.getParamsContent();
 
         // check whether the answer exist or not
         ResultSet rsHistory = null;
@@ -1092,8 +1089,7 @@ public class UserFactory {
                         + "histories WHERE user_id = ?");
                 psMax.setInt(1, userId);
                 rsMax = psMax.executeQuery();
-                if (rsMax.next())
-                    historyId = rsMax.getInt("max_id");
+                if (rsMax.next()) historyId = rsMax.getInt("max_id");
 
                 connection.commit();
             }
@@ -1116,8 +1112,7 @@ public class UserFactory {
             throw new WdkUserException(ex);
         } finally {
             try {
-                if (connection != null)
-                    connection.setAutoCommit(true);
+                if (connection != null) connection.setAutoCommit(true);
                 SqlUtils.closeStatement(psHistory);
                 SqlUtils.closeResultSet(rsHistory);
                 SqlUtils.closeResultSet(rsMax);
@@ -1148,14 +1143,10 @@ public class UserFactory {
         Date lastRunTime = (updateTime) ? new Date() : history.getLastRunTime();
         PreparedStatement psHistory = null;
         try {
-            psHistory = SqlUtils
-                    .getPreparedStatement(
-                            dataSource,
-                            "UPDATE "
-                                    + loginSchema
-                                    + "histories SET custom_name = ?, "
-                                    + "last_run_time = ?, is_deleted = ?, estimate_size = ?"
-                                    + "WHERE user_id = ? AND project_id = ? AND history_id = ?");
+            psHistory = SqlUtils.getPreparedStatement(dataSource, "UPDATE "
+                    + loginSchema + "histories SET custom_name = ?, "
+                    + " last_run_time = ?, is_deleted = ?, estimate_size = ? "
+                    + "WHERE user_id = ? AND project_id = ? AND history_id = ?");
             psHistory.setString(1, history.getBaseCustomName());
             psHistory.setTimestamp(2, new Timestamp(lastRunTime.getTime()));
             psHistory.setBoolean(3, history.isDeleted());
@@ -1171,6 +1162,67 @@ public class UserFactory {
 
             // update the last run stamp
             history.setLastRunTime(lastRunTime);
+        } catch (SQLException ex) {
+            throw new WdkUserException(ex);
+        } finally {
+            try {
+                SqlUtils.closeStatement(psHistory);
+            } catch (SQLException ex) {
+                throw new WdkUserException(ex);
+            }
+        }
+    }
+
+    void updateHistory(History history, String expression)
+            throws WdkUserException, WdkModelException {
+        User user = history.getUser();
+        String email = user.getEmail();
+
+        // check email existence
+        if (!isExist(email))
+            throw new WdkUserException("The user " + email
+                    + " doesn't exist. Updating operation cancelled.");
+
+        // TEST
+        logger.info("Change boolean expression: '" + expression + "'");
+
+        // prepare the fields to be updated
+        Answer answer = history.getAnswer();
+        Date updateTime = new Date();
+        String qiChecksum = answer.getIdsQueryInstance().getChecksum();
+        int estimateSize = answer.getResultSize();
+        String params = expression;
+        int historyId = history.getHistoryId();
+
+        PreparedStatement psHistory = null;
+        try {
+            psHistory = SqlUtils.getPreparedStatement(dataSource, "UPDATE "
+                    + loginSchema + "histories SET create_time = ?, "
+                    + "last_run_time = ?, query_instance_checksum = ?, "
+                    + "estimate_size = ?, params = ? "
+                    + "WHERE user_id = ? AND project_id = ? "
+                    + "AND history_id = ?");
+            psHistory.setTimestamp(1, new Timestamp(updateTime.getTime()));
+            psHistory.setTimestamp(2, new Timestamp(updateTime.getTime()));
+            psHistory.setString(3, qiChecksum);
+            psHistory.setInt(4, estimateSize);
+            // the platform set clob, and run the statement
+            platform.updateClobData(psHistory, 5, params, false);
+
+            psHistory.setInt(6, user.getUserId());
+            psHistory.setString(7, projectId);
+            psHistory.setInt(8, historyId);
+            int result = psHistory.executeUpdate();
+            if (result == 0)
+                throw new WdkUserException("The history #" + historyId
+                        + " of user " + email + " on project " + projectId
+                        + " cannot be found.");
+
+            // update the last run stamp
+            history.setCreatedTime(updateTime);
+            history.setLastRunTime(updateTime);
+            history.setEstimateSize(estimateSize);
+            history.setBooleanExpression(expression);
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
         } finally {
@@ -1214,14 +1266,12 @@ public class UserFactory {
             StringBuffer sql = new StringBuffer();
             sql.append("DELETE FROM " + loginSchema + "histories "
                     + "WHERE user_id = ? ");
-            if (!allProjects)
-                sql.append("AND project_id = ?");
-            psHistory = SqlUtils.getPreparedStatement(dataSource, sql
-                    .toString());
+            if (!allProjects) sql.append("AND project_id = ?");
+            psHistory = SqlUtils.getPreparedStatement(dataSource,
+                    sql.toString());
 
             psHistory.setInt(1, user.getUserId());
-            if (!allProjects)
-                psHistory.setString(2, projectId);
+            if (!allProjects) psHistory.setString(2, projectId);
             psHistory.executeUpdate();
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
@@ -1458,10 +1508,12 @@ public class UserFactory {
         savePassword(email, password);
 
         // send an email to the user
-        String message = emailContent.replaceAll("\\$\\$FIRST_NAME\\$\\$", Matcher.quoteReplacement(user
-                .getFirstName()));
-        message = message.replaceAll("\\$\\$EMAIL\\$\\$", Matcher.quoteReplacement(email));
-        message = message.replaceAll("\\$\\$PASSWORD\\$\\$", Matcher.quoteReplacement(password));
+        String message = emailContent.replaceAll("\\$\\$FIRST_NAME\\$\\$",
+                Matcher.quoteReplacement(user.getFirstName()));
+        message = message.replaceAll("\\$\\$EMAIL\\$\\$",
+                Matcher.quoteReplacement(email));
+        message = message.replaceAll("\\$\\$PASSWORD\\$\\$",
+                Matcher.quoteReplacement(password));
         sendEmail(user.getEmail(), supportEmail, emailSubject, message);
     }
 
@@ -1519,9 +1571,8 @@ public class UserFactory {
         try {
             // encrypt the password, and save it
             String encrypted = encrypt(password);
-            ps = SqlUtils
-                    .getPreparedStatement(dataSource, "UPDATE " + loginSchema
-                            + "users SET passwd = ? " + "WHERE email = ?");
+            ps = SqlUtils.getPreparedStatement(dataSource, "UPDATE "
+                    + loginSchema + "users SET passwd = ? " + "WHERE email = ?");
             ps.setString(1, encrypted);
             ps.setString(2, email);
             ps.execute();

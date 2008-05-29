@@ -109,7 +109,6 @@ public class SqlQueryInstance extends QueryInstance {
     private String instantiateSqlWithJoin(String sql) throws WdkModelException {
         String joinTableName = cacheTable.getCacheTableFullName();
         String primaryKeyJoin = joinTableName + "." + primaryKeyColumnName;
-        checksum = null;
 
         // in the join mode, we have to force the "use quote" of primaryKey and
         // project_id to be false, since the values of them are column names.

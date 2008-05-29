@@ -24,6 +24,10 @@ public class HistoryBean {
         this.history = history;
     }
     
+    History getHistory() {
+        return history;
+    }
+    
     /*
      * (non-Javadoc)
      * 

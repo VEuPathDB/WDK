@@ -55,8 +55,6 @@ public abstract class QueryInstance {
      */
     protected boolean isDynamic;
 
-    protected String checksum = null;
-
     /**
      * The result message contains a description of the status of the result.
      * For example, for blast searh, if the blast returns no hit, the message
@@ -74,7 +72,6 @@ public abstract class QueryInstance {
     // ------------------------------------------------------------------
 
     public void setValues(Map<String, Object> values) throws WdkModelException {
-        checksum = null;
         query.applyDefaults(values);
         query.validateParamValues(values);
         this.values = new LinkedHashMap<String, Object>(values);
@@ -93,7 +90,7 @@ public abstract class QueryInstance {
 
     /**
      * @param cacheTable
-     *          the cacheTable to set
+     *            the cacheTable to set
      */
     public void setCacheTable(CacheTable cacheTable) {
         this.cacheTable = cacheTable;
@@ -111,11 +108,9 @@ public abstract class QueryInstance {
     }
 
     public void setIsCacheable(boolean isCacheable) throws WdkModelException {
-        if (isCacheable && !query.getIsCacheable().booleanValue()) {
-            throw new WdkModelException(
-                    query.getFullName()
-                            + " is not cacheable, but a query instance is, which is illegal");
-        }
+        if (isCacheable && !query.getIsCacheable().booleanValue()) { throw new WdkModelException(
+                query.getFullName()
+                        + " is not cacheable, but a query instance is, which is illegal"); }
         this.isCacheable = isCacheable;
     }
 
@@ -205,7 +200,7 @@ public abstract class QueryInstance {
 
     /**
      * @param sortingColumns
-     *          the sortingColumns to set
+     *            the sortingColumns to set
      */
     void setSortingColumns(Set<SortingColumn> sortingColumns) {
         this.sortingColumns = sortingColumns;
@@ -243,17 +238,14 @@ public abstract class QueryInstance {
     }
 
     public String getChecksum() throws WdkModelException {
-        if (checksum == null) {
-            // get the clob content: a combination of query name, param
-            // names and values
-            String content = getQueryInstanceContent();
+        // get the clob content: a combination of query name, param
+        // names and values
+        String content = getQueryInstanceContent();
 
-            // TEST
-            // logger.info( content );
+        // TEST
+        // logger.info( content );
 
-            checksum = Utilities.encrypt(content);
-        }
-        return checksum;
+        return Utilities.encrypt(content);
     }
 
     /**
@@ -265,7 +257,7 @@ public abstract class QueryInstance {
 
     /**
      * @param resultMessage
-     *          The resultMessage to set.
+     *            The resultMessage to set.
      */
     public void setResultMessage(String resultMessage) {
         this.resultMessage = resultMessage;
