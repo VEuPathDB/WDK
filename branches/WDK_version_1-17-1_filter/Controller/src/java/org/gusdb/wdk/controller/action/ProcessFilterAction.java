@@ -77,24 +77,26 @@ public class ProcessFilterAction extends ProcessQuestionAction {
         
 	HistoryBean history;
         AnswerBean wdkAnswer;
+	StepBean step;
 
-	// Having booleanExpression present causes question to break (due to unrecognized
-	// parameter).  Remove booleanExpression from params, and set using inherited method
-	// from BooleanExpressionForm.
-        Map<String, Object> internalParams = fForm.getMyProps();
-	System.out.println(internalParams);
-	fForm.setBooleanExpression(internalParams.remove("booleanExpression").toString());
-
+	Map<String, Object> internalParams = fForm.getMyProps();
 
 	// Make sure a protocol is specified
-	Object protocol = internalParams.remove("protocol");
+	String strProtoId = request.getParameter("protocol");
 
-	System.out.println("Filter protocol: " + protocol);
-	if (protocol == null || protocol.toString().length() == 0) {
+	System.out.println("Filter protocol: " + strProtoId);
+	if (strProtoId == null || strProtoId.length() == 0) {
 	    throw new WdkModelException("No protocol was specified for filtering!");
 	}
 
-	fForm.setMyProps(internalParams);
+	String stepIx = request.getParameter("revise");
+	if (stepIx == null || stepIx.length() == 0) {
+	    // Having booleanExpression present causes question to break (due to unrecognized
+	    // parameter).  Remove booleanExpression from params, and set using inherited method
+	    // from BooleanExpressionForm.
+	    fForm.setBooleanExpression(internalParams.remove("booleanExpression").toString());
+	    fForm.setMyProps(internalParams);
+	}
 
 	// Get question name
 	String questionName = wdkQuestion.getFullName();
@@ -144,36 +146,77 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 
         int historyId = history.getHistoryId();
 
-	// 1. create a new StepBean
-	// 2. add subquery history to StepBean
-	StepBean step = new StepBean();
-        step.setSubQueryHistory(history);
+	if (stepIx == null || stepIx.length() == 0) {
+	    // 1. create a new StepBean
+	    // 2. add subquery history to StepBean
+	    step = new StepBean();
+	    step.setSubQueryHistory(history);
+	    
+	    String stepKey = UUID.randomUUID().toString();
+	    
+	    request.getSession().setAttribute(stepKey, step);
+	    //System.out.println("Filter step: " + request.getAttribute(CConstants.WDK_STEP_KEY));
+	    
+	    // Get partial booleanExpression from form, complete it with history id
+	    // of filter question results, and set the complete expression on the form
+	    String booleanExpression = fForm.getBooleanExpression();
+	    booleanExpression += " " + historyId;
+	    fForm.setBooleanExpression(booleanExpression);
+	    
+	    // forward to ProcessBooleanExpressionAction
+	    ActionForward processBoolean = mapping.findForward( CConstants.PROCESS_BOOLEAN_EXPRESSION_MAPKEY );
+	    StringBuffer url = new StringBuffer( processBoolean.getPath() );
+	    url.append( "?booleanExpression=" + URLEncoder.encode(fForm.getBooleanExpression()));
+	    url.append("&historySectionId=" + URLEncoder.encode(wdkQuestion.getRecordClass().getFullName()) + "&submit=Get+Combined+Result");
+	    url.append("&protocol=" + URLEncoder.encode(strProtoId));
+	    url.append("&addStep=" + URLEncoder.encode(stepKey));
+	    
+	    logger.info(url);
+	    
+	    // construct the forward to ProcessBoolean action
+	    ActionForward forward = new ActionForward( url.toString() );
+	    forward.setRedirect( true );
+	    return forward;
+	}
+	else {
+	    // 1. get filter history
+	    //    note:  if this is the first step, filter history is in the next step.
+	    ProtocolBean protocol = null;
+	    protocol = ProtocolBean.getProtocol(strProtoId, protocol, wdkUser);
 
-	String stepKey = UUID.randomUUID().toString();
+	    step = protocol.getStep(Integer.valueOf(stepIx));
+	    HistoryBean filterHist;
+	    if (step.getIsFirstStep()) {
+		filterHist = step.getNextStep().getFilterHistory();
+	    }
+	    else {
+		filterHist = step.getFilterHistory();
+	    }
+	    
+	    // 2. get boolean expression from filter history
+	    String boolExp = filterHist.getBooleanExpression();
+	    
+	    // 3. update boolean expression
+	    //    note:  if this is the first step, we update the left operand
+	    if (step.getIsFirstStep()) {
+		boolExp = historyId + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
+	    }
+	    else {
+		boolExp = boolExp.substring(0, boolExp.lastIndexOf(" ")) + historyId;
+	    }
 
-	request.getSession().setAttribute(stepKey, step);
-	//System.out.println("Filter step: " + request.getAttribute(CConstants.WDK_STEP_KEY));
+	    // 4. update filter history w/ boolean expression
+	    wdkUser.updateHistory(filterHist, boolExp);
 
-	// Get partial booleanExpression from form, complete it with history id
-	// of filter question results, and set the complete expression on the form
-	String booleanExpression = fForm.getBooleanExpression();
-	booleanExpression += " " + historyId;
-	fForm.setBooleanExpression(booleanExpression);
-    
-	// forward to ProcessBooleanExpressionAction
-        ActionForward processBoolean = mapping.findForward( CConstants.PROCESS_BOOLEAN_EXPRESSION_MAPKEY );
-        StringBuffer url = new StringBuffer( processBoolean.getPath() );
-        url.append( "?booleanExpression=" + URLEncoder.encode(fForm.getBooleanExpression()));
-	url.append("&historySectionId=" + URLEncoder.encode(wdkQuestion.getRecordClass().getFullName()) + "&submit=Get+Combined+Result");
-	url.append("&protocol=" + URLEncoder.encode(protocol.toString()));
-	url.append("&addStep=" + URLEncoder.encode(stepKey));
-	
-        logger.info(url);
+	    // 5. forward to showsummary
+	    ActionForward showSummary = mapping.findForward( CConstants.SHOW_SUMMARY_MAPKEY );
+	    StringBuffer url = new StringBuffer( showSummary.getPath() );
+	    url.append("?protocol=" + URLEncoder.encode(strProtoId.toString()));
 
-        // construct the forward to ProcessBoolean action
-        ActionForward forward = new ActionForward( url.toString() );
-        forward.setRedirect( true );
-        return forward;
+	    ActionForward forward = new ActionForward( url.toString() );
+	    forward.setRedirect( true );
+	    return forward;
+	}
     }
 
     /*
