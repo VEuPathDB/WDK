@@ -65,15 +65,24 @@ public class Category extends WdkModelBase {
         // get the base recordClass
         String recordClassRef = categories.getRecordClassRef();
         for (WdkModelText ref : questionRefs) {
-            Question question = (Question) model.resolveReference(ref.getText().trim());
+            Question question = null;
+            try {
+                question = (Question) model.resolveReference(ref.getText().trim());
+            } catch (WdkModelException ex) {
+                // ignore the invalid question ref in the category
+            }
 
-            // make sure the recordClass matches
-            if (!question.getRecordClass().getFullName().equals(recordClassRef))
-                throw new WdkModelException("Question "
-                        + question.getFullName()
-                        + " cannot be included in categories " + recordClassRef);
+            if (question != null) {
+                // make sure the recordClass matches
+                if (!question.getRecordClass().getFullName().equals(
+                        recordClassRef))
+                    throw new WdkModelException("Question "
+                            + question.getFullName()
+                            + " cannot be included in categories "
+                            + recordClassRef);
 
-            questions.add(question);
+                questions.add(question);
+            }
         }
     }
 }

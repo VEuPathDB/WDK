@@ -61,9 +61,18 @@ public class Categories extends WdkModelBase {
         // resolve the base recordClass
         recordClass = (RecordClass) model.resolveReference(recordClassRef);
 
+        List<String> removeList = new ArrayList<String>();
+        
         // resolve the references in category
         for (Category category : categoryMap.values()) {
             category.resolveReferences(model);
+            // remove the empty categories
+            if (category.getQuestions().length == 0) removeList.add(category.getName());
+        }
+        
+        // remove the empty categories
+        for(String name : removeList) {
+            categoryMap.remove(name);
         }
     }
 }
