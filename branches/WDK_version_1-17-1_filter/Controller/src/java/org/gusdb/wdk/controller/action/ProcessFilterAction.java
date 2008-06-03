@@ -89,8 +89,9 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	    throw new WdkModelException("No protocol was specified for filtering!");
 	}
 
-	String stepIx = request.getParameter("revise");
-	if (stepIx == null || stepIx.length() == 0) {
+	// Are we revising a step?
+	String reviseStep = request.getParameter("revise");
+	if (reviseStep == null || reviseStep.length() == 0) {
 	    // Having booleanExpression present causes question to break (due to unrecognized
 	    // parameter).  Remove booleanExpression from params, and set using inherited method
 	    // from BooleanExpressionForm.
@@ -146,7 +147,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 
         int historyId = history.getHistoryId();
 
-	if (stepIx == null || stepIx.length() == 0) {
+	if (reviseStep == null || reviseStep.length() == 0) {
 	    // 1. create a new StepBean
 	    // 2. add subquery history to StepBean
 	    step = new StepBean();
@@ -184,35 +185,41 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	    ProtocolBean protocol = null;
 	    protocol = ProtocolBean.getProtocol(strProtoId, protocol, wdkUser);
 
-	    step = protocol.getStep(Integer.valueOf(stepIx));
+	    step = protocol.getStep(Integer.valueOf(reviseStep));
 	    HistoryBean filterHist;
+	    String boolExp;
 	    if (step.getIsFirstStep()) {
-		filterHist = step.getNextStep().getFilterHistory();
+		if (step.getNextStep() != null) {
+		    filterHist = step.getNextStep().getFilterHistory();
+		    // 2. get boolean expression from filter history
+		    boolExp = filterHist.getBooleanExpression();
+		    boolExp = historyId + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
+
+		    // 4. update filter history w/ boolean expression
+		    wdkUser.updateHistory(filterHist, boolExp);
+		}
+		else {
+		    strProtoId = historyId + "";
+		}
 	    }
 	    else {
 		filterHist = step.getFilterHistory();
-	    }
-	    
-	    // 2. get boolean expression from filter history
-	    String boolExp = filterHist.getBooleanExpression();
-	    
-	    // 3. update boolean expression
-	    //    note:  if this is the first step, we update the left operand
-	    if (step.getIsFirstStep()) {
-		boolExp = historyId + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
-	    }
-	    else {
+		// 2. get boolean expression from filter history
+		boolExp = filterHist.getBooleanExpression();
 		boolExp = boolExp.substring(0, boolExp.lastIndexOf(" ")) + historyId;
+
+		// 4. update filter history w/ boolean expression
+		wdkUser.updateHistory(filterHist, boolExp);
 	    }
-
-	    // 4. update filter history w/ boolean expression
-	    wdkUser.updateHistory(filterHist, boolExp);
-
+	    
 	    // 5. forward to showsummary
 	    ActionForward showSummary = mapping.findForward( CConstants.SHOW_SUMMARY_MAPKEY );
 	    StringBuffer url = new StringBuffer( showSummary.getPath() );
-	    url.append("?protocol=" + URLEncoder.encode(strProtoId.toString()));
-
+	    url.append("?protocol=" + URLEncoder.encode(strProtoId));
+	    String viewStep = request.getParameter("step");
+	    if (viewStep != null && viewStep.length() != 0) {
+		url.append("&step=" + URLEncoder.encode(viewStep));
+	    }
 	    ActionForward forward = new ActionForward( url.toString() );
 	    forward.setRedirect( true );
 	    return forward;
