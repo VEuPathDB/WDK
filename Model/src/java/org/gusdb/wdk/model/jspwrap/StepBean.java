@@ -53,6 +53,14 @@ public class StepBean {
 	return subQueryHistory.getCustomName();
     }
 
+    public String getShortName() 
+	throws WdkModelException, WdkUserException {
+	if (getIsFirstStep()) {
+	    return filterHistory.getAnswer().getQuestion().getShortDisplayName();
+	}
+	return subQueryHistory.getAnswer().getQuestion().getShortDisplayName();
+    }
+
     public int getFilterResultSize()
 	throws WdkModelException, WdkUserException {
 	return filterHistory.getAnswer().getResultSize();
