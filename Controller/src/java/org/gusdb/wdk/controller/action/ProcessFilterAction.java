@@ -91,14 +91,13 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 
 	// Are we revising a step?
 	String reviseStep = request.getParameter("revise");
-	if (reviseStep == null || reviseStep.length() == 0) {
-	    // Having booleanExpression present causes question to break (due to unrecognized
-	    // parameter).  Remove booleanExpression from params, and set using inherited method
-	    // from BooleanExpressionForm.
-	    fForm.setBooleanExpression(internalParams.remove("booleanExpression").toString());
-	    fForm.setMyProps(internalParams);
-	}
 
+	// Having booleanExpression present causes question to break (due to unrecognized
+	// parameter).  Remove booleanExpression from params, and set using inherited method
+	// from BooleanExpressionForm.
+	fForm.setBooleanExpression(internalParams.remove("booleanExpression").toString());
+	fForm.setMyProps(internalParams);
+	
 	// Get question name
 	String questionName = wdkQuestion.getFullName();
 	
@@ -188,12 +187,14 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	    step = protocol.getStep(Integer.valueOf(reviseStep));
 	    HistoryBean filterHist;
 	    String boolExp;
+	    String op = fForm.getBooleanExpression();
+	    op = op.substring(0,op.lastIndexOf(" "));
 	    if (step.getIsFirstStep()) {
 		if (step.getNextStep() != null) {
 		    filterHist = step.getNextStep().getFilterHistory();
 		    // 2. get boolean expression from filter history
 		    boolExp = filterHist.getBooleanExpression();
-		    boolExp = historyId + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
+		    boolExp = historyId + " " + op + boolExp.substring(boolExp.lastIndexOf(" "), boolExp.length());
 
 		    // 4. update filter history w/ boolean expression
 		    wdkUser.updateHistory(filterHist, boolExp);
@@ -206,7 +207,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 		filterHist = step.getFilterHistory();
 		// 2. get boolean expression from filter history
 		boolExp = filterHist.getBooleanExpression();
-		boolExp = boolExp.substring(0, boolExp.lastIndexOf(" ")) + historyId;
+		boolExp = boolExp.substring(0, boolExp.indexOf(" ")) + op + " " + historyId;
 
 		// 4. update filter history w/ boolean expression
 		wdkUser.updateHistory(filterHist, boolExp);
