@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model;
 
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.LinkedHashMap;
@@ -186,6 +187,9 @@ public class BooleanQueryInstance extends QueryInstance {
     protected String getSql() throws WdkModelException {
         ResultFactory rsFactory = getResultFactory();
         String[] commonColumns = findCommonColumnNames();
+        
+        // has to make sure the order of the columns are consistant
+        Arrays.sort(commonColumns);
 
         StringBuffer sql = new StringBuffer("(");
         sql.append(rsFactory.getSqlForBooleanOp(firstQueryInstance,
