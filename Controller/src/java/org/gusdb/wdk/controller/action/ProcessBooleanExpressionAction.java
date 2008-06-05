@@ -31,7 +31,6 @@ public class ProcessBooleanExpressionAction extends Action {
 
 			ActionForward fwd = mapping
 					.findForward(CConstants.PROCESS_BOOLEAN_EXPRESSION_MAPKEY);
-			String stepKey = request.getParameter("addStep").toString();
 			String path = fwd.getPath();
 			if (path.indexOf("?") > 0) {
 			    if (path.indexOf(CConstants.WDK_HISTORY_ID_KEY) < 0) {
@@ -43,6 +42,7 @@ public class ProcessBooleanExpressionAction extends Action {
 				+ userAnswerIdStr;
 			}
 
+			String stepKey = request.getParameter("addStep");
 			if (stepKey != null && stepKey.length() != 0) {
 			    path += "&protocol=" + Integer.parseInt(request.getAttribute(CConstants.WDK_PROTOCOL_ID_KEY).toString());
 			    request.removeAttribute(CConstants.WDK_PROTOCOL_ID_KEY);
@@ -77,7 +77,7 @@ public class ProcessBooleanExpressionAction extends Action {
 		if (strProtoId != null && strProtoId.length() != 0) {
 		    ProtocolBean protocol = null;
 		    protocol = ProtocolBean.getProtocol(strProtoId, protocol, wdkUser);
-		    String stepKey = request.getParameter("addStep").toString();
+		    String stepKey = request.getParameter("addStep");
 		    if (stepKey != null && stepKey.length() != 0) {
 			StepBean step = (StepBean) request.getSession().getAttribute(stepKey);
 			step.setFilterHistory(history);
