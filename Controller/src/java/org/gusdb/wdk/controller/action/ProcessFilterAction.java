@@ -188,7 +188,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	    HistoryBean filterHist;
 	    String boolExp;
 	    String op = fForm.getBooleanExpression();
-	    op = op.substring(0,op.lastIndexOf(" "));
+	    op = op.substring(op.indexOf(" "), op.length());
 	    if (step.getIsFirstStep()) {
 		if (step.getNextStep() != null) {
 		    filterHist = step.getNextStep().getFilterHistory();
@@ -220,6 +220,10 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	    String viewStep = request.getParameter("step");
 	    if (viewStep != null && viewStep.length() != 0) {
 		url.append("&step=" + URLEncoder.encode(viewStep));
+	    }
+	    String subQuery = request.getParameter("subquery");
+	    if (subQuery != null && subQuery.length() != 0) {
+		url.append("&subquery=" + URLEncoder.encode(subQuery));
 	    }
 	    ActionForward forward = new ActionForward( url.toString() );
 	    forward.setRedirect( true );
