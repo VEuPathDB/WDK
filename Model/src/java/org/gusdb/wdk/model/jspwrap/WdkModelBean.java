@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Vector;
 
+import org.gusdb.wdk.model.Categories;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
 import org.gusdb.wdk.model.RecordClass;
@@ -238,4 +239,18 @@ public class WdkModelBean  {
     public String getProjectId() {
         return model.getProjectId();
     }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.WdkModel#getCategories()
+     */
+    public CategoriesBean[] getCategories() {
+        Categories[] cats = model.getCategories();
+        CategoriesBean[] catsBeans = new CategoriesBean[cats.length];
+        for(int i = 0; i < cats.length; i++) {
+            catsBeans[i] = new CategoriesBean(cats[i]);
+        }
+        return catsBeans;
+    }
+    
 }
