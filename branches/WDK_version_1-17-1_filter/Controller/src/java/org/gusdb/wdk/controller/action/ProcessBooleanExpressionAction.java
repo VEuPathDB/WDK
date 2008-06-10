@@ -75,8 +75,7 @@ public class ProcessBooleanExpressionAction extends Action {
 		String strProtoId = request.getParameter("protocol");
  	
 		if (strProtoId != null && strProtoId.length() != 0) {
-		    ProtocolBean protocol = null;
-		    protocol = ProtocolBean.getProtocol(strProtoId, protocol, wdkUser);
+		    ProtocolBean protocol = ProtocolBean.getProtocol(strProtoId, wdkUser);
 		    String stepKey = request.getParameter("addStep");
 		    if (stepKey != null && stepKey.length() != 0) {
 			StepBean step = (StepBean) request.getSession().getAttribute(stepKey);

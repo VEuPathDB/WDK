@@ -74,7 +74,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
 	String strProtoId = request.getParameter("protocol");
  	
 	if (strProtoId != null && strProtoId.length() != 0) {
-	    protocol = ProtocolBean.getProtocol(strProtoId, protocol, wdkUser);
+	    protocol = ProtocolBean.getProtocol(strProtoId, wdkUser);
 	    String stepIndex = request.getParameter("step");
 	    StepBean[] steps = protocol.getAllSteps();
 	    if (stepIndex != null && stepIndex.length() != 0)

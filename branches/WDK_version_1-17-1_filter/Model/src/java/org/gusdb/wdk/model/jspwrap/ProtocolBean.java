@@ -81,7 +81,13 @@ public class ProtocolBean {
      *
      */
 
-    public static ProtocolBean getProtocol(String protocolId, ProtocolBean protocol, UserBean wdkUser) 
+    public static ProtocolBean getProtocol(String protocolId, UserBean wdkUser) 
+	throws WdkModelException, WdkUserException {
+	ProtocolBean protocol = null;
+	return getProtocol(protocolId, protocol, wdkUser);
+    }
+
+    private static ProtocolBean getProtocol(String protocolId, ProtocolBean protocol, UserBean wdkUser) 
 	throws WdkModelException, WdkUserException {
 	HistoryBean filterHistory = wdkUser.getHistory(Integer.parseInt(protocolId));
 	
