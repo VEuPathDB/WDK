@@ -58,28 +58,6 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             throws Exception {
         System.out.println("Entering ProcessFilterAction...");
 
-	WdkModelBean wdkModel = ( WdkModelBean ) servlet.getServletContext().getAttribute(CConstants.WDK_MODEL_KEY );
-        UserBean wdkUser = ( UserBean ) request.getSession().getAttribute(
-                CConstants.WDK_USER_KEY );
-        if ( wdkUser == null ) {
-            wdkUser = wdkModel.getUserFactory().getGuestUser();
-            request.getSession().setAttribute( CConstants.WDK_USER_KEY, wdkUser );
-        }
-        
-        // get question
-        String qFullName = request.getParameter( CConstants.QUESTION_FULLNAME_PARAM );
-        QuestionBean wdkQuestion = getQuestionByFullName( qFullName );
-        FilterForm fForm = prepareFilterForm( wdkQuestion, request,
-                ( FilterForm ) form );
-        
-	// validate & parse params
-        Map< String, String > params = prepareParams( wdkUser, request, fForm );
-        
-	HistoryBean history;
-        AnswerBean wdkAnswer;
-	StepBean step;
-
-	Map<String, Object> internalParams = fForm.getMyProps();
 
 	// Make sure a protocol is specified
 	String strProtoId = request.getParameter("protocol");
@@ -89,8 +67,102 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	    throw new WdkModelException("No protocol was specified for filtering!");
 	}
 
-	// Are we revising a step?
+	// load model, user
+	WdkModelBean wdkModel = ( WdkModelBean ) servlet.getServletContext().getAttribute(CConstants.WDK_MODEL_KEY );
+        UserBean wdkUser = ( UserBean ) request.getSession().getAttribute(
+                CConstants.WDK_USER_KEY );
+        if ( wdkUser == null ) {
+            wdkUser = wdkModel.getUserFactory().getGuestUser();
+            request.getSession().setAttribute( CConstants.WDK_USER_KEY, wdkUser );
+        }
+
+
+	HistoryBean history, filterHist;
+        AnswerBean wdkAnswer;
+	ProtocolBean protocol;
+	StepBean step;
+	String boolExp;
+
+	// Are we revising or deleting a step?
 	String reviseStep = request.getParameter("revise");
+	String deleteStep = request.getParameter("delete");
+
+	if (deleteStep != null && deleteStep.length() != 0) {
+	    protocol = ProtocolBean.getProtocol(strProtoId, wdkUser);
+	    step = protocol.getStep(Integer.valueOf(deleteStep));
+	    // are we deleting the first step?
+	    if (step.getIsFirstStep()) {
+		// if there are two steps, we're just moving to the second step as a one-step protocol
+		if (protocol.getLength() == 2) {
+		    // will need to change when we have unique ids for protocols
+		    strProtoId = step.getNextStep().getSubQueryHistory().getHistoryId() + "";
+		}
+		// if there are more than two steps, we need to update the filter history of the third step
+		// so that the boolean expression points to the subquery history of the second step
+		else if (protocol.getLength() > 2) {
+		    step = step.getNextStep().getNextStep();
+		    filterHist = step.getFilterHistory();
+		    boolExp = filterHist.getBooleanExpression();
+		    boolExp = step.getPreviousStep().getSubQueryHistory().getHistoryId() + " " + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
+		    wdkUser.updateHistory(filterHist, boolExp);
+		}
+		// not sure what to do here, but something has to happen...
+		else {
+		    // eventually we'll support deleting protocols...?
+		    // for now, throw error
+		    throw new WdkUserException("Can't delete the only step in a one-step search strategy!");
+		}
+	    }
+	    else {
+		//if this is not the last step, then filter history of the next step needs
+		// to point to filter history of the previous step
+		if (Integer.valueOf(deleteStep) < protocol.getLength() - 1) {
+		    filterHist = step.getNextStep().getFilterHistory();
+		    boolExp = filterHist.getBooleanExpression();
+		    boolExp = step.getPreviousStep().getFilterHistory().getHistoryId() + " " + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
+		    wdkUser.updateHistory(filterHist, boolExp);
+		}
+		//if this is the last step, we're just moving to the protocol that ends w/ the previous step
+		else {
+		    strProtoId = step.getPreviousStep().getFilterHistory().getHistoryId() + "";
+		}
+	    }
+
+	    // 5. forward to showsummary
+	    ActionForward showSummary = mapping.findForward( CConstants.SHOW_SUMMARY_MAPKEY );
+	    StringBuffer url = new StringBuffer( showSummary.getPath() );
+	    url.append("?protocol=" + URLEncoder.encode(strProtoId));
+	    String viewStep = request.getParameter("step");
+	    if (viewStep != null && viewStep.length() != 0) {
+		if (Integer.valueOf(viewStep) > Integer.valueOf(deleteStep)) {
+		    viewStep = (Integer.valueOf(viewStep) - 1) + "";
+		    url.append("&step=" + URLEncoder.encode(viewStep));
+		}
+		else if (Integer.valueOf(viewStep) < Integer.valueOf(deleteStep)) {
+		    url.append("&step=" + URLEncoder.encode(viewStep));
+		}
+	    }
+	    String subQuery = request.getParameter("subquery");
+	    if (subQuery != null && subQuery.length() != 0) {
+		url.append("&subquery=" + URLEncoder.encode(subQuery));
+	    }
+	    ActionForward forward = new ActionForward( url.toString() );
+	    forward.setRedirect( true );
+	    return forward;
+	}
+		    
+		    
+
+        // get question
+        String qFullName = request.getParameter( CConstants.QUESTION_FULLNAME_PARAM );
+        QuestionBean wdkQuestion = getQuestionByFullName( qFullName );
+        FilterForm fForm = prepareFilterForm( wdkQuestion, request,
+                ( FilterForm ) form );
+        
+	// validate & parse params
+        Map< String, String > params = prepareParams( wdkUser, request, fForm );
+
+	Map<String, Object> internalParams = fForm.getMyProps();
 
 	// Having booleanExpression present causes question to break (due to unrecognized
 	// parameter).  Remove booleanExpression from params, and set using inherited method
@@ -181,12 +253,9 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	else {
 	    // 1. get filter history
 	    //    note:  if this is the first step, filter history is in the next step.
-	    ProtocolBean protocol = null;
-	    protocol = ProtocolBean.getProtocol(strProtoId, protocol, wdkUser);
+	    protocol = ProtocolBean.getProtocol(strProtoId, wdkUser);
 
 	    step = protocol.getStep(Integer.valueOf(reviseStep));
-	    HistoryBean filterHist;
-	    String boolExp;
 	    String op = fForm.getBooleanExpression();
 	    op = op.substring(op.indexOf(" "), op.length());
 	    if (step.getIsFirstStep()) {
