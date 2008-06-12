@@ -56,8 +56,7 @@ public class ProcessSummaryAction extends Action {
 		String stepId = request.getParameter("step");
 		if (protocolId == null || protocolId.length() == 0 || stepId == null || stepId.length() == 0) 
 		    throw new WdkModelException("Missing parameters for this action" );
-		ProtocolBean protocol = null;
-		protocol = ProtocolBean.getProtocol(protocolId, protocol, wdkUser);
+		ProtocolBean protocol = ProtocolBean.getProtocol(protocolId, wdkUser);
 		StepBean step = protocol.getStep(Integer.parseInt(stepId));
 		historyId = Integer.toString(step.getFilterHistory().getHistoryId());
 	    }
