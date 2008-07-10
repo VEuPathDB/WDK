@@ -82,8 +82,8 @@ public class ProcessLoginAction extends Action {
             } else {
                 forwardUrl = referer;
             }
-            // login succeeded, redirect to "show_history page if history_id
-            // contained in the url. since the history id is invalid/changed
+            // login succeeded, redirect to "show_userAnswer page if userAnswer_id
+            // contained in the url. since the userAnswer id is invalid/changed
             // after login
             if (forwardUrl.indexOf(CConstants.WDK_HISTORY_ID_KEY) >= 0) {
                 forward = mapping.findForward(CConstants.SHOW_QUERY_HISTORY_MAPKEY);

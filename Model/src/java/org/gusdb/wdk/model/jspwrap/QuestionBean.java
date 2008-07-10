@@ -223,10 +223,10 @@ public class QuestionBean {
      * @param end
      *            Index of the last record to include in the answer
      */
-    public AnswerBean makeAnswer(Map<String, Object> paramValues, int start,
+    public RecordPageBean makeRecordPage(Map<String, Object> paramValues, int start,
             int end, Map<String, Boolean> sortingAttributes)
             throws WdkModelException, WdkUserException {
-        return new AnswerBean(question.makeAnswer(paramValues, start, end,
+        return new RecordPageBean(question.makeRecordPage(paramValues, start, end,
                 sortingAttributes));
     }
 
@@ -252,10 +252,10 @@ public class QuestionBean {
      * answer beans that contains all records in one page or not.
      * 
      * @return
-     * @see org.gusdb.wdk.model.Question#isFullAnswer()
+     * @see org.gusdb.wdk.model.Question#isFullRecordPage()
      */
-    public boolean isFullAnswer() {
-        return question.isFullAnswer();
+    public boolean isFullRecordPage() {
+        return question.isFullRecordPage();
     }
 
     /**
@@ -266,13 +266,13 @@ public class QuestionBean {
      * @return
      * @throws WdkUserException
      * @throws WdkModelException
-     * @see org.gusdb.wdk.model.Question#makeAnswer(java.util.Map,
+     * @see org.gusdb.wdk.model.Question#makeRecordPage(java.util.Map,
      *      java.util.Map)
      */
-    public AnswerBean makeAnswer(Map<String, Object> paramValues,
+    public RecordPageBean makeRecordPage(Map<String, Object> paramValues,
             Map<String, Boolean> sortingAttributes) throws WdkUserException,
             WdkModelException {
-        return new AnswerBean(question.makeAnswer(paramValues,
+        return new RecordPageBean(question.makeRecordPage(paramValues,
                 sortingAttributes));
     }
 
@@ -284,11 +284,11 @@ public class QuestionBean {
      * @return
      * @throws WdkUserException
      * @throws WdkModelException
-     * @see org.gusdb.wdk.model.Question#makeAnswer(java.util.Map)
+     * @see org.gusdb.wdk.model.Question#makeRecordPage(java.util.Map)
      */
-    public AnswerBean makeAnswer(Map<String, Object> paramValues)
+    public RecordPageBean makeRecordPage(Map<String, Object> paramValues)
             throws WdkUserException, WdkModelException {
-        return new AnswerBean(question.makeAnswer(paramValues));
+        return new RecordPageBean(question.makeRecordPage(paramValues));
     }
 
     /**

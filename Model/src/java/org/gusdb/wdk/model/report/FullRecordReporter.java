@@ -17,7 +17,7 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.Answer;
+import org.gusdb.wdk.model.RecordPage;
 import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.AttributeFieldValue;
 import org.gusdb.wdk.model.Field;
@@ -58,7 +58,7 @@ public class FullRecordReporter extends Reporter {
 
     private boolean hasEmptyTable = false;
 
-    public FullRecordReporter(Answer answer, int startIndex, int endIndex) {
+    public FullRecordReporter(RecordPage answer, int startIndex, int endIndex) {
         super(answer, startIndex, endIndex);
     }
 
@@ -136,7 +136,7 @@ public class FullRecordReporter extends Reporter {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.report.IReporter#format(org.gusdb.wdk.model.Answer)
+     * @see org.gusdb.wdk.model.report.IReporter#format(org.gusdb.wdk.model.RecordPage)
      */
     public void write(OutputStream out) throws WdkModelException {
         PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
@@ -187,10 +187,10 @@ public class FullRecordReporter extends Reporter {
             int recordCount = 0;
 
             // get page based answers with a maximum size (defined in
-            // PageAnswerIterator)
-            for (Answer pageAnswer : this) {
-                while (pageAnswer.hasMoreRecordInstances()) {
-                    RecordInstance record = pageAnswer.getNextRecordInstance();
+            // PageRecordPageIterator)
+            for (RecordPage pageRecordPage : this) {
+                while (pageRecordPage.hasMoreRecordInstances()) {
+                    RecordInstance record = pageRecordPage.getNextRecordInstance();
 
                     // print out attributes of the record first
                     formatAttributes(record, attributes, writer);
@@ -214,7 +214,7 @@ public class FullRecordReporter extends Reporter {
                         }
                     }
                     // print out tables
-                    formatTables(record, tables, writer, pageAnswer, psCache,
+                    formatTables(record, tables, writer, pageRecordPage, psCache,
                             hasCached);
 
                     writer.println();
@@ -279,7 +279,7 @@ public class FullRecordReporter extends Reporter {
     }
 
     private void formatTables(RecordInstance record, Set<TableField> tables,
-            PrintWriter writer, Answer answer, PreparedStatement psCache,
+            PrintWriter writer, RecordPage answer, PreparedStatement psCache,
             boolean hasCached) throws WdkModelException, SQLException {
         RDBMSPlatformI platform = answer.getQuestion().getWdkModel().getPlatform();
         boolean hasProjectId = answer.hasProjectId();
@@ -358,8 +358,8 @@ public class FullRecordReporter extends Reporter {
             document.open();
 
             // get page based answers with a maximum size (defined in
-            // PageAnswerIterator)
-            for (Answer answer : this) {
+            // PageRecordPageIterator)
+            for (RecordPage answer : this) {
                 while (answer.hasMoreRecordInstances()) {
                     RecordInstance record = answer.getNextRecordInstance();
                     // print out attributes of the record first

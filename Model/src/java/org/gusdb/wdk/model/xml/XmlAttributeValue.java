@@ -111,7 +111,7 @@ public class XmlAttributeValue {
     }
 
     /**
-     * This method will be called by XmlAnswer
+     * This method will be called by XmlRecordPage
      * @param isSummary The isSummary to set.
      */
     public void setSummary(boolean isSummary) {

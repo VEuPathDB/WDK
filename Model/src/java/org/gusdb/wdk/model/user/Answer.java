@@ -18,22 +18,23 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 
 /**
- * @author xingao
+ * @author Charles Treatman
  * 
  */
-public class History {
+
+// Copied from History.java; need to convert to new Answer object.
+// Need to get rid of references to User (this is global answer)
+// Get rid of custom name, dates, deleted, (?) depended, version
+
+public class Answer {
     
     private UserFactory factory;
     private User user;
-    private int historyId;
-    private Date createdTime;
-    private Date lastRunTime;
-    private String customName;
+    private int answerId;
     private RecordPage answer = null;
     private int estimateSize;
     private boolean isBoolean;
     private String booleanExpression;
-    private boolean isDeleted;
     private Boolean isDepended;
     
     private boolean isValid = true;
@@ -41,73 +42,17 @@ public class History {
     private Map< String, Object > params;
     private String questionName;
     
-    History( UserFactory factory, User user, int historyId ) {
+    Answer( UserFactory factory, User user, int answerId ) {
         this.factory = factory;
         this.user = user;
-        this.historyId = historyId;
-        isDeleted = false;
-    }
-    
-    public User getUser() {
-        return user;
-    }
+        this.answerId = answerId;
+     }
     
     /**
-     * @return Returns the createTime.
+     * @return Returns the answerId.
      */
-    public Date getCreatedTime() {
-        return createdTime;
-    }
-    
-    /**
-     * @param createTime
-     *            The createTime to set.
-     */
-    void setCreatedTime( Date createdTime ) {
-        this.createdTime = createdTime;
-    }
-    
-    public String getBaseCustomName() {
-        return customName;
-    }
-    
-    /**
-     * @return Returns the customName. If no custom name set before, it will
-     *         return the default name provided by the underline RecordPage - a
-     *         combination of question's full name, parameter names and values.
-     */
-    public String getCustomName() {
-        String name = customName;
-        if ( name == null || name.length() == 0 ) {
-            if ( isBoolean ) name = booleanExpression;
-            else if ( answer != null ) {
-                name = answer.getQuestion().getDisplayName();
-            }
-        }
-        if ( name == null ) name = questionName;
-        if ( name != null ) {
-            // remove script injections
-            name = name.replaceAll( "<.+?>", " " );
-            name = name.replaceAll( "['\"]", " " );
-            name = name.trim().replaceAll( "\\s+", " " );
-            if ( name.length() > 4000 ) name = name.substring( 0, 4000 );
-        }
-        return name;
-    }
-    
-    /**
-     * @param customName
-     *            The customName to set.
-     */
-    public void setCustomName( String customName ) {
-        this.customName = customName;
-    }
-    
-    /**
-     * @return Returns the historyId.
-     */
-    public int getHistoryId() {
-        return historyId;
+    public int getAnswerId() {
+        return answerId;
     }
     
     /**
@@ -116,7 +61,7 @@ public class History {
      */
     public RecordPage getRecordPage() throws WdkUserException {
         if ( !isValid )
-            throw new WdkUserException( "The history #" + historyId
+            throw new WdkUserException( "The history #" + answerId
                     + " is invalid." );
         return answer;
     }
@@ -142,21 +87,6 @@ public class History {
      */
     public void setEstimateSize( int estimateSize ) {
         this.estimateSize = estimateSize;
-    }
-    
-    /**
-     * @return Returns the lastRunTime.
-     */
-    public Date getLastRunTime() {
-        return lastRunTime;
-    }
-    
-    /**
-     * @param lastRunTime
-     *            The lastRunTime to set.
-     */
-    public void setLastRunTime( Date lastRunTime ) {
-        this.lastRunTime = lastRunTime;
     }
     
     /**
@@ -201,36 +131,31 @@ public class History {
         return answer.getQuestion().getRecordClass().getFullName();
     }
     
-    public void update() throws WdkUserException {
-        factory.updateHistory( user, this, true );
-    }
-    
-    public void update( boolean updateTime ) throws WdkUserException {
-        factory.updateHistory( user, this, updateTime );
-    }
-    
+    // Do these just go in UserAnswer, no need for it in answer?
+    /*
     public boolean isDepended() throws WdkUserException, WdkModelException {
-        if ( isDepended == null ) computeDependencies( user.getHistories() );
+        if ( isDepended == null ) computeDependencies( user.getAnswers() );
         return isDepended;
     }
     
-    void computeDependencies( History[ ] histories ) throws WdkModelException {
+    void computeDependencies( Answer[ ] histories ) throws WdkModelException {
         isDepended = false;
-        for ( History history : histories ) {
-            if ( history.historyId == this.historyId ) continue;
-            Set< Integer > components = history.getComponentHistories();
-            if ( components.contains( historyId ) ) {
+        for ( Answer history : histories ) {
+            if ( history.answerId == this.answerId ) continue;
+            Set< Integer > components = history.getComponentAnswers();
+            if ( components.contains( answerId ) ) {
                 isDepended = true;
                 break;
             }
         }
     }
-    
+    */
     /**
      * @return get a list of history ID's this one depends on directly.
      * @throws WdkModelException
      */
-    public Set< Integer > getComponentHistories() throws WdkModelException {
+    /*
+    public Set< Integer > getComponentAnswers() throws WdkModelException {
         if ( isBoolean ) {
             BooleanExpression parser = new BooleanExpression( user );
             return parser.getOperands( booleanExpression );
@@ -249,24 +174,9 @@ public class History {
             return components;
         }
     }
-    
+    */
     public String getDescription() {
         return ( isBoolean ) ? booleanExpression : answer.getName();
-    }
-    
-    /**
-     * @return Returns the isDeleted.
-     */
-    public boolean isDeleted() {
-        return isDeleted;
-    }
-    
-    /**
-     * @param isDeleted
-     *            The isDeleted to set.
-     */
-    public void setDeleted( boolean isDeleted ) {
-        this.isDeleted = isDeleted;
     }
     
     public String getCacheFullTable() throws WdkModelException {
@@ -311,6 +221,7 @@ public class History {
         return new LinkedHashMap< String, Object >( this.params );
     }
     
+    // How to get user object out of here?
     public Map< String, String > getParamNames() {
         Map< String, String > paramNames = new LinkedHashMap< String, String >();
         WdkModel wdkModel = user.getWdkModel();

@@ -9,179 +9,181 @@ import java.util.Map;
 import org.gusdb.wdk.model.RecordPage;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.user.History;
+import org.gusdb.wdk.model.user.UserAnswer;
 
 /**
  * @author xingao
  * 
  */
-public class HistoryBean {
+public class UserAnswerBean {
     
-    private History history;
+    UserAnswer userAnswer;
     private int nameTruncateTo;
     
-    public HistoryBean( History history ) {
-        this.history = history;
+    public UserAnswerBean( UserAnswer userAnswer ) {
+        this.userAnswer = userAnswer;
     }
     
-    History getHistory() {
-        return history;
+    UserAnswer getUserAnswer() {
+        return userAnswer;
     }
     
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.user.History#getChecksum()
+     * @see org.gusdb.wdk.model.user.UserAnswer#getChecksum()
      */
     public String getChecksum() throws WdkModelException {
-        return history.getChecksum();
+        return userAnswer.getChecksum();
     }
     
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.user.History#getCreatedTime()
+     * @see org.gusdb.wdk.model.user.UserAnswer#getCreatedTime()
      */
     public Date getCreatedTime() {
-        return history.getCreatedTime();
+        return userAnswer.getCreatedTime();
     }
     
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.user.History#getCustomName()
+     * @see org.gusdb.wdk.model.user.UserAnswer#getCustomName()
      */
     public String getCustomName() {
-        return history.getCustomName();
+        return userAnswer.getCustomName();
     }
     
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.user.History#getBaseCustomName()
+     * @see org.gusdb.wdk.model.user.UserAnswer#getBaseCustomName()
      */
     public String getBaseCustomName() {
-        return history.getBaseCustomName();
+        return userAnswer.getBaseCustomName();
     }
     
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.user.History#getDataType()
+     * @see org.gusdb.wdk.model.user.UserAnswer#getDataType()
      */
     public String getDataType() {
-        return history.getDataType();
+        return userAnswer.getDataType();
     }
     
      /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.user.History#getVersion()
+     * @see org.gusdb.wdk.model.user.UserAnswer#getVersion()
      */   
     public String getVersion() {
-        return history.getVersion();
+        return userAnswer.getVersion();
     }
     
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.user.History#getEstimateSize()
+     * @see org.gusdb.wdk.model.user.UserAnswer#getEstimateSize()
      */
     public int getEstimateSize() {
-        return history.getEstimateSize();
+        return userAnswer.getEstimateSize();
     }
     
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.user.History#setEstimateSize(int)
+     * @see org.gusdb.wdk.model.user.UserAnswer#setEstimateSize(int)
      */
     public void setEstimateSize( int estimateSize ) {
-        history.setEstimateSize( estimateSize );
+        userAnswer.setEstimateSize( estimateSize );
     }
     
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.user.History#getHistoryId()
+     * @see org.gusdb.wdk.model.user.UserAnswer#getUserAnswerId()
      */
-    public int getHistoryId() {
-        return history.getHistoryId();
+    public int getUserAnswerId() {
+        return userAnswer.getUserAnswerId();
     }
     
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.user.History#getLastRunTime()
+     * @see org.gusdb.wdk.model.user.UserAnswer#getLastRunTime()
      */
     public Date getLastRunTime() {
-        return history.getLastRunTime();
+        return userAnswer.getLastRunTime();
     }
     
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.user.History#getSignature()
+     * @see org.gusdb.wdk.model.user.UserAnswer#getSignature()
      */
     public String getSignature() throws WdkModelException {
-        return history.getSignature();
+        return userAnswer.getSignature();
     }
     
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.user.History#getUser()
+     * @see org.gusdb.wdk.model.user.UserAnswer#getUser()
      */
     public UserBean getUser() {
-        return new UserBean( history.getUser() );
+        return new UserBean( userAnswer.getUser() );
     }
     
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.user.History#isBoolean()
+     * @see org.gusdb.wdk.model.user.UserAnswer#isBoolean()
      */
     public boolean isBoolean() {
-        return history.isBoolean();
+        return userAnswer.isBoolean();
     }
     
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.user.History#update()
+     * @see org.gusdb.wdk.model.user.UserAnswer#update()
      */
     public void update() throws WdkUserException {
-        history.update();
+        userAnswer.update();
     }
     
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.user.History#update(boolean)
+     * @see org.gusdb.wdk.model.user.UserAnswer#update(boolean)
      */
     public void update( boolean updateTime ) throws WdkUserException {
-        history.update( updateTime );
+        userAnswer.update( updateTime );
     }
     
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.user.History#isDepended()
+     * @see org.gusdb.wdk.model.user.UserAnswer#isDepended()
      */
+    /*
     public boolean getDepended() throws WdkUserException, WdkModelException {
-        return history.isDepended();
+        return userAnswer.isDepended();
     }
+    */
     
     /**
      * @return
      * @throws WdkUserException
-     * @see org.gusdb.wdk.model.user.History#getRecordPage()
+     * @see org.gusdb.wdk.model.user.UserAnswer#getRecordPage()
      */
     public RecordPageBean getRecordPage() throws WdkUserException {
-        RecordPage answer = history.getRecordPage();
+        RecordPage answer = userAnswer.getRecordPage();
         RecordPageBean answerBean = new RecordPageBean( answer );
         if ( answer.getIsBoolean() )
-            answerBean.customName = history.getCustomName();
+            answerBean.customName = userAnswer.getCustomName();
         return answerBean;
     }
     
@@ -201,7 +203,7 @@ public class HistoryBean {
     }
     
     public String getTruncatedName() {
-        String name = history.getCustomName();
+        String name = userAnswer.getCustomName();
         if (name != null && name.length() > nameTruncateTo )
             name = name.substring( 0, nameTruncateTo ) + "...";
         return name;
@@ -210,68 +212,68 @@ public class HistoryBean {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.user.History#setCustomName(java.lang.String)
+     * @see org.gusdb.wdk.model.user.UserAnswer#setCustomName(java.lang.String)
      */
     public void setCustomName( String customName ) {
-        history.setCustomName( customName );
+        userAnswer.setCustomName( customName );
     }
     
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.user.History#getDescription()
+     * @see org.gusdb.wdk.model.user.UserAnswer#getDescription()
      */
     public String getDescription() {
-        return history.getDescription();
+        return userAnswer.getDescription();
     }
     
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.user.History#getBooleanExpression()
+     * @see org.gusdb.wdk.model.user.UserAnswer#getBooleanExpression()
      */
     public String getBooleanExpression() {
-        return history.getBooleanExpression();
+        return userAnswer.getBooleanExpression();
     }
     
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.user.History#isDeleted()
+     * @see org.gusdb.wdk.model.user.UserAnswer#isDeleted()
      */
     public boolean isDeleted() {
-        return history.isDeleted();
+        return userAnswer.isDeleted();
     }
     
     /**
      * @return
-     * @see org.gusdb.wdk.model.user.History#getParamNames()
+     * @see org.gusdb.wdk.model.user.UserAnswer#getParamNames()
      */
     public Map< String, String > getParamNames() {
-        return history.getParamNames();
+        return userAnswer.getParamNames();
     }
     
     /**
      * @return
-     * @see org.gusdb.wdk.model.user.History#getParams()
+     * @see org.gusdb.wdk.model.user.UserAnswer#getParams()
      */
     public Map< String, Object > getParams() {
-        return history.getParams();
+        return userAnswer.getParams();
     }
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.user.History#getQuestionName()
+     * @see org.gusdb.wdk.model.user.UserAnswer#getQuestionName()
      */
     public String getQuestionName() {
-        return history.getQuestionName();
+        return userAnswer.getQuestionName();
     }
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.user.History#isValid()
+     * @see org.gusdb.wdk.model.user.UserAnswer#isValid()
      */
     public boolean isValid() {
-        return history.isValid();
+        return userAnswer.isValid();
     }
 }

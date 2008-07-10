@@ -19,7 +19,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.DatasetBean;
 import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
 import org.gusdb.wdk.model.jspwrap.EnumParamBean;
-import org.gusdb.wdk.model.jspwrap.HistoryBean;
+import org.gusdb.wdk.model.jspwrap.UserAnswerBean;
 import org.gusdb.wdk.model.jspwrap.HistoryParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
@@ -187,14 +187,14 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
             } else if (p instanceof HistoryParamBean) {
                 // get type, as in RecordClass full name
                 String dataType = wdkQuestion.getRecordClass().getFullName();
-                HistoryBean[] histories = user.getHistories(dataType);
-                String[] values = new String[histories.length];
-                String[] labels = new String[histories.length];
-                for (int idx = 0; idx < histories.length; idx++) {
+                UserAnswerBean[] userAnswers = user.getUserAnswers(dataType);
+                String[] values = new String[userAnswers.length];
+                String[] labels = new String[userAnswers.length];
+                for (int idx = 0; idx < userAnswers.length; idx++) {
                     values[idx] = signature + ":"
-                            + histories[idx].getHistoryId();
-                    labels[idx] = "#" + histories[idx].getHistoryId() + " "
-                            + histories[idx].getCustomName();
+                            + userAnswers[idx].getUserAnswerId();
+                    labels[idx] = "#" + userAnswers[idx].getUserAnswerId() + " "
+                            + userAnswers[idx].getCustomName();
                 }
                 qForm.getMyValues().put(p.getName(), values);
                 qForm.getMyLabels().put(p.getName(),

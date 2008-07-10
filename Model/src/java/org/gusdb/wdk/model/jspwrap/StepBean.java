@@ -1,108 +1,87 @@
 package org.gusdb.wdk.model.jspwrap;
 
-import org.gusdb.wdk.model.BooleanQuery;
-import org.gusdb.wdk.model.BooleanQuestionNode;
+import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 
 public class StepBean {
- 
-    public static final String INTERNAL_AND = "INTERSECT";
-    public static final String INTERNAL_OR = "UNION";
-    public static final String INTERNAL_NOT = "MINUS";
-    
-    
-    StepBean nextStep;
-    StepBean previousStep;
-    
-    HistoryBean filterHistory;
-    HistoryBean subQueryHistory;
+    Step step;
 
-    public StepBean() {
+    public StepBean(UserAnswerBean userAnswer) {
+	this.step = new Step(userAnswer.userAnswer);
     }
 
-    public StepBean(HistoryBean filterHistory, HistoryBean subQueryHistory,
-		    StepBean previousStep, StepBean nextStep) {
-	this.previousStep = previousStep;
-	this.nextStep = nextStep;
-	this.filterHistory = filterHistory;
-	this.subQueryHistory = subQueryHistory;
+    public StepBean(Step step) {
+	this.step = step;
     }
 
     public StepBean getPreviousStep() {
-
-        return previousStep;
+	if (step.getPreviousStep() != null) {
+	    return new StepBean(step.getPreviousStep());
+	}
+	return null;
     }
 
     public StepBean getNextStep() {
-	return nextStep;
+	if (step.getNextStep() != null) {
+	    return new StepBean(step.getNextStep());
+	}
+	return null;
     }
 
-    public HistoryBean getFilterHistory() {
-	return filterHistory;
+    public UserAnswerBean getChildStepUserAnswer() {
+	if (step.getChildStep() != null) {
+	    return new UserAnswerBean(step.getChildStepUserAnswer());
+	}
+	return null;
     }
 
-    public HistoryBean getSubQueryHistory() {
-	return subQueryHistory;
+    public StepBean getChildStep() {
+	if (step.getChildStep() != null) {
+	    return new StepBean(step.getChildStep());
+	}
+	return null;
+    }
+
+    public UserAnswerBean getFilterUserAnswer() {
+	if (step.getFilterUserAnswer() != null) {
+	    return new UserAnswerBean(step.getFilterUserAnswer());
+	}
+	return null;
+    }
+
+    public void setFilterUserAnswer(UserAnswerBean answer) {
+	step.setFilterUserAnswer(answer.userAnswer);
+    }
+
+    public void setChildStep(StepBean childStep) {
+	step.setChildStep(childStep.step);
     }
 
     public String getCustomName() {
-	if (getIsFirstStep()) {
-	    return filterHistory.getCustomName();
-	}
-	return subQueryHistory.getCustomName();
+	return step.getCustomName();
     }
 
     public String getShortName() 
 	throws WdkModelException, WdkUserException {
-	if (getIsFirstStep()) {
-	    return filterHistory.getAnswer().getQuestion().getShortDisplayName();
-	}
-	return subQueryHistory.getAnswer().getQuestion().getShortDisplayName();
+	return step.getShortName();
     }
 
     public int getFilterResultSize()
 	throws WdkModelException, WdkUserException {
-	return filterHistory.getAnswer().getResultSize();
+	return step.getFilterResultSize();
     }
 
     public int getSubQueryResultSize()
 	throws WdkModelException, WdkUserException {
-	return subQueryHistory.getAnswer().getResultSize();
+	return step.getSubQueryResultSize();
     }
 
     public String getOperation() throws WdkUserException {
-	if (getIsFirstStep()) {
-	    throw new RuntimeException("getOperation cannot be called on the first StepBean.");
-	}
-	return filterHistory.getAnswer().getBooleanOperation();
-    }
-    
-    public String getDetails() {
-	if (getIsFirstStep()) {
-	    return filterHistory.getDescription().replace(",", "\n").replace(":", ":\n");
-	}
-	return subQueryHistory.getDescription().replace(",", "\n").replace(":", ":\n");
-    }
-
-    // Not sure if these mutators are safe, is there a better way to do this?
-    public void setFilterHistory(HistoryBean history) {
-	this.filterHistory = history;
-    }
-    
-    public void setSubQueryHistory(HistoryBean history) {
-	this.subQueryHistory = history;
-    }
-
-    protected void setNextStep(StepBean newNextStep) {
-        this.nextStep = newNextStep;
-    }
-
-    protected void setPreviousStep(StepBean previousStep) {
-        this.previousStep = previousStep;
+	return step.getOperation();
     }
 
     public boolean getIsFirstStep() {
-	return (previousStep == null);
+	return step.getIsFirstStep();
     }
 }

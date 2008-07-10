@@ -28,12 +28,12 @@ import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.AnswerBean;
+import org.gusdb.wdk.model.jspwrap.RecordPageBean;
 import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
 import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
 import org.gusdb.wdk.model.jspwrap.DatasetBean;
-import org.gusdb.wdk.model.jspwrap.HistoryBean;
-import org.gusdb.wdk.model.jspwrap.ProtocolBean;
+import org.gusdb.wdk.model.jspwrap.UserAnswerBean;
+import org.gusdb.wdk.model.jspwrap.UserStrategyBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.HistoryParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
@@ -59,12 +59,12 @@ public class ProcessFilterAction extends ProcessQuestionAction {
         System.out.println("Entering ProcessFilterAction...");
 
 
-	// Make sure a protocol is specified
-	String strProtoId = request.getParameter("protocol");
+	// Make sure a strategy is specified
+	String strProtoId = request.getParameter("strategy");
 
-	System.out.println("Filter protocol: " + strProtoId);
+	System.out.println("Filter strategy: " + strProtoId);
 	if (strProtoId == null || strProtoId.length() == 0) {
-	    throw new WdkModelException("No protocol was specified for filtering!");
+	    throw new WdkModelException("No strategy was specified for filtering!");
 	}
 
 	// load model, user
@@ -77,9 +77,9 @@ public class ProcessFilterAction extends ProcessQuestionAction {
         }
 
 
-	HistoryBean history, filterHist;
-        AnswerBean wdkAnswer;
-	ProtocolBean protocol;
+	UserAnswerBean userAnswer, filterHist;
+        RecordPageBean wdkRecordPage;
+	UserStrategyBean strategy;
 	StepBean step;
 	String boolExp;
 
@@ -100,15 +100,19 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	// Having booleanExpression present causes question to break (due to unrecognized
 	// parameter).  Remove booleanExpression from params, and set using inherited method
 	// from BooleanExpressionForm.
-	fForm.setBooleanExpression(internalParams.remove("booleanExpression").toString());
-	fForm.setMyProps(internalParams);
-	
+	boolExp = internalParams.remove("booleanExpression").toString();
+	//fForm.setBooleanExpression(internalParams.remove("booleanExpression").toString());
+	//fForm.setMyProps(internalParams);
+	//boolExp = fForm.getBooleanExpression();
+
 	// Get question name
 	String questionName = wdkQuestion.getFullName();
 	
 	internalParams = handleMultiPickParams(new LinkedHashMap<String, Object>(fForm.getMyProps()));
 	handleDatasetParams(wdkUser, wdkQuestion, internalParams);
 	
+	// How much if this is needed to answer the question?  What is only needed for summary?
+
 	// get sorting key, if have
 	String sortingChecksum = request.getParameter(CConstants.WDK_SORTING_KEY);
 	Map<String, Boolean> sortingAttributes;
@@ -130,7 +134,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	}
 	
 	try {
-	    wdkAnswer = summaryPaging(request, wdkQuestion, internalParams,
+	    wdkRecordPage = summaryPaging(request, wdkQuestion, internalParams,
 				      sortingAttributes, summaryAttributes);
 	} catch (WdkModelException ex) {
 	    logger.error(ex);
@@ -141,105 +145,94 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	    ex.printStackTrace();
 	    return showError(wdkModel, wdkUser, mapping, request, response);
 	}
+
+	// get strategy
+	strategy = wdkUser.getUserStrategy(Integer.parseInt(strProtoId));
 	
-	// create history for filter subquery
-	history = wdkUser.createHistory(wdkAnswer);
+	// create userAnswer for filter subquery
+	userAnswer = wdkUser.createUserAnswer(wdkRecordPage);
+        int userAnswerId = userAnswer.getUserAnswerId();
 
-        // delete empty history
-        //if (history != null && history.getEstimateSize() == 0)
-        //    wdkUser.deleteHistory(history.getHistoryId());
+	StepBean childStep = new StepBean(userAnswer);
 
-        int historyId = history.getHistoryId();
-
+	System.out.println("Revise: " + reviseStep);
 	if (reviseStep == null || reviseStep.length() == 0) {
-	    // 1. create a new StepBean
-	    // 2. add subquery history to StepBean
-	    step = new StepBean();
-	    step.setSubQueryHistory(history);
+	    boolExp += " " + userAnswerId;
+	    System.out.println(boolExp);
+	    // now create userAnswer for operation query
+	    userAnswer = wdkUser.combineUserAnswer(boolExp);
+	    userAnswerId = userAnswer.getUserAnswerId();
 	    
-	    String stepKey = UUID.randomUUID().toString();
+	    step = new StepBean(userAnswer);
+	    step.setChildStep(childStep);
 	    
-	    request.getSession().setAttribute(stepKey, step);
-	    //System.out.println("Filter step: " + request.getAttribute(CConstants.WDK_STEP_KEY));
-	    
-	    // Get partial booleanExpression from form, complete it with history id
-	    // of filter question results, and set the complete expression on the form
-	    String booleanExpression = fForm.getBooleanExpression();
-	    booleanExpression += " " + historyId;
-	    fForm.setBooleanExpression(booleanExpression);
-	    
-	    // forward to ProcessBooleanExpressionAction
-	    ActionForward processBoolean = mapping.findForward( CConstants.PROCESS_BOOLEAN_EXPRESSION_MAPKEY );
-	    StringBuffer url = new StringBuffer( processBoolean.getPath() );
-	    url.append( "?booleanExpression=" + URLEncoder.encode(fForm.getBooleanExpression()));
-	    url.append("&historySectionId=" + URLEncoder.encode(wdkQuestion.getRecordClass().getFullName()) + "&submit=Get+Combined+Result");
-	    url.append("&protocol=" + URLEncoder.encode(strProtoId));
-	    url.append("&addStep=" + URLEncoder.encode(stepKey));
-	    
-	    logger.info(url);
-	    
-	    // construct the forward to ProcessBoolean action
-	    ActionForward forward = new ActionForward( url.toString() );
-	    forward.setRedirect( true );
-	    return forward;
+	    // if we're not revising, just add new step
+	    strategy.addStep(step);
 	}
 	else {
-	    // 1. get filter history
-	    //    note:  if this is the first step, filter history is in the next step.
-	    protocol = ProtocolBean.getProtocol(strProtoId, wdkUser);
+	    // NOTE:  this is still working off of a simple strategy concept...what about substrategies?
+	    // if we are revising, need to get subsequent steps and update them as well.
+	    int reviseIx = Integer.parseInt(reviseStep);
+	    int stratLen = strategy.getLength();
 
-	    step = protocol.getStep(Integer.valueOf(reviseStep));
-	    String op = fForm.getBooleanExpression();
-	    op = op.substring(op.indexOf(" "), op.length());
-	    if (step.getIsFirstStep()) {
-		if (step.getNextStep() != null) {
-		    filterHist = step.getNextStep().getFilterHistory();
-		    // 2. get boolean expression from filter history
-		    boolExp = filterHist.getBooleanExpression();
-		    boolExp = historyId + " " + op + boolExp.substring(boolExp.lastIndexOf(" "), boolExp.length());
-
-		    // 4. update filter history w/ boolean expression
-		    wdkUser.updateHistory(filterHist, boolExp);
-		}
-		else {
-		    strProtoId = historyId + "";
-		}
+	    if (reviseIx == 0) {
+		// build boolExp for switching to new first query
+		reviseIx++;
+		step = strategy.getStep(reviseIx);
+		boolExp = step.getFilterUserAnswer().getBooleanExpression();
+		boolExp = boolExp.substring(0, boolExp.lastIndexOf(" ")) + userAnswerId;
 	    }
 	    else {
-		filterHist = step.getFilterHistory();
-		// 2. get boolean expression from filter history
-		boolExp = filterHist.getBooleanExpression();
-		boolExp = boolExp.substring(0, boolExp.indexOf(" ")) + op + " " + historyId;
-
-		// 4. update filter history w/ boolean expression
-		wdkUser.updateHistory(filterHist, boolExp);
-	    }
+		// build standard boolExp for non-first step
+		boolExp += " " + userAnswerId;
+	    }		
+		
+	    // now create userAnswer for operation query
+	    userAnswer = wdkUser.combineUserAnswer(boolExp);
+	    userAnswerId = userAnswer.getUserAnswerId();
 	    
-	    // 5. forward to showsummary
-	    ActionForward showSummary = mapping.findForward( CConstants.SHOW_SUMMARY_MAPKEY );
-	    StringBuffer url = new StringBuffer( showSummary.getPath() );
-	    url.append("?protocol=" + URLEncoder.encode(strProtoId));
-	    String viewStep = request.getParameter("step");
-	    if (viewStep != null && viewStep.length() != 0) {
-		url.append("&step=" + URLEncoder.encode(viewStep));
+	    step = new StepBean(userAnswer);
+	    // NOTE:  this isn't correct for editing 1st step, but since we're just rebuilding object
+	    // in ShowSummary, it doesn't have to be structurally correct here (at the moment)
+	    step.setChildStep(childStep);
+	    
+	    for (int i = reviseIx + 1; i < stratLen; ++i) {
+		step = strategy.getStep(i);
+		boolExp = step.getFilterUserAnswer().getBooleanExpression();
+		boolExp = userAnswerId + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
+		userAnswer = wdkUser.combineUserAnswer(boolExp);
+		userAnswerId = userAnswer.getUserAnswerId();
+		step.setFilterUserAnswer(userAnswer);
 	    }
-	    String subQuery = request.getParameter("subquery");
-	    if (subQuery != null && subQuery.length() != 0) {
-		url.append("&subquery=" + URLEncoder.encode(subQuery));
-	    }
-	    ActionForward forward = new ActionForward( url.toString() );
-	    forward.setRedirect( true );
-	    return forward;
+	    // set latest step
+	    strategy.setLatestStep(step);
 	}
+
+	// in either case, update and forward to show summary
+	strategy.update();
+
+	ActionForward showSummary = mapping.findForward( CConstants.SHOW_SUMMARY_MAPKEY );
+	StringBuffer url = new StringBuffer( showSummary.getPath() );
+	url.append("?strategy=" + URLEncoder.encode(strProtoId));
+	String viewStep = request.getParameter("step");
+	if (viewStep != null && viewStep.length() != 0) {
+	    url.append("&step=" + URLEncoder.encode(viewStep));
+	}
+	String subQuery = request.getParameter("subquery");
+	if (subQuery != null && subQuery.length() != 0) {
+	    url.append("&subquery=" + URLEncoder.encode(subQuery));
+	}
+	ActionForward forward = new ActionForward( url.toString() );
+	forward.setRedirect( true );
+	return forward;
     }
 
     /*
      *
      *  These methods were scavenged from ProcessQuestionAction, and modified to accept
-     *  a FilterForm instead of a QuestionForm.
+     *  a FilterForm instead of a FilterForm.
      *
      */
-
     private Map< String, String > prepareParams( UserBean user,
             HttpServletRequest request, FilterForm fform )
             throws WdkModelException, WdkUserException {
@@ -288,7 +281,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
         }
         return compressedParams;
     }
-
+    
     protected FilterForm prepareFilterForm(QuestionBean wdkQuestion,
             HttpServletRequest request) throws WdkUserException,
             WdkModelException {
@@ -360,14 +353,14 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             } else if (p instanceof HistoryParamBean) {
                 // get type, as in RecordClass full name
                 String dataType = wdkQuestion.getRecordClass().getFullName();
-                HistoryBean[] histories = user.getHistories(dataType);
-                String[] values = new String[histories.length];
-                String[] labels = new String[histories.length];
-                for (int idx = 0; idx < histories.length; idx++) {
+                UserAnswerBean[] userAnswers = user.getUserAnswers(dataType);
+                String[] values = new String[userAnswers.length];
+                String[] labels = new String[userAnswers.length];
+                for (int idx = 0; idx < userAnswers.length; idx++) {
                     values[idx] = signature + ":"
-                            + histories[idx].getHistoryId();
-                    labels[idx] = "#" + histories[idx].getHistoryId() + " "
-                            + histories[idx].getCustomName();
+                            + userAnswers[idx].getUserAnswerId();
+                    labels[idx] = "#" + userAnswers[idx].getUserAnswerId() + " "
+                            + userAnswers[idx].getCustomName();
                 }
                 fForm.getMyValues().put(p.getName(), values);
                 fForm.getMyLabels().put(p.getName(),
@@ -422,13 +415,13 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 
         return fForm;
     }
-
+    
     private ActionForward showError(WdkModelBean wdkModel, UserBean wdkUser,
             ActionMapping mapping, HttpServletRequest request,
             HttpServletResponse response) throws WdkModelException,
             WdkUserException {
         // TEST
-        logger.info("Show the details of an invalid history/question");
+        logger.info("Show the details of an invalid userAnswer/question");
 
         String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
         Map<String, Object> params;
@@ -436,12 +429,12 @@ public class ProcessFilterAction extends ProcessQuestionAction {
         String customName;
         if (qFullName == null || qFullName.length() == 0) {
             String strHistId = request.getParameter(CConstants.WDK_HISTORY_ID_KEY);
-            int historyId = Integer.parseInt(strHistId);
-            HistoryBean history = wdkUser.getHistory(historyId);
-            params = history.getParams();
-            paramNames = history.getParamNames();
-            qFullName = history.getQuestionName();
-            customName = history.getCustomName();
+            int userAnswerId = Integer.parseInt(strHistId);
+            UserAnswerBean userAnswer = wdkUser.getUserAnswer(userAnswerId);
+            params = userAnswer.getParams();
+            paramNames = userAnswer.getParamNames();
+            qFullName = userAnswer.getQuestionName();
+            customName = userAnswer.getCustomName();
         } else {
             params = new LinkedHashMap<String, Object>();
             paramNames = new LinkedHashMap<String, String>();
@@ -510,7 +503,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
         return forward;
     }
 
-    protected AnswerBean summaryPaging(HttpServletRequest request,
+    protected RecordPageBean summaryPaging(HttpServletRequest request,
             Object answerMaker, Map<String, Object> params,
             Map<String, Boolean> sortingAttributes, String[] summaryAttributes)
             throws WdkModelException, WdkUserException {
@@ -518,10 +511,10 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 summaryAttributes, null);
     }
 
-    private AnswerBean summaryPaging(HttpServletRequest request,
+    private RecordPageBean summaryPaging(HttpServletRequest request,
             Object answerMaker, Map<String, Object> params,
             Map<String, Boolean> sortingAttributes, String[] summaryAttributes,
-            AnswerBean wdkAnswer) throws WdkModelException, WdkUserException {
+            RecordPageBean wdkRecordPage) throws WdkModelException, WdkUserException {
         UserBean wdkUser = (UserBean) request.getSession().getAttribute(
                 CConstants.WDK_USER_KEY);
         int start = 1;
@@ -540,9 +533,9 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 pageSize = Integer.parseInt(altPageSizeKey);
         }
 
-        if (wdkAnswer != null) {
-            answerMaker = wdkAnswer.getQuestion();
-            params = wdkAnswer.getInternalParams();
+        if (wdkRecordPage != null) {
+            answerMaker = wdkRecordPage.getQuestion();
+            params = wdkRecordPage.getInternalParams();
         }
         if (start < 1) {
             start = 1;
@@ -555,21 +548,21 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             QuestionBean question = (QuestionBean) answerMaker;
             // check if the question is supposed to make answers containing all
             // records in one page
-            if (question.isFullAnswer()) {
-                wdkAnswer = question.makeAnswer(params, sortingAttributes);
+            if (question.isFullRecordPage()) {
+                wdkRecordPage = question.makeRecordPage(params, sortingAttributes);
             } else {
-                wdkAnswer = question.makeAnswer(params, start, end,
+                wdkRecordPage = question.makeRecordPage(params, start, end,
                         sortingAttributes);
             }
-            wdkAnswer.setSumaryAttribute(summaryAttributes);
+            wdkRecordPage.setSumaryAttribute(summaryAttributes);
         } else if (answerMaker instanceof BooleanQuestionNodeBean) {
-            wdkAnswer = ((BooleanQuestionNodeBean) answerMaker).makeAnswer(
+            wdkRecordPage = ((BooleanQuestionNodeBean) answerMaker).makeRecordPage(
                     start, end);
         } else {
             throw new RuntimeException("unexpected answerMaker: " + answerMaker);
         }
 
-        int totalSize = wdkAnswer.getResultSize();
+        int totalSize = wdkRecordPage.getResultSize();
 
         if (end > totalSize) {
             end = totalSize;
@@ -590,7 +583,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
         request.setAttribute("wdk_paging_end", new Integer(end));
         request.setAttribute("wdk_paging_url", request.getRequestURI());
         request.setAttribute("wdk_paging_params", editedParamNames);
-        return wdkAnswer;
+        return wdkRecordPage;
     }
 
     protected Map<String, Object> handleMultiPickParams(

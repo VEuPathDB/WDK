@@ -13,7 +13,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.BooleanQuery;
-import org.gusdb.wdk.model.jspwrap.AnswerBean;
+import org.gusdb.wdk.model.jspwrap.RecordPageBean;
 import org.gusdb.wdk.model.jspwrap.BooleanQuestionLeafBean;
 import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
@@ -28,7 +28,7 @@ import org.gusdb.wdk.model.jspwrap.UserBean;
  *    3) forwards control to a jsp page that displays a summary
  */
 
-public class GetBooleanAnswerAction extends ShowSummaryAction {
+public class GetBooleanRecordPageAction extends ShowSummaryAction {
     public ActionForward execute(ActionMapping mapping,
 				 ActionForm form,
 				 HttpServletRequest request,
@@ -38,7 +38,7 @@ public class GetBooleanAnswerAction extends ShowSummaryAction {
 	BooleanQuestionForm bqf = (BooleanQuestionForm)form;
 
 	Object root = request.getSession().getAttribute(CConstants.CURRENT_BOOLEAN_ROOT_KEY);
-	AnswerBean answer;
+	RecordPageBean answer;
 	if (root instanceof BooleanQuestionLeafBean) {
 	    BooleanQuestionLeafBean rootLeaf = (BooleanQuestionLeafBean)root;
 	    QuestionBean leafQuestion = rootLeaf.getQuestion();
@@ -62,29 +62,29 @@ public class GetBooleanAnswerAction extends ShowSummaryAction {
 		    processNode(bqf, nextRealNode);
 		}
 	    }
-	    answer = booleanAnswerPaging(request, rootNode);
+	    answer = booleanRecordPagePaging(request, rootNode);
 	}
 
 	request.getSession().setAttribute(CConstants.WDK_ANSWER_KEY, answer);
 	request.getSession().setAttribute(CConstants.BOOLEAN_QUESTION_FORM_KEY, bqf);
 
-	//add UserAnswerBean to UserAnswer for query history
+	//add UserRecordPageBean to UserRecordPage for query userAnswer
     UserBean wdkUser = (UserBean)request.getSession().getAttribute(CConstants.WDK_USER_KEY);
-    wdkUser.createHistory(answer);
+    wdkUser.createUserAnswer(answer);
 	//set the question form bean saved at ShowQuestionAction time to be non-validating
-	//to prevent problem at show history time (o.w. ShowSummaryAction goes to question page)
+	//to prevent problem at show userAnswer time (o.w. ShowSummaryAction goes to question page)
 	QuestionForm qForm = (QuestionForm)request.getSession().getAttribute(CConstants.QUESTIONFORM_KEY);
 	qForm.setNonValidating();
 
 	/*DEBUG
 	  System.err.println("DEBUG GBAA: reset cursor on boolean answer before listing");
-	  answer.resetAnswerRowCursor();
+	  answer.resetRecordPageRowCursor();
 	  java.util.Iterator it = answer.getRecords();
 	  while (it.hasNext()) {
 	  System.err.println("DEBUG GBAA: record is: " + (org.gusdb.wdk.model.jspwrap.RecordBean)it.next());
 	  }
 	  System.err.println("DEBUG GBAA: reset cursor on boolean answer after listing");
-	  answer.resetAnswerRowCursor();
+	  answer.resetRecordPageRowCursor();
 	*/
 	
 	ActionForward forward = mapping.findForward(CConstants.GET_BOOLEAN_ANSWER_MAPKEY);

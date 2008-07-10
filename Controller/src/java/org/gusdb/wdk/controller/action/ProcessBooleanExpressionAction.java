@@ -10,13 +10,13 @@ import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.HistoryBean;
-import org.gusdb.wdk.model.jspwrap.ProtocolBean;
+import org.gusdb.wdk.model.jspwrap.UserAnswerBean;
+import org.gusdb.wdk.model.jspwrap.UserStrategyBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 
 /**
- * This Action is process boolean expression on queryHistory.jsp page.
+ * This Action is process boolean expression on queryUserAnswer.jsp page.
  * 
  */
 
@@ -27,7 +27,7 @@ public class ProcessBooleanExpressionAction extends Action {
 			throws Exception {
 		try {
 			BooleanExpressionForm beForm = (BooleanExpressionForm) form;
-			String userAnswerIdStr = processBooleanExpression(request, beForm);
+			String userRecordPageIdStr = processBooleanExpression(request, beForm);
 
 			ActionForward fwd = mapping
 					.findForward(CConstants.PROCESS_BOOLEAN_EXPRESSION_MAPKEY);
@@ -35,21 +35,23 @@ public class ProcessBooleanExpressionAction extends Action {
 			if (path.indexOf("?") > 0) {
 			    if (path.indexOf(CConstants.WDK_HISTORY_ID_KEY) < 0) {
 				path += "&" + CConstants.WDK_HISTORY_ID_KEY + "="
-				    + userAnswerIdStr;
+				    + userRecordPageIdStr;
 			    }
 			} else {
 			    path += "?" + CConstants.WDK_HISTORY_ID_KEY + "="
-				+ userAnswerIdStr;
+				+ userRecordPageIdStr;
 			}
 
+			/* Step code
 			String stepKey = request.getParameter("addStep");
 			if (stepKey != null && stepKey.length() != 0) {
-			    path += "&protocol=" + Integer.parseInt(request.getAttribute(CConstants.WDK_PROTOCOL_ID_KEY).toString());
-			    request.removeAttribute(CConstants.WDK_PROTOCOL_ID_KEY);
+			    path += "&strategy=" + Integer.parseInt(request.getAttribute(CConstants.WDK_STRATEGY_ID_KEY).toString());
+			    request.removeAttribute(CConstants.WDK_STRATEGY_ID_KEY);
 			    fwd = new ActionForward(path);
 			    fwd.setRedirect(true);
 			    return fwd;
 			}
+			*/
 			return new ActionForward(path);
 		} catch (Exception ex) {
 		    ex.printStackTrace();
@@ -62,31 +64,33 @@ public class ProcessBooleanExpressionAction extends Action {
 			WdkUserException {
 		UserBean wdkUser = (UserBean) request.getSession().getAttribute(
 				CConstants.WDK_USER_KEY);
-		HistoryBean history = wdkUser.combineHistory(beForm
+		UserAnswerBean userAnswer = wdkUser.combineUserAnswer(beForm
 				.getBooleanExpression());
-		int historyId = history.getHistoryId();
-
-		// 1. Check for protocol id
-		// 2. If exists, load protocol
+		int userAnswerId = userAnswer.getUserAnswerId();
+		/*
+		// 1. Check for strategy id
+		// 2. If exists, load strategy
 		//    i. Check for Step object
-		//   ii. If exists, add filter history & add step to protocol
+		//   ii. If exists, add filter userAnswer & add step to strategy
 		//  iii. Remove attributes for Step object
 
-		String strProtoId = request.getParameter("protocol");
+		String strProtoId = request.getParameter("strategy");
  	
 		if (strProtoId != null && strProtoId.length() != 0) {
-		    ProtocolBean protocol = ProtocolBean.getProtocol(strProtoId, wdkUser);
+		    UserStrategyBean strategy = wdkUser.getUserStrategy(Integer.parseInt(strProtoId));
 		    String stepKey = request.getParameter("addStep");
 		    if (stepKey != null && stepKey.length() != 0) {
-			StepBean step = (StepBean) request.getSession().getAttribute(stepKey);
-			step.setFilterHistory(history);
-			protocol.addStep(step);
+			StepBean subQuery = (StepBean) request.getSession().getAttribute(stepKey);
+			StepBean step = new StepBean(userAnswer);
+			step.setChildStep(subQuery);
+			strategy.addStep(step);
+			strategy.update();
 			request.getSession().removeAttribute(stepKey);
-			request.setAttribute(CConstants.WDK_PROTOCOL_ID_KEY, protocol.getProtocolId());
+			request.setAttribute(CConstants.WDK_STRATEGY_ID_KEY, strategy.getStrategyId());
 		    }
 		}
-
-		request.setAttribute(CConstants.WDK_HISTORY_ID_KEY, historyId);
-		return Integer.toString(historyId);
+		*/
+		request.setAttribute(CConstants.WDK_HISTORY_ID_KEY, userAnswerId);
+		return Integer.toString(userAnswerId);
 	}
 }

@@ -16,35 +16,32 @@ import org.gusdb.wdk.model.Param;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.user.Answer;
 
 /**
- * @author xingao
+ * @author Charles Treatman
  * 
  */
-public class History {
+
+public class UserAnswer {
     
     private UserFactory factory;
     private User user;
-    private int historyId;
+    private int userAnswerId;
     private Date createdTime;
     private Date lastRunTime;
     private String customName;
-    private RecordPage answer = null;
-    private int estimateSize;
-    private boolean isBoolean;
-    private String booleanExpression;
+    private Answer answer = null;
     private boolean isDeleted;
     private Boolean isDepended;
     
     private boolean isValid = true;
     private String version;
-    private Map< String, Object > params;
-    private String questionName;
-    
-    History( UserFactory factory, User user, int historyId ) {
+        
+    UserAnswer( UserFactory factory, User user, int userAnswerId ) {
         this.factory = factory;
         this.user = user;
-        this.historyId = historyId;
+        this.userAnswerId = userAnswerId;
         isDeleted = false;
     }
     
@@ -78,13 +75,14 @@ public class History {
      */
     public String getCustomName() {
         String name = customName;
+	/*
         if ( name == null || name.length() == 0 ) {
-            if ( isBoolean ) name = booleanExpression;
-            else if ( answer != null ) {
-                name = answer.getQuestion().getDisplayName();
+            if ( answer.isBoolean() ) name = answer.getBooleanExpression();
+            else if ( answer.getRecordPage() != null ) {
+                name = answer.getRecordPage().getQuestion().getDisplayName();
             }
-        }
-        if ( name == null ) name = questionName;
+	    }*/
+        if ( name == null ) name = answer.getQuestionName();
         if ( name != null ) {
             // remove script injections
             name = name.replaceAll( "<.+?>", " " );
@@ -104,36 +102,49 @@ public class History {
     }
     
     /**
-     * @return Returns the historyId.
+     * @return Returns the userAnswerId.
      */
-    public int getHistoryId() {
-        return historyId;
+    public int getUserAnswerId() {
+        return userAnswerId;
     }
     
     /**
+     * @param answer
+     *          The answer to set.
+     */
+    public void setAnswer( Answer answer ) {
+	this.answer = answer;
+    }
+
+    /**
      * @return Returns the answer.
+     */
+    public Answer getAnswer() {
+	return answer;
+    }
+
+
+    /**
+     * @return Returns the result.
      * @throws WdkUserException
      */
     public RecordPage getRecordPage() throws WdkUserException {
-        if ( !isValid )
-            throw new WdkUserException( "The history #" + historyId
-                    + " is invalid." );
-        return answer;
+        return answer.getRecordPage();
     }
     
     /**
      * @param answer
      *            The answer to set.
      */
-    public void setRecordPage( RecordPage answer ) {
-        this.answer = answer;
+    public void setRecordPage( RecordPage result ) {
+        answer.setRecordPage(result);
     }
     
     /**
      * @return Returns the estimateSize.
      */
     public int getEstimateSize() {
-        return estimateSize;
+        return answer.getEstimateSize();
     }
     
     /**
@@ -141,7 +152,7 @@ public class History {
      *            The estimateSize to set.
      */
     public void setEstimateSize( int estimateSize ) {
-        this.estimateSize = estimateSize;
+        answer.setEstimateSize(estimateSize);
     }
     
     /**
@@ -163,7 +174,7 @@ public class History {
      * @return Returns the isBoolean.
      */
     public boolean isBoolean() {
-        return isBoolean;
+        return answer.isBoolean();
     }
     
     /**
@@ -171,14 +182,14 @@ public class History {
      *            The isBoolean to set.
      */
     public void setBoolean( boolean isBoolean ) {
-        this.isBoolean = isBoolean;
+        answer.setBoolean(isBoolean);
     }
     
     /**
      * @return Returns the booleanExpression.
      */
     public String getBooleanExpression() {
-        return booleanExpression;
+        return answer.getBooleanExpression();
     }
     
     /**
@@ -186,29 +197,31 @@ public class History {
      *            The booleanExpression to set.
      */
     public void setBooleanExpression( String booleanExpression ) {
-        this.booleanExpression = booleanExpression;
+        answer.setBooleanExpression(booleanExpression);
     }
     
     public String getSignature() throws WdkModelException {
-        return answer.getIdsQueryInstance().getQuery().getSignature();
+        return answer.getSignature();
     }
     
     public String getChecksum() throws WdkModelException {
-        return answer.getIdsQueryInstance().getChecksum();
+        return answer.getChecksum();
     }
     
     public String getDataType() {
-        return answer.getQuestion().getRecordClass().getFullName();
+        return answer.getDataType();
     }
     
     public void update() throws WdkUserException {
-        factory.updateHistory( user, this, true );
+        factory.updateUserAnswer( user, this, true );
     }
     
     public void update( boolean updateTime ) throws WdkUserException {
-        factory.updateHistory( user, this, updateTime );
+        factory.updateUserAnswer( user, this, updateTime );
     }
     
+    // Not sure how to deal w/ this...is this now handled by UserAnswerTree?
+    /*
     public boolean isDepended() throws WdkUserException, WdkModelException {
         if ( isDepended == null ) computeDependencies( user.getHistories() );
         return isDepended;
@@ -217,19 +230,20 @@ public class History {
     void computeDependencies( History[ ] histories ) throws WdkModelException {
         isDepended = false;
         for ( History history : histories ) {
-            if ( history.historyId == this.historyId ) continue;
+            if ( history.userAnswerId == this.userAnswerId ) continue;
             Set< Integer > components = history.getComponentHistories();
-            if ( components.contains( historyId ) ) {
+            if ( components.contains( userAnswerId ) ) {
                 isDepended = true;
                 break;
             }
         }
     }
-    
+    */
     /**
      * @return get a list of history ID's this one depends on directly.
      * @throws WdkModelException
      */
+    /*
     public Set< Integer > getComponentHistories() throws WdkModelException {
         if ( isBoolean ) {
             BooleanExpression parser = new BooleanExpression( user );
@@ -249,9 +263,9 @@ public class History {
             return components;
         }
     }
-    
+    */
     public String getDescription() {
-        return ( isBoolean ) ? booleanExpression : answer.getName();
+        return answer.getDescription();
     }
     
     /**
@@ -270,7 +284,7 @@ public class History {
     }
     
     public String getCacheFullTable() throws WdkModelException {
-        return answer.getIdsQueryInstance().getResultAsTableName();
+        return answer.getCacheFullTable();
     }
     
     /**
@@ -304,30 +318,22 @@ public class History {
     }
     
     public void setParams( Map< String, Object > params ) {
-        this.params = params;
+        answer.setParams(params);
     }
     
     public Map< String, Object > getParams() {
-        return new LinkedHashMap< String, Object >( this.params );
+        return new LinkedHashMap< String, Object >( answer.getParams() );
     }
     
     public Map< String, String > getParamNames() {
-        Map< String, String > paramNames = new LinkedHashMap< String, String >();
-        WdkModel wdkModel = user.getWdkModel();
-        for ( String paramName : params.keySet() ) {
-            String displayName = wdkModel.getParamDisplayName( paramName );
-            if ( displayName == null ) displayName = paramName;
-            paramNames.put( paramName, displayName );
-        }
-        
-        return paramNames;
+        return answer.getParamNames();
     }
     
     void setQuestionName( String questionName ) {
-        this.questionName = questionName;
+	answer.setQuestionName(questionName);
     }
     
     public String getQuestionName() {
-        return this.questionName;
+	return answer.getQuestionName();
     }
 }

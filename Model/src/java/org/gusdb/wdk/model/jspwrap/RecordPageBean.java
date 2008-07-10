@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
-import org.gusdb.wdk.model.Answer;
+import org.gusdb.wdk.model.RecordPage;
 import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.BooleanQuery;
 import org.gusdb.wdk.model.DatasetParam;
@@ -18,17 +18,17 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.report.Reporter;
 
 /**
- * A wrapper on a {@link Answer} that provides simplified access for consumption
+ * A wrapper on a {@link RecordPage} that provides simplified access for consumption
  * by a view
  */
-public class AnswerBean {
+public class RecordPageBean {
     
-    Answer answer;
+    RecordPage answer;
     Map downloadConfigMap = null;
     
     String customName = null;
     
-    public AnswerBean( Answer answer ) {
+    public RecordPageBean( RecordPage answer ) {
         this.answer = answer;
     }
     
@@ -113,7 +113,7 @@ public class AnswerBean {
         System.err.println( "the param map is: " + answer.getParams() );
         if ( !getIsBoolean() ) {
             throw new RuntimeException(
-                    "getBooleanOperation can not be called on simple AnswerBean" );
+                    "getBooleanOperation can not be called on simple RecordPageBean" );
         }
         return ( String ) answer.getParams().get(
                 BooleanQuery.OPERATION_PARAM_NAME );
@@ -123,28 +123,28 @@ public class AnswerBean {
      * @return first child answer for boolean answer, null if it is an answer
      *         for a simple question.
      */
-    public AnswerBean getFirstChildAnswer() {
+    public RecordPageBean getFirstChildRecordPage() {
         if ( !getIsBoolean() ) {
             throw new RuntimeException(
-                    "getFirstChildAnswer can not be called on simple AnswerBean" );
+                    "getFirstChildRecordPage can not be called on simple RecordPageBean" );
         }
-        Object childAnswer = answer.getParams().get(
+        Object childRecordPage = answer.getParams().get(
                 BooleanQuery.FIRST_ANSWER_PARAM_NAME );
-        return new AnswerBean( ( Answer ) childAnswer );
+        return new RecordPageBean( ( RecordPage ) childRecordPage );
     }
     
     /**
      * @return second child answer for boolean answer, null if it is an answer
      *         for a simple question.
      */
-    public AnswerBean getSecondChildAnswer() {
+    public RecordPageBean getSecondChildRecordPage() {
         if ( !getIsBoolean() ) {
             throw new RuntimeException(
-                    "getSecondChildAnswer can not be called on simple AnswerBean" );
+                    "getSecondChildRecordPage can not be called on simple RecordPageBean" );
         }
-        Object childAnswer = answer.getParams().get(
+        Object childRecordPage = answer.getParams().get(
                 BooleanQuery.SECOND_ANSWER_PARAM_NAME );
-        return new AnswerBean( ( Answer ) childAnswer );
+        return new RecordPageBean( ( RecordPage ) childRecordPage );
     }
     
     public int getPageSize() {
@@ -168,7 +168,7 @@ public class AnswerBean {
         return answer.getIsBoolean();
     }
     
-    public boolean getIsCombinedAnswer() {
+    public boolean getIsCombinedRecordPage() {
         return answer.getIsBoolean();
     }
     
@@ -229,7 +229,7 @@ public class AnswerBean {
         for ( int i = 0; i < rmAttribs.length; i++ ) {
             String attribName = rmAttribs[ i ].getName();
             Object configStatus = downloadConfigMap.get( attribName );
-            // System.err.println("DEBUG AnswerBean: configStatus for " +
+            // System.err.println("DEBUG RecordPageBean: configStatus for " +
             // attrName + " is " + configStatus);
             if ( configStatus != null ) {
                 v.add( rmAttribs[ i ] );
@@ -296,9 +296,9 @@ public class AnswerBean {
     /**
      * for controller: reset counter for download purpose
      */
-    public void resetAnswerRowCursor() {
+    public void resetRecordPageRowCursor() {
         try {
-            answer = answer.newAnswer();
+            answer = answer.newRecordPage();
         } catch ( WdkModelException ex ) {
             ex.printStackTrace();
             throw new RuntimeException( ex );
@@ -308,19 +308,19 @@ public class AnswerBean {
     /**
      * for controller: reset counter for download purpose
      */
-    public boolean getResetAnswerRowCursor() {
-        resetAnswerRowCursor();
+    public boolean getResetRecordPageRowCursor() {
+        resetRecordPageRowCursor();
         return true;
     }
     
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.Answer#getResultMessage()
+     * @see org.gusdb.wdk.model.RecordPage#getResultMessage()
      */
     public String getResultMessage() {
         // TEST
-        System.out.println( "Result message from AnswerBean: "
+        System.out.println( "Result message from RecordPageBean: "
                 + answer.getResultMessage() );
         
         return answer.getResultMessage();
@@ -331,7 +331,7 @@ public class AnswerBean {
      * @param config
      * @return
      * @throws WdkModelException
-     * @see org.gusdb.wdk.model.Answer#getReport(java.lang.String,
+     * @see org.gusdb.wdk.model.RecordPage#getReport(java.lang.String,
      *      java.util.Map)
      */
     public Reporter createReport( String reporterName,
@@ -341,7 +341,7 @@ public class AnswerBean {
     
     /**
      * @return
-     * @see org.gusdb.wdk.model.Answer#getSortingAttributeNames()
+     * @see org.gusdb.wdk.model.RecordPage#getSortingAttributeNames()
      */
     public String[ ] getSortingAttributeNames() {
         return answer.getSortingAttributeNames();
@@ -349,7 +349,7 @@ public class AnswerBean {
     
     /**
      * @return
-     * @see org.gusdb.wdk.model.Answer#getSortingAttributeOrders()
+     * @see org.gusdb.wdk.model.RecordPage#getSortingAttributeOrders()
      */
     public boolean[ ] getSortingAttributeOrders() {
         return answer.getSortingAttributeOrders();
@@ -368,7 +368,7 @@ public class AnswerBean {
     
     /**
      * @param attributeName
-     * @see org.gusdb.wdk.model.Answer#addSumaryAttribute(java.lang.String)
+     * @see org.gusdb.wdk.model.RecordPage#addSumaryAttribute(java.lang.String)
      */
     public void setSumaryAttribute( String[ ] attributeNames ) {
         answer.setSumaryAttributes( attributeNames );
@@ -377,7 +377,7 @@ public class AnswerBean {
     /**
      * @return
      * @throws WdkModelException
-     * @see org.gusdb.wdk.model.Answer#getAllIds()
+     * @see org.gusdb.wdk.model.RecordPage#getAllIds()
      */
     public String getAllIdList() throws WdkModelException {
         String[ ] ids = answer.getAllIds();

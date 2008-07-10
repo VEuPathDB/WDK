@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.Answer;
+import org.gusdb.wdk.model.RecordPage;
 import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.BooleanExpression;
 import org.gusdb.wdk.model.BooleanQuestionNode;
@@ -353,15 +353,31 @@ public class User /* implements Serializable */{
         this.guest = guest;
     }
 
-    public History createHistory(Answer answer) throws WdkUserException,
+    public History createHistory(RecordPage answer) throws WdkUserException,
             WdkModelException {
         return createHistory(answer, null, false);
     }
 
-    private History createHistory(Answer answer, String booleanExpression,
+    private History createHistory(RecordPage answer, String booleanExpression,
             boolean deleted) throws WdkUserException, WdkModelException {
         return userFactory.createHistory(this, answer, booleanExpression,
                 deleted);
+    }
+
+    public UserAnswer createUserAnswer(RecordPage result)
+	throws WdkUserException, WdkModelException {
+	return createUserAnswer(result, null, false);
+    }
+    
+    public UserAnswer createUserAnswer(RecordPage result, String booleanExpression,
+				       boolean deleted)
+	throws WdkUserException, WdkModelException {
+	return userFactory.createUserAnswer(this, result, booleanExpression, deleted);
+    }
+
+    public UserStrategy createUserStrategy(UserAnswer answer, String name, boolean saved)
+	throws WdkUserException, WdkModelException {
+	return userFactory.createUserStrategy(this, answer, name, saved);
     }
 
     /**
@@ -391,7 +407,7 @@ public class User /* implements Serializable */{
 
                 if (components.isEmpty()) {
                     // no components, can merge
-                    History newHistory = createHistory(history.getAnswer(),
+                    History newHistory = createHistory(history.getRecordPage(),
                             null, history.isDeleted());
                     newHistory.setCustomName(history.getBaseCustomName());
                     newHistory.update();
@@ -442,7 +458,7 @@ public class User /* implements Serializable */{
                     newHistory = combineHistory(expression, history.isDeleted());
                 } else {
                     // merge histories with DatasetParam/HistoryParam
-                    Answer answer = history.getAnswer();
+                    RecordPage answer = history.getRecordPage();
                     Question question = answer.getQuestion();
                     int startIndex = answer.getStartRecordInstanceI();
                     int endIndex = answer.getEndRecordInstanceI();
@@ -472,7 +488,7 @@ public class User /* implements Serializable */{
                             values.put(param.getName(), newValue);
                         }
                     }
-                    answer = question.makeAnswer(values, startIndex, endIndex);
+                    answer = question.makeRecordPage(values, startIndex, endIndex);
                     newHistory = createHistory(answer, null,
                             history.isDeleted());
                 }
@@ -513,6 +529,16 @@ public class User /* implements Serializable */{
             if (!history.isDeleted()) historyCount++;
         }
         return histories;
+    }
+
+    public Map<Integer, UserAnswer> getUserAnswersMap()
+	throws WdkUserException, WdkModelException {
+	Map<Integer, UserAnswer> invalidUserAnswers = new LinkedHashMap<Integer, UserAnswer>();
+	Map<Integer, UserAnswer> userAnswers = userFactory.loadUserAnswers(this, invalidUserAnswers);
+
+	// update the user answer count?  we need to have one first
+
+	return userAnswers;
     }
 
     public History[] getInvalidHistories() throws WdkUserException,
@@ -581,6 +607,26 @@ public class User /* implements Serializable */{
         return array;
     }
 
+    public Map<Integer, UserAnswer> getUserAnswersMap(String dataType)
+	throws WdkUserException, WdkModelException {
+	Map<Integer, UserAnswer> userAnswers = getUserAnswersMap();
+	Map<Integer, UserAnswer> selected = new LinkedHashMap<Integer, UserAnswer>();
+	for (int userAnswerId : userAnswers.keySet()) {
+	    UserAnswer userAnswer = userAnswers.get(userAnswerId);
+	    if (dataType.equalsIgnoreCase(userAnswer.getDataType()))
+		selected.put(userAnswerId, userAnswer);
+	}
+	return selected;
+    }
+
+    public UserAnswer[] getUserAnswers(String dataType)
+	throws WdkUserException, WdkModelException {
+	Map<Integer, UserAnswer> map = getUserAnswersMap(dataType);
+	UserAnswer[] array = new UserAnswer[map.size()];
+	map.values().toArray(array);
+	return array;
+    }
+
     /**
      * if the history of the given id doesn't exist, a null is returned
      * 
@@ -594,6 +640,16 @@ public class User /* implements Serializable */{
         return userFactory.loadHistory(this, historyId);
     }
 
+    public UserAnswer getUserAnswer(int userAnswerId)
+	throws WdkUserException, WdkModelException {
+	return userFactory.loadUserAnswer(this, userAnswerId);
+    }
+
+    public UserStrategy getUserStrategy(int userStrategyId)
+	throws WdkUserException, WdkModelException {
+	return userFactory.loadUserStrategy(this, userStrategyId);
+    }
+
     public void deleteHistories() throws WdkUserException {
         userFactory.deleteHistories(this, false);
     }
@@ -602,9 +658,24 @@ public class User /* implements Serializable */{
         userFactory.deleteHistories(this, allProjects);
     }
 
+    public void deleteUserAnswers()
+	throws WdkUserException {
+	userFactory.deleteUserAnswers(this, false);
+    }
+
+    public void deleteUserAnswers(boolean allProjects)
+	throws WdkUserException {
+	userFactory.deleteUserAnswers(this, allProjects);
+    }
+
     public void deleteInvalidHistories() throws WdkUserException,
             WdkModelException {
         userFactory.deleteInvalidHistories(this);
+    }
+
+    public void deleteInvalidUserAnswers()
+	throws WdkUserException, WdkModelException {
+	userFactory.deleteInvalidUserAnswers(this);
     }
 
     public void deleteHistory(int historyId) throws WdkUserException,
@@ -626,6 +697,17 @@ public class User /* implements Serializable */{
         }
         // decrement the history count
         historyCount--;
+    }
+
+    public void deleteUserAnswer(int userAnswerId)
+	throws WdkUserException, WdkModelException {
+	UserAnswer userAnswer = getUserAnswer(userAnswerId);
+	// Need to check if we can actually delete from DB or not
+	// For now, this will just hide the UserAnswer
+	userAnswer.setDeleted(true);
+	userAnswer.update(false);
+
+	// need a user answer count?
     }
 
     public int getHistoryCount() throws WdkUserException {
@@ -738,28 +820,40 @@ public class User /* implements Serializable */{
         return combineHistory(expression, false);
     }
 
+    public UserAnswer combineUserAnswer(String expression)
+	throws WdkUserException, WdkModelException {
+	return combineUserAnswer(expression, false);
+    }
+
     public void updateHistory(History history, String expression)
             throws WdkUserException, WdkModelException {
-        Answer answer = parseExpression(expression);
-        history.setAnswer(answer);
+        RecordPage answer = parseExpression(expression);
+        history.setRecordPage(answer);
         history.setBooleanExpression(expression);
         userFactory.updateHistory(history, expression);
     }
 
+
     private History combineHistory(String expression, boolean deleted)
             throws WdkUserException, WdkModelException {
-        Answer answer = parseExpression(expression);
+        RecordPage answer = parseExpression(expression);
         return createHistory(answer, expression, false);
     }
 
-    private Answer parseExpression(String expression) throws WdkUserException,
+    private UserAnswer combineUserAnswer(String expression, boolean deleted)
+	throws WdkUserException, WdkModelException {
+	RecordPage answer = parseExpression(expression);
+	return createUserAnswer(answer, expression, false);
+    }
+
+    private RecordPage parseExpression(String expression) throws WdkUserException,
             WdkModelException {
         logger.debug("Boolean expression: " + expression);
         BooleanExpression exp = new BooleanExpression(this);
         Map<String, String> operatorMap = getWdkModel().getBooleanOperators();
         BooleanQuestionNode root = exp.parseExpression(expression, operatorMap);
 
-        Answer answer = root.makeAnswer(1, getItemsPerPage());
+        RecordPage answer = root.makeRecordPage(1, getItemsPerPage());
 
         logger.debug("Boolean answer: " + answer.getResultSize());
 
