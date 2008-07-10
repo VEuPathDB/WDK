@@ -1,6 +1,7 @@
 package org.gusdb.wdk.controller.action;
 
 import java.net.URLEncoder;
+import java.util.Date;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServlet;
@@ -18,16 +19,16 @@ import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.AnswerBean;
-import org.gusdb.wdk.model.jspwrap.HistoryBean;
-import org.gusdb.wdk.model.jspwrap.ProtocolBean;
+import org.gusdb.wdk.model.jspwrap.RecordPageBean;
+import org.gusdb.wdk.model.jspwrap.UserAnswerBean;
+import org.gusdb.wdk.model.jspwrap.UserStrategyBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
 /**
  *  This Action handles moving a step in a search strategy to a different
- *  position.  It moves the step, updates the relevant filter histories,
+ *  position.  It moves the step, updates the relevant filter userAnswers,
  *  and forwards to ShowSummaryAction
  **/
 
@@ -37,15 +38,15 @@ public class MoveStepAction extends Action {
     public ActionForward execture(ActionMapping mapping, ActionForm form,
 				  HttpServletRequest request, HttpServletResponse response)
 	throws Exception {
-	// Make sure protocol, step, and moveto are defined
-	String strProtoId = request.getParameter("protocol");
+	// Make sure strategy, step, and moveto are defined
+	String strProtoId = request.getParameter("strategy");
 	String strMoveFromIx = request.getParameter("movefrom");
 	String op = request.getParameter("op");
 	String strMoveToIx = request.getParameter("moveto");
 
 	// Make sure necessary arguments are provided
 	if (strProtoId == null || strProtoId.length() == 0) {
-	    throw new WdkModelException("No protocol was specified for moving steps!");
+	    throw new WdkModelException("No strategy was specified for moving steps!");
 	}
 	if (strMoveFromIx == null || strMoveFromIx.length() == 0) {
 	    throw new WdkModelException("No step was specified for moving!");
@@ -70,65 +71,67 @@ public class MoveStepAction extends Action {
 		request.getSession().setAttribute( CConstants.WDK_USER_KEY, wdkUser );
 	    }
 	    
-	    ProtocolBean protocol = ProtocolBean.getProtocol(strProtoId, wdkUser);
-	    StepBean moveStep = protocol.getStep(moveFromIx);
-	 
+	    UserStrategyBean strategy = wdkUser.getUserStrategy(Integer.parseInt(strProtoId));
+	    StepBean moveStep = strategy.getStep(moveFromIx);
+	    
+	    /* Charles:  Commented out on 7/1/08.  Will need to update for new strategy objects
 	    String boolExp;
 	    int histId = -1;
 
 	    if (moveFromIx < moveToIx) {
 		for (int i = moveFromIx; i < moveToIx; ++i) {
-		    StepBean step = protocol.getStep(i);
+		    StepBean step = strategy.getStep(i);
 		    if (i == 0) {
-			// set histId to the subQueryHistory of the next step...since we're moving
+			// set histId to the subQueryUserAnswer of the next step...since we're moving
 			// step 1, next step 2 is going to become step 1
-			histId = step.getNextStep().getSubQueryHistory().getHistoryId();
+			histId = step.getNextStep().getSubQueryUserAnswer().getUserAnswerId();
 		    }
 		    else {
 			// move the step "back"...
-			boolExp = step.getNextStep().getFilterHistory().getBooleanExpression();
+			boolExp = step.getNextStep().getFilterUserAnswer().getBooleanExpression();
 			if (histId < 0) {
-			    histId = step.getPreviousStep().getFilterHistory().getHistoryId();
+			    histId = step.getPreviousStep().getFilterUserAnswer().getUserAnswerId();
 			}
 			boolExp = histId + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
-			wdkUser.updateHistory(step.getFilterHistory(), boolExp);
+			wdkUser.updateUserAnswer(step.getFilterUserAnswer(), boolExp);
 			histId = -1;
 		    }
 		}
-		boolExp = protocol.getStep(moveToIx).getFilterHistory().getBooleanExpression();
+		boolExp = strategy.getStep(moveToIx).getFilterUserAnswer().getBooleanExpression();
 		if (moveFromIx == 0) {
-		    // need previous step history id + op + first step history id
-		    boolExp = boolExp.substring(0, boolExp.indexOf(" ")) + op + " " + moveStep.getFilterHistory().getHistoryId();
+		    // need previous step userAnswer id + op + first step userAnswer id
+		    boolExp = boolExp.substring(0, boolExp.indexOf(" ")) + op + " " + moveStep.getFilterUserAnswer().getUserAnswerId();
 		}
 		else {
-		    // need previous step history id + (op, subquery history id) substring from movestep
-		    String moveBoolExp = moveStep.getFilterHistory().getBooleanExpression();
+		    // need previous step userAnswer id + (op, subquery userAnswer id) substring from movestep
+		    String moveBoolExp = moveStep.getFilterUserAnswer().getBooleanExpression();
 		    boolExp = boolExp.substring(0, boolExp.indexOf(" ")) + moveBoolExp.substring(moveBoolExp.indexOf(" ") + 1, moveBoolExp.length());
 		}
-		wdkUser.updateHistory(protocol.getStep(moveToIx).getFilterHistory(), boolExp);
+		wdkUser.updateUserAnswer(strategy.getStep(moveToIx).getFilterUserAnswer(), boolExp);
 	    }
 	    else {
 		for (int i = moveFromIx; i > moveToIx; --i) {
-		    StepBean step = protocol.getStep(i);
+		    StepBean step = strategy.getStep(i);
 		    if (step.getPreviousStep().getIsFirstStep()) {
-			//need to build boolExp: moveStep subquery history id  + op + first step filter history id
-			boolExp = moveStep.getSubQueryHistory().getHistoryId() + " " + op + " " + step.getPreviousStep().getFilterHistory().getHistoryId();
-			wdkUser.updateHistory(step.getFilterHistory(), boolExp);
+			//need to build boolExp: moveStep subquery userAnswer id  + op + first step filter userAnswer id
+			boolExp = moveStep.getSubQueryUserAnswer().getUserAnswerId() + " " + op + " " + step.getPreviousStep().getFilterUserAnswer().getUserAnswerId();
+			wdkUser.updateUserAnswer(step.getFilterUserAnswer(), boolExp);
 		    }
 		    else {
-			boolExp = step.getPreviousStep().getFilterHistory().getBooleanExpression();
-			histId = step.getPreviousStep().getFilterHistory().getHistoryId();
+			boolExp = step.getPreviousStep().getFilterUserAnswer().getBooleanExpression();
+			histId = step.getPreviousStep().getFilterUserAnswer().getUserAnswerId();
 			boolExp = histId + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
-			wdkUser.updateHistory(step.getFilterHistory(), boolExp);
+			wdkUser.updateUserAnswer(step.getFilterUserAnswer(), boolExp);
 		    }
 		}
 	    }
+	    */
 	}
 	
 	// Forward to ShowSummaryAction
 	ActionForward showSummary = mapping.findForward( CConstants.SHOW_SUMMARY_MAPKEY );
 	StringBuffer url = new StringBuffer( showSummary.getPath() );
-	url.append("?protocol=" + URLEncoder.encode(strProtoId));
+	url.append("?strategy=" + URLEncoder.encode(strProtoId));
 	String viewStep = request.getParameter("step");
 	if (viewStep != null && viewStep.length() != 0) {
 	    url.append("&step=" + URLEncoder.encode(viewStep));

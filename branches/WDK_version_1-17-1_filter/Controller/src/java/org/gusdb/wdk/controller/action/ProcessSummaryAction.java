@@ -13,11 +13,11 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.jspwrap.AnswerBean;
-import org.gusdb.wdk.model.jspwrap.HistoryBean;
+import org.gusdb.wdk.model.jspwrap.RecordPageBean;
+import org.gusdb.wdk.model.jspwrap.UserAnswerBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
-import org.gusdb.wdk.model.jspwrap.ProtocolBean;
+import org.gusdb.wdk.model.jspwrap.UserStrategyBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.user.User;
 
@@ -48,20 +48,27 @@ public class ProcessSummaryAction extends Action {
         // get question
         String questionName = request.getParameter( CConstants.QUESTION_FULLNAME_PARAM );
         if ( questionName == null || questionName.length() == 0 ) {
-            // for boolean questions only; get history id
-            String historyId = request.getParameter( CConstants.WDK_HISTORY_ID_KEY );
-            if ( historyId == null || historyId.length() == 0 ) {
-		// Check for protocol in here?  Sure, why not.
-		String protocolId = request.getParameter("protocol");
-		String stepId = request.getParameter("step");
-		if (protocolId == null || protocolId.length() == 0 || stepId == null || stepId.length() == 0) 
+            // for boolean questions only; get userAnswer id
+            String userAnswerId = request.getParameter( CConstants.WDK_HISTORY_ID_KEY );
+            if ( userAnswerId == null || userAnswerId.length() == 0 ) {
+		// Check for strategy in here?  Sure, why not.
+		String strategyId = request.getParameter("strategy");
+		String stepIx = request.getParameter("step");
+		if (strategyId == null || strategyId.length() == 0) 
 		    throw new WdkModelException("Missing parameters for this action" );
-		ProtocolBean protocol = ProtocolBean.getProtocol(protocolId, wdkUser);
-		StepBean step = protocol.getStep(Integer.parseInt(stepId));
-		historyId = Integer.toString(step.getFilterHistory().getHistoryId());
+
+		UserStrategyBean strategy = wdkUser.getUserStrategy(Integer.parseInt(strategyId));
+
+		StepBean step;
+		if (stepIx == null || stepIx.length() == 0)
+		    step = strategy.getLatestStep();
+		else 
+		    step = strategy.getStep(Integer.parseInt(stepIx));
+		
+		userAnswerId = Integer.toString(step.getFilterUserAnswer().getUserAnswerId());
 	    }
-            HistoryBean history = wdkUser.getHistory( Integer.parseInt( historyId ) );
-            AnswerBean answer = history.getAnswer();
+            UserAnswerBean userAnswer = wdkUser.getUserAnswer( Integer.parseInt( userAnswerId ) );
+            RecordPageBean answer = userAnswer.getRecordPage();
             questionName = answer.getQuestion().getFullName();
             String[ ] summaryAttributes = answer.getSummaryAttributeNames();
             wdkUser.applySummaryChecksum( questionName, summaryAttributes );

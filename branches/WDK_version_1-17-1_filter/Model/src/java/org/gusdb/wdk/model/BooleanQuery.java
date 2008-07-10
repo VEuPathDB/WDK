@@ -8,8 +8,8 @@ import java.util.Set;
  * A Query representing the pairing of two other Queries (known as 'boolean
  * operands') in a boolean operation (Union, Intersect, Subtract, etc.). The
  * expected use of a BooleanQuery is as the ID Query for a Question and thus a
- * BooleanQuery is fundamentally tied to other Questions and their Answers. A
- * BooleanQuery has three parameters. Two are AnswerParams, representing Answers
+ * BooleanQuery is fundamentally tied to other Questions and their RecordPages. A
+ * BooleanQuery has three parameters. Two are RecordPageParams, representing RecordPages
  * to Questions whose Queries are the boolean operands. The Questions must have
  * the same RecordClasses in order to be operands. The third is the operation to
  * be performed which is a StringParam. BooleanQueries are recursive, and thus
@@ -22,9 +22,9 @@ import java.util.Set;
  * Query providing many QueryInstances).
  * 
  * Queries need to declare their columns, so a BooleanQuery provides this, but
- * only when a BooleanQueryInstance has been created and its AnswerParameters
+ * only when a BooleanQueryInstance has been created and its RecordPageParameters
  * have been set. The columns of the BooleanQuery then become the Columns of the
- * ID Queries in the Answer's Question. The two Query operands in a BooleanQuery
+ * ID Queries in the RecordPage's Question. The two Query operands in a BooleanQuery
  * must have the same declared columns.
  * 
  * It is the responsibility of whoever creates a BooleanQuery to set its
@@ -50,16 +50,16 @@ public class BooleanQuery extends Query {
     private static final long serialVersionUID = -8139624051192148234L;
 
     /**
-     * Name of the AnswerParam whose value is the first Answer operand in the
+     * Name of the RecordPageParam whose value is the first RecordPage operand in the
      * BooleanQuery.
      */
-    public static final String FIRST_ANSWER_PARAM_NAME = "firstAnswer";
+    public static final String FIRST_ANSWER_PARAM_NAME = "firstRecordPage";
 
     /**
-     * Name of the AnswerParam whose value is the second Answer operand in the
+     * Name of the RecordPageParam whose value is the second RecordPage operand in the
      * BooleanQuery.
      */
-    public static final String SECOND_ANSWER_PARAM_NAME = "secondAnswer";
+    public static final String SECOND_ANSWER_PARAM_NAME = "secondRecordPage";
 
     /**
      * Name of the StringParam whose value is the operation in this
@@ -92,11 +92,11 @@ public class BooleanQuery extends Query {
         setSetName("BooleanQuerySet");
 
         // DTB -- need to figure out what to have for prompt, help, etc.
-        AnswerParam firstParam = makeAnswerParam(FIRST_ANSWER_PARAM_NAME,
+        RecordPageParam firstParam = makeRecordPageParam(FIRST_ANSWER_PARAM_NAME,
                 "q1 prompt", "q1 help", "q1 default");
         addParam(firstParam);
 
-        AnswerParam secondParam = makeAnswerParam(SECOND_ANSWER_PARAM_NAME,
+        RecordPageParam secondParam = makeRecordPageParam(SECOND_ANSWER_PARAM_NAME,
                 "q2 prompt", "q2 help", "q2 default");
         addParam(secondParam);
 
@@ -124,7 +124,7 @@ public class BooleanQuery extends Query {
     // ------------------------------------------------------------------
 
     /**
-     * @return BooleanQueryInstance on which one can set Answers and operations
+     * @return BooleanQueryInstance on which one can set RecordPages and operations
      * as values.
      */
     public QueryInstance makeInstance() {
@@ -142,10 +142,10 @@ public class BooleanQuery extends Query {
     /**
      * Helper method for the constructor.
      */
-    private AnswerParam makeAnswerParam(String name, String prompt,
+    private RecordPageParam makeRecordPageParam(String name, String prompt,
             String help, String defaultValue) {
 
-        AnswerParam qp = new AnswerParam();
+        RecordPageParam qp = new RecordPageParam();
         qp.setName(name);
         qp.setFullName(BOOLEAN_PARAM_SET_NAME);
         qp.setPrompt(prompt);

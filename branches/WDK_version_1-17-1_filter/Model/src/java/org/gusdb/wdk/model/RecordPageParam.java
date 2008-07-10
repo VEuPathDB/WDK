@@ -1,22 +1,22 @@
 package org.gusdb.wdk.model;
 
-import org.gusdb.wdk.model.Answer;
+import org.gusdb.wdk.model.RecordPage;
 
-public class AnswerParam extends Param {
+public class RecordPageParam extends Param {
 
     // ///////////////////////////////////////////////////////////////////
     // /////////// Public properties ////////////////////////////////////
     // ///////////////////////////////////////////////////////////////////
 
-    public AnswerParam() {}
+    public RecordPageParam() {}
 
-    public AnswerParam(AnswerParam param) {
+    public RecordPageParam(RecordPageParam param) {
         super(param);
     }
 
     public String validateValue(Object value) throws WdkModelException {
-        if (!(value instanceof Answer)) {
-            throw new WdkModelException("Value must be a Answer " + value);
+        if (!(value instanceof RecordPage)) {
+            throw new WdkModelException("Value must be a RecordPage " + value);
         }
         return null;
     }
@@ -31,7 +31,7 @@ public class AnswerParam extends Param {
      */
     @Override
     public Param clone() {
-        return new AnswerParam(this);
+        return new RecordPageParam(this);
     }
 
     protected void resolveReferences(WdkModel model) throws WdkModelException {}

@@ -9,7 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.Answer;
+import org.gusdb.wdk.model.RecordPage;
 import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.WdkModelException;
@@ -20,27 +20,27 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  * @author xingao
  * 
  */
-public abstract class Reporter implements Iterable<Answer> {
+public abstract class Reporter implements Iterable<RecordPage> {
 
     public static final String FIELD_FORMAT = "downloadType";
 
     private final static Logger logger = Logger.getLogger(Reporter.class);
 
-    private class PageAnswerIterator implements Iterator<Answer> {
+    private class PageRecordPageIterator implements Iterator<RecordPage> {
 
         private static final int MAX_PAGE_SIZE = 100;
 
-        private Answer baseAnswer;
+        private RecordPage baseRecordPage;
         private int endIndex;
         private int startIndex;
 
-        PageAnswerIterator(Answer answer, int startIndex, int endIndex)
+        PageRecordPageIterator(RecordPage answer, int startIndex, int endIndex)
                 throws WdkModelException {
-            this.baseAnswer = answer;
+            this.baseRecordPage = answer;
 
             // determine the end index, which should be no bigger result size,
             // since the index starts from 1
-            int resultSize = baseAnswer.getResultSize();
+            int resultSize = baseRecordPage.getResultSize();
             this.endIndex = Math.min(endIndex, resultSize);
 
             this.startIndex = startIndex;
@@ -51,7 +51,7 @@ public abstract class Reporter implements Iterable<Answer> {
             return (startIndex <= endIndex);
         }
 
-        public Answer next() {
+        public RecordPage next() {
             // decide the new end index for the page answer
             int pageEndIndex = Math.min(endIndex, startIndex + MAX_PAGE_SIZE
                     - 1);
@@ -60,7 +60,7 @@ public abstract class Reporter implements Iterable<Answer> {
                     + pageEndIndex);
 
             try {
-                Answer answer = baseAnswer.newAnswer(startIndex, pageEndIndex);
+                RecordPage answer = baseRecordPage.newRecordPage(startIndex, pageEndIndex);
                 // update the current index
                 startIndex = pageEndIndex + 1;
                 return answer;
@@ -78,13 +78,13 @@ public abstract class Reporter implements Iterable<Answer> {
     protected Map<String, String> properties;
     protected Map<String, String> config;
 
-    private Answer answer;
+    private RecordPage answer;
     private int startIndex;
     private int endIndex;
 
     protected String format = "plain";
 
-    protected Reporter(Answer answer, int startIndex, int endIndex) {
+    protected Reporter(RecordPage answer, int startIndex, int endIndex) {
         this.answer = answer;
         this.startIndex = startIndex;
         this.endIndex = endIndex;
@@ -155,7 +155,7 @@ public abstract class Reporter implements Iterable<Answer> {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.Answer#getResultIndexColumn()
+     * @see org.gusdb.wdk.model.RecordPage#getResultIndexColumn()
      */
     public String getResultIndexColumn() {
         return answer.getResultIndexColumn();
@@ -164,7 +164,7 @@ public abstract class Reporter implements Iterable<Answer> {
     /**
      * @return
      * @throws WdkModelException
-     * @see org.gusdb.wdk.model.Answer#getSortingIndex()
+     * @see org.gusdb.wdk.model.RecordPage#getSortingIndex()
      */
     public int getSortingIndex() throws WdkModelException {
         return answer.getSortingIndex();
@@ -172,15 +172,15 @@ public abstract class Reporter implements Iterable<Answer> {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.Answer#getSortingIndexColumn()
+     * @see org.gusdb.wdk.model.RecordPage#getSortingIndexColumn()
      */
     public String getSortingIndexColumn() {
         return answer.getSortingIndexColumn();
     }
 
-    public Iterator<Answer> iterator() {
+    public Iterator<RecordPage> iterator() {
         try {
-            return new PageAnswerIterator(answer, startIndex, endIndex);
+            return new PageRecordPageIterator(answer, startIndex, endIndex);
         } catch (WdkModelException ex) {
             throw new RuntimeException(ex);
         }

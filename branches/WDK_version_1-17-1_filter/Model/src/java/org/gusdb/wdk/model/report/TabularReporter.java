@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.Answer;
+import org.gusdb.wdk.model.RecordPage;
 import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.LinkValue;
 import org.gusdb.wdk.model.RecordInstance;
@@ -39,7 +39,7 @@ public class TabularReporter extends Reporter {
     private boolean hasHeader = true;
     private String divider = "\t";
 
-    public TabularReporter(Answer answer, int startIndex, int endIndex) {
+    public TabularReporter(RecordPage answer, int startIndex, int endIndex) {
         super(answer, startIndex, endIndex);
     }
 
@@ -103,7 +103,7 @@ public class TabularReporter extends Reporter {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.report.IReporter#format(org.gusdb.wdk.model.Answer)
+     * @see org.gusdb.wdk.model.report.IReporter#format(org.gusdb.wdk.model.RecordPage)
      */
     public void write(OutputStream out) throws WdkModelException {
         PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
@@ -162,8 +162,8 @@ public class TabularReporter extends Reporter {
         }
 
         // get page based answers with a maximum size (defined in
-        // PageAnswerIterator)
-        for (Answer answer : this) {
+        // PageRecordPageIterator)
+        for (RecordPage answer : this) {
             while (answer.hasMoreRecordInstances()) {
                 RecordInstance record = answer.getNextRecordInstance();
                 for (AttributeField column : columns) {
@@ -203,8 +203,8 @@ public class TabularReporter extends Reporter {
             int count = 0;
             
             // get page based answers with a maximum size (defined in
-            // PageAnswerIterator)
-            for (Answer answer : this) {
+            // PageRecordPageIterator)
+            for (RecordPage answer : this) {
                 while (answer.hasMoreRecordInstances()) {
                     RecordInstance record = answer.getNextRecordInstance();
 
@@ -275,8 +275,8 @@ public class TabularReporter extends Reporter {
         }
 
         // get page based answers with a maximum size (defined in
-        // PageAnswerIterator)
-        for (Answer answer : this) {
+        // PageRecordPageIterator)
+        for (RecordPage answer : this) {
             while (answer.hasMoreRecordInstances()) {
                 RecordInstance record = answer.getNextRecordInstance();
                 writer.println("<tr>");

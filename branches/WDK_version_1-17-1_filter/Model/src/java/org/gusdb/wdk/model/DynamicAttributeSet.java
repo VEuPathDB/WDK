@@ -174,7 +174,7 @@ public class DynamicAttributeSet extends WdkModelBase {
             addColumn(column, sqlSelectBuf, attributesQuery, resultTableMacro);
         }
 
-        String[] pkColNames = Answer.findPrimaryKeyColumnNames(question.getQuery());
+        String[] pkColNames = RecordPage.findPrimaryKeyColumnNames(question.getQuery());
 
         // add other attribute fields into the query, such as text and link
         // attributes

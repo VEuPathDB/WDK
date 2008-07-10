@@ -18,16 +18,16 @@ import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.AnswerBean;
-import org.gusdb.wdk.model.jspwrap.HistoryBean;
-import org.gusdb.wdk.model.jspwrap.ProtocolBean;
+import org.gusdb.wdk.model.jspwrap.RecordPageBean;
+import org.gusdb.wdk.model.jspwrap.UserAnswerBean;
+import org.gusdb.wdk.model.jspwrap.UserStrategyBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
 /**
  *  This Action handles moving a step in a search strategy to a different
- *  position.  It moves the step, updates the relevant filter histories,
+ *  position.  It moves the step, updates the relevant filter userAnswers,
  *  and forwards to ShowSummaryAction
  **/
 
@@ -40,12 +40,12 @@ public class DeleteStepAction extends Action {
         System.out.println("Entering DeleteStepAction...");
 
 
-	// Make sure a protocol is specified
-	String strProtoId = request.getParameter("protocol");
+	// Make sure a strategy is specified
+	String strProtoId = request.getParameter("strategy");
 
-	System.out.println("Filter protocol: " + strProtoId);
+	System.out.println("Filter strategy: " + strProtoId);
 	if (strProtoId == null || strProtoId.length() == 0) {
-	    throw new WdkModelException("No protocol was specified for deleting a step!");
+	    throw new WdkModelException("No strategy was specified for deleting a step!");
 	}
 
 	// load model, user
@@ -57,9 +57,9 @@ public class DeleteStepAction extends Action {
             request.getSession().setAttribute( CConstants.WDK_USER_KEY, wdkUser );
         }
 
-	HistoryBean history, filterHist;
-        AnswerBean wdkAnswer;
-	ProtocolBean protocol;
+	UserAnswerBean userAnswer, filterHist;
+        RecordPageBean wdkRecordPage;
+	UserStrategyBean strategy;
 	StepBean step;
 	String boolExp;
 
@@ -70,27 +70,29 @@ public class DeleteStepAction extends Action {
 	    throw new WdkModelException("No step was specified to delete!");
 	}
 
-	protocol = ProtocolBean.getProtocol(strProtoId, wdkUser);
-	step = protocol.getStep(Integer.valueOf(deleteStep));
+	strategy = wdkUser.getUserStrategy(Integer.parseInt(strProtoId));
+	step = strategy.getStep(Integer.valueOf(deleteStep));
+
+	/* Charles:  Commented out on 7/1/08; need to rewrite for new strategy object
 	// are we deleting the first step?
 	if (step.getIsFirstStep()) {
-	    // if there are two steps, we're just moving to the second step as a one-step protocol
-	    if (protocol.getLength() == 2) {
-		// will need to change when we have unique ids for protocols
-		strProtoId = step.getNextStep().getSubQueryHistory().getHistoryId() + "";
+	    // if there are two steps, we're just moving to the second step as a one-step strategy
+	    if (strategy.getLength() == 2) {
+		// will need to change when we have unique ids for strategys
+		strProtoId = step.getNextStep().getSubQueryUserAnswer().getUserAnswerId() + "";
 	    }
-	    // if there are more than two steps, we need to update the filter history of the third step
-	    // so that the boolean expression points to the subquery history of the second step
-	    else if (protocol.getLength() > 2) {
+	    // if there are more than two steps, we need to update the filter userAnswer of the third step
+	    // so that the boolean expression points to the subquery userAnswer of the second step
+	    else if (strategy.getLength() > 2) {
 		step = step.getNextStep().getNextStep();
-		filterHist = step.getFilterHistory();
+		filterHist = step.getFilterUserAnswer();
 		boolExp = filterHist.getBooleanExpression();
-		boolExp = step.getPreviousStep().getSubQueryHistory().getHistoryId() + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
-		wdkUser.updateHistory(filterHist, boolExp);
+		boolExp = step.getPreviousStep().getSubQueryUserAnswer().getUserAnswerId() + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
+		wdkUser.updateUserAnswer(filterHist, boolExp);
 	    }
 	    // not sure what to do here, but something has to happen...
 	    else {
-		// eventually we'll support deleting protocols...?
+		// eventually we'll support deleting strategys...?
 		// for now, throw error
 		//throw new WdkUserException("Can't delete the only step in a one-step search strategy!");
 		ActionForward forward = new ActionForward("");
@@ -99,24 +101,25 @@ public class DeleteStepAction extends Action {
 	    }
 	}
 	else {
-	    //if this is not the last step, then filter history of the next step needs
-	    // to point to filter history of the previous step
-	    if (Integer.valueOf(deleteStep) < protocol.getLength() - 1) {
-		filterHist = step.getNextStep().getFilterHistory();
+	    //if this is not the last step, then filter userAnswer of the next step needs
+	    // to point to filter userAnswer of the previous step
+	    if (Integer.valueOf(deleteStep) < strategy.getLength() - 1) {
+		filterHist = step.getNextStep().getFilterUserAnswer();
 		boolExp = filterHist.getBooleanExpression();
-		boolExp = step.getPreviousStep().getFilterHistory().getHistoryId() + " " + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
-		wdkUser.updateHistory(filterHist, boolExp);
+		boolExp = step.getPreviousStep().getFilterUserAnswer().getUserAnswerId() + " " + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
+		wdkUser.updateUserAnswer(filterHist, boolExp);
 	    }
-	    //if this is the last step, we're just moving to the protocol that ends w/ the previous step
+	    //if this is the last step, we're just moving to the strategy that ends w/ the previous step
 	    else {
-		strProtoId = step.getPreviousStep().getFilterHistory().getHistoryId() + "";
+		strProtoId = step.getPreviousStep().getFilterUserAnswer().getUserAnswerId() + "";
 	    }
 	}
-	
+	*/
+
 	// 5. forward to showsummary
 	ActionForward showSummary = mapping.findForward( CConstants.SHOW_SUMMARY_MAPKEY );
 	StringBuffer url = new StringBuffer( showSummary.getPath() );
-	url.append("?protocol=" + URLEncoder.encode(strProtoId));
+	url.append("?strategy=" + URLEncoder.encode(strProtoId));
 	String viewStep = request.getParameter("step");
 	if (viewStep != null && viewStep.length() != 0) {
 	    if (Integer.valueOf(viewStep) > Integer.valueOf(deleteStep)) {

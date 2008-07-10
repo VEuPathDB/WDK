@@ -13,7 +13,7 @@ import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
-import org.gusdb.wdk.model.jspwrap.XmlAnswerBean;
+import org.gusdb.wdk.model.jspwrap.XmlRecordPageBean;
 import org.gusdb.wdk.model.jspwrap.XmlQuestionBean;
 import org.gusdb.wdk.model.jspwrap.XmlQuestionSetBean;
 
@@ -31,9 +31,9 @@ public class ShowXmlDataContentAction extends Action {
 				 HttpServletResponse response) throws Exception {
 	String xmlQName = request.getParameter(CConstants.NAME);
 	XmlQuestionBean xmlQuestion = getXmlQuestionByFullName(xmlQName);
-	XmlAnswerBean xmlAnswer = xmlQuestion.getFullAnswer();
-	request.setAttribute(CConstants.WDK_XMLANSWER_KEY, xmlAnswer);
-	return getForward(xmlAnswer, mapping);
+	XmlRecordPageBean xmlRecordPage = xmlQuestion.getFullRecordPage();
+	request.setAttribute(CConstants.WDK_XMLANSWER_KEY, xmlRecordPage);
+	return getForward(xmlRecordPage, mapping);
     }
 
     protected XmlQuestionBean getXmlQuestionByFullName(String qFullName) {
@@ -48,13 +48,13 @@ public class ShowXmlDataContentAction extends Action {
 	return wdkQuestion;
     }
 
-    private ActionForward getForward (XmlAnswerBean xmlAnswer, ActionMapping mapping) {
+    private ActionForward getForward (XmlRecordPageBean xmlRecordPage, ActionMapping mapping) {
 	ServletContext svltCtx = getServlet().getServletContext();
 	String customViewDir = (String)svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
 	String customViewFile1 = customViewDir + File.separator
-	    + xmlAnswer.getQuestion().getFullName() + ".jsp";
+	    + xmlRecordPage.getQuestion().getFullName() + ".jsp";
 	String customViewFile2 = customViewDir + File.separator
-	    + xmlAnswer.getRecordClass().getFullName() + ".jsp";
+	    + xmlRecordPage.getRecordClass().getFullName() + ".jsp";
 	ActionForward forward = null;
 	if (ApplicationInitListener.resourceExists(customViewFile1, svltCtx)) {
 	    forward = new ActionForward(customViewFile1);

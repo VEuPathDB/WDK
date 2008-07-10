@@ -5,7 +5,7 @@ import java.util.Map;
 
 import junit.framework.TestCase;
 
-import org.gusdb.wdk.model.Answer;
+import org.gusdb.wdk.model.RecordPage;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
 import org.gusdb.wdk.model.Reference;
@@ -72,7 +72,7 @@ public class JUnitSqlUtilsTester extends TestCase {
                 int nextStartRow = Integer.parseInt(rows[i]);
                 int nextEndRow = Integer.parseInt(rows[i + 1]);
 
-                Answer answer = question.makeAnswer(paramValues, nextStartRow,
+                RecordPage answer = question.makeRecordPage(paramValues, nextStartRow,
                         nextEndRow);
 
                 if (rows.length != 2) System.out.println("page " + pageCount);

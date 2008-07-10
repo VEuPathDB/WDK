@@ -17,7 +17,7 @@ import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
  * operand for its parent boolean Question. This is a leaf Question in a boolean
  * Question tree and its pointers to boolean operands are null values.
  * 
- * Also recursively sets operand Answers as parameter values for boolean
+ * Also recursively sets operand RecordPages as parameter values for boolean
  * Questions.
  * 
  * Created: Fri 22 October 12:00:00 2004 EST
@@ -55,7 +55,7 @@ public class BooleanQuestionNode {
      * Values which will be set for this Questions parameters. These must be
      * instantiated for every node in this BooleanQuestionNode's tree before
      * <code>setAllValues</code> is called, the exception being any values for
-     * Answer parameters.
+     * RecordPage parameters.
      */
     private Map<String, Object> values;
 
@@ -259,64 +259,64 @@ public class BooleanQuestionNode {
     /**
      * Recursive method that traverses <code>bqn</code> and sets its values,
      * which may be either normal query values if the node is a leaf or the
-     * Answers of its operands if the node is a boolean Question. The method is
+     * RecordPages of its operands if the node is a boolean Question. The method is
      * recursively called on each of the operands if the node is a boolean
      * Question.
      * 
-     * @return the Answer of <code>bqn</code>. The answer should not be used
+     * @return the RecordPage of <code>bqn</code>. The answer should not be used
      *         as the answer returned by the top (recursive initializer) node;
-     *         that should be retrieved by calling makeAnswer() on that node's
+     *         that should be retrieved by calling makeRecordPage() on that node's
      *         Question after running this method.
      */
-    public Answer makeAnswer(int startIndex, int endIndex)
+    public RecordPage makeRecordPage(int startIndex, int endIndex)
             throws WdkUserException, WdkModelException {
 
         // dtb -- initially this method was in BooleanQueryTester but I figured
         // it might be needed by other classes
 
-        Answer answer = null;
+        RecordPage answer = null;
 
         if (isLeaf()) {
 
             Question question = getQuestion();
             Map<String, Object> leafValues = getValues();
-            answer = question.makeAnswer(leafValues, startIndex, endIndex);
+            answer = question.makeRecordPage(leafValues, startIndex, endIndex);
         } else { // bqn is boolean question
 
             Question booleanQuestion = getQuestion();
 
             BooleanQuestionNode firstChild = getFirstChild();
-            Answer firstChildAnswer = firstChild.makeAnswer(startIndex,
+            RecordPage firstChildRecordPage = firstChild.makeRecordPage(startIndex,
                     endIndex);
 
             BooleanQuestionNode secondChild = getSecondChild();
-            Answer secondChildAnswer = secondChild.makeAnswer(startIndex,
+            RecordPage secondChildRecordPage = secondChild.makeRecordPage(startIndex,
                     endIndex);
 
             Map<String, Object> booleanValues = getValues();
 
             booleanValues.put(BooleanQuery.FIRST_ANSWER_PARAM_NAME,
-                    firstChildAnswer);
+                    firstChildRecordPage);
             booleanValues.put(BooleanQuery.SECOND_ANSWER_PARAM_NAME,
-                    secondChildAnswer);
+                    secondChildRecordPage);
 
-            Map<String, AttributeField> firstSummaryAtts = firstChildAnswer.getSummaryAttributes();
-            Map<String, AttributeField> secondSummaryAtts = secondChildAnswer.getSummaryAttributes();
+            Map<String, AttributeField> firstSummaryAtts = firstChildRecordPage.getSummaryAttributes();
+            Map<String, AttributeField> secondSummaryAtts = secondChildRecordPage.getSummaryAttributes();
 
             Map<String, AttributeField> booleanSummaryAtts = new LinkedHashMap<String, AttributeField>();
             booleanSummaryAtts.putAll(firstSummaryAtts);
             booleanSummaryAtts.putAll(secondSummaryAtts);
 
-            Map<String, AttributeField> firstDynaAtts = firstChildAnswer.getQuestion().getDynamicAttributeFields();
+            Map<String, AttributeField> firstDynaAtts = firstChildRecordPage.getQuestion().getDynamicAttributeFields();
             if (firstDynaAtts != null)
                 removeDynamicAtributes(booleanSummaryAtts, firstDynaAtts);
-            Map<String, AttributeField> secondDynaAtts = secondChildAnswer.getQuestion().getDynamicAttributeFields();
+            Map<String, AttributeField> secondDynaAtts = secondChildRecordPage.getQuestion().getDynamicAttributeFields();
             if (secondDynaAtts != null)
                 removeDynamicAtributes(booleanSummaryAtts, secondDynaAtts);
 
             booleanQuestion.setSummaryAttributesMap(booleanSummaryAtts);
 
-            answer = booleanQuestion.makeAnswer(booleanValues, startIndex,
+            answer = booleanQuestion.makeRecordPage(booleanValues, startIndex,
                     endIndex);
         }
         return answer;

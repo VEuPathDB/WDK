@@ -39,7 +39,7 @@ public class BooleanQuestionNodeBean {
 
     //
     // public void setAllValues() throws WdkModelException, WdkUserException {
-    // bqn.makeAnswer();
+    // bqn.makeRecordPage();
     // }
 
     /**
@@ -51,9 +51,9 @@ public class BooleanQuestionNodeBean {
      * @throws WdkModelException
      * @throws WdkUserException
      */
-    public AnswerBean makeAnswer(int startIndex, int endIndex) throws WdkModelException,
+    public RecordPageBean makeRecordPage(int startIndex, int endIndex) throws WdkModelException,
             WdkUserException {
-        return new AnswerBean(bqn.makeAnswer(startIndex, endIndex));
+        return new RecordPageBean(bqn.makeRecordPage(startIndex, endIndex));
     }
 
     public String getOperation() {

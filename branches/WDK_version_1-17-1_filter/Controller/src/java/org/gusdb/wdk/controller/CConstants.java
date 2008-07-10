@@ -28,8 +28,8 @@ public class CConstants {
     public static final String WDK_QUESTION_KEY = "wdkQuestion";
     public static final String WDK_QUESTION_PARAMS_KEY = "wdkQuestionParams";
     public static final String WDK_ANSWER_KEY = "wdkAnswer";
-    public static final String WDK_PROTOCOL_KEY = "wdkProtocol";
-    public static final String WDK_PROTOCOL_ID_KEY = "protocol_id";
+    public static final String WDK_STRATEGY_KEY = "wdkStrategy";
+    public static final String WDK_STRATEGY_ID_KEY = "strategy_id";
     public static final String WDK_STEP_KEY = "step";
     public static final String WDK_REPORT_FORMATS_KEY = "wdkReportFormats";
     public static final String WDK_REPORT_FORMAT_KEY = "wdkReportFormat";
@@ -53,6 +53,7 @@ public class CConstants {
     public static final String WDK_ALT_PAGE_SIZE_KEY = "altPageSize";
     public static final String WDK_ALL_RECORD_IDS_KEY = "allRecordIds";
     public static final String WDK_RESULT_SIZE_ONLY_KEY = "resultSizeOnly";
+    public static final String WDK_RESULT_SET_ONLY_KEY = "resultsOnly";
     
     // constants for remote logins
     public static final String WDK_REMOTE_URL_KEY = "remoteUrl";
@@ -120,6 +121,8 @@ public class CConstants {
     public static final String DELETE_DATASET_MAPKEY = "delete_dataset";
     public static final String SHOW_CREATE_DATASET_MAPKEY = "show_create_dataset";
     public static final String CREATE_DATASET_MAPKEY = "create_dataset";
+    public static final String RESULTSONLY_MAPKEY = "results_only";
+    public static final String SHOW_STRATEGY_MAPKEY = "show_strategy";
 
     //button click detectors, used in action, action forms, and jsp pages
     public static final String PQ_SUBMIT_KEY = "questionSubmit"; //match question.jsp

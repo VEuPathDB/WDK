@@ -95,7 +95,7 @@ public class ModelXmlParser extends XmlParser {
         super(gusHome, "lib/rng/wdkModel.rng");
 
         // get model schema file and xml schema file
-        xmlSchemaURL = makeURL(gusHome, "lib/rng/xmlAnswer.rng");
+        xmlSchemaURL = makeURL(gusHome, "lib/rng/xmlRecordPage.rng");
         xmlDataDir = gusHome + "/lib/xml/";
     }
 

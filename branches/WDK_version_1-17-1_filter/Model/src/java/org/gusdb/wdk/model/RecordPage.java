@@ -17,24 +17,24 @@ import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.report.Reporter;
 
 /**
- * Answer.java
+ * RecordPage.java
  * 
  * Created: Fri June 4 13:01:30 2004 EDT
  * 
  * @author David Barkan
- * @version $Revision$ $Date: 2007-01-22 12:33:24 -0500 (Mon, 22 Jan
- *          2007) $ $Author$
+ * @version $Revision: 5778 $ $Date: 2007-01-22 12:33:24 -0500 (Mon, 22 Jan
+ *          2007) $ $Author: jerric $
  */
 
 /**
  * A list of RecordInstances representing one page of the answer to a Question.
- * The constructor of the Answer provides a handle (QueryInstance) on the
+ * The constructor of the RecordPage provides a handle (QueryInstance) on the
  * ResultList that is the list of primary keys for the all the records (not *
  * just one page) that are the answer to the Question. The ResultList also has a
  * column that contains the row number (RESULT_TABLE_I) so that a list of
  * primary keys for a single page can be efficiently accessed.
  * 
- * The Answer is lazy in that it only constructs the set of RecordInstances for
+ * The RecordPage is lazy in that it only constructs the set of RecordInstances for
  * the page when the first RecordInstance is requested.
  * 
  * The initial request triggers the creation of skeletal RecordInstances for the
@@ -62,9 +62,9 @@ import org.gusdb.wdk.model.report.Reporter;
  * in the page.  An exception is thrown otherwise.
  *
  */
-public class Answer {
+public class RecordPage {
 
-    private static final Logger logger = Logger.getLogger(Answer.class);
+    private static final Logger logger = Logger.getLogger(RecordPage.class);
 
     // ------------------------------------------------------------------
     // Instance variables
@@ -105,7 +105,7 @@ public class Answer {
     /**
      * @param question
      *            The <code>Question</code> to which this is the
-     *            <code>Answer</code>.
+     *            <code>RecordPage</code>.
      * @param idsQueryInstance
      *            The <co de>QueryInstance</code> that provides a handle on the
      *            ResultList containing all primary keys that are the result for
@@ -117,7 +117,7 @@ public class Answer {
      *            The index of the last <code>RecordInstance</code> in the
      *            page, inclusive.
      */
-    Answer(Question question, QueryInstance idsQueryInstance,
+    RecordPage(Question question, QueryInstance idsQueryInstance,
             int startRecordInstanceI, int endRecordInstanceI,
             Map<String, Boolean> sortingAttributes) throws WdkModelException {
         this.question = question;
@@ -428,7 +428,7 @@ public class Answer {
 
         try {
             Class<?> rptClass = Class.forName(rptImp);
-            Class<?>[] paramClasses = { Answer.class, int.class, int.class };
+            Class<?>[] paramClasses = { RecordPage.class, int.class, int.class };
             Constructor<?> constructor = rptClass.getConstructor(paramClasses);
 
             Object[] params = { this, startI, endI };
@@ -599,7 +599,7 @@ public class Answer {
                     project, id);
             nextRecordInstance.setDynamicAttributeFields(question.getDynamicAttributeFields());
 
-            nextRecordInstance.setAnswer(this);
+            nextRecordInstance.setRecordPage(this);
             tempRecordInstances.add(nextRecordInstance);
         }
         pageRecordInstances = new RecordInstance[tempRecordInstances.size()];
@@ -645,19 +645,19 @@ public class Answer {
         return sb.toString();
     }
 
-    public Answer newAnswer() throws WdkModelException {
-        Answer answer = new Answer(question, idsQueryInstance,
+    public RecordPage newRecordPage() throws WdkModelException {
+        RecordPage answer = new RecordPage(question, idsQueryInstance,
                 startRecordInstanceI, endRecordInstanceI, sortingAttributes);
         // instead of cloning all parts of an answer, just initialize it as a
         // new answer, and the queries can be re-run without any assumption
         return answer;
     }
 
-    public Answer newAnswer(int startIndex, int endIndex)
+    public RecordPage newRecordPage(int startIndex, int endIndex)
             throws WdkModelException {
         this.startRecordInstanceI = startIndex;
         this.endRecordInstanceI = endIndex;
-        Answer answer = new Answer(question, idsQueryInstance,
+        RecordPage answer = new RecordPage(question, idsQueryInstance,
                 startRecordInstanceI, endRecordInstanceI, sortingAttributes);
         answer.summaryAttributes = new LinkedHashMap<String, AttributeField>(
                 this.summaryAttributes);
@@ -942,4 +942,18 @@ public class Answer {
         String[] pkColumns = findPrimaryKeyColumnNames();
         return (pkColumns[1] != null);
     }
+
+    /**
+     * @return operation for boolean answer
+     */
+    public String getBooleanOperation() {
+        System.err.println( "the param map is: " + getParams() );
+        if ( !getIsBoolean() ) {
+            throw new RuntimeException(
+                    "getBooleanOperation can not be called on simple RecordPage" );
+        }
+        return ( String ) getParams().get(
+                BooleanQuery.OPERATION_PARAM_NAME );
+    }
+
 }

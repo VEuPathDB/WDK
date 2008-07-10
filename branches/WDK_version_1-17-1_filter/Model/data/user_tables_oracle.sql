@@ -1,6 +1,6 @@
 CREATE USER userlogins
 IDENTIFIED BY loginpwd
-QUOTA UNLIMITED ON users 
+QUOTA UNLIMITED ON users
 QUOTA UNLIMITED ON gus
 DEFAULT TABLESPACE gus
 TEMPORARY TABLESPACE temp;
@@ -27,6 +27,10 @@ DROP TABLE userlogins.user_roles;
 DROP TABLE userlogins.users;
 DROP TABLE userlogins.sorting_attributes;
 DROP TABLE userlogins.summary_attributes;
+DROP TABLE userlogins.user_strategies;
+DROP TABLE userlogins.user_answer_trees;
+DROP TABLE userlogins.user_answers;
+DROP TABLE userlogins.answers;
 
 
 
@@ -202,3 +206,78 @@ CREATE TABLE userlogins.clob_values
 
 GRANT insert, update, delete on userlogins.clob_values to GUS_W;
 GRANT select on userlogins.clob_values to GUS_R;
+
+
+CREATE TABLE userlogins.answers
+(
+    answer_id NUMBER(10) NOT NULL,
+    project_id varchar(50) NOT NULL,
+    question_name varchar(255) NOT NULL,
+    estimate_size NUMBER(12),
+    query_signature VARCHAR(40),
+    query_instance_checksum VARCHAR(40),
+    is_boolean NUMBER(1),
+    params CLOB,
+    CONSTRAINT "ANSWERS_PK" PRIMARY KEY (answer_id, project_id)
+);
+
+GRANT insert, update, delete on userlogins.answers to GUS_W;
+GRANT select on userlogins.answers to GUS_R;
+
+
+CREATE TABLE userlogins.user_answers
+(
+     user_answer_id NUMBER(12) NOT NULL,
+     project_id varchar(50) NOT NULL,
+     user_id NUMBER(12) NOT NULL,
+     answer_id NUMBER(12) NOT NULL,
+     create_time timestamp NOT NULL,
+     last_run_time timestamp NOT NULL,
+     site_version varchar(5),
+     custom_name varchar(200),
+     is_deleted NUMBER(1),
+     CONSTRAINT "USER_ANSWERS_PK" PRIMARY KEY (user_id, user_answer_id),
+     CONSTRAINT "USER_ANSWERS_ANSWER_ID_FK" FOREIGN KEY (answer_id, project_id)
+         REFERENCES answers (answer_id, project_id),
+     CONSTRAINT "USER_ANSWERS_USER_ID_FK" FOREIGN KEY (user_id)
+         REFERENCES userlogins.users (user_id)
+);
+
+GRANT insert, update, delete on userlogins.user_answers to GUS_W;
+GRANT select on userlogins.user_answers to GUS_R;
+
+
+CREATE TABLE userlogins.user_strategies
+(
+     user_strategy_id NUMBER(12) NOT NULL,
+     user_id NUMBER(12) NOT NULL,
+     user_answer_id NUMBER(12) NOT NULL,
+     is_saved NUMBER(1) NOT NULL,
+     name varchar(200),
+     CONSTRAINT "USER_STRATEGIES_PK" PRIMARY KEY (user_id, user_strategy_id),
+     CONSTRAINT "USER_STRATEGIES_ANSWER_FK" FOREIGN KEY (user_id, user_answer_id)
+         REFERENCES userlogins.user_answers (user_id, user_answer_id),
+     CONSTRAINT "USER_STRATEGIES_USER_ID_FK" FOREIGN KEY (user_id)
+         REFERENCES userlogins.users (user_id)
+);
+
+GRANT insert, update, delete on userlogins.user_strategies to GUS_W;
+GRANT select on userlogins.user_strategies to GUS_R;
+
+
+CREATE TABLE userlogins.user_answer_tree
+(
+    parent_answer_id NUMBER(12) NOT NULL,
+    child_answer_id NUMBER(12) NOT NULL,
+    user_id NUMBER(12) NOT NULL,
+    CONSTRAINT "USER_ANSWER_TREE_PK" PRIMARY KEY (user_id, parent_answer_id, child_answer_id),
+    CONSTRAINT "USER_ANSWER_TREE_PARENT_FK" FOREIGN KEY (user_id, parent_answer_id)
+        REFERENCES userlogins.user_answers (user_id, user_answer_id),
+    CONSTRAINT "USER_ANSWER_TREE_CHILD_FK" FOREIGN KEY (user_id, child_answer_id)
+        REFERENCES userlogins.user_answers (user_id, user_answer_id),
+    CONSTRAINT "USER_ANSWER_TREE_USER_ID_FK" FOREIGN KEY (user_id)
+        REFERENCES userlogins.users (user_id)
+);
+
+GRANT insert, update, delete on userlogins.user_answer_tree to GUS_W;
+GRANT select on userlogins.user_answer_tree to GUS_R;

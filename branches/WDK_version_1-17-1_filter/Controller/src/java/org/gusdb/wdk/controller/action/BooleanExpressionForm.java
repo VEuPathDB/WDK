@@ -15,7 +15,7 @@ import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
 /**
- * form bean for holding the boolean expression string fro queryHistory.jsp page
+ * form bean for holding the boolean expression string fro queryUserAnswer.jsp page
  */
 
 public class BooleanExpressionForm extends ActionForm {
@@ -25,7 +25,7 @@ public class BooleanExpressionForm extends ActionForm {
      */
     private static final long serialVersionUID = -6371621860440022826L;
     private String booleanExpression = null;
-    private String historySectionId = null;
+    private String userAnswerSectionId = null;
 
     public void setBooleanExpression(String be) {
         booleanExpression = be;
@@ -35,12 +35,12 @@ public class BooleanExpressionForm extends ActionForm {
         return booleanExpression;
     }
 
-    public void setHistorySectionId(String si) {
-        historySectionId = si;
+    public void setUserAnswerSectionId(String si) {
+        userAnswerSectionId = si;
     }
 
-    public String getHistorySectionId() {
-        return historySectionId;
+    public String getUserAnswerSectionId() {
+        return userAnswerSectionId;
     }
 
     /**
