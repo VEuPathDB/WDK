@@ -58,11 +58,10 @@ public class ShowStrategyAction extends ShowQuestionAction {
 
 
 	// Make sure a protocol is specified
-	String strProtoId = request.getParameter("protocol");
+	String strProtoId = request.getParameter("strategy");
 
-	System.out.println("Filter protocol: " + strProtoId);
 	if (strProtoId == null || strProtoId.length() == 0) {
-	    throw new WdkModelException("No protocol was specified for filtering!");
+	    throw new WdkModelException("No strategy was specified for loading!");
 	}
 
 	// load model, user
@@ -81,7 +80,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
 	// forward to strategyPage.jsp
 	ActionForward showSummary = mapping.findForward( CConstants.SHOW_STRATEGY_MAPKEY );
 	StringBuffer url = new StringBuffer( showSummary.getPath() );
-	url.append("?protocol=" + URLEncoder.encode(strProtoId));
+	url.append("?strategy=" + URLEncoder.encode(strProtoId));
 	String viewStep = request.getParameter("step");
 	if (viewStep != null && viewStep.length() != 0) {
 	    url.append("&step=" + URLEncoder.encode(viewStep));
