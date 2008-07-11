@@ -90,7 +90,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
 	    url.append("&subquery=" + URLEncoder.encode(subQuery));
 	}
 	ActionForward forward = new ActionForward( url.toString() );
-	forward.setRedirect( true );
+	forward.setRedirect( false );
 	return forward;
     }
 }
