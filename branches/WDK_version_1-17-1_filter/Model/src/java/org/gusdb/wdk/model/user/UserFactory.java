@@ -815,14 +815,16 @@ public class UserFactory {
                     + qinstance.getParamsContent();
 
         // check whether the Answer exists or not
+	PreparedStatement psAnswer = null;
+	PreparedStatement psCheck = null;
+	PreparedStatement psMax = null;
         ResultSet rsAnswer = null;
-        PreparedStatement psAnswer = null;
         ResultSet rsMax = null;
 
         Connection connection = null;
         try {	    
-	    PreparedStatement psCheck = SqlUtils.getPreparedStatement(
-		    dataSource, "SELECT answer_id FROM " + loginSchema
+	    psCheck = SqlUtils.getPreparedStatement(dataSource,
+		    "SELECT answer_id FROM " + loginSchema
 		    + "answers WHERE project_id = ? "
 		    + "AND query_instance_checksum = ?");
 	    psCheck.setString(1, projectId);
@@ -872,7 +874,7 @@ public class UserFactory {
                 psAnswer.executeUpdate();
 
                 // query to get the new answer id
-                PreparedStatement psMax = connection.prepareStatement("SELECT"
+                psMax = connection.prepareStatement("SELECT"
                         + " max(answer_id) AS max_id FROM " + loginSchema
                         + "answers WHERE project_id = ?");
                 psMax.setString(1, projectId);
@@ -898,9 +900,9 @@ public class UserFactory {
         } finally {
             try {
                 if (connection != null) connection.setAutoCommit(true);
-                SqlUtils.closeStatement(psAnswer);
+		SqlUtils.closeStatement(psCheck);
                 SqlUtils.closeResultSet(rsAnswer);
-                SqlUtils.closeResultSet(rsMax);
+		if (connection != null) connection.close();
             } catch (SQLException ex) {
                 throw new WdkUserException(ex);
             }
@@ -910,8 +912,9 @@ public class UserFactory {
     Answer loadAnswer(User user, int answerId) 
 	throws WdkUserException {
 	ResultSet rsHistory = null;
+	PreparedStatement psHistory = null;
 	try {
-	    PreparedStatement psHistory = SqlUtils.getPreparedStatement(
+	    psHistory = SqlUtils.getPreparedStatement(
                     dataSource, "SELECT question_name, estimate_size,"
 		    + "is_boolean, params FROM "
 		    + loginSchema + "answers WHERE answer_id = ? "
@@ -959,6 +962,7 @@ public class UserFactory {
             throw new WdkUserException(ex);
         } finally {
             try {
+		SqlUtils.closeStatement(psHistory);
                 SqlUtils.closeResultSet(rsHistory);
             } catch (SQLException ex) {
                 throw new WdkUserException(ex);
@@ -966,14 +970,14 @@ public class UserFactory {
         }
     }
 
-    // Not sure about this one...
     Map<Integer, UserAnswer> loadUserAnswers(User user, Map<Integer,UserAnswer> invalidUserAnswers)
 	throws WdkUserException, WdkModelException {
         Map<Integer, UserAnswer> userAnswers = new LinkedHashMap<Integer, UserAnswer>();
 
         ResultSet rsUserAnswer = null;
+	PreparedStatement psUserAnswer = null;
         try {
-            PreparedStatement psUserAnswer = SqlUtils.getPreparedStatement(
+            psUserAnswer = SqlUtils.getPreparedStatement(
                     dataSource, "SELECT user_answer_id, question_name, create_time"
                             + ", last_run_time, custom_name, estimate_size, "
                             + "is_boolean, is_deleted, params, "
@@ -1054,6 +1058,7 @@ public class UserFactory {
             throw new WdkUserException(ex);
         } finally {
             try {
+		SqlUtils.closeStatement(psUserAnswer);
                 SqlUtils.closeResultSet(rsUserAnswer);
             } catch (SQLException ex) {
                 throw new WdkUserException(ex);
@@ -1064,8 +1069,9 @@ public class UserFactory {
 
     UserAnswer loadUserAnswer(User user, int userAnswerId) throws WdkUserException {
         ResultSet rsUserAnswer = null;
+	PreparedStatement psUserAnswer = null;
         try {
-            PreparedStatement psUserAnswer = SqlUtils.getPreparedStatement(
+            psUserAnswer = SqlUtils.getPreparedStatement(
                     dataSource, "SELECT answer_id, create_time, last_run_time, "
                             + "custom_name, is_deleted FROM "
                             + loginSchema + "user_answers WHERE user_id = ? "
@@ -1100,6 +1106,7 @@ public class UserFactory {
             throw new WdkUserException(ex);
         } finally {
             try {
+		SqlUtils.closeStatement(psUserAnswer);
                 SqlUtils.closeResultSet(rsUserAnswer);
             } catch (SQLException ex) {
                 throw new WdkUserException(ex);
@@ -1127,10 +1134,11 @@ public class UserFactory {
         // check whether the Answer exists or not
 	ResultSet rsAnswer = null;
 	PreparedStatement psAnswer = null;
+	PreparedStatement psCheck = null;
 	Answer answer = null;
 	
 	try {
-	    PreparedStatement psCheck = SqlUtils.getPreparedStatement(
+	    psCheck = SqlUtils.getPreparedStatement(
        	            dataSource, "SELECT answer_id FROM " + loginSchema
 		    + "answers WHERE project_id = ? "
 		    + "AND query_instance_checksum = ?");
@@ -1154,6 +1162,7 @@ public class UserFactory {
             throw new WdkUserException(ex);
         } finally {
             try {
+		SqlUtils.closeStatement(psCheck);
 		SqlUtils.closeStatement(psAnswer);
                 SqlUtils.closeResultSet(rsAnswer);
             } catch (SQLException ex) {
@@ -1162,8 +1171,9 @@ public class UserFactory {
         }
 	
 	// Now that we have the Answer, create the UserAnswer
+	PreparedStatement psUserAnswer = null;
+	PreparedStatement psMax = null;
         ResultSet rsUserAnswer = null;
-        PreparedStatement psUserAnswer = null;
         ResultSet rsMax = null;
 
         Connection connection = null;
@@ -1197,15 +1207,8 @@ public class UserFactory {
                 psUserAnswer.setString(7, customName);
 		psUserAnswer.executeUpdate();
 
-		/*if 
-		PreparedStatement psUserAnswerTree = connection.prepareStatement(
-                        "INSERT INTO" + loginSchema + "user_answer_tree ("
-			+ "parent_answer_id, child_answer_id, user_id) "
-			+ "VALUES (?, ?, ?)");
-		*/
-
                 // query to get the new history id
-                PreparedStatement psMax = connection.prepareStatement("SELECT"
+                psMax = connection.prepareStatement("SELECT"
                         + " max(user_answer_id) AS max_id FROM " + loginSchema
                         + "user_answers WHERE user_id = ?");
                 psMax.setInt(1, userId);
@@ -1239,10 +1242,10 @@ public class UserFactory {
             throw new WdkUserException(ex);
         } finally {
             try {
-                if (connection != null) connection.setAutoCommit(true);
-                SqlUtils.closeStatement(psUserAnswer);
-                SqlUtils.closeResultSet(rsUserAnswer);
-                SqlUtils.closeResultSet(rsMax);
+                if (connection != null) {
+		    connection.setAutoCommit(true);
+		    connection.close();
+		}
             } catch (SQLException ex) {
                 throw new WdkUserException(ex);
             }
@@ -1490,7 +1493,7 @@ public class UserFactory {
         logger.info("Save custom name: '" + strategy.getName() + "'");
 
         // update strategy name, saved, user_answer_id
-         PreparedStatement psStrategy = null;
+	PreparedStatement psStrategy = null;
         try {
             psStrategy = SqlUtils.getPreparedStatement(dataSource, "UPDATE "
                     + loginSchema + "user_strategies SET name = ?, "
@@ -1527,8 +1530,9 @@ public class UserFactory {
 	throws WdkUserException {
 	int userId = user.getUserId();
 
-	ResultSet rsStrategy = null;
         ResultSet rsMax = null;
+	PreparedStatement psMax = null;
+	PreparedStatement psStrategy = null;
 
         Connection connection = null;
 	try {
@@ -1540,7 +1544,7 @@ public class UserFactory {
                 connection.setAutoCommit(false);
 		
 		// insert the row into user_strategies
-		PreparedStatement psStrategy = SqlUtils.getPreparedStatement(
+		psStrategy = SqlUtils.getPreparedStatement(
 			dataSource, "INSERT INTO " + loginSchema + "user_strategies "
 			+ "(user_strategy_id, user_id, user_answer_id, is_saved, name, project_id) "
 			+ "VALUES ((SELECT max(max_id) + 1  FROM "
@@ -1558,7 +1562,7 @@ public class UserFactory {
 		psStrategy.executeUpdate();
 		                
 		// query to get the new strategy id
-                PreparedStatement psMax = connection.prepareStatement("SELECT"
+                psMax = connection.prepareStatement("SELECT"
                         + " max(user_strategy_id) AS max_id FROM " + loginSchema
                         + "user_strategies WHERE user_id = ? AND project_id = ?");
                 psMax.setInt(1, userId);
@@ -1576,7 +1580,10 @@ public class UserFactory {
 	}
 	finally {
             try {
-                SqlUtils.closeResultSet(rsStrategy);
+                if (connection != null) {
+		    connection.setAutoCommit(true);
+		    connection.close();
+		}
             } catch (SQLException ex) {
                 throw new WdkUserException(ex);
             }

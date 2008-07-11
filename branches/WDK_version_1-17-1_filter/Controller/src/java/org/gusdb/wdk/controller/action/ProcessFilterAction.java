@@ -211,7 +211,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	// in either case, update and forward to show summary
 	strategy.update();
 
-	ActionForward showSummary = mapping.findForward( CConstants.SHOW_SUMMARY_MAPKEY );
+	ActionForward showSummary = mapping.findForward( CConstants.SHOW_STRATEGY_MAPKEY );
 	StringBuffer url = new StringBuffer( showSummary.getPath() );
 	url.append("?strategy=" + URLEncoder.encode(strProtoId));
 	String viewStep = request.getParameter("step");
