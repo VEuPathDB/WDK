@@ -205,6 +205,10 @@ public class RecordPageBean {
         return sumAttribs;
     }
     
+    public int getAttributeLength(){
+    	return getSummaryAttributes().length;
+    }
+    
     public String[ ] getSummaryAttributeNames() {
         AttributeFieldBean[ ] sumAttribs = getSummaryAttributes();
         Vector< String > v = new Vector< String >();
@@ -393,24 +397,33 @@ public class RecordPageBean {
     
     class RecordBeanList implements Iterator {
         
+        public RecordBeanList() {
+        	super();
+        	try {
+        		answer.initPageRecordInstances();
+        	} catch (WdkModelException ex) {}
+        	
+        	
+        }
+        
         public int getSize() {
             return answer.getPageSize();
         }
         
         public boolean hasNext() {
-            try {
+         //   try {
                 return answer.hasMoreRecordInstances();
-            } catch ( WdkModelException exp ) {
-                throw new RuntimeException( exp );
-            }
+         //   } catch ( WdkModelException exp ) {
+         //       throw new RuntimeException( exp );
+         //   }
         }
         
         public Object next() {
-            try {
+           // try {
                 return new RecordBean( answer.getNextRecordInstance() );
-            } catch ( WdkModelException exp ) {
-                throw new RuntimeException( exp );
-            }
+           // } catch ( WdkModelException exp ) {
+           //     throw new RuntimeException( exp );
+           // }
         }
         
         public void remove() {

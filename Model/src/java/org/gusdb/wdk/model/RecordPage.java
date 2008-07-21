@@ -283,46 +283,53 @@ public class RecordPage {
 
     private void releaseRecordInstances() {
         if (pageRecordInstances != null && pageRecordInstances.length > 0) {
-            pageRecordInstances = new RecordInstance[0];
-            recordInstanceCursor = 0;
+        //    pageRecordInstances = new RecordInstance[0];
+          pageRecordInstances = null;
+          recordInstanceCursor = 0;
         }
     }
 
     // Returns null if we have already returned the last instance
-    public RecordInstance getNextRecordInstance() throws WdkModelException {
-        try {
-            initPageRecordInstances();
+    public RecordInstance getNextRecordInstance() { //throws WdkModelException {
+    	logger.info("getNextRecordIsntance() Cursor = " + recordInstanceCursor);
+        //try {
+            //initPageRecordInstances();
 
-            RecordInstance nextInstance = null;
-            if (recordInstanceCursor < pageRecordInstances.length) {
-                nextInstance = pageRecordInstances[recordInstanceCursor];
+            //RecordInstance nextInstance = null;
+            //if (recordInstanceCursor < pageRecordInstances.length) {
+               RecordInstance nextInstance = pageRecordInstances[recordInstanceCursor];
                 recordInstanceCursor++;
-            }
-            if (nextInstance == null) {
+            //}
+            //if (nextInstance == null) {
                 // clean up the record instances
-                releaseRecordInstances();
-            }
-            return nextInstance;
-        } catch (WdkModelException ex) {
-            releaseRecordInstances();
-            throw ex;
-        }
+              //  releaseRecordInstances();
+            //}
+           return nextInstance;
+        //} catch (WdkModelException ex) {
+         //   releaseRecordInstances();
+         //   throw ex;
+        //}
     }
 
-    public boolean hasMoreRecordInstances() throws WdkModelException {
-        try {
-            initPageRecordInstances();
+    public boolean hasMoreRecordInstances() { //throws WdkModelException {
+        logger.info("hasMoreRecordInstances() Cursor = " + recordInstanceCursor);
+        //try {
+        //    initPageRecordInstances();
 
             if (pageRecordInstances == null) {
                 logger.warn("pageRecordInstances is still null");
-            }
-            if (recordInstanceCursor >= pageRecordInstances.length) {
                 return false;
-            } else return true;
-        } catch (WdkModelException ex) {
-            releaseRecordInstances();
-            throw ex;
-        }
+            }
+            if (recordInstanceCursor >= pageRecordInstances.length){
+            	releaseRecordInstances();
+                return false;
+            } else { 
+            	return true;
+            }
+        //} catch (Exception ex) {
+        //    releaseRecordInstances();
+        //    throw new WdkModelException();
+        //}
     }
 
     public Integer getDatasetId() throws WdkModelException {
@@ -575,7 +582,7 @@ public class RecordPage {
      * setting each with its id (either just primary key or that and project, if
      * using a federated data source).
      */
-    private void initPageRecordInstances() throws WdkModelException {
+    public void initPageRecordInstances() throws WdkModelException {
         if (pageRecordInstances != null) return;
 
         // set instance variables projectColumnName and idsColumnName
