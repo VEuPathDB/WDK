@@ -798,6 +798,10 @@ public class UserFactory {
         }
     }
 
+    /********
+     * CONNECTION LEAK IS SOMEWHERE IN HERE
+     ********/
+
     Answer createAnswer(User user, RecordPage result, String booleanExpression)
  	throws WdkUserException, WdkModelException {
 	//int userId = user.getUserId();
@@ -901,9 +905,11 @@ public class UserFactory {
             try {
                 if (connection != null) connection.setAutoCommit(true);
 		SqlUtils.closeStatement(psCheck);
+		SqlUtils.closeStatement(psAnswer);
+		//SqlUtils.closeStatement(psMax);
+		SqlUtils.closeResultSet(rsMax);
                 SqlUtils.closeResultSet(rsAnswer);
-		if (connection != null) connection.close();
-            } catch (SQLException ex) {
+	    } catch (SQLException ex) {
                 throw new WdkUserException(ex);
             }
         }
@@ -1131,13 +1137,20 @@ public class UserFactory {
             params = qinstance.getQuery().getFullName()
                     + qinstance.getParamsContent();
 
-        // check whether the Answer exists or not
-	ResultSet rsAnswer = null;
 	PreparedStatement psAnswer = null;
 	PreparedStatement psCheck = null;
-	Answer answer = null;
+	PreparedStatement psUserAnswer = null;
+	PreparedStatement psMax = null;
+	ResultSet rsAnswer = null;
+        ResultSet rsUserAnswer = null;
+        ResultSet rsMax = null;
+
+        Connection connection = null;
 	
+	Answer answer = null;
+
 	try {
+	    // check whether the Answer exists or not
 	    psCheck = SqlUtils.getPreparedStatement(
        	            dataSource, "SELECT answer_id FROM " + loginSchema
 		    + "answers WHERE project_id = ? "
@@ -1156,40 +1169,20 @@ public class UserFactory {
 	    else {
 		answer = createAnswer(user, result, booleanExpression);
 	    }
-	    
-	}
-	catch (SQLException ex) {
-            throw new WdkUserException(ex);
-        } finally {
-            try {
-		SqlUtils.closeStatement(psCheck);
-		SqlUtils.closeStatement(psAnswer);
-                SqlUtils.closeResultSet(rsAnswer);
-            } catch (SQLException ex) {
-                throw new WdkUserException(ex);
-            }
-        }
 	
-	// Now that we have the Answer, create the UserAnswer
-	PreparedStatement psUserAnswer = null;
-	PreparedStatement psMax = null;
-        ResultSet rsUserAnswer = null;
-        ResultSet rsMax = null;
-
-        Connection connection = null;
-        try {
+	    // Now that we have the Answer, create the UserAnswer
             Date createTime = new Date();
             Date lastRunTime = new Date(createTime.getTime());
-
+	    
             int userAnswerId = 1;
-
+	    
             connection = dataSource.getConnection();
             synchronized (connection) {
-
+		
                 connection.setAutoCommit(false);
-
+		
                 psUserAnswer = connection.prepareStatement("INSERT INTO "
-                        + loginSchema + "user_answers (user_answer_id, "
+							   + loginSchema + "user_answers (user_answer_id, "
                         + "user_id, answer_id, project_id, create_time, "
                         + "last_run_time, custom_name, is_deleted) VALUES "
                         + "((SELECT max(max_id) + 1  FROM "
@@ -1242,20 +1235,33 @@ public class UserFactory {
             throw new WdkUserException(ex);
         } finally {
             try {
-                if (connection != null) {
-		    connection.setAutoCommit(true);
-		    connection.close();
-		}
-            } catch (SQLException ex) {
+                if (connection != null) connection.setAutoCommit(true);
+		SqlUtils.closeStatement(psAnswer);
+		SqlUtils.closeStatement(psCheck);
+		SqlUtils.closeStatement(psUserAnswer);
+		//SqlUtils.closeStatement(psMax);
+                SqlUtils.closeResultSet(rsAnswer);
+		SqlUtils.closeResultSet(rsUserAnswer);
+		SqlUtils.closeResultSet(rsMax);
+	    } catch (SQLException ex) {
                 throw new WdkUserException(ex);
             }
         }
     }
 
+    // Note:  this function still assumes two-operand booleans.  will need
+    // to be rewritten?
     private void updateUserAnswerTree(User user, UserAnswer userAnswer, String booleanExpression) 
 	throws WdkUserException {
 	PreparedStatement psUpdateAnswerTree = null;
+
 	try {
+	    psUpdateAnswerTree = SqlUtils.getPreparedStatement(
+	            dataSource, "INSERT INTO " + loginSchema +
+		    "user_answer_tree (parent_answer_id, "
+		    + "child_answer_id, child_order, project_id, user_id) "
+		    + "VALUES (?, ?, ?, ?, ?)");
+
 	    int childId;
 	    for (int i = 0; i < 2; ++i) {
 		if (i == 0) {
@@ -1265,17 +1271,13 @@ public class UserFactory {
 		    childId = Integer.parseInt(booleanExpression.substring(booleanExpression.lastIndexOf(" ") + 1,
 									   booleanExpression.length()));
 		}
-		
-		psUpdateAnswerTree = SqlUtils.getPreparedStatement(
-				     dataSource, "INSERT INTO " + loginSchema +
-				     "user_answer_tree (parent_answer_id, "
-				     + "child_answer_id, child_order, project_id, user_id) "
-				     + "VALUES (?, ?, ?, ?, ?)");
+
 		psUpdateAnswerTree.setInt(1, userAnswer.getUserAnswerId());
 		psUpdateAnswerTree.setInt(2, childId);
 		psUpdateAnswerTree.setInt(3, i);
 		psUpdateAnswerTree.setString(4, projectId);
 		psUpdateAnswerTree.setInt(5, user.getUserId());
+
 		psUpdateAnswerTree.executeUpdate();
 	    }
 	} catch (SQLException ex) {
@@ -1431,14 +1433,16 @@ public class UserFactory {
 	    
 	    Integer parentAnswerId;
 	    Step parentStep;
+
+	    psAnswerTree = SqlUtils.getPreparedStatement(
+	        dataSource, "SELECT child_answer_id FROM "
+		+ loginSchema + "user_answer_tree WHERE "
+		+ "user_id = ? AND parent_answer_id = ? "
+		+ "AND project_id = ? ORDER BY child_order");
+
 	    while (!answerTree.empty()) {
 		parentAnswerId = answerTree.pop();
-
-		psAnswerTree = SqlUtils.getPreparedStatement(
-			dataSource, "SELECT child_answer_id FROM "
-			+ loginSchema + "user_answer_tree WHERE "
-			+ "user_id = ? AND parent_answer_id = ? "
-			+ "AND project_id = ? ORDER BY child_order");
+		
 		psAnswerTree.setInt(1, user.getUserId());
 		psAnswerTree.setInt(2, parentAnswerId.intValue());
 		psAnswerTree.setString(3, projectId);
@@ -1530,9 +1534,9 @@ public class UserFactory {
 	throws WdkUserException {
 	int userId = user.getUserId();
 
-        ResultSet rsMax = null;
 	PreparedStatement psMax = null;
 	PreparedStatement psStrategy = null;
+        ResultSet rsMax = null;
 
         Connection connection = null;
 	try {
@@ -1580,15 +1584,19 @@ public class UserFactory {
 	}
 	finally {
             try {
-                if (connection != null) {
-		    connection.setAutoCommit(true);
-		    connection.close();
-		}
-            } catch (SQLException ex) {
+                if (connection != null) connection.setAutoCommit(true);
+		//SqlUtils.closeStatement(psMax);
+		SqlUtils.closeStatement(psStrategy);
+		SqlUtils.closeResultSet(rsMax);
+	    } catch (SQLException ex) {
                 throw new WdkUserException(ex);
             }
         }
     }
+
+    /********
+     * END CONNECTION LEAK
+     ********/
 
     Map<Integer, History> loadHistories(User user,
             Map<Integer, History> invalidHistories) throws WdkUserException,
