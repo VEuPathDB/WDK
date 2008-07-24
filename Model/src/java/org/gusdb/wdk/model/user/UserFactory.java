@@ -798,9 +798,6 @@ public class UserFactory {
         }
     }
 
-    /********
-     * CONNECTION LEAK IS SOMEWHERE IN HERE
-     ********/
 
     Answer createAnswer(User user, RecordPage result, String booleanExpression)
  	throws WdkUserException, WdkModelException {
@@ -1487,13 +1484,13 @@ public class UserFactory {
         }
     }
 
-    // This function only updates the user_strategies table (I'm not sure about this -- Charles)
+    // This function only updates the user_strategies table
     void updateUserStrategy(User user, UserStrategy strategy) throws WdkUserException {
 	if (!isExist(user.getEmail()))
             throw new WdkUserException("The user " + user.getEmail()
                     + " doesn't exist. Updating operation cancelled.");
 
-        // TEST
+        // TODO:  Check if isSaved(), make a duplicate, and then work w/ that one?
         logger.info("Save custom name: '" + strategy.getName() + "'");
 
         // update strategy name, saved, user_answer_id
@@ -1593,10 +1590,6 @@ public class UserFactory {
             }
         }
     }
-
-    /********
-     * END CONNECTION LEAK
-     ********/
 
     Map<Integer, History> loadHistories(User user,
             Map<Integer, History> invalidHistories) throws WdkUserException,

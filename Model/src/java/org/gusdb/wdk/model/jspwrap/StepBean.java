@@ -62,6 +62,10 @@ public class StepBean {
 	return step.getCustomName();
     }
 
+    public String getDataType() {
+	return step.getDataType();
+    }
+
     public String getShortName() 
 	throws WdkModelException, WdkUserException {
 	return step.getShortName();
