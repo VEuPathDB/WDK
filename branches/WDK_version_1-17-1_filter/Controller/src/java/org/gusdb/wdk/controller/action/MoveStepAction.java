@@ -61,6 +61,7 @@ public class MoveStepAction extends Action {
 	int moveFromIx = Integer.valueOf(strMoveFromIx);
 	int moveToIx = Integer.valueOf(strMoveToIx);
 
+	// No need to load anything if there's nothing to move
 	if (moveFromIx != moveToIx) {
 	    // load model, user
 	    WdkModelBean wdkModel = ( WdkModelBean ) servlet.getServletContext().getAttribute(CConstants.WDK_MODEL_KEY );
@@ -72,8 +73,68 @@ public class MoveStepAction extends Action {
 	    }
 	    
 	    UserStrategyBean strategy = wdkUser.getUserStrategy(Integer.parseInt(strProtoId));
-	    StepBean moveStep = strategy.getStep(moveFromIx);
 	    
+	    StepBean moveFromStep = strategy.getStep(moveFromIx);
+	    StepBean moveToStep = strategy.getStep(moveToIx);
+	    StepBean step, newStep;
+
+	    int stubIx = Math.min(moveFromIx, moveToIx) - 1;
+	    int length = strategy.getLength();
+
+	    String boolExp;
+
+	    UserAnswerBean userAnswer;
+
+	    if (stubIx < 0) {
+		step = null;
+	    }
+	    else {
+		step = strategy.getStep(stubIx);
+	    }
+
+	    for (int i = stubIx + 1; i < length; ++i) {
+		if (i == moveToIx) {
+		    if (step == null) {
+			step = new StepBean(moveFromStep.getChildStepUserAnswer());
+		    }
+		    else {
+			// assuming boolean, will need to add case for non-boolean op
+			boolExp = moveFromStep.getFilterUserAnswer().getBooleanExpression();
+			boolExp = step.getFilterUserAnswer().getUserAnswerId() + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
+			userAnswer = wdkUser.combineUserAnswer(boolExp);
+			moveFromStep.setFilterUserAnswer(userAnswer);
+			step = moveFromStep;
+		    }
+		    //again, assuming boolean, will need to add case for non-boolean
+		    boolExp = moveToStep.getFilterUserAnswer().getBooleanExpression();
+		    boolExp = step.getFilterUserAnswer().getUserAnswerId() + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
+		    userAnswer = wdkUser.combineUserAnswer(boolExp);
+		    moveToStep.setFilterUserAnswer(userAnswer);
+		    step = moveToStep;
+		}
+		else if (i == moveFromIx) {
+		    //do nothing; this step was moved, so we just ignore it.
+		}
+		else {
+		    newStep = strategy.getStep(i);
+		    if (step == null) {
+			step = new StepBean(newStep.getChildStepUserAnswer());
+		    }
+		    else {
+			//again, assuming boolean, will need to add case for non-boolean
+			boolExp = newStep.getFilterUserAnswer().getBooleanExpression();
+			boolExp = step.getFilterUserAnswer().getUserAnswerId() + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
+			userAnswer = wdkUser.combineUserAnswer(boolExp);
+			newStep.setFilterUserAnswer(userAnswer);
+			step = moveToStep;
+		    }
+		}
+	    }
+
+	    strategy.setLatestStep(step);
+	    strategy.update();
+			
+
 	    /* Charles:  Commented out on 7/1/08.  Will need to update for new strategy objects
 	    String boolExp;
 	    int histId = -1;

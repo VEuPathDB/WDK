@@ -174,19 +174,24 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	    // if we are revising, need to get subsequent steps and update them as well.
 	    int reviseIx = Integer.parseInt(reviseStep);
 	    int stratLen = strategy.getLength();
+	    String op = boolExp.substring(boolExp.indexOf(" "), boolExp.length());
 
 	    if (reviseIx == 0) {
 		// build boolExp for switching to new first query
 		reviseIx++;
 		step = strategy.getStep(reviseIx);
 		boolExp = step.getFilterUserAnswer().getBooleanExpression();
-		boolExp = boolExp.substring(0, boolExp.lastIndexOf(" ")) + userAnswerId;
+		boolExp = userAnswerId + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
 	    }
 	    else {
 		// build standard boolExp for non-first step
-		boolExp += " " + userAnswerId;
+		step = strategy.getStep(reviseIx);
+		boolExp = step.getFilterUserAnswer().getBooleanExpression();
+		boolExp = boolExp.substring(0, boolExp.indexOf(" ")+1) + op + userAnswerId;
 	    }		
 		
+	    System.out.println("Combining user answers for revised step.");
+	    System.out.println("Boolean expression: " + boolExp);
 	    // now create userAnswer for operation query
 	    userAnswer = wdkUser.combineUserAnswer(boolExp);
 	    userAnswerId = userAnswer.getUserAnswerId();
@@ -196,7 +201,9 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	    // in ShowSummary, it doesn't have to be structurally correct here (at the moment)
 	    step.setChildStep(childStep);
 	    
+	    System.out.println("Updating subsequent steps.");
 	    for (int i = reviseIx + 1; i < stratLen; ++i) {
+		System.out.println("Updating step " + i);
 		step = strategy.getStep(i);
 		boolExp = step.getFilterUserAnswer().getBooleanExpression();
 		boolExp = userAnswerId + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
