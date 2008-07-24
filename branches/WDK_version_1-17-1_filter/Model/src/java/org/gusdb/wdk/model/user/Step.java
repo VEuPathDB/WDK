@@ -67,6 +67,10 @@ public class Step {
 	}
     }
 
+    public String getDataType() {
+	return filterUserAnswer.getDataType();
+    }
+
     public int getFilterResultSize()
 	throws WdkModelException, WdkUserException {
 	return filterUserAnswer.getRecordPage().getResultSize();
