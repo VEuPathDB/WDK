@@ -60,8 +60,9 @@ public class DeleteStepAction extends Action {
 	UserAnswerBean userAnswer, filterHist;
         RecordPageBean wdkRecordPage;
 	UserStrategyBean strategy;
-	StepBean step;
+	StepBean step, newStep;
 	String boolExp;
+	int stepIx;
 
 	// Are we revising or deleting a step?
 	String deleteStep = request.getParameter("delete");
@@ -71,28 +72,34 @@ public class DeleteStepAction extends Action {
 	}
 
 	strategy = wdkUser.getUserStrategy(Integer.parseInt(strProtoId));
-	step = strategy.getStep(Integer.valueOf(deleteStep));
+	stepIx = Integer.valueOf(deleteStep);
+	step = strategy.getStep(stepIx);
 
-	/* Charles:  Commented out on 7/1/08; need to rewrite for new strategy object
 	// are we deleting the first step?
 	if (step.getIsFirstStep()) {
 	    // if there are two steps, we're just moving to the second step as a one-step strategy
 	    if (strategy.getLength() == 2) {
-		// will need to change when we have unique ids for strategys
-		strProtoId = step.getNextStep().getSubQueryUserAnswer().getUserAnswerId() + "";
+		// update step so that filter user answer is the subquery answer from the second step
+		step.setFilterUserAnswer(step.getNextStep().getChildStepUserAnswer());
 	    }
-	    // if there are more than two steps, we need to update the filter userAnswer of the third step
-	    // so that the boolean expression points to the subquery userAnswer of the second step
+	    // if there are more than two steps, we need to convert the second step into a first step
+	    // (i.e., so that it doesn't have an operation) and then update all steps after the second step
 	    else if (strategy.getLength() > 2) {
-		step = step.getNextStep().getNextStep();
-		filterHist = step.getFilterUserAnswer();
-		boolExp = filterHist.getBooleanExpression();
-		boolExp = step.getPreviousStep().getSubQueryUserAnswer().getUserAnswerId() + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
-		wdkUser.updateUserAnswer(filterHist, boolExp);
+		step = step.getNextStep();
+		step.setFilterUserAnswer(step.getChildStepUserAnswer());
+		stepIx++;
+		for (int i = stepIx + 1; i < strategy.getLength(); ++i) {
+		    newStep = strategy.getStep(i);
+		    boolExp = newStep.getFilterUserAnswer().getBooleanExpression();
+		    boolExp = step.getFilterUserAnswer().getUserAnswerId() + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
+		    userAnswer = wdkUser.combineUserAnswer(boolExp);
+		    newStep.setFilterUserAnswer(userAnswer);
+		    step = newStep;
+		}
 	    }
 	    // not sure what to do here, but something has to happen...
 	    else {
-		// eventually we'll support deleting strategys...?
+		// eventually we'll support deleting strategies...?
 		// for now, throw error
 		//throw new WdkUserException("Can't delete the only step in a one-step search strategy!");
 		ActionForward forward = new ActionForward("");
@@ -101,20 +108,28 @@ public class DeleteStepAction extends Action {
 	    }
 	}
 	else {
-	    //if this is not the last step, then filter userAnswer of the next step needs
+	    // if this is not the last step, then filter userAnswer of the next step needs
 	    // to point to filter userAnswer of the previous step
 	    if (Integer.valueOf(deleteStep) < strategy.getLength() - 1) {
-		filterHist = step.getNextStep().getFilterUserAnswer();
-		boolExp = filterHist.getBooleanExpression();
-		boolExp = step.getPreviousStep().getFilterUserAnswer().getUserAnswerId() + " " + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
-		wdkUser.updateUserAnswer(filterHist, boolExp);
+		step = step.getPreviousStep();
+		for (int i = stepIx + 1; i < strategy.getLength(); ++i) {
+		    newStep = strategy.getStep(i);
+		    boolExp = newStep.getFilterUserAnswer().getBooleanExpression();
+		    boolExp = step.getFilterUserAnswer().getUserAnswerId() + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
+		    userAnswer = wdkUser.combineUserAnswer(boolExp);
+		    newStep.setFilterUserAnswer(userAnswer);
+		    step = newStep;
+		}
 	    }
-	    //if this is the last step, we're just moving to the strategy that ends w/ the previous step
+	    // if this is the last step, then we just set the previous step as the last step of the strategy
 	    else {
-		strProtoId = step.getPreviousStep().getFilterUserAnswer().getUserAnswerId() + "";
+		step = step.getPreviousStep();
 	    }
 	}
-	*/
+
+	// set the latest step, and update the strategy
+	strategy.setLatestStep(step);
+	strategy.update();
 
 	// 5. forward to showsummary
 	ActionForward showSummary = mapping.findForward( CConstants.SHOW_SUMMARY_MAPKEY );
