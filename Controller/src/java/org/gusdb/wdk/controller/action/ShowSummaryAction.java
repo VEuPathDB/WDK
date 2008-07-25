@@ -89,23 +89,6 @@ public class ShowSummaryAction extends ShowQuestionAction {
 	    else {
 		strHistId = Integer.toString(step.getFilterUserAnswer().getUserAnswerId());
 	    }
-
-	    //Strategy debug code:
-	    /*
-	    System.out.println("########\nStrategy: " + strategy.getStrategyId());
-	    System.out.println("Array test:");
-	    StepBean[] tests = strategy.getAllSteps();
-	    for (StepBean test : tests) {
-		System.out.println("Step: " + test.getFilterUserAnswer().getUserAnswerId());
-		System.out.println("First? " + test.getIsFirstStep());
-		System.out.println("Size: " + test.getFilterResultSize());
-		if (!test.getIsFirstStep()) {
-		    System.out.println("Child step answer: " + test.getChildStepUserAnswer());
-		    System.out.println("Operation: " + test.getOperation());
-		}
-	    }
-	    */
-	    //end strategy debug code
 	}
 
         if (strHistId == null || strHistId.length() == 0) {
@@ -187,7 +170,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
                     summaryAttributes, wdkRecordPage);
         }
 
-        // delete empty userAnswer
+        // DO NOT delete empty userAnswer -- it will screw up strategies
         //if (userAnswer != null && userAnswer.getEstimateSize() == 0)
         //    wdkUser.deleteUserAnswer(userAnswer.getUserAnswerId());
 
@@ -243,19 +226,29 @@ public class ShowSummaryAction extends ShowQuestionAction {
         // }
 
         // make ActionForward
- 	ActionForward forward;
- 	String resultsOnly = request.getParameter(CConstants.WDK_RESULT_SET_ONLY_KEY);
- 	// forward to the results page, if requested
- 	if (resultsOnly != null && Boolean.valueOf(resultsOnly)) {
- 	    forward = mapping.findForward(CConstants.RESULTSONLY_MAPKEY);
- 	}
- 	// otherwise, forward to the full summary page
-	else {
-	    forward= getForward(wdkRecordPage, mapping, userAnswerId);
+	ActionForward forward;
+	// if we got a strategy id in the URL, go to summary page
+	if (strProtoId != null && strProtoId.length() != 0) {
+	    String resultsOnly = request.getParameter(CConstants.WDK_RESULT_SET_ONLY_KEY);
+	    // forward to the results page, if requested
+	    if (resultsOnly != null && Boolean.valueOf(resultsOnly)) {
+		forward = mapping.findForward(CConstants.RESULTSONLY_MAPKEY);
+	    }
+	    // otherwise, forward to the full summary page
+	    else {
+		forward = getForward(wdkRecordPage, mapping, userAnswerId);
+	    }
+	    
+	    System.out.println("From forward: " + forward.getPath());
 	}
-
-	System.out.println("From forward: " + forward.getPath());
-
+	// of not, redirect back to ShowSummary, with corrected URL
+	else {
+	    forward = mapping.findForward("reload_summary");
+	    String path = forward.getPath() + "?" + queryString;
+	    System.out.println(path);
+	    forward = new ActionForward(path, true);
+	}
+	
 	return forward;
     }
 
