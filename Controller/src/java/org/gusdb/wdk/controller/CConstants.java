@@ -150,6 +150,10 @@ public class CConstants {
     public static final String NEXT_QUESTION_OPERAND_SUFFIX = "_nextQuestionOperand"; //match WEB-INF/includes/booleanQuestionNode.jsp
     public static final String NEXT_BOOLEAN_OPERATION_SUFFIX = "_nextBooleanOperation"; //match WEB-INF/includes/booleanQuestionNode.jsp
 
+    //keys for WDK cookies
+    public static final String WDK_LOGIN_COOKIE_KEY = "wdk_check_auth";
+    public static final String WDK_LOGIN_SECRET_KEY = "grep 'model name' /proc/cpuinfo | md5sum";
+
     //name of webapp init params, from web.xml, used in ApplicationInitListener.java
     protected static final String WDK_MODELCONFIGXML_PARAM = "wdkModelConfigXml_param";
     protected static final String WDK_MODELXML_PARAM = "wdkModelXml_param";
