@@ -1457,6 +1457,7 @@ public class UserFactory {
 		    parentStep = steps.get(parentAnswerId);
 		    if (parentStep.getPreviousStep() == null) {
 			parentStep.setPreviousStep(currentStep);
+			currentStep.setNextStep(parentStep);
 		    }
 		    else if (parentStep.getChildStep() == null) {
 			parentStep.setChildStep(currentStep);
