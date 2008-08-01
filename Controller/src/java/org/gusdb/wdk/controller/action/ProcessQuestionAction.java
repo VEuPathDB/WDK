@@ -82,7 +82,7 @@ public class ProcessQuestionAction extends ShowQuestionAction {
         return forward;
     }
     
-    private Map< String, String > prepareParams( UserBean user,
+    protected Map< String, String > prepareParams( UserBean user,
             HttpServletRequest request, QuestionForm qform )
             throws WdkModelException, WdkUserException {
         QuestionBean question = qform.getQuestion();

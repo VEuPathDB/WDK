@@ -79,6 +79,7 @@ public class User /* implements Serializable */{
 
     // cache the history count in memory
     int historyCount;
+    int strategyCount;
 
     public User() {
         userRoles = new LinkedHashSet<String>();
@@ -87,6 +88,7 @@ public class User /* implements Serializable */{
         projectPreferences = new LinkedHashMap<String, String>();
 
         historyCount = 0;
+	strategyCount = 0;
     }
 
     User(WdkModel model, int userId, String email, String signature)
@@ -375,6 +377,18 @@ public class User /* implements Serializable */{
 	return userFactory.createUserAnswer(this, result, booleanExpression, deleted);
     }
 
+    public UserStrategy createUserStrategy(UserAnswer answer, boolean saved) 
+	throws WdkUserException, WdkModelException {
+        Date now = new Date();
+	String name = answer.getAnswer().getRecordPage().getQuestion().getRecordClass().getType() + " Strategy for ";
+	name += getFirstName();
+	if (!isGuest()) {
+	    name += " " + getLastName();
+	}
+	name += now;
+	return createUserStrategy(answer, name, saved);
+    }
+
     public UserStrategy createUserStrategy(UserAnswer answer, String name, boolean saved)
 	throws WdkUserException, WdkModelException {
 	return userFactory.createUserStrategy(this, answer, name, saved);
@@ -541,6 +555,18 @@ public class User /* implements Serializable */{
 	return userAnswers;
     }
 
+    public Map<Integer, UserStrategy> getUserStrategiesMap()
+	throws WdkUserException, WdkModelException {
+	Map<Integer, UserStrategy> invalidStrategies = new LinkedHashMap<Integer, UserStrategy>();
+	Map<Integer, UserStrategy> strategies = userFactory.loadUserStrategies(this, invalidStrategies);
+	
+	strategyCount = 0;
+	for (UserStrategy strategy : strategies.values()) {
+	    strategyCount++;
+	}
+	return strategies;
+    }
+
     public History[] getInvalidHistories() throws WdkUserException,
             WdkModelException {
         Map<Integer, History> histories = new LinkedHashMap<Integer, History>();
@@ -577,6 +603,43 @@ public class User /* implements Serializable */{
             list.add(history);
         }
         return category;
+    }
+
+    public UserStrategy[] getInvalidUserStrategies()
+	throws WdkUserException, WdkModelException {
+	Map<Integer, UserStrategy> strategies = new LinkedHashMap<Integer, UserStrategy>();
+	userFactory.loadUserStrategies(this, strategies);
+
+	UserStrategy[] array = new UserStrategy[strategies.size()];
+	strategies.values().toArray(array);
+	return array;
+    }
+
+    public UserStrategy[] getUserStrategies()
+	throws WdkUserException, WdkModelException {
+	Map<Integer, UserStrategy> map = getUserStrategiesMap();
+	UserStrategy[] array = new UserStrategy[map.size()];
+	map.values().toArray(array);
+	return array;
+    }
+
+    public Map<String, List<UserStrategy>> getUserStrategiesByCategory()
+	throws WdkUserException, WdkModelException {
+	Map<Integer, UserStrategy> strategies = getUserStrategiesMap();
+	Map<String, List<UserStrategy>> category = new LinkedHashMap<String, List<UserStrategy>>();
+	for (UserStrategy strategy : strategies.values()) {
+	    String type = strategy.getDataType();
+	    List<UserStrategy> list;
+	    if (category.containsKey(type)) {
+		list = category.get(type);
+	    }
+	    else {
+		list = new ArrayList<UserStrategy>();
+		category.put(type, list);
+	    }
+	    list.add(strategy);
+	}
+	return category;
     }
 
     /**
@@ -626,6 +689,28 @@ public class User /* implements Serializable */{
 	map.values().toArray(array);
 	return array;
     }
+
+    public Map<Integer, UserStrategy> getUserStrategiesMap(String dataType)
+	throws WdkUserException, WdkModelException {
+	Map<Integer, UserStrategy> strategies = getUserStrategiesMap();
+	Map<Integer, UserStrategy> selected = new LinkedHashMap<Integer, UserStrategy>();
+	for (int strategyId : strategies.keySet()) {
+	    UserStrategy strategy = strategies.get(strategyId);
+	    if (dataType.equalsIgnoreCase(strategy.getDataType()))
+		selected.put(strategyId, strategy);
+	}
+	return selected;
+    }
+
+    public UserStrategy[] getUserStrategies(String dataType)
+	throws WdkUserException, WdkModelException {
+	Map<Integer, UserStrategy> map = getUserStrategiesMap(dataType);
+	UserStrategy[] array = new UserStrategy[map.size()];
+	map.values().toArray(array);
+	return array;
+    }
+
+
 
     /**
      * if the history of the given id doesn't exist, a null is returned
@@ -710,8 +795,22 @@ public class User /* implements Serializable */{
 	// need a user answer count?
     }
 
+    public void deleteUserStrategy(int strategyId)
+	throws WdkUserException, WdkModelException {
+	userFactory.deleteUserStrategy(this, strategyId);
+	strategyCount--;
+    }
+
     public int getHistoryCount() throws WdkUserException {
         return historyCount;
+    }
+
+    public int getStrategyCount() throws WdkUserException {
+        return strategyCount;
+    }
+
+    public void setStrategyCount(int strategyCount) {
+	this.strategyCount = strategyCount;
     }
 
     /**

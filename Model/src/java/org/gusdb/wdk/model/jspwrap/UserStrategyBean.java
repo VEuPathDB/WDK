@@ -17,6 +17,10 @@ public class UserStrategyBean {
 	return strategy.getName();
     }
 
+    public void setName(String name) {
+	strategy.setName(name);
+    }
+
     public StepBean getLatestStep() {
 	return new StepBean(strategy.getLatestStep());
     }

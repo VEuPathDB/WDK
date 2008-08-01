@@ -89,8 +89,10 @@ public class ProcessFilterAction extends ProcessQuestionAction {
         // get question
         String qFullName = request.getParameter( CConstants.QUESTION_FULLNAME_PARAM );
         QuestionBean wdkQuestion = getQuestionByFullName( qFullName );
-        FilterForm fForm = prepareFilterForm( wdkQuestion, request,
-                ( FilterForm ) form );
+        //FilterForm fForm = prepareFilterForm( wdkQuestion, request,
+	//      ( FilterForm ) form );
+        QuestionForm fForm = prepareQuestionForm( wdkQuestion, request,
+                ( QuestionForm ) form );
         
 	// validate & parse params
         Map< String, String > params = prepareParams( wdkUser, request, fForm );
@@ -101,9 +103,6 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	// parameter).  Remove booleanExpression from params, and set using inherited method
 	// from BooleanExpressionForm.
 	boolExp = internalParams.remove("booleanExpression").toString();
-	//fForm.setBooleanExpression(internalParams.remove("booleanExpression").toString());
-	//fForm.setMyProps(internalParams);
-	//boolExp = fForm.getBooleanExpression();
 
 	// Get question name
 	String questionName = wdkQuestion.getFullName();
@@ -187,7 +186,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 		// build standard boolExp for non-first step
 		step = strategy.getStep(reviseIx);
 		boolExp = step.getFilterUserAnswer().getBooleanExpression();
-		boolExp = boolExp.substring(0, boolExp.indexOf(" ")+1) + op + userAnswerId;
+		boolExp = boolExp.substring(0, boolExp.indexOf(" ")+1) + op + " " + userAnswerId;
 	    }		
 		
 	    System.out.println("Combining user answers for revised step.");
@@ -234,195 +233,6 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	return forward;
     }
 
-    /*
-     *
-     *  These methods were scavenged from ProcessQuestionAction, and modified to accept
-     *  a FilterForm instead of a FilterForm.
-     *
-     */
-    private Map< String, String > prepareParams( UserBean user,
-            HttpServletRequest request, FilterForm fform )
-            throws WdkModelException, WdkUserException {
-        QuestionBean question = fform.getQuestion();
-        Map< String, Object > params = fform.getMyProps();
-        Map< String, Object > paramObjects = fform.getMyPropObjects();
-        Map< String, String > compressedParams = new LinkedHashMap< String, String >();
-        
-        ParamBean[ ] paramDefinitions = question.getParams();
-        for ( ParamBean param : paramDefinitions ) {
-            String paramName = param.getName();
-            String paramValue = null;
-            if ( param instanceof DatasetParamBean ) {
-                // get the input type
-                String type = request.getParameter( paramName + "_type" );
-                if ( type == null )
-                    throw new WdkModelException( "Missing input parameter: "
-                            + paramName + "_type." );
-                
-                String data;
-                String uploadFile = "";
-                if ( type.equalsIgnoreCase( "data" ) ) {
-                    data = request.getParameter( paramName + "_data" );
-                } else if ( type.equalsIgnoreCase( "file" ) ) {
-                    FormFile file = ( FormFile ) paramObjects.get( paramName
-                            + "_file" );
-                    uploadFile = file.getFileName();
-                    try {
-                        data = new String( file.getFileData() );
-                        
-                    } catch ( IOException ex ) {
-                        throw new WdkModelException( ex );
-                    }
-                } else {
-                    throw new WdkModelException( "Invalid input type for "
-                            + "Dataset " + paramName + ": " + type );
-                }
-                String[ ] values = Utilities.toArray( data );
-                DatasetBean dataset = user.createDataset( uploadFile, values );
-                paramValue = dataset.getChecksum();
-            } else {
-                paramValue = param.compressValue( params.get( paramName ) );
-            }
-            compressedParams.put( paramName, paramValue );
-	    System.out.println("prepareParams: " + paramName + ", " + paramValue);
-        }
-        return compressedParams;
-    }
-    
-    protected FilterForm prepareFilterForm(QuestionBean wdkQuestion,
-            HttpServletRequest request) throws WdkUserException,
-            WdkModelException {
-
-        FilterForm fForm = new FilterForm();
-
-        return prepareFilterForm(wdkQuestion, request, fForm);
-    }
-
-    protected FilterForm prepareFilterForm(QuestionBean wdkQuestion,
-            HttpServletRequest request, FilterForm fForm)
-            throws WdkUserException, WdkModelException {
-        // get the current user
-        WdkModelBean wdkModel = (WdkModelBean) getServlet().getServletContext().getAttribute(
-                CConstants.WDK_MODEL_KEY);
-        UserBean user = (UserBean) request.getSession().getAttribute(
-                CConstants.WDK_USER_KEY);
-        if (user == null) {
-            user = wdkModel.getUserFactory().getGuestUser();
-            request.getSession().setAttribute(CConstants.WDK_USER_KEY, user);
-        }
-
-        String signature = user.getSignature();
-
-        ActionServlet servlet = getServlet();
-        fForm.setServlet(servlet);
-
-        ParamBean[] params = wdkQuestion.getParams();
-
-        boolean hasAllParams = true;
-        for (int i = 0; i < params.length; i++) {
-            ParamBean p = params[i];
-            Object pVal = null;
-            if (p instanceof EnumParamBean) {
-                // not assuming fixed order, so call once, use twice.
-                String[] flatVocab = ((EnumParamBean) p).getVocab();
-                String[] labels = ((EnumParamBean) p).getDisplays();
-                fForm.getMyValues().put(p.getName(), flatVocab);
-                fForm.getMyLabels().put(p.getName(),
-                        getLengthBoundedLabels(labels));
-
-                // get values from the request
-                String[] cgiParamValSet = request.getParameterValues(p.getName());
-                if (cgiParamValSet == null) {// get values from the form
-                    cgiParamValSet = fForm.getMyMultiProp(p.getName());
-                }
-
-                if (cgiParamValSet != null && cgiParamValSet.length == 1) {
-                    // try to decompress the value
-                    cgiParamValSet = (String[]) p.decompressValue(cgiParamValSet[0]);
-                }
-
-                if (cgiParamValSet != null && cgiParamValSet.length > 0) {
-                    // use the user's selection from revise url
-                    pVal = cgiParamValSet;
-                } else { // no selection made, then use the default ones;
-                    String defaultSelection = p.getDefault();
-                    if (defaultSelection == null) {
-                        // just select the first one as the default
-                        pVal = new String[] { flatVocab[0] };
-                    } else { // use the value by the author
-                        String[] defaults = defaultSelection.split(",");
-                        for (int idx = 0; idx < defaults.length; idx++) {
-                            defaults[idx] = defaults[idx].trim();
-                        }
-                        pVal = defaults;
-                    }
-                }
-            } else if (p instanceof HistoryParamBean) {
-                // get type, as in RecordClass full name
-                String dataType = wdkQuestion.getRecordClass().getFullName();
-                UserAnswerBean[] userAnswers = user.getUserAnswers(dataType);
-                String[] values = new String[userAnswers.length];
-                String[] labels = new String[userAnswers.length];
-                for (int idx = 0; idx < userAnswers.length; idx++) {
-                    values[idx] = signature + ":"
-                            + userAnswers[idx].getUserAnswerId();
-                    labels[idx] = "#" + userAnswers[idx].getUserAnswerId() + " "
-                            + userAnswers[idx].getCustomName();
-                }
-                fForm.getMyValues().put(p.getName(), values);
-                fForm.getMyLabels().put(p.getName(),
-                        getLengthBoundedLabels(labels));
-
-                // get the value
-                String cgiParamVal = request.getParameter(p.getName());
-                if (cgiParamVal == null)
-                    cgiParamVal = fForm.getMyMultiProp(p.getName())[0];
-                if (cgiParamVal == null) {
-                    // just select the first one as the default
-                    if (values.length > 0) pVal = new String[] { values[0] };
-                } else { // use the value by the author
-                    pVal = new String[] { cgiParamVal };
-                }
-            } else {
-                // get the value
-                String cgiParamVal = request.getParameter(p.getName());
-                if (cgiParamVal == null)
-                    cgiParamVal = fForm.getMyProp(p.getName());
-                if (cgiParamVal != null)
-                    cgiParamVal = (String) p.decompressValue(cgiParamVal);
-
-                if (p instanceof DatasetParamBean && cgiParamVal != null
-                        && cgiParamVal.length() != 0) {
-                    String datasetChecksum = cgiParamVal;
-                    DatasetBean dataset = user.getDataset(datasetChecksum);
-                    request.setAttribute(p.getName(), dataset);
-                }
-
-                if (cgiParamVal == null) cgiParamVal = p.getDefault();
-                pVal = cgiParamVal;
-            }
-	    
-	    System.out.println( "DEBUG: param " + p.getName() + " = '" + pVal + "'" );
-           
-            if (pVal == null) {
-                hasAllParams = false;
-                pVal = p.getDefault();
-            }
-	    fForm.getMyProps().put(p.getName(), pVal);
-	}
-        fForm.setQuestion(wdkQuestion);
-        fForm.setParamsFilled(hasAllParams);
-
-        if (request.getParameter(CConstants.VALIDATE_PARAM) == "0") {
-            fForm.setNonValidating();
-        }
-
-        request.setAttribute(CConstants.QUESTIONFORM_KEY, fForm);
-        request.setAttribute(CConstants.WDK_QUESTION_KEY, wdkQuestion);
-
-        return fForm;
-    }
-    
     private ActionForward showError(WdkModelBean wdkModel, UserBean wdkUser,
             ActionMapping mapping, HttpServletRequest request,
             HttpServletResponse response) throws WdkModelException,

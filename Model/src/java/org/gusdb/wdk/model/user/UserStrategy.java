@@ -14,11 +14,11 @@ public class UserStrategy {
     private boolean isSaved;
     private String name;
 
-    UserStrategy( UserFactory factory, User user, int strategyId ) {
+    UserStrategy( UserFactory factory, User user, int strategyId, String name ) {
 	this.factory = factory;
 	this.user = user;
 	this.strategyId = strategyId;
-	this.name = "Unnamed Strategy " + strategyId + " for " + user.getEmail();
+	this.name = name;
 	isSaved = false;
     }
 
@@ -36,6 +36,10 @@ public class UserStrategy {
     
     public boolean getIsSaved() {
 	return isSaved;
+    }
+
+    public String getDataType() {
+	return latestStep.getDataType();
     }
 
     public Step getLatestStep() {

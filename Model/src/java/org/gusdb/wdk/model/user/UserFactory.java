@@ -1410,8 +1410,7 @@ public class UserFactory {
 					   + "for user " + user.getEmail());
 	    }
 
-	    UserStrategy strategy = new UserStrategy(this, user, userStrategyId);
-	    strategy.setName(rsStrategy.getString("name"));
+	    UserStrategy strategy = new UserStrategy(this, user, userStrategyId, rsStrategy.getString("name"));
 	    strategy.setIsSaved(rsStrategy.getBoolean("is_saved"));
 
 	    // Now add user_answer_id to a stack, and go into while loop
@@ -1574,6 +1573,10 @@ public class UserFactory {
 
                 connection.commit();
 	    }
+	   
+	    // update the user's strategy count
+            int strategyCount = getUserStrategyCount(user);
+            user.setStrategyCount(strategyCount);
 	    
 	    return loadUserStrategy(user, strategyId);
 	}
@@ -2032,7 +2035,28 @@ public class UserFactory {
 
     void deleteUserAnswer(User user, int userAnswerId)
 	throws WdkUserException {
-	throw new WdkUserException("UserFactory.deleteUserAnswer() is not implemented.");
+        PreparedStatement psUserAnswer = null;
+        try {
+            // remove user answer
+            psUserAnswer = SqlUtils.getPreparedStatement(dataSource, "DELETE "
+                    + "FROM " + loginSchema + "user_answers WHERE user_id = ? "
+                    + "AND project_id = ? AND user_answer_id = ?");
+            psUserAnswer.setInt(1, user.getUserId());
+            psUserAnswer.setString(2, projectId);
+            psUserAnswer.setInt(3, userAnswerId);
+            int result = psUserAnswer.executeUpdate();
+            if (result == 0)
+                throw new WdkUserException("The user answer #" + userAnswerId
+                        + " of user " + user.getEmail() + " cannot be found.");
+        } catch (SQLException ex) {
+            throw new WdkUserException(ex);
+        } finally {
+            try {
+                SqlUtils.closeStatement(psUserAnswer);
+            } catch (SQLException ex) {
+                throw new WdkUserException(ex);
+            }
+        }
     }
 
     void deleteHistory(User user, int historyId) throws WdkUserException {
@@ -2097,6 +2121,33 @@ public class UserFactory {
 	for (int userAnswerId : invalidUserAnswers.keySet()) {
 	    deleteUserAnswer(user, userAnswerId);
 	}
+    }
+
+    public void deleteUserStrategy(User user, int strategyId) 
+	throws WdkUserException {
+        PreparedStatement psStrategy = null;
+        try {
+            // remove history
+            psStrategy = SqlUtils.getPreparedStatement(dataSource, "DELETE "
+                    + "FROM " + loginSchema + "user_strategies WHERE user_id = ? "
+                    + "AND project_id = ? AND user_strategy_id = ?");
+            psStrategy.setInt(1, user.getUserId());
+            psStrategy.setString(2, projectId);
+            psStrategy.setInt(3, strategyId);
+            int result = psStrategy.executeUpdate();
+            if (result == 0)
+                throw new WdkUserException("The strategy #" + strategyId
+                        + " of user " + user.getEmail() + " cannot be found.");
+        } catch (SQLException ex) {
+            throw new WdkUserException(ex);
+        } finally {
+            try {
+                SqlUtils.closeStatement(psStrategy);
+            } catch (SQLException ex) {
+                throw new WdkUserException(ex);
+            }
+        }
+
     }
 
     public void deleteInvalidHistories(User user) throws WdkUserException,
@@ -2200,6 +2251,32 @@ public class UserFactory {
                 throw new WdkUserException(ex);
             }
         }
+    }
+
+    private int getUserStrategyCount(User user)
+	throws WdkUserException {
+	ResultSet rsStrategy = null;
+	try {
+	    PreparedStatement psStrategy = SqlUtils.getPreparedStatement(
+		    dataSource, "SELECT count(*) AS num FROM " + loginSchema
+		    + "user_strategies WHERE user_id = ? AND project_id = ? ");
+	    psStrategy.setInt(1, user.getUserId());
+	    psStrategy.setString(2, projectId);
+	    rsStrategy = psStrategy.executeQuery();
+	    rsStrategy.next();
+	    return rsStrategy.getInt("num");
+	}
+	catch (SQLException ex) {
+	    throw new WdkUserException(ex);
+	}
+	finally {
+	    try {
+		SqlUtils.closeResultSet(rsStrategy);
+	    }
+	    catch (SQLException ex) {
+		throw new WdkUserException(ex);
+	    }
+	}
     }
 
     private void savePreferences(User user) throws WdkUserException {
