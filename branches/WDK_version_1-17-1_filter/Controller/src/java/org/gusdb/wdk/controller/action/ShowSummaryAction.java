@@ -9,7 +9,6 @@ import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Date;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -177,11 +176,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
 	String queryString;
 
 	if (strategy == null) {
-	    // Need to find a better place to generate default name, but for now:
-	    String type = wdkRecordPage.getRecordClass().getType();
-	    Date now = new Date();
-	    String name = wdkUser.getFirstName() + " " + wdkUser.getLastName() + "'s " + type + " Strategy " + now;
-	    strategy = wdkUser.createUserStrategy(userAnswer, name, false);
+	    strategy = wdkUser.createUserStrategy(userAnswer, false);
 	    queryString = "strategy=" + strategy.getStrategyId();
 	}
 	else {

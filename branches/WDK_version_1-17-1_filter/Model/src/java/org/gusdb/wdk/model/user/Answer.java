@@ -31,7 +31,7 @@ public class Answer {
     private UserFactory factory;
     private User user;
     private int answerId;
-    private RecordPage answer = null;
+    private RecordPage recordPage = null;
     private int estimateSize;
     private boolean isBoolean;
     private String booleanExpression;
@@ -56,22 +56,22 @@ public class Answer {
     }
     
     /**
-     * @return Returns the answer.
+     * @return Returns the recordPage.
      * @throws WdkUserException
      */
     public RecordPage getRecordPage() throws WdkUserException {
         if ( !isValid )
             throw new WdkUserException( "The history #" + answerId
                     + " is invalid." );
-        return answer;
+        return recordPage;
     }
     
     /**
      * @param answer
      *            The answer to set.
      */
-    public void setRecordPage( RecordPage answer ) {
-        this.answer = answer;
+    public void setRecordPage( RecordPage recordPage ) {
+        this.recordPage = recordPage;
     }
     
     /**
@@ -120,15 +120,15 @@ public class Answer {
     }
     
     public String getSignature() throws WdkModelException {
-        return answer.getIdsQueryInstance().getQuery().getSignature();
+        return recordPage.getIdsQueryInstance().getQuery().getSignature();
     }
     
     public String getChecksum() throws WdkModelException {
-        return answer.getIdsQueryInstance().getChecksum();
+        return recordPage.getIdsQueryInstance().getChecksum();
     }
     
     public String getDataType() {
-        return answer.getQuestion().getRecordClass().getFullName();
+        return recordPage.getQuestion().getRecordClass().getFullName();
     }
     
     // Do these just go in UserAnswer, no need for it in answer?
@@ -176,11 +176,11 @@ public class Answer {
     }
     */
     public String getDescription() {
-        return ( isBoolean ) ? booleanExpression : answer.getName();
+        return ( isBoolean ) ? booleanExpression : recordPage.getName();
     }
     
     public String getCacheFullTable() throws WdkModelException {
-        return answer.getIdsQueryInstance().getResultAsTableName();
+        return recordPage.getIdsQueryInstance().getResultAsTableName();
     }
     
     /**

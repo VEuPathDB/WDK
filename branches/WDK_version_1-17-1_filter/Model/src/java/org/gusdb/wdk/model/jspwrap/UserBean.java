@@ -608,6 +608,12 @@ public class UserBean /* implements Serializable */{
 	return new UserAnswerBean(userAnswer);
     }
 
+    public UserStrategyBean createUserStrategy(UserAnswerBean answer, boolean saved)
+	throws WdkUserException, WdkModelException {
+	UserStrategy strategy = user.createUserStrategy(answer.userAnswer, saved);
+	return new UserStrategyBean(strategy);
+    }
+
     public UserStrategyBean createUserStrategy(UserAnswerBean answer, String name, boolean saved)
 	throws WdkUserException, WdkModelException {
 	UserStrategy strategy = user.createUserStrategy(answer.userAnswer, name, saved);
@@ -627,6 +633,11 @@ public class UserBean /* implements Serializable */{
     public void deleteUserAnswer(int userAnswerId)
 	throws WdkUserException, WdkModelException {
 	user.deleteUserAnswer(userAnswerId);
+    }
+
+    public void deleteUserStrategy(int strategyId)
+	throws WdkUserException, WdkModelException {
+	user.deleteUserStrategy(strategyId);
     }
 
     /*
@@ -684,6 +695,31 @@ public class UserBean /* implements Serializable */{
         return category;
     }
 
+    public UserStrategyBean[] getInvalidUserStrategies()
+	throws WdkUserException, WdkModelException {
+	UserStrategy[] strategies = user.getInvalidUserStrategies();
+	UserStrategyBean[] beans = new UserStrategyBean[strategies.length];
+	for (int i = 0; i < strategies.length; ++i) {
+	    beans[i] = new UserStrategyBean(strategies[i]);
+	}
+	return beans;
+    }
+
+    public Map<String, List<UserStrategyBean>> getUserStrategiesByCategory()
+	throws WdkUserException, WdkModelException {
+	Map<String, List<UserStrategy>> strategies = user.getUserStrategiesByCategory();
+	Map<String, List<UserStrategyBean>> category = new LinkedHashMap<String, List<UserStrategyBean>>();
+	for (String type : strategies.keySet()) {
+	    List<UserStrategy> list = strategies.get(type);
+	    List<UserStrategyBean> beans = new ArrayList<UserStrategyBean>();
+	    for (UserStrategy strategy : list) {
+		beans.add(new UserStrategyBean(strategy));
+	    }
+	    category.put(type, beans);
+	}
+	return category;
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -697,6 +733,16 @@ public class UserBean /* implements Serializable */{
             beans[i] = new HistoryBean(histories[i]);
         }
         return beans;
+    }
+
+    public UserStrategyBean[] getUserStrategies(String dataType)
+	throws WdkUserException, WdkModelException {
+	UserStrategy[] strategies = user.getUserStrategies(dataType);
+	UserStrategyBean[] beans = new UserStrategyBean[strategies.length];
+	for (int i = 0; i < strategies.length; ++i) {
+	    beans[i] = new UserStrategyBean(strategies[i]);
+	}
+	return beans;
     }
 
     public UserAnswerBean[] getUserAnswers(String dataType)
@@ -756,6 +802,15 @@ public class UserBean /* implements Serializable */{
      */
     public int getHistoryCount() throws WdkUserException {
         return user.getHistoryCount();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#getStrategyCount()
+     */
+    public int getStrategyCount() throws WdkUserException {
+        return user.getStrategyCount();
     }
 
     /*
