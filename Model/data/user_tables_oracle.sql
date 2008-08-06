@@ -27,6 +27,7 @@ DROP TABLE userlogins.user_roles;
 DROP TABLE userlogins.users;
 DROP TABLE userlogins.sorting_attributes;
 DROP TABLE userlogins.summary_attributes;
+DROP TABLE userlogins.user_strategy_tree;
 DROP TABLE userlogins.user_strategies;
 DROP TABLE userlogins.user_answer_tree;
 DROP TABLE userlogins.user_answers;
@@ -208,7 +209,7 @@ GRANT insert, update, delete on userlogins.clob_values to GUS_W;
 GRANT select on userlogins.clob_values to GUS_R;
 
 
-CREATE TABLE ctreatma.answers
+CREATE TABLE userlogins.answers
 (
     answer_id NUMBER(10) NOT NULL,
     project_id varchar(50) NOT NULL,
@@ -221,11 +222,11 @@ CREATE TABLE ctreatma.answers
     CONSTRAINT "ANSWERS_PK" PRIMARY KEY (answer_id, project_id)
 );
 
-GRANT insert, update, delete on ctreatma.answers to GUS_W;
-GRANT select on ctreatma.answers to GUS_R;
+GRANT insert, update, delete on userlogins.answers to GUS_W;
+GRANT select on userlogins.answers to GUS_R;
 
 
-CREATE TABLE ctreatma.user_answers
+CREATE TABLE userlogins.user_answers
 (
      user_answer_id NUMBER(12) NOT NULL,
      project_id varchar(50) NOT NULL,
@@ -240,14 +241,14 @@ CREATE TABLE ctreatma.user_answers
      CONSTRAINT "USER_ANSWERS_ANSWER_ID_FK" FOREIGN KEY (answer_id, project_id)
          REFERENCES answers (answer_id, project_id),
      CONSTRAINT "USER_ANSWERS_USER_ID_FK" FOREIGN KEY (user_id)
-         REFERENCES ctreatma.users (user_id)
+         REFERENCES userlogins.users (user_id)
 );
 
-GRANT insert, update, delete on ctreatma.user_answers to GUS_W;
-GRANT select on ctreatma.user_answers to GUS_R;
+GRANT insert, update, delete on userlogins.user_answers to GUS_W;
+GRANT select on userlogins.user_answers to GUS_R;
 
 
-CREATE TABLE ctreatma.user_strategies
+CREATE TABLE userlogins.user_strategies
 (
      user_strategy_id NUMBER(12) NOT NULL,
      user_id NUMBER(12) NOT NULL,
@@ -257,16 +258,16 @@ CREATE TABLE ctreatma.user_strategies
      name varchar(200),
      CONSTRAINT "USER_STRATEGIES_PK" PRIMARY KEY (user_id, user_strategy_id, project_id),
      CONSTRAINT "USER_STRATEGIES_ANSWER_FK" FOREIGN KEY (user_id, user_answer_id, project_id)
-         REFERENCES ctreatma.user_answers (user_id, user_answer_id, project_id),
+         REFERENCES userlogins.user_answers (user_id, user_answer_id, project_id),
      CONSTRAINT "USER_STRATEGIES_USER_ID_FK" FOREIGN KEY (user_id)
-         REFERENCES ctreatma.users (user_id)
+         REFERENCES userlogins.users (user_id)
 );
 
-GRANT insert, update, delete on ctreatma.user_strategies to GUS_W;
-GRANT select on ctreatma.user_strategies to GUS_R;
+GRANT insert, update, delete on userlogins.user_strategies to GUS_W;
+GRANT select on userlogins.user_strategies to GUS_R;
 
 
-CREATE TABLE ctreatma.user_answer_tree
+CREATE TABLE userlogins.user_answer_tree
 (
     parent_answer_id NUMBER(12) NOT NULL,
     child_answer_id NUMBER(12) NOT NULL,
@@ -275,12 +276,31 @@ CREATE TABLE ctreatma.user_answer_tree
     child_order NUMBER(1) NOT NULL,
     CONSTRAINT "USER_ANSWER_TREE_PK" PRIMARY KEY (user_id, parent_answer_id, child_answer_id, project_id),
     CONSTRAINT "USER_ANSWER_TREE_PARENT_FK" FOREIGN KEY (user_id, parent_answer_id, project_id)
-        REFERENCES ctreatma.user_answers (user_id, user_answer_id, project_id),
+        REFERENCES userlogins.user_answers (user_id, user_answer_id, project_id),
     CONSTRAINT "USER_ANSWER_TREE_CHILD_FK" FOREIGN KEY (user_id, child_answer_id, project_id)
-        REFERENCES ctreatma.user_answers (user_id, user_answer_id, project_id),
+        REFERENCES userlogins.user_answers (user_id, user_answer_id, project_id),
     CONSTRAINT "USER_ANSWER_TREE_USER_ID_FK" FOREIGN KEY (user_id)
-        REFERENCES ctreatma.users (user_id)
+        REFERENCES userlogins.users (user_id)
 );
 
-GRANT insert, update, delete on ctreatma.user_answer_tree to GUS_W;
-GRANT select on ctreatma.user_answer_tree to GUS_R;
+GRANT insert, update, delete on userlogins.user_answer_tree to GUS_W;
+GRANT select on userlogins.user_answer_tree to GUS_R;
+
+
+CREATE TABLE userlogins.user_strategy_tree
+(
+    parent_strategy_id NUMBER(12) NOT NULL,
+    child_strategy_id NUMBER(12) NOT NULL,
+    user_id NUMBER(12) NOT NULL,
+    project_id varchar(50) NOT NULL,
+    CONSTRAINT "USER_STRATEGY_TREE_PK" PRIMARY KEY (user_id, parent_strategy_id, child_strategy_id, project_id),
+    CONSTRAINT "USER_STRATEGY_TREE_PARENT_FK" FOREIGN KEY (user_id, parent_strategy_id, project_id)
+        REFERENCES userlogins.user_strategies (user_id, user_strategy_id, project_id),
+    CONSTRAINT "USER_STRATEGY_TREE_CHILD_FK" FOREIGN KEY (user_id, child_strategy_id, project_id)
+        REFERENCES userlogins.user_strategies (user_id, user_strategy_id, project_id),
+    CONSTRAINT "USER_STRATEGY_TREE_USER_ID_FK" FOREIGN KEY (user_id)
+        REFERENCES userlogins.users (user_id)
+);
+
+GRANT insert, update, delete on userlogins.user_strategy_tree to GUS_W;
+GRANT select on userlogins.user_strategy_tree to GUS_R;
