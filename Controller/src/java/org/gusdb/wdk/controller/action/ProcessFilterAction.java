@@ -232,7 +232,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	    strategy.setLatestStep(step);
 	}
 
-	// in either case, update and forward to show summary
+	// in either case, update and forward to show strategy
 	strategy.update();
 
 	ActionForward showSummary = mapping.findForward( CConstants.SHOW_STRATEGY_MAPKEY );
