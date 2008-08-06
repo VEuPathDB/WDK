@@ -189,8 +189,8 @@ public class MoveStepAction extends Action {
 	    */
 	}
 	
-	// Forward to ShowSummaryAction
-	ActionForward showSummary = mapping.findForward( CConstants.SHOW_SUMMARY_MAPKEY );
+	// Forward to ShowStrategyAction
+	ActionForward showSummary = mapping.findForward( CConstants.SHOW_STRATEGY_MAPKEY );
 	StringBuffer url = new StringBuffer( showSummary.getPath() );
 	url.append("?strategy=" + URLEncoder.encode(strProtoId));
 	String viewStep = request.getParameter("step");
