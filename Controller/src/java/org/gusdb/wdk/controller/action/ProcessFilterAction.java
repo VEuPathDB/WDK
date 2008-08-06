@@ -83,8 +83,6 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	StepBean step;
 	String boolExp;
 
-	// Are we revising or deleting a step?
-	String reviseStep = request.getParameter("revise");
 
         // get question
         String qFullName = request.getParameter( CConstants.QUESTION_FULLNAME_PARAM );
@@ -154,10 +152,15 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 
 	StepBean childStep = new StepBean(userAnswer);
 
-	System.out.println("Revise: " + reviseStep);
-	if (reviseStep == null || reviseStep.length() == 0) {
+	// Are we revising or inserting a step?
+	String reviseStep = request.getParameter("revise");
+	String insertStep = request.getParameter("insert");
+	
+	if ((reviseStep == null || reviseStep.length() == 0) &&
+	    (insertStep == null || insertStep.length() == 0)) {
 	    boolExp += " " + userAnswerId;
-	    System.out.println(boolExp);
+	    System.out.println("Boolean expression for add: " + boolExp);
+	    
 	    // now create userAnswer for operation query
 	    userAnswer = wdkUser.combineUserAnswer(boolExp);
 	    userAnswerId = userAnswer.getUserAnswerId();
@@ -165,43 +168,58 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	    step = new StepBean(userAnswer);
 	    step.setChildStep(childStep);
 	    
-	    // if we're not revising, just add new step
+	    // no insert specified,  so add step at end.
 	    strategy.addStep(step);
 	}
 	else {
-	    // NOTE:  this is still working off of a simple strategy concept...what about substrategies?
-	    // if we are revising, need to get subsequent steps and update them as well.
-	    int reviseIx = Integer.parseInt(reviseStep);
-	    int stratLen = strategy.getLength();
 	    String op = boolExp.substring(boolExp.indexOf(" "), boolExp.length());
+	    int stratLen = strategy.getLength();
+	    int targetIx;
 
-	    if (reviseIx == 0) {
-		// build boolExp for switching to new first query
-		reviseIx++;
-		step = strategy.getStep(reviseIx);
-		boolExp = step.getFilterUserAnswer().getBooleanExpression();
-		boolExp = userAnswerId + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
+	    // NOTE:  this is still working off of a simple strategy concept...what about substrategies?
+	    // if we are revising/inserting, we need to get subsequent steps and update them as well.
+	    if (reviseStep != null && reviseStep.length() != 0) {
+		targetIx = Integer.parseInt(reviseStep);
+		
+		step = strategy.getStep(targetIx);
+		if (step.getIsFirstStep()) {
+		    // build boolExp for switching to new first query
+		    boolExp = step.getFilterUserAnswer().getBooleanExpression();
+		    boolExp = userAnswerId + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
+		    targetIx++;
+		}
+		else {
+		    // build standard boolExp for non-first step
+		    boolExp = step.getFilterUserAnswer().getBooleanExpression();
+		    boolExp = boolExp.substring(0, boolExp.indexOf(" ")+1) + op + " " + userAnswerId;
+		}
+		targetIx++;
 	    }
 	    else {
-		// build standard boolExp for non-first step
-		step = strategy.getStep(reviseIx);
-		boolExp = step.getFilterUserAnswer().getBooleanExpression();
-		boolExp = boolExp.substring(0, boolExp.indexOf(" ")+1) + op + " " + userAnswerId;
-	    }		
-		
-	    System.out.println("Combining user answers for revised step.");
-	    System.out.println("Boolean expression: " + boolExp);
+		targetIx = Integer.parseInt(insertStep);
+
+		step = strategy.getStep(targetIx);
+		if (step.getIsFirstStep()) {
+		    boolExp = userAnswerId +  " " + op + " " + step.getFilterUserAnswer().getUserAnswerId();
+		    targetIx++;
+		}
+		else {
+		    // the inserted step has to point to the step at insertIx - 1
+		    step = step.getPreviousStep();
+		    boolExp = step.getFilterUserAnswer().getUserAnswerId() + " " + op + " " + userAnswerId;
+		}
+	    }
+
+	    System.out.println("Boolean expression for revise/insert: " + boolExp);
 	    // now create userAnswer for operation query
 	    userAnswer = wdkUser.combineUserAnswer(boolExp);
 	    userAnswerId = userAnswer.getUserAnswerId();
 	    
 	    step = new StepBean(userAnswer);
-	    // NOTE:  this isn't correct for editing 1st step, but since we're just rebuilding object
-	    // in ShowSummary, it doesn't have to be structurally correct here (at the moment)
 	    step.setChildStep(childStep);
 	    
 	    System.out.println("Updating subsequent steps.");
-	    for (int i = reviseIx + 1; i < stratLen; ++i) {
+	    for (int i = targetIx; i < stratLen; ++i) {
 		System.out.println("Updating step " + i);
 		step = strategy.getStep(i);
 		boolExp = step.getFilterUserAnswer().getBooleanExpression();
