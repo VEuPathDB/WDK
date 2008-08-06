@@ -41,7 +41,14 @@ public class TableFieldValue {
         return tableField.getDisplayName();
     }
 
-    public Boolean getInternal() {
+    /**
+     * @return
+     */
+    public String getDescription() {
+		return tableField.getDescription();
+	}
+
+	public Boolean getInternal() {
         return tableField.getInternal();
     }
 
