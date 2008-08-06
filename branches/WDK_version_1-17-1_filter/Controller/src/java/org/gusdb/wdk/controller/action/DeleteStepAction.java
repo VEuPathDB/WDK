@@ -65,7 +65,7 @@ public class DeleteStepAction extends Action {
 	int stepIx;
 
 	// Are we revising or deleting a step?
-	String deleteStep = request.getParameter("delete");
+	String deleteStep = request.getParameter("step");
 
 	if (deleteStep == null || deleteStep.length() == 0) {
 	    throw new WdkModelException("No step was specified to delete!");
