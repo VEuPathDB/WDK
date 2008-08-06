@@ -798,6 +798,11 @@
         <element name="table">
           <attribute name="queryRef" />
           <ref name="FieldBaseContents" />
+          <zeroOrMore>
+              <element name="description">
+                  <text />
+              </element>        
+          </zeroOrMore>
           <oneOrMore>
              <ref name="attributes" />
           </oneOrMore>
