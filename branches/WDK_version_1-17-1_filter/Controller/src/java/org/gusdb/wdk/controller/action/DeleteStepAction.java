@@ -131,8 +131,8 @@ public class DeleteStepAction extends Action {
 	strategy.setLatestStep(step);
 	strategy.update();
 
-	// 5. forward to showsummary
-	ActionForward showSummary = mapping.findForward( CConstants.SHOW_SUMMARY_MAPKEY );
+	// 5. forward to strategy page
+	ActionForward showSummary = mapping.findForward( CConstants.SHOW_STRATEGY_MAPKEY );
 	StringBuffer url = new StringBuffer( showSummary.getPath() );
 	url.append("?strategy=" + URLEncoder.encode(strProtoId));
 	String viewStep = request.getParameter("step");
