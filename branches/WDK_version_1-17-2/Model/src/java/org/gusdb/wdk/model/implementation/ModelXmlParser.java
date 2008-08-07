@@ -306,6 +306,13 @@ public class ModelXmlParser extends XmlParser {
         configureNode(digester, "wdkModel/recordClassSet/recordClass/table",
                 TableField.class, "addTableField");
 
+		configureNode(digester,
+				"wdkModel/recordClassSet/recordClass/table/description",
+				WdkModelText.class, "addDescription");
+		digester.addCallMethod(
+				"wdkModel/recordClassSet/recordClass/table/description",
+				"setText", 0);
+
         configureNode(digester,
                 "wdkModel/recordClassSet/recordClass/table/columnAttribute",
                 ColumnAttributeField.class, "addAttributeField");
