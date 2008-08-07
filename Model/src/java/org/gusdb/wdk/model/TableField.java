@@ -15,6 +15,9 @@ public class TableField extends Field {
     private List<AttributeField> attributeFieldList = new ArrayList<AttributeField>();
     private Map<String, AttributeField> attributeFieldMap = new LinkedHashMap<String, AttributeField>();
 
+	private List<WdkModelText> descriptions = new ArrayList<WdkModelText>();
+	private String description;
+
     Query getQuery() {
         return query;
     }
@@ -30,6 +33,14 @@ public class TableField extends Field {
     public String getQueryRef() {
         return queryTwoPartName;
     }
+
+	public void addDescription(WdkModelText description) {
+		this.descriptions.add(description);
+	}
+
+	public String getDescription() {
+		return (description == null) ? "" : description;
+	}
 
     public void addAttributeField(AttributeField attributeField) {
         attributeFieldList.add(attributeField);
@@ -100,6 +111,23 @@ public class TableField extends Field {
      */
     @Override
     public void excludeResources(String projectId) throws WdkModelException {
+		// exclude descriptions
+		boolean hasDescription = false;
+		for (WdkModelText description : descriptions) {
+			if (description.include(projectId)) {
+				if (hasDescription) {
+					throw new WdkModelException("The table field " + name
+							+ " of recordClass " + recordClass.getFullName()
+							+ " has more than one description for project "
+							+ projectId);
+				} else {
+					this.description = description.getText();
+					hasDescription = true;
+				}
+			}
+		}
+		descriptions = null;
+
         // exclude attributes
         for (AttributeField field : attributeFieldList) {
             if (field.include(projectId)) {
