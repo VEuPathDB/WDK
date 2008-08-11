@@ -62,6 +62,18 @@ public class UserFactoryBean {
         return new UserBean(user);
     }
 
+
+    public UserBean createUserNoPass(String email, String lastName, String firstName)
+	throws WdkUserException,WdkModelException {
+        User user = userFactory.createUser(email, lastName, firstName,
+                null, null, null, null, null, null,
+                null, null, null, null, null,
+                null, false);
+        return new UserBean(user);
+    }
+
+
+
     /*
      * (non-Javadoc)
      * 
