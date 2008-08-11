@@ -27,8 +27,8 @@ public class ProcessRenameUserAnswerAction extends Action {
             HttpServletRequest request, HttpServletResponse response )
             throws Exception {
         
-        String histIdstr = request.getParameter( CConstants.WDK_HISTORY_ID_KEY );
-        String customName = request.getParameter( CConstants.WDK_HISTORY_CUSTOM_NAME_KEY );
+        String histIdstr = request.getParameter( "user_answer_id" );
+        String customName = request.getParameter( "customUserAnswerName" );
         
         // TEST
         logger.info( "Set custom name: '" + customName + "'" );
