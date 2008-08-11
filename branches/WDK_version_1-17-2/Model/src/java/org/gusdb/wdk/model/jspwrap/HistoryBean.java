@@ -260,5 +260,15 @@ public class HistoryBean {
      */
     public boolean isValid() {
         return history.isValid();
+    }   
+
+     /**
+     * @return 
+     * @see org.gusdb.wdk.model.user.History#getVersion()
+     */
+    public String getVersion() {
+        return history.getVersion();
     }
+
+
 }
