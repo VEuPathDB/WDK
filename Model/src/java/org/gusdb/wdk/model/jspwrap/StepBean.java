@@ -15,6 +15,15 @@ public class StepBean {
 	this.step = step;
     }
 
+    public void setStrategy(UserStrategyBean strategy)
+	throws WdkUserException {
+	step.setStrategy(strategy.strategy);
+    }
+	
+    public UserStrategyBean getStrategy() {
+	return new UserStrategyBean(step.getStrategy());
+    }
+
     public StepBean getPreviousStep() {
 	if (step.getPreviousStep() != null) {
 	    return new StepBean(step.getPreviousStep());

@@ -54,6 +54,16 @@ public class UserAnswerBean {
     public String getCustomName() {
         return userAnswer.getCustomName();
     }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.UserAnswer#getShortDisplayName()
+     */
+    public String getShortDisplayName() 
+	throws WdkUserException {
+        return userAnswer.getShortDisplayName();
+    }
     
     /*
      * (non-Javadoc)

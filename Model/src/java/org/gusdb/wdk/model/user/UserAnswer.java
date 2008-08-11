@@ -93,6 +93,26 @@ public class UserAnswer {
         return name;
     }
     
+
+    /**
+     * @return Returns the custom name, if it is set.  Otherwise, returns
+     *         the short display name for the underlying question.
+     */
+    public String getShortDisplayName()
+	throws WdkUserException {
+	String name = customName;
+	
+	if ( name == null ) name = answer.getRecordPage().getQuestion().getShortDisplayName();
+	if ( name != null ) {
+            // remove script injections
+            name = name.replaceAll( "<.+?>", " " );
+            name = name.replaceAll( "['\"]", " " );
+            name = name.trim().replaceAll( "\\s+", " " );
+            if ( name.length() > 4000 ) name = name.substring( 0, 4000 );
+        }
+        return name;
+    }
+
     /**
      * @param customName
      *            The customName to set.

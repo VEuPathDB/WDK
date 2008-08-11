@@ -11,12 +11,10 @@ public class Step {
     
     Step nextStep = null;
     Step previousStep = null;
+    Step childStep = null;
+    UserStrategy strategy = null;
     
     UserAnswer filterUserAnswer;
-    Step childStep = null;
-
-    /*public Step() {
-      }*/
 
     public Step(UserAnswer filterUserAnswer) {
 	this.filterUserAnswer = filterUserAnswer;
@@ -28,6 +26,18 @@ public class Step {
 	this.nextStep = nextStep;
 	this.filterUserAnswer = filterUserAnswer;
 	this.childStep = childStep;
+    }
+
+    public void setStrategy(UserStrategy strategy)
+	throws WdkUserException {
+	if (nextStep != null) {
+	    throw new RuntimeException("Strategy pointer is only valid for last step in a strategy!");
+	}
+	this.strategy = strategy;
+    }
+	
+    public UserStrategy getStrategy() {
+	return strategy;
     }
 
     public Step getPreviousStep() {
@@ -60,10 +70,10 @@ public class Step {
     public String getShortName() 
 	throws WdkModelException, WdkUserException {
 	if (getIsFirstStep()) {
-	    return filterUserAnswer.getRecordPage().getQuestion().getShortDisplayName();
+	    return filterUserAnswer.getShortDisplayName();
 	}
 	else {
-	    return childStep.getFilterUserAnswer().getRecordPage().getQuestion().getShortDisplayName();
+	    return childStep.getFilterUserAnswer().getShortDisplayName();
 	}
     }
 
@@ -98,8 +108,13 @@ public class Step {
 	this.childStep = childStep;
     }
 
-    protected void setNextStep(Step newNextStep) {
+    protected void setNextStep(Step newNextStep) 
+	throws WdkUserException {
         this.nextStep = newNextStep;
+	if (this.strategy != null) {
+	    newNextStep.setStrategy(this.strategy);
+	    this.strategy = null;
+	}
     }
 
     protected void setPreviousStep(Step previousStep) {

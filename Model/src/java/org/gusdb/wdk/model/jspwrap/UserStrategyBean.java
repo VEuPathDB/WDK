@@ -39,11 +39,13 @@ public class UserStrategyBean {
 	return allSteps.toArray(new StepBean[allSteps.size()]);
     }
 
-    public void addStep(StepBean step) {
+    public void addStep(StepBean step)
+	throws WdkUserException {
 	strategy.addStep(step.step);
     }
 
-    public void setLatestStep(StepBean step) {
+    public void setLatestStep(StepBean step) 
+	throws WdkUserException {
 	strategy.setLatestStep(step.step);
     }
 
@@ -51,8 +53,8 @@ public class UserStrategyBean {
 	return getAllSteps().length;
     }
 
-    public void update() throws WdkUserException {
-	strategy.update();
+    public void update(boolean overwrite) throws WdkUserException {
+	strategy.update(overwrite);
     }
 
     private ArrayList<StepBean> buildAllStepsArray(ArrayList<StepBean> array, StepBean step) {

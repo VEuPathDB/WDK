@@ -89,13 +89,13 @@ public class DownloadUserAnswerRecordPageAction extends Action {
     
     protected RecordPageBean getRecordPageBean( HttpServletRequest request )
             throws Exception {
-        String histIdstr = request.getParameter( CConstants.WDK_HISTORY_ID_KEY );
+        String histIdstr = request.getParameter( "user_answer_id" );
         if ( histIdstr == null ) {
-            histIdstr = ( String ) request.getAttribute( CConstants.WDK_HISTORY_ID_KEY );
+            histIdstr = ( String ) request.getAttribute( "user_answer_id" );
         }
         if ( histIdstr != null ) {
             int histId = Integer.parseInt( histIdstr );
-            request.setAttribute( CConstants.WDK_HISTORY_ID_KEY, histId );
+            request.setAttribute( "user_answer_id", histId );
             
             UserBean wdkUser = ( UserBean ) request.getSession().getAttribute(
                     CConstants.WDK_USER_KEY );

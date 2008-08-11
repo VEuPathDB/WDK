@@ -34,9 +34,9 @@ public class GetDownloadResultAction extends Action {
             throws Exception {
         try {
             // get answer
-            String histIdstr = request.getParameter( CConstants.WDK_HISTORY_ID_KEY );
+            String histIdstr = request.getParameter( "user_answer_id" );
             if ( histIdstr == null ) {
-                histIdstr = ( String ) request.getAttribute( CConstants.WDK_HISTORY_ID_KEY );
+                histIdstr = ( String ) request.getAttribute( "user_answer_id" );
             }
             if ( histIdstr == null )
                 throw new Exception(

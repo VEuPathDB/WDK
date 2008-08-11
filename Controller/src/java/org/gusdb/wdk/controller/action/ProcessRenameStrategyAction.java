@@ -40,7 +40,7 @@ public class ProcessRenameStrategyAction extends Action {
                 UserStrategyBean strategy = wdkUser.getUserStrategy( stratId );
                 strategy.setName( customName );
 		
-                strategy.update();
+                strategy.update(false);
             } catch ( Exception e ) {
                 e.printStackTrace();
                 // prevent refresh of page after delete from breaking

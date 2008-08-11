@@ -129,7 +129,7 @@ public class DeleteStepAction extends Action {
 
 	// set the latest step, and update the strategy
 	strategy.setLatestStep(step);
-	strategy.update();
+	strategy.update(false);
 
 	// 5. forward to strategy page
 	ActionForward showSummary = mapping.findForward( CConstants.SHOW_STRATEGY_MAPKEY );
