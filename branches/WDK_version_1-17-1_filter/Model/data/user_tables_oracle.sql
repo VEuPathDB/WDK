@@ -261,6 +261,7 @@ CREATE TABLE userlogins.user_strategies
          REFERENCES userlogins.user_answers (user_id, user_answer_id, project_id),
      CONSTRAINT "USER_STRATEGIES_USER_ID_FK" FOREIGN KEY (user_id)
          REFERENCES userlogins.users (user_id)
+     CONSTRAINT "USER_STRATEGIES_NAME_UNIQUE" UNIQUE (name)
 );
 
 GRANT insert, update, delete on userlogins.user_strategies to GUS_W;

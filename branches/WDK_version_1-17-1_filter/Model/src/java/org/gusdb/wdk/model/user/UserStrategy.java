@@ -46,6 +46,10 @@ public class UserStrategy {
 	return latestStep;
     }
     
+    void setStrategyId(int strategyId) {
+	this.strategyId = strategyId;
+    }
+
     public int getStrategyId() {
 	return strategyId;
     }
@@ -76,20 +80,22 @@ public class UserStrategy {
 	return array;
     }
 
-    public void addStep(Step step) {
+    public void addStep(Step step) 
+	throws WdkUserException {
 	if (latestStep != null) {
 	    step.setPreviousStep(latestStep);
 	    latestStep.setNextStep(step);
 	}
-	//this.latestStep = step;
 	setLatestStep(step);
     }
     
-    public void setLatestStep(Step step) {
+    public void setLatestStep(Step step) 
+	throws WdkUserException  {
 	this.latestStep = step;
+	this.latestStep.setStrategy(this);
     }
 
-    public void update() throws WdkUserException {
-	factory.updateUserStrategy(user, this);
+    public void update(boolean overwrite) throws WdkUserException {
+	factory.updateUserStrategy(user, this, overwrite);
     }
 }

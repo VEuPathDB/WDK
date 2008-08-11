@@ -233,7 +233,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	}
 
 	// in either case, update and forward to show strategy
-	strategy.update();
+	strategy.update(false);
 
 	ActionForward showSummary = mapping.findForward( CConstants.SHOW_STRATEGY_MAPKEY );
 	StringBuffer url = new StringBuffer( showSummary.getPath() );

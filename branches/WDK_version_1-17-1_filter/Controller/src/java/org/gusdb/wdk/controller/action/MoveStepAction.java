@@ -132,7 +132,7 @@ public class MoveStepAction extends Action {
 	    }
 
 	    strategy.setLatestStep(step);
-	    strategy.update();
+	    strategy.update(false);
 			
 
 	    /* Charles:  Commented out on 7/1/08.  Will need to update for new strategy objects

@@ -1485,17 +1485,43 @@ public class UserFactory {
     }
 
     // This function only updates the user_strategies table
-    void updateUserStrategy(User user, UserStrategy strategy) throws WdkUserException {
+    void updateUserStrategy(User user, UserStrategy strategy, boolean overwrite) throws WdkUserException {
 	if (!isExist(user.getEmail()))
             throw new WdkUserException("The user " + user.getEmail()
                     + " doesn't exist. Updating operation cancelled.");
 
-        // TODO:  Check if isSaved(), make a duplicate, and then work w/ that one?
-        logger.info("Save custom name: '" + strategy.getName() + "'");
-
         // update strategy name, saved, user_answer_id
 	PreparedStatement psStrategy = null;
+	ResultSet rsStrategy = null;
+
+	int userId = user.getUserId();
+
         try {
+	    if (strategy.getIsSaved()) {
+		if (!overwrite) {
+		    UserStrategy newStrat = createUserStrategy(user, strategy.getLatestStep().getFilterUserAnswer(),
+							       strategy.getName(), false);
+		    strategy.setStrategyId(newStrat.getStrategyId());
+		    strategy.setIsSaved(newStrat.getIsSaved());
+		    return;
+		}
+		else {
+		    PreparedStatement psCheck = SqlUtils.getPreparedStatement(
+                    dataSource, "SELECT user_strategy_id FROM " + loginSchema
+                            + "user_strategies WHERE user_id = ? AND project_id = ? "
+                            + "AND name = ? AND saved = ?");
+		    psCheck.setInt(1, userId);
+		    psCheck.setString(2, projectId);
+		    psCheck.setString(3, strategy.getName());
+		    psCheck.setBoolean(4, strategy.getIsSaved());
+		    rsStrategy = psCheck.executeQuery();
+
+		    if (rsStrategy.next()) {
+			strategy.setStrategyId(rsStrategy.getInt("user_strategy_id"));
+		    }
+		}
+	    }
+
             psStrategy = SqlUtils.getPreparedStatement(dataSource, "UPDATE "
                     + loginSchema + "user_strategies SET name = ?, "
                     + "user_answer_id = ?, is_saved = ?"
@@ -1517,6 +1543,7 @@ public class UserFactory {
         } finally {
             try {
                 SqlUtils.closeStatement(psStrategy);
+		SqlUtils.closeResultSet(rsStrategy);
             } catch (SQLException ex) {
                 throw new WdkUserException(ex);
             }
