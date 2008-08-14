@@ -155,10 +155,16 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	// Are we revising or inserting a step?
 	String reviseStep = request.getParameter("revise");
 	String insertStep = request.getParameter("insert");
+	String op = boolExp;
+	if (op.indexOf(" ") >= 0) {
+	    op = boolExp.substring(boolExp.indexOf(" "), boolExp.length());
+	}
+	System.out.println("Op: " + op);
 	
 	if ((reviseStep == null || reviseStep.length() == 0) &&
 	    (insertStep == null || insertStep.length() == 0)) {
-	    boolExp += " " + userAnswerId;
+	    step = strategy.getLatestStep();
+	    boolExp = step.getFilterUserAnswer().getUserAnswerId() + " " + op + " " + userAnswerId;
 	    System.out.println("Boolean expression for add: " + boolExp);
 	    
 	    // now create userAnswer for operation query
@@ -172,7 +178,6 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	    strategy.addStep(step);
 	}
 	else {
-	    String op = boolExp.substring(boolExp.indexOf(" "), boolExp.length());
 	    int stratLen = strategy.getLength();
 	    int targetIx;
 
@@ -184,14 +189,13 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 		step = strategy.getStep(targetIx);
 		if (step.getIsFirstStep()) {
 		    // build boolExp for switching to new first query
-		    boolExp = step.getFilterUserAnswer().getBooleanExpression();
+		    boolExp = step.getNextStep().getFilterUserAnswer().getBooleanExpression();
 		    boolExp = userAnswerId + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
 		    targetIx++;
 		}
 		else {
 		    // build standard boolExp for non-first step
-		    boolExp = step.getFilterUserAnswer().getBooleanExpression();
-		    boolExp = boolExp.substring(0, boolExp.indexOf(" ")+1) + op + " " + userAnswerId;
+		    boolExp = step.getPreviousStep().getFilterUserAnswer().getUserAnswerId() + op + " " + userAnswerId;
 		}
 		targetIx++;
 	    }
