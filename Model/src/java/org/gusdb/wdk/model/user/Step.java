@@ -60,7 +60,8 @@ public class Step {
 	return childStep.getFilterUserAnswer();
     }
 
-    public String getCustomName() {
+    public String getCustomName()
+	throws WdkUserException {
 	if (getIsFirstStep()) {
 	    return filterUserAnswer.getCustomName();
 	}
@@ -108,7 +109,7 @@ public class Step {
 	this.childStep = childStep;
     }
 
-    protected void setNextStep(Step newNextStep) 
+    public void setNextStep(Step newNextStep) 
 	throws WdkUserException {
         this.nextStep = newNextStep;
 	if (this.strategy != null) {
@@ -117,7 +118,7 @@ public class Step {
 	}
     }
 
-    protected void setPreviousStep(Step previousStep) {
+    public void setPreviousStep(Step previousStep) {
         this.previousStep = previousStep;
     }
 

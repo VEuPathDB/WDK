@@ -9,6 +9,7 @@ import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -183,6 +184,15 @@ public class ShowSummaryAction extends ShowQuestionAction {
 	    queryString = request.getQueryString();
 	}
 
+	HashMap<Integer,UserStrategyBean> activeStrategies = (HashMap<Integer,UserStrategyBean>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
+
+	if (activeStrategies == null) {
+	    activeStrategies = new HashMap<Integer,UserStrategyBean>();
+	}
+	activeStrategies.put(new Integer(strategy.getStrategyId()),strategy);
+	
+	request.getSession().setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY, activeStrategies);  
+	
         int userAnswerId = userAnswer.getUserAnswerId();
 
 	String requestUrl = request.getRequestURI() + "?" + queryString;
@@ -222,6 +232,20 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
         // make ActionForward
 	ActionForward forward;
+
+	String resultsOnly = request.getParameter(CConstants.WDK_RESULT_SET_ONLY_KEY);
+	// forward to the results page, if requested
+	if (resultsOnly != null && Boolean.valueOf(resultsOnly)) {
+	    forward = mapping.findForward(CConstants.RESULTSONLY_MAPKEY);
+	}
+	// otherwise, forward to the full summary page
+	else {
+	    forward = mapping.findForward(CConstants.SHOW_APPLICATION_MAPKEY);
+	    forward = new ActionForward(forward.getPath(), true);
+	}
+	
+	System.out.println("From forward: " + forward.getPath());
+	/*
 	// if we got a strategy id in the URL, go to summary page
 	if (strProtoId != null && strProtoId.length() != 0) {
 	    String resultsOnly = request.getParameter(CConstants.WDK_RESULT_SET_ONLY_KEY);
@@ -236,14 +260,14 @@ public class ShowSummaryAction extends ShowQuestionAction {
 	    
 	    System.out.println("From forward: " + forward.getPath());
 	}
-	// of not, redirect back to ShowSummary, with corrected URL
+	// if not, redirect back to ShowSummary, with corrected URL
 	else {
 	    forward = mapping.findForward("reload_summary");
 	    String path = forward.getPath() + "?" + queryString;
 	    System.out.println(path);
 	    forward = new ActionForward(path, true);
 	}
-	
+	*/ 
 	return forward;
     }
 
@@ -336,7 +360,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 summaryAttributes, null);
     }
 
-    private RecordPageBean summaryPaging(HttpServletRequest request,
+    protected RecordPageBean summaryPaging(HttpServletRequest request,
             Object answerMaker, Map<String, Object> params,
             Map<String, Boolean> sortingAttributes, String[] summaryAttributes,
             RecordPageBean wdkRecordPage) throws WdkModelException, WdkUserException {

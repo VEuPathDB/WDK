@@ -87,11 +87,13 @@ public class DeleteStepAction extends Action {
 	    else if (strategy.getLength() > 2) {
 		step = step.getNextStep();
 		step.setFilterUserAnswer(step.getChildStepUserAnswer());
-		stepIx++;
-		for (int i = stepIx + 1; i < strategy.getLength(); ++i) {
+		//we need to update starting w/ step 3
+		stepIx += 2;
+		for (int i = stepIx; i < strategy.getLength(); ++i) {
 		    newStep = strategy.getStep(i);
 		    boolExp = newStep.getFilterUserAnswer().getBooleanExpression();
 		    boolExp = step.getFilterUserAnswer().getUserAnswerId() + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
+		    System.out.println("Delete boolExp " + i + ": " + boolExp);
 		    userAnswer = wdkUser.combineUserAnswer(boolExp);
 		    newStep.setFilterUserAnswer(userAnswer);
 		    step = newStep;
@@ -110,12 +112,16 @@ public class DeleteStepAction extends Action {
 	else {
 	    // if this is not the last step, then filter userAnswer of the next step needs
 	    // to point to filter userAnswer of the previous step
-	    if (Integer.valueOf(deleteStep) < strategy.getLength() - 1) {
+	    if (stepIx < strategy.getLength() - 1) {
 		step = step.getPreviousStep();
-		for (int i = stepIx + 1; i < strategy.getLength(); ++i) {
+		//need to start by updating the step after the deleted step so that it
+		//points to the step before the deleted step, then update subsequent steps
+		stepIx++;
+		for (int i = stepIx; i < strategy.getLength(); ++i) {
 		    newStep = strategy.getStep(i);
 		    boolExp = newStep.getFilterUserAnswer().getBooleanExpression();
 		    boolExp = step.getFilterUserAnswer().getUserAnswerId() + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
+		    System.out.println("Delete boolExp " + i + ": " + boolExp);
 		    userAnswer = wdkUser.combineUserAnswer(boolExp);
 		    newStep.setFilterUserAnswer(userAnswer);
 		    step = newStep;
@@ -123,7 +129,9 @@ public class DeleteStepAction extends Action {
 	    }
 	    // if this is the last step, then we just set the previous step as the last step of the strategy
 	    else {
+		newStep = null;
 		step = step.getPreviousStep();
+		step.setNextStep(newStep);
 	    }
 	}
 

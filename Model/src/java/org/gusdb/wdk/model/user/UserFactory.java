@@ -903,7 +903,6 @@ public class UserFactory {
                 if (connection != null) connection.setAutoCommit(true);
 		SqlUtils.closeStatement(psCheck);
 		SqlUtils.closeStatement(psAnswer);
-		//SqlUtils.closeStatement(psMax);
 		SqlUtils.closeResultSet(rsMax);
                 SqlUtils.closeResultSet(rsAnswer);
 	    } catch (SQLException ex) {
@@ -1221,6 +1220,9 @@ public class UserFactory {
 	    if (isBoolean) {
 		updateUserAnswerTree(user, userAnswer, booleanExpression);
 	    }
+	    else if (userAnswer.isTransform()) {
+		updateUserAnswerTree(user, userAnswer, null);
+	    }
 
             // update the user's history count
 	    // change to update user's answer count?
@@ -1260,22 +1262,35 @@ public class UserFactory {
 		    + "VALUES (?, ?, ?, ?, ?)");
 
 	    int childId;
-	    for (int i = 0; i < 2; ++i) {
-		if (i == 0) {
-		    childId = Integer.parseInt(booleanExpression.substring(0, booleanExpression.indexOf(" ")));
+	    if (booleanExpression != null && booleanExpression.length() != 0) {
+		for (int i = 0; i < 2; ++i) {
+		    if (i == 0) {
+			childId = Integer.parseInt(booleanExpression.substring(0, booleanExpression.indexOf(" ")));
+		    }
+		    else {
+			childId = Integer.parseInt(booleanExpression.substring(booleanExpression.lastIndexOf(" ") + 1,
+									       booleanExpression.length()));
+		    }
+	      
+		    psUpdateAnswerTree.setInt(1, userAnswer.getUserAnswerId());
+		    psUpdateAnswerTree.setInt(2, childId);
+		    psUpdateAnswerTree.setInt(3, i);
+		    psUpdateAnswerTree.setString(4, projectId);
+		    psUpdateAnswerTree.setInt(5, user.getUserId());
+		    
+		    psUpdateAnswerTree.executeUpdate();
 		}
-		else {
-		    childId = Integer.parseInt(booleanExpression.substring(booleanExpression.lastIndexOf(" ") + 1,
-									   booleanExpression.length()));
+	    }
+	    else {
+		Param[] params = userAnswer.getRecordPage().getQuestion().getParams();
+		List<HistoryParam> histParams = new ArrayList<HistoryParam>();
+		for ( Param param : params ) {
+		    if ( param instanceof HistoryParam ) {
+			histParams.add((HistoryParam) param);
+		    }
 		}
-
-		psUpdateAnswerTree.setInt(1, userAnswer.getUserAnswerId());
-		psUpdateAnswerTree.setInt(2, childId);
-		psUpdateAnswerTree.setInt(3, i);
-		psUpdateAnswerTree.setString(4, projectId);
-		psUpdateAnswerTree.setInt(5, user.getUserId());
-
-		psUpdateAnswerTree.executeUpdate();
+		//iterate over any history params found (can there be more than one?)
+		//and add rows in user_answer_tree
 	    }
 	} catch (SQLException ex) {
 	    throw new WdkUserException(ex);

@@ -11,6 +11,7 @@ import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.UUID;
 
 import javax.servlet.ServletContext;
@@ -74,7 +75,11 @@ public class ShowStrategyAction extends ShowQuestionAction {
         }
 
 	UserStrategyBean strategy = wdkUser.getUserStrategy(Integer.parseInt(strProtoId));
+	HashMap<Integer,UserStrategyBean> activeStrategies = (HashMap<Integer,UserStrategyBean>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
 
+	activeStrategies.put(new Integer(strategy.getStrategyId()),strategy);
+	
+	request.getSession().setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY, activeStrategies);
 	request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
 
 	// forward to strategyPage.jsp

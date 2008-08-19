@@ -73,15 +73,14 @@ public class UserAnswer {
      *         return the default name provided by the underline RecordPage - a
      *         combination of question's full name, parameter names and values.
      */
-    public String getCustomName() {
+    public String getCustomName() 
+	throws WdkUserException {
         String name = customName;
-	/*
-        if ( name == null || name.length() == 0 ) {
-            if ( answer.isBoolean() ) name = answer.getBooleanExpression();
-            else if ( answer.getRecordPage() != null ) {
-                name = answer.getRecordPage().getQuestion().getDisplayName();
-            }
-	    }*/
+	if ( name == null || name.length() == 0) {
+	    if (answer.getRecordPage() != null) {
+		name = answer.getRecordPage().getQuestion().getDisplayName();
+	    }
+	}
         if ( name == null ) name = answer.getQuestionName();
         if ( name != null ) {
             // remove script injections
@@ -196,6 +195,13 @@ public class UserAnswer {
     public boolean isBoolean() {
         return answer.isBoolean();
     }
+
+    /**
+     * @return Returns whether this UserAnswer is a transform
+     */
+    public boolean isTransform() {
+	return answer.isTransform();
+    }
     
     /**
      * @param isBoolean
@@ -240,50 +246,7 @@ public class UserAnswer {
         factory.updateUserAnswer( user, this, updateTime );
     }
     
-    // Not sure how to deal w/ this...is this now handled by UserAnswerTree?
-    /*
-    public boolean isDepended() throws WdkUserException, WdkModelException {
-        if ( isDepended == null ) computeDependencies( user.getHistories() );
-        return isDepended;
-    }
-    
-    void computeDependencies( History[ ] histories ) throws WdkModelException {
-        isDepended = false;
-        for ( History history : histories ) {
-            if ( history.userAnswerId == this.userAnswerId ) continue;
-            Set< Integer > components = history.getComponentHistories();
-            if ( components.contains( userAnswerId ) ) {
-                isDepended = true;
-                break;
-            }
-        }
-    }
-    */
-    /**
-     * @return get a list of history ID's this one depends on directly.
-     * @throws WdkModelException
-     */
-    /*
-    public Set< Integer > getComponentHistories() throws WdkModelException {
-        if ( isBoolean ) {
-            BooleanExpression parser = new BooleanExpression( user );
-            return parser.getOperands( booleanExpression );
-        } else {
-            Set< Integer > components = new LinkedHashSet< Integer >();
-            Param[ ] params = answer.getQuestion().getParams();
-            Map< String, Object > values = answer.getParams();
-            for ( Param param : params ) {
-                if ( param instanceof HistoryParam ) {
-                    String compound = values.get( param.getName() ).toString();
-                    // two parts: user_signature, history_id
-                    String[ ] parts = compound.split( ":" );
-                    components.add( Integer.parseInt( parts[ 1 ].trim() ) );
-                }
-            }
-            return components;
-        }
-    }
-    */
+
     public String getDescription() {
         return answer.getDescription();
     }

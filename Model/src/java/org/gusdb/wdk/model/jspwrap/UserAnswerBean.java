@@ -51,7 +51,8 @@ public class UserAnswerBean {
      * 
      * @see org.gusdb.wdk.model.user.UserAnswer#getCustomName()
      */
-    public String getCustomName() {
+    public String getCustomName()
+	throws WdkUserException {
         return userAnswer.getCustomName();
     }
 
@@ -212,7 +213,8 @@ public class UserAnswerBean {
         this.nameTruncateTo = nameTruncateTo;
     }
     
-    public String getTruncatedName() {
+    public String getTruncatedName()
+	throws WdkUserException {
         String name = userAnswer.getCustomName();
         if (name != null && name.length() > nameTruncateTo )
             name = name.substring( 0, nameTruncateTo ) + "...";
