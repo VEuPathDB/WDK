@@ -29,6 +29,7 @@ public class CConstants {
     public static final String WDK_QUESTION_PARAMS_KEY = "wdkQuestionParams";
     public static final String WDK_ANSWER_KEY = "wdkAnswer";
     public static final String WDK_STRATEGY_KEY = "wdkStrategy";
+    public static final String WDK_STRATEGY_COLLECTION_KEY = "wdkActiveStrategies";
     public static final String WDK_STRATEGY_ID_KEY = "strategy_id";
     public static final String WDK_STEP_KEY = "step";
     public static final String WDK_REPORT_FORMATS_KEY = "wdkReportFormats";
@@ -123,6 +124,7 @@ public class CConstants {
     public static final String CREATE_DATASET_MAPKEY = "create_dataset";
     public static final String RESULTSONLY_MAPKEY = "results_only";
     public static final String SHOW_STRATEGY_MAPKEY = "show_strategy";
+    public static final String SHOW_APPLICATION_MAPKEY = "show_application";
 
     //button click detectors, used in action, action forms, and jsp pages
     public static final String PQ_SUBMIT_KEY = "questionSubmit"; //match question.jsp

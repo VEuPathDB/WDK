@@ -25,7 +25,12 @@ public class HistoryParamBean extends ParamBean {
         this.combinedId = combinedId;
     }
 
-    public HistoryBean getHistory() throws WdkUserException, WdkModelException {
+    /*public HistoryBean getHistory() throws WdkUserException, WdkModelException {
         return new HistoryBean(historyParam.getHistory(combinedId));
+	}*/
+
+    public UserAnswerBean getUserAnswer()
+	throws WdkUserException, WdkModelException {
+	return new UserAnswerBean(historyParam.getUserAnswer(combinedId));
     }
 }

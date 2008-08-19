@@ -8,12 +8,18 @@
 <!-- get wdkAnswer from requestScope -->
 <jsp:useBean id="wdkUser" scope="session" type="org.gusdb.wdk.model.jspwrap.UserBean"/>
 <c:set value="${requestScope.wdkAnswer}" var="wdkAnswer"/>
-<c:set var="history_id" value="${requestScope.wdk_history_id}"/>
+<c:set var="history_id" value="${requestScope.user_answer_id}"/>
 <c:set var="format" value="${requestScope.wdkReportFormat}"/>
 
 
 <!-- display page header -->
-<site:header banner="Select a format for the download data" />
+<%-- <site:header banner="Select a format for the download data" /> --%>
+<site:home_header refer="reporterConfig" />
+<site:menubar />
+
+<div id="contentwrapper">
+    <div id="contentcolumn2">
+        <div class="innertube">
 
 <table border="0" width="100%" cellpadding="1" cellspacing="0" bgcolor="white" class="thinTopBorders">
 <tr><td bgcolor="white" valign="top">
@@ -34,5 +40,8 @@
 <%-- CLOSE TABLE that sets the red line on top --%>
 </td></tr></table>
 
+        </div>
+    </div>
+</div>
 
 <site:footer/>

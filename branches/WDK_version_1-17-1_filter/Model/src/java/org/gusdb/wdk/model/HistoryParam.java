@@ -3,7 +3,7 @@
  */
 package org.gusdb.wdk.model;
 
-import org.gusdb.wdk.model.user.History;
+import org.gusdb.wdk.model.user.UserAnswer;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
 
@@ -42,7 +42,8 @@ public class HistoryParam extends Param {
             int historyId = Integer.parseInt(strHistId);
             try {
                 User user = factory.loadUserBySignature(signature);
-                user.getHistory(historyId);
+                //user.getHistory(historyId);
+		user.getUserAnswer(historyId);
             } catch (WdkUserException ex) {
                 ex.printStackTrace();
                 return ex.getMessage();
@@ -85,14 +86,15 @@ public class HistoryParam extends Param {
     @Override
     protected String getInternalValue(String value) throws WdkModelException {
         try {
-            History history = getHistory(value);
-            return history.getCacheFullTable();
+            //History history = getHistory(value);
+            UserAnswer history = getUserAnswer(value);
+	    return history.getCacheFullTable();
         } catch (WdkUserException ex) {
             throw new WdkModelException(ex);
         }
     }
 
-    public History getHistory(String combinedId)
+    /*public History getHistory(String combinedId)
             throws WdkUserException, WdkModelException {
         String[] parts = combinedId.split(":");
         // the input have a valid user id and history id
@@ -102,6 +104,17 @@ public class HistoryParam extends Param {
         int historyId = Integer.parseInt(strHistId);
         User user = factory.loadUserBySignature(signature);
         return user.getHistory(historyId);
+	}*/
+
+    public UserAnswer getUserAnswer(String combinedId)
+	throws WdkUserException, WdkModelException {
+	String[] parts = combinedId.split(":");
+	String signature = parts[0].trim();
+	String strHistId = parts[1].trim();
+
+	int userAnswerId = Integer.parseInt(strHistId);
+	User user = factory.loadUserBySignature(signature);
+	return user.getUserAnswer(userAnswerId);
     }
 
     /*

@@ -131,25 +131,6 @@ public class Answer {
         return recordPage.getQuestion().getRecordClass().getFullName();
     }
     
-    // Do these just go in UserAnswer, no need for it in answer?
-    /*
-    public boolean isDepended() throws WdkUserException, WdkModelException {
-        if ( isDepended == null ) computeDependencies( user.getAnswers() );
-        return isDepended;
-    }
-    
-    void computeDependencies( Answer[ ] histories ) throws WdkModelException {
-        isDepended = false;
-        for ( Answer history : histories ) {
-            if ( history.answerId == this.answerId ) continue;
-            Set< Integer > components = history.getComponentAnswers();
-            if ( components.contains( answerId ) ) {
-                isDepended = true;
-                break;
-            }
-        }
-    }
-    */
     /**
      * @return get a list of history ID's this one depends on directly.
      * @throws WdkModelException
@@ -183,6 +164,16 @@ public class Answer {
         return recordPage.getIdsQueryInstance().getResultAsTableName();
     }
     
+    public boolean isTransform() {
+	Param[ ] params = recordPage.getQuestion().getParams();
+	for ( Param param : params ) {
+	    if ( param instanceof HistoryParam ) {
+		return true;
+	    }
+	}
+	return false;
+    }
+
     /**
      * @return the isValid
      */

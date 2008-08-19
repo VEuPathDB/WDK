@@ -131,6 +131,8 @@ public class MoveStepAction extends Action {
 		}
 	    }
 
+	    newStep = null;
+	    step.setNextStep(newStep);
 	    strategy.setLatestStep(step);
 	    strategy.update(false);
 			

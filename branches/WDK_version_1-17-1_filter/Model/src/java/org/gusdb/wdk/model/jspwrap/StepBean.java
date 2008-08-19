@@ -38,6 +38,11 @@ public class StepBean {
 	return null;
     }
 
+    public void setNextStep(StepBean next)
+	throws WdkUserException {
+	step.setNextStep(next.step);
+    }
+
     public UserAnswerBean getChildStepUserAnswer() {
 	if (step.getChildStep() != null) {
 	    return new UserAnswerBean(step.getChildStepUserAnswer());
@@ -67,7 +72,8 @@ public class StepBean {
 	step.setChildStep(childStep.step);
     }
 
-    public String getCustomName() {
+    public String getCustomName() 
+	throws WdkUserException {
 	return step.getCustomName();
     }
 
