@@ -195,7 +195,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 		}
 		else {
 		    // build standard boolExp for non-first step
-		    boolExp = step.getPreviousStep().getFilterUserAnswer().getUserAnswerId() + op + " " + userAnswerId;
+		    boolExp = step.getPreviousStep().getFilterUserAnswer().getUserAnswerId() + " " + op + " " + userAnswerId;
 		}
 		targetIx++;
 	    }

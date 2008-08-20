@@ -1282,6 +1282,8 @@ public class UserFactory {
 		}
 	    }
 	    else {
+		//find all history params so we can use the name to look up the value
+		//in the userAnswer
 		Param[] params = userAnswer.getRecordPage().getQuestion().getParams();
 		List<HistoryParam> histParams = new ArrayList<HistoryParam>();
 		for ( Param param : params ) {
@@ -1289,8 +1291,22 @@ public class UserFactory {
 			histParams.add((HistoryParam) param);
 		    }
 		}
-		//iterate over any history params found (can there be more than one?)
-		//and add rows in user_answer_tree
+
+		//iterate over any history params found and add rows in user_answer_tree
+		Map<String, Object> paramVals = userAnswer.getRecordPage().getParams();
+		int i = 0;
+		for (HistoryParam param: histParams) {
+		    childId = Integer.parseInt((String) paramVals.get(param.getName()));
+	      
+		    psUpdateAnswerTree.setInt(1, userAnswer.getUserAnswerId());
+		    psUpdateAnswerTree.setInt(2, childId);
+		    psUpdateAnswerTree.setInt(3, i);
+		    psUpdateAnswerTree.setString(4, projectId);
+		    psUpdateAnswerTree.setInt(5, user.getUserId());
+		    
+		    psUpdateAnswerTree.executeUpdate();
+		    ++i;
+		}
 	    }
 	} catch (SQLException ex) {
 	    throw new WdkUserException(ex);
