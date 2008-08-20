@@ -6,6 +6,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -34,11 +36,13 @@ import org.gusdb.wdk.model.RecordClassSet;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.implementation.ModelXmlParser;
 import org.gusdb.wdk.model.test.SanityModel;
 import org.gusdb.wdk.model.test.SanityQuestion;
 import org.gusdb.wdk.model.test.SanityRecord;
 import org.gusdb.wdk.model.test.SanityTestXmlParser;
+import org.json.JSONException;
 import org.xml.sax.SAXException;
 
 public class StressTemplater {
@@ -111,7 +115,9 @@ public class StressTemplater {
         recordItems = new LinkedHashMap<String, RecordItem>();
     }
 
-    public void makeTemplate(File file) throws WdkModelException {
+    public void makeTemplate(File file) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
         // load the info from the model
         logger.info("Loading info from the model...");
         loadFromModel();
@@ -131,7 +137,9 @@ public class StressTemplater {
         generateTemplate(file);
     }
 
-    private void loadFromModel() throws WdkModelException {
+    private void loadFromModel() throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
         // get questions
         QuestionSet[] qsets = wdkModel.getAllQuestionSets();
         for (QuestionSet qset : qsets) {
@@ -320,8 +328,12 @@ public class StressTemplater {
     // /////////// static methods /////////////////////////////////////
     // ////////////////////////////////////////////////////////////////////
 
-    public static void main(String[] args)
-            throws IOException, WdkModelException {
+    public static void main(String[] args) throws IOException,
+            WdkModelException, NoSuchAlgorithmException,
+            ParserConfigurationException, TransformerFactoryConfigurationError,
+            TransformerException, SAXException, SQLException, JSONException,
+            WdkUserException, InstantiationException, IllegalAccessException,
+            ClassNotFoundException {
 
         String cmdName = System.getProperty("cmdName");
         String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
@@ -332,34 +344,21 @@ public class StressTemplater {
 
         String modelName = cmdLine.getOptionValue("model");
 
-        try {
-            ModelXmlParser parser = new ModelXmlParser(gusHome);
-            WdkModel wdkModel = parser.parseModel(modelName);
-            SanityTestXmlParser sanityParser = new SanityTestXmlParser(gusHome);
-            SanityModel sanityModel = sanityParser.parseModel(modelName,
-                    wdkModel);
+        ModelXmlParser parser = new ModelXmlParser(gusHome);
+        WdkModel wdkModel = parser.parseModel(modelName);
+        SanityTestXmlParser sanityParser = new SanityTestXmlParser(gusHome);
+        SanityModel sanityModel = sanityParser.parseModel(modelName, wdkModel);
 
-            StressTemplater tester = new StressTemplater(wdkModel, sanityModel);
+        StressTemplater tester = new StressTemplater(wdkModel, sanityModel);
 
-            // open the input/output file
-            File outFile = new File(gusHome, "/config/" + modelName
-                    + "/stress.template");
-            tester.makeTemplate(outFile);
+        // open the input/output file
+        File outFile = new File(gusHome, "/config/" + modelName
+                + "/stress.template");
+        tester.makeTemplate(outFile);
 
-            System.out.println("The template file for " + modelName
-                    + " has been saved at " + outFile.getAbsolutePath());
-            System.exit(0);
-        } catch (SAXException ex) {
-            throw new WdkModelException(ex);
-        } catch (IOException ex) {
-            throw new WdkModelException(ex);
-        } catch (ParserConfigurationException ex) {
-            throw new WdkModelException(ex);
-        } catch (TransformerFactoryConfigurationError ex) {
-            throw new WdkModelException(ex);
-        } catch (TransformerException ex) {
-            throw new WdkModelException(ex);
-        }
+        System.out.println("The template file for " + modelName
+                + " has been saved at " + outFile.getAbsolutePath());
+        System.exit(0);
     }
 
     private static void addOption(Options options, String argName, String desc) {

@@ -4,7 +4,8 @@
 package org.gusdb.wdk.model.test;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -19,6 +20,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
+import org.json.JSONException;
 import org.xml.sax.SAXException;
 
 /**
@@ -80,10 +82,12 @@ public class UserFactoryTest extends TestCase {
     private String email = "jerric@uga.edu";
     private String password = "jerric";
 
-    public static void main(String[] args)
-            throws WdkModelException, WdkUserException, SAXException,
-            IOException, ParserConfigurationException,
-            TransformerFactoryConfigurationError, TransformerException {
+    public static void main(String[] args) throws WdkModelException,
+            WdkUserException, SAXException, IOException,
+            ParserConfigurationException, TransformerFactoryConfigurationError,
+            TransformerException, NoSuchAlgorithmException, SQLException,
+            JSONException, InstantiationException, IllegalAccessException,
+            ClassNotFoundException {
         if (args.length < 1) {
             printUsage("Command is missing.");
             System.exit(-1);
@@ -194,45 +198,31 @@ public class UserFactoryTest extends TestCase {
      * Test method for
      * 'org.gusdb.wdk.model.user.UserFactory.authenticate(String, String)'
      */
-    public void testAuthenticate() {
-        try {
-            User guest = factory.createGuestUser();
-            User user = factory.login(guest, email, "jerric");
-            assertNotNull(user);
-            assertFalse(user.isGuest());
-        } catch (WdkUserException ex) {
-            ex.printStackTrace();
-            assertTrue(false);
-        } catch (WdkModelException ex) {
-            ex.printStackTrace();
-            assertTrue(false);
-        }
+    public void testAuthenticate() throws NoSuchAlgorithmException,
+            SQLException, JSONException, WdkUserException, WdkModelException {
+        User guest = factory.createGuestUser();
+        User user = factory.login(guest, email, "jerric");
+        assertNotNull(user);
+        assertFalse(user.isGuest());
     }
 
     /*
      * Test method for 'org.gusdb.wdk.model.user.UserFactory.saveUser(User)'
      */
-    public void testSaveUser() {
-        try {
-            User guest = factory.createGuestUser();
-            User user = factory.login(guest, email, "jerric");
-            assertNotNull(user);
-            assertFalse(user.isGuest());
+    public void testSaveUser() throws NoSuchAlgorithmException,
+            WdkUserException, WdkModelException, SQLException, JSONException {
+        User guest = factory.createGuestUser();
+        User user = factory.login(guest, email, "jerric");
+        assertNotNull(user);
+        assertFalse(user.isGuest());
 
-            // update user information, and save it
-            user.setAddress("524 Guardian dr. 1428 Blockley Hall");
-            user.setCity("Philadelphia");
-            user.setDepartment("Center for Bioinformatics");
-            user.setOrganization("University of Pennsylvania");
-            user.addUserRole("administrator");
-            user.save();
-        } catch (WdkUserException ex) {
-            ex.printStackTrace();
-            assertTrue(false);
-        } catch (WdkModelException ex) {
-            ex.printStackTrace();
-            assertTrue(false);
-        }
+        // update user information, and save it
+        user.setAddress("524 Guardian dr. 1428 Blockley Hall");
+        user.setCity("Philadelphia");
+        user.setDepartment("Center for Bioinformatics");
+        user.setOrganization("University of Pennsylvania");
+        user.addUserRole("administrator");
+        user.save();
     }
 
     /*

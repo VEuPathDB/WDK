@@ -21,6 +21,12 @@ public class ReporterRef extends WdkModelBase {
     private List<ReporterProperty> propertyList = new ArrayList<ReporterProperty>();
     private Map<String, String> properties = new LinkedHashMap<String, String>();
 
+    private WdkModel wdkModel;
+
+    public WdkModel getWdkModel() {
+        return wdkModel;
+    }
+
     /**
      * @return the implementation
      */
@@ -30,7 +36,7 @@ public class ReporterRef extends WdkModelBase {
 
     /**
      * @param implementation
-     * the implementation to set
+     *                the implementation to set
      */
     public void setImplementation(String implementation) {
         this.implementation = implementation;
@@ -45,7 +51,7 @@ public class ReporterRef extends WdkModelBase {
 
     /**
      * @param name
-     * the name to set
+     *                the name to set
      */
     public void setName(String name) {
         this.name = name;
@@ -60,7 +66,7 @@ public class ReporterRef extends WdkModelBase {
 
     /**
      * @param displayName
-     * the displayName to set
+     *                the displayName to set
      */
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
@@ -75,7 +81,7 @@ public class ReporterRef extends WdkModelBase {
 
     /**
      * @param inReportMaker
-     * the inReportMaker to set
+     *                the inReportMaker to set
      */
     public void setInReportMaker(boolean inReportMaker) {
         this.inReportMaker = inReportMaker;
@@ -109,5 +115,19 @@ public class ReporterRef extends WdkModelBase {
             }
         }
         propertyList = null;
+    }
+
+    public void setResources(WdkModel wdkModel) {
+        this.wdkModel = wdkModel;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model.WdkModel)
+     */
+    @Override
+    public void resolveReferences(WdkModel wodkModel) throws WdkModelException {
+    // do nothing
     }
 }

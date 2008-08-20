@@ -4,6 +4,8 @@
 package org.gusdb.wdk.model.migrate;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -21,6 +23,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.implementation.ModelXmlParser;
+import org.json.JSONException;
 import org.xml.sax.SAXException;
 
 /**
@@ -48,9 +51,24 @@ public class Migrator {
      * @param args
      * @throws WdkModelException
      * @throws WdkUserException
+     * @throws ClassNotFoundException
+     * @throws IllegalAccessException
+     * @throws InstantiationException
+     * @throws JSONException
+     * @throws SQLException
+     * @throws SAXException
+     * @throws IOException
+     * @throws TransformerException
+     * @throws TransformerFactoryConfigurationError
+     * @throws ParserConfigurationException
+     * @throws NoSuchAlgorithmException
      */
-    public static void main(String[] args)
-            throws WdkModelException, WdkUserException {
+    public static void main(String[] args) throws WdkModelException,
+            WdkUserException, NoSuchAlgorithmException,
+            ParserConfigurationException, TransformerFactoryConfigurationError,
+            TransformerException, IOException, SAXException, SQLException,
+            JSONException, InstantiationException, IllegalAccessException,
+            ClassNotFoundException {
         // determine which version of the migrator to be used
         Migrator migrator = new Migrator();
         migrator.parseOptions(args);
@@ -62,21 +80,13 @@ public class Migrator {
         // construct the migrator class to do the real work
         String className = Migrator.class.getName() + oldVersion + "To"
                 + newVersion;
-        try {
-            Class migratorClass = Class.forName(className);
-            migrator = (Migrator) migratorClass.newInstance();
-            migrator.parseOptions(args);
-            migrator.migrate();
+        Class<?> migratorClass = Class.forName(className);
+        migrator = (Migrator) migratorClass.newInstance();
+        migrator.parseOptions(args);
+        migrator.migrate();
 
-            System.out.println("Migration from " + oldVersion + " to "
-                    + newVersion + " is finished");
-        } catch (ClassNotFoundException ex) {
-            throw new WdkModelException(ex);
-        } catch (InstantiationException ex) {
-            throw new WdkModelException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new WdkModelException(ex);
-        }
+        System.out.println("Migration from " + oldVersion + " to " + newVersion
+                + " is finished");
     }
 
     private String commandName;
@@ -96,7 +106,12 @@ public class Migrator {
         declareOptions();
     }
 
-    public void parseOptions(String[] args) throws WdkModelException {
+    public void parseOptions(String[] args) throws WdkModelException,
+            NoSuchAlgorithmException, ParserConfigurationException,
+            TransformerFactoryConfigurationError, TransformerException,
+            IOException, SAXException, SQLException, JSONException,
+            WdkUserException, InstantiationException, IllegalAccessException,
+            ClassNotFoundException {
         commandName = System.getProperty("cmdName");
 
         CommandLineParser parser = new BasicParser();
@@ -117,20 +132,8 @@ public class Migrator {
 
         // parse the wdk model
         String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
-        try {
-            ModelXmlParser modelParser = new ModelXmlParser(gusHome);
-            wdkModel = modelParser.parseModel(modelName);
-        } catch (SAXException ex) {
-            throw new WdkModelException(ex);
-        } catch (IOException ex) {
-            throw new WdkModelException(ex);
-        } catch (ParserConfigurationException ex) {
-            throw new WdkModelException(ex);
-        } catch (TransformerFactoryConfigurationError ex) {
-            throw new WdkModelException(ex);
-        } catch (TransformerException ex) {
-            throw new WdkModelException(ex);
-        }
+        ModelXmlParser modelParser = new ModelXmlParser(gusHome);
+        wdkModel = modelParser.parseModel(modelName);
     }
 
     public String getOldVersion() {
@@ -206,8 +209,12 @@ public class Migrator {
 
     /**
      * start migration. This method will be overridden by sub-classes
+     * 
+     * @throws SQLException
+     * @throws NoSuchAlgorithmException
      */
-    public void migrate() throws WdkModelException, WdkUserException {
+    public void migrate() throws WdkModelException, WdkUserException,
+            NoSuchAlgorithmException, SQLException {
         System.out.println("Do nothing");
     }
 }

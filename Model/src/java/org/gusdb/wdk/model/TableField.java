@@ -6,10 +6,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-public class TableField extends Field {
+import org.gusdb.wdk.model.query.Query;
 
-	private static final Logger logger = WdkLogManager
-			.getLogger("org.gusdb.wdk.model.TableField");
+public class TableField extends Field implements AttributeFieldContainer {
+
+    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.model.TableField");
 
 	private String queryTwoPartName;
 	private Query query;
@@ -31,53 +32,83 @@ public class TableField extends Field {
 		this.queryTwoPartName = queryRef;
 	}
 
+    public void addAttributeField(AttributeField attributeField) {
+        attributeField.setRecordClass(recordClass);
+        attributeField.setContainer(this);
+        attributeFieldList.add(attributeField);
+    }
+
 	public String getQueryRef() {
 		return queryTwoPartName;
 	}
 
+    public AttributeField[] getAttributeFields() {
+        return getAttributeFields(FieldScope.All);
+    }
+
+    public AttributeField[] getAttributeFields(FieldScope scope) {
+        Map<String, AttributeField> fieldMap = getAttributeFieldMap(scope);
+        AttributeField[] array = new AttributeField[fieldMap.size()];
+        fieldMap.values().toArray(array);
+        return array;
+    }
+
 	public void addDescription(WdkModelText description) {
 		this.descriptions.add(description);
 	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.AttributeFieldContainer#getAttributeFieldMap()
+     */
+    public Map<String, AttributeField> getAttributeFieldMap() {
+        return getAttributeFieldMap(FieldScope.All);
+    }
 
 	public String getDescription() {
 		return (description == null) ? "" : description;
 	}
 
-	public void addAttributeField(AttributeField attributeField) {
-		attributeFieldList.add(attributeField);
-	}
+	public Map<String, AttributeField> getAttributeFieldMap(FieldScope scope) {
+        Map<String, AttributeField> map = new LinkedHashMap<String, AttributeField>();
+        for (AttributeField field : attributeFieldMap.values()) {
+            if ((scope == FieldScope.All)
+                    || (scope == FieldScope.NonInternal && !field.isInternal())
+                    || (scope == FieldScope.ReportMaker && field.isInReportMaker()))
+                map.put(field.getName(), field);
+        }
+        return map;
+    }
 
-	public AttributeField[] getAttributeFields() {
-		AttributeField[] array = new AttributeField[attributeFieldMap.size()];
-		attributeFieldMap.values().toArray(array);
-		return array;
-	}
+    public AttributeField getAttributeField(String fieldName) {
+        return attributeFieldMap.get(fieldName);
+    }
 
-	public Map<String, AttributeField> getAttributeFieldMap() {
-		return new LinkedHashMap<String, AttributeField>(attributeFieldMap);
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.Field#resolveReferences(org.gusdb.wdk.model.WdkModel)
+     */
+    @Override
+    public void resolveReferences(WdkModel model) throws WdkModelException {
+        // resolve Query
+        Query query = (Query) model.resolveReference(queryTwoPartName);
 
-	public AttributeField[] getReportMakerFields() {
-		List<AttributeField> fields = new ArrayList<AttributeField>();
-		for (AttributeField field : attributeFieldMap.values()) {
-			if (field.getInReportMaker())
-				fields.add(field);
-		}
-		AttributeField[] array = new AttributeField[fields.size()];
-		fields.toArray(array);
-		return array;
-	}
+        // validate the query
+        recordClass.validateQuery(query);
 
-	public AttributeField[] getDisplayableFields() {
-		List<AttributeField> fields = new ArrayList<AttributeField>();
-		for (AttributeField field : attributeFieldMap.values()) {
-			if (!field.getInternal())
-				fields.add(field);
-		}
-		AttributeField[] array = new AttributeField[fields.size()];
-		fields.toArray(array);
-		return array;
-	}
+        // prepare the query and add primary key params
+        query = recordClass.prepareQuery(query);
+        this.query = query;
+
+        Column[] columns = query.getColumns();
+        for (Column column : columns) {
+            AttributeField field = attributeFieldMap.get(column.getName());
+            if (field != null && field instanceof ColumnAttributeField) {
+                ((ColumnAttributeField) field).setColumn(column);
+            } // else, it's okay to have unmatched columns
+        }
+    }
 
 	/*
 	 * (non-Javadoc) Should never be called, but is necessary because TableField
@@ -87,24 +118,6 @@ public class TableField extends Field {
 	 */
 	public int getTruncateTo() {
 		throw new RuntimeException("getTruncate does not apply to TableField");
-	}
-
-	void resolveReferences(WdkModel model) throws WdkModelException {
-		// resolve Query
-		query = (Query) model.resolveReference(queryTwoPartName);
-		Column[] columns = query.getColumns();
-		for (Column column : columns) {
-			AttributeField field = attributeFieldMap.get(column.getName());
-			if (field != null && field instanceof ColumnAttributeField) {
-				((ColumnAttributeField) field).setColumn(column);
-			} else {
-				String message = "The Column of name '" + column.getName()
-						+ "' doesn't match with any ColumnAttributeField in"
-						+ " TableField " + getName() + ".";
-				logger.finest(message);
-				throw new WdkModelException(message);
-			}
-		}
 	}
 
 	/*

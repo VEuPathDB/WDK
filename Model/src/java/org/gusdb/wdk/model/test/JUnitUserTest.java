@@ -3,6 +3,8 @@
  */
 package org.gusdb.wdk.model.test;
 
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -24,6 +26,7 @@ import org.gusdb.wdk.model.user.DatasetFactory;
 import org.gusdb.wdk.model.user.History;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
+import org.json.JSONException;
 
 /**
  * @author Jerric
@@ -179,26 +182,26 @@ public class JUnitUserTest extends TestCase {
     }
 
     public void testCombineHistory() {
-//        try {
-//            History hist1 = user.getHistory(1);
-//            History hist2 = user.getHistory(2);
-//            History hist9 = user.getHistory(9);
-//
-//            // print the base history
-//            printHistory(hist1);
-//            printHistory(hist2);
-//            printHistory(hist9);
-//
-//            History history = user.combineHistory("(1 OR 2) OR 9");
-//            printHistory(history);
-//
-//        } catch (WdkUserException ex) {
-//            ex.printStackTrace();
-//            assertTrue(false);
-//        } catch (WdkModelException ex) {
-//            ex.printStackTrace();
-//            assertTrue(false);
-//        }
+    // try {
+    // History hist1 = user.getHistory(1);
+    // History hist2 = user.getHistory(2);
+    // History hist9 = user.getHistory(9);
+    //
+    // // print the base history
+    // printHistory(hist1);
+    // printHistory(hist2);
+    // printHistory(hist9);
+    //
+    // History history = user.combineHistory("(1 OR 2) OR 9");
+    // printHistory(history);
+    //
+    // } catch (WdkUserException ex) {
+    // ex.printStackTrace();
+    // assertTrue(false);
+    // } catch (WdkModelException ex) {
+    // ex.printStackTrace();
+    // assertTrue(false);
+    // }
     }
 
     public void testDeleteHistory() {
@@ -212,7 +215,7 @@ public class JUnitUserTest extends TestCase {
             ex.printStackTrace();
             assertTrue(false);
         }
-        
+
         // the history shouldn't be found
         try {
             History history = user.getHistory(historyId);
@@ -244,7 +247,8 @@ public class JUnitUserTest extends TestCase {
     }
 
     private Answer[] createAnswers(SanityModel sanityModel)
-            throws WdkUserException, WdkModelException {
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException {
         // TEST
         System.out.println("Creating answers....");
 
@@ -280,7 +284,8 @@ public class JUnitUserTest extends TestCase {
     }
 
     private void printHistory(History history) throws WdkModelException,
-            WdkUserException {
+            WdkUserException, NoSuchAlgorithmException, SQLException,
+            JSONException {
         assertNotNull(history);
 
         DateFormat format = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");

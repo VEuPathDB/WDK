@@ -1,15 +1,19 @@
 package org.gusdb.wdk.model;
 
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.query.Query;
+import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.user.User;
+import org.json.JSONException;
 
 /**
  * Question.java
@@ -25,11 +29,15 @@ import org.gusdb.wdk.model.user.User;
 
 public class Question extends WdkModelBase {
 
+    public static final String BOOLEAN_QUESTION_PREFIX = "boolean_question_";
+
+    private static final String DYNAMIC_QUERY_SUFFIX = "_dynamic";
+
     private static final long serialVersionUID = -446811404645317117L;
 
     private static final Logger logger = Logger.getLogger(Question.class);
 
-    private String recordClassTwoPartName;
+    private String recordClassRef;
 
     private String queryTwoPartName;
 
@@ -64,6 +72,7 @@ public class Question extends WdkModelBase {
 
     private List<DynamicAttributeSet> dynamicAttributeSets = new ArrayList<DynamicAttributeSet>();
     private DynamicAttributeSet dynamicAttributeSet;
+    private Query dynamicAttributeQuery;
 
     private List<PropertyList> propertyLists = new ArrayList<PropertyList>();
     private Map<String, String[]> propertyListMap = new LinkedHashMap<String, String[]>();
@@ -81,8 +90,7 @@ public class Question extends WdkModelBase {
     /**
      * default constructor used by model parser
      */
-    public Question() {
-    }
+    public Question() {}
 
     /**
      * copy constructor
@@ -105,7 +113,7 @@ public class Question extends WdkModelBase {
         this.queryTwoPartName = question.queryTwoPartName;
         this.questionSet = question.questionSet;
         this.recordClass = question.recordClass;
-        this.recordClassTwoPartName = question.recordClassTwoPartName;
+        this.recordClassRef = question.recordClassRef;
         this.sortingAttributeMap.putAll(question.sortingAttributeMap);
         this.summary = question.summary;
         this.summaryAttributeMap.putAll(question.summaryAttributeMap);
@@ -138,9 +146,9 @@ public class Question extends WdkModelBase {
         this.helps.add(help);
     }
 
-    public void setRecordClassRef(String recordClassTwoPartName) {
+    public void setRecordClassRef(String recordClassRef) {
 
-        this.recordClassTwoPartName = recordClassTwoPartName;
+        this.recordClassRef = recordClassRef;
     }
 
     public void setQueryRef(String queryTwoPartName) {
@@ -160,6 +168,7 @@ public class Question extends WdkModelBase {
     }
 
     public void addDynamicAttributeSet(DynamicAttributeSet dynamicAttributes) {
+        dynamicAttributes.setQuestion(this);
         this.dynamicAttributeSets.add(dynamicAttributes);
     }
 
@@ -167,30 +176,18 @@ public class Question extends WdkModelBase {
         return summaryAttributeMap;
     }
 
-    public Map<String, AttributeField> getReportMakerAttributeFields() {
-        Map<String, AttributeField> rmfields = recordClass.getReportMakerAttributeFieldMap();
-        if (dynamicAttributeSet != null)
-            rmfields.putAll(dynamicAttributeSet.getReportMakerAttributeFieldMap());
-        return rmfields;
-    }
-
-    public Map<String, TableField> getReportMakerTableFields() {
-        Map<String, TableField> rmfields = recordClass.getReportMakerTableFieldMap();
-        return rmfields;
-    }
-
-    public Map<String, Field> getReportMakerFields() {
+    public Map<String, Field> getFields(FieldScope scope) {
         Map<String, Field> fields = new LinkedHashMap<String, Field>();
-        Map<String, AttributeField> attributes = getReportMakerAttributeFields();
-        Map<String, TableField> tables = getReportMakerTableFields();
+        Map<String, AttributeField> attributes = getAttributeFields(scope);
+        Map<String, TableField> tables = recordClass.getTableFieldMap(scope);
 
-        for (String name : attributes.keySet()) {
-            fields.put(name, attributes.get(name));
-        }
-        for (String name : tables.keySet()) {
-            fields.put(name, tables.get(name));
-        }
+        fields.putAll(attributes);
+        fields.putAll(tables);
         return fields;
+    }
+
+    Query getDynamicAttributeQuery() {
+        return dynamicAttributeQuery;
     }
 
     // /////////////////////////////////////////////////////////////////////
@@ -202,9 +199,13 @@ public class Question extends WdkModelBase {
      * @return
      * @throws WdkModelException
      * @throws WdkUserException
+     * @throws JSONException
+     * @throws SQLException
+     * @throws NoSuchAlgorithmException
      */
     public Answer makeAnswer(Map<String, Object> paramValues)
-            throws WdkUserException, WdkModelException {
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException {
         return makeAnswer(paramValues, sortingAttributeMap);
     }
 
@@ -217,10 +218,14 @@ public class Question extends WdkModelBase {
      * @return
      * @throws WdkModelException
      * @throws WdkUserException
+     * @throws JSONException
+     * @throws SQLException
+     * @throws NoSuchAlgorithmException
      */
     public Answer makeAnswer(Map<String, Object> paramValues,
             Map<String, Boolean> sortingAttributes) throws WdkUserException,
-            WdkModelException {
+            WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException {
         // get the result size by making a temp answer
         Answer answer = makeAnswer(paramValues, 1, 1, sortingAttributes, null);
         int resultSize = answer.getResultSize();
@@ -241,15 +246,22 @@ public class Question extends WdkModelBase {
      * @return
      * @throws WdkUserException
      * @throws WdkModelException
+     * @throws JSONException
+     * @throws SQLException
+     * @throws NoSuchAlgorithmException
      */
     public Answer makeAnswer(Map<String, Object> paramValues, int i, int j)
-            throws WdkUserException, WdkModelException {
-        return makeAnswer(paramValues, i, j, sortingAttributeMap, null);
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException {
+        return makeAnswer(paramValues, i, j, sortingAttributeMap,
+                recordClass.getDefaultView());
     }
 
     public Answer makeAnswer(Map<String, Object> paramValues, int i, int j,
-            String subTypeValue) throws WdkUserException, WdkModelException {
-        return makeAnswer(paramValues, i, j, sortingAttributeMap, subTypeValue);
+            SummaryView summaryView) throws WdkUserException,
+            WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException {
+        return makeAnswer(paramValues, i, j, sortingAttributeMap, summaryView);
     }
 
     /**
@@ -262,16 +274,17 @@ public class Question extends WdkModelBase {
      * @return
      * @throws WdkUserException
      * @throws WdkModelException
+     * @throws JSONException
+     * @throws SQLException
+     * @throws NoSuchAlgorithmException
      */
     public Answer makeAnswer(Map<String, Object> paramValues, int i, int j,
-            Map<String, Boolean> sortingAttributes, Object subTypeValue)
-            throws WdkUserException, WdkModelException {
-        if (ignoreSubType) subTypeValue = null;
-        
-        QueryInstance qi = query.makeInstance();
-        qi.setValues(paramValues);
-        qi.setSubTypeValue(subTypeValue);
-        Answer answer = new Answer(this, qi, i, j, sortingAttributes);
+            Map<String, Boolean> sortingAttributes, SummaryView summaryView)
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException {
+        QueryInstance qi = query.makeInstance(paramValues);
+        Answer answer = new Answer(this, qi, i, j, sortingAttributes,
+                summaryView);
 
         return answer;
     }
@@ -337,7 +350,6 @@ public class Question extends WdkModelBase {
         return displayName;
     }
 
-    
     /**
      * @deprecated
      */
@@ -351,10 +363,6 @@ public class Question extends WdkModelBase {
 
     public Query getQuery() {
         return this.query;
-    }
-
-    public void setRecordClass(RecordClass rc) {
-        this.recordClass = rc;
     }
 
     public void setQuery(Query q) {
@@ -382,8 +390,8 @@ public class Question extends WdkModelBase {
             saNames.append(saName + ", ");
         }
         StringBuffer buf = new StringBuffer("Question: name='" + name + "'"
-                + newline + "  recordClass='" + recordClassTwoPartName + "'"
-                + newline + "  query='" + queryTwoPartName + "'" + newline
+                + newline + "  recordClass='" + recordClassRef + "'" + newline
+                + "  query='" + queryTwoPartName + "'" + newline
                 + "  displayName='" + getDisplayName() + "'" + newline
                 + "  summary='" + getSummary() + "'" + newline
                 + "  description='" + getDescription() + "'" + newline
@@ -405,7 +413,9 @@ public class Question extends WdkModelBase {
      * name="pf_organism" value="Plasmodium falciparum"/> <sanityParam
      * name="ec_number_pattern" value="6.1.1.12"/> </sanityQuestion>
      */
-    public String getSanityTestSuggestion() throws WdkModelException {
+    public String getSanityTestSuggestion() throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
         String indent = "    ";
         String newline = System.getProperty("line.separator");
         StringBuffer buf = new StringBuffer(newline + newline + indent
@@ -467,32 +477,48 @@ public class Question extends WdkModelBase {
 
     Map<String, AttributeField> getDynamicAttributeFields() {
         return dynamicAttributeSet == null ? null
-                : dynamicAttributeSet.getAttributeFields();
+                : dynamicAttributeSet.getAttributeFieldMap();
     }
 
     void setResources(WdkModel model) throws WdkModelException {
         this.wdkModel = model;
         if (dynamicAttributeSet != null) {
             dynamicAttributeSet.setQuestion(this);
-            dynamicAttributeSet.setResources(wdkModel);
         }
         initSummaryAttributes();
     }
 
-    Map<String, AttributeField> getAttributeFields() {
+    public Map<String, AttributeField> getAttributeFields() {
+        return getAttributeFields(FieldScope.All);
+    }
+
+    public Map<String, AttributeField> getAttributeFields(FieldScope scope) {
         Map<String, AttributeField> attributeFields = new LinkedHashMap<String, AttributeField>(
-                recordClass.getAttributeFieldMap());
+                recordClass.getAttributeFieldMap(scope));
         if (dynamicAttributeSet != null) {
-            attributeFields.putAll(dynamicAttributeSet.getAttributeFields());
+            attributeFields.putAll(dynamicAttributeSet.getAttributeFieldMap(scope));
         }
         return attributeFields;
     }
 
-    void resolveReferences(WdkModel model) throws WdkModelException {
+    @Override
+    public void resolveReferences(WdkModel model) throws WdkModelException {
+        if (resolved) return;
 
-        this.query = (Query) model.resolveReference(queryTwoPartName);
-        Object rc = model.resolveReference(recordClassTwoPartName);
-        setRecordClass((RecordClass) rc);
+        // it must happen before dynamicAttributeSet, because it is referenced
+        // in the dynamicAttributeSet.
+        this.recordClass = (RecordClass) model.resolveReference(recordClassRef);
+
+        // the id query is forced to be cache-able.
+        query = (Query) model.resolveReference(queryTwoPartName);
+        query.setCached(true);
+
+        // dynamic attribute set need to be initialized after the id query.
+        if (dynamicAttributeSet != null) {
+            this.dynamicAttributeQuery = createDynamicAttributeQuery();
+            dynamicAttributeSet.resolveReferences(model);
+        }
+        resolved = true;
     }
 
     boolean isSummaryAttribute(String attName) {
@@ -533,7 +559,7 @@ public class Question extends WdkModelBase {
             while (ramI.hasNext()) {
                 attribName = ramI.next();
                 AttributeField attr = recAttrsMap.get(attribName);
-                if (attr.getInternal()) {
+                if (attr.isInternal()) {
                     summaryAttributeMap.remove(attribName);
                 }
             }
@@ -546,55 +572,52 @@ public class Question extends WdkModelBase {
      * @return
      * @throws WdkModelException
      */
-    public Question getBaseQuestion() throws WdkModelException {
-        Question question = new Question();
-        question.description = this.description;
-        question.summary = this.summary;
-        question.displayName = this.displayName;
-        question.help = this.help;
-        question.name = this.name;
-        question.queryTwoPartName = this.queryTwoPartName;
-        question.questionSet = this.questionSet;
-        question.recordClass = this.recordClass;
-        question.recordClassTwoPartName = this.recordClassTwoPartName;
-
-        // needs to clone this summary attribute as well
-        Map<String, AttributeField> sumAttributes = new LinkedHashMap<String, AttributeField>();
-        Map<String, AttributeField> attributes = recordClass.getAttributeFieldMap();
-        for (String attrName : summaryAttributeMap.keySet()) {
-            if (attributes.containsKey(attrName))
-                sumAttributes.put(attrName, summaryAttributeMap.get(attrName));
-        }
-        question.summaryAttributeMap = sumAttributes;
-
-        // clone the query too, but excludes the columns in dynamic attribute
-        Set<String> excludedColumns = new LinkedHashSet<String>();
-        // TEST
-        StringBuffer sb = new StringBuffer();
-
-        if (this.dynamicAttributeSet != null) {
-            attributes = dynamicAttributeSet.getAttributeFields();
-            for (AttributeField field : attributes.values()) {
-                if (field instanceof ColumnAttributeField) {
-                    ColumnAttributeField cfield = (ColumnAttributeField) field;
-                    excludedColumns.add(cfield.getColumn().getName());
-                    // TEST
-                    sb.append(cfield.getColumn().getName() + ", ");
-                }
-            }
-        }
-        logger.debug("Excluded fields: " + sb.toString());
-
-        Query newQuery = this.query.getBaseQuery(excludedColumns);
-        question.query = newQuery;
-
-        return question;
-    }
-
-    public String getSignature() throws WdkModelException {
-        return query.getSignature();
-    }
-
+    // public Question getBaseQuestion() throws WdkModelException {
+    // Question question = new Question();
+    // question.description = this.description;
+    // question.summary = this.summary;
+    // question.displayName = this.displayName;
+    // question.help = this.help;
+    // question.name = this.name;
+    // question.queryTwoPartName = this.queryTwoPartName;
+    // question.questionSet = this.questionSet;
+    // question.recordClass = this.recordClass;
+    // question.recordClassTwoPartName = this.recordClassTwoPartName;
+    //
+    // // needs to clone this summary attribute as well
+    // Map<String, AttributeField> sumAttributes = new LinkedHashMap<String,
+    // AttributeField>();
+    // Map<String, AttributeField> attributes =
+    // recordClass.getAttributeFieldMap();
+    // for (String attrName : summaryAttributeMap.keySet()) {
+    // if (attributes.containsKey(attrName))
+    // sumAttributes.put(attrName, summaryAttributeMap.get(attrName));
+    // }
+    // question.summaryAttributeMap = sumAttributes;
+    //
+    // // clone the query too, but excludes the columns in dynamic attribute
+    // Set<String> excludedColumns = new LinkedHashSet<String>();
+    // // TEST
+    // StringBuffer sb = new StringBuffer();
+    //
+    // if (this.dynamicAttributeSet != null) {
+    // attributes = dynamicAttributeSet.getAttributeFieldMap();
+    // for (AttributeField field : attributes.values()) {
+    // if (field instanceof ColumnAttributeField) {
+    // ColumnAttributeField cfield = (ColumnAttributeField) field;
+    // excludedColumns.add(cfield.getColumn().getName());
+    // // TEST
+    // sb.append(cfield.getColumn().getName() + ", ");
+    // }
+    // }
+    // }
+    // logger.debug("Excluded fields: " + sb.toString());
+    //
+    // Query newQuery = this.query.getBaseQuery(excludedColumns);
+    // question.query = newQuery;
+    //
+    // return question;
+    // }
     public Map<String, Boolean> getDefaultSortingAttributes() {
         Map<String, Boolean> sortMap = new LinkedHashMap<String, Boolean>();
         int count = 0;
@@ -665,7 +688,6 @@ public class Question extends WdkModelBase {
     public boolean isIgnoreSubType() {
         return ignoreSubType;
     }
-    
 
     /**
      * @param ignoreSubType
@@ -674,7 +696,6 @@ public class Question extends WdkModelBase {
     public void setIgnoreSubType(boolean ignoreSubType) {
         this.ignoreSubType = ignoreSubType;
     }
-    
 
     /*
      * (non-Javadoc)
@@ -781,5 +802,16 @@ public class Question extends WdkModelBase {
             }
         }
         propertyLists = null;
+    }
+
+    private Query createDynamicAttributeQuery() {
+        SqlQuery query = new SqlQuery();
+        query.setCached(false);
+        query.setName(this.query.getName() + DYNAMIC_QUERY_SUFFIX);
+        query.setQuerySet(this.query.getQuerySet());
+
+        // set the columns, which as the same column as the id query
+        query.setColumns(this.query.getColumns());
+        return query;
     }
 }

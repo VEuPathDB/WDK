@@ -1,12 +1,16 @@
 package org.gusdb.wdk.model.test;
 
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.json.JSONException;
 
 /**
  * Object used in running a sanity test; represents a query or question in a wdk
@@ -192,4 +196,15 @@ public abstract class SanityQueryOrQuestion extends WdkModelBase {
     public void excludeResources(String projectId) throws WdkModelException {
     // do nothing
     }
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model.WdkModel)
+     */
+    @Override
+    public void resolveReferences(WdkModel wodkModel) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
+        // do nothing
+    }
+    
 }

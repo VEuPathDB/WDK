@@ -1,6 +1,8 @@
 package org.gusdb.wdk.model.test;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -16,19 +18,23 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.gusdb.wdk.model.Column;
 import org.gusdb.wdk.model.FlatVocabParam;
 import org.gusdb.wdk.model.Param;
-import org.gusdb.wdk.model.Query;
-import org.gusdb.wdk.model.QueryInstance;
 import org.gusdb.wdk.model.QuerySet;
 import org.gusdb.wdk.model.Reference;
-import org.gusdb.wdk.model.ResultList;
 import org.gusdb.wdk.model.StringParam;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.dbms.CacheFactory;
+import org.gusdb.wdk.model.dbms.ResultFactory;
+import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.implementation.ModelXmlParser;
+import org.gusdb.wdk.model.query.Query;
+import org.gusdb.wdk.model.query.QueryInstance;
+import org.json.JSONException;
 import org.xml.sax.SAXException;
 
 public class QueryTester {
@@ -44,21 +50,31 @@ public class QueryTester {
     // ////////////////////////////////////////////////////////////////////
 
     public ResultList getResult(String querySetName, String queryName,
-            Map<String, Object> paramHash) throws WdkModelException, WdkUserException {
+            Map<String, Object> paramHash) throws WdkModelException,
+            WdkUserException, NoSuchAlgorithmException, SQLException,
+            JSONException {
         QueryInstance instance = getInstance(querySetName, queryName, paramHash);
-        return instance.getResult();
+        return instance.getResults();
     }
 
-    public String getResultAsTableName(String querySetName, String queryName,
-            Map<String, Object> paramHash) throws WdkModelException, WdkUserException {
+    public String showSql(String querySetName, String queryName,
+            Map<String, Object> paramHash) throws WdkModelException,
+            WdkUserException, NoSuchAlgorithmException, SQLException,
+            JSONException {
         QueryInstance instance = getInstance(querySetName, queryName, paramHash);
-        return instance.getResultAsTableName();
+        return instance.getSql();
     }
 
-    public String showLowLevelQuery(String querySetName, String queryName,
-            Map<String, Object> paramHash) throws WdkModelException, WdkUserException {
+    public String showResultTable(String querySetName, String queryName,
+            Map<String, Object> paramHash) throws WdkModelException,
+            WdkUserException, NoSuchAlgorithmException, SQLException,
+            JSONException {
         QueryInstance instance = getInstance(querySetName, queryName, paramHash);
-        return instance.getLowLevelQuery();
+        ResultFactory factory = wdkModel.getResultFactory();
+        Query query = instance.getQuery();
+        String tableName = CacheFactory.normalizeTableName(query.getFullName());
+        int instanceId = factory.getInstanceId(instance);
+        return tableName + ":" + instanceId;
     }
 
     public WdkModel getWdkModel() {
@@ -70,18 +86,19 @@ public class QueryTester {
     // ////////////////////////////////////////////////////////////////////
 
     QueryInstance getInstance(String querySetName, String queryName,
-            Map<String, Object> paramHash) throws WdkModelException, WdkUserException {
+            Map<String, Object> paramHash) throws WdkModelException,
+            WdkUserException {
         QuerySet querySet = wdkModel.getQuerySet(querySetName);
         Query query = querySet.getQuery(queryName);
-        QueryInstance instance = query.makeInstance();
-        instance.setValues(paramHash);
+        QueryInstance instance = query.makeInstance(paramHash);
         return instance;
     }
 
-    void displayQuery(Query query) throws WdkModelException {
+    void displayQuery(Query query) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
         String newline = System.getProperty("line.separator");
-        System.out.println(newline + "Query: " + query.getDisplayName()
-                + newline);
+        System.out.println(newline + "Query: " + query.getFullName() + newline);
 
         System.out.println("Parameters");
 
@@ -107,8 +124,9 @@ public class QueryTester {
         return h;
     }
 
-    String formatParamPrompt(Param param) throws WdkModelException {
-
+    String formatParamPrompt(Param param) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
         String newline = System.getProperty("line.separator");
 
         String prompt = "  " + param.getPrompt();
@@ -144,8 +162,12 @@ public class QueryTester {
     // /////////// static methods /////////////////////////////////////
     // ////////////////////////////////////////////////////////////////////
 
-    public static void main(String[] args)
-            throws WdkModelException, WdkUserException {
+    public static void main(String[] args) throws WdkModelException,
+            WdkUserException, NoSuchAlgorithmException, SQLException,
+            JSONException, ParserConfigurationException,
+            TransformerFactoryConfigurationError, TransformerException,
+            IOException, SAXException, InstantiationException,
+            IllegalAccessException, ClassNotFoundException {
         String cmdName = System.getProperty("cmdName");
         String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
 
@@ -159,7 +181,7 @@ public class QueryTester {
         boolean returnResultAsTable = cmdLine.hasOption("returnTable");
         boolean showQuery = cmdLine.hasOption("showQuery");
         boolean haveParams = cmdLine.hasOption("params");
-        //boolean paging = cmdLine.hasOption("rows");
+        // boolean paging = cmdLine.hasOption("rows");
         String[] params = new String[0];
         if (haveParams) params = cmdLine.getOptionValues("params");
 
@@ -168,42 +190,49 @@ public class QueryTester {
         String queryName = ref.getElementName();
 
         // read config info
-        try {
-            ModelXmlParser parser = new ModelXmlParser(gusHome);
-            WdkModel wdkModel = parser.parseModel(modelName);
+        ModelXmlParser parser = new ModelXmlParser(gusHome);
+        WdkModel wdkModel = parser.parseModel(modelName);
 
-            QueryTester tester = new QueryTester(wdkModel);
+        QueryTester tester = new QueryTester(wdkModel);
 
-            Map<String, Object> paramHash = tester.parseParamArgs(params);
-            if (showQuery) {
-                String query = tester.showLowLevelQuery(querySetName,
-                        queryName, paramHash);
-                String newline = System.getProperty("line.separator");
-                String newlineQuery = query.replaceAll("^\\s\\s\\s", newline);
-                newlineQuery = newlineQuery.replaceAll("(\\S)\\s\\s\\s", "$1"
-                        + newline);
-                System.out.println(newline + newlineQuery + newline);
-            } else if (returnResultAsTable) {
-                String table = tester.getResultAsTableName(querySetName,
-                        queryName, paramHash);
-                System.out.println(table);
-            } else {
-                wdkModel.getQuerySet(querySetName).getQuery(queryName);
+        Map<String, Object> paramHash = tester.parseParamArgs(params);
+        if (showQuery) {
+            String query = tester.showSql(querySetName, queryName, paramHash);
+            String newline = System.getProperty("line.separator");
+            String newlineQuery = query.replaceAll("^\\s\\s\\s", newline);
+            newlineQuery = newlineQuery.replaceAll("(\\S)\\s\\s\\s", "$1"
+                    + newline);
+            System.out.println(newline + newlineQuery + newline);
+        } else if (returnResultAsTable) {
+            String table = tester.showResultTable(querySetName, queryName,
+                    paramHash);
+            System.out.println(table);
+        } else {
+            Query query = wdkModel.getQuerySet(querySetName).getQuery(queryName);
 
-                ResultList rs = tester.getResult(querySetName, queryName,
-                        paramHash);
-                rs.print();
+            ResultList rs = tester.getResult(querySetName, queryName, paramHash);
+            print(query, rs);
+        }
+    }
+
+    private static void print(Query query, ResultList resultList)
+            throws WdkModelException {
+        // print out the column headers
+        Column[] columns = query.getColumns();
+        System.out.print("No.");
+        for (Column column : columns)
+            System.out.print("\t| <" + column.getName() + ">");
+        System.out.println();
+
+        // print out the rows
+        int row = 1;
+        while (resultList.next()) {
+            System.out.print(row++);
+            for (Column column : columns) {
+                Object value = resultList.get(column.getName());
+                System.out.print("\t| " + value);
             }
-        } catch (SAXException ex) {
-            throw new WdkModelException(ex);
-        } catch (IOException ex) {
-            throw new WdkModelException(ex);
-        } catch (ParserConfigurationException ex) {
-            throw new WdkModelException(ex);
-        } catch (TransformerFactoryConfigurationError ex) {
-            throw new WdkModelException(ex);
-        } catch (TransformerException ex) {
-            throw new WdkModelException(ex);
+            System.out.println();
         }
     }
 

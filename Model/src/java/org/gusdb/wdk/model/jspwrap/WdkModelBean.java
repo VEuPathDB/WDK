@@ -31,10 +31,6 @@ public class WdkModelBean  {
     public Map getProperties() {
         return model.getProperties();
     }
-    
-    public String getName() {
-        return model.getName();
-    }
 
     /* (non-Javadoc)
      * @see org.gusdb.wdk.model.WdkModel#getVersion()
@@ -215,15 +211,6 @@ public class WdkModelBean  {
      */
     public Map<String, String> getBooleanOperators() {
         return model.getBooleanOperators();
-    }
-
-    /**
-     * @param paramName
-     * @return
-     * @see org.gusdb.wdk.model.WdkModel#getParamDisplayName(java.lang.String)
-     */
-    public String getParamDisplayName( String paramName ) {
-        return model.getParamDisplayName( paramName );
     }
 
     /**

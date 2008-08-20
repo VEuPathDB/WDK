@@ -6,6 +6,11 @@
  */
 package org.gusdb.wdk.model;
 
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
+
+import org.json.JSONException;
+
 public interface ModelSetI {
 
     String getName();
@@ -14,6 +19,8 @@ public interface ModelSetI {
 
     void setResources(WdkModel model) throws WdkModelException;
 
-    void resolveReferences(WdkModel model) throws WdkModelException;
+    void resolveReferences(WdkModel model) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException;
 
 }

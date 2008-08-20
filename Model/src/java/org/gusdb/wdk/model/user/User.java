@@ -4,6 +4,7 @@
 package org.gusdb.wdk.model.user;
 
 import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -24,6 +25,7 @@ import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.json.JSONException;
 
 /**
  * @author xingao
@@ -145,7 +147,7 @@ public class User /* implements Serializable */{
 
     /**
      * @param address
-     *            The address to set.
+     *                The address to set.
      */
     public void setAddress(String address) {
         this.address = address;
@@ -160,7 +162,7 @@ public class User /* implements Serializable */{
 
     /**
      * @param city
-     *            The city to set.
+     *                The city to set.
      */
     public void setCity(String city) {
         this.city = city;
@@ -175,7 +177,7 @@ public class User /* implements Serializable */{
 
     /**
      * @param country
-     *            The country to set.
+     *                The country to set.
      */
     public void setCountry(String country) {
         this.country = country;
@@ -190,7 +192,7 @@ public class User /* implements Serializable */{
 
     /**
      * @param department
-     *            The department to set.
+     *                The department to set.
      */
     public void setDepartment(String department) {
         this.department = department;
@@ -205,7 +207,7 @@ public class User /* implements Serializable */{
 
     /**
      * @param firstName
-     *            The firstName to set.
+     *                The firstName to set.
      */
     public void setFirstName(String firstName) {
         this.firstName = firstName;
@@ -220,7 +222,7 @@ public class User /* implements Serializable */{
 
     /**
      * @param lastName
-     *            The lastName to set.
+     *                The lastName to set.
      */
     public void setLastName(String lastName) {
         this.lastName = lastName;
@@ -235,7 +237,7 @@ public class User /* implements Serializable */{
 
     /**
      * @param middleName
-     *            The middleName to set.
+     *                The middleName to set.
      */
     public void setMiddleName(String middleName) {
         this.middleName = middleName;
@@ -250,7 +252,7 @@ public class User /* implements Serializable */{
 
     /**
      * @param organization
-     *            The organization to set.
+     *                The organization to set.
      */
     public void setOrganization(String organization) {
         this.organization = organization;
@@ -265,7 +267,7 @@ public class User /* implements Serializable */{
 
     /**
      * @param phoneNumber
-     *            The phoneNumber to set.
+     *                The phoneNumber to set.
      */
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
@@ -280,7 +282,7 @@ public class User /* implements Serializable */{
 
     /**
      * @param state
-     *            The state to set.
+     *                The state to set.
      */
     public void setState(String state) {
         this.state = state;
@@ -295,7 +297,7 @@ public class User /* implements Serializable */{
 
     /**
      * @param title
-     *            The title to set.
+     *                The title to set.
      */
     public void setTitle(String title) {
         this.title = title;
@@ -310,7 +312,7 @@ public class User /* implements Serializable */{
 
     /**
      * @param zipCode
-     *            The zipCode to set.
+     *                The zipCode to set.
      */
     public void setZipCode(String zipCode) {
         this.zipCode = zipCode;
@@ -335,7 +337,7 @@ public class User /* implements Serializable */{
 
     /**
      * @param userRole
-     *            The userRole to set.
+     *                The userRole to set.
      */
     public void addUserRole(String userRole) {
         this.userRoles.add(userRole);
@@ -347,19 +349,21 @@ public class User /* implements Serializable */{
 
     /**
      * @param guest
-     *            The guest to set.
+     *                The guest to set.
      */
     void setGuest(boolean guest) {
         this.guest = guest;
     }
 
     public History createHistory(Answer answer) throws WdkUserException,
-            WdkModelException {
+            WdkModelException, NoSuchAlgorithmException, JSONException,
+            SQLException {
         return createHistory(answer, null, false);
     }
 
     private History createHistory(Answer answer, String booleanExpression,
-            boolean deleted) throws WdkUserException, WdkModelException {
+            boolean deleted) throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, JSONException, SQLException {
         return userFactory.createHistory(this, answer, booleanExpression,
                 deleted);
     }
@@ -372,8 +376,12 @@ public class User /* implements Serializable */{
      * @param user
      * @throws WdkUserException
      * @throws WdkModelException
+     * @throws JSONException
+     * @throws SQLException
+     * @throws NoSuchAlgorithmException
      */
-    void mergeUser(User user) throws WdkUserException, WdkModelException {
+    void mergeUser(User user) throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException {
         // TEST
         logger.debug("Merging user #" + user.getUserId() + " into user #"
                 + userId + "...");
@@ -444,10 +452,10 @@ public class User /* implements Serializable */{
                     // merge histories with DatasetParam/HistoryParam
                     Answer answer = history.getAnswer();
                     Question question = answer.getQuestion();
-                    int startIndex = answer.getStartRecordInstanceI();
-                    int endIndex = answer.getEndRecordInstanceI();
+                    int startIndex = answer.getStartIndex();
+                    int endIndex = answer.getEndIndex();
                     Param[] params = question.getParams();
-                    Map<String, Object> values = answer.getParams();
+                    Map<String, Object> values = answer.getIdsQueryInstance().getValues();
                     for (Param param : params) {
                         if (param instanceof HistoryParam) {
                             String compound = values.get(param.getName()).toString();
@@ -634,7 +642,7 @@ public class User /* implements Serializable */{
 
     /**
      * @param historyCount
-     *            The historyCount to set.
+     *                The historyCount to set.
      */
     void setHistoryCount(int historyCount) {
         this.historyCount = historyCount;
@@ -710,7 +718,8 @@ public class User /* implements Serializable */{
     }
 
     public Dataset createDataset(String uploadFile, String[] values)
-            throws WdkUserException, WdkModelException {
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException {
         return datasetFactory.makeDataset(this, uploadFile, values);
     }
 
@@ -734,18 +743,21 @@ public class User /* implements Serializable */{
     }
 
     public History combineHistory(String expression) throws WdkUserException,
-            WdkModelException {
+            WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException {
         return combineHistory(expression, false, null, false);
     }
 
     private History combineHistory(String expression, boolean deleted)
-            throws WdkUserException, WdkModelException {
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException {
         return combineHistory(expression, deleted, null, false);
     }
 
     public History combineHistory(String expression, boolean deleted,
             String subTypeValue, boolean expandSubType)
-            throws WdkUserException, WdkModelException {
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException {
         logger.debug("Boolean expression: " + expression);
         BooleanExpression exp = new BooleanExpression(this);
         Map<String, String> operatorMap = getWdkModel().getBooleanOperators();
@@ -810,7 +822,8 @@ public class User /* implements Serializable */{
     }
 
     public String addSortingAttribute(String questionFullName, String attrName,
-            boolean ascending) throws WdkUserException, WdkModelException {
+            boolean ascending) throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException {
         Map<String, Boolean> sortingMap = new LinkedHashMap<String, Boolean>();
         sortingMap.put(attrName, ascending);
         Map<String, Boolean> previousMap = getSortingAttributes(questionFullName);
@@ -860,7 +873,8 @@ public class User /* implements Serializable */{
     }
 
     public String addSummaryAttribute(String questionFullName, String attrName)
-            throws WdkUserException, WdkModelException {
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException {
         Set<String> summaryAttributes = new LinkedHashSet<String>();
         String[] summary = getSummaryAttributes(questionFullName);
         for (String attributeName : summary) {
@@ -876,7 +890,8 @@ public class User /* implements Serializable */{
     }
 
     public String removeSummaryAttribute(String questionFullName,
-            String attrName) throws WdkUserException, WdkModelException {
+            String attrName) throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException {
         Set<String> summaryAttributes = new LinkedHashSet<String>();
         String[] summary = getSummaryAttributes(questionFullName);
         for (String attributeName : summary) {
@@ -898,7 +913,7 @@ public class User /* implements Serializable */{
 
     public String arrangeSummaryAttribute(String questionFullName,
             String attrName, boolean moveLeft) throws WdkUserException,
-            WdkModelException {
+            WdkModelException, NoSuchAlgorithmException {
         String[] summary = getSummaryAttributes(questionFullName);
 
         // TEST
@@ -937,9 +952,11 @@ public class User /* implements Serializable */{
      * @param summaryChecksum
      * @throws WdkUserException
      * @throws WdkModelException
+     * @throws NoSuchAlgorithmException
      */
     public String applySummaryChecksum(String questionFullName,
-            String[] attributes) throws WdkModelException, WdkUserException {
+            String[] attributes) throws WdkModelException, WdkUserException,
+            NoSuchAlgorithmException {
         QueryFactory queryFactory = model.getQueryFactory();
         String summaryChecksum = queryFactory.makeSummaryChecksum(attributes);
 

@@ -3,6 +3,8 @@ package org.gusdb.wdk.model;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -12,12 +14,17 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 
+import org.gusdb.wdk.model.dbms.DBPlatform;
+import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.implementation.ModelXmlParser;
+import org.gusdb.wdk.model.query.BooleanQuery;
+import org.gusdb.wdk.model.user.AnswerFactory;
 import org.gusdb.wdk.model.user.DatasetFactory;
 import org.gusdb.wdk.model.user.QueryFactory;
 import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
 import org.gusdb.wdk.model.xml.XmlRecordClassSet;
+import org.json.JSONException;
 import org.xml.sax.SAXException;
 
 // why is this in impl?
@@ -28,50 +35,78 @@ import org.xml.sax.SAXException;
  */
 public class WdkModel {
 
-    public static final String WDK_VERSION = "1.13";
+    public static final String WDK_VERSION = "1.18";
 
     public static final int TRUNCATE_DEFAULT = 100;
 
-    @Deprecated
-    public static WdkModel INSTANCE = new WdkModel();
+    /**
+     * Convenience method for constructing a model from the configuration
+     * information
+     * 
+     * @throws JSONException
+     * @throws SQLException
+     * @throws SAXException
+     * @throws IOException
+     * @throws TransformerException
+     * @throws TransformerFactoryConfigurationError
+     * @throws ParserConfigurationException
+     * @throws NoSuchAlgorithmException
+     * @throws ClassNotFoundException
+     * @throws IllegalAccessException
+     * @throws InstantiationException
+     * @throws WdkUserException
+     */
+    public static WdkModel construct(String modelName)
+            throws WdkModelException, NoSuchAlgorithmException,
+            ParserConfigurationException, TransformerFactoryConfigurationError,
+            TransformerException, IOException, SAXException, SQLException,
+            JSONException, WdkUserException, InstantiationException,
+            IllegalAccessException, ClassNotFoundException {
+        String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
+
+        ModelXmlParser parser = new ModelXmlParser(gusHome);
+        return parser.parseModel(modelName);
+    }
 
     private ModelConfig modelConfig;
     private String projectId;
 
-    private RDBMSPlatformI platform;
-    private RDBMSPlatformI authenPlatform;
+    private DBPlatform platform;
+    private DBPlatform authenPlatform;
 
     private List<QuerySet> querySetList = new ArrayList<QuerySet>();
-    private Map<String, QuerySet> querySets = new LinkedHashMap<String, QuerySet>();
+    private Map<String, ModelSetI> querySets = new LinkedHashMap<String, ModelSetI>();
 
     private List<ParamSet> paramSetList = new ArrayList<ParamSet>();
-    private Map<String, ParamSet> paramSets = new LinkedHashMap<String, ParamSet>();
+    private Map<String, ModelSetI> paramSets = new LinkedHashMap<String, ModelSetI>();
 
     private List<RecordClassSet> recordClassSetList = new ArrayList<RecordClassSet>();
-    private Map<String, RecordClassSet> recordClassSets = new LinkedHashMap<String, RecordClassSet>();
+    private Map<String, ModelSetI> recordClassSets = new LinkedHashMap<String, ModelSetI>();
 
     private List<QuestionSet> questionSetList = new ArrayList<QuestionSet>();
-    private Map<String, QuestionSet> questionSets = new LinkedHashMap<String, QuestionSet>();
+    private Map<String, ModelSetI> questionSets = new LinkedHashMap<String, ModelSetI>();
 
     private Map<String, ModelSetI> allModelSets = new LinkedHashMap<String, ModelSetI>();
 
     private List<GroupSet> groupSetList = new ArrayList<GroupSet>();
-    private Map<String, GroupSet> groupSets = new LinkedHashMap<String, GroupSet>();
+    private Map<String, ModelSetI> groupSets = new LinkedHashMap<String, ModelSetI>();
 
     private List<XmlQuestionSet> xmlQuestionSetList = new ArrayList<XmlQuestionSet>();
-    private Map<String, XmlQuestionSet> xmlQuestionSets = new LinkedHashMap<String, XmlQuestionSet>();
+    private Map<String, ModelSetI> xmlQuestionSets = new LinkedHashMap<String, ModelSetI>();
 
     private List<XmlRecordClassSet> xmlRecordClassSetList = new ArrayList<XmlRecordClassSet>();
-    private Map<String, XmlRecordClassSet> xmlRecordClassSets = new LinkedHashMap<String, XmlRecordClassSet>();
+    private Map<String, ModelSetI> xmlRecordClassSets = new LinkedHashMap<String, ModelSetI>();
 
     private List<WdkModelName> wdkModelNames = new ArrayList<WdkModelName>();
-    private String name;
     private String displayName;
     private String version; // use default version
 
     private List<WdkModelText> introductions = new ArrayList<WdkModelText>();
     private String introduction;
+
     private ResultFactory resultFactory;
+
+    private AnswerFactory answerFactory;
 
     @Deprecated
     private Map<String, String> properties;
@@ -97,48 +132,30 @@ public class WdkModel {
     private Map<String, Categories> categoriesMap = new LinkedHashMap<String, Categories>();
 
     /**
-     * Default constructor
-     */
-    public WdkModel() {
-        INSTANCE = this;
-    }
-
-    /**
-     * Convenience method for constructing a model from the configuration
-     * information
-     */
-    public static WdkModel construct(String modelName) throws WdkModelException {
-        String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
-
-        try {
-            ModelXmlParser parser = new ModelXmlParser(gusHome);
-            WdkModel model = parser.parseModel(modelName);
-
-            return model;
-        } catch (SAXException ex) {
-            throw new WdkModelException(ex);
-        } catch (IOException ex) {
-            throw new WdkModelException(ex);
-        } catch (ParserConfigurationException ex) {
-            throw new WdkModelException(ex);
-        } catch (TransformerFactoryConfigurationError ex) {
-            throw new WdkModelException(ex);
-        } catch (TransformerException ex) {
-            throw new WdkModelException(ex);
-        }
-    }
-
-    /**
      * @param initRecordClassList
      * @return
      * @throws WdkUserException
      * @throws WdkModelException
      */
-    public Question getQuestion(String initRecordClassList)
+    public Question getQuestion(String questionFullName)
             throws WdkUserException, WdkModelException {
-        Reference r = new Reference(initRecordClassList);
+        Reference r = new Reference(questionFullName);
         QuestionSet ss = getQuestionSet(r.getSetName());
         return ss.getQuestion(r.getElementName());
+    }
+
+    public Question[] getQuestions(RecordClass recordClass) {
+        String rcName = recordClass.getFullName();
+        List<Question> questions = new ArrayList<Question>();
+        for (ModelSetI questionSet : questionSets.values()) {
+            for (Question question : ((QuestionSet) questionSet).getQuestions()) {
+                if (question.getRecordClass().getFullName().equals(rcName))
+                    questions.add(question);
+            }
+        }
+        Question[] array = new Question[questions.size()];
+        questions.toArray(array);
+        return array;
     }
 
     public RecordClass getRecordClass(String recordClassReference)
@@ -154,10 +171,6 @@ public class WdkModel {
 
     public void addWdkModelName(WdkModelName wdkModelName) {
         this.wdkModelNames.add(wdkModelName);
-    }
-
-    public String getName() {
-        return name;
     }
 
     /**
@@ -195,7 +208,7 @@ public class WdkModel {
             throws WdkModelException {
 
         if (!recordClassSets.containsKey(recordClassSetName)) {
-            String err = "WDK Model " + name
+            String err = "WDK Model " + projectId
                     + " does not contain a recordClass set with name "
                     + recordClassSetName;
 
@@ -214,7 +227,7 @@ public class WdkModel {
 
     public QuerySet getQuerySet(String setName) throws WdkModelException {
         if (!querySets.containsKey(setName)) {
-            String err = "WDK Model " + name
+            String err = "WDK Model " + projectId
                     + " does not contain a query set with name " + setName;
             throw new WdkModelException(err);
         }
@@ -240,7 +253,7 @@ public class WdkModel {
     // Question Sets
     public QuestionSet getQuestionSet(String setName) throws WdkModelException {
         if (!questionSets.containsKey(setName)) {
-            String err = "WDK Model " + name
+            String err = "WDK Model " + projectId
                     + " does not contain a Question set with name " + setName;
             throw new WdkModelException(err);
         }
@@ -252,7 +265,11 @@ public class WdkModel {
     }
 
     public Map<String, QuestionSet> getQuestionSets() {
-        return new LinkedHashMap<String, QuestionSet>(questionSets);
+        Map<String, QuestionSet> sets = new LinkedHashMap<String, QuestionSet>();
+        for (String setName : questionSets.keySet()) {
+            sets.put(setName, (QuestionSet) questionSets.get(setName));
+        }
+        return sets;
     }
 
     public Map<String, Map<String, Question[]>> getQuestionsByCategories() {
@@ -274,7 +291,7 @@ public class WdkModel {
 
     public ParamSet getParamSet(String setName) throws WdkModelException {
         if (!paramSets.containsKey(setName)) {
-            String err = "WDK Model " + name
+            String err = "WDK Model " + projectId
                     + " does not contain a param set with name " + setName;
             throw new WdkModelException(err);
         }
@@ -294,42 +311,55 @@ public class WdkModel {
     }
 
     public GroupSet getGroupSet(String setName) throws WdkModelException {
-        GroupSet groupSet = groupSets.get(setName);
+        GroupSet groupSet = (GroupSet) groupSets.get(setName);
         if (groupSet == null)
             throw new WdkModelException("The Model does not "
                     + "have a groupSet named " + setName);
         return groupSet;
     }
 
-    public Question makeBooleanQuestion(RecordClass rc)
+    public Question getBooleanQuestion(RecordClass recordClass)
             throws WdkModelException {
+        // check if the boolean question already exists
+        String qname = Question.BOOLEAN_QUESTION_PREFIX
+                + recordClass.getFullName().replace('.', '_');
+        QuestionSet internalSet = getQuestionSet(Utilities.INTERNAL_QUESTION_SET);
 
-        Question q = new Question();
-        q.setName(BooleanQuestionNode.BOOLEAN_QUESTION_NAME);
-        q.setRecordClass(rc);
-
-        // can't call resolve references, since the underlying query is invalid
-        // yet
-        // q.resolveReferences( this );
-        q.setResources(this);
-
-        BooleanQuery bq = makeBooleanQuery();
-        q.setQuery(bq);
-        return q;
+        Question booleanQuestion;
+        if (internalSet.contains(qname)) {
+            booleanQuestion = internalSet.getQuestion(qname);
+        } else {
+            booleanQuestion = new Question();
+            booleanQuestion.setName(qname);
+            booleanQuestion.setQuery(getBooleanQuery(recordClass));
+            booleanQuestion.setResources(this);
+            internalSet.addQuestion(booleanQuestion);
+        }
+        return booleanQuestion;
     }
 
-    public BooleanQuery makeBooleanQuery() throws WdkModelException {
-        BooleanQuery booleanQuery = new BooleanQuery();
-        booleanQuery.resolveReferences(this);
-        booleanQuery.setResources(this);
+    public BooleanQuery getBooleanQuery(RecordClass recordClass)
+            throws WdkModelException {
+        // check if the boolean query already exists
+        String queryName = BooleanQuery.getQueryName(recordClass);
+        QuerySet internalQuerySet = getQuerySet(Utilities.INTERNAL_QUERY_SET);
+
+        BooleanQuery booleanQuery;
+        if (internalQuerySet.contains(queryName)) {
+            booleanQuery = (BooleanQuery) internalQuerySet.getQuery(queryName);
+        } else {
+            booleanQuery = new BooleanQuery(recordClass);
+            internalQuerySet.addQuery(booleanQuery);
+        }
         return booleanQuery;
     }
 
     // ModelSetI's
-    private void addSet(ModelSetI set, Map setMap) throws WdkModelException {
+    private void addSet(ModelSetI set, Map<String, ModelSetI> setMap)
+            throws WdkModelException {
         String setName = set.getName();
         if (allModelSets.containsKey(setName)) {
-            String err = "WDK Model " + name
+            String err = "WDK Model " + projectId
                     + " already contains a set with name " + setName;
 
             throw new WdkModelException(err);
@@ -353,100 +383,91 @@ public class WdkModel {
      * 
      * @param gusHome
      * @throws WdkModelException
+     * @throws JSONException
+     * @throws SQLException
+     * @throws NoSuchAlgorithmException
+     * @throws WdkUserException
+     * @throws ClassNotFoundException
+     * @throws IllegalAccessException
+     * @throws InstantiationException
      */
-    public void configure(ModelConfig modelConfig) throws WdkModelException {
-        try {
+    public void configure(ModelConfig modelConfig) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException, InstantiationException, IllegalAccessException,
+            ClassNotFoundException {
 
-            // assign projectId
-            this.projectId = modelConfig.getProjectId();
-            this.modelConfig = modelConfig;
+        // assign projectId
+        this.projectId = modelConfig.getProjectId();
+        this.modelConfig = modelConfig;
 
-            String connectionUrl = modelConfig.getConnectionUrl();
-            String login = modelConfig.getLogin();
-            String password = modelConfig.getPassword();
-            String platformClass = modelConfig.getPlatformClass();
-            Integer maxIdle = modelConfig.getMaxIdle();
-            Integer minIdle = modelConfig.getMinIdle();
-            Integer maxWait = modelConfig.getMaxWait();
-            Integer maxActive = modelConfig.getMaxActive();
-            Integer initialSize = modelConfig.getInitialSize();
+        String connectionUrl = modelConfig.getConnectionUrl();
+        String login = modelConfig.getLogin();
+        String password = modelConfig.getPassword();
+        String platformClass = modelConfig.getPlatformClass();
+        Integer maxIdle = modelConfig.getMaxIdle();
+        Integer minIdle = modelConfig.getMinIdle();
+        Integer maxWait = modelConfig.getMaxWait();
+        Integer maxActive = modelConfig.getMaxActive();
+        Integer initialSize = modelConfig.getInitialSize();
 
-            RDBMSPlatformI platform = (RDBMSPlatformI) Class.forName(
-                    platformClass).newInstance();
+        // also load the connection info for authentication database
+        String authenPlatformClass = modelConfig.getAuthenticationPlatformClass();
+        String authenLogin = modelConfig.getAuthenticationLogin();
+        String authenPassword = modelConfig.getAuthenticationPassword();
+        String authenConnection = modelConfig.getAuthenticationConnectionUrl();
 
-            // also load the connection info for authentication database
-            String authenPlatformClass = modelConfig.getAuthenticationPlatformClass();
-            String authenLogin = modelConfig.getAuthenticationLogin();
-            String authenPassword = modelConfig.getAuthenticationPassword();
-            String authenConnection = modelConfig.getAuthenticationConnectionUrl();
+        String loginSchema = modelConfig.getLoginSchema();
 
-            String loginSchema = modelConfig.getLoginSchema();
+        String defaultRole = modelConfig.getDefaultRole();
+        String smtpServer = modelConfig.getSmtpServer();
+        String supportEmail = modelConfig.getSupportEmail();
+        String emailSubject = modelConfig.getEmailSubject();
+        String emailContent = modelConfig.getEmailContent();
 
-            String defaultRole = modelConfig.getDefaultRole();
-            String smtpServer = modelConfig.getSmtpServer();
-            String supportEmail = modelConfig.getSupportEmail();
-            String emailSubject = modelConfig.getEmailSubject();
-            String emailContent = modelConfig.getEmailContent();
+        boolean enableQueryLogger = modelConfig.isEnableQueryLogger();
+        String queryLoggerFile = modelConfig.getQueryLoggerFile();
 
-            boolean enableQueryLogger = modelConfig.isEnableQueryLogger();
-            String queryLoggerFile = modelConfig.getQueryLoggerFile();
+        // initialize authentication factory
+        // set the max active as half of the model's configuration
 
-            String configFile = modelConfig.getGusHome() + "/config/"
-                    + projectId + "/model-config.xml";
+        authenPlatform = (DBPlatform) Class.forName(authenPlatformClass).newInstance();
+        authenPlatform.initialize(authenConnection, authenLogin,
+                authenPassword, minIdle, maxIdle, maxWait, maxActive / 2);
+        userFactory = new UserFactory(this, projectId, authenPlatform,
+                loginSchema, defaultRole, smtpServer, supportEmail,
+                emailSubject, emailContent);
 
-            // initialize authentication factory
-            // set the max active as half of the model's configuration
-            if (authenPlatformClass != null && !"".equals(authenPlatformClass)) {
-                authenPlatform = (RDBMSPlatformI) Class.forName(
-                        authenPlatformClass).newInstance();
-                authenPlatform.init(authenConnection, authenLogin,
-                        authenPassword, minIdle, maxIdle, maxWait,
-                        maxActive / 2, initialSize, configFile);
-                userFactory = new UserFactory(this, projectId, authenPlatform,
-                        loginSchema, defaultRole, smtpServer, supportEmail,
-                        emailSubject, emailContent);
-            } else {
-                userFactory = new UserFactory(this, projectId, null, null,
-                        null, null, null, null, null);
-            }
+        platform = (DBPlatform) Class.forName(platformClass).newInstance();
+        platform.initialize(connectionUrl, login, password, minIdle, maxIdle,
+                maxWait, maxActive);
+        ResultFactory resultFactory = new ResultFactory(this);
+        // 2008
+        this.webServiceUrl = modelConfig.getWebServiceUrl();
+        this.resultFactory = resultFactory;
 
-            platform.init(connectionUrl, login, password, minIdle, maxIdle,
-                    maxWait, maxActive, initialSize, configFile);
-            ResultFactory resultFactory = new ResultFactory(platform, login,
-                    enableQueryLogger, queryLoggerFile);
-            this.platform = platform;
-            this.authenPlatform = authenPlatform; // Added by Cary P. Feb 7,
-            // 2008
-            this.webServiceUrl = modelConfig.getWebServiceUrl();
-            this.resultFactory = resultFactory;
+        // initialize dataset factory with the login preferences
+        datasetFactory = new DatasetFactory(authenPlatform, loginSchema);
 
-            // initialize dataset factory with the login preferences
-            datasetFactory = new DatasetFactory(authenPlatform, loginSchema);
+        // initialize QueryFactory in user schema too
+        queryFactory = new QueryFactory(authenPlatform, loginSchema);
 
-            // initialize QueryFactory in user schema too
-            queryFactory = new QueryFactory(authenPlatform, loginSchema);
+        // initialize answerFactory
+        answerFactory = new AnswerFactory(this);
 
-            // resolve references in the model objects
-            resolveReferences();
-        } catch (InstantiationException ex) {
-            throw new WdkModelException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new WdkModelException(ex);
-        } catch (ClassNotFoundException ex) {
-            throw new WdkModelException(ex);
-        }
+        // resolve references in the model objects
+        resolveReferences();
     }
 
     public ModelConfig getModelConfig() {
         return modelConfig;
     }
 
-    public RDBMSPlatformI getRDBMSPlatform() {
+    public DBPlatform getQueryPlatform() {
         return platform;
     }
 
     // Function Added by Cary P. Feb 7, 2008
-    public RDBMSPlatformI getAuthRDBMSPlatform() {
+    public DBPlatform getAuthenticationPlatform() {
         return authenPlatform;
     }
 
@@ -485,11 +506,22 @@ public class WdkModel {
     /**
      * Some elements within the set may refer to others by name. Resolve those
      * references into real object references.
+     * 
+     * @throws JSONException
+     * @throws SQLException
+     * @throws NoSuchAlgorithmException
+     * @throws WdkUserException
      */
-    private void resolveReferences() throws WdkModelException {
+    private void resolveReferences() throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
         // set the exception header
         WdkModelException.modelName = getProjectId();
         WdkUserException.modelName = getProjectId();
+
+        // before the resources are excluded, the internal sets need to be
+        // created.
+        createInternalSets();
 
         // exclude resources that are not used by this project
         excludeResources();
@@ -508,26 +540,26 @@ public class WdkModel {
 
         // instead, we first resolve querySets, then recordSets, and then
         // paramSets, and last on questionSets
-        for (GroupSet groupSet : groupSets.values()) {
+        for (ModelSetI groupSet : groupSets.values()) {
             groupSet.resolveReferences(this);
         }
-        for (QuerySet querySet : querySets.values()) {
+        for (ModelSetI querySet : querySets.values()) {
             querySet.resolveReferences(this);
         }
-        for (ParamSet paramSet : paramSets.values()) {
+        for (ModelSetI paramSet : paramSets.values()) {
             paramSet.resolveReferences(this);
         }
-        for (RecordClassSet recordClassSet : recordClassSets.values()) {
+        for (ModelSetI recordClassSet : recordClassSets.values()) {
             recordClassSet.resolveReferences(this);
         }
-        for (QuestionSet questionSet : questionSets.values()) {
+        for (ModelSetI questionSet : questionSets.values()) {
             questionSet.resolveReferences(this);
         }
         // resolve references for xml record classes and questions
-        for (XmlRecordClassSet rcSet : xmlRecordClassSets.values()) {
+        for (ModelSetI rcSet : xmlRecordClassSets.values()) {
             rcSet.resolveReferences(this);
         }
-        for (XmlQuestionSet qSet : xmlQuestionSets.values()) {
+        for (ModelSetI qSet : xmlQuestionSets.values()) {
             qSet.resolveReferences(this);
         }
         for (Categories categories : this.categoriesMap.values()) {
@@ -544,7 +576,6 @@ public class WdkModel {
                     throw new WdkModelException("The model has more than one "
                             + "<modelName> for project " + projectId);
                 } else {
-                    this.name = wdkModelName.getName();
                     this.displayName = wdkModelName.getDisplayName();
                     this.version = wdkModelName.getVersion();
                     hasModelName = true;
@@ -661,10 +692,30 @@ public class WdkModel {
         categoriesList = null;
     }
 
+    private void createInternalSets() {
+        // create a param set to hold all internal params, that is, the params
+        // created at run-time.
+        ParamSet internalParamSet = new ParamSet();
+        internalParamSet.setName(Utilities.INTERNAL_PARAM_SET);
+        addParamSet(internalParamSet);
+
+        // create a query set to hold all internal queries, that is, the queries
+        // created at run-time.
+        QuerySet internalQuerySet = new QuerySet();
+        internalQuerySet.setName(Utilities.INTERNAL_QUERY_SET);
+        addQuerySet(internalQuerySet);
+
+        // create a query set to hold all internal questions, that is, the
+        // questions created at run-time.
+        QuestionSet internalQuestionSet = new QuestionSet();
+        internalQuestionSet.setName(Utilities.INTERNAL_QUESTION_SET);
+        addQuestionSet(internalQuestionSet);
+    }
+
     public String toString() {
         String newline = System.getProperty("line.separator");
-        StringBuffer buf = new StringBuffer("WdkModel: name='" + name + "'"
-                + newline + "displayName='" + displayName + "'" + newline
+        StringBuffer buf = new StringBuffer("WdkModel: projectId='" + projectId
+                + "'" + newline + "displayName='" + displayName + "'" + newline
                 + "introduction='" + introduction + "'");
         buf.append(showSet("Param", paramSets));
         buf.append(showSet("Query", querySets));
@@ -736,9 +787,9 @@ public class WdkModel {
 
     public XmlQuestionSet getXmlQuestionSet(String setName)
             throws WdkModelException {
-        XmlQuestionSet qset = xmlQuestionSets.get(setName);
+        XmlQuestionSet qset = (XmlQuestionSet) xmlQuestionSets.get(setName);
         if (qset == null)
-            throw new WdkModelException("WDK Model " + name
+            throw new WdkModelException("WDK Model " + projectId
                     + " does not contain an Xml Question set with name "
                     + setName);
         return qset;
@@ -752,9 +803,9 @@ public class WdkModel {
 
     public XmlRecordClassSet getXmlRecordClassSet(String setName)
             throws WdkModelException {
-        XmlRecordClassSet rcset = xmlRecordClassSets.get(setName);
+        XmlRecordClassSet rcset = (XmlRecordClassSet) xmlRecordClassSets.get(setName);
         if (rcset == null)
-            throw new WdkModelException("WDK Model " + name
+            throw new WdkModelException("WDK Model " + projectId
                     + " does not contain an Xml Record Class set with name "
                     + setName);
         return rcset;
@@ -776,20 +827,16 @@ public class WdkModel {
         return xmlDataDir;
     }
 
-    public RDBMSPlatformI getPlatform() {
-        return platform;
-    }
-
-    public RDBMSPlatformI getAuthenticationPlatform() {
-        return authenPlatform;
-    }
-
     public DatasetFactory getDatasetFactory() {
         return datasetFactory;
     }
 
     public QueryFactory getQueryFactory() {
         return queryFactory;
+    }
+
+    public AnswerFactory getAnswerFactory() {
+        return answerFactory;
     }
 
     public String getProjectId() {
@@ -811,7 +858,7 @@ public class WdkModel {
         map.put("||", "UNION");
         map.put("+", "UNION");
 
-        String minus = platform.getMinus();
+        String minus = platform.getMinusOperator();
         map.put("minus", minus);
         map.put("MINUS", minus);
         map.put("not", minus);
@@ -821,16 +868,6 @@ public class WdkModel {
         map.put("-", minus);
 
         return map;
-    }
-
-    public String getParamDisplayName(String paramName) {
-        for (ParamSet paramset : paramSets.values()) {
-            Object object = paramset.getElement(paramName);
-            if (object == null) continue;
-            Param param = (Param) object;
-            return param.getPrompt();
-        }
-        return null;
     }
 
     public String getQuestionDisplayName(String questionFullName) {

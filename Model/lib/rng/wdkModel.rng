@@ -7,7 +7,6 @@
         <choice>
         
           <element name="modelName">
-              <attribute name="name" />
               <attribute name="displayName" />
               <attribute name="version"/>
               <ref name="IncludeExclude"/>
@@ -109,7 +108,7 @@
                     <ref name="stringParam" />
                     <ref name="enumParam" />
                     <ref name="flatVocabParam" />
-                    <ref name="historyParam" />
+                    <ref name="answerParam" />
                     <ref name="datasetParam" />
                 </choice>
               </oneOrMore>
@@ -209,10 +208,10 @@
         </element>
     </define>
     
-    <define name="historyParam">
-        <element name="historyParam">
+    <define name="answerParam">
+        <element name="answerParam">
             <ref name="ParamBaseContents" />
-            <!-- defines the type of the values of this historyParam -->
+            <!-- defines the type of the values of this answerParam -->
             <attribute name="recordClassRef" />
             <zeroOrMore>
                 <element name="suggest">
@@ -330,7 +329,7 @@
   <define name="queries">
     <choice>
       <ref name="sqlQuery" />
-      <ref name="wsQuery" />
+      <ref name="processQuery" />
     </choice>
   </define>  
   
@@ -496,8 +495,8 @@
   </define>
 
   
-  <define name="wsQuery">
-    <element name="wsQuery">
+  <define name="processQuery">
+    <element name="processQuery">
       <ref name="QueryBaseContents" />
       <oneOrMore>
         <ref name="wsColumns" />
@@ -515,12 +514,15 @@
   <define name="sqlColumn">
     <element name="column">
       <ref name="ColumnBaseContents" />
+      
+      <!-- the sortingTable & sortingColumn will be removed, since they are not used any longer -->
       <optional>
         <attribute name="sortingTable" />
       </optional>
       <optional>
         <attribute name="sortingColumn" />
       </optional>
+      
       <optional>
         <attribute name="lowerCase">
             <data type="boolean" />
@@ -544,32 +546,25 @@
     <element name="recordClass">
       <attribute name="name" />
       <attribute name="type" />
-      <attribute name="idPrefix" />
       <optional>
         <attribute name="displayName" />
+      </optional>
+      <optional>
+        <attribute name="aliasQueryRef" />
       </optional>
       <ref name="IncludeExclude" />
       <optional>
          <attribute name="attributeOrdering" />
       </optional>
 
-      <!-- the following attribute & element is used by two-part primary key -->
-      <optional>
-         <attribute name="delimiter" />
-      </optional>
-  
-      <optional>
-         <element name="projectParamRef">
-             <attribute name="ref" />
-         </element>
-      </optional>
-      
-      <optional>
-         <attribute name="aliasQueryRef" />
-      </optional>
-
       <zeroOrMore>  
         <choice>
+
+          <ref name="primaryKeyAttribute" />
+          <ref name="textAttribute" />
+          <ref name="linkAttribute" />
+          <ref name="table" />
+        
           <element name="reporter">
              <attribute name="name" />
              <attribute name="displayName" />
@@ -592,23 +587,50 @@
              </zeroOrMore>
           </element>
           
-          <element name="subType">
-             <!-- a filter query for the sub types. There should be two params for the
-		           query, and the name should be matched with subTypeParamRef and
-		           cacheTableParamRef. the subType param should be a Enum or FlatVocab
-		           param; the value for cacheTable param will be the cache table name
-		           fetched by WDK at run time.
-		     -->
-             <ref name="IncludeExclude" />
-	         <attribute name="filterQueryRef" />
-             <optional>
-	             <attribute name="transformQueryRef" />
-	         </optional>
-	         <!-- A term from subType enum/flatvocab Param. if the user inputs
-	              this term, the filter will be skipped
-	         -->
- 	         <attribute name="termToSkip" />
-         </element>
+          <!-- summary table definitions -->
+          <element name="summaryTable">
+            <attribute name="name" />
+            <attribute name="displayName" />
+            <attribute name="rowParamRef" />
+            <attribute name="columnParamRef" />
+            <ref name="IncludeExclude" />
+            <optional>
+              <attribute name="visible">
+                <data type="boolean" />
+              </attribute>
+            </optional>
+            
+            <zeroOrMore>
+              <choice>
+                <element name="description">
+                  <ref name="IncludeExclude"/>
+                  <text />
+                </element>
+                <element name="view">
+                  <attribute name="rowTerm" />
+                  <attribute name="columnTerm" />
+                  <attribute name="summaryQueryRef" />
+                  <ref name="IncludeExclude"/>
+                  <optional>
+                    <attribute name="isDefault">
+                      <data type="boolean" />
+                    </attribute>
+                  </optional>
+                  <optional>
+                    <attribute name="isBooleanDefault">
+                      <data type="boolean" />
+                    </attribute>
+                  </optional>
+                  <zeroOrMore>
+                    <element name="description">
+                      <ref name="IncludeExclude"/>
+                      <text />
+                    </element>
+                   </zeroOrMore>
+                </element>
+              </choice>
+            </zeroOrMore>
+          </element>
           
           <element name="attributeQueryRef">
               <attribute name="ref" />
@@ -617,10 +639,6 @@
                   <ref name="attributes" />
               </zeroOrMore>
           </element>
-
-          <ref name="table" />
-          <ref name="linkAttribute" />
-          <ref name="textAttribute" />
 
           <element name="nestedRecord">
             <attribute name="questionRef" />
@@ -763,6 +781,24 @@
         </optional>
     </define>
     
+    <define name="primaryKeyAttribute">
+        <element name="primaryKeyAttribute">
+            <ref name="AttributeFieldCotent" />
+            <oneOrMore>
+                <choice>
+                    <element name="columnRef">
+                        <ref name="IncludeExclude" />
+                        <text />
+                    </element>
+                    <element name="text">
+                        <ref name="IncludeExclude" />
+                        <text />
+                    </element>
+                </choice>
+            </oneOrMore>
+        </element>
+    </define>
+    
     <define name="columnAttribute">
         <element name="columnAttribute">
             <ref name="AttributeFieldCotent" />
@@ -784,12 +820,17 @@
     <define name ="linkAttribute">
         <element name="linkAttribute">
             <ref name="AttributeFieldCotent" />
-            <attribute name="visible" />
             <oneOrMore>
-                <element name="url">
-                    <ref name="IncludeExclude" />
-                    <text />
-                </element>
+                <choice>
+                    <element name="displayText">
+                        <ref name="IncludeExclude" />
+                        <text />
+                    </element>
+                    <element name="url">
+                        <ref name="IncludeExclude" />
+                        <text />
+                    </element>
+                </choice>
             </oneOrMore>
         </element>
     </define>

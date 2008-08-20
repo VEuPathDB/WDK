@@ -3,29 +3,26 @@
  */
 package org.gusdb.wdk.model;
 
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * @author Jerric
  * @created Jan 19, 2006
  */
 public abstract class AttributeField extends Field {
 
-    /**
-     * although this object is in question (application) domain, but the value
-     * is set when it is usedf the first time. The value is supposed to be set
-     * by the first answer when it is null; if it's not, it will never be set
-     * again.
-     */
-    protected Boolean sortable;
-    protected String align;
-    protected boolean nowrap;
+    public abstract Collection<ColumnAttributeField> getDependents()
+            throws WdkModelException;
 
-    /**
-     * 
-     */
-    public AttributeField() {
-        super();
-        nowrap = false;
-    }
+    protected AttributeFieldContainer container;
+
+    private boolean sortable = true;
+    private String align;
+    private boolean nowrap = false;
 
     /**
      * @return the sortable
@@ -34,9 +31,12 @@ public abstract class AttributeField extends Field {
         return sortable;
     }
 
+    /**
+     * @param sortable
+     *                the sortable to set
+     */
     public void setSortable(boolean sortable) {
-        // only set if user specify it as not sortable
-        if (!sortable) this.sortable = new Boolean(false);
+        this.sortable = sortable;
     }
 
     /**
@@ -48,7 +48,7 @@ public abstract class AttributeField extends Field {
 
     /**
      * @param align
-     *            the align to set
+     *                the align to set
      */
     public void setAlign(String align) {
         this.align = align;
@@ -63,9 +63,39 @@ public abstract class AttributeField extends Field {
 
     /**
      * @param nowrap
-     *            the nowrap to set
+     *                the nowrap to set
      */
     public void setNowrap(boolean nowrap) {
         this.nowrap = nowrap;
+    }
+
+    /**
+     * @param container
+     *                the container to set
+     */
+    public void setContainer(AttributeFieldContainer container) {
+        this.container = container;
+    }
+
+    protected Map<String, ColumnAttributeField> parseFields(String text)
+            throws WdkModelException {
+        Map<String, ColumnAttributeField> children = new LinkedHashMap<String, ColumnAttributeField>();
+        Map<String, AttributeField> fields = container.getAttributeFieldMap();
+
+        String type = ColumnAttributeField.class.getName();
+        Pattern pattern = Pattern.compile("\\$\\$(.+?)\\$\\$", Pattern.DOTALL);
+        Matcher matcher = pattern.matcher(text);
+        while (matcher.find()) {
+            String fieldName = matcher.group(1);
+            if (!fields.containsKey(fieldName)) continue;
+            AttributeField field = fields.get(fieldName);
+            if (!(field instanceof ColumnAttributeField))
+                throw new WdkModelException("Only " + type + " can "
+                        + "be embedded into the text content. " + fieldName
+                        + " is not a " + type + ".");
+            if (!children.containsKey(fieldName))
+                children.put(fieldName, (ColumnAttributeField) field);
+        }
+        return children;
     }
 }

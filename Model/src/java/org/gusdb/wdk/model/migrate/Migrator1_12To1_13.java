@@ -3,6 +3,7 @@
  */
 package org.gusdb.wdk.model.migrate;
 
+import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -11,11 +12,11 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
-import org.gusdb.wdk.model.RDBMSPlatformI;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.implementation.SqlUtils;
+import org.gusdb.wdk.model.dbms.DBPlatform;
+import org.gusdb.wdk.model.dbms.SqlUtils;
 
 /**
  * @author Jerric
@@ -112,10 +113,14 @@ public class Migrator1_12To1_13 extends Migrator {
     /**
      * (non-Javadoc)
      * 
+     * @throws SQLException
+     * @throws NoSuchAlgorithmException
+     * 
      * @see org.gusdb.wdk.model.migrate.Migrator#migrate()
      */
     @Override
-    public void migrate() throws WdkModelException, WdkUserException {
+    public void migrate() throws WdkModelException, WdkUserException,
+            NoSuchAlgorithmException, SQLException {
         // update histories
         updateHistories();
     }
@@ -123,19 +128,22 @@ public class Migrator1_12To1_13 extends Migrator {
     /**
      * @throws WdkUserException
      * @throws WdkModelException
+     * @throws NoSuchAlgorithmException
+     * @throws SQLException
      * 
      * 
      */
-    private void updateHistories() throws WdkUserException, WdkModelException {
-        RDBMSPlatformI platform = wdkModel.getAuthenticationPlatform();
+    private void updateHistories() throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, SQLException {
+        DBPlatform platform = wdkModel.getAuthenticationPlatform();
         DataSource dataSource = platform.getDataSource();
         String newSchema = getNewSchema();
-        
+
         List<HistoryItem> histories = new ArrayList<HistoryItem>();
 
         ResultSet rsHistory = null;
         try {
-            rsHistory = SqlUtils.getResultSet(dataSource, "SELECT user_id, "
+            rsHistory = SqlUtils.executeQuery(dataSource, "SELECT user_id, "
                     + "project_id, history_id, params FROM " + newSchema
                     + "histories WHERE query_instance_checksum IS NULL");
 
@@ -145,11 +153,12 @@ public class Migrator1_12To1_13 extends Migrator {
                 int historyId = rsHistory.getInt("history_id");
                 String params = platform.getClobData(rsHistory, "params");
 
-                params = params.replaceAll("--WDK_PARAM_DIVIDER--",
-                        Utilities.DATA_DIVIDER);
-                String content = projectId + Utilities.DATA_DIVIDER + params;
+                // params = params.replaceAll("--WDK_PARAM_DIVIDER--",
+                // Utilities.DATA_DIVIDER);
+                // String content = projectId + Utilities.DATA_DIVIDER + params;
+                String content = projectId + "--WDK_PARAM_DIVIDER--" + params;
                 String checksum = Utilities.encrypt(content);
-                
+
                 HistoryItem item = new HistoryItem();
                 item.setChecksum(checksum);
                 item.setHistoryId(historyId);
@@ -158,23 +167,17 @@ public class Migrator1_12To1_13 extends Migrator {
                 item.setUserId(userId);
                 histories.add(item);
             }
-        } catch (SQLException ex) {
-            throw new WdkModelException(ex);
         } finally {
-            try {
-                SqlUtils.closeResultSet(rsHistory);
-            } catch (SQLException ex) {
-                throw new WdkModelException(ex);
-            }
+            SqlUtils.closeResultSet(rsHistory);
         }
-        
+
         PreparedStatement psHistory = null;
         try {
-            psHistory = SqlUtils.getPreparedStatement(dataSource, "UPDATE " + newSchema
-                    + "histories SET query_instance_checksum = ? "
+            psHistory = SqlUtils.getPreparedStatement(dataSource, "UPDATE "
+                    + newSchema + "histories SET query_instance_checksum = ? "
                     + ", params = ? WHERE user_id = ? AND project_id = ? "
                     + "AND history_id = ?");
-            
+
             int count = 0;
             for (HistoryItem item : histories) {
                 psHistory.setString(1, item.getChecksum());

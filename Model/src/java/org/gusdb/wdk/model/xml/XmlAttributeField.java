@@ -3,7 +3,12 @@
  */
 package org.gusdb.wdk.model.xml;
 
+import java.util.Collection;
+
 import org.gusdb.wdk.model.AttributeField;
+import org.gusdb.wdk.model.ColumnAttributeField;
+import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelException;
 
 /**
  * @author Jerric
@@ -34,11 +39,35 @@ public class XmlAttributeField extends AttributeField {
         return buf.toString();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
      */
     @Override
     public void excludeResources(String projectId) {
-        // do nothing
+    // do nothing
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.AttributeField#getDependents()
+     */
+    @Override
+    public Collection<ColumnAttributeField> getDependents()
+            throws WdkModelException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.Field#resolveReferences(org.gusdb.wdk.model.WdkModel)
+     */
+    @Override
+    public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
+    // do nothing
     }
 }

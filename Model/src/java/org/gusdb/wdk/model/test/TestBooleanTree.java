@@ -3,13 +3,13 @@ package org.gusdb.wdk.model.test;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.gusdb.wdk.model.BooleanQuery;
 import org.gusdb.wdk.model.BooleanQuestionNode;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.BooleanQuery;
 
 /**
  * TestBooleanTree.java
@@ -66,14 +66,14 @@ public class TestBooleanTree {
                 "Neospora caninum");
 
         // boolean nodes
-        Question q2 = model.makeBooleanQuestion(q7.getRecordClass());
+        Question q2 = model.getBooleanQuestion(q7.getRecordClass());
         Map<String, Object> q2values = makeBooleanValues("Union", model);
 
-        Question q3 = model.makeBooleanQuestion(q7.getRecordClass());
+        Question q3 = model.getBooleanQuestion(q7.getRecordClass());
         Map<String, Object> q3values = makeBooleanValues("Union", model);
 
         // root boolean node
-        Question q1 = model.makeBooleanQuestion(q7.getRecordClass());
+        Question q1 = model.getBooleanQuestion(q7.getRecordClass());
         Map<String, Object> q1values = makeBooleanValues("Minus", model);
         // Hashtable q1values = makeBooleanValues("Union", model);
 
@@ -117,9 +117,9 @@ public class TestBooleanTree {
         // need to translate the operators
         if (operation.equalsIgnoreCase("Minus")
                 || operation.equalsIgnoreCase("Except"))
-            operation = model.getRDBMSPlatform().getMinus();
+            operation = model.getQueryPlatform().getMinusOperator();
         Map<String, Object> h = new LinkedHashMap<String, Object>();
-        h.put(BooleanQuery.OPERATION_PARAM_NAME, operation);
+        h.put(BooleanQuery.OPERATOR_PARAM, operation);
         return h;
     }
 

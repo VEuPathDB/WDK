@@ -2,6 +2,8 @@ package org.gusdb.wdk.model.jspwrap;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -10,22 +12,63 @@ import java.util.Vector;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.AttributeField;
-import org.gusdb.wdk.model.BooleanQuery;
 import org.gusdb.wdk.model.DatasetParam;
+import org.gusdb.wdk.model.FieldScope;
 import org.gusdb.wdk.model.FlatVocabParam;
 import org.gusdb.wdk.model.Param;
-import org.gusdb.wdk.model.SubType;
+import org.gusdb.wdk.model.Question;
+import org.gusdb.wdk.model.RecordClass;
+import org.gusdb.wdk.model.RecordInstance;
 import org.gusdb.wdk.model.TableField;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.report.Reporter;
-
-import sun.util.logging.resources.logging;
+import org.json.JSONException;
 
 /**
  * A wrapper on a {@link Answer} that provides simplified access for consumption
  * by a view
  */
 public class AnswerBean {
+
+    private class RecordBeanList implements Iterator<RecordBean> {
+
+        private RecordInstance[] instances;
+        private int position = 0;
+
+        private RecordBeanList(RecordInstance[] instances) {
+            this.instances = instances;
+        }
+
+        /*
+         * (non-Javadoc)
+         * 
+         * @see java.util.Iterator#hasNext()
+         */
+        public boolean hasNext() {
+            return position < instances.length;
+        }
+
+        /*
+         * (non-Javadoc)
+         * 
+         * @see java.util.Iterator#next()
+         */
+        public RecordBean next() {
+            return new RecordBean(instances[position++]);
+        }
+
+        /*
+         * (non-Javadoc)
+         * 
+         * @see java.util.Iterator#remove()
+         */
+        public void remove() {
+            throw new UnsupportedOperationException("Not supported");
+        }
+
+    }
 
     private static Logger logger = Logger.getLogger(AnswerBean.class);
     Answer answer;
@@ -45,7 +88,7 @@ public class AnswerBean {
     }
 
     public Map<String, Object> getInternalParams() {
-        return answer.getParams();
+        return answer.getIdsQueryInstance().getValues();
     }
 
     public String getQuestionUrlParams() throws WdkModelException {
@@ -78,7 +121,6 @@ public class AnswerBean {
                 }
             }
         }
-        composeSubTypeUrl(sb);
         return sb.toString();
     }
 
@@ -105,45 +147,24 @@ public class AnswerBean {
                 throw new WdkModelException(ex);
             }
         }
-        composeSubTypeUrl(sb);
         return sb.toString();
     }
 
-    private void composeSubTypeUrl(StringBuffer sb) throws WdkModelException {
-        SubType subType = answer.getQuestion().getRecordClass().getSubType();
-
-        logger.debug("SubType: '" + subType + "', value '"
-                + answer.getSubTypeValue() + "'");
-
-        if (subType != null && answer.getSubTypeValue() != null) {
-            String subTypeName = subType.getSubTypeParam().getName();
-            String subTypeValue = (String) answer.getSubTypeValue();
-            try {
-                subTypeName = URLEncoder.encode("myProp(" + subTypeName + ")",
-                        "UTF-8");
-                subTypeValue = URLEncoder.encode(subTypeValue, "UTF-8");
-                sb.append("&" + subTypeName + "=" + subTypeValue);
-            } catch (UnsupportedEncodingException ex) {
-                throw new WdkModelException(ex);
-            }
-        }
-    }
-
-    public Integer getDatasetId() throws WdkModelException {
-        return answer.getDatasetId();
+    public String getChecksum() throws WdkModelException,
+            NoSuchAlgorithmException, JSONException {
+        return answer.getChecksum();
     }
 
     /**
      * @return opertation for boolean answer
      */
     public String getBooleanOperation() {
-        System.err.println("the param map is: " + answer.getParams());
         if (!getIsBoolean()) {
-            throw new RuntimeException(
-                    "getBooleanOperation can not be called on simple AnswerBean");
+            throw new RuntimeException("getBooleanOperation can not be called"
+                    + " on simple AnswerBean");
         }
-        return (String) answer.getParams().get(
-                BooleanQuery.OPERATION_PARAM_NAME);
+        Map<String, Object> params = answer.getIdsQueryInstance().getValues();
+        return (String) params.get(BooleanQuery.OPERATOR_PARAM);
     }
 
     /**
@@ -152,11 +173,11 @@ public class AnswerBean {
      */
     public AnswerBean getFirstChildAnswer() {
         if (!getIsBoolean()) {
-            throw new RuntimeException(
-                    "getFirstChildAnswer can not be called on simple AnswerBean");
+            throw new RuntimeException("getFirstChildAnswer can not be called"
+                    + " on simple AnswerBean");
         }
-        Object childAnswer = answer.getParams().get(
-                BooleanQuery.FIRST_ANSWER_PARAM_NAME);
+        Map<String, Object> params = answer.getIdsQueryInstance().getValues();
+        Object childAnswer = params.get(BooleanQuery.LEFT_OPERAND_PARAM_PREFIX);
         return new AnswerBean((Answer) childAnswer);
     }
 
@@ -166,28 +187,34 @@ public class AnswerBean {
      */
     public AnswerBean getSecondChildAnswer() {
         if (!getIsBoolean()) {
-            throw new RuntimeException(
-                    "getSecondChildAnswer can not be called on simple AnswerBean");
+            throw new RuntimeException("getSecondChildAnswer can not be called"
+                    + " on simple AnswerBean");
         }
-        Object childAnswer = answer.getParams().get(
-                BooleanQuery.SECOND_ANSWER_PARAM_NAME);
+        Map<String, Object> params = answer.getIdsQueryInstance().getValues();
+        Object childAnswer = params.get(BooleanQuery.RIGHT_OPERAND_PARAM_PREFIX);
         return new AnswerBean((Answer) childAnswer);
     }
 
-    public int getPageSize() {
+    public int getPageSize() throws NoSuchAlgorithmException,
+            WdkModelException, SQLException, JSONException, WdkUserException {
         return answer.getPageSize();
     }
 
-    public int getPageCount() throws WdkModelException {
+    public int getPageCount() throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
         return answer.getPageCount();
     }
 
-    public int getResultSize() throws WdkModelException {
+    public int getResultSize() throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
         return answer.getResultSize();
     }
 
     public Map<String, Integer> getResultSizesByProject()
-            throws WdkModelException {
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
         return answer.getResultSizesByProject();
     }
 
@@ -209,9 +236,15 @@ public class AnswerBean {
 
     /**
      * @return A list of {@link RecordBean}s.
+     * @throws WdkUserException
+     * @throws JSONException
+     * @throws SQLException
+     * @throws WdkModelException
+     * @throws NoSuchAlgorithmException
      */
-    public Iterator getRecords() {
-        return new RecordBeanList();
+    public Iterator<RecordBean> getRecords() throws NoSuchAlgorithmException,
+            WdkModelException, SQLException, JSONException, WdkUserException {
+        return new RecordBeanList(answer.getRecordInstances());
     }
 
     public void setDownloadConfigMap(Map downloadConfigMap) {
@@ -269,7 +302,8 @@ public class AnswerBean {
     }
 
     public AttributeFieldBean[] getAllReportMakerAttributes() {
-        Map<String, AttributeField> attribs = answer.getReportMakerAttributeFields();
+        Question question = answer.getQuestion();
+        Map<String, AttributeField> attribs = question.getAttributeFields(FieldScope.ReportMaker);
         Iterator<String> ai = attribs.keySet().iterator();
         Vector<AttributeFieldBean> v = new Vector<AttributeFieldBean>();
         while (ai.hasNext()) {
@@ -283,7 +317,8 @@ public class AnswerBean {
     }
 
     public TableFieldBean[] getAllReportMakerTables() {
-        Map<String, TableField> tables = answer.getReportMakerTableFields();
+        RecordClass recordClass = answer.getQuestion().getRecordClass();
+        Map<String, TableField> tables = recordClass.getTableFieldMap(FieldScope.ReportMaker);
         Iterator<String> ti = tables.keySet().iterator();
         Vector<TableFieldBean> v = new Vector<TableFieldBean>();
         while (ti.hasNext()) {
@@ -324,12 +359,9 @@ public class AnswerBean {
      * for controller: reset counter for download purpose
      */
     public void resetAnswerRowCursor() {
-        try {
-            answer = answer.newAnswer();
-        } catch (WdkModelException ex) {
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
-        }
+        int startIndex = answer.getStartIndex();
+        int endIndex = answer.getEndIndex();
+        answer = new Answer(answer, startIndex, endIndex);
     }
 
     /**
@@ -358,11 +390,16 @@ public class AnswerBean {
      * @param config
      * @return
      * @throws WdkModelException
+     * @throws WdkUserException
+     * @throws JSONException
+     * @throws SQLException
+     * @throws NoSuchAlgorithmException
      * @see org.gusdb.wdk.model.Answer#getReport(java.lang.String,
      *      java.util.Map)
      */
     public Reporter createReport(String reporterName, Map<String, String> config)
-            throws WdkModelException {
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
         return answer.createReport(reporterName, config);
     }
 
@@ -371,7 +408,10 @@ public class AnswerBean {
      * @see org.gusdb.wdk.model.Answer#getSortingAttributeNames()
      */
     public String[] getSortingAttributeNames() {
-        return answer.getSortingAttributeNames();
+        Map<String, Boolean> sortingFields = answer.getSortingAttributes();
+        String[] array = new String[sortingFields.size()];
+        sortingFields.keySet().toArray(array);
+        return array;
     }
 
     /**
@@ -379,7 +419,13 @@ public class AnswerBean {
      * @see org.gusdb.wdk.model.Answer#getSortingAttributeOrders()
      */
     public boolean[] getSortingAttributeOrders() {
-        return answer.getSortingAttributeOrders();
+        Map<String, Boolean> sortingFields = answer.getSortingAttributes();
+        boolean[] array = new boolean[sortingFields.size()];
+        int index = 0;
+        for (boolean order : sortingFields.values()) {
+            array[index++] = order;
+        }
+        return array;
     }
 
     public AttributeFieldBean[] getDisplayableAttributes() {
@@ -400,84 +446,4 @@ public class AnswerBean {
     public void setSumaryAttribute(String[] attributeNames) {
         answer.setSumaryAttributes(attributeNames);
     }
-
-    /**
-     * @return
-     * @throws WdkModelException
-     * @see org.gusdb.wdk.model.Answer#getAllIds()
-     */
-    public String getAllIdList() throws WdkModelException {
-        String[] ids = answer.getAllIds();
-        StringBuffer sbIds = new StringBuffer();
-        for (String id : ids)
-            sbIds.append(id + "\n");
-        return sbIds.toString().trim();
-    }
-
-    /**
-     * @return
-     * @see org.gusdb.wdk.model.Answer#getSubTypeValues()
-     */
-    public Object getSubTypeValue() {
-        return answer.getSubTypeValue();
-    }
-
-    /**
-     * @return
-     * @see org.gusdb.wdk.model.Answer#isExpandSubType()
-     */
-    public boolean isExpandSubType() {
-        return answer.isExpandSubType();
-    }
-
-    /**
-     * @param expandSubType
-     * @see org.gusdb.wdk.model.Answer#setExpandSubType(boolean)
-     */
-    public void setExpandSubType(boolean expandSubType) {
-        answer.setExpandSubType(expandSubType);
-    }
-
-    /**
-     * @return
-     * @throws WdkModelException
-     * @see org.gusdb.wdk.model.Answer#getCacheTableName()
-     */
-    public String getCacheTableName() throws WdkModelException {
-        return answer.getCacheTableName();
-    }
-
-    // //////////////////////////////////////////////////////////////////////
-    // Inner classes
-    // //////////////////////////////////////////////////////////////////////
-
-    class RecordBeanList implements Iterator {
-
-        public int getSize() {
-            return answer.getPageSize();
-        }
-
-        public boolean hasNext() {
-            try {
-                return answer.hasMoreRecordInstances();
-            } catch (WdkModelException exp) {
-                throw new RuntimeException(exp);
-            }
-        }
-
-        public Object next() {
-            try {
-                return new RecordBean(answer.getNextRecordInstance());
-            } catch (WdkModelException exp) {
-                throw new RuntimeException(exp);
-            }
-        }
-
-        public void remove() {
-            throw new UnsupportedOperationException(
-                    "remove isn't allowed on this iterator");
-        }
-
-    }
-
 }

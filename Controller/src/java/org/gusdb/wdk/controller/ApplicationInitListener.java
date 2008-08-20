@@ -3,6 +3,8 @@ package org.gusdb.wdk.controller;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -11,12 +13,14 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 
-import org.gusdb.wdk.model.RDBMSPlatformI;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.implementation.ModelXmlParser;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.json.JSONException;
 import org.xml.sax.SAXException;
 
 /**
@@ -26,15 +30,15 @@ import org.xml.sax.SAXException;
  */
 public class ApplicationInitListener implements ServletContextListener {
 
-    private RDBMSPlatformI platform;
-    private RDBMSPlatformI authPlatform;
+    private DBPlatform platform;
+    private DBPlatform authPlatform;
 
     public void contextDestroyed(ServletContextEvent sce) {
         try {
             getPlatform().close();
-	    getAuthPlatform().close();
-        } catch (WdkModelException exp) {
-            throw new RuntimeException(exp);
+            getAuthPlatform().close();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
         }
     }
 
@@ -52,7 +56,7 @@ public class ApplicationInitListener implements ServletContextListener {
         try {
             initMemberVars(application, gusHome, modelName, customViewDir,
                     alwaysGoToSummary, loginUrl);
-        } catch (WdkModelException ex) {
+        } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
     }
@@ -68,51 +72,44 @@ public class ApplicationInitListener implements ServletContextListener {
         }
     }
 
-    protected RDBMSPlatformI getPlatform() {
+    protected DBPlatform getPlatform() {
         return platform;
     }
 
-    protected RDBMSPlatformI getAuthPlatform() {
+    protected DBPlatform getAuthPlatform() {
         return authPlatform;
     }
 
-    protected void setPlatform(RDBMSPlatformI platform) {
+    protected void setPlatform(DBPlatform platform) {
         this.platform = platform;
     }
 
-    protected void setAuthPlatform(RDBMSPlatformI authPlatform) {
+    protected void setAuthPlatform(DBPlatform authPlatform) {
         this.authPlatform = authPlatform;
     }
 
     private void initMemberVars(ServletContext application, String gusHome,
             String modelName, String customViewDir, String alwaysGoToSummary,
-            String loginUrl) throws WdkModelException {
-        try {
-            ModelXmlParser parser = new ModelXmlParser(gusHome);
-            WdkModel wdkModelRaw = parser.parseModel(modelName);
+            String loginUrl) throws WdkModelException,
+            NoSuchAlgorithmException, ParserConfigurationException,
+            TransformerFactoryConfigurationError, TransformerException,
+            IOException, SAXException, SQLException, JSONException,
+            WdkUserException, InstantiationException, IllegalAccessException,
+            ClassNotFoundException {
+        ModelXmlParser parser = new ModelXmlParser(gusHome);
+        WdkModel wdkModelRaw = parser.parseModel(modelName);
 
-            WdkModelBean wdkModel = new WdkModelBean(wdkModelRaw);
+        WdkModelBean wdkModel = new WdkModelBean(wdkModelRaw);
 
-            setPlatform(wdkModelRaw.getRDBMSPlatform());
+        setPlatform(wdkModelRaw.getQueryPlatform());
 
-            setAuthPlatform(wdkModelRaw.getAuthRDBMSPlatform());
+        setAuthPlatform(wdkModelRaw.getAuthenticationPlatform());
 
-            application.setAttribute(CConstants.WDK_MODEL_KEY, wdkModel);
-            application.setAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY,
-                    customViewDir);
-            application.setAttribute(CConstants.WDK_ALWAYSGOTOSUMMARY_KEY,
-                    alwaysGoToSummary);
-            application.setAttribute(CConstants.WDK_LOGIN_URL_KEY, loginUrl);
-        } catch (SAXException ex) {
-            throw new WdkModelException(ex);
-        } catch (IOException ex) {
-            throw new WdkModelException(ex);
-        } catch (ParserConfigurationException ex) {
-            throw new WdkModelException(ex);
-        } catch (TransformerFactoryConfigurationError ex) {
-            throw new WdkModelException(ex);
-        } catch (TransformerException ex) {
-            throw new WdkModelException(ex);
-        }
+        application.setAttribute(CConstants.WDK_MODEL_KEY, wdkModel);
+        application.setAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY,
+                customViewDir);
+        application.setAttribute(CConstants.WDK_ALWAYSGOTOSUMMARY_KEY,
+                alwaysGoToSummary);
+        application.setAttribute(CConstants.WDK_LOGIN_URL_KEY, loginUrl);
     }
 }

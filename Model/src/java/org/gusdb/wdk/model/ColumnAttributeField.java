@@ -1,5 +1,8 @@
 package org.gusdb.wdk.model;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public class ColumnAttributeField extends AttributeField {
 
@@ -23,20 +26,11 @@ public class ColumnAttributeField extends AttributeField {
 
     /**
      * @param column
-     * The column to set.
+     *                The column to set.
+     * @throws WdkModelException
      */
     void setColumn(Column column) {
         this.column = column;
-    }
-
-    Query getQuery() throws WdkModelException {
-        if (column == null)
-            throw new WdkModelException("Null column in Column Attribute: "
-                    + name + " This may "
-                    + "happen if you have declared a column attribute in the "
-                    + "record, but the underlying query doesn't have that "
-                    + "column declared");
-        return column.getQuery();
     }
 
     /*
@@ -47,5 +41,31 @@ public class ColumnAttributeField extends AttributeField {
     @Override
     public void excludeResources(String projectId) {
     // nothing to be exclude, do nothing
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.Field#presolveReferences(org.gusdb.wdk.model.WdkModel)
+     */
+    @Override
+    public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
+        // verify the name
+        if (!name.equals(column.getName()))
+            throw new WdkModelException("The name of the ColumnAttributeField"
+                    + " '" + name + "' does not match the column name '"
+                    + column.getName() + "'");
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.AttributeField#getDependents()
+     */
+    @Override
+    public Collection<ColumnAttributeField> getDependents() {
+        List<ColumnAttributeField> dependents = new ArrayList<ColumnAttributeField>();
+        dependents.add(this);
+        return dependents;
     }
 }
