@@ -40,7 +40,12 @@ public class StepBean {
 
     public void setNextStep(StepBean next)
 	throws WdkUserException {
-	step.setNextStep(next.step);
+	if (next != null)
+	    step.setNextStep(next.step);
+	else {
+	    Step nextStep = null;
+	    step.setNextStep(nextStep);
+	}
     }
 
     public UserAnswerBean getChildStepUserAnswer() {

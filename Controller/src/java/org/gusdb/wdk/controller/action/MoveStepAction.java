@@ -131,6 +131,7 @@ public class MoveStepAction extends Action {
 		}
 	    }
 
+	    // set next step to null so we can set strategy pointer
 	    newStep = null;
 	    step.setNextStep(newStep);
 	    strategy.setLatestStep(step);
