@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.user;
 
+import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -8,11 +9,11 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import org.gusdb.wdk.model.RDBMSPlatformI;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.implementation.SqlUtils;
+import org.gusdb.wdk.model.dbms.DBPlatform;
+import org.gusdb.wdk.model.dbms.SqlUtils;
 
 public class QueryFactory {
 
@@ -20,15 +21,16 @@ public class QueryFactory {
     // );
 
     private String querySchema;
-    private RDBMSPlatformI platform;
+    private DBPlatform platform;
 
-    public QueryFactory(RDBMSPlatformI platform, String querySchema) {
+    public QueryFactory(DBPlatform platform, String querySchema) {
         this.platform = platform;
         this.querySchema = querySchema;
     }
 
     public String makeSummaryChecksum(String[] summaryAttributes)
-            throws WdkModelException, WdkUserException {
+            throws WdkModelException, WdkUserException,
+            NoSuchAlgorithmException {
         // create checksum for config columns
         StringBuffer sb = new StringBuffer();
         for (String attribute : summaryAttributes) {
@@ -96,7 +98,8 @@ public class QueryFactory {
     }
 
     public String makeSortingChecksum(Map<String, Boolean> columns)
-            throws WdkModelException, WdkUserException {
+            throws WdkModelException, WdkUserException,
+            NoSuchAlgorithmException {
         // create checksum for sorting columns
         StringBuffer sb = new StringBuffer();
         int i = 0;
@@ -181,7 +184,8 @@ public class QueryFactory {
         }
     }
 
-    public String makeClobChecksum(String paramValue) throws WdkModelException {
+    public String makeClobChecksum(String paramValue) throws WdkModelException,
+            NoSuchAlgorithmException {
         // make the checksum
         String checksum = Utilities.encrypt(paramValue);
 

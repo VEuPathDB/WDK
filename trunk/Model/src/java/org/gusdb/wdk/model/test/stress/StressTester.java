@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -26,6 +27,9 @@ import java.util.Random;
 import java.util.Set;
 
 import javax.sql.DataSource;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
@@ -36,17 +40,19 @@ import org.gusdb.wdk.model.HistoryParam;
 import org.gusdb.wdk.model.Param;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
-import org.gusdb.wdk.model.RDBMSPlatformI;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.implementation.SqlUtils;
+import org.gusdb.wdk.model.dbms.DBPlatform;
+import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.test.CommandHelper;
 import org.gusdb.wdk.model.test.stress.StressTestRunner.RunnerState;
 import org.gusdb.wdk.model.test.stress.StressTestTask.ResultType;
 import org.gusdb.wdk.model.xml.XmlQuestion;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
+import org.json.JSONException;
+import org.xml.sax.SAXException;
 
 /**
  * @author: Jerric
@@ -106,11 +112,25 @@ public class StressTester {
      * @throws WdkModelException
      * @throws URISyntaxException
      * @throws WdkUserException
+     * @throws ClassNotFoundException
+     * @throws IllegalAccessException
+     * @throws InstantiationException
+     * @throws JSONException
+     * @throws SQLException
+     * @throws SAXException
+     * @throws TransformerException
+     * @throws TransformerFactoryConfigurationError
+     * @throws ParserConfigurationException
+     * @throws NoSuchAlgorithmException
      * 
      */
     public StressTester(String modelName)
             throws InvalidPropertiesFormatException, IOException,
-            WdkModelException, URISyntaxException, WdkUserException {
+            WdkModelException, URISyntaxException, WdkUserException,
+            NoSuchAlgorithmException, ParserConfigurationException,
+            TransformerFactoryConfigurationError, TransformerException,
+            SAXException, SQLException, JSONException, InstantiationException,
+            IllegalAccessException, ClassNotFoundException {
         logger.info("Initializing stress test on " + modelName);
 
         urlPool = new ArrayList<UrlItem>();
@@ -125,7 +145,7 @@ public class StressTester {
 
         // load the model
         WdkModel wdkModel = WdkModel.construct(modelName);
-        dataSource = wdkModel.getPlatform().getDataSource();
+        dataSource = wdkModel.getQueryPlatform().getDataSource();
 
         // initialize the stress-test result table
         try {
@@ -146,23 +166,23 @@ public class StressTester {
     private void initializeResultTable(WdkModel wdkModel) throws SQLException {
         // check if result table exists
         try {
-            ResultSet rs = SqlUtils.getResultSet(dataSource, "SELECT * FROM "
+            ResultSet rs = SqlUtils.executeQuery(dataSource, "SELECT * FROM "
                     + TABLE_STRESS_RESULT);
             SqlUtils.closeResultSet(rs);
         } catch (SQLException e) {
             // table doesn't exist, create it
-            RDBMSPlatformI platform = wdkModel.getPlatform();
-            String numericType = platform.getNumberDataType();
+            DBPlatform platform = wdkModel.getQueryPlatform();
+            String numericType = platform.getNumberDataType(20);
             String textType = platform.getClobDataType();
 
             StringBuffer sb = new StringBuffer();
             sb.append("CREATE TABLE " + TABLE_STRESS_RESULT + " (");
-            sb.append("test_tag " + numericType + "(20) not null, ");
-            sb.append("task_id " + numericType + "(20) not null, ");
-            sb.append("runner_id " + numericType + "(20) not null, ");
+            sb.append("test_tag " + numericType + " not null, ");
+            sb.append("task_id " + numericType + " not null, ");
+            sb.append("runner_id " + numericType + " not null, ");
             sb.append("task_type varchar(100) not null, ");
-            sb.append("start_time " + numericType + "(20) not null, ");
-            sb.append("end_time " + numericType + "(20) not null, ");
+            sb.append("start_time " + numericType + " not null, ");
+            sb.append("end_time " + numericType + " not null, ");
             sb.append("result_type varchar(100) not null, ");
             sb.append("result_message " + textType + ", ");
             sb.append(" PRIMARY KEY(test_tag, task_id))");
@@ -180,7 +200,7 @@ public class StressTester {
     }
 
     private long getNewTestTag() throws SQLException {
-        ResultSet rs = SqlUtils.getResultSet(dataSource,
+        ResultSet rs = SqlUtils.executeQuery(dataSource,
                 "SELECT count(0), max(test_tag) FROM " + TABLE_STRESS_RESULT);
         long testTag = 0;
         rs.next();
@@ -220,9 +240,9 @@ public class StressTester {
         }
     }
 
-    private void composeUrls(WdkModel wdkModel)
-            throws WdkUserException, WdkModelException, URISyntaxException,
-            IOException {
+    private void composeUrls(WdkModel wdkModel) throws WdkUserException,
+            WdkModelException, URISyntaxException, IOException,
+            NoSuchAlgorithmException, SQLException, JSONException {
         logger.debug("Composing test urls...");
         // add home url into the pool
         if (homeUrlPattern != null) {
@@ -244,7 +264,9 @@ public class StressTester {
         composeFromTemplate();
     }
 
-    private void composeFromModel(WdkModel wdkModel) throws WdkModelException {
+    private void composeFromModel(WdkModel wdkModel) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
         // compose urls for all xml questions
         XmlQuestionSet[] xmlqsets = wdkModel.getXmlQuestionSets();
         for (XmlQuestionSet xmlqset : xmlqsets) {
@@ -521,8 +543,7 @@ public class StressTester {
 
     private static Options declareOptions() {
         String[] names = { "model", "threads" };
-        String[] descs = {
-                "The project id. For example, ToyDB, PlasmoDB",
+        String[] descs = { "The project id. For example, ToyDB, PlasmoDB",
                 "The number of threads used to run the tasks." };
         boolean[] required = { true, true };
         int[] args = { 0, 0 };
@@ -538,11 +559,24 @@ public class StressTester {
      * @throws URISyntaxException
      * @throws WdkUserException
      * @throws SQLException
+     * @throws ClassNotFoundException
+     * @throws IllegalAccessException
+     * @throws InstantiationException
+     * @throws JSONException
+     * @throws SAXException
+     * @throws TransformerException
+     * @throws TransformerFactoryConfigurationError
+     * @throws ParserConfigurationException
+     * @throws NoSuchAlgorithmException
      */
     public static void main(String[] args)
             throws InvalidPropertiesFormatException, IOException,
             WdkModelException, URISyntaxException, WdkUserException,
-            SQLException {
+            SQLException, NoSuchAlgorithmException,
+            ParserConfigurationException, TransformerFactoryConfigurationError,
+            TransformerException, SAXException, JSONException,
+            InstantiationException, IllegalAccessException,
+            ClassNotFoundException {
         String cmdName = System.getProperty("cmdName");
 
         // process args

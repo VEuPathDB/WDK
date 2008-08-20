@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model;
 
+import org.gusdb.wdk.model.dbms.DBPlatform;
+
 /**
  * @author
  * @modified Jan 6, 2006 - Jerric add a property for the name of query history
@@ -25,6 +27,7 @@ public class ModelConfig {
     private String authenticationConnectionUrl;
     private String authenticationPlatformClass;
 
+    private String answerSchema;
     private String loginSchema;
     private String defaultRole;
     private String smtpServer;
@@ -55,7 +58,7 @@ public class ModelConfig {
 
     /**
      * @param modelName
-     *        the modelName to set
+     *            the modelName to set
      */
     public void setModelName(String modelName) {
         this.modelName = modelName;
@@ -150,7 +153,7 @@ public class ModelConfig {
 
     /**
      * @param authenticationConnectionUrl
-     *        The authenticationConnectionUrl to set.
+     *            The authenticationConnectionUrl to set.
      */
     public void setAuthenticationConnectionUrl(
             String authenticationConnectionUrl) {
@@ -166,7 +169,7 @@ public class ModelConfig {
 
     /**
      * @param authenticationLogin
-     *        The authenticationLogin to set.
+     *            The authenticationLogin to set.
      */
     public void setAuthenticationLogin(String authenticationLogin) {
         this.authenticationLogin = authenticationLogin;
@@ -181,7 +184,7 @@ public class ModelConfig {
 
     /**
      * @param authenticationPassword
-     *        The authenticationPassword to set.
+     *            The authenticationPassword to set.
      */
     public void setAuthenticationPassword(String authenticationPassword) {
         this.authenticationPassword = authenticationPassword;
@@ -196,10 +199,10 @@ public class ModelConfig {
 
     /**
      * @param loginSchema
-     *        The loginSchema to set.
+     *            The loginSchema to set.
      */
     public void setLoginSchema(String loginSchema) {
-        this.loginSchema = loginSchema;
+        this.loginSchema = DBPlatform.normalizeSchema(loginSchema);
     }
 
     /**
@@ -211,7 +214,7 @@ public class ModelConfig {
 
     /**
      * @param defaultRole
-     *        The defaultRole to set.
+     *            The defaultRole to set.
      */
     public void setDefaultRole(String defaultRole) {
         this.defaultRole = defaultRole;
@@ -226,7 +229,7 @@ public class ModelConfig {
 
     /**
      * @param authenticationPlatformClass
-     *        The authenticationPlatformClass to set.
+     *            The authenticationPlatformClass to set.
      */
     public void setAuthenticationPlatformClass(
             String authenticationPlatformClass) {
@@ -242,7 +245,7 @@ public class ModelConfig {
 
     /**
      * @param smtpServer
-     *        The smtpServer to set.
+     *            The smtpServer to set.
      */
     public void setSmtpServer(String smtpServer) {
         this.smtpServer = smtpServer;
@@ -257,7 +260,7 @@ public class ModelConfig {
 
     /**
      * @param emailContent
-     *        The emailContent to set.
+     *            The emailContent to set.
      */
     public void setEmailContent(String emailContent) {
         this.emailContent = emailContent;
@@ -272,7 +275,7 @@ public class ModelConfig {
 
     /**
      * @param emailSubject
-     *        The emailSubject to set.
+     *            The emailSubject to set.
      */
     public void setEmailSubject(String emailSubject) {
         this.emailSubject = emailSubject;
@@ -295,7 +298,7 @@ public class ModelConfig {
 
     /**
      * @param enableQueryLogger
-     *        the enableQueryLogger to set
+     *            the enableQueryLogger to set
      */
     public void setEnableQueryLogger(boolean enableQueryLogger) {
         this.enableQueryLogger = enableQueryLogger;
@@ -310,7 +313,7 @@ public class ModelConfig {
 
     /**
      * @param queryLoggerFile
-     *        the queryLoggerFile to set
+     *            the queryLoggerFile to set
      */
     public void setQueryLoggerFile(String queryLoggerFile) {
         this.queryLoggerFile = queryLoggerFile;
@@ -325,7 +328,7 @@ public class ModelConfig {
 
     /**
      * @param projectId
-     *        the projectId to set
+     *            the projectId to set
      */
     public void setProjectId(String projectId) {
         this.projectId = projectId;
@@ -340,9 +343,24 @@ public class ModelConfig {
 
     /**
      * @param gusHome
-     *        the gusHome to set
+     *            the gusHome to set
      */
     public void setGusHome(String gusHome) {
         this.gusHome = gusHome;
+    }
+
+    /**
+     * @return the answerSchema
+     */
+    public String getAnswerSchema() {
+        return answerSchema;
+    }
+
+    /**
+     * @param answerSchema
+     *            the answerSchema to set
+     */
+    public void setAnswerSchema(String answerSchema) {
+        this.answerSchema = DBPlatform.normalizeSchema(answerSchema);
     }
 }

@@ -29,6 +29,7 @@
             <attribute name="authenticationConnectionUrl" />
             <attribute name="authenticationPlatformClass" />
             <attribute name="loginSchema" />
+            <attribute name="answerSchema" />
             <attribute name="defaultRole" />
             <attribute name="smtpServer" />
             <attribute name="enableQueryLogger">

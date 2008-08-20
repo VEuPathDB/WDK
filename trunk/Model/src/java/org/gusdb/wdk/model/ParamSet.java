@@ -11,8 +11,7 @@ public class ParamSet extends WdkModelBase implements ModelSetI {
     private Map<String, Param> paramMap = new LinkedHashMap<String, Param>();
     private String name;
 
-    private List<ParamConfiguration> useTermOnlies =
-            new ArrayList<ParamConfiguration>();
+    private List<ParamConfiguration> useTermOnlies = new ArrayList<ParamConfiguration>();
     private boolean useTermOnly = false;
 
     public void setName(String name) {
@@ -41,8 +40,14 @@ public class ParamSet extends WdkModelBase implements ModelSetI {
         return array;
     }
 
+    public boolean contains(String paramName) {
+        return paramMap.containsKey(paramName);
+    }
+
     public void addParam(Param param) throws WdkModelException {
-        paramList.add(param);
+        param.setParamSet(this);
+        if (paramList != null) paramList.add(param);
+        else paramMap.put(param.getName(), param);
     }
 
     public void addUseTermOnly(ParamConfiguration paramConfig) {
@@ -62,7 +67,6 @@ public class ParamSet extends WdkModelBase implements ModelSetI {
     public void setResources(WdkModel model) throws WdkModelException {
         for (Param param : paramMap.values()) {
             param.setResources(model);
-            param.setFullName(this.getName());
         }
     }
 
@@ -110,7 +114,6 @@ public class ParamSet extends WdkModelBase implements ModelSetI {
             // default value for the param, therefore it should happen before
             // excluding the resource from param
             if (param.include(projectId)) {
-                param.setParamSet(this);
                 param.excludeResources(projectId);
                 String paramName = param.getName();
 

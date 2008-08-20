@@ -1,5 +1,7 @@
 package org.gusdb.wdk.controller.action;
 
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -12,10 +14,12 @@ import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.BooleanQuestionLeafBean;
 import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
 import org.gusdb.wdk.model.jspwrap.EnumParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
+import org.json.JSONException;
 
 /**
  * form bean for setting up a boolean question
@@ -109,8 +113,16 @@ public class BooleanQuestionForm extends QuestionForm {
                                 }
                             }
                         }
-                    } catch (WdkModelException exp) {
-                        throw new RuntimeException(exp.getMessage());
+                    } catch (WdkModelException ex) {
+                        throw new RuntimeException(ex.getMessage());
+                    } catch (NoSuchAlgorithmException ex) {
+                        throw new RuntimeException(ex.getMessage());
+                    } catch (SQLException ex) {
+                        throw new RuntimeException(ex.getMessage());
+                    } catch (JSONException ex) {
+                        throw new RuntimeException(ex.getMessage());
+                   } catch (WdkUserException ex) {
+                       throw new RuntimeException(ex.getMessage());
                     }
                 }
             }

@@ -9,7 +9,6 @@ import org.apache.struts.action.ActionError;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
-import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.EnumParamBean;
 import org.gusdb.wdk.model.jspwrap.HistoryParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
@@ -91,7 +90,7 @@ public class QuestionForm extends QuestionSetForm {
                 }
                 // System.out.println("===== Validated " + p.getName() + ": '" +
                 // errMsg + "'");
-            } catch (WdkModelException exp) {
+            } catch (Exception exp) {
                 errors.add(ActionErrors.GLOBAL_MESSAGE, new ActionError(
                         "mapped.properties", p.getPrompt(), exp.getMessage()));
                 request.setAttribute(CConstants.QUESTIONSETFORM_KEY, this);

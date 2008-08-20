@@ -5,6 +5,8 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -17,7 +19,6 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.gusdb.wdk.model.Answer;
-import org.gusdb.wdk.model.QueryInstance;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
 import org.gusdb.wdk.model.RecordInstance;
@@ -25,7 +26,9 @@ import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.report.Reporter;
+import org.json.JSONException;
 
 public class SummaryTester {
 
@@ -69,9 +72,8 @@ public class SummaryTester {
         }
 
         // get subType, if any
-        String subTypeValue = null;
-        if (cmdLine.hasOption("subType"))
-            subTypeValue = cmdLine.getOptionValue("subType");
+        String view = null;
+        if (cmdLine.hasOption("view")) view = cmdLine.getOptionValue("view");
 
         try {
             // variable never used
@@ -94,7 +96,7 @@ public class SummaryTester {
             int pageCount = 1;
 
             if (toXml) {
-                writeSummaryAsXml(question, paramValues, xmlFileName, subTypeValue);
+                writeSummaryAsXml(question, paramValues, xmlFileName, view);
                 return;
             }
 
@@ -103,7 +105,7 @@ public class SummaryTester {
                 int nextEndRow = Integer.parseInt(rows[i + 1]);
 
                 Answer answer = question.makeAnswer(paramValues, nextStartRow,
-                        nextEndRow, subTypeValue);
+                        nextEndRow);
 
                 // this is wrong. it only shows one attribute query, not
                 // all. Fix this in Answer by saving a list of attribute
@@ -166,9 +168,10 @@ public class SummaryTester {
     }
 
     private static void writeSummaryAsXml(Question question,
-            Map<String, Object> paramValues, String xmlFile, String subTypeValue)
-            throws WdkModelException, WdkUserException, IOException {
-        Answer answer = question.makeAnswer(paramValues, 1, 10, subTypeValue);
+            Map<String, Object> paramValues, String xmlFile, String view)
+            throws WdkModelException, WdkUserException, IOException,
+            NoSuchAlgorithmException, SQLException, JSONException {
+        Answer answer = question.makeAnswer(paramValues, 1, 10);
         int resultSize = answer.getResultSize();
         answer = question.makeAnswer(paramValues, 1, resultSize);
         FileWriter fw = new FileWriter(new File(xmlFile), false);
@@ -179,8 +182,7 @@ public class SummaryTester {
         fw.write("<" + question.getFullName() + ">" + newline);
         fw.close();
         fw = new FileWriter(new File(xmlFile), true);
-        while (answer.hasMoreRecordInstances()) {
-            RecordInstance ri = answer.getNextRecordInstance();
+        for (RecordInstance ri : answer.getRecordInstances()) {
             fw.write(ri.toXML(ident) + newline);
         }
         fw.write("</" + question.getFullName() + ">" + newline);
@@ -188,10 +190,11 @@ public class SummaryTester {
     }
 
     private static String getLowLevelQuery(Answer answer)
-            throws WdkModelException {
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
         // QueryInstance instance = answer.getAttributesQueryInstance();
         QueryInstance instance = answer.getIdsQueryInstance();
-        String query = instance.getLowLevelQuery();
+        String query = instance.getSql();
         String newline = System.getProperty("line.separator");
         String newlineQuery = query.replaceAll("^\\s\\s\\s", newline);
         newlineQuery = newlineQuery.replaceAll("(\\S)\\s\\s\\s", "$1" + newline);
@@ -319,7 +322,7 @@ public class SummaryTester {
                 + " [-showQuery]"
                 + " [-toXml <xmlFile>|-fullRecords]"
                 + " [-format tabular | gff3 | fullRecords [-config <config_file>]]"
-                + " [-subType <subType term>]"
+                + " [-view <subType term>]"
                 + " -params param_1_name param_1_value ...";
 
         String header = newline

@@ -1,11 +1,19 @@
 package org.gusdb.wdk.model;
 
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONException;
+
 public abstract class AbstractEnumParam extends Param {
+
+    protected abstract void initVocabMap() throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException;
 
     protected boolean multiPick = false;
     protected Map<String, String> termInternalMap;
@@ -16,16 +24,18 @@ public abstract class AbstractEnumParam extends Param {
     protected boolean useTermOnly = false;
 
     private String displayType;
-    
+
     public AbstractEnumParam() {}
-    
+
     public AbstractEnumParam(AbstractEnumParam param) {
         super(param);
         this.multiPick = param.multiPick;
         if (param.termDisplayMap != null)
-            this.termDisplayMap = new LinkedHashMap<String, String>(param.termDisplayMap);
+            this.termDisplayMap = new LinkedHashMap<String, String>(
+                    param.termDisplayMap);
         if (param.termInternalMap != null)
-            this.termInternalMap = new LinkedHashMap<String, String>(param.termInternalMap);
+            this.termInternalMap = new LinkedHashMap<String, String>(
+                    param.termInternalMap);
         this.quote = param.quote;
         this.useTermOnly = param.useTermOnly;
         this.displayType = param.displayType;
@@ -55,7 +65,9 @@ public abstract class AbstractEnumParam extends Param {
         this.useTermOnlies.add(paramConfig);
     }
 
-    public String validateValue(Object value) throws WdkModelException {
+    @Override
+    public String validateValue(Object value) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException, WdkUserException {
         // check if null value is allowed; if so, pass
         if (allowEmpty && value == null) return null;
 
@@ -80,7 +92,9 @@ public abstract class AbstractEnumParam extends Param {
      * 
      * @see org.gusdb.wdk.model.Param#getInternalValue(java.lang.String)
      */
-    public String getInternalValue(String termList) throws WdkModelException {
+    public String getInternalValue(String termList) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
         // check if null value is allowed
         if (allowEmpty && termList == null) return getEmptyValue();
 
@@ -102,14 +116,18 @@ public abstract class AbstractEnumParam extends Param {
         return buf.toString();
     }
 
-    public String[] getVocab() throws WdkModelException {
+    public String[] getVocab() throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
         initVocabMap();
         String[] array = new String[termInternalMap.size()];
         termInternalMap.keySet().toArray(array);
         return array;
     }
 
-    public String[] getVocabInternal() throws WdkModelException {
+    public String[] getVocabInternal() throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
         initVocabMap();
         String[] array = new String[termInternalMap.size()];
         if (useTermOnly) termInternalMap.keySet().toArray(array);
@@ -117,14 +135,18 @@ public abstract class AbstractEnumParam extends Param {
         return array;
     }
 
-    public String[] getDisplays() throws WdkModelException {
+    public String[] getDisplays() throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
         Map<String, String> displayMap = getDisplayMap();
         String[] displays = new String[displayMap.size()];
         displayMap.values().toArray(displays);
         return displays;
     }
 
-    public Map<String, String> getVocabMap() throws WdkModelException {
+    public Map<String, String> getVocabMap() throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
         initVocabMap();
         Map<String, String> newVocabMap = new LinkedHashMap<String, String>();
         for (String term : termInternalMap.keySet()) {
@@ -134,7 +156,9 @@ public abstract class AbstractEnumParam extends Param {
         return newVocabMap;
     }
 
-    public Map<String, String> getDisplayMap() throws WdkModelException {
+    public Map<String, String> getDisplayMap() throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
         initVocabMap();
         Map<String, String> newDisplayMap = new LinkedHashMap<String, String>();
         for (String term : termDisplayMap.keySet()) {
@@ -143,7 +167,10 @@ public abstract class AbstractEnumParam extends Param {
         return newDisplayMap;
     }
 
-    public String getDefault() throws WdkModelException {
+    @Override
+    public String getDefault() throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
         if (defaultValue != null) return defaultValue;
         String[] vocab = getVocab();
         if (vocab.length == 0) return null;
@@ -172,7 +199,8 @@ public abstract class AbstractEnumParam extends Param {
     }
 
     /**
-     * @param displayType the displayType to set
+     * @param displayType
+     *            the displayType to set
      */
     public void setDisplayType(String displayType) {
         this.displayType = displayType;
@@ -188,7 +216,8 @@ public abstract class AbstractEnumParam extends Param {
      * @see org.gusdb.wdk.model.Param#compressValue(java.lang.Object)
      */
     @Override
-    public String compressValue(Object value) throws WdkModelException {
+    public String compressValue(Object value) throws WdkModelException,
+            NoSuchAlgorithmException {
         if (value instanceof String[]) {
             String[] values = (String[]) value;
             value = Utilities.fromArray(values);
@@ -223,9 +252,9 @@ public abstract class AbstractEnumParam extends Param {
         return values;
     }
 
-    protected abstract void initVocabMap() throws WdkModelException;
-
-    protected String validateSingleValue(Object value) throws WdkModelException {
+    protected String validateSingleValue(Object value)
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
         initVocabMap();
 
         if (termInternalMap.containsKey(value)) {

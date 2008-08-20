@@ -1,9 +1,14 @@
 package org.gusdb.wdk.model;
 
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
+import org.gusdb.wdk.model.query.BooleanQuery;
+import org.json.JSONException;
 
 /**
  * Represents a Question in boolean context. A boolean Question is defined as
@@ -81,7 +86,7 @@ public class BooleanQuestionNode {
     public BooleanQuestionNode(Question q, BooleanQuestionNode firstChild,
             BooleanQuestionNode secondChild, BooleanQuestionNode parent)
             throws WdkModelException {
-        this.question = (q == null) ? q : q.getBaseQuestion();
+        this.question = q;
         this.firstChild = firstChild;
         this.secondChild = secondChild;
         this.parent = parent;
@@ -100,7 +105,7 @@ public class BooleanQuestionNode {
      */
     public BooleanQuestionNode(Question q, BooleanQuestionNode parent)
             throws WdkModelException {
-        this.question = (q == null) ? null : q.getBaseQuestion();
+        this.question = q;
         this.firstChild = null;
         this.secondChild = null;
         this.parent = parent;
@@ -150,31 +155,22 @@ public class BooleanQuestionNode {
 
         // define a new Question for the new root
         RecordClass rc = firstChild.question.getRecordClass();
-        Question question = model.makeBooleanQuestion(rc);
+        Question question = model.getBooleanQuestion(rc);
 
         BooleanQuestionNode root = new BooleanQuestionNode(question,
                 firstChild, secondChild, null);
 
         // store operation
-        operator = translateOperator(operator, operatorMap,
-                model.getRDBMSPlatform());
+        BooleanOperator boolOp = BooleanOperator.parse(operator);
+        if (boolOp == BooleanOperator.LeftMinus) {
+            DBPlatform platform = question.getWdkModel().getQueryPlatform();
+            operator = platform.getMinusOperator();
+        } else operator = boolOp.getOperator();
+
         Map<String, Object> values = new LinkedHashMap<String, Object>();
-        values.put(BooleanQuery.OPERATION_PARAM_NAME, operator);
+        values.put(BooleanQuery.OPERATOR_PARAM, operator);
         root.setValues(values);
         return root;
-    }
-
-    private static String translateOperator(String operator,
-            Map<String, String> operatorMap, RDBMSPlatformI platform)
-            throws WdkUserException {
-        operator = operator.toLowerCase();
-        if (!operatorMap.containsKey(operator))
-            throw new WdkUserException("Invalid operator: " + operator);
-
-        String internal = operatorMap.get(operator);
-        if (internal.equalsIgnoreCase(BooleanQuestionNodeBean.INTERNAL_NOT))
-            internal = platform.getMinus();
-        return internal;
     }
 
     /**
@@ -228,9 +224,13 @@ public class BooleanQuestionNode {
      *         as the answer returned by the top (recursive initializer) node;
      *         that should be retrieved by calling makeAnswer() on that node's
      *         Question after running this method.
+     * @throws JSONException
+     * @throws SQLException
+     * @throws NoSuchAlgorithmException
      */
     public Answer makeAnswer(int startIndex, int endIndex)
-            throws WdkUserException, WdkModelException {
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException {
 
         // dtb -- initially this method was in BooleanQueryTester but I figured
         // it might be needed by other classes
@@ -241,8 +241,7 @@ public class BooleanQuestionNode {
 
             Question question = getQuestion();
             Map<String, Object> leafValues = getValues();
-            answer = question.makeAnswer(leafValues, startIndex, endIndex,
-                    subTypeValue);
+            answer = question.makeAnswer(leafValues, startIndex, endIndex);
         } else { // bqn is boolean question
 
             Question booleanQuestion = getQuestion();
@@ -257,9 +256,9 @@ public class BooleanQuestionNode {
 
             Map<String, Object> booleanValues = getValues();
 
-            booleanValues.put(BooleanQuery.FIRST_ANSWER_PARAM_NAME,
+            booleanValues.put(BooleanQuery.LEFT_OPERAND_PARAM_PREFIX,
                     firstChildAnswer);
-            booleanValues.put(BooleanQuery.SECOND_ANSWER_PARAM_NAME,
+            booleanValues.put(BooleanQuery.RIGHT_OPERAND_PARAM_PREFIX,
                     secondChildAnswer);
 
             Map<String, AttributeField> firstSummaryAtts = firstChildAnswer.getSummaryAttributes();
@@ -280,11 +279,8 @@ public class BooleanQuestionNode {
 
             answer = booleanQuestion.makeAnswer(booleanValues, startIndex,
                     endIndex);
-            answer.setSubTypeValue(subTypeValue);
         }
-        answer.setExpandSubType(expandSubType);
         return answer;
-
     }
 
     /**
@@ -367,7 +363,7 @@ public class BooleanQuestionNode {
         } else {
             StringBuffer sb = new StringBuffer(
                     "Internal Boolean node; operation: "
-                            + values.get(BooleanQuery.OPERATION_PARAM_NAME));
+                            + values.get(BooleanQuery.OPERATOR_PARAM));
             sb.append("\n\tFirst Child: " + firstChild.toString());
             sb.append("\n\tSecond Child: " + secondChild.toString());
             return sb.toString();

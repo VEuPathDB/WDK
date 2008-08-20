@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.jspwrap;
 
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -7,9 +9,11 @@ import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.ReporterRef;
-import org.gusdb.wdk.model.SubType;
 import org.gusdb.wdk.model.TableField;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
+import org.json.JSONException;
 
 /**
  * A wrapper on a {@link RecordClass} that provides simplified access for
@@ -32,7 +36,7 @@ public class RecordClassBean {
     }
 
     public String getType() {
-        return recordClass.getType();
+        return recordClass.getFullName();
     }
 
     /**
@@ -61,29 +65,19 @@ public class RecordClassBean {
         return fieldBeans;
     }
 
-    public RecordBean makeRecord(String recordId) {
+    public RecordBean makeRecord(Map<String, Object> pkValues)
+            throws NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
         try {
-            return new RecordBean(recordClass.makeRecordInstance(recordId));
-        } catch (WdkModelException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    /**
-     * used by the controller
-     */
-    public RecordBean makeRecord(String projectId, String recordId) {
-        try {
-            return new RecordBean(recordClass.makeRecordInstance(projectId,
-                    recordId));
+            return new RecordBean(recordClass.makeRecordInstance(pkValues));
         } catch (WdkModelException ex) {
             throw new RuntimeException(ex);
         }
     }
 
     public QuestionBean[] getQuestions() {
-
-        Question questions[] = recordClass.getQuestions();
+        WdkModel wdkModel = recordClass.getWdkModel();
+        Question questions[] = wdkModel.getQuestions(recordClass);
         QuestionBean[] questionBeans = new QuestionBean[questions.length];
         for (int i = 0; i < questions.length; i++) {
             questionBeans[i] = new QuestionBean(questions[i]);
@@ -104,7 +98,7 @@ public class RecordClassBean {
 
     /**
      * @param projectId
-     *          the projectId to set
+     *            the projectId to set
      */
     public void setProjectId(String projectId) {
         this.projectId = projectId;
@@ -112,10 +106,14 @@ public class RecordClassBean {
 
     /**
      * @param recordId
-     *          the recordId to set
+     *            the recordId to set
      */
     public void setRecordId(String recordId) {
         this.recordId = recordId;
+    }
+    
+    public String[] getPrimaryKeyColumns() {
+        return recordClass.getPrimaryKeyAttributeField().getColumnRefs();
     }
 
     /**
@@ -124,21 +122,7 @@ public class RecordClassBean {
      * 
      * @return
      */
-    public RecordBean getRecord() {
-        return makeRecord(projectId, recordId);
-    }
-
-    /**
-     * @return
-     * @see org.gusdb.wdk.model.RecordClass#getSubType()
-     */
-    public SubTypeBean getSubType() {
-        SubType subType = recordClass.getSubType();
-        if (subType == null) return null;
-        else return new SubTypeBean(subType);
-    }
-    
-    public boolean isHasSubType() {
-        return (recordClass.getSubType() != null);
-    }
+    // public RecordBean getRecord() {
+    // return makeRecord(projectId, recordId);
+    // }
 }

@@ -38,16 +38,16 @@ public abstract class FieldBean {
      * @return
      * @see org.gusdb.wdk.model.Field#getInReportMaker()
      */
-    public boolean getInReportMaker() {
-        return field.getInReportMaker();
+    public boolean isInReportMaker() {
+        return field.isInReportMaker();
     }
 
     /**
      * @return
      * @see org.gusdb.wdk.model.Field#getInternal()
      */
-    public boolean getInternal() {
-        return field.getInternal();
+    public boolean isInternal() {
+        return field.isInternal();
     }
 
     /**

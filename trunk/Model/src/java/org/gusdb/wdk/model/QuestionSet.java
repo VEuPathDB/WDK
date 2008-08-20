@@ -18,8 +18,7 @@ import java.util.Map;
 public class QuestionSet extends WdkModelBase implements ModelSetI {
 
     private List<Question> questionList = new ArrayList<Question>();
-    private Map<String, Question> questions =
-            new LinkedHashMap<String, Question>();
+    private Map<String, Question> questionMap = new LinkedHashMap<String, Question>();
     private String name;
     private String displayName;
 
@@ -61,27 +60,30 @@ public class QuestionSet extends WdkModelBase implements ModelSetI {
     }
 
     public Question getQuestion(String name) throws WdkModelException {
-        Question question = questions.get(name);
+        Question question = questionMap.get(name);
         if (question == null)
             throw new WdkModelException("Question Set " + getName()
                     + " does not include question " + name);
         return question;
     }
 
+    public boolean contains(String questionName) {
+        return questionMap.containsKey(questionName);
+    }
+
     public Object getElement(String name) {
-        return questions.get(name);
+        return questionMap.get(name);
     }
 
     public Question[] getQuestions() {
-        Question[] array = new Question[questions.size()];
-        questions.values().toArray(array);
+        Question[] array = new Question[questionMap.size()];
+        questionMap.values().toArray(array);
         return array;
     }
 
     public Map<String, Question[]> getQuestionsByCategory() {
-        Map<String, List<Question>> questionsByCategory =
-                new LinkedHashMap<String, List<Question>>();
-        for (Question question : questions.values()) {
+        Map<String, List<Question>> questionsByCategory = new LinkedHashMap<String, List<Question>>();
+        for (Question question : questionMap.values()) {
             String category = question.getCategory();
             List<Question> questionList = questionsByCategory.get(category);
             if (questionList == null) {
@@ -91,8 +93,7 @@ public class QuestionSet extends WdkModelBase implements ModelSetI {
             questionList.add(question);
         }
 
-        Map<String, Question[]> questionArraysByCategory =
-                new LinkedHashMap<String, Question[]>();
+        Map<String, Question[]> questionArraysByCategory = new LinkedHashMap<String, Question[]>();
         for (String category : questionsByCategory.keySet()) {
             List<Question> questionList = questionsByCategory.get(category);
             Question[] questions = new Question[questionList.size()];
@@ -107,31 +108,26 @@ public class QuestionSet extends WdkModelBase implements ModelSetI {
     }
 
     public void resolveReferences(WdkModel model) throws WdkModelException {
-        for (Question question : questions.values()) {
+        for (Question question : questionMap.values()) {
             question.resolveReferences(model);
         }
     }
 
     public void setResources(WdkModel model) throws WdkModelException {
-        for (Question question : questions.values()) {
+        for (Question question : questionMap.values()) {
             question.setResources(model);
-            RecordClass rc = question.getRecordClass();
-            rc.addQuestion(question);
         }
-
     }
 
     public String toString() {
         String newline = System.getProperty("line.separator");
-        StringBuffer buf =
-                new StringBuffer("QuestionSet: name='" + getName() + "'"
-                        + newline + "  displayName='" + getDisplayName() + "'"
-                        + newline + "  description='" + getDescription() + "'"
-                        + newline + "  internal='" + getInternal() + "'"
-                        + newline);
+        StringBuffer buf = new StringBuffer("QuestionSet: name='" + getName()
+                + "'" + newline + "  displayName='" + getDisplayName() + "'"
+                + newline + "  description='" + getDescription() + "'"
+                + newline + "  internal='" + getInternal() + "'" + newline);
         buf.append(newline);
 
-        for (Question question : questions.values()) {
+        for (Question question : questionMap.values()) {
             buf.append(newline);
             buf.append(":::::::::::::::::::::::::::::::::::::::::::::");
             buf.append(newline);
@@ -171,12 +167,12 @@ public class QuestionSet extends WdkModelBase implements ModelSetI {
                 question.setQuestionSet(this);
                 question.excludeResources(projectId);
                 String questionName = question.getName();
-                if (questions.containsKey(questionName))
+                if (questionMap.containsKey(questionName))
                     throw new WdkModelException("Question named "
                             + questionName + " already exists in question set "
                             + getName());
 
-                questions.put(questionName, question);
+                questionMap.put(questionName, question);
             }
         }
         questionList = null;

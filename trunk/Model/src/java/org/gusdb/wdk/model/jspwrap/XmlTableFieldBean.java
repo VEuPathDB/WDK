@@ -58,8 +58,8 @@ public class XmlTableFieldBean {
      * 
      * @see org.gusdb.wdk.model.xml.XmlTableField#getIsInternal()
      */
-    public Boolean getInternal() {
-        return this.field.getInternal();
+    public boolean isInternal() {
+        return this.field.isInternal();
     }
 
     /*

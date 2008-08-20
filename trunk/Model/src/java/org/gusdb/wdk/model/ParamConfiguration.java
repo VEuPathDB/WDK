@@ -21,7 +21,7 @@ public class ParamConfiguration extends WdkModelBase {
 
     /**
      * @param value
-     *        the value to set
+     *                the value to set
      */
     public void setValue(boolean value) {
         this.value = value;
@@ -34,6 +34,16 @@ public class ParamConfiguration extends WdkModelBase {
      */
     @Override
     public void excludeResources(String projectId) {
-        // do nothing
+    // do nothing
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model.WdkModel)
+     */
+    @Override
+    public void resolveReferences(WdkModel wodkModel) throws WdkModelException {
+    // do nothing
     }
 }

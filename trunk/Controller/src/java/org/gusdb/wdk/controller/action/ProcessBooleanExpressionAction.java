@@ -1,5 +1,8 @@
 package org.gusdb.wdk.controller.action;
 
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -13,6 +16,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.HistoryBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
+import org.json.JSONException;
 
 /**
  * This Action is process boolean expression on queryHistory.jsp page.
@@ -22,7 +26,7 @@ import org.gusdb.wdk.model.jspwrap.UserBean;
 public class ProcessBooleanExpressionAction extends Action {
 
     private static Logger logger = Logger.getLogger(ProcessBooleanExpressionAction.class);
-    
+
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
@@ -51,15 +55,16 @@ public class ProcessBooleanExpressionAction extends Action {
 
     private String processBooleanExpression(HttpServletRequest request,
             BooleanExpressionForm beForm) throws WdkModelException,
-            WdkUserException {
+            WdkUserException, NoSuchAlgorithmException, SQLException,
+            JSONException {
         UserBean wdkUser = (UserBean) request.getSession().getAttribute(
                 CConstants.WDK_USER_KEY);
         String expression = beForm.getBooleanExpression();
         String subTypeValue = beForm.getSubTypeValue();
         boolean expandSubType = beForm.isExpandSubType();
-        
+
         logger.debug("expand: " + expandSubType);
-        
+
         HistoryBean history = wdkUser.combineHistory(expression, subTypeValue,
                 expandSubType);
         int historyId = history.getHistoryId();

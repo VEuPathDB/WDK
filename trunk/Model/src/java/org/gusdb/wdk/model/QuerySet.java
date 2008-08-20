@@ -5,6 +5,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.gusdb.wdk.model.query.Query;
+
 public class QuerySet extends WdkModelBase implements ModelSetI {
 
     private List<Query> queryList = new ArrayList<Query>();
@@ -36,9 +38,13 @@ public class QuerySet extends WdkModelBase implements ModelSetI {
         queries.values().toArray(array);
         return array;
     }
+    
+    public boolean contains(String queryName) {
+        return queries.containsKey(queryName);
+    }
 
     public void addQuery(Query query) throws WdkModelException {
-        query.setSetName(this.getName());
+        query.setQuerySet(this);
         queryList.add(query);
     }
 
@@ -48,11 +54,12 @@ public class QuerySet extends WdkModelBase implements ModelSetI {
         }
     }
 
-    public void setResources(WdkModel model) throws WdkModelException {
-        for (Query query : queries.values()) {
-            query.setResources(model);
-        }
-    }
+    /*
+     * (non-Javadoc) do nothing 
+     * 
+     * @see org.gusdb.wdk.model.ModelSetI#setResources(org.gusdb.wdk.model.WdkModel)
+     */
+    public void setResources(WdkModel model) throws WdkModelException {}
 
     public String toString() {
         String newline = System.getProperty("line.separator");

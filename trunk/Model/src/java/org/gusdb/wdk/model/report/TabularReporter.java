@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -14,9 +16,12 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.AttributeField;
-import org.gusdb.wdk.model.LinkValue;
+import org.gusdb.wdk.model.AttributeValue;
+import org.gusdb.wdk.model.FieldScope;
 import org.gusdb.wdk.model.RecordInstance;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
+import org.json.JSONException;
 
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
@@ -53,8 +58,8 @@ public class TabularReporter extends Reporter {
         // get basic configurations
         if (config.containsKey(FIELD_HAS_HEADER)) {
             String value = config.get(FIELD_HAS_HEADER);
-            hasHeader = (value.equalsIgnoreCase("yes") || value.equalsIgnoreCase("true"))
-                    ? true : false;
+            hasHeader = (value.equalsIgnoreCase("yes") || value.equalsIgnoreCase("true")) ? true
+                    : false;
         }
 
         if (config.containsKey(FIELD_DIVIDER)) {
@@ -105,7 +110,9 @@ public class TabularReporter extends Reporter {
      * 
      * @see org.gusdb.wdk.model.report.IReporter#format(org.gusdb.wdk.model.Answer)
      */
-    public void write(OutputStream out) throws WdkModelException {
+    public void write(OutputStream out) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
         PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
 
         // get the columns that will be in the report
@@ -121,8 +128,7 @@ public class TabularReporter extends Reporter {
         }
     }
 
-    private Set<AttributeField> validateColumns()
-            throws WdkModelException {
+    private Set<AttributeField> validateColumns() throws WdkModelException {
         // the config map contains a list of column names;
         Map<String, AttributeField> summary = getSummaryAttributes();
         Set<AttributeField> columns = new LinkedHashSet<AttributeField>();
@@ -131,7 +137,8 @@ public class TabularReporter extends Reporter {
         if (fieldsList == null) {
             columns.addAll(summary.values());
         } else {
-            Map<String, AttributeField> attributes = getQuestion().getReportMakerAttributeFields();
+            Map<String, AttributeField> attributes = getQuestion().getAttributeFields(
+                    FieldScope.ReportMaker);
             String[] fields = fieldsList.split(",");
             for (String column : fields) {
                 column = column.trim();
@@ -149,12 +156,13 @@ public class TabularReporter extends Reporter {
         return columns;
     }
 
-    private void format2Text(Set<AttributeField> columns, PrintWriter writer)
-            throws WdkModelException {
+    private void format2Text(Set<AttributeField> fields, PrintWriter writer)
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
         // print the header
         if (hasHeader) {
-            for (AttributeField column : columns) {
-                writer.print("[" + column.getDisplayName() + "]");
+            for (AttributeField field : fields) {
+                writer.print("[" + field.getDisplayName() + "]");
                 writer.print(divider);
             }
             writer.println();
@@ -164,15 +172,10 @@ public class TabularReporter extends Reporter {
         // get page based answers with a maximum size (defined in
         // PageAnswerIterator)
         for (Answer answer : this) {
-            while (answer.hasMoreRecordInstances()) {
-                RecordInstance record = answer.getNextRecordInstance();
-                for (AttributeField column : columns) {
-                    Object value = record.getAttributeValue(column);
-                    if (value instanceof LinkValue) {
-                        writer.print(((LinkValue) value).getValue());
-                    } else {
-                        writer.print(value);
-                    }
+            for (RecordInstance record : answer.getRecordInstances()) {
+                for (AttributeField field : fields) {
+                    AttributeValue value = record.getAttributeValue(field.getName());
+                    writer.print(value.getValue());
                     writer.print(divider);
                 }
                 writer.println();
@@ -181,50 +184,41 @@ public class TabularReporter extends Reporter {
         }
     }
 
-    private void format2PDF(Set<AttributeField> columns, OutputStream out)
-            throws WdkModelException {
+    private void format2PDF(Set<AttributeField> fields, OutputStream out)
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
         logger.info("format2PDF>>>");
         Document document = new Document(PageSize.LETTER.rotate());
         try {
             PdfWriter pwriter = PdfWriter.getInstance(document, out);
             document.open();
 
-            int NumColumns = columns.size();
+            int NumFields = fields.size();
 
-            PdfPTable datatable = new PdfPTable(NumColumns);
+            PdfPTable datatable = new PdfPTable(NumFields);
 
             if (hasHeader) {
-                for (AttributeField column : columns) {
-                    datatable.addCell("" + column.getDisplayName() + "");
+                for (AttributeField field : fields) {
+                    datatable.addCell("" + field.getDisplayName() + "");
                 }
             }
 
             datatable.setHeaderRows(1);
             int count = 0;
-            
+
             // get page based answers with a maximum size (defined in
             // PageAnswerIterator)
             for (Answer answer : this) {
-                while (answer.hasMoreRecordInstances()) {
-                    RecordInstance record = answer.getNextRecordInstance();
-
+                for (RecordInstance record : answer.getRecordInstances()) {
                     count++;
 
                     if (count % 2 == 1) {
                         datatable.getDefaultCell().setGrayFill(0.9f);
                     }
 
-                    for (AttributeField column : columns) {
-                        Object value = record.getAttributeValue(column);
-                        if (value instanceof LinkValue) {
-                            datatable.addCell(((LinkValue) value).getValue());
-                        } else {
-                            // PdfPCell cell = new PdfPCell(new
-                            // Paragraph(""+value)
-                            // );
-                            datatable.addCell("" + value);
-
-                        }
+                    for (AttributeField field : fields) {
+                        AttributeValue value = record.getAttributeValue(field.getName());
+                        datatable.addCell("" + value.getValue());
                     }
 
                     if (count % 2 == 1) {
@@ -259,15 +253,16 @@ public class TabularReporter extends Reporter {
 
     }
 
-    private void format2Excel(Set<AttributeField> columns, PrintWriter writer)
-            throws WdkModelException {
+    private void format2Excel(Set<AttributeField> fields, PrintWriter writer)
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
         writer.println("<table border=\"1\">");
 
         // print the header
         if (hasHeader) {
             writer.println("<tr>");
-            for (AttributeField column : columns) {
-                writer.print("<th>[" + column.getDisplayName() + "]</th>");
+            for (AttributeField field : fields) {
+                writer.print("<th>[" + field.getDisplayName() + "]</th>");
             }
             writer.println();
             writer.println("</tr>");
@@ -277,17 +272,12 @@ public class TabularReporter extends Reporter {
         // get page based answers with a maximum size (defined in
         // PageAnswerIterator)
         for (Answer answer : this) {
-            while (answer.hasMoreRecordInstances()) {
-                RecordInstance record = answer.getNextRecordInstance();
+            for (RecordInstance record : answer.getRecordInstances()) {
                 writer.println("<tr>");
-                for (AttributeField column : columns) {
-                    Object value = record.getAttributeValue(column);
+                for (AttributeField field : fields) {
+                    AttributeValue value = record.getAttributeValue(field.getName());
                     writer.print("<td>");
-                    if (value instanceof LinkValue) {
-                        writer.print(((LinkValue) value).getValue());
-                    } else {
-                        writer.print(value);
-                    }
+                    writer.print(value.getValue());
                     writer.print("</td>");
                 }
                 writer.println();

@@ -4,8 +4,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -16,51 +17,29 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.gusdb.wdk.model.ModelConfig;
-import org.gusdb.wdk.model.ModelConfigParser;
-import org.gusdb.wdk.model.RDBMSPlatformI;
+import org.gusdb.wdk.model.Column;
 import org.gusdb.wdk.model.Utilities;
-import org.gusdb.wdk.model.implementation.SqlUtils;
+import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.dbms.DBPlatform;
+import org.gusdb.wdk.model.dbms.SqlUtils;
 
 public class TestDBManager {
 
     public static void main(String[] args) throws Exception {
-        String cmdName = System.getProperty("cmdName");
-        String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
-
         // process args
         Options options = declareOptions();
+        String cmdName = System.getProperty("cmdName");
         CommandLine cmdLine = parseOptions(cmdName, options, args);
 
         String modelName = cmdLine.getOptionValue("model");
 
-        File modelConfigXmlFile = new File(gusHome, "/config/" + modelName
-                + "-config.xml");
-
-        ModelConfigParser parser = new ModelConfigParser(gusHome);
-        ModelConfig modelConfig = parser.parseConfig(modelName);
-
-        String connectionUrl = modelConfig.getConnectionUrl();
-        String login = modelConfig.getLogin();
-        String password = modelConfig.getPassword();
-        // variable never used
-        // String instanceTable = modelConfig.getQueryInstanceTable();
-        String platformClass = modelConfig.getPlatformClass();
-
-        Integer maxIdle = modelConfig.getMaxIdle();
-        Integer minIdle = modelConfig.getMinIdle();
-        Integer maxWait = modelConfig.getMaxWait();
-        Integer maxActive = modelConfig.getMaxActive();
-        Integer initialSize = modelConfig.getInitialSize();
-
-        RDBMSPlatformI platform = (RDBMSPlatformI) Class.forName(platformClass).newInstance();
-        platform.init(connectionUrl, login, password, minIdle, maxIdle,
-                maxWait, maxActive, initialSize,
-                modelConfigXmlFile.getAbsolutePath());
+        WdkModel wdkModel = WdkModel.construct(modelName);
+        DBPlatform platform = wdkModel.getQueryPlatform();
 
         boolean drop = cmdLine.hasOption("drop");
         boolean create = cmdLine.hasOption("create");
 
+        String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
         String tableDir;
         if (cmdLine.hasOption("tableDir")) {
             tableDir = cmdLine.getOptionValue("tableDir");
@@ -69,10 +48,12 @@ public class TestDBManager {
         }
         String[] tables = getTableNames(gusHome + "/" + tableDir);
 
-        if (drop == false && create == false) { // valid option
-            System.err.println("Test Database Manager:  user has not specified any database management operations");
-            System.exit(0);
+        if (drop == false && create == false) {// invalid option
+            System.err.println("TestDBManager: user has not specified any "
+                    + "database management operations");
+            usage(cmdName, options);
         }
+
         for (int t = 0; t < tables.length; t++) {
             File nextTable = new File(tables[t]);
             if ("CVS".equals(nextTable.getName())) {
@@ -82,56 +63,68 @@ public class TestDBManager {
             BufferedReader reader = new BufferedReader(
                     new FileReader(nextTable));
             String firstLine = reader.readLine();
-            String tableName = platform.getTableFullName(login,
-                    nextTable.getName());
+            String tableName = nextTable.getName();
 
             if (drop) {
-                if (platform.checkTableExists(tableName) == true) {
-                    System.err.println("Dropping existing table " + tableName);
+                try {
+                    System.err.println("Dropping table " + tableName);
                     dropTable(tableName, platform.getDataSource());
+                } catch (SQLException ex) {
+                    System.err.println("Dropping table '" + tableName
+                            + "' failed.");
+                    ex.printStackTrace();
                 }
             }
             if (create) {
-                if (platform.checkTableExists(tableName) == false) {
-                    createTable(tableName, firstLine, platform);
+                try {
+                    Map<String, String> columnTypes = createTable(tableName,
+                            firstLine, platform);
+                    Map<Integer, String> columnIds = new LinkedHashMap<Integer, String>();
 
-                    String noReturn = "select * from " + tableName;
+                    // prepare the statement
+                    StringBuffer sql = new StringBuffer("INSERT INTO ");
+                    sql.append(tableName).append(" (");
+                    StringBuffer sqlPiece = new StringBuffer();
+                    int columnId = 0;
+                    for (String column : columnTypes.keySet()) {
+                        if (sqlPiece.length() > 0) {
+                            sql.append(", ");
+                            sqlPiece.append(", ");
+                        }
+                        sql.append(column);
+                        sqlPiece.append("?");
 
-                    // HACK -- query empty table to get MetaData for use later
-                    // (we will need column types, etc.)
-                    ResultSet empty = SqlUtils.getResultSet(
-                            platform.getDataSource(), noReturn);
-                    ResultSetMetaData rsmd = empty.getMetaData();
-                    PreparedStatement prepStmt = makePreparedStatement(
-                            tableName, platform.getDataSource(), rsmd);
-                    int columnCount = rsmd.getColumnCount();
-                    String nextLine = reader.readLine();
+                        columnIds.put(columnId++, column);
+                    }
+                    sql.append(") VALUES (").append(sqlPiece).append(")");
+                    PreparedStatement ps = SqlUtils.getPreparedStatement(
+                            platform.getDataSource(), sql.toString());
+
                     System.err.println("Loading table " + tableName
                             + " to database from file\n");
-                    while (nextLine != null) {
-
-                        String[] parts = nextLine.split("\t", columnCount);
+                    String nextLine;
+                    while ((nextLine = reader.readLine()) != null) {
+                        String[] parts = nextLine.split("\t", columnIds.size());
                         for (int i = 0; i < parts.length; i++) {
-
                             String nextValue = parts[i];
+                            String type = columnTypes.get(columnIds.get(i));
 
-                            if (nextValue.trim().equals("")) {
-                                int origSqlType = rsmd.getColumnType(i + 1);
-                                prepStmt.setNull(i + 1, origSqlType);
+                            if (nextValue.trim().equals("")
+                                    && type.equals(Column.TYPE_NUMBER))
+                                nextValue = "0";
 
+                            if (type.equals(Column.TYPE_NUMBER)) {
+                                ps.setObject(i + 1, Integer.parseInt(nextValue));
                             } else {
-                                prepStmt.setObject(i + 1, nextValue);
+                                ps.setObject(i + 1, nextValue);
                             }
                         }
-                        SqlUtils.getResultSet(platform.getDataSource(),
-                                prepStmt);
-                        nextLine = reader.readLine();
+                        ps.executeUpdate();
                     }
-                    SqlUtils.closeStatement(prepStmt);
-                } else {
-                    System.err.println("Table "
-                            + tableName
-                            + " already exists; no change made.  To reload this table, first drop it and then create it again");
+                    SqlUtils.closeStatement(ps);
+                } catch (SQLException ex) {
+                    System.err.println("Create table " + tableName + " failed");
+                    ex.printStackTrace();
                 }
             }
         }
@@ -147,55 +140,66 @@ public class TestDBManager {
         return tables;
     }
 
-    private static void createTable(String tableName, String firstLine,
-            RDBMSPlatformI platform) throws Exception {
+    private static Map<String, String> createTable(String tableName,
+            String firstLine, DBPlatform platform) throws Exception {
         DataSource dataSource = platform.getDataSource();
 
-        // substitute plaform indpendent number types for "number(10)"
-        String numType = platform.getNumberDataType();
-        String clobType = platform.getClobDataType();
+        StringBuffer sql = new StringBuffer("CREATE TABLE ");
+        sql.append(tableName).append(" (");
 
-        String platformCorrectedFirstLine = firstLine.replaceAll("number\\(",
-                numType + "(");
+        // parse the first line, which holds the column definition
+        String[] columns = firstLine.split(",");
+        Map<String, String> columnTypes = new LinkedHashMap<String, String>();
+        boolean firstColumn = true;
+        for (String column : columns) {
+            if (firstColumn) firstColumn = false;
+            else sql.append(", ");
 
-        platformCorrectedFirstLine = platformCorrectedFirstLine.replaceAll(
-                " clob", " " + clobType);
+            String[] pieces = column.trim().split("\\s+");
+            sql.append(pieces[0]).append(" "); // column name
+            String type = pieces[1].trim().toLowerCase();
+            if (type.startsWith("varchar") || type.startsWith("char")) {
+                int quoteStart = type.indexOf('(');
+                int quoteEnd = type.indexOf(')');
+                int length = Integer.parseInt(type.substring(quoteStart + 1,
+                        quoteEnd));
+                sql.append(platform.getStringDataType(length));
+            } else if (type.startsWith("number")) {
+                int quoteStart = type.indexOf('(');
+                int quoteEnd = type.indexOf(')');
+                int length = Integer.parseInt(type.substring(quoteStart + 1,
+                        quoteEnd));
+                sql.append(platform.getNumberDataType(length));
+            } else if (type.startsWith("clob")) {
+                sql.append(platform.getClobDataType());
+            } else {
+                sql.append(type);
+            }
+            for (int i = 2; i < pieces.length; i++) {
+                sql.append(" ").append(pieces[i]);
+            }
 
-        String createTable = "create table " + tableName + " ("
-                + platformCorrectedFirstLine + ")";
+            // decide the type
+            if (type.startsWith("number")) {
+                columnTypes.put(pieces[0], Column.TYPE_NUMBER);
+            } else {
+                columnTypes.put(pieces[0], Column.TYPE_STRING);
+            }
+        }
+        sql.append(")");
+
         // System.err.println("creating test table with sql " + createTable);
 
-        SqlUtils.execute(dataSource, createTable);
+        SqlUtils.executeUpdate(dataSource, sql.toString());
+
+        return columnTypes;
     }
 
     private static void dropTable(String tableName, DataSource dataSource)
             throws Exception {
 
         String dropTable = "drop table " + tableName;
-        SqlUtils.execute(dataSource, dropTable);
-    }
-
-    private static PreparedStatement makePreparedStatement(String tableName,
-            DataSource dataSource, ResultSetMetaData rsmd) throws Exception {
-
-        int columnCount = rsmd.getColumnCount();
-        StringBuffer preparedInsert = new StringBuffer();
-        preparedInsert.append("insert into " + tableName + " (");
-        for (int i = 0; i < columnCount - 1; i++) {
-            preparedInsert.append(rsmd.getColumnName(i + 1) + ", ");
-        }
-        preparedInsert.append(rsmd.getColumnName(columnCount) + ") values (");
-        for (int i = 0; i < columnCount - 1; i++) {
-            preparedInsert.append("?, ");
-        }
-        preparedInsert.append("?)");
-        PreparedStatement prepStmt = SqlUtils.getPreparedStatement(dataSource,
-                preparedInsert.toString());
-        if (prepStmt == null) {
-            System.err.println("could not get prepared Statement!");
-        }
-
-        return prepStmt;
+        SqlUtils.executeUpdate(dataSource, dropTable);
     }
 
     private static void addOption(Options options, String argName,
@@ -217,7 +221,7 @@ public class TestDBManager {
                 + "($GUS_HOME/config/model_name-config.xml)");
 
         // tableDir
-        addOption(options, "tableDir", true, true, "the path to a directory "
+        addOption(options, "tableDir", true, false, "the path to a directory "
                 + "that contains the data files to be created at tables in the"
                 + " database. The path can be absolute path (starts with '/'),"
                 + " or relative path from $GUS_HOME (not starting with '/').");
@@ -269,7 +273,7 @@ public class TestDBManager {
 
         // PrintWriter stderr = new PrintWriter(System.err);
         HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp(75, cmdlineSyntax, header, options, footer);
+        formatter.printHelp(70, cmdlineSyntax, header, options, footer);
         System.exit(1);
     }
 

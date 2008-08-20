@@ -7,10 +7,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * This class represents the <attributeList> tag in <question>
+ * This class represents the <attributeList> tag in <question>. It is used to
+ * define summary attribute list and sorting attribute list.
  * 
  * @author Jerric
- *
+ * 
  */
 public class AttributeList extends WdkModelBase {
 
@@ -22,14 +23,6 @@ public class AttributeList extends WdkModelBase {
     }
 
     public void setSummary(String summaryList) {
-        // ensure that the list includes primaryKey
-        String primaryKey = RecordClass.PRIMARY_KEY_NAME;
-        if (!(summaryList.equals(primaryKey)
-                || summaryList.startsWith(primaryKey + ",")
-                || summaryList.endsWith("," + primaryKey) || summaryList.indexOf(","
-                + primaryKey + ",") > 0)) {
-            summaryList = primaryKey + "," + summaryList;
-        }
         this.summaryAttributeNames = summaryList.split(",\\s*");
     }
 
@@ -70,5 +63,15 @@ public class AttributeList extends WdkModelBase {
     @Override
     public void excludeResources(String projectId) {
     // no resource to release, do nothing
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model.WdkModel)
+     */
+    @Override
+    public void resolveReferences(WdkModel wodkModel) throws WdkModelException {
+    // nothing to resolve.
     }
 }

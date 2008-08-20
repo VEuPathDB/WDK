@@ -3,8 +3,12 @@
  */
 package org.gusdb.wdk.model;
 
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.LinkedHashSet;
 import java.util.Set;
+
+import org.json.JSONException;
 
 /**
  * @author Jerric
@@ -12,8 +16,24 @@ import java.util.Set;
  */
 public abstract class WdkModelBase {
 
+    /**
+     * exclude the resources the object hold which are not included in the
+     * current project
+     * 
+     * @param projectId
+     * @throws WdkModelException
+     */
+    public abstract void excludeResources(String projectId)
+            throws WdkModelException;
+
+    public abstract void resolveReferences(WdkModel wodkModel)
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException;
+
     private Set<String> includeProjects;
     private Set<String> excludeProjects;
+
+    protected boolean resolved = false;
 
     public WdkModelBase() {
         includeProjects = new LinkedHashSet<String>();
@@ -22,7 +42,7 @@ public abstract class WdkModelBase {
 
     /**
      * @param excludeProjects
-     * the excludeProjects to set
+     *            the excludeProjects to set
      */
     public void setExcludeProjects(String excludeProjects) {
         excludeProjects = excludeProjects.trim();
@@ -36,7 +56,7 @@ public abstract class WdkModelBase {
 
     /**
      * @param includeProjects
-     * the includeProjects to set
+     *            the includeProjects to set
      */
     public void setIncludeProjects(String includeProjects) {
         includeProjects = includeProjects.trim();
@@ -62,12 +82,9 @@ public abstract class WdkModelBase {
     }
 
     /**
-     * exclude the resources the object hold which are not included in the
-     * current project
-     * 
-     * @param projectId
-     * @throws WdkModelException
+     * @return the resolved
      */
-    public abstract void excludeResources(String projectId)
-            throws WdkModelException;
+    public boolean isResolved() {
+        return resolved;
+    }
 }

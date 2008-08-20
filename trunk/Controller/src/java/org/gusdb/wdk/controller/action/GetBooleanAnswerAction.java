@@ -12,13 +12,13 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
-import org.gusdb.wdk.model.BooleanQuery;
 import org.gusdb.wdk.model.jspwrap.AnswerBean;
 import org.gusdb.wdk.model.jspwrap.BooleanQuestionLeafBean;
 import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
+import org.gusdb.wdk.model.query.BooleanQuery;
 
 
 /**
@@ -43,7 +43,7 @@ public class GetBooleanAnswerAction extends ShowSummaryAction {
 	    BooleanQuestionLeafBean rootLeaf = (BooleanQuestionLeafBean)root;
 	    QuestionBean leafQuestion = rootLeaf.getQuestion();
 	    Map params = getParamsFromForm(bqf, rootLeaf);
-	    answer = summaryPaging(request, leafQuestion, params, null, null, null, false);
+	    answer = summaryPaging(request, leafQuestion, params, null, null);
 	} else {
 	    BooleanQuestionNodeBean rootNode = (BooleanQuestionNodeBean)root;
 	    List<Object> allNodes = new ArrayList<Object>();
@@ -97,7 +97,7 @@ public class GetBooleanAnswerAction extends ShowSummaryAction {
 	String opInternalName = node.getOperation();
 	
 	//	String value = (String)bqf.getMyProps().get(opDisplayName);
-	values.put(BooleanQuery.OPERATION_PARAM_NAME, opInternalName);
+	values.put(BooleanQuery.OPERATOR_PARAM, opInternalName);
 	node.setValues(values);
     }
 

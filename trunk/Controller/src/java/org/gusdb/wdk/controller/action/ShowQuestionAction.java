@@ -1,6 +1,8 @@
 package org.gusdb.wdk.controller.action;
 
 import java.io.File;
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.Vector;
 
 import javax.servlet.ServletContext;
@@ -24,9 +26,9 @@ import org.gusdb.wdk.model.jspwrap.HistoryParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.QuestionSetBean;
-import org.gusdb.wdk.model.jspwrap.SubTypeBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.json.JSONException;
 
 /**
  * This Action is called by the ActionServlet when a WDK question is requested.
@@ -119,7 +121,8 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
 
     protected QuestionForm prepareQuestionForm(QuestionBean wdkQuestion,
             HttpServletRequest request) throws WdkUserException,
-            WdkModelException {
+            WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException {
 
         QuestionForm qForm = new QuestionForm();
 
@@ -128,7 +131,8 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
 
     protected QuestionForm prepareQuestionForm(QuestionBean wdkQuestion,
             HttpServletRequest request, QuestionForm qForm)
-            throws WdkUserException, WdkModelException {
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException {
         // get the current user
         WdkModelBean wdkModel = (WdkModelBean) getServlet().getServletContext().getAttribute(
                 CConstants.WDK_MODEL_KEY);
@@ -187,7 +191,7 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
                 }
             } else if (p instanceof HistoryParamBean) {
                 // get type, as in RecordClass full name
-                HistoryParamBean historyParam = (HistoryParamBean)p;
+                HistoryParamBean historyParam = (HistoryParamBean) p;
                 HistoryBean[] histories = historyParam.getHistories(user);
                 String[] values = new String[histories.length];
                 String[] labels = new String[histories.length];
@@ -243,23 +247,6 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
 
         qForm.setQuestion(wdkQuestion);
         qForm.setParamsFilled(hasAllParams);
-
-        // set sub type default value
-        SubTypeBean subType = wdkQuestion.getRecordClass().getSubType();
-        if (subType != null) {
-            EnumParamBean subTypeParam = subType.getSubTypeParam();
-            String subTypeName = subTypeParam.getName();
-
-            qForm.getMyValues().put(subTypeName, subTypeParam.getVocab());
-            qForm.getMyLabels().put(subTypeName,
-                    getLengthBoundedLabels(subTypeParam.getDisplays()));
-
-            String subTypeValue = request.getParameter(subTypeName);
-            if (subTypeValue == null)
-                subTypeValue = qForm.getMyProp(subTypeName);
-            if (subTypeValue == null) subTypeValue = subTypeParam.getDefault();
-            qForm.getMyProps().put(subTypeName, subTypeValue);
-        }
 
         if (request.getParameter(CConstants.VALIDATE_PARAM) == "0") {
             qForm.setNonValidating();

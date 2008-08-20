@@ -1,6 +1,9 @@
 package org.gusdb.wdk.controller.action;
 
 import java.io.File;
+import java.net.URLEncoder;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -13,9 +16,12 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.RecordBean;
 import org.gusdb.wdk.model.jspwrap.RecordClassBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+
+import com.sun.org.apache.regexp.internal.recompile;
 
 /**
  * This Action is called by the ActionServlet when a WDK record is requested. It
@@ -33,29 +39,28 @@ public class ShowRecordAction extends Action {
         long start = System.currentTimeMillis();
 
         ServletContext svltCtx = getServlet().getServletContext();
-        WdkModelBean wdkModel = (WdkModelBean) svltCtx
-                .getAttribute(CConstants.WDK_MODEL_KEY);
-        String customViewDir = (String) svltCtx
-                .getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
+        WdkModelBean wdkModel = (WdkModelBean) svltCtx.getAttribute(CConstants.WDK_MODEL_KEY);
+        String customViewDir = (String) svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
 
-        // * modified by mheiges to make backward compatible with older url
-        // * formats which only had an 'id' parameter (which was renamed
-        // * 'primary_key' as part of the federation code integration).
-        String id = (request.getParameter("id") != null) ? request
-                .getParameter("id") : request.getParameter("primary_key");
-        String projectID = null;
-        if (request.getParameter("project_id") != null) {
-            projectID = request.getParameter("project_id").trim();
-            if (projectID.length() == 0) projectID = null;
+        RecordClassBean wdkRecordClass = wdkModel.findRecordClass(request.getParameter("name"));
+        String[] pkColumns = wdkRecordClass.getPrimaryKeyColumns();
+
+        Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
+        StringBuffer urlParams = new StringBuffer();
+        for (String column : pkColumns) {
+            String value = request.getParameter(column);
+            if (value == null)
+                throw new WdkModelException("The required primary key value "
+                        + column + " for recordClass "
+                        + wdkRecordClass.getFullName() + " is missing.");
+            pkValues.put(column, value);
+
+            urlParams.append((urlParams.length() == 0) ? "?" : "&");
+            urlParams.append(URLEncoder.encode(column, "UTF-8")).append("=");
+            urlParams.append(URLEncoder.encode(value, "UTF-8"));
         }
 
-        // make project_id optional to be compatible with old urls. If project
-        // is not present, will use the project in the model
-        if (projectID == null) projectID = wdkModel.getProjectId();
-
-        RecordClassBean wdkRecordClass = wdkModel.findRecordClass(request
-                .getParameter("name"));
-        RecordBean wdkRecord = wdkRecordClass.makeRecord(projectID, id);
+        RecordBean wdkRecord = wdkRecordClass.makeRecord(pkValues);
 
         request.setAttribute(CConstants.WDK_RECORD_KEY, wdkRecord);
 
@@ -65,10 +70,10 @@ public class ShowRecordAction extends Action {
                 + CConstants.WDK_CUSTOM_RECORD_PAGE;
         ActionForward forward = null;
         if (ApplicationInitListener.resourceExists(customViewFile1, svltCtx)) {
-            forward = new ActionForward(customViewFile1 + "?id=" + id, false);
+            forward = new ActionForward(customViewFile1 + urlParams, false);
         } else if (ApplicationInitListener.resourceExists(customViewFile2,
                 svltCtx)) {
-            forward = new ActionForward(customViewFile2 + "?id=" + id, false);
+            forward = new ActionForward(customViewFile2 + urlParams, false);
         } else {
             forward = mapping.findForward(CConstants.SHOW_RECORD_MAPKEY);
         }

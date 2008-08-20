@@ -3,13 +3,17 @@
  */
 package org.gusdb.wdk.model;
 
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
+
+import org.json.JSONException;
+
 /**
  * @author Jerric
- *
+ * 
  */
 public class WdkModelName extends WdkModelBase {
 
-    private String name;
     private String displayName;
     private String version;
 
@@ -21,24 +25,11 @@ public class WdkModelName extends WdkModelBase {
     }
 
     /**
-     * @param displayName the displayName to set
+     * @param displayName
+     *                the displayName to set
      */
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
-    }
-
-    /**
-     * @return the name
-     */
-    public String getName() {
-        return this.name;
-    }
-
-    /**
-     * @param name the name to set
-     */
-    public void setName(String name) {
-        this.name = name;
     }
 
     /**
@@ -49,17 +40,31 @@ public class WdkModelName extends WdkModelBase {
     }
 
     /**
-     * @param version the version to set
+     * @param version
+     *                the version to set
      */
     public void setVersion(String version) {
         this.version = version;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
      */
     @Override
     public void excludeResources(String projectId) {
-        // no resources held by ModelName. do nothing
+    // no resources held by ModelName. do nothing
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model.WdkModel)
+     */
+    @Override
+    public void resolveReferences(WdkModel wodkModel) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException {
+    // nothing to do
     }
 }

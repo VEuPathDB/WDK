@@ -82,4 +82,12 @@ public class ParamSuggestion extends WdkModelBase {
     public void excludeResources(String projectId) {
     // do nothing
     }
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model.WdkModel)
+     */
+    @Override
+    public void resolveReferences(WdkModel wodkModel) throws WdkModelException {
+        // do nothing
+    }
 }

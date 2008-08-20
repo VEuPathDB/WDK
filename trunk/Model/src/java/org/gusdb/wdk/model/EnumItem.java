@@ -7,12 +7,11 @@ public class EnumItem extends WdkModelBase {
     private String internal;
     private boolean isDefault = false;
 
-    
     /**
      * default constructor called by digester
      */
     public EnumItem() {}
-    
+
     /**
      * Copy constructor
      * 
@@ -34,7 +33,7 @@ public class EnumItem extends WdkModelBase {
 
     /**
      * @param display
-     * the display to set
+     *                the display to set
      */
     public void setDisplay(String display) {
         this.display = display;
@@ -65,7 +64,7 @@ public class EnumItem extends WdkModelBase {
 
     /**
      * @param isDefault
-     * the isDefault to set
+     *                the isDefault to set
      */
     public void setDefault(boolean isDefault) {
         this.isDefault = isDefault;
@@ -79,5 +78,15 @@ public class EnumItem extends WdkModelBase {
     @Override
     public void excludeResources(String projectId) {
     // do nothing
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model.WdkModel)
+     */
+    @Override
+    public void resolveReferences(WdkModel wodkModel) throws WdkModelException {
+    // do nothing.
     }
 }

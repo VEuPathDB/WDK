@@ -1,14 +1,38 @@
 package org.gusdb.wdk.model;
 
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.user.QueryFactory;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public abstract class Param extends WdkModelBase {
 
     protected static Logger logger = Logger.getLogger(Param.class);
+
+    /**
+     * @return Error string if an error. null if no errors.
+     * @throws JSONException
+     * @throws SQLException
+     * @throws NoSuchAlgorithmException
+     * @throws WdkUserException
+     */
+    public abstract String validateValue(Object value)
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException;
+
+    public abstract Param clone();
+
+    public abstract void resolveReferences(WdkModel model)
+            throws WdkModelException;
+
+    protected abstract void appendJSONContent(JSONObject jsParam)
+            throws JSONException;
 
     protected String id;
     protected String name;
@@ -19,7 +43,6 @@ public abstract class Param extends WdkModelBase {
 
     protected String defaultValue;
     protected String sample;
-    protected String fullName;
 
     private boolean visible;
     private boolean readonly;
@@ -50,7 +73,6 @@ public abstract class Param extends WdkModelBase {
         this.help = param.help;
         this.defaultValue = param.defaultValue;
         this.sample = param.sample;
-        this.fullName = param.fullName;
         this.visible = param.visible;
         this.readonly = param.readonly;
         this.group = param.group;
@@ -60,8 +82,6 @@ public abstract class Param extends WdkModelBase {
         this.paramSet = param.paramSet;
     }
 
-    public abstract Param clone();
-
     /**
      * @return the id
      */
@@ -70,7 +90,8 @@ public abstract class Param extends WdkModelBase {
     }
 
     /**
-     * @param id the id to set
+     * @param id
+     *            the id to set
      */
     public void setId(String id) {
         this.id = id;
@@ -89,19 +110,7 @@ public abstract class Param extends WdkModelBase {
     }
 
     public String getFullName() {
-        return fullName;
-    }
-
-    /**
-     * Assumes that the name of this param has already been set. Note this is
-     * slightly different than a simple accessor in that the full name of the
-     * param is <code>paramSetName</code> concatenated with ".paramName".
-     * 
-     * @param paramSetName
-     *                name of the paramSet to which this param belongs.
-     */
-    public void setFullName(String paramSetName) {
-        this.fullName = paramSetName + "." + name;
+        return paramSet.getName() + "." + name;
     }
 
     public void setPrompt(String prompt) {
@@ -127,7 +136,9 @@ public abstract class Param extends WdkModelBase {
         this.defaultValue = defaultValue;
     }
 
-    public String getDefault() throws WdkModelException {
+    public String getDefault() throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
         return defaultValue;
     }
 
@@ -147,7 +158,7 @@ public abstract class Param extends WdkModelBase {
 
     /**
      * @param readonly
-     *                The readonly to set.
+     *            The readonly to set.
      */
     public void setReadonly(boolean readonly) {
         this.readonly = readonly;
@@ -162,7 +173,7 @@ public abstract class Param extends WdkModelBase {
 
     /**
      * @param visible
-     *                The visible to set.
+     *            The visible to set.
      */
     public void setVisible(boolean visible) {
         this.visible = visible;
@@ -175,7 +186,7 @@ public abstract class Param extends WdkModelBase {
         return this.allowEmpty;
     }
 
-    void setAllowEmpty(boolean allowEmpty) {
+    public void setAllowEmpty(boolean allowEmpty) {
         this.allowEmpty = allowEmpty;
     }
 
@@ -187,7 +198,8 @@ public abstract class Param extends WdkModelBase {
     }
 
     /**
-     * @param emptyValue the emptyValue to set
+     * @param emptyValue
+     *            the emptyValue to set
      */
     public void setEmptyValue(String emptyValue) {
         this.emptyValue = emptyValue;
@@ -202,7 +214,7 @@ public abstract class Param extends WdkModelBase {
 
     /**
      * @param group
-     *                the group to set
+     *            the group to set
      */
     public void setGroup(Group group) {
         this.group = group;
@@ -225,12 +237,8 @@ public abstract class Param extends WdkModelBase {
         return buf.toString();
     }
 
-    /**
-     * @return Error string if an error. null if no errors.
-     */
-    public abstract String validateValue(Object value) throws WdkModelException;
-
-    public String compressValue(Object value) throws WdkModelException {
+    public String compressValue(Object value) throws WdkModelException,
+            NoSuchAlgorithmException {
         // check if the value is already been compressed
         String strValue = (value != null) ? value.toString() : "";
 
@@ -298,24 +306,55 @@ public abstract class Param extends WdkModelBase {
         suggestions = null;
     }
 
-    // ////////////////////////////////////////////////////////////////////
-    // protected methods
-    // ////////////////////////////////////////////////////////////////////
-
     /**
      * Transforms external value into internal value if needed By default
      * returns provided value
      * 
+     * @throws SQLException
+     * @throws WdkUserException
+     * @throws JSONException
+     * @throws NoSuchAlgorithmException
+     * 
      * @throws WdkUserException
      */
-    protected String getInternalValue(String value) throws WdkModelException {
-        return (String) decompressValue(value);
+    public String getInternalValue(Object value) throws WdkModelException,
+            SQLException, NoSuchAlgorithmException, JSONException,
+            WdkUserException {
+        String term = (String) value;
+        value = decompressValue(term);
+        if (value != null && value instanceof String[]) {
+            StringBuffer buffer = new StringBuffer();
+            String[] array = (String[]) value;
+            for (String item : array) {
+                if (buffer.length() > 0) buffer.append(',');
+                buffer.append(item);
+            }
+            return buffer.toString();
+        } else if (value != null) return value.toString();
+        else {
+            throw new WdkModelException("The internal value of param '"
+                    + getFullName() + "' with given term '" + term
+                    + "' cannot be found.");
+        }
+
     }
 
-    protected abstract void resolveReferences(WdkModel model)
-            throws WdkModelException;
+    public JSONObject getJSONContent() throws JSONException {
+        JSONObject jsParam = new JSONObject();
+        jsParam.put("name", getFullName());
+        appendJSONContent(jsParam);
+        return jsParam;
+    }
 
-    protected void setResources(WdkModel model) throws WdkModelException {
+    public void setResources(WdkModel model) throws WdkModelException {
         this.queryFactory = model.getQueryFactory();
+    }
+
+    public String replaceSql(String sql, String internalValue)
+            throws SQLException, NoSuchAlgorithmException, WdkModelException,
+            JSONException, WdkUserException {
+        String regex = "\\$\\$" + name + "\\$\\$";
+        // escape all single quotes in the value
+        return sql.replaceAll(regex, Matcher.quoteReplacement(internalValue));
     }
 }

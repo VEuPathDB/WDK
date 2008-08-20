@@ -3,12 +3,15 @@
  */
 package org.gusdb.wdk.model.jspwrap;
 
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
+import org.json.JSONException;
 
 /**
  * @author: Jerric
@@ -87,7 +90,8 @@ public class UserFactoryBean {
      *      java.lang.String)
      */
     public UserBean login(UserBean guest, String email, String password)
-            throws WdkModelException, WdkUserException {
+            throws WdkModelException, WdkUserException,
+            NoSuchAlgorithmException, SQLException, JSONException {
         User user = userFactory.login(guest.getUser(), email, password);
         return new UserBean(user);
     }

@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class TextAttributeField extends AttributeField {
@@ -27,8 +28,8 @@ public class TextAttributeField extends AttributeField {
      */
     @Override
     public void excludeResources(String projectId) throws WdkModelException {
-        String rcName =
-                (recordClass == null) ? "" : (recordClass.getFullName() + ".");
+        String rcName = (recordClass == null) ? ""
+                : (recordClass.getFullName() + ".");
 
         // exclude texts
         boolean hasText = false;
@@ -50,5 +51,27 @@ public class TextAttributeField extends AttributeField {
                     + getName() + " does not have a <text> tag for project "
                     + projectId);
         texts = null;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.Field#presolveReferences(org.gusdb.wdk.model.WdkModel)
+     */
+    @Override
+    public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
+        // try the parse out the embedded column fields
+        parseFields(text);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.AttributeField#getDependents()
+     */
+    @Override
+    public Collection<ColumnAttributeField> getDependents()
+            throws WdkModelException {
+        return parseFields(text).values();
     }
 }

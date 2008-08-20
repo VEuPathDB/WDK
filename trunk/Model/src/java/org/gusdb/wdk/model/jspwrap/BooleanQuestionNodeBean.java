@@ -1,12 +1,15 @@
 package org.gusdb.wdk.model.jspwrap;
 
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
-import org.gusdb.wdk.model.BooleanQuery;
 import org.gusdb.wdk.model.BooleanQuestionNode;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.BooleanQuery;
+import org.json.JSONException;
 
 public class BooleanQuestionNodeBean {
  
@@ -50,16 +53,19 @@ public class BooleanQuestionNodeBean {
      * @return
      * @throws WdkModelException
      * @throws WdkUserException
+     * @throws JSONException 
+     * @throws SQLException 
+     * @throws NoSuchAlgorithmException 
      */
     public AnswerBean makeAnswer(int startIndex, int endIndex) throws WdkModelException,
-            WdkUserException {
+            WdkUserException, NoSuchAlgorithmException, SQLException, JSONException {
         return new AnswerBean(bqn.makeAnswer(startIndex, endIndex));
     }
 
     public String getOperation() {
         // change this when we make EnumParams.
         Map<String, Object> values = this.bqn.getValues();
-        String op = (String) values.get(BooleanQuery.OPERATION_PARAM_NAME);
+        String op = (String) values.get(BooleanQuery.OPERATOR_PARAM);
         return op;
     }
 

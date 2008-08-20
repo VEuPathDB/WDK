@@ -14,7 +14,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Random;
+import java.util.Set;
 import java.util.regex.Matcher;
 
 import javax.activation.DataHandler;
@@ -29,8 +38,17 @@ import javax.mail.internet.MimeMessage;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.*;
-import org.gusdb.wdk.model.implementation.SqlUtils;
+import org.gusdb.wdk.model.Answer;
+import org.gusdb.wdk.model.BooleanExpression;
+import org.gusdb.wdk.model.BooleanQuestionNode;
+import org.gusdb.wdk.model.Question;
+import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.dbms.DBPlatform;
+import org.gusdb.wdk.model.dbms.SqlUtils;
+import org.gusdb.wdk.model.query.QueryInstance;
+import org.json.JSONException;
 
 /**
  * @author xingao
@@ -109,7 +127,7 @@ public class UserFactory {
 
     private static Logger logger = Logger.getLogger(UserFactory.class);
 
-    private RDBMSPlatformI platform;
+    private DBPlatform platform;
     private DataSource dataSource;
 
     private String loginSchema;
@@ -127,7 +145,7 @@ public class UserFactory {
     private String emailContent;
 
     public UserFactory(WdkModel wdkModel, String projectId,
-            RDBMSPlatformI platform, String loginSchema, String defaultRole,
+            DBPlatform platform, String loginSchema, String defaultRole,
             String smtpServer, String supportEmail, String emailSubject,
             String emailContent) {
         this.platform = platform;
@@ -240,35 +258,36 @@ public class UserFactory {
                         + "' has been registered. Please choose another one.");
 
             // get a new userId
-            int userId = Integer.parseInt(platform.getNextId(loginSchema,
-                    "users"));
+            int userId = platform.getNextId(loginSchema, "users");
             String signature = encrypt(userId + "_" + email);
+            Date registerTime = new Date();
+            Date lastActiveTime = new Date();
 
             psUser = SqlUtils.getPreparedStatement(dataSource, "INSERT INTO "
                     + loginSchema + "users (user_id, email, passwd, is_guest, "
                     + "register_time, last_active, last_name, first_name, "
                     + "middle_name, title, organization, department, address, "
                     + "city, state, zip_code, phone_number, country,signature)"
-                    + " VALUES (?, ?, ' ', ?, "
-                    + platform.getCurrentDateFunction() + ", "
-                    + platform.getCurrentDateFunction() + ", ?, ?, ?, ?, ?,"
+                    + " VALUES (?, ?, ' ', ?, ?, ?, ?, ?, ?, ?, ?,"
                     + "?, ?, ?, ?, ?, ?, ?, ?)");
             psUser.setInt(1, userId);
             psUser.setString(2, email);
             psUser.setBoolean(3, false);
-            psUser.setString(4, lastName);
-            psUser.setString(5, firstName);
-            psUser.setString(6, middleName);
-            psUser.setString(7, title);
-            psUser.setString(8, organization);
-            psUser.setString(9, department);
-            psUser.setString(10, address);
-            psUser.setString(11, city);
-            psUser.setString(12, state);
-            psUser.setString(13, zipCode);
-            psUser.setString(14, phoneNumber);
-            psUser.setString(15, country);
-            psUser.setString(16, signature);
+            psUser.setDate(4, new java.sql.Date(registerTime.getTime()));
+            psUser.setDate(5, new java.sql.Date(lastActiveTime.getTime()));
+            psUser.setString(6, lastName);
+            psUser.setString(7, firstName);
+            psUser.setString(8, middleName);
+            psUser.setString(9, title);
+            psUser.setString(10, organization);
+            psUser.setString(11, department);
+            psUser.setString(12, address);
+            psUser.setString(13, city);
+            psUser.setString(14, state);
+            psUser.setString(15, zipCode);
+            psUser.setString(16, phoneNumber);
+            psUser.setString(17, country);
+            psUser.setString(18, signature);
             psUser.execute();
 
             // create user object
@@ -321,21 +340,22 @@ public class UserFactory {
         PreparedStatement psUser = null;
         try {
             // get a new user id
-            int userId = Integer.parseInt(platform.getNextId(loginSchema,
-                    "users"));
+            int userId = platform.getNextId(loginSchema, "users");
             String email = GUEST_USER_PREFIX + userId;
+            Date registerTime = new Date();
+            Date lastActiveTime = new Date();
             String signature = encrypt(userId + "_" + email);
             String firstName = "Guest #" + userId;
             psUser = SqlUtils.getPreparedStatement(dataSource, "INSERT INTO "
                     + loginSchema + "users (user_id, email, passwd, is_guest, "
                     + "register_time, last_active, first_name, signature) "
-                    + "VALUES (?, ?, ' ', 1, "
-                    + platform.getCurrentDateFunction() + ", "
-                    + platform.getCurrentDateFunction() + ", ?, ?)");
+                    + "VALUES (?, ?, ' ', 1, ?, ?, ?, ?)");
             psUser.setInt(1, userId);
             psUser.setString(2, email);
-            psUser.setString(3, firstName);
-            psUser.setString(4, signature);
+            psUser.setDate(3, new java.sql.Date(registerTime.getTime()));
+            psUser.setDate(4, new java.sql.Date(lastActiveTime.getTime()));
+            psUser.setString(5, firstName);
+            psUser.setString(6, signature);
             psUser.executeUpdate();
 
             User user = new User(wdkModel, userId, email, signature);
@@ -363,7 +383,8 @@ public class UserFactory {
     }
 
     public User login(User guest, String email, String password)
-            throws WdkUserException, WdkModelException {
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException {
         // make sure the guest is really a guest
         if (!guest.isGuest())
             throw new WdkUserException("User has been logged in.");
@@ -550,7 +571,7 @@ public class UserFactory {
         List<User> users = new ArrayList<User>();
         ResultSet rs = null;
         try {
-            rs = SqlUtils.getResultSet(dataSource, sql);
+            rs = SqlUtils.executeQuery(dataSource, sql);
             while (rs.next()) {
                 int userId = rs.getInt("user_id");
                 User user = loadUser(userId);
@@ -594,7 +615,7 @@ public class UserFactory {
             psUser = SqlUtils.getPreparedStatement(dataSource, "Update "
                     + loginSchema + "users SET signature = ? WHERE user_id = ?");
 
-            rs = SqlUtils.getResultSet(dataSource, sql);
+            rs = SqlUtils.executeQuery(dataSource, sql);
             while (rs.next()) {
                 int userId = rs.getInt("user_id");
 
@@ -695,29 +716,31 @@ public class UserFactory {
                 throw new WdkUserException("The user with email " + email
                         + " doesn't exist. Save operation cancelled.");
 
+            Date lastActiveTime = new Date();
+
             // save the user's basic information
             psUser = SqlUtils.getPreparedStatement(dataSource, "UPDATE "
                     + loginSchema + "users SET is_guest = ?, "
-                    + "last_active = " + platform.getCurrentDateFunction()
-                    + ", last_name = ?, first_name = ?, "
+                    + "last_active = ?, last_name = ?, first_name = ?, "
                     + "middle_name = ?, organization = ?, department = ?, "
                     + "title = ?,  address = ?, city = ?, state = ?, "
                     + "zip_code = ?, phone_number = ?, country = ? "
                     + "WHERE user_id = ?");
             psUser.setBoolean(1, user.isGuest());
-            psUser.setString(2, user.getLastName());
-            psUser.setString(3, user.getFirstName());
-            psUser.setString(4, user.getMiddleName());
-            psUser.setString(5, user.getOrganization());
-            psUser.setString(6, user.getDepartment());
-            psUser.setString(7, user.getTitle());
-            psUser.setString(8, user.getAddress());
-            psUser.setString(9, user.getCity());
-            psUser.setString(10, user.getState());
-            psUser.setString(11, user.getZipCode());
-            psUser.setString(12, user.getPhoneNumber());
-            psUser.setString(13, user.getCountry());
-            psUser.setInt(14, userId);
+            psUser.setDate(2, new java.sql.Date(lastActiveTime.getTime()));
+            psUser.setString(3, user.getLastName());
+            psUser.setString(4, user.getFirstName());
+            psUser.setString(5, user.getMiddleName());
+            psUser.setString(6, user.getOrganization());
+            psUser.setString(7, user.getDepartment());
+            psUser.setString(8, user.getTitle());
+            psUser.setString(9, user.getAddress());
+            psUser.setString(10, user.getCity());
+            psUser.setString(11, user.getState());
+            psUser.setString(12, user.getZipCode());
+            psUser.setString(13, user.getPhoneNumber());
+            psUser.setString(14, user.getCountry());
+            psUser.setInt(15, userId);
             psUser.execute();
 
             // save user's roles
@@ -747,10 +770,12 @@ public class UserFactory {
     private void updateUser(User user) throws WdkUserException {
         PreparedStatement psUser = null;
         try {
+            Date lastActiveTime = new Date();
             psUser = SqlUtils.getPreparedStatement(dataSource, "UPDATE "
-                    + loginSchema + "users SET last_active = "
-                    + platform.getCurrentDateFunction() + " WHERE user_id = ?");
-            psUser.setInt(1, user.getUserId());
+                    + loginSchema + "users SET last_active = ?"
+                    + " WHERE user_id = ?");
+            psUser.setDate(1, new java.sql.Date(lastActiveTime.getTime()));
+            psUser.setInt(2, user.getUserId());
             int result = psUser.executeUpdate();
             if (result == 0)
                 throw new WdkUserException("User " + user.getEmail()
@@ -897,6 +922,10 @@ public class UserFactory {
             history.setValid(false);
         } catch (WdkUserException ex) {
             history.setValid(false);
+        } catch (NoSuchAlgorithmException ex) {
+            history.setValid(false);
+        } catch (JSONException ex) {
+            history.setValid(false);
         }
 
         return history;
@@ -904,7 +933,8 @@ public class UserFactory {
 
     private Map<String, Object> parseParams(boolean isBoolean,
             String paramsClob, Object[] subTypeInfo) {
-        String[] parts = paramsClob.split(Utilities.DATA_DIVIDER);
+        // String[] parts = paramsClob.split(Utilities.DATA_DIVIDER);
+        String[] parts = paramsClob.split(",");
         int base = 1;
 
         // the first element is query name, ignored;
@@ -913,15 +943,16 @@ public class UserFactory {
         // * the third is subtype value, and
         // * the fourth is expand flag, and
         // * param-value pair starts from the fifth item
-        if (parts[1].equals(Utilities.SUB_TYPE)) {
-            base = 4;
-            subTypeInfo[0] = parts[2];
-            subTypeInfo[1] = Boolean.parseBoolean(parts[3]);
-        }
+        // if (parts[1].equals(Utilities.SUB_TYPE)) {
+        // base = 4;
+        // subTypeInfo[0] = parts[2];
+        // subTypeInfo[1] = Boolean.parseBoolean(parts[3]);
+        // }
 
         Map<String, Object> params = new LinkedHashMap<String, Object>();
         if (isBoolean) {// the last part for boolean is a boolean expression
-            params.put(Utilities.BOOLEAN_EXPRESSION_PARAM_KEY, parts[base]);
+            // params.put(Utilities.BOOLEAN_EXPRESSION_PARAM_KEY, parts[base]);
+            params.put("boolean", parts[base]);
         } else {
             for (int i = base; i < parts.length; i++) {
                 String pvPair = parts[i];
@@ -935,14 +966,17 @@ public class UserFactory {
     }
 
     private void constructAnswer(History history, String instanceContent)
-            throws WdkModelException, WdkUserException {
+            throws WdkModelException, WdkUserException,
+            NoSuchAlgorithmException, SQLException, JSONException {
         User user = history.getUser();
         Object[] subTypeInfo = { null, false };
         Map<String, Object> params = parseParams(history.isBoolean(),
                 instanceContent, subTypeInfo);
         Answer answer;
         if (history.isBoolean()) {
-            String expression = (String) params.get(Utilities.BOOLEAN_EXPRESSION_PARAM_KEY);
+            // String expression = (String)
+            // params.get(Utilities.BOOLEAN_EXPRESSION_PARAM_KEY);
+            String expression = (String) params.get("booean");
             history.setBooleanExpression(expression);
 
             BooleanExpression exp = new BooleanExpression(user);
@@ -950,8 +984,8 @@ public class UserFactory {
             BooleanQuestionNode root = exp.parseExpression(expression,
                     operatorMap);
             answer = root.makeAnswer(1, user.getItemsPerPage());
-            answer.setSubTypeValue(subTypeInfo[0]);
-            answer.setExpandSubType((Boolean) subTypeInfo[1]);
+            // answer.setSubTypeValue(subTypeInfo[0]);
+            // answer.setExpandSubType((Boolean) subTypeInfo[1]);
         } else {
             // obtain the question with full name
             String questionName = history.getQuestionName();
@@ -959,7 +993,7 @@ public class UserFactory {
 
             // get the user's preferences
             answer = question.makeAnswer(params, 1, user.getItemsPerPage(),
-                    user.getSortingAttributes(questionName), subTypeInfo[0]);
+                    user.getSortingAttributes(questionName), null);
             String[] summaryAttributes = user.getSummaryAttributes(questionName);
             answer.setSumaryAttributes(summaryAttributes);
         }
@@ -968,7 +1002,8 @@ public class UserFactory {
     }
 
     History createHistory(User user, Answer answer, String booleanExpression,
-            boolean deleted) throws WdkUserException, WdkModelException {
+            boolean deleted) throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, JSONException, SQLException {
         int userId = user.getUserId();
         String questionName = answer.getQuestion().getFullName();
 
@@ -981,10 +1016,10 @@ public class UserFactory {
         int estimateSize = answer.getResultSize();
         QueryInstance qinstance = answer.getIdsQueryInstance();
         String qiChecksum = qinstance.getChecksum();
-        String signature = qinstance.getQuery().getSignature();
-        String instanceContent = qinstance.getQueryInstanceContent(!isBoolean);
-        if (isBoolean)
-            instanceContent += Utilities.DATA_DIVIDER + booleanExpression;
+        String signature = qinstance.getQuery().getChecksum();
+        String instanceContent = qinstance.getJSONContent().toString();
+        if (isBoolean) instanceContent += ", " + booleanExpression;
+        // instanceContent += Utilities.DATA_DIVIDER + booleanExpression;
 
         // check whether the answer exist or not
         ResultSet rsHistory = null;
