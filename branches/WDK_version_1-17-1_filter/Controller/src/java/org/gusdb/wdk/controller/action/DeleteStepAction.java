@@ -129,15 +129,22 @@ public class DeleteStepAction extends Action {
 	    }
 	    // if this is the last step, then we just set the previous step as the last step of the strategy
 	    else {
-		newStep = null;
 		step = step.getPreviousStep();
-		step.setNextStep(newStep);
 	    }
 	}
 
+	// set nextStep to null so we can set the strategy pointer later
+	System.out.println("Before nulling nextStep");
+	newStep = null;
+	System.out.println("Setting nextStep to null");
+	step.setNextStep(newStep);
 	// set the latest step, and update the strategy
+	
+	System.out.println("Setting latest step");
 	strategy.setLatestStep(step);
+	System.out.println("Updating strategy");
 	strategy.update(false);
+	System.out.println("Done, making forward.");
 
 	// 5. forward to strategy page
 	ActionForward showSummary = mapping.findForward( CConstants.SHOW_STRATEGY_MAPKEY );

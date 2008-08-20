@@ -112,7 +112,8 @@ public class Step {
     public void setNextStep(Step newNextStep) 
 	throws WdkUserException {
         this.nextStep = newNextStep;
-	if (this.strategy != null) {
+	if (this.strategy != null && newNextStep != null) {
+	    System.out.println(newNextStep == null);
 	    newNextStep.setStrategy(this.strategy);
 	    this.strategy = null;
 	}

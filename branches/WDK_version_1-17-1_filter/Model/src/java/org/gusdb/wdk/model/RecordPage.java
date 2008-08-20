@@ -291,7 +291,7 @@ public class RecordPage {
 
     // Returns null if we have already returned the last instance
     public RecordInstance getNextRecordInstance() { //throws WdkModelException {
-    	logger.info("getNextRecordIsntance() Cursor = " + recordInstanceCursor);
+    	//logger.info("getNextRecordIsntance() Cursor = " + recordInstanceCursor);
         //try {
             //initPageRecordInstances();
 
@@ -312,12 +312,12 @@ public class RecordPage {
     }
 
     public boolean hasMoreRecordInstances() { //throws WdkModelException {
-        logger.info("hasMoreRecordInstances() Cursor = " + recordInstanceCursor);
+        //logger.info("hasMoreRecordInstances() Cursor = " + recordInstanceCursor);
         //try {
         //    initPageRecordInstances();
 
             if (pageRecordInstances == null) {
-                logger.warn("pageRecordInstances is still null");
+                //logger.warn("pageRecordInstances is still null");
                 return false;
             }
             if (recordInstanceCursor >= pageRecordInstances.length){
