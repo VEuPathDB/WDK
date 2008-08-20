@@ -89,8 +89,8 @@ public class XmlAttributeValue {
      * 
      * @see org.gusdb.wdk.model.xml.XmlAttributeField#getIsInternal()
      */
-    public Boolean getIsInternal() {
-        return this.attributeField.getInternal();
+    public boolean isInternal() {
+        return this.attributeField.isInternal();
     }
 
     /*

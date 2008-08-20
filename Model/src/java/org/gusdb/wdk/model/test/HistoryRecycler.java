@@ -4,8 +4,15 @@
 package org.gusdb.wdk.model.test;
 
 import java.io.File;
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
@@ -15,6 +22,8 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.implementation.ModelXmlParser;
 import org.gusdb.wdk.model.user.UserFactory;
+import org.json.JSONException;
+import org.xml.sax.SAXException;
 
 /**
  * @author xingao
@@ -55,10 +64,7 @@ public class HistoryRecycler implements Runnable {
                     } catch (InterruptedException ex) {}
                     if (isStopping()) break;
                 }
-            } catch (WdkModelException ex) {
-                ex.printStackTrace();
-                System.exit(-1);
-            } catch (WdkUserException ex) {
+            } catch (Exception ex) {
                 ex.printStackTrace();
                 System.exit(-1);
             }
@@ -71,7 +77,12 @@ public class HistoryRecycler implements Runnable {
         return stopFile.exists();
     }
 
-    private void recycle() throws WdkModelException, WdkUserException {
+    private void recycle() throws WdkModelException, WdkUserException,
+            NoSuchAlgorithmException, JSONException,
+            ParserConfigurationException, TransformerFactoryConfigurationError,
+            TransformerException, IOException, SAXException, SQLException,
+            InstantiationException, IllegalAccessException,
+            ClassNotFoundException {
         System.out.println("========== Start recycling histories on "
                 + modelName + " ==========");
         // construct model
@@ -84,13 +95,14 @@ public class HistoryRecycler implements Runnable {
         for (QuestionSet qset : qsets) {
             Question[] questions = qset.getQuestions();
             for (Question question : questions) {
-                signatures.put(question.getFullName(), question.getSignature());
+                signatures.put(question.getFullName(),
+                        question.getQuery().getChecksum());
             }
         }
 
         // in this version, do not delete invalid histories
         // remove invalid histories
-        //factory.deleteInvalidHistories(signatures);
+        // factory.deleteInvalidHistories(signatures);
 
         // remove expired users
         System.out.println("Deleting expired guest users...");

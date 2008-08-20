@@ -3,11 +3,15 @@
  */
 package org.gusdb.wdk.model;
 
+
 /**
  * @author Jerric
  * @created Jan 17, 2006
  */
 public abstract class Field extends WdkModelBase {
+
+    public abstract void resolveReferences(WdkModel wdkModel)
+            throws WdkModelException;
 
     protected String name;
     protected String displayName;
@@ -17,9 +21,6 @@ public abstract class Field extends WdkModelBase {
     protected boolean internal;
     protected boolean inReportMaker;
 
-    /**
-     * a reference to the recordClass which holds this field
-     */
     protected RecordClass recordClass;
 
     /**
@@ -65,7 +66,7 @@ public abstract class Field extends WdkModelBase {
     /**
      * @return Returns the inReportMaker.
      */
-    public boolean getInReportMaker() {
+    public boolean isInReportMaker() {
         return this.inReportMaker;
     }
 
@@ -80,7 +81,7 @@ public abstract class Field extends WdkModelBase {
     /**
      * @return Returns the internal.
      */
-    public boolean getInternal() {
+    public boolean isInternal() {
         return this.internal;
     }
 

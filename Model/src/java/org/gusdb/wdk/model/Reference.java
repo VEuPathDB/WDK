@@ -85,4 +85,12 @@ public class Reference extends WdkModelBase {
     public void excludeResources(String projectId) throws WdkModelException {
         // do nothing
     }
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model.WdkModel)
+     */
+    @Override
+    public void resolveReferences(WdkModel wodkModel) throws WdkModelException {
+        // do nothing
+    }
 }

@@ -3,9 +3,12 @@
  */
 package org.gusdb.wdk.model;
 
+import java.security.NoSuchAlgorithmException;
+
 import org.gusdb.wdk.model.user.History;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
+import org.json.JSONObject;
 
 /**
  * @author xingao
@@ -18,8 +21,7 @@ public class HistoryParam extends Param {
     private String recordClassRef;
     private RecordClass recordClass;
 
-    public HistoryParam() {
-    }
+    public HistoryParam() {}
 
     public HistoryParam(HistoryParam param) {
         super(param);
@@ -30,7 +32,7 @@ public class HistoryParam extends Param {
 
     /**
      * @param recordClassRef
-     *            the recordClassRef to set
+     *                the recordClassRef to set
      */
     public void setRecordClassRef(String recordClassRef) {
         this.recordClassRef = recordClassRef;
@@ -81,9 +83,9 @@ public class HistoryParam extends Param {
      * @see org.gusdb.wdk.model.Param#resolveReferences(org.gusdb.wdk.model.WdkModel)
      */
     @Override
-    protected void resolveReferences(WdkModel model) throws WdkModelException {
-    	if (recordClass == null)
-        recordClass = (RecordClass) model.resolveReference(recordClassRef);
+    public void resolveReferences(WdkModel model) throws WdkModelException {
+        if (recordClass == null)
+            recordClass = (RecordClass) model.resolveReference(recordClassRef);
     }
 
     /*
@@ -92,7 +94,7 @@ public class HistoryParam extends Param {
      * @see org.gusdb.wdk.model.Param#setResources(org.gusdb.wdk.model.WdkModel)
      */
     @Override
-    protected void setResources(WdkModel model) throws WdkModelException {
+    public void setResources(WdkModel model) throws WdkModelException {
         super.setResources(model);
         try {
             factory = model.getUserFactory();
@@ -107,10 +109,11 @@ public class HistoryParam extends Param {
      * @see org.gusdb.wdk.model.Param#getInternalValue(java.lang.String)
      */
     @Override
-    protected String getInternalValue(String value) throws WdkModelException {
+    public String getInternalValue(Object value) throws WdkModelException {
         try {
-            History history = getHistory(value);
-            return history.getCacheFullTable();
+            History history = getHistory((String) value);
+            // return history.getCacheFullTable();
+            return null;
         } catch (WdkUserException ex) {
             throw new WdkModelException(ex);
         }
@@ -134,7 +137,8 @@ public class HistoryParam extends Param {
      * @see org.gusdb.wdk.model.Param#compressValue(java.lang.Object)
      */
     @Override
-    public String compressValue(Object value) throws WdkModelException {
+    public String compressValue(Object value) throws WdkModelException,
+            NoSuchAlgorithmException {
         if (value instanceof String[]) {
             String[] array = (String[]) value;
             StringBuffer sb = new StringBuffer();
@@ -160,5 +164,16 @@ public class HistoryParam extends Param {
     public History[] getHistories(User user) throws WdkUserException,
             WdkModelException {
         return user.getHistories(recordClassRef);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.Param#appendJSONContent(org.json.JSONObject)
+     */
+    @Override
+    protected void appendJSONContent(JSONObject jsParam) {
+    // TODO Auto-generated method stub
+
     }
 }

@@ -34,7 +34,8 @@ public class XmlTableValue {
     /**
      * this method will called by XmlRecordInstance
      * 
-     * @param tableField The tableField to set.
+     * @param tableField
+     *                The tableField to set.
      */
     public void setTableField(XmlTableField tableField) {
         this.tableField = tableField;
@@ -76,8 +77,8 @@ public class XmlTableValue {
      * 
      * @see org.gusdb.wdk.model.xml.XmlTableField#getIsInternal()
      */
-    public Boolean getInternal() {
-        return this.tableField.getInternal();
+    public boolean isInternal() {
+        return this.tableField.isInternal();
     }
 
     /*

@@ -1,6 +1,10 @@
 package org.gusdb.wdk.model.test;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -11,18 +15,14 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.gusdb.wdk.model.RecordClass;
-import org.gusdb.wdk.model.RecordClassSet;
 import org.gusdb.wdk.model.RecordInstance;
-import org.gusdb.wdk.model.Reference;
-import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.implementation.ModelXmlParser;
+import org.json.JSONException;
 import org.xml.sax.SAXException;
 
 public class RecordTester {
@@ -31,72 +31,62 @@ public class RecordTester {
     // /////////// static methods /////////////////////////////////////
     // ////////////////////////////////////////////////////////////////////
 
-    public static void main(String[] args)
-            throws WdkModelException, WdkUserException {
+    public static void main(String[] args) throws WdkModelException,
+            WdkUserException, NoSuchAlgorithmException, SQLException,
+            JSONException, SAXException, IOException,
+            ParserConfigurationException, TransformerFactoryConfigurationError,
+            TransformerException, InstantiationException, IllegalAccessException, ClassNotFoundException {
         String cmdName = System.getProperty("cmdName");
-        String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
 
         // process args
         Options options = declareOptions();
         CommandLine cmdLine = parseOptions(cmdName, options, args);
 
+        // get arguments
         String modelName = cmdLine.getOptionValue("model");
-
         String recordClassFullName = cmdLine.getOptionValue("record");
-
-        String projectID = null;
-        if (cmdLine.hasOption("project"))
-            projectID = cmdLine.getOptionValue("project");
-        String primaryKey = cmdLine.getOptionValue("primaryKey");
-        boolean timeQueries = cmdLine.hasOption("timeQueries");
+        String[] primaryKeyArray = cmdLine.getOptionValues("primaryKey");
 
         long start = System.currentTimeMillis();
+        long st = System.currentTimeMillis();
 
-        try {
-            long st = System.currentTimeMillis();
+        // initialize the model
+        WdkModel wdkModel = WdkModel.construct(modelName);
 
-            Reference ref = new Reference(recordClassFullName);
-            String recordClassSetName = ref.getSetName();
-            String recordClassName = ref.getElementName();
+        System.out.println("Model initialization took: "
+                + ((System.currentTimeMillis() - st) / 1000F) + " seconds.");
+        st = System.currentTimeMillis();
 
-            ModelXmlParser parser = new ModelXmlParser(gusHome);
-            WdkModel wdkModel = parser.parseModel(modelName);
+        // create instance
+        RecordClass recordClass = (RecordClass) wdkModel.resolveReference(recordClassFullName);
+        Map<String, Object> pkValues = parsePrimaryKeyArgs(primaryKeyArray);
+        RecordInstance recordInstance = recordClass.makeRecordInstance(pkValues);
 
-            System.out.println("Model initialization took: "
-                    + ((System.currentTimeMillis() - st) / 1000F) + " seconds.");
-            st = System.currentTimeMillis();
+        System.out.println("Record creation took: "
+                + ((System.currentTimeMillis() - st) / 1000F) + " seconds.");
+        st = System.currentTimeMillis();
+        System.out.println(recordInstance.print());
 
-            RecordClassSet recordClassSet = wdkModel.getRecordClassSet(recordClassSetName);
-            RecordClass recordClass = recordClassSet.getRecordClass(recordClassName);
-            RecordInstance recordInstance = recordClass.makeRecordInstance(
-                    projectID, primaryKey);
+        System.out.println(recordInstance.print());
+        
+        System.out.println("Fields retrieval took: "
+                + ((System.currentTimeMillis() - st) / 1000F) + " seconds.");
+        long end = System.currentTimeMillis();
+        System.out.println("Total time spent: " + ((end - start) / 1000F)
+                + " seconds.");
+    }
 
-            System.out.println("Record creation took: "
-                    + ((System.currentTimeMillis() - st) / 1000F) + " seconds.");
-            st = System.currentTimeMillis();
+    private static Map<String, Object> parsePrimaryKeyArgs(String[] array) {
+        Map<String, Object> map = new LinkedHashMap<String, Object>();
 
-            if (timeQueries) {
-                recordInstance.setTimeAttributeQueries(true);
-            }
-            System.out.println(recordInstance.print());
-
-            System.out.println("Fields retrieval took: "
-                    + ((System.currentTimeMillis() - st) / 1000F) + " seconds.");
-        } catch (SAXException ex) {
-            throw new WdkModelException(ex);
-        } catch (IOException ex) {
-            throw new WdkModelException(ex);
-        } catch (ParserConfigurationException ex) {
-            throw new WdkModelException(ex);
-        } catch (TransformerFactoryConfigurationError ex) {
-            throw new WdkModelException(ex);
-        } catch (TransformerException ex) {
-            throw new WdkModelException(ex);
-        } finally {
-            long end = System.currentTimeMillis();
-            System.out.println("Total time spent: " + ((end - start) / 1000F)
-                    + " seconds.");
+        if (array.length % 2 != 0) {
+            throw new IllegalArgumentException(
+                    "The -primaryKey option must be followed by column key value pairs only");
         }
+        for (int i = 0; i < array.length; i += 2) {
+            map.put(array[i], array[i + 1]);
+        }
+        return map;
     }
 
     private static void addOption(Options options, String argName, String desc) {
@@ -121,21 +111,12 @@ public class RecordTester {
         addOption(options, "record",
                 "The full name (set.element) of the record to print.");
 
-        // by Jerric - project ID
-        // use cache
-        Option project = new Option("project", true,
-                "The project ID of the record, if project IDs are used.");
-        options.addOption(project);
-
-        // primary key
-        addOption(options, "primaryKey",
-                "The primary key of the record to find.");
-
-        OptionGroup specialOperations = new OptionGroup();
-        Option timeQueries = new Option("timeQueries",
-                "print how long it takes for queries to return.");
-        specialOperations.addOption(timeQueries);
-        options.addOptionGroup(specialOperations);
+        // primary key columns
+        Option primaryKey = new Option("primaryKey", true,
+                "space delimited list of column_name column_value ....");
+        primaryKey.setArgName("primaryKey");
+        primaryKey.setArgs(Option.UNLIMITED_VALUES);
+        options.addOption(primaryKey);
 
         return options;
     }
@@ -163,8 +144,8 @@ public class RecordTester {
 
         String newline = System.getProperty("line.separator");
         String cmdlineSyntax = cmdName + " -model model_name"
-                + " -record full_record_name" + " -timeQueries "
-                + " -primaryKey primary_key" + " [-project project_id]";
+                + " -record full_record_name"
+                + " -primaryKey column_name column_value...";
 
         String header = newline
                 + "Print a record found in a WDK Model xml file. Options:";

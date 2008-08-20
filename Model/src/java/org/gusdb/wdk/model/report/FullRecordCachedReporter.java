@@ -6,6 +6,8 @@ package org.gusdb.wdk.model.report;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.security.NoSuchAlgorithmException;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
@@ -16,12 +18,17 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.AttributeField;
+import org.gusdb.wdk.model.AttributeValue;
 import org.gusdb.wdk.model.Field;
-import org.gusdb.wdk.model.RDBMSPlatformI;
+import org.gusdb.wdk.model.FieldScope;
+import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.RecordInstance;
 import org.gusdb.wdk.model.TableField;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.implementation.SqlUtils;
+import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.dbms.DBPlatform;
+import org.gusdb.wdk.model.dbms.SqlUtils;
+import org.json.JSONException;
 
 /**
  * @author xingao
@@ -81,8 +88,8 @@ public class FullRecordCachedReporter extends Reporter {
         // get basic configurations
         if (config.containsKey(FIELD_HAS_EMPTY_TABLE)) {
             String value = config.get(FIELD_HAS_EMPTY_TABLE);
-            hasEmptyTable = (value.equalsIgnoreCase("yes") || value.equalsIgnoreCase("true"))
-                    ? true : false;
+            hasEmptyTable = (value.equalsIgnoreCase("yes") || value.equalsIgnoreCase("true")) ? true
+                    : false;
         }
     }
 
@@ -121,7 +128,9 @@ public class FullRecordCachedReporter extends Reporter {
      * 
      * @see org.gusdb.wdk.model.report.IReporter#format(org.gusdb.wdk.model.Answer)
      */
-    public void write(OutputStream out) throws WdkModelException {
+    public void write(OutputStream out) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
         // get the columns that will be in the report
         Set<Field> fields = validateColumns();
 
@@ -142,7 +151,8 @@ public class FullRecordCachedReporter extends Reporter {
 
     private Set<Field> validateColumns() throws WdkModelException {
         // get a map of report maker fields
-        Map<String, Field> fieldMap = getQuestion().getReportMakerFields();
+        Map<String, Field> fieldMap = getQuestion().getFields(
+                FieldScope.ReportMaker);
 
         // the config map contains a list of column names;
         Set<Field> columns = new LinkedHashSet<Field>();
@@ -165,92 +175,72 @@ public class FullRecordCachedReporter extends Reporter {
 
     private void formatRecord2Text(Set<AttributeField> attributes,
             Set<TableField> tables, PrintWriter writer)
-            throws WdkModelException {
+            throws WdkModelException, SQLException, NoSuchAlgorithmException,
+            JSONException, WdkUserException {
         logger.debug("Include empty table: " + hasEmptyTable);
-        
+
         // construct in clause
         StringBuffer sqlIn = new StringBuffer();
-        // add a dummy table name to make sure the constructed sql is valid, in 
+        // add a dummy table name to make sure the constructed sql is valid, in
         // case none of the table names are selected.
         sqlIn.append("'WDK_DUMMY_TABLE'");
         for (TableField table : tables) {
             sqlIn.append(", '" + table.getName() + "'");
         }
+        RecordClass recordClass = getQuestion().getRecordClass();
+        String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
 
-        // construct the SQL to retrieve table cache
-        String answerCache = getCacheTableName();
-        String indexColumn = getResultIndexColumn();
-        String sortingColumn = getSortingIndexColumn();
-        int sortingIndex = getSortingIndex();
-        boolean hasProjectId = hasProjectId();
-
+        // construct the SQL by join cache table with data table
         StringBuffer sql = new StringBuffer("SELECT ");
-        if (hasProjectId) sql.append(" ac.project_id, ");
-        sql.append("ac." + recordIdColumn);
-        sql.append(", tc.table_name");
-        sql.append(", tc.row_count");
-        sql.append(", tc.content");
-        sql.append(" FROM " + answerCache + " ac");
-        sql.append(", " + tableCache + " tc");
-        sql.append(" WHERE tc." + recordIdColumn + " = ac." + recordIdColumn);
-        sql.append(" AND tc.table_name IN (" + sqlIn.toString() + ")");
-        sql.append(" AND ac." + sortingColumn + " = " + sortingIndex);
-        if (hasProjectId) sql.append(" AND tc.project_id = ac.project_id");
-        sql.append(" ORDER BY ac." + indexColumn);
+        sql.append("table_name, row_count, content ");
+        sql.append("FROM ").append(tableCache);
+        for (int index = 0; index < pkColumns.length; index++) {
+            sql.append((index == 0) ? " WHERE " : " AND ");
+            sql.append(pkColumns[index]).append(" = ?");
+        }
 
         // get the result from database
-        RDBMSPlatformI platform = getQuestion().getWdkModel().getPlatform();
-        ResultSet rsTable = null;
+        DBPlatform platform = getQuestion().getWdkModel().getQueryPlatform();
+        PreparedStatement ps = null;
         try {
-            rsTable = SqlUtils.getResultSet(platform.getDataSource(),
+            ps = SqlUtils.getPreparedStatement(platform.getDataSource(),
                     sql.toString());
-
-            boolean advanced = false;
 
             // get page based answers with a maximum size (defined in
             // PageAnswerIterator)
             for (Answer answer : this) {
-                while (answer.hasMoreRecordInstances()) {
-                    RecordInstance record = answer.getNextRecordInstance();
-                    String recordId = record.getPrimaryKey().getRecordId();
-                    String projectId = record.getPrimaryKey().getProjectId();
-
+                for (RecordInstance record : answer.getRecordInstances()) {
                     // print out attributes of the record first
                     for (AttributeField attribute : attributes) {
-                        Object value = record.getAttributeValue(attribute);
+                        AttributeValue value = record.getAttributeValue(attribute.getName());
                         writer.println(attribute.getDisplayName() + ": "
-                                + value);
+                                + value.getValue());
                     }
                     writer.println();
                     writer.flush();
-                    
+
                     // skip he following section if no table field is selected
                     if (tables.size() == 0) continue;
 
-                    // print out cached table values of the record
-                    if (!advanced) {
-                        if (!rsTable.next()) break; // no more records, break;
-                        advanced = true;
+                    // get the cached data of the record
+                    Map<String, Object> pkValues = record.getPrimaryKey().getValues();
+                    for (int index = 0; index < pkColumns.length; index++) {
+                        Object value = pkValues.get(pkColumns[index]);
+                        ps.setObject(index + 1, value);
                     }
-                    // read the content, and put into a map
+                    ResultSet resultSet = ps.executeQuery();
                     Map<String, String> tableValues = new LinkedHashMap<String, String>();
-                    do {
-                        // it's another record
-                        if (!recordId.equals(rsTable.getString(recordIdColumn)))
-                            break;
-                        if (hasProjectId
-                                && !projectId.equals(rsTable.getString("project_id")))
-                            break;
+                    while (resultSet.next()) {
+                        // check if display empty tables
+                        int size = resultSet.getInt("row_count");
+                        if (!hasEmptyTable && size == 0) continue;
 
-                        // check if the table is empty
-                        int tableSize = rsTable.getInt("row_count");
-                        if (!hasEmptyTable && tableSize == 0) continue;
-
-                        String tableName = rsTable.getString("table_name");
-                        String content = platform.getClobData(rsTable,
+                        String tableName = resultSet.getString("table_name");
+                        String content = platform.getClobData(resultSet,
                                 "content");
                         tableValues.put(tableName, content);
-                    } while (rsTable.next());
+                    }
+                    resultSet.close();
 
                     // output the value, preserving the order
                     for (TableField table : tables) {
@@ -266,11 +256,9 @@ public class FullRecordCachedReporter extends Reporter {
                 }
             }
             writer.flush();
-        } catch (SQLException ex) {
-            throw new WdkModelException(ex);
         } finally {
             try {
-                SqlUtils.closeResultSet(rsTable);
+                SqlUtils.closeStatement(ps);
             } catch (SQLException ex) {
                 throw new WdkModelException(ex);
             }

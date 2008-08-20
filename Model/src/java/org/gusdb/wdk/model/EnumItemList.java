@@ -89,4 +89,16 @@ public class EnumItemList extends WdkModelBase {
         }
         items = newItems;
     }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model.WdkModel)
+     */
+    @Override
+    public void resolveReferences(WdkModel wodkModel) throws WdkModelException {
+        for (EnumItem item : items) {
+            item.resolveReferences(wodkModel);
+        }
+    }
 }

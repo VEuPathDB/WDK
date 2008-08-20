@@ -1,18 +1,23 @@
 package org.gusdb.wdk.model;
 
+import org.gusdb.wdk.model.query.Query;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class Column extends WdkModelBase {
 
+    public final static String TYPE_NUMBER = "number";
+    public final static String TYPE_STRING = "string";
     /**
      * 
      */
     private static final long serialVersionUID = -1895749085919850028L;
 
-    //private static Logger logger = Logger.getLogger( Column.class );
+    // private static Logger logger = Logger.getLogger( Column.class );
 
     private String name;
     private Query query;
-    private String dataTypeName;
+    private String type = TYPE_STRING;
     private int width = 100; // for wsColumns (width of datatype)
 
     /**
@@ -20,13 +25,18 @@ public class Column extends WdkModelBase {
      */
     private String wsName;
 
-    private boolean dynamicColumn = false;
-
-    private String sortingTable;
-    private String sortingColumn;
     private boolean lowerCase = false;
 
     public Column() {}
+
+    public Column(Column column) {
+        this.name = column.name;
+        this.query = column.query;
+        this.type = column.type;
+        this.width = column.width;
+        this.wsName = column.wsName;
+        this.lowerCase = column.lowerCase;
+    }
 
     public void setName(String name) {
         this.name = name;
@@ -36,19 +46,15 @@ public class Column extends WdkModelBase {
         return name;
     }
 
-    public void setSpecialType(String specialType) {
-        this.dataTypeName = specialType;
+    public void setType(String type) {
+        this.type = type;
     }
 
-    public String getSpecialType() {
-        return dataTypeName;
+    public String getType() {
+        return type;
     }
 
     public void setQuery(Query query) {
-        // TEST
-        // if (name != null && name.equalsIgnoreCase("score"))
-        // logger.debug("Columns Query is set to: " + query.getFullName());
-
         this.query = query;
     }
 
@@ -80,52 +86,6 @@ public class Column extends WdkModelBase {
     }
 
     /**
-     * @return the dynamicColumn
-     */
-    public boolean isDynamicColumn() {
-        return dynamicColumn;
-    }
-
-    /**
-     * @param dynamicColumn
-     *            the dynamicColumn to set
-     */
-    void setDynamicColumn(boolean dynamicColumn) {
-        this.dynamicColumn = dynamicColumn;
-    }
-
-    /**
-     * @return the sortingTable
-     */
-    public String getSortingTable() {
-        return sortingTable;
-    }
-
-    /**
-     * @param sortingTable
-     *            the sortingTable to set
-     */
-    public void setSortingTable(String sortingTable) {
-        this.sortingTable = sortingTable;
-    }
-
-    /**
-     * @return the sortingColumn
-     */
-    public String getSortingColumn() {
-        if (sortingColumn != null) return sortingColumn;
-        else return name;
-    }
-
-    /**
-     * @param sortingColumn
-     *            the sortingColumn to set
-     */
-    public void setSortingColumn(String sortingColumn) {
-        this.sortingColumn = sortingColumn;
-    }
-
-    /**
      * @return the lowerCase
      */
     public boolean isLowerCase() {
@@ -139,31 +99,39 @@ public class Column extends WdkModelBase {
     public void setLowerCase(boolean lowerCase) {
         this.lowerCase = lowerCase;
     }
-
+    
+    public JSONObject getJSONContent() throws JSONException {
+        JSONObject jsColumn = new JSONObject();
+        jsColumn.put("name", name);
+        jsColumn.put("type", type);
+        jsColumn.put("width", width);
+        return jsColumn;
+    }
+    
     public String toString() {
         String newline = System.getProperty("line.separator");
         String classnm = this.getClass().getName();
         StringBuffer buf = new StringBuffer(classnm + ": name='" + name + "'"
-                + newline + "  dataTypeName='" + dataTypeName + "'" + newline);
+                + newline + "  dataTypeName='" + type + "'" + newline);
 
         return buf.toString();
     }
 
-    public Column clone() {
-        Column column = new Column();
-        column.dataTypeName = this.dataTypeName;
-        column.name = this.name;
-        column.query = this.query;
-        column.width = this.width;
-        column.wsName = this.wsName;
-        return column;
-    }
-
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
      */
     @Override
     public void excludeResources(String projectId) {
-        // do nothing
+    // do nothing
+    }
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model.WdkModel)
+     */
+    @Override
+    public void resolveReferences(WdkModel wodkModel) throws WdkModelException {
+        // nothing to resolve
     }
 }

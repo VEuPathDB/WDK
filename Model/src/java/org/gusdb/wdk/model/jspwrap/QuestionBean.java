@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.jspwrap;
 
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -8,8 +10,8 @@ import org.gusdb.wdk.model.AbstractEnumParam;
 import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.BooleanQuestionNode;
 import org.gusdb.wdk.model.DatasetParam;
-import org.gusdb.wdk.model.EnumParam;
 import org.gusdb.wdk.model.Field;
+import org.gusdb.wdk.model.FieldScope;
 import org.gusdb.wdk.model.Group;
 import org.gusdb.wdk.model.HistoryParam;
 import org.gusdb.wdk.model.Param;
@@ -17,6 +19,7 @@ import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.TableField;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.json.JSONException;
 
 /**
  * A wrapper on a {@link Question} that provides simplified access for
@@ -125,7 +128,7 @@ public class QuestionBean {
     }
 
     public Map<String, AttributeFieldBean> getReportMakerAttributesMap() {
-        Map<String, AttributeField> attribs = question.getReportMakerAttributeFields();
+        Map<String, AttributeField> attribs = question.getAttributeFields(FieldScope.ReportMaker);
         Iterator<String> ai = attribs.keySet().iterator();
 
         Map<String, AttributeFieldBean> rmaMap = new LinkedHashMap<String, AttributeFieldBean>();
@@ -138,7 +141,8 @@ public class QuestionBean {
     }
 
     public Map<String, TableFieldBean> getReportMakerTablesMap() {
-        Map<String, TableField> tables = question.getReportMakerTableFields();
+        Map<String, TableField> tables = question.getRecordClass().getTableFieldMap(
+                FieldScope.ReportMaker);
         Iterator<String> ti = tables.keySet().iterator();
 
         Map<String, TableFieldBean> rmtMap = new LinkedHashMap<String, TableFieldBean>();
@@ -150,7 +154,7 @@ public class QuestionBean {
     }
 
     public Map<String, FieldBean> getReportMakerFieldsMap() {
-        Map<String, Field> fields = question.getReportMakerFields();
+        Map<String, Field> fields = question.getFields(FieldScope.ReportMaker);
         Iterator<String> fi = fields.keySet().iterator();
 
         Map<String, FieldBean> rmfMap = new LinkedHashMap<String, FieldBean>();
@@ -222,12 +226,16 @@ public class QuestionBean {
      *            Index of the first record to include in the answer
      * @param end
      *            Index of the last record to include in the answer
+     * @throws JSONException
+     * @throws SQLException
+     * @throws NoSuchAlgorithmException
      */
     public AnswerBean makeAnswer(Map<String, Object> paramValues, int start,
-            int end, Map<String, Boolean> sortingAttributes,
-            Object subTypeValues) throws WdkModelException, WdkUserException {
+            int end, Map<String, Boolean> sortingAttributes)
+            throws WdkModelException, WdkUserException,
+            NoSuchAlgorithmException, SQLException, JSONException {
         return new AnswerBean(question.makeAnswer(paramValues, start, end,
-                sortingAttributes, subTypeValues));
+                sortingAttributes, null));
     }
 
     public String getDescription() {
@@ -266,12 +274,16 @@ public class QuestionBean {
      * @return
      * @throws WdkUserException
      * @throws WdkModelException
+     * @throws JSONException
+     * @throws SQLException
+     * @throws NoSuchAlgorithmException
      * @see org.gusdb.wdk.model.Question#makeAnswer(java.util.Map,
      *      java.util.Map)
      */
     public AnswerBean makeAnswer(Map<String, Object> paramValues,
             Map<String, Boolean> sortingAttributes) throws WdkUserException,
-            WdkModelException {
+            WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException {
         return new AnswerBean(question.makeAnswer(paramValues,
                 sortingAttributes));
     }
@@ -284,10 +296,14 @@ public class QuestionBean {
      * @return
      * @throws WdkUserException
      * @throws WdkModelException
+     * @throws JSONException
+     * @throws SQLException
+     * @throws NoSuchAlgorithmException
      * @see org.gusdb.wdk.model.Question#makeAnswer(java.util.Map)
      */
     public AnswerBean makeAnswer(Map<String, Object> paramValues)
-            throws WdkUserException, WdkModelException {
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException {
         return new AnswerBean(question.makeAnswer(paramValues));
     }
 

@@ -1,10 +1,14 @@
 package org.gusdb.wdk.model;
 
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.json.JSONException;
 
 public class RecordClassSet extends WdkModelBase implements ModelSetI {
 
@@ -43,7 +47,7 @@ public class RecordClassSet extends WdkModelBase implements ModelSetI {
     }
 
     public void addRecordClass(RecordClass recordClass) {
-        recordClass.setFullName(name);
+        recordClass.setRecordClassSet(this);
         recordClassList.add(recordClass);
     }
 
@@ -63,7 +67,9 @@ public class RecordClassSet extends WdkModelBase implements ModelSetI {
         return buf.toString();
     }
 
-    public void resolveReferences(WdkModel model) throws WdkModelException {
+    @Override
+    public void resolveReferences(WdkModel model) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException, WdkUserException {
         Iterator<RecordClass> recordClassIterator = recordClassMap.values().iterator();
         while (recordClassIterator.hasNext()) {
             RecordClass recordClass = recordClassIterator.next();

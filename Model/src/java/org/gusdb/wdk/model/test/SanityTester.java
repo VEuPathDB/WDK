@@ -1,6 +1,9 @@
 package org.gusdb.wdk.model.test;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -17,26 +20,25 @@ import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.AttributeField;
-import org.gusdb.wdk.model.Query;
 import org.gusdb.wdk.model.QuerySet;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
-import org.gusdb.wdk.model.RDBMSPlatformI;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.RecordClassSet;
 import org.gusdb.wdk.model.RecordInstance;
 import org.gusdb.wdk.model.Reference;
-import org.gusdb.wdk.model.ResultList;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.dbms.DBPlatform;
+import org.gusdb.wdk.model.dbms.ResultList;
+import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.xml.XmlAnswer;
 import org.gusdb.wdk.model.xml.XmlQuestion;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
+import org.json.JSONException;
 import org.xml.sax.SAXException;
-
-import com.sun.org.apache.bcel.internal.classfile.Attribute;
 
 /**
  * SanityTester.java " [-project project_id]" +
@@ -78,11 +80,16 @@ public class SanityTester {
     public static final String BANNER_LINE_bot = "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^";
 
     private static final Logger logger = Logger.getLogger(SanityTester.class);
-    
+
     public SanityTester(String modelName, SanityModel sanityModel,
             boolean verbose, boolean suggestOnly, Integer skipTo,
             Integer stopAfter, boolean failuresOnly, boolean indexOnly)
-            throws WdkModelException, WdkUserException {
+            throws WdkModelException, WdkUserException,
+            NoSuchAlgorithmException, ParserConfigurationException,
+            TransformerFactoryConfigurationError, TransformerException,
+            IOException, SAXException, SQLException, JSONException,
+            InstantiationException, IllegalAccessException,
+            ClassNotFoundException {
         this.wdkModel = WdkModel.construct(modelName);
         this.verbose = verbose;
         this.failuresOnly = failuresOnly;
@@ -118,7 +125,8 @@ public class SanityTester {
                 if (!sanityModel.hasSanityQuery(nextQuerySet.getName() + "."
                         + nextQuery.getName())) {
                     if (suggestOnly) {
-                        System.out.println(nextQuery.getSanityTestSuggestion());
+                        // System.out.println(nextQuery.getSanityTestSuggestion());
+                        System.out.println(nextQuery.toString());
                     } else {
                         System.out.println("Sanity Test Failed!  Query "
                                 + nextQuerySet.getName() + "."
@@ -163,7 +171,8 @@ public class SanityTester {
                 if (!sanityModel.hasSanityQuestion(nextQuestionSet.getName()
                         + "." + nextQuestion.getName())) {
                     if (suggestOnly) {
-                        System.out.println(nextQuestion.getSanityTestSuggestion());
+                        // System.out.println(nextQuestion.getSanityTestSuggestion());
+                        System.out.println(nextQuestion.toString());
                     } else {
                         System.out.println("Sanity Test Failed!  Question "
                                 + nextQuestionSet.getName() + "."
@@ -312,8 +321,15 @@ public class SanityTester {
                 recordRef = new Reference(records[i].getRef());
                 RecordClassSet nextRecordClassSet = wdkModel.getRecordClassSet(recordRef.getSetName());
                 RecordClass nextRecordClass = nextRecordClassSet.getRecordClass(recordRef.getElementName());
-                RecordInstance nextRecordInstance = nextRecordClass.makeRecordInstance(
-                        records[i].getProjectId(), records[i].getPrimaryKey());
+
+                String[] pkColumns = nextRecordClass.getPrimaryKeyAttributeField().getColumnRefs();
+
+                // HACK
+                Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
+                pkValues.put(pkColumns[0], records[i].getProjectId());
+                pkValues.put(pkColumns[1], records[i].getPrimaryKey());
+
+                RecordInstance nextRecordInstance = nextRecordClass.makeRecordInstance(pkValues);
 
                 String riString = nextRecordInstance.print();
 
@@ -388,13 +404,12 @@ public class SanityTester {
                         questions[i].getPageStart(), questions[i].getPageEnd());
 
                 int resultSize = answer.getResultSize();
-                
+
                 // get the summary attribute list
                 Map<String, AttributeField> summary = answer.getSummaryAttributes();
-                // iterate through the page and try every summary attribute of 
+                // iterate through the page and try every summary attribute of
                 // each record
-                while (answer.hasMoreRecordInstances()) {
-                    RecordInstance record = answer.getNextRecordInstance();
+                for (RecordInstance record : answer.getRecordInstances()) {
                     StringBuffer sb = new StringBuffer();
                     for (String attrName : summary.keySet()) {
                         sb.append(record.getAttributeValue(attrName));
@@ -452,7 +467,7 @@ public class SanityTester {
                 System.out.println(BANNER_LINE_bot + "\n");
             }
             // check the connection usage
-            RDBMSPlatformI platform = wdkModel.getPlatform();
+            DBPlatform platform = wdkModel.getQueryPlatform();
             // System.out.println("Connection: " + platform.getActiveCount() +
             // "/"
             // + platform.getIdleCount());
@@ -582,17 +597,17 @@ public class SanityTester {
 
     /**
      * @param queryResult
-     *        a two-value array where the first entry is the number of queries
-     *        that passed the test and the second is the number of queries that
-     *        failed.
+     *            a two-value array where the first entry is the number of
+     *            queries that passed the test and the second is the number of
+     *            queries that failed.
      * 
      * @param recordResult
-     *        a two-value array where the first entry is the number of records
-     *        that passed the test and the second is the number of records that
-     *        failed.
+     *            a two-value array where the first entry is the number of
+     *            records that passed the test and the second is the number of
+     *            records that failed.
      * 
      * @param return
-     *        true if one or more tests failed; false otherwise.
+     *            true if one or more tests failed; false otherwise.
      */
 
     private boolean printSummaryLine() {
@@ -708,7 +723,9 @@ public class SanityTester {
     public static void main(String[] args) throws WdkModelException,
             SAXException, IOException, ParserConfigurationException,
             TransformerFactoryConfigurationError, TransformerException,
-            WdkUserException {
+            WdkUserException, NoSuchAlgorithmException, SQLException,
+            JSONException, InstantiationException, IllegalAccessException,
+            ClassNotFoundException {
         String cmdName = System.getProperty("cmdName");
         String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
 

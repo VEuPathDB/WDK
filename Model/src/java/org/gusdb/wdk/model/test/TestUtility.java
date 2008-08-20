@@ -4,6 +4,8 @@
 package org.gusdb.wdk.model.test;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.Random;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -19,7 +21,8 @@ import org.apache.commons.cli.Options;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.implementation.ModelXmlParser;
+import org.gusdb.wdk.model.WdkUserException;
+import org.json.JSONException;
 import org.xml.sax.SAXException;
 
 /**
@@ -67,10 +70,12 @@ public class TestUtility {
         return suite;
     }
 
-    public static TestUtility getInstance()
-            throws WdkModelException, SAXException, IOException,
-            ParserConfigurationException, TransformerFactoryConfigurationError,
-            TransformerException {
+    public static TestUtility getInstance() throws WdkModelException,
+            SAXException, IOException, ParserConfigurationException,
+            TransformerFactoryConfigurationError, TransformerException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException, InstantiationException, IllegalAccessException,
+            ClassNotFoundException {
         if (utility == null) utility = new TestUtility();
         return utility;
     }
@@ -82,12 +87,20 @@ public class TestUtility {
      * @throws ParserConfigurationException
      * @throws IOException
      * @throws SAXException
+     * @throws ClassNotFoundException
+     * @throws IllegalAccessException
+     * @throws InstantiationException
+     * @throws WdkUserException
+     * @throws JSONException
+     * @throws SQLException
+     * @throws NoSuchAlgorithmException
      * 
      */
-    public TestUtility()
-            throws WdkModelException, SAXException, IOException,
+    public TestUtility() throws WdkModelException, SAXException, IOException,
             ParserConfigurationException, TransformerFactoryConfigurationError,
-            TransformerException {
+            TransformerException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException, InstantiationException,
+            IllegalAccessException, ClassNotFoundException {
         super();
         wdkModel = loadWdkModel();
         sanityModel = loadSanityModel();
@@ -115,16 +128,23 @@ public class TestUtility {
         return this.wdkModel;
     }
 
-    private WdkModel loadWdkModel() throws WdkModelException {
+    private WdkModel loadWdkModel() throws WdkModelException,
+            NoSuchAlgorithmException, ParserConfigurationException,
+            TransformerFactoryConfigurationError, TransformerException,
+            IOException, SAXException, SQLException, JSONException,
+            WdkUserException, InstantiationException, IllegalAccessException,
+            ClassNotFoundException {
         // load wdk model
         String modelName = System.getProperty("model");
         return WdkModel.construct(modelName);
     }
 
-    private SanityModel loadSanityModel()
-            throws WdkModelException, SAXException, IOException,
-            ParserConfigurationException, TransformerFactoryConfigurationError,
-            TransformerException {
+    private SanityModel loadSanityModel() throws WdkModelException,
+            SAXException, IOException, ParserConfigurationException,
+            TransformerFactoryConfigurationError, TransformerException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException, InstantiationException, IllegalAccessException,
+            ClassNotFoundException {
         String modelName = System.getProperty("model");
         String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
 

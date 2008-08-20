@@ -27,7 +27,7 @@ public class PropertyList extends WdkModelBase {
 
     /**
      * @param name
-     *            the name to set
+     *                the name to set
      */
     public void setName(String name) {
         this.name = name;
@@ -57,13 +57,23 @@ public class PropertyList extends WdkModelBase {
                 String value = valueText.getText();
                 if (values.contains(value)) {
                     throw new WdkModelException("The property value \"" + value
-                            + "\" is included more than once in property " +
-                            		"list: " + name);
+                            + "\" is included more than once in property "
+                            + "list: " + name);
                 } else {
                     values.add(value);
                 }
             }
         }
         valueTexts = null;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model.WdkModel)
+     */
+    @Override
+    public void resolveReferences(WdkModel wodkModel) throws WdkModelException {
+    // do nothing
     }
 }

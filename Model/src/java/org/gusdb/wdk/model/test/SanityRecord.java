@@ -1,7 +1,13 @@
 package org.gusdb.wdk.model.test;
 
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
+
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
+import org.json.JSONException;
 
 /**
  * SanityRecord.java
@@ -110,6 +116,18 @@ public class SanityRecord extends WdkModelBase implements SanityElementI {
     @Override
     public void excludeResources(String projectId) throws WdkModelException {
     // no nothing
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model.WdkModel)
+     */
+    @Override
+    public void resolveReferences(WdkModel wodkModel) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
+    // do nothing
     }
 
 }

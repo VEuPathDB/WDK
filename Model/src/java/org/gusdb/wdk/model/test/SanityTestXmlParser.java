@@ -5,6 +5,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -32,8 +34,10 @@ import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.XmlParser;
 import org.gusdb.wdk.model.implementation.ModelXmlParser;
+import org.json.JSONException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -51,7 +55,9 @@ public class SanityTestXmlParser extends XmlParser {
     public SanityModel parseModel(String projectId) throws SAXException,
             IOException, ParserConfigurationException,
             TransformerFactoryConfigurationError, TransformerException,
-            WdkModelException {
+            WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException, InstantiationException,
+            IllegalAccessException, ClassNotFoundException {
         // load model
         ModelXmlParser parser = new ModelXmlParser(gusHome);
         WdkModel wdkModel = parser.parseModel(projectId);
@@ -197,7 +203,10 @@ public class SanityTestXmlParser extends XmlParser {
 
     public static void main(String[] args) throws SAXException, IOException,
             WdkModelException, ParserConfigurationException,
-            TransformerFactoryConfigurationError, TransformerException {
+            TransformerFactoryConfigurationError, TransformerException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException, InstantiationException, IllegalAccessException,
+            ClassNotFoundException {
         String cmdName = System.getProperty("cmdName");
         String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
 

@@ -3,6 +3,8 @@
  */
 package org.gusdb.wdk.model.test;
 
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -23,6 +25,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
 import org.gusdb.wdk.model.user.User;
+import org.json.JSONException;
 
 /**
  * @author Jerric
@@ -81,7 +84,8 @@ public class JUnitBooleanExpressionTest extends TestCase {
     }
 
     private Map<String, Answer> buildOperandMap(SanityModel sanityModel)
-            throws WdkModelException, WdkUserException {
+            throws WdkModelException, WdkUserException,
+            NoSuchAlgorithmException, SQLException, JSONException {
         // get sanity questions
         SanityQuestion[] sqs = sanityModel.getAllSanityQuestions();
 

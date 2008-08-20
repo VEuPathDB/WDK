@@ -2,6 +2,7 @@ package org.gusdb.wdk.controller.action;
 
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.security.NoSuchAlgorithmException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -69,21 +70,6 @@ public class ProcessQuestionAction extends ShowQuestionAction {
             url.append("=" + URLEncoder.encode(paramValue, "utf-8"));
         }
 
-        // get subType input, and compose it into url
-        if (wdkQuestion.getRecordClass().isHasSubType()
-                && !wdkQuestion.isIgnoreSubType()) {
-            String subTypeName = wdkQuestion.getRecordClass().getSubType().getSubTypeParam().getName();
-            String subTypeValue = request.getParameter(subTypeName);
-            if (subTypeValue == null)
-                subTypeValue = qForm.getMyProp(subTypeName);
-            if (subTypeValue != null) {
-                url.append("&"
-                        + URLEncoder.encode("myProp(" + subTypeName + ")",
-                                "utf-8"));
-                url.append("=" + URLEncoder.encode(subTypeValue, "utf-8"));
-            }
-        }
-
         // check if user want to define the output size for the answer
         String altPageSizeKey = request.getParameter(CConstants.WDK_ALT_PAGE_SIZE_KEY);
         if (altPageSizeKey != null && altPageSizeKey.length() > 0) {
@@ -99,7 +85,8 @@ public class ProcessQuestionAction extends ShowQuestionAction {
 
     private Map<String, String> prepareParams(UserBean user,
             HttpServletRequest request, QuestionForm qform)
-            throws WdkModelException, WdkUserException {
+            throws WdkModelException, WdkUserException,
+            NoSuchAlgorithmException {
         QuestionBean question = qform.getQuestion();
         Map<String, Object> params = qform.getMyProps();
         Map<String, Object> paramObjects = qform.getMyPropObjects();

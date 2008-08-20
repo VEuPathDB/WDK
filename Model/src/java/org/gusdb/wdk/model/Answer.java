@@ -2,19 +2,31 @@ package org.gusdb.wdk.model;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.security.NoSuchAlgorithmException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.Vector;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
+import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.dbms.CacheFactory;
+import org.gusdb.wdk.model.dbms.DBPlatform;
+import org.gusdb.wdk.model.dbms.ResultFactory;
+import org.gusdb.wdk.model.dbms.ResultList;
+import org.gusdb.wdk.model.dbms.SqlResultList;
+import org.gusdb.wdk.model.dbms.SqlUtils;
+import org.gusdb.wdk.model.query.BooleanQueryInstance;
+import org.gusdb.wdk.model.query.Query;
+import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.report.Reporter;
+import org.gusdb.wdk.model.user.AnswerFactory;
+import org.json.JSONException;
 
 /**
  * Answer.java
@@ -70,33 +82,27 @@ public class Answer {
     // Instance variables
     // ------------------------------------------------------------------
 
+    private ResultFactory resultFactory;
     private Question question;
 
     private QueryInstance idsQueryInstance;
 
-    private QueryInstance attributesQueryInstance;
-
-    private RecordInstance[] pageRecordInstances;
-
-    int startRecordInstanceI;
-
-    int endRecordInstanceI;
-
-    private int recordInstanceCursor;
-
-    private String recordIdColumnName;
-
-    private String recordProjectColumnName;
+    private int startIndex;
+    private int endIndex;
 
     private boolean isBoolean = false;
 
-    private Integer resultSize; // size of total result
+    private String pagedIdSql;
 
-    private Map<String, Integer> resultSizesByProject = null;
+    private Map<PrimaryKeyAttributeValue, RecordInstance> pageRecordInstances;
+
+    private Integer resultSize; // size of total result
+    private Map<String, Integer> resultSizesByProject;
 
     private Map<String, Boolean> sortingAttributes;
-
     private Map<String, AttributeField> summaryAttributes;
+
+    private SummaryView summaryView;
 
     // ------------------------------------------------------------------
     // Constructor
@@ -116,23 +122,53 @@ public class Answer {
      * @param endRecordInstanceI
      *            The index of the last <code>RecordInstance</code> in the
      *            page, inclusive.
+     * @throws JSONException
+     * @throws SQLException
+     * @throws NoSuchAlgorithmException
+     * @throws WdkUserException
      */
-    Answer(Question question, QueryInstance idsQueryInstance,
-            int startRecordInstanceI, int endRecordInstanceI,
-            Map<String, Boolean> sortingAttributes) throws WdkModelException {
+    Answer(Question question, QueryInstance idsQueryInstance, int startIndex,
+            int endIndex, Map<String, Boolean> sortingAttributes,
+            SummaryView summaryView) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
         this.question = question;
+        this.resultFactory = question.getWdkModel().getResultFactory();
         this.idsQueryInstance = idsQueryInstance;
         this.isBoolean = (idsQueryInstance instanceof BooleanQueryInstance);
-        this.recordInstanceCursor = 0;
-        this.startRecordInstanceI = startRecordInstanceI;
-        this.endRecordInstanceI = endRecordInstanceI;
+        this.startIndex = startIndex;
+        this.endIndex = endIndex;
 
         // get sorting columns
         this.sortingAttributes = sortingAttributes;
-
         this.summaryAttributes = new LinkedHashMap<String, AttributeField>();
-        
-        this.idsQueryInstance.setRecordClass(question.getRecordClass());
+        this.summaryView = summaryView;
+
+        // save the answer
+        AnswerFactory answerFactory = question.getWdkModel().getAnswerFactory();
+        answerFactory.saveAnswer(this);
+    }
+
+    /**
+     * A copy constructor, and
+     * 
+     * @param answer
+     * @param startIndex
+     * @param endIndex
+     */
+    public Answer(Answer answer, int startIndex, int endIndex) {
+        this.startIndex = startIndex;
+        this.endIndex = endIndex;
+
+        this.idsQueryInstance = answer.idsQueryInstance;
+        this.isBoolean = answer.isBoolean;
+        this.question = answer.question;
+        this.resultFactory = answer.resultFactory;
+        this.sortingAttributes = new LinkedHashMap<String, Boolean>(
+                answer.sortingAttributes);
+        this.summaryAttributes = new LinkedHashMap<String, AttributeField>(
+                answer.summaryAttributes);
+        this.summaryView = answer.summaryView;
     }
 
     // ------------------------------------------------------------------
@@ -146,32 +182,49 @@ public class Answer {
         return this.question;
     }
 
-    public int getPageSize() {
-        return pageRecordInstances == null ? 0 : pageRecordInstances.length;
+    public int getPageSize() throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
+        initPageRecordInstances();
+        return pageRecordInstances.size();
     }
 
-    public int getPageCount() throws WdkModelException {
-        int total = (resultSize == null) ? getResultSize() : resultSize;
-        int pageSize = endRecordInstanceI - startRecordInstanceI + 1;
+    public int getPageCount() throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
+        int total = getResultSize();
+        int pageSize = endIndex - startIndex + 1;
         int pageCount = (int) Math.round(Math.ceil((float) total / pageSize));
         logger.debug("#Pages: " + pageCount + ",\t#Total: " + total
                 + ",\t#PerPage: " + pageSize);
         return pageCount;
     }
 
-    public int getResultSize() throws WdkModelException {
-        if (resultSize == null || resultSizesByProject == null) {
-            resultSizesByProject = new LinkedHashMap<String, Integer>();
-            // fill the project column name
-            findPrimaryKeyColumnNames();
-
-            ResultList rl = idsQueryInstance.getResult();
+    public int getResultSize() throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
+        if (resultSize == null) {
+            // need to run the query first
+            ResultList rl = idsQueryInstance.getResults();
+            String message = idsQueryInstance.getResultMessage();
+            boolean hasMessage = (message != null && message.length() > 0);
+            if (hasMessage) {
+                String[] sizes = idsQueryInstance.getResultMessage().split(",");
+                for (String size : sizes) {
+                    String[] parts = size.split(":");
+                    resultSizesByProject.put(parts[0],
+                            Integer.parseInt(parts[1]));
+                }
+            }
             int counter = 0;
+            resultSizesByProject = new LinkedHashMap<String, Integer>();
+
             while (rl.next()) {
                 counter++;
-                // get the project id
-                if (recordProjectColumnName != null) {
-                    String project = rl.getValue(recordProjectColumnName).toString();
+
+                if (!hasMessage) {
+                    // also count by project
+                    String project = rl.get(Utilities.COLUMN_PROJECT_ID).toString();
                     int subCounter = 0;
                     if (resultSizesByProject.containsKey(project))
                         subCounter = resultSizesByProject.get(project);
@@ -179,31 +232,15 @@ public class Answer {
                 }
             }
             rl.close();
-            resultSize = new Integer(counter);
+            resultSize = counter;
         }
         return resultSize.intValue();
     }
 
     public Map<String, Integer> getResultSizesByProject()
-            throws WdkModelException {
-        // fill the result size map grouped by project id
-        // if ( resultSizesByProject == null ) getResultSize();
-        // return resultSizesByProject;
-
-        // fill the result size map grouped by project id
-        // if (resultSizesByProject == null){
-        if (idsQueryInstance.getResultMessage().equals("")) { // added by
-            // Cary P
-            getResultSize();
-        } else {// Added by Cary P
-            String message = idsQueryInstance.getResultMessage();
-            String[] sizes = message.split(",");
-            for (String size : sizes) {
-                String[] ss = size.split(":");
-                resultSizesByProject.put(ss[0], Integer.parseInt(ss[1]));
-            }
-        }// End Cary P
-        // }
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
+        if (resultSizesByProject == null) getResultSize();
         return resultSizesByProject;
 
     }
@@ -213,18 +250,11 @@ public class Answer {
     }
 
     /**
-     * @return Map where key is param name and value is param value
-     */
-    public Map<String, Object> getParams() {
-        return idsQueryInstance.getValuesMap();
-    }
-
-    /**
      * @return Map where key is param display name and value is param value
      */
     public Map<String, Object> getDisplayParams() {
         Map<String, Object> displayParamsMap = new LinkedHashMap<String, Object>();
-        Map<String, Object> paramsMap = getParams();
+        Map<String, Object> paramsMap = idsQueryInstance.getValues();
         Param[] params = question.getParams();
         for (int i = 0; i < params.length; i++) {
             Param param = params[i];
@@ -238,96 +268,42 @@ public class Answer {
         return this.isBoolean;
     }
 
-    // this method is wrong. it should be plural, and return
-    // all the attributes query instances. this returns only the last
-    // one made, which is bogus. it is used by wdkSummary --showQuery
-    // which itself should be --showQueries
-    public QueryInstance getAttributesQueryInstance() {
-        return attributesQueryInstance;
-    }
-
     public QueryInstance getIdsQueryInstance() {
         return idsQueryInstance;
     }
 
-    public Map<String, AttributeField> getAttributeFields() {
-        return question.getAttributeFields();
+    public RecordInstance[] getRecordInstances() throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
+        initPageRecordInstances();
+
+        RecordInstance[] array = new RecordInstance[pageRecordInstances.size()];
+        pageRecordInstances.values().toArray(array);
+        return array;
     }
 
-    public Map<String, AttributeField> getReportMakerAttributeFields() {
-        return question.getReportMakerAttributeFields();
+    public RecordInstance getRecordInstance(PrimaryKeyAttributeValue primaryKey) {
+        return pageRecordInstances.get(primaryKey);
     }
 
-    public Map<String, TableField> getReportMakerTableFields() {
-        return question.getReportMakerTableFields();
-    }
-
-    public boolean isSummaryAttribute(String attName) {
-        return question.isSummaryAttribute(attName);
-    }
-
-    private void releaseRecordInstances() {
-        if (pageRecordInstances != null && pageRecordInstances.length > 0) {
-            pageRecordInstances = new RecordInstance[0];
-            recordInstanceCursor = 0;
-        }
-    }
-
-    // Returns null if we have already returned the last instance
-    public RecordInstance getNextRecordInstance() throws WdkModelException {
-        try {
-            initPageRecordInstances();
-
-            RecordInstance nextInstance = null;
-            if (recordInstanceCursor < pageRecordInstances.length) {
-                nextInstance = pageRecordInstances[recordInstanceCursor];
-                recordInstanceCursor++;
-            }
-            if (nextInstance == null) {
-                // clean up the record instances
-                releaseRecordInstances();
-            }
-            return nextInstance;
-        } catch (WdkModelException ex) {
-            releaseRecordInstances();
-            throw ex;
-        }
-    }
-
-    public boolean hasMoreRecordInstances() throws WdkModelException {
-        try {
-            initPageRecordInstances();
-
-            if (pageRecordInstances == null) {
-                logger.warn("pageRecordInstances is still null");
-            }
-            if (recordInstanceCursor >= pageRecordInstances.length) {
-                return false;
-            } else return true;
-        } catch (WdkModelException ex) {
-            releaseRecordInstances();
-            throw ex;
-        }
-    }
-
-    public Integer getDatasetId() throws WdkModelException {
-        Integer datasetId = idsQueryInstance.getQueryInstanceId();
-        if (datasetId == null) idsQueryInstance.getResultAsTableName();
-        return idsQueryInstance.getQueryInstanceId();
+    public String getChecksum() throws WdkModelException,
+            NoSuchAlgorithmException, JSONException {
+        return idsQueryInstance.getChecksum();
     }
 
     // ///////////////////////////////////////////////////////////////////
     // print methods
     // ///////////////////////////////////////////////////////////////////
 
-    public String printAsRecords() throws WdkModelException, WdkUserException {
+    public String printAsRecords() throws WdkModelException, WdkUserException,
+            NoSuchAlgorithmException, SQLException, JSONException {
         String newline = System.getProperty("line.separator");
         StringBuffer buf = new StringBuffer();
 
         initPageRecordInstances();
 
-        for (int i = 0; i < pageRecordInstances.length; i++) {
-            buf.append(pageRecordInstances[i].print());
+        for (RecordInstance recordInstance : pageRecordInstances.values()) {
+            buf.append(recordInstance.print());
             buf.append("---------------------" + newline);
         }
         return buf.toString();
@@ -335,14 +311,19 @@ public class Answer {
 
     /**
      * print summary attributes, one per line Note: not sure why this is needed
+     * 
+     * @throws JSONException
+     * @throws SQLException
+     * @throws NoSuchAlgorithmException
      */
-    public String printAsSummary() throws WdkModelException, WdkUserException {
+    public String printAsSummary() throws WdkModelException, WdkUserException,
+            NoSuchAlgorithmException, SQLException, JSONException {
         StringBuffer buf = new StringBuffer();
 
         initPageRecordInstances();
 
-        for (int i = 0; i < pageRecordInstances.length; i++) {
-            buf.append(pageRecordInstances[i].printSummary());
+        for (RecordInstance recordInstance : pageRecordInstances.values()) {
+            buf.append(recordInstance.printSummary());
         }
         return buf.toString();
     }
@@ -350,8 +331,13 @@ public class Answer {
     /**
      * print summary attributes in tab delimited table with header of attr.
      * names
+     * 
+     * @throws JSONException
+     * @throws SQLException
+     * @throws NoSuchAlgorithmException
      */
-    public String printAsTable() throws WdkModelException, WdkUserException {
+    public String printAsTable() throws WdkModelException, WdkUserException,
+            NoSuchAlgorithmException, SQLException, JSONException {
         String newline = System.getProperty("line.separator");
         StringBuffer buf = new StringBuffer();
 
@@ -362,34 +348,30 @@ public class Answer {
                 + getPageCount() + ",\t# Records per Page: " + getPageSize()
                 + newline);
 
-        if (pageRecordInstances.length == 0) return buf.toString();
+        if (pageRecordInstances.size() == 0) return buf.toString();
 
-        for (int i = -1; i < pageRecordInstances.length; i++) {
-
+        Map<String, AttributeField> attributes = getSummaryAttributes();
+        for (String nextAttName : attributes.keySet()) {
+            buf.append(nextAttName + "\t");
+        }
+        buf.append(newline);
+        for (RecordInstance recordInstance : pageRecordInstances.values()) {
             // only print
-            for (String nextAttName : getSummaryAttributes().keySet()) {
-                // make header
-                if (i == -1) buf.append(nextAttName + "\t");
-
+            for (String nextAttName : attributes.keySet()) {
                 // make data row
-                else {
-                    AttributeField field = getAttributeFields().get(nextAttName);
-                    Object value = pageRecordInstances[i].getAttributeValue(field);
-                    if (value == null) value = "";
-                    // only print part of the string
-                    String str = value.toString().trim();
-                    if (str.length() > 50) str = str.substring(0, 47) + "...";
-                    buf.append(str + "\t");
-                }
+                AttributeValue value = recordInstance.getAttributeValue(nextAttName);
+                // only print part of the string
+                String str = value.getBriefValue();
+                buf.append(str + "\t");
             }
             buf.append(newline);
         }
-
         return buf.toString();
     }
 
     public Reporter createReport(String reporterName, Map<String, String> config)
-            throws WdkModelException {
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
         // get the full answer
         int endI = getResultSize();
         return createReport(reporterName, config, 1, endI);
@@ -420,6 +402,7 @@ public class Answer {
             Reporter reporter = (Reporter) constructor.newInstance(params);
             reporter.setProperties(rptRef.getProperties());
             reporter.configure(config);
+            reporter.setWdkModel(rptRef.getWdkModel());
             return reporter;
         } catch (ClassNotFoundException ex) {
             throw new WdkModelException(ex);
@@ -446,386 +429,296 @@ public class Answer {
      * Integrate into the page's RecordInstances the attribute values from a
      * particular attributes query. The attributes query result includes only
      * rows for this page.
+     * 
+     * The query is obtained from Column, and the query should not be modified.
+     * 
+     * @throws SQLException
+     * @throws JSONException
+     * @throws NoSuchAlgorithmException
+     * @throws WdkModelException
+     * @throws WdkUserException
      */
-    void integrateAttributesQueryResult(QueryInstance attributesQueryInstance)
-            throws WdkModelException {
-        // TEST
-        // logger.debug("Question is: " + question.hashCode());
-        // logger.debug("#Summary Attributes: "
-        // + question.getSummaryAttributes().size());
+    void integrateAttributesQuery(Query attributeQuery) throws SQLException,
+            NoSuchAlgorithmException, JSONException, WdkModelException,
+            WdkUserException {
+        initPageRecordInstances();
 
-        this.attributesQueryInstance = attributesQueryInstance;
+        // get and run the paged attribute query sql
+        String sql = getPagedAttributeSql(attributeQuery);
+        DBPlatform platform = question.getWdkModel().getQueryPlatform();
+        DataSource dataSource = platform.getDataSource();
+        ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql);
+        ResultList resultList = new SqlResultList(resultSet);
 
-        boolean isDynamic = attributesQueryInstance.getQuery().getParam(
-                DynamicAttributeSet.RESULT_TABLE) != null;
-
-        logger.debug("AttributeQuery is: "
-                + attributesQueryInstance.getQuery().getFullName());
-        logger.debug("isDynamic=" + isDynamic);
-
-        CacheTable cacheTable = idsQueryInstance.getCacheTable();
-        Set<SortingColumn> sortingColumns = getSortingColumns(sortingAttributes);
-        attributesQueryInstance.setSortingColumns(sortingColumns);
-        attributesQueryInstance.initJoinMode(cacheTable,
-                recordProjectColumnName, recordIdColumnName,
-                startRecordInstanceI, endRecordInstanceI, isDynamic);
-
-        // Initialize with nulls (handle missing attribute rows)
-        Map<PrimaryKeyValue, RecordInstance> recordInstanceMap = new LinkedHashMap<PrimaryKeyValue, RecordInstance>();
-        for (RecordInstance recordInstance : pageRecordInstances) {
-            setColumnValues(recordInstance, attributesQueryInstance, isDynamic,
-                    recordIdColumnName, recordProjectColumnName, null);
-            PrimaryKeyValue primaryKey = recordInstance.getPrimaryKey();
-            recordInstanceMap.put(primaryKey, recordInstance);
-        }
-
-        // int pageIndex = 0;
-        // int idsResultTableI = startRecordInstanceI;
-        Set<PrimaryKeyValue> primaryKeySet = new LinkedHashSet<PrimaryKeyValue>();
-        ResultList attrQueryResultList = attributesQueryInstance.getResult();
-        while (attrQueryResultList.next()) {
-
-            String id = attrQueryResultList.getValue(recordIdColumnName).toString();
-            String project = null;
-            if (recordProjectColumnName != null) {
-                project = attrQueryResultList.getValue(recordProjectColumnName).toString();
+        // fill in the column attributes
+        PrimaryKeyAttributeField pkField = question.getRecordClass().getPrimaryKeyAttributeField();
+        Map<String, AttributeField> fields = question.getAttributeFields();
+        while (resultList.next()) {
+            // get primary key
+            Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
+            for (String column : pkField.getColumnRefs()) {
+                pkValues.put(column, resultList.get(column));
             }
+            PrimaryKeyAttributeValue primaryKey = new PrimaryKeyAttributeValue(
+                    pkField, pkValues);
+            RecordInstance record = pageRecordInstances.get(primaryKey);
 
-            PrimaryKeyValue attrPrimaryKey = new PrimaryKeyValue(
-                    getQuestion().getRecordClass().getPrimaryKeyField(),
-                    project, id.toString());
-
-            if (primaryKeySet.contains(attrPrimaryKey)) {
-                String msg = "Result Table "
-                        + cacheTable.getCacheTableFullName()
-                        + " for Attribute query "
-                        + attributesQueryInstance.getQuery().getFullName()
-                        + " " + " has more than one row for " + attrPrimaryKey;
-                // close connection before throwing out the exception
-                attrQueryResultList.close();
-                throw new WdkModelException(msg);
-            } else {
-                primaryKeySet.add(attrPrimaryKey);
+            // fill in the column attributes
+            for (String columnName : attributeQuery.getColumnMap().keySet()) {
+                AttributeField field = fields.get(columnName);
+                if (field != null && (field instanceof ColumnAttributeField)) {
+                    // valid attribute field, fill it in
+                    Object objValue = resultList.get(columnName);
+                    ColumnAttributeValue value = new ColumnAttributeValue(
+                            (ColumnAttributeField) field, objValue);
+                    record.addColumnAttributeValue(value);
+                }
             }
-
-            RecordInstance recordInstance = recordInstanceMap.get(attrPrimaryKey);
-            if (recordInstance == null) {
-                throw new WdkModelException(
-                        "Can't find record instance for primary key '"
-                                + attrPrimaryKey + "' from attribute query " 
-                                + attributesQueryInstance.getQuery().getFullName());
-            }
-
-            setColumnValues(recordInstance, attributesQueryInstance, isDynamic,
-                    recordIdColumnName, recordProjectColumnName,
-                    attrQueryResultList);
         }
-        attrQueryResultList.close();
-    }
-
-    private void setColumnValues(RecordInstance recordInstance,
-            QueryInstance attributesQueryInstance, boolean isDynamic,
-            String recordIdColumnName, String recordProjectColumnName,
-            ResultList attrQueryResultList) throws WdkModelException {
-
-        Column[] columns = attributesQueryInstance.getQuery().getColumns();
-
-        for (int i = 0; i < columns.length; i++) {
-            String colName = columns[i].getName();
-            if (colName.equalsIgnoreCase(recordIdColumnName)) continue;
-            if (colName.equalsIgnoreCase(recordProjectColumnName)) continue;
-            Object value = null;
-            if (attrQueryResultList != null)
-                value = attrQueryResultList.getValue(colName);
-
-            if (isDynamic) recordInstance.setAttributeValue(colName, value,
-                    attributesQueryInstance.getQuery());
-            else recordInstance.setAttributeValue(colName, value);
-        }
-    }
-
-    public String[] findPrimaryKeyColumnNames() {
-        String[] names = findPrimaryKeyColumnNames(idsQueryInstance.getQuery());
-        recordIdColumnName = names[0];
-        recordProjectColumnName = names[1];
-        return names;
     }
 
     // ------------------------------------------------------------------
     // Private Methods
     // ------------------------------------------------------------------
 
+    private String getPagedAttributeSql(Query attributeQuery)
+            throws SQLException, NoSuchAlgorithmException, WdkModelException,
+            JSONException, WdkUserException {
+        // get the paged SQL of id query
+        String idSql = getPagedIdSql();
+
+        PrimaryKeyAttributeField pkField = question.getRecordClass().getPrimaryKeyAttributeField();
+
+        // combine the id query with attribute query
+        String attributeSql = getAttributeSql(attributeQuery);
+        StringBuffer sql = new StringBuffer("SELECT a.* FROM (");
+        sql.append(idSql);
+        sql.append(") i, (").append(attributeSql).append(") a WHERE ");
+
+        boolean firstColumn = true;
+        for (String column : pkField.getColumnRefs()) {
+            if (firstColumn) firstColumn = false;
+            else sql.append(" AND ");
+            sql.append("a.").append(column).append(" = i.").append(column);
+        }
+        return sql.toString();
+    }
+
+    private String getAttributeSql(Query attributeQuery)
+            throws NoSuchAlgorithmException, SQLException, WdkModelException,
+            JSONException, WdkUserException {
+        String queryName = attributeQuery.getFullName();
+        String dynamicQueryName = question.getDynamicAttributeQuery().getFullName();
+        if (queryName.equals(dynamicQueryName)) {
+            // the dynamic query doesn't have sql defined, the sql will be
+            // constructed from the id query cache table.
+            String cacheTable = CacheFactory.normalizeTableName(idsQueryInstance.getQuery().getFullName());
+            int instanceId = idsQueryInstance.getInstanceId();
+
+            StringBuffer sql = new StringBuffer("SELECT * FROM ");
+            sql.append(cacheTable).append(" WHERE ");
+            sql.append(CacheFactory.COLUMN_INSTANCE_ID);
+            sql.append(" = ").append(instanceId);
+            return sql.toString();
+        } else if (!(attributeQuery instanceof SqlQuery)
+                || attributeQuery.isCached()) {
+            // cache the attribute query, and use the cache; no params needed
+            // for attribute query
+            Map<String, Object> params = new LinkedHashMap<String, Object>();
+            QueryInstance queryInstance = attributeQuery.makeInstance(params);
+            String cacheTable = CacheFactory.normalizeTableName(queryName);
+            int instanceId = resultFactory.getInstanceId(queryInstance);
+
+            StringBuffer sql = new StringBuffer("SELECT * FROM ");
+            sql.append(cacheTable);
+            sql.append(" WHERE ");
+            sql.append(CacheFactory.COLUMN_INSTANCE_ID).append(" = ");
+            sql.append(instanceId);
+            return sql.toString();
+        } else return ((SqlQuery) attributeQuery).getSql();
+
+    }
+
+    private String getPagedIdSql() throws NoSuchAlgorithmException,
+            SQLException, WdkModelException, JSONException, WdkUserException {
+        if (pagedIdSql != null) return pagedIdSql;
+
+        // get id sql
+        String idSql = getIdSql();
+
+        // get sorting attribute queries
+        Map<String, String> attributeSqls = new LinkedHashMap<String, String>();
+        List<String> orderClauses = new ArrayList<String>();
+        prepareSortingSqls(attributeSqls, orderClauses);
+
+        StringBuffer sql = new StringBuffer("SELECT i.* FROM (");
+        sql.append(idSql).append(") i");
+        // add all tables involved
+        for (String shortName : attributeSqls.keySet()) {
+            sql.append(", (").append(attributeSqls.get(shortName)).append(") ");
+            sql.append(shortName);
+        }
+
+        // add primary key join conditions
+        String[] pkColumns = question.getRecordClass().getPrimaryKeyAttributeField().getColumnRefs();
+        boolean firstClause = true;
+        for (String shortName : attributeSqls.keySet()) {
+            for (String column : pkColumns) {
+                if (firstClause) {
+                    sql.append(" WHERE ");
+                    firstClause = false;
+                } else sql.append(" AND ");
+
+                sql.append("i.").append(column);
+                sql.append(" = ");
+                sql.append(shortName).append(".").append(column);
+            }
+        }
+
+        // add order clause
+        if (orderClauses.size() > 0) {
+            sql.append(" ORDER BY ");
+            firstClause = true;
+            for (String clause : orderClauses) {
+                if (firstClause) firstClause = false;
+                else sql.append(", ");
+                sql.append(clause);
+            }
+        }
+
+        DBPlatform platform = question.getWdkModel().getQueryPlatform();
+        pagedIdSql = platform.getPagedSql(sql.toString(), startIndex, endIndex);
+        return pagedIdSql;
+    }
+
+    private String getIdSql() throws NoSuchAlgorithmException, SQLException,
+            WdkModelException, JSONException, WdkUserException {
+        if (summaryView != null) { // get a summary view
+            Param columParam = summaryView.getSummaryTable().getColumnParam();
+            Param rowParam = summaryView.getSummaryTable().getRowParam();
+
+            // prepare the params for summary view
+            Map<String, Object> params = new LinkedHashMap<String, Object>();
+            params.put(columParam.getName(), summaryView.getColumnTerm());
+            params.put(rowParam.getName(), summaryView.getRowTerm());
+            params.put(summaryView.getAnswerParam().getName(), getChecksum());
+
+            // get a summary view query instance
+            Query query = summaryView.getSummaryQuery();
+            QueryInstance instance = query.makeInstance(params);
+            return instance.getSql();
+        } else { // get the id query directly
+            return idsQueryInstance.getSql();
+        }
+    }
+
+    private void prepareSortingSqls(Map<String, String> sqls,
+            Collection<String> orders) throws WdkModelException, JSONException,
+            NoSuchAlgorithmException, SQLException, WdkUserException {
+        Map<String, AttributeField> fields = question.getAttributeFields();
+        Map<String, String> querySqls = new LinkedHashMap<String, String>();
+        Map<String, String> queryNames = new LinkedHashMap<String, String>();
+        Map<String, String> orderClauses = new LinkedHashMap<String, String>();
+        for (String fieldName : sortingAttributes.keySet()) {
+            AttributeField field = fields.get(fieldName);
+            boolean ascend = sortingAttributes.get(fieldName);
+            for (ColumnAttributeField dependent : field.getDependents()) {
+                Query query = dependent.getColumn().getQuery();
+                String queryName = query.getFullName();
+
+                // handle query
+                if (!queryNames.containsKey(queryName)) {
+                    // query not processed yet, process it
+                    String shortName = "a" + queryNames.size();
+                    String sql = getAttributeSql(query);
+                    queryNames.put(queryName, shortName);
+                    querySqls.put(queryName, sql);
+                }
+
+                // handle column
+                String dependentName = dependent.getName();
+                if (!orderClauses.containsKey(dependentName)) {
+                    // dependent not processed, process it
+                    StringBuffer clause = new StringBuffer();
+                    clause.append(queryNames.get(queryName));
+                    clause.append(".");
+                    clause.append(dependentName);
+                    clause.append(ascend ? " ASC" : " DESC");
+                    orderClauses.put(dependentName, clause.toString());
+                }
+            }
+        }
+
+        // fill the map of short name and sqls
+        for (String queryName : queryNames.keySet()) {
+            String shortName = queryNames.get(queryName);
+            String sql = querySqls.get(queryName);
+            sqls.put(shortName, sql);
+        }
+        orders.addAll(orderClauses.values());
+    }
+
     /**
      * If not already initialized, initialize the page's record instances,
      * setting each with its id (either just primary key or that and project, if
      * using a federated data source).
+     * 
+     * @throws JSONException
+     * @throws SQLException
+     * @throws NoSuchAlgorithmException
+     * @throws WdkModelException
+     * @throws WdkUserException
      */
-    private void initPageRecordInstances() throws WdkModelException {
+    private void initPageRecordInstances() throws NoSuchAlgorithmException,
+            SQLException, JSONException, WdkModelException, WdkUserException {
         if (pageRecordInstances != null) return;
 
-        RecordClass recordClass = question.getRecordClass();
-        
-        // set instance variables projectColumnName and idsColumnName
-        findPrimaryKeyColumnNames();
-        idsQueryInstance.projectColumnName = recordProjectColumnName;
-        idsQueryInstance.primaryKeyColumnName = recordIdColumnName;
-        idsQueryInstance.setSortingColumns(getSortingColumns(sortingAttributes));
+        this.pageRecordInstances = new LinkedHashMap<PrimaryKeyAttributeValue, RecordInstance>();
 
-        ResultList rl = idsQueryInstance.getPersistentResultPage(
-                startRecordInstanceI, endRecordInstanceI);
-
-        Vector<RecordInstance> tempRecordInstances = new Vector<RecordInstance>();
-
-        while (rl.next()) {
-            String project = null;
-            if (recordProjectColumnName != null)
-                project = rl.getValue(recordProjectColumnName).toString();
-            String id = rl.getValue(recordIdColumnName).toString();
-            RecordInstance nextRecordInstance = recordClass.makeRecordInstance(
-                    project, id);
-            nextRecordInstance.setDynamicAttributeFields(question.getDynamicAttributeFields());
-
-            nextRecordInstance.setAnswer(this);
-            tempRecordInstances.add(nextRecordInstance);
-        }
-        pageRecordInstances = new RecordInstance[tempRecordInstances.size()];
-        tempRecordInstances.copyInto(pageRecordInstances);
-        rl.close();
-    }
-
-    /**
-     * Given a set of columns, find the id and project column names The project
-     * column is optional. Assumption: the id and project columns are the first
-     * two columns, but, they may be (id, project) or (project, id)
-     * 
-     * @return array where first element is pk col name, second is project
-     */
-    static String[] findPrimaryKeyColumnNames(Query query) {
-        Column[] columns = query.getColumns();
-        String[] names = new String[2];
-
-        // assume id is in first column and no project column
-        names[0] = columns[0].getName();
-        names[1] = null;
-
-        // having two columns, one is for Id and one for project
-        if (columns.length > 1) {
-            if (columns[0].getName().toUpperCase().indexOf("PROJECT") != -1) {
-                names[0] = columns[1].getName();
-                names[1] = columns[0].getName();
-            } else if (columns[1].getName().toUpperCase().indexOf("PROJECT") != -1) {
-                names[1] = columns[1].getName();
+        String sql = getPagedIdSql();
+        DBPlatform platform = question.getWdkModel().getQueryPlatform();
+        DataSource dataSource = platform.getDataSource();
+        ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql);
+        ResultList resultList = new SqlResultList(resultSet);
+        PrimaryKeyAttributeField pkField = question.getRecordClass().getPrimaryKeyAttributeField();
+        while (resultList.next()) {
+            // get primary key. the primary key is supposed to be translated to
+            // the current ones from the id query, and no more translation
+            // needed.
+            // 
+            // If this assumption is false, then we need to join the alias query
+            // into the paged id query as well.
+            Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
+            for (String column : pkField.getColumnRefs()) {
+                pkValues.put(column, resultList.get(column));
             }
+            PrimaryKeyAttributeValue primaryKey = new PrimaryKeyAttributeValue(
+                    pkField, pkValues);
+            RecordInstance record = new RecordInstance(this, primaryKey);
+            pageRecordInstances.put(primaryKey, record);
         }
-        return names;
-    }
-
-    public String toString() {
-        return idsQueryInstance.getQueryInstanceContent(true);
-    }
-
-    public Answer newAnswer() throws WdkModelException {
-        // instead of cloning all parts of an answer, just initialize it as a
-        // new answer, and the queries can be re-run without any assumption
-        return newAnswer(startRecordInstanceI, endRecordInstanceI);
-    }
-
-    public Answer newAnswer(int startIndex, int endIndex)
-            throws WdkModelException {
-        Answer answer = new Answer(question, idsQueryInstance,
-                startIndex, endIndex, sortingAttributes);
-        answer.summaryAttributes = new LinkedHashMap<String, AttributeField>(
-                this.summaryAttributes);
-        return answer;
     }
 
     /**
      * @return Returns the endRecordInstanceI.
      */
-    public int getEndRecordInstanceI() {
-        return endRecordInstanceI;
+    public int getEndIndex() {
+        return endIndex;
     }
 
     /**
      * @return Returns the startRecordInstanceI.
      */
-    public int getStartRecordInstanceI() {
-        return startRecordInstanceI;
+    public int getStartIndex() {
+        return startIndex;
     }
 
     public String getResultMessage() {
         return idsQueryInstance.getResultMessage();
     }
 
-    /**
-     * @return get the name as a combination of question full name, parameter
-     *         and values
-     */
-    public String getName() {
-        StringBuffer nameBuf = new StringBuffer();
-        nameBuf.append(question.getDisplayName() + ": ");
-
-        Map<String, Param> params = question.getParamMap();
-        Map<String, Object> paramValues = idsQueryInstance.getValuesMap();
-
-        boolean first = true;
-        for (String paramName : paramValues.keySet()) {
-            Param param = params.get(paramName);
-            Object value = paramValues.get(paramName);
-            if (!first) nameBuf.append(", ");
-            else first = false;
-            nameBuf.append(param.getPrompt() + " = ");
-            nameBuf.append(value);
-        }
-        return nameBuf.toString();
-    }
-
-    private Set<SortingColumn> getSortingColumns(
-            Map<String, Boolean> sortingAttributes) throws WdkModelException {
-        Set<SortingColumn> columns = new LinkedHashSet<SortingColumn>();
-        for (String attrName : sortingAttributes.keySet()) {
-            boolean ascending = sortingAttributes.get(attrName);
-            Set<SortingColumn> subColumns = findColumns(attrName, ascending);
-            for (SortingColumn column : subColumns) {
-                if (!columns.contains(column))
-                // ignore the order of the children, since it should be the
-                    // same
-                    // as the parent
-                    columns.add(column);
-            }
-        }
-        return columns;
-    }
-
-    private Set<SortingColumn> findColumns(String attrName, boolean ascending)
-            throws WdkModelException {
-        AttributeField attribute = question.getAttributeFields().get(attrName);
-        if (attribute == null)
-            throw new WdkModelException("The sorting attribute " + attrName
-                    + " cannot be found in the record.");
-
-        Set<SortingColumn> columns = new LinkedHashSet<SortingColumn>();
-        if (attribute instanceof PrimaryKeyField) {
-            PrimaryKeyField primaryKey = (PrimaryKeyField) attribute;
-            Column column = null;
-            // get project column, if have
-            if (primaryKey.hasProjectParam()) {
-                column = idsQueryInstance.getQuery().getColumn(
-                        recordProjectColumnName);
-                String tableName = column.getSortingTable();
-                if (tableName == null)
-                    tableName = idsQueryInstance.getResultAsTableName();
-                String columnName = column.getSortingColumn();
-                boolean lowerCase = column.isLowerCase();
-                SortingColumn sColumn = new SortingColumn(tableName,
-                        columnName, ascending, lowerCase);
-                if (!columns.contains(sColumn)) columns.add(sColumn);
-            }
-            // get record id column
-            column = idsQueryInstance.getQuery().getColumn(recordIdColumnName);
-            String tableName = column.getSortingTable();
-            if (tableName == null)
-                tableName = idsQueryInstance.getResultAsTableName();
-            String columnName = column.getSortingColumn();
-            boolean lowerCase = column.isLowerCase();
-            SortingColumn sColumn = new SortingColumn(tableName, columnName,
-                    ascending, lowerCase);
-            if (!columns.contains(sColumn)) columns.add(sColumn);
-        } else if (attribute instanceof ColumnAttributeField) {
-            ColumnAttributeField columnAttribute = (ColumnAttributeField) attribute;
-            Column column = columnAttribute.getColumn();
-            // check if sortingTable presents
-            if (column == null)
-                throw new WdkModelException(
-                        "Null column in Column Attribute: '"
-                                + columnAttribute.getName()
-                                + "'.  This may happen if you have declared a column attribute in the record, but the underlying query doesn't have that column declared");
-            String tableName = column.getSortingTable();
-            if (tableName == null) {
-                if (column.isDynamicColumn()) {// use cache table
-                    tableName = idsQueryInstance.getResultAsTableName();
-                } else {// no sorting table specified, error
-                    throw new WdkModelException(
-                            "The sortingTable property is missing in Column: "
-                                    + column.getQuery().getFullName()
-                                    + column.getName());
-                }
-            }
-
-            String columnName = column.getSortingColumn();
-            boolean lowerCase = column.isLowerCase();
-            SortingColumn sColumn = new SortingColumn(tableName, columnName,
-                    ascending, lowerCase);
-            if (!columns.contains(sColumn)) columns.add(sColumn);
-        } else if (attribute instanceof TextAttributeField) {
-            TextAttributeField textAttribute = (TextAttributeField) attribute;
-            String text = textAttribute.getText();
-            // parse out the children
-            Set<String> children = getChildren(text);
-            for (String child : children) {
-                Set<SortingColumn> subColumns = findColumns(child, ascending);
-                for (SortingColumn column : subColumns) {
-                    if (!columns.contains(column))
-                    // ignore the order of the children, since it should be
-                        // the
-                        // same as the parent
-                        columns.add(column);
-                }
-            }
-        } else if (attribute instanceof LinkAttributeField) {
-            LinkAttributeField linkAttribute = (LinkAttributeField) attribute;
-            String visible = linkAttribute.getVisible();
-            // parse out the children
-            Set<String> children = getChildren(visible);
-            for (String child : children) {
-                Set<SortingColumn> subColumns = findColumns(child, ascending);
-                for (SortingColumn column : subColumns) {
-                    if (!columns.contains(column))
-                    // ignore the order of the children, since it should be
-                        // the
-                        // same as the parent
-                        columns.add(column);
-                }
-            }
-        } else {
-            throw new WdkModelException("Uknown attribute type: "
-                    + attribute.getName() + " ("
-                    + attribute.getClass().getName() + ")");
-        }
-        return columns;
-    }
-
-    private Set<String> getChildren(String text) {
-        Set<String> children = new LinkedHashSet<String>();
-        Pattern pattern = Pattern.compile("\\$\\$(.+?)\\$\\$", Pattern.DOTALL);
-        Matcher matcher = pattern.matcher(text);
-        while (matcher.find()) {
-            String child = matcher.group(1);
-            if (!children.contains(child)) children.add(child);
-        }
-        return children;
-    }
-
-    public String[] getSortingAttributeNames() {
-        int size = Math.min(3, sortingAttributes.size());
-        String[] attributeNames = new String[size];
-        int count = 0;
-        for (String attrName : sortingAttributes.keySet()) {
-            attributeNames[count++] = attrName;
-            if (count >= size) break;
-        }
-        return attributeNames;
-    }
-
-    public boolean[] getSortingAttributeOrders() {
-        int size = Math.min(3, sortingAttributes.size());
-        boolean[] attributeOrders = new boolean[size];
-        int count = 0;
-        for (String attrName : sortingAttributes.keySet()) {
-            attributeOrders[count++] = sortingAttributes.get(attrName);
-            if (count >= size) break;
-        }
-        return attributeOrders;
+    public Map<String, Boolean> getSortingAttributes() {
+        return new LinkedHashMap<String, Boolean>(sortingAttributes);
     }
 
     public List<AttributeField> getDisplayableAttributes() {
@@ -835,28 +728,8 @@ public class Answer {
         for (String attriName : attributes.keySet()) {
             AttributeField attribute = attributes.get(attriName);
 
-            // if the sortable property is null, then check if all associated
-            // columns are sortable
-            if (attribute.sortable == null) {
-                Map<String, Boolean> stub = new HashMap<String, Boolean>();
-                stub.put(attriName, true);
-                try {
-                    // all associated columns are sortable if this call doesn't
-                    // throw out exception
-                    getSortingColumns(stub);
-                    attribute.sortable = new Boolean(true);
-                    // logger.info( "Attribute " + attriName + " is sortable."
-                    // );
-                } catch (WdkModelException e) {
-                    // the attribute contains unsortable column(s), skip it
-                    // logger.info( "Attribute " + attriName + " is not
-                    // sortable." );
-                    attribute.sortable = new Boolean(false);
-                }
-            }
-
             // the sortable attribute cannot be internal
-            if (attribute.getInternal()) continue;
+            if (attribute.isInternal()) continue;
 
             // skip the attributes that are already displayed
             if (summaryAttributes.containsKey(attriName)) continue;
@@ -867,6 +740,8 @@ public class Answer {
     }
 
     public Map<String, AttributeField> getSummaryAttributes() {
+        // the list might be different from the ones in question, since they
+        // can be customized.
         if (summaryAttributes.size() == 0) {
             summaryAttributes.putAll(question.getSummaryAttributes());
         }
@@ -882,59 +757,28 @@ public class Answer {
         }
     }
 
-    public String[] getAllIds() throws WdkModelException {
-        List<String> ids = new ArrayList<String>();
-        findPrimaryKeyColumnNames();
-        ResultList rl = idsQueryInstance.getResult();
-        while (rl.next()) {
-            String id = rl.getValue(recordIdColumnName).toString();
-            ids.add(id);
-        }
-        rl.close();
-        String[] array = new String[ids.size()];
-        ids.toArray(array);
-        return array;
-    }
-
-    public String getCacheTableName() throws WdkModelException {
-        return idsQueryInstance.getResultAsTableName();
-    }
-
-    public String getResultIndexColumn() {
-        return ResultFactory.RESULT_TABLE_I;
-    }
-
-    public String getSortingIndexColumn() {
-        return ResultFactory.COLUMN_SORTING_INDEX;
-    }
-
-    public int getSortingIndex() throws WdkModelException {
-        idsQueryInstance.setSortingColumns(getSortingColumns(sortingAttributes));
-        return idsQueryInstance.getSortingIndex();
-    }
-
-    public boolean hasProjectId() {
-        String[] pkColumns = findPrimaryKeyColumnNames();
-        return (pkColumns[1] != null);
-    }
-    
-    public Object getSubTypeValue() {
-        return idsQueryInstance.getSubTypeValue();
-    }
-    
-    public void setSubTypeValue(Object subTypeValue) {
-        idsQueryInstance.setSubTypeValue(subTypeValue);
-    }
-
     /**
-     * @param expandSubType
-     * @see org.gusdb.wdk.model.QueryInstance#setExpandSubType(boolean)
+     * @return returns a list of all primary key values.
+     * @throws WdkModelException
+     * @throws NoSuchAlgorithmException
+     * @throws SQLException
+     * @throws JSONException
+     * @throws WdkUserException
      */
-    public void setExpandSubType(boolean expandSubType) {
-        idsQueryInstance.setExpandSubType(expandSubType);
-    }
-    
-    public boolean isExpandSubType() {
-        return idsQueryInstance.isExpandSubType();
+    public Object[][] getPrimaryKeyValues() throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
+        String[] columns = question.getRecordClass().getPrimaryKeyAttributeField().getColumnRefs();
+        int resultSize = getResultSize();
+        Object[][] ids = new String[resultSize][columns.length];
+
+        ResultList resultList = idsQueryInstance.getResults();
+        int rowIndex = 0;
+        while (resultList.next()) {
+            for (int columnIndex = 0; columnIndex < columns.length; columnIndex++) {
+                ids[rowIndex][columnIndex] = resultList.get(columns[columnIndex]);
+            }
+        }
+        return ids;
     }
 }

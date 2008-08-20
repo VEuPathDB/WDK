@@ -3,19 +3,14 @@
  */
 package org.gusdb.wdk.model.test;
 
-import java.io.File;
-
 import org.apache.commons.cli.ParseException;
-import org.gusdb.wdk.model.ModelConfig;
-import org.gusdb.wdk.model.ModelConfigParser;
-import org.gusdb.wdk.model.RDBMSPlatformI;
-import org.gusdb.wdk.model.ResultFactory;
-import org.gusdb.wdk.model.Utilities;
+import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wsf.util.BaseCLI;
 
 /**
  * @author xingao
- *
+ * 
  */
 public class CacheCLI extends BaseCLI {
 
@@ -100,12 +95,8 @@ public class CacheCLI extends BaseCLI {
      */
     @Override
     public void invoke() {
-        String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
-
         String projectId = (String) getOptionValue(ARG_PROJECT_ID);
 
-        File modelConfigFile = new File(gusHome, "/config/" + projectId
-                + "/model-config.xml");
         boolean newCache = (Boolean) getOptionValue(ARG_CREATE);
         boolean resetCache = (Boolean) getOptionValue(ARG_RESET);
         boolean dropCache = (Boolean) getOptionValue(ARG_DROP);
@@ -116,43 +107,19 @@ public class CacheCLI extends BaseCLI {
 
         try {
             // read config info
-            ModelConfigParser configParser = new ModelConfigParser(gusHome);
-            ModelConfig modelConfig = configParser.parseConfig(projectId);
-
-            String connectionUrl = modelConfig.getConnectionUrl();
-            String login = modelConfig.getLogin();
-            String password = modelConfig.getPassword();
-            String platformClass = modelConfig.getPlatformClass();
-
-            Integer maxIdle = modelConfig.getMaxIdle();
-            Integer minIdle = modelConfig.getMinIdle();
-            Integer maxWait = modelConfig.getMaxWait();
-            Integer maxActive = modelConfig.getMaxActive();
-            Integer initialSize = modelConfig.getInitialSize();
-
-            boolean enableQueryLogger = modelConfig.isEnableQueryLogger();
-            String queryLoggerFile = modelConfig.getQueryLoggerFile();
-
-            RDBMSPlatformI platform = (RDBMSPlatformI) Class.forName(
-                    platformClass).newInstance();
-            platform.init(connectionUrl, login, password, minIdle, maxIdle,
-                    maxWait, maxActive, initialSize,
-                    modelConfigFile.getAbsolutePath());
-
-            ResultFactory factory = new ResultFactory(platform, login,
-                    enableQueryLogger, queryLoggerFile);
+            WdkModel wdkModel = WdkModel.construct(projectId);
+            CacheFactory factory = wdkModel.getResultFactory().getCacheFactory();
 
             long start = System.currentTimeMillis();
-            if (newCache) factory.createCache(noSchemaOutput);
-            else if (resetCache) factory.resetCache(noSchemaOutput, forceDrop);
-            else if (dropCache) factory.dropCache(noSchemaOutput, forceDrop);
-            else if (recreateCache) factory.recreateCache(noSchemaOutput,
-                    forceDrop);
+            if (newCache) factory.createCache();
+            else if (resetCache) factory.resetCache();
+            else if (dropCache) factory.dropCache();
+            else if (recreateCache) factory.recreateCache();
             else if (dropSingleCache) {
                 String value = (String) getOptionValue(ARG_DROP_SINGLE);
                 if (value.matches("\\d+")) {
-                    factory.dropCache(Integer.parseInt(value), noSchemaOutput);
-                } else factory.dropCache(value, noSchemaOutput);
+                    factory.dropCache(Integer.parseInt(value));
+                } else factory.dropCache(value);
             }
             long end = System.currentTimeMillis();
             System.out.println("Command succeeded in "

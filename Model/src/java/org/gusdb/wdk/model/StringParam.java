@@ -1,5 +1,8 @@
 package org.gusdb.wdk.model;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 
 public class StringParam extends Param {
     
@@ -103,7 +106,7 @@ public class StringParam extends Param {
     // protected methods
     // ///////////////////////////////////////////////////////////////
     
-    protected void resolveReferences( WdkModel model ) throws WdkModelException {}
+    public void resolveReferences( WdkModel model ) throws WdkModelException {}
     
     /*
      * (non-Javadoc)
@@ -111,14 +114,15 @@ public class StringParam extends Param {
      * @see org.gusdb.wdk.model.Param#getInternalValue(java.lang.String)
      */
     @Override
-    protected String getInternalValue( String value ) throws WdkModelException {
+    public String getInternalValue( Object value ) throws WdkModelException {
         // check if null value is allowed
         if ( allowEmpty && value == null ) return getEmptyValue();
         
-        value = ( String ) decompressValue( value );
-        value = value.replaceAll( "'", "''" );
-        if (quote) value = "'" + value + "'";
-        return value;
+        String strValue = (String)value;
+        strValue = ( String ) decompressValue( strValue );
+        strValue = strValue.replaceAll( "'", "''" );
+        if (quote) strValue = "'" + strValue + "'";
+        return strValue;
     }
     
     /*
@@ -128,5 +132,14 @@ public class StringParam extends Param {
      */
     public Param clone() {
         return new StringParam(this);
+    }
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.Param#appendJSONContent(org.json.JSONObject)
+     */
+    @Override
+    protected void appendJSONContent(JSONObject jsParam) throws JSONException {
+        // TODO Auto-generated method stub
+        
     }
 }

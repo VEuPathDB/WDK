@@ -2,11 +2,13 @@ package org.gusdb.wdk.model;
 
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.query.Query;
 
 public class NestedRecordList extends WdkModelBase {
 
-    protected String questionTwoPartName;
-    protected Question question;
+    private RecordClass parentRecordClass;
+    private String questionTwoPartName;
+    private Question question;
 
     // todo:
     // validate links between nested record query and parent record instance
@@ -27,8 +29,34 @@ public class NestedRecordList extends WdkModelBase {
         return this.question;
     }
 
-    void resolveReferences(WdkModel model) throws WdkModelException {
+    /**
+     * @return the parentRecordClass
+     */
+    public RecordClass getParentRecordClass() {
+        return parentRecordClass;
+    }
+
+    /**
+     * @param parentRecordClass
+     *            the parentRecordClass to set
+     */
+    public void setParentRecordClass(RecordClass parentRecordClass) {
+        this.parentRecordClass = parentRecordClass;
+    }
+
+    @Override
+    public void resolveReferences(WdkModel model) throws WdkModelException {
         this.question = (Question) model.resolveReference(questionTwoPartName);
+        question.resolveReferences(model);
+        
+        // validate the query
+        Query query = question.getQuery();
+        query.resolveReferences(model);
+        parentRecordClass.validateQuery(query);
+
+        // prepare the query and add primary key params
+        query = parentRecordClass.prepareQuery(query);
+        question.setQuery(query);
     }
 
     /*

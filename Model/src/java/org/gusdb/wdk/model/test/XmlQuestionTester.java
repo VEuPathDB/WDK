@@ -1,6 +1,8 @@
 package org.gusdb.wdk.model.test;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -14,17 +16,24 @@ import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.implementation.ModelXmlParser;
 import org.gusdb.wdk.model.xml.XmlAnswer;
 import org.gusdb.wdk.model.xml.XmlQuestion;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
+import org.json.JSONException;
 import org.xml.sax.SAXException;
 
 public class XmlQuestionTester {
 
     static Logger logger = Logger.getRootLogger();
 
-    public static void main(String[] args) throws WdkModelException {
+    public static void main(String[] args) throws WdkModelException,
+            SAXException, IOException, NoSuchAlgorithmException,
+            ParserConfigurationException, TransformerFactoryConfigurationError,
+            TransformerException, SQLException, JSONException,
+            WdkUserException, InstantiationException, IllegalAccessException,
+            ClassNotFoundException {
         String cmdName = System.getProperty("cmdName");
         String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
 
@@ -46,40 +55,27 @@ public class XmlQuestionTester {
         String questionSetName = ref.getSetName();
         String questionName = ref.getElementName();
 
-        try {
-            ModelXmlParser parser = new ModelXmlParser(gusHome);
-            WdkModel wdkModel = parser.parseModel(modelName);
+        ModelXmlParser parser = new ModelXmlParser(gusHome);
+        WdkModel wdkModel = parser.parseModel(modelName);
 
-            XmlQuestionSet questionSet = wdkModel.getXmlQuestionSet(questionSetName);
-            XmlQuestion question = questionSet.getQuestion(questionName);
+        XmlQuestionSet questionSet = wdkModel.getXmlQuestionSet(questionSetName);
+        XmlQuestion question = questionSet.getQuestion(questionName);
 
-            // use external data source
-            if (xmlData != null) question.setXmlDataURL(xmlData);
+        // use external data source
+        if (xmlData != null) question.setXmlDataURL(xmlData);
 
-            int pageCount = 1;
+        int pageCount = 1;
 
-            for (int i = 0; i < rows.length; i += 2) {
-                int nextStartRow = Integer.parseInt(rows[i]);
-                int nextEndRow = Integer.parseInt(rows[i + 1]);
+        for (int i = 0; i < rows.length; i += 2) {
+            int nextStartRow = Integer.parseInt(rows[i]);
+            int nextEndRow = Integer.parseInt(rows[i + 1]);
 
-                XmlAnswer answer = question.makeAnswer(null, nextStartRow,
-                        nextEndRow);
+            XmlAnswer answer = question.makeAnswer(null, nextStartRow,
+                    nextEndRow);
 
-                System.out.println("Printing Record Instances on page "
-                        + pageCount);
-                System.out.println(answer.print());
-                pageCount++;
-            }
-        } catch (SAXException ex) {
-            throw new WdkModelException(ex);
-        } catch (IOException ex) {
-            throw new WdkModelException(ex);
-        } catch (ParserConfigurationException ex) {
-            throw new WdkModelException(ex);
-        } catch (TransformerFactoryConfigurationError ex) {
-            throw new WdkModelException(ex);
-        } catch (TransformerException ex) {
-            throw new WdkModelException(ex);
+            System.out.println("Printing Record Instances on page " + pageCount);
+            System.out.println(answer.print());
+            pageCount++;
         }
     }
 

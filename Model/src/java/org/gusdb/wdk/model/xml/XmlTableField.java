@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.gusdb.wdk.model.Field;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 
 /**
@@ -86,5 +87,15 @@ public class XmlTableField extends Field {
             }
         }
         attributeFieldList = null;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.Field#resolveReferences(org.gusdb.wdk.model.WdkModel)
+     */
+    @Override
+    public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
+    // do nothing
     }
 }

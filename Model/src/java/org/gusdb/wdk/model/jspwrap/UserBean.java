@@ -3,17 +3,18 @@
  */
 package org.gusdb.wdk.model.jspwrap;
 
-import java.io.Serializable;
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.History;
 import org.gusdb.wdk.model.user.User;
+import org.json.JSONException;
 
 /**
  * @author: Jerric
@@ -556,7 +557,7 @@ public class UserBean /* implements Serializable */{
      *      java.lang.String, java.lang.String[])
      */
     public DatasetBean createDataset(String uploadFile, String[] values)
-            throws WdkUserException, WdkModelException {
+            throws WdkUserException, WdkModelException, NoSuchAlgorithmException {
         DatasetBean bean = new DatasetBean(user.createDataset(uploadFile,
                 values));
         return bean;
@@ -591,7 +592,7 @@ public class UserBean /* implements Serializable */{
      * @see org.gusdb.wdk.model.user.User#createHistory(org.gusdb.wdk.model.Answer)
      */
     public HistoryBean createHistory(AnswerBean answer)
-            throws WdkUserException, WdkModelException {
+            throws WdkUserException, WdkModelException, NoSuchAlgorithmException, JSONException, SQLException {
         History history = user.createHistory(answer.answer);
         return new HistoryBean(history);
     }
@@ -692,7 +693,7 @@ public class UserBean /* implements Serializable */{
      * @see org.gusdb.wdk.model.user.User#combineHistory(java.lang.String)
      */
     public HistoryBean combineHistory(String expression, String subTypeValue,
-            boolean expandSubType) throws WdkUserException, WdkModelException {
+            boolean expandSubType) throws WdkUserException, WdkModelException, NoSuchAlgorithmException, SQLException, JSONException {
         return new HistoryBean(user.combineHistory(expression, false,
                 subTypeValue, expandSubType));
     }
@@ -730,11 +731,12 @@ public class UserBean /* implements Serializable */{
      * @param ascending
      * @throws WdkUserException
      * @throws WdkModelException
+     * @throws NoSuchAlgorithmException 
      * @see org.gusdb.wdk.model.user.User#addSortingAttribute(java.lang.String,
      *      java.lang.String, boolean)
      */
     public String addSortingAttribute(String questionFullName, String attrName,
-            boolean ascending) throws WdkUserException, WdkModelException {
+            boolean ascending) throws WdkUserException, WdkModelException, NoSuchAlgorithmException {
         return user.addSortingAttribute(questionFullName, attrName, ascending);
     }
 
@@ -775,11 +777,12 @@ public class UserBean /* implements Serializable */{
      * @param attrName
      * @throws WdkUserException
      * @throws WdkModelException
+     * @throws NoSuchAlgorithmException 
      * @see org.gusdb.wdk.model.user.User#addSummaryAttribute(java.lang.String,
      *      java.lang.String)
      */
     public String addSummaryAttribute(String questionFullName, String attrName)
-            throws WdkUserException, WdkModelException {
+            throws WdkUserException, WdkModelException, NoSuchAlgorithmException {
         return user.addSummaryAttribute(questionFullName, attrName);
     }
 
@@ -811,11 +814,12 @@ public class UserBean /* implements Serializable */{
      * @param attrName
      * @throws WdkUserException
      * @throws WdkModelException
+     * @throws NoSuchAlgorithmException 
      * @see org.gusdb.wdk.model.user.User#removeSummaryAttribute(java.lang.String,
      *      java.lang.String)
      */
     public String removeSummaryAttribute(String questionFullName,
-            String attrName) throws WdkUserException, WdkModelException {
+            String attrName) throws WdkUserException, WdkModelException, NoSuchAlgorithmException {
         return user.removeSummaryAttribute(questionFullName, attrName);
     }
 
@@ -833,12 +837,13 @@ public class UserBean /* implements Serializable */{
      * @param moveLeft
      * @throws WdkUserException
      * @throws WdkModelException
+     * @throws NoSuchAlgorithmException 
      * @see org.gusdb.wdk.model.user.User#arrangeSummaryAttribute(java.lang.String,
      *      java.lang.String, boolean)
      */
     public String arrangeSummaryAttribute(String questionFullName,
             String attrName, boolean moveLeft) throws WdkUserException,
-            WdkModelException {
+            WdkModelException, NoSuchAlgorithmException {
         return user.arrangeSummaryAttribute(questionFullName, attrName,
                 moveLeft);
     }
@@ -848,9 +853,10 @@ public class UserBean /* implements Serializable */{
      * @param summaryChecksum
      * @throws WdkUserException
      * @throws WdkModelException
+     * @throws NoSuchAlgorithmException 
      */
     public String applySummaryChecksum(String questionFullName,
-            String[] atributes) throws WdkModelException, WdkUserException {
+            String[] atributes) throws WdkModelException, WdkUserException, NoSuchAlgorithmException {
         return user.applySummaryChecksum(questionFullName, atributes);
     }
 

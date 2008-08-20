@@ -4,20 +4,22 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import org.json.JSONObject;
+
 public class EnumParam extends AbstractEnumParam {
 
     private List<EnumItemList> enumItemLists;
     private EnumItemList enumItemList;
 
-    public EnumParam () {
+    public EnumParam() {
         enumItemLists = new ArrayList<EnumItemList>();
     }
-    
+
     public EnumParam(EnumParam param) {
         super(param);
         this.enumItemList = param.enumItemList;
     }
-    
+
     // ///////////////////////////////////////////////////////////////////
     // /////////// Public properties ////////////////////////////////////
     // ///////////////////////////////////////////////////////////////////
@@ -100,19 +102,35 @@ public class EnumParam extends AbstractEnumParam {
                     + getFullName());
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.Param#resolveReferences(org.gusdb.wdk.model.WdkModel)
      */
     @Override
-    protected void resolveReferences(WdkModel model) throws WdkModelException {
-        // nothing to resolve
+    public void resolveReferences(WdkModel model) throws WdkModelException {
+        enumItemList.resolveReferences(model);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.Param#clone()
      */
     @Override
     public Param clone() {
         return new EnumParam(this);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.Param#appendJSONContent(org.json.JSONObject)
+     */
+    @Override
+    protected void appendJSONContent(JSONObject jsParam) {
+    // do nothing. do not add the enum list into the content, since they may be
+    // changed between versions, but we don't want to invalidate a query because
+    // of it.
     }
 }

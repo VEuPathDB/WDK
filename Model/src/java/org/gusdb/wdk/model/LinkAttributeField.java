@@ -1,21 +1,21 @@
 package org.gusdb.wdk.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 public class LinkAttributeField extends AttributeField {
 
     private List<WdkModelText> urls;
     private String url;
 
-    private String visible;
+    private List<WdkModelText> displayTexts;
+    private String displayText;
 
     public LinkAttributeField() {
+        displayTexts = new ArrayList<WdkModelText>();
         urls = new ArrayList<WdkModelText>();
-    }
-
-    public void setVisible(String visible) {
-        this.visible = visible;
     }
 
     public void addUrl(WdkModelText url) {
@@ -26,8 +26,19 @@ public class LinkAttributeField extends AttributeField {
         return url;
     }
 
-    String getVisible() {
-        return visible;
+    /**
+     * @return the displayText
+     */
+    public String getDisplayText() {
+        return displayText;
+    }
+
+    /**
+     * @param displayText
+     *                the displayText to set
+     */
+    public void addDisplayText(WdkModelText displayText) {
+        this.displayTexts.add(displayText);
     }
 
     /*
@@ -37,8 +48,8 @@ public class LinkAttributeField extends AttributeField {
      */
     @Override
     public void excludeResources(String projectId) throws WdkModelException {
-        String rcName =
-                (recordClass == null) ? "" : (recordClass.getFullName() + ".");
+        String rcName = (recordClass == null) ? ""
+                : (recordClass.getFullName() + ".");
 
         // exclude urls
         boolean hasUrl = false;
@@ -54,11 +65,56 @@ public class LinkAttributeField extends AttributeField {
                 }
             }
         }
-        // check if all texts are excluded
-        if (this.url == null)
-            throw new WdkModelException("The linkAttribute " + rcName
-                    + getName() + " does not have a <url> tag for project "
-                    + projectId);
+        // check if all urls are excluded
+        if (!hasUrl)
+            throw new WdkModelException("The linkAttribute " + rcName + name
+                    + " does not have a <url> tag for project " + projectId);
         urls = null;
+
+        // exclude display texts
+        boolean hasText = false;
+        for (WdkModelText text : displayTexts) {
+            if (text.include(projectId)) {
+                if (hasText) {
+                    throw new WdkModelException("The linkAttribute " + rcName
+                            + getName() + " has more than one <displayText> "
+                            + "for project " + projectId);
+                } else {
+                    this.displayText = text.getText();
+                    hasText = true;
+                }
+            }
+        }
+        // check if all texts are excluded
+        if (!hasText)
+            throw new WdkModelException("The linkAttribute " + rcName + name
+                    + " does not have a <displayText> tag for project "
+                    + projectId);
+        displayTexts = null;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.Field#resolveReferences(org.gusdb.wdk.model.WdkModel)
+     */
+    @Override
+    public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
+        // try parse the url & visible
+        parseFields(url);
+        parseFields(displayText);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.AttributeField#getDependents()
+     */
+    @Override
+    public Collection<ColumnAttributeField> getDependents()
+            throws WdkModelException {
+        Map<String, ColumnAttributeField> dependents = parseFields(url);
+        dependents.putAll(parseFields(displayText));
+        return dependents.values();
     }
 }

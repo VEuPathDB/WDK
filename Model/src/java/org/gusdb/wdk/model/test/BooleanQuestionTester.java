@@ -1,6 +1,8 @@
 package org.gusdb.wdk.model.test;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -25,19 +27,21 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.implementation.ModelXmlParser;
 import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
+import org.json.JSONException;
 import org.xml.sax.SAXException;
 
 /**
  * BooleanQuestionTester.java
- *
- * WDK Testing class that creates a recursive boolean Question and prints
- * out the Answer.  Currently, this uses data returned by the TestBooleanTree class.
- *
+ * 
+ * WDK Testing class that creates a recursive boolean Question and prints out
+ * the Answer. Currently, this uses data returned by the TestBooleanTree class.
+ * 
  * Created: Wed October 6 12:00:00 2004 EDT
- *
+ * 
  * @author David Barkan
- * @version $Revision$ $Date$Author: dbarkan $
- *
+ * @version $Revision$ $Date: 2007-07-24 14:12:53 -0400 (Tue, 24 Jul
+ *          2007) $Author$
+ * 
  */
 
 public class BooleanQuestionTester {
@@ -55,8 +59,12 @@ public class BooleanQuestionTester {
     // Main
     // ------------------------------------------------------------------
 
-    public static void main(String[] args)
-            throws WdkModelException, WdkUserException {
+    public static void main(String[] args) throws WdkModelException,
+            WdkUserException, NoSuchAlgorithmException, SQLException,
+            JSONException, ParserConfigurationException,
+            TransformerFactoryConfigurationError, TransformerException,
+            IOException, SAXException, InstantiationException,
+            IllegalAccessException, ClassNotFoundException {
 
         String cmdName = System.getProperty("cmdName");
         String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
@@ -71,47 +79,34 @@ public class BooleanQuestionTester {
 
         validateRowCount(rows);
 
-        try {
-            //create model
-            ModelXmlParser parser = new ModelXmlParser(gusHome);
-            WdkModel wdkModel = parser.parseModel(modelName);
+        // create model
+        ModelXmlParser parser = new ModelXmlParser(gusHome);
+        WdkModel wdkModel = parser.parseModel(modelName);
 
-            int startRow = Integer.parseInt(rows[0]);
-            int endRow = Integer.parseInt(rows[1]);
+        int startRow = Integer.parseInt(rows[0]);
+        int endRow = Integer.parseInt(rows[1]);
 
-            //create recursive question tree
-            BooleanQuestionNode topNode = TestBooleanTree.getTestTree(wdkModel);
-            System.err.println(topNode.toString());
-            //init recursive method
-            topNode.makeAnswer(startRow, endRow);
-            //BooleanQuestionNode.setAllValues(topNode);
+        // create recursive question tree
+        BooleanQuestionNode topNode = TestBooleanTree.getTestTree(wdkModel);
+        System.err.println(topNode.toString());
+        // init recursive method
+        topNode.makeAnswer(startRow, endRow);
+        // BooleanQuestionNode.setAllValues(topNode);
 
-            //runGrowTest(topNode, "01", wdkModel);
+        // runGrowTest(topNode, "01", wdkModel);
 
-            Question topQuestion = topNode.getQuestion();
-            int pageCount = 1;
-            for (int i = 0; i < rows.length; i += 2) {
+        Question topQuestion = topNode.getQuestion();
+        int pageCount = 1;
+        for (int i = 0; i < rows.length; i += 2) {
 
-                int nextStartRow = Integer.parseInt(rows[i]);
-                int nextEndRow = Integer.parseInt(rows[i + 1]);
+            int nextStartRow = Integer.parseInt(rows[i]);
+            int nextEndRow = Integer.parseInt(rows[i + 1]);
 
-                Answer answer = topQuestion.makeAnswer(topNode.getValues(),
-                        nextStartRow, nextEndRow);
-                System.out.println("Printing Record Instances on page "
-                        + pageCount);
-                System.out.println(answer.printAsTable());
-                pageCount++;
-            }
-        } catch (SAXException ex) {
-            throw new WdkModelException(ex);
-        } catch (IOException ex) {
-            throw new WdkModelException(ex);
-        } catch (ParserConfigurationException ex) {
-            throw new WdkModelException(ex);
-        } catch (TransformerFactoryConfigurationError ex) {
-            throw new WdkModelException(ex);
-        } catch (TransformerException ex) {
-            throw new WdkModelException(ex);
+            Answer answer = topQuestion.makeAnswer(topNode.getValues(),
+                    nextStartRow, nextEndRow);
+            System.out.println("Printing Record Instances on page " + pageCount);
+            System.out.println(answer.printAsTable());
+            pageCount++;
         }
     }
 
@@ -120,14 +115,19 @@ public class BooleanQuestionTester {
     // ------------------------------------------------------------------
 
     // this method is never used locally
-    //    private static void runGrowTest(BooleanQuestionNode topNode, String nodeId, WdkModel model) throws WdkModelException, WdkUserException{
+    // private static void runGrowTest(BooleanQuestionNode topNode, String
+    // nodeId, WdkModel model) throws WdkModelException, WdkUserException{
     //	
-    //	BooleanQuestionNode found = topNode.find(nodeId);
-    //	System.out.println("BooleanQuestionTester.runGrowTest: Tree before growing\n " + topNode.toString());
-    //	System.out.println("BooleanQuestionTester.runGrowTest:  Found node " + found.toString());
-    //	found.grow(TestBooleanTree.makeNewLeafNode(model), "Or", model, operatorMap);
-    //	System.out.println("BooleanQuestionTester.runGrowTest:  New tree after growing\n " + topNode.toString());
-    //    }
+    // BooleanQuestionNode found = topNode.find(nodeId);
+    // System.out.println("BooleanQuestionTester.runGrowTest: Tree before
+    // growing\n " + topNode.toString());
+    // System.out.println("BooleanQuestionTester.runGrowTest: Found node " +
+    // found.toString());
+    // found.grow(TestBooleanTree.makeNewLeafNode(model), "Or", model,
+    // operatorMap);
+    // System.out.println("BooleanQuestionTester.runGrowTest: New tree after
+    // growing\n " + topNode.toString());
+    // }
 
     private static void addOption(Options options, String argName, String desc) {
 
