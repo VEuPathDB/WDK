@@ -54,6 +54,10 @@ public class EnumParam extends AbstractEnumParam {
     public String getDefault() throws WdkModelException {
         StringBuffer sb = new StringBuffer();
         EnumItem[] enumItems = enumItemList.getEnumItems();
+        if (enumItems.length == 0) {
+           throw new WdkModelException("enumParam '" + this.name 
+                    + "' has zero items");
+        }
         for (EnumItem item : enumItems) {
             if (item.isDefault()) {
                 if (sb.length() > 0) sb.append(",");
