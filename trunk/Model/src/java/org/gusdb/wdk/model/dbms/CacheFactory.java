@@ -21,7 +21,6 @@ public class CacheFactory {
     public static final String COLUMN_INSTANCE_ID = "instance_id";
     static final String COLUMN_QUERY_NAME = "query_name";
     static final String COLUMN_INSTANCE_CHECKSUM = "instance_checksum";
-    static final String COLUMN_LAST_ACCESS = "last_access";
     static final String COLUMN_RESULT_MESSAGE = "result_message";
 
     public static String normalizeTableName(String tableName) {
@@ -127,7 +126,6 @@ public class CacheFactory {
         sql.append(platform.getStringDataType(100)).append(" NOT NULL, ");
         sql.append(COLUMN_INSTANCE_CHECKSUM).append(" ");
         sql.append(platform.getStringDataType(40)).append(" NOT NULL, ");
-        sql.append(COLUMN_LAST_ACCESS).append(" DATE, ");
         sql.append(COLUMN_RESULT_MESSAGE).append(" ");
         sql.append(platform.getClobDataType());
         sql.append(", CONSTRAINT PK_").append(COLUMN_INSTANCE_ID);
