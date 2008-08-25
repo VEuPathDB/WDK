@@ -179,8 +179,7 @@ public class FullRecordReporter extends Reporter {
             sqlInsert.append(column).append(", ");
         }
         sqlInsert.append(", table_name, row_count, content) VALUES (");
-        for (@SuppressWarnings("unused")
-        String column : pkColumns) {
+        for (String column : pkColumns) {
             sqlInsert.append("?, ");
         }
         sqlInsert.append("?, ?, ?)");
