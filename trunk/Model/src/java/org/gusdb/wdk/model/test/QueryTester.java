@@ -34,6 +34,7 @@ import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.implementation.ModelXmlParser;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.query.SqlQueryInstance;
 import org.json.JSONException;
 import org.xml.sax.SAXException;
 
@@ -62,7 +63,9 @@ public class QueryTester {
             WdkUserException, NoSuchAlgorithmException, SQLException,
             JSONException {
         QueryInstance instance = getInstance(querySetName, queryName, paramHash);
-        return instance.getSql();
+        if (instance instanceof SqlQueryInstance) {
+            return ((SqlQueryInstance) instance).getUncachedSql();
+        } else return instance.getSql();
     }
 
     public String showResultTable(String querySetName, String queryName,

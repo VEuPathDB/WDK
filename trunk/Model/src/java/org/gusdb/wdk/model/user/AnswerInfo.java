@@ -16,6 +16,7 @@ public class AnswerInfo {
     private String questionName;
     private String queryChecksum;
     private int estimatedSize;
+    private String resultMessage;
 
     public AnswerInfo(int answerId) {
         this.answerId = answerId;
@@ -118,4 +119,18 @@ public class AnswerInfo {
         return answerId;
     }
 
+    /**
+     * @return the resultMessage
+     */
+    public String getResultMessage() {
+        return resultMessage;
+    }
+
+    /**
+     * @param resultMessage
+     *            the resultMessage to set
+     */
+    public void setResultMessage(String resultMessage) {
+        this.resultMessage = resultMessage;
+    }
 }

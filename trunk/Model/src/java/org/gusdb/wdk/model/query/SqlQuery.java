@@ -8,7 +8,10 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
 import org.json.JSONException;
@@ -125,6 +128,31 @@ public class SqlQuery extends Query {
             }
         }
         sqlMacroList = null;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.query.Query#resolveReferences(org.gusdb.wdk.model.WdkModel)
+     */
+    @Override
+    public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
+        super.resolveReferences(wdkModel);
+
+        // apply the sql macros into sql
+        for (String paramName : sqlMacroMap.keySet()) {
+            String pattern = "&&" + paramName + "&&";
+            String value = sqlMacroMap.get(paramName);
+            // escape the & $ \ chars in the value
+            sql = sql.replaceAll(pattern, Matcher.quoteReplacement(value));
+        }
+        // verify the all param macros have been replaced
+        Matcher matcher = Pattern.compile("&&([^&]+)&&").matcher(sql);
+        if (matcher.find())
+            throw new WdkModelException("SqlParamValue macro "
+                    + matcher.group(1) + " found in <sql> of query "
+                    + getFullName() + ", but it's not defined.");
+
     }
 
     /*

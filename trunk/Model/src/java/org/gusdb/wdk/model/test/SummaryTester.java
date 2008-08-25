@@ -21,8 +21,11 @@ import org.apache.commons.cli.ParseException;
 import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
+import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.RecordInstance;
 import org.gusdb.wdk.model.Reference;
+import org.gusdb.wdk.model.SummaryTable;
+import org.gusdb.wdk.model.SummaryView;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -44,9 +47,7 @@ public class SummaryTester {
 
         String[] params = null;
         boolean haveParams = cmdLine.hasOption("params");
-        if (haveParams) {
-            params = cmdLine.getOptionValues("params");
-        }
+        if (haveParams) params = cmdLine.getOptionValues("params");
 
         boolean toXml = cmdLine.hasOption("toXml");
         String xmlFileName = cmdLine.getOptionValue("toXml");
@@ -72,8 +73,9 @@ public class SummaryTester {
         }
 
         // get subType, if any
-        String view = null;
-        if (cmdLine.hasOption("view")) view = cmdLine.getOptionValue("view");
+        String[] viewValues = null;
+        if (cmdLine.hasOption("view"))
+            viewValues = cmdLine.getOptionValues("view");
 
         try {
             // variable never used
@@ -90,6 +92,9 @@ public class SummaryTester {
                 paramValues = parseParamArgs(params);
             }
 
+            // parse the summary view
+            SummaryView view = parseSummaryView(question, viewValues);
+
             // this is suspicious
             // Query query = question.getQuery();
             // query.setIsCacheable(new Boolean(true));
@@ -105,7 +110,7 @@ public class SummaryTester {
                 int nextEndRow = Integer.parseInt(rows[i + 1]);
 
                 Answer answer = question.makeAnswer(paramValues, nextStartRow,
-                        nextEndRow);
+                        nextEndRow, view);
 
                 // this is wrong. it only shows one attribute query, not
                 // all. Fix this in Answer by saving a list of attribute
@@ -146,6 +151,15 @@ public class SummaryTester {
         // while(true){}
     }
 
+    private static SummaryView parseSummaryView(Question question,
+            String[] viewValues) throws WdkModelException {
+        if (viewValues == null || viewValues.length != 3) return null;
+        RecordClass recordClass = question.getRecordClass();
+        SummaryTable summaryTable = recordClass.getSummaryTable(viewValues[0]);
+        SummaryView view = summaryTable.getView(viewValues[1], viewValues[2]);
+        return view;
+    }
+
     private static Map<String, String> loadConfiguration(String configFileName)
             throws IOException {
         Map<String, String> config = new LinkedHashMap<String, String>();
@@ -168,12 +182,13 @@ public class SummaryTester {
     }
 
     private static void writeSummaryAsXml(Question question,
-            Map<String, Object> paramValues, String xmlFile, String view)
+            Map<String, Object> paramValues, String xmlFile, SummaryView view)
             throws WdkModelException, WdkUserException, IOException,
             NoSuchAlgorithmException, SQLException, JSONException {
-        Answer answer = question.makeAnswer(paramValues, 1, 10);
+
+        Answer answer = question.makeAnswer(paramValues, 1, 10, view);
         int resultSize = answer.getResultSize();
-        answer = question.makeAnswer(paramValues, 1, resultSize);
+        answer = question.makeAnswer(paramValues, 1, resultSize, view);
         FileWriter fw = new FileWriter(new File(xmlFile), false);
 
         String newline = System.getProperty("line.separator");
@@ -228,7 +243,7 @@ public class SummaryTester {
         Option rows = new Option("rows", "The start and end pairs of the "
                 + "summary rows to return. Ignored when toXml is turned on, "
                 + "but required otherwise.");
-        rows.setArgs(Option.UNLIMITED_VALUES);
+        rows.setArgs(2);
         options.addOption(rows);
 
         // show query
@@ -256,9 +271,11 @@ public class SummaryTester {
         options.addOption(config);
 
         // the sub type input
-        Option subType = new Option("subType", true, "The subType term used "
+        Option view = new Option("view", true, "The summary view to be used "
                 + "to filter (or not filter the result");
-        options.addOption(subType);
+        view.setArgName("view");
+        view.setArgs(3);
+        options.addOption(view);
 
         // params
         Option params = new Option("params", true,
@@ -316,14 +333,14 @@ public class SummaryTester {
 
         String newline = System.getProperty("line.separator");
         String cmdlineSyntax = cmdName
-                + " -model model_name"
-                + " -question full_question_name"
-                + " [-rows start end]"
-                + " [-showQuery]"
-                + " [-toXml <xmlFile>|-fullRecords]"
-                + " [-format tabular | gff3 | fullRecords [-config <config_file>]]"
-                + " [-view <subType term>]"
-                + " -params param_1_name param_1_value ...";
+                + " -model model_name\n"
+                + " -question full_question_name\n"
+                + " [-rows start end]\n"
+                + " [-showQuery]\n"
+                + " [-toXml <xmlFile>|-fullRecords]\n"
+                + " [-format tabular | gff3 | fullRecords [-config <config_file>]]\n"
+                + " [-view <summary_table row_term column_term>]\n"
+                + " -params param_1_name param_1_value ...\n";
 
         String header = newline
                 + "Print a summary found in a WDK Model xml file. Options:";

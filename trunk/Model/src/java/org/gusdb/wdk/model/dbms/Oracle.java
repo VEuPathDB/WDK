@@ -3,6 +3,7 @@
  */
 package org.gusdb.wdk.model.dbms;
 
+import java.math.BigDecimal;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -108,7 +109,8 @@ public class Oracle extends DBPlatform {
         StringBuffer sql = new StringBuffer("SELECT ");
         sql.append(schema).append(table).append(ID_SEQUENCE_SUFFIX);
         sql.append(".nextval FROM dual");
-        return (Integer) SqlUtils.executeScalar(dataSource, sql.toString());
+        BigDecimal id = (BigDecimal) SqlUtils.executeScalar(dataSource, sql.toString());
+        return id.intValue();
     }
 
     /*
@@ -170,15 +172,22 @@ public class Oracle extends DBPlatform {
     public boolean checkTableExists(String schema, String tableName)
             throws SQLException {
         StringBuffer sql = new StringBuffer("SELECT count(*) FROM ALL_TABLES ");
-        sql.append("WHERE table_name = '").append(tableName).append("'");
+        sql.append("WHERE table_name = '");
+        sql.append(tableName.toUpperCase()).append("'");
+        
         if (schema == null) schema = defaultSchema;
-        sql.append(" AND owner = '").append(schema).append("'");
+        if (schema.charAt(schema.length() - 1) == '.')
+            schema = schema.substring(0, schema.length() - 1);
+        sql.append(" AND owner = '").append(schema.toUpperCase()).append("'");
 
-        long count = (Long) SqlUtils.executeScalar(dataSource, sql.toString());
-        return (count > 0);
+        BigDecimal count = (BigDecimal) SqlUtils.executeScalar(dataSource,
+                sql.toString());
+        return (count.longValue() > 0);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.dbms.DBPlatform#getDateDataType()
      */
     @Override
