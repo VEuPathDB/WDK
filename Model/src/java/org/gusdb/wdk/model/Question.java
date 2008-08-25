@@ -476,7 +476,7 @@ public class Question extends WdkModelBase {
     // /////////////////////////////////////////////////////////////////////
 
     Map<String, AttributeField> getDynamicAttributeFields() {
-        return dynamicAttributeSet == null ? null
+        return dynamicAttributeSet == null ? new LinkedHashMap<String, AttributeField>()
                 : dynamicAttributeSet.getAttributeFieldMap();
     }
 

@@ -37,7 +37,7 @@ public abstract class Query extends WdkModelBase {
     private static final Logger logger = Logger.getLogger(Query.class);
 
     private String name;
-    protected boolean cached = true;
+    protected boolean cached = false;
 
     // temp list, will be discarded after resolve references
     private List<ParamReference> paramRefList;

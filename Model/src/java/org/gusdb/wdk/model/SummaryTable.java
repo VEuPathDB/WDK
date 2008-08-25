@@ -178,6 +178,17 @@ public class SummaryTable extends WdkModelBase {
         return array;
     }
 
+    public SummaryView getView(String rowTerm, String columnTerm)
+            throws WdkModelException {
+        Cell cell = new Cell(rowTerm, columnTerm);
+        SummaryView view = summaryViewMap.get(cell);
+        if (view == null)
+            throw new WdkModelException("The view ['" + rowTerm + "', '"
+                    + columnTerm + "'] in summaryTable "
+                    + recordClass.getFullName() + "." + name + " doesn't exist");
+        return view;
+    }
+
     public SummaryView getDefaultView() {
         for (SummaryView summaryView : summaryViewMap.values()) {
             if (summaryView.isDefault()) return summaryView;
@@ -229,7 +240,8 @@ public class SummaryTable extends WdkModelBase {
     }
 
     public void resolveReferences(WdkModel wdkModel) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException, WdkUserException {
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
         // resolve the references of row/column params
         rowParam = (AbstractEnumParam) wdkModel.resolveReference(rowParamRef);
         columnParam = (AbstractEnumParam) wdkModel.resolveReference(columnParamRef);

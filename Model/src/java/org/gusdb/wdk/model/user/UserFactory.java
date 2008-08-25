@@ -911,9 +911,11 @@ public class UserFactory {
         history.setEstimateSize(rsHistory.getInt("estimate_size"));
         history.setBoolean(rsHistory.getBoolean("is_boolean"));
         history.setDeleted(rsHistory.getBoolean("is_deleted"));
+        
+        
 
         String instanceContent = platform.getClobData(rsHistory, "params");
-        history.setQuestionName(rsHistory.getString("question_name"));
+        //history.setQuestionName(rsHistory.getString("question_name"));
 
         // re-construct the answer
         try {
@@ -988,7 +990,7 @@ public class UserFactory {
             // answer.setExpandSubType((Boolean) subTypeInfo[1]);
         } else {
             // obtain the question with full name
-            String questionName = history.getQuestionName();
+            String questionName = history.getAnswer().getQuestion().getFullName();
             Question question = (Question) wdkModel.resolveReference(questionName);
 
             // get the user's preferences
@@ -1108,7 +1110,7 @@ public class UserFactory {
             history.setCustomName(customName);
             history.setEstimateSize(estimateSize);
             history.setBoolean(answer.getIsBoolean());
-            history.setQuestionName(questionName);
+            //history.setQuestionName(questionName);
 
             // update the user's history count
             int historyCount = getHistoryCount(user);

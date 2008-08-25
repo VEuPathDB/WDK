@@ -40,6 +40,7 @@ public class AnswerFactory {
     private static final String COLUMN_ANSWER_CHECKSUM = "answer_checksum";
     private static final String COLUMN_ESTIMATED_SIZE = "estimated_size";
     private static final String COLUMN_PARAMS = "params";
+    private static final String COLUMN_RESULT_MESSAGE = "result_message";
 
     private WdkModel wdkModel;
     private DBPlatform loginPlatform;
@@ -81,6 +82,8 @@ public class AnswerFactory {
         sql.append(loginPlatform.getNumberDataType(10)).append(", ");
         sql.append(COLUMN_PARAMS).append(" ");
         sql.append(loginPlatform.getClobDataType()).append(", ");
+        sql.append(COLUMN_RESULT_MESSAGE).append(" ");
+        sql.append(loginPlatform.getClobDataType()).append(", ");
         sql.append("CONSTRAINT \"").append(TABLE_ANSWER).append("_PK\" ");
         sql.append("PRIMARY KEY (").append(COLUMN_ANSWER_ID).append("), ");
         sql.append("CONSTRAINT \"").append(TABLE_ANSWER).append("_UQ1\" ");
@@ -119,6 +122,7 @@ public class AnswerFactory {
             answerInfo.setProjectVersion(wdkModel.getVersion());
             answerInfo.setQueryChecksum(answer.getQuestion().getQuery().getChecksum());
             answerInfo.setQuestionName(answer.getQuestion().getFullName());
+            answerInfo.setResultMessage(answer.getResultMessage());
 
             String paramClob = answer.getIdsQueryInstance().getParamJSONObject().toString();
             saveAnswerInfo(answerInfo, paramClob, connection);
@@ -174,7 +178,9 @@ public class AnswerFactory {
                 paramClob);
 
         // create the answer
-        return question.makeAnswer(pvalues);
+        Answer answer = question.makeAnswer(pvalues);
+        //answer.set
+        return answer;
     }
 
     private AnswerInfo getAnswerInfo(Connection connection,

@@ -28,6 +28,9 @@ public class History {
     private UserFactory factory;
     private User user;
     private int historyId;
+    
+    private AnswerInfo answerInfo;
+    
     private Date createdTime;
     private Date lastRunTime;
     private String customName;
@@ -39,9 +42,6 @@ public class History {
     private Boolean isDepended;
 
     private boolean isValid = true;
-    private String version;
-    private Map<String, Object> params;
-    private String questionName;
 
     History(UserFactory factory, User user, int historyId) {
         this.factory = factory;
@@ -86,7 +86,7 @@ public class History {
                 name = answer.getQuestion().getDisplayName();
             }
         }
-        if (name == null) name = questionName;
+        if (name == null) name = answerInfo.getQuestionName();
         if (name != null) {
             // remove script injections
             name = name.replaceAll("<.+?>", " ");
@@ -290,32 +290,32 @@ public class History {
     }
 
     /**
-     * @return the version
+     * @return the answerInfo
      */
-    public String getVersion() {
-        return version;
+    public AnswerInfo getAnswerInfo() {
+        return answerInfo;
     }
 
     /**
-     * @param version
-     *                the version to set
+     * @param answerInfo the answerInfo to set
      */
-    public void setVersion(String version) {
-        this.version = version;
+    public void setAnswerInfo(AnswerInfo answerInfo) {
+        this.answerInfo = answerInfo;
     }
 
     public void setParams(Map<String, Object> params) {
-        this.params = params;
+        //this.params = params;
     }
 
     public Map<String, Object> getParams() {
-        return new LinkedHashMap<String, Object>(this.params);
+        //return new LinkedHashMap<String, Object>(this.params);
+        return answer.getIdsQueryInstance().getValues();
     }
 
     public Map<String, String> getParamNames() throws WdkModelException {
         Map<String, String> paramNames = new LinkedHashMap<String, String>();
         WdkModel wdkModel = user.getWdkModel();
-        for (String paramName : params.keySet()) {
+        for (String paramName : getParams().keySet()) {
             Param param = (Param)wdkModel.resolveReference(paramName);
             String displayName = param.getPrompt();
             if (displayName == null) displayName = paramName;
@@ -323,13 +323,5 @@ public class History {
         }
 
         return paramNames;
-    }
-
-    void setQuestionName(String questionName) {
-        this.questionName = questionName;
-    }
-
-    public String getQuestionName() {
-        return this.questionName;
     }
 }
