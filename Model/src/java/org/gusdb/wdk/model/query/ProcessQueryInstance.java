@@ -97,7 +97,7 @@ public class ProcessQueryInstance extends QueryInstance {
                 stmt = connection.createStatement();
                 stmt.execute(sqlTable.toString());
             } catch (SQLException ex) {
-                if (stmt != null && !stmt.isClosed()) stmt.close();
+                if (stmt != null) stmt.close();
             }
         } catch (SQLException ex) {
             throw new WdkModelException(ex);
@@ -152,7 +152,7 @@ public class ProcessQueryInstance extends QueryInstance {
         } finally {
             // close the statement manually, since we need to keep the
             // connection open to finish the transaction.
-            if (ps != null && !ps.isClosed()) ps.close();
+            if (ps != null) ps.close();
         }
     }
 

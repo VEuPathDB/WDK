@@ -52,7 +52,6 @@ public abstract class QueryInstance {
     protected Query query;
     protected WdkModel wdkModel;
     protected Map<String, Object> values;
-    protected Date lastAccess;
     protected String resultMessage;
     protected boolean cached;
 
@@ -102,14 +101,6 @@ public abstract class QueryInstance {
         // passed, assign the value
         this.values = new LinkedHashMap<String, Object>(values);
         checksum = null;
-    }
-
-    public Date getLastAccessTime() {
-        return lastAccess;
-    }
-
-    public void setLastAccessTime(Date lastAccess) {
-        this.lastAccess = lastAccess;
     }
 
     public String getResultMessage() {
