@@ -9,7 +9,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Date;
 
 import javax.sql.DataSource;
 
@@ -59,11 +58,8 @@ public class ResultFactory {
             WdkUserException {
         // get the query instance id; null if not exist
         Integer instanceId = queryInstanceId(instance);
-        if (instanceId == null) { // instance cache not exist, create it
+        if (instanceId == null) // instance cache not exist, create it
             instanceId = createCache(instance);
-        } else { // instance has been cached
-            updateAccessTime(instance, instanceId);
-        }
         instance.setInstanceId(instanceId);
         return instanceId;
     }
@@ -187,49 +183,23 @@ public class ResultFactory {
         sql.append(CacheFactory.COLUMN_INSTANCE_ID).append(", ");
         sql.append(CacheFactory.COLUMN_QUERY_NAME).append(", ");
         sql.append(CacheFactory.COLUMN_INSTANCE_CHECKSUM).append(", ");
-        sql.append(CacheFactory.COLUMN_LAST_ACCESS).append(", ");
         sql.append(CacheFactory.COLUMN_RESULT_MESSAGE);
-        sql.append(") VALUES (?, ?, ?, ?, ?)");
+        sql.append(") VALUES (?, ?, ?, ?)");
 
-        Date lastAccess = new Date();
         PreparedStatement ps = null;
         try {
             ps = connection.prepareStatement(sql.toString());
             ps.setInt(1, instanceId);
             ps.setString(2, instance.getQuery().getFullName());
             ps.setString(3, instance.getChecksum());
-            ps.setDate(4, new java.sql.Date(lastAccess.getTime()));
-            platform.updateClobData(ps, 5, instance.getResultMessage(), false);
+            platform.updateClobData(ps, 4, instance.getResultMessage(), false);
             ps.executeUpdate();
 
-            instance.setLastAccessTime(lastAccess);
             return instanceId;
         } finally {
             // close the statement manually, since we cannot close the
             // connection; it's not committed yet.
             if (ps != null) ps.close();
-        }
-    }
-
-    private void updateAccessTime(QueryInstance instance, int instanceId)
-            throws SQLException {
-        Date lastAccess = new Date();
-
-        StringBuffer sql = new StringBuffer("UPDATE ");
-        sql.append(CacheFactory.TABLE_CACHE_INDEX).append(" SET ");
-        sql.append(CacheFactory.COLUMN_LAST_ACCESS).append(" = ? WHERE ");
-        sql.append(CacheFactory.COLUMN_INSTANCE_ID).append(" = ?");
-
-        PreparedStatement ps = null;
-        DataSource dataSource = platform.getDataSource();
-        try {
-            ps = SqlUtils.getPreparedStatement(dataSource, sql.toString());
-            ps.setDate(1, new java.sql.Date(lastAccess.getTime()));
-            ps.setInt(2, instanceId);
-            ps.execute();
-            instance.setLastAccessTime(lastAccess);
-        } finally {
-            SqlUtils.closeStatement(ps);
         }
     }
 }
