@@ -442,8 +442,8 @@ public class RecordClass extends WdkModelBase implements
         validateQuery(query);
         // plus, attribute query should not have any params
         if (query.getParams().length > 0)
-            throw new WdkModelException("Attribute query " + query
-                    + " should not have any params.");
+            throw new WdkModelException("Attribute query "
+                    + query.getFullName() + " should not have any params.");
     }
 
     void validateQuery(Query query) throws WdkModelException {
@@ -772,6 +772,15 @@ public class RecordClass extends WdkModelBase implements
         SummaryTable[] array = new SummaryTable[summaryTableMap.size()];
         summaryTableMap.values().toArray(array);
         return array;
+    }
+
+    public SummaryTable getSummaryTable(String tableName)
+            throws WdkModelException {
+        SummaryTable table = summaryTableMap.get(tableName);
+        if (table == null)
+            throw new WdkModelException("The summary table '" + tableName
+                    + "' does not exist in recordClass " + getFullName());
+        return table;
     }
 
     public SummaryView getDefaultView() {

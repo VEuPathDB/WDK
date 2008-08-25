@@ -142,6 +142,10 @@ public class Answer {
         // get sorting columns
         this.sortingAttributes = sortingAttributes;
         this.summaryAttributes = new LinkedHashMap<String, AttributeField>();
+
+        // get the view
+        if (summaryView == null)
+            summaryView = question.getRecordClass().getDefaultView();
         this.summaryView = summaryView;
 
         // save the answer
@@ -508,8 +512,8 @@ public class Answer {
             throws NoSuchAlgorithmException, SQLException, WdkModelException,
             JSONException, WdkUserException {
         String queryName = attributeQuery.getFullName();
-        String dynamicQueryName = question.getDynamicAttributeQuery().getFullName();
-        if (queryName.equals(dynamicQueryName)) {
+        Query dynaQuery = question.getDynamicAttributeQuery();
+        if (dynaQuery != null && queryName.equals(dynaQuery.getFullName())) {
             // the dynamic query doesn't have sql defined, the sql will be
             // constructed from the id query cache table.
             String cacheTable = CacheFactory.normalizeTableName(idsQueryInstance.getQuery().getFullName());

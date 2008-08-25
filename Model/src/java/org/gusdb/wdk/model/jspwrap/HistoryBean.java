@@ -78,7 +78,7 @@ public class HistoryBean {
      * @see org.gusdb.wdk.model.user.History#getVersion()
      */
     public String getVersion() {
-        return history.getVersion();
+        return history.getUser().getWdkModel().getVersion();
     }
 
     /*
@@ -262,10 +262,11 @@ public class HistoryBean {
 
     /**
      * @return
+     * @throws WdkUserException
      * @see org.gusdb.wdk.model.user.History#getQuestionName()
      */
-    public String getQuestionName() {
-        return history.getQuestionName();
+    public String getQuestionName() throws WdkUserException {
+        return history.getAnswer().getQuestion().getFullName();
     }
 
     /**

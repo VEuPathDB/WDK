@@ -100,7 +100,8 @@ public class ResultFactory {
         sql.append(" = '").append(instance.getChecksum()).append("'");
 
         DataSource dataSource = platform.dataSource;
-        return (Integer) SqlUtils.executeScalar(dataSource, sql.toString());
+        Object id = SqlUtils.executeScalar(dataSource, sql.toString());
+        return (id == null) ? null : Integer.parseInt(id.toString());
     }
 
     private int createCache(QueryInstance instance) throws SQLException,
@@ -199,6 +200,7 @@ public class ResultFactory {
             ps.setString(3, instance.getChecksum());
             ps.setDate(4, new java.sql.Date(lastAccess.getTime()));
             platform.updateClobData(ps, 5, instance.getResultMessage(), false);
+            ps.executeUpdate();
 
             instance.setLastAccessTime(lastAccess);
             return instanceId;
