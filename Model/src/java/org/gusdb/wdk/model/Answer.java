@@ -5,6 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Savepoint;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -26,6 +27,7 @@ import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.user.AnswerFactory;
+import org.gusdb.wdk.model.user.AnswerInfo;
 import org.json.JSONException;
 
 /**
@@ -81,6 +83,8 @@ public class Answer {
     // ------------------------------------------------------------------
     // Instance variables
     // ------------------------------------------------------------------
+
+    private AnswerInfo answerInfo;
 
     private ResultFactory resultFactory;
     private Question question;
@@ -784,5 +788,14 @@ public class Answer {
             }
         }
         return ids;
+    }
+
+    public AnswerInfo getAnswerInfo() throws NoSuchAlgorithmException,
+            SQLException, WdkModelException, JSONException, WdkUserException {
+        if (answerInfo == null) {
+            AnswerFactory factory = question.getWdkModel().getAnswerFactory();
+            answerInfo = factory.saveAnswer(this);
+        }
+        return answerInfo;
     }
 }

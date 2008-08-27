@@ -204,17 +204,10 @@ public class JUnitUserTest extends TestCase {
     // }
     }
 
-    public void testDeleteHistory() {
+    public void testDeleteHistory() throws NoSuchAlgorithmException,
+            WdkUserException, WdkModelException, SQLException, JSONException {
         int historyId = 14;
-        try {
-            user.deleteHistory(historyId);
-        } catch (WdkUserException ex) {
-            ex.printStackTrace();
-            assertTrue(false);
-        } catch (WdkModelException ex) {
-            ex.printStackTrace();
-            assertTrue(false);
-        }
+        user.deleteHistory(historyId);
 
         // the history shouldn't be found
         try {

@@ -4,6 +4,7 @@
 package org.gusdb.wdk.model.jspwrap;
 
 import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.Map;
 
@@ -150,7 +151,8 @@ public class HistoryBean {
      * 
      * @see org.gusdb.wdk.model.user.History#update()
      */
-    public void update() throws WdkUserException {
+    public void update() throws WdkUserException, NoSuchAlgorithmException,
+            SQLException, WdkModelException, JSONException {
         history.update();
     }
 
@@ -159,7 +161,9 @@ public class HistoryBean {
      * 
      * @see org.gusdb.wdk.model.user.History#update(boolean)
      */
-    public void update(boolean updateTime) throws WdkUserException {
+    public void update(boolean updateTime) throws WdkUserException,
+            NoSuchAlgorithmException, SQLException, WdkModelException,
+            JSONException {
         history.update(updateTime);
     }
 
