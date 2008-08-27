@@ -19,7 +19,7 @@ import org.gusdb.wdk.model.xml.XmlRecordClassSet;
  * A wrapper on a {@link WdkModel} that provides simplified access for
  * consumption by a view
  */
-public class WdkModelBean  {
+public class WdkModelBean {
 
     WdkModel model;
 
@@ -32,7 +32,9 @@ public class WdkModelBean  {
         return model.getProperties();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.WdkModel#getVersion()
      */
     public String getVersion() {
@@ -66,8 +68,7 @@ public class WdkModelBean  {
      * @link QuestionBean}
      */
     public Map getQuestionsByCategory() {
-        Map<String, Map<String, Question[]>> qByCat = model
-                .getQuestionsByCategories();
+        Map<String, Map<String, Question[]>> qByCat = model.getQuestionsByCategories();
 
         Map<String, Map<String, QuestionBean[]>> qBeanByCat = new LinkedHashMap<String, Map<String, QuestionBean[]>>();
         Iterator recI = qByCat.keySet().iterator();
@@ -106,8 +107,8 @@ public class WdkModelBean  {
         Map<String, QuestionSetBean> qSetBeans = new LinkedHashMap<String, QuestionSetBean>();
         while (it.hasNext()) {
             String qSetKey = (String) it.next();
-            QuestionSetBean qSetBean = new QuestionSetBean((QuestionSet) qSets
-                    .get(qSetKey));
+            QuestionSetBean qSetBean = new QuestionSetBean(
+                    (QuestionSet) qSets.get(qSetKey));
             qSetBeans.put(qSetKey, qSetBean);
         }
         return qSetBeans;
@@ -121,8 +122,8 @@ public class WdkModelBean  {
         int i = 0;
         while (it.hasNext()) {
             Object qSetKey = it.next();
-            QuestionSetBean qSetBean = new QuestionSetBean((QuestionSet) qSets
-                    .get(qSetKey));
+            QuestionSetBean qSetBean = new QuestionSetBean(
+                    (QuestionSet) qSets.get(qSetKey));
             qSetBeans[i++] = qSetBean;
         }
         return qSetBeans;
@@ -142,15 +143,14 @@ public class WdkModelBean  {
             }
         }
 
-        RecordClassBean[] returnedBeans = new RecordClassBean[recordClassBeans
-                .size()];
+        RecordClassBean[] returnedBeans = new RecordClassBean[recordClassBeans.size()];
         for (int i = 0; i < recordClassBeans.size(); i++) {
             RecordClassBean nextReturnedBean = recordClassBeans.elementAt(i);
             returnedBeans[i] = nextReturnedBean;
         }
         return returnedBeans;
     }
-    
+
     public Map<String, RecordClassBean> getRecordClassMap() {
         Map<String, RecordClassBean> recordClassMap = new LinkedHashMap<String, RecordClassBean>();
         RecordClassSet[] rcsets = model.getAllRecordClassSets();
@@ -206,7 +206,9 @@ public class WdkModelBean  {
         return new UserFactoryBean(model.getUserFactory());
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.WdkModel#getBooleanOperators()
      */
     public Map<String, String> getBooleanOperators() {
@@ -218,11 +220,15 @@ public class WdkModelBean  {
      * @return
      * @see org.gusdb.wdk.model.WdkModel#getQuestionDisplayName(java.lang.String)
      */
-    public String getQuestionDisplayName( String questionFullName ) {
-        return model.getQuestionDisplayName( questionFullName );
+    public String getQuestionDisplayName(String questionFullName) {
+        return model.getQuestionDisplayName(questionFullName);
     }
 
     public String getProjectId() {
+        return model.getProjectId();
+    }
+
+    public String getName() {
         return model.getProjectId();
     }
 }
