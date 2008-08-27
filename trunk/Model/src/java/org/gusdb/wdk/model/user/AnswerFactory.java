@@ -31,12 +31,13 @@ import org.json.JSONObject;
  */
 public class AnswerFactory {
 
-    private static final String TABLE_ANSWER = "answer";
+    static final String TABLE_ANSWER = "answer";
+
+    static final String COLUMN_ANSWER_ID = "answer_id";
     private static final String COLUMN_PROJECT_ID = "project_id";
     private static final String COLUMN_PROJECT_VERSION = "project_version";
     private static final String COLUMN_QUESTION_NAME = "question_name";
     private static final String COLUMN_QUERY_CHECKSUM = "query_checksum";
-    private static final String COLUMN_ANSWER_ID = "answer_id";
     private static final String COLUMN_ANSWER_CHECKSUM = "answer_checksum";
     private static final String COLUMN_ESTIMATED_SIZE = "estimated_size";
     private static final String COLUMN_PARAMS = "params";
@@ -56,13 +57,12 @@ public class AnswerFactory {
     }
 
     private void createTables() throws SQLException {
-        createAnswerTable();
+        // check if answer table exists
+        if (!loginPlatform.checkTableExists(answerSchema, TABLE_ANSWER))
+            createAnswerTable();
     }
 
     private void createAnswerTable() throws SQLException {
-        // check if table exists
-        if (loginPlatform.checkTableExists(answerSchema, TABLE_ANSWER)) return;
-
         // construct sql to create the table
         StringBuffer sql = new StringBuffer("CREATE TABLE ");
         sql.append(answerSchema).append(TABLE_ANSWER).append(" (");
@@ -147,6 +147,12 @@ public class AnswerFactory {
         }
     }
 
+    /**
+     * @param answerChecksum
+     * @return an AnswerInfo object if the answer has been saved; otherwise,
+     *         return null.
+     * @throws SQLException
+     */
     public AnswerInfo getAnswerInfo(String answerChecksum) throws SQLException {
         Connection connection = loginPlatform.getDataSource().getConnection();
         try {
@@ -179,7 +185,7 @@ public class AnswerFactory {
 
         // create the answer
         Answer answer = question.makeAnswer(pvalues);
-        //answer.set
+        // answer.set
         return answer;
     }
 

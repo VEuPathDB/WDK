@@ -32,8 +32,7 @@ public class UserBean /* implements Serializable */{
 
     private User user;
 
-    public UserBean() {
-    }
+    public UserBean() {}
 
     /**
      * 
@@ -557,7 +556,8 @@ public class UserBean /* implements Serializable */{
      *      java.lang.String, java.lang.String[])
      */
     public DatasetBean createDataset(String uploadFile, String[] values)
-            throws WdkUserException, WdkModelException, NoSuchAlgorithmException {
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException {
         DatasetBean bean = new DatasetBean(user.createDataset(uploadFile,
                 values));
         return bean;
@@ -592,7 +592,8 @@ public class UserBean /* implements Serializable */{
      * @see org.gusdb.wdk.model.user.User#createHistory(org.gusdb.wdk.model.Answer)
      */
     public HistoryBean createHistory(AnswerBean answer)
-            throws WdkUserException, WdkModelException, NoSuchAlgorithmException, JSONException, SQLException {
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, JSONException, SQLException {
         History history = user.createHistory(answer.answer);
         return new HistoryBean(history);
     }
@@ -603,7 +604,8 @@ public class UserBean /* implements Serializable */{
      * @see org.gusdb.wdk.model.user.User#deleteHistory(int)
      */
     public void deleteHistory(int historyId) throws WdkUserException,
-            WdkModelException {
+            WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException {
         user.deleteHistory(historyId);
     }
 
@@ -693,7 +695,8 @@ public class UserBean /* implements Serializable */{
      * @see org.gusdb.wdk.model.user.User#combineHistory(java.lang.String)
      */
     public HistoryBean combineHistory(String expression, String subTypeValue,
-            boolean expandSubType) throws WdkUserException, WdkModelException, NoSuchAlgorithmException, SQLException, JSONException {
+            boolean expandSubType) throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException {
         return new HistoryBean(user.combineHistory(expression, false,
                 subTypeValue, expandSubType));
     }
@@ -731,12 +734,13 @@ public class UserBean /* implements Serializable */{
      * @param ascending
      * @throws WdkUserException
      * @throws WdkModelException
-     * @throws NoSuchAlgorithmException 
+     * @throws NoSuchAlgorithmException
      * @see org.gusdb.wdk.model.user.User#addSortingAttribute(java.lang.String,
      *      java.lang.String, boolean)
      */
     public String addSortingAttribute(String questionFullName, String attrName,
-            boolean ascending) throws WdkUserException, WdkModelException, NoSuchAlgorithmException {
+            boolean ascending) throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException {
         return user.addSortingAttribute(questionFullName, attrName, ascending);
     }
 
@@ -777,12 +781,13 @@ public class UserBean /* implements Serializable */{
      * @param attrName
      * @throws WdkUserException
      * @throws WdkModelException
-     * @throws NoSuchAlgorithmException 
+     * @throws NoSuchAlgorithmException
      * @see org.gusdb.wdk.model.user.User#addSummaryAttribute(java.lang.String,
      *      java.lang.String)
      */
     public String addSummaryAttribute(String questionFullName, String attrName)
-            throws WdkUserException, WdkModelException, NoSuchAlgorithmException {
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException {
         return user.addSummaryAttribute(questionFullName, attrName);
     }
 
@@ -814,12 +819,13 @@ public class UserBean /* implements Serializable */{
      * @param attrName
      * @throws WdkUserException
      * @throws WdkModelException
-     * @throws NoSuchAlgorithmException 
+     * @throws NoSuchAlgorithmException
      * @see org.gusdb.wdk.model.user.User#removeSummaryAttribute(java.lang.String,
      *      java.lang.String)
      */
     public String removeSummaryAttribute(String questionFullName,
-            String attrName) throws WdkUserException, WdkModelException, NoSuchAlgorithmException {
+            String attrName) throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException {
         return user.removeSummaryAttribute(questionFullName, attrName);
     }
 
@@ -837,7 +843,7 @@ public class UserBean /* implements Serializable */{
      * @param moveLeft
      * @throws WdkUserException
      * @throws WdkModelException
-     * @throws NoSuchAlgorithmException 
+     * @throws NoSuchAlgorithmException
      * @see org.gusdb.wdk.model.user.User#arrangeSummaryAttribute(java.lang.String,
      *      java.lang.String, boolean)
      */
@@ -853,10 +859,11 @@ public class UserBean /* implements Serializable */{
      * @param summaryChecksum
      * @throws WdkUserException
      * @throws WdkModelException
-     * @throws NoSuchAlgorithmException 
+     * @throws NoSuchAlgorithmException
      */
     public String applySummaryChecksum(String questionFullName,
-            String[] atributes) throws WdkModelException, WdkUserException, NoSuchAlgorithmException {
+            String[] atributes) throws WdkModelException, WdkUserException,
+            NoSuchAlgorithmException {
         return user.applySummaryChecksum(questionFullName, atributes);
     }
 

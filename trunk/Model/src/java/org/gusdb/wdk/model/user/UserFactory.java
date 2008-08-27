@@ -47,7 +47,6 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.SqlUtils;
-import org.gusdb.wdk.model.query.QueryInstance;
 import org.json.JSONException;
 
 /**
@@ -55,6 +54,8 @@ import org.json.JSONException;
  * 
  */
 public class UserFactory {
+
+    static final String TABLE_USER = "users";
 
     /*
      * Inner class to act as a JAF datasource to send HTML e-mail content
@@ -911,11 +912,9 @@ public class UserFactory {
         history.setEstimateSize(rsHistory.getInt("estimate_size"));
         history.setBoolean(rsHistory.getBoolean("is_boolean"));
         history.setDeleted(rsHistory.getBoolean("is_deleted"));
-        
-        
 
         String instanceContent = platform.getClobData(rsHistory, "params");
-        //history.setQuestionName(rsHistory.getString("question_name"));
+        // history.setQuestionName(rsHistory.getString("question_name"));
 
         // re-construct the answer
         try {
@@ -1006,8 +1005,9 @@ public class UserFactory {
     History createHistory(User user, Answer answer, String booleanExpression,
             boolean deleted) throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, JSONException, SQLException {
+        // save answer
+        int answerId = answer.getAnswerInfo().getAnswerId();
         int userId = user.getUserId();
-        String questionName = answer.getQuestion().getFullName();
 
         boolean isBoolean = answer.getIsBoolean();
         // String customName = (isBoolean) ? booleanExpression : null;
@@ -1015,13 +1015,7 @@ public class UserFactory {
         // customName = customName.substring(0, 4000);
         String customName = null;
 
-        int estimateSize = answer.getResultSize();
-        QueryInstance qinstance = answer.getIdsQueryInstance();
-        String qiChecksum = qinstance.getChecksum();
-        String signature = qinstance.getQuery().getChecksum();
-        String instanceContent = qinstance.getJSONContent().toString();
-        if (isBoolean) instanceContent += ", " + booleanExpression;
-        // instanceContent += Utilities.DATA_DIVIDER + booleanExpression;
+        String hisTable = loginSchema + "histories";
 
         // check whether the answer exist or not
         ResultSet rsHistory = null;
@@ -1031,13 +1025,12 @@ public class UserFactory {
         Connection connection = null;
         try {
             PreparedStatement psCheck = SqlUtils.getPreparedStatement(
-                    dataSource, "SELECT history_id FROM " + loginSchema
-                            + "histories WHERE user_id = ? AND project_id = ? "
-                            + "AND query_instance_checksum = ? "
+                    dataSource, "SELECT history_id FROM " + hisTable
+                            + " WHERE user_id = ? AND answer_id = ? "
                             + "AND is_deleted = ?");
             psCheck.setInt(1, userId);
             psCheck.setString(2, projectId);
-            psCheck.setString(3, qiChecksum);
+            psCheck.setInt(3, answerId);
             psCheck.setBoolean(4, deleted);
             rsHistory = psCheck.executeQuery();
 
@@ -1065,31 +1058,24 @@ public class UserFactory {
 
                 connection.setAutoCommit(false);
 
+                String maxIdSql = "(SELECT max(max_id)+1  FROM ("
+                        + " SELECT max(history_id) AS max_id FROM " + hisTable
+                        + " WHERE user_id = " + userId
+                        + " UNION SELECT count(*) AS max_id FROM " + hisTable
+                        + " WHERE user_id = " + userId + ") f)";
+
                 psHistory = connection.prepareStatement("INSERT INTO "
-                        + loginSchema + "histories (history_id, "
-                        + "user_id, project_id, question_name, create_time, "
-                        + "last_run_time, custom_name, estimate_size, "
-                        + "query_instance_checksum, query_signature, "
-                        + "is_boolean, is_deleted, params) VALUES "
-                        + "((SELECT max(max_id) + 1  FROM "
-                        + "(SELECT max(history_id) AS max_id FROM "
-                        + loginSchema + "histories WHERE user_id = " + userId
-                        + " UNION SELECT count(*) AS max_id FROM "
-                        + loginSchema + "histories WHERE user_id = ?) f), "
-                        + "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, " + "0, ?)");
+                        + hisTable + " (history_id, user_id, answer_id, "
+                        + "create_time, last_run_time, custom_name, "
+                        + " is_boolean, is_deleted) VALUES (" + maxIdSql
+                        + ", ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)");
                 psHistory.setInt(1, userId);
-                psHistory.setInt(2, userId);
-                psHistory.setString(3, projectId);
-                psHistory.setString(4, questionName);
-                psHistory.setTimestamp(5, new Timestamp(createTime.getTime()));
-                psHistory.setTimestamp(6, new Timestamp(lastRunTime.getTime()));
-                psHistory.setString(7, customName);
-                psHistory.setInt(8, estimateSize);
-                psHistory.setString(9, qiChecksum);
-                psHistory.setString(10, signature);
-                psHistory.setBoolean(11, isBoolean);
-                // the platform set clob, and run the statement
-                platform.updateClobData(psHistory, 12, instanceContent, false);
+                psHistory.setInt(2, answerId);
+                psHistory.setTimestamp(3, new Timestamp(createTime.getTime()));
+                psHistory.setTimestamp(4, new Timestamp(lastRunTime.getTime()));
+                psHistory.setString(5, customName);
+                psHistory.setBoolean(6, isBoolean);
+                psHistory.setBoolean(7, deleted);
                 psHistory.executeUpdate();
 
                 // query to get the new history id
@@ -1108,9 +1094,7 @@ public class UserFactory {
             history.setCreatedTime(createTime);
             history.setLastRunTime(lastRunTime);
             history.setCustomName(customName);
-            history.setEstimateSize(estimateSize);
             history.setBoolean(answer.getIsBoolean());
-            //history.setQuestionName(questionName);
 
             // update the user's history count
             int historyCount = getHistoryCount(user);
@@ -1137,9 +1121,14 @@ public class UserFactory {
      * @param user
      * @param history
      * @throws WdkUserException
+     * @throws JSONException
+     * @throws WdkModelException
+     * @throws SQLException
+     * @throws NoSuchAlgorithmException
      */
     void updateHistory(User user, History history, boolean updateTime)
-            throws WdkUserException {
+            throws WdkUserException, NoSuchAlgorithmException, SQLException,
+            WdkModelException, JSONException {
         // check email existence
         if (!isExist(user.getEmail()))
             throw new WdkUserException("The user " + user.getEmail()
@@ -1154,15 +1143,13 @@ public class UserFactory {
         try {
             psHistory = SqlUtils.getPreparedStatement(dataSource, "UPDATE "
                     + loginSchema + "histories SET custom_name = ?, "
-                    + "last_run_time = ?, is_deleted = ?, estimate_size = ?"
-                    + "WHERE user_id = ? AND project_id = ? AND history_id = ?");
+                    + "last_run_time = ?, is_deleted = ? "
+                    + "WHERE user_id = ? AND history_id = ?");
             psHistory.setString(1, history.getBaseCustomName());
             psHistory.setTimestamp(2, new Timestamp(lastRunTime.getTime()));
             psHistory.setBoolean(3, history.isDeleted());
-            psHistory.setInt(4, history.getEstimateSize());
-            psHistory.setInt(5, user.getUserId());
-            psHistory.setString(6, projectId);
-            psHistory.setInt(7, history.getHistoryId());
+            psHistory.setInt(4, user.getUserId());
+            psHistory.setInt(5, history.getHistoryId());
             int result = psHistory.executeUpdate();
             if (result == 0)
                 throw new WdkUserException("The history #"
@@ -1187,11 +1174,10 @@ public class UserFactory {
         try {
             // remove history
             psHistory = SqlUtils.getPreparedStatement(dataSource, "DELETE "
-                    + "FROM " + loginSchema + "histories WHERE user_id = ? "
-                    + "AND project_id = ? AND history_id = ?");
+                    + "FROM " + loginSchema + "histories "
+                    + "WHERE user_id = ? AND history_id = ?");
             psHistory.setInt(1, user.getUserId());
-            psHistory.setString(2, projectId);
-            psHistory.setInt(3, historyId);
+            psHistory.setInt(2, historyId);
             int result = psHistory.executeUpdate();
             if (result == 0)
                 throw new WdkUserException("The history #" + historyId
@@ -1210,11 +1196,16 @@ public class UserFactory {
     void deleteHistories(User user, boolean allProjects)
             throws WdkUserException {
         PreparedStatement psHistory = null;
+        String hisTable = loginSchema + "histories";
+        String ansTable = wdkModel.getModelConfig().getAnswerSchema()
+                + AnswerFactory.TABLE_ANSWER;
         try {
             StringBuffer sql = new StringBuffer();
-            sql.append("DELETE FROM " + loginSchema + "histories "
-                    + "WHERE user_id = ? ");
-            if (!allProjects) sql.append("AND project_id = ?");
+            sql.append("DELETE FROM " + hisTable + " WHERE user_id = ?");
+            if (!allProjects) {
+                sql.append("AND answer_id IN (");
+                sql.append("SELECT answer_id");
+            }
             psHistory = SqlUtils.getPreparedStatement(dataSource,
                     sql.toString());
 
