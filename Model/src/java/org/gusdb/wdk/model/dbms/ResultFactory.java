@@ -164,6 +164,8 @@ public class ResultFactory {
             sql.append(column.getName());
         }
         sql.append(" FROM ").append(tableName);
+        sql.append(" WHERE ").append(CacheFactory.COLUMN_INSTANCE_ID);
+        sql.append(" = ").append(instanceId);
 
         // check if we need to do paging
         if (startIndex != null && endIndex != null) {
