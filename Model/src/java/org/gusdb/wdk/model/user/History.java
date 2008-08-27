@@ -4,6 +4,7 @@
 package org.gusdb.wdk.model.user;
 
 import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -28,9 +29,7 @@ public class History {
     private UserFactory factory;
     private User user;
     private int historyId;
-    
-    private AnswerInfo answerInfo;
-    
+
     private Date createdTime;
     private Date lastRunTime;
     private String customName;
@@ -63,7 +62,7 @@ public class History {
 
     /**
      * @param createTime
-     *                The createTime to set.
+     *            The createTime to set.
      */
     void setCreatedTime(Date createdTime) {
         this.createdTime = createdTime;
@@ -86,7 +85,6 @@ public class History {
                 name = answer.getQuestion().getDisplayName();
             }
         }
-        if (name == null) name = answerInfo.getQuestionName();
         if (name != null) {
             // remove script injections
             name = name.replaceAll("<.+?>", " ");
@@ -99,7 +97,7 @@ public class History {
 
     /**
      * @param customName
-     *                The customName to set.
+     *            The customName to set.
      */
     public void setCustomName(String customName) {
         this.customName = customName;
@@ -125,7 +123,7 @@ public class History {
 
     /**
      * @param answer
-     *                The answer to set.
+     *            The answer to set.
      */
     public void setAnswer(Answer answer) {
         this.answer = answer;
@@ -140,7 +138,7 @@ public class History {
 
     /**
      * @param estimateSize
-     *                The estimateSize to set.
+     *            The estimateSize to set.
      */
     public void setEstimateSize(int estimateSize) {
         this.estimateSize = estimateSize;
@@ -155,7 +153,7 @@ public class History {
 
     /**
      * @param lastRunTime
-     *                The lastRunTime to set.
+     *            The lastRunTime to set.
      */
     public void setLastRunTime(Date lastRunTime) {
         this.lastRunTime = lastRunTime;
@@ -170,7 +168,7 @@ public class History {
 
     /**
      * @param isBoolean
-     *                The isBoolean to set.
+     *            The isBoolean to set.
      */
     public void setBoolean(boolean isBoolean) {
         this.isBoolean = isBoolean;
@@ -185,7 +183,7 @@ public class History {
 
     /**
      * @param booleanExpression
-     *                The booleanExpression to set.
+     *            The booleanExpression to set.
      */
     public void setBooleanExpression(String booleanExpression) {
         this.booleanExpression = booleanExpression;
@@ -205,11 +203,14 @@ public class History {
         return answer.getQuestion().getRecordClass().getFullName();
     }
 
-    public void update() throws WdkUserException {
+    public void update() throws WdkUserException, NoSuchAlgorithmException,
+            SQLException, WdkModelException, JSONException {
         factory.updateHistory(user, this, true);
     }
 
-    public void update(boolean updateTime) throws WdkUserException {
+    public void update(boolean updateTime) throws WdkUserException,
+            NoSuchAlgorithmException, SQLException, WdkModelException,
+            JSONException {
         factory.updateHistory(user, this, updateTime);
     }
 
@@ -268,7 +269,7 @@ public class History {
 
     /**
      * @param isDeleted
-     *                The isDeleted to set.
+     *            The isDeleted to set.
      */
     public void setDeleted(boolean isDeleted) {
         this.isDeleted = isDeleted;
@@ -283,32 +284,18 @@ public class History {
 
     /**
      * @param isValid
-     *                the isValid to set
+     *            the isValid to set
      */
     public void setValid(boolean isValid) {
         this.isValid = isValid;
     }
 
-    /**
-     * @return the answerInfo
-     */
-    public AnswerInfo getAnswerInfo() {
-        return answerInfo;
-    }
-
-    /**
-     * @param answerInfo the answerInfo to set
-     */
-    public void setAnswerInfo(AnswerInfo answerInfo) {
-        this.answerInfo = answerInfo;
-    }
-
     public void setParams(Map<String, Object> params) {
-        //this.params = params;
+    // this.params = params;
     }
 
     public Map<String, Object> getParams() {
-        //return new LinkedHashMap<String, Object>(this.params);
+        // return new LinkedHashMap<String, Object>(this.params);
         return answer.getIdsQueryInstance().getValues();
     }
 
@@ -316,7 +303,7 @@ public class History {
         Map<String, String> paramNames = new LinkedHashMap<String, String>();
         WdkModel wdkModel = user.getWdkModel();
         for (String paramName : getParams().keySet()) {
-            Param param = (Param)wdkModel.resolveReference(paramName);
+            Param param = (Param) wdkModel.resolveReference(paramName);
             String displayName = param.getPrompt();
             if (displayName == null) displayName = paramName;
             paramNames.put(paramName, displayName);

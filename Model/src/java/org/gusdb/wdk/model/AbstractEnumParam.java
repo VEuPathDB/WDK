@@ -92,21 +92,22 @@ public abstract class AbstractEnumParam extends Param {
      * 
      * @see org.gusdb.wdk.model.Param#getInternalValue(java.lang.String)
      */
-    public String getInternalValue(String termList) throws WdkModelException,
+    @Override
+    public String getInternalValue(Object termList) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
         // check if null value is allowed
         if (allowEmpty && termList == null) return getEmptyValue();
 
         // the input is a list of terms
-        String[] terms = (String[]) decompressValue(termList);
+        String[] terms = (String[]) decompressValue((String)termList);
         initVocabMap();
         StringBuffer buf = new StringBuffer();
         for (String term : terms) {
             // verify the term
             if (!termInternalMap.containsKey(term))
-                throw new WdkModelException("The term " + term
-                        + " does not exist in param " + getFullName());
+                throw new WdkModelException("The term '" + term
+                        + "' does not exist in param " + getFullName());
 
             String internal = useTermOnly ? term : termInternalMap.get(term);
             if (quote) internal = "'" + internal + "'";

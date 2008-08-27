@@ -147,7 +147,7 @@ public class User /* implements Serializable */{
 
     /**
      * @param address
-     *                The address to set.
+     *            The address to set.
      */
     public void setAddress(String address) {
         this.address = address;
@@ -162,7 +162,7 @@ public class User /* implements Serializable */{
 
     /**
      * @param city
-     *                The city to set.
+     *            The city to set.
      */
     public void setCity(String city) {
         this.city = city;
@@ -177,7 +177,7 @@ public class User /* implements Serializable */{
 
     /**
      * @param country
-     *                The country to set.
+     *            The country to set.
      */
     public void setCountry(String country) {
         this.country = country;
@@ -192,7 +192,7 @@ public class User /* implements Serializable */{
 
     /**
      * @param department
-     *                The department to set.
+     *            The department to set.
      */
     public void setDepartment(String department) {
         this.department = department;
@@ -207,7 +207,7 @@ public class User /* implements Serializable */{
 
     /**
      * @param firstName
-     *                The firstName to set.
+     *            The firstName to set.
      */
     public void setFirstName(String firstName) {
         this.firstName = firstName;
@@ -222,7 +222,7 @@ public class User /* implements Serializable */{
 
     /**
      * @param lastName
-     *                The lastName to set.
+     *            The lastName to set.
      */
     public void setLastName(String lastName) {
         this.lastName = lastName;
@@ -237,7 +237,7 @@ public class User /* implements Serializable */{
 
     /**
      * @param middleName
-     *                The middleName to set.
+     *            The middleName to set.
      */
     public void setMiddleName(String middleName) {
         this.middleName = middleName;
@@ -252,7 +252,7 @@ public class User /* implements Serializable */{
 
     /**
      * @param organization
-     *                The organization to set.
+     *            The organization to set.
      */
     public void setOrganization(String organization) {
         this.organization = organization;
@@ -267,7 +267,7 @@ public class User /* implements Serializable */{
 
     /**
      * @param phoneNumber
-     *                The phoneNumber to set.
+     *            The phoneNumber to set.
      */
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
@@ -282,7 +282,7 @@ public class User /* implements Serializable */{
 
     /**
      * @param state
-     *                The state to set.
+     *            The state to set.
      */
     public void setState(String state) {
         this.state = state;
@@ -297,7 +297,7 @@ public class User /* implements Serializable */{
 
     /**
      * @param title
-     *                The title to set.
+     *            The title to set.
      */
     public void setTitle(String title) {
         this.title = title;
@@ -312,7 +312,7 @@ public class User /* implements Serializable */{
 
     /**
      * @param zipCode
-     *                The zipCode to set.
+     *            The zipCode to set.
      */
     public void setZipCode(String zipCode) {
         this.zipCode = zipCode;
@@ -337,7 +337,7 @@ public class User /* implements Serializable */{
 
     /**
      * @param userRole
-     *                The userRole to set.
+     *            The userRole to set.
      */
     public void addUserRole(String userRole) {
         this.userRoles.add(userRole);
@@ -349,7 +349,7 @@ public class User /* implements Serializable */{
 
     /**
      * @param guest
-     *                The guest to set.
+     *            The guest to set.
      */
     void setGuest(boolean guest) {
         this.guest = guest;
@@ -616,7 +616,8 @@ public class User /* implements Serializable */{
     }
 
     public void deleteHistory(int historyId) throws WdkUserException,
-            WdkModelException {
+            WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException {
         // check the dependencies of the history
         History history = getHistory(historyId);
         if (history.isDepended()) {
@@ -642,7 +643,7 @@ public class User /* implements Serializable */{
 
     /**
      * @param historyCount
-     *                The historyCount to set.
+     *            The historyCount to set.
      */
     void setHistoryCount(int historyCount) {
         this.historyCount = historyCount;
