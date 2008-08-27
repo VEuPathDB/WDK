@@ -184,14 +184,14 @@ public class ShowSummaryAction extends ShowQuestionAction {
 	    queryString = request.getQueryString();
 	}
 
-	HashMap<Integer,UserStrategyBean> activeStrategies = (HashMap<Integer,UserStrategyBean>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
+	//HashMap<Integer,UserStrategyBean> activeStrategies = (HashMap<Integer,UserStrategyBean>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
 
-	if (activeStrategies == null) {
-	    activeStrategies = new HashMap<Integer,UserStrategyBean>();
-	}
-	activeStrategies.put(new Integer(strategy.getStrategyId()),strategy);
+	//if (activeStrategies == null) {
+	    //activeStrategies = new HashMap<Integer,UserStrategyBean>();
+	//}
+	//activeStrategies.put(new Integer(strategy.getStrategyId()),strategy);
 	
-	request.getSession().setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY, activeStrategies);  
+	//request.getSession().setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY, activeStrategies);  
 	
         int userAnswerId = userAnswer.getUserAnswerId();
 
@@ -233,19 +233,19 @@ public class ShowSummaryAction extends ShowQuestionAction {
         // make ActionForward
 	ActionForward forward;
 
-	String resultsOnly = request.getParameter(CConstants.WDK_RESULT_SET_ONLY_KEY);
+	//String resultsOnly = request.getParameter(CConstants.WDK_RESULT_SET_ONLY_KEY);
 	// forward to the results page, if requested
-	if (resultsOnly != null && Boolean.valueOf(resultsOnly)) {
-	    forward = mapping.findForward(CConstants.RESULTSONLY_MAPKEY);
-	}
+	//if (resultsOnly != null && Boolean.valueOf(resultsOnly)) {
+	//    forward = mapping.findForward(CConstants.RESULTSONLY_MAPKEY);
+	//}
 	// otherwise, forward to the full summary page
-	else {
-	    forward = mapping.findForward(CConstants.SHOW_APPLICATION_MAPKEY);
-	    forward = new ActionForward(forward.getPath(), true);
-	}
+	//else {
+	//    forward = mapping.findForward(CConstants.SHOW_APPLICATION_MAPKEY);
+	//    forward = new ActionForward(forward.getPath(), true);
+	//}
 	
-	System.out.println("From forward: " + forward.getPath());
-	/*
+	//System.out.println("From forward: " + forward.getPath());
+	
 	// if we got a strategy id in the URL, go to summary page
 	if (strProtoId != null && strProtoId.length() != 0) {
 	    String resultsOnly = request.getParameter(CConstants.WDK_RESULT_SET_ONLY_KEY);
@@ -267,7 +267,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
 	    System.out.println(path);
 	    forward = new ActionForward(path, true);
 	}
-	*/ 
+	 
 	return forward;
     }
 
