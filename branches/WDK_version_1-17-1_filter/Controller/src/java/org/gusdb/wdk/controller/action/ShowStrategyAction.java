@@ -75,11 +75,11 @@ public class ShowStrategyAction extends ShowQuestionAction {
         }
 
 	UserStrategyBean strategy = wdkUser.getUserStrategy(Integer.parseInt(strProtoId));
-	HashMap<Integer,UserStrategyBean> activeStrategies = (HashMap<Integer,UserStrategyBean>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
+	//HashMap<Integer,UserStrategyBean> activeStrategies = (HashMap<Integer,UserStrategyBean>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
 
-	activeStrategies.put(new Integer(strategy.getStrategyId()),strategy);
+	//activeStrategies.put(new Integer(strategy.getStrategyId()),strategy);
 	
-	request.getSession().setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY, activeStrategies);
+	//request.getSession().setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY, activeStrategies);
 	request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
 
 	// forward to strategyPage.jsp
