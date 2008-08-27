@@ -18,12 +18,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
-import java.util.Set;
 import java.util.regex.Matcher;
 
 import javax.activation.DataHandler;
@@ -1204,7 +1202,10 @@ public class UserFactory {
             sql.append("DELETE FROM " + hisTable + " WHERE user_id = ?");
             if (!allProjects) {
                 sql.append("AND answer_id IN (");
-                sql.append("SELECT answer_id");
+                sql.append("SELECT h.answer_id FROM ");
+                sql.append(hisTable).append(" h, ").append(ansTable).append(
+                        " a ");
+                sql.append("WHERE h.answer_id = a.answer_id AND a.project_id = ?");
             }
             psHistory = SqlUtils.getPreparedStatement(dataSource,
                     sql.toString());
@@ -1233,83 +1234,88 @@ public class UserFactory {
         }
     }
 
-    public void deleteInvalidHistories(Map<String, String> signatures)
-            throws WdkUserException {
-        ResultSet rsHistory = null;
-        PreparedStatement psDelete = null;
-        try {
-            // get invalid histories
-            PreparedStatement psHistory = SqlUtils.getPreparedStatement(
-                    dataSource, "SELECT user_id, history_id, question_name, "
-                            + "is_boolean, signature FROM " + loginSchema
-                            + "histories where project_id = ?");
-            psHistory.setString(1, projectId);
-            rsHistory = psHistory.executeQuery();
-            Set<HistoryKey> histories = new LinkedHashSet<HistoryKey>();
-            while (rsHistory.next()) {
-                int userId = rsHistory.getInt("user_id");
-                int historyId = rsHistory.getInt("history_id");
-                String questionName = rsHistory.getString("question_name");
-                boolean isBoolean = rsHistory.getBoolean("is_boolean");
-                String signature = rsHistory.getString("signature");
-                if (!isBoolean) {
-                    if (!signatures.containsKey(questionName)) {
-                        // check if the question still exists
-                        histories.add(new HistoryKey(userId, historyId));
-                        continue;
-                    } else if (!signature.equals(signatures.get(questionName))) {
-                        // check if the parameter names/number has been changed
-                        histories.add(new HistoryKey(userId, historyId));
-                        continue;
-                    }
-                }
-                // check if the history has valid parameter values by trying
-                // to make an answer
-                try {
-                    User user = loadUser(userId);
-                    History history = loadHistory(user, historyId);
-                    // remove deleted, undepended histories
-                    if (history.isDeleted() && !history.isDepended())
-                        histories.add(new HistoryKey(userId, historyId));
-                } catch (WdkModelException ex) {
-                    histories.add(new HistoryKey(userId, historyId));
-                }
-
-            }
-
-            System.out.print(histories.size()
-                    + " invalid Histories found. Deleting them...");
-
-            // delete invalid histories
-            psDelete = SqlUtils.getPreparedStatement(dataSource, "DELETE FROM "
-                    + loginSchema + "histories WHERE user_id = ? AND "
-                    + "project_id = ? AND history_id = ?");
-            for (HistoryKey history : histories) {
-                psDelete.setInt(1, history.userId);
-                psDelete.setString(2, projectId);
-                psDelete.setInt(3, history.historyId);
-                psDelete.executeUpdate();
-            }
-            System.out.println("done.");
-        } catch (SQLException ex) {
-            throw new WdkUserException(ex);
-        } finally {
-            try {
-                SqlUtils.closeResultSet(rsHistory);
-                SqlUtils.closeStatement(psDelete);
-            } catch (SQLException ex) {
-                throw new WdkUserException(ex);
-            }
-        }
-    }
+    // public void deleteInvalidHistories(Map<String, String> signatures)
+    // throws WdkUserException {
+    // ResultSet rsHistory = null;
+    // PreparedStatement psDelete = null;
+    // try {
+    // // get invalid histories
+    // PreparedStatement psHistory = SqlUtils.getPreparedStatement(
+    // dataSource, "SELECT user_id, history_id, question_name, "
+    // + "is_boolean, signature FROM " + loginSchema
+    // + "histories where project_id = ?");
+    // psHistory.setString(1, projectId);
+    // rsHistory = psHistory.executeQuery();
+    // Set<HistoryKey> histories = new LinkedHashSet<HistoryKey>();
+    // while (rsHistory.next()) {
+    // int userId = rsHistory.getInt("user_id");
+    // int historyId = rsHistory.getInt("history_id");
+    // String questionName = rsHistory.getString("question_name");
+    // boolean isBoolean = rsHistory.getBoolean("is_boolean");
+    // String signature = rsHistory.getString("signature");
+    // if (!isBoolean) {
+    // if (!signatures.containsKey(questionName)) {
+    // // check if the question still exists
+    // histories.add(new HistoryKey(userId, historyId));
+    // continue;
+    // } else if (!signature.equals(signatures.get(questionName))) {
+    // // check if the parameter names/number has been changed
+    // histories.add(new HistoryKey(userId, historyId));
+    // continue;
+    // }
+    // }
+    // // check if the history has valid parameter values by trying
+    // // to make an answer
+    // try {
+    // User user = loadUser(userId);
+    // History history = loadHistory(user, historyId);
+    // // remove deleted, undepended histories
+    // if (history.isDeleted() && !history.isDepended())
+    // histories.add(new HistoryKey(userId, historyId));
+    // } catch (WdkModelException ex) {
+    // histories.add(new HistoryKey(userId, historyId));
+    // }
+    //
+    // }
+    //
+    // System.out.print(histories.size()
+    // + " invalid Histories found. Deleting them...");
+    //
+    // // delete invalid histories
+    // psDelete = SqlUtils.getPreparedStatement(dataSource, "DELETE FROM "
+    // + loginSchema + "histories WHERE user_id = ? AND "
+    // + "project_id = ? AND history_id = ?");
+    // for (HistoryKey history : histories) {
+    // psDelete.setInt(1, history.userId);
+    // psDelete.setString(2, projectId);
+    // psDelete.setInt(3, history.historyId);
+    // psDelete.executeUpdate();
+    // }
+    // System.out.println("done.");
+    // } catch (SQLException ex) {
+    // throw new WdkUserException(ex);
+    // } finally {
+    // try {
+    // SqlUtils.closeResultSet(rsHistory);
+    // SqlUtils.closeStatement(psDelete);
+    // } catch (SQLException ex) {
+    // throw new WdkUserException(ex);
+    // }
+    // }
+    // }
 
     private int getHistoryCount(User user) throws WdkUserException {
+        String hisTable = loginSchema + "histories";
+        String ansTable = wdkModel.getModelConfig().getAnswerSchema()
+                + AnswerFactory.TABLE_ANSWER;
         ResultSet rsHistory = null;
         try {
             PreparedStatement psHistory = SqlUtils.getPreparedStatement(
-                    dataSource, "SELECT count(*) AS num FROM " + loginSchema
-                            + "histories WHERE user_id = ? AND project_id = ? "
-                            + "AND is_deleted = 0");
+                    dataSource, "SELECT count(h.history_id) AS num FROM "
+                            + hisTable + " h, " + ansTable + " a "
+                            + "WHERE h.answer_id = a.answer_id "
+                            + " AND h.user_id = ? AND a.project_id = ? "
+                            + " AND is_deleted = 0");
             psHistory.setInt(1, user.getUserId());
             psHistory.setString(2, projectId);
             rsHistory = psHistory.executeQuery();
