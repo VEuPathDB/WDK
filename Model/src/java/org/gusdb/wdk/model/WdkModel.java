@@ -56,7 +56,7 @@ public class WdkModel {
      * @throws InstantiationException
      * @throws WdkUserException
      */
-    public static WdkModel construct(String modelName)
+    public static WdkModel construct(String projectId)
             throws WdkModelException, NoSuchAlgorithmException,
             ParserConfigurationException, TransformerFactoryConfigurationError,
             TransformerException, IOException, SAXException, SQLException,
@@ -65,7 +65,7 @@ public class WdkModel {
         String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
 
         ModelXmlParser parser = new ModelXmlParser(gusHome);
-        return parser.parseModel(modelName);
+        return parser.parseModel(projectId);
     }
 
     private ModelConfig modelConfig;

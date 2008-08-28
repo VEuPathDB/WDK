@@ -36,7 +36,7 @@ public class ShowRegisterAction extends Action {
                 CConstants.WDK_USER_KEY);
         
         ActionForward forward = null;
-        if (wdkUser != null && !wdkUser.getGuest()) {
+        if (wdkUser != null && !wdkUser.isGuest()) {
             String customProfileViewFile = customViewDir + File.separator
                     + CConstants.WDK_CUSTOM_PROFILE_PAGE;
             if (ApplicationInitListener.resourceExists(customProfileViewFile,

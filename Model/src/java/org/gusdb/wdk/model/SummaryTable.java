@@ -4,12 +4,18 @@
 package org.gusdb.wdk.model;
 
 import java.security.NoSuchAlgorithmException;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.sql.DataSource;
+
+import org.gusdb.wdk.model.dbms.SqlUtils;
+import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.query.SqlQueryInstance;
 import org.json.JSONException;
 
 /**
@@ -67,6 +73,7 @@ public class SummaryTable extends WdkModelBase {
     private List<SummaryView> summaryViewList = new ArrayList<SummaryView>();
     private Map<Cell, SummaryView> summaryViewMap = new LinkedHashMap<Cell, SummaryView>();
 
+    private WdkModel wdkModel;
     private RecordClass recordClass;
 
     /**
@@ -242,6 +249,8 @@ public class SummaryTable extends WdkModelBase {
     public void resolveReferences(WdkModel wdkModel) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
+        this.wdkModel = wdkModel;
+
         // resolve the references of row/column params
         rowParam = (AbstractEnumParam) wdkModel.resolveReference(rowParamRef);
         columnParam = (AbstractEnumParam) wdkModel.resolveReference(columnParamRef);
@@ -263,5 +272,61 @@ public class SummaryTable extends WdkModelBase {
             SummaryView summaryView = summaryViewMap.get(cell);
             summaryView.resolveReferences(wdkModel);
         }
+    }
+
+    public Map<String, Map<String, Integer>> getSummaryCount(Answer answer)
+            throws SQLException, NoSuchAlgorithmException, WdkModelException,
+            JSONException, WdkUserException {
+        String answerChecksum = answer.getChecksum();
+
+        // construct union query
+        StringBuffer sql = new StringBuffer();
+        for (SummaryView view : summaryViewMap.values()) {
+            String subSql = getSummarySql(view, answerChecksum);
+            if (sql.length() > 0) sql.append(" UNION ");
+            sql.append("SELECT count(*) AS view_count, ");
+            sql.append("'").append(view.getRowTerm()).append("' AS view_row, ");
+            sql.append("'").append(view.getColumnTerm()).append("' AS view_column ");
+            sql.append(" FROM (").append(subSql).append(") f");
+        }
+
+        // construct container
+        Map<String, Map<String, Integer>> summaries = new LinkedHashMap<String, Map<String, Integer>>();
+        for (String row : rowParam.getVocab()) {
+            Map<String, Integer> rowSummary = new LinkedHashMap<String, Integer>();
+            for (String column : columnParam.getVocab()) {
+                rowSummary.put(column, null);
+            }
+            summaries.put(row, rowSummary);
+        }
+
+        // run the query and get the count
+        ResultSet resultSet = null;
+        DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
+        try {
+            resultSet = SqlUtils.executeQuery(dataSource, sql.toString());
+            while (resultSet.next()) {
+                String row = resultSet.getString("view_row");
+                String column = resultSet.getString("view_column");
+                int count = resultSet.getInt("view_count");
+                summaries.get(row).put(column, count);
+            }
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            SqlUtils.closeResultSet(resultSet);
+        }
+        return summaries;
+    }
+
+    private String getSummarySql(SummaryView view, String answerChecksum)
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
+        Map<String, Object> params = new LinkedHashMap<String, Object>();
+        params.put(rowParam.getName(), view.getRowTerm());
+        params.put(columnParam.getName(), view.getColumnTerm());
+        params.put(view.getAnswerParam().getName(), answerChecksum);
+        QueryInstance instance = view.getSummaryQuery().makeInstance(params);
+        return ((SqlQueryInstance) instance).getUncachedSql();
     }
 }

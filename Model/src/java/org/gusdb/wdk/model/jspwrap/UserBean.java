@@ -203,7 +203,7 @@ public class UserBean /* implements Serializable */{
      * 
      * @see org.gusdb.wdk.model.user.User#isGuest()
      */
-    public boolean getGuest() throws WdkUserException {
+    public boolean isGuest() throws WdkUserException {
         return user.isGuest();
     }
 
