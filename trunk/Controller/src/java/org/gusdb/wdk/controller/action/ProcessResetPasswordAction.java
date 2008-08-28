@@ -46,7 +46,7 @@ public class ProcessResetPasswordAction extends Action {
 
         // if the user is logged in, redirect him/her to change password page
         UserBean user = (UserBean)request.getSession().getAttribute(CConstants.WDK_USER_KEY);
-        if (user != null && !user.getGuest()) {
+        if (user != null && !user.isGuest()) {
             forward= mapping.findForward(CConstants.SHOW_PASSWORD_MAPKEY);
             return forward;
         }

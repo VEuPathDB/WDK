@@ -59,7 +59,7 @@ public class ProcessPasswordAction extends Action {
 
         try {
             // fails if the current use is a guest
-            if (user.getGuest())
+            if (user.isGuest())
                 throw new WdkUserException(
                         "You cannot change the password as a guest.");
 

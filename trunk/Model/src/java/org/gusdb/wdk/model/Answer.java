@@ -5,7 +5,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Savepoint;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -681,6 +680,10 @@ public class Answer {
             SQLException, JSONException, WdkModelException, WdkUserException {
         if (pageRecordInstances != null) return;
 
+        // store answer info
+        AnswerFactory answerFactory = question.getWdkModel().getAnswerFactory();
+        answerInfo = answerFactory.saveAnswer(this);
+
         this.pageRecordInstances = new LinkedHashMap<PrimaryKeyAttributeValue, RecordInstance>();
 
         String sql = getPagedIdSql();
@@ -792,10 +795,28 @@ public class Answer {
 
     public AnswerInfo getAnswerInfo() throws NoSuchAlgorithmException,
             SQLException, WdkModelException, JSONException, WdkUserException {
-        if (answerInfo == null) {
-            AnswerFactory factory = question.getWdkModel().getAnswerFactory();
-            answerInfo = factory.saveAnswer(this);
-        }
+        initPageRecordInstances();
         return answerInfo;
+    }
+
+    public Map<String, Map<String, Integer>> getSummaryCount(
+            String summaryTableName) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
+        initPageRecordInstances();
+        SummaryTable summaryTable = question.getRecordClass().getSummaryTable(
+                summaryTableName);
+        return summaryTable.getSummaryCount(this);
+    }
+
+    public Map<String, Map<String, Map<String, Integer>>> getAllSummaryCount()
+            throws NoSuchAlgorithmException, WdkModelException, SQLException,
+            JSONException, WdkUserException {
+        Map<String, Map<String, Map<String, Integer>>> allSummaries = new LinkedHashMap<String, Map<String, Map<String, Integer>>>();
+        for (SummaryTable summaryTable : question.getRecordClass().getSummaryTables()) {
+            String summaryName = summaryTable.getName();
+            allSummaries.put(summaryName, getSummaryCount(summaryName));
+        }
+        return allSummaries;
     }
 }

@@ -133,7 +133,7 @@ CREATE TABLE userlogins.histories
   custom_name varchar(4000),
   is_boolean NUMBER(1),
   is_deleted NUMBER(1),
-  CONSTRAINT "HISTORIES_PK" PRIMARY KEY (user_id, history_id, project_id),
+  CONSTRAINT "HISTORIES_PK" PRIMARY KEY (user_id, history_id),
   CONSTRAINT "HISTORY_USER_ID_FK" FOREIGN KEY (user_id)
       REFERENCES userlogins.users (user_id)
 );

@@ -117,6 +117,7 @@ public class SummaryTester {
                 // queries, not just one.
                 if (cmdLine.hasOption("showQuery")) {
                     System.out.println(getLowLevelQuery(answer));
+                    System.exit(0);
                 }
 
                 if (rows.length != 2) System.out.println("page " + pageCount);
@@ -124,6 +125,9 @@ public class SummaryTester {
                 // print the size of the answer
                 System.out.println("Total # of records: "
                         + answer.getResultSize());
+
+                // print summary tables
+                printSummaryTables(answer);
 
                 // load configuration for output format
                 if (!hasFormat) format = "tabular";
@@ -158,6 +162,35 @@ public class SummaryTester {
         SummaryTable summaryTable = recordClass.getSummaryTable(viewValues[0]);
         SummaryView view = summaryTable.getView(viewValues[1], viewValues[2]);
         return view;
+    }
+
+    private static void printSummaryTables(Answer answer)
+            throws NoSuchAlgorithmException, WdkModelException, SQLException,
+            JSONException, WdkUserException {
+        System.out.println("\n====================== Summaries =========================\n");
+        
+        SummaryTable[] tables = answer.getQuestion().getRecordClass().getSummaryTables();
+        for (SummaryTable table : tables) {
+            System.out.println("[Summary] " + table.getDisplayName());
+            Map<String, Map<String, Integer>> summary = answer.getSummaryCount(table.getName());
+
+            // print column names
+            for (String column : summary.values().iterator().next().keySet()) {
+                System.out.print("\t[" + column + "]");
+            }
+            System.out.println();
+
+            // print cells
+            for (String row : summary.keySet()) {
+                System.out.print("[" + row + "]");
+                for (Integer count : summary.get(row).values()) {
+                    System.out.print("\t" + ((count == null) ? "-" : count));
+                }
+                System.out.println();
+            }
+            System.out.println();
+        }
+        System.out.println();
     }
 
     private static Map<String, String> loadConfiguration(String configFileName)
