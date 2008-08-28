@@ -47,7 +47,7 @@ public class RemoteLoginAction extends Action {
             // create remote key, if user logged in
             UserBean user = ( UserBean ) request.getSession().getAttribute(
                     CConstants.WDK_USER_KEY );
-            if ( user != null && !user.getGuest() ) {
+            if ( user != null && !user.isGuest() ) {
                 String remoteKey = user.createRemoteKey();
                 String signature = user.getSignature();
                 sbUrl.append( "&" + CConstants.WDK_REMOTE_SIGNATURE_KEY );

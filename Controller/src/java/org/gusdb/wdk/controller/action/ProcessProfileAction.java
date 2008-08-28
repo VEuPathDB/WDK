@@ -47,7 +47,7 @@ public class ProcessProfileAction extends Action {
             forward = mapping.findForward(CConstants.SHOW_PROFILE_MAPKEY);
         }
         // fails if the current use is a guest
-        if (user != null && !user.getGuest()) {
+        if (user != null && !user.isGuest()) {
 
             // clear the preference
             user.clearPreferences();

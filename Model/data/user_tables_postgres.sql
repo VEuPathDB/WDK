@@ -77,18 +77,13 @@ CREATE TABLE userlogins.histories
 (
   history_id NUMERIC(12) NOT NULL,
   user_id NUMERIC(12) NOT NULL,
-  project_id VARCHAR(50) NOT NULL,
-  question_name VARCHAR(255) NOT NULL,
+  answer_id NUMERIC(12) NOT NULL,
   create_time TIMESTAMP NOT NULL,
   last_run_time TIMESTAMP NOT NULL,
   custom_name VARCHAR(4000),
-  estimate_size NUMERIC(12),
-  query_signature VARCHAR(40),
-  query_instance_checksum VARCHAR(40),
   is_boolean NUMERIC(1),
   is_deleted NUMERIC(1),
-  params TEXT,
-  CONSTRAINT "HISTORIES_PK" PRIMARY KEY (user_id, history_id, project_id),
+  CONSTRAINT "HISTORIES_PK" PRIMARY KEY (user_id, history_id),
   CONSTRAINT "HISTORY_USER_ID_FK" FOREIGN KEY (user_id)
       REFERENCES userlogins.users (user_id)
 );

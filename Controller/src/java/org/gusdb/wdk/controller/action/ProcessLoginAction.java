@@ -61,7 +61,7 @@ public class ProcessLoginAction extends Action {
             request.getSession().setAttribute(CConstants.WDK_USER_KEY, guest);
         }
 
-        if (!guest.getGuest()) { // user has been logged in, redirect back
+        if (!guest.isGuest()) { // user has been logged in, redirect back
             response.sendRedirect(response.encodeRedirectURL(request.getRequestURL().toString()));
         }
 
