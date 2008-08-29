@@ -61,27 +61,6 @@ display the parameter values for an non-boolean answer.
                           </tr>
                        </c:if>
                     </c:forEach>
-                    
-                    <%-- display subType information, if having any --%>
-                    <c:set var="recordClass" value="${wdkAnswer.question.recordClass}"/>
-                    <c:if test="${recordClass.hasSubType}">
-                        <c:set var="subTypeParam" value="${recordClass.subType.subTypeParam}"/>
-                        <tr>
-                            <td align="right" valign="top" nowrap class="medium">
-                                <b><i>${subTypeParam.prompt}</i><b>
-                            </td>
-                            <td valign="top" class="medium">&nbsp;:&nbsp;</td>
-                            <td class="medium">
-                                <jsp:setProperty name="subTypeParam" 
-                                                 property="paramValue" 
-                                                 value="${wdkAnswer.subTypeValue}" />
-                                <jsp:setProperty name="subTypeParam" 
-                                                 property="truncateLength" 
-                                                 value="1000" />
-                                ${subTypeParam.decompressedValue}
-                            </td>
-                        </tr>
-                    </c:if>
                 </table>
             </td>
         </tr>
