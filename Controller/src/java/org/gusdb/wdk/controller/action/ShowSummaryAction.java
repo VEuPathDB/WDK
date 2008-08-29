@@ -370,12 +370,13 @@ public class ShowSummaryAction extends ShowQuestionAction {
     private ActionForward showError(WdkModelBean wdkModel, UserBean wdkUser,
             ActionMapping mapping, HttpServletRequest request,
             HttpServletResponse response) throws WdkModelException,
-            WdkUserException, UnsupportedEncodingException {
+            WdkUserException, UnsupportedEncodingException, SQLException,
+            JSONException {
         // TEST
         logger.info("Show the details of an invalid history/question");
 
         String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
-        Map<String, Object> params;
+        Map<String, String> params;
         Map<String, String> paramNames;
         String customName;
         if (qFullName == null || qFullName.length() == 0) {
@@ -387,7 +388,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             qFullName = history.getQuestionName();
             customName = history.getCustomName();
         } else {
-            params = new LinkedHashMap<String, Object>();
+            params = new LinkedHashMap<String, String>();
             paramNames = new LinkedHashMap<String, String>();
             customName = qFullName;
 

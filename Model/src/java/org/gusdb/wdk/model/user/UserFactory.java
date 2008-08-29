@@ -37,8 +37,6 @@ import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Answer;
-import org.gusdb.wdk.model.BooleanExpression;
-import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -823,17 +821,24 @@ public class UserFactory {
 
     Map<Integer, History> loadHistories(User user,
             Map<Integer, History> invalidHistories) throws WdkUserException,
-            WdkModelException {
+            WdkModelException, SQLException, JSONException {
         Map<Integer, History> histories = new LinkedHashMap<Integer, History>();
 
+        String hisTable = loginSchema + "histories";
+        String ansTable = wdkModel.getAnswerFactory().getAnswerTable();
         ResultSet rsHistory = null;
         try {
             PreparedStatement psHistory = SqlUtils.getPreparedStatement(
-                    dataSource, "SELECT history_id, question_name, create_time"
-                            + ", last_run_time, custom_name, estimate_size, "
-                            + "is_boolean, is_deleted, params FROM "
-                            + loginSchema + "histories WHERE user_id = ? "
-                            + "AND project_id = ? ORDER BY last_run_time DESC");
+                    dataSource, "SELECT h.history_id, a."
+                            + AnswerFactory.COLUMN_ANSWER_CHECKSUM
+                            + ", h.create_time, h.last_run_time, "
+                            + " h.custom_name, h.is_boolean, h.is_deleted, "
+                            + " display_params FROM " + hisTable + " h, "
+                            + ansTable + " a "
+                            + "WHERE h.answer_id = a.answer_id "
+                            + "AND h.user_id = ? AND a."
+                            + AnswerFactory.COLUMN_PROJECT_ID + " = ? "
+                            + "ORDER BY h.last_run_time DESC");
             psHistory.setInt(1, user.getUserId());
             psHistory.setString(2, projectId);
             rsHistory = psHistory.executeQuery();
@@ -853,69 +858,62 @@ public class UserFactory {
             for (History history : histories.values()) {
                 history.computeDependencies(array);
             }
-        } catch (SQLException ex) {
-            throw new WdkUserException(ex);
         } finally {
-            try {
-                SqlUtils.closeResultSet(rsHistory);
-            } catch (SQLException ex) {
-                throw new WdkUserException(ex);
-            }
+            SqlUtils.closeResultSet(rsHistory);
         }
         return histories;
     }
 
-    History loadHistory(User user, int historyId) throws WdkUserException {
+    History loadHistory(User user, int historyId) throws WdkUserException,
+            SQLException, JSONException {
+        String hisTable = loginSchema + "histories";
+        String ansTable = wdkModel.getAnswerFactory().getAnswerTable();
         ResultSet rsHistory = null;
         try {
             PreparedStatement psHistory = SqlUtils.getPreparedStatement(
-                    dataSource, "SELECT question_name, create_time, "
-                            + "last_run_time, custom_name, estimate_size, "
-                            + "is_boolean, is_deleted, params FROM "
-                            + loginSchema + "histories WHERE user_id = ? "
-                            + "AND project_id = ? AND history_id = ? "
-                            + "ORDER BY last_run_time DESC");
+                    dataSource, "SELECT a."
+                            + AnswerFactory.COLUMN_ANSWER_CHECKSUM
+                            + ", h.create_time, h.last_run_time, "
+                            + " h.custom_name, h.is_boolean, h.is_deleted, "
+                            + " h.display_params                         "
+                            + "FROM " + hisTable + " h, " + ansTable + " a "
+                            + "WHERE h.answer_id = a.answer_id"
+                            + " AND h.user_id = ? AND h.history_id = ? "
+                            + "ORDER BY h.last_run_time DESC");
             psHistory.setInt(1, user.getUserId());
-            psHistory.setString(2, projectId);
-            psHistory.setInt(3, historyId);
+            psHistory.setInt(2, historyId);
             rsHistory = psHistory.executeQuery();
             if (!rsHistory.next())
                 throw new SQLException("The history #" + historyId
                         + " of user " + user.getEmail() + " doesn't exist.");
 
             return loadHistory(user, historyId, rsHistory);
-        } catch (SQLException ex) {
-            throw new WdkUserException(ex);
         } finally {
-            try {
-                SqlUtils.closeResultSet(rsHistory);
-            } catch (SQLException ex) {
-                throw new WdkUserException(ex);
-            }
+            SqlUtils.closeResultSet(rsHistory);
         }
     }
 
     private History loadHistory(User user, int historyId, ResultSet rsHistory)
-            throws SQLException {
+            throws SQLException, JSONException {
         History history = new History(this, user, historyId);
 
         // load history info
+        String answerChecksum = rsHistory.getString(AnswerFactory.COLUMN_ANSWER_CHECKSUM);
         Timestamp createTime = rsHistory.getTimestamp("create_time");
         Timestamp lastRunTime = rsHistory.getTimestamp("last_run_time");
 
         history.setCreatedTime(new Date(createTime.getTime()));
         history.setLastRunTime(new Date(lastRunTime.getTime()));
         history.setCustomName(rsHistory.getString("custom_name"));
-        history.setEstimateSize(rsHistory.getInt("estimate_size"));
         history.setBoolean(rsHistory.getBoolean("is_boolean"));
         history.setDeleted(rsHistory.getBoolean("is_deleted"));
 
-        String instanceContent = platform.getClobData(rsHistory, "params");
-        // history.setQuestionName(rsHistory.getString("question_name"));
+        String displayParams = platform.getClobData(rsHistory, "display_params");
+        history.setDisplayParams(displayParams);
 
         // re-construct the answer
         try {
-            constructAnswer(history, instanceContent);
+            constructAnswer(history, answerChecksum);
         } catch (WdkModelException ex) {
             history.setValid(false);
         } catch (WdkUserException ex) {
@@ -929,70 +927,16 @@ public class UserFactory {
         return history;
     }
 
-    private Map<String, Object> parseParams(boolean isBoolean,
-            String paramsClob, Object[] subTypeInfo) {
-        // String[] parts = paramsClob.split(Utilities.DATA_DIVIDER);
-        String[] parts = paramsClob.split(",");
-        int base = 1;
-
-        // the first element is query name, ignored;
-        // the second could be subtype label or the first param-value pair
-        // if the second is subtype label then:
-        // * the third is subtype value, and
-        // * the fourth is expand flag, and
-        // * param-value pair starts from the fifth item
-        // if (parts[1].equals(Utilities.SUB_TYPE)) {
-        // base = 4;
-        // subTypeInfo[0] = parts[2];
-        // subTypeInfo[1] = Boolean.parseBoolean(parts[3]);
-        // }
-
-        Map<String, Object> params = new LinkedHashMap<String, Object>();
-        if (isBoolean) {// the last part for boolean is a boolean expression
-            // params.put(Utilities.BOOLEAN_EXPRESSION_PARAM_KEY, parts[base]);
-            params.put("boolean", parts[base]);
-        } else {
-            for (int i = base; i < parts.length; i++) {
-                String pvPair = parts[i];
-                int index = pvPair.indexOf('=');
-                String paramName = pvPair.substring(0, index).trim();
-                String value = pvPair.substring(index + 1).trim();
-                params.put(paramName, value);
-            }
-        }
-        return params;
-    }
-
-    private void constructAnswer(History history, String instanceContent)
+    private void constructAnswer(History history, String answerChecksum)
             throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, SQLException, JSONException {
-        User user = history.getUser();
-        Object[] subTypeInfo = { null, false };
-        Map<String, Object> params = parseParams(history.isBoolean(),
-                instanceContent, subTypeInfo);
-        Answer answer;
-        if (history.isBoolean()) {
-            // String expression = (String)
-            // params.get(Utilities.BOOLEAN_EXPRESSION_PARAM_KEY);
-            String expression = (String) params.get("booean");
-            history.setBooleanExpression(expression);
+        AnswerFactory answerFactory = wdkModel.getAnswerFactory();
+        AnswerInfo answerInfo = answerFactory.getAnswerInfo(answerChecksum);
+        if (answerInfo == null)
+            throw new WdkModelException("The answer with checksum '"
+                    + answerChecksum + "' does not exist");
 
-            BooleanExpression exp = new BooleanExpression(user);
-            answer = exp.parseExpression(expression);
-            // answer.setSubTypeValue(subTypeInfo[0]);
-            // answer.setExpandSubType((Boolean) subTypeInfo[1]);
-        } else {
-            // obtain the question with full name
-            String questionName = history.getAnswer().getQuestion().getFullName();
-            Question question = (Question) wdkModel.resolveReference(questionName);
-
-            // get the user's preferences
-            answer = question.makeAnswer(params, 1, user.getItemsPerPage(),
-                    user.getSortingAttributes(questionName), null);
-            String[] summaryAttributes = user.getSummaryAttributes(questionName);
-            answer.setSumaryAttributes(summaryAttributes);
-        }
-        history.setParams(params);
+        Answer answer = answerFactory.getAnswer(answerInfo);
         history.setAnswer(answer);
     }
 
@@ -1185,8 +1129,7 @@ public class UserFactory {
             throws WdkUserException {
         PreparedStatement psHistory = null;
         String hisTable = loginSchema + "histories";
-        String ansTable = wdkModel.getModelConfig().getAnswerSchema()
-                + AnswerFactory.TABLE_ANSWER;
+        String ansTable = wdkModel.getAnswerFactory().getAnswerTable();
         try {
             StringBuffer sql = new StringBuffer();
             sql.append("DELETE FROM " + hisTable + " WHERE user_id = ?");
@@ -1215,7 +1158,7 @@ public class UserFactory {
     }
 
     public void deleteInvalidHistories(User user) throws WdkUserException,
-            WdkModelException {
+            WdkModelException, SQLException, JSONException {
         // get invalid histories
         Map<Integer, History> invalidHistories = new LinkedHashMap<Integer, History>();
         loadHistories(user, invalidHistories);
