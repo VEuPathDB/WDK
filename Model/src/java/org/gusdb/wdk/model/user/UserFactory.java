@@ -1023,9 +1023,8 @@ public class UserFactory {
                             + " WHERE user_id = ? AND answer_id = ? "
                             + "AND is_deleted = ?");
             psCheck.setInt(1, userId);
-            psCheck.setString(2, projectId);
-            psCheck.setInt(3, answerId);
-            psCheck.setBoolean(4, deleted);
+            psCheck.setInt(2, answerId);
+            psCheck.setBoolean(3, deleted);
             rsHistory = psCheck.executeQuery();
 
             if (rsHistory.next()) {
@@ -1075,8 +1074,8 @@ public class UserFactory {
 
                 // query to get the new history id
                 PreparedStatement psMax = connection.prepareStatement("SELECT"
-                        + " max(history_id) AS max_id FROM " + loginSchema
-                        + "histories WHERE user_id = ?");
+                        + " max(history_id) AS max_id FROM " + hisTable
+                        + " WHERE user_id = ?");
                 psMax.setInt(1, userId);
                 rsMax = psMax.executeQuery();
                 if (rsMax.next()) historyId = rsMax.getInt("max_id");
@@ -1096,17 +1095,11 @@ public class UserFactory {
             user.setHistoryCount(historyCount);
 
             return history;
-        } catch (SQLException ex) {
-            throw new WdkUserException(ex);
         } finally {
-            try {
-                if (connection != null) connection.setAutoCommit(true);
-                SqlUtils.closeStatement(psHistory);
-                SqlUtils.closeResultSet(rsHistory);
-                SqlUtils.closeResultSet(rsMax);
-            } catch (SQLException ex) {
-                throw new WdkUserException(ex);
-            }
+            if (connection != null) connection.setAutoCommit(true);
+            SqlUtils.closeStatement(psHistory);
+            SqlUtils.closeResultSet(rsHistory);
+            SqlUtils.closeResultSet(rsMax);
         }
     }
 
