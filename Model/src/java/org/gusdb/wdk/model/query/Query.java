@@ -376,9 +376,7 @@ public abstract class Query extends WdkModelBase {
         return param;
     }
 
-    void validateValues(Map<String, Object> v) throws WdkModelException {
-        Map<String, Object> values = new LinkedHashMap<String, Object>();
-
+    void validateValues(Map<String, Object> values) throws WdkModelException {
         // fill the empty values
         fillEmptyValues(values);
 

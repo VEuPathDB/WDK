@@ -60,13 +60,15 @@ public class ProcessBooleanExpressionAction extends Action {
         UserBean wdkUser = (UserBean) request.getSession().getAttribute(
                 CConstants.WDK_USER_KEY);
         String expression = beForm.getBooleanExpression();
-        String subTypeValue = beForm.getSubTypeValue();
-        boolean expandSubType = beForm.isExpandSubType();
+        String summaryTable = beForm.getSummaryTable();
+        String viewRow = beForm.getViewRow();
+        String viewColumn = beForm.getViewColumn();
 
-        logger.debug("expand: " + expandSubType);
+        logger.debug("boolean view: " + summaryTable + "[" + viewRow + ", "
+                + viewColumn + "]");
 
-        HistoryBean history = wdkUser.combineHistory(expression, subTypeValue,
-                expandSubType);
+        HistoryBean history = wdkUser.combineHistory(expression, summaryTable,
+                viewRow, viewColumn);
         int historyId = history.getHistoryId();
         request.setAttribute(CConstants.WDK_HISTORY_ID_KEY, historyId);
         return Integer.toString(historyId);

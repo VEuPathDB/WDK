@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Hashtable;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -18,15 +16,11 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.gusdb.wdk.model.Answer;
-import org.gusdb.wdk.model.BooleanQuestionNode;
-import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.implementation.ModelXmlParser;
-import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
 import org.json.JSONException;
 import org.xml.sax.SAXException;
 
@@ -45,15 +39,6 @@ import org.xml.sax.SAXException;
  */
 
 public class BooleanQuestionTester {
-
-    private static Map<String, String> operatorMap;
-
-    static {
-        operatorMap = new LinkedHashMap<String, String>();
-        operatorMap.put("and", BooleanQuestionNodeBean.INTERNAL_AND);
-        operatorMap.put("or", BooleanQuestionNodeBean.INTERNAL_OR);
-        operatorMap.put("not", BooleanQuestionNodeBean.INTERNAL_NOT);
-    }
 
     // ------------------------------------------------------------------
     // Main
@@ -87,27 +72,27 @@ public class BooleanQuestionTester {
         int endRow = Integer.parseInt(rows[1]);
 
         // create recursive question tree
-        BooleanQuestionNode topNode = TestBooleanTree.getTestTree(wdkModel);
-        System.err.println(topNode.toString());
-        // init recursive method
-        topNode.makeAnswer(startRow, endRow);
-        // BooleanQuestionNode.setAllValues(topNode);
-
-        // runGrowTest(topNode, "01", wdkModel);
-
-        Question topQuestion = topNode.getQuestion();
-        int pageCount = 1;
-        for (int i = 0; i < rows.length; i += 2) {
-
-            int nextStartRow = Integer.parseInt(rows[i]);
-            int nextEndRow = Integer.parseInt(rows[i + 1]);
-
-            Answer answer = topQuestion.makeAnswer(topNode.getValues(),
-                    nextStartRow, nextEndRow);
-            System.out.println("Printing Record Instances on page " + pageCount);
-            System.out.println(answer.printAsTable());
-            pageCount++;
-        }
+//        BooleanQuestionNode topNode = TestBooleanTree.getTestTree(wdkModel);
+//        System.err.println(topNode.toString());
+//        // init recursive method
+//        topNode.makeAnswer(startRow, endRow);
+//        // BooleanQuestionNode.setAllValues(topNode);
+//
+//        // runGrowTest(topNode, "01", wdkModel);
+//
+//        Question topQuestion = topNode.getQuestion();
+//        int pageCount = 1;
+//        for (int i = 0; i < rows.length; i += 2) {
+//
+//            int nextStartRow = Integer.parseInt(rows[i]);
+//            int nextEndRow = Integer.parseInt(rows[i + 1]);
+//
+//            Answer answer = topQuestion.makeAnswer(topNode.getValues(),
+//                    nextStartRow, nextEndRow);
+//            System.out.println("Printing Record Instances on page " + pageCount);
+//            System.out.println(answer.printAsTable());
+//            pageCount++;
+//        }
     }
 
     // ------------------------------------------------------------------

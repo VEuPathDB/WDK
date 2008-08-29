@@ -282,7 +282,7 @@ public class SummaryTable extends WdkModelBase {
         // construct union query
         StringBuffer sql = new StringBuffer();
         for (SummaryView view : summaryViewMap.values()) {
-            String subSql = getSummarySql(view, answerChecksum);
+            String subSql = view.getSummarySql(answerChecksum);
             if (sql.length() > 0) sql.append(" UNION ");
             sql.append("SELECT count(*) AS view_count, ");
             sql.append("'").append(view.getRowTerm()).append("' AS view_row, ");
@@ -317,16 +317,5 @@ public class SummaryTable extends WdkModelBase {
             SqlUtils.closeResultSet(resultSet);
         }
         return summaries;
-    }
-
-    private String getSummarySql(SummaryView view, String answerChecksum)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
-        Map<String, Object> params = new LinkedHashMap<String, Object>();
-        params.put(rowParam.getName(), view.getRowTerm());
-        params.put(columnParam.getName(), view.getColumnTerm());
-        params.put(view.getAnswerParam().getName(), answerChecksum);
-        QueryInstance instance = view.getSummaryQuery().makeInstance(params);
-        return ((SqlQueryInstance) instance).getUncachedSql();
     }
 }

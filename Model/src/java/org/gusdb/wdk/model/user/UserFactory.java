@@ -38,7 +38,6 @@ import javax.sql.DataSource;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.BooleanExpression;
-import org.gusdb.wdk.model.BooleanQuestionNode;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -979,10 +978,7 @@ public class UserFactory {
             history.setBooleanExpression(expression);
 
             BooleanExpression exp = new BooleanExpression(user);
-            Map<String, String> operatorMap = getWdkModel().getBooleanOperators();
-            BooleanQuestionNode root = exp.parseExpression(expression,
-                    operatorMap);
-            answer = root.makeAnswer(1, user.getItemsPerPage());
+            answer = exp.parseExpression(expression);
             // answer.setSubTypeValue(subTypeInfo[0]);
             // answer.setExpandSubType((Boolean) subTypeInfo[1]);
         } else {

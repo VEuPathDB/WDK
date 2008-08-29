@@ -3,6 +3,8 @@
  */
 package org.gusdb.wdk.model;
 
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -10,8 +12,11 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.gusdb.wdk.model.query.BooleanQuery;
+import org.gusdb.wdk.model.query.BooleanQueryInstance;
 import org.gusdb.wdk.model.user.History;
 import org.gusdb.wdk.model.user.User;
+import org.json.JSONException;
 
 /**
  * @author Jerric
@@ -32,6 +37,12 @@ public class BooleanExpression {
         this.user = user;
     }
 
+    public Answer parseExpression(String expression) throws WdkUserException,
+            WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException {
+        return parseExpression(expression, null, null, null);
+    }
+
     /**
      * this function accept a boolean expression that defines the combination of
      * cached answers in current user's history. In the expression answers can
@@ -49,10 +60,14 @@ public class BooleanExpression {
      * @return
      * @throws WdkUserException
      * @throws WdkModelException
+     * @throws JSONException
+     * @throws SQLException
+     * @throws NoSuchAlgorithmException
      */
-    public BooleanQuestionNode parseExpression(String expression,
-            Map<String, String> operatorMap) throws WdkUserException,
-            WdkModelException {
+    public Answer parseExpression(String expression, String summaryTable,
+            String viewRow, String viewColumn) throws WdkUserException,
+            WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException {
         this.orgExp = expression;
         // TEST
         // System.out.println("Expression: " + expression);
@@ -81,8 +96,8 @@ public class BooleanExpression {
         expression = expression.replaceAll("\\s", " ").trim();
 
         // build the BooleanQuestionNode tree
-        BooleanQuestionNode root = parseBlock(expression, replace, operatorMap);
-        return root;
+        return parseBlock(expression, replace, summaryTable, viewRow,
+                viewColumn);
     }
 
     private String replaceLiterals(String expression,
@@ -112,9 +127,10 @@ public class BooleanExpression {
         return sb.toString();
     }
 
-    private BooleanQuestionNode parseBlock(String block,
-            Map<String, String> replace, Map<String, String> operatorMap)
-            throws WdkUserException, WdkModelException {
+    private Answer parseBlock(String block, Map<String, String> replace,
+            String summaryTable, String viewRow, String viewColumn)
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException {
         // check if the expression can be divided further
         // to do so, just need to check if there're spaces
         int spaces = block.indexOf(" ");
@@ -126,23 +142,25 @@ public class BooleanExpression {
         String[] triplet = getTriplet(block);
 
         if (triplet.length == 1) { // only remove one pair of parentheses
-            return parseBlock(triplet[0], replace, operatorMap);
+            return parseBlock(triplet[0], replace, summaryTable, viewRow,
+                    viewColumn);
         } else { // a triplet
-            // create BooleanQuestioNode for each piece
-            BooleanQuestionNode left = parseBlock(triplet[0], replace,
-                    operatorMap);
-            BooleanQuestionNode right = parseBlock(triplet[2], replace,
-                    operatorMap);
+            // get the answers that represents each piece
+            Answer left = parseBlock(triplet[0], replace, summaryTable,
+                    viewRow, viewColumn);
+            Answer right = parseBlock(triplet[2], replace, summaryTable,
+                    viewRow, viewColumn);
 
-            // combine left & right sub-tree to form a new tree
-            return BooleanQuestionNode.combine(left, right, triplet[1],
-                    user.getWdkModel(), operatorMap);
+            String operator = BooleanOperator.parse(triplet[1]).getOperator();
+
+            // create boolean answer that wraps the children
+            return makeBooleanAnswer(left, right, operator, summaryTable,
+                    viewRow, viewColumn);
         }
     }
 
-    private BooleanQuestionNode buildLeaf(String block,
-            Map<String, String> replace) throws WdkUserException,
-            WdkModelException {
+    private Answer buildLeaf(String block, Map<String, String> replace)
+            throws WdkUserException, WdkModelException {
         // the block must be a history id or an id starting with '#'
         String strId = (block.charAt(0) == '#') ? block.substring(1) : block;
         int historyId;
@@ -157,15 +175,8 @@ public class BooleanExpression {
         if (!history.isValid())
             throw new WdkUserException("The history #" + historyId
                     + " is invalid.");
-        Answer answer = history.getAnswer();
 
-        // create a leaf BooleanQuestionNode from the answer
-        BooleanQuestionNode leaf = new BooleanQuestionNode(
-                answer.getQuestion(), null);
-        Map<String, Object> values = answer.getIdsQueryInstance().getValues();
-        leaf.setValues(new LinkedHashMap<String, Object>(values));
-        // leaf.setSubTypeValue((String)answer.getSubTypeValue());
-        return leaf;
+        return history.getAnswer();
     }
 
     /**
@@ -232,5 +243,37 @@ public class BooleanExpression {
             operands.add(Integer.parseInt(strId));
         }
         return operands;
+    }
+
+    private Answer makeBooleanAnswer(Answer leftOperand, Answer rightOperand,
+            String operator, String summaryTable, String viewRow,
+            String viewColumn) throws WdkModelException,
+            NoSuchAlgorithmException, WdkUserException, SQLException,
+            JSONException {
+        // verify the record type of the operands
+        RecordClass leftRecordClass = leftOperand.getQuestion().getRecordClass();
+        RecordClass rightRecordClass = rightOperand.getQuestion().getRecordClass();
+        if (!leftRecordClass.getFullName().equals(
+                rightRecordClass.getFullName()))
+            throw new WdkUserException("Boolean operation cannot be applied "
+                    + "to results of different record types. Left operand is "
+                    + "of type " + leftRecordClass.getFullName() + ", but the"
+                    + " right operand is of type "
+                    + rightRecordClass.getFullName());
+        Question question = user.getWdkModel().getBooleanQuestion(
+                leftRecordClass);
+        BooleanQuery query = (BooleanQuery) question.getQuery();
+
+        Map<String, Object> params = new LinkedHashMap<String, Object>();
+        params.put(query.getLeftOperandParam().getName(),
+                leftOperand.getChecksum());
+        params.put(query.getRightOperandParam().getName(),
+                rightOperand.getChecksum());
+        Answer answer = question.makeAnswer(params);
+        if (summaryTable != null) {
+            BooleanQueryInstance instance = (BooleanQueryInstance) answer.getIdsQueryInstance();
+            instance.setBooleanView(summaryTable, viewRow, viewColumn);
+        }
+        return answer;
     }
 }
