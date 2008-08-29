@@ -457,7 +457,7 @@ public class AnswerBean {
      * @throws WdkUserException
      * @see org.gusdb.wdk.model.Answer#getSummaryCount(java.lang.String)
      */
-    public Map<String, Map<String, Integer>> getSummaryCount(
+    public Map<String, Map<String, Integer>> getSummaryMap(
             String summaryTableName) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {

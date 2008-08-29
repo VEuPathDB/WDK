@@ -4,10 +4,12 @@
 package org.gusdb.wdk.model;
 
 import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 
 import org.gusdb.wdk.model.user.History;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -66,7 +68,7 @@ public class HistoryParam extends Param {
             try {
                 User user = factory.loadUserBySignature(signature);
                 user.getHistory(historyId);
-            } catch (WdkUserException ex) {
+            } catch (Exception ex) {
                 ex.printStackTrace();
                 return ex.getMessage();
             }
@@ -109,7 +111,7 @@ public class HistoryParam extends Param {
      * @see org.gusdb.wdk.model.Param#getInternalValue(java.lang.String)
      */
     @Override
-    public String getInternalValue(Object value) throws WdkModelException {
+    public String getInternalValue(Object value) throws WdkModelException, SQLException, JSONException {
         try {
             History history = getHistory((String) value);
             // return history.getCacheFullTable();
@@ -120,7 +122,7 @@ public class HistoryParam extends Param {
     }
 
     public History getHistory(String combinedId) throws WdkUserException,
-            WdkModelException {
+            WdkModelException, SQLException, JSONException {
         String[] parts = combinedId.split(":");
         // the input have a valid user id and history id
         String signature = parts[0].trim();
@@ -162,7 +164,7 @@ public class HistoryParam extends Param {
     }
 
     public History[] getHistories(User user) throws WdkUserException,
-            WdkModelException {
+            WdkModelException, SQLException, JSONException {
         return user.getHistories(recordClassRef);
     }
 

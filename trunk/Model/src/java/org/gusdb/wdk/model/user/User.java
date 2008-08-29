@@ -508,9 +508,11 @@ public class User /* implements Serializable */{
      * @return
      * @throws WdkModelException
      * @throws WdkUserException
+     * @throws JSONException
+     * @throws SQLException
      */
     public Map<Integer, History> getHistoriesMap() throws WdkUserException,
-            WdkModelException {
+            WdkModelException, SQLException, JSONException {
         Map<Integer, History> invalidHistories = new LinkedHashMap<Integer, History>();
         Map<Integer, History> histories = userFactory.loadHistories(this,
                 invalidHistories);
@@ -524,7 +526,7 @@ public class User /* implements Serializable */{
     }
 
     public History[] getInvalidHistories() throws WdkUserException,
-            WdkModelException {
+            WdkModelException, SQLException, JSONException {
         Map<Integer, History> histories = new LinkedHashMap<Integer, History>();
         userFactory.loadHistories(this, histories);
 
@@ -533,7 +535,8 @@ public class User /* implements Serializable */{
         return array;
     }
 
-    public History[] getHistories() throws WdkUserException, WdkModelException {
+    public History[] getHistories() throws WdkUserException, WdkModelException,
+            SQLException, JSONException {
         Map<Integer, History> map = getHistoriesMap();
         History[] array = new History[map.size()];
         map.values().toArray(array);
@@ -541,7 +544,8 @@ public class User /* implements Serializable */{
     }
 
     public Map<String, List<History>> getHistoriesByCategory()
-            throws WdkUserException, WdkModelException {
+            throws WdkUserException, WdkModelException, SQLException,
+            JSONException {
         Map<Integer, History> histories = getHistoriesMap();
         Map<String, List<History>> category = new LinkedHashMap<String, List<History>>();
         for (History history : histories.values()) {
@@ -568,9 +572,12 @@ public class User /* implements Serializable */{
      * @return
      * @throws WdkModelException
      * @throws WdkUserException
+     * @throws JSONException
+     * @throws SQLException
      */
     public Map<Integer, History> getHistoriesMap(String dataType)
-            throws WdkUserException, WdkModelException {
+            throws WdkUserException, WdkModelException, SQLException,
+            JSONException {
         Map<Integer, History> histories = getHistoriesMap();
         Map<Integer, History> selected = new LinkedHashMap<Integer, History>();
         for (int historyId : histories.keySet()) {
@@ -582,7 +589,7 @@ public class User /* implements Serializable */{
     }
 
     public History[] getHistories(String dataType) throws WdkUserException,
-            WdkModelException {
+            WdkModelException, SQLException, JSONException {
         Map<Integer, History> map = getHistoriesMap(dataType);
         History[] array = new History[map.size()];
         map.values().toArray(array);
@@ -596,9 +603,11 @@ public class User /* implements Serializable */{
      * @return
      * @throws WdkUserException
      * @throws WdkModelException
+     * @throws JSONException
+     * @throws SQLException
      */
     public History getHistory(int historyId) throws WdkUserException,
-            WdkModelException {
+            WdkModelException, SQLException, JSONException {
         return userFactory.loadHistory(this, historyId);
     }
 
@@ -611,7 +620,7 @@ public class User /* implements Serializable */{
     }
 
     public void deleteInvalidHistories() throws WdkUserException,
-            WdkModelException {
+            WdkModelException, SQLException, JSONException {
         userFactory.deleteInvalidHistories(this);
     }
 

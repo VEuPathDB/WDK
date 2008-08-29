@@ -6,19 +6,23 @@ package org.gusdb.wdk.model.user;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
 import org.gusdb.wdk.model.Answer;
+import org.gusdb.wdk.model.AnswerParam;
 import org.gusdb.wdk.model.BooleanExpression;
 import org.gusdb.wdk.model.HistoryParam;
 import org.gusdb.wdk.model.Param;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.QueryInstance;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * @author xingao
@@ -41,6 +45,8 @@ public class History {
     private Boolean isDepended;
 
     private boolean isValid = true;
+
+    private Map<String, String> displayParams;
 
     History(UserFactory factory, User user, int historyId) {
         this.factory = factory;
@@ -214,7 +220,8 @@ public class History {
         factory.updateHistory(user, this, updateTime);
     }
 
-    public boolean isDepended() throws WdkUserException, WdkModelException {
+    public boolean isDepended() throws WdkUserException, WdkModelException,
+            SQLException, JSONException {
         if (isDepended == null) computeDependencies(user.getHistories());
         return isDepended;
     }
@@ -290,19 +297,60 @@ public class History {
         this.isValid = isValid;
     }
 
-    public void setParams(Map<String, Object> params) {
-    // this.params = params;
+    public void setDisplayParams(String paramClob) throws JSONException {
+        if (isBoolean) booleanExpression = paramClob;
+        else {
+            JSONObject jsParams = new JSONObject(paramClob);
+            displayParams = new LinkedHashMap<String, String>();
+            Iterator itKeys = jsParams.keys();
+            while (itKeys.hasNext()) {
+                String paramName = itKeys.next().toString();
+                String paramValue = jsParams.getString(paramName);
+                displayParams.put(paramName, paramValue);
+            }
+        }
     }
 
-    public Map<String, Object> getParams() {
-        // return new LinkedHashMap<String, Object>(this.params);
-        return answer.getIdsQueryInstance().getValues();
+    public String getDisplayParamClob() throws JSONException {
+        if (isBoolean) return booleanExpression;
+        else {
+            Map<String, String> displayParams = getDisplayParams();
+            JSONObject jsParams = new JSONObject();
+            for (String paramName : displayParams.keySet()) {
+                String paramValue = displayParams.get(paramName);
+                jsParams.put(paramName, paramValue);
+            }
+            return jsParams.toString();
+        }
+    }
+
+    public Map<String, String> getDisplayParams() {
+        QueryInstance instance = answer.getIdsQueryInstance();
+        Param[] params = instance.getQuery().getParams();
+        Map<String, Object> paramValues = instance.getValues();
+        if (displayParams == null) {
+            displayParams = new LinkedHashMap<String, String>();
+            for (Param param : params) {
+                if (!(param instanceof AnswerParam)) continue;
+                String value = paramValues.get(param.getName()).toString();
+                displayParams.put(param.getName(), value);
+            }
+        }
+
+        // append the rest of the params
+        Map<String, String> allValues = new LinkedHashMap<String, String>(
+                displayParams);
+        for (String param : paramValues.keySet()) {
+            if (!allValues.containsKey(param))
+                allValues.put(param, paramValues.get(param).toString());
+        }
+        return allValues;
     }
 
     public Map<String, String> getParamNames() throws WdkModelException {
         Map<String, String> paramNames = new LinkedHashMap<String, String>();
         WdkModel wdkModel = user.getWdkModel();
-        for (String paramName : getParams().keySet()) {
+        for (String paramName : getDisplayParams().keySet()) {
             Param param = (Param) wdkModel.resolveReference(paramName);
             String displayName = param.getPrompt();
             if (displayName == null) displayName = paramName;

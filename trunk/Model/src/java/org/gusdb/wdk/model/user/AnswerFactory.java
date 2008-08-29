@@ -34,11 +34,11 @@ public class AnswerFactory {
     static final String TABLE_ANSWER = "answer";
 
     static final String COLUMN_ANSWER_ID = "answer_id";
-    private static final String COLUMN_PROJECT_ID = "project_id";
+    static final String COLUMN_ANSWER_CHECKSUM = "answer_checksum";
+    static final String COLUMN_PROJECT_ID = "project_id";
     private static final String COLUMN_PROJECT_VERSION = "project_version";
     private static final String COLUMN_QUESTION_NAME = "question_name";
     private static final String COLUMN_QUERY_CHECKSUM = "query_checksum";
-    private static final String COLUMN_ANSWER_CHECKSUM = "answer_checksum";
     private static final String COLUMN_ESTIMATED_SIZE = "estimated_size";
     private static final String COLUMN_PARAMS = "params";
     private static final String COLUMN_RESULT_MESSAGE = "result_message";
@@ -67,7 +67,7 @@ public class AnswerFactory {
         StringBuffer sql = new StringBuffer("CREATE TABLE ");
         sql.append(answerSchema).append(TABLE_ANSWER).append(" (");
         sql.append(COLUMN_ANSWER_ID).append(" ");
-        sql.append(loginPlatform.getNumberDataType(10)).append(" NOT NULL, ");
+        sql.append(loginPlatform.getNumberDataType(12)).append(" NOT NULL, ");
         sql.append(COLUMN_ANSWER_CHECKSUM).append(" ");
         sql.append(loginPlatform.getStringDataType(40)).append(" NOT NULL, ");
         sql.append(COLUMN_PROJECT_ID).append(" ");
@@ -79,7 +79,7 @@ public class AnswerFactory {
         sql.append(COLUMN_QUERY_CHECKSUM).append(" ");
         sql.append(loginPlatform.getStringDataType(40)).append(" NOT NULL, ");
         sql.append(COLUMN_ESTIMATED_SIZE).append(" ");
-        sql.append(loginPlatform.getNumberDataType(10)).append(", ");
+        sql.append(loginPlatform.getNumberDataType(12)).append(", ");
         sql.append(COLUMN_PARAMS).append(" ");
         sql.append(loginPlatform.getClobDataType()).append(", ");
         sql.append(COLUMN_RESULT_MESSAGE).append(" ");
@@ -288,5 +288,9 @@ public class AnswerFactory {
             paramValues.put(param, value);
         }
         return paramValues;
+    }
+    
+    String getAnswerTable() {
+        return answerSchema + TABLE_ANSWER;
     }
 }

@@ -172,7 +172,8 @@ public class HistoryBean {
      * 
      * @see org.gusdb.wdk.model.user.History#isDepended()
      */
-    public boolean getDepended() throws WdkUserException, WdkModelException {
+    public boolean getDepended() throws WdkUserException, WdkModelException,
+            SQLException, JSONException {
         return history.isDepended();
     }
 
@@ -260,8 +261,8 @@ public class HistoryBean {
      * @return
      * @see org.gusdb.wdk.model.user.History#getParams()
      */
-    public Map<String, Object> getParams() {
-        return history.getParams();
+    public Map<String, String> getParams() {
+        return history.getDisplayParams();
     }
 
     /**

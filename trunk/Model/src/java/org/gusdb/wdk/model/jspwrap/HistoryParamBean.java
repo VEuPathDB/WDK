@@ -3,6 +3,7 @@
  */
 package org.gusdb.wdk.model.jspwrap;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,6 +12,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.History;
 import org.gusdb.wdk.model.user.User;
+import org.json.JSONException;
 
 /**
  * @author xingao
@@ -30,12 +32,14 @@ public class HistoryParamBean extends ParamBean {
         this.combinedId = combinedId;
     }
 
-    public HistoryBean getHistory() throws WdkUserException, WdkModelException {
+    public HistoryBean getHistory() throws WdkUserException, WdkModelException,
+            SQLException, JSONException {
         return new HistoryBean(historyParam.getHistory(combinedId));
     }
 
     public HistoryBean[] getHistories(UserBean userBean)
-            throws WdkUserException, WdkModelException {
+            throws WdkUserException, WdkModelException, SQLException,
+            JSONException {
         User user = userBean.getUser();
         History[] histories = historyParam.getHistories(user);
         List<HistoryBean> historyBeans = new ArrayList<HistoryBean>();
