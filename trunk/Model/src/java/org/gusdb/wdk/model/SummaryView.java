@@ -3,11 +3,17 @@
  */
 package org.gusdb.wdk.model;
 
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.gusdb.wdk.model.query.Query;
+import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.query.SqlQueryInstance;
+import org.json.JSONException;
 
 /**
  * @author Jerric Gao
@@ -201,4 +207,16 @@ public class SummaryView extends WdkModelBase {
         }
         this.answerParam = answerParam;
     }
+
+    String getSummarySql(String answerChecksum) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
+        Map<String, Object> params = new LinkedHashMap<String, Object>();
+        params.put(summaryTable.getRowParam().getName(), rowTerm);
+        params.put(summaryTable.getColumnParam().getName(), columnTerm);
+        params.put(answerParam.getName(), answerChecksum);
+        QueryInstance instance = summaryQuery.makeInstance(params);
+        return ((SqlQueryInstance) instance).getUncachedSql();
+    }
+
 }

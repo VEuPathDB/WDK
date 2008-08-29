@@ -684,9 +684,10 @@ public class UserBean /* implements Serializable */{
         return new HistoryBean(user.getHistory(historyId));
     }
 
-    public String validateExpression(String expression,
-            Map<String, String> operatorMap) throws WdkModelException {
-        return this.user.validateExpression(expression, operatorMap);
+    public void validateExpression(String expression) throws WdkModelException,
+            NoSuchAlgorithmException, WdkUserException, SQLException,
+            JSONException {
+        user.validateExpression(expression);
     }
 
     /*
@@ -694,11 +695,12 @@ public class UserBean /* implements Serializable */{
      * 
      * @see org.gusdb.wdk.model.user.User#combineHistory(java.lang.String)
      */
-    public HistoryBean combineHistory(String expression, String subTypeValue,
-            boolean expandSubType) throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException {
+    public HistoryBean combineHistory(String expression, String summaryTable,
+            String viewRow, String viewColumn) throws WdkUserException,
+            WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException {
         return new HistoryBean(user.combineHistory(expression, false,
-                subTypeValue, expandSubType));
+                summaryTable, viewRow, viewColumn));
     }
 
     /*

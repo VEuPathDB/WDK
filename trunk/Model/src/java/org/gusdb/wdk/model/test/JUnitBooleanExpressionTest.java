@@ -16,14 +16,12 @@ import junit.framework.TestSuite;
 
 import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.BooleanExpression;
-import org.gusdb.wdk.model.BooleanQuestionNode;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
 import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 
@@ -37,7 +35,6 @@ public class JUnitBooleanExpressionTest extends TestCase {
     private WdkModel wdkModel;
     private SanityModel sanityModel;
     private Map<String, Answer> operandMap;
-    private Map<String, String> operatorMap;
 
     public static void main(String[] args) {
         junit.textui.TestRunner.run(JUnitBooleanExpressionTest.class);
@@ -77,10 +74,6 @@ public class JUnitBooleanExpressionTest extends TestCase {
 
         operandMap = buildOperandMap(sanityModel);
 
-        operatorMap = new LinkedHashMap<String, String>();
-        operatorMap.put("and", BooleanQuestionNodeBean.INTERNAL_AND);
-        operatorMap.put("or", BooleanQuestionNodeBean.INTERNAL_OR);
-        operatorMap.put("not", BooleanQuestionNodeBean.INTERNAL_NOT);
     }
 
     private Map<String, Answer> buildOperandMap(SanityModel sanityModel)
@@ -144,65 +137,44 @@ public class JUnitBooleanExpressionTest extends TestCase {
      * 'org.gusdb.wdk.model.BooleanExpression.combineAnswers(String, Map<String,
      * Answer>)'
      */
-    public void testParseExpression() {
-        try {
-            User user = wdkModel.getUserFactory().createGuestUser();
-            BooleanExpression be = new BooleanExpression(user);
+    public void testParseExpression() throws WdkUserException, WdkModelException {
+        User user = wdkModel.getUserFactory().createGuestUser();
+        BooleanExpression be = new BooleanExpression(user);
 
-            String[] valid = { "1 OR 2", "1 AND (2 NOT 3)",
-                    "(1 AND 3)AND(2 AND 4)", "(1) OR (3)",
-                    "ans_1 OR \"ans (2\"" };
-            // String[] valid = { "#1 OR #2"};
+        String[] valid = { "1 OR 2", "1 AND (2 NOT 3)",
+                "(1 AND 3)AND(2 AND 4)", "(1) OR (3)", "ans_1 OR \"ans (2\"" };
+        // String[] valid = { "#1 OR #2"};
 
-            for (String expression : valid) {
-                try {
-                    BooleanQuestionNode bqn = be.parseExpression(expression,
-                            operatorMap);
+        for (String expression : valid) {
+            try {
+                Answer answer = be.parseExpression(expression);
 
-                    assertNotNull(bqn);
+                assertTrue(answer.getResultSize() >= 0);
 
-                    // make answer
-                    Answer answer = bqn.makeAnswer(1, 20);
-
-                    assertNotNull(answer);
-
-                    assertTrue(answer.getResultSize() >= 0);
-
-                    // TEST
-                    System.out.println(answer.printAsTable());
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                    // System.err.println(ex);
-                    assertTrue(false);
-                }
+                // TEST
+                System.out.println(answer.printAsTable());
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                // System.err.println(ex);
+                assertTrue(false);
             }
+        }
 
-            String[] invalid = { "#0 OR #2", "#1 AND (#2 NOT #3",
-                    "(#1 AND) #3", "#1(OR #2)", "#1 BAD #2", "ans_0 OR #1",
-                    "\"ans_1 OR \"ans (2\"" };
+        String[] invalid = { "#0 OR #2", "#1 AND (#2 NOT #3", "(#1 AND) #3",
+                "#1(OR #2)", "#1 BAD #2", "ans_0 OR #1",
+                "\"ans_1 OR \"ans (2\"" };
 
-            for (String expression : invalid) {
-                try {
-                    BooleanQuestionNode bqn = be.parseExpression(expression,
-                            operatorMap);
+        for (String expression : invalid) {
+            try {
+                Answer answer = be.parseExpression(expression);
 
-                    assertNotNull(bqn);
-
-                    // make answer
-                    bqn.makeAnswer(1, 20);
-
-                    assertTrue(false);
-                } catch (Exception ex) {
-                    // TODO Auto-generated catch block
-                    // ex.printStackTrace();
-                    System.err.println(ex + " - expected.");
-                    assertTrue(true);
-                }
+                assertNotNull(answer);
+            } catch (Exception ex) {
+                // TODO Auto-generated catch block
+                // ex.printStackTrace();
+                System.err.println(ex + " - expected.");
+                assertTrue(true);
             }
-        } catch (WdkUserException ex) {
-            ex.printStackTrace();
-        } catch (WdkModelException ex) {
-            ex.printStackTrace();
         }
     }
 }

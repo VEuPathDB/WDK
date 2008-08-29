@@ -20,7 +20,7 @@ import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlResultList;
 import org.gusdb.wdk.model.dbms.SqlUtils;
-import org.gusdb.wdk.model.query.BooleanQueryInstance;
+import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.SqlQuery;
@@ -138,7 +138,7 @@ public class Answer {
         this.question = question;
         this.resultFactory = question.getWdkModel().getResultFactory();
         this.idsQueryInstance = idsQueryInstance;
-        this.isBoolean = (idsQueryInstance instanceof BooleanQueryInstance);
+        this.isBoolean = (idsQueryInstance.getQuery() instanceof BooleanQuery);
         this.startIndex = startIndex;
         this.endIndex = endIndex;
 

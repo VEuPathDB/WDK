@@ -17,7 +17,6 @@ import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.BooleanExpression;
-import org.gusdb.wdk.model.BooleanQuestionNode;
 import org.gusdb.wdk.model.DatasetParam;
 import org.gusdb.wdk.model.HistoryParam;
 import org.gusdb.wdk.model.Param;
@@ -25,6 +24,7 @@ import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.BooleanQuery;
 import org.json.JSONException;
 
 /**
@@ -746,27 +746,23 @@ public class User /* implements Serializable */{
     public History combineHistory(String expression) throws WdkUserException,
             WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException {
-        return combineHistory(expression, false, null, false);
+        return combineHistory(expression, false, null, null, null);
     }
 
     private History combineHistory(String expression, boolean deleted)
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
-        return combineHistory(expression, deleted, null, false);
+        return combineHistory(expression, deleted, null, null, null);
     }
 
     public History combineHistory(String expression, boolean deleted,
-            String subTypeValue, boolean expandSubType)
+            String summaryTable, String viewRow, String viewColumn)
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
         logger.debug("Boolean expression: " + expression);
         BooleanExpression exp = new BooleanExpression(this);
-        Map<String, String> operatorMap = getWdkModel().getBooleanOperators();
-        BooleanQuestionNode root = exp.parseExpression(expression, operatorMap);
-        root.setSubTypeValue(subTypeValue);
-        root.setExpandSubType(expandSubType);
-
-        Answer answer = root.makeAnswer(1, getItemsPerPage());
+        Answer answer = exp.parseExpression(expression, summaryTable, viewRow,
+                viewColumn);
 
         logger.debug("Boolean answer: " + answer.getResultSize());
 
@@ -787,16 +783,12 @@ public class User /* implements Serializable */{
         return createHistory(answer, expression, deleted);
     }
 
-    public String validateExpression(String expression,
-            Map<String, String> operatorMap) throws WdkModelException {
+    public void validateExpression(String expression) throws WdkModelException,
+            NoSuchAlgorithmException, WdkUserException, SQLException,
+            JSONException {
         // construct BooleanQuestionNode
         BooleanExpression be = new BooleanExpression(this);
-        try {
-            be.parseExpression(expression, operatorMap);
-        } catch (WdkUserException ue) {
-            return ue.getMessage();
-        }
-        return null;
+        be.parseExpression(expression);
     }
 
     public Map<String, Boolean> getSortingAttributes(String questionFullName)
@@ -806,11 +798,11 @@ public class User /* implements Serializable */{
         Map<String, Boolean> sortingAttributes = getSortingAttributesByChecksum(sortingChecksum);
         if (sortingAttributes != null) return sortingAttributes;
 
-        if (questionFullName.equals(BooleanQuestionNode.BOOLEAN_QUESTION_NAME)) {
+        Question question = model.getQuestion(questionFullName);
+        if (question.getQuery() instanceof BooleanQuery) {
             // boolean question has no sorting attributes by default
             return new LinkedHashMap<String, Boolean>();
         } else { // ordinary question
-            Question question = model.getQuestion(questionFullName);
             return question.getDefaultSortingAttributes();
         }
     }
@@ -854,10 +846,10 @@ public class User /* implements Serializable */{
         String[] summary = getSummaryAttributesByChecksum(summaryChecksum);
         if (summary != null) return summary;
 
-        if (questionFullName.equals(BooleanQuestionNode.BOOLEAN_QUESTION_NAME)) {
+        Question question = model.getQuestion(questionFullName);
+        if (question.getQuery() instanceof BooleanQuery) {
             summary = new String[0];
         } else { // ordinary question
-            Question question = model.getQuestion(questionFullName);
             Map<String, AttributeField> attributes = question.getSummaryAttributes();
             summary = new String[attributes.size()];
             attributes.keySet().toArray(summary);

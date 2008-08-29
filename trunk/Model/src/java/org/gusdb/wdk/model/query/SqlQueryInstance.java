@@ -93,28 +93,7 @@ public class SqlQueryInstance extends QueryInstance {
         String sql = getUncachedSql();
 
         // create table
-        StringBuffer sqlTable = new StringBuffer("CREATE TABLE ");
-        sqlTable.append(tableName);
-        sqlTable.append(" AS SELECT ");
-        sqlTable.append(" f.*, ");
-        sqlTable.append(instanceId);
-        sqlTable.append(" AS ");
-        sqlTable.append(CacheFactory.COLUMN_INSTANCE_ID);
-        sqlTable.append(" FROM (");
-        sqlTable.append(sql);
-        sqlTable.append(") f");
-
-        Statement stmt = null;
-        try {
-            try {
-                stmt = connection.createStatement();
-                stmt.execute(sqlTable.toString());
-            } finally {
-                if (stmt != null) stmt.close();
-            }
-        } catch (SQLException ex) {
-            throw ex;
-        }
+        createCacheFromSql(connection, tableName, instanceId, sql);
     }
 
     /*
