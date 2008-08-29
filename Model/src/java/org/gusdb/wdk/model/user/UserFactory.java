@@ -1061,8 +1061,8 @@ public class UserFactory {
                 psHistory = connection.prepareStatement("INSERT INTO "
                         + hisTable + " (history_id, user_id, answer_id, "
                         + "create_time, last_run_time, custom_name, "
-                        + " is_boolean, is_deleted) VALUES (" + maxIdSql
-                        + ", ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)");
+                        + " is_boolean, is_deleted, display_params) VALUES ("
+                        + maxIdSql + ", ?, ?, ?, ?, ?, ?, ?, ?)");
                 psHistory.setInt(1, userId);
                 psHistory.setInt(2, answerId);
                 psHistory.setTimestamp(3, new Timestamp(createTime.getTime()));
@@ -1070,6 +1070,7 @@ public class UserFactory {
                 psHistory.setString(5, customName);
                 psHistory.setBoolean(6, isBoolean);
                 psHistory.setBoolean(7, deleted);
+                platform.updateClobData(psHistory, 8, booleanExpression, false);
                 psHistory.executeUpdate();
 
                 // query to get the new history id
