@@ -83,6 +83,7 @@ CREATE TABLE userlogins.histories
   custom_name VARCHAR(4000),
   is_boolean NUMERIC(1),
   is_deleted NUMERIC(1),
+  display_params TEXT,
   CONSTRAINT "HISTORIES_PK" PRIMARY KEY (user_id, history_id),
   CONSTRAINT "HISTORY_USER_ID_FK" FOREIGN KEY (user_id)
       REFERENCES userlogins.users (user_id)
