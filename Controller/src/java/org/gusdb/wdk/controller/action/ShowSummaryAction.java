@@ -22,11 +22,9 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
-import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.AnswerBean;
-import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
 import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
 import org.gusdb.wdk.model.jspwrap.HistoryBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
@@ -341,9 +339,6 @@ public class ShowSummaryAction extends ShowQuestionAction {
                         sortingAttributes);
             }
             wdkAnswer.setSumaryAttribute(summaryAttributes);
-        } else if (answerMaker instanceof BooleanQuestionNodeBean) {
-            wdkAnswer = ((BooleanQuestionNodeBean) answerMaker).makeAnswer(
-                    start, end);
         } else {
             throw new RuntimeException("unexpected answerMaker: " + answerMaker);
         }

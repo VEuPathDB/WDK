@@ -6,6 +6,7 @@ package org.gusdb.wdk.model.query;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -95,10 +96,11 @@ public abstract class QueryInstance {
     }
 
     private void setValues(Map<String, Object> values) throws WdkModelException {
+        values = new LinkedHashMap<String, Object>(values);
         // apply empty values, and validate them on assignment
         query.validateValues(values);
         // passed, assign the value
-        this.values = new LinkedHashMap<String, Object>(values);
+        this.values = values;
         checksum = null;
     }
 
@@ -233,5 +235,32 @@ public abstract class QueryInstance {
         sql.append(CacheFactory.COLUMN_INSTANCE_ID);
         sql.append(" = ").append(instanceId);
         return sql.toString();
+    }
+    
+    protected void createCacheFromSql(Connection connection, String tableName,
+            int instanceId, String sql) throws SQLException {
+        // create table
+        StringBuffer sqlTable = new StringBuffer("CREATE TABLE ");
+        sqlTable.append(tableName);
+        sqlTable.append(" AS SELECT ");
+        sqlTable.append(" f.*, ");
+        sqlTable.append(instanceId);
+        sqlTable.append(" AS ");
+        sqlTable.append(CacheFactory.COLUMN_INSTANCE_ID);
+        sqlTable.append(" FROM (");
+        sqlTable.append(sql);
+        sqlTable.append(") f");
+
+        Statement stmt = null;
+        try {
+            try {
+                stmt = connection.createStatement();
+                stmt.execute(sqlTable.toString());
+            } finally {
+                if (stmt != null) stmt.close();
+            }
+        } catch (SQLException ex) {
+            throw ex;
+        }
     }
 }

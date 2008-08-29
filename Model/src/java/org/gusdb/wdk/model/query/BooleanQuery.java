@@ -49,13 +49,13 @@ import org.json.JSONObject;
  *          2007) $ $Author$
  */
 
-public class BooleanQuery extends Query {
+public class BooleanQuery extends SqlQuery {
 
     public static final String QUERY_NAME_PREFIX = "boolean_query_";
     public static final String LEFT_OPERAND_PARAM_PREFIX = "boolean_left_operand_";
     public static final String RIGHT_OPERAND_PARAM_PREFIX = "boolean_right_operand_";
     public static final String OPERATOR_PARAM = "boolean_operator";
-
+    
     public static String getQueryName(RecordClass recordClass) {
         String rcName = recordClass.getFullName().replace('.', '_');
         return QUERY_NAME_PREFIX + rcName;
@@ -93,6 +93,8 @@ public class BooleanQuery extends Query {
         this.paramMap.put(rightOperand.getName(), rightOperand);
         this.paramMap.put(operator.getName(), operator);
         prepareColumns(recordClass);
+        
+        this.sql = constructSql();
     }
 
     private BooleanQuery(BooleanQuery query) {
@@ -181,6 +183,26 @@ public class BooleanQuery extends Query {
     @Override
     public QueryInstance makeInstance(Map<String, Object> values)
             throws WdkModelException {
-        return new BooleanQueryInstance(this, values);
+        return new SqlQueryInstance(this, values);
+    }
+    
+    private String constructSql() {
+        StringBuffer sql = new StringBuffer();
+        constructOperandSql(sql, leftOperand.getName());
+        sql.append(" $$").append(operator.getName()).append("$$ ");
+        constructOperandSql(sql, leftOperand.getName());
+        return sql.toString();
+    }
+    
+    private void constructOperandSql(StringBuffer sql, String operand) {
+        sql.append("SELECT ");
+        boolean first = true;
+        for(String column : columnMap.keySet()) {
+            if (first) first = false;
+            else sql.append(", ");
+            sql.append(column);
+        }
+        sql.append(" FROM $$").append(operand).append("$$");
+        sql.append(" WHERE $$").append(operand).append(".condition$$");
     }
 }

@@ -24,7 +24,7 @@ import org.json.JSONObject;
 public class SqlQuery extends Query {
 
     private List<WdkModelText> sqlList;
-    private String sql;
+    protected String sql;
     private List<SqlParamValue> sqlMacroList;
     private Map<String, String> sqlMacroMap;
 

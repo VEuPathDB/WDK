@@ -8,7 +8,6 @@ import java.util.Map;
 
 import org.gusdb.wdk.model.AbstractEnumParam;
 import org.gusdb.wdk.model.AttributeField;
-import org.gusdb.wdk.model.BooleanQuestionNode;
 import org.gusdb.wdk.model.DatasetParam;
 import org.gusdb.wdk.model.Field;
 import org.gusdb.wdk.model.FieldScope;
@@ -207,14 +206,6 @@ public class QuestionBean {
 
     public String getHelp() {
         return question.getHelp();
-    }
-
-    public BooleanQuestionLeafBean makeBooleanQuestionLeaf()
-            throws WdkModelException {
-        BooleanQuestionNode bqn = new BooleanQuestionNode(this.question, null);
-        BooleanQuestionLeafBean leaf = new BooleanQuestionLeafBean(bqn, null);
-        return leaf;
-
     }
 
     /**
