@@ -16,6 +16,8 @@ public class PrimaryKeyAttributeField extends AttributeField {
     private List<WdkModelText> textList = new ArrayList<WdkModelText>();
     private String text;
 
+    private String aliasQueryRef = null;
+
     public PrimaryKeyAttributeField() {
         // add project id into the column list
         columnRefSet.add(Utilities.COLUMN_PROJECT_ID);
@@ -49,6 +51,23 @@ public class PrimaryKeyAttributeField extends AttributeField {
         super.setRecordClass(recordClass);
         this.recordClass = recordClass;
     }
+
+    /**
+     * @return the aliasQueryRef
+     */
+    public String getAliasQueryRef() {
+        return aliasQueryRef;
+    }
+    
+
+    /**
+     * @param aliasQueryRef
+     *            the aliasQueryRef to set
+     */
+    public void setAliasQueryRef(String aliasQueryRef) {
+        this.aliasQueryRef = aliasQueryRef;
+    }
+    
 
     /*
      * (non-Javadoc)
