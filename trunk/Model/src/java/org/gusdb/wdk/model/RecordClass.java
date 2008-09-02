@@ -411,28 +411,43 @@ public class RecordClass extends WdkModelBase implements
         }
 
         // resolve references for filter instances
-        for (AnswerFilterInstance filter : filterMap.values()) {
+        for (AnswerFilter filter : filterList) {
             filter.resolveReferences(model);
-            if (filter.isDefault()) {
-                if (defaultFilter != null)
-                    throw new WdkModelException("The default filter of type "
-                            + getFullName() + " is defined more than once: ["
-                            + defaultFilter.getName() + "], ["
-                            + filter.getName() + "]");
-                defaultFilter = filter;
-            }
-            if (filter.isBooleanDefault()) {
-                if (defaultBooleanFilter != null)
-                    throw new WdkModelException("The default boolean filter of"
-                            + " type " + getFullName() + " is defined more "
-                            + "than once: [" + defaultBooleanFilter.getName()
-                            + "] and [" + filter.getName() + "]");
-                defaultBooleanFilter = filter;
+
+            Map<String, AnswerFilterInstance> instances = filter.getInstances();
+            for (String filterName : instances.keySet()) {
+                if (filterMap.containsKey(filterName))
+                    throw new WdkModelException("Filter instance ["
+                            + filterName + "] of type " + getFullName()
+                            + " is included more than once");
+                AnswerFilterInstance instance = instances.get(filterName);
+                filterMap.put(filterName, instance);
+
+                if (instance.isDefault()) {
+                    if (defaultFilter != null)
+                        throw new WdkModelException(
+                                "The default filter of type " + getFullName()
+                                        + " is defined more than once: ["
+                                        + defaultFilter.getName() + "], ["
+                                        + instance.getName() + "]");
+                    defaultFilter = instance;
+                }
+                if (instance.isBooleanDefault()) {
+                    if (defaultBooleanFilter != null)
+                        throw new WdkModelException(
+                                "The default boolean filter of" + " type "
+                                        + getFullName() + " is defined more "
+                                        + "than once: ["
+                                        + defaultBooleanFilter.getName()
+                                        + "] and [" + instance.getName() + "]");
+                    defaultBooleanFilter = instance;
+                }
             }
         }
-        
+        filterList = null;
+
         // resolve references for the filter layout instances
-        for(AnswerFilterLayout layout : filterLayoutMap.values()) {
+        for (AnswerFilterLayout layout : filterLayoutMap.values()) {
             layout.resolveReferences(model);
         }
     }
@@ -746,20 +761,14 @@ public class RecordClass extends WdkModelBase implements
         nestedRecordListQuestionRefList = null;
 
         // exclude filter instances
+        List<AnswerFilter> newFilters = new ArrayList<AnswerFilter>();
         for (AnswerFilter filter : filterList) {
             if (filter.include(projectId)) {
                 filter.excludeResources(projectId);
-                Map<String, AnswerFilterInstance> instances = filter.getInstances();
-                for (String filterName : instances.keySet()) {
-                    if (filterMap.containsKey(filterName))
-                        throw new WdkModelException("Filter instance ["
-                                + filterName + "] of type " + getFullName()
-                                + " is included more than once");
-                    filterMap.put(filterName, instances.get(filterName));
-                }
+                newFilters.add(filter);
             }
         }
-        filterList = null;
+        filterList = newFilters;
 
         // exclude filter layout
         for (AnswerFilterLayout layout : filterLayoutList) {

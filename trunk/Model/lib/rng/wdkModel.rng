@@ -646,7 +646,7 @@
                           <ref name="IncludeExclude"/>
                           <text />
                         </element>
-                    <choice>
+                    </choice>
                   </zeroOrMore>
                 </element>
               </oneOrMore>
