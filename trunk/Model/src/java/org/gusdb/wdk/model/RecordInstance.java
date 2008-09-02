@@ -74,10 +74,13 @@ public class RecordInstance extends AttributeValueContainer {
         String queryName = attributeQuery.getFullName();
         Query query = recordClass.getAttributeQuery(queryName);
         QueryInstance instance = query.makeInstance(primaryKey.getValues());
+
         ResultList resultList = instance.getResults();
-        if (!resultList.next())
+        if (!resultList.next()) {
             throw new WdkModelException("Attribute query " + queryName
-                    + " doesn't return any row.");
+                    + " doesn't return any row: " + instance.getSql());
+        }
+
         Map<String, AttributeField> fields = recordClass.getAttributeFieldMap();
         for (Column column : query.getColumns()) {
             if (!fields.containsKey(column.getName())) continue;
