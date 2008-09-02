@@ -45,7 +45,8 @@ public abstract class AttributeValue {
     @Override
     public String toString() {
         try {
-            return (String) getValue();
+            Object value = getValue();
+            return (value == null) ? null : value.toString();
         } catch (WdkModelException ex) {
             throw new RuntimeException(ex);
         } catch (NoSuchAlgorithmException ex) {
