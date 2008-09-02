@@ -54,6 +54,9 @@ public class BooleanQuery extends SqlQuery {
     public static final String QUERY_NAME_PREFIX = "boolean_query_";
     public static final String LEFT_OPERAND_PARAM_PREFIX = "boolean_left_operand_";
     public static final String RIGHT_OPERAND_PARAM_PREFIX = "boolean_right_operand_";
+    public static final String LEFT_FILTER_PARAM = "boolean_left_filter";
+    public static final String RIGHT_FILTER_PARAM = "boolean_right_filter";
+    
     public static final String OPERATOR_PARAM = "boolean_operator";
     
     public static String getQueryName(RecordClass recordClass) {

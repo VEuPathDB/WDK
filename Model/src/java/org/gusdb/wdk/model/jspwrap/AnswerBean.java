@@ -447,35 +447,9 @@ public class AnswerBean {
         answer.setSumaryAttributes(attributeNames);
     }
 
-    /**
-     * @param summaryTableName
-     * @return
-     * @throws WdkModelException
-     * @throws NoSuchAlgorithmException
-     * @throws SQLException
-     * @throws JSONException
-     * @throws WdkUserException
-     * @see org.gusdb.wdk.model.Answer#getSummaryCount(java.lang.String)
-     */
-    public Map<String, Map<String, Integer>> getSummaryMap(
-            String summaryTableName) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
-        return answer.getSummaryCount(summaryTableName);
-    }
-
-    /**
-     * @return
-     * @throws NoSuchAlgorithmException
-     * @throws WdkModelException
-     * @throws SQLException
-     * @throws JSONException
-     * @throws WdkUserException
-     * @see org.gusdb.wdk.model.Answer#getAllSummaryCount()
-     */
-    public Map<String, Map<String, Map<String, Integer>>> getAllSummaryCount()
-            throws NoSuchAlgorithmException, WdkModelException, SQLException,
+    public int getFilterSize(String filterName)
+            throws NoSuchAlgorithmException, SQLException, WdkModelException,
             JSONException, WdkUserException {
-        return answer.getAllSummaryCount();
+        return answer.getFilterSize(filterName);
     }
 }

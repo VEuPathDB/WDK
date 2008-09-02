@@ -105,7 +105,7 @@ public class Answer {
     private Map<String, Boolean> sortingAttributes;
     private Map<String, AttributeField> summaryAttributes;
 
-    private SummaryView summaryView;
+    private AnswerFilterInstance filter;
 
     // ------------------------------------------------------------------
     // Constructor
@@ -132,7 +132,7 @@ public class Answer {
      */
     Answer(Question question, QueryInstance idsQueryInstance, int startIndex,
             int endIndex, Map<String, Boolean> sortingAttributes,
-            SummaryView summaryView) throws WdkModelException,
+            AnswerFilterInstance filter) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
         this.question = question;
@@ -147,9 +147,9 @@ public class Answer {
         this.summaryAttributes = new LinkedHashMap<String, AttributeField>();
 
         // get the view
-        if (summaryView == null)
-            summaryView = question.getRecordClass().getDefaultView();
-        this.summaryView = summaryView;
+        if (filter == null)
+            filter = question.getRecordClass().getDefaultFilter();
+        this.filter = filter;
 
         // save the answer
         AnswerFactory answerFactory = question.getWdkModel().getAnswerFactory();
@@ -175,7 +175,7 @@ public class Answer {
                 answer.sortingAttributes);
         this.summaryAttributes = new LinkedHashMap<String, AttributeField>(
                 answer.summaryAttributes);
-        this.summaryView = answer.summaryView;
+        this.filter = answer.filter;
     }
 
     // ------------------------------------------------------------------
@@ -600,19 +600,8 @@ public class Answer {
 
     private String getIdSql() throws NoSuchAlgorithmException, SQLException,
             WdkModelException, JSONException, WdkUserException {
-        if (summaryView != null) { // get a summary view
-            Param columParam = summaryView.getSummaryTable().getColumnParam();
-            Param rowParam = summaryView.getSummaryTable().getRowParam();
-
-            // prepare the params for summary view
-            Map<String, Object> params = new LinkedHashMap<String, Object>();
-            params.put(columParam.getName(), summaryView.getColumnTerm());
-            params.put(rowParam.getName(), summaryView.getRowTerm());
-            params.put(summaryView.getAnswerParam().getName(), getChecksum());
-
-            // get a summary view query instance
-            Query query = summaryView.getSummaryQuery();
-            QueryInstance instance = query.makeInstance(params);
+        if (filter != null) { // get a filter
+            QueryInstance instance = filter.makeQueryInstance(this);
             return instance.getSql();
         } else { // get the id query directly
             return idsQueryInstance.getSql();
@@ -799,24 +788,12 @@ public class Answer {
         return answerInfo;
     }
 
-    public Map<String, Map<String, Integer>> getSummaryCount(
-            String summaryTableName) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
-        initPageRecordInstances();
-        SummaryTable summaryTable = question.getRecordClass().getSummaryTable(
-                summaryTableName);
-        return summaryTable.getSummaryCount(this);
-    }
-
-    public Map<String, Map<String, Map<String, Integer>>> getAllSummaryCount()
-            throws NoSuchAlgorithmException, WdkModelException, SQLException,
+    public int getFilterSize(String filterName)
+            throws NoSuchAlgorithmException, SQLException, WdkModelException,
             JSONException, WdkUserException {
-        Map<String, Map<String, Map<String, Integer>>> allSummaries = new LinkedHashMap<String, Map<String, Map<String, Integer>>>();
-        for (SummaryTable summaryTable : question.getRecordClass().getSummaryTables()) {
-            String summaryName = summaryTable.getName();
-            allSummaries.put(summaryName, getSummaryCount(summaryName));
-        }
-        return allSummaries;
+        RecordClass recordClass = question.getRecordClass();
+        AnswerFilterInstance filter = recordClass.getFilter(filterName);
+        QueryInstance instance = filter.makeQueryInstance(this);
+        return instance.getResultSize();
     }
 }

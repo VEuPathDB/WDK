@@ -588,11 +588,9 @@
           </element>
           
           <!-- summary table definitions -->
-          <element name="summaryTable">
+          <element name="answerFilterLayout">
             <attribute name="name" />
             <attribute name="displayName" />
-            <attribute name="rowParamRef" />
-            <attribute name="columnParamRef" />
             <ref name="IncludeExclude" />
             <optional>
               <attribute name="visible">
@@ -606,10 +604,25 @@
                   <ref name="IncludeExclude"/>
                   <text />
                 </element>
-                <element name="view">
-                  <attribute name="rowTerm" />
-                  <attribute name="columnTerm" />
-                  <attribute name="summaryQueryRef" />
+                <element name="instanceRef">
+                  <attribute name="ref" />
+                  <attribute name="layout" />
+                  <ref name="IncludeExclude"/>
+                </element>
+              </choice>
+            </zeroOrMore>
+          </element>
+          
+          
+          <!-- answerFilter definition -->
+          <element name="answerFilter">
+              <attribute name="queryRef" />
+              <ref name="IncludeExclude"/>
+              
+              <oneOrMore>
+                <element name="instance">
+                  <attribute name="name" />
+                  <attribute name="displayName" />
                   <ref name="IncludeExclude"/>
                   <optional>
                     <attribute name="isDefault">
@@ -621,17 +634,26 @@
                       <data type="boolean" />
                     </attribute>
                   </optional>
+                  
                   <zeroOrMore>
-                    <element name="description">
-                      <ref name="IncludeExclude"/>
-                      <text />
-                    </element>
-                   </zeroOrMore>
+                    <choice>
+                        <element name="description">
+                          <ref name="IncludeExclude"/>
+                          <text />
+                        </element>
+                        <element name="paramValue">
+                          <attribute name="name"/>
+                          <ref name="IncludeExclude"/>
+                          <text />
+                        </element>
+                    <choice>
+                  </zeroOrMore>
                 </element>
-              </choice>
-            </zeroOrMore>
+              </oneOrMore>
           </element>
           
+          
+          <!-- attribute query ref -->
           <element name="attributeQueryRef">
               <attribute name="ref" />
               <ref name="IncludeExclude" />

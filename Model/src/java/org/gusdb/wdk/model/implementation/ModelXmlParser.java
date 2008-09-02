@@ -33,6 +33,11 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.digester.Digester;
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.AnswerFilter;
+import org.gusdb.wdk.model.AnswerFilterInstance;
+import org.gusdb.wdk.model.AnswerFilterInstanceParam;
+import org.gusdb.wdk.model.AnswerFilterLayout;
+import org.gusdb.wdk.model.AnswerFilterLayoutInstance;
 import org.gusdb.wdk.model.AnswerParam;
 import org.gusdb.wdk.model.AttributeList;
 import org.gusdb.wdk.model.AttributeQueryReference;
@@ -67,8 +72,6 @@ import org.gusdb.wdk.model.RecordClassSet;
 import org.gusdb.wdk.model.ReporterProperty;
 import org.gusdb.wdk.model.ReporterRef;
 import org.gusdb.wdk.model.StringParam;
-import org.gusdb.wdk.model.SummaryTable;
-import org.gusdb.wdk.model.SummaryView;
 import org.gusdb.wdk.model.TableField;
 import org.gusdb.wdk.model.TextAttributeField;
 import org.gusdb.wdk.model.Utilities;
@@ -136,7 +139,7 @@ public class ModelXmlParser extends XmlParser {
         // load property map
         Map<String, String> properties = getPropMap(modelPropURL);
         InputStream modelXmlStream = substituteProps(masterDoc, properties);
-        
+
         // add project id into the prop map automatically
         properties.put(Utilities.PARAM_PROJECT_ID, projectId);
 
@@ -328,24 +331,44 @@ public class ModelXmlParser extends XmlParser {
                 "wdkModel/recordClassSet/recordClass/reporter/property",
                 "setValue", 0);
 
-        // summary tables
+        // filter layouts
         configureNode(digester,
-                "wdkModel/recordClassSet/recordClass/summaryTable",
-                SummaryTable.class, "addSummaryTable");
-        configureNode(digester,
-                "wdkModel/recordClass/summaryTable/description",
-                WdkModelText.class, "addDescription");
-        digester.addCallMethod("wdkModel/recordClass/summaryTable/description",
-                "setText", 0);
-
-        configureNode(digester,
-                "wdkModel/recordClassSet/recordClass/summaryTable/view",
-                SummaryView.class, "addView");
-        configureNode(digester,
-                "wdkModel/recordClass/summaryTable/view/description",
+                "wdkModel/recordClassSet/recordClass/answerFilterLayout",
+                AnswerFilterLayout.class, "addFilterLayout");
+        configureNode(
+                digester,
+                "wdkModel/recordClassSet/recordClass/answerFilterLayout/description",
                 WdkModelText.class, "addDescription");
         digester.addCallMethod(
-                "wdkModel/recordClass/summaryTable/view/description",
+                "wdkModel/recordClassSet/recordClass/answerFilterLayout/description",
+                "setText", 0);
+        configureNode(
+                digester,
+                "wdkModel/recordClassSet/recordClass/answerFilterLayout/instanceRef",
+                AnswerFilterLayoutInstance.class, "addInstance");
+
+        // filter instances
+        configureNode(digester,
+                "wdkModel/recordClassSet/recordClass/answerFilter",
+                AnswerFilter.class, "addFilter");
+        configureNode(digester,
+                "wdkModel/recordClassSet/recordClass/answerFilter/instance",
+                AnswerFilterInstance.class, "addInstance");
+
+        configureNode(
+                digester,
+                "wdkModel/recordClassSet/recordClass/answerFilter/instance/description",
+                WdkModelText.class, "addDescription");
+        digester.addCallMethod(
+                "wdkModel/recordClassSet/recordClass/answerFilter/instance/description",
+                "setText", 0);
+
+        configureNode(
+                digester,
+                "wdkModel/recordClassSet/recordClass/answerFilter/instance/paramValue",
+                AnswerFilterInstanceParam.class, "addParamValue");
+        digester.addCallMethod(
+                "wdkModel/recordClassSet/recordClass/answerFilter/instance/paramValue",
                 "setText", 0);
 
         // attribute query ref

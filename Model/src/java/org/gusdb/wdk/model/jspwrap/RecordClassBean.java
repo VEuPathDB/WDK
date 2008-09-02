@@ -5,6 +5,8 @@ import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.gusdb.wdk.model.AnswerFilterInstance;
+import org.gusdb.wdk.model.AnswerFilterLayout;
 import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.RecordClass;
@@ -111,9 +113,63 @@ public class RecordClassBean {
     public void setRecordId(String recordId) {
         this.recordId = recordId;
     }
-    
+
     public String[] getPrimaryKeyColumns() {
         return recordClass.getPrimaryKeyAttributeField().getColumnRefs();
+    }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.RecordClass#getFilterLayoutMap()
+     */
+    public Map<String, AnswerFilterLayoutBean> getFilterLayoutMap() {
+        Map<String, AnswerFilterLayout> layouts = recordClass.getFilterLayoutMap();
+        Map<String, AnswerFilterLayoutBean> beans = new LinkedHashMap<String, AnswerFilterLayoutBean>();
+        for (String name : layouts.keySet()) {
+            AnswerFilterLayout layout = layouts.get(name);
+            beans.put(name, new AnswerFilterLayoutBean(layout));
+        }
+        return beans;
+    }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.RecordClass#getFilterLayouts()
+     */
+    public AnswerFilterLayoutBean[] getFilterLayouts() {
+        AnswerFilterLayout[] layouts = recordClass.getFilterLayouts();
+        AnswerFilterLayoutBean[] beans = new AnswerFilterLayoutBean[layouts.length];
+        for (int i = 0; i < layouts.length; i++) {
+            beans[i] = new AnswerFilterLayoutBean(layouts[i]);
+        }
+        return beans;
+    }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.RecordClass#getFilterMap()
+     */
+    public Map<String, AnswerFilterInstanceBean> getFilterMap() {
+        Map<String, AnswerFilterInstance> instances = recordClass.getFilterMap();
+        Map<String, AnswerFilterInstanceBean> beans = new LinkedHashMap<String, AnswerFilterInstanceBean>();
+        for (String name : instances.keySet()) {
+            AnswerFilterInstance instance = instances.get(name);
+            beans.put(name, new AnswerFilterInstanceBean(instance));
+        }
+        return beans;
+    }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.RecordClass#getFilters()
+     */
+    public AnswerFilterInstanceBean[] getFilters() {
+        AnswerFilterInstance[] instances = recordClass.getFilters();
+        AnswerFilterInstanceBean[] beans = new AnswerFilterInstanceBean[instances.length];
+        for (int i = 0; i < instances.length; i++) {
+            beans[i] = new AnswerFilterInstanceBean(instances[i]);
+        }
+        return beans;
     }
 
     /**
@@ -125,4 +181,5 @@ public class RecordClassBean {
     // public RecordBean getRecord() {
     // return makeRecord(projectId, recordId);
     // }
+
 }
