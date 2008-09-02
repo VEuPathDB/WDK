@@ -254,14 +254,14 @@ public class Question extends WdkModelBase {
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
         return makeAnswer(paramValues, i, j, sortingAttributeMap,
-                recordClass.getDefaultView());
+                recordClass.getDefaultFilter());
     }
 
     public Answer makeAnswer(Map<String, Object> paramValues, int i, int j,
-            SummaryView summaryView) throws WdkUserException,
+            AnswerFilterInstance filter) throws WdkUserException,
             WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException {
-        return makeAnswer(paramValues, i, j, sortingAttributeMap, summaryView);
+        return makeAnswer(paramValues, i, j, sortingAttributeMap, filter);
     }
 
     /**
@@ -279,12 +279,12 @@ public class Question extends WdkModelBase {
      * @throws NoSuchAlgorithmException
      */
     public Answer makeAnswer(Map<String, Object> paramValues, int i, int j,
-            Map<String, Boolean> sortingAttributes, SummaryView summaryView)
+            Map<String, Boolean> sortingAttributes, AnswerFilterInstance filter)
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
         QueryInstance qi = query.makeInstance(paramValues);
         Answer answer = new Answer(this, qi, i, j, sortingAttributes,
-                summaryView);
+                filter);
 
         return answer;
     }

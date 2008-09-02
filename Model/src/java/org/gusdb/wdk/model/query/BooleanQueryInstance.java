@@ -2,13 +2,10 @@ package org.gusdb.wdk.model.query;
 
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.gusdb.wdk.model.Column;
 import org.gusdb.wdk.model.RecordClass;
-import org.gusdb.wdk.model.SummaryTable;
-import org.gusdb.wdk.model.SummaryView;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.json.JSONException;
@@ -29,7 +26,6 @@ import org.json.JSONException;
 public class BooleanQueryInstance extends SqlQueryInstance {
 
     private BooleanQuery booleanQuery;
-    private SummaryView booleanView;
 
     /**
      * @param query
@@ -41,14 +37,13 @@ public class BooleanQueryInstance extends SqlQueryInstance {
         super(query, values);
         this.booleanQuery = query;
         // set default view
-        booleanView = query.getRecordClass().getDefaultBooleanView();
     }
 
     public void setBooleanView(String tableName, String row, String column)
             throws WdkModelException {
         RecordClass recordClass = booleanQuery.getRecordClass();
-        SummaryTable summaryTable = recordClass.getSummaryTable(tableName);
-        booleanView = summaryTable.getView(row, column);
+//        SummaryTable summaryTable = recordClass.getSummaryTable(tableName);
+//        booleanView = summaryTable.getView(row, column);
     }
 
     /*
@@ -59,7 +54,7 @@ public class BooleanQueryInstance extends SqlQueryInstance {
     @Override
     public String getUncachedSql() throws WdkModelException, SQLException,
             NoSuchAlgorithmException, JSONException, WdkUserException {
-        if (booleanView == null) return super.getUncachedSql();
+//        if (booleanView == null) return super.getUncachedSql();
 
         // needs to apply the view to each operand before boolean
         StringBuffer sql = new StringBuffer();
@@ -81,16 +76,16 @@ public class BooleanQueryInstance extends SqlQueryInstance {
             throws NoSuchAlgorithmException, WdkModelException, SQLException,
             JSONException, WdkUserException {
         // prepare the filter query
-        SummaryTable summaryTable = booleanView.getSummaryTable();
-        Map<String, Object> params = new LinkedHashMap<String, Object>();
-        params.put(summaryTable.getRowParam().getName(),
-                booleanView.getRowTerm());
-        params.put(summaryTable.getColumnParam().getName(),
-                booleanView.getColumnTerm());
-        params.put(booleanView.getAnswerParam().getName(), answerChecksum);
-        Query query = booleanView.getSummaryQuery();
-        QueryInstance instance = query.makeInstance(params);
-        String subSql = instance.getSql();
+//        SummaryTable summaryTable = booleanView.getSummaryTable();
+//        Map<String, Object> params = new LinkedHashMap<String, Object>();
+//        params.put(summaryTable.getRowParam().getName(),
+//                booleanView.getRowTerm());
+//        params.put(summaryTable.getColumnParam().getName(),
+//                booleanView.getColumnTerm());
+//        params.put(booleanView.getAnswerParam().getName(), answerChecksum);
+//        Query query = booleanView.getSummaryQuery();
+//        QueryInstance instance = query.makeInstance(params);
+//        String subSql = instance.getSql();
 
         sql.append("SELECT ");
         boolean first = true;
@@ -99,6 +94,6 @@ public class BooleanQueryInstance extends SqlQueryInstance {
             else sql.append(", ");
             sql.append(column.getName());
         }
-        sql.append(" FROM (").append(subSql).append(") f");
+//        sql.append(" FROM (").append(subSql).append(") f");
     }
 }
