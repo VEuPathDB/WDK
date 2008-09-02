@@ -221,7 +221,6 @@ public class TableValue implements Iterable<Map<String, AttributeValue>>,
 
     private PrimaryKeyAttributeValue primaryKey;
     private TableField tableField;
-    private Map<String, AttributeField> attributeFields;
     private ResultList resultList;
 
     private TableValueRow nextRow;
@@ -358,7 +357,7 @@ public class TableValue implements Iterable<Map<String, AttributeValue>>,
             nextRow = new TableValueRow(this);
 
             // fill in the column attributes
-            for (AttributeField field : attributeFields.values()) {
+            for (AttributeField field : tableField.getAttributeFields()) {
                 if (!(field instanceof ColumnAttributeField)) continue;
 
                 Object value = resultList.get(field.getName());
