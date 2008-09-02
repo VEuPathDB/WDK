@@ -138,10 +138,11 @@ public class ModelXmlParser extends XmlParser {
 
         // load property map
         Map<String, String> properties = getPropMap(modelPropURL);
-        InputStream modelXmlStream = substituteProps(masterDoc, properties);
 
         // add project id into the prop map automatically
         properties.put(Utilities.PARAM_PROJECT_ID, projectId);
+
+        InputStream modelXmlStream = substituteProps(masterDoc, properties);
 
         WdkModel model = (WdkModel) digester.parse(modelXmlStream);
 

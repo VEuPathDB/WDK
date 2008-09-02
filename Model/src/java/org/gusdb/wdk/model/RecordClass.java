@@ -582,7 +582,7 @@ public class RecordClass extends WdkModelBase implements
                 String columnName = column.getName();
                 result.put(columnName, resultList.get(columnName));
             }
-        }
+        } else result.putAll(pkValues); // no alias found, use the original ones
         resultList.close();
         return result;
     }
@@ -696,6 +696,7 @@ public class RecordClass extends WdkModelBase implements
             throw new WdkModelException("The primaryKeyField of recordClass "
                     + getFullName() + " is not set. Please define a "
                     + "<primaryKeyAttribute> in the recordClass.");
+        this.aliasQueryRef = primaryKeyField.getAliasQueryRef();
 
         // exclude table fields
         for (TableField field : tableFieldList) {
