@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.gusdb.wdk.model.Answer;
+import org.gusdb.wdk.model.AnswerFilterInstance;
 import org.gusdb.wdk.model.AnswerParam;
 import org.gusdb.wdk.model.BooleanExpression;
 import org.gusdb.wdk.model.HistoryParam;
@@ -47,7 +48,8 @@ public class History {
     private boolean isValid = true;
 
     private Map<String, String> displayParams;
-
+    private AnswerFilterInstance filter;
+    
     History(UserFactory factory, User user, int historyId) {
         this.factory = factory;
         this.user = user;

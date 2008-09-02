@@ -592,14 +592,17 @@ public class RecordClass extends WdkModelBase implements
         String[] pkColumns = primaryKeyField.getColumnRefs();
         Map<String, Param> originalParams = query.getParamMap();
         Query newQuery = query.clone();
+        
+        // find the new params to be created
+        List<String> newParams = new ArrayList<String>();
+        for (String column : pkColumns) {
+            if (!originalParams.containsKey(column)) newParams.add(column);
+        }
 
         // create primary key params for the query, using primary key column
         // names
         ParamSet paramSet = wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
-        for (String columnName : pkColumns) {
-            // skip any of the existing params
-            if (originalParams.containsKey(columnName)) continue;
-
+        for (String columnName : newParams) {
             StringParam param;
             if (paramSet.contains(columnName)) {
                 param = (StringParam) paramSet.getParam(columnName);
@@ -614,15 +617,12 @@ public class RecordClass extends WdkModelBase implements
         }
 
         // if the new query is SqlQuery, modify the sql
-        if (newQuery instanceof SqlQuery) {
+        if (newQuery instanceof SqlQuery && newParams.size() > 0) {
             StringBuffer sql = new StringBuffer("SELECT * FROM (");
             sql.append(((SqlQuery) newQuery).getSql());
             sql.append(") f WHERE ");
             boolean firstColumn = true;
-            for (String columnName : pkColumns) {
-                // skip any of the existing params
-                if (originalParams.containsKey(columnName)) continue;
-
+            for (String columnName : newParams) {
                 if (firstColumn) firstColumn = false;
                 else sql.append(" AND ");
                 sql.append(columnName + " = $$" + columnName + "$$");
