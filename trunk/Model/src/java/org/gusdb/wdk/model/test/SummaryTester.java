@@ -11,6 +11,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -19,23 +23,27 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.gusdb.wdk.model.Answer;
+import org.gusdb.wdk.model.AnswerFilterInstance;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
-import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.RecordInstance;
 import org.gusdb.wdk.model.Reference;
-import org.gusdb.wdk.model.SummaryTable;
-import org.gusdb.wdk.model.SummaryView;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.report.Reporter;
 import org.json.JSONException;
+import org.xml.sax.SAXException;
 
 public class SummaryTester {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws WdkModelException,
+            NoSuchAlgorithmException, WdkUserException, SQLException,
+            JSONException, ParserConfigurationException,
+            TransformerFactoryConfigurationError, TransformerException,
+            IOException, SAXException, InstantiationException,
+            IllegalAccessException, ClassNotFoundException {
 
         String cmdName = System.getProperty("cmdName");
 
@@ -72,125 +80,69 @@ public class SummaryTester {
             validateRowCount(rows);
         }
 
-        // get subType, if any
-        String[] viewValues = null;
-        if (cmdLine.hasOption("view"))
-            viewValues = cmdLine.getOptionValues("view");
+        // variable never used
+        Reference ref = new Reference(questionFullName);
+        String questionSetName = ref.getSetName();
+        String questionName = ref.getElementName();
+        WdkModel wdkModel = WdkModel.construct(cmdLine.getOptionValue("model"));
 
-        try {
-            // variable never used
-            Reference ref = new Reference(questionFullName);
-            String questionSetName = ref.getSetName();
-            String questionName = ref.getElementName();
-            WdkModel wdkModel = WdkModel.construct(cmdLine.getOptionValue("model"));
+        QuestionSet questionSet = wdkModel.getQuestionSet(questionSetName);
+        Question question = questionSet.getQuestion(questionName);
 
-            QuestionSet questionSet = wdkModel.getQuestionSet(questionSetName);
-            Question question = questionSet.getQuestion(questionName);
-
-            Map<String, Object> paramValues = new LinkedHashMap<String, Object>();
-            if (haveParams) {
-                paramValues = parseParamArgs(params);
-            }
-
-            // parse the summary view
-            SummaryView view = parseSummaryView(question, viewValues);
-
-            // this is suspicious
-            // Query query = question.getQuery();
-            // query.setIsCacheable(new Boolean(true));
-            int pageCount = 1;
-
-            if (toXml) {
-                writeSummaryAsXml(question, paramValues, xmlFileName, view);
-                return;
-            }
-
-            for (int i = 0; i < rows.length; i += 2) {
-                int nextStartRow = Integer.parseInt(rows[i]);
-                int nextEndRow = Integer.parseInt(rows[i + 1]);
-
-                Answer answer = question.makeAnswer(paramValues, nextStartRow,
-                        nextEndRow, view);
-
-                // this is wrong. it only shows one attribute query, not
-                // all. Fix this in Answer by saving a list of attribute
-                // queries, not just one.
-                if (cmdLine.hasOption("showQuery")) {
-                    System.out.println(getLowLevelQuery(answer));
-                    System.exit(0);
-                }
-
-                if (rows.length != 2) System.out.println("page " + pageCount);
-
-                // print the size of the answer
-                System.out.println("Total # of records: "
-                        + answer.getResultSize());
-
-                // print summary tables
-                printSummaryTables(answer);
-
-                // load configuration for output format
-                if (!hasFormat) format = "tabular";
-                Map<String, String> config = loadConfiguration(configFile);
-
-                Reporter reporter = answer.createReport(format, config,
-                        nextStartRow, nextEndRow);
-
-                reporter.write(System.out);
-                System.out.println();
-
-                pageCount++;
-            }
-        } catch (WdkUserException e) {
-            System.err.println(e.formatErrors());
-            System.exit(1);
-        } catch (Exception e) {
-            e.printStackTrace();
-            // System.exit(1);
+        Map<String, Object> paramValues = new LinkedHashMap<String, Object>();
+        if (haveParams) {
+            paramValues = parseParamArgs(params);
         }
-        // System.exit(0);
 
-        // HACK
-        // prevent the app from exiting
-        // while(true){}
-    }
+        // get filter
+        AnswerFilterInstance filter = null;
+        if (cmdLine.hasOption("filter")) {
+            String filterName = cmdLine.getOptionValue("filter");
+            filter = question.getRecordClass().getFilter(filterName);
+        }
 
-    private static SummaryView parseSummaryView(Question question,
-            String[] viewValues) throws WdkModelException {
-        if (viewValues == null || viewValues.length != 3) return null;
-        RecordClass recordClass = question.getRecordClass();
-        SummaryTable summaryTable = recordClass.getSummaryTable(viewValues[0]);
-        SummaryView view = summaryTable.getView(viewValues[1], viewValues[2]);
-        return view;
-    }
+        // this is suspicious
+        // Query query = question.getQuery();
+        // query.setIsCacheable(new Boolean(true));
+        int pageCount = 1;
 
-    private static void printSummaryTables(Answer answer)
-            throws NoSuchAlgorithmException, WdkModelException, SQLException,
-            JSONException, WdkUserException {
-        System.out.println("\n====================== Summaries =========================\n");
-        
-        SummaryTable[] tables = answer.getQuestion().getRecordClass().getSummaryTables();
-        for (SummaryTable table : tables) {
-            System.out.println("[Summary] " + table.getDisplayName());
-            Map<String, Map<String, Integer>> summary = answer.getSummaryCount(table.getName());
+        if (toXml) {
+            writeSummaryAsXml(question, paramValues, xmlFileName, filter);
+            return;
+        }
 
-            // print column names
-            for (String column : summary.values().iterator().next().keySet()) {
-                System.out.print("\t[" + column + "]");
+        for (int i = 0; i < rows.length; i += 2) {
+            int nextStartRow = Integer.parseInt(rows[i]);
+            int nextEndRow = Integer.parseInt(rows[i + 1]);
+
+            Answer answer = question.makeAnswer(paramValues, nextStartRow,
+                    nextEndRow, filter);
+
+            // this is wrong. it only shows one attribute query, not
+            // all. Fix this in Answer by saving a list of attribute
+            // queries, not just one.
+            if (cmdLine.hasOption("showQuery")) {
+                System.out.println(getLowLevelQuery(answer));
+                System.exit(0);
             }
+
+            if (rows.length != 2) System.out.println("page " + pageCount);
+
+            // print the size of the answer
+            System.out.println("Total # of records: " + answer.getResultSize());
+
+            // load configuration for output format
+            if (!hasFormat) format = "tabular";
+            Map<String, String> config = loadConfiguration(configFile);
+
+            Reporter reporter = answer.createReport(format, config,
+                    nextStartRow, nextEndRow);
+
+            reporter.write(System.out);
             System.out.println();
 
-            // print cells
-            for (String row : summary.keySet()) {
-                System.out.print("[" + row + "]");
-                for (Integer count : summary.get(row).values()) {
-                    System.out.print("\t" + ((count == null) ? "-" : count));
-                }
-                System.out.println();
-            }
-            System.out.println();
+            pageCount++;
         }
-        System.out.println();
     }
 
     private static Map<String, String> loadConfiguration(String configFileName)
@@ -215,13 +167,14 @@ public class SummaryTester {
     }
 
     private static void writeSummaryAsXml(Question question,
-            Map<String, Object> paramValues, String xmlFile, SummaryView view)
-            throws WdkModelException, WdkUserException, IOException,
-            NoSuchAlgorithmException, SQLException, JSONException {
+            Map<String, Object> paramValues, String xmlFile,
+            AnswerFilterInstance filter) throws WdkModelException,
+            WdkUserException, IOException, NoSuchAlgorithmException,
+            SQLException, JSONException {
 
-        Answer answer = question.makeAnswer(paramValues, 1, 10, view);
+        Answer answer = question.makeAnswer(paramValues, 1, 10, filter);
         int resultSize = answer.getResultSize();
-        answer = question.makeAnswer(paramValues, 1, resultSize, view);
+        answer = question.makeAnswer(paramValues, 1, resultSize, filter);
         FileWriter fw = new FileWriter(new File(xmlFile), false);
 
         String newline = System.getProperty("line.separator");
@@ -304,11 +257,9 @@ public class SummaryTester {
         options.addOption(config);
 
         // the sub type input
-        Option view = new Option("view", true, "The summary view to be used "
-                + "to filter (or not filter the result");
-        view.setArgName("view");
-        view.setArgs(3);
-        options.addOption(view);
+        Option filter = new Option("filter", true, "The filter to be used "
+                + "to filter out the result");
+        options.addOption(filter);
 
         // params
         Option params = new Option("params", true,
@@ -372,7 +323,7 @@ public class SummaryTester {
                 + " [-showQuery]\n"
                 + " [-toXml <xmlFile>|-fullRecords]\n"
                 + " [-format tabular | gff3 | fullRecords [-config <config_file>]]\n"
-                + " [-view <summary_table row_term column_term>]\n"
+                + " [-filter <filter_name>]\n"
                 + " -params param_1_name param_1_value ...\n";
 
         String header = newline

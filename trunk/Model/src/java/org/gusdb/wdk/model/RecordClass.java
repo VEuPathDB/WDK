@@ -69,11 +69,14 @@ public class RecordClass extends WdkModelBase implements
     private List<ReporterRef> reporterList = new ArrayList<ReporterRef>();
     private Map<String, ReporterRef> reporterMap = new LinkedHashMap<String, ReporterRef>();
 
-    private List<SummaryTable> summaryTableList = new ArrayList<SummaryTable>();
-    private Map<String, SummaryTable> summaryTableMap = new LinkedHashMap<String, SummaryTable>();
+    private List<AnswerFilter> filterList = new ArrayList<AnswerFilter>();
+    private Map<String, AnswerFilterInstance> filterMap = new LinkedHashMap<String, AnswerFilterInstance>();
 
-    private SummaryView defaultView;
-    private SummaryView defaultBooleanView;
+    private List<AnswerFilterLayout> filterLayoutList = new ArrayList<AnswerFilterLayout>();
+    private Map<String, AnswerFilterLayout> filterLayoutMap = new LinkedHashMap<String, AnswerFilterLayout>();
+
+    private AnswerFilterInstance defaultFilter;
+    private AnswerFilterInstance defaultBooleanFilter;
 
     // ////////////////////////////////////////////////////////////////////
     // Called at model creation time
@@ -407,34 +410,30 @@ public class RecordClass extends WdkModelBase implements
             this.aliasQuery = prepareAliasQuery(Query);
         }
 
-        // resolve reference for summary query
-        for (SummaryTable summaryTable : summaryTableMap.values()) {
-            summaryTable.resolveReferences(model);
-
-            // assign default view, using the first encounter
-            SummaryView defaultView = summaryTable.getDefaultView();
-            if (defaultView != null) {
-                if (this.defaultView != null)
-                    throw new WdkModelException("There're are more than one "
-                            + "default views.");
-                this.defaultView = defaultView;
+        // resolve references for filter instances
+        for (AnswerFilterInstance filter : filterMap.values()) {
+            filter.resolveReferences(model);
+            if (filter.isDefault()) {
+                if (defaultFilter != null)
+                    throw new WdkModelException("The default filter of type "
+                            + getFullName() + " is defined more than once: ["
+                            + defaultFilter.getName() + "], ["
+                            + filter.getName() + "]");
+                defaultFilter = filter;
             }
-
-            SummaryView defaultBooleanView = summaryTable.getDefaultBooleanView();
-            if (defaultBooleanView != null) {
-                if (this.defaultBooleanView != null)
-                    throw new WdkModelException("There're are more than one "
-                            + "default boolean views.");
-                this.defaultBooleanView = defaultBooleanView;
+            if (filter.isBooleanDefault()) {
+                if (defaultBooleanFilter != null)
+                    throw new WdkModelException("The default boolean filter of"
+                            + " type " + getFullName() + " is defined more "
+                            + "than once: [" + defaultBooleanFilter.getName()
+                            + "] and [" + filter.getName() + "]");
+                defaultBooleanFilter = filter;
             }
         }
-
-        // if no default view assigned, use the first one as default
-        if (summaryTableMap.size() > 0) {
-            SummaryTable defaultTable = summaryTableMap.values().iterator().next();
-            if (defaultView == null) defaultView = defaultTable.getViews()[0];
-            if (defaultBooleanView == null)
-                defaultView = defaultTable.getViews()[0];
+        
+        // resolve references for the filter layout instances
+        for(AnswerFilterLayout layout : filterLayoutMap.values()) {
+            layout.resolveReferences(model);
         }
     }
 
@@ -746,48 +745,91 @@ public class RecordClass extends WdkModelBase implements
         }
         nestedRecordListQuestionRefList = null;
 
-        // exclude the summary tables
-        for (SummaryTable summaryTable : summaryTableList) {
-            if (summaryTable.include(projectId)) {
-                String tableName = summaryTable.getName();
-                if (summaryTableMap.containsKey(tableName)) {
-                    throw new WdkModelException("recordClass " + getFullName()
-                            + " has more than one summaryTables of name \""
-                            + tableName + "\"");
-                } else {
-                    summaryTable.excludeResources(projectId);
-                    summaryTableMap.put(tableName, summaryTable);
+        // exclude filter instances
+        for (AnswerFilter filter : filterList) {
+            if (filter.include(projectId)) {
+                filter.excludeResources(projectId);
+                Map<String, AnswerFilterInstance> instances = filter.getInstances();
+                for (String filterName : instances.keySet()) {
+                    if (filterMap.containsKey(filterName))
+                        throw new WdkModelException("Filter instance ["
+                                + filterName + "] of type " + getFullName()
+                                + " is included more than once");
+                    filterMap.put(filterName, instances.get(filterName));
                 }
             }
         }
-        summaryTableList = null;
+        filterList = null;
+
+        // exclude filter layout
+        for (AnswerFilterLayout layout : filterLayoutList) {
+            if (layout.include(projectId)) {
+                layout.excludeResources(projectId);
+                String layoutName = layout.getName();
+                if (filterLayoutMap.containsKey(layoutName))
+                    throw new WdkModelException("Filter layout [" + layoutName
+                            + "] of type " + getFullName()
+                            + " is included more than once");
+                filterLayoutMap.put(layoutName, layout);
+            }
+        }
+        filterLayoutList = null;
     }
 
-    public void addSummaryTable(SummaryTable summaryTable) {
-        summaryTable.setRecordClass(this);
-        this.summaryTableList.add(summaryTable);
+    public void addFilter(AnswerFilter filter) {
+        filter.setRecordClass(this);
+        this.filterList.add(filter);
     }
 
-    public SummaryTable[] getSummaryTables() {
-        SummaryTable[] array = new SummaryTable[summaryTableMap.size()];
-        summaryTableMap.values().toArray(array);
-        return array;
+    public Map<String, AnswerFilterInstance> getFilterMap() {
+        return new LinkedHashMap<String, AnswerFilterInstance>(filterMap);
     }
 
-    public SummaryTable getSummaryTable(String tableName)
+    public AnswerFilterInstance[] getFilters() {
+        AnswerFilterInstance[] instances = new AnswerFilterInstance[filterMap.size()];
+        filterMap.values().toArray(instances);
+        return instances;
+    }
+
+    public AnswerFilterInstance getFilter(String filterName)
             throws WdkModelException {
-        SummaryTable table = summaryTableMap.get(tableName);
-        if (table == null)
-            throw new WdkModelException("The summary table '" + tableName
-                    + "' does not exist in recordClass " + getFullName());
-        return table;
+        AnswerFilterInstance instance = filterMap.get(filterName);
+        if (instance == null)
+            throw new WdkModelException("The name [" + filterName
+                    + "] does not " + "match any filter instance of type "
+                    + getFullName());
+        return instance;
     }
 
-    public SummaryView getDefaultView() {
-        return defaultView;
+    public void addFilterLayout(AnswerFilterLayout layout) {
+        layout.setRecordClass(this);
+        this.filterLayoutList.add(layout);
     }
 
-    public SummaryView getDefaultBooleanView() {
-        return defaultBooleanView;
+    public Map<String, AnswerFilterLayout> getFilterLayoutMap() {
+        return new LinkedHashMap<String, AnswerFilterLayout>(filterLayoutMap);
+    }
+
+    public AnswerFilterLayout[] getFilterLayouts() {
+        AnswerFilterLayout[] layouts = new AnswerFilterLayout[filterLayoutMap.size()];
+        filterLayoutMap.values().toArray(layouts);
+        return layouts;
+    }
+
+    public AnswerFilterLayout getFilterLayout(String layoutName)
+            throws WdkModelException {
+        AnswerFilterLayout layout = filterLayoutMap.get(layoutName);
+        if (layout == null)
+            throw new WdkModelException("The name [" + layoutName + "] does "
+                    + "not match any filter layout of type " + getFullName());
+        return layout;
+    }
+
+    public AnswerFilterInstance getDefaultFilter() {
+        return defaultFilter;
+    }
+
+    public AnswerFilterInstance getDefaultBooleanFilter() {
+        return defaultBooleanFilter;
     }
 }
