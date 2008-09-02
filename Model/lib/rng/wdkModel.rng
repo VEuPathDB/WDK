@@ -549,9 +549,6 @@
       <optional>
         <attribute name="displayName" />
       </optional>
-      <optional>
-        <attribute name="aliasQueryRef" />
-      </optional>
       <ref name="IncludeExclude" />
       <optional>
          <attribute name="attributeOrdering" />
@@ -806,6 +803,9 @@
     <define name="primaryKeyAttribute">
         <element name="primaryKeyAttribute">
             <ref name="AttributeFieldCotent" />
+            <optional>
+                <attribute name="aliasQueryRef" />
+            </optional>
             <oneOrMore>
                 <choice>
                     <element name="columnRef">
