@@ -22,7 +22,7 @@ public class AnswerFilterLayout extends WdkModelBase {
 
     private String name;
     private String displayName;
-    private boolean visible;
+    private boolean visible = true;
 
     private List<WdkModelText> descriptionList = new ArrayList<WdkModelText>();
     private String description;
@@ -49,6 +49,9 @@ public class AnswerFilterLayout extends WdkModelBase {
      */
     void setRecordClass(RecordClass recordClass) {
         this.recordClass = recordClass;
+        for (AnswerFilterLayoutInstance instance : instanceList) {
+            instance.setRecordClass(recordClass);
+        }
     }
 
     /**
@@ -108,7 +111,6 @@ public class AnswerFilterLayout extends WdkModelBase {
     }
 
     public void addInstance(AnswerFilterLayoutInstance instance) {
-        instance.setRecordClass(recordClass);
         this.instanceList.add(instance);
     }
 
