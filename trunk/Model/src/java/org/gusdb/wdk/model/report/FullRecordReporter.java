@@ -379,7 +379,6 @@ public class FullRecordReporter extends Reporter {
                         // check if table is empty
                         Iterator<Map<String, AttributeValue>> iterator = tableValue.iterator();
                         if (!hasEmptyTable && !iterator.hasNext()) {
-                            tableValue.close();
                             continue;
                         }
 
