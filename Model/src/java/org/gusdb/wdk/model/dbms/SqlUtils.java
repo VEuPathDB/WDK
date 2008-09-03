@@ -93,9 +93,10 @@ public final class SqlUtils {
      */
     public static int executeUpdate(DataSource dataSource, String sql)
             throws SQLException {
+        Connection connection = null;
         Statement stmt = null;
         try {
-            Connection connection = dataSource.getConnection();
+            connection = dataSource.getConnection();
             stmt = connection.createStatement();
             return stmt.executeUpdate(sql);
         } catch (SQLException ex) {
@@ -103,6 +104,7 @@ public final class SqlUtils {
             throw ex;
         } finally {
             closeStatement(stmt);
+            connection.close();
         }
     }
 
@@ -118,14 +120,16 @@ public final class SqlUtils {
     public static ResultSet executeQuery(DataSource dataSource, String sql)
             throws SQLException {
         ResultSet resultSet = null;
+        Connection connection = null;
         try {
-            Connection connection = dataSource.getConnection();
+            connection = dataSource.getConnection();
             Statement stmt = connection.createStatement();
             resultSet = stmt.executeQuery(sql);
             return resultSet;
         } catch (SQLException ex) {
             logger.error("Failed to run query: '" + sql + "'");
             closeResultSet(resultSet);
+            connection.close();
             throw ex;
         }
     }
