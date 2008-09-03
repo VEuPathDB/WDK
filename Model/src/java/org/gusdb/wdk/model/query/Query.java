@@ -143,7 +143,7 @@ public abstract class Query extends WdkModelBase {
      * @param cached
      *                the cached to set
      */
-    public void setCached(boolean cached) {
+    public void setIsCacheable(boolean cached) {
         this.cached = cached;
     }
 
@@ -198,7 +198,9 @@ public abstract class Query extends WdkModelBase {
     public void setColumns(Column[] columns) {
         columnMap.clear();
         for (Column column : columns) {
-            columnMap.put(column.getName(), column);
+            Column newColumn = new Column(column);
+            newColumn.setQuery(this);
+            columnMap.put(column.getName(), newColumn);
         }
     }
 
@@ -395,6 +397,7 @@ public abstract class Query extends WdkModelBase {
                 }
             } catch (Exception ex) {
                 errMsg = ex.getMessage();
+                if (errMsg == null) errMsg = ex.getClass().getName();
             }
             if (errMsg != null) {
                 if (errors == null)
@@ -427,4 +430,30 @@ public abstract class Query extends WdkModelBase {
                 values.put(paramName, param.getEmptyValue());
         }
     }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        StringBuffer buffer = new StringBuffer(getFullName());
+        buffer.append(": params{");
+        boolean firstParam = true;
+        for(Param param : paramMap.values()) {
+            if (firstParam) firstParam = false;
+            else buffer.append(", ");
+            buffer.append(param.getName()).append("[");
+            buffer.append(param.getClass().getSimpleName()).append("]");
+        }
+        buffer.append("} columns{");
+        boolean firstColumn = true;
+        for (Column column : columnMap.values()) {
+            if (firstColumn) firstColumn = false;
+            else buffer.append(", ");
+            buffer.append(column.getName());
+        }
+        buffer.append("}");
+        return buffer.toString();
+    }
+    
 }

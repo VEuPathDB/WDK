@@ -32,7 +32,7 @@ public class RecordInstance extends AttributeValueContainer {
      */
     public RecordInstance(RecordClass recordClass,
             PrimaryKeyAttributeValue primaryKey) throws WdkModelException {
-        super(recordClass, primaryKey);
+        super(primaryKey);
         this.recordClass = recordClass;
 
         this.primaryKey = primaryKey;
@@ -62,34 +62,63 @@ public class RecordInstance extends AttributeValueContainer {
     /*
      * (non-Javadoc)
      * 
+     * @see org.gusdb.wdk.model.AttributeValueContainer#getAttributeFieldMap()
+     */
+    @Override
+    protected Map<String, AttributeField> getAttributeFieldMap() {
+        return attributeFields;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.AttributeValueContainer#fillColumnAttributeValues(org.gusdb.wdk.model.query.Query)
      */
     @Override
     protected void fillColumnAttributeValues(Query attributeQuery)
             throws WdkModelException, NoSuchAlgorithmException, JSONException,
             SQLException, WdkUserException {
-        if (answer != null) answer.integrateAttributesQuery(attributeQuery);
+        if (answer != null) {
+            answer.integrateAttributesQuery(attributeQuery);
+            return;
+        }
 
         // prepare the attribute query, and make a new one,
         String queryName = attributeQuery.getFullName();
-        Query query = recordClass.getAttributeQuery(queryName);
+
+        Query query;
+        if (answer != null) {
+            Query dynaQuery = answer.getQuestion().getDynamicAttributeQuery();
+            if (dynaQuery != null && dynaQuery.getFullName().equals(queryName)) {
+                query = dynaQuery;
+            } else {
+                query = recordClass.getAttributeQuery(queryName);
+            }
+        } else {
+            query = recordClass.getAttributeQuery(queryName);
+        }
         QueryInstance instance = query.makeInstance(primaryKey.getValues());
 
-        ResultList resultList = instance.getResults();
-        if (!resultList.next()) {
-            throw new WdkModelException("Attribute query " + queryName
-                    + " doesn't return any row: " + instance.getSql());
-        }
+        ResultList resultList = null;
+        try {
+            resultList = instance.getResults();
+            if (!resultList.next()) {
+                throw new WdkModelException("Attribute query " + queryName
+                        + " doesn't return any row: " + instance.getSql());
+            }
 
-        Map<String, AttributeField> fields = recordClass.getAttributeFieldMap();
-        for (Column column : query.getColumns()) {
-            if (!fields.containsKey(column.getName())) continue;
-            AttributeField field = fields.get(column.getName());
-            if (!(field instanceof ColumnAttributeField)) continue;
-            Object objValue = resultList.get(column.getName());
-            ColumnAttributeValue value = new ColumnAttributeValue(
-                    (ColumnAttributeField) field, objValue);
-            addColumnAttributeValue(value);
+            Map<String, AttributeField> fields = recordClass.getAttributeFieldMap();
+            for (Column column : query.getColumns()) {
+                if (!fields.containsKey(column.getName())) continue;
+                AttributeField field = fields.get(column.getName());
+                if (!(field instanceof ColumnAttributeField)) continue;
+                Object objValue = resultList.get(column.getName());
+                ColumnAttributeValue value = new ColumnAttributeValue(
+                        (ColumnAttributeField) field, objValue);
+                addColumnAttributeValue(value);
+            }
+        } finally {
+            if (resultList != null) resultList.close();
         }
     }
 

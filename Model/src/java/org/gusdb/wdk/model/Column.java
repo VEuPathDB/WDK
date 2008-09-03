@@ -99,7 +99,7 @@ public class Column extends WdkModelBase {
     public void setLowerCase(boolean lowerCase) {
         this.lowerCase = lowerCase;
     }
-    
+
     public JSONObject getJSONContent() throws JSONException {
         JSONObject jsColumn = new JSONObject();
         jsColumn.put("name", name);
@@ -107,12 +107,12 @@ public class Column extends WdkModelBase {
         jsColumn.put("width", width);
         return jsColumn;
     }
-    
+
     public String toString() {
         String newline = System.getProperty("line.separator");
-        String classnm = this.getClass().getName();
-        StringBuffer buf = new StringBuffer(classnm + ": name='" + name + "'"
-                + newline + "  dataTypeName='" + type + "'" + newline);
+        String classnm = this.getClass().getSimpleName();
+        StringBuffer buf = new StringBuffer(classnm + ": name='" + name + "', "
+                + "  dataTypeName='" + type + "'" + newline);
 
         return buf.toString();
     }
@@ -127,11 +127,13 @@ public class Column extends WdkModelBase {
     // do nothing
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model.WdkModel)
      */
     @Override
     public void resolveReferences(WdkModel wodkModel) throws WdkModelException {
-        // nothing to resolve
+    // nothing to resolve
     }
 }

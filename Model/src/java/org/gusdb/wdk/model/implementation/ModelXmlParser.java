@@ -704,6 +704,7 @@ public class ModelXmlParser extends XmlParser {
 
         // print out the model content
         System.out.println(wdkModel.toString());
+        System.exit(0);
     }
 
     private static void addOption(Options options, String argName, String desc) {

@@ -4,10 +4,15 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Map;
 
+import org.gusdb.wdk.model.Answer;
+import org.gusdb.wdk.model.AnswerFilterInstance;
+import org.gusdb.wdk.model.AnswerParam;
 import org.gusdb.wdk.model.Column;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.user.AnswerFactory;
+import org.gusdb.wdk.model.user.AnswerInfo;
 import org.json.JSONException;
 
 /**
@@ -36,14 +41,6 @@ public class BooleanQueryInstance extends SqlQueryInstance {
             Map<String, Object> values) throws WdkModelException {
         super(query, values);
         this.booleanQuery = query;
-        // set default view
-    }
-
-    public void setBooleanView(String tableName, String row, String column)
-            throws WdkModelException {
-        RecordClass recordClass = booleanQuery.getRecordClass();
-//        SummaryTable summaryTable = recordClass.getSummaryTable(tableName);
-//        booleanView = summaryTable.getView(row, column);
     }
 
     /*
@@ -54,46 +51,56 @@ public class BooleanQueryInstance extends SqlQueryInstance {
     @Override
     public String getUncachedSql() throws WdkModelException, SQLException,
             NoSuchAlgorithmException, JSONException, WdkUserException {
-//        if (booleanView == null) return super.getUncachedSql();
 
         // needs to apply the view to each operand before boolean
         StringBuffer sql = new StringBuffer();
 
         // construct the filter query for the first child
-        Object leftOperand = values.get(booleanQuery.getLeftOperandParam().getName());
-        constructOperandSql(sql, leftOperand);
+        AnswerParam leftParam = booleanQuery.getLeftOperandParam();
+        String leftChecksum = (String)values.get(leftParam.getName());
+        String leftFilter = (String)values.get(booleanQuery.getLeftFilterParam().getName());
+        constructOperandSql(sql, leftParam, leftChecksum, leftFilter);
 
         Object operator = values.get(booleanQuery.getOperatorParam().getName());
         sql.append(" ").append(operator).append(" ");
 
-        Object rightOperand = values.get(booleanQuery.getRightOperandParam().getName());
-        constructOperandSql(sql, rightOperand);
+        AnswerParam rightParam = booleanQuery.getRightOperandParam();
+        String rightChecksum = (String)values.get(rightParam.getName());
+        String rightFilter = (String)values.get(booleanQuery.getRightFilterParam().getName());
+        constructOperandSql(sql, rightParam, rightChecksum, rightFilter);
 
         return sql.toString();
     }
 
-    private void constructOperandSql(StringBuffer sql, Object answerChecksum)
+    private void constructOperandSql(StringBuffer sql, AnswerParam answerParam,
+            String answerChecksum, String filterName)
             throws NoSuchAlgorithmException, WdkModelException, SQLException,
             JSONException, WdkUserException {
-        // prepare the filter query
-//        SummaryTable summaryTable = booleanView.getSummaryTable();
-//        Map<String, Object> params = new LinkedHashMap<String, Object>();
-//        params.put(summaryTable.getRowParam().getName(),
-//                booleanView.getRowTerm());
-//        params.put(summaryTable.getColumnParam().getName(),
-//                booleanView.getColumnTerm());
-//        params.put(booleanView.getAnswerParam().getName(), answerChecksum);
-//        Query query = booleanView.getSummaryQuery();
-//        QueryInstance instance = query.makeInstance(params);
-//        String subSql = instance.getSql();
-
-        sql.append("SELECT ");
-        boolean first = true;
-        for (Column column : this.booleanQuery.getColumns()) {
-            if (first) first = false;
+        // put columns in
+        boolean firstColumn = true;
+        for (Column column : booleanQuery.getColumns()) {
+            if (firstColumn) firstColumn = false;
             else sql.append(", ");
             sql.append(column.getName());
         }
-//        sql.append(" FROM (").append(subSql).append(") f");
+
+        // put from & where clause
+        sql.append(" FROM ");
+        if (filterName != null) {
+            // use a filter
+            AnswerFactory answerFactory = booleanQuery.getWdkModel().getAnswerFactory();
+            AnswerInfo answerInfo = answerFactory.getAnswerInfo(answerChecksum);
+            Answer answer = answerFactory.getAnswer(answerInfo);
+            RecordClass recordClass = booleanQuery.getRecordClass();
+            AnswerFilterInstance filter = recordClass.getFilter(filterName);
+            QueryInstance instance = filter.makeQueryInstance(answer);
+            sql.append("(").append(instance.getSql()).append(") f"); 
+        } else {
+            // do not use a filter
+            String clause = "$$" + answerParam.getName() + "$$ WHERE $$"
+                    + answerParam.getName() + ".condition$$";
+            clause = answerParam.replaceSql(clause, answerChecksum);
+            sql.append(clause);
+        }
     }
 }

@@ -95,14 +95,14 @@ public class ResultFactory {
         sql.append("' AND ").append(CacheFactory.COLUMN_INSTANCE_CHECKSUM);
         sql.append(" = '").append(instance.getChecksum()).append("'");
 
-        DataSource dataSource = platform.dataSource;
+        DataSource dataSource = platform.getDataSource();
         Object id = SqlUtils.executeScalar(dataSource, sql.toString());
         return (id == null) ? null : Integer.parseInt(id.toString());
     }
 
-    private int createCache(QueryInstance instance) throws SQLException,
-            NoSuchAlgorithmException, WdkModelException, JSONException,
-            WdkUserException {
+    private int createCache(QueryInstance instance) throws JSONException,
+            SQLException, WdkUserException, NoSuchAlgorithmException,
+            WdkModelException {
         DataSource dataSource = platform.getDataSource();
 
         // start transaction
@@ -126,6 +126,15 @@ public class ResultFactory {
             connection.rollback();
             throw ex;
         } catch (WdkUserException ex) {
+            connection.rollback();
+            throw ex;
+        } catch (NoSuchAlgorithmException ex) {
+            connection.rollback();
+            throw ex;
+        } catch (WdkModelException ex) {
+            connection.rollback();
+            throw ex;
+        } catch (JSONException ex) {
             connection.rollback();
             throw ex;
         } finally {

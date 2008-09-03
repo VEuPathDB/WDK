@@ -38,6 +38,12 @@
             <attribute name="queryLoggerFile" />
             <attribute name="supportEmail" />
 
+            <optional>
+                <attribute name="showConnections">
+                    <data type="boolean" />
+                </attribute>
+            </optional>
+            
             <element name="emailSubject">
                 <text />
             </element>        

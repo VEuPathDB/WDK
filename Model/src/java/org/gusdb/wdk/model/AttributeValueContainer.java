@@ -17,19 +17,19 @@ import org.json.JSONException;
  */
 public abstract class AttributeValueContainer {
 
+    protected abstract Map<String, AttributeField> getAttributeFieldMap();
+    
     protected abstract void fillColumnAttributeValues(Query attributeQuery)
             throws WdkModelException, NoSuchAlgorithmException, JSONException,
             SQLException, WdkUserException;
 
     protected PrimaryKeyAttributeValue primaryKey;
 
-    private AttributeFieldContainer fieldContainer;
     private Map<String, AttributeValue> attributeValueCache;
 
-    AttributeValueContainer(AttributeFieldContainer fieldContainer,
+    AttributeValueContainer(
             PrimaryKeyAttributeValue primaryKey) {
         attributeValueCache = new LinkedHashMap<String, AttributeValue>();
-        this.fieldContainer = fieldContainer;
 
         attributeValueCache.put(primaryKey.getAttributeField().getName(),
                 primaryKey);
@@ -39,7 +39,7 @@ public abstract class AttributeValueContainer {
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException {
         // get the field from the cache; primary key always exists in the cache
-        Map<String, AttributeField> fields = fieldContainer.getAttributeFieldMap();
+        Map<String, AttributeField> fields = getAttributeFieldMap();
         AttributeField field = fields.get(fieldName);
         if (attributeValueCache.containsKey(fieldName))
             return attributeValueCache.get(fieldName);

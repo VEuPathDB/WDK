@@ -4,7 +4,6 @@
 package org.gusdb.wdk.model.user;
 
 import java.security.NoSuchAlgorithmException;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -105,61 +104,26 @@ public class AnswerFactory {
             WdkUserException {
         // use transaction
         String answerChecksum = answer.getChecksum();
-        Connection connection = loginPlatform.getDataSource().getConnection();
-        try {
-            connection.setAutoCommit(false);
+        
+        // check if answer has been saved.
+        AnswerInfo answerInfo = getAnswerInfo(answerChecksum);
+        if (answerInfo != null) return answerInfo;
 
-            // check if answer has been saved.
-            AnswerInfo answerInfo = getAnswerInfo(connection, answerChecksum);
-            if (answerInfo != null) return answerInfo;
+        // the answer hasn't been stored, create an answerInfo, and save it
+        int answerId = loginPlatform.getNextId(answerSchema, TABLE_ANSWER);
+        answerInfo = new AnswerInfo(answerId);
+        answerInfo.setAnswerChecksum(answer.getChecksum());
+        answerInfo.setEstimatedSize(answer.getResultSize());
+        answerInfo.setProjectId(wdkModel.getProjectId());
+        answerInfo.setProjectVersion(wdkModel.getVersion());
+        answerInfo.setQueryChecksum(answer.getQuestion().getQuery().getChecksum());
+        answerInfo.setQuestionName(answer.getQuestion().getFullName());
+        answerInfo.setResultMessage(answer.getResultMessage());
 
-            // the answer hasn't been stored, create an answerInfo, and save it
-            int answerId = loginPlatform.getNextId(answerSchema, TABLE_ANSWER);
-            answerInfo = new AnswerInfo(answerId);
-            answerInfo.setAnswerChecksum(answer.getChecksum());
-            answerInfo.setEstimatedSize(answer.getResultSize());
-            answerInfo.setProjectId(wdkModel.getProjectId());
-            answerInfo.setProjectVersion(wdkModel.getVersion());
-            answerInfo.setQueryChecksum(answer.getQuestion().getQuery().getChecksum());
-            answerInfo.setQuestionName(answer.getQuestion().getFullName());
-            answerInfo.setResultMessage(answer.getResultMessage());
+        String paramClob = answer.getIdsQueryInstance().getParamJSONObject().toString();
+        saveAnswerInfo(answerInfo, paramClob);
 
-            String paramClob = answer.getIdsQueryInstance().getParamJSONObject().toString();
-            saveAnswerInfo(answerInfo, paramClob, connection);
-
-            connection.commit();
-            return answerInfo;
-        } catch (SQLException ex) {
-            connection.rollback();
-            throw ex;
-        } catch (NoSuchAlgorithmException ex) {
-            connection.rollback();
-            throw ex;
-        } catch (WdkModelException ex) {
-            connection.rollback();
-            throw ex;
-        } catch (JSONException ex) {
-            connection.rollback();
-            throw ex;
-        } finally {
-            connection.setAutoCommit(true);
-            connection.close();
-        }
-    }
-
-    /**
-     * @param answerChecksum
-     * @return an AnswerInfo object if the answer has been saved; otherwise,
-     *         return null.
-     * @throws SQLException
-     */
-    public AnswerInfo getAnswerInfo(String answerChecksum) throws SQLException {
-        Connection connection = loginPlatform.getDataSource().getConnection();
-        try {
-            return getAnswerInfo(connection, answerChecksum);
-        } finally {
-            connection.close();
-        }
+        return answerInfo;
     }
 
     public Answer getAnswer(AnswerInfo answerInfo) throws WdkModelException,
@@ -189,8 +153,13 @@ public class AnswerFactory {
         return answer;
     }
 
-    private AnswerInfo getAnswerInfo(Connection connection,
-            String answerChecksum) throws SQLException {
+    /**
+     * @param answerChecksum
+     * @return an AnswerInfo object if the answer has been saved; otherwise,
+     *         return null.
+     * @throws SQLException
+     */
+    public AnswerInfo getAnswerInfo(String answerChecksum) throws SQLException {
         String projectId = wdkModel.getProjectId();
 
         // construct the query
@@ -203,7 +172,8 @@ public class AnswerFactory {
         PreparedStatement ps = null;
         AnswerInfo answerInfo = null;
         try {
-            ps = connection.prepareStatement(sql.toString());
+            DataSource dataSource = loginPlatform.getDataSource();
+            ps = SqlUtils.getPreparedStatement(dataSource, sql.toString());
             ps.setString(1, projectId);
             ps.setString(2, answerChecksum);
             resultSet = ps.executeQuery();
@@ -218,14 +188,12 @@ public class AnswerFactory {
                 answerInfo.setQuestionName(resultSet.getString(COLUMN_QUESTION_NAME));
             }
         } finally {
-            if (resultSet != null) resultSet.close();
-            if (ps != null) ps.close();
+            SqlUtils.closeResultSet(resultSet);
         }
         return answerInfo;
     }
 
-    private void saveAnswerInfo(AnswerInfo answerInfo, String paramClob,
-            Connection connection) throws SQLException {
+    private void saveAnswerInfo(AnswerInfo answerInfo, String paramClob) throws SQLException {
         // prepare the sql
         StringBuffer sql = new StringBuffer("INSERT INTO ");
         sql.append(answerSchema).append(TABLE_ANSWER).append(" (");
@@ -240,7 +208,8 @@ public class AnswerFactory {
 
         PreparedStatement ps = null;
         try {
-            ps = connection.prepareStatement(sql.toString());
+            DataSource dataSource = loginPlatform.getDataSource();
+            ps = SqlUtils.getPreparedStatement(dataSource, sql.toString());
             ps.setInt(1, answerInfo.getAnswerId());
             ps.setString(2, answerInfo.getAnswerChecksum());
             ps.setInt(3, answerInfo.getEstimatedSize());
@@ -252,7 +221,7 @@ public class AnswerFactory {
 
             ps.executeUpdate();
         } finally {
-            if (ps != null) ps.close();
+            SqlUtils.closeStatement(ps);
         }
     }
 
@@ -289,7 +258,7 @@ public class AnswerFactory {
         }
         return paramValues;
     }
-    
+
     String getAnswerTable() {
         return answerSchema + TABLE_ANSWER;
     }

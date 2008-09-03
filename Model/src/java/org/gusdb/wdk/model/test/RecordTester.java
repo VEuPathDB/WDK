@@ -35,7 +35,8 @@ public class RecordTester {
             WdkUserException, NoSuchAlgorithmException, SQLException,
             JSONException, SAXException, IOException,
             ParserConfigurationException, TransformerFactoryConfigurationError,
-            TransformerException, InstantiationException, IllegalAccessException, ClassNotFoundException {
+            TransformerException, InstantiationException,
+            IllegalAccessException, ClassNotFoundException {
         String cmdName = System.getProperty("cmdName");
 
         // process args
@@ -65,15 +66,15 @@ public class RecordTester {
         System.out.println("Record creation took: "
                 + ((System.currentTimeMillis() - st) / 1000F) + " seconds.");
         st = System.currentTimeMillis();
-        System.out.println(recordInstance.print());
 
         System.out.println(recordInstance.print());
-        
+
         System.out.println("Fields retrieval took: "
                 + ((System.currentTimeMillis() - st) / 1000F) + " seconds.");
         long end = System.currentTimeMillis();
         System.out.println("Total time spent: " + ((end - start) / 1000F)
                 + " seconds.");
+        System.exit(0);
     }
 
     private static Map<String, Object> parsePrimaryKeyArgs(String[] array) {

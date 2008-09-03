@@ -150,10 +150,6 @@ public class Answer {
         if (filter == null)
             filter = question.getRecordClass().getDefaultFilter();
         this.filter = filter;
-
-        // save the answer
-        AnswerFactory answerFactory = question.getWdkModel().getAnswerFactory();
-        answerFactory.saveAnswer(this);
     }
 
     /**
@@ -795,5 +791,19 @@ public class Answer {
         AnswerFilterInstance filter = recordClass.getFilter(filterName);
         QueryInstance instance = filter.makeQueryInstance(this);
         return instance.getResultSize();
+    }
+
+    /**
+     * @return the filter
+     */
+    public AnswerFilterInstance getFilter() {
+        return filter;
+    }
+
+    /**
+     * @param filter the filter to set
+     */
+    public void setFilter(AnswerFilterInstance filter) {
+        this.filter = filter;
     }
 }
