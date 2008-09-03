@@ -14,6 +14,7 @@ import org.apache.commons.dbcp.DriverManagerConnectionFactory;
 import org.apache.commons.dbcp.PoolableConnectionFactory;
 import org.apache.commons.dbcp.PoolingDataSource;
 import org.apache.commons.pool.impl.GenericObjectPool;
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModel;
 
 /**
@@ -43,7 +44,8 @@ public abstract class DBPlatform {
                         getActiveCount());
                 display.append(", Idle = ").append(getIdleCount());
                 
-                System.err.println(display);
+                logger.info(display);
+                //System.out.println(display);
                 try {
                     Thread.sleep(2000);
                 } catch (InterruptedException ex) {
@@ -55,6 +57,8 @@ public abstract class DBPlatform {
     }
 
     public static final String ID_SEQUENCE_SUFFIX = "_pkseq";
+    
+    private static final Logger logger = Logger.getLogger(DBPlatform.class);
 
     // #########################################################################
     // Platform related helper functions
