@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -15,8 +16,7 @@ import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.json.JSONException;
 
-public class TableValue implements Iterable<Map<String, AttributeValue>>,
-        Iterator<Map<String, AttributeValue>> {
+public class TableValue implements Collection<Map<String, AttributeValue>> {
 
     private static class TableValueRow extends AttributeValueContainer
             implements Map<String, AttributeValue> {
@@ -229,9 +229,9 @@ public class TableValue implements Iterable<Map<String, AttributeValue>>,
 
     private PrimaryKeyAttributeValue primaryKey;
     private TableField tableField;
-    private ResultList resultList;
+    QueryInstance instance;
 
-    private TableValueRow nextRow;
+    private List<Map<String, AttributeValue>> rows;
 
     public TableValue(PrimaryKeyAttributeValue primaryKey, TableField tableField)
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
@@ -241,25 +241,11 @@ public class TableValue implements Iterable<Map<String, AttributeValue>>,
 
         // run the table query, and get the resultList
         Query query = tableField.getQuery();
-        QueryInstance instance = query.makeInstance(primaryKey.getValues());
-        this.resultList = instance.getResults();
-
-        readNextRow();
+        this.instance = query.makeInstance(primaryKey.getValues());
     }
 
     public TableField getTableField() {
         return tableField;
-    }
-
-    /**
-     * Must be called to close the table.
-     * 
-     * @return null
-     * @throws SQLException
-     * @throws WdkModelException
-     */
-    public void close() throws WdkModelException {
-        resultList.close();
     }
 
     public String toString() {
@@ -310,69 +296,160 @@ public class TableValue implements Iterable<Map<String, AttributeValue>>,
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Iterable#iterator()
+    /* (non-Javadoc)
+     * @see java.util.Collection#add(java.lang.Object)
      */
-    public Iterator<Map<String, AttributeValue>> iterator() {
-        return this;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.util.Iterator#hasNext()
-     */
-    public boolean hasNext() {
-        return (nextRow != null);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.util.Iterator#next()
-     */
-    public Map<String, AttributeValue> next() {
-        Map<String, AttributeValue> row = nextRow;
-        try {
-            readNextRow();
-        } catch (WdkModelException ex) {
-            throw new RuntimeException(ex);
-        } catch (NoSuchAlgorithmException ex) {
-            throw new RuntimeException(ex);
-        } catch (JSONException ex) {
-            throw new RuntimeException(ex);
-        } catch (SQLException ex) {
-            throw new RuntimeException(ex);
-        }
-        return row;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.util.Iterator#remove()
-     */
-    public void remove() {
+    public boolean add(Map<String, AttributeValue> e) {
         throw new UnsupportedOperationException("Not supported");
     }
 
-    private void readNextRow() throws WdkModelException,
-            NoSuchAlgorithmException, JSONException, SQLException {
-        nextRow = null;
-        if (resultList.next()) {
-            nextRow = new TableValueRow(this);
+    /* (non-Javadoc)
+     * @see java.util.Collection#addAll(java.util.Collection)
+     */
+    public boolean addAll(Collection<? extends Map<String, AttributeValue>> c) {
+        throw new UnsupportedOperationException("Not supported");
+    }
 
-            // fill in the column attributes
-            for (AttributeField field : tableField.getAttributeFields()) {
-                if (!(field instanceof ColumnAttributeField)) continue;
+    /* (non-Javadoc)
+     * @see java.util.Collection#clear()
+     */
+    public void clear() {
+        throw new UnsupportedOperationException("Not supported");
+    }
 
-                Object value = resultList.get(field.getName());
-                ColumnAttributeValue attributeValue = new ColumnAttributeValue(
-                        (ColumnAttributeField) field, value);
-                nextRow.addColumnAttributeValue(attributeValue);
+    /* (non-Javadoc)
+     * @see java.util.Collection#contains(java.lang.Object)
+     */
+    public boolean contains(Object o) {
+        try {
+            initializeRows();
+            return rows.contains(o);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new RuntimeException(ex);
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see java.util.Collection#containsAll(java.util.Collection)
+     */
+    public boolean containsAll(Collection<?> c) {
+        try {
+            initializeRows();
+            return rows.containsAll(c);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new RuntimeException(ex);
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see java.util.Collection#isEmpty()
+     */
+    public boolean isEmpty() {
+        try {
+            initializeRows();
+            return rows.isEmpty();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new RuntimeException(ex);
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see java.util.Collection#remove(java.lang.Object)
+     */
+    public boolean remove(Object o) {
+        throw new UnsupportedOperationException("Not supported");
+    }
+
+    /* (non-Javadoc)
+     * @see java.util.Collection#removeAll(java.util.Collection)
+     */
+    public boolean removeAll(Collection<?> c) {
+        throw new UnsupportedOperationException("Not supported");
+    }
+
+    /* (non-Javadoc)
+     * @see java.util.Collection#retainAll(java.util.Collection)
+     */
+    public boolean retainAll(Collection<?> c) {
+        throw new UnsupportedOperationException("Not supported");
+    }
+
+    /* (non-Javadoc)
+     * @see java.util.Collection#size()
+     */
+    public int size() {
+        try {
+            initializeRows();
+            return rows.size();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new RuntimeException(ex);
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see java.util.Collection#toArray()
+     */
+    public Object[] toArray() {
+        try {
+            initializeRows();
+            return rows.toArray();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new RuntimeException(ex);
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see java.util.Collection#toArray(T[])
+     */
+    public <T> T[] toArray(T[] a) {
+        try {
+            initializeRows();
+            return rows.toArray(a);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new RuntimeException(ex);
+        }
+    }
+    
+    private void initializeRows() throws NoSuchAlgorithmException, SQLException, WdkModelException, JSONException, WdkUserException {
+        if (rows != null) return;
+        
+        rows = new ArrayList<Map<String, AttributeValue>>();
+        ResultList resultList = instance.getResults();
+        try {
+            while (resultList.next()) {
+                TableValueRow row = new TableValueRow(this);
+
+                // fill in the column attributes
+                for (AttributeField field : tableField.getAttributeFields()) {
+                    if (!(field instanceof ColumnAttributeField)) continue;
+
+                    Object value = resultList.get(field.getName());
+                    ColumnAttributeValue attributeValue = new ColumnAttributeValue(
+                            (ColumnAttributeField) field, value);
+                    row.addColumnAttributeValue(attributeValue);
+                }
             }
+        } finally {
+            resultList.close();
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see java.util.Collection#iterator()
+     */
+    public Iterator<Map<String, AttributeValue>> iterator() {
+        try {
+            initializeRows();
+            return rows.iterator();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new RuntimeException(ex);
         }
     }
 }
