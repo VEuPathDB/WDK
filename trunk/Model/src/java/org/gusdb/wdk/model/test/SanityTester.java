@@ -401,7 +401,8 @@ public class SanityTester {
                 // run question
                 Answer answer = question.makeAnswer(
                         questions[i].getParamHash(),
-                        questions[i].getPageStart(), questions[i].getPageEnd());
+                        questions[i].getPageStart(), questions[i].getPageEnd(),
+                        question.getDefaultSortingAttributes(), null);
 
                 int resultSize = answer.getResultSize();
 

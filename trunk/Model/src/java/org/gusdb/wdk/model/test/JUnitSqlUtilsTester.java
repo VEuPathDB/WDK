@@ -73,7 +73,8 @@ public class JUnitSqlUtilsTester extends TestCase {
                 int nextEndRow = Integer.parseInt(rows[i + 1]);
 
                 Answer answer = question.makeAnswer(paramValues, nextStartRow,
-                        nextEndRow);
+                        nextEndRow, question.getDefaultSortingAttributes(),
+                        null);
 
                 if (rows.length != 2) System.out.println("page " + pageCount);
 
