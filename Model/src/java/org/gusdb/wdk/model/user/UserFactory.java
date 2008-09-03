@@ -37,6 +37,8 @@ import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Answer;
+import org.gusdb.wdk.model.AnswerFilterInstance;
+import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -832,11 +834,12 @@ public class UserFactory {
                     dataSource, "SELECT h.history_id, a."
                             + AnswerFactory.COLUMN_ANSWER_CHECKSUM
                             + ", h.create_time, h.last_run_time, "
-                            + " h.custom_name, h.is_boolean, h.is_deleted, "
-                            + " display_params FROM " + hisTable + " h, "
-                            + ansTable + " a "
-                            + "WHERE h.answer_id = a.answer_id "
-                            + "AND h.user_id = ? AND a."
+                            + " h.answer_filter, h.custom_name, h.is_boolean, "
+                            + " h.is_deleted, display_params FROM " + hisTable
+                            + " h, " + ansTable + " a "
+                            + "WHERE h.answer_id = a."
+                            + AnswerFactory.COLUMN_ANSWER_ID
+                            + " AND h.user_id = ? AND a."
                             + AnswerFactory.COLUMN_PROJECT_ID + " = ? "
                             + "ORDER BY h.last_run_time DESC");
             psHistory.setInt(1, user.getUserId());
@@ -874,10 +877,11 @@ public class UserFactory {
                     dataSource, "SELECT a."
                             + AnswerFactory.COLUMN_ANSWER_CHECKSUM
                             + ", h.create_time, h.last_run_time, "
-                            + " h.custom_name, h.is_boolean, h.is_deleted, "
-                            + " h.display_params                         "
+                            + " h.answer_filter, h.custom_name, h.is_boolean,"
+                            + " h.is_deleted, h.display_params               "
                             + "FROM " + hisTable + " h, " + ansTable + " a "
-                            + "WHERE h.answer_id = a.answer_id"
+                            + "WHERE h.answer_id = a."
+                            + AnswerFactory.COLUMN_ANSWER_ID
                             + " AND h.user_id = ? AND h.history_id = ? "
                             + "ORDER BY h.last_run_time DESC");
             psHistory.setInt(1, user.getUserId());
@@ -908,6 +912,9 @@ public class UserFactory {
         history.setBoolean(rsHistory.getBoolean("is_boolean"));
         history.setDeleted(rsHistory.getBoolean("is_deleted"));
 
+        // get answer filter
+        history.setFilterName(rsHistory.getString("answer_filter"));
+
         String displayParams = platform.getClobData(rsHistory, "display_params");
         history.setDisplayParams(displayParams);
 
@@ -937,51 +944,39 @@ public class UserFactory {
                     + answerChecksum + "' does not exist");
 
         Answer answer = answerFactory.getAnswer(answerInfo);
+
+        // resolve the filter
+        RecordClass recordClass = answer.getQuestion().getRecordClass();
+        AnswerFilterInstance filter = recordClass.getFilterMap().get(
+                history.getFilterName());
+        if (filter == null) history.setValid(false);
+        else answer.setFilter(filter);
         history.setAnswer(answer);
     }
 
     History createHistory(User user, Answer answer, String booleanExpression,
-            boolean deleted) throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, JSONException, SQLException {
+            boolean deleted) throws SQLException, NoSuchAlgorithmException,
+            WdkModelException, JSONException, WdkUserException {
         // save answer
         int answerId = answer.getAnswerInfo().getAnswerId();
         int userId = user.getUserId();
 
         boolean isBoolean = answer.getIsBoolean();
-        // String customName = (isBoolean) ? booleanExpression : null;
-        // if (customName != null && customName.length() > 4000)
-        // customName = customName.substring(0, 4000);
-        String customName = null;
+        String customName = (isBoolean) ? booleanExpression : null;
+        if (customName != null && customName.length() > 4000)
+            customName = customName.substring(0, 4000);
+        String filterName = (answer.getFilter() == null) ? null
+                : answer.getFilter().getName();
 
         String hisTable = loginSchema + "histories";
 
         // check whether the answer exist or not
-        ResultSet rsHistory = null;
         PreparedStatement psHistory = null;
         ResultSet rsMax = null;
 
-        Connection connection = null;
+        Connection connection = dataSource.getConnection();
         try {
-            PreparedStatement psCheck = SqlUtils.getPreparedStatement(
-                    dataSource, "SELECT history_id FROM " + hisTable
-                            + " WHERE user_id = ? AND answer_id = ? "
-                            + "AND is_deleted = ?");
-            psCheck.setInt(1, userId);
-            psCheck.setInt(2, answerId);
-            psCheck.setBoolean(3, deleted);
-            rsHistory = psCheck.executeQuery();
-
-            if (rsHistory.next()) {
-                // get existing history
-                int historyId = rsHistory.getInt("history_id");
-                History history = loadHistory(user, historyId);
-
-                // update the history time stamp
-                history.update();
-                return history;
-            }
-
-            // no existing ones matched, get a new history id
+            // always get a new history id
             // int historyId = getMaxHistoryId( userId ) + 1;
             // instead of getting a new history id, we start a transaction,
             // insert a new history with generated id, and read it back
@@ -990,9 +985,7 @@ public class UserFactory {
 
             int historyId = 1;
 
-            connection = dataSource.getConnection();
             synchronized (connection) {
-
                 connection.setAutoCommit(false);
 
                 String maxIdSql = "(SELECT max(max_id)+1  FROM ("
@@ -1003,17 +996,19 @@ public class UserFactory {
 
                 psHistory = connection.prepareStatement("INSERT INTO "
                         + hisTable + " (history_id, user_id, answer_id, "
-                        + "create_time, last_run_time, custom_name, "
-                        + " is_boolean, is_deleted, display_params) VALUES ("
-                        + maxIdSql + ", ?, ?, ?, ?, ?, ?, ?, ?)");
+                        + "create_time, last_run_time, answer_filter, "
+                        + "custom_name, is_boolean, is_deleted, display_params"
+                        + ") VALUES (" + maxIdSql
+                        + ", ?, ?, ?, ?, ?, ?, ?, ?, ?)");
                 psHistory.setInt(1, userId);
                 psHistory.setInt(2, answerId);
                 psHistory.setTimestamp(3, new Timestamp(createTime.getTime()));
                 psHistory.setTimestamp(4, new Timestamp(lastRunTime.getTime()));
-                psHistory.setString(5, customName);
-                psHistory.setBoolean(6, isBoolean);
-                psHistory.setBoolean(7, deleted);
-                platform.updateClobData(psHistory, 8, booleanExpression, false);
+                psHistory.setString(5, filterName);
+                psHistory.setString(6, customName);
+                psHistory.setBoolean(7, isBoolean);
+                psHistory.setBoolean(8, deleted);
+                platform.updateClobData(psHistory, 9, booleanExpression, false);
                 psHistory.executeUpdate();
 
                 // query to get the new history id
@@ -1039,10 +1034,15 @@ public class UserFactory {
             user.setHistoryCount(historyCount);
 
             return history;
+        } catch (SQLException ex) {
+            connection.rollback();
+            throw ex;
+        } catch (WdkUserException ex) {
+            connection.rollback();
+            throw ex;
         } finally {
             if (connection != null) connection.setAutoCommit(true);
             SqlUtils.closeStatement(psHistory);
-            SqlUtils.closeResultSet(rsHistory);
             SqlUtils.closeResultSet(rsMax);
         }
     }

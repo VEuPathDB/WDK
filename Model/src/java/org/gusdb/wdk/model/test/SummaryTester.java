@@ -11,10 +11,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactoryConfigurationError;
-
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -34,16 +30,10 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.report.Reporter;
 import org.json.JSONException;
-import org.xml.sax.SAXException;
 
 public class SummaryTester {
 
-    public static void main(String[] args) throws WdkModelException,
-            NoSuchAlgorithmException, WdkUserException, SQLException,
-            JSONException, ParserConfigurationException,
-            TransformerFactoryConfigurationError, TransformerException,
-            IOException, SAXException, InstantiationException,
-            IllegalAccessException, ClassNotFoundException {
+    public static void main(String[] args) throws Exception {
 
         String cmdName = System.getProperty("cmdName");
 
@@ -84,65 +74,72 @@ public class SummaryTester {
         Reference ref = new Reference(questionFullName);
         String questionSetName = ref.getSetName();
         String questionName = ref.getElementName();
-        WdkModel wdkModel = WdkModel.construct(cmdLine.getOptionValue("model"));
+        try {
+            WdkModel wdkModel = WdkModel.construct(cmdLine.getOptionValue("model"));
 
-        QuestionSet questionSet = wdkModel.getQuestionSet(questionSetName);
-        Question question = questionSet.getQuestion(questionName);
+            QuestionSet questionSet = wdkModel.getQuestionSet(questionSetName);
+            Question question = questionSet.getQuestion(questionName);
 
-        Map<String, Object> paramValues = new LinkedHashMap<String, Object>();
-        if (haveParams) {
-            paramValues = parseParamArgs(params);
-        }
-
-        // get filter
-        AnswerFilterInstance filter = null;
-        if (cmdLine.hasOption("filter")) {
-            String filterName = cmdLine.getOptionValue("filter");
-            filter = question.getRecordClass().getFilter(filterName);
-        }
-
-        // this is suspicious
-        // Query query = question.getQuery();
-        // query.setIsCacheable(new Boolean(true));
-        int pageCount = 1;
-
-        if (toXml) {
-            writeSummaryAsXml(question, paramValues, xmlFileName, filter);
-            return;
-        }
-
-        for (int i = 0; i < rows.length; i += 2) {
-            int nextStartRow = Integer.parseInt(rows[i]);
-            int nextEndRow = Integer.parseInt(rows[i + 1]);
-
-            Answer answer = question.makeAnswer(paramValues, nextStartRow,
-                    nextEndRow, filter);
-
-            // this is wrong. it only shows one attribute query, not
-            // all. Fix this in Answer by saving a list of attribute
-            // queries, not just one.
-            if (cmdLine.hasOption("showQuery")) {
-                System.out.println(getLowLevelQuery(answer));
-                System.exit(0);
+            Map<String, Object> paramValues = new LinkedHashMap<String, Object>();
+            if (haveParams) {
+                paramValues = parseParamArgs(params);
             }
 
-            if (rows.length != 2) System.out.println("page " + pageCount);
+            // get filter
+            AnswerFilterInstance filter = null;
+            if (cmdLine.hasOption("filter")) {
+                String filterName = cmdLine.getOptionValue("filter");
+                filter = question.getRecordClass().getFilter(filterName);
+            }
 
-            // print the size of the answer
-            System.out.println("Total # of records: " + answer.getResultSize());
+            // this is suspicious
+            // Query query = question.getQuery();
+            // query.setIsCacheable(new Boolean(true));
+            int pageCount = 1;
 
-            // load configuration for output format
-            if (!hasFormat) format = "tabular";
-            Map<String, String> config = loadConfiguration(configFile);
+            if (toXml) {
+                writeSummaryAsXml(question, paramValues, xmlFileName, filter);
+                return;
+            }
 
-            Reporter reporter = answer.createReport(format, config,
-                    nextStartRow, nextEndRow);
+            for (int i = 0; i < rows.length; i += 2) {
+                int nextStartRow = Integer.parseInt(rows[i]);
+                int nextEndRow = Integer.parseInt(rows[i + 1]);
 
-            reporter.write(System.out);
-            System.out.println();
+                Answer answer = question.makeAnswer(paramValues, nextStartRow,
+                        nextEndRow, filter);
 
-            pageCount++;
+                // this is wrong. it only shows one attribute query, not
+                // all. Fix this in Answer by saving a list of attribute
+                // queries, not just one.
+                if (cmdLine.hasOption("showQuery")) {
+                    System.out.println(getLowLevelQuery(answer));
+                    System.exit(0);
+                }
+
+                if (rows.length != 2) System.out.println("page " + pageCount);
+
+                // print the size of the answer
+                System.out.println("Total # of records: "
+                        + answer.getResultSize());
+
+                // load configuration for output format
+                if (!hasFormat) format = "tabular";
+                Map<String, String> config = loadConfiguration(configFile);
+
+                Reporter reporter = answer.createReport(format, config,
+                        nextStartRow, nextEndRow);
+
+                reporter.write(System.out);
+                System.out.println();
+
+                pageCount++;
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            System.exit(-1);
         }
+        System.exit(0);
     }
 
     private static Map<String, String> loadConfiguration(String configFileName)

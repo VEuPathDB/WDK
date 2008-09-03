@@ -41,6 +41,8 @@ public class ModelConfig {
     private boolean enableQueryLogger = false;
     private String queryLoggerFile;
 
+    private boolean showConnections = false;
+
     /**
      * The projectId is not part of the config file content, it is input by the
      * user
@@ -362,5 +364,20 @@ public class ModelConfig {
      */
     public void setAnswerSchema(String answerSchema) {
         this.answerSchema = DBPlatform.normalizeSchema(answerSchema);
+    }
+
+    /**
+     * @return the showConnections
+     */
+    public boolean isShowConnections() {
+        return showConnections;
+    }
+
+    /**
+     * @param showConnections
+     *            the showConnections to set
+     */
+    public void setShowConnections(boolean showConnections) {
+        this.showConnections = showConnections;
     }
 }

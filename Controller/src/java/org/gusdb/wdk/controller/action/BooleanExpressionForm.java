@@ -21,10 +21,6 @@ public class BooleanExpressionForm extends ActionForm {
     private String booleanExpression = null;
     private String historySectionId = null;
 
-    private String summaryTable = null;
-    private String viewRow = null;
-    private String viewColumn = null;
-
     public void setBooleanExpression(String be) {
         booleanExpression = be;
     }
@@ -39,51 +35,6 @@ public class BooleanExpressionForm extends ActionForm {
 
     public String getHistorySectionId() {
         return historySectionId;
-    }
-
-    /**
-     * @return the summaryTable
-     */
-    public String getSummaryTable() {
-        return summaryTable;
-    }
-
-    /**
-     * @param summaryTable
-     *            the summaryTable to set
-     */
-    public void setSummaryTable(String summaryTable) {
-        this.summaryTable = summaryTable;
-    }
-
-    /**
-     * @return the viewRow
-     */
-    public String getViewRow() {
-        return viewRow;
-    }
-
-    /**
-     * @param viewRow
-     *            the viewRow to set
-     */
-    public void setViewRow(String viewRow) {
-        this.viewRow = viewRow;
-    }
-
-    /**
-     * @return the viewColumn
-     */
-    public String getViewColumn() {
-        return viewColumn;
-    }
-
-    /**
-     * @param viewColumn
-     *            the viewColumn to set
-     */
-    public void setViewColumn(String viewColumn) {
-        this.viewColumn = viewColumn;
     }
 
     /**

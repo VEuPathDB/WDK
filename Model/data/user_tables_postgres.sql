@@ -80,6 +80,7 @@ CREATE TABLE userlogins.histories
   answer_id NUMERIC(12) NOT NULL,
   create_time TIMESTAMP NOT NULL,
   last_run_time TIMESTAMP NOT NULL,
+  answer_filter varchar(100),
   custom_name VARCHAR(4000),
   is_boolean NUMERIC(1),
   is_deleted NUMERIC(1),

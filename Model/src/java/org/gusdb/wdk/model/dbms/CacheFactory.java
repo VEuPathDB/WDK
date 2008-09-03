@@ -22,7 +22,7 @@ public class CacheFactory {
     static final String COLUMN_QUERY_NAME = "query_name";
     static final String COLUMN_INSTANCE_CHECKSUM = "instance_checksum";
     static final String COLUMN_RESULT_MESSAGE = "result_message";
-
+    
     public static String normalizeTableName(String tableName) {
         return tableName.trim().toLowerCase().replaceAll("\\W", "_");
     }

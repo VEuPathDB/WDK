@@ -755,23 +755,15 @@ public class User /* implements Serializable */{
     public History combineHistory(String expression) throws WdkUserException,
             WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException {
-        return combineHistory(expression, false, null, null, null);
+        return combineHistory(expression, false);
     }
 
     private History combineHistory(String expression, boolean deleted)
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
-        return combineHistory(expression, deleted, null, null, null);
-    }
-
-    public History combineHistory(String expression, boolean deleted,
-            String summaryTable, String viewRow, String viewColumn)
-            throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException {
         logger.debug("Boolean expression: " + expression);
         BooleanExpression exp = new BooleanExpression(this);
-        Answer answer = exp.parseExpression(expression, summaryTable, viewRow,
-                viewColumn);
+        Answer answer = exp.parseExpression(expression);
 
         logger.debug("Boolean answer: " + answer.getResultSize());
 

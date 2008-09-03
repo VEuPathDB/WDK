@@ -64,13 +64,16 @@ public class FlatVocabParam extends AbstractEnumParam {
     @Override
     public void resolveReferences(WdkModel model) throws WdkModelException {
         Query query = (Query) model.resolveReference(queryTwoPartName);
+        query.resolveReferences(model);
         query = query.clone();
 
         // add a served query param into flatVocabQuery, if it doesn't exist
+        ParamSet paramSet = model.getParamSet(Utilities.INTERNAL_PARAM_SET);
         StringParam param = new StringParam();
         param.setName(PARAM_SERVED_QUERY);
         param.setDefault(servedQueryName);
         param.setAllowEmpty(true);
+        paramSet.addParam(param);
         query.addParam(param);
         this.query = query;
     }

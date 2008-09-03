@@ -37,6 +37,7 @@ public class CacheCLI extends BaseCLI {
             System.exit(-1);
         }
         cacher.invoke();
+        System.exit(0);
     }
 
     /**
@@ -131,6 +132,5 @@ public class CacheCLI extends BaseCLI {
             e.printStackTrace();
             System.exit(1);
         }
-        System.exit(0);
     }
 }

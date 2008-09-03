@@ -48,8 +48,8 @@ public class History {
     private boolean isValid = true;
 
     private Map<String, String> displayParams;
-    private AnswerFilterInstance filter;
-    
+    private String filterName;
+
     History(UserFactory factory, User user, int historyId) {
         this.factory = factory;
         this.user = user;
@@ -360,5 +360,20 @@ public class History {
         }
 
         return paramNames;
+    }
+
+    /**
+     * @return the filterName
+     */
+    public String getFilterName() {
+        return filterName;
+    }
+
+    /**
+     * @param filterName
+     *            the filterName to set
+     */
+    public void setFilterName(String filterName) {
+        this.filterName = filterName;
     }
 }

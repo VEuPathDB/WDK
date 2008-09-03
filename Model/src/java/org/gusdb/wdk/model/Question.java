@@ -511,7 +511,7 @@ public class Question extends WdkModelBase {
 
         // the id query is forced to be cache-able.
         query = (Query) model.resolveReference(queryTwoPartName);
-        query.setCached(true);
+        query.setIsCacheable(true);
 
         // dynamic attribute set need to be initialized after the id query.
         if (dynamicAttributeSet != null) {
@@ -806,7 +806,7 @@ public class Question extends WdkModelBase {
 
     private Query createDynamicAttributeQuery() {
         SqlQuery query = new SqlQuery();
-        query.setCached(false);
+        query.setIsCacheable(false);
         query.setName(this.query.getName() + DYNAMIC_QUERY_SUFFIX);
         query.setQuerySet(this.query.getQuerySet());
 

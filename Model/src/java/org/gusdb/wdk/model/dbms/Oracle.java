@@ -12,6 +12,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.apache.commons.dbcp.DelegatingConnection;
+import org.gusdb.wdk.model.WdkModel;
 
 import oracle.jdbc.driver.OracleDriver;
 import oracle.sql.CLOB;
