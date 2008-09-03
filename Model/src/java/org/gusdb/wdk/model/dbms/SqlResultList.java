@@ -15,6 +15,16 @@ import org.gusdb.wdk.model.WdkModelException;
  */
 public class SqlResultList implements ResultList {
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#finalize()
+     */
+    @Override
+    protected void finalize() throws Throwable {
+        SqlUtils.closeResultSet(resultSet);
+        // TODO Auto-generated method stub
+        super.finalize();
+    }
+
     private Set<String> columns;
     private ResultSet resultSet;
 
