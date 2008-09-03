@@ -22,7 +22,7 @@ public class CacheFactory {
     static final String COLUMN_QUERY_NAME = "query_name";
     static final String COLUMN_INSTANCE_CHECKSUM = "instance_checksum";
     static final String COLUMN_RESULT_MESSAGE = "result_message";
-    
+
     public static String normalizeTableName(String tableName) {
         return tableName.trim().toLowerCase().replaceAll("\\W", "_");
     }
@@ -160,7 +160,13 @@ public class CacheFactory {
         // drop the cache tables
         for (String queryName : queryNames) {
             String cacheTable = normalizeTableName(queryName);
-            SqlUtils.executeUpdate(dataSource, "DROP TABLE " + cacheTable);
+            try {
+                SqlUtils.executeUpdate(dataSource, "DROP TABLE " + cacheTable);
+            } catch (SQLException ex) {
+                System.err.println("Drop table " + cacheTable
+                        + " failed. Table does not exist, "
+                        + "or you don't have permission to drop it.");
+            }
         }
 
         // delete rows from cache index table
