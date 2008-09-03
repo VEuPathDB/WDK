@@ -25,6 +25,22 @@ public abstract class AttributeValue {
         return this.field;
     }
 
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.Field#getDisplayName()
+     */
+    public String getDisplayName() {
+        return field.getDisplayName();
+    }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.Field#getName()
+     */
+    public String getName() {
+        return field.getName();
+    }
+
     public String getBriefValue() throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
