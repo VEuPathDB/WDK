@@ -68,7 +68,7 @@ public class Question extends WdkModelBase {
 
     private String[] summaryAttributeNames;
     private Map<String, AttributeField> summaryAttributeMap = new LinkedHashMap<String, AttributeField>();
-    private Map<String, Boolean> sortingAttributeMap = new LinkedHashMap<String, Boolean>();
+    private Map<String, Boolean> defaultSortingMap = new LinkedHashMap<String, Boolean>();
 
     private List<DynamicAttributeSet> dynamicAttributeSets = new ArrayList<DynamicAttributeSet>();
     private DynamicAttributeSet dynamicAttributeSet;
@@ -114,7 +114,7 @@ public class Question extends WdkModelBase {
         this.questionSet = question.questionSet;
         this.recordClass = question.recordClass;
         this.recordClassRef = question.recordClassRef;
-        this.sortingAttributeMap.putAll(question.sortingAttributeMap);
+        this.defaultSortingMap.putAll(question.defaultSortingMap);
         this.summary = question.summary;
         this.summaryAttributeMap.putAll(question.summaryAttributeMap);
         this.summaryAttributeNames = question.summaryAttributeNames;
@@ -193,7 +193,7 @@ public class Question extends WdkModelBase {
     // /////////////////////////////////////////////////////////////////////
 
     /**
-     * make an answer that returns all records in one page.
+     * make an answer with default page size
      * 
      * @param paramValues
      * @return
@@ -206,62 +206,11 @@ public class Question extends WdkModelBase {
     public Answer makeAnswer(Map<String, Object> paramValues)
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
-        return makeAnswer(paramValues, sortingAttributeMap);
-    }
-
-    /**
-     * make an answer that returns all records in one page, sorted by the given
-     * attribute list.
-     * 
-     * @param paramValues
-     * @param sortingAttributes
-     * @return
-     * @throws WdkModelException
-     * @throws WdkUserException
-     * @throws JSONException
-     * @throws SQLException
-     * @throws NoSuchAlgorithmException
-     */
-    public Answer makeAnswer(Map<String, Object> paramValues,
-            Map<String, Boolean> sortingAttributes) throws WdkUserException,
-            WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException {
-        // get the result size by making a temp answer
-        Answer answer = makeAnswer(paramValues, 1, 1, sortingAttributes, null);
-        int resultSize = answer.getResultSize();
-
-        // skip empty answers and one-record answers
-        if (resultSize <= 1) return answer;
-
-        // make an answer containing all records
-        return makeAnswer(paramValues, 1, resultSize, sortingAttributes, null);
-    }
-
-    /**
-     * make an answer by given page range.
-     * 
-     * @param paramValues
-     * @param i
-     * @param j
-     * @return
-     * @throws WdkUserException
-     * @throws WdkModelException
-     * @throws JSONException
-     * @throws SQLException
-     * @throws NoSuchAlgorithmException
-     */
-    public Answer makeAnswer(Map<String, Object> paramValues, int i, int j)
-            throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException {
-        return makeAnswer(paramValues, i, j, sortingAttributeMap,
-                recordClass.getDefaultFilter());
-    }
-
-    public Answer makeAnswer(Map<String, Object> paramValues, int i, int j,
-            AnswerFilterInstance filter) throws WdkUserException,
-            WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException {
-        return makeAnswer(paramValues, i, j, sortingAttributeMap, filter);
+        int pageStart = 1;
+        int pageEnd = Utilities.DEFAULT_PAGE_SIZE;
+        Map<String, Boolean> sortingMap = this.defaultSortingMap;
+        AnswerFilterInstance filter = recordClass.getDefaultFilter();
+        return makeAnswer(paramValues, pageStart, pageEnd, sortingMap, filter);
     }
 
     /**
@@ -278,12 +227,12 @@ public class Question extends WdkModelBase {
      * @throws SQLException
      * @throws NoSuchAlgorithmException
      */
-    public Answer makeAnswer(Map<String, Object> paramValues, int i, int j,
+    public Answer makeAnswer(Map<String, Object> paramValues, int pageStart, int pageEnd,
             Map<String, Boolean> sortingAttributes, AnswerFilterInstance filter)
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
         QueryInstance qi = query.makeInstance(paramValues);
-        Answer answer = new Answer(this, qi, i, j, sortingAttributes,
+        Answer answer = new Answer(this, qi, pageStart, pageEnd, sortingAttributes,
                 filter);
 
         return answer;
@@ -619,21 +568,21 @@ public class Question extends WdkModelBase {
     // return question;
     // }
     public Map<String, Boolean> getDefaultSortingAttributes() {
-        Map<String, Boolean> sortMap = new LinkedHashMap<String, Boolean>();
+        Map<String, Boolean> map = new LinkedHashMap<String, Boolean>();
         int count = 0;
-        for (String attrName : sortingAttributeMap.keySet()) {
-            sortMap.put(attrName, sortingAttributeMap.get(attrName));
+        for (String attrName : defaultSortingMap.keySet()) {
+            map.put(attrName, defaultSortingMap.get(attrName));
             count++;
             if (count >= User.SORTING_LEVEL) break;
         }
-        return sortMap;
+        return map;
     }
 
     /**
      * @return the sortingAttributeMap
      */
     public Map<String, Boolean> getSortingAttributeMap() {
-        return new LinkedHashMap<String, Boolean>(this.sortingAttributeMap);
+        return new LinkedHashMap<String, Boolean>(this.defaultSortingMap);
     }
 
     /**
@@ -762,7 +711,7 @@ public class Question extends WdkModelBase {
                             + "project " + projectId);
                 } else {
                     this.summaryAttributeNames = attributeList.getSummaryAttributeNames();
-                    this.sortingAttributeMap = attributeList.getSortingAttributeMap();
+                    this.defaultSortingMap = attributeList.getSortingAttributeMap();
                     hasAttributeList = true;
                 }
             }

@@ -264,7 +264,8 @@ public class JUnitUserTest extends TestCase {
             Answer answer = question.makeAnswer(
                     questions[index].getParamHash(),
                     questions[index].getPageStart(),
-                    questions[index].getPageEnd());
+                    questions[index].getPageEnd(),
+                    question.getDefaultSortingAttributes(), null);
             answers.add(answer);
         }
         Answer[] array = new Answer[answers.size()];

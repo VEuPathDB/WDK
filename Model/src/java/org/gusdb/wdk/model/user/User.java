@@ -480,7 +480,8 @@ public class User /* implements Serializable */{
                             values.put(param.getName(), newValue);
                         }
                     }
-                    answer = question.makeAnswer(values, startIndex, endIndex);
+                    answer = question.makeAnswer(values, startIndex, endIndex,
+                            answer.getSortingAttributes(), answer.getFilter());
                     newHistory = createHistory(answer, null,
                             history.isDeleted());
                 }

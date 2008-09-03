@@ -147,10 +147,8 @@ public class AnswerFactory {
         Map<String, Object> pvalues = parseParams(query.getParamMap(),
                 paramClob);
 
-        // create the answer
-        Answer answer = question.makeAnswer(pvalues);
-        // answer.set
-        return answer;
+        // create the answer with default page size
+        return question.makeAnswer(pvalues);
     }
 
     /**

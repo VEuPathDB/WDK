@@ -7,6 +7,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.gusdb.wdk.model.AbstractEnumParam;
+import org.gusdb.wdk.model.Answer;
+import org.gusdb.wdk.model.AnswerFilterInstance;
 import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.DatasetParam;
 import org.gusdb.wdk.model.Field;
@@ -15,10 +17,13 @@ import org.gusdb.wdk.model.Group;
 import org.gusdb.wdk.model.HistoryParam;
 import org.gusdb.wdk.model.Param;
 import org.gusdb.wdk.model.Question;
+import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.TableField;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.json.JSONException;
+
+import com.sun.org.apache.regexp.internal.recompile;
 
 /**
  * A wrapper on a {@link Question} that provides simplified access for
@@ -221,12 +226,18 @@ public class QuestionBean {
      * @throws SQLException
      * @throws NoSuchAlgorithmException
      */
-    public AnswerBean makeAnswer(Map<String, Object> paramValues, int start,
-            int end, Map<String, Boolean> sortingAttributes)
-            throws WdkModelException, WdkUserException,
+    public AnswerBean makeAnswer(Map<String, Object> paramValues,
+            int pageStart, int pageEnd, Map<String, Boolean> sortingMap,
+            String filterName) throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, SQLException, JSONException {
-        return new AnswerBean(question.makeAnswer(paramValues, start, end,
-                sortingAttributes, null));
+        AnswerFilterInstance filter = null;
+        if (filterName != null) {
+            RecordClass recordClass = question.getRecordClass();
+            filter = recordClass.getFilter(filterName);
+        }
+        Answer answer = question.makeAnswer(paramValues, pageStart, pageEnd,
+                sortingMap, filter);
+        return new AnswerBean(answer);
     }
 
     public String getDescription() {
@@ -258,30 +269,7 @@ public class QuestionBean {
     }
 
     /**
-     * make an answer bean that returns all record beans in one page.
-     * 
-     * @param paramValues
-     * @param sortingAttributes
-     * @return
-     * @throws WdkUserException
-     * @throws WdkModelException
-     * @throws JSONException
-     * @throws SQLException
-     * @throws NoSuchAlgorithmException
-     * @see org.gusdb.wdk.model.Question#makeAnswer(java.util.Map,
-     *      java.util.Map)
-     */
-    public AnswerBean makeAnswer(Map<String, Object> paramValues,
-            Map<String, Boolean> sortingAttributes) throws WdkUserException,
-            WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException {
-        return new AnswerBean(question.makeAnswer(paramValues,
-                sortingAttributes));
-    }
-
-    /**
-     * make an answer bean that returns all record beans in one page, sorted by
-     * the given attribute list.
+     * make an answer bean with default page size.
      * 
      * @param paramValues
      * @return

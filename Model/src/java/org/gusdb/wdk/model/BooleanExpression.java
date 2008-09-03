@@ -13,7 +13,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.gusdb.wdk.model.query.BooleanQuery;
-import org.gusdb.wdk.model.query.BooleanQueryInstance;
 import org.gusdb.wdk.model.user.History;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
@@ -246,7 +245,7 @@ public class BooleanExpression {
 
         params.put(query.getOperatorParam().getName(), operator);
 
-        Answer answer = question.makeAnswer(params);
-        return answer;
+        // create a boolean answer with default page size
+        return question.makeAnswer(params);
     }
 }

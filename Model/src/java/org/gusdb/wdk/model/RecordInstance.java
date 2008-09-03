@@ -293,8 +293,13 @@ public class RecordInstance extends AttributeValueContainer {
     private Answer getNestedRecordAnswer(Question question)
             throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, SQLException, JSONException {
-        return question.makeAnswer(primaryKey.getValues(), 1,
-                Utilities.MAXIMUM_NESTED_RECORD_INSTANCES);
+        Map<String, Object> params = primaryKey.getValues();
+        int pageStart = 1;
+        int pageEnd = Utilities.MAXIMUM_RECORD_INSTANCES;
+        Map<String, Boolean> sortingMap = question.getDefaultSortingAttributes();
+        AnswerFilterInstance filter = question.getRecordClass().getDefaultFilter();
+        // create an answer with maximium allowed rows
+        return question.makeAnswer(params, pageStart, pageEnd, sortingMap, filter);
     }
 
     // maybe change this to RecordInstance[][] for jspwrap purposes?

@@ -22,6 +22,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.AnswerBean;
@@ -327,17 +328,19 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
         logger.info("Make answer with start=" + start + ", end=" + end);
 
+        // get filter
+        String filterName = request.getParameter("filter");
+
         if (answerMaker instanceof QuestionBean) {
             QuestionBean question = (QuestionBean) answerMaker;
             // check if the question is supposed to make answers containing all
             // records in one page
             if (question.isFullAnswer()) {
-                wdkAnswer = question.makeAnswer(params, sortingAttributes);
-            } else {
-
-                wdkAnswer = question.makeAnswer(params, start, end,
-                        sortingAttributes);
+                start = 1;
+                end = Utilities.MAXIMUM_RECORD_INSTANCES;
             }
+            wdkAnswer = question.makeAnswer(params, start, end,
+                    sortingAttributes, filterName);
             wdkAnswer.setSumaryAttribute(summaryAttributes);
         } else {
             throw new RuntimeException("unexpected answerMaker: " + answerMaker);
