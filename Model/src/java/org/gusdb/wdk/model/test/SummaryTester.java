@@ -139,9 +139,9 @@ public class SummaryTester {
             }
         } catch (Exception ex) {
             ex.printStackTrace();
-            System.exit(-1);
+//            System.exit(-1);
         }
-        System.exit(0);
+//        System.exit(0);
     }
 
     private static Map<String, String> loadConfiguration(String configFileName)

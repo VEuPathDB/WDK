@@ -74,7 +74,7 @@ public class RecordTester {
         long end = System.currentTimeMillis();
         System.out.println("Total time spent: " + ((end - start) / 1000F)
                 + " seconds.");
-        System.exit(0);
+//        System.exit(0);
     }
 
     private static Map<String, Object> parsePrimaryKeyArgs(String[] array) {
