@@ -56,9 +56,9 @@ public class BooleanQuery extends SqlQuery {
     public static final String RIGHT_OPERAND_PARAM_PREFIX = "boolean_right_operand_";
     public static final String LEFT_FILTER_PARAM = "boolean_left_filter";
     public static final String RIGHT_FILTER_PARAM = "boolean_right_filter";
-    
+
     public static final String OPERATOR_PARAM = "boolean_operator";
-    
+
     public static String getQueryName(RecordClass recordClass) {
         String rcName = recordClass.getFullName().replace('.', '_');
         return QUERY_NAME_PREFIX + rcName;
@@ -67,6 +67,8 @@ public class BooleanQuery extends SqlQuery {
     private AnswerParam leftOperand;
     private AnswerParam rightOperand;
     private StringParam operator;
+    private StringParam leftFilter;
+    private StringParam rightFilter;
     private RecordClass recordClass;
 
     public BooleanQuery(RecordClass recordClass) throws WdkModelException {
@@ -81,22 +83,21 @@ public class BooleanQuery extends SqlQuery {
         rightOperand = prepareOperand(internalParamSet, recordClass,
                 RIGHT_OPERAND_PARAM_PREFIX + rcName);
 
-        // create the stringParam for the operator
-        if (internalParamSet.contains(OPERATOR_PARAM)) {
-            operator = (StringParam) internalParamSet.getParam(OPERATOR_PARAM);
-        } else {
-            operator = new StringParam();
-            operator.setName(OPERATOR_PARAM);
-            internalParamSet.addParam(operator);
-        }
+        // create the stringParam for the others
+        operator = prepareStringParam(internalParamSet, OPERATOR_PARAM);
+        leftFilter = prepareStringParam(internalParamSet, LEFT_FILTER_PARAM);
+        rightFilter = prepareStringParam(internalParamSet, RIGHT_FILTER_PARAM);
 
         // create the query
         this.setName(BooleanQuery.getQueryName(recordClass));
-        this.paramMap.put(leftOperand.getName(), leftOperand);
-        this.paramMap.put(rightOperand.getName(), rightOperand);
-        this.paramMap.put(operator.getName(), operator);
-        prepareColumns(recordClass);
+        this.addParam(leftOperand);
+        this.addParam(rightOperand);
+        this.addParam(operator);
+        this.addParam(leftFilter);
+        this.addParam(rightFilter);
         
+        prepareColumns(recordClass);
+
         this.sql = constructSql();
     }
 
@@ -132,6 +133,20 @@ public class BooleanQuery extends SqlQuery {
         return operator;
     }
 
+    /**
+     * @return the leftFilter
+     */
+    public StringParam getLeftFilterParam() {
+        return leftFilter;
+    }
+
+    /**
+     * @return the rightFilter
+     */
+    public StringParam getRightFilterParam() {
+        return rightFilter;
+    }
+
     private AnswerParam prepareOperand(ParamSet paramSet,
             RecordClass recordClass, String paramName) throws WdkModelException {
         AnswerParam operand;
@@ -146,6 +161,19 @@ public class BooleanQuery extends SqlQuery {
             operand.setResources(wdkModel);
         }
         return operand;
+    }
+
+    private StringParam prepareStringParam(ParamSet paramSet, String paramName)
+            throws WdkModelException {
+        StringParam param;
+        if (paramSet.contains(paramName)) {
+            param = (StringParam) paramSet.getParam(paramName);
+        } else {
+            param = new StringParam();
+            param.setName(paramName);
+            paramSet.addParam(param);
+        }
+        return param;
     }
 
     private void prepareColumns(RecordClass recordClass) {
@@ -188,7 +216,7 @@ public class BooleanQuery extends SqlQuery {
             throws WdkModelException {
         return new SqlQueryInstance(this, values);
     }
-    
+
     private String constructSql() {
         StringBuffer sql = new StringBuffer();
         constructOperandSql(sql, leftOperand.getName());
@@ -196,11 +224,11 @@ public class BooleanQuery extends SqlQuery {
         constructOperandSql(sql, leftOperand.getName());
         return sql.toString();
     }
-    
+
     private void constructOperandSql(StringBuffer sql, String operand) {
         sql.append("SELECT ");
         boolean first = true;
-        for(String column : columnMap.keySet()) {
+        for (String column : columnMap.keySet()) {
             if (first) first = false;
             else sql.append(", ");
             sql.append(column);

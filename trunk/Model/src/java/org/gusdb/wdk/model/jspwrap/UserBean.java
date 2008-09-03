@@ -696,12 +696,10 @@ public class UserBean /* implements Serializable */{
      * 
      * @see org.gusdb.wdk.model.user.User#combineHistory(java.lang.String)
      */
-    public HistoryBean combineHistory(String expression, String summaryTable,
-            String viewRow, String viewColumn) throws WdkUserException,
-            WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException {
-        return new HistoryBean(user.combineHistory(expression, false,
-                summaryTable, viewRow, viewColumn));
+    public HistoryBean combineHistory(String expression)
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException {
+        return new HistoryBean(user.combineHistory(expression));
     }
 
     /*

@@ -8,6 +8,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.gusdb.wdk.model.WdkModel;
+
 /**
  * @author Jerric Gao
  * 

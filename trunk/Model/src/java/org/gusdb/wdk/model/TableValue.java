@@ -67,8 +67,16 @@ public class TableValue implements Iterable<Map<String, AttributeValue>>,
         private TableValueRow(TableValue tableValue)
                 throws NoSuchAlgorithmException, WdkModelException,
                 JSONException, SQLException {
-            super(tableValue.getTableField(), tableValue.primaryKey);
+            super(tableValue.primaryKey);
             this.fields = tableValue.getTableField().getAttributeFieldMap();
+        }
+
+        /* (non-Javadoc)
+         * @see org.gusdb.wdk.model.AttributeValueContainer#getAttributeFieldMap()
+         */
+        @Override
+        protected Map<String, AttributeField> getAttributeFieldMap() {
+            return fields;
         }
 
         /*

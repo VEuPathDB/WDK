@@ -216,6 +216,7 @@ public class QueryTester {
             ResultList rs = tester.getResult(querySetName, queryName, paramHash);
             print(query, rs);
         }
+        System.exit(0);
     }
 
     private static void print(Query query, ResultList resultList)

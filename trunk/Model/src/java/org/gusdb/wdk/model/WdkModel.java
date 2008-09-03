@@ -431,14 +431,14 @@ public class WdkModel {
         // set the max active as half of the model's configuration
 
         authenPlatform = (DBPlatform) Class.forName(authenPlatformClass).newInstance();
-        authenPlatform.initialize(authenConnection, authenLogin,
+        authenPlatform.initialize(this, "LOGIN", authenConnection, authenLogin,
                 authenPassword, minIdle, maxIdle, maxWait, maxActive / 2);
         userFactory = new UserFactory(this, projectId, authenPlatform,
                 loginSchema, defaultRole, smtpServer, supportEmail,
                 emailSubject, emailContent);
 
         platform = (DBPlatform) Class.forName(platformClass).newInstance();
-        platform.initialize(connectionUrl, login, password, minIdle, maxIdle,
+        platform.initialize(this, "QUERY", connectionUrl, login, password, minIdle, maxIdle,
                 maxWait, maxActive);
         ResultFactory resultFactory = new ResultFactory(this);
         // 2008
