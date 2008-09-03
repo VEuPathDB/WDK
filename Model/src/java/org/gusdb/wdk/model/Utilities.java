@@ -39,7 +39,7 @@ public class Utilities {
      */
     public static final String SYSTEM_PROPERTY_GUS_HOME = "GUS_HOME";
 
-    public static final int MAXIMUM_NESTED_RECORD_INSTANCES = 1000;
+    public static final int MAXIMUM_RECORD_INSTANCES = 1000;
 
     public static final String COLUMN_PROJECT_ID = "project_id";
 
@@ -52,6 +52,8 @@ public class Utilities {
     public static final String INTERNAL_QUERY_SET = "internalQueries";
 
     public static final String INTERNAL_QUESTION_SET = "internalQuestions";
+    
+    public static final int DEFAULT_PAGE_SIZE = 20;
 
     public static String encrypt(String data) throws WdkModelException,
             NoSuchAlgorithmException {

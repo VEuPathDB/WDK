@@ -120,7 +120,8 @@ public class JUnitBooleanExpressionTest extends TestCase {
 
             // run question
             Answer answer = question.makeAnswer(sq.getParamHash(),
-                    sq.getPageStart(), sq.getPageEnd());
+                    sq.getPageStart(), sq.getPageEnd(),
+                    question.getDefaultSortingAttributes(), null);
             // compose answer id and name
             idIndex++;
             String answerID = Integer.toString(idIndex);

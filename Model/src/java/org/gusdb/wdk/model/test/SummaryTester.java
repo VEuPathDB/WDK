@@ -102,12 +102,14 @@ public class SummaryTester {
                 return;
             }
 
+            Map<String, Boolean> sortingMap = question.getDefaultSortingAttributes();
+
             for (int i = 0; i < rows.length; i += 2) {
                 int nextStartRow = Integer.parseInt(rows[i]);
                 int nextEndRow = Integer.parseInt(rows[i + 1]);
 
                 Answer answer = question.makeAnswer(paramValues, nextStartRow,
-                        nextEndRow, filter);
+                        nextEndRow, sortingMap, filter);
 
                 // this is wrong. it only shows one attribute query, not
                 // all. Fix this in Answer by saving a list of attribute
@@ -169,9 +171,13 @@ public class SummaryTester {
             WdkUserException, IOException, NoSuchAlgorithmException,
             SQLException, JSONException {
 
-        Answer answer = question.makeAnswer(paramValues, 1, 10, filter);
+        Map<String, Boolean> sortingMap = question.getDefaultSortingAttributes();
+
+        Answer answer = question.makeAnswer(paramValues, 1, 2, sortingMap,
+                filter);
         int resultSize = answer.getResultSize();
-        answer = question.makeAnswer(paramValues, 1, resultSize, filter);
+        answer = question.makeAnswer(paramValues, 1, resultSize, sortingMap,
+                filter);
         FileWriter fw = new FileWriter(new File(xmlFile), false);
 
         String newline = System.getProperty("line.separator");
