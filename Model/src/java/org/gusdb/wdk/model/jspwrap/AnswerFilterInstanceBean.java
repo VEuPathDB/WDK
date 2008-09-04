@@ -43,10 +43,10 @@ public class AnswerFilterInstanceBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.AnswerFilterInstance#isBooleanDefault()
+     * @see org.gusdb.wdk.model.AnswerFilterInstance#isBooleanExpansion()
      */
-    public boolean isBooleanDefault() {
-        return instance.isBooleanDefault();
+    public boolean isBooleanExpansion() {
+        return instance.isBooleanExpansion();
     }
 
     /**

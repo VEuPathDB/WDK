@@ -438,7 +438,7 @@ public class RecordClass extends WdkModelBase implements
                                         + instance.getName() + "]");
                     defaultFilter = instance;
                 }
-                if (instance.isBooleanDefault()) {
+                if (instance.isBooleanExpansion()) {
                     if (defaultBooleanFilter != null)
                         throw new WdkModelException(
                                 "The default boolean filter of" + " type "
