@@ -23,8 +23,6 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.json.JSONException;
 
-import com.sun.org.apache.regexp.internal.recompile;
-
 /**
  * A wrapper on a {@link Question} that provides simplified access for
  * consumption by a view
@@ -119,16 +117,12 @@ public class QuestionBean {
     }
 
     public Map<String, AttributeFieldBean> getSummaryAttributesMap() {
-        Map<String, AttributeField> attribs = question.getSummaryAttributes();
-        Iterator<String> ai = attribs.keySet().iterator();
-
-        Map<String, AttributeFieldBean> saMap = new LinkedHashMap<String, AttributeFieldBean>();
-        while (ai.hasNext()) {
-            String attribName = ai.next();
-            saMap.put(attribName, new AttributeFieldBean(
-                    attribs.get(attribName)));
+        Map<String, AttributeField> attribs = question.getSummaryAttributeFields();
+        Map<String, AttributeFieldBean> beanMap = new LinkedHashMap<String, AttributeFieldBean>();
+        for (AttributeField field : attribs.values()) {
+            beanMap.put(field.getName(), new AttributeFieldBean(field));
         }
-        return saMap;
+        return beanMap;
     }
 
     public Map<String, AttributeFieldBean> getReportMakerAttributesMap() {

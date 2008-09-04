@@ -3,7 +3,6 @@ package org.gusdb.wdk.model;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,8 +65,8 @@ public class Question extends WdkModelBase {
 
     private List<AttributeList> attributeLists = new ArrayList<AttributeList>();
 
-    private String[] summaryAttributeNames;
-    private Map<String, AttributeField> summaryAttributeMap = new LinkedHashMap<String, AttributeField>();
+    private String[] defaultSummaryAttributeNames;
+    private Map<String, AttributeField> defaultSummaryAttributeFields = new LinkedHashMap<String, AttributeField>();
     private Map<String, Boolean> defaultSortingMap = new LinkedHashMap<String, Boolean>();
 
     private List<DynamicAttributeSet> dynamicAttributeSets = new ArrayList<DynamicAttributeSet>();
@@ -116,8 +115,7 @@ public class Question extends WdkModelBase {
         this.recordClassRef = question.recordClassRef;
         this.defaultSortingMap.putAll(question.defaultSortingMap);
         this.summary = question.summary;
-        this.summaryAttributeMap.putAll(question.summaryAttributeMap);
-        this.summaryAttributeNames = question.summaryAttributeNames;
+        this.defaultSummaryAttributeFields.putAll(question.defaultSummaryAttributeFields);
         this.wdkModel = question.wdkModel;
 
         this.noSummaryOnSingleRecord = question.noSummaryOnSingleRecord;
@@ -128,6 +126,10 @@ public class Question extends WdkModelBase {
      */
     public WdkModel getWdkModel() {
         return this.wdkModel;
+    }
+
+    public void setWdkModel(WdkModel wdkModel) {
+        this.wdkModel = wdkModel;
     }
 
     public void setName(String name) {
@@ -172,8 +174,19 @@ public class Question extends WdkModelBase {
         this.dynamicAttributeSets.add(dynamicAttributes);
     }
 
-    public Map<String, AttributeField> getSummaryAttributes() {
-        return summaryAttributeMap;
+    public Map<String, AttributeField> getSummaryAttributeFields() {
+        Map<String, AttributeField> summaryFields = new LinkedHashMap<String, AttributeField>();
+        // always put primary key as the first field
+        AttributeField pkField = recordClass.getPrimaryKeyAttributeField();
+        summaryFields.put(pkField.getName(), pkField);
+
+        if (defaultSummaryAttributeFields.size() > 0) { // use the default list
+            summaryFields.putAll(defaultSummaryAttributeFields);
+        } else { // compose the list from recordClass and dynamic queries
+            summaryFields.putAll(recordClass.getAttributeFieldMap(FieldScope.NonInternal));
+            summaryFields.putAll(dynamicAttributeSet.getAttributeFieldMap(FieldScope.NonInternal));
+        }
+        return summaryFields;
     }
 
     public Map<String, Field> getFields(FieldScope scope) {
@@ -227,13 +240,14 @@ public class Question extends WdkModelBase {
      * @throws SQLException
      * @throws NoSuchAlgorithmException
      */
-    public Answer makeAnswer(Map<String, Object> paramValues, int pageStart, int pageEnd,
-            Map<String, Boolean> sortingAttributes, AnswerFilterInstance filter)
-            throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException {
+    public Answer makeAnswer(Map<String, Object> paramValues, int pageStart,
+            int pageEnd, Map<String, Boolean> sortingAttributes,
+            AnswerFilterInstance filter) throws WdkUserException,
+            WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException {
         QueryInstance qi = query.makeInstance(paramValues);
-        Answer answer = new Answer(this, qi, pageStart, pageEnd, sortingAttributes,
-                filter);
+        Answer answer = new Answer(this, qi, pageStart, pageEnd,
+                sortingAttributes, filter);
 
         return answer;
     }
@@ -335,7 +349,7 @@ public class Question extends WdkModelBase {
         String newline = System.getProperty("line.separator");
 
         StringBuffer saNames = new StringBuffer();
-        for (String saName : summaryAttributeMap.keySet()) {
+        for (String saName : getSummaryAttributeFields().keySet()) {
             saNames.append(saName + ", ");
         }
         StringBuffer buf = new StringBuffer("Question: name='" + name + "'"
@@ -429,19 +443,15 @@ public class Question extends WdkModelBase {
                 : dynamicAttributeSet.getAttributeFieldMap();
     }
 
-    void setResources(WdkModel model) throws WdkModelException {
-        this.wdkModel = model;
-        if (dynamicAttributeSet != null) {
-            dynamicAttributeSet.setQuestion(this);
-        }
-        initSummaryAttributes();
-    }
-
     public Map<String, AttributeField> getAttributeFields() {
         return getAttributeFields(FieldScope.All);
     }
 
     public Map<String, AttributeField> getAttributeFields(FieldScope scope) {
+        // handles the summary fields differently, since question may define its
+        // own set
+        if (scope == FieldScope.NonInternal) getSummaryAttributeFields();
+
         Map<String, AttributeField> attributeFields = new LinkedHashMap<String, AttributeField>(
                 recordClass.getAttributeFieldMap(scope));
         if (dynamicAttributeSet != null) {
@@ -451,8 +461,12 @@ public class Question extends WdkModelBase {
     }
 
     @Override
-    public void resolveReferences(WdkModel model) throws WdkModelException {
+    public void resolveReferences(WdkModel model) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
         if (resolved) return;
+
+        this.wdkModel = model;
 
         // it must happen before dynamicAttributeSet, because it is referenced
         // in the dynamicAttributeSet.
@@ -467,15 +481,22 @@ public class Question extends WdkModelBase {
             this.dynamicAttributeQuery = createDynamicAttributeQuery();
             dynamicAttributeSet.resolveReferences(model);
         }
+
+        // resolve default summary attributes
+        if (defaultSummaryAttributeNames != null) {
+            Map<String, AttributeField> attributeFields = getAttributeFields();
+            for (String fieldName : defaultSummaryAttributeNames) {
+                AttributeField field = attributeFields.get(fieldName);
+                if (field == null)
+                    throw new WdkModelException("Summary attribute field ["
+                            + fieldName + "] defined in question ["
+                            + getFullName() + "] is invalid.");
+                defaultSummaryAttributeFields.put(fieldName, field);
+            }
+        }
+        defaultSummaryAttributeNames = null;
+
         resolved = true;
-    }
-
-    boolean isSummaryAttribute(String attName) {
-        return summaryAttributeMap.get(attName) != null;
-    }
-
-    void setSummaryAttributesMap(Map<String, AttributeField> summaryAtts) {
-        this.summaryAttributeMap = summaryAtts;
     }
 
     // /////////////////////////////////////////////////////////////////////
@@ -485,34 +506,6 @@ public class Question extends WdkModelBase {
     protected void setQuestionSet(QuestionSet questionSet)
             throws WdkModelException {
         this.questionSet = questionSet;
-    }
-
-    private void initSummaryAttributes() throws WdkModelException {
-        if (summaryAttributeNames != null) {
-            summaryAttributeMap = new LinkedHashMap<String, AttributeField>();
-            Map<String, AttributeField> attMap = getAttributeFields();
-
-            for (String name : summaryAttributeNames) {
-                if (attMap.get(name) == null) {
-                    throw new WdkModelException("Question " + getName()
-                            + " has unknown summary attribute: '" + name + "'");
-                }
-                summaryAttributeMap.put(name, attMap.get(name));
-            }
-        } else {
-            Map<String, AttributeField> recAttrsMap = getRecordClass().getAttributeFieldMap();
-            summaryAttributeMap = new LinkedHashMap<String, AttributeField>(
-                    recAttrsMap);
-            Iterator<String> ramI = recAttrsMap.keySet().iterator();
-            String attribName = null;
-            while (ramI.hasNext()) {
-                attribName = ramI.next();
-                AttributeField attr = recAttrsMap.get(attribName);
-                if (attr.isInternal()) {
-                    summaryAttributeMap.remove(attribName);
-                }
-            }
-        }
     }
 
     /**
@@ -583,17 +576,6 @@ public class Question extends WdkModelBase {
      */
     public Map<String, Boolean> getSortingAttributeMap() {
         return new LinkedHashMap<String, Boolean>(this.defaultSortingMap);
-    }
-
-    /**
-     * @return the summaryAttributeNames
-     */
-    public String[] getSummaryAttributeNames() {
-        if (summaryAttributeNames == null) return null;
-
-        String[] array = new String[summaryAttributeNames.length];
-        System.arraycopy(summaryAttributeNames, 0, array, 0, array.length);
-        return array;
     }
 
     /**
@@ -710,7 +692,7 @@ public class Question extends WdkModelBase {
                             + " has more than one <attributesList> for "
                             + "project " + projectId);
                 } else {
-                    this.summaryAttributeNames = attributeList.getSummaryAttributeNames();
+                    this.defaultSummaryAttributeNames = attributeList.getSummaryAttributeNames();
                     this.defaultSortingMap = attributeList.getSortingAttributeMap();
                     hasAttributeList = true;
                 }

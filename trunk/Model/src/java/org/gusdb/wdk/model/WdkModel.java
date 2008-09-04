@@ -332,7 +332,7 @@ public class WdkModel {
             booleanQuestion = new Question();
             booleanQuestion.setName(qname);
             booleanQuestion.setQuery(getBooleanQuery(recordClass));
-            booleanQuestion.setResources(this);
+            booleanQuestion.setWdkModel(this);
             internalSet.addQuestion(booleanQuestion);
         }
         return booleanQuestion;
