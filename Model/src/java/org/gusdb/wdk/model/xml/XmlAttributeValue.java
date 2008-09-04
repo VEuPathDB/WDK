@@ -3,6 +3,7 @@
  */
 package org.gusdb.wdk.model.xml;
 
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 
 /**
@@ -33,7 +34,7 @@ public class XmlAttributeValue {
     public String getBriefValue() {
         // prepare truncation length
         int truncate = attributeField.getTruncateTo();
-        if (truncate == 0) truncate = WdkModel.TRUNCATE_DEFAULT;
+        if (truncate == 0) truncate = Utilities.TRUNCATE_DEFAULT;
 
         if (value == null || truncate >= value.length()) return value;
         else return value.substring(0, truncate) + ". . .";

@@ -37,8 +37,6 @@ public class WdkModel {
 
     public static final String WDK_VERSION = "1.18";
 
-    public static final int TRUNCATE_DEFAULT = 100;
-
     /**
      * Convenience method for constructing a model from the configuration
      * information

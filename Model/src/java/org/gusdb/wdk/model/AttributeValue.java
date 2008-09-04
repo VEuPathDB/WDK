@@ -48,6 +48,7 @@ public abstract class AttributeValue {
         if (value == null) return "";
         String strValue = value.toString();
         int truncateTo = field.getTruncateTo();
+        if (truncateTo == 0) truncateTo = Utilities.TRUNCATE_DEFAULT;
         if (strValue.length() > truncateTo)
             strValue = strValue.substring(0, truncateTo) + "...";
         return strValue;
