@@ -15,6 +15,7 @@ import org.apache.commons.dbcp.PoolableConnectionFactory;
 import org.apache.commons.dbcp.PoolingDataSource;
 import org.apache.commons.pool.impl.GenericObjectPool;
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.ModelConfig;
 import org.gusdb.wdk.model.WdkModel;
 
 /**
@@ -37,17 +38,23 @@ public abstract class DBPlatform {
          * @see java.lang.Runnable#run()
          */
         public void run() {
+            ModelConfig config = platform.wdkModel.getModelConfig();
+            long interval = config.getShowConnectionsInternval();
+            long duration = config.getShowConnectionsDuration();
+            long startTime = System.currentTimeMillis();
             while (true) {
                 StringBuffer display = new StringBuffer();
                 display.append("[").append(platform.name).append("]");
                 display.append(" Connections: Active = ").append(
                         getActiveCount());
                 display.append(", Idle = ").append(getIdleCount());
-                
+
                 logger.info(display);
-                //System.out.println(display);
+                // System.out.println(display);
+                long elapsed = (System.currentTimeMillis() - startTime) / 1000;
+                if (elapsed > duration) break;
                 try {
-                    Thread.sleep(2000);
+                    Thread.sleep(interval * 1000);
                 } catch (InterruptedException ex) {
                     // ex.printStackTrace();
                 }
@@ -57,7 +64,7 @@ public abstract class DBPlatform {
     }
 
     public static final String ID_SEQUENCE_SUFFIX = "_pkseq";
-    
+
     private static final Logger logger = Logger.getLogger(DBPlatform.class);
 
     // #########################################################################

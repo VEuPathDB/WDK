@@ -39,9 +39,19 @@
             <attribute name="supportEmail" />
 
             <optional>
+              <group>
                 <attribute name="showConnections">
                     <data type="boolean" />
                 </attribute>
+                <optional>
+                    <attribute name="showConnectionsInterval">
+                        <data type="unsignedLong" />
+                    </attribute>
+                    <attribute name="showConnectionsDuration">
+                        <data type="unsignedLong" />
+                    </attribute>
+                </optional>
+              </group>
             </optional>
             
             <element name="emailSubject">
