@@ -627,7 +627,7 @@
                     </attribute>
                   </optional>
                   <optional>
-                    <attribute name="isBooleanDefault">
+                    <attribute name="isBooleanExpansion">
                       <data type="boolean" />
                     </attribute>
                   </optional>
