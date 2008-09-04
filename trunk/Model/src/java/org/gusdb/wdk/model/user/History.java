@@ -13,12 +13,10 @@ import java.util.Map;
 import java.util.Set;
 
 import org.gusdb.wdk.model.Answer;
-import org.gusdb.wdk.model.AnswerFilterInstance;
 import org.gusdb.wdk.model.AnswerParam;
 import org.gusdb.wdk.model.BooleanExpression;
 import org.gusdb.wdk.model.HistoryParam;
 import org.gusdb.wdk.model.Param;
-import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.QueryInstance;
@@ -342,21 +340,19 @@ public class History {
         // append the rest of the params
         Map<String, String> allValues = new LinkedHashMap<String, String>(
                 displayParams);
-        for (String param : paramValues.keySet()) {
-            if (!allValues.containsKey(param))
-                allValues.put(param, paramValues.get(param).toString());
+        for (String paramName : paramValues.keySet()) {
+            if (!allValues.containsKey(paramName))
+                allValues.put(paramName, paramValues.get(paramName).toString());
         }
         return allValues;
     }
 
-    public Map<String, String> getParamNames() throws WdkModelException {
+    public Map<String, String> getParamPrompts() throws WdkModelException {
         Map<String, String> paramNames = new LinkedHashMap<String, String>();
-        WdkModel wdkModel = user.getWdkModel();
-        for (String paramName : getDisplayParams().keySet()) {
-            Param param = (Param) wdkModel.resolveReference(paramName);
-            String displayName = param.getPrompt();
-            if (displayName == null) displayName = paramName;
-            paramNames.put(paramName, displayName);
+        QueryInstance instance = answer.getIdsQueryInstance();
+        Param[] params = instance.getQuery().getParams();
+        for (Param param : params) {
+            paramNames.put(param.getName(), param.getPrompt());
         }
 
         return paramNames;
