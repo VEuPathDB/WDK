@@ -23,7 +23,7 @@ public class AnswerFilterInstance extends WdkModelBase {
     private String name;
     private String displayName;
     private boolean isDefault;
-    private boolean isBooleanDefault;
+    private boolean isBooleanExpansion;
 
     private List<WdkModelText> descriptionList = new ArrayList<WdkModelText>();
     private String description;
@@ -81,18 +81,18 @@ public class AnswerFilterInstance extends WdkModelBase {
     }
 
     /**
-     * @return the isBooleanDefault
+     * @return the isBooleanExpansion
      */
-    public boolean isBooleanDefault() {
-        return isBooleanDefault;
+    public boolean isBooleanExpansion() {
+        return isBooleanExpansion;
     }
 
     /**
-     * @param isBooleanDefault
-     *            the isBooleanDefault to set
+     * @param isBooleanExpansion
+     *            the isBooleanExpansion to set
      */
-    public void setBooleanDefault(boolean isBooleanDefault) {
-        this.isBooleanDefault = isBooleanDefault;
+    public void setBooleanExpansion(boolean isBooleanExpansion) {
+        this.isBooleanExpansion = isBooleanExpansion;
     }
 
     /**
@@ -105,7 +105,7 @@ public class AnswerFilterInstance extends WdkModelBase {
     public void addDescription(WdkModelText description) {
         this.descriptionList.add(description);
     }
-    
+
     public void addParamValue(AnswerFilterInstanceParam param) {
         this.paramValueList.add(param);
     }
