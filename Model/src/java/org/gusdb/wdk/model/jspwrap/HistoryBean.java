@@ -254,7 +254,7 @@ public class HistoryBean {
      * @see org.gusdb.wdk.model.user.History#getParamNames()
      */
     public Map<String, String> getParamNames() throws WdkModelException {
-        return history.getParamNames();
+        return history.getParamPrompts();
     }
 
     /**
