@@ -739,13 +739,16 @@ public class Answer {
         // the list might be different from the ones in question, since they
         // can be customized.
         if (summaryAttributes.size() == 0) {
-            summaryAttributes.putAll(question.getSummaryAttributes());
+            summaryAttributes.putAll(question.getSummaryAttributeFields());
         }
         return new LinkedHashMap<String, AttributeField>(summaryAttributes);
     }
 
     public void setSumaryAttributes(String[] attributeNames) {
         summaryAttributes.clear();
+        // always put the primary key as the first attribute
+        PrimaryKeyAttributeField pkField = question.getRecordClass().getPrimaryKeyAttributeField();
+        summaryAttributes.put(pkField.getName(), pkField);
         for (String attributeName : attributeNames) {
             AttributeField field = question.getAttributeFields().get(
                     attributeName);

@@ -852,7 +852,7 @@ public class User /* implements Serializable */{
         if (question.getQuery() instanceof BooleanQuery) {
             summary = new String[0];
         } else { // ordinary question
-            Map<String, AttributeField> attributes = question.getSummaryAttributes();
+            Map<String, AttributeField> attributes = question.getSummaryAttributeFields();
             summary = new String[attributes.size()];
             attributes.keySet().toArray(summary);
         }

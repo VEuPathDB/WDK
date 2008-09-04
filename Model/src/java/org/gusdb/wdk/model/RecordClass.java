@@ -201,6 +201,10 @@ public class RecordClass extends WdkModelBase implements
 
     public Map<String, AttributeField> getAttributeFieldMap(FieldScope scope) {
         Map<String, AttributeField> fields = new LinkedHashMap<String, AttributeField>();
+
+        // always put primary key field as the first one
+        fields.put(primaryKeyField.getName(), primaryKeyField);
+
         for (AttributeField field : attributeFieldsMap.values()) {
             if (scope == FieldScope.All
                     || (scope == FieldScope.NonInternal && !field.isInternal())
@@ -341,6 +345,8 @@ public class RecordClass extends WdkModelBase implements
     public void resolveReferences(WdkModel model) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
+        if (resolved) return;
+
         this.wdkModel = model;
 
         // resolve the references for attribute queries
@@ -450,6 +456,8 @@ public class RecordClass extends WdkModelBase implements
         for (AnswerFilterLayout layout : filterLayoutMap.values()) {
             layout.resolveReferences(model);
         }
+
+        resolved = true;
     }
 
     void validateAttributeQuery(Query query) throws WdkModelException {
@@ -592,7 +600,7 @@ public class RecordClass extends WdkModelBase implements
         String[] pkColumns = primaryKeyField.getColumnRefs();
         Map<String, Param> originalParams = query.getParamMap();
         Query newQuery = query.clone();
-        
+
         // find the new params to be created
         List<String> newParams = new ArrayList<String>();
         for (String column : pkColumns) {

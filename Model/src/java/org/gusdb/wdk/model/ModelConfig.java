@@ -42,6 +42,8 @@ public class ModelConfig {
     private String queryLoggerFile;
 
     private boolean showConnections = false;
+    private long showConnectionsInternval = 10;
+    private long showConnectionsDuration = 60; 
 
     /**
      * The projectId is not part of the config file content, it is input by the
@@ -379,5 +381,33 @@ public class ModelConfig {
      */
     public void setShowConnections(boolean showConnections) {
         this.showConnections = showConnections;
+    }
+
+    /**
+     * @return the showConnectionsInternval
+     */
+    public long getShowConnectionsInternval() {
+        return showConnectionsInternval;
+    }
+
+    /**
+     * @param showConnectionsInternval the showConnectionsInternval to set
+     */
+    public void setShowConnectionsInternval(long showConnectionsInternval) {
+        this.showConnectionsInternval = showConnectionsInternval;
+    }
+
+    /**
+     * @return the showConnectionsDuration
+     */
+    public long getShowConnectionsDuration() {
+        return showConnectionsDuration;
+    }
+
+    /**
+     * @param showConnectionsDuration the showConnectionsDuration to set
+     */
+    public void setShowConnectionsDuration(long showConnectionsDuration) {
+        this.showConnectionsDuration = showConnectionsDuration;
     }
 }
