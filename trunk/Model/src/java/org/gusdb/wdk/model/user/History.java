@@ -302,7 +302,7 @@ public class History {
     public void setDisplayParams(String paramClob) throws JSONException {
         displayParams = new LinkedHashMap<String, String>();
         if (isBoolean) booleanExpression = paramClob;
-        else if (paramClob != null) {
+        else if (paramClob != null && paramClob.length() > 0) {
             JSONObject jsParams = new JSONObject(paramClob);
             Iterator itKeys = jsParams.keys();
             while (itKeys.hasNext()) {
