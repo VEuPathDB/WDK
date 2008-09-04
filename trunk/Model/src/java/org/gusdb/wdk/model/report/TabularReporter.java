@@ -138,7 +138,7 @@ public class TabularReporter extends Reporter {
             columns.addAll(summary.values());
         } else {
             Map<String, AttributeField> attributes = getQuestion().getAttributeFields(
-                    FieldScope.ReportMaker);
+                    FieldScope.REPORT_MAKER);
             String[] fields = fieldsList.split(",");
             for (String column : fields) {
                 column = column.trim();

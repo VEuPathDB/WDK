@@ -152,7 +152,7 @@ public class FullRecordCachedReporter extends Reporter {
     private Set<Field> validateColumns() throws WdkModelException {
         // get a map of report maker fields
         Map<String, Field> fieldMap = getQuestion().getFields(
-                FieldScope.ReportMaker);
+                FieldScope.REPORT_MAKER);
 
         // the config map contains a list of column names;
         Set<Field> columns = new LinkedHashSet<Field>();

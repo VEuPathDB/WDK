@@ -102,8 +102,8 @@ public class Answer {
     private Integer resultSize; // size of total result
     private Map<String, Integer> resultSizesByProject;
 
-    private Map<String, Boolean> sortingAttributes;
-    private Map<String, AttributeField> summaryAttributes;
+    private Map<String, Boolean> sortingMap;
+    private Map<String, AttributeField> summaryFieldMap;
 
     private AnswerFilterInstance filter;
 
@@ -131,7 +131,7 @@ public class Answer {
      * @throws WdkUserException
      */
     Answer(Question question, QueryInstance idsQueryInstance, int startIndex,
-            int endIndex, Map<String, Boolean> sortingAttributes,
+            int endIndex, Map<String, Boolean> sortingMap,
             AnswerFilterInstance filter) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
@@ -143,8 +143,8 @@ public class Answer {
         this.endIndex = endIndex;
 
         // get sorting columns
-        this.sortingAttributes = sortingAttributes;
-        this.summaryAttributes = new LinkedHashMap<String, AttributeField>();
+        this.sortingMap = sortingMap;
+        this.summaryFieldMap = new LinkedHashMap<String, AttributeField>();
 
         // get the view
         if (filter == null)
@@ -167,10 +167,9 @@ public class Answer {
         this.isBoolean = answer.isBoolean;
         this.question = answer.question;
         this.resultFactory = answer.resultFactory;
-        this.sortingAttributes = new LinkedHashMap<String, Boolean>(
-                answer.sortingAttributes);
-        this.summaryAttributes = new LinkedHashMap<String, AttributeField>(
-                answer.summaryAttributes);
+        this.sortingMap = new LinkedHashMap<String, Boolean>(answer.sortingMap);
+        this.summaryFieldMap = new LinkedHashMap<String, AttributeField>(
+                answer.summaryFieldMap);
         this.filter = answer.filter;
     }
 
@@ -353,7 +352,7 @@ public class Answer {
 
         if (pageRecordInstances.size() == 0) return buf.toString();
 
-        Map<String, AttributeField> attributes = getSummaryAttributes();
+        Map<String, AttributeField> attributes = getAttributeFieldMap(FieldScope.SUMMARY);
         for (String nextAttName : attributes.keySet()) {
             buf.append(nextAttName + "\t");
         }
@@ -611,9 +610,9 @@ public class Answer {
         Map<String, String> querySqls = new LinkedHashMap<String, String>();
         Map<String, String> queryNames = new LinkedHashMap<String, String>();
         Map<String, String> orderClauses = new LinkedHashMap<String, String>();
-        for (String fieldName : sortingAttributes.keySet()) {
+        for (String fieldName : sortingMap.keySet()) {
             AttributeField field = fields.get(fieldName);
-            boolean ascend = sortingAttributes.get(fieldName);
+            boolean ascend = sortingMap.get(fieldName);
             for (ColumnAttributeField dependent : field.getDependents()) {
                 Query query = dependent.getColumn().getQuery();
                 String queryName = query.getFullName();
@@ -713,14 +712,14 @@ public class Answer {
         return idsQueryInstance.getResultMessage();
     }
 
-    public Map<String, Boolean> getSortingAttributes() {
-        return new LinkedHashMap<String, Boolean>(sortingAttributes);
+    public Map<String, Boolean> getSortingMap() {
+        return new LinkedHashMap<String, Boolean>(sortingMap);
     }
 
     public List<AttributeField> getDisplayableAttributes() {
         List<AttributeField> displayAttributes = new ArrayList<AttributeField>();
         Map<String, AttributeField> attributes = question.getAttributeFields();
-        Map<String, AttributeField> summaryAttributes = getSummaryAttributes();
+        Map<String, AttributeField> summaryAttributes = getAttributeFieldMap(FieldScope.SUMMARY);
         for (String attriName : attributes.keySet()) {
             AttributeField attribute = attributes.get(attriName);
 
@@ -735,25 +734,26 @@ public class Answer {
         return displayAttributes;
     }
 
-    public Map<String, AttributeField> getSummaryAttributes() {
-        // the list might be different from the ones in question, since they
-        // can be customized.
-        if (summaryAttributes.size() == 0) {
-            summaryAttributes.putAll(question.getSummaryAttributeFields());
-        }
-        return new LinkedHashMap<String, AttributeField>(summaryAttributes);
+    public Map<String, AttributeField> getAttributeFieldMap(FieldScope scope) {
+        Map<String, AttributeField> summaryFields;
+        if (summaryFieldMap.size() > 0) summaryFields = new LinkedHashMap<String, AttributeField>(
+                summaryFieldMap);
+        else summaryFields = question.getAttributeFields(scope);
+        return summaryFields;
     }
 
     public void setSumaryAttributes(String[] attributeNames) {
-        summaryAttributes.clear();
+        Map<String, AttributeField> summaryFields = new LinkedHashMap<String, AttributeField>();
         // always put the primary key as the first attribute
         PrimaryKeyAttributeField pkField = question.getRecordClass().getPrimaryKeyAttributeField();
-        summaryAttributes.put(pkField.getName(), pkField);
+        summaryFields.put(pkField.getName(), pkField);
         for (String attributeName : attributeNames) {
             AttributeField field = question.getAttributeFields().get(
                     attributeName);
-            summaryAttributes.put(attributeName, field);
+            summaryFields.put(attributeName, field);
         }
+        summaryFieldMap.clear();
+        summaryFieldMap.putAll(summaryFields);
     }
 
     /**
@@ -804,7 +804,8 @@ public class Answer {
     }
 
     /**
-     * @param filter the filter to set
+     * @param filter
+     *            the filter to set
      */
     public void setFilter(AnswerFilterInstance filter) {
         this.filter = filter;

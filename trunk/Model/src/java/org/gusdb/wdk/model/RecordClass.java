@@ -175,15 +175,15 @@ public class RecordClass extends WdkModelBase implements
     }
 
     public Map<String, TableField> getTableFieldMap() {
-        return getTableFieldMap(FieldScope.All);
+        return getTableFieldMap(FieldScope.ALL);
     }
 
     public Map<String, TableField> getTableFieldMap(FieldScope scope) {
         Map<String, TableField> fields = new LinkedHashMap<String, TableField>();
         for (TableField field : tableFieldsMap.values()) {
-            if (scope == FieldScope.All
-                    || (scope == FieldScope.NonInternal && !field.isInternal())
-                    || (scope == FieldScope.ReportMaker && field.isInReportMaker()))
+            if (scope == FieldScope.ALL
+                    || (scope == FieldScope.SUMMARY && !field.isInternal())
+                    || (scope == FieldScope.REPORT_MAKER && field.isInReportMaker()))
                 fields.put(field.getName(), field);
         }
         return fields;
@@ -196,7 +196,7 @@ public class RecordClass extends WdkModelBase implements
     }
 
     public Map<String, AttributeField> getAttributeFieldMap() {
-        return getAttributeFieldMap(FieldScope.All);
+        return getAttributeFieldMap(FieldScope.ALL);
     }
 
     public Map<String, AttributeField> getAttributeFieldMap(FieldScope scope) {
@@ -206,9 +206,9 @@ public class RecordClass extends WdkModelBase implements
         fields.put(primaryKeyField.getName(), primaryKeyField);
 
         for (AttributeField field : attributeFieldsMap.values()) {
-            if (scope == FieldScope.All
-                    || (scope == FieldScope.NonInternal && !field.isInternal())
-                    || (scope == FieldScope.ReportMaker && field.isInReportMaker()))
+            if (scope == FieldScope.ALL
+                    || (scope == FieldScope.SUMMARY && !field.isInternal())
+                    || (scope == FieldScope.REPORT_MAKER && field.isInReportMaker()))
                 fields.put(field.getName(), field);
         }
         return fields;

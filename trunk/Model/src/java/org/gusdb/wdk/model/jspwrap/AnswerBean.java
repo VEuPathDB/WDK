@@ -252,7 +252,7 @@ public class AnswerBean {
     }
 
     public AttributeFieldBean[] getSummaryAttributes() {
-        Map<String, AttributeField> attribs = answer.getSummaryAttributes();
+        Map<String, AttributeField> attribs = answer.getAttributeFieldMap(FieldScope.SUMMARY);
         Iterator<String> ai = attribs.keySet().iterator();
         Vector<AttributeFieldBean> v = new Vector<AttributeFieldBean>();
         while (ai.hasNext()) {
@@ -303,7 +303,7 @@ public class AnswerBean {
 
     public AttributeFieldBean[] getAllReportMakerAttributes() {
         Question question = answer.getQuestion();
-        Map<String, AttributeField> attribs = question.getAttributeFields(FieldScope.ReportMaker);
+        Map<String, AttributeField> attribs = question.getAttributeFields(FieldScope.REPORT_MAKER);
         Iterator<String> ai = attribs.keySet().iterator();
         Vector<AttributeFieldBean> v = new Vector<AttributeFieldBean>();
         while (ai.hasNext()) {
@@ -318,7 +318,7 @@ public class AnswerBean {
 
     public TableFieldBean[] getAllReportMakerTables() {
         RecordClass recordClass = answer.getQuestion().getRecordClass();
-        Map<String, TableField> tables = recordClass.getTableFieldMap(FieldScope.ReportMaker);
+        Map<String, TableField> tables = recordClass.getTableFieldMap(FieldScope.REPORT_MAKER);
         Iterator<String> ti = tables.keySet().iterator();
         Vector<TableFieldBean> v = new Vector<TableFieldBean>();
         while (ti.hasNext()) {
@@ -408,7 +408,7 @@ public class AnswerBean {
      * @see org.gusdb.wdk.model.Answer#getSortingAttributeNames()
      */
     public String[] getSortingAttributeNames() {
-        Map<String, Boolean> sortingFields = answer.getSortingAttributes();
+        Map<String, Boolean> sortingFields = answer.getSortingMap();
         String[] array = new String[sortingFields.size()];
         sortingFields.keySet().toArray(array);
         return array;
@@ -419,7 +419,7 @@ public class AnswerBean {
      * @see org.gusdb.wdk.model.Answer#getSortingAttributeOrders()
      */
     public boolean[] getSortingAttributeOrders() {
-        Map<String, Boolean> sortingFields = answer.getSortingAttributes();
+        Map<String, Boolean> sortingFields = answer.getSortingMap();
         boolean[] array = new boolean[sortingFields.size()];
         int index = 0;
         for (boolean order : sortingFields.values()) {

@@ -126,7 +126,7 @@ public class QuestionBean {
     }
 
     public Map<String, AttributeFieldBean> getReportMakerAttributesMap() {
-        Map<String, AttributeField> attribs = question.getAttributeFields(FieldScope.ReportMaker);
+        Map<String, AttributeField> attribs = question.getAttributeFields(FieldScope.REPORT_MAKER);
         Iterator<String> ai = attribs.keySet().iterator();
 
         Map<String, AttributeFieldBean> rmaMap = new LinkedHashMap<String, AttributeFieldBean>();
@@ -140,7 +140,7 @@ public class QuestionBean {
 
     public Map<String, TableFieldBean> getReportMakerTablesMap() {
         Map<String, TableField> tables = question.getRecordClass().getTableFieldMap(
-                FieldScope.ReportMaker);
+                FieldScope.REPORT_MAKER);
         Iterator<String> ti = tables.keySet().iterator();
 
         Map<String, TableFieldBean> rmtMap = new LinkedHashMap<String, TableFieldBean>();
@@ -152,7 +152,7 @@ public class QuestionBean {
     }
 
     public Map<String, FieldBean> getReportMakerFieldsMap() {
-        Map<String, Field> fields = question.getFields(FieldScope.ReportMaker);
+        Map<String, Field> fields = question.getFields(FieldScope.REPORT_MAKER);
         Iterator<String> fi = fields.keySet().iterator();
 
         Map<String, FieldBean> rmfMap = new LinkedHashMap<String, FieldBean>();
