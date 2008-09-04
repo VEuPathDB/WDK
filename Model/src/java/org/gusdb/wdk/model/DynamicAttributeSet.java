@@ -49,15 +49,15 @@ public class DynamicAttributeSet extends WdkModelBase {
     }
 
     public Map<String, AttributeField> getAttributeFieldMap() {
-        return getAttributeFieldMap(FieldScope.All);
+        return getAttributeFieldMap(FieldScope.ALL);
     }
 
     public Map<String, AttributeField> getAttributeFieldMap(FieldScope scope) {
         Map<String, AttributeField> map = new LinkedHashMap<String, AttributeField>();
         for (AttributeField field : attributeFieldMap.values()) {
-            if ((scope == FieldScope.All)
-                    || (scope == FieldScope.NonInternal && !field.isInternal())
-                    || (scope == FieldScope.ReportMaker && field.isInReportMaker()))
+            if ((scope == FieldScope.ALL)
+                    || (scope == FieldScope.SUMMARY && !field.isInternal())
+                    || (scope == FieldScope.REPORT_MAKER && field.isInReportMaker()))
                 map.put(field.getName(), field);
         }
         return map;

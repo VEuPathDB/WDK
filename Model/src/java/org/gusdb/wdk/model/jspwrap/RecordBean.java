@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.gusdb.wdk.model.AttributeValue;
+import org.gusdb.wdk.model.FieldScope;
 import org.gusdb.wdk.model.PrimaryKeyAttributeValue;
 import org.gusdb.wdk.model.RecordInstance;
 import org.gusdb.wdk.model.TableValue;
@@ -42,10 +43,7 @@ public class RecordBean {
     }
 
     public String[] getSummaryAttributeNames() {
-        Map<String, Integer> summaries = recordInstance.getSummaryAttributesMap();
-        String[] names = new String[summaries.size()];
-        summaries.keySet().toArray(names);
-        return names;
+        return recordInstance.getSummaryAttributeNames();
     }
 
     public Map<String, RecordBean> getNestedRecords() throws WdkModelException,
@@ -88,15 +86,22 @@ public class RecordBean {
     public Map<String, AttributeValue> getAttributes()
             throws NoSuchAlgorithmException, WdkModelException, SQLException,
             JSONException, WdkUserException {
-        return recordInstance.getAttributeValues();
+        return recordInstance.getAttributeValueMap();
     }
 
     /**
      * @return Map of attributeName -->
      *         {@link org.gusdb.wdk.model.AttributeFieldValue}
+     * @throws WdkUserException
+     * @throws JSONException
+     * @throws SQLException
+     * @throws WdkModelException
+     * @throws NoSuchAlgorithmException
      */
-    public Map<String, Integer> getSummaryAttributes() {
-        return recordInstance.getSummaryAttributesMap();
+    public Map<String, AttributeValue> getSummaryAttributes()
+            throws NoSuchAlgorithmException, WdkModelException, SQLException,
+            JSONException, WdkUserException {
+        return recordInstance.getSummaryAttributeValueMap();
     }
 
     /**

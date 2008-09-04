@@ -8,7 +8,7 @@ package org.gusdb.wdk.model;
  *
  */
 public enum FieldScope {
-    All,
-    NonInternal,
-    ReportMaker,
+    ALL,
+    SUMMARY,
+    REPORT_MAKER,
 }

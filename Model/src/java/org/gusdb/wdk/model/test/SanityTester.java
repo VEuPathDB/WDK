@@ -20,6 +20,7 @@ import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.AttributeField;
+import org.gusdb.wdk.model.FieldScope;
 import org.gusdb.wdk.model.QuerySet;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
@@ -407,7 +408,7 @@ public class SanityTester {
                 int resultSize = answer.getResultSize();
 
                 // get the summary attribute list
-                Map<String, AttributeField> summary = answer.getSummaryAttributes();
+                Map<String, AttributeField> summary = answer.getAttributeFieldMap(FieldScope.SUMMARY);
                 // iterate through the page and try every summary attribute of
                 // each record
                 for (RecordInstance record : answer.getRecordInstances()) {

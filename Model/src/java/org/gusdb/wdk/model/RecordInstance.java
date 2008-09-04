@@ -22,8 +22,6 @@ public class RecordInstance extends AttributeValueContainer {
     private Map<String, Integer> summaryAttributeMap = new LinkedHashMap<String, Integer>();
     private Answer answer;
 
-    private Map<String, AttributeField> attributeFields;
-
     /**
      * 
      * @param recordClass
@@ -36,7 +34,6 @@ public class RecordInstance extends AttributeValueContainer {
         this.recordClass = recordClass;
 
         this.primaryKey = primaryKey;
-        this.attributeFields = recordClass.getAttributeFieldMap();
     }
 
     /**
@@ -49,7 +46,6 @@ public class RecordInstance extends AttributeValueContainer {
         this(answer.getQuestion().getRecordClass(), primaryKey);
 
         this.answer = answer;
-        this.attributeFields.putAll(answer.getQuestion().getDynamicAttributeFields());
     }
 
     /**
@@ -66,7 +62,12 @@ public class RecordInstance extends AttributeValueContainer {
      */
     @Override
     protected Map<String, AttributeField> getAttributeFieldMap() {
-        return attributeFields;
+        return getAttributeFieldMap(FieldScope.ALL);
+    }
+
+    public Map<String, AttributeField> getAttributeFieldMap(FieldScope scope) {
+        if (answer != null) return answer.getAttributeFieldMap(scope);
+        else return recordClass.getAttributeFieldMap(scope);
     }
 
     /*
@@ -129,6 +130,7 @@ public class RecordInstance extends AttributeValueContainer {
      */
     public AttributeField getAttributeField(String fieldName)
             throws WdkModelException {
+        Map<String, AttributeField> attributeFields = getAttributeFieldMap();
         if (!attributeFields.containsKey(fieldName))
             throw new WdkModelException("The attribute field '" + fieldName
                     + "' does not exist in record instance "
@@ -148,7 +150,7 @@ public class RecordInstance extends AttributeValueContainer {
     public TableValue getTableValue(String tableName)
             throws NoSuchAlgorithmException, WdkModelException, SQLException,
             JSONException, WdkUserException {
-        return getTableValue(tableName, FieldScope.All);
+        return getTableValue(tableName, FieldScope.ALL);
     }
 
     public TableValue getTableValue(String tableName, FieldScope scope)
@@ -176,7 +178,7 @@ public class RecordInstance extends AttributeValueContainer {
      */
     public Map<String, TableValue> getTables() throws NoSuchAlgorithmException,
             WdkModelException, SQLException, JSONException, WdkUserException {
-        return getTables(FieldScope.All);
+        return getTables(FieldScope.ALL);
     }
 
     /**
@@ -209,10 +211,10 @@ public class RecordInstance extends AttributeValueContainer {
      * @throws WdkUserException
      */
 
-    public Map<String, AttributeValue> getAttributeValues()
+    public Map<String, AttributeValue> getAttributeValueMap()
             throws NoSuchAlgorithmException, WdkModelException, SQLException,
             JSONException, WdkUserException {
-        return getAttributeValues(FieldScope.All);
+        return getAttributeValueMap(FieldScope.ALL);
     }
 
     /**
@@ -224,18 +226,15 @@ public class RecordInstance extends AttributeValueContainer {
      * @throws JSONException
      * @throws WdkUserException
      */
-    public Map<String, AttributeValue> getAttributeValues(FieldScope scope)
+    public Map<String, AttributeValue> getAttributeValueMap(FieldScope scope)
             throws NoSuchAlgorithmException, WdkModelException, SQLException,
             JSONException, WdkUserException {
+        Map<String, AttributeField> fields = getAttributeFieldMap(scope);
         Map<String, AttributeValue> values = new LinkedHashMap<String, AttributeValue>();
 
-        for (AttributeField field : attributeFields.values()) {
-            if ((scope == FieldScope.All)
-                    || (scope == FieldScope.NonInternal && !field.isInternal())
-                    || (scope == FieldScope.ReportMaker && field.isInReportMaker())) {
-                String name = field.getName();
-                values.put(name, getAttributeValue(name));
-            }
+        for (AttributeField field : fields.values()) {
+            String name = field.getName();
+            values.put(name, getAttributeValue(name));
         }
         return values;
     }
@@ -299,7 +298,8 @@ public class RecordInstance extends AttributeValueContainer {
         Map<String, Boolean> sortingMap = question.getDefaultSortingAttributes();
         AnswerFilterInstance filter = question.getRecordClass().getDefaultFilter();
         // create an answer with maximium allowed rows
-        return question.makeAnswer(params, pageStart, pageEnd, sortingMap, filter);
+        return question.makeAnswer(params, pageStart, pageEnd, sortingMap,
+                filter);
     }
 
     // maybe change this to RecordInstance[][] for jspwrap purposes?
@@ -319,12 +319,12 @@ public class RecordInstance extends AttributeValueContainer {
         String newline = System.getProperty("line.separator");
         StringBuffer buf = new StringBuffer();
 
-        Map<String, AttributeValue> attributeValues = getAttributeValues();
+        Map<String, AttributeValue> attributeValues = getAttributeValueMap();
 
         Map<String, AttributeValue> summaryAttributeValues = new LinkedHashMap<String, AttributeValue>();
         Map<String, AttributeValue> nonSummaryAttributeValues = new LinkedHashMap<String, AttributeValue>();
 
-        splitSummaryAttributes(attributeValues, summaryAttributeValues,
+        splitSummaryAttributeValue(attributeValues, summaryAttributeValues,
                 nonSummaryAttributeValues);
 
         printAtts_Aux(buf, summaryAttributeValues);
@@ -368,12 +368,12 @@ public class RecordInstance extends AttributeValueContainer {
 
         StringBuffer buf = new StringBuffer();
 
-        Map<String, AttributeValue> attributeValues = getAttributeValues();
+        Map<String, AttributeValue> attributeValues = getAttributeValueMap();
 
         Map<String, AttributeValue> summaryAttributeValues = new LinkedHashMap<String, AttributeValue>();
         Map<String, AttributeValue> nonSummaryAttributeValues = new LinkedHashMap<String, AttributeValue>();
 
-        splitSummaryAttributes(attributeValues, summaryAttributeValues,
+        splitSummaryAttributeValue(attributeValues, summaryAttributeValues,
                 nonSummaryAttributeValues);
 
         printAtts_Aux(buf, summaryAttributeValues);
@@ -398,7 +398,7 @@ public class RecordInstance extends AttributeValueContainer {
         ident = ident + "    ";
         buf.append(rootStart);
 
-        Map<String, AttributeValue> attributeFields = getAttributeValues();
+        Map<String, AttributeValue> attributeFields = getAttributeValueMap();
         for (String fieldName : attributeFields.keySet()) {
             AttributeValue value = attributeFields.get(fieldName);
             AttributeField field = value.getAttributeField();
@@ -438,16 +438,17 @@ public class RecordInstance extends AttributeValueContainer {
     // package methods
     // /////////////////////////////////////////////////////////////////////////
 
-    void setSummaryAttributeList(String[] summaryAttributeList) {
-        if (summaryAttributeList != null) {
-            for (int i = 0; i < summaryAttributeList.length; i++) {
-                summaryAttributeMap.put(summaryAttributeList[i], i);
-            }
-        }
+    public String[] getSummaryAttributeNames() {
+        Map<String, AttributeField> summaryFields = getAttributeFieldMap(FieldScope.SUMMARY);
+        String[] names = new String[summaryFields.size()];
+        summaryFields.keySet().toArray(names);
+        return names;
     }
 
-    public Map<String, Integer> getSummaryAttributesMap() {
-        return summaryAttributeMap;
+    public Map<String, AttributeValue> getSummaryAttributeValueMap()
+            throws NoSuchAlgorithmException, WdkModelException, SQLException,
+            JSONException, WdkUserException {
+        return getAttributeValueMap(FieldScope.SUMMARY);
     }
 
     // /////////////////////////////////////////////////////////////////////////
@@ -464,7 +465,8 @@ public class RecordInstance extends AttributeValueContainer {
      * @param nonSummaryAttributes.
      */
 
-    private void splitSummaryAttributes(Map<String, AttributeValue> attributes,
+    private void splitSummaryAttributeValue(
+            Map<String, AttributeValue> attributes,
             Map<String, AttributeValue> summaryAttributes,
             Map<String, AttributeValue> nonSummaryAttributes) {
         for (String fieldName : attributes.keySet()) {
