@@ -947,9 +947,9 @@ public class UserFactory {
 
         // resolve the filter
         RecordClass recordClass = answer.getQuestion().getRecordClass();
-        AnswerFilterInstance filter = recordClass.getFilterMap().get(
-                history.getFilterName());
-        if (filter == null) history.setValid(false);
+        String filterName = history.getFilterName();
+        AnswerFilterInstance filter = recordClass.getFilterMap().get(filterName);
+        if (filterName != null && filter == null) history.setValid(false);
         else answer.setFilter(filter);
         history.setAnswer(answer);
     }
@@ -965,8 +965,8 @@ public class UserFactory {
         String customName = (isBoolean) ? booleanExpression : null;
         if (customName != null && customName.length() > 4000)
             customName = customName.substring(0, 4000);
-        String filterName = (answer.getFilter() == null) ? null
-                : answer.getFilter().getName();
+        AnswerFilterInstance filter = answer.getFilter();
+        String filterName = (filter == null) ? null : filter.getName();
 
         String hisTable = loginSchema + "histories";
 
