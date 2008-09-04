@@ -30,7 +30,7 @@ public abstract class Field extends WdkModelBase {
         // initialize the optional properties
         internal = false;
         inReportMaker = true;
-        truncateTo = 0;
+        truncateTo = Utilities.TRUNCATE_DEFAULT;
     }
 
     /**
