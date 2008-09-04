@@ -174,21 +174,6 @@ public class Question extends WdkModelBase {
         this.dynamicAttributeSets.add(dynamicAttributes);
     }
 
-    public Map<String, AttributeField> getSummaryAttributeFields() {
-        Map<String, AttributeField> summaryFields = new LinkedHashMap<String, AttributeField>();
-        // always put primary key as the first field
-        AttributeField pkField = recordClass.getPrimaryKeyAttributeField();
-        summaryFields.put(pkField.getName(), pkField);
-
-        if (defaultSummaryAttributeFields.size() > 0) { // use the default list
-            summaryFields.putAll(defaultSummaryAttributeFields);
-        } else { // compose the list from recordClass and dynamic queries
-            summaryFields.putAll(recordClass.getAttributeFieldMap(FieldScope.SUMMARY));
-            summaryFields.putAll(dynamicAttributeSet.getAttributeFieldMap(FieldScope.SUMMARY));
-        }
-        return summaryFields;
-    }
-
     public Map<String, Field> getFields(FieldScope scope) {
         Map<String, Field> fields = new LinkedHashMap<String, Field>();
         Map<String, AttributeField> attributes = getAttributeFields(scope);
@@ -349,7 +334,8 @@ public class Question extends WdkModelBase {
         String newline = System.getProperty("line.separator");
 
         StringBuffer saNames = new StringBuffer();
-        for (String saName : getSummaryAttributeFields().keySet()) {
+        Map<String, AttributeField> summaryFields = getAttributeFields(FieldScope.SUMMARY);
+        for (String saName : summaryFields.keySet()) {
             saNames.append(saName + ", ");
         }
         StringBuffer buf = new StringBuffer("Question: name='" + name + "'"
@@ -448,14 +434,21 @@ public class Question extends WdkModelBase {
     }
 
     public Map<String, AttributeField> getAttributeFields(FieldScope scope) {
+        Map<String, AttributeField> attributeFields = new LinkedHashMap<String, AttributeField>();
+
+        // always put primary key as the first field
+        AttributeField pkField = recordClass.getPrimaryKeyAttributeField();
+        attributeFields.put(pkField.getName(), pkField);
+
         // handles the summary fields differently, since question may define its
         // own set
-        if (scope == FieldScope.SUMMARY) getSummaryAttributeFields();
-
-        Map<String, AttributeField> attributeFields = new LinkedHashMap<String, AttributeField>(
-                recordClass.getAttributeFieldMap(scope));
-        if (dynamicAttributeSet != null) {
-            attributeFields.putAll(dynamicAttributeSet.getAttributeFieldMap(scope));
+        if (scope == FieldScope.SUMMARY
+                && defaultSummaryAttributeFields.size() > 0) {
+            attributeFields.putAll(defaultSummaryAttributeFields);
+        } else {
+            attributeFields.putAll(recordClass.getAttributeFieldMap(scope));
+            if (dynamicAttributeSet != null)
+                attributeFields.putAll(dynamicAttributeSet.getAttributeFieldMap(scope));
         }
         return attributeFields;
     }
