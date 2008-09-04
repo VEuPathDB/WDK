@@ -18,6 +18,7 @@ import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.BooleanExpression;
 import org.gusdb.wdk.model.DatasetParam;
+import org.gusdb.wdk.model.FieldScope;
 import org.gusdb.wdk.model.HistoryParam;
 import org.gusdb.wdk.model.Param;
 import org.gusdb.wdk.model.Question;
@@ -481,7 +482,7 @@ public class User /* implements Serializable */{
                         }
                     }
                     answer = question.makeAnswer(values, startIndex, endIndex,
-                            answer.getSortingAttributes(), answer.getFilter());
+                            answer.getSortingMap(), answer.getFilter());
                     newHistory = createHistory(answer, null,
                             history.isDeleted());
                 }
@@ -772,7 +773,7 @@ public class User /* implements Serializable */{
         String summaryKey = answer.getQuestion().getFullName()
                 + SUMMARY_ATTRIBUTES_SUFFIX;
         if (!projectPreferences.containsKey(summaryKey)) {
-            Map<String, AttributeField> summary = answer.getSummaryAttributes();
+            Map<String, AttributeField> summary = answer.getAttributeFieldMap(FieldScope.SUMMARY);
             StringBuffer sb = new StringBuffer();
             for (String attrName : summary.keySet()) {
                 if (sb.length() != 0) sb.append(",");

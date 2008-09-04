@@ -183,8 +183,8 @@ public class Question extends WdkModelBase {
         if (defaultSummaryAttributeFields.size() > 0) { // use the default list
             summaryFields.putAll(defaultSummaryAttributeFields);
         } else { // compose the list from recordClass and dynamic queries
-            summaryFields.putAll(recordClass.getAttributeFieldMap(FieldScope.NonInternal));
-            summaryFields.putAll(dynamicAttributeSet.getAttributeFieldMap(FieldScope.NonInternal));
+            summaryFields.putAll(recordClass.getAttributeFieldMap(FieldScope.SUMMARY));
+            summaryFields.putAll(dynamicAttributeSet.getAttributeFieldMap(FieldScope.SUMMARY));
         }
         return summaryFields;
     }
@@ -444,13 +444,13 @@ public class Question extends WdkModelBase {
     }
 
     public Map<String, AttributeField> getAttributeFields() {
-        return getAttributeFields(FieldScope.All);
+        return getAttributeFields(FieldScope.ALL);
     }
 
     public Map<String, AttributeField> getAttributeFields(FieldScope scope) {
         // handles the summary fields differently, since question may define its
         // own set
-        if (scope == FieldScope.NonInternal) getSummaryAttributeFields();
+        if (scope == FieldScope.SUMMARY) getSummaryAttributeFields();
 
         Map<String, AttributeField> attributeFields = new LinkedHashMap<String, AttributeField>(
                 recordClass.getAttributeFieldMap(scope));

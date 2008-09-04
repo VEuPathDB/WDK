@@ -243,7 +243,7 @@ public class FullRecordReporter extends Reporter {
     private Set<Field> validateColumns() throws WdkModelException {
         // get a map of report maker fields
         Map<String, Field> fieldMap = getQuestion().getFields(
-                FieldScope.ReportMaker);
+                FieldScope.REPORT_MAKER);
 
         // the config map contains a list of column names;
         Set<Field> columns = new LinkedHashSet<Field>();
@@ -291,7 +291,7 @@ public class FullRecordReporter extends Reporter {
         for (TableField table : tables) {
             TableValue tableValue = record.getTableValue(table.getName());
 
-            AttributeField[] fields = table.getAttributeFields(FieldScope.ReportMaker);
+            AttributeField[] fields = table.getAttributeFields(FieldScope.REPORT_MAKER);
 
             // output table header
             StringBuffer sb = new StringBuffer();
@@ -382,7 +382,7 @@ public class FullRecordReporter extends Reporter {
                             continue;
                         }
 
-                        AttributeField[] fields = table.getAttributeFields(FieldScope.ReportMaker);
+                        AttributeField[] fields = table.getAttributeFields(FieldScope.REPORT_MAKER);
 
                         // output table header
                         document.add(new Paragraph("Table: "
