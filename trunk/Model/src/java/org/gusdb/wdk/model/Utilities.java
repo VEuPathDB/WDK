@@ -10,6 +10,8 @@ import org.json.JSONException;
 
 public class Utilities {
 
+    public static final int TRUNCATE_DEFAULT = 100;
+
     /**
      * param values with is prefix means the result of that value is a checksum
      * for the real value. if the param is a datasetParam, then the checksum is

@@ -4,6 +4,7 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 
 import org.gusdb.wdk.model.Param;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -23,7 +24,7 @@ public class ParamBean {
 
     public ParamBean(Param param) {
         this.param = param;
-        truncateLength = WdkModel.TRUNCATE_DEFAULT;
+        truncateLength = Utilities.TRUNCATE_DEFAULT;
     }
 
     public String getName() {
