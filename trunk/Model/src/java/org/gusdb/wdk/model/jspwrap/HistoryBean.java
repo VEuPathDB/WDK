@@ -88,17 +88,9 @@ public class HistoryBean {
      * 
      * @see org.gusdb.wdk.model.user.History#getEstimateSize()
      */
-    public int getEstimateSize() {
+    public int getEstimateSize() throws NoSuchAlgorithmException, SQLException,
+            WdkModelException, JSONException, WdkUserException {
         return history.getEstimateSize();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.user.History#setEstimateSize(int)
-     */
-    public void setEstimateSize(int estimateSize) {
-        history.setEstimateSize(estimateSize);
     }
 
     /*
@@ -282,8 +274,7 @@ public class HistoryBean {
     public boolean isValid() {
         return history.isValid();
     }
-    
-    
+
     public String getFilterDisplayName() throws WdkUserException {
         AnswerFilterInstance filter = history.getAnswer().getFilter();
         if (filter == null) return null;

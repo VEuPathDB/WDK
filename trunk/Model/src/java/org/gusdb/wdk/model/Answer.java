@@ -783,7 +783,10 @@ public class Answer {
 
     public AnswerInfo getAnswerInfo() throws NoSuchAlgorithmException,
             SQLException, WdkModelException, JSONException, WdkUserException {
-        initPageRecordInstances();
+        if (answerInfo == null) {
+            AnswerFactory answerFactory = question.getWdkModel().getAnswerFactory();
+            answerInfo = answerFactory.getAnswerInfo(getChecksum());
+        }
         return answerInfo;
     }
 
