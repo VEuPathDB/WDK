@@ -38,6 +38,7 @@ public class RecordClass extends WdkModelBase implements
     private String fullName;
     private String displayName;
     private String attributeOrdering;
+    private String type;
 
     private List<NestedRecord> nestedRecordQuestionRefList = new ArrayList<NestedRecord>();
     private Map<String, NestedRecord> nestedRecordQuestionRefs = new LinkedHashMap<String, NestedRecord>();
@@ -849,5 +850,20 @@ public class RecordClass extends WdkModelBase implements
 
     public AnswerFilterInstance getDefaultBooleanFilter() {
         return defaultBooleanFilter;
+    }
+
+    /**
+     * @return the type
+     */
+    public String getType() {
+        return type;
+    }
+
+    /**
+     * @param type
+     *            the type to set
+     */
+    public void setType(String type) {
+        this.type = type;
     }
 }
