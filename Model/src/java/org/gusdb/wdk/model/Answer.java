@@ -813,4 +813,8 @@ public class Answer {
     public void setFilter(AnswerFilterInstance filter) {
         this.filter = filter;
     }
+    
+    public void setAnswerInfo(AnswerInfo answerInfo) {
+        this.answerInfo = answerInfo;
+    }
 }

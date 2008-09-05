@@ -104,25 +104,26 @@ public class AnswerFactory {
             WdkUserException {
         // use transaction
         String answerChecksum = answer.getChecksum();
-        
+
         // check if answer has been saved.
         AnswerInfo answerInfo = getAnswerInfo(answerChecksum);
-        if (answerInfo != null) return answerInfo;
+        if (answerInfo == null) {
 
-        // the answer hasn't been stored, create an answerInfo, and save it
-        int answerId = loginPlatform.getNextId(answerSchema, TABLE_ANSWER);
-        answerInfo = new AnswerInfo(answerId);
-        answerInfo.setAnswerChecksum(answer.getChecksum());
-        answerInfo.setEstimatedSize(answer.getResultSize());
-        answerInfo.setProjectId(wdkModel.getProjectId());
-        answerInfo.setProjectVersion(wdkModel.getVersion());
-        answerInfo.setQueryChecksum(answer.getQuestion().getQuery().getChecksum());
-        answerInfo.setQuestionName(answer.getQuestion().getFullName());
-        answerInfo.setResultMessage(answer.getResultMessage());
+            // the answer hasn't been stored, create an answerInfo, and save it
+            int answerId = loginPlatform.getNextId(answerSchema, TABLE_ANSWER);
+            answerInfo = new AnswerInfo(answerId);
+            answerInfo.setAnswerChecksum(answer.getChecksum());
+            answerInfo.setEstimatedSize(answer.getResultSize());
+            answerInfo.setProjectId(wdkModel.getProjectId());
+            answerInfo.setProjectVersion(wdkModel.getVersion());
+            answerInfo.setQueryChecksum(answer.getQuestion().getQuery().getChecksum());
+            answerInfo.setQuestionName(answer.getQuestion().getFullName());
+            answerInfo.setResultMessage(answer.getResultMessage());
 
-        String paramClob = answer.getIdsQueryInstance().getParamJSONObject().toString();
-        saveAnswerInfo(answerInfo, paramClob);
-
+            String paramClob = answer.getIdsQueryInstance().getParamJSONObject().toString();
+            saveAnswerInfo(answerInfo, paramClob);
+        }
+        answer.setAnswerInfo(answerInfo);
         return answerInfo;
     }
 
@@ -148,7 +149,9 @@ public class AnswerFactory {
                 paramClob);
 
         // create the answer with default page size
-        return question.makeAnswer(pvalues);
+        Answer answer = question.makeAnswer(pvalues);
+        answer.setAnswerInfo(answerInfo);
+        return answer;
     }
 
     /**
@@ -191,7 +194,8 @@ public class AnswerFactory {
         return answerInfo;
     }
 
-    private void saveAnswerInfo(AnswerInfo answerInfo, String paramClob) throws SQLException {
+    private void saveAnswerInfo(AnswerInfo answerInfo, String paramClob)
+            throws SQLException {
         // prepare the sql
         StringBuffer sql = new StringBuffer("INSERT INTO ");
         sql.append(answerSchema).append(TABLE_ANSWER).append(" (");
