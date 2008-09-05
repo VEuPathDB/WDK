@@ -38,7 +38,7 @@ public class RecordClassBean {
     }
 
     public String getType() {
-        return recordClass.getFullName();
+        return recordClass.getType();
     }
 
     /**
