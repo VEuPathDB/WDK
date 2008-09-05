@@ -25,9 +25,9 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.AnswerParam;
 import org.gusdb.wdk.model.DatasetParam;
 import org.gusdb.wdk.model.FlatVocabParam;
-import org.gusdb.wdk.model.HistoryParam;
 import org.gusdb.wdk.model.Param;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
@@ -160,7 +160,7 @@ public class StressTemplater {
                 for (Param param : params) {
                     if (param instanceof FlatVocabParam) {
                         // skip it
-                    } else if (param instanceof HistoryParam
+                    } else if (param instanceof AnswerParam
                             || param instanceof DatasetParam) {
                         // unusable question
                         unusable = true;

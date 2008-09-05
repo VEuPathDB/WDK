@@ -15,7 +15,6 @@ import java.util.Set;
 import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.AnswerParam;
 import org.gusdb.wdk.model.BooleanExpression;
-import org.gusdb.wdk.model.HistoryParam;
 import org.gusdb.wdk.model.Param;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -202,7 +201,7 @@ public class History {
 
     public String getChecksum() throws WdkModelException,
             NoSuchAlgorithmException, JSONException {
-        return answer.getIdsQueryInstance().getChecksum();
+        return answer.getChecksum();
     }
 
     public String getDataType() {
@@ -246,20 +245,7 @@ public class History {
         if (isBoolean) {
             BooleanExpression parser = new BooleanExpression(user);
             return parser.getOperands(booleanExpression);
-        } else {
-            Set<Integer> components = new LinkedHashSet<Integer>();
-            Param[] params = answer.getQuestion().getParams();
-            Map<String, Object> values = answer.getIdsQueryInstance().getValues();
-            for (Param param : params) {
-                if (param instanceof HistoryParam) {
-                    String compound = values.get(param.getName()).toString();
-                    // two parts: user_signature, history_id
-                    String[] parts = compound.split(":");
-                    components.add(Integer.parseInt(parts[1].trim()));
-                }
-            }
-            return components;
-        }
+        } else return new LinkedHashSet<Integer>();
     }
 
     public String getDescription() {

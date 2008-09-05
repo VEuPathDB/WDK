@@ -9,8 +9,8 @@ import org.apache.struts.action.ActionError;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.model.jspwrap.AnswerParamBean;
 import org.gusdb.wdk.model.jspwrap.EnumParamBean;
-import org.gusdb.wdk.model.jspwrap.HistoryParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.QuestionSetBean;
@@ -66,7 +66,7 @@ public class QuestionForm extends QuestionSetForm {
             try {
                 String[] pVals = null;
                 if ((p instanceof EnumParamBean)
-                        || (p instanceof HistoryParamBean)) {
+                        || (p instanceof AnswerParamBean)) {
                     pVals = getMyMultiProp(p.getName());
                     if (pVals == null) {
                         pVals = new String[] { "" };
