@@ -67,7 +67,7 @@ public class SqlQueryInstance extends QueryInstance {
         String sql = getUncachedSql();
 
         DBPlatform platform = query.getWdkModel().getQueryPlatform();
-        if (startIndex != null && endIndex != null) {
+        if (startIndex != null || endIndex != null) {
             sql = platform.getPagedSql(sql, startIndex, endIndex);
         }
         DataSource dataSource = platform.getDataSource();
