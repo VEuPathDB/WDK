@@ -434,6 +434,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
                             (ColumnAttributeField) field, value);
                     row.addColumnAttributeValue(attributeValue);
                 }
+                rows.add(row);
             }
         } finally {
             resultList.close();
