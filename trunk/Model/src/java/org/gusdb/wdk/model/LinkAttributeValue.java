@@ -50,7 +50,7 @@ public class LinkAttributeValue extends AttributeValue {
                 AttributeValue value = container.getAttributeValue(subField);
                 values.put(subField, value.getValue());
             }
-            displayText = Utilities.replaceMacros(url, values);
+            url = Utilities.replaceMacros(url, values);
         }
         return this.url;
     }
