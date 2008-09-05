@@ -24,7 +24,9 @@ public class CacheFactory {
     static final String COLUMN_RESULT_MESSAGE = "result_message";
 
     public static String normalizeTableName(String tableName) {
-        return tableName.trim().toLowerCase().replaceAll("\\W", "_");
+        tableName = tableName.trim().toLowerCase().replaceAll("\\W", "_");
+        if (tableName.length() > 30) tableName = tableName.substring(0, 30);
+        return tableName;
     }
 
     private DBPlatform platform;
