@@ -70,25 +70,54 @@ public class ShowSummaryAction extends ShowQuestionAction {
         Map<String, Object> params;
 
         String strHistId = request.getParameter(CConstants.WDK_HISTORY_ID_KEY);
-        if (strHistId == null || strHistId.length() == 0) {
-            QuestionBean wdkQuestion = (QuestionBean) request.getAttribute(CConstants.WDK_QUESTION_KEY);
-            if (wdkQuestion == null) {
-                wdkQuestion = qForm.getQuestion();
-            }
-            if (wdkQuestion == null) {
-                String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
-                if (qFullName != null)
-                    wdkQuestion = getQuestionByFullName(qFullName);
-            }
-            if (wdkQuestion == null) {
-                return showError(wdkModel, wdkUser, mapping, request, response);
-            }
-            String questionName = wdkQuestion.getFullName();
 
+	QuestionBean wdkQuestion = (QuestionBean) request.getAttribute(CConstants.WDK_QUESTION_KEY);
+	if (wdkQuestion == null) {
+	    wdkQuestion = qForm.getQuestion();
+	}
+	if (wdkQuestion == null) {
+	    String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
+	    if (qFullName != null)
+		wdkQuestion = getQuestionByFullName(qFullName);
+	}
+	if (wdkQuestion == null) {
+	    // no question, we're just loading history.
+	    if (strHistId == null || strHistId.length() == 0) {
+		return showError(wdkModel, wdkUser, mapping, request, response);
+	    }
+	    else {
+		// given a history id, load it
+		history = wdkUser.getHistory(Integer.parseInt(strHistId));
+		
+		// check if history is still valid
+		if (!history.isValid()) {
+		    return showError(wdkModel, wdkUser, mapping, request, response);
+		}
+		
+		wdkAnswer = history.getAnswer();
+		// update the estimate size, in case the database has changed
+		// don't update last run time
+		history.setEstimateSize(wdkAnswer.getResultSize());
+		history.update(false);
+		
+		// get sorting and summary attributes
+		String questionName = wdkAnswer.getQuestion().getFullName();
+		Map<String, Boolean> sortingAttributes = wdkUser.getSortingAttributes(questionName);
+		String[] summaryAttributes = wdkUser.getSummaryAttributes(questionName);
+		
+		params = wdkAnswer.getInternalParams();
+		
+		wdkAnswer = summaryPaging(request, null, params, sortingAttributes,
+					  summaryAttributes, wdkAnswer);
+	    }
+	}
+	else {
+	    String questionName = wdkQuestion.getFullName();
+	    
             params = handleMultiPickParams(new LinkedHashMap<String, Object>(
                     qForm.getMyProps()));
             handleDatasetParams(wdkUser, wdkQuestion, params);
-
+	    
             // get sorting key, if have
             String sortingChecksum = request.getParameter(CConstants.WDK_SORTING_KEY);
             Map<String, Boolean> sortingAttributes;
@@ -127,41 +156,42 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 return showError(wdkModel, wdkUser, mapping, request, response);
             }
 
-            // create history
-            history = wdkUser.createHistory(wdkAnswer);
-        } else { // given a history id, load it
-            history = wdkUser.getHistory(Integer.parseInt(strHistId));
 
-            // check if history is still valid
-            if (!history.isValid()) {
-                return showError(wdkModel, wdkUser, mapping, request, response);
-            }
+	    // was history specified?
+	    if (strHistId == null || strHistId.length() == 0) {
+		history = wdkUser.createHistory(wdkAnswer);
+	    }
+	    else {
+		//try loading
+		try {
+		history = wdkUser.getHistory(Integer.parseInt(strHistId));
 
-            wdkAnswer = history.getAnswer();
-            // update the estimate size, in case the database has changed
-            history.setEstimateSize(wdkAnswer.getResultSize());
-            history.update();
+		// check if history is still valid
+		if (!history.isValid()) {
+		    return showError(wdkModel, wdkUser, mapping, request, response);
+		}
 
-            // get sorting and summary attributes
-            String questionName = wdkAnswer.getQuestion().getFullName();
-            Map<String, Boolean> sortingAttributes = wdkUser.getSortingAttributes(questionName);
-            String[] summaryAttributes = wdkUser.getSummaryAttributes(questionName);
-
-            params = wdkAnswer.getInternalParams();
-
-            wdkAnswer = summaryPaging(request, null, params, sortingAttributes,
-                    summaryAttributes, wdkAnswer);
+		// is this the right history?
+		if (!history.getAnswer().getChecksum().equals(wdkAnswer.getChecksum())) {
+		    // no.  create new history.
+		    history = wdkUser.createHistory(wdkAnswer);
+		}
+		} catch (SQLException ex) {
+		    // couldn't find history: create history
+		    history = wdkUser.createHistory(wdkAnswer);
+		} catch (Exception ex) {
+		    logger.error(ex);
+		    ex.printStackTrace();
+		    return showError(wdkModel, wdkUser, mapping, request, response);
+		}
+	    }
         }
 
-        // delete empty history
-        // if (history != null && history.getEstimateSize() == 0)
-        // wdkUser.deleteHistory(history.getHistoryId());
-
         int historyId = history.getHistoryId();
-
+	
         String requestUrl = request.getRequestURI() + "?"
-                + request.getQueryString();
-
+	    + request.getQueryString();
+	
         // return only the result size, if requested
         if (request.getParameterMap().containsKey(
                 CConstants.WDK_RESULT_SIZE_ONLY_KEY)) {
