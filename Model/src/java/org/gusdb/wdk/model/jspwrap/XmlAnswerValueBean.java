@@ -3,7 +3,7 @@
  */
 package org.gusdb.wdk.model.jspwrap;
 
-import org.gusdb.wdk.model.xml.XmlRecordPage;
+import org.gusdb.wdk.model.xml.XmlAnswerValue;
 import org.gusdb.wdk.model.xml.XmlRecordInstance;
 
 import java.util.LinkedHashMap;
@@ -13,21 +13,21 @@ import java.util.Map;
  * @author Jerric
  * @created Oct 19, 2005
  */
-public class XmlRecordPageBean {
+public class XmlAnswerValueBean {
 
-    private XmlRecordPage answer;
+    private XmlAnswerValue answer;
 
     /**
      * 
      */
-    public XmlRecordPageBean(XmlRecordPage answer) {
+    public XmlAnswerValueBean(XmlAnswerValue answer) {
         this.answer = answer;
     }
 
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.xml.XmlRecordPage#getEndIndex()
+     * @see org.gusdb.wdk.model.xml.XmlAnswerValue#getEndIndex()
      */
     public int getEndIndex() {
         return this.answer.getEndIndex();
@@ -36,7 +36,7 @@ public class XmlRecordPageBean {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.xml.XmlRecordPage#getPageSize()
+     * @see org.gusdb.wdk.model.xml.XmlAnswerValue#getPageSize()
      */
     public int getPageSize() {
         return this.answer.getPageSize();
@@ -45,7 +45,7 @@ public class XmlRecordPageBean {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.xml.XmlRecordPage#getQuestion()
+     * @see org.gusdb.wdk.model.xml.XmlAnswerValue#getQuestion()
      */
     public XmlQuestionBean getQuestion() {
         return new XmlQuestionBean(answer.getQuestion());
@@ -54,7 +54,7 @@ public class XmlRecordPageBean {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.xml.XmlRecordPage#getRecordInstances()
+     * @see org.gusdb.wdk.model.xml.XmlAnswerValue#getRecordInstances()
      */
     public XmlRecordBean[] getRecordInstances() {
         XmlRecordInstance[] records = answer.getRecordInstances();
@@ -78,7 +78,7 @@ public class XmlRecordPageBean {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.xml.XmlRecordPage#getResultSize()
+     * @see org.gusdb.wdk.model.xml.XmlAnswerValue#getResultSize()
      */
     public int getResultSize() {
         return this.answer.getResultSize();
@@ -87,7 +87,7 @@ public class XmlRecordPageBean {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.xml.XmlRecordPage#getStartIndex()
+     * @see org.gusdb.wdk.model.xml.XmlAnswerValue#getStartIndex()
      */
     public int getStartIndex() {
         return this.answer.getStartIndex();

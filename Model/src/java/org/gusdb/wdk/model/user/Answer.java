@@ -9,7 +9,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.gusdb.wdk.model.RecordPage;
+import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.BooleanExpression;
 import org.gusdb.wdk.model.HistoryParam;
 import org.gusdb.wdk.model.Param;
@@ -21,17 +21,12 @@ import org.gusdb.wdk.model.WdkUserException;
  * @author Charles Treatman
  * 
  */
-
-// Copied from History.java; need to convert to new Answer object.
-// Need to get rid of references to User (this is global answer)
-// Get rid of custom name, dates, deleted, (?) depended, version
-
 public class Answer {
     
     private UserFactory factory;
     private User user;
     private int answerId;
-    private RecordPage recordPage = null;
+    private AnswerValue answerValue = null;
     private int estimateSize;
     private boolean isBoolean;
     private String booleanExpression;
@@ -42,11 +37,11 @@ public class Answer {
     private Map< String, Object > params;
     private String questionName;
     
-    Answer( UserFactory factory, User user, int answerId ) {
+    Answer( UserFactory factory, User user, int answerId) {
         this.factory = factory;
         this.user = user;
         this.answerId = answerId;
-     }
+    }
     
     /**
      * @return Returns the answerId.
@@ -56,22 +51,22 @@ public class Answer {
     }
     
     /**
-     * @return Returns the recordPage.
+     * @return Returns the answerValue.
      * @throws WdkUserException
      */
-    public RecordPage getRecordPage() throws WdkUserException {
+    public AnswerValue getAnswerValue() throws WdkUserException {
         if ( !isValid )
             throw new WdkUserException( "The history #" + answerId
                     + " is invalid." );
-        return recordPage;
+        return answerValue;
     }
     
     /**
      * @param answer
      *            The answer to set.
      */
-    public void setRecordPage( RecordPage recordPage ) {
-        this.recordPage = recordPage;
+    public void setAnswerValue( AnswerValue answerValue ) {
+        this.answerValue = answerValue;
     }
     
     /**
@@ -120,52 +115,27 @@ public class Answer {
     }
     
     public String getSignature() throws WdkModelException {
-        return recordPage.getIdsQueryInstance().getQuery().getSignature();
+        return answerValue.getIdsQueryInstance().getQuery().getSignature();
     }
     
     public String getChecksum() throws WdkModelException {
-        return recordPage.getIdsQueryInstance().getChecksum();
+        return answerValue.getIdsQueryInstance().getChecksum();
     }
     
     public String getDataType() {
-        return recordPage.getQuestion().getRecordClass().getFullName();
+        return answerValue.getQuestion().getRecordClass().getFullName();
     }
     
-    /**
-     * @return get a list of history ID's this one depends on directly.
-     * @throws WdkModelException
-     */
-    /*
-    public Set< Integer > getComponentAnswers() throws WdkModelException {
-        if ( isBoolean ) {
-            BooleanExpression parser = new BooleanExpression( user );
-            return parser.getOperands( booleanExpression );
-        } else {
-            Set< Integer > components = new LinkedHashSet< Integer >();
-            Param[ ] params = answer.getQuestion().getParams();
-            Map< String, Object > values = answer.getParams();
-            for ( Param param : params ) {
-                if ( param instanceof HistoryParam ) {
-                    String compound = values.get( param.getName() ).toString();
-                    // two parts: user_signature, history_id
-                    String[ ] parts = compound.split( ":" );
-                    components.add( Integer.parseInt( parts[ 1 ].trim() ) );
-                }
-            }
-            return components;
-        }
-    }
-    */
     public String getDescription() {
-        return ( isBoolean ) ? booleanExpression : recordPage.getName();
+        return ( isBoolean ) ? booleanExpression : answerValue.getName();
     }
     
     public String getCacheFullTable() throws WdkModelException {
-        return recordPage.getIdsQueryInstance().getResultAsTableName();
+        return answerValue.getIdsQueryInstance().getResultAsTableName();
     }
     
     public boolean isTransform() {
-	Param[ ] params = recordPage.getQuestion().getParams();
+	Param[ ] params = answerValue.getQuestion().getParams();
 	for ( Param param : params ) {
 	    if ( param instanceof HistoryParam ) {
 		return true;

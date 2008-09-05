@@ -18,9 +18,9 @@ import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.RecordPageBean;
-import org.gusdb.wdk.model.jspwrap.UserAnswerBean;
-import org.gusdb.wdk.model.jspwrap.UserStrategyBean;
+import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
+import org.gusdb.wdk.model.jspwrap.StepBean;
+import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
@@ -57,9 +57,9 @@ public class DeleteStepAction extends Action {
             request.getSession().setAttribute( CConstants.WDK_USER_KEY, wdkUser );
         }
 
-	UserAnswerBean userAnswer, filterHist;
-        RecordPageBean wdkRecordPage;
-	UserStrategyBean strategy;
+	StepBean userAnswer, filterHist;
+        AnswerValueBean wdkAnswerValue;
+	StrategyBean strategy;
 	StepBean step, newStep;
 	String boolExp;
 	int stepIx;
@@ -71,7 +71,7 @@ public class DeleteStepAction extends Action {
 	    throw new WdkModelException("No step was specified to delete!");
 	}
 
-	strategy = wdkUser.getUserStrategy(Integer.parseInt(strProtoId));
+	strategy = wdkUser.getStrategy(Integer.parseInt(strProtoId));
 	stepIx = Integer.valueOf(deleteStep);
 	step = strategy.getStep(stepIx);
 
@@ -80,22 +80,22 @@ public class DeleteStepAction extends Action {
 	    // if there are two steps, we're just moving to the second step as a one-step strategy
 	    if (strategy.getLength() == 2) {
 		// update step so that filter user answer is the subquery answer from the second step
-		step.setFilterUserAnswer(step.getNextStep().getChildStepUserAnswer());
+		step = step.getNextStep().getChildStep();
 	    }
 	    // if there are more than two steps, we need to convert the second step into a first step
 	    // (i.e., so that it doesn't have an operation) and then update all steps after the second step
 	    else if (strategy.getLength() > 2) {
 		step = step.getNextStep();
-		step.setFilterUserAnswer(step.getChildStepUserAnswer());
+		step = step.getChildStep();
 		//we need to update starting w/ step 3
 		stepIx += 2;
 		for (int i = stepIx; i < strategy.getLength(); ++i) {
 		    newStep = strategy.getStep(i);
-		    boolExp = newStep.getFilterUserAnswer().getBooleanExpression();
-		    boolExp = step.getFilterUserAnswer().getUserAnswerId() + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
+		    boolExp = newStep.getBooleanExpression();
+		    boolExp = step.getStepId() + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
 		    System.out.println("Delete boolExp " + i + ": " + boolExp);
-		    userAnswer = wdkUser.combineUserAnswer(boolExp);
-		    newStep.setFilterUserAnswer(userAnswer);
+		    userAnswer = wdkUser.combineStep(boolExp);
+		    newStep = userAnswer;
 		    step = newStep;
 		}
 	    }
@@ -119,11 +119,11 @@ public class DeleteStepAction extends Action {
 		stepIx++;
 		for (int i = stepIx; i < strategy.getLength(); ++i) {
 		    newStep = strategy.getStep(i);
-		    boolExp = newStep.getFilterUserAnswer().getBooleanExpression();
-		    boolExp = step.getFilterUserAnswer().getUserAnswerId() + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
+		    boolExp = newStep.getBooleanExpression();
+		    boolExp = step.getStepId() + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
 		    System.out.println("Delete boolExp " + i + ": " + boolExp);
-		    userAnswer = wdkUser.combineUserAnswer(boolExp);
-		    newStep.setFilterUserAnswer(userAnswer);
+		    userAnswer = wdkUser.combineStep(boolExp);
+		    newStep = userAnswer;
 		    step = newStep;
 		}
 	    }

@@ -34,7 +34,7 @@ public class XmlDataLoader {
         this.schemaURL = schemaURL;
     }
 
-    public XmlRecordPage parseDataFile(URL xmlDataURL) throws WdkModelException {
+    public XmlAnswerValue parseDataFile(URL xmlDataURL) throws WdkModelException {
         // validate the xml data file
         if (!validDataFile(xmlDataURL, schemaURL))
             throw new WdkModelException("Validation to data xml file failed: "
@@ -57,7 +57,7 @@ public class XmlDataLoader {
         }
     }
 
-    public XmlRecordPage parseDataStream(InputStream xmlDataStream)
+    public XmlAnswerValue parseDataStream(InputStream xmlDataStream)
             throws WdkModelException {
         // I have to bypass the validation part for stream source, since the
         // validator need to use a String or File to validate it
@@ -67,7 +67,7 @@ public class XmlDataLoader {
 
         try {
             // load and parse the data source
-            XmlRecordPage answer = (XmlRecordPage) digester.parse(xmlDataStream);
+            XmlAnswerValue answer = (XmlAnswerValue) digester.parse(xmlDataStream);
 
             return answer;
         } catch (IOException ex) {
@@ -108,45 +108,45 @@ public class XmlDataLoader {
         digester.setValidating(false);
 
         // set the root
-        digester.addObjectCreate("xmlRecordPage", XmlRecordPage.class);
-        digester.addSetProperties("xmlRecordPage");
+        digester.addObjectCreate("xmlAnswerValue", XmlAnswerValue.class);
+        digester.addSetProperties("xmlAnswerValue");
 
         // xmlRecord
-        digester.addObjectCreate("xmlRecordPage/record", XmlRecordInstance.class);
-        digester.addSetProperties("xmlRecordPage/record");
+        digester.addObjectCreate("xmlAnswerValue/record", XmlRecordInstance.class);
+        digester.addSetProperties("xmlAnswerValue/record");
 
         // xmlAttribute
-        digester.addObjectCreate("xmlRecordPage/record/attribute",
+        digester.addObjectCreate("xmlAnswerValue/record/attribute",
                 XmlAttributeValue.class);
-        digester.addSetProperties("xmlRecordPage/record/attribute");
-        digester.addCallMethod("xmlRecordPage/record/attribute", "setValue", 1);
-        digester.addCallParam("xmlRecordPage/record/attribute", 0);
+        digester.addSetProperties("xmlAnswerValue/record/attribute");
+        digester.addCallMethod("xmlAnswerValue/record/attribute", "setValue", 1);
+        digester.addCallParam("xmlAnswerValue/record/attribute", 0);
 
-        digester.addSetNext("xmlRecordPage/record/attribute", "addAttribute");
+        digester.addSetNext("xmlAnswerValue/record/attribute", "addAttribute");
 
         // xmlTable
-        digester.addObjectCreate("xmlRecordPage/record/table", XmlTableValue.class);
-        digester.addSetProperties("xmlRecordPage/record/table");
+        digester.addObjectCreate("xmlAnswerValue/record/table", XmlTableValue.class);
+        digester.addSetProperties("xmlAnswerValue/record/table");
 
         // xmlRow
-        digester.addObjectCreate("xmlRecordPage/record/table/row",
+        digester.addObjectCreate("xmlAnswerValue/record/table/row",
                 XmlRowValue.class);
-        digester.addSetProperties("xmlRecordPage/record/table/row");
+        digester.addSetProperties("xmlAnswerValue/record/table/row");
 
         // xmlAttribute - columns
-        digester.addObjectCreate("xmlRecordPage/record/table/row/attribute",
+        digester.addObjectCreate("xmlAnswerValue/record/table/row/attribute",
                 XmlAttributeValue.class);
-        digester.addSetProperties("xmlRecordPage/record/table/row/attribute");
-        digester.addCallMethod("xmlRecordPage/record/table/row/attribute",
+        digester.addSetProperties("xmlAnswerValue/record/table/row/attribute");
+        digester.addCallMethod("xmlAnswerValue/record/table/row/attribute",
                 "setValue", 1);
-        digester.addCallParam("xmlRecordPage/record/table/row/attribute", 0);
-        digester.addSetNext("xmlRecordPage/record/table/row/attribute", "addColumn");
+        digester.addCallParam("xmlAnswerValue/record/table/row/attribute", 0);
+        digester.addSetNext("xmlAnswerValue/record/table/row/attribute", "addColumn");
 
-        digester.addSetNext("xmlRecordPage/record/table/row", "addRow");
+        digester.addSetNext("xmlAnswerValue/record/table/row", "addRow");
 
-        digester.addSetNext("xmlRecordPage/record/table", "addTable");
+        digester.addSetNext("xmlAnswerValue/record/table", "addTable");
 
-        digester.addSetNext("xmlRecordPage/record", "addRecordInstance");
+        digester.addSetNext("xmlAnswerValue/record", "addRecordInstance");
 
         return digester;
     }

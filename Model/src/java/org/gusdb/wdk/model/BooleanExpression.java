@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.gusdb.wdk.model.user.UserAnswer;
+import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.User;
 
 /**
@@ -153,11 +153,11 @@ public class BooleanExpression {
         }
         
         // get history
-        UserAnswer history = user.getUserAnswer( historyId );
+        Step history = user.getStep( historyId );
         if ( !history.isValid() )
             throw new WdkUserException( "The history #" + historyId
                     + " is invalid." );
-        RecordPage answer = history.getRecordPage();
+        AnswerValue answer = history.getAnswerValue();
         
         // create a leaf BooleanQuestionNode from the answer
         BooleanQuestionNode leaf = new BooleanQuestionNode(

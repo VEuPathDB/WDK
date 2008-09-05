@@ -27,10 +27,8 @@ DROP TABLE userlogins.user_roles;
 DROP TABLE userlogins.users;
 DROP TABLE userlogins.sorting_attributes;
 DROP TABLE userlogins.summary_attributes;
-DROP TABLE userlogins.user_strategy_tree;
-DROP TABLE userlogins.user_strategies;
-DROP TABLE userlogins.user_answer_tree;
-DROP TABLE userlogins.user_answers;
+DROP TABLE userlogins.strategies;
+DROP TABLE userlogins.steps;
 DROP TABLE userlogins.answers;
 
 
@@ -46,6 +44,20 @@ CREATE SEQUENCE userlogins.dataset_indices_pkseq INCREMENT BY 1 START WITH 1;
 GRANT select on userlogins.dataset_indices_pkseq to GUS_W;
 GRANT select on userlogins.dataset_indices_pkseq to GUS_R;
 
+CREATE SEQUENCE userlogins.steps_pkseq INCREMENT BY 1 START WITH 1;
+
+GRANT select on userlogins.steps_pkseq to GUS_W;
+GRANT select on userlogins.steps_pkseq to GUS_R;
+
+CREATE SEQUENCE userlogins.answers_pkseq INCREMENT BY 1 START WITH 1;
+
+GRANT select on userlogins.answers_pkseq to GUS_W;
+GRANT select on userlogins.answers_pkseq to GUS_R;
+
+CREATE SEQUENCE userlogins.strategies_pkseq INCREMENT BY 1 START WITH 1;
+
+GRANT select on userlogins.strategies_pkseq to GUS_W;
+GRANT select on userlogins.strategies_pkseq to GUS_R;
 
 
 CREATE TABLE userlogins.summary_attributes
@@ -211,7 +223,7 @@ GRANT select on userlogins.clob_values to GUS_R;
 
 CREATE TABLE userlogins.answers
 (
-    answer_id NUMBER(10) NOT NULL,
+    answer_id NUMBER(12) NOT NULL,
     project_id varchar(50) NOT NULL,
     question_name varchar(255) NOT NULL,
     estimate_size NUMBER(12),
@@ -219,89 +231,61 @@ CREATE TABLE userlogins.answers
     query_instance_checksum VARCHAR(40),
     is_boolean NUMBER(1),
     params CLOB,
-    CONSTRAINT "ANSWERS_PK" PRIMARY KEY (answer_id, project_id)
+    CONSTRAINT "ANSWERS_PK" PRIMARY KEY (answer_id)
 );
 
 GRANT insert, update, delete on userlogins.answers to GUS_W;
 GRANT select on userlogins.answers to GUS_R;
 
 
-CREATE TABLE userlogins.user_answers
+CREATE TABLE userlogins.steps
 (
-     user_answer_id NUMBER(12) NOT NULL,
+     step_id NUMBER(12) NOT NULL,
+     display_id NUMBER(12) NOT NULL,
      project_id varchar(50) NOT NULL,
      user_id NUMBER(12) NOT NULL,
      answer_id NUMBER(12) NOT NULL,
+     left_child_id NUMBER(12) NOT NULL,
+     right_child_id NUMBER(12) NOT NULL,
      create_time timestamp NOT NULL,
      last_run_time timestamp NOT NULL,
      site_version varchar(5),
      custom_name varchar(200),
+     collapsed_name varchar(200),
      is_deleted NUMBER(1),
-     CONSTRAINT "USER_ANSWERS_PK" PRIMARY KEY (user_id, user_answer_id, project_id),
-     CONSTRAINT "USER_ANSWERS_ANSWER_ID_FK" FOREIGN KEY (answer_id, project_id)
-         REFERENCES answers (answer_id, project_id),
-     CONSTRAINT "USER_ANSWERS_USER_ID_FK" FOREIGN KEY (user_id)
+     is_collapsible NUMBER(1),
+     CONSTRAINT "STEPS_PK" PRIMARY KEY (step_id),
+     CONSTRAINT "STEPS_UNIQUE" UNIQUE (user_id, display_id, project_id),
+     CONSTRAINT "STEPS_LEFT_CHILD_ID_FK" FOREIGN KEY (left_child_id)
+         REFERENCES steps (step_id),
+     CONSTRAINT "STEPS_RIGHT_CHILD_ID_FK" FOREIGN KEY (right_child_id)
+         REFERENCES steps (step_id),
+     CONSTRAINT "STEPS_ANSWER_ID_FK" FOREIGN KEY (answer_id)
+         REFERENCES answers (answer_id),
+     CONSTRAINT "STEPS_USER_ID_FK" FOREIGN KEY (user_id)
          REFERENCES userlogins.users (user_id)
 );
 
-GRANT insert, update, delete on userlogins.user_answers to GUS_W;
-GRANT select on userlogins.user_answers to GUS_R;
+GRANT insert, update, delete on userlogins.steps to GUS_W;
+GRANT select on userlogins.steps to GUS_R;
 
 
-CREATE TABLE userlogins.user_strategies
+CREATE TABLE userlogins.strategies
 (
-     user_strategy_id NUMBER(12) NOT NULL,
+     strategy_id NUMBER(12) NOT NULL,
+     display_id NUMBER(12) NOT NULL,
      user_id NUMBER(12) NOT NULL,
-     user_answer_id NUMBER(12) NOT NULL,
+     root_step_id NUMBER(12) NOT NULL,
      project_id varchar(50) NOT NULL,
      is_saved NUMBER(1) NOT NULL,
      name varchar(200),
-     CONSTRAINT "USER_STRATEGIES_PK" PRIMARY KEY (user_id, user_strategy_id, project_id),
-     CONSTRAINT "USER_STRATEGIES_ANSWER_FK" FOREIGN KEY (user_id, user_answer_id, project_id)
-         REFERENCES userlogins.user_answers (user_id, user_answer_id, project_id),
-     CONSTRAINT "USER_STRATEGIES_USER_ID_FK" FOREIGN KEY (user_id)
+     CONSTRAINT "STRATEGIES_PK" PRIMARY KEY (strategy_id),
+     CONSTRAINT "STRATEGIES_UNIQUE" UNIQUE (user_id, display_id, project_id),
+     CONSTRAINT "STRATEGIES_STEP_FK" FOREIGN KEY (root_step_id, user_id, project_id)
+         REFERENCES userlogins.steps (display_id, user_id, project_id),
+     CONSTRAINT "STRATEGIES_USER_ID_FK" FOREIGN KEY (user_id)
          REFERENCES userlogins.users (user_id)
-     CONSTRAINT "USER_STRATEGIES_NAME_UNIQUE" UNIQUE (name)
 );
 
-GRANT insert, update, delete on userlogins.user_strategies to GUS_W;
-GRANT select on userlogins.user_strategies to GUS_R;
-
-
-CREATE TABLE userlogins.user_answer_tree
-(
-    parent_answer_id NUMBER(12) NOT NULL,
-    child_answer_id NUMBER(12) NOT NULL,
-    user_id NUMBER(12) NOT NULL,
-    project_id varchar(50) NOT NULL,
-    child_order NUMBER(1) NOT NULL,
-    CONSTRAINT "USER_ANSWER_TREE_PK" PRIMARY KEY (user_id, parent_answer_id, child_answer_id, project_id),
-    CONSTRAINT "USER_ANSWER_TREE_PARENT_FK" FOREIGN KEY (user_id, parent_answer_id, project_id)
-        REFERENCES userlogins.user_answers (user_id, user_answer_id, project_id),
-    CONSTRAINT "USER_ANSWER_TREE_CHILD_FK" FOREIGN KEY (user_id, child_answer_id, project_id)
-        REFERENCES userlogins.user_answers (user_id, user_answer_id, project_id),
-    CONSTRAINT "USER_ANSWER_TREE_USER_ID_FK" FOREIGN KEY (user_id)
-        REFERENCES userlogins.users (user_id)
-);
-
-GRANT insert, update, delete on userlogins.user_answer_tree to GUS_W;
-GRANT select on userlogins.user_answer_tree to GUS_R;
-
-
-CREATE TABLE userlogins.user_strategy_tree
-(
-    parent_strategy_id NUMBER(12) NOT NULL,
-    child_strategy_id NUMBER(12) NOT NULL,
-    user_id NUMBER(12) NOT NULL,
-    project_id varchar(50) NOT NULL,
-    CONSTRAINT "USER_STRATEGY_TREE_PK" PRIMARY KEY (user_id, parent_strategy_id, child_strategy_id, project_id),
-    CONSTRAINT "USER_STRATEGY_TREE_PARENT_FK" FOREIGN KEY (user_id, parent_strategy_id, project_id)
-        REFERENCES userlogins.user_strategies (user_id, user_strategy_id, project_id),
-    CONSTRAINT "USER_STRATEGY_TREE_CHILD_FK" FOREIGN KEY (user_id, child_strategy_id, project_id)
-        REFERENCES userlogins.user_strategies (user_id, user_strategy_id, project_id),
-    CONSTRAINT "USER_STRATEGY_TREE_USER_ID_FK" FOREIGN KEY (user_id)
-        REFERENCES userlogins.users (user_id)
-);
-
-GRANT insert, update, delete on userlogins.user_strategy_tree to GUS_W;
-GRANT select on userlogins.user_strategy_tree to GUS_R;
+GRANT insert, update, delete on userlogins.strategies to GUS_W;
+GRANT select on userlogins.strategies to GUS_R;

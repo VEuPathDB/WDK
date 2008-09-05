@@ -799,7 +799,7 @@ public class UserFactory {
     }
 
 
-    Answer createAnswer(User user, RecordPage result, String booleanExpression)
+    Answer createAnswer(User user, AnswerValue result, String booleanExpression)
  	throws WdkUserException, WdkModelException {
 	//int userId = user.getUserId();
         String questionName = result.getQuestion().getFullName();
@@ -844,7 +844,8 @@ public class UserFactory {
             Date createTime = new Date();
             Date lastRunTime = new Date(createTime.getTime());
 
-            int answerId = 1;
+            int answerId = Integer.parseInt(platform.getNextId(loginSchema,
+                    "answers"));
 
             connection = dataSource.getConnection();
             synchronized (connection) {
@@ -856,38 +857,24 @@ public class UserFactory {
                         + "project_id, question_name, estimate_size, "
                         + "query_instance_checksum, query_signature, "
                         + "is_boolean, params) VALUES "
-                        + "((SELECT max(max_id) + 1  FROM "
-                        + "(SELECT max(answer_id) AS max_id FROM "
-                        + loginSchema + "answers WHERE project_id = ?"
-                        + " UNION SELECT count(*) AS max_id FROM "
-                        + loginSchema + "answers WHERE project_id = ?) f), "
-                        + "?, ?, ?, ?, ?, ?, ?)");
-		psAnswer.setString(1, projectId);
+                        + "(?, ?, ?, ?, ?, ?, ?, ?)");
+                psAnswer.setInt(1, answerId);
                 psAnswer.setString(2, projectId);
-                psAnswer.setString(3, projectId);
-                psAnswer.setString(4, questionName);
-		psAnswer.setInt(5, estimateSize);
-                psAnswer.setString(6, qiChecksum);
-                psAnswer.setString(7, signature);
-                psAnswer.setBoolean(8, isBoolean);
+                psAnswer.setString(3, questionName);
+		psAnswer.setInt(4, estimateSize);
+                psAnswer.setString(5, qiChecksum);
+                psAnswer.setString(6, signature);
+                psAnswer.setBoolean(7, isBoolean);
                 // the platform set clob, and run the statement
-                platform.updateClobData(psAnswer, 9, params, false);
+                platform.updateClobData(psAnswer, 8, params, false);
                 psAnswer.executeUpdate();
-
-                // query to get the new answer id
-                psMax = connection.prepareStatement("SELECT"
-                        + " max(answer_id) AS max_id FROM " + loginSchema
-                        + "answers WHERE project_id = ?");
-                psMax.setString(1, projectId);
-                rsMax = psMax.executeQuery();
-                if (rsMax.next()) answerId = rsMax.getInt("max_id");
 
                 connection.commit();
             }
 
             // create the Answer
             Answer answer = new Answer(this, user, answerId);
-            answer.setRecordPage(result);
+            answer.setAnswerValue(result);
 	    answer.setEstimateSize(estimateSize);
             answer.setBoolean(result.getIsBoolean());
             answer.setQuestionName(questionName);
@@ -919,10 +906,8 @@ public class UserFactory {
 	    psHistory = SqlUtils.getPreparedStatement(
                     dataSource, "SELECT question_name, estimate_size,"
 		    + "is_boolean, params FROM "
-		    + loginSchema + "answers WHERE answer_id = ? "
-		    + "AND project_id = ?");
+		    + loginSchema + "answers WHERE answer_id = ?");
 	    psHistory.setInt(1, answerId);
-	    psHistory.setString(2, projectId);
 	    rsHistory = psHistory.executeQuery();
 	    if (!rsHistory.next()) 
 		throw new SQLException("The global history #" + answerId + "does not exist.");
@@ -945,14 +930,14 @@ public class UserFactory {
             answer.setParams(params);
 
             try {
-                RecordPage result;
+                AnswerValue result;
                 if (answer.isBoolean()) {
-                    result = constructBooleanRecordPage(user, paramsClob);
+                    result = constructBooleanAnswerValue(user, paramsClob);
                     answer.setBooleanExpression(paramsClob);
                 } else {
-                    result = constructRecordPage(user, questionName, params);
+                    result = constructAnswerValue(user, questionName, params);
                 }
-                answer.setRecordPage(result);
+                answer.setAnswerValue(result);
             } catch (WdkModelException ex) {
                 answer.setValid(false);
             } catch (WdkUserException ex) {
@@ -972,19 +957,20 @@ public class UserFactory {
         }
     }
 
-    Map<Integer, UserAnswer> loadUserAnswers(User user, Map<Integer,UserAnswer> invalidUserAnswers)
+    // TODO:  Rewrite for Steps?
+    Map<Integer, Step> loadSteps(User user, Map<Integer,Step> invalidUserAnswers)
 	throws WdkUserException, WdkModelException {
-        Map<Integer, UserAnswer> userAnswers = new LinkedHashMap<Integer, UserAnswer>();
+        Map<Integer, Step> userAnswers = new LinkedHashMap<Integer, Step>();
 
         ResultSet rsUserAnswer = null;
 	PreparedStatement psUserAnswer = null;
         try {
             psUserAnswer = SqlUtils.getPreparedStatement(
-                    dataSource, "SELECT user_answer_id, question_name, create_time"
+                    dataSource, "SELECT step_id, display_id, question_name, create_time"
                             + ", last_run_time, custom_name, estimate_size, "
                             + "is_boolean, is_deleted, params, "
 		            + "ga.answer_id AS answer_id FROM "
-                            + loginSchema + "user_answers ua, " + loginSchema
+                            + loginSchema + "steps ua, " + loginSchema
 		            + "answers ga WHERE ua.user_id = ? "
                             + "AND ua.project_id = ? AND ga.answer_id = ua.answer_id "
 		            + "AND ga.project_id = ua.project_id "
@@ -995,12 +981,13 @@ public class UserFactory {
 
             while (rsUserAnswer.next()) {
                 // load history info
-                int userAnswerId = rsUserAnswer.getInt("user_answer_id");
+                int userAnswerId = rsUserAnswer.getInt("display_id");
+		int internalId = rsUserAnswer.getInt("step_id");
 		int answerId = rsUserAnswer.getInt("answer_id");
                 Timestamp createTime = rsUserAnswer.getTimestamp("create_time");
                 Timestamp lastRunTime = rsUserAnswer.getTimestamp("last_run_time");
 
-                UserAnswer userAnswer = new UserAnswer(this, user, userAnswerId);
+                Step userAnswer = new Step(this, user, userAnswerId, internalId);
 		Answer answer = new Answer(this, user, answerId);
 		userAnswer.setAnswer(answer);
                 userAnswer.setCreatedTime(new Date(createTime.getTime()));
@@ -1015,7 +1002,7 @@ public class UserFactory {
                 userAnswer.setQuestionName(questionName);
 
                 // re-construct the result
-                RecordPage result;
+                AnswerValue result;
 
                 // get the params
                 Map<String, Object> params;
@@ -1030,12 +1017,12 @@ public class UserFactory {
                 // construct answer of the history
                 try {
                     if (userAnswer.isBoolean()) {
-                        result = constructBooleanRecordPage(user, paramsClob);
+                        result = constructBooleanAnswerValue(user, paramsClob);
                         userAnswer.setBooleanExpression(paramsClob);
                     } else {
-                        result = constructRecordPage(user, questionName, params);
+                        result = constructAnswerValue(user, questionName, params);
                     }
-                    userAnswer.setRecordPage(result);
+                    userAnswer.setAnswerValue(result);
                     userAnswers.put(userAnswerId, userAnswer);
                 } catch (WdkModelException ex) {
                     // invalid userAnswer
@@ -1047,15 +1034,6 @@ public class UserFactory {
                     invalidUserAnswers.put(userAnswerId, userAnswer);
                 }
             }
-	    
-	    /* This is now in user_answer_tree?
-            // now compute the dependencies of the userAnswers
-            History[] array = new History[histories.size()];
-            histories.values().toArray(array);
-            for (History history : histories.values()) {
-                history.computeDependencies(array);
-            }
-	    */
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
         } finally {
@@ -1069,15 +1047,15 @@ public class UserFactory {
         return userAnswers;
     }
 
-    UserAnswer loadUserAnswer(User user, int userAnswerId) throws WdkUserException {
+    Step loadStep(User user, int userAnswerId) throws WdkUserException {
         ResultSet rsUserAnswer = null;
 	PreparedStatement psUserAnswer = null;
         try {
             psUserAnswer = SqlUtils.getPreparedStatement(
-                    dataSource, "SELECT answer_id, create_time, last_run_time, "
+                    dataSource, "SELECT step_id, answer_id, create_time, last_run_time, "
                             + "custom_name, is_deleted FROM "
-                            + loginSchema + "user_answers WHERE user_id = ? "
-                            + "AND project_id = ? AND user_answer_id = ? "
+                            + loginSchema + "steps WHERE user_id = ? "
+                            + "AND project_id = ? AND display_id = ? "
                             + "ORDER BY last_run_time DESC");
             psUserAnswer.setInt(1, user.getUserId());
             psUserAnswer.setString(2, projectId);
@@ -1090,8 +1068,9 @@ public class UserFactory {
             // load UserAnswer info
             Timestamp createTime = rsUserAnswer.getTimestamp("create_time");
             Timestamp lastRunTime = rsUserAnswer.getTimestamp("last_run_time");
+	    int internalId = rsUserAnswer.getInt("step_id");
 
-            UserAnswer userAnswer = new UserAnswer(this, user, userAnswerId);
+            Step userAnswer = new Step(this, user, userAnswerId, internalId);
             userAnswer.setCreatedTime(new Date(createTime.getTime()));
             userAnswer.setLastRunTime(new Date(lastRunTime.getTime()));
             userAnswer.setCustomName(rsUserAnswer.getString("custom_name"));
@@ -1116,7 +1095,8 @@ public class UserFactory {
         }
     }
 
-    UserAnswer createUserAnswer(User user, RecordPage result, String booleanExpression, boolean deleted)
+    // TODO: Change for new Step object
+    Step createStep(User user, AnswerValue result, String booleanExpression, boolean deleted)
 	throws WdkUserException, WdkModelException { 
 	int userId = user.getUserId();
         String questionName = result.getQuestion().getFullName();
@@ -1170,46 +1150,51 @@ public class UserFactory {
             Date createTime = new Date();
             Date lastRunTime = new Date(createTime.getTime());
 	    
-            int userAnswerId = 1;
-	    
+            int userAnswerId = -1;
+            int internalId = Integer.parseInt(platform.getNextId(loginSchema,
+                    "steps"));
             connection = dataSource.getConnection();
             synchronized (connection) {
 		
                 connection.setAutoCommit(false);
 		
                 psUserAnswer = connection.prepareStatement("INSERT INTO "
-							   + loginSchema + "user_answers (user_answer_id, "
+			+ loginSchema + "steps (display_id, step_id,"
                         + "user_id, answer_id, project_id, create_time, "
                         + "last_run_time, custom_name, is_deleted) VALUES "
                         + "((SELECT max(max_id) + 1  FROM "
-                        + "(SELECT max(user_answer_id) AS max_id FROM "
-                        + loginSchema + "user_answers WHERE user_id = " + userId
+                        + "(SELECT max(display_id) AS max_id FROM "
+                        + loginSchema + "steps WHERE user_id = " + userId
                         + " UNION SELECT count(*) AS max_id FROM "
-                        + loginSchema + "user_answers WHERE user_id = ?) f), "
-                        + "?, ?, ?, ?, ?, ?, 0)");
+                        + loginSchema + "steps WHERE user_id = ?) f), "
+                        + "?, ?, ?, ?, ?, ?, ?, 0)");
                 psUserAnswer.setInt(1, userId);
-                psUserAnswer.setInt(2, userId);
-		psUserAnswer.setInt(3, answer.getAnswerId());
-                psUserAnswer.setString(4, projectId);
-		psUserAnswer.setTimestamp(5, new Timestamp(createTime.getTime()));
-                psUserAnswer.setTimestamp(6, new Timestamp(lastRunTime.getTime()));
-                psUserAnswer.setString(7, customName);
+		psUserAnswer.setInt(2, internalId);
+                psUserAnswer.setInt(3, userId);
+		psUserAnswer.setInt(4, answer.getAnswerId());
+                psUserAnswer.setString(5, projectId);
+		psUserAnswer.setTimestamp(6, new Timestamp(createTime.getTime()));
+                psUserAnswer.setTimestamp(7, new Timestamp(lastRunTime.getTime()));
+                psUserAnswer.setString(8, customName);
 		psUserAnswer.executeUpdate();
 
                 // query to get the new history id
                 psMax = connection.prepareStatement("SELECT"
-                        + " max(user_answer_id) AS max_id FROM " + loginSchema
-                        + "user_answers WHERE user_id = ?");
+                        + " max(display_id) AS max_id FROM " + loginSchema
+                        + "steps WHERE user_id = ?");
                 psMax.setInt(1, userId);
                 rsMax = psMax.executeQuery();
                 if (rsMax.next()) userAnswerId = rsMax.getInt("max_id");
 
                 connection.commit();
             }
+	    if (userAnswerId < 0) {
+		throw new WdkModelException("An unknown error occurred while creating step.");
+	    }
             // create the History
-            UserAnswer userAnswer = new UserAnswer(this, user, userAnswerId);
+            Step userAnswer = new Step(this, user, userAnswerId, internalId);
 	    userAnswer.setAnswer(answer);
-            userAnswer.setRecordPage(result);
+            userAnswer.setAnswerValue(result);
             userAnswer.setCreatedTime(createTime);
             userAnswer.setLastRunTime(lastRunTime);
             userAnswer.setCustomName(customName);
@@ -1238,7 +1223,6 @@ public class UserFactory {
 		SqlUtils.closeStatement(psAnswer);
 		SqlUtils.closeStatement(psCheck);
 		SqlUtils.closeStatement(psUserAnswer);
-		//SqlUtils.closeStatement(psMax);
                 SqlUtils.closeResultSet(rsAnswer);
 		SqlUtils.closeResultSet(rsUserAnswer);
 		SqlUtils.closeResultSet(rsMax);
@@ -1250,64 +1234,48 @@ public class UserFactory {
 
     // Note:  this function still assumes two-operand booleans.  will need
     // to be rewritten?
-    private void updateUserAnswerTree(User user, UserAnswer userAnswer, String booleanExpression) 
+    private void updateUserAnswerTree(User user, Step userAnswer, String booleanExpression) 
 	throws WdkUserException {
 	PreparedStatement psUpdateAnswerTree = null;
 
 	try {
-	    psUpdateAnswerTree = SqlUtils.getPreparedStatement(
-	            dataSource, "INSERT INTO " + loginSchema +
-		    "user_answer_tree (parent_answer_id, "
-		    + "child_answer_id, child_order, project_id, user_id) "
-		    + "VALUES (?, ?, ?, ?, ?)");
-
-	    int childId;
+	    int leftChildId;
+	    int rightChildId;
 	    if (booleanExpression != null && booleanExpression.length() != 0) {
-		for (int i = 0; i < 2; ++i) {
-		    if (i == 0) {
-			childId = Integer.parseInt(booleanExpression.substring(0, booleanExpression.indexOf(" ")));
-		    }
-		    else {
-			childId = Integer.parseInt(booleanExpression.substring(booleanExpression.lastIndexOf(" ") + 1,
-									       booleanExpression.length()));
-		    }
-	      
-		    psUpdateAnswerTree.setInt(1, userAnswer.getUserAnswerId());
-		    psUpdateAnswerTree.setInt(2, childId);
-		    psUpdateAnswerTree.setInt(3, i);
-		    psUpdateAnswerTree.setString(4, projectId);
-		    psUpdateAnswerTree.setInt(5, user.getUserId());
-		    
-		    psUpdateAnswerTree.executeUpdate();
-		}
+
+	    psUpdateAnswerTree = SqlUtils.getPreparedStatement(
+	            dataSource, "UPDATE " + loginSchema +
+		    "steps SET left_child_id = ?, "
+		    + "right_child_id = ? "
+		    + "WHERE step_id = ?");
+		leftChildId = Integer.parseInt(booleanExpression.substring(0, booleanExpression.indexOf(" ")));
+		rightChildId = Integer.parseInt(booleanExpression.substring(booleanExpression.lastIndexOf(" ") + 1,
+									    booleanExpression.length()));
+		psUpdateAnswerTree.setInt(1, leftChildId);
+		psUpdateAnswerTree.setInt(2, rightChildId);
+		psUpdateAnswerTree.setInt(3, userAnswer.getInternalId());
 	    }
 	    else {
-		//find all history params so we can use the name to look up the value
-		//in the userAnswer
-		Param[] params = userAnswer.getRecordPage().getQuestion().getParams();
-		List<HistoryParam> histParams = new ArrayList<HistoryParam>();
+		psUpdateAnswerTree = SqlUtils.getPreparedStatement(dataSource, "UPDATE " + loginSchema +
+								   "steps SET left_child_id = ? "
+								   + "WHERE step_id = ?");
+		Param[] params = userAnswer.getAnswerValue().getQuestion().getParams();
+		HistoryParam histParam = null;
 		for ( Param param : params ) {
 		    if ( param instanceof HistoryParam ) {
-			histParams.add((HistoryParam) param);
+			histParam = (HistoryParam)param;
 		    }
 		}
 
-		//iterate over any history params found and add rows in user_answer_tree
-		Map<String, Object> paramVals = userAnswer.getRecordPage().getParams();
-		int i = 0;
-		for (HistoryParam param: histParams) {
-		    childId = Integer.parseInt((String) paramVals.get(param.getName()));
-	      
-		    psUpdateAnswerTree.setInt(1, userAnswer.getUserAnswerId());
-		    psUpdateAnswerTree.setInt(2, childId);
-		    psUpdateAnswerTree.setInt(3, i);
-		    psUpdateAnswerTree.setString(4, projectId);
-		    psUpdateAnswerTree.setInt(5, user.getUserId());
-		    
-		    psUpdateAnswerTree.executeUpdate();
-		    ++i;
-		}
+		if (histParam == null) 
+		    throw new WdkUserException("Transform query has no HistoryParam.");
+
+		Map<String, Object> paramVals = userAnswer.getAnswerValue().getParams();
+		leftChildId = Integer.parseInt((String) paramVals.get(histParam.getName()));
+		psUpdateAnswerTree.setInt(1, leftChildId);
+		psUpdateAnswerTree.setInt(2, userAnswer.getInternalId());
 	    }
+	    psUpdateAnswerTree.executeUpdate();
 	} catch (SQLException ex) {
 	    throw new WdkUserException(ex);
 	} finally {
@@ -1326,7 +1294,7 @@ public class UserFactory {
      * @param userAnswer
      * @throws WdkUserException
      */
-    void updateUserAnswer(User user, UserAnswer userAnswer, boolean updateTime)
+    void updateStep(User user, Step userAnswer, boolean updateTime)
             throws WdkUserException {
         // check email existence
         if (!isExist(user.getEmail()))
@@ -1341,19 +1309,17 @@ public class UserFactory {
         PreparedStatement psUserAnswer = null;
         try {
             psUserAnswer = SqlUtils.getPreparedStatement(dataSource, "UPDATE "
-                    + loginSchema + "user_answers SET custom_name = ?, "
+                    + loginSchema + "steps SET custom_name = ?, "
                     + " last_run_time = ?, is_deleted = ?"
-                    + "WHERE user_id = ? AND project_id = ? AND user_answer_id = ?");
+                    + "WHERE step_id = ?");
             psUserAnswer.setString(1, userAnswer.getBaseCustomName());
             psUserAnswer.setTimestamp(2, new Timestamp(lastRunTime.getTime()));
             psUserAnswer.setBoolean(3, userAnswer.isDeleted());
-	    psUserAnswer.setInt(4, user.getUserId());
-            psUserAnswer.setString(5, projectId);
-            psUserAnswer.setInt(6, userAnswer.getUserAnswerId());
+            psUserAnswer.setInt(4, userAnswer.getInternalId());
             int result = psUserAnswer.executeUpdate();
             if (result == 0)
                 throw new WdkUserException("The history #"
-                        + userAnswer.getUserAnswerId() + " of user "
+                        + userAnswer.getStepId() + " of user "
                         + user.getEmail() + " cannot be found.");
 
             // update the last run stamp
@@ -1370,29 +1336,29 @@ public class UserFactory {
     }
 
     // Not sure about this one...maybe I'll just go the lazy route and select all strategy ids for the
-    // user, then load them w/ loadUserStrategy...don't think there's a clever join to do this in one
+    // user, then load them w/ loadStrategy...don't think there's a clever join to do this in one
     // sitting
-    Map<Integer, UserStrategy> loadUserStrategies(User user, Map<Integer, UserStrategy> invalidStrategies) 
+    Map<Integer, Strategy> loadStrategies(User user, Map<Integer, Strategy> invalidStrategies) 
 	throws WdkUserException, WdkModelException {
-        Map<Integer, UserStrategy> userStrategies = new LinkedHashMap<Integer, UserStrategy>();
+        Map<Integer, Strategy> userStrategies = new LinkedHashMap<Integer, Strategy>();
 
 	PreparedStatement psStrategyIds = null;
 	ResultSet rsStrategyIds = null;
 
 	try {
 	    psStrategyIds = SqlUtils.getPreparedStatement(
-		     dataSource, "SELECT user_strategy_id FROM "
-		     + loginSchema + "user_strategies WHERE "
+		     dataSource, "SELECT display_id FROM "
+		     + loginSchema + "strategies WHERE "
 		     + "user_id = ? AND project_id = ?");
 	    psStrategyIds.setInt(1, user.getUserId());
 	    psStrategyIds.setString(2, projectId);
 	    rsStrategyIds = psStrategyIds.executeQuery();
 
-	    UserStrategy strategy;
+	    Strategy strategy;
 	    int strategyId;
 	    while (rsStrategyIds.next()) {
-		strategyId = rsStrategyIds.getInt("user_strategy_id");
-		strategy = loadUserStrategy(user, strategyId);
+		strategyId = rsStrategyIds.getInt("display_id");
+		strategy = loadStrategy(user, strategyId);
 		userStrategies.put(new Integer(strategyId), strategy);
 	    }
 
@@ -1409,18 +1375,114 @@ public class UserFactory {
 	}
     }
 
-    UserStrategy loadUserStrategy(User user, int userStrategyId) throws WdkUserException {
-	// Get name, saved, latest user_answer_id, and all latest user_answer data
-	// FROM strategy table JOIN user_answer table
+    Strategy importStrategyBySignature(User user, String signature)
+	throws WdkUserException, WdkModelException {
+	ResultSet rsStrategy = null;
+	try {
+	    // Get user_id, strategy_id from user_strategies by signature
+	    PreparedStatement psStrategy = SqlUtils.getPreparedStatement(
+		     dataSource, "SELECT user_id, user_strategy_id FROM "
+		     + loginSchema + "user_strategies WHERE "
+		     + "signature = ?");
+	    psStrategy.setString(1, signature);
+	    rsStrategy = psStrategy.executeQuery();
+	    if (!rsStrategy.next())
+		throw new WdkUserException("The strategy with signature '" + signature + "' doesn't exist.");
+
+	    int userId = rsStrategy.getInt("user_id");
+	    int strategyId = rsStrategy.getInt("user_strategy_id");
+
+	    return importStrategy(user, userId, strategyId);
+	} catch (SQLException ex) {
+	    throw new WdkUserException(ex);
+	} finally {
+	    try {
+		SqlUtils.closeResultSet(rsStrategy);
+	    } catch (SQLException ex) {
+		throw new WdkUserException(ex);
+	    }
+	}
+    }
+
+    private Strategy importStrategy(User user, int userId, int strategyId)
+	throws WdkUserException, WdkModelException {
+	
+	// Load export User by user_id
+	User exportUser = loadUser(userId);
+	// Load Strategy by export User, strategy_id
+	Strategy exportStrat = loadStrategy(exportUser, strategyId);
+	/**
+	 *
+	 *  TODO:  REWRITE FOR NEW UNIFIED STEP/UA OBJECT
+	 *
+	 *
+	 */
+	/*
+	Step[] exportSteps = exportStrat.getAllSteps();
+	// can we initialize to something better?
+	int userAnswerId = -1;
+
+	UserAnswer userAnswer = null;
+	// Iterate over Steps in Strategy
+	for ( Step step : exportSteps ) {
+	    //    If isBoolean, update the booleanExpression properly
+	    if (step.getFilterStep().isBoolean()) {
+		int childAnswerId;
+		if (step.getChildStep().getStrategy() != null) {
+		    Strategy subStrat = importStrategy(user, userId, step.getChildStep().getStrategy().getStrategyId());
+		    userAnswer = createUserAnswer(user, subStrat.getLatestStep().getFilterUserAnswer().getAnswerValue(), null, false);
+		}
+		else {
+		    userAnswer = createUserAnswer(user, step.getChildStep().getFilterUserAnswer().getAnswerValue(), null, false);
+		}
+		childAnswerId = userAnswer.getStepId();
+		
+		String booleanExpression = userAnswerId + " " + step.getOperation() + " " + childAnswerId;
+		userAnswer = user.combineUserAnswer(booleanExpression);
+		userAnswerId = userAnswer.getStepId();
+	    }
+	    else {
+		if (step.getFilterUserAnswer().isTransform()) {
+		    //find history param in the UserAnswer
+		    Param[] params = step.getFilterUserAnswer().getAnswerValue().getQuestion().getParams();
+		    HistoryParam histParam = null;
+		    for ( Param param : params ) {
+			if ( param instanceof HistoryParam ) {
+			    histParam = (HistoryParam)param;
+			}
+		    }
+		    
+		    if (histParam == null) 
+			throw new WdkUserException("Transform query has no HistoryParam.");
+		    
+		    //update the history param so it is correct for the import user
+		    Map<String, Object> paramVals = step.getFilterUserAnswer().getAnswerValue().getParams();
+		    paramVals.put(histParam.getName(), userAnswerId);
+		}
+		
+		userAnswer = createUserAnswer(user, step.getFilterUserAnswer().getAnswerValue(), null, false);
+		userAnswerId = userAnswer.getStepId();
+	    }
+	}
+      
+	return createStrategy(user, userAnswer, exportStrat.getName(), exportStrat.getIsSaved());
+	*/
+	return exportStrat;
+    }
+
+    // TODO: SQL needs to be changed to work w/ new steps table
+    Strategy loadStrategy(User user, int userStrategyId) throws WdkUserException {
+	// Get name, saved, latest step_id, and all latest step data
+	// FROM strategy table JOIN step table
 	// Create strategy object
 	// Create latest UserAnswer/Step objects
 	// while we get have a non-empty parent stack:
 	//   remove latest parent from stack
 
-	//   select parent_id, child_id, child user_answer data FROM
-	//   user_answer_tree JOIN user_answer WHERE parent_id = latest parent
+	//   select parent_id, child_id, child step data FROM
+	//   step_tree JOIN step WHERE parent_id = latest parent
 	
-	//   for each row returned, create UserAnswer and Step, add Step to strategy, put child_id on parent stack
+	//   for each row returned, create Step, add Step to strategy, put child_id on parent stack
 
 	PreparedStatement psStrategy = null;
 	PreparedStatement psAnswerTree = null;
@@ -1428,9 +1490,9 @@ public class UserFactory {
 	ResultSet rsAnswerTree = null;
 	try {
 	    psStrategy = SqlUtils.getPreparedStatement(
-		     dataSource, "SELECT name, is_saved, user_answer_id "
+		     dataSource, "SELECT strategy_id, name, is_saved, root_step_id "
 		     + "FROM " + loginSchema + "user_strategies WHERE "
-		     + "user_id = ? AND user_strategy_id = ? "
+		     + "user_id = ? AND display_id = ? "
 		     + "AND project_id = ?");
 	    psStrategy.setInt(1, user.getUserId());
 	    psStrategy.setInt(2, userStrategyId);
@@ -1440,32 +1502,32 @@ public class UserFactory {
 		throw new WdkUserException("The strategy " + userStrategyId + " does not exist "
 					   + "for user " + user.getEmail());
 	    }
+	    
+	    int internalId = rsStrategy.getInt("strategy_id");
 
-	    UserStrategy strategy = new UserStrategy(this, user, userStrategyId, rsStrategy.getString("name"));
+	    Strategy strategy = new Strategy(this, user, userStrategyId, internalId, rsStrategy.getString("name"));
 	    strategy.setIsSaved(rsStrategy.getBoolean("is_saved"));
 
-	    // Now add user_answer_id to a stack, and go into while loop
-	    int currentAnswerId = rsStrategy.getInt("user_answer_id");
-	    Integer currentAnswerIdObj = new Integer(currentAnswerId);
-	    UserAnswer currentAnswer = loadUserAnswer(user, currentAnswerId);
-	    Step currentStep = new Step(currentAnswer);
+	    // Now add step_id to a stack, and go into while loop
+	    int currentStepId = rsStrategy.getInt("root_step_id");
+	    Integer currentStepIdObj = new Integer(currentStepId);
+	    Step currentStep = loadStep(user, currentStepId);
 	    
 	    strategy.addStep(currentStep);
 
 	    Stack<Integer> answerTree = new Stack<Integer>();
-	    answerTree.push(currentAnswerIdObj);
+	    answerTree.push(currentStepIdObj);
 
 	    HashMap<Integer, Step> steps = new HashMap<Integer, Step>();
-	    steps.put(currentAnswerIdObj, currentStep);
+	    steps.put(currentStepIdObj, currentStep);
 	    
 	    Integer parentAnswerId;
 	    Step parentStep;
 
 	    psAnswerTree = SqlUtils.getPreparedStatement(
-	        dataSource, "SELECT child_answer_id FROM "
-		+ loginSchema + "user_answer_tree WHERE "
-		+ "user_id = ? AND parent_answer_id = ? "
-		+ "AND project_id = ? ORDER BY child_order");
+	        dataSource, "SELECT left_child_id, right_child_id FROM "
+		+ loginSchema + "steps WHERE user_id = ? AND "
+		+ "display_id = ? AND project_id = ?");
 
 	    while (!answerTree.empty()) {
 		parentAnswerId = answerTree.pop();
@@ -1476,30 +1538,29 @@ public class UserFactory {
 
 		rsAnswerTree = psAnswerTree.executeQuery();
 		
-		while (rsAnswerTree.next()) {
-		    currentAnswerId = rsAnswerTree.getInt("child_answer_id");
-		    currentAnswerIdObj = new Integer(currentAnswerId);
-		    currentAnswer = loadUserAnswer(user, currentAnswerId);
-		    currentStep = new Step(currentAnswer);
-		    answerTree.push(currentAnswerIdObj);
-		    steps.put(currentAnswerIdObj, currentStep);
-		    
-		    parentStep = steps.get(parentAnswerId);
-		    if (parentStep.getPreviousStep() == null) {
-			parentStep.setPreviousStep(currentStep);
-			currentStep.setNextStep(parentStep);
-		    }
-		    else if (parentStep.getChildStep() == null) {
-			parentStep.setChildStep(currentStep);
-		    }
-		    else {
-			throw new WdkUserException("Step " + parentAnswerId + " in strategy " + userStrategyId +
-						   " for user " + user.getEmail() + " has incorrect number of children.");
-		    }
-		}
+		parentStep = steps.get(parentAnswerId);
 
+		// TODO:  need to check if currentStepId < 1?
+		// left child
+		currentStepId = rsAnswerTree.getInt("left_child_id");
+		currentStepIdObj = new Integer(currentStepId);
+		currentStep = loadStep(user, currentStepId);
+		answerTree.push(currentStepIdObj);
+		steps.put(currentStepIdObj, currentStep);
+		
+		parentStep.setPreviousStep(currentStep);
+		currentStep.setNextStep(parentStep);
+		
+		// right child
+		currentStepId = rsAnswerTree.getInt("right_child_id");
+		currentStepIdObj = new Integer(currentStepId);
+		currentStep = loadStep(user, currentStepId);
+		answerTree.push(currentStepIdObj);
+		steps.put(currentStepIdObj, currentStep);
+		
+		parentStep.setChildStep(currentStep);
 	    }
-
+	    
 	    return strategy;
 	} catch (SQLException ex) {
             throw new WdkUserException(ex);
@@ -1516,12 +1577,13 @@ public class UserFactory {
     }
 
     // This function only updates the user_strategies table
-    void updateUserStrategy(User user, UserStrategy strategy, boolean overwrite) throws WdkUserException {
+    void updateStrategy(User user, Strategy strategy, boolean overwrite)
+	throws WdkUserException, WdkModelException {
 	if (!isExist(user.getEmail()))
             throw new WdkUserException("The user " + user.getEmail()
                     + " doesn't exist. Updating operation cancelled.");
 
-        // update strategy name, saved, user_answer_id
+        // update strategy name, saved, step_id
 	PreparedStatement psStrategy = null;
 	ResultSet rsStrategy = null;
 
@@ -1530,16 +1592,17 @@ public class UserFactory {
         try {
 	    if (strategy.getIsSaved()) {
 		if (!overwrite) {
-		    UserStrategy newStrat = createUserStrategy(user, strategy.getLatestStep().getFilterUserAnswer(),
+		    Strategy newStrat = createStrategy(user, strategy.getLatestStep(),
 							       strategy.getName(), false);
 		    strategy.setStrategyId(newStrat.getStrategyId());
+		    strategy.setInternalId(newStrat.getInternalId());
 		    strategy.setIsSaved(newStrat.getIsSaved());
 		    return;
 		}
 		else {
 		    PreparedStatement psCheck = SqlUtils.getPreparedStatement(
-                    dataSource, "SELECT user_strategy_id FROM " + loginSchema
-                            + "user_strategies WHERE user_id = ? AND project_id = ? "
+                    dataSource, "SELECT strategy_id, display_id FROM " + loginSchema
+                            + "strategies WHERE user_id = ? AND project_id = ? "
                             + "AND name = ? AND saved = ?");
 		    psCheck.setInt(1, userId);
 		    psCheck.setString(2, projectId);
@@ -1548,22 +1611,20 @@ public class UserFactory {
 		    rsStrategy = psCheck.executeQuery();
 
 		    if (rsStrategy.next()) {
-			strategy.setStrategyId(rsStrategy.getInt("user_strategy_id"));
+			strategy.setStrategyId(rsStrategy.getInt("display_id"));
+			strategy.setInternalId(rsStrategy.getInt("strategy_id"));
 		    }
 		}
 	    }
 
             psStrategy = SqlUtils.getPreparedStatement(dataSource, "UPDATE "
-                    + loginSchema + "user_strategies SET name = ?, "
-                    + "user_answer_id = ?, is_saved = ?"
-                    + "WHERE user_id = ? AND user_strategy_id = ? "
-		    + "AND project_id = ?");
+                    + loginSchema + "strategies SET name = ?, "
+                    + "root_step_id = ?, is_saved = ?"
+                    + "WHERE strategy_id = ?");
             psStrategy.setString(1, strategy.getName());
-	    psStrategy.setInt(2, strategy.getLatestStep().getFilterUserAnswer().getUserAnswerId());
+	    psStrategy.setInt(2, strategy.getLatestStep().getStepId());
             psStrategy.setBoolean(3, strategy.getIsSaved());
-	    psStrategy.setInt(4, user.getUserId());
-            psStrategy.setInt(5, strategy.getStrategyId());
-	    psStrategy.setString(6, projectId);
+            psStrategy.setInt(4, strategy.getInternalId());
             int result = psStrategy.executeUpdate();
             if (result == 0)
                 throw new WdkUserException("The strategy #"
@@ -1583,10 +1644,10 @@ public class UserFactory {
     }
 
     // Note:  this function only adds the necessary row in user_strategies;  updating of answers,
-    // user_answers, and user_answer_tree is handled in other functions.  Once the UserAnswer
+    // steps, and user_answer_tree is handled in other functions.  Once the UserAnswer
     // object exists, all of this data is already in the db.
-    UserStrategy createUserStrategy(User user, UserAnswer answer, String name, boolean saved)
-	throws WdkUserException {
+    Strategy createStrategy(User user, Step root, String name, boolean saved)
+	throws WdkUserException, WdkModelException {
 	int userId = user.getUserId();
 
 	PreparedStatement psMax = null;
@@ -1595,7 +1656,9 @@ public class UserFactory {
 
         Connection connection = null;
 	try {
-            int strategyId = 1;
+            int strategyId = -1;
+            int internalId = Integer.parseInt(platform.getNextId(loginSchema,
+                    "strategies"));
 
             connection = dataSource.getConnection();
             synchronized (connection) {
@@ -1604,26 +1667,27 @@ public class UserFactory {
 		
 		// insert the row into user_strategies
 		psStrategy = SqlUtils.getPreparedStatement(
-			dataSource, "INSERT INTO " + loginSchema + "user_strategies "
-			+ "(user_strategy_id, user_id, user_answer_id, is_saved, name, project_id) "
+			dataSource, "INSERT INTO " + loginSchema + "strategies "
+			+ "(display_id, strategy_id, user_id, root_step_id, is_saved, name, project_id) "
 			+ "VALUES ((SELECT max(max_id) + 1  FROM "
-                        + "(SELECT max(user_strategy_id) AS max_id FROM "
-                        + loginSchema + "user_strategies WHERE user_id = " + userId
+                        + "(SELECT max(display_id) AS max_id FROM "
+                        + loginSchema + "strategies WHERE user_id = " + userId
                         + " UNION SELECT count(*) AS max_id FROM "
-                        + loginSchema + "user_strategies WHERE user_id = ?) f)"
-			+ ", ?, ?, ?, ?, ?)");
+                        + loginSchema + "strategies WHERE user_id = ?) f)"
+			+ ", ?, ?, ?, ?, ?, ?)");
 		psStrategy.setInt(1, userId);
-		psStrategy.setInt(2, userId);
-		psStrategy.setInt(3, answer.getUserAnswerId());
-		psStrategy.setBoolean(4, saved);
-		psStrategy.setString(5, name);
-		psStrategy.setString(6, projectId);
+		psStrategy.setInt(2, internalId);
+		psStrategy.setInt(3, userId);
+		psStrategy.setInt(4, root.getStepId());
+		psStrategy.setBoolean(5, saved);
+		psStrategy.setString(6, name);
+		psStrategy.setString(7, projectId);
 		psStrategy.executeUpdate();
 		                
 		// query to get the new strategy id
                 psMax = connection.prepareStatement("SELECT"
-                        + " max(user_strategy_id) AS max_id FROM " + loginSchema
-                        + "user_strategies WHERE user_id = ? AND project_id = ?");
+                        + " max(display_id) AS max_id FROM " + loginSchema
+                        + "strategies WHERE user_id = ? AND project_id = ?");
                 psMax.setInt(1, userId);
 		psMax.setString(2, projectId);
                 rsMax = psMax.executeQuery();
@@ -1631,12 +1695,15 @@ public class UserFactory {
 
                 connection.commit();
 	    }
+	    if (strategyId < 0) {
+		throw new WdkModelException("Unknown error while creating strategy.");
+	    }
 	   
 	    // update the user's strategy count
-            int strategyCount = getUserStrategyCount(user);
+            int strategyCount = getStrategyCount(user);
             user.setStrategyCount(strategyCount);
 	    
-	    return loadUserStrategy(user, strategyId);
+	    return loadStrategy(user, strategyId);
 	}
 	catch (SQLException ex) {
 	    throw new WdkUserException(ex);
@@ -1644,7 +1711,6 @@ public class UserFactory {
 	finally {
             try {
                 if (connection != null) connection.setAutoCommit(true);
-		//SqlUtils.closeStatement(psMax);
 		SqlUtils.closeStatement(psStrategy);
 		SqlUtils.closeResultSet(rsMax);
 	    } catch (SQLException ex) {
@@ -1689,7 +1755,7 @@ public class UserFactory {
                 history.setQuestionName(questionName);
 
                 // re-construct the answer
-                RecordPage answer;
+                AnswerValue answer;
 
                 // get the params
                 Map<String, Object> params;
@@ -1704,12 +1770,12 @@ public class UserFactory {
                 // construct answer of the history
                 try {
                     if (history.isBoolean()) {
-                        answer = constructBooleanRecordPage(user, paramsClob);
+                        answer = constructBooleanAnswerValue(user, paramsClob);
                         history.setBooleanExpression(paramsClob);
                     } else {
-                        answer = constructRecordPage(user, questionName, params);
+                        answer = constructAnswerValue(user, questionName, params);
                     }
-                    history.setRecordPage(answer);
+                    history.setAnswerValue(answer);
                     histories.put(historyId, history);
                 } catch (WdkModelException ex) {
                     // invalid history
@@ -1785,14 +1851,14 @@ public class UserFactory {
 
             // re-construct the answer
             try {
-                RecordPage answer;
+                AnswerValue answer;
                 if (history.isBoolean()) {
-                    answer = constructBooleanRecordPage(user, paramsClob);
+                    answer = constructBooleanAnswerValue(user, paramsClob);
                     history.setBooleanExpression(paramsClob);
                 } else {
-                    answer = constructRecordPage(user, questionName, params);
+                    answer = constructAnswerValue(user, questionName, params);
                 }
-                history.setRecordPage(answer);
+                history.setAnswerValue(answer);
             } catch (WdkModelException ex) {
                 history.setValid(false);
             } catch (WdkUserException ex) {
@@ -1825,7 +1891,7 @@ public class UserFactory {
         return params;
     }
 
-    private RecordPage constructRecordPage(User user, String questionName,
+    private AnswerValue constructAnswerValue(User user, String questionName,
             Map<String, Object> params) throws WdkModelException,
             WdkUserException {
         // obtain the question with full name
@@ -1833,25 +1899,25 @@ public class UserFactory {
 
         // get the user's preferences
 
-        RecordPage answer = question.makeRecordPage(params, 1, user.getItemsPerPage(),
+        AnswerValue answer = question.makeAnswerValue(params, 1, user.getItemsPerPage(),
                 user.getSortingAttributes(questionName));
         String[] summaryAttributes = user.getSummaryAttributes(questionName);
         answer.setSumaryAttributes(summaryAttributes);
         return answer;
     }
 
-    private RecordPage constructBooleanRecordPage(User user, String expression)
+    private AnswerValue constructBooleanAnswerValue(User user, String expression)
             throws WdkUserException, WdkModelException {
         BooleanExpression exp = new BooleanExpression(user);
         Map<String, String> operatorMap = getWdkModel().getBooleanOperators();
         BooleanQuestionNode root = exp.parseExpression(expression, operatorMap);
 
-        return root.makeRecordPage(1, user.getItemsPerPage());
+        return root.makeAnswerValue(1, user.getItemsPerPage());
     }
 
 
 
-    History createHistory(User user, RecordPage answer, String booleanExpression,
+    History createHistory(User user, AnswerValue answer, String booleanExpression,
             boolean deleted) throws WdkUserException, WdkModelException {
         int userId = user.getUserId();
         String questionName = answer.getQuestion().getFullName();
@@ -1952,7 +2018,7 @@ public class UserFactory {
             }
             // create the History
             History history = new History(this, user, historyId);
-            history.setRecordPage(answer);
+            history.setAnswerValue(answer);
             history.setCreatedTime(createTime);
             history.setLastRunTime(lastRunTime);
             history.setCustomName(customName);
@@ -2044,7 +2110,7 @@ public class UserFactory {
         logger.info("Change boolean expression: '" + expression + "'");
 
         // prepare the fields to be updated
-        RecordPage answer = history.getRecordPage();
+        AnswerValue answer = history.getAnswerValue();
         Date updateTime = new Date();
         String qiChecksum = answer.getIdsQueryInstance().getChecksum();
         int estimateSize = answer.getResultSize();
@@ -2091,14 +2157,14 @@ public class UserFactory {
         }
     }
 
-    void deleteUserAnswer(User user, int userAnswerId)
+    void deleteStep(User user, int userAnswerId)
 	throws WdkUserException {
         PreparedStatement psUserAnswer = null;
         try {
             // remove user answer
             psUserAnswer = SqlUtils.getPreparedStatement(dataSource, "DELETE "
-                    + "FROM " + loginSchema + "user_answers WHERE user_id = ? "
-                    + "AND project_id = ? AND user_answer_id = ?");
+                    + "FROM " + loginSchema + "steps WHERE user_id = ? "
+                    + "AND project_id = ? AND display_id = ?");
             psUserAnswer.setInt(1, user.getUserId());
             psUserAnswer.setString(2, projectId);
             psUserAnswer.setInt(3, userAnswerId);
@@ -2142,7 +2208,8 @@ public class UserFactory {
         }
     }
 
-    void deleteUserAnswers(User user, boolean allProjects)
+    // TODO: Do we really offer this in the world where Step == UserAnswer?
+    void deleteSteps(User user, boolean allProjects)
 	throws WdkUserException {
 	throw new WdkUserException("UserFactory.deleteUserAnswers() is not implemented.");
     }
@@ -2172,16 +2239,17 @@ public class UserFactory {
         }
     }
 
-    public void deleteInvalidUserAnswers(User user)
+    // TODO: Do we really offer this in the world where Step == UserAnswer?
+    public void deleteInvalidSteps(User user)
 	throws WdkUserException, WdkModelException {
-	Map<Integer, UserAnswer> invalidUserAnswers = new LinkedHashMap<Integer, UserAnswer>();
-	loadUserAnswers(user, invalidUserAnswers);
+	Map<Integer, Step> invalidUserAnswers = new LinkedHashMap<Integer, Step>();
+	loadSteps(user, invalidUserAnswers);
 	for (int userAnswerId : invalidUserAnswers.keySet()) {
-	    deleteUserAnswer(user, userAnswerId);
+	    deleteStep(user, userAnswerId);
 	}
     }
 
-    public void deleteUserStrategy(User user, int strategyId) 
+    public void deleteStrategy(User user, int strategyId) 
 	throws WdkUserException {
         PreparedStatement psStrategy = null;
         try {
@@ -2311,7 +2379,7 @@ public class UserFactory {
         }
     }
 
-    private int getUserStrategyCount(User user)
+    private int getStrategyCount(User user)
 	throws WdkUserException {
 	ResultSet rsStrategy = null;
 	try {

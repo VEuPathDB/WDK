@@ -13,11 +13,10 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.jspwrap.RecordPageBean;
-import org.gusdb.wdk.model.jspwrap.UserAnswerBean;
+import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
-import org.gusdb.wdk.model.jspwrap.UserStrategyBean;
+import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.user.User;
 
@@ -57,7 +56,7 @@ public class ProcessSummaryAction extends Action {
 		if (strategyId == null || strategyId.length() == 0) 
 		    throw new WdkModelException("Missing parameters for this action" );
 
-		UserStrategyBean strategy = wdkUser.getUserStrategy(Integer.parseInt(strategyId));
+		StrategyBean strategy = wdkUser.getStrategy(Integer.parseInt(strategyId));
 
 		StepBean step;
 		if (stepIx == null || stepIx.length() == 0)
@@ -65,10 +64,10 @@ public class ProcessSummaryAction extends Action {
 		else 
 		    step = strategy.getStep(Integer.parseInt(stepIx));
 		
-		userAnswerId = Integer.toString(step.getFilterUserAnswer().getUserAnswerId());
+		userAnswerId = Integer.toString(step.getStepId());
 	    }
-            UserAnswerBean userAnswer = wdkUser.getUserAnswer( Integer.parseInt( userAnswerId ) );
-            RecordPageBean answer = userAnswer.getRecordPage();
+            StepBean userAnswer = wdkUser.getStep( Integer.parseInt( userAnswerId ) );
+            AnswerValueBean answer = userAnswer.getAnswerValue();
             questionName = answer.getQuestion().getFullName();
             String[ ] summaryAttributes = answer.getSummaryAttributeNames();
             wdkUser.applySummaryChecksum( questionName, summaryAttributes );

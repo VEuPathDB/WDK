@@ -13,7 +13,7 @@ import org.apache.log4j.Logger;
 /**
  * BooleanQueryInstance.java
  * 
- * Instance instantiated by a BooleanQuery. Takes RecordPages as values for its
+ * Instance instantiated by a BooleanQuery. Takes AnswerValues as values for its
  * parameters along with a boolean operation, and returns a result.
  * 
  * Created: Wed May 19 15:11:30 2004
@@ -32,13 +32,13 @@ public class BooleanQueryInstance extends QueryInstance {
     // ------------------------------------------------------------------
 
     /**
-     * QueryInstance from the first RecordPage that is a parameter for
+     * QueryInstance from the first AnswerValue that is a parameter for
      * BooleanQueryInstance. May itself be a BooleanQueryInstance.
      */
     protected QueryInstance firstQueryInstance;
 
     /**
-     * QueryInstance from the second RecordPage that is a parameter for
+     * QueryInstance from the second AnswerValue that is a parameter for
      * BooleanQueryInstance. May itself be a BooleanQueryInstance.
      */
     protected QueryInstance secondQueryInstance;
@@ -81,8 +81,8 @@ public class BooleanQueryInstance extends QueryInstance {
      * @param values
      *            Map where the keys are the names for BooleanQuery parameters
      *            found as static variables in BooleanQuery, and the values are
-     *            the expected values for those parameters (RecordPages for the two
-     *            RecordPageParam and the name of the boolean operation for the
+     *            the expected values for those parameters (AnswerValues for the two
+     *            AnswerValueParam and the name of the boolean operation for the
      *            StringParam). Columns are set at this time for the
      *            BooleanQuery this instance points to.
      */
@@ -90,13 +90,13 @@ public class BooleanQueryInstance extends QueryInstance {
 
         super.setValues(values);
 
-        RecordPage firstRecordPage = (RecordPage) values.get(BooleanQuery.FIRST_ANSWER_PARAM_NAME);
-        this.firstQueryInstance = firstRecordPage.getIdsQueryInstance();
+        AnswerValue firstAnswerValue = (AnswerValue) values.get(BooleanQuery.FIRST_ANSWER_PARAM_NAME);
+        this.firstQueryInstance = firstAnswerValue.getIdsQueryInstance();
 
-        RecordPage secondRecordPage = (RecordPage) values.get(BooleanQuery.SECOND_ANSWER_PARAM_NAME);
-        this.secondQueryInstance = secondRecordPage.getIdsQueryInstance();
+        AnswerValue secondAnswerValue = (AnswerValue) values.get(BooleanQuery.SECOND_ANSWER_PARAM_NAME);
+        this.secondQueryInstance = secondAnswerValue.getIdsQueryInstance();
 
-        validateBooleanValues(firstRecordPage, secondRecordPage);
+        validateBooleanValues(firstAnswerValue, secondAnswerValue);
 
         this.operation = (String) values.get(BooleanQuery.OPERATION_PARAM_NAME);
 
@@ -211,14 +211,14 @@ public class BooleanQueryInstance extends QueryInstance {
 
     /**
      * Checks to make sure that the Queries in the Questions for the given
-     * RecordPages have the same primary key Columns and that the Questions'
+     * AnswerValues have the same primary key Columns and that the Questions'
      * RecordClasses are the same.
      */
-    private void validateBooleanValues(RecordPage firstRecordPage, RecordPage secondRecordPage)
+    private void validateBooleanValues(AnswerValue firstAnswerValue, AnswerValue secondAnswerValue)
             throws WdkModelException {
 
-        String[] cols1 = firstRecordPage.findPrimaryKeyColumnNames();
-        String[] cols2 = secondRecordPage.findPrimaryKeyColumnNames();
+        String[] cols1 = firstAnswerValue.findPrimaryKeyColumnNames();
+        String[] cols2 = secondAnswerValue.findPrimaryKeyColumnNames();
 
         // compare nulls and strings
         boolean recIdMisMatch = cols1[0] != cols2[0]
@@ -227,26 +227,26 @@ public class BooleanQueryInstance extends QueryInstance {
                 && !cols1[1].equals(cols2[1]);
         if (recIdMisMatch || prjIdMisMatch) {
             String errMsg = "Primary key columns don't match in Boolean Query for "
-                    + firstRecordPage.getQuestion().getFullName()
+                    + firstAnswerValue.getQuestion().getFullName()
                     + " ("
                     + cols1[0]
                     + ", "
                     + cols1[1]
                     + ") and "
-                    + secondRecordPage.getQuestion().getFullName()
+                    + secondAnswerValue.getQuestion().getFullName()
                     + " ("
                     + cols2[0] + ", " + cols2[1] + ")";
             throw new WdkModelException(errMsg);
         }
 
-        RecordClass firstRecordClass = firstRecordPage.getQuestion().getRecordClass();
-        RecordClass secondRecordClass = secondRecordPage.getQuestion().getRecordClass();
+        RecordClass firstRecordClass = firstAnswerValue.getQuestion().getRecordClass();
+        RecordClass secondRecordClass = secondAnswerValue.getQuestion().getRecordClass();
         if (firstRecordClass != secondRecordClass) {
             StringBuffer rc = new StringBuffer(
-                    "RecordClasses in two RecordPageParams in a BooleanQuery must be the same,\n");
+                    "RecordClasses in two AnswerValueParams in a BooleanQuery must be the same,\n");
             rc.append("but record classes in Questions "
-                    + firstRecordPage.getQuestion().getName() + " and "
-                    + secondRecordPage.getQuestion().getName() + " are not");
+                    + firstAnswerValue.getQuestion().getName() + " and "
+                    + secondAnswerValue.getQuestion().getName() + " are not");
             throw new WdkModelException(rc.toString());
         }
     }

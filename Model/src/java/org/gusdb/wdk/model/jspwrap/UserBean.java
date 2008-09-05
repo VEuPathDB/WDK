@@ -14,8 +14,8 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.History;
 import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.model.user.UserAnswer;
-import org.gusdb.wdk.model.user.UserStrategy;
+import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.Strategy;
 
 /**
  * @author: Jerric
@@ -355,48 +355,48 @@ public class UserBean /* implements Serializable */{
     // /*
     // * (non-Javadoc)
     // *
-    // * @see org.gusdb.wdk.model.User#addRecordPage(org.gusdb.wdk.model.RecordPage)
+    // * @see org.gusdb.wdk.model.User#addAnswerValue(org.gusdb.wdk.model.AnswerValue)
     // */
-    // public void addRecordPage(RecordPageBean answer) throws WdkUserException,
+    // public void addAnswerValue(AnswerValueBean answer) throws WdkUserException,
     // WdkModelException {
-    // user.addRecordPage(answer.answer);
+    // user.addAnswerValue(answer.answer);
     // }
     //
     // /*
     // * (non-Javadoc)
     // *
     // * @see
-    // org.gusdb.wdk.model.User#addRecordPageFuzzy(org.gusdb.wdk.model.RecordPage)
+    // org.gusdb.wdk.model.User#addAnswerValueFuzzy(org.gusdb.wdk.model.AnswerValue)
     // */
-    // public void addRecordPageFuzzy(RecordPageBean answer) throws WdkUserException,
+    // public void addAnswerValueFuzzy(AnswerValueBean answer) throws WdkUserException,
     // WdkModelException {
-    // user.addRecordPageFuzzy(answer.answer);
+    // user.addAnswerValueFuzzy(answer.answer);
     // }
     //
     // /*
     // * (non-Javadoc)
     // *
-    // * @see org.gusdb.wdk.model.User#combineRecordPages(int, int,
+    // * @see org.gusdb.wdk.model.User#combineAnswerValues(int, int,
     // java.lang.String)
     // */
-    // public UserRecordPageBean combineUserRecordPages(int firstRecordPageID,
-    // int secondRecordPageID, String operation, int start, int end,
+    // public UserAnswerValueBean combineUserAnswerValues(int firstAnswerValueID,
+    // int secondAnswerValueID, String operation, int start, int end,
     // Map<String, String> operatorMap) throws WdkUserException,
     // WdkModelException {
-    // return new UserRecordPageBean(this.user.combineUserRecordPages(firstRecordPageID,
-    // secondRecordPageID, operation, start, end, operatorMap));
+    // return new UserAnswerValueBean(this.user.combineUserAnswerValues(firstAnswerValueID,
+    // secondAnswerValueID, operation, start, end, operatorMap));
     // }
     //
     // /*
     // * (non-Javadoc)
     // *
-    // * @see org.gusdb.wdk.model.User#combineRecordPages(java.lang.String)
+    // * @see org.gusdb.wdk.model.User#combineAnswerValues(java.lang.String)
     // */
-    // public UserRecordPageBean combineRecordPages(String expression, int start, int
+    // public UserAnswerValueBean combineAnswerValues(String expression, int start, int
     // end,
     // Map<String, String> operatorMap) throws WdkUserException,
     // WdkModelException {
-    // return new UserRecordPageBean(this.user.combineUserRecordPages(expression,
+    // return new UserAnswerValueBean(this.user.combineUserAnswerValues(expression,
     // start, end, operatorMap));
     // }
     //
@@ -404,90 +404,90 @@ public class UserBean /* implements Serializable */{
     // /*
     // * (non-Javadoc)
     // *
-    // * @see org.gusdb.wdk.model.User#deleteRecordPage(int)
+    // * @see org.gusdb.wdk.model.User#deleteAnswerValue(int)
     // */
-    // public void deleteUserRecordPage(int answerId) throws WdkUserException {
-    // this.user.deleteUserRecordPage(answerId);
+    // public void deleteUserAnswerValue(int answerId) throws WdkUserException {
+    // this.user.deleteUserAnswerValue(answerId);
     // }
     //
     // /*
     // * (non-Javadoc)
     // *
-    // * @see org.gusdb.wdk.model.User#clearRecordPages()
+    // * @see org.gusdb.wdk.model.User#clearAnswerValues()
     // */
-    // public void clearUserRecordPages() throws WdkUserException {
-    // this.user.clearUserRecordPages();
+    // public void clearUserAnswerValues() throws WdkUserException {
+    // this.user.clearUserAnswerValues();
     // }
     //
     // /*
     // * (non-Javadoc)
     // *
-    // * @see org.gusdb.wdk.model.User#getRecordPageByID(int)
+    // * @see org.gusdb.wdk.model.User#getAnswerValueByID(int)
     // */
-    // public UserRecordPageBean getUserRecordPageByID(int answerID)
+    // public UserAnswerValueBean getUserAnswerValueByID(int answerID)
     // throws WdkUserException {
-    // return new UserRecordPageBean(this.user.getUserRecordPageByID(answerID));
+    // return new UserAnswerValueBean(this.user.getUserAnswerValueByID(answerID));
     // }
     //
     // /*
     // * (non-Javadoc)
     // *
-    // * @see org.gusdb.wdk.model.User#getRecordPageByName(java.lang.String)
+    // * @see org.gusdb.wdk.model.User#getAnswerValueByName(java.lang.String)
     // */
-    // public UserRecordPageBean getUserRecordPageByName(String name)
+    // public UserAnswerValueBean getUserAnswerValueByName(String name)
     // throws WdkUserException {
-    // return new UserRecordPageBean(this.user.getUserRecordPageByName(name));
+    // return new UserAnswerValueBean(this.user.getUserAnswerValueByName(name));
     // }
     //
-    // public int getUserRecordPageIdByRecordPage(RecordPageBean answer)
+    // public int getUserAnswerValueIdByAnswerValue(AnswerValueBean answer)
     // throws WdkUserException {
-    // return getUserRecordPageByRecordPageFuzzy(answer).getRecordPageID();
+    // return getUserAnswerValueByAnswerValueFuzzy(answer).getAnswerValueID();
     // }
     //
-    // public UserRecordPageBean getUserRecordPageByRecordPage(RecordPageBean answer)
+    // public UserAnswerValueBean getUserAnswerValueByAnswerValue(AnswerValueBean answer)
     // throws WdkUserException {
-    // return new UserRecordPageBean(user.getUserRecordPageByRecordPage(answer.answer));
+    // return new UserAnswerValueBean(user.getUserAnswerValueByAnswerValue(answer.answer));
     // }
     //
-    // public UserRecordPageBean getUserRecordPageByRecordPageFuzzy(RecordPageBean answer)
+    // public UserAnswerValueBean getUserAnswerValueByAnswerValueFuzzy(AnswerValueBean answer)
     // throws WdkUserException {
-    // return new UserRecordPageBean(
-    // user.getUserRecordPageByRecordPageFuzzy(answer.answer));
+    // return new UserAnswerValueBean(
+    // user.getUserAnswerValueByAnswerValueFuzzy(answer.answer));
     // }
     //
     // /*
     // * (non-Javadoc)
     // *
-    // * @see org.gusdb.wdk.model.User#getRecordPages()
+    // * @see org.gusdb.wdk.model.User#getAnswerValues()
     // */
-    // public UserRecordPageBean[] getUserRecordPages() {
-    // UserRecordPage[] answers = user.getUserRecordPages();
-    // UserRecordPageBean[] answerBeans = new UserRecordPageBean[answers.length];
+    // public UserAnswerValueBean[] getUserAnswerValues() {
+    // UserAnswerValue[] answers = user.getUserAnswerValues();
+    // UserAnswerValueBean[] answerBeans = new UserAnswerValueBean[answers.length];
     // for (int i = 0; i < answers.length; i++) {
-    // answerBeans[i] = new UserRecordPageBean(answers[i]);
+    // answerBeans[i] = new UserAnswerValueBean(answers[i]);
     // }
     // return answerBeans;
     // }
     //
-    // public int getRecordPageCount() {
-    // return user.getUserRecordPages().length;
+    // public int getAnswerValueCount() {
+    // return user.getUserAnswerValues().length;
     // }
     //
     // /*
     // * (non-Javadoc)
     // *
-    // * @see org.gusdb.wdk.model.User#getRecordRecordPageMap()
+    // * @see org.gusdb.wdk.model.User#getRecordAnswerValueMap()
     // */
-    // public Map<String, UserRecordPageBean[]> getRecordRecordPageMap() {
-    // Map recUsrAnsMap = user.getRecordRecordPageMap();
-    // Map<String, UserRecordPageBean[]> recUsrAnsBeanMap = new
-    // LinkedHashMap<String, UserRecordPageBean[]>();
+    // public Map<String, UserAnswerValueBean[]> getRecordAnswerValueMap() {
+    // Map recUsrAnsMap = user.getRecordAnswerValueMap();
+    // Map<String, UserAnswerValueBean[]> recUsrAnsBeanMap = new
+    // LinkedHashMap<String, UserAnswerValueBean[]>();
     // for (Object r : recUsrAnsMap.keySet()) {
     // String rec = (String) r;
-    // UserRecordPage[] usrAns = (UserRecordPage[]) recUsrAnsMap.get(rec);
-    // UserRecordPageBean[] answerBeans = new UserRecordPageBean[usrAns.length];
+    // UserAnswerValue[] usrAns = (UserAnswerValue[]) recUsrAnsMap.get(rec);
+    // UserAnswerValueBean[] answerBeans = new UserAnswerValueBean[usrAns.length];
     // for (int i = 0; i < usrAns.length; i++) {
-    // answerBeans[i] = new UserRecordPageBean(usrAns[i]);
+    // answerBeans[i] = new UserAnswerValueBean(usrAns[i]);
     // }
     // recUsrAnsBeanMap.put(rec, answerBeans);
     // }
@@ -497,11 +497,11 @@ public class UserBean /* implements Serializable */{
     // /*
     // * (non-Javadoc)
     // *
-    // * @see org.gusdb.wdk.model.User#renameRecordPage(int, java.lang.String)
+    // * @see org.gusdb.wdk.model.User#renameAnswerValue(int, java.lang.String)
     // */
-    // public void renameUserRecordPage(int answerID, String name)
+    // public void renameUserAnswerValue(int answerID, String name)
     // throws WdkUserException {
-    // this.user.renameUserRecordPage(answerID, name);
+    // this.user.renameUserAnswerValue(answerID, name);
     // }
 
     public Map<String, String> getGlobalPreferences() {
@@ -586,38 +586,38 @@ public class UserBean /* implements Serializable */{
         user.deleteHistories();
     }
 
-    public void deleteUserAnswers()
+    public void deleteSteps()
 	throws WdkUserException {
-	user.deleteUserAnswers();
+	user.deleteSteps();
     }
 
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.user.User#createHistory(org.gusdb.wdk.model.RecordPage)
+     * @see org.gusdb.wdk.model.user.User#createHistory(org.gusdb.wdk.model.AnswerValue)
      */
-    public HistoryBean createHistory(RecordPageBean answer)
+    public HistoryBean createHistory(AnswerValueBean answer)
             throws WdkUserException, WdkModelException {
         History history = user.createHistory(answer.answer);
         return new HistoryBean(history);
     }
 
-    public UserAnswerBean createUserAnswer(RecordPageBean answer)
+    public StepBean createStep(AnswerValueBean answer)
 	throws WdkUserException, WdkModelException {
-	UserAnswer userAnswer = user.createUserAnswer(answer.answer);
-	return new UserAnswerBean(userAnswer);
+	Step userAnswer = user.createStep(answer.answer);
+	return new StepBean(userAnswer);
     }
 
-    public UserStrategyBean createUserStrategy(UserAnswerBean answer, boolean saved)
+    public StrategyBean createStrategy(StepBean root, boolean saved)
 	throws WdkUserException, WdkModelException {
-	UserStrategy strategy = user.createUserStrategy(answer.userAnswer, saved);
-	return new UserStrategyBean(strategy);
+	Strategy strategy = user.createStrategy(root.step, saved);
+	return new StrategyBean(strategy);
     }
 
-    public UserStrategyBean createUserStrategy(UserAnswerBean answer, String name, boolean saved)
+    public StrategyBean createStrategy(StepBean root, String name, boolean saved)
 	throws WdkUserException, WdkModelException {
-	UserStrategy strategy = user.createUserStrategy(answer.userAnswer, name, saved);
-	return new UserStrategyBean(strategy);
+	Strategy strategy = user.createStrategy(root.step, name, saved);
+	return new StrategyBean(strategy);
     }
 
     /*
@@ -630,14 +630,14 @@ public class UserBean /* implements Serializable */{
         user.deleteHistory(historyId);
     }
 
-    public void deleteUserAnswer(int userAnswerId)
+    public void deleteStep(int userAnswerId)
 	throws WdkUserException, WdkModelException {
-	user.deleteUserAnswer(userAnswerId);
+	user.deleteStep(userAnswerId);
     }
 
-    public void deleteUserStrategy(int strategyId)
+    public void deleteStrategy(int strategyId)
 	throws WdkUserException, WdkModelException {
-	user.deleteUserStrategy(strategyId);
+	user.deleteStrategy(strategyId);
     }
 
     /*
@@ -675,9 +675,9 @@ public class UserBean /* implements Serializable */{
         user.deleteInvalidHistories();
     }
 
-    public void deleteInvalidUserAnswers()
+    public void deleteInvalidSteps()
 	throws WdkUserException, WdkModelException {
-	user.deleteInvalidUserAnswers();
+	user.deleteInvalidSteps();
     }
 
     public Map<String, List<HistoryBean>> getHistoriesByCategory()
@@ -695,25 +695,25 @@ public class UserBean /* implements Serializable */{
         return category;
     }
 
-    public UserStrategyBean[] getInvalidUserStrategies()
+    public StrategyBean[] getInvalidStrategies()
 	throws WdkUserException, WdkModelException {
-	UserStrategy[] strategies = user.getInvalidUserStrategies();
-	UserStrategyBean[] beans = new UserStrategyBean[strategies.length];
+	Strategy[] strategies = user.getInvalidStrategies();
+	StrategyBean[] beans = new StrategyBean[strategies.length];
 	for (int i = 0; i < strategies.length; ++i) {
-	    beans[i] = new UserStrategyBean(strategies[i]);
+	    beans[i] = new StrategyBean(strategies[i]);
 	}
 	return beans;
     }
 
-    public Map<String, List<UserStrategyBean>> getUserStrategiesByCategory()
+    public Map<String, List<StrategyBean>> getStrategiesByCategory()
 	throws WdkUserException, WdkModelException {
-	Map<String, List<UserStrategy>> strategies = user.getUserStrategiesByCategory();
-	Map<String, List<UserStrategyBean>> category = new LinkedHashMap<String, List<UserStrategyBean>>();
+	Map<String, List<Strategy>> strategies = user.getStrategiesByCategory();
+	Map<String, List<StrategyBean>> category = new LinkedHashMap<String, List<StrategyBean>>();
 	for (String type : strategies.keySet()) {
-	    List<UserStrategy> list = strategies.get(type);
-	    List<UserStrategyBean> beans = new ArrayList<UserStrategyBean>();
-	    for (UserStrategy strategy : list) {
-		beans.add(new UserStrategyBean(strategy));
+	    List<Strategy> list = strategies.get(type);
+	    List<StrategyBean> beans = new ArrayList<StrategyBean>();
+	    for (Strategy strategy : list) {
+		beans.add(new StrategyBean(strategy));
 	    }
 	    category.put(type, beans);
 	}
@@ -735,22 +735,22 @@ public class UserBean /* implements Serializable */{
         return beans;
     }
 
-    public UserStrategyBean[] getUserStrategies(String dataType)
+    public StrategyBean[] getStrategies(String dataType)
 	throws WdkUserException, WdkModelException {
-	UserStrategy[] strategies = user.getUserStrategies(dataType);
-	UserStrategyBean[] beans = new UserStrategyBean[strategies.length];
+	Strategy[] strategies = user.getStrategies(dataType);
+	StrategyBean[] beans = new StrategyBean[strategies.length];
 	for (int i = 0; i < strategies.length; ++i) {
-	    beans[i] = new UserStrategyBean(strategies[i]);
+	    beans[i] = new StrategyBean(strategies[i]);
 	}
 	return beans;
     }
 
-    public UserAnswerBean[] getUserAnswers(String dataType)
+    public StepBean[] getSteps(String dataType)
 	throws WdkUserException, WdkModelException {
-	UserAnswer[] userAnswers = user.getUserAnswers(dataType);
-	UserAnswerBean[] beans = new UserAnswerBean[userAnswers.length];
+	Step[] userAnswers = user.getSteps(dataType);
+	StepBean[] beans = new StepBean[userAnswers.length];
 	for (int i = 0; i < userAnswers.length; ++i) {
-	    beans[i] = new UserAnswerBean(userAnswers[i]);
+	    beans[i] = new StepBean(userAnswers[i]);
 	}
 	return beans;
     }
@@ -765,14 +765,14 @@ public class UserBean /* implements Serializable */{
         return new HistoryBean(user.getHistory(historyId));
     }
 
-    public UserAnswerBean getUserAnswer(int userAnswerId)
+    public StepBean getStep(int userAnswerId)
 	throws WdkUserException, WdkModelException {
-	return new UserAnswerBean(user.getUserAnswer(userAnswerId));
+	return new StepBean(user.getStep(userAnswerId));
     }
 
-    public UserStrategyBean getUserStrategy(int userStrategyId)
+    public StrategyBean getStrategy(int userStrategyId)
 	throws WdkUserException, WdkModelException {
-	return new UserStrategyBean(user.getUserStrategy(userStrategyId));
+	return new StrategyBean(user.getStrategy(userStrategyId));
     }
 
     public String validateExpression(String expression,
@@ -790,9 +790,9 @@ public class UserBean /* implements Serializable */{
         return new HistoryBean(user.combineHistory(expression));
     }
 
-    public UserAnswerBean combineUserAnswer(String expression)
+    public StepBean combineStep(String expression)
 	throws WdkUserException, WdkModelException {
-	return new UserAnswerBean(user.combineUserAnswer(expression));
+	return new StepBean(user.combineStep(expression));
     }
 
     /*

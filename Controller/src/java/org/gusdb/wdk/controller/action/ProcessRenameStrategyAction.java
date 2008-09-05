@@ -12,7 +12,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
-import org.gusdb.wdk.model.jspwrap.UserStrategyBean;
+import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 
 /**
@@ -37,7 +37,7 @@ public class ProcessRenameStrategyAction extends Action {
             UserBean wdkUser = ( UserBean ) request.getSession().getAttribute(
                     CConstants.WDK_USER_KEY );
             try {
-                UserStrategyBean strategy = wdkUser.getUserStrategy( stratId );
+                StrategyBean strategy = wdkUser.getStrategy( stratId );
                 strategy.setName( customName );
 		
                 strategy.update(true);

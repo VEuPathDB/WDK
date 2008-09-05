@@ -15,7 +15,7 @@ import org.gusdb.wdk.model.WdkModelException;
  * @author Jerric
  * @created Oct 11, 2005
  */
-public class XmlRecordPage {
+public class XmlAnswerValue {
 
     private int startIndex;
     private int endIndex;
@@ -26,7 +26,7 @@ public class XmlRecordPage {
     /**
      * 
      */
-    public XmlRecordPage() {
+    public XmlAnswerValue() {
         recordInstances = new ArrayList<XmlRecordInstance>();
         recordInstanceMap = new LinkedHashMap<String, XmlRecordInstance>();
     }

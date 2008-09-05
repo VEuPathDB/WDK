@@ -11,7 +11,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
-import org.gusdb.wdk.model.jspwrap.RecordPageBean;
+import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 //import org.gusdb.wdk.model.jspwrap.BooleanQuestionLeafBean;
 
 
@@ -22,7 +22,7 @@ import org.gusdb.wdk.model.jspwrap.RecordPageBean;
  *    2b) forwards control to a GetDownloadResult action
  */
 
-public class ConfigDownloadAction extends DownloadUserAnswerRecordPageAction {
+public class ConfigDownloadAction extends DownloadStepAnswerValueAction {
     public ActionForward execute(ActionMapping mapping,
 				 ActionForm form,
 				 HttpServletRequest request,
@@ -38,8 +38,8 @@ public class ConfigDownloadAction extends DownloadUserAnswerRecordPageAction {
 	    }
 	}
 
-	RecordPageBean wdkRecordPage = getRecordPageBean(request);
-	wdkRecordPage.setDownloadConfigMap(downloadConfigMap);
+	AnswerValueBean wdkAnswerValue = getAnswerValueBean(request);
+	wdkAnswerValue.setDownloadConfigMap(downloadConfigMap);
 
 	ActionForward forward = mapping.findForward(CConstants.CONFIG_DOWNLOAD_MAPKEY);
 	return forward;

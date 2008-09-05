@@ -18,7 +18,7 @@ public class RecordInstance {
     RecordClass recordClass;
     Map<String, Map<String, Object>> attributesResultSetsMap;
     Map<String, Integer> summaryAttributeMap;
-    RecordPage answer;
+    AnswerValue answer;
     Map<String, AttributeField> dynamicAttributeFields = new LinkedHashMap<String, AttributeField>();
     boolean timeAttributeQueries = false;
 
@@ -207,12 +207,12 @@ public class RecordInstance {
         if (nq != null) {
             for (int i = 0; i < nq.length; i++) {
                 Question nextNq = nq[i];
-                RecordPage a = getNestedRecordRecordPage(nextNq);
+                AnswerValue a = getNestedRecordAnswerValue(nextNq);
                 // TODO
                 // the reset function is no longer available; instead call
-                // cloneRecordPage() to get a new answer object and work on it
+                // cloneAnswerValue() to get a new answer object and work on it
                 // a.resetRecordInstanceCounter();
-                a = a.newRecordPage();
+                a = a.newAnswerValue();
                 RecordInstance nextRi = a.getNextRecordInstance();
 
                 if (a.getNextRecordInstance() != null) {
@@ -239,7 +239,7 @@ public class RecordInstance {
         if (nql != null) {
             for (int i = 0; i < nql.length; i++) {
                 Question nextNql = nql[i];
-                RecordPage a = getNestedRecordRecordPage(nextNql);
+                AnswerValue a = getNestedRecordAnswerValue(nextNql);
                 Vector<RecordInstance> riVector = new Vector<RecordInstance>();
                 while (a.hasMoreRecordInstances()) {
                     RecordInstance nextRi = a.getNextRecordInstance();
@@ -263,7 +263,7 @@ public class RecordInstance {
         return timeAttributeQueries;
     }
 
-    private RecordPage getNestedRecordRecordPage(Question q) throws WdkModelException,
+    private AnswerValue getNestedRecordAnswerValue(Question q) throws WdkModelException,
             WdkUserException {
 
         Param nestedQueryParams[] = q.getQuery().getParams();
@@ -292,7 +292,7 @@ public class RecordInstance {
 
             queryValues.put(paramName, value);
         }
-        RecordPage a = q.makeRecordPage(queryValues, 1, MAXIMUM_NESTED_RECORD_INSTANCES);
+        AnswerValue a = q.makeAnswerValue(queryValues, 1, MAXIMUM_NESTED_RECORD_INSTANCES);
         return a;
     }
 
@@ -458,7 +458,7 @@ public class RecordInstance {
         dynamicAttributeFields = dynaAttribs;
     }
 
-    void setRecordPage(RecordPage answer) {
+    void setAnswerValue(AnswerValue answer) {
         this.answer = answer;
     }
 
@@ -514,7 +514,7 @@ public class RecordInstance {
         QueryInstance qInstance = query.makeInstance();
         qInstance.setIsCacheable(false);
 
-        // If in the context of an RecordPage, then we are doing a "summary"
+        // If in the context of an AnswerValue, then we are doing a "summary"
         // and need to do a join against the result table
         if (answer != null) {
             answer.integrateAttributesQueryResult(qInstance);

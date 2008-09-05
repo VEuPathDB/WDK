@@ -12,23 +12,23 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
-import org.gusdb.wdk.model.jspwrap.UserAnswerBean;
+import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 
 /**
  * @author xingao
  * 
  */
-public class ProcessRenameUserAnswerAction extends Action {
+public class ProcessRenameStepAction extends Action {
     
-    private static Logger logger = Logger.getLogger( ProcessRenameUserAnswerAction.class );
+    private static Logger logger = Logger.getLogger( ProcessRenameStepAction.class );
     
     public ActionForward execute( ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response )
             throws Exception {
         
         String histIdstr = request.getParameter( "user_answer_id" );
-        String customName = request.getParameter( "customUserAnswerName" );
+        String customName = request.getParameter( "customStepName" );
         
         // TEST
         logger.info( "Set custom name: '" + customName + "'" );
@@ -37,7 +37,7 @@ public class ProcessRenameUserAnswerAction extends Action {
             UserBean wdkUser = ( UserBean ) request.getSession().getAttribute(
                     CConstants.WDK_USER_KEY );
             try {
-                UserAnswerBean userAnswer = wdkUser.getUserAnswer( histId );
+                StepBean userAnswer = wdkUser.getStep( histId );
                 userAnswer.setCustomName( customName );
                 userAnswer.update( false );
             } catch ( Exception e ) {

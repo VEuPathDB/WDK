@@ -28,7 +28,7 @@ public class DeleteStrategyAction extends Action {
 		int stratId = Integer.parseInt(stratIdstr[i]);
 		UserBean wdkUser = (UserBean) request.getSession().getAttribute(CConstants.WDK_USER_KEY);
 		try {
-		    wdkUser.deleteUserStrategy(stratId);
+		    wdkUser.deleteStrategy(stratId);
 		} catch (Exception e) {
 		    e.printStackTrace();
 		    // prevent refresh of page after delete from breaking

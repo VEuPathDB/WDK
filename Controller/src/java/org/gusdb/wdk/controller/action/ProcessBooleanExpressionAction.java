@@ -10,13 +10,13 @@ import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.UserAnswerBean;
-import org.gusdb.wdk.model.jspwrap.UserStrategyBean;
+import org.gusdb.wdk.model.jspwrap.StepBean;
+import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 
 /**
- * This Action is process boolean expression on queryUserAnswer.jsp page.
+ * This Action is process boolean expression on queryStep.jsp page.
  * 
  */
 
@@ -27,7 +27,7 @@ public class ProcessBooleanExpressionAction extends Action {
 			throws Exception {
 		try {
 			BooleanExpressionForm beForm = (BooleanExpressionForm) form;
-			String userRecordPageIdStr = processBooleanExpression(request, beForm);
+			String userAnswerValueIdStr = processBooleanExpression(request, beForm);
 
 			ActionForward fwd = mapping
 					.findForward(CConstants.PROCESS_BOOLEAN_EXPRESSION_MAPKEY);
@@ -35,11 +35,11 @@ public class ProcessBooleanExpressionAction extends Action {
 			if (path.indexOf("?") > 0) {
 			    if (path.indexOf(CConstants.WDK_HISTORY_ID_KEY) < 0) {
 				path += "&" + CConstants.WDK_HISTORY_ID_KEY + "="
-				    + userRecordPageIdStr;
+				    + userAnswerValueIdStr;
 			    }
 			} else {
 			    path += "?" + CConstants.WDK_HISTORY_ID_KEY + "="
-				+ userRecordPageIdStr;
+				+ userAnswerValueIdStr;
 			}
 
 			/* Step code
@@ -64,9 +64,9 @@ public class ProcessBooleanExpressionAction extends Action {
 			WdkUserException {
 		UserBean wdkUser = (UserBean) request.getSession().getAttribute(
 				CConstants.WDK_USER_KEY);
-		UserAnswerBean userAnswer = wdkUser.combineUserAnswer(beForm
+		StepBean userAnswer = wdkUser.combineStep(beForm
 				.getBooleanExpression());
-		int userAnswerId = userAnswer.getUserAnswerId();
+		int userAnswerId = userAnswer.getStepId();
 		/*
 		// 1. Check for strategy id
 		// 2. If exists, load strategy
@@ -77,7 +77,7 @@ public class ProcessBooleanExpressionAction extends Action {
 		String strProtoId = request.getParameter("strategy");
  	
 		if (strProtoId != null && strProtoId.length() != 0) {
-		    UserStrategyBean strategy = wdkUser.getUserStrategy(Integer.parseInt(strProtoId));
+		    StrategyBean strategy = wdkUser.getStrategy(Integer.parseInt(strProtoId));
 		    String stepKey = request.getParameter("addStep");
 		    if (stepKey != null && stepKey.length() != 0) {
 			StepBean subQuery = (StepBean) request.getSession().getAttribute(stepKey);

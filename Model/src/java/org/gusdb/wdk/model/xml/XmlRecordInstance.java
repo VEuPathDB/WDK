@@ -44,7 +44,7 @@ public class XmlRecordInstance {
     }
 
     /**
-     * this method is called by the XmlRecordPage in setting resource stage
+     * this method is called by the XmlAnswerValue in setting resource stage
      * 
      * @param recordClass
      *          The recordClass to set.

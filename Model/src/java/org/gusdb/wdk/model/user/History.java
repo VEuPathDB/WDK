@@ -9,7 +9,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.gusdb.wdk.model.RecordPage;
+import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.BooleanExpression;
 import org.gusdb.wdk.model.HistoryParam;
 import org.gusdb.wdk.model.Param;
@@ -29,7 +29,7 @@ public class History {
     private Date createdTime;
     private Date lastRunTime;
     private String customName;
-    private RecordPage answer = null;
+    private AnswerValue answer = null;
     private int estimateSize;
     private boolean isBoolean;
     private String booleanExpression;
@@ -73,7 +73,7 @@ public class History {
     
     /**
      * @return Returns the customName. If no custom name set before, it will
-     *         return the default name provided by the underline RecordPage - a
+     *         return the default name provided by the underline AnswerValue - a
      *         combination of question's full name, parameter names and values.
      */
     public String getCustomName() {
@@ -114,7 +114,7 @@ public class History {
      * @return Returns the answer.
      * @throws WdkUserException
      */
-    public RecordPage getRecordPage() throws WdkUserException {
+    public AnswerValue getAnswerValue() throws WdkUserException {
         if ( !isValid )
             throw new WdkUserException( "The history #" + historyId
                     + " is invalid." );
@@ -125,7 +125,7 @@ public class History {
      * @param answer
      *            The answer to set.
      */
-    public void setRecordPage( RecordPage answer ) {
+    public void setAnswerValue( AnswerValue answer ) {
         this.answer = answer;
     }
     

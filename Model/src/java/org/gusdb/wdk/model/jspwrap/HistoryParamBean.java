@@ -29,8 +29,8 @@ public class HistoryParamBean extends ParamBean {
         return new HistoryBean(historyParam.getHistory(combinedId));
 	}*/
 
-    public UserAnswerBean getUserAnswer()
+    public StepBean getStep()
 	throws WdkUserException, WdkModelException {
-	return new UserAnswerBean(historyParam.getUserAnswer(combinedId));
+	return new StepBean(historyParam.getStep(combinedId));
     }
 }
