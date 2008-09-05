@@ -18,11 +18,11 @@ import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.jspwrap.AnswerParamBean;
 import org.gusdb.wdk.model.jspwrap.DatasetBean;
 import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
 import org.gusdb.wdk.model.jspwrap.EnumParamBean;
 import org.gusdb.wdk.model.jspwrap.HistoryBean;
-import org.gusdb.wdk.model.jspwrap.HistoryParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.QuestionSetBean;
@@ -189,17 +189,17 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
                         pVal = defaults;
                     }
                 }
-            } else if (p instanceof HistoryParamBean) {
+            } else if (p instanceof AnswerParamBean) {
                 // get type, as in RecordClass full name
-                HistoryParamBean historyParam = (HistoryParamBean) p;
-                HistoryBean[] histories = historyParam.getHistories(user);
+                AnswerParamBean answerParam = (AnswerParamBean) p;
+                HistoryBean[] histories = answerParam.getHistories(user);
                 String[] values = new String[histories.length];
                 String[] labels = new String[histories.length];
                 for (int idx = 0; idx < histories.length; idx++) {
-                    values[idx] = signature + ":"
-                            + histories[idx].getHistoryId();
-                    labels[idx] = "#" + histories[idx].getHistoryId() + " "
-                            + histories[idx].getCustomName();
+                    HistoryBean history = histories[idx];
+                    values[idx] = history.getChecksum();
+                    labels[idx] = "#" + history.getHistoryId() + " "
+                            + history.getCustomName();
                 }
                 qForm.getMyValues().put(p.getName(), values);
                 qForm.getMyLabels().put(p.getName(),

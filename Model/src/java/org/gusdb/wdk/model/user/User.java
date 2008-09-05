@@ -19,7 +19,6 @@ import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.BooleanExpression;
 import org.gusdb.wdk.model.DatasetParam;
 import org.gusdb.wdk.model.FieldScope;
-import org.gusdb.wdk.model.HistoryParam;
 import org.gusdb.wdk.model.Param;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.WdkModel;
@@ -458,16 +457,7 @@ public class User /* implements Serializable */{
                     Param[] params = question.getParams();
                     Map<String, Object> values = answer.getIdsQueryInstance().getValues();
                     for (Param param : params) {
-                        if (param instanceof HistoryParam) {
-                            String compound = values.get(param.getName()).toString();
-                            // two parts: user_signature, history_id
-                            String parts[] = compound.split(":");
-                            int histId = Integer.parseInt(parts[1].trim());
-                            Integer newId = historyMap.get(histId);
-                            // replace the signature with current user's
-                            String newValue = this.signature + ":" + newId;
-                            values.put(param.getName(), newValue);
-                        } else if (param instanceof DatasetParam) {
+                        if (param instanceof DatasetParam) {
                             // merge dataset, by creating new datasets with the
                             // previous values
                             String compound = values.get(param.getName()).toString();
@@ -577,22 +567,22 @@ public class User /* implements Serializable */{
      * @throws JSONException
      * @throws SQLException
      */
-    public Map<Integer, History> getHistoriesMap(String dataType)
+    public Map<Integer, History> getHistoriesMap(String recordClassName)
             throws WdkUserException, WdkModelException, SQLException,
             JSONException {
         Map<Integer, History> histories = getHistoriesMap();
         Map<Integer, History> selected = new LinkedHashMap<Integer, History>();
         for (int historyId : histories.keySet()) {
             History history = histories.get(historyId);
-            if (dataType.equalsIgnoreCase(history.getDataType()))
+            if (recordClassName.equalsIgnoreCase(history.getDataType()))
                 selected.put(historyId, history);
         }
         return selected;
     }
 
-    public History[] getHistories(String dataType) throws WdkUserException,
+    public History[] getHistories(String recordClassName) throws WdkUserException,
             WdkModelException, SQLException, JSONException {
-        Map<Integer, History> map = getHistoriesMap(dataType);
+        Map<Integer, History> map = getHistoriesMap(recordClassName);
         History[] array = new History[map.size()];
         map.values().toArray(array);
         return array;
