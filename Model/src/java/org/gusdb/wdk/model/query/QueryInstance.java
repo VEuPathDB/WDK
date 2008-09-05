@@ -179,7 +179,7 @@ public abstract class QueryInstance {
             Integer endIndex) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
-        if (query.isCached()) return getCachedResults(columns, startIndex,
+        if (cached) return getCachedResults(columns, startIndex,
                 endIndex);
         else return getUncachedResults(columns, startIndex, endIndex);
     }
