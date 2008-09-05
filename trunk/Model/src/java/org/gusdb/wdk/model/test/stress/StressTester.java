@@ -34,9 +34,9 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.AnswerParam;
 import org.gusdb.wdk.model.DatasetParam;
 import org.gusdb.wdk.model.FlatVocabParam;
-import org.gusdb.wdk.model.HistoryParam;
 import org.gusdb.wdk.model.Param;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
@@ -302,7 +302,7 @@ public class StressTester {
                         for (String term : terms) {
                             values.add(term);
                         }
-                    } else if (param instanceof HistoryParam
+                    } else if (param instanceof AnswerParam
                             || param instanceof DatasetParam) {
                         unusable = true;
                         break;

@@ -1,5 +1,5 @@
 <%-- 
-Provides form input element for a given FlatVocbParam.
+Provides form input element for a given AnswerParam.
 
 For a multi-selectable parameter a form element is provided as either a 
 series of checkboxes or a multiselect menu depending on number of 
@@ -14,7 +14,7 @@ Otherwise a standard select menu is used.
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
 
 <%@ attribute name="qp"
-              type="org.gusdb.wdk.model.jspwrap.HistoryParamBean"
+              type="org.gusdb.wdk.model.jspwrap.AnswerParamBean"
               required="true"
               description="parameter name"
 %>

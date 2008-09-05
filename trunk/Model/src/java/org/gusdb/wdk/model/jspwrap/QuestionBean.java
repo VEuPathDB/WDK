@@ -9,12 +9,12 @@ import java.util.Map;
 import org.gusdb.wdk.model.AbstractEnumParam;
 import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.AnswerFilterInstance;
+import org.gusdb.wdk.model.AnswerParam;
 import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.DatasetParam;
 import org.gusdb.wdk.model.Field;
 import org.gusdb.wdk.model.FieldScope;
 import org.gusdb.wdk.model.Group;
-import org.gusdb.wdk.model.HistoryParam;
 import org.gusdb.wdk.model.Param;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.RecordClass;
@@ -107,8 +107,8 @@ public class QuestionBean {
     private ParamBean getParam(Param param) {
         if (param instanceof AbstractEnumParam) {
             return new EnumParamBean((AbstractEnumParam) param);
-        } else if (param instanceof HistoryParam) {
-            return new HistoryParamBean((HistoryParam) param);
+        } else if (param instanceof AnswerParam) {
+            return new AnswerParamBean((AnswerParam) param);
         } else if (param instanceof DatasetParam) {
             return new DatasetParamBean((DatasetParam) param);
         } else {
