@@ -36,7 +36,6 @@ public class History {
     private Date lastRunTime;
     private String customName;
     private Answer answer = null;
-    private int estimateSize;
     private boolean isBoolean;
     private String booleanExpression;
     private boolean isDeleted;
@@ -136,17 +135,14 @@ public class History {
 
     /**
      * @return Returns the estimateSize.
+     * @throws WdkUserException 
+     * @throws JSONException 
+     * @throws WdkModelException 
+     * @throws SQLException 
+     * @throws NoSuchAlgorithmException 
      */
-    public int getEstimateSize() {
-        return estimateSize;
-    }
-
-    /**
-     * @param estimateSize
-     *            The estimateSize to set.
-     */
-    public void setEstimateSize(int estimateSize) {
-        this.estimateSize = estimateSize;
+    public int getEstimateSize() throws NoSuchAlgorithmException, SQLException, WdkModelException, JSONException, WdkUserException {
+        return answer.getAnswerInfo().getEstimatedSize();
     }
 
     /**
