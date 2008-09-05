@@ -11,6 +11,7 @@ import java.util.Vector;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Answer;
+import org.gusdb.wdk.model.AnswerFilterInstance;
 import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.DatasetParam;
 import org.gusdb.wdk.model.FieldScope;
@@ -451,5 +452,11 @@ public class AnswerBean {
             throws NoSuchAlgorithmException, SQLException, WdkModelException,
             JSONException, WdkUserException {
         return answer.getFilterSize(filterName);
+    }
+    
+    public AnswerFilterInstanceBean getFilter() {
+        AnswerFilterInstance filter = answer.getFilter();
+        if (filter == null) return null;
+        return new AnswerFilterInstanceBean(filter);
     }
 }

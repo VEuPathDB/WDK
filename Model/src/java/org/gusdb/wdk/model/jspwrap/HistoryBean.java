@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.Map;
 
 import org.gusdb.wdk.model.Answer;
+import org.gusdb.wdk.model.AnswerFilterInstance;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.History;
@@ -280,5 +281,12 @@ public class HistoryBean {
      */
     public boolean isValid() {
         return history.isValid();
+    }
+    
+    
+    public String getFilterDisplayName() throws WdkUserException {
+        AnswerFilterInstance filter = history.getAnswer().getFilter();
+        if (filter == null) return null;
+        return filter.getDisplayName();
     }
 }
