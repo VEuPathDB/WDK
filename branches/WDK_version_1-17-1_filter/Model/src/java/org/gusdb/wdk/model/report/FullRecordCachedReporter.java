@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.RecordPage;
+import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.Field;
 import org.gusdb.wdk.model.RDBMSPlatformI;
@@ -42,7 +42,7 @@ public class FullRecordCachedReporter extends Reporter {
 
     private boolean hasEmptyTable = false;
 
-    public FullRecordCachedReporter(RecordPage answer, int startIndex, int endIndex) {
+    public FullRecordCachedReporter(AnswerValue answer, int startIndex, int endIndex) {
         super(answer, startIndex, endIndex);
     }
 
@@ -119,7 +119,7 @@ public class FullRecordCachedReporter extends Reporter {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.report.IReporter#format(org.gusdb.wdk.model.RecordPage)
+     * @see org.gusdb.wdk.model.report.IReporter#format(org.gusdb.wdk.model.AnswerValue)
      */
     public void write(OutputStream out) throws WdkModelException {
         // get the columns that will be in the report
@@ -208,8 +208,8 @@ public class FullRecordCachedReporter extends Reporter {
             boolean advanced = false;
 
             // get page based answers with a maximum size (defined in
-            // PageRecordPageIterator)
-            for (RecordPage answer : this) {
+            // PageAnswerValueIterator)
+            for (AnswerValue answer : this) {
                 while (answer.hasMoreRecordInstances()) {
                     RecordInstance record = answer.getNextRecordInstance();
                     String recordId = record.getPrimaryKey().getRecordId();

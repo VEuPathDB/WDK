@@ -214,9 +214,9 @@ public class XmlQuestion extends WdkModelBase {
         this.model = model;
     }
 
-    public XmlRecordPage makeRecordPage(Map<String, String> params, int startIndex,
+    public XmlAnswerValue makeAnswerValue(Map<String, String> params, int startIndex,
             int endIndex) throws WdkModelException {
-        XmlRecordPage answer;
+        XmlAnswerValue answer;
         InputStream inXmlStream = null;
         InputStream inXslStream = null;
         ByteArrayOutputStream outXmlStream = null;

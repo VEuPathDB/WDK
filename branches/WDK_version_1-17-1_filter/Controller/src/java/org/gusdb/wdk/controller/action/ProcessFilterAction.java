@@ -28,12 +28,12 @@ import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.RecordPageBean;
+import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
 import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
 import org.gusdb.wdk.model.jspwrap.DatasetBean;
-import org.gusdb.wdk.model.jspwrap.UserAnswerBean;
-import org.gusdb.wdk.model.jspwrap.UserStrategyBean;
+import org.gusdb.wdk.model.jspwrap.StepBean;
+import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.HistoryParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
@@ -77,9 +77,9 @@ public class ProcessFilterAction extends ProcessQuestionAction {
         }
 
 
-	UserAnswerBean userAnswer, filterHist;
-        RecordPageBean wdkRecordPage;
-	UserStrategyBean strategy;
+	StepBean userAnswer, filterHist;
+        AnswerValueBean wdkAnswerValue;
+	StrategyBean strategy;
 	StepBean step;
 	String boolExp;
 
@@ -131,7 +131,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	}
 	
 	try {
-	    wdkRecordPage = summaryPaging(request, wdkQuestion, internalParams,
+	    wdkAnswerValue = summaryPaging(request, wdkQuestion, internalParams,
 				      sortingAttributes, summaryAttributes);
 	} catch (WdkModelException ex) {
 	    logger.error(ex);
@@ -144,13 +144,13 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	}
 
 	// get strategy
-	strategy = wdkUser.getUserStrategy(Integer.parseInt(strProtoId));
+	strategy = wdkUser.getStrategy(Integer.parseInt(strProtoId));
 	
 	// create userAnswer for filter subquery
-	userAnswer = wdkUser.createUserAnswer(wdkRecordPage);
-        int userAnswerId = userAnswer.getUserAnswerId();
+	userAnswer = wdkUser.createStep(wdkAnswerValue);
+        int userAnswerId = userAnswer.getStepId();
 
-	StepBean childStep = new StepBean(userAnswer);
+	StepBean childStep = userAnswer;
 
 	// Are we revising or inserting a step?
 	String reviseStep = request.getParameter("revise");
@@ -164,14 +164,14 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	if ((reviseStep == null || reviseStep.length() == 0) &&
 	    (insertStep == null || insertStep.length() == 0)) {
 	    step = strategy.getLatestStep();
-	    boolExp = step.getFilterUserAnswer().getUserAnswerId() + " " + op + " " + userAnswerId;
+	    boolExp = step.getStepId() + " " + op + " " + userAnswerId;
 	    System.out.println("Boolean expression for add: " + boolExp);
 	    
 	    // now create userAnswer for operation query
-	    userAnswer = wdkUser.combineUserAnswer(boolExp);
-	    userAnswerId = userAnswer.getUserAnswerId();
+	    userAnswer = wdkUser.combineStep(boolExp);
+	    userAnswerId = userAnswer.getStepId();
 	    
-	    step = new StepBean(userAnswer);
+	    step = userAnswer;
 	    step.setChildStep(childStep);
 	    
 	    // no insert specified,  so add step at end.
@@ -189,13 +189,13 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 		step = strategy.getStep(targetIx);
 		if (step.getIsFirstStep()) {
 		    // build boolExp for switching to new first query
-		    boolExp = step.getNextStep().getFilterUserAnswer().getBooleanExpression();
+		    boolExp = step.getNextStep().getBooleanExpression();
 		    boolExp = userAnswerId + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
 		    targetIx++;
 		}
 		else {
 		    // build standard boolExp for non-first step
-		    boolExp = step.getPreviousStep().getFilterUserAnswer().getUserAnswerId() + " " + op + " " + userAnswerId;
+		    boolExp = step.getPreviousStep().getStepId() + " " + op + " " + userAnswerId;
 		}
 		targetIx++;
 	    }
@@ -204,33 +204,33 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 
 		step = strategy.getStep(targetIx);
 		if (step.getIsFirstStep()) {
-		    boolExp = userAnswerId +  " " + op + " " + step.getFilterUserAnswer().getUserAnswerId();
+		    boolExp = userAnswerId +  " " + op + " " + step.getStepId();
 		    targetIx++;
 		}
 		else {
 		    // the inserted step has to point to the step at insertIx - 1
 		    step = step.getPreviousStep();
-		    boolExp = step.getFilterUserAnswer().getUserAnswerId() + " " + op + " " + userAnswerId;
+		    boolExp = step.getStepId() + " " + op + " " + userAnswerId;
 		}
 	    }
 
 	    System.out.println("Boolean expression for revise/insert: " + boolExp);
 	    // now create userAnswer for operation query
-	    userAnswer = wdkUser.combineUserAnswer(boolExp);
-	    userAnswerId = userAnswer.getUserAnswerId();
+	    userAnswer = wdkUser.combineStep(boolExp);
+	    userAnswerId = userAnswer.getStepId();
 	    
-	    step = new StepBean(userAnswer);
+	    step = userAnswer;
 	    step.setChildStep(childStep);
 	    
 	    System.out.println("Updating subsequent steps.");
 	    for (int i = targetIx; i < stratLen; ++i) {
 		System.out.println("Updating step " + i);
 		step = strategy.getStep(i);
-		boolExp = step.getFilterUserAnswer().getBooleanExpression();
+		boolExp = step.getBooleanExpression();
 		boolExp = userAnswerId + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
-		userAnswer = wdkUser.combineUserAnswer(boolExp);
-		userAnswerId = userAnswer.getUserAnswerId();
-		step.setFilterUserAnswer(userAnswer);
+		userAnswer = wdkUser.combineStep(boolExp);
+		userAnswerId = userAnswer.getStepId();
+		step = userAnswer;
 	    }
 	    // set latest step
 	    strategy.setLatestStep(step);
@@ -269,7 +269,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
         if (qFullName == null || qFullName.length() == 0) {
             String strHistId = request.getParameter(CConstants.WDK_HISTORY_ID_KEY);
             int userAnswerId = Integer.parseInt(strHistId);
-            UserAnswerBean userAnswer = wdkUser.getUserAnswer(userAnswerId);
+            StepBean userAnswer = wdkUser.getStep(userAnswerId);
             params = userAnswer.getParams();
             paramNames = userAnswer.getParamNames();
             qFullName = userAnswer.getQuestionName();
@@ -342,7 +342,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
         return forward;
     }
 
-    protected RecordPageBean summaryPaging(HttpServletRequest request,
+    protected AnswerValueBean summaryPaging(HttpServletRequest request,
             Object answerMaker, Map<String, Object> params,
             Map<String, Boolean> sortingAttributes, String[] summaryAttributes)
             throws WdkModelException, WdkUserException {
@@ -350,10 +350,10 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 summaryAttributes, null);
     }
 
-    private RecordPageBean summaryPaging(HttpServletRequest request,
+    private AnswerValueBean summaryPaging(HttpServletRequest request,
             Object answerMaker, Map<String, Object> params,
             Map<String, Boolean> sortingAttributes, String[] summaryAttributes,
-            RecordPageBean wdkRecordPage) throws WdkModelException, WdkUserException {
+            AnswerValueBean wdkAnswerValue) throws WdkModelException, WdkUserException {
         UserBean wdkUser = (UserBean) request.getSession().getAttribute(
                 CConstants.WDK_USER_KEY);
         int start = 1;
@@ -372,9 +372,9 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 pageSize = Integer.parseInt(altPageSizeKey);
         }
 
-        if (wdkRecordPage != null) {
-            answerMaker = wdkRecordPage.getQuestion();
-            params = wdkRecordPage.getInternalParams();
+        if (wdkAnswerValue != null) {
+            answerMaker = wdkAnswerValue.getQuestion();
+            params = wdkAnswerValue.getInternalParams();
         }
         if (start < 1) {
             start = 1;
@@ -387,21 +387,21 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             QuestionBean question = (QuestionBean) answerMaker;
             // check if the question is supposed to make answers containing all
             // records in one page
-            if (question.isFullRecordPage()) {
-                wdkRecordPage = question.makeRecordPage(params, sortingAttributes);
+            if (question.isFullAnswerValue()) {
+                wdkAnswerValue = question.makeAnswerValue(params, sortingAttributes);
             } else {
-                wdkRecordPage = question.makeRecordPage(params, start, end,
+                wdkAnswerValue = question.makeAnswerValue(params, start, end,
                         sortingAttributes);
             }
-            wdkRecordPage.setSumaryAttribute(summaryAttributes);
+            wdkAnswerValue.setSumaryAttribute(summaryAttributes);
         } else if (answerMaker instanceof BooleanQuestionNodeBean) {
-            wdkRecordPage = ((BooleanQuestionNodeBean) answerMaker).makeRecordPage(
+            wdkAnswerValue = ((BooleanQuestionNodeBean) answerMaker).makeAnswerValue(
                     start, end);
         } else {
             throw new RuntimeException("unexpected answerMaker: " + answerMaker);
         }
 
-        int totalSize = wdkRecordPage.getResultSize();
+        int totalSize = wdkAnswerValue.getResultSize();
 
         if (end > totalSize) {
             end = totalSize;
@@ -422,7 +422,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
         request.setAttribute("wdk_paging_end", new Integer(end));
         request.setAttribute("wdk_paging_url", request.getRequestURI());
         request.setAttribute("wdk_paging_params", editedParamNames);
-        return wdkRecordPage;
+        return wdkAnswerValue;
     }
 
     protected Map<String, Object> handleMultiPickParams(

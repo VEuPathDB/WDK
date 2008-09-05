@@ -13,7 +13,7 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import org.gusdb.wdk.model.RecordPage;
+import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
 import org.gusdb.wdk.model.Reference;
@@ -36,7 +36,7 @@ public class JUnitUserTest extends TestCase {
     private SanityModel sanityModel;
     private UserFactory userFactory;
     private DatasetFactory datasetFactory;
-    private RecordPage[] answers;
+    private AnswerValue[] answers;
     private User user;
     private Random rand;
 
@@ -91,7 +91,7 @@ public class JUnitUserTest extends TestCase {
             // System.out.println("New user: #" + user.getUserId());
             // System.exit(0);
 
-            answers = createRecordPages(sanityModel);
+            answers = createAnswerValues(sanityModel);
         }
     }
 
@@ -243,7 +243,7 @@ public class JUnitUserTest extends TestCase {
 
     }
 
-    private RecordPage[] createRecordPages(SanityModel sanityModel)
+    private AnswerValue[] createAnswerValues(SanityModel sanityModel)
             throws WdkUserException, WdkModelException {
         // TEST
         System.out.println("Creating answers....");
@@ -252,7 +252,7 @@ public class JUnitUserTest extends TestCase {
         SanityQuestion[] questions = sanityModel.getAllSanityQuestions();
 
         assertTrue(questions.length > 0);
-        List<RecordPage> answers = new ArrayList<RecordPage>();
+        List<AnswerValue> answers = new ArrayList<AnswerValue>();
         // choose a subset of questions only
         for (int i = 0; i < 10; i++) {
             // int index = rand.nextInt(questions.length);
@@ -264,13 +264,13 @@ public class JUnitUserTest extends TestCase {
             Question question = questionSet.getQuestion(questionRef.getElementName());
 
             // run question
-            RecordPage answer = question.makeRecordPage(
+            AnswerValue answer = question.makeAnswerValue(
                     questions[index].getParamHash(),
                     questions[index].getPageStart(),
                     questions[index].getPageEnd());
             answers.add(answer);
         }
-        RecordPage[] array = new RecordPage[answers.size()];
+        AnswerValue[] array = new AnswerValue[answers.size()];
         answers.toArray(array);
 
         // TEST
@@ -293,7 +293,7 @@ public class JUnitUserTest extends TestCase {
                 + history.getEstimateSize());
 
         // print out the answer
-        RecordPage answer = history.getRecordPage();
+        AnswerValue answer = history.getAnswerValue();
         assertNotNull(answer);
         System.out.println(answer.printAsTable());
     }

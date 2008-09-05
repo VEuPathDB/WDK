@@ -15,27 +15,27 @@ import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.jspwrap.RecordPageBean;
-import org.gusdb.wdk.model.jspwrap.UserAnswerBean;
+import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
+import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.RecordClassBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 
 /**
- * This Action is process the download of RecordPages on queryUserAnswer.jsp page.
+ * This Action is process the download of AnswerValues on queryStep.jsp page.
  * 
  */
 
-public class DownloadUserAnswerRecordPageAction extends Action {
+public class DownloadStepAnswerValueAction extends Action {
     
-    private static Logger logger = Logger.getLogger( DownloadUserAnswerRecordPageAction.class );
+    private static Logger logger = Logger.getLogger( DownloadStepAnswerValueAction.class );
     
     public ActionForward execute( ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response )
             throws Exception {
-        RecordPageBean wdkRecordPage = getRecordPageBean( request );
+        AnswerValueBean wdkAnswerValue = getAnswerValueBean( request );
         
         // get a list of supported reporters
-        RecordClassBean recordClass = wdkRecordPage.getQuestion().getRecordClass();
+        RecordClassBean recordClass = wdkAnswerValue.getQuestion().getRecordClass();
         String fullName = recordClass.getFullName();
         Map< String, String > reporters = recordClass.getReporters();
         
@@ -48,9 +48,9 @@ public class DownloadUserAnswerRecordPageAction extends Action {
         if ( reporter != null ) {
             request.setAttribute( CConstants.WDK_REPORT_FORMAT_KEY, reporter );
         }
-        request.setAttribute( CConstants.WDK_ANSWER_KEY, wdkRecordPage );
+        request.setAttribute( CConstants.WDK_ANSWER_KEY, wdkAnswerValue );
         request.setAttribute( CConstants.WDK_QUESTION_PARAMS_KEY,
-                wdkRecordPage.getInternalParams() );
+                wdkAnswerValue.getInternalParams() );
         
         // get forward
         ActionForward forward;
@@ -87,7 +87,7 @@ public class DownloadUserAnswerRecordPageAction extends Action {
         return forward;
     }
     
-    protected RecordPageBean getRecordPageBean( HttpServletRequest request )
+    protected AnswerValueBean getAnswerValueBean( HttpServletRequest request )
             throws Exception {
         String histIdstr = request.getParameter( "user_answer_id" );
         if ( histIdstr == null ) {
@@ -100,8 +100,8 @@ public class DownloadUserAnswerRecordPageAction extends Action {
             UserBean wdkUser = ( UserBean ) request.getSession().getAttribute(
                     CConstants.WDK_USER_KEY );
             
-            UserAnswerBean userAnswer = wdkUser.getUserAnswer( histId );
-            return userAnswer.getRecordPage();
+            StepBean userAnswer = wdkUser.getStep( histId );
+            return userAnswer.getAnswerValue();
         } else {
             throw new Exception(
                     "no userAnswer id is given for which to download the result" );

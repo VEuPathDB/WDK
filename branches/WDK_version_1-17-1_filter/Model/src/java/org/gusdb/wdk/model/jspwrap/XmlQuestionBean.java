@@ -6,7 +6,7 @@ package org.gusdb.wdk.model.jspwrap;
 import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.xml.XmlRecordPage;
+import org.gusdb.wdk.model.xml.XmlAnswerValue;
 import org.gusdb.wdk.model.xml.XmlQuestion;
 
 /**
@@ -90,19 +90,19 @@ public class XmlQuestionBean {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.xml.XmlQuestion#makeRecordPage(java.util.Map, int,
+     * @see org.gusdb.wdk.model.xml.XmlQuestion#makeAnswerValue(java.util.Map, int,
      *      int)
      */
-    public XmlRecordPageBean makeRecordPage(Map<String, String> params, int startIndex,
+    public XmlAnswerValueBean makeAnswerValue(Map<String, String> params, int startIndex,
             int endIndex) throws WdkModelException {
-        XmlRecordPage answer = question.makeRecordPage(params, startIndex, endIndex);
-        return new XmlRecordPageBean(answer);
+        XmlAnswerValue answer = question.makeAnswerValue(params, startIndex, endIndex);
+        return new XmlAnswerValueBean(answer);
     }
 
-    public XmlRecordPageBean getFullRecordPage() throws WdkModelException {
+    public XmlAnswerValueBean getFullAnswerValue() throws WdkModelException {
 	
-	XmlRecordPageBean a = makeRecordPage(null, 1, 3);
+	XmlAnswerValueBean a = makeAnswerValue(null, 1, 3);
 	int c = a.getResultSize();
-	return makeRecordPage(null, 1, c);
+	return makeAnswerValue(null, 1, c);
     }
 }

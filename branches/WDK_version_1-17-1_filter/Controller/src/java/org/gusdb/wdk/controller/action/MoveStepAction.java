@@ -19,9 +19,9 @@ import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.RecordPageBean;
-import org.gusdb.wdk.model.jspwrap.UserAnswerBean;
-import org.gusdb.wdk.model.jspwrap.UserStrategyBean;
+import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
+import org.gusdb.wdk.model.jspwrap.StepBean;
+import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
@@ -72,7 +72,7 @@ public class MoveStepAction extends Action {
 		request.getSession().setAttribute( CConstants.WDK_USER_KEY, wdkUser );
 	    }
 	    
-	    UserStrategyBean strategy = wdkUser.getUserStrategy(Integer.parseInt(strProtoId));
+	    StrategyBean strategy = wdkUser.getStrategy(Integer.parseInt(strProtoId));
 	    
 	    StepBean moveFromStep = strategy.getStep(moveFromIx);
 	    StepBean moveToStep = strategy.getStep(moveToIx);
@@ -83,7 +83,7 @@ public class MoveStepAction extends Action {
 
 	    String boolExp;
 
-	    UserAnswerBean userAnswer;
+	    StepBean userAnswer;
 
 	    if (stubIx < 0) {
 		step = null;
@@ -95,21 +95,24 @@ public class MoveStepAction extends Action {
 	    for (int i = stubIx + 1; i < length; ++i) {
 		if (i == moveToIx) {
 		    if (step == null) {
-			step = new StepBean(moveFromStep.getChildStepUserAnswer());
+			// used to be step = new StepBean(moveFromStep.getChildStepUserAnswer());
+			// may need a clone method so that step is a separate object from moveFromStep
+			step = moveFromStep.getChildStep();
 		    }
 		    else {
 			// assuming boolean, will need to add case for non-boolean op
-			boolExp = moveFromStep.getFilterUserAnswer().getBooleanExpression();
-			boolExp = step.getFilterUserAnswer().getUserAnswerId() + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
-			userAnswer = wdkUser.combineUserAnswer(boolExp);
-			moveFromStep.setFilterUserAnswer(userAnswer);
+			boolExp = moveFromStep.getBooleanExpression();
+			boolExp = step.getStepId() + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
+			userAnswer = wdkUser.combineStep(boolExp);
+			// may also need clone method here?
+			moveFromStep = userAnswer;
 			step = moveFromStep;
 		    }
 		    //again, assuming boolean, will need to add case for non-boolean
-		    boolExp = moveToStep.getFilterUserAnswer().getBooleanExpression();
-		    boolExp = step.getFilterUserAnswer().getUserAnswerId() + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
-		    userAnswer = wdkUser.combineUserAnswer(boolExp);
-		    moveToStep.setFilterUserAnswer(userAnswer);
+		    boolExp = moveToStep.getBooleanExpression();
+		    boolExp = step.getStepId() + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
+		    userAnswer = wdkUser.combineStep(boolExp);
+		    moveToStep = userAnswer;
 		    step = moveToStep;
 		}
 		else if (i == moveFromIx) {
@@ -118,14 +121,15 @@ public class MoveStepAction extends Action {
 		else {
 		    newStep = strategy.getStep(i);
 		    if (step == null) {
-			step = new StepBean(newStep.getChildStepUserAnswer());
+			// need clone method?
+			step = newStep.getChildStep();
 		    }
 		    else {
 			//again, assuming boolean, will need to add case for non-boolean
-			boolExp = newStep.getFilterUserAnswer().getBooleanExpression();
-			boolExp = step.getFilterUserAnswer().getUserAnswerId() + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
-			userAnswer = wdkUser.combineUserAnswer(boolExp);
-			newStep.setFilterUserAnswer(userAnswer);
+			boolExp = newStep.getBooleanExpression();
+			boolExp = step.getStepId() + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
+			userAnswer = wdkUser.combineStep(boolExp);
+			newStep = userAnswer;
 			step = moveToStep;
 		    }
 		}
@@ -136,60 +140,6 @@ public class MoveStepAction extends Action {
 	    step.setNextStep(newStep);
 	    strategy.setLatestStep(step);
 	    strategy.update(false);
-			
-
-	    /* Charles:  Commented out on 7/1/08.  Will need to update for new strategy objects
-	    String boolExp;
-	    int histId = -1;
-
-	    if (moveFromIx < moveToIx) {
-		for (int i = moveFromIx; i < moveToIx; ++i) {
-		    StepBean step = strategy.getStep(i);
-		    if (i == 0) {
-			// set histId to the subQueryUserAnswer of the next step...since we're moving
-			// step 1, next step 2 is going to become step 1
-			histId = step.getNextStep().getSubQueryUserAnswer().getUserAnswerId();
-		    }
-		    else {
-			// move the step "back"...
-			boolExp = step.getNextStep().getFilterUserAnswer().getBooleanExpression();
-			if (histId < 0) {
-			    histId = step.getPreviousStep().getFilterUserAnswer().getUserAnswerId();
-			}
-			boolExp = histId + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
-			wdkUser.updateUserAnswer(step.getFilterUserAnswer(), boolExp);
-			histId = -1;
-		    }
-		}
-		boolExp = strategy.getStep(moveToIx).getFilterUserAnswer().getBooleanExpression();
-		if (moveFromIx == 0) {
-		    // need previous step userAnswer id + op + first step userAnswer id
-		    boolExp = boolExp.substring(0, boolExp.indexOf(" ")) + op + " " + moveStep.getFilterUserAnswer().getUserAnswerId();
-		}
-		else {
-		    // need previous step userAnswer id + (op, subquery userAnswer id) substring from movestep
-		    String moveBoolExp = moveStep.getFilterUserAnswer().getBooleanExpression();
-		    boolExp = boolExp.substring(0, boolExp.indexOf(" ")) + moveBoolExp.substring(moveBoolExp.indexOf(" ") + 1, moveBoolExp.length());
-		}
-		wdkUser.updateUserAnswer(strategy.getStep(moveToIx).getFilterUserAnswer(), boolExp);
-	    }
-	    else {
-		for (int i = moveFromIx; i > moveToIx; --i) {
-		    StepBean step = strategy.getStep(i);
-		    if (step.getPreviousStep().getIsFirstStep()) {
-			//need to build boolExp: moveStep subquery userAnswer id  + op + first step filter userAnswer id
-			boolExp = moveStep.getSubQueryUserAnswer().getUserAnswerId() + " " + op + " " + step.getPreviousStep().getFilterUserAnswer().getUserAnswerId();
-			wdkUser.updateUserAnswer(step.getFilterUserAnswer(), boolExp);
-		    }
-		    else {
-			boolExp = step.getPreviousStep().getFilterUserAnswer().getBooleanExpression();
-			histId = step.getPreviousStep().getFilterUserAnswer().getUserAnswerId();
-			boolExp = histId + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
-			wdkUser.updateUserAnswer(step.getFilterUserAnswer(), boolExp);
-		    }
-		}
-	    }
-	    */
 	}
 	
 	// Forward to ShowStrategyAction

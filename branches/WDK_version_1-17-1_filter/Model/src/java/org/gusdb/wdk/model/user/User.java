@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.RecordPage;
+import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.BooleanExpression;
 import org.gusdb.wdk.model.BooleanQuestionNode;
@@ -355,43 +355,43 @@ public class User /* implements Serializable */{
         this.guest = guest;
     }
 
-    public History createHistory(RecordPage answer) throws WdkUserException,
+    public History createHistory(AnswerValue answer) throws WdkUserException,
             WdkModelException {
         return createHistory(answer, null, false);
     }
 
-    private History createHistory(RecordPage answer, String booleanExpression,
+    private History createHistory(AnswerValue answer, String booleanExpression,
             boolean deleted) throws WdkUserException, WdkModelException {
         return userFactory.createHistory(this, answer, booleanExpression,
                 deleted);
     }
 
-    public UserAnswer createUserAnswer(RecordPage result)
+    public Step createStep(AnswerValue result)
 	throws WdkUserException, WdkModelException {
-	return createUserAnswer(result, null, false);
+	return createStep(result, null, false);
     }
     
-    public UserAnswer createUserAnswer(RecordPage result, String booleanExpression,
+    public Step createStep(AnswerValue result, String booleanExpression,
 				       boolean deleted)
 	throws WdkUserException, WdkModelException {
-	return userFactory.createUserAnswer(this, result, booleanExpression, deleted);
+	return userFactory.createStep(this, result, booleanExpression, deleted);
     }
 
-    public UserStrategy createUserStrategy(UserAnswer answer, boolean saved) 
+    public Strategy createStrategy(Step answer, boolean saved) 
 	throws WdkUserException, WdkModelException {
         Date now = new Date();
-	String name = answer.getAnswer().getRecordPage().getQuestion().getRecordClass().getType() + " Strategy for ";
+	String name = answer.getAnswer().getAnswerValue().getQuestion().getRecordClass().getType() + " Strategy for ";
 	name += getFirstName();
 	if (!isGuest()) {
 	    name += " " + getLastName();
 	}
 	name += now;
-	return createUserStrategy(answer, name, saved);
+	return createStrategy(answer, name, saved);
     }
 
-    public UserStrategy createUserStrategy(UserAnswer answer, String name, boolean saved)
+    public Strategy createStrategy(Step answer, String name, boolean saved)
 	throws WdkUserException, WdkModelException {
-	return userFactory.createUserStrategy(this, answer, name, saved);
+	return userFactory.createStrategy(this, answer, name, saved);
     }
 
     /**
@@ -421,7 +421,7 @@ public class User /* implements Serializable */{
 
                 if (components.isEmpty()) {
                     // no components, can merge
-                    History newHistory = createHistory(history.getRecordPage(),
+                    History newHistory = createHistory(history.getAnswerValue(),
                             null, history.isDeleted());
                     newHistory.setCustomName(history.getBaseCustomName());
                     newHistory.update();
@@ -472,7 +472,7 @@ public class User /* implements Serializable */{
                     newHistory = combineHistory(expression, history.isDeleted());
                 } else {
                     // merge histories with DatasetParam/HistoryParam
-                    RecordPage answer = history.getRecordPage();
+                    AnswerValue answer = history.getAnswerValue();
                     Question question = answer.getQuestion();
                     int startIndex = answer.getStartRecordInstanceI();
                     int endIndex = answer.getEndRecordInstanceI();
@@ -502,7 +502,7 @@ public class User /* implements Serializable */{
                             values.put(param.getName(), newValue);
                         }
                     }
-                    answer = question.makeRecordPage(values, startIndex, endIndex);
+                    answer = question.makeAnswerValue(values, startIndex, endIndex);
                     newHistory = createHistory(answer, null,
                             history.isDeleted());
                 }
@@ -545,23 +545,23 @@ public class User /* implements Serializable */{
         return histories;
     }
 
-    public Map<Integer, UserAnswer> getUserAnswersMap()
+    public Map<Integer, Step> getStepsMap()
 	throws WdkUserException, WdkModelException {
-	Map<Integer, UserAnswer> invalidUserAnswers = new LinkedHashMap<Integer, UserAnswer>();
-	Map<Integer, UserAnswer> userAnswers = userFactory.loadUserAnswers(this, invalidUserAnswers);
+	Map<Integer, Step> invalidSteps = new LinkedHashMap<Integer, Step>();
+	Map<Integer, Step> userAnswers = userFactory.loadSteps(this, invalidSteps);
 
 	// update the user answer count?  we need to have one first
 
 	return userAnswers;
     }
 
-    public Map<Integer, UserStrategy> getUserStrategiesMap()
+    public Map<Integer, Strategy> getStrategiesMap()
 	throws WdkUserException, WdkModelException {
-	Map<Integer, UserStrategy> invalidStrategies = new LinkedHashMap<Integer, UserStrategy>();
-	Map<Integer, UserStrategy> strategies = userFactory.loadUserStrategies(this, invalidStrategies);
+	Map<Integer, Strategy> invalidStrategies = new LinkedHashMap<Integer, Strategy>();
+	Map<Integer, Strategy> strategies = userFactory.loadStrategies(this, invalidStrategies);
 	
 	strategyCount = 0;
-	for (UserStrategy strategy : strategies.values()) {
+	for (Strategy strategy : strategies.values()) {
 	    strategyCount++;
 	}
 	return strategies;
@@ -605,36 +605,36 @@ public class User /* implements Serializable */{
         return category;
     }
 
-    public UserStrategy[] getInvalidUserStrategies()
+    public Strategy[] getInvalidStrategies()
 	throws WdkUserException, WdkModelException {
-	Map<Integer, UserStrategy> strategies = new LinkedHashMap<Integer, UserStrategy>();
-	userFactory.loadUserStrategies(this, strategies);
+	Map<Integer, Strategy> strategies = new LinkedHashMap<Integer, Strategy>();
+	userFactory.loadStrategies(this, strategies);
 
-	UserStrategy[] array = new UserStrategy[strategies.size()];
+	Strategy[] array = new Strategy[strategies.size()];
 	strategies.values().toArray(array);
 	return array;
     }
 
-    public UserStrategy[] getUserStrategies()
+    public Strategy[] getStrategies()
 	throws WdkUserException, WdkModelException {
-	Map<Integer, UserStrategy> map = getUserStrategiesMap();
-	UserStrategy[] array = new UserStrategy[map.size()];
+	Map<Integer, Strategy> map = getStrategiesMap();
+	Strategy[] array = new Strategy[map.size()];
 	map.values().toArray(array);
 	return array;
     }
 
-    public Map<String, List<UserStrategy>> getUserStrategiesByCategory()
+    public Map<String, List<Strategy>> getStrategiesByCategory()
 	throws WdkUserException, WdkModelException {
-	Map<Integer, UserStrategy> strategies = getUserStrategiesMap();
-	Map<String, List<UserStrategy>> category = new LinkedHashMap<String, List<UserStrategy>>();
-	for (UserStrategy strategy : strategies.values()) {
+	Map<Integer, Strategy> strategies = getStrategiesMap();
+	Map<String, List<Strategy>> category = new LinkedHashMap<String, List<Strategy>>();
+	for (Strategy strategy : strategies.values()) {
 	    String type = strategy.getDataType();
-	    List<UserStrategy> list;
+	    List<Strategy> list;
 	    if (category.containsKey(type)) {
 		list = category.get(type);
 	    }
 	    else {
-		list = new ArrayList<UserStrategy>();
+		list = new ArrayList<Strategy>();
 		category.put(type, list);
 	    }
 	    list.add(strategy);
@@ -670,42 +670,42 @@ public class User /* implements Serializable */{
         return array;
     }
 
-    public Map<Integer, UserAnswer> getUserAnswersMap(String dataType)
+    public Map<Integer, Step> getStepsMap(String dataType)
 	throws WdkUserException, WdkModelException {
-	Map<Integer, UserAnswer> userAnswers = getUserAnswersMap();
-	Map<Integer, UserAnswer> selected = new LinkedHashMap<Integer, UserAnswer>();
+	Map<Integer, Step> userAnswers = getStepsMap();
+	Map<Integer, Step> selected = new LinkedHashMap<Integer, Step>();
 	for (int userAnswerId : userAnswers.keySet()) {
-	    UserAnswer userAnswer = userAnswers.get(userAnswerId);
+	    Step userAnswer = userAnswers.get(userAnswerId);
 	    if (dataType.equalsIgnoreCase(userAnswer.getDataType()))
 		selected.put(userAnswerId, userAnswer);
 	}
 	return selected;
     }
 
-    public UserAnswer[] getUserAnswers(String dataType)
+    public Step[] getSteps(String dataType)
 	throws WdkUserException, WdkModelException {
-	Map<Integer, UserAnswer> map = getUserAnswersMap(dataType);
-	UserAnswer[] array = new UserAnswer[map.size()];
+	Map<Integer, Step> map = getStepsMap(dataType);
+	Step[] array = new Step[map.size()];
 	map.values().toArray(array);
 	return array;
     }
 
-    public Map<Integer, UserStrategy> getUserStrategiesMap(String dataType)
+    public Map<Integer, Strategy> getStrategiesMap(String dataType)
 	throws WdkUserException, WdkModelException {
-	Map<Integer, UserStrategy> strategies = getUserStrategiesMap();
-	Map<Integer, UserStrategy> selected = new LinkedHashMap<Integer, UserStrategy>();
+	Map<Integer, Strategy> strategies = getStrategiesMap();
+	Map<Integer, Strategy> selected = new LinkedHashMap<Integer, Strategy>();
 	for (int strategyId : strategies.keySet()) {
-	    UserStrategy strategy = strategies.get(strategyId);
+	    Strategy strategy = strategies.get(strategyId);
 	    if (dataType.equalsIgnoreCase(strategy.getDataType()))
 		selected.put(strategyId, strategy);
 	}
 	return selected;
     }
 
-    public UserStrategy[] getUserStrategies(String dataType)
+    public Strategy[] getStrategies(String dataType)
 	throws WdkUserException, WdkModelException {
-	Map<Integer, UserStrategy> map = getUserStrategiesMap(dataType);
-	UserStrategy[] array = new UserStrategy[map.size()];
+	Map<Integer, Strategy> map = getStrategiesMap(dataType);
+	Strategy[] array = new Strategy[map.size()];
 	map.values().toArray(array);
 	return array;
     }
@@ -725,14 +725,14 @@ public class User /* implements Serializable */{
         return userFactory.loadHistory(this, historyId);
     }
 
-    public UserAnswer getUserAnswer(int userAnswerId)
+    public Step getStep(int userAnswerId)
 	throws WdkUserException, WdkModelException {
-	return userFactory.loadUserAnswer(this, userAnswerId);
+	return userFactory.loadStep(this, userAnswerId);
     }
 
-    public UserStrategy getUserStrategy(int userStrategyId)
+    public Strategy getStrategy(int userStrategyId)
 	throws WdkUserException, WdkModelException {
-	return userFactory.loadUserStrategy(this, userStrategyId);
+	return userFactory.loadStrategy(this, userStrategyId);
     }
 
     public void deleteHistories() throws WdkUserException {
@@ -743,14 +743,14 @@ public class User /* implements Serializable */{
         userFactory.deleteHistories(this, allProjects);
     }
 
-    public void deleteUserAnswers()
+    public void deleteSteps()
 	throws WdkUserException {
-	userFactory.deleteUserAnswers(this, false);
+	userFactory.deleteSteps(this, false);
     }
 
-    public void deleteUserAnswers(boolean allProjects)
+    public void deleteSteps(boolean allProjects)
 	throws WdkUserException {
-	userFactory.deleteUserAnswers(this, allProjects);
+	userFactory.deleteSteps(this, allProjects);
     }
 
     public void deleteInvalidHistories() throws WdkUserException,
@@ -758,9 +758,9 @@ public class User /* implements Serializable */{
         userFactory.deleteInvalidHistories(this);
     }
 
-    public void deleteInvalidUserAnswers()
+    public void deleteInvalidSteps()
 	throws WdkUserException, WdkModelException {
-	userFactory.deleteInvalidUserAnswers(this);
+	userFactory.deleteInvalidSteps(this);
     }
 
     public void deleteHistory(int historyId) throws WdkUserException,
@@ -784,20 +784,20 @@ public class User /* implements Serializable */{
         historyCount--;
     }
 
-    public void deleteUserAnswer(int userAnswerId)
+    public void deleteStep(int userAnswerId)
 	throws WdkUserException, WdkModelException {
-	UserAnswer userAnswer = getUserAnswer(userAnswerId);
+	Step userAnswer = getStep(userAnswerId);
 	// Need to check if we can actually delete from DB or not
-	// For now, this will just hide the UserAnswer
+	// For now, this will just hide the Step
 	userAnswer.setDeleted(true);
 	userAnswer.update(false);
 
 	// need a user answer count?
     }
 
-    public void deleteUserStrategy(int strategyId)
+    public void deleteStrategy(int strategyId)
 	throws WdkUserException, WdkModelException {
-	userFactory.deleteUserStrategy(this, strategyId);
+	userFactory.deleteStrategy(this, strategyId);
 	strategyCount--;
     }
 
@@ -919,15 +919,15 @@ public class User /* implements Serializable */{
         return combineHistory(expression, false);
     }
 
-    public UserAnswer combineUserAnswer(String expression)
+    public Step combineStep(String expression)
 	throws WdkUserException, WdkModelException {
-	return combineUserAnswer(expression, false);
+	return combineStep(expression, false);
     }
 
     public void updateHistory(History history, String expression)
             throws WdkUserException, WdkModelException {
-        RecordPage answer = parseExpression(expression);
-        history.setRecordPage(answer);
+        AnswerValue answer = parseExpression(expression);
+        history.setAnswerValue(answer);
         history.setBooleanExpression(expression);
         userFactory.updateHistory(history, expression);
     }
@@ -935,24 +935,24 @@ public class User /* implements Serializable */{
 
     private History combineHistory(String expression, boolean deleted)
             throws WdkUserException, WdkModelException {
-        RecordPage answer = parseExpression(expression);
+        AnswerValue answer = parseExpression(expression);
         return createHistory(answer, expression, false);
     }
 
-    private UserAnswer combineUserAnswer(String expression, boolean deleted)
+    private Step combineStep(String expression, boolean deleted)
 	throws WdkUserException, WdkModelException {
-	RecordPage answer = parseExpression(expression);
-	return createUserAnswer(answer, expression, false);
+	AnswerValue answer = parseExpression(expression);
+	return createStep(answer, expression, false);
     }
 
-    private RecordPage parseExpression(String expression) throws WdkUserException,
+    private AnswerValue parseExpression(String expression) throws WdkUserException,
             WdkModelException {
         logger.debug("Boolean expression: " + expression);
         BooleanExpression exp = new BooleanExpression(this);
         Map<String, String> operatorMap = getWdkModel().getBooleanOperators();
         BooleanQuestionNode root = exp.parseExpression(expression, operatorMap);
 
-        RecordPage answer = root.makeRecordPage(1, getItemsPerPage());
+        AnswerValue answer = root.makeAnswerValue(1, getItemsPerPage());
 
         logger.debug("Boolean answer: " + answer.getResultSize());
 

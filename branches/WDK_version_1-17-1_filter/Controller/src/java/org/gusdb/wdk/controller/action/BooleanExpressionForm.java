@@ -15,7 +15,7 @@ import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
 /**
- * form bean for holding the boolean expression string fro queryUserAnswer.jsp page
+ * form bean for holding the boolean expression string fro queryStep.jsp page
  */
 
 public class BooleanExpressionForm extends ActionForm {
@@ -35,11 +35,11 @@ public class BooleanExpressionForm extends ActionForm {
         return booleanExpression;
     }
 
-    public void setUserAnswerSectionId(String si) {
+    public void setStepSectionId(String si) {
         userAnswerSectionId = si;
     }
 
-    public String getUserAnswerSectionId() {
+    public String getStepSectionId() {
         return userAnswerSectionId;
     }
 

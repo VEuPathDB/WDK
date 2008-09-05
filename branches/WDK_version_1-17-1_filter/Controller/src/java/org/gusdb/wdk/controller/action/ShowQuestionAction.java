@@ -19,7 +19,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.DatasetBean;
 import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
 import org.gusdb.wdk.model.jspwrap.EnumParamBean;
-import org.gusdb.wdk.model.jspwrap.UserAnswerBean;
+import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.HistoryParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
@@ -187,13 +187,13 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
             } else if (p instanceof HistoryParamBean) {
                 // get type, as in RecordClass full name
                 String dataType = wdkQuestion.getRecordClass().getFullName();
-                UserAnswerBean[] userAnswers = user.getUserAnswers(dataType);
+                StepBean[] userAnswers = user.getSteps(dataType);
                 String[] values = new String[userAnswers.length];
                 String[] labels = new String[userAnswers.length];
                 for (int idx = 0; idx < userAnswers.length; idx++) {
                     values[idx] = signature + ":"
-                            + userAnswers[idx].getUserAnswerId();
-                    labels[idx] = "#" + userAnswers[idx].getUserAnswerId() + " "
+                            + userAnswers[idx].getStepId();
+                    labels[idx] = "#" + userAnswers[idx].getStepId() + " "
                             + userAnswers[idx].getCustomName();
                 }
                 qForm.getMyValues().put(p.getName(), values);

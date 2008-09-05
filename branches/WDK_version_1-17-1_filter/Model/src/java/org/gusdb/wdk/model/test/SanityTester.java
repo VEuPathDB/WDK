@@ -15,7 +15,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.RecordPage;
+import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.Query;
 import org.gusdb.wdk.model.QuerySet;
@@ -31,7 +31,7 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.xml.XmlRecordPage;
+import org.gusdb.wdk.model.xml.XmlAnswerValue;
 import org.gusdb.wdk.model.xml.XmlQuestion;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
 import org.xml.sax.SAXException;
@@ -383,7 +383,7 @@ public class SanityTester {
                 }
 
                 // run question
-                RecordPage answer = question.makeRecordPage(
+                AnswerValue answer = question.makeAnswerValue(
                         questions[i].getParamHash(),
                         questions[i].getPageStart(), questions[i].getPageEnd());
 
@@ -503,7 +503,7 @@ public class SanityTester {
                 }
 
                 // run question
-                XmlRecordPage answer = question.makeRecordPage(null,
+                XmlAnswerValue answer = question.makeAnswerValue(null,
                         questions[i].getPageStart(), questions[i].getPageEnd());
 
                 int resultSize = answer.getResultSize();

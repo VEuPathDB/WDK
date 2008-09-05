@@ -6,7 +6,7 @@ package org.gusdb.wdk.model.jspwrap;
 import java.util.Date;
 import java.util.Map;
 
-import org.gusdb.wdk.model.RecordPage;
+import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.History;
@@ -175,11 +175,11 @@ public class HistoryBean {
     /**
      * @return
      * @throws WdkUserException
-     * @see org.gusdb.wdk.model.user.History#getRecordPage()
+     * @see org.gusdb.wdk.model.user.History#getAnswerValue()
      */
-    public RecordPageBean getRecordPage() throws WdkUserException {
-        RecordPage answer = history.getRecordPage();
-        RecordPageBean answerBean = new RecordPageBean( answer );
+    public AnswerValueBean getAnswerValue() throws WdkUserException {
+        AnswerValue answer = history.getAnswerValue();
+        AnswerValueBean answerBean = new AnswerValueBean( answer );
         if ( answer.getIsBoolean() )
             answerBean.customName = history.getCustomName();
         return answerBean;

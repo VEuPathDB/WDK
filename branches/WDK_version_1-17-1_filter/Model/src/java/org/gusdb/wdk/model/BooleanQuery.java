@@ -8,8 +8,8 @@ import java.util.Set;
  * A Query representing the pairing of two other Queries (known as 'boolean
  * operands') in a boolean operation (Union, Intersect, Subtract, etc.). The
  * expected use of a BooleanQuery is as the ID Query for a Question and thus a
- * BooleanQuery is fundamentally tied to other Questions and their RecordPages. A
- * BooleanQuery has three parameters. Two are RecordPageParams, representing RecordPages
+ * BooleanQuery is fundamentally tied to other Questions and their AnswerValues. A
+ * BooleanQuery has three parameters. Two are AnswerValueParams, representing AnswerValues
  * to Questions whose Queries are the boolean operands. The Questions must have
  * the same RecordClasses in order to be operands. The third is the operation to
  * be performed which is a StringParam. BooleanQueries are recursive, and thus
@@ -22,9 +22,9 @@ import java.util.Set;
  * Query providing many QueryInstances).
  * 
  * Queries need to declare their columns, so a BooleanQuery provides this, but
- * only when a BooleanQueryInstance has been created and its RecordPageParameters
+ * only when a BooleanQueryInstance has been created and its AnswerValueParameters
  * have been set. The columns of the BooleanQuery then become the Columns of the
- * ID Queries in the RecordPage's Question. The two Query operands in a BooleanQuery
+ * ID Queries in the AnswerValue's Question. The two Query operands in a BooleanQuery
  * must have the same declared columns.
  * 
  * It is the responsibility of whoever creates a BooleanQuery to set its
@@ -50,16 +50,16 @@ public class BooleanQuery extends Query {
     private static final long serialVersionUID = -8139624051192148234L;
 
     /**
-     * Name of the RecordPageParam whose value is the first RecordPage operand in the
+     * Name of the AnswerValueParam whose value is the first AnswerValue operand in the
      * BooleanQuery.
      */
-    public static final String FIRST_ANSWER_PARAM_NAME = "firstRecordPage";
+    public static final String FIRST_ANSWER_PARAM_NAME = "firstAnswerValue";
 
     /**
-     * Name of the RecordPageParam whose value is the second RecordPage operand in the
+     * Name of the AnswerValueParam whose value is the second AnswerValue operand in the
      * BooleanQuery.
      */
-    public static final String SECOND_ANSWER_PARAM_NAME = "secondRecordPage";
+    public static final String SECOND_ANSWER_PARAM_NAME = "secondAnswerValue";
 
     /**
      * Name of the StringParam whose value is the operation in this
@@ -92,11 +92,11 @@ public class BooleanQuery extends Query {
         setSetName("BooleanQuerySet");
 
         // DTB -- need to figure out what to have for prompt, help, etc.
-        RecordPageParam firstParam = makeRecordPageParam(FIRST_ANSWER_PARAM_NAME,
+        AnswerValueParam firstParam = makeAnswerValueParam(FIRST_ANSWER_PARAM_NAME,
                 "q1 prompt", "q1 help", "q1 default");
         addParam(firstParam);
 
-        RecordPageParam secondParam = makeRecordPageParam(SECOND_ANSWER_PARAM_NAME,
+        AnswerValueParam secondParam = makeAnswerValueParam(SECOND_ANSWER_PARAM_NAME,
                 "q2 prompt", "q2 help", "q2 default");
         addParam(secondParam);
 
@@ -124,7 +124,7 @@ public class BooleanQuery extends Query {
     // ------------------------------------------------------------------
 
     /**
-     * @return BooleanQueryInstance on which one can set RecordPages and operations
+     * @return BooleanQueryInstance on which one can set AnswerValues and operations
      * as values.
      */
     public QueryInstance makeInstance() {
@@ -142,10 +142,10 @@ public class BooleanQuery extends Query {
     /**
      * Helper method for the constructor.
      */
-    private RecordPageParam makeRecordPageParam(String name, String prompt,
+    private AnswerValueParam makeAnswerValueParam(String name, String prompt,
             String help, String defaultValue) {
 
-        RecordPageParam qp = new RecordPageParam();
+        AnswerValueParam qp = new AnswerValueParam();
         qp.setName(name);
         qp.setFullName(BOOLEAN_PARAM_SET_NAME);
         qp.setPrompt(prompt);

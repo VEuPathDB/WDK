@@ -5,19 +5,21 @@ import java.util.ArrayList;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 
-public class UserStrategy {
+public class Strategy {
     
     private UserFactory factory;
     private User user;
     private Step latestStep;
     private int strategyId;
+    private int internalId;
     private boolean isSaved;
     private String name;
 
-    UserStrategy( UserFactory factory, User user, int strategyId, String name ) {
+    Strategy( UserFactory factory, User user, int strategyId, int internalId, String name ) {
 	this.factory = factory;
 	this.user = user;
 	this.strategyId = strategyId;
+	this.internalId = internalId;
 	this.name = name;
 	isSaved = false;
     }
@@ -52,6 +54,14 @@ public class UserStrategy {
 
     public int getStrategyId() {
 	return strategyId;
+    }
+
+    public int getInternalId() {
+	return internalId;
+    }
+
+    void setInternalId(int internalId) {
+	this.internalId = internalId;
     }
 
     public Step getStep(int index) {
@@ -92,10 +102,10 @@ public class UserStrategy {
     public void setLatestStep(Step step) 
 	throws WdkUserException  {
 	this.latestStep = step;
-	this.latestStep.setStrategy(this);
     }
 
-    public void update(boolean overwrite) throws WdkUserException {
-	factory.updateUserStrategy(user, this, overwrite);
+    public void update(boolean overwrite)
+	throws WdkUserException, WdkModelException {
+	factory.updateStrategy(user, this, overwrite);
     }
 }

@@ -10,7 +10,7 @@ import org.apache.struts.action.ActionForm;
  * @author xingao
  *
  */
-public class RenameUserAnswerForm extends ActionForm {
+public class RenameStepForm extends ActionForm {
 
     /**
      * 
@@ -36,14 +36,14 @@ public class RenameUserAnswerForm extends ActionForm {
     /**
      * @return Returns the userAnswerId.
      */
-    public String getUserAnswerId() {
+    public String getStepId() {
         return userAnswerId;
     }
     
     /**
      * @param userAnswerId The userAnswerId to set.
      */
-    public void setUserAnswerId(String userAnswerId) {
+    public void setStepId(String userAnswerId) {
         this.userAnswerId = userAnswerId;
     }
     

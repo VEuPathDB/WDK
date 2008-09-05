@@ -14,11 +14,11 @@ import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
 
 /**
- * This Action shows the queryUserAnswer page.
+ * This Action shows the queryStep page.
  * 
  */
 
-public class ShowQueryUserAnswerAction extends Action {
+public class ShowQueryStepAction extends Action {
 
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)

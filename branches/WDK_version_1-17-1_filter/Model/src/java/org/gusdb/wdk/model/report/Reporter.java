@@ -9,7 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.RecordPage;
+import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.WdkModelException;
@@ -20,27 +20,27 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  * @author xingao
  * 
  */
-public abstract class Reporter implements Iterable<RecordPage> {
+public abstract class Reporter implements Iterable<AnswerValue> {
 
     public static final String FIELD_FORMAT = "downloadType";
 
     private final static Logger logger = Logger.getLogger(Reporter.class);
 
-    private class PageRecordPageIterator implements Iterator<RecordPage> {
+    private class PageAnswerValueIterator implements Iterator<AnswerValue> {
 
         private static final int MAX_PAGE_SIZE = 100;
 
-        private RecordPage baseRecordPage;
+        private AnswerValue baseAnswerValue;
         private int endIndex;
         private int startIndex;
 
-        PageRecordPageIterator(RecordPage answer, int startIndex, int endIndex)
+        PageAnswerValueIterator(AnswerValue answer, int startIndex, int endIndex)
                 throws WdkModelException {
-            this.baseRecordPage = answer;
+            this.baseAnswerValue = answer;
 
             // determine the end index, which should be no bigger result size,
             // since the index starts from 1
-            int resultSize = baseRecordPage.getResultSize();
+            int resultSize = baseAnswerValue.getResultSize();
             this.endIndex = Math.min(endIndex, resultSize);
 
             this.startIndex = startIndex;
@@ -51,7 +51,7 @@ public abstract class Reporter implements Iterable<RecordPage> {
             return (startIndex <= endIndex);
         }
 
-        public RecordPage next() {
+        public AnswerValue next() {
             // decide the new end index for the page answer
             int pageEndIndex = Math.min(endIndex, startIndex + MAX_PAGE_SIZE
                     - 1);
@@ -60,7 +60,7 @@ public abstract class Reporter implements Iterable<RecordPage> {
                     + pageEndIndex);
 
             try {
-                RecordPage answer = baseRecordPage.newRecordPage(startIndex, pageEndIndex);
+                AnswerValue answer = baseAnswerValue.newAnswerValue(startIndex, pageEndIndex);
                 // update the current index
                 startIndex = pageEndIndex + 1;
                 return answer;
@@ -78,13 +78,13 @@ public abstract class Reporter implements Iterable<RecordPage> {
     protected Map<String, String> properties;
     protected Map<String, String> config;
 
-    private RecordPage answer;
+    private AnswerValue answer;
     private int startIndex;
     private int endIndex;
 
     protected String format = "plain";
 
-    protected Reporter(RecordPage answer, int startIndex, int endIndex) {
+    protected Reporter(AnswerValue answer, int startIndex, int endIndex) {
         this.answer = answer;
         this.startIndex = startIndex;
         this.endIndex = endIndex;
@@ -155,7 +155,7 @@ public abstract class Reporter implements Iterable<RecordPage> {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.RecordPage#getResultIndexColumn()
+     * @see org.gusdb.wdk.model.AnswerValue#getResultIndexColumn()
      */
     public String getResultIndexColumn() {
         return answer.getResultIndexColumn();
@@ -164,7 +164,7 @@ public abstract class Reporter implements Iterable<RecordPage> {
     /**
      * @return
      * @throws WdkModelException
-     * @see org.gusdb.wdk.model.RecordPage#getSortingIndex()
+     * @see org.gusdb.wdk.model.AnswerValue#getSortingIndex()
      */
     public int getSortingIndex() throws WdkModelException {
         return answer.getSortingIndex();
@@ -172,15 +172,15 @@ public abstract class Reporter implements Iterable<RecordPage> {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.RecordPage#getSortingIndexColumn()
+     * @see org.gusdb.wdk.model.AnswerValue#getSortingIndexColumn()
      */
     public String getSortingIndexColumn() {
         return answer.getSortingIndexColumn();
     }
 
-    public Iterator<RecordPage> iterator() {
+    public Iterator<AnswerValue> iterator() {
         try {
-            return new PageRecordPageIterator(answer, startIndex, endIndex);
+            return new PageAnswerValueIterator(answer, startIndex, endIndex);
         } catch (WdkModelException ex) {
             throw new RuntimeException(ex);
         }

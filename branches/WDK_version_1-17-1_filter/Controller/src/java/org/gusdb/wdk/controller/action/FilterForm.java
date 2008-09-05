@@ -25,7 +25,7 @@ import org.gusdb.wdk.model.jspwrap.EnumParamBean;
 import org.gusdb.wdk.model.jspwrap.HistoryParamBean;
 
 /**
- * form bean for holding the boolean expression string fro queryUserAnswer.jsp page
+ * form bean for holding the boolean expression string fro queryStep.jsp page
  */
 
 public class FilterForm extends BooleanExpressionForm {

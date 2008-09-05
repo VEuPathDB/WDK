@@ -15,7 +15,7 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.implementation.ModelXmlParser;
-import org.gusdb.wdk.model.xml.XmlRecordPage;
+import org.gusdb.wdk.model.xml.XmlAnswerValue;
 import org.gusdb.wdk.model.xml.XmlQuestion;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
 import org.xml.sax.SAXException;
@@ -62,7 +62,7 @@ public class XmlQuestionTester {
                 int nextStartRow = Integer.parseInt(rows[i]);
                 int nextEndRow = Integer.parseInt(rows[i + 1]);
 
-                XmlRecordPage answer = question.makeRecordPage(null, nextStartRow,
+                XmlAnswerValue answer = question.makeAnswerValue(null, nextStartRow,
                         nextEndRow);
 
                 System.out.println("Printing Record Instances on page "

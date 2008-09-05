@@ -16,7 +16,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.gusdb.wdk.model.RecordPage;
+import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.BooleanQuestionNode;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.Utilities;
@@ -31,7 +31,7 @@ import org.xml.sax.SAXException;
  * BooleanQuestionTester.java
  *
  * WDK Testing class that creates a recursive boolean Question and prints
- * out the RecordPage.  Currently, this uses data returned by the TestBooleanTree class.
+ * out the AnswerValue.  Currently, this uses data returned by the TestBooleanTree class.
  *
  * Created: Wed October 6 12:00:00 2004 EDT
  *
@@ -83,7 +83,7 @@ public class BooleanQuestionTester {
             BooleanQuestionNode topNode = TestBooleanTree.getTestTree(wdkModel);
             System.err.println(topNode.toString());
             //init recursive method
-            topNode.makeRecordPage(startRow, endRow);
+            topNode.makeAnswerValue(startRow, endRow);
             //BooleanQuestionNode.setAllValues(topNode);
 
             //runGrowTest(topNode, "01", wdkModel);
@@ -95,7 +95,7 @@ public class BooleanQuestionTester {
                 int nextStartRow = Integer.parseInt(rows[i]);
                 int nextEndRow = Integer.parseInt(rows[i + 1]);
 
-                RecordPage answer = topQuestion.makeRecordPage(topNode.getValues(),
+                AnswerValue answer = topQuestion.makeAnswerValue(topNode.getValues(),
                         nextStartRow, nextEndRow);
                 System.out.println("Printing Record Instances on page "
                         + pageCount);
@@ -204,7 +204,7 @@ public class BooleanQuestionTester {
                 + " -rows start_1 end_1...";
 
         String header = newline
-                + "prints out the RecordPage to a recursive boolean Question"
+                + "prints out the AnswerValue to a recursive boolean Question"
                 + newline + newline + "Options: ";
 
         String footer = "";

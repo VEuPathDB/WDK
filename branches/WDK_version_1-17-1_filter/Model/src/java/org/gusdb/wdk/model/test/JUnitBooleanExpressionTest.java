@@ -12,7 +12,7 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import org.gusdb.wdk.model.RecordPage;
+import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.BooleanExpression;
 import org.gusdb.wdk.model.BooleanQuestionNode;
 import org.gusdb.wdk.model.Question;
@@ -33,7 +33,7 @@ public class JUnitBooleanExpressionTest extends TestCase {
     private TestUtility utility;
     private WdkModel wdkModel;
     private SanityModel sanityModel;
-    private Map<String, RecordPage> operandMap;
+    private Map<String, AnswerValue> operandMap;
     private Map<String, String> operatorMap;
 
     public static void main(String[] args) {
@@ -80,7 +80,7 @@ public class JUnitBooleanExpressionTest extends TestCase {
         operatorMap.put("not", BooleanQuestionNodeBean.INTERNAL_NOT);
     }
 
-    private Map<String, RecordPage> buildOperandMap(SanityModel sanityModel)
+    private Map<String, AnswerValue> buildOperandMap(SanityModel sanityModel)
             throws WdkModelException, WdkUserException {
         // get sanity questions
         SanityQuestion[] sqs = sanityModel.getAllSanityQuestions();
@@ -104,7 +104,7 @@ public class JUnitBooleanExpressionTest extends TestCase {
             sqSet.add(sq);
         }
 
-        // create RecordPage list using the biggest sanity question set
+        // create AnswerValue list using the biggest sanity question set
         int max = sqSet.size();
         for (Set<SanityQuestion> subSet : sqSets.values()) {
             if (subSet.size() > max) {
@@ -114,7 +114,7 @@ public class JUnitBooleanExpressionTest extends TestCase {
         }
 
         // create answers for the biggest sanity question set
-        operandMap = new LinkedHashMap<String, RecordPage>();
+        operandMap = new LinkedHashMap<String, AnswerValue>();
         for (SanityQuestion sq : sqSet) {
             // get model question from sanity question
             Reference questionRef = new Reference(sq.getRef());
@@ -122,7 +122,7 @@ public class JUnitBooleanExpressionTest extends TestCase {
             Question question = questionSet.getQuestion(questionRef.getElementName());
 
             // run question
-            RecordPage answer = question.makeRecordPage(sq.getParamHash(),
+            AnswerValue answer = question.makeAnswerValue(sq.getParamHash(),
                     sq.getPageStart(), sq.getPageEnd());
             // compose answer id and name
             idIndex++;
@@ -137,8 +137,8 @@ public class JUnitBooleanExpressionTest extends TestCase {
 
     /*
      * Test method for
-     * 'org.gusdb.wdk.model.BooleanExpression.combineRecordPages(String, Map<String,
-     * RecordPage>)'
+     * 'org.gusdb.wdk.model.BooleanExpression.combineAnswerValues(String, Map<String,
+     * AnswerValue>)'
      */
     public void testParseExpression() {
         try {
@@ -158,7 +158,7 @@ public class JUnitBooleanExpressionTest extends TestCase {
                     assertNotNull(bqn);
 
                     // make answer
-                    RecordPage answer = bqn.makeRecordPage(1, 20);
+                    AnswerValue answer = bqn.makeAnswerValue(1, 20);
 
                     assertNotNull(answer);
 
@@ -185,7 +185,7 @@ public class JUnitBooleanExpressionTest extends TestCase {
                     assertNotNull(bqn);
 
                     // make answer
-                    bqn.makeRecordPage(1, 20);
+                    bqn.makeAnswerValue(1, 20);
 
                     assertTrue(false);
                 } catch (Exception ex) {

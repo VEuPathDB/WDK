@@ -16,7 +16,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.gusdb.wdk.model.RecordPage;
+import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.QueryInstance;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
@@ -97,11 +97,11 @@ public class SummaryTester {
                 int nextStartRow = Integer.parseInt(rows[i]);
                 int nextEndRow = Integer.parseInt(rows[i + 1]);
 
-                RecordPage answer = question.makeRecordPage(paramValues, nextStartRow,
+                AnswerValue answer = question.makeAnswerValue(paramValues, nextStartRow,
                         nextEndRow);
 
                 // this is wrong. it only shows one attribute query, not
-                // all. Fix this in RecordPage by saving a list of attribute
+                // all. Fix this in AnswerValue by saving a list of attribute
                 // queries, not just one.
                 if (cmdLine.hasOption("showQuery")) {
                     System.out.println(getLowLevelQuery(answer));
@@ -163,9 +163,9 @@ public class SummaryTester {
     private static void writeSummaryAsXml(Question question,
             Map<String, Object> paramValues, String xmlFile)
             throws WdkModelException, WdkUserException, IOException {
-        RecordPage answer = question.makeRecordPage(paramValues, 1, 10);
+        AnswerValue answer = question.makeAnswerValue(paramValues, 1, 10);
         int resultSize = answer.getResultSize();
-        answer = question.makeRecordPage(paramValues, 1, resultSize);
+        answer = question.makeAnswerValue(paramValues, 1, resultSize);
         FileWriter fw = new FileWriter(new File(xmlFile), false);
 
         String newline = System.getProperty("line.separator");
@@ -182,7 +182,7 @@ public class SummaryTester {
         fw.close();
     }
 
-    private static String getLowLevelQuery(RecordPage answer)
+    private static String getLowLevelQuery(AnswerValue answer)
             throws WdkModelException {
         // QueryInstance instance = answer.getAttributesQueryInstance();
         QueryInstance instance = answer.getIdsQueryInstance();

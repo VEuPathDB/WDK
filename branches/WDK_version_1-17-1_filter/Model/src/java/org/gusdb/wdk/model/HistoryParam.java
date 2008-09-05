@@ -3,7 +3,7 @@
  */
 package org.gusdb.wdk.model;
 
-import org.gusdb.wdk.model.user.UserAnswer;
+import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
 
@@ -43,7 +43,7 @@ public class HistoryParam extends Param {
             try {
                 User user = factory.loadUserBySignature(signature);
                 //user.getHistory(historyId);
-		user.getUserAnswer(historyId);
+		user.getStep(historyId);
             } catch (WdkUserException ex) {
                 ex.printStackTrace();
                 return ex.getMessage();
@@ -87,7 +87,7 @@ public class HistoryParam extends Param {
     protected String getInternalValue(String value) throws WdkModelException {
         try {
             //History history = getHistory(value);
-            UserAnswer history = getUserAnswer(value);
+            Step history = getStep(value);
 	    return history.getCacheFullTable();
         } catch (WdkUserException ex) {
             throw new WdkModelException(ex);
@@ -106,7 +106,7 @@ public class HistoryParam extends Param {
         return user.getHistory(historyId);
 	}*/
 
-    public UserAnswer getUserAnswer(String combinedId)
+    public Step getStep(String combinedId)
 	throws WdkUserException, WdkModelException {
 	String[] parts = combinedId.split(":");
 	String signature = parts[0].trim();
@@ -114,7 +114,7 @@ public class HistoryParam extends Param {
 
 	int userAnswerId = Integer.parseInt(strHistId);
 	User user = factory.loadUserBySignature(signature);
-	return user.getUserAnswer(userAnswerId);
+	return user.getStep(userAnswerId);
     }
 
     /*

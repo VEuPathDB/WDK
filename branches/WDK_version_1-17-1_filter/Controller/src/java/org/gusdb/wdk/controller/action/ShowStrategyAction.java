@@ -29,12 +29,12 @@ import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.RecordPageBean;
+import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
 import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
 import org.gusdb.wdk.model.jspwrap.DatasetBean;
 import org.gusdb.wdk.model.jspwrap.HistoryBean;
-import org.gusdb.wdk.model.jspwrap.UserStrategyBean;
+import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.HistoryParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
@@ -74,8 +74,8 @@ public class ShowStrategyAction extends ShowQuestionAction {
             request.getSession().setAttribute( CConstants.WDK_USER_KEY, wdkUser );
         }
 
-	UserStrategyBean strategy = wdkUser.getUserStrategy(Integer.parseInt(strProtoId));
-	//HashMap<Integer,UserStrategyBean> activeStrategies = (HashMap<Integer,UserStrategyBean>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
+	StrategyBean strategy = wdkUser.getStrategy(Integer.parseInt(strProtoId));
+	//HashMap<Integer,StrategyBean> activeStrategies = (HashMap<Integer,StrategyBean>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
 
 	//activeStrategies.put(new Integer(strategy.getStrategyId()),strategy);
 	

@@ -25,11 +25,10 @@ import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.RecordPageBean;
+import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
 import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
-import org.gusdb.wdk.model.jspwrap.UserAnswerBean;
-import org.gusdb.wdk.model.jspwrap.UserStrategyBean;
+import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
@@ -58,27 +57,26 @@ public class ShowApplicationAction extends ShowSummaryAction {
             request.getSession().setAttribute(CConstants.WDK_USER_KEY, wdkUser);
         }
 
-	HashMap<Integer,UserStrategyBean> activeStrategies = (HashMap<Integer,UserStrategyBean>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
+	HashMap<Integer,StrategyBean> activeStrategies = (HashMap<Integer,StrategyBean>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
 
 	Integer[] keys = activeStrategies.keySet().toArray(new Integer[0]);
 
-	UserStrategyBean strategy = activeStrategies.get(keys[0]);
+	StrategyBean strategy = activeStrategies.get(keys[0]);
 	StepBean step = strategy.getLatestStep();
-	UserAnswerBean userAnswer = step.getFilterUserAnswer();
-	RecordPageBean wdkRecordPage = userAnswer.getRecordPage();
+	AnswerValueBean wdkAnswerValue = step.getAnswerValue();
 
-	String questionName = wdkRecordPage.getQuestion().getFullName();
+	String questionName = wdkAnswerValue.getQuestion().getFullName();
 	Map<String, Boolean> sortingAttributes = wdkUser.getSortingAttributes(questionName);
 	String[] summaryAttributes = wdkUser.getSummaryAttributes(questionName);
 	
-	Map<String, Object> params = wdkRecordPage.getInternalParams();
-	//reformulate the RecordPageBean in order to set all necessary request attributes
-	wdkRecordPage = summaryPaging(request, null, params, sortingAttributes,
-				      summaryAttributes, wdkRecordPage);
+	Map<String, Object> params = wdkAnswerValue.getInternalParams();
+	//reformulate the AnswerValueBean in order to set all necessary request attributes
+	wdkAnswerValue = summaryPaging(request, null, params, sortingAttributes,
+				      summaryAttributes, wdkAnswerValue);
 
         request.setAttribute(CConstants.WDK_QUESTION_PARAMS_KEY, params);
-        request.setAttribute(CConstants.WDK_ANSWER_KEY, wdkRecordPage);
-        request.setAttribute(CConstants.WDK_HISTORY_KEY, userAnswer);
+        request.setAttribute(CConstants.WDK_ANSWER_KEY, wdkAnswerValue);
+        request.setAttribute(CConstants.WDK_HISTORY_KEY, step);
 	request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
         //request.setAttribute("wdk_summary_url", requestUrl);
         //request.setAttribute("wdk_query_string", queryString);

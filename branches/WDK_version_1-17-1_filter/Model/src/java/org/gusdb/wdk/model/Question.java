@@ -54,7 +54,7 @@ public class Question extends WdkModelBase {
 
     private String category;
 
-    private boolean fullRecordPage = false;
+    private boolean fullAnswerValue = false;
 
     private List<AttributeList> attributeLists = new ArrayList<AttributeList>();
 
@@ -202,9 +202,9 @@ public class Question extends WdkModelBase {
      * @throws WdkModelException
      * @throws WdkUserException
      */
-    public RecordPage makeRecordPage(Map<String, Object> paramValues)
+    public AnswerValue makeAnswerValue(Map<String, Object> paramValues)
             throws WdkUserException, WdkModelException {
-        return makeRecordPage(paramValues, sortingAttributeMap);
+        return makeAnswerValue(paramValues, sortingAttributeMap);
     }
 
     /**
@@ -217,18 +217,18 @@ public class Question extends WdkModelBase {
      * @throws WdkModelException
      * @throws WdkUserException
      */
-    public RecordPage makeRecordPage(Map<String, Object> paramValues,
+    public AnswerValue makeAnswerValue(Map<String, Object> paramValues,
             Map<String, Boolean> sortingAttributes) throws WdkUserException,
             WdkModelException {
         // get the result size by making a temp answer
-        RecordPage answer = makeRecordPage(paramValues, 1, 1, sortingAttributes);
+        AnswerValue answer = makeAnswerValue(paramValues, 1, 1, sortingAttributes);
         int resultSize = answer.getResultSize();
 
         // skip empty answers and one-record answers
         if (resultSize <= 1) return answer;
 
         // make an answer containing all records
-        return makeRecordPage(paramValues, 1, resultSize, sortingAttributes);
+        return makeAnswerValue(paramValues, 1, resultSize, sortingAttributes);
     }
 
     /**
@@ -241,9 +241,9 @@ public class Question extends WdkModelBase {
      * @throws WdkUserException
      * @throws WdkModelException
      */
-    public RecordPage makeRecordPage(Map<String, Object> paramValues, int i, int j)
+    public AnswerValue makeAnswerValue(Map<String, Object> paramValues, int i, int j)
             throws WdkUserException, WdkModelException {
-        return makeRecordPage(paramValues, i, j, sortingAttributeMap);
+        return makeAnswerValue(paramValues, i, j, sortingAttributeMap);
     }
 
     /**
@@ -257,12 +257,12 @@ public class Question extends WdkModelBase {
      * @throws WdkUserException
      * @throws WdkModelException
      */
-    public RecordPage makeRecordPage(Map<String, Object> paramValues, int i, int j,
+    public AnswerValue makeAnswerValue(Map<String, Object> paramValues, int i, int j,
             Map<String, Boolean> sortingAttributes) throws WdkUserException,
             WdkModelException {
         QueryInstance qi = query.makeInstance();
         qi.setValues(paramValues);
-        RecordPage answer = new RecordPage(this, qi, i, j, sortingAttributes);
+        AnswerValue answer = new AnswerValue(this, qi, i, j, sortingAttributes);
 
         return answer;
     }
@@ -416,21 +416,21 @@ public class Question extends WdkModelBase {
      * A indicator to the controller whether this question should make answers
      * that contains all records in one page or not.
      * 
-     * @return the fullRecordPage
+     * @return the fullAnswerValue
      */
-    public boolean isFullRecordPage() {
-        return fullRecordPage;
+    public boolean isFullAnswerValue() {
+        return fullAnswerValue;
     }
 
     /**
      * Set the indicator to the controller that suggests this question to make
      * answers containing all records in one page, or not.
      * 
-     * @param fullRecordPage
-     *            the fullRecordPage to set
+     * @param fullAnswerValue
+     *            the fullAnswerValue to set
      */
-    public void setFullRecordPage(boolean fullRecordPage) {
-        this.fullRecordPage = fullRecordPage;
+    public void setFullAnswerValue(boolean fullAnswerValue) {
+        this.fullAnswerValue = fullAnswerValue;
     }
 
     

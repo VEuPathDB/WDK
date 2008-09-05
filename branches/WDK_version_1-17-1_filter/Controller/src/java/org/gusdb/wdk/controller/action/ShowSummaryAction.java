@@ -23,11 +23,11 @@ import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.RecordPageBean;
+import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
 import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
-import org.gusdb.wdk.model.jspwrap.UserAnswerBean;
-import org.gusdb.wdk.model.jspwrap.UserStrategyBean;
+import org.gusdb.wdk.model.jspwrap.StepBean;
+import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
@@ -64,9 +64,9 @@ public class ShowSummaryAction extends ShowQuestionAction {
         // ProcessQuestionSetsFlatAction
         qForm.cleanup();
 
-        UserAnswerBean userAnswer;
-        RecordPageBean wdkRecordPage;
-	UserStrategyBean strategy = null;
+        StepBean userAnswer;
+        AnswerValueBean wdkAnswerValue;
+	StrategyBean strategy = null;
 	StepBean step;
         Map<String, Object> params;
 
@@ -75,7 +75,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
 	String strProtoId = request.getParameter("strategy");
  	
 	if (strProtoId != null && strProtoId.length() != 0) {
-	    strategy = wdkUser.getUserStrategy(Integer.parseInt(strProtoId));
+	    strategy = wdkUser.getStrategy(Integer.parseInt(strProtoId));
 	    String stepIndex = request.getParameter("step");
 	    StepBean[] steps = strategy.getAllSteps();
 	    if (stepIndex != null && stepIndex.length() != 0)
@@ -84,10 +84,10 @@ public class ShowSummaryAction extends ShowQuestionAction {
 		step = steps[steps.length - 1];
 	    String subQuery = request.getParameter("subquery");
 	    if (subQuery != null && subQuery.length() != 0 && Boolean.valueOf(subQuery)) {
-		strHistId = Integer.toString(step.getChildStepUserAnswer().getUserAnswerId());
+		strHistId = Integer.toString(step.getChildStep().getStepId());
 	    }
 	    else {
-		strHistId = Integer.toString(step.getFilterUserAnswer().getUserAnswerId());
+		strHistId = Integer.toString(step.getStepId());
 	    }
 	}
 
@@ -132,7 +132,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
             // make the answer
             try {
-		wdkRecordPage = summaryPaging(request, wdkQuestion, params,
+		wdkAnswerValue = summaryPaging(request, wdkQuestion, params,
                         sortingAttributes, summaryAttributes);
 	    } catch (WdkModelException ex) {
                 logger.error(ex);
@@ -145,55 +145,55 @@ public class ShowSummaryAction extends ShowQuestionAction {
             }
 
             // create userAnswer
-            userAnswer = wdkUser.createUserAnswer(wdkRecordPage);
+            userAnswer = wdkUser.createStep(wdkAnswerValue);
         } else {
-            userAnswer = wdkUser.getUserAnswer(Integer.parseInt(strHistId));
+            userAnswer = wdkUser.getStep(Integer.parseInt(strHistId));
 
             // check if userAnswer is still valid
-            if (!userAnswer.isValid()) {
+            if (!userAnswer.getIsValid()) {
                 return showError(wdkModel, wdkUser, mapping, request, response);
             }
 
-            wdkRecordPage = userAnswer.getRecordPage();
+            wdkAnswerValue = userAnswer.getAnswerValue();
             // update the estimate size, in case the database has changed
-            userAnswer.setEstimateSize(wdkRecordPage.getResultSize());
+            userAnswer.setEstimateSize(wdkAnswerValue.getResultSize());
             userAnswer.update();
 
             // get sorting and summary attributes
-            String questionName = wdkRecordPage.getQuestion().getFullName();
+            String questionName = wdkAnswerValue.getQuestion().getFullName();
             Map<String, Boolean> sortingAttributes = wdkUser.getSortingAttributes(questionName);
             String[] summaryAttributes = wdkUser.getSummaryAttributes(questionName);
 
-            params = wdkRecordPage.getInternalParams();
+            params = wdkAnswerValue.getInternalParams();
 
-            wdkRecordPage = summaryPaging(request, null, params, sortingAttributes,
-                    summaryAttributes, wdkRecordPage);
+            wdkAnswerValue = summaryPaging(request, null, params, sortingAttributes,
+                    summaryAttributes, wdkAnswerValue);
         }
 
         // DO NOT delete empty userAnswer -- it will screw up strategies
         //if (userAnswer != null && userAnswer.getEstimateSize() == 0)
-        //    wdkUser.deleteUserAnswer(userAnswer.getUserAnswerId());
+        //    wdkUser.deleteStep(userAnswer.getStepId());
 
 	String queryString;
 
 	if (strategy == null) {
-	    strategy = wdkUser.createUserStrategy(userAnswer, false);
+	    strategy = wdkUser.createStrategy(userAnswer, false);
 	    queryString = "strategy=" + strategy.getStrategyId();
 	}
 	else {
 	    queryString = request.getQueryString();
 	}
 
-	//HashMap<Integer,UserStrategyBean> activeStrategies = (HashMap<Integer,UserStrategyBean>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
+	//HashMap<Integer,StrategyBean> activeStrategies = (HashMap<Integer,StrategyBean>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
 
 	//if (activeStrategies == null) {
-	    //activeStrategies = new HashMap<Integer,UserStrategyBean>();
+	    //activeStrategies = new HashMap<Integer,StrategyBean>();
 	//}
 	//activeStrategies.put(new Integer(strategy.getStrategyId()),strategy);
 	
 	//request.getSession().setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY, activeStrategies);  
 	
-        int userAnswerId = userAnswer.getUserAnswerId();
+        int userAnswerId = userAnswer.getStepId();
 
 	String requestUrl = request.getRequestURI() + "?" + queryString;
 
@@ -201,12 +201,12 @@ public class ShowSummaryAction extends ShowQuestionAction {
         // return only the result size, if requested
         if (request.getParameterMap().containsKey(CConstants.WDK_RESULT_SIZE_ONLY_KEY)) {
             PrintWriter writer = response.getWriter();
-            writer.print(wdkRecordPage.getResultSize());
+            writer.print(wdkAnswerValue.getResultSize());
             return null;
         }
 
-        request.setAttribute(CConstants.WDK_QUESTION_PARAMS_KEY, wdkRecordPage.getInternalParams());
-        request.setAttribute(CConstants.WDK_ANSWER_KEY, wdkRecordPage);
+        request.setAttribute(CConstants.WDK_QUESTION_PARAMS_KEY, wdkAnswerValue.getInternalParams());
+        request.setAttribute(CConstants.WDK_ANSWER_KEY, wdkAnswerValue);
         request.setAttribute(CConstants.WDK_HISTORY_KEY, userAnswer);
 	request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
         request.setAttribute("wdk_summary_url", requestUrl);
@@ -255,7 +255,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
 	    }
 	    // otherwise, forward to the full summary page
 	    else {
-		forward = getForward(wdkRecordPage, mapping, userAnswerId);
+		forward = getForward(wdkAnswerValue, mapping, userAnswerId);
 	    }
 	    
 	    System.out.println("From forward: " + forward.getPath());
@@ -271,21 +271,21 @@ public class ShowSummaryAction extends ShowQuestionAction {
 	return forward;
     }
 
-    private ActionForward getForward(RecordPageBean wdkRecordPage,
+    private ActionForward getForward(AnswerValueBean wdkAnswerValue,
             ActionMapping mapping, int userAnswerId) throws WdkModelException {
         ServletContext svltCtx = getServlet().getServletContext();
         String customViewDir = (String) svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
         String customViewFile1 = customViewDir + File.separator
-                + wdkRecordPage.getQuestion().getFullName() + ".summary.jsp";
+                + wdkAnswerValue.getQuestion().getFullName() + ".summary.jsp";
         String customViewFile2 = customViewDir + File.separator
-                + wdkRecordPage.getRecordClass().getFullName() + ".summary.jsp";
+                + wdkAnswerValue.getRecordClass().getFullName() + ".summary.jsp";
         String customViewFile3 = customViewDir + File.separator
                 + CConstants.WDK_CUSTOM_SUMMARY_PAGE;
         ActionForward forward = null;
 
-        if (wdkRecordPage.getResultSize() == 1 && !wdkRecordPage.getIsDynamic()
-                && wdkRecordPage.getQuestion().isNoSummaryOnSingleRecord()) {
-            RecordBean rec = (RecordBean) wdkRecordPage.getRecords().next();
+        if (wdkAnswerValue.getResultSize() == 1 && !wdkAnswerValue.getIsDynamic()
+                && wdkAnswerValue.getQuestion().isNoSummaryOnSingleRecord()) {
+            RecordBean rec = (RecordBean) wdkAnswerValue.getRecords().next();
             forward = mapping.findForward(CConstants.SKIPTO_RECORD_MAPKEY);
             String path = forward.getPath() + "?name="
                     + rec.getRecordClass().getFullName() + "&primary_key="
@@ -347,12 +347,12 @@ public class ShowSummaryAction extends ShowQuestionAction {
         }
     }
 
-    protected RecordPageBean booleanRecordPagePaging(HttpServletRequest request,
+    protected AnswerValueBean booleanAnswerValuePaging(HttpServletRequest request,
             Object answerMaker) throws WdkModelException, WdkUserException {
         return summaryPaging(request, answerMaker, null, null, null, null);
     }
 
-    protected RecordPageBean summaryPaging(HttpServletRequest request,
+    protected AnswerValueBean summaryPaging(HttpServletRequest request,
             Object answerMaker, Map<String, Object> params,
             Map<String, Boolean> sortingAttributes, String[] summaryAttributes)
             throws WdkModelException, WdkUserException {
@@ -360,10 +360,10 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 summaryAttributes, null);
     }
 
-    protected RecordPageBean summaryPaging(HttpServletRequest request,
+    protected AnswerValueBean summaryPaging(HttpServletRequest request,
             Object answerMaker, Map<String, Object> params,
             Map<String, Boolean> sortingAttributes, String[] summaryAttributes,
-            RecordPageBean wdkRecordPage) throws WdkModelException, WdkUserException {
+            AnswerValueBean wdkAnswerValue) throws WdkModelException, WdkUserException {
         UserBean wdkUser = (UserBean) request.getSession().getAttribute(
                 CConstants.WDK_USER_KEY);
         int start = 1;
@@ -382,9 +382,9 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 pageSize = Integer.parseInt(altPageSizeKey);
         }
 
-        if (wdkRecordPage != null) {
-            answerMaker = wdkRecordPage.getQuestion();
-            params = wdkRecordPage.getInternalParams();
+        if (wdkAnswerValue != null) {
+            answerMaker = wdkAnswerValue.getQuestion();
+            params = wdkAnswerValue.getInternalParams();
         }
         if (start < 1) {
             start = 1;
@@ -397,21 +397,21 @@ public class ShowSummaryAction extends ShowQuestionAction {
             QuestionBean question = (QuestionBean) answerMaker;
             // check if the question is supposed to make answers containing all
             // records in one page
-            if (question.isFullRecordPage()) {
-                wdkRecordPage = question.makeRecordPage(params, sortingAttributes);
+            if (question.isFullAnswerValue()) {
+                wdkAnswerValue = question.makeAnswerValue(params, sortingAttributes);
             } else {
-                wdkRecordPage = question.makeRecordPage(params, start, end,
+                wdkAnswerValue = question.makeAnswerValue(params, start, end,
                         sortingAttributes);
             }
-            wdkRecordPage.setSumaryAttribute(summaryAttributes);
+            wdkAnswerValue.setSumaryAttribute(summaryAttributes);
         } else if (answerMaker instanceof BooleanQuestionNodeBean) {
-            wdkRecordPage = ((BooleanQuestionNodeBean) answerMaker).makeRecordPage(
+            wdkAnswerValue = ((BooleanQuestionNodeBean) answerMaker).makeAnswerValue(
                     start, end);
         } else {
             throw new RuntimeException("unexpected answerMaker: " + answerMaker);
         }
 
-        int totalSize = wdkRecordPage.getResultSize();
+        int totalSize = wdkAnswerValue.getResultSize();
 
         if (end > totalSize) {
             end = totalSize;
@@ -432,7 +432,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
         request.setAttribute("wdk_paging_end", new Integer(end));
         request.setAttribute("wdk_paging_url", request.getRequestURI());
         request.setAttribute("wdk_paging_params", editedParamNames);
-        return wdkRecordPage;
+        return wdkAnswerValue;
     }
 
     private ActionForward showError(WdkModelBean wdkModel, UserBean wdkUser,
@@ -449,7 +449,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
         if (qFullName == null || qFullName.length() == 0) {
             String strHistId = request.getParameter(CConstants.WDK_HISTORY_ID_KEY);
             int userAnswerId = Integer.parseInt(strHistId);
-            UserAnswerBean userAnswer = wdkUser.getUserAnswer(userAnswerId);
+            StepBean userAnswer = wdkUser.getStep(userAnswerId);
             params = userAnswer.getParams();
             paramNames = userAnswer.getParamNames();
             qFullName = userAnswer.getQuestionName();

@@ -13,7 +13,7 @@ import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
-import org.gusdb.wdk.model.jspwrap.XmlRecordPageBean;
+import org.gusdb.wdk.model.jspwrap.XmlAnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.XmlQuestionBean;
 import org.gusdb.wdk.model.jspwrap.XmlQuestionSetBean;
 
@@ -31,9 +31,9 @@ public class ShowXmlDataContentAction extends Action {
 				 HttpServletResponse response) throws Exception {
 	String xmlQName = request.getParameter(CConstants.NAME);
 	XmlQuestionBean xmlQuestion = getXmlQuestionByFullName(xmlQName);
-	XmlRecordPageBean xmlRecordPage = xmlQuestion.getFullRecordPage();
-	request.setAttribute(CConstants.WDK_XMLANSWER_KEY, xmlRecordPage);
-	return getForward(xmlRecordPage, mapping);
+	XmlAnswerValueBean xmlAnswerValue = xmlQuestion.getFullAnswerValue();
+	request.setAttribute(CConstants.WDK_XMLANSWER_KEY, xmlAnswerValue);
+	return getForward(xmlAnswerValue, mapping);
     }
 
     protected XmlQuestionBean getXmlQuestionByFullName(String qFullName) {
@@ -48,13 +48,13 @@ public class ShowXmlDataContentAction extends Action {
 	return wdkQuestion;
     }
 
-    private ActionForward getForward (XmlRecordPageBean xmlRecordPage, ActionMapping mapping) {
+    private ActionForward getForward (XmlAnswerValueBean xmlAnswerValue, ActionMapping mapping) {
 	ServletContext svltCtx = getServlet().getServletContext();
 	String customViewDir = (String)svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
 	String customViewFile1 = customViewDir + File.separator
-	    + xmlRecordPage.getQuestion().getFullName() + ".jsp";
+	    + xmlAnswerValue.getQuestion().getFullName() + ".jsp";
 	String customViewFile2 = customViewDir + File.separator
-	    + xmlRecordPage.getRecordClass().getFullName() + ".jsp";
+	    + xmlAnswerValue.getRecordClass().getFullName() + ".jsp";
 	ActionForward forward = null;
 	if (ApplicationInitListener.resourceExists(customViewFile1, svltCtx)) {
 	    forward = new ActionForward(customViewFile1);

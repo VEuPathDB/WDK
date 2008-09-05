@@ -2,14 +2,14 @@ package org.gusdb.wdk.model.jspwrap;
 
 import java.util.ArrayList;
 
-import org.gusdb.wdk.model.user.UserStrategy;
+import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 
-public class UserStrategyBean {
-    UserStrategy strategy;
+public class StrategyBean {
+    Strategy strategy;
   
-    public UserStrategyBean(UserStrategy strategy) {
+    public StrategyBean(Strategy strategy) {
 	this.strategy = strategy;
     }
     
@@ -53,7 +53,8 @@ public class UserStrategyBean {
 	return getAllSteps().length;
     }
 
-    public void update(boolean overwrite) throws WdkUserException {
+    public void update(boolean overwrite)
+	throws WdkUserException, WdkModelException {
 	strategy.update(overwrite);
     }
 

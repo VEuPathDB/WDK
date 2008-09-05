@@ -13,7 +13,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.BooleanQuery;
-import org.gusdb.wdk.model.jspwrap.RecordPageBean;
+import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.BooleanQuestionLeafBean;
 import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
@@ -28,7 +28,7 @@ import org.gusdb.wdk.model.jspwrap.UserBean;
  *    3) forwards control to a jsp page that displays a summary
  */
 
-public class GetBooleanRecordPageAction extends ShowSummaryAction {
+public class GetBooleanAnswerValueAction extends ShowSummaryAction {
     public ActionForward execute(ActionMapping mapping,
 				 ActionForm form,
 				 HttpServletRequest request,
@@ -38,7 +38,7 @@ public class GetBooleanRecordPageAction extends ShowSummaryAction {
 	BooleanQuestionForm bqf = (BooleanQuestionForm)form;
 
 	Object root = request.getSession().getAttribute(CConstants.CURRENT_BOOLEAN_ROOT_KEY);
-	RecordPageBean answer;
+	AnswerValueBean answer;
 	if (root instanceof BooleanQuestionLeafBean) {
 	    BooleanQuestionLeafBean rootLeaf = (BooleanQuestionLeafBean)root;
 	    QuestionBean leafQuestion = rootLeaf.getQuestion();
@@ -62,15 +62,15 @@ public class GetBooleanRecordPageAction extends ShowSummaryAction {
 		    processNode(bqf, nextRealNode);
 		}
 	    }
-	    answer = booleanRecordPagePaging(request, rootNode);
+	    answer = booleanAnswerValuePaging(request, rootNode);
 	}
 
 	request.getSession().setAttribute(CConstants.WDK_ANSWER_KEY, answer);
 	request.getSession().setAttribute(CConstants.BOOLEAN_QUESTION_FORM_KEY, bqf);
 
-	//add UserRecordPageBean to UserRecordPage for query userAnswer
+	//add StepValueBean to StepValue for query userAnswer
     UserBean wdkUser = (UserBean)request.getSession().getAttribute(CConstants.WDK_USER_KEY);
-    wdkUser.createUserAnswer(answer);
+    wdkUser.createStep(answer);
 	//set the question form bean saved at ShowQuestionAction time to be non-validating
 	//to prevent problem at show userAnswer time (o.w. ShowSummaryAction goes to question page)
 	QuestionForm qForm = (QuestionForm)request.getSession().getAttribute(CConstants.QUESTIONFORM_KEY);
@@ -78,13 +78,13 @@ public class GetBooleanRecordPageAction extends ShowSummaryAction {
 
 	/*DEBUG
 	  System.err.println("DEBUG GBAA: reset cursor on boolean answer before listing");
-	  answer.resetRecordPageRowCursor();
+	  answer.resetAnswerValueRowCursor();
 	  java.util.Iterator it = answer.getRecords();
 	  while (it.hasNext()) {
 	  System.err.println("DEBUG GBAA: record is: " + (org.gusdb.wdk.model.jspwrap.RecordBean)it.next());
 	  }
 	  System.err.println("DEBUG GBAA: reset cursor on boolean answer after listing");
-	  answer.resetRecordPageRowCursor();
+	  answer.resetAnswerValueRowCursor();
 	*/
 	
 	ActionForward forward = mapping.findForward(CConstants.GET_BOOLEAN_ANSWER_MAPKEY);
