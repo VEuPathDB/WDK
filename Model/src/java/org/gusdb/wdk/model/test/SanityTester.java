@@ -1,6 +1,8 @@
 package org.gusdb.wdk.model.test;
 
 import java.io.IOException;
+import java.sql.SQLException;
+import java.sql.ResultSet;
 import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -21,11 +23,11 @@ import org.gusdb.wdk.model.Query;
 import org.gusdb.wdk.model.QuerySet;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
+import org.gusdb.wdk.model.ParamValuesSet;
 import org.gusdb.wdk.model.RDBMSPlatformI;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.RecordClassSet;
 import org.gusdb.wdk.model.RecordInstance;
-import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.ResultList;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
@@ -34,6 +36,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.xml.XmlAnswer;
 import org.gusdb.wdk.model.xml.XmlQuestion;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
+import org.gusdb.wdk.model.implementation.SqlUtils;
 import org.xml.sax.SAXException;
 
 import com.sun.org.apache.bcel.internal.classfile.Attribute;
@@ -65,22 +68,22 @@ public class SanityTester {
     int testCount = 0;
     Integer skipTo; // skip tests before this one
     Integer stopAfter; // stop after this test
+    static final String newline = System.getProperty("line.separator");
 
     WdkModel wdkModel;
     boolean verbose;
     boolean failuresOnly;
     boolean indexOnly;
-    SanityModel sanityModel;
     String modelName;
-    boolean suggestOnly;
+    private Boolean doNotTest;
+    private static final int MAXROWS = 1000000000;
 
     public static final String BANNER_LINE_top = "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv";
     public static final String BANNER_LINE_bot = "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^";
 
     private static final Logger logger = Logger.getLogger(SanityTester.class);
     
-    public SanityTester(String modelName, SanityModel sanityModel,
-            boolean verbose, boolean suggestOnly, Integer skipTo,
+    public SanityTester(String modelName, boolean verbose, Integer skipTo,
             Integer stopAfter, boolean failuresOnly, boolean indexOnly)
             throws WdkModelException, WdkUserException {
         this.wdkModel = WdkModel.construct(modelName);
@@ -88,496 +91,224 @@ public class SanityTester {
         this.failuresOnly = failuresOnly;
         this.indexOnly = indexOnly;
         this.modelName = modelName;
-        this.suggestOnly = suggestOnly;
         this.skipTo = skipTo;
         this.stopAfter = stopAfter;
-
-        sanityModel.validateQueries();
-        sanityModel.validateQuestions();
-        this.sanityModel = sanityModel;
     }
 
     // ------------------------------------------------------------------
     // Private Methods
     // ------------------------------------------------------------------
 
-    /**
-     * Checks to make sure every Query and RecordClass in the wdkModel is
-     * represented in the sanity test. If a query or recordClass is in the
-     * sanity test but not the model then that will be caught in the other
-     * validation tests.
-     */
-    private void existenceTest() throws IOException, WdkModelException {
+    private void testQuestionSets() throws SQLException, WdkModelException {
 
-        QuerySet querySets[] = wdkModel.getAllQuerySets();
-        for (int i = 0; i < querySets.length; i++) {
-            QuerySet nextQuerySet = querySets[i];
-            Query queries[] = nextQuerySet.getQueries();
-            for (int j = 0; j < queries.length; j++) {
-                Query nextQuery = queries[j];
-                if (!sanityModel.hasSanityQuery(nextQuerySet.getName() + "."
-                        + nextQuery.getName())) {
-                    if (suggestOnly) {
-                        System.out.println(nextQuery.getSanityTestSuggestion());
-                    } else {
-                        System.out.println("Sanity Test Failed!  Query "
-                                + nextQuerySet.getName() + "."
-                                + nextQuery.getName()
-                                + " is not represented in the sanity test\n");
-                        queriesFailed++;
-                    }
-                }
-            }
-        }
+        System.out.println("Sanity Test:  Checking questions" + newline);
 
-        RecordClassSet recordClassSets[] = wdkModel.getAllRecordClassSets();
-        for (int i = 0; i < recordClassSets.length; i++) {
-            RecordClassSet nextRecordClassSet = recordClassSets[i];
-            RecordClass recordClasses[] = nextRecordClassSet.getRecordClasses();
-            if (recordClasses != null) {
-                for (int j = 0; j < recordClasses.length; j++) {
-                    RecordClass nextRecordClass = recordClasses[j];
-                    if (!sanityModel.hasSanityRecord(nextRecordClassSet.getName()
-                            + "." + nextRecordClass.getName())) {
-                        if (suggestOnly) {
-                            System.out.println(nextRecordClass.getSanityTestSuggestion());
-                        } else {
-                            System.out.println("Sanity Test Failed!  RecordClass "
-                                    + nextRecordClassSet.getName()
-                                    + "."
-                                    + nextRecordClass.getName()
-                                    + " is not represented in the sanity test\n");
-                            recordsFailed++;
-                        }
-                    }
-                }
-            }
-        }
+	for (QuestionSet questionSet : wdkModel.getAllQuestionSets()) {
+	    if (questionSet.getDoNotTest()) continue;
 
-        QuestionSet questionSets[] = wdkModel.getAllQuestionSets();
-        for (int i = 0; i < questionSets.length; i++) {
-            QuestionSet nextQuestionSet = questionSets[i];
-            Question questions[] = nextQuestionSet.getQuestions();
-            for (int j = 0; j < questions.length; j++) {
-                Question nextQuestion = questions[j];
-                if (!sanityModel.hasSanityQuestion(nextQuestionSet.getName()
-                        + "." + nextQuestion.getName())) {
-                    if (suggestOnly) {
-                        System.out.println(nextQuestion.getSanityTestSuggestion());
-                    } else {
-                        System.out.println("Sanity Test Failed!  Question "
-                                + nextQuestionSet.getName() + "."
-                                + nextQuestion.getName()
-                                + " is not represented in the sanity test\n");
-                        questionsFailed++;
-                    }
-                }
-            }
-        }
-
-        // check existence of XmlQuestions
-        for (XmlQuestionSet questionSet : wdkModel.getXmlQuestionSets()) {
-            for (XmlQuestion question : questionSet.getQuestions()) {
-                if (!sanityModel.hasSanityXmlQuestion(question.getFullName())) {
-                    if (suggestOnly) {
-                        System.out.println(question.getSanityTestSuggestion());
-                    } else {
-                        System.out.println("Sanity Test Failed! Xml Question "
-                                + question.getFullName()
-                                + " is not represented in the sanity test\n");
-                        questionsFailed++;
-                    }
-                }
-            }
-        }
+	    for (Question question : questionSet.getQuestions()) {
+		Query query = question.getQuery();
+		if (query.getDoNotTest()) continue;
+		for (ParamValuesSet paramValuesSet : query.getParamValuesSets()) {
+		    testQuestion(questionSet, question, paramValuesSet);
+		}
+	    }
+	}
     }
 
-    /**
-     * Runs each query provided in the sanity test model (which is also each
-     * query in the wdk model). Compares the results returned by the query to
-     * the expected range provided in the sanity model. The test fails if the
-     * result is outside the expected range or if an exception is thrown.
-     */
-    private void queriesTest() {
-        System.out.println("Sanity Test:  Checking queries\n");
+    private void testQuestion(QuestionSet questionSet, Question question,
+			      ParamValuesSet paramValuesSet) {
 
-        Reference queryRef = null;
-        SanityQuery queries[] = sanityModel.getAllSanityQueries();
+	testCount++;
+	if (skipTo != null && testCount < skipTo) return;
+	if (stopAfter != null && testCount > stopAfter) return;
+	if (indexOnly) {
+	    System.out.println(" [test: " + testCount + "]"
+			       + " QUESTION " + question.getFullName()
+			       + " (query " + question.getQuery().getFullName() + ")"
+			       + newline);
+	    return;
+	}
+	long start = System.currentTimeMillis();
+	int sanityMin = 1;
+	int sanityMax = MAXROWS;
+	boolean passed = false;
+	String status = " FAILED!";
+	String prefix = "***";
+	String returned = "";
+	String expected = "";
 
-        for (int i = 0; i < queries.length; i++) {
-            testCount++;
-            if (skipTo != null && testCount < skipTo) continue;
-            if (stopAfter != null && testCount > stopAfter) continue;
-            // logging time
-            long start = System.currentTimeMillis();
-            try {
+	try {
+	    Answer answer = question.makeAnswer(paramValuesSet.getParamValues(), 1, 100);
 
-                // get model query from sanity query
-                queryRef = new Reference(queries[i].getRef());
-                QuerySet nextQuerySet = wdkModel.getQuerySet(queryRef.getSetName());
-                // variable never used
-                // Query nextQuery =
-                // nextQuerySet.getQuery(queryRef.getElementName());
-                nextQuerySet.getQuery(queryRef.getElementName());
+	    int resultSize = answer.getResultSize();
 
-                if (indexOnly) {
-                    System.out.println(" QUERY " + queryRef.getSetName() + "."
-                            + queryRef.getElementName() + " [test: "
-                            + testCount + "]");
-                    continue;
-                }
+	    // get the summary attribute list
+	    Map<String, AttributeField> summary = answer.getSummaryAttributes();
+	    // iterate through the page and try every summary attribute of
+	    // each record
+	    while (answer.hasMoreRecordInstances()) {
+		RecordInstance record = answer.getNextRecordInstance();
+		// for (RecordInstance record : answer.getRecordInstances()) {
+		StringBuffer sb = new StringBuffer();
+		for (String attrName : summary.keySet()) {
+		    sb.append(record.getAttributeValue(attrName));
+		    sb.append('\t');
+		}
+		logger.debug("Record: " + sb.toString());
+	    }
 
-                // run query
-                QueryTester queryTester = new QueryTester(wdkModel);
-                ResultList rs = queryTester.getResult(queryRef.getSetName(),
-                        queryRef.getElementName(), queries[i].getParamHash());
+	    passed = (resultSize >= sanityMin && resultSize <= sanityMax);
 
-                // count results; check if sane
-                int sanityMin = queries[i].getMinOutputLength().intValue();
-                int sanityMax = queries[i].getMaxOutputLength().intValue();
-                int counter = 0;
+	    returned = " It returned " + resultSize + " rows. ";
+	    if (sanityMin != 1 || sanityMax != MAXROWS)
+		expected = "Expected (" + sanityMin + " - " + sanityMax + ") ";
 
-                while (rs.next()) {
-                    counter++;
-                }
-                rs.close();
+	} catch (Exception e) {
+	    returned = " It threw an exception.";
+	} finally {
+	    long end = System.currentTimeMillis();
+	    if (passed) {
+		queriesPassed++;
+		prefix = "";
+		status = " passed.";
+	    }
+	    else {
+		queriesFailed++;
+	    }
+	    if (!passed) System.out.println(BANNER_LINE_top);
+	    String cmd = " [ wdkSummary -model " + wdkModel.getName()
+		+ " -question " + question.getFullName() 
+		+ " -rows 1 100"
+		+ " -params " + paramValuesSet.getCmdLineString()
+		+ " ] ";
 
-                // logging time
-                long end = System.currentTimeMillis();
+	    String msg = prefix + ((end - start) / 1000F)
+		+ " [test: " + testCount + "]" 
+		+ " QUESTION " + question.getFullName()
+		+ " (query " + question.getQuery().getFullName() + ")"
+		+ status 
+		+ returned
+		+ expected
+		+ cmd
+		+ newline;
+	    if (!passed || !failuresOnly) System.out.println(msg);
+	    if (!passed) System.out.println(BANNER_LINE_bot + newline);
 
-                if (counter < sanityMin || counter > sanityMax) {
-                    System.out.println(BANNER_LINE_top);
-                    System.out.println("*** " + ((end - start) / 1000F)
-                            + " QUERY " + queryRef.getSetName() + "."
-                            + queryRef.getElementName()
-                            + " FAILED!***  It returned " + counter
-                            + " rows--not within expected range (" + sanityMin
-                            + " - " + sanityMax + ")" + " [test: " + testCount
-                            + "]");
-                    printFailureMessage(queries[i]);
-                    System.out.println(BANNER_LINE_bot + "\n");
-                    queriesFailed++;
-                } else {
-                    String globalArgs = "-model " + modelName;
-                    String command = queries[i].getCommand(globalArgs);
-                    if (!failuresOnly)
-                        System.out.println(((end - start) / 1000F) + " Query "
-                                + queryRef.getSetName() + "."
-                                + queryRef.getElementName()
-                                + " passed--returned " + counter
-                                + " rows, expected (" + sanityMin + " - "
-                                + sanityMax + ") [" + command + "]"
-                                + " [test: " + testCount + "]" + "\n");
-                    queriesPassed++;
-                }
-            } catch (Exception e) {
-                queriesFailed++;
-
-                // logging time
-                long end = System.currentTimeMillis();
-
-                System.out.println(BANNER_LINE_top);
-                System.out.println("*** " + ((end - start) / 1000F) + " QUERY "
-                        + queryRef.getSetName() + "."
-                        + queryRef.getElementName()
-                        + " FAILED!***  It threw an exception." + " [test: "
-                        + testCount + "]");
-                printFailureMessage(queries[i]);
-                System.out.println(BANNER_LINE_bot + "\n");
-            }
-        }
+	    // check the connection usage
+            RDBMSPlatformI platform = wdkModel.getRDBMSPlatform();
+	    if (platform.getActiveCount() > 0) {
+		System.err.println("Connection leak ("
+				   + platform.getActiveCount() + ") for question: "
+				   + question.getFullName());
+	    }
+	}
     }
 
-    /**
-     * Processes each RecordClass (by simply calling its print method, which
-     * exercises all of the queries within that recordClass) provided in the
-     * sanity test. The test fails if an exception is thrown.
-     * 
-     */
-    private void recordsTest() {
+    private void testQuerySets(String queryType) throws SQLException, WdkModelException {
 
-        System.out.println("Sanity Test:  Checking records\n");
+        System.out.println("Sanity Test:  Checking " + queryType + " queries"
+			   + newline);
 
-        Reference recordRef = null;
-        SanityRecord records[] = sanityModel.getAllSanityRecords();
+	for (QuerySet querySet : wdkModel.getAllQuerySets()) {
+	    if (!querySet.getQueryType().equals(queryType)
+		  || querySet.getDoNotTest()) continue;
 
-        for (int i = 0; i < records.length; i++) {
-            // logging time
-            long start = System.currentTimeMillis();
-            testCount++;
-            if (skipTo != null && testCount < skipTo) continue;
-            if (stopAfter != null && testCount > stopAfter) continue;
+	    int minRows = 1;
+	    if (queryType.equals("attribute")) {
+		/*
+		// discover number of entities expected in each attribute query
+		String cardinalitySql = querySet.getCardinalitySql();
+		ResultSet rs = 
+		    SqlUtils.executeQuery(wdkModel.getRDBMSPlatform().getDataSource(), 
+					  cardinalitySql);
+		rs.next();
+		minRows = rs.getInt(1);
+		SqlUtils.closeResultSet(rs);
+		*/
+	    }
 
-            try {
-                recordRef = new Reference(records[i].getRef());
-                RecordClassSet nextRecordClassSet = wdkModel.getRecordClassSet(recordRef.getSetName());
-                RecordClass nextRecordClass = nextRecordClassSet.getRecordClass(recordRef.getElementName());
-                RecordInstance nextRecordInstance = nextRecordClass.makeRecordInstance(
-                        records[i].getProjectId(), records[i].getPrimaryKey());
-
-                String riString = nextRecordInstance.print();
-
-                // logging time
-                long end = System.currentTimeMillis();
-
-                if (indexOnly) {
-                    System.out.println(" RECORD " + recordRef.getSetName()
-                            + "." + recordRef.getElementName() + " [test: "
-                            + testCount + "]");
-                    continue;
-                }
-
-                if (!failuresOnly)
-                    System.out.println(((end - start) / 1000F) + " Record "
-                            + recordRef.getSetName() + "."
-                            + recordRef.getElementName() + " passed"
-                            + " [test: " + testCount + "]" + "\n");
-                if (verbose) System.out.println(riString + "\n");
-                recordsPassed++;
-            } catch (Exception wme) {
-                recordsFailed++;
-
-                // logging time
-                long end = System.currentTimeMillis();
-
-                System.out.println(BANNER_LINE_top);
-                System.out.println("*** " + ((end - start) / 1000F)
-                        + " RECORD " + recordRef.getSetName() + "."
-                        + recordRef.getElementName() + " FAILED!***"
-                        + " [test: " + testCount + "]");
-                printFailureMessage(records[i]);
-                System.out.println(BANNER_LINE_bot + "\n");
-            }
-        }
+	    for (Query query : querySet.getQueries()) {
+		if (query.getDoNotTest()) continue;
+		for (ParamValuesSet paramValuesSet : query.getParamValuesSets()) {
+		    testQuery(querySet, query, queryType, minRows, paramValuesSet);
+		}
+	    }
+	}
     }
 
-    /**
-     * Runs each question provided in the sanity test model (which is also each
-     * query in the wdk model). Compares the results returned by the question to
-     * the expected range provided in the sanity model. The test fails if the
-     * result is outside the expected range or if an exception is thrown.
-     */
-    private void questionsTest() {
-        System.out.println("Sanity Test:  Checking questions\n");
+    private void testQuery(QuerySet querySet, Query query, String queryType,
+			   int minRows, ParamValuesSet paramValuesSet) {
 
-        Reference questionRef = null;
-        SanityQuestion questions[] = sanityModel.getAllSanityQuestions();
+	String typeUpperCase = queryType.toUpperCase();
 
-        for (int i = 0; i < questions.length; i++) {
-            testCount++;
-            if (skipTo != null && testCount < skipTo) continue;
-            if (stopAfter != null && testCount > stopAfter) continue;
-            // logging time
-            long start = System.currentTimeMillis();
-            try {
-                // get model question from sanity question
-                questionRef = new Reference(questions[i].getRef());
-                QuestionSet questionSet = wdkModel.getQuestionSet(questionRef.getSetName());
-                Question question = questionSet.getQuestion(questionRef.getElementName());
+	testCount++;
+	if (skipTo != null && testCount < skipTo) return;
+	if (stopAfter != null && testCount > stopAfter) return;
+	if (indexOnly) {
+	    System.out.println(" [test: " + testCount + "] " 
+			       + typeUpperCase + " QUERY " 
+			       + query.getFullName()
+			       + newline);
+	    return;
+	}
 
-                if (indexOnly) {
-                    System.out.println(" QUESTION " + questionRef.getSetName()
-                            + "." + questionRef.getElementName() + " [test: "
-                            + testCount + "]");
-                    continue;
-                }
+	boolean passed = false;
+	String prefix = "***";
+	String status = " FAILED!";
+	int sanityMin = minRows;
+	int sanityMax = MAXROWS;
+	int counter = 0;
+	long start = System.currentTimeMillis();
+	String returned = "";
+	String expected = "";
 
-                // run question
-                Answer answer = question.makeAnswer(
-                        questions[i].getParamHash(),
-                        questions[i].getPageStart(), questions[i].getPageEnd());
+	try {
+	    QueryTester queryTester = new QueryTester(wdkModel);
+	    ResultList rs = 
+		queryTester.getResult(querySet.getName(),
+				      query.getName(),
+				      paramValuesSet.getParamValues());
 
-                int resultSize = answer.getResultSize();
-                
-                // get the summary attribute list
-                Map<String, AttributeField> summary = answer.getSummaryAttributes();
-                // iterate through the page and try every summary attribute of 
-                // each record
-                while (answer.hasMoreRecordInstances()) {
-                    RecordInstance record = answer.getNextRecordInstance();
-                    StringBuffer sb = new StringBuffer();
-                    for (String attrName : summary.keySet()) {
-                        sb.append(record.getAttributeValue(attrName));
-                        sb.append('\t');
-                    }
-                    logger.debug("Record: " + sb.toString());
-                }
+	    while (rs.next()) { counter++; }
+	    rs.close();
 
-                // count results; check if sane
-                int sanityMin = questions[i].getMinOutputLength().intValue();
-                int sanityMax = questions[i].getMaxOutputLength().intValue();
+	    passed = (counter >= sanityMin && counter <= sanityMax);
 
-                // logging time
-                long end = System.currentTimeMillis();
+	    returned = " It returned " + counter + " rows. ";
+	    if (sanityMin != 1 || sanityMax != MAXROWS)
+		expected = "Expected (" + sanityMin + " - " + sanityMax + ") ";
 
-                if (resultSize < sanityMin || resultSize > sanityMax) {
-                    System.out.println(BANNER_LINE_top);
-                    System.out.println("*** " + ((end - start) / 1000F)
-                            + " QUESTION " + questionRef.getSetName() + "."
-                            + questionRef.getElementName()
-                            + " FAILED!***  It returned " + resultSize
-                            + " rows--not within expected range (" + sanityMin
-                            + " - " + sanityMax + ")" + " [test: " + testCount
-                            + "]");
-                    printFailureMessage(questions[i]);
-                    System.out.println(BANNER_LINE_bot + "\n");
-                    questionsFailed++;
-                } else {
-                    String globalArgs = "-model " + modelName;
-                    String command = questions[i].getCommand(globalArgs);
-                    if (!failuresOnly)
-                        System.out.println(((end - start) / 1000F)
-                                + " Question " + questionRef.getSetName() + "."
-                                + questionRef.getElementName()
-                                + " passed--returned " + resultSize
-                                + " rows, within expected range (" + sanityMin
-                                + " - " + sanityMax + ") [" + command + "]"
-                                + " [test: " + testCount + "]" + "\n");
-                    questionsPassed++;
-                }
-            } catch (Exception e) {
-                questionsFailed++;
-                e.printStackTrace();
+	} catch (Exception e) {
+	    returned = " It threw an exception.";
+	} finally {
+	    long end = System.currentTimeMillis();
+	    if (passed) {
+		queriesPassed++;
+		prefix = "";
+		status = " passed.";
+	    }
+	    else {
+		queriesFailed++;
+	    }
+	    if (!passed) System.out.println(BANNER_LINE_top);
 
-                // logging time
-                long end = System.currentTimeMillis();
+	    String cmd = " [ wdkQuery -model " + wdkModel.getName()
+		+ " -query " + query.getFullName() 
+		+ " -params " + paramValuesSet.getCmdLineString()
+		+ " ] ";
 
-                System.out.println(BANNER_LINE_top);
-                System.out.println("*** " + ((end - start) / 1000F)
-                        + " QUESTION " + questionRef.getSetName() + "."
-                        + questionRef.getElementName()
-                        + " FAILED!***  It threw an exception." + " [test: "
-                        + testCount + "]");
-                printFailureMessage(questions[i]);
-                System.out.println(BANNER_LINE_bot + "\n");
-            }
-            // check the connection usage
-            RDBMSPlatformI platform = wdkModel.getPlatform();
-            // System.out.println("Connection: " + platform.getActiveCount() +
-            // "/"
-            // + platform.getIdleCount());
-            if (platform.getActiveCount() > 0) {
-                System.err.println("Connection leak ("
-                        + platform.getActiveCount() + ") for question: "
-                        + questionRef.getSetName() + "."
-                        + questionRef.getElementName());
-                printFailureMessage(questions[i]);
-            }
-        }
-    }
-
-    /**
-     * Runs each question provided in the sanity test model (which is also each
-     * query in the wdk model). Compares the results returned by the question to
-     * the expected range provided in the sanity model. The test fails if the
-     * result is outside the expected range or if an exception is thrown.
-     */
-    private void xmlQuestionsTest() {
-        System.out.println("Sanity Test:  Checking XML questions\n");
-
-        Reference questionRef = null;
-        SanityXmlQuestion questions[] = sanityModel.getSanityXmlQuestions();
-
-        for (int i = 0; i < questions.length; i++) {
-            testCount++;
-            if (skipTo != null && testCount < skipTo) continue;
-            if (stopAfter != null && testCount > stopAfter) continue;
-            // logging time
-            long start = System.currentTimeMillis();
-            try {
-                // get model question from sanity question
-                questionRef = new Reference(questions[i].getRef());
-                XmlQuestionSet questionSet = wdkModel.getXmlQuestionSet(questionRef.getSetName());
-                XmlQuestion question = questionSet.getQuestion(questionRef.getElementName());
-
-                // if need to use external xml data source
-                String xmlData = questions[i].getXmlData();
-                if (xmlData != null) question.setXmlDataURL(xmlData);
-
-                if (indexOnly) {
-                    System.out.println(" XML QUESTION "
-                            + questionRef.getSetName() + "."
-                            + questionRef.getElementName() + " [test: "
-                            + testCount + "]");
-                    continue;
-                }
-
-                // run question
-                XmlAnswer answer = question.makeAnswer(null,
-                        questions[i].getPageStart(), questions[i].getPageEnd());
-
-                int resultSize = answer.getResultSize();
-
-                // count results; check if sane
-                int sanityMin = questions[i].getMinOutputLength();
-                int sanityMax = questions[i].getMaxOutputLength();
-
-                // logging time
-                long end = System.currentTimeMillis();
-
-                if (resultSize < sanityMin || resultSize > sanityMax) {
-                    System.out.println(BANNER_LINE_top);
-                    System.out.println("*** " + ((end - start) / 1000F)
-                            + " XML QUESTION " + questionRef.getSetName() + "."
-                            + questionRef.getElementName()
-                            + " FAILED!***  It returned " + resultSize
-                            + " rows--not within expected range (" + sanityMin
-                            + " - " + sanityMax + ")" + " [test: " + testCount
-                            + "]");
-                    printFailureMessage(questions[i]);
-                    System.out.println(BANNER_LINE_bot + "\n");
-                    questionsFailed++;
-                } else {
-                    if (!failuresOnly)
-                        System.out.println(((end - start) / 1000F)
-                                + " XmlQuestion " + questionRef.getSetName()
-                                + "." + questionRef.getElementName()
-                                + " passed--returned " + resultSize
-                                + " rows, within expected range (" + sanityMin
-                                + " - " + sanityMax + ")" + " [test: "
-                                + testCount + "]" + "\n");
-                    questionsPassed++;
-                }
-            } catch (Exception e) {
-                questionsFailed++;
-
-                // logging time
-                long end = System.currentTimeMillis();
-
-                System.out.println(BANNER_LINE_top);
-                System.out.println("*** " + ((end - start) / 1000F)
-                        + " XML QUESTION " + questionRef.getSetName() + "."
-                        + questionRef.getElementName()
-                        + " FAILED!***  It threw an exception." + " [test: "
-                        + testCount + "]");
-                e.printStackTrace();
-                printFailureMessage(questions[i]);
-                System.out.println(BANNER_LINE_bot + "\n");
-            }
-        }
-    }
-
-    /**
-     * Prints out a command to run so the user can test failures outside of the
-     * sanity test.
-     */
-    private void printFailureMessage(SanityElementI element) {
-        try {
-            StringBuffer message = new StringBuffer("To test "
-                    + element.getType() + " " + element.getName()
-                    + ", run the following command: \n ");
-
-            String globalArgs = "-model " + modelName;
-            String command = element.getCommand(globalArgs);
-            message.append(command);
-
-            System.out.println(message.toString());
-
-        } catch (Exception e) {
-            System.out.println("An error occurred when attempting to create a message explaining a previous error");
-            System.out.println(e.getMessage());
-            e.printStackTrace();
-        }
+	    String msg = prefix + ((end - start) / 1000F)
+		+ " [test: " + testCount + "]" 
+		+ " " + typeUpperCase + " QUERY " + query.getFullName()
+		+ status 
+		+ returned
+		+ expected
+		+ cmd
+		+ newline;
+	    if (!passed || !failuresOnly) System.out.println(msg);
+	    if (!passed) System.out.println(BANNER_LINE_bot + newline);
+	}
     }
 
     /**
@@ -604,18 +335,18 @@ public class SanityTester {
         int totalFailed = queriesFailed + recordsFailed + questionsFailed;
 
         StringBuffer resultLine = new StringBuffer(
-                "***Sanity test summary***\n");
-        resultLine.append("Skipped to: " + skipTo + "\n");
-        resultLine.append("Stopped after: " + stopAfter + "\n");
-        resultLine.append("Total Passed: " + totalPassed + "\n");
-        resultLine.append("Total Failed: " + totalFailed + "\n");
+                "***Sanity test summary***" + newline);
+        resultLine.append("Skipped to: " + skipTo + newline);
+        resultLine.append("Stopped after: " + stopAfter + newline);
+        resultLine.append("Total Passed: " + totalPassed + newline);
+        resultLine.append("Total Failed: " + totalFailed + newline);
         resultLine.append("   " + queriesPassed + " queries passed, "
-                + queriesFailed + " queries failed\n");
+                + queriesFailed + " queries failed" + newline);
         resultLine.append("   " + recordsPassed + " records passed, "
-                + recordsFailed + " records failed\n");
+                + recordsFailed + " records failed" + newline);
         resultLine.append("   " + questionsPassed + " questions passed, "
-                + questionsFailed + " questions failed\n");
-        resultLine.append("Sanity Test " + result + "\n");
+                + questionsFailed + " questions failed" + newline);
+        resultLine.append("Sanity Test " + result + newline);
         System.out.println(resultLine.toString());
         return failedOverall;
     }
@@ -635,7 +366,7 @@ public class SanityTester {
         addOption(
                 options,
                 "model",
-                "the name of the model.  This is used to find the Model XML file ($GUS_HOME/config/model_name.xml), the Model property file ($GUS_HOME/config/model_name.prop), the Sanity Test file ($GUS_HOME/config/model_name-sanity.xml) and the Model config file ($GUS_HOME/config/model_name-config.xml)");
+                "the name of the model.  This is used to find the Model XML file ($GUS_HOME/config/model_name.xml), the Model property file ($GUS_HOME/config/model_name.prop) and the Model config file ($GUS_HOME/config/model_name-config.xml)");
 
         // verbose
         Option verbose = new Option("verbose",
@@ -643,10 +374,6 @@ public class SanityTester {
         options.addOption(verbose);
 
         // verbose
-        Option suggestOnly = new Option("suggestOnly",
-                "Only print the suggested templates for missing tests.");
-        options.addOption(suggestOnly);
-
         Option skipTo = new Option("skipTo", true,
                 "Skip tests before this one.  Provide the integer test number.");
         options.addOption(skipTo);
@@ -689,10 +416,10 @@ public class SanityTester {
         String newline = System.getProperty("line.separator");
         String cmdlineSyntax = cmdName
                 + " -model model_name"
-                + " [-verbose] [-skipTo testnum] [-stopAfter testnum]  [-failuresOnly | -indexOnly | -suggestOnly]";
+                + " [-verbose] [-skipTo testnum] [-stopAfter testnum]  [-failuresOnly | -indexOnly";
 
         String header = newline
-                + "Run a test on all queries and records in a wdk model, using a provided sanity model, to ensure that the course of development hasn't dramatically affected wdk functionality."
+                + "Run a test on all queries and records in a wdk model."
                 + newline + newline + "Options:";
 
         String footer = "";
@@ -708,6 +435,7 @@ public class SanityTester {
     public static void main(String[] args) throws WdkModelException,
             SAXException, IOException, ParserConfigurationException,
             TransformerFactoryConfigurationError, TransformerException,
+						  SQLException,					  
             WdkUserException {
         String cmdName = System.getProperty("cmdName");
         String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
@@ -716,8 +444,6 @@ public class SanityTester {
         CommandLine cmdLine = parseOptions(cmdName, options, args);
 
         String modelName = cmdLine.getOptionValue("model");
-
-        boolean suggestOnly = cmdLine.hasOption("suggestOnly");
 
         String skipToStr = cmdLine.getOptionValue("skipTo");
 
@@ -734,24 +460,16 @@ public class SanityTester {
 
         boolean indexOnly = cmdLine.hasOption("indexOnly");
 
-        SanityTestXmlParser parser = new SanityTestXmlParser(gusHome);
-        SanityModel sanityModel = parser.parseModel(modelName);
-
-        SanityTester sanityTester = new SanityTester(modelName, sanityModel,
-                verbose, suggestOnly, skipTo, stopAfter, failuresOnly,
+        SanityTester sanityTester = new SanityTester(modelName, 
+                verbose, skipTo, stopAfter, failuresOnly,
                 indexOnly);
 
-        sanityTester.existenceTest();
-        if (!suggestOnly) {
-            sanityTester.queriesTest();
-            sanityTester.recordsTest();
-            sanityTester.questionsTest();
-            sanityTester.xmlQuestionsTest();
-
-            if (verbose) System.out.println(sanityModel.toString());
-            if (sanityTester.printSummaryLine()) {
-                System.exit(1);
-            }
+	//	sanityTester.testQuerySets(QuerySet.TYPE_ATTRIBUTE);
+	//	sanityTester.testQuerySets(QuerySet.TYPE_TABLE);
+	//	sanityTester.testQuerySets(QuerySet.TYPE_VOCAB);
+	sanityTester.testQuestionSets();
+	if (sanityTester.printSummaryLine()) {
+	    System.exit(1);
         }
     }
 }

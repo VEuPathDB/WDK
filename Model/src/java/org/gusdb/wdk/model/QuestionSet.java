@@ -25,6 +25,7 @@ public class QuestionSet extends WdkModelBase implements ModelSetI {
 
     private List<WdkModelText> descriptions = new ArrayList<WdkModelText>();
     private String description;
+    private boolean doNotTest = false;
 
     private boolean internal = false;
 
@@ -50,6 +51,14 @@ public class QuestionSet extends WdkModelBase implements ModelSetI {
 
     public String getDescription() {
         return description;
+    }
+
+    public void setDoNotTest(Boolean doNotTest) {
+	this.doNotTest = doNotTest.booleanValue();
+    }
+
+    public boolean getDoNotTest() {
+	return doNotTest;
     }
 
     public Boolean getInternal() {

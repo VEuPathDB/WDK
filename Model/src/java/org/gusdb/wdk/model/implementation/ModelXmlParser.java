@@ -41,6 +41,7 @@ import org.gusdb.wdk.model.EnumItem;
 import org.gusdb.wdk.model.EnumItemList;
 import org.gusdb.wdk.model.EnumParam;
 import org.gusdb.wdk.model.FlatVocabParam;
+import org.gusdb.wdk.model.ParamValuesSet;
 import org.gusdb.wdk.model.Group;
 import org.gusdb.wdk.model.GroupSet;
 import org.gusdb.wdk.model.HistoryParam;
@@ -339,9 +340,15 @@ public class ModelXmlParser extends XmlParser {
         configureNode(digester, "wdkModel/querySet", QuerySet.class,
                 "addQuerySet");
 
+	// defaultTestParamValues
+	configureParamValuesSet(digester, "wdkModel/querySet/defaultTestParamValues", "addDefaultParamValuesSet");
+
         // sqlQuery
         configureNode(digester, "wdkModel/querySet/sqlQuery", SqlQuery.class,
                 "addQuery");
+
+	// defaultTestParamValues
+	configureParamValuesSet(digester, "wdkModel/querySet/sqlQuery/testParamValues", "addParamValuesSet");
 
         configureNode(digester, "wdkModel/querySet/sqlQuery/sql",
                 WdkModelText.class, "addSql");
