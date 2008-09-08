@@ -2,6 +2,7 @@ package org.gusdb.wdk.controller.action;
 
 import java.io.File;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.ServletContext;
@@ -54,23 +55,26 @@ public class ShowQuestionSetsFlatAction extends ShowQuestionSetsAction {
 
     protected void prepareQuestionSetForm(ActionServlet servlet,
             QuestionSetForm qSetForm) throws Exception {
-        ServletContext context = servlet.getServletContext();
+        // ServletContext context = servlet.getServletContext();
 
         WdkModelBean wdkModel = (WdkModelBean) getServlet().getServletContext().getAttribute(
                 CConstants.WDK_MODEL_KEY);
-        Set qSets = wdkModel.getQuestionSetsMap().keySet();
-        Iterator qSetsI = qSets.iterator();
-        while (qSetsI.hasNext()) {
-            String qSetName = (String) qSetsI.next();
-            QuestionSetBean wdkQuestionSet = (QuestionSetBean) wdkModel.getQuestionSetsMap().get(
-                    qSetName);
 
-            Set questions = wdkQuestionSet.getQuestionsMap().keySet();
-            Iterator questionsI = questions.iterator();
-            while (questionsI.hasNext()) {
-                String qName = (String) questionsI.next();
-                QuestionBean wdkQuestion = (QuestionBean) wdkQuestionSet.getQuestionsMap().get(
-                        qName);
+        String qFullName = qSetForm.getQuestionFullName();
+        Map<String, QuestionSetBean> qSetMap = wdkModel.getQuestionSetsMap();
+        for (String qSetName : qSetMap.keySet()) {
+            if (qFullName != null && !qFullName.startsWith(qSetName)) continue;
+
+            QuestionSetBean wdkQuestionSet = qSetMap.get(qSetName);
+
+            Map<String, QuestionBean> questionMap = wdkQuestionSet.getQuestionsMap();
+            for (String qName : questionMap.keySet()) {
+                QuestionBean wdkQuestion = questionMap.get(qName);
+
+                // skip the unused questions
+                if (qFullName != null
+                        && wdkQuestion.getFullName().equals(qFullName))
+                    continue;
 
                 ParamBean[] params = wdkQuestion.getParams();
 

@@ -8,7 +8,7 @@ import org.gusdb.wdk.model.AttributeField;
 public class AttributeFieldBean extends FieldBean {
 
     private AttributeField attributeField;
-    
+
     /**
      * 
      */
@@ -24,4 +24,13 @@ public class AttributeFieldBean extends FieldBean {
     public boolean isSortable() {
         return attributeField.isSortable();
     }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.AttributeField#getAlign()
+     */
+    public String getAlign() {
+        return attributeField.getAlign();
+    }
+
 }

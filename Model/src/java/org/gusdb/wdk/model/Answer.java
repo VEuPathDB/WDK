@@ -786,6 +786,8 @@ public class Answer {
         if (answerInfo == null) {
             AnswerFactory answerFactory = question.getWdkModel().getAnswerFactory();
             answerInfo = answerFactory.getAnswerInfo(getChecksum());
+            if (answerInfo == null)
+                answerInfo = answerFactory.saveAnswer(this);
         }
         return answerInfo;
     }
@@ -813,7 +815,7 @@ public class Answer {
     public void setFilter(AnswerFilterInstance filter) {
         this.filter = filter;
     }
-    
+
     public void setAnswerInfo(AnswerInfo answerInfo) {
         this.answerInfo = answerInfo;
     }
