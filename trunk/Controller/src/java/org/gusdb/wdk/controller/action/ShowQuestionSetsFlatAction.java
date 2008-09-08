@@ -73,7 +73,7 @@ public class ShowQuestionSetsFlatAction extends ShowQuestionSetsAction {
 
                 // skip the unused questions
                 if (qFullName != null
-                        && wdkQuestion.getFullName().equals(qFullName))
+                        && !wdkQuestion.getFullName().equals(qFullName))
                     continue;
 
                 ParamBean[] params = wdkQuestion.getParams();
