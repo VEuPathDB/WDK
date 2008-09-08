@@ -100,32 +100,21 @@ public class WdkModelBean {
     /**
      * @return Map of questionSetName --> {@link QuestionSetBean}
      */
-    public Map getQuestionSetsMap() {
-        Map qSets = model.getQuestionSets();
-        Iterator it = qSets.keySet().iterator();
-
+    public Map<String, QuestionSetBean> getQuestionSetsMap() {
+        Map<String, QuestionSet> qSets = model.getQuestionSets();
         Map<String, QuestionSetBean> qSetBeans = new LinkedHashMap<String, QuestionSetBean>();
-        while (it.hasNext()) {
-            String qSetKey = (String) it.next();
+        for (String qSetKey : qSets.keySet()) {
             QuestionSetBean qSetBean = new QuestionSetBean(
-                    (QuestionSet) qSets.get(qSetKey));
+                    qSets.get(qSetKey));
             qSetBeans.put(qSetKey, qSetBean);
         }
         return qSetBeans;
     }
 
     public QuestionSetBean[] getQuestionSets() {
-        Map qSets = model.getQuestionSets();
-        Iterator it = qSets.keySet().iterator();
-
-        QuestionSetBean[] qSetBeans = new QuestionSetBean[qSets.size()];
-        int i = 0;
-        while (it.hasNext()) {
-            Object qSetKey = it.next();
-            QuestionSetBean qSetBean = new QuestionSetBean(
-                    (QuestionSet) qSets.get(qSetKey));
-            qSetBeans[i++] = qSetBean;
-        }
+        Map<String, QuestionSetBean> qSetMap = getQuestionsByCategory(); 
+        QuestionSetBean[] qSetBeans = new QuestionSetBean[qSetMap.size()];
+        qSetMap.values().toArray(qSetBeans);
         return qSetBeans;
     }
 
