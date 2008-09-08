@@ -12,8 +12,9 @@ GRANT GUS_R TO userlogins;
 GRANT GUS_W TO userlogins;
 GRANT CREATE VIEW TO userlogins;
 
-
-
+DROP SEQUENCE userlogins.strategies_pkseq;
+DROP SEQUENCE userlogins.steps_pkseq;
+DROP SEQUENCE userlogins.answers_pkseq;
 DROP SEQUENCE userlogins.users_pkseq;
 DROP SEQUENCE userlogins.dataset_indices_pkseq;
 
@@ -22,16 +23,20 @@ DROP TABLE userlogins.user_datasets;
 DROP TABLE userlogins.dataset_values;
 DROP TABLE userlogins.dataset_indices;
 DROP TABLE userlogins.histories;
+DROP TABLE userlogins.strategies;
+DROP TABLE userlogins.steps;
+DROP TABLE userlogins.answers;
 DROP TABLE userlogins.preferences;
 DROP TABLE userlogins.user_roles;
 DROP TABLE userlogins.users;
 DROP TABLE userlogins.sorting_attributes;
 DROP TABLE userlogins.summary_attributes;
-DROP TABLE userlogins.strategies;
-DROP TABLE userlogins.steps;
-DROP TABLE userlogins.answers;
 
-
+DROP SEQUENCE userlogins.users_pkseq;
+DROP SEQUENCE userlogins.dataset_indices_pkseq;
+DROP SEQUENCE userlogins.steps_pkseq;
+DROP SEQUENCE userlogins.answers_pkseq;
+DROP SEQUENCE userlogins.strategies_pkseq;
 
 CREATE SEQUENCE userlogins.users_pkseq INCREMENT BY 1 START WITH 1;
 
