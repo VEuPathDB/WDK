@@ -11,6 +11,17 @@ public class QuerySet extends WdkModelBase implements ModelSetI {
     private Map<String, Query> queries = new LinkedHashMap<String, Query>();
     private String name;
 
+    // for sanity testing
+    private String queryType = "";
+    public static final String TYPE_ATTRIBUTE = "attribute";
+    public static final String TYPE_TABLE = "table";
+    public static final String TYPE_VOCAB = "vocab";
+    private boolean doNotTest = false;
+    private List<ParamValuesSet> unexcludedDefaultParamValuesSets =
+	new ArrayList<ParamValuesSet>();
+    private ParamValuesSet defaultParamValuesSet;
+    private String cardinalitySql;
+
     public void setName(String name) {
         this.name = name;
     }
@@ -37,8 +48,55 @@ public class QuerySet extends WdkModelBase implements ModelSetI {
         return array;
     }
 
+    public void setQueryType(String type) {
+	if (!type.equals(TYPE_ATTRIBUTE) && !type.equals(TYPE_TABLE)
+	    && !type.equals(TYPE_VOCAB)) {
+	    String msg = "Query type " + type
+		+ " is not valid.  Allowed types are: "
+		+ TYPE_ATTRIBUTE + ", " 
+		+ TYPE_VOCAB + " and " 
+		+ TYPE_TABLE;
+	    throw new IllegalArgumentException(msg);
+	}
+	this.queryType = type;
+    }
+
+    public String getQueryType() {
+	return queryType;
+    }
+
+    public void setDoNotTest(Boolean doNotTest) {
+	this.doNotTest = doNotTest.booleanValue();
+    }
+
+    public boolean getDoNotTest() {
+	return doNotTest;
+    }
+
+    public void addDefaultParamValuesSet(ParamValuesSet paramValuesSet) {
+	unexcludedDefaultParamValuesSets.add(paramValuesSet);
+    }
+
+    public ParamValuesSet getDefaultParamValuesSet() {
+	return defaultParamValuesSet;
+    }
+
+    // sql that returns number of rows expected by all queries in this query set
+    public void setCardinalitySql(String sql) {
+	this.cardinalitySql = sql;
+    }
+
+    public String getCardinalitySql() {
+	return cardinalitySql;
+    }
+
+    public boolean contains(String queryName) {
+        return queries.containsKey(queryName);
+    }
+
     public void addQuery(Query query) throws WdkModelException {
         query.setSetName(this.getName());
+        query.setQuerySet(this);
         queryList.add(query);
     }
 
@@ -88,7 +146,18 @@ public class QuerySet extends WdkModelBase implements ModelSetI {
             }
         }
         queryList = null;
+
+	// exclude paramValuesSets
+        for (ParamValuesSet paramValuesSet : unexcludedDefaultParamValuesSets) {
+            if (paramValuesSet.include(projectId)) {
+                if (defaultParamValuesSet != null)
+                    throw new WdkModelException("Duplicate <defaultParamValues> included in query set " + getName() + " for projectId " + projectId);
+		defaultParamValuesSet = paramValuesSet;
+
+            }
+        }
     }
+
     // ///////////////////////////////////////////////////////////////
     // ///// protected
     // ///////////////////////////////////////////////////////////////

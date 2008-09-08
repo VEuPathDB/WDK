@@ -315,7 +315,7 @@ public class SummaryTester {
         String cmdlineSyntax = cmdName
                 + " -model model_name"
                 + " -question full_question_name"
-                + " [-rows start end]"
+                + " -rows start end"
                 + " [-showQuery]"
                 + " [-toXml <xmlFile>|-fullRecords]"
                 + " [-format tabular | gff3 | fullRecords [-config <config_file>]]"

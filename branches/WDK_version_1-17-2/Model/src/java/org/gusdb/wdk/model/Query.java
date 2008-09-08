@@ -18,6 +18,7 @@ public abstract class Query extends WdkModelBase {
 
     private static Logger logger = Logger.getLogger(Query.class);
 
+    protected QuerySet querySet;
     protected String name;
     protected String fullName;
     protected String displayName;
@@ -35,6 +36,11 @@ public abstract class Query extends WdkModelBase {
 
     protected String signature = null;
     protected String projectId;
+
+    // for sanity testing
+    private boolean doNotTest = false;
+    private List<ParamValuesSet> paramValuesSets
+	= new ArrayList<ParamValuesSet>();
 
     // ///////////////////////////////////////////////////////////////////
     // /////////// Setters for initialization ///////////////////////////
@@ -116,10 +122,36 @@ public abstract class Query extends WdkModelBase {
         return help;
     }
 
+    // exclude this query from sanity testing
+    public void setDoNotTest(Boolean doNotTest) {
+	this.doNotTest = doNotTest.booleanValue();
+    }
+
+    public boolean getDoNotTest() {
+	return doNotTest;
+    }
+
+    public void addParamValuesSet(ParamValuesSet paramValuesSet) {
+	paramValuesSets.add(paramValuesSet);
+    }
+
+    public List<ParamValuesSet> getParamValuesSets() throws WdkModelException {
+	updateParamValuesSetsWithDefaults();
+	return paramValuesSets;
+    }
+
     public Column[] getColumns() {
         Column[] columnA = new Column[columns.size()];
         columns.values().toArray(columnA);
         return columnA;
+    }
+
+    public void setQuerySet(QuerySet querySet) {
+	this.querySet = querySet;
+    }
+
+    public QuerySet getQuerySet() {
+	return querySet;
     }
 
     public Map<String, Column> getColumnMap() {
@@ -228,30 +260,6 @@ public abstract class Query extends WdkModelBase {
             }
         }
         return signature;
-    }
-
-    /*
-     * <sanityQuery ref="GeneFeatureIds.GenesByGeneType" minOutputLength="30"
-     * maxOutputLength="100"> <sanityParam name="geneType" value="tRNA"/>
-     * <sanityParam name="organism" value="Plasmodium falciparum"/>
-     * </sanityQuery>
-     */
-    public String getSanityTestSuggestion() throws WdkModelException {
-        String indent = "    ";
-        String newline = System.getProperty("line.separator");
-        StringBuffer buf = new StringBuffer(newline + newline + indent
-                + "<sanityQuery ref=\"" + getFullName() + "\"" + newline
-                + indent + indent + indent + "minOutputLength=\"FIX_min_len\" "
-                + "maxOutputLength=\"FIX_max_len\">" + newline);
-        for (Param param : getParams()) {
-            String paramName = param.getName();
-            String value = param.getDefault();
-            if (value == null) value = "FIX_null_dflt";
-            buf.append(indent + indent + "<sanityParam name=\"" + paramName
-                    + "\" value=\"" + value + "\"/>" + newline);
-        }
-        buf.append(indent + "</sanityQuery>");
-        return buf.toString();
     }
 
     public String getProjectId() {
@@ -365,6 +373,22 @@ public abstract class Query extends WdkModelBase {
             param.setResources(model);
         }
         this.projectId = model.getProjectId();
+    }
+
+    private void updateParamValuesSetsWithDefaults() throws WdkModelException {
+	ParamValuesSet querySetDefaults = querySet.getDefaultParamValuesSet();
+	if (paramValuesSets.isEmpty()) {
+	    paramValuesSets.add(new ParamValuesSet());
+	}
+	for (ParamValuesSet paramValuesSet : paramValuesSets) {
+	    paramValuesSet.updateWithDefaults(querySetDefaults);
+
+	    for (Param param : getParams()) {
+		String paramName = param.getName();
+		String defaultValue = param.getDefault();
+		paramValuesSet.updateWithDefault(paramName, defaultValue);
+	    }
+	}
     }
 
     protected void validateParamValues(Map<String, Object> values)
@@ -517,6 +541,15 @@ public abstract class Query extends WdkModelBase {
             }
         }
         columnList = null;
+
+	// exclude paramValuesSets
+	List<ParamValuesSet> tempList = new ArrayList<ParamValuesSet>();
+        for (ParamValuesSet paramValuesSet : paramValuesSets) {
+            if (paramValuesSet.include(projectId)) {
+		tempList.add(paramValuesSet);
+            }
+        }
+	paramValuesSets = tempList;
     }
 
     protected abstract String getSignatureData();

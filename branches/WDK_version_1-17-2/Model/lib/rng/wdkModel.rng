@@ -359,6 +359,17 @@
       </attribute>
     </optional>
     <zeroOrMore>
+      <element name="testParamValues">
+        <oneOrMore>
+          <element name="paramValue">
+            <attribute name="name"/>
+            <text/>
+          </element>
+        </oneOrMore>
+        <ref name="IncludeExclude" />
+      </element>
+    </zeroOrMore>
+    <zeroOrMore>
       <element name="paramRef">
         <attribute name="ref" />
         <ref name="IncludeExclude" />
@@ -410,7 +421,27 @@
   <define name="querySet">
     <element name="querySet">
       <attribute name="name" />
+      <optional>
+        <attribute name="queryType">
+          <choice>
+            <value>attribute</value>
+            <value>table</value>
+            <value>vocab</value>
+          </choice>
+        </attribute>
+      </optional>
       <ref name="IncludeExclude" />
+      <zeroOrMore>
+        <element name="defaultTestParamValues">
+          <oneOrMore>
+            <element name="paramValue">
+              <attribute name="name"/>
+              <text/>
+            </element>
+          </oneOrMore>
+          <ref name="IncludeExclude" />
+        </element>
+      </zeroOrMore>
       <oneOrMore>
         <ref name="queries" />
       </oneOrMore>
