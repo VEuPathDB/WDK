@@ -262,11 +262,11 @@ CREATE TABLE userlogins.steps
      CONSTRAINT "STEPS_PK" PRIMARY KEY (step_id),
      CONSTRAINT "STEPS_UNIQUE" UNIQUE (user_id, display_id, project_id),
      CONSTRAINT "STEPS_LEFT_CHILD_ID_FK" FOREIGN KEY (left_child_id)
-         REFERENCES steps (step_id),
+         REFERENCES userlogins.steps (step_id),
      CONSTRAINT "STEPS_RIGHT_CHILD_ID_FK" FOREIGN KEY (right_child_id)
-         REFERENCES steps (step_id),
+         REFERENCES userlogins.steps (step_id),
      CONSTRAINT "STEPS_ANSWER_ID_FK" FOREIGN KEY (answer_id)
-         REFERENCES answers (answer_id),
+         REFERENCES userlogins.answers (answer_id),
      CONSTRAINT "STEPS_USER_ID_FK" FOREIGN KEY (user_id)
          REFERENCES userlogins.users (user_id)
 );
