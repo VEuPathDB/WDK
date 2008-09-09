@@ -62,6 +62,9 @@ public class ProcessBooleanExpressionAction extends Action {
         String expression = beForm.getBooleanExpression();
         boolean useBooleanFilter = beForm.isUseBooleanFilter();
 
+        logger.info("Boolean Expression: " + expression);
+	logger.info("Use Boolean Filter: " + useBooleanFilter);
+
         HistoryBean history = wdkUser.combineHistory(expression,
                 useBooleanFilter);
         int historyId = history.getHistoryId();

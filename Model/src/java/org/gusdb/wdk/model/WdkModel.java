@@ -329,6 +329,7 @@ public class WdkModel {
         } else {
             booleanQuestion = new Question();
             booleanQuestion.setName(qname);
+            booleanQuestion.setRecordClass(recordClass);
             booleanQuestion.setQuery(getBooleanQuery(recordClass));
             booleanQuestion.setWdkModel(this);
             internalSet.addQuestion(booleanQuestion);

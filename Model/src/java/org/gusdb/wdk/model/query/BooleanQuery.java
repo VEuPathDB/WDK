@@ -182,6 +182,7 @@ public class BooleanQuery extends SqlQuery {
         } else {
             param = new StringParam();
             param.setName(paramName);
+            param.setQuote(false);
             paramSet.addParam(param);
         }
         return param;
