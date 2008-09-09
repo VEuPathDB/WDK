@@ -12,6 +12,8 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.apache.log4j.Logger;
+
 import org.gusdb.wdk.model.Column;
 import org.gusdb.wdk.model.Param;
 import org.gusdb.wdk.model.WdkModelException;
@@ -29,6 +31,8 @@ import org.json.JSONObject;
  * 
  */
 public class SqlQueryInstance extends QueryInstance {
+
+    private static Logger logger = Logger.getLogger(SqlQueryInstance.class);
 
     private SqlQuery query;
 
@@ -70,13 +74,12 @@ public class SqlQueryInstance extends QueryInstance {
         if (startIndex != null || endIndex != null) {
             sql = platform.getPagedSql(sql, startIndex, endIndex);
         }
+        
+        logger.debug("paged sql: " + sql);
+
         DataSource dataSource = platform.getDataSource();
-        try {
-            ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql);
-            return new SqlResultList(resultSet);
-        } catch (SQLException ex) {
-            throw new WdkModelException(ex);
-        }
+        ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql);
+        return new SqlResultList(resultSet);
     }
 
     /*

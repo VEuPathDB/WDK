@@ -149,8 +149,11 @@ public class Question extends WdkModelBase {
     }
 
     public void setRecordClassRef(String recordClassRef) {
-
         this.recordClassRef = recordClassRef;
+    }
+    
+    public void setRecordClass(RecordClass recordClass) {
+        this.recordClass = recordClass;
     }
 
     public void setQueryRef(String queryTwoPartName) {
