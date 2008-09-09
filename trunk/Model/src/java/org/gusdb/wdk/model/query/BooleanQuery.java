@@ -56,6 +56,7 @@ public class BooleanQuery extends SqlQuery {
     public static final String RIGHT_OPERAND_PARAM_PREFIX = "boolean_right_operand_";
     public static final String LEFT_FILTER_PARAM = "boolean_left_filter";
     public static final String RIGHT_FILTER_PARAM = "boolean_right_filter";
+    public static final String USE_BOOLEAN_FILTER_PARAM = "use_boolean_filter";
 
     public static final String OPERATOR_PARAM = "boolean_operator";
 
@@ -69,6 +70,7 @@ public class BooleanQuery extends SqlQuery {
     private StringParam operator;
     private StringParam leftFilter;
     private StringParam rightFilter;
+    private StringParam useBooleanFilter;
     private RecordClass recordClass;
 
     public BooleanQuery(RecordClass recordClass) throws WdkModelException {
@@ -87,6 +89,7 @@ public class BooleanQuery extends SqlQuery {
         operator = prepareStringParam(internalParamSet, OPERATOR_PARAM);
         leftFilter = prepareStringParam(internalParamSet, LEFT_FILTER_PARAM);
         rightFilter = prepareStringParam(internalParamSet, RIGHT_FILTER_PARAM);
+        useBooleanFilter = prepareStringParam(internalParamSet, USE_BOOLEAN_FILTER_PARAM);
 
         // create the query
         this.setName(BooleanQuery.getQueryName(recordClass));
@@ -95,6 +98,7 @@ public class BooleanQuery extends SqlQuery {
         this.addParam(operator);
         this.addParam(leftFilter);
         this.addParam(rightFilter);
+        this.addParam(useBooleanFilter);
         
         prepareColumns(recordClass);
 
@@ -145,6 +149,13 @@ public class BooleanQuery extends SqlQuery {
      */
     public StringParam getRightFilterParam() {
         return rightFilter;
+    }
+
+    /**
+     * @return the useBooleanFilter
+     */
+    public StringParam getUseBooleanFilter() {
+        return useBooleanFilter;
     }
 
     private AnswerParam prepareOperand(ParamSet paramSet,

@@ -77,7 +77,7 @@ public class RecordClass extends WdkModelBase implements
     private Map<String, AnswerFilterLayout> filterLayoutMap = new LinkedHashMap<String, AnswerFilterLayout>();
 
     private AnswerFilterInstance defaultFilter;
-    private AnswerFilterInstance defaultBooleanFilter;
+    private AnswerFilterInstance booleanExpansionFilter;
 
     // ////////////////////////////////////////////////////////////////////
     // Called at model creation time
@@ -440,14 +440,14 @@ public class RecordClass extends WdkModelBase implements
                     defaultFilter = instance;
                 }
                 if (instance.isBooleanExpansion()) {
-                    if (defaultBooleanFilter != null)
-                        throw new WdkModelException(
-                                "The default boolean filter of" + " type "
+                    if (booleanExpansionFilter != null)
+                        throw new WdkModelException("The boolean expansion " +
+                        		"filter of type "
                                         + getFullName() + " is defined more "
                                         + "than once: ["
-                                        + defaultBooleanFilter.getName()
+                                        + booleanExpansionFilter.getName()
                                         + "] and [" + instance.getName() + "]");
-                    defaultBooleanFilter = instance;
+                    booleanExpansionFilter = instance;
                 }
             }
         }
@@ -848,8 +848,8 @@ public class RecordClass extends WdkModelBase implements
         return defaultFilter;
     }
 
-    public AnswerFilterInstance getDefaultBooleanFilter() {
-        return defaultBooleanFilter;
+    public AnswerFilterInstance getBooleanExpansionFilter() {
+        return booleanExpansionFilter;
     }
 
     /**

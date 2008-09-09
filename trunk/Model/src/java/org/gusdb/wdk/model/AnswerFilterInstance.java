@@ -12,6 +12,7 @@ import java.util.Map;
 
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.query.SqlQuery;
 import org.json.JSONException;
 
 /**
@@ -155,6 +156,10 @@ public class AnswerFilterInstance extends WdkModelBase {
         this.answerParam = answerParam;
     }
 
+    public Map<String, Object> getParamValueMap() {
+        return new LinkedHashMap<String, Object>(paramValueMap);
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -204,6 +209,15 @@ public class AnswerFilterInstance extends WdkModelBase {
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
         if (resolved) return;
+
+        // the boolean expansion filter query must be a SqlQuery, since the sql
+        // will be customized differently
+        if (isBooleanExpansion && !(filterQuery instanceof SqlQuery))
+            throw new WdkModelException("The boolean expansion filter "
+                    + "instance [" + getName() + "] of type "
+                    + recordClass.getFullName()
+                    + " must reference to a sqlQuery.");
+
         // make sure the params provides match with those in the filter query
         Map<String, Param> params = filterQuery.getParamMap();
         for (String paramName : paramValueMap.keySet()) {
