@@ -45,6 +45,7 @@ public class History {
 
     private Map<String, String> displayParams;
     private String filterName;
+    private int filterSize;
 
     History(UserFactory factory, User user, int historyId) {
         this.factory = factory;
@@ -353,5 +354,20 @@ public class History {
      */
     public void setFilterName(String filterName) {
         this.filterName = filterName;
+    }
+
+    /**
+     * @return the filterSize
+     */
+    public int getFilterSize() {
+        return filterSize;
+    }
+
+    /**
+     * @param filterName
+     *            the filterSize to set
+     */
+    public void setFilterSize(int filterSize) {
+        this.filterSize = filterSize;
     }
 }

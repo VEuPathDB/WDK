@@ -189,6 +189,10 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
         int historyId = history.getHistoryId();
 
+	if (wdkAnswer.getFilter() != null) {
+	    history.setFilterSize(wdkAnswer.getFilterSize(wdkAnswer.getFilter().getName()));
+	}
+
         String requestUrl = request.getRequestURI() + "?"
                 + request.getQueryString();
 

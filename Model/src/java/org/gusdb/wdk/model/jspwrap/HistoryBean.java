@@ -280,4 +280,12 @@ public class HistoryBean {
         if (filter == null) return null;
         return filter.getDisplayName();
     }
+
+    public void setFilterSize(int filterSize) {
+	history.setFilterSize(filterSize);
+    }
+
+    public int getFilterSize() {
+	return history.getFilterSize();
+    }
 }
