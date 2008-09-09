@@ -1199,7 +1199,7 @@ public class UserFactory {
             userAnswer.setLastRunTime(lastRunTime);
             userAnswer.setCustomName(customName);
 	    
-	    // Need to insert rows into user_answer_tree
+	    // Need to insert children into steps table
 	    // NOTE:  This will continue to assume we're working in simple,
 	    // two-operand booleans!  Need to find a way to not do this!
 	    if (isBoolean) {
@@ -1379,10 +1379,10 @@ public class UserFactory {
 	throws WdkUserException, WdkModelException {
 	ResultSet rsStrategy = null;
 	try {
-	    // Get user_id, strategy_id from user_strategies by signature
+	    // Get user_id, strategy_id from strategies by signature
 	    PreparedStatement psStrategy = SqlUtils.getPreparedStatement(
-		     dataSource, "SELECT user_id, user_strategy_id FROM "
-		     + loginSchema + "user_strategies WHERE "
+		     dataSource, "SELECT user_id, strategy_id FROM "
+		     + loginSchema + "strategies WHERE "
 		     + "signature = ?");
 	    psStrategy.setString(1, signature);
 	    rsStrategy = psStrategy.executeQuery();
@@ -1390,7 +1390,7 @@ public class UserFactory {
 		throw new WdkUserException("The strategy with signature '" + signature + "' doesn't exist.");
 
 	    int userId = rsStrategy.getInt("user_id");
-	    int strategyId = rsStrategy.getInt("user_strategy_id");
+	    int strategyId = rsStrategy.getInt("strategy_id");
 
 	    return importStrategy(user, userId, strategyId);
 	} catch (SQLException ex) {
@@ -1491,7 +1491,7 @@ public class UserFactory {
 	try {
 	    psStrategy = SqlUtils.getPreparedStatement(
 		     dataSource, "SELECT strategy_id, name, is_saved, root_step_id "
-		     + "FROM " + loginSchema + "user_strategies WHERE "
+		     + "FROM " + loginSchema + "strategies WHERE "
 		     + "user_id = ? AND display_id = ? "
 		     + "AND project_id = ?");
 	    psStrategy.setInt(1, user.getUserId());
@@ -1538,27 +1538,32 @@ public class UserFactory {
 
 		rsAnswerTree = psAnswerTree.executeQuery();
 		
-		parentStep = steps.get(parentAnswerId);
-
-		// TODO:  need to check if currentStepId < 1?
-		// left child
-		currentStepId = rsAnswerTree.getInt("left_child_id");
-		currentStepIdObj = new Integer(currentStepId);
-		currentStep = loadStep(user, currentStepId);
-		answerTree.push(currentStepIdObj);
-		steps.put(currentStepIdObj, currentStep);
-		
-		parentStep.setPreviousStep(currentStep);
-		currentStep.setNextStep(parentStep);
-		
-		// right child
-		currentStepId = rsAnswerTree.getInt("right_child_id");
-		currentStepIdObj = new Integer(currentStepId);
-		currentStep = loadStep(user, currentStepId);
-		answerTree.push(currentStepIdObj);
-		steps.put(currentStepIdObj, currentStep);
-		
-		parentStep.setChildStep(currentStep);
+		if (rsAnswerTree.next()) {
+		    parentStep = steps.get(parentAnswerId);
+		    
+		    // TODO:  need to check if currentStepId < 1?
+		    // left child
+		    currentStepId = rsAnswerTree.getInt("left_child_id");
+		    if (currentStepId >= 1) {
+			currentStepIdObj = new Integer(currentStepId);
+			currentStep = loadStep(user, currentStepId);
+			answerTree.push(currentStepIdObj);
+			steps.put(currentStepIdObj, currentStep);
+			
+			parentStep.setPreviousStep(currentStep);
+			currentStep.setNextStep(parentStep);
+		    }
+		    // right child
+		    currentStepId = rsAnswerTree.getInt("right_child_id");
+		    if (currentStepId >= 1) {
+			currentStepIdObj = new Integer(currentStepId);
+			currentStep = loadStep(user, currentStepId);
+			answerTree.push(currentStepIdObj);
+			steps.put(currentStepIdObj, currentStep);
+		    
+			parentStep.setChildStep(currentStep);
+		    }
+		}
 	    }
 	    
 	    return strategy;
@@ -1576,7 +1581,7 @@ public class UserFactory {
         }
     }
 
-    // This function only updates the user_strategies table
+    // This function only updates the strategies table
     void updateStrategy(User user, Strategy strategy, boolean overwrite)
 	throws WdkUserException, WdkModelException {
 	if (!isExist(user.getEmail()))
@@ -1643,8 +1648,8 @@ public class UserFactory {
 	
     }
 
-    // Note:  this function only adds the necessary row in user_strategies;  updating of answers,
-    // steps, and user_answer_tree is handled in other functions.  Once the UserAnswer
+    // Note:  this function only adds the necessary row in strategies;  updating of answers
+    // and steps, is handled in other functions.  Once the Step
     // object exists, all of this data is already in the db.
     Strategy createStrategy(User user, Step root, String name, boolean saved)
 	throws WdkUserException, WdkModelException {
@@ -1665,7 +1670,7 @@ public class UserFactory {
 
                 connection.setAutoCommit(false);
 		
-		// insert the row into user_strategies
+		// insert the row into strategies
 		psStrategy = SqlUtils.getPreparedStatement(
 			dataSource, "INSERT INTO " + loginSchema + "strategies "
 			+ "(display_id, strategy_id, user_id, root_step_id, is_saved, name, project_id) "
@@ -1683,7 +1688,7 @@ public class UserFactory {
 		psStrategy.setString(6, name);
 		psStrategy.setString(7, projectId);
 		psStrategy.executeUpdate();
-		                
+
 		// query to get the new strategy id
                 psMax = connection.prepareStatement("SELECT"
                         + " max(display_id) AS max_id FROM " + loginSchema
@@ -1702,7 +1707,6 @@ public class UserFactory {
 	    // update the user's strategy count
             int strategyCount = getStrategyCount(user);
             user.setStrategyCount(strategyCount);
-	    
 	    return loadStrategy(user, strategyId);
 	}
 	catch (SQLException ex) {
@@ -2255,8 +2259,8 @@ public class UserFactory {
         try {
             // remove history
             psStrategy = SqlUtils.getPreparedStatement(dataSource, "DELETE "
-                    + "FROM " + loginSchema + "user_strategies WHERE user_id = ? "
-                    + "AND project_id = ? AND user_strategy_id = ?");
+                    + "FROM " + loginSchema + "strategies WHERE user_id = ? "
+                    + "AND project_id = ? AND strategy_id = ?");
             psStrategy.setInt(1, user.getUserId());
             psStrategy.setString(2, projectId);
             psStrategy.setInt(3, strategyId);
@@ -2385,7 +2389,7 @@ public class UserFactory {
 	try {
 	    PreparedStatement psStrategy = SqlUtils.getPreparedStatement(
 		    dataSource, "SELECT count(*) AS num FROM " + loginSchema
-		    + "user_strategies WHERE user_id = ? AND project_id = ? ");
+		    + "strategies WHERE user_id = ? AND project_id = ? ");
 	    psStrategy.setInt(1, user.getUserId());
 	    psStrategy.setString(2, projectId);
 	    rsStrategy = psStrategy.executeQuery();
