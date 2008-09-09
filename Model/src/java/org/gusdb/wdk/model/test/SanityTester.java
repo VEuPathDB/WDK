@@ -108,7 +108,7 @@ public class SanityTester {
 
 	    for (Question question : questionSet.getQuestions()) {
 		Query query = question.getQuery();
-		if (query.getDoNotTest()) continue;
+		if (query.getDoNotTest() || query.getQuerySet().getDoNotTest()) continue;
 		for (ParamValuesSet paramValuesSet : query.getParamValuesSets()) {
 		    testQuestion(questionSet, question, paramValuesSet);
 		}
