@@ -845,7 +845,7 @@ public class UserFactory {
             Date lastRunTime = new Date(createTime.getTime());
 
             int answerId = Integer.parseInt(platform.getNextId(loginSchema,
-                    "answers"));
+                    "answers_pkseq"));
 
             connection = dataSource.getConnection();
             synchronized (connection) {
@@ -1152,7 +1152,7 @@ public class UserFactory {
 	    
             int userAnswerId = -1;
             int internalId = Integer.parseInt(platform.getNextId(loginSchema,
-                    "steps"));
+                    "steps_pkseq"));
             connection = dataSource.getConnection();
             synchronized (connection) {
 		
@@ -1658,7 +1658,7 @@ public class UserFactory {
 	try {
             int strategyId = -1;
             int internalId = Integer.parseInt(platform.getNextId(loginSchema,
-                    "strategies"));
+                    "strategies_pkseq"));
 
             connection = dataSource.getConnection();
             synchronized (connection) {
