@@ -369,6 +369,9 @@ public class ModelXmlParser extends XmlParser {
         configureNode(digester, "wdkModel/querySet/wsQuery", WSQuery.class,
                 "addQuery");
 
+	// defaultTestParamValues
+	configureParamValuesSet(digester, "wdkModel/querySet/wsQuery/testParamValues", "addParamValuesSet");
+
         configureNode(digester, "wdkModel/querySet/wsQuery/paramRef",
                 ParamReference.class, "addParamRef");
 
