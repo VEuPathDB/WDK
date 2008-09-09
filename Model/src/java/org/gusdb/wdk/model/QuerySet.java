@@ -38,14 +38,15 @@ public class QuerySet extends WdkModelBase implements ModelSetI {
         queries.values().toArray(array);
         return array;
     }
-    
+
     public boolean contains(String queryName) {
         return queries.containsKey(queryName);
     }
 
     public void addQuery(Query query) throws WdkModelException {
         query.setQuerySet(this);
-        queryList.add(query);
+        if (queryList != null) queryList.add(query);
+        else queries.put(query.getName(), query);
     }
 
     public void resolveReferences(WdkModel model) throws WdkModelException {
@@ -55,7 +56,7 @@ public class QuerySet extends WdkModelBase implements ModelSetI {
     }
 
     /*
-     * (non-Javadoc) do nothing 
+     * (non-Javadoc) do nothing
      * 
      * @see org.gusdb.wdk.model.ModelSetI#setResources(org.gusdb.wdk.model.WdkModel)
      */
