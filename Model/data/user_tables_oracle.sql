@@ -12,12 +12,6 @@ GRANT GUS_R TO userlogins;
 GRANT GUS_W TO userlogins;
 GRANT CREATE VIEW TO userlogins;
 
-DROP SEQUENCE userlogins.strategies_pkseq;
-DROP SEQUENCE userlogins.steps_pkseq;
-DROP SEQUENCE userlogins.answers_pkseq;
-DROP SEQUENCE userlogins.users_pkseq;
-DROP SEQUENCE userlogins.dataset_indices_pkseq;
-
 DROP TABLE userlogins.clob_values;
 DROP TABLE userlogins.user_datasets;
 DROP TABLE userlogins.dataset_values;
