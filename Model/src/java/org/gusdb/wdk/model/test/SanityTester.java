@@ -130,7 +130,7 @@ public class SanityTester {
 	    return;
 	}
 	long start = System.currentTimeMillis();
-	int sanityMin = 1;
+	int sanityMin = paramValuesSet.getMinRows();
 	int sanityMax = MAXROWS;
 	boolean passed = false;
 	String status = " FAILED!";
@@ -214,7 +214,7 @@ public class SanityTester {
 	    if (!querySet.getQueryType().equals(queryType)
 		  || querySet.getDoNotTest()) continue;
 
-	    int minRows = 1;
+	    int minRows = 0;
 	    if (queryType.equals("attribute")) {
 		/*
 		// discover number of entities expected in each attribute query
@@ -231,6 +231,8 @@ public class SanityTester {
 	    for (Query query : querySet.getQueries()) {
 		if (query.getDoNotTest()) continue;
 		for (ParamValuesSet paramValuesSet : query.getParamValuesSets()) {
+		    if (!queryType.equals("attribute"))
+			minRows = paramValuesSet.getMinRows();
 		    testQuery(querySet, query, queryType, minRows, paramValuesSet);
 		}
 	    }
@@ -464,9 +466,9 @@ public class SanityTester {
                 verbose, skipTo, stopAfter, failuresOnly,
                 indexOnly);
 
-	//	sanityTester.testQuerySets(QuerySet.TYPE_ATTRIBUTE);
-	//	sanityTester.testQuerySets(QuerySet.TYPE_TABLE);
-	//	sanityTester.testQuerySets(QuerySet.TYPE_VOCAB);
+	sanityTester.testQuerySets(QuerySet.TYPE_ATTRIBUTE);
+	sanityTester.testQuerySets(QuerySet.TYPE_TABLE);
+       	sanityTester.testQuerySets(QuerySet.TYPE_VOCAB);
 	sanityTester.testQuestionSets();
 	if (sanityTester.printSummaryLine()) {
 	    System.exit(1);

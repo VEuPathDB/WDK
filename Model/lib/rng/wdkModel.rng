@@ -358,14 +358,22 @@
           <data type="boolean" />
       </attribute>
     </optional>
+     <optional>
+       <attribute name="doNotTest">
+           <data type="boolean" />
+       </attribute>
+    </optional>
     <zeroOrMore>
       <element name="testParamValues">
-        <oneOrMore>
+        <optional>
+          <attribute name="minRows"/>
+        </optional>
+        <zeroOrMore>
           <element name="paramValue">
             <attribute name="name"/>
             <text/>
           </element>
-        </oneOrMore>
+        </zeroOrMore>
         <ref name="IncludeExclude" />
       </element>
     </zeroOrMore>
@@ -430,6 +438,11 @@
           </choice>
         </attribute>
       </optional>
+      <optional>
+         <attribute name="doNotTest">
+             <data type="boolean" />
+         </attribute>
+      </optional>
       <ref name="IncludeExclude" />
       <zeroOrMore>
         <element name="defaultTestParamValues">
@@ -467,6 +480,11 @@
           <attribute name="internal">
               <data type="boolean" />
           </attribute>
+      </optional>
+      <optional>
+         <attribute name="doNotTest">
+             <data type="boolean" />
+         </attribute>
       </optional>
       <zeroOrMore>
           <element name="description">
