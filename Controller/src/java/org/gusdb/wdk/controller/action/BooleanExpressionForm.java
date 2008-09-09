@@ -21,6 +21,8 @@ public class BooleanExpressionForm extends ActionForm {
     private String booleanExpression = null;
     private String historySectionId = null;
 
+    private boolean useBooleanFilter = false;
+
     public void setBooleanExpression(String be) {
         booleanExpression = be;
     }
@@ -35,6 +37,21 @@ public class BooleanExpressionForm extends ActionForm {
 
     public String getHistorySectionId() {
         return historySectionId;
+    }
+
+    /**
+     * @return the useBooleanFilter
+     */
+    public boolean isUseBooleanFilter() {
+        return useBooleanFilter;
+    }
+
+    /**
+     * @param useBooleanFilter
+     *            the useBooleanFilter to set
+     */
+    public void setUseBooleanFilter(boolean useBooleanFilter) {
+        this.useBooleanFilter = useBooleanFilter;
     }
 
     /**

@@ -60,8 +60,10 @@ public class ProcessBooleanExpressionAction extends Action {
         UserBean wdkUser = (UserBean) request.getSession().getAttribute(
                 CConstants.WDK_USER_KEY);
         String expression = beForm.getBooleanExpression();
+        boolean useBooleanFilter = beForm.isUseBooleanFilter();
 
-        HistoryBean history = wdkUser.combineHistory(expression);
+        HistoryBean history = wdkUser.combineHistory(expression,
+                useBooleanFilter);
         int historyId = history.getHistoryId();
         request.setAttribute(CConstants.WDK_HISTORY_ID_KEY, historyId);
         return Integer.toString(historyId);

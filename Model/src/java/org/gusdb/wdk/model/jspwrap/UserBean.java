@@ -665,8 +665,9 @@ public class UserBean /* implements Serializable */{
      * 
      * @see org.gusdb.wdk.model.user.User#getHistories(java.lang.String)
      */
-    public HistoryBean[] getHistories(String recordClassName) throws WdkUserException,
-            WdkModelException, SQLException, JSONException {
+    public HistoryBean[] getHistories(String recordClassName)
+            throws WdkUserException, WdkModelException, SQLException,
+            JSONException {
         History[] histories = user.getHistories(recordClassName);
         HistoryBean[] beans = new HistoryBean[histories.length];
         for (int i = 0; i < histories.length; i++) {
@@ -696,10 +697,12 @@ public class UserBean /* implements Serializable */{
      * 
      * @see org.gusdb.wdk.model.user.User#combineHistory(java.lang.String)
      */
-    public HistoryBean combineHistory(String expression)
-            throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException {
-        return new HistoryBean(user.combineHistory(expression));
+    public HistoryBean combineHistory(String expression,
+            boolean useBooleanFilter) throws WdkUserException,
+            WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException {
+        return new HistoryBean(
+                user.combineHistory(expression, useBooleanFilter));
     }
 
     /*
