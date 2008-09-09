@@ -73,7 +73,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
 	// Get userAnswer id & strategy id from request (if they exist)
         String strHistId = request.getParameter(CConstants.WDK_HISTORY_ID_KEY);
 	String strProtoId = request.getParameter("strategy");
- 	
+
 	if (strProtoId != null && strProtoId.length() != 0) {
 	    strategy = wdkUser.getStrategy(Integer.parseInt(strProtoId));
 	    String stepIndex = request.getParameter("step");
@@ -519,6 +519,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
         ActionForward forward = new ActionForward(url);
         forward.setRedirect(false);
+
         return forward;
     }
 }
