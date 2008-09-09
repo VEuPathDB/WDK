@@ -382,6 +382,10 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
         int totalSize = wdkAnswer.getResultSize();
 
+	if (wdkAnswer.getFilter() != null) {
+	    totalSize = wdkAnswer.getFilterSize(wdkAnswer.getFilter().getName());
+	}
+
         if (end > totalSize) {
             end = totalSize;
         }

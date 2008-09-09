@@ -194,7 +194,13 @@ public class Answer {
     public int getPageCount() throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
-        int total = getResultSize();
+	int total;
+	if (getFilter() == null) {
+	    total = getResultSize();
+	}
+	else {
+	    total = getFilterSize(getFilter().getName());
+	}
         int pageSize = endIndex - startIndex + 1;
         int pageCount = (int) Math.round(Math.ceil((float) total / pageSize));
         logger.debug("#Pages: " + pageCount + ",\t#Total: " + total
