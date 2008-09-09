@@ -2,6 +2,7 @@ package org.gusdb.wdk.controller.action;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionError;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
@@ -18,6 +19,9 @@ public class BooleanExpressionForm extends ActionForm {
      * 
      */
     private static final long serialVersionUID = -6371621860440022826L;
+
+    private static Logger logger = Logger.getLogger(BooleanExpressionForm.class);
+
     private String booleanExpression = null;
     private String historySectionId = null;
 
@@ -64,13 +68,18 @@ public class BooleanExpressionForm extends ActionForm {
         String errMsg = null;
         try {
             UserBean wdkUser = ActionUtility.getUser(getServlet(), request);
-            wdkUser.validateExpression(getBooleanExpression());
+            String expression = getBooleanExpression();
+
+            logger.info("Validating boolean expression: " + expression);
+
+            wdkUser.validateExpression(expression);
             if (errMsg != null) {
                 errors.add(ActionErrors.GLOBAL_ERROR, new ActionError(
                         "mapped.properties", "booleanExpression", errMsg));
             }
-        } catch (Exception exp) {
-            errMsg = exp.getMessage();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            errMsg = ex.getMessage();
             errors.add(ActionErrors.GLOBAL_ERROR, new ActionError(
                     "mapped.properties", "booleanExpression", errMsg));
         }
