@@ -148,7 +148,7 @@ public class JUnitBooleanExpressionTest extends TestCase {
 
         for (String expression : valid) {
             try {
-                Answer answer = be.parseExpression(expression);
+                Answer answer = be.parseExpression(expression, true);
 
                 assertTrue(answer.getResultSize() >= 0);
 
@@ -167,7 +167,7 @@ public class JUnitBooleanExpressionTest extends TestCase {
 
         for (String expression : invalid) {
             try {
-                Answer answer = be.parseExpression(expression);
+                Answer answer = be.parseExpression(expression, false);
 
                 assertNotNull(answer);
             } catch (Exception ex) {

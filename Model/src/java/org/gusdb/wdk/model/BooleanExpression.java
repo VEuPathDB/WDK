@@ -36,9 +36,9 @@ public class BooleanExpression {
         this.user = user;
     }
 
-    public Answer parseExpression(String expression) throws WdkUserException,
-            WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException {
+    public Answer parseExpression(String expression, boolean useBooleanFilter)
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException {
         this.orgExp = expression;
         // TEST
         // System.out.println("Expression: " + expression);
@@ -67,7 +67,7 @@ public class BooleanExpression {
         expression = expression.replaceAll("\\s", " ").trim();
 
         // build the BooleanQuestionNode tree
-        return parseBlock(expression, replace);
+        return parseBlock(expression, replace, useBooleanFilter);
     }
 
     private String replaceLiterals(String expression,
@@ -97,9 +97,10 @@ public class BooleanExpression {
         return sb.toString();
     }
 
-    private Answer parseBlock(String block, Map<String, String> replace)
-            throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException {
+    private Answer parseBlock(String block, Map<String, String> replace,
+            boolean useBooleanFilter) throws WdkUserException,
+            WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException {
         // check if the expression can be divided further
         // to do so, just need to check if there're spaces
         int spaces = block.indexOf(" ");
@@ -111,16 +112,16 @@ public class BooleanExpression {
         String[] triplet = getTriplet(block);
 
         if (triplet.length == 1) { // only remove one pair of parentheses
-            return parseBlock(triplet[0], replace);
+            return parseBlock(triplet[0], replace, useBooleanFilter);
         } else { // a triplet
             // get the answers that represents each piece
-            Answer left = parseBlock(triplet[0], replace);
-            Answer right = parseBlock(triplet[2], replace);
+            Answer left = parseBlock(triplet[0], replace, useBooleanFilter);
+            Answer right = parseBlock(triplet[2], replace, useBooleanFilter);
 
             String operator = BooleanOperator.parse(triplet[1]).getOperator();
 
             // create boolean answer that wraps the children
-            return makeBooleanAnswer(left, right, operator);
+            return makeBooleanAnswer(left, right, operator, useBooleanFilter);
         }
     }
 
@@ -212,9 +213,9 @@ public class BooleanExpression {
     }
 
     private Answer makeBooleanAnswer(Answer leftOperand, Answer rightOperand,
-            String operator) throws WdkModelException,
-            NoSuchAlgorithmException, WdkUserException, SQLException,
-            JSONException {
+            String operator, boolean useBooleanFilter)
+            throws WdkModelException, NoSuchAlgorithmException,
+            WdkUserException, SQLException, JSONException {
         // verify the record type of the operands
         RecordClass leftRecordClass = leftOperand.getQuestion().getRecordClass();
         RecordClass rightRecordClass = rightOperand.getQuestion().getRecordClass();
@@ -244,6 +245,8 @@ public class BooleanExpression {
                 (rightFilter == null) ? null : rightFilter.getName());
 
         params.put(query.getOperatorParam().getName(), operator);
+        params.put(query.getUseBooleanFilter().getName(),
+                Boolean.toString(useBooleanFilter));
 
         // create a boolean answer with default page size
         return question.makeAnswer(params);

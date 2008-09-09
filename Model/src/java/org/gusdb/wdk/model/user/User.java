@@ -744,18 +744,18 @@ public class User /* implements Serializable */{
         save();
     }
 
-    public History combineHistory(String expression) throws WdkUserException,
+    public History combineHistory(String expression, boolean useBooleanFilter) throws WdkUserException,
             WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException {
-        return combineHistory(expression, false);
+        return combineHistory(expression,useBooleanFilter, false);
     }
 
-    private History combineHistory(String expression, boolean deleted)
+    private History combineHistory(String expression, boolean useBooleanFilter, boolean deleted)
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
         logger.debug("Boolean expression: " + expression);
         BooleanExpression exp = new BooleanExpression(this);
-        Answer answer = exp.parseExpression(expression);
+        Answer answer = exp.parseExpression(expression, useBooleanFilter);
 
         logger.debug("Boolean answer: " + answer.getResultSize());
 
@@ -781,7 +781,7 @@ public class User /* implements Serializable */{
             JSONException {
         // construct BooleanQuestionNode
         BooleanExpression be = new BooleanExpression(this);
-        be.parseExpression(expression);
+        be.parseExpression(expression, false);
     }
 
     public Map<String, Boolean> getSortingAttributes(String questionFullName)
