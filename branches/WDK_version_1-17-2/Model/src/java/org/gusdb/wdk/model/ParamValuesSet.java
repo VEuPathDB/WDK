@@ -5,6 +5,7 @@ import java.util.Map;
 
 public class ParamValuesSet extends WdkModelBase {
     private String name;
+    private int minRows = 1;
     private Map<String,Object> paramValues
 	= new LinkedHashMap<String,Object>();
 
@@ -14,6 +15,14 @@ public class ParamValuesSet extends WdkModelBase {
 
     public String getName() {
         return name;
+    }
+
+    public void setMinRows(int minRows) {
+        this.minRows = minRows;
+    }
+
+    public int getMinRows() {
+        return minRows;
     }
 
     public void put(String name, String value) {

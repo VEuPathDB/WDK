@@ -65,8 +65,8 @@ public class QuerySet extends WdkModelBase implements ModelSetI {
 	return queryType;
     }
 
-    public void setDoNotTest(Boolean doNotTest) {
-	this.doNotTest = doNotTest.booleanValue();
+    public void setDoNotTest(boolean doNotTest) {
+	this.doNotTest = doNotTest;
     }
 
     public boolean getDoNotTest() {
