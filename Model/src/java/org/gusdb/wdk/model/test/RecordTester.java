@@ -62,6 +62,12 @@ public class RecordTester {
         RecordClass recordClass = (RecordClass) wdkModel.resolveReference(recordClassFullName);
         Map<String, Object> pkValues = parsePrimaryKeyArgs(primaryKeyArray);
         RecordInstance recordInstance = recordClass.makeRecordInstance(pkValues);
+        
+        // try to get all attributes
+        recordInstance.getAttributeValueMap();
+        
+        // try to get all tables
+        recordInstance.getTables();
 
         System.out.println("Record creation took: "
                 + ((System.currentTimeMillis() - st) / 1000F) + " seconds.");

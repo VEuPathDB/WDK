@@ -2,9 +2,12 @@ package org.gusdb.wdk.model;
 
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
@@ -12,7 +15,7 @@ import org.json.JSONException;
 
 public class RecordInstance extends AttributeValueContainer {
 
-    // private static Logger logger = Logger.getLogger(RecordInstance.class);
+    private static Logger logger = Logger.getLogger(RecordInstance.class);
 
     private RecordClass recordClass;
     private PrimaryKeyAttributeValue primaryKey;
