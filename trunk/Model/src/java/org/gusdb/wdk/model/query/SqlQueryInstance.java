@@ -74,8 +74,8 @@ public class SqlQueryInstance extends QueryInstance {
         if (startIndex != null || endIndex != null) {
             sql = platform.getPagedSql(sql, startIndex, endIndex);
         }
-        
-        logger.debug("paged sql: " + sql);
+
+        // logger.debug("paged sql: " + sql);
 
         DataSource dataSource = platform.getDataSource();
         ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql);

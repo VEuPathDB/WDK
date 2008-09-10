@@ -23,9 +23,12 @@ public class CacheFactory {
     static final String COLUMN_INSTANCE_CHECKSUM = "instance_checksum";
     static final String COLUMN_RESULT_MESSAGE = "result_message";
 
+    private static final int DB_IDENTIFIER_MAX_LENGTH = 24;
+
     public static String normalizeTableName(String tableName) {
         tableName = tableName.trim().toLowerCase().replaceAll("\\W", "_");
-        if (tableName.length() > 30) tableName = tableName.substring(0, 30);
+        if (tableName.length() > DB_IDENTIFIER_MAX_LENGTH)
+            tableName = tableName.substring(0, DB_IDENTIFIER_MAX_LENGTH);
         return tableName;
     }
 

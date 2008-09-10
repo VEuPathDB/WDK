@@ -194,7 +194,8 @@ public class BooleanQuery extends SqlQuery {
         for (String columnName : primaryKey.getColumnRefs()) {
             Column column = new Column();
             column.setName(columnName);
-            addColumn(column);
+            column.setQuery(this);
+            columnMap.put(columnName, column);
         }
     }
 
