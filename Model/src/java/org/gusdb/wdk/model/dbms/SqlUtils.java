@@ -103,8 +103,8 @@ public final class SqlUtils {
             logger.error("Failed to run nonQuery: '" + sql + "'");
             throw ex;
         } finally {
-            closeStatement(stmt);
-            connection.close();
+            if (stmt == null) connection.close();
+            else closeStatement(stmt);
         }
     }
 
@@ -128,8 +128,8 @@ public final class SqlUtils {
             return resultSet;
         } catch (SQLException ex) {
             logger.error("Failed to run query: '" + sql + "'");
+            if (resultSet == null) connection.close();
             closeResultSet(resultSet);
-            connection.close();
             throw ex;
         }
     }
