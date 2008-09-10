@@ -137,6 +137,7 @@ public class SanityTester {
 	String prefix = "***";
 	String returned = "";
 	String expected = "";
+	Exception caughtException = null;
 
 	try {
 	    Answer answer = question.makeAnswer(paramValuesSet.getParamValues(), 1, 100);
@@ -166,6 +167,7 @@ public class SanityTester {
 
 	} catch (Exception e) {
 	    returned = " It threw an exception.";
+	    caughtException = e;
 	} finally {
 	    long end = System.currentTimeMillis();
 	    if (passed) {
@@ -193,6 +195,8 @@ public class SanityTester {
 		+ cmd
 		+ newline;
 	    if (!passed || !failuresOnly) System.out.println(msg);
+	    if (caughtException != null)
+		caughtException.printStackTrace(System.err);
 	    if (!passed) System.out.println(BANNER_LINE_bot + newline);
 
 	    // check the connection usage
@@ -264,6 +268,7 @@ public class SanityTester {
 	long start = System.currentTimeMillis();
 	String returned = "";
 	String expected = "";
+	Exception caughtException = null;
 
 	try {
 	    QueryTester queryTester = new QueryTester(wdkModel);
@@ -283,6 +288,7 @@ public class SanityTester {
 
 	} catch (Exception e) {
 	    returned = " It threw an exception.";
+	    caughtException = e;
 	} finally {
 	    long end = System.currentTimeMillis();
 	    if (passed) {
@@ -309,6 +315,8 @@ public class SanityTester {
 		+ cmd
 		+ newline;
 	    if (!passed || !failuresOnly) System.out.println(msg);
+	    if (caughtException != null)
+		caughtException.printStackTrace(System.err);
 	    if (!passed) System.out.println(BANNER_LINE_bot + newline);
 	}
     }
@@ -466,9 +474,9 @@ public class SanityTester {
                 verbose, skipTo, stopAfter, failuresOnly,
                 indexOnly);
 
+       	sanityTester.testQuerySets(QuerySet.TYPE_VOCAB);
 	sanityTester.testQuerySets(QuerySet.TYPE_ATTRIBUTE);
 	sanityTester.testQuerySets(QuerySet.TYPE_TABLE);
-       	sanityTester.testQuerySets(QuerySet.TYPE_VOCAB);
 	sanityTester.testQuestionSets();
 	if (sanityTester.printSummaryLine()) {
 	    System.exit(1);
