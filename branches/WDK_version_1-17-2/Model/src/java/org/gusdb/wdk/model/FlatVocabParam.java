@@ -8,7 +8,7 @@ public class FlatVocabParam extends AbstractEnumParam {
     public static final String PARAM_SERVED_QUERY = "ServedQuery";
     private Query query;
     private String queryTwoPartName;
-    private String servedQueryName;
+    private String servedQueryName = "unknown";
     
     public FlatVocabParam() {}
     
