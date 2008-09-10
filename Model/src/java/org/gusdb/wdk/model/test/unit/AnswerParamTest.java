@@ -47,10 +47,11 @@ public class AnswerParamTest {
     public AnswerParamTest() throws NoSuchAlgorithmException, WdkUserException, WdkModelException, SQLException, JSONException, ParserConfigurationException, TransformerFactoryConfigurationError, TransformerException, IOException, SAXException, InstantiationException, IllegalAccessException, ClassNotFoundException {
         wdkModel = UnitTestHelper.getModel();
         recordClass = wdkModel.getAllRecordClassSets()[0].getRecordClasses()[0];
-        answers = UnitTestHelper.getAnswerPool(recordClass);
         
         // get a list of questions that has a single answer param
         questions = loadQuestions();
+
+        answers = UnitTestHelper.getAnswerPool(recordClass);
         
         Assert.assertTrue(questions.size() > 0);
     }
@@ -64,7 +65,7 @@ public class AnswerParamTest {
             for (Param param : params) {
                 if (param instanceof AnswerParam) answerParamCount++;
             }
-            if (answerParamCount == 1) pool.add(question);
+            if (answerParamCount > 1) pool.add(question);
         }
         return pool;
     }
