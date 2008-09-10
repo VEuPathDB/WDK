@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Column;
 import org.gusdb.wdk.model.Param;
 import org.gusdb.wdk.model.Utilities;
@@ -47,6 +48,8 @@ public abstract class QueryInstance {
             Integer startIndex, Integer endIndex) throws WdkModelException,
             SQLException, NoSuchAlgorithmException, JSONException,
             WdkUserException;
+    
+    private static final Logger logger = Logger.getLogger(QueryInstance.class);
 
     private Integer instanceId;
     protected Query query;
@@ -179,8 +182,7 @@ public abstract class QueryInstance {
             Integer endIndex) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
-        if (cached) return getCachedResults(columns, startIndex,
-                endIndex);
+        if (cached) return getCachedResults(columns, startIndex, endIndex);
         else return getUncachedResults(columns, startIndex, endIndex);
     }
 
@@ -236,7 +238,7 @@ public abstract class QueryInstance {
         sql.append(" = ").append(instanceId);
         return sql.toString();
     }
-    
+
     protected void createCacheFromSql(Connection connection, String tableName,
             int instanceId, String sql) throws SQLException {
         // create table
@@ -253,14 +255,13 @@ public abstract class QueryInstance {
 
         Statement stmt = null;
         try {
-            try {
-                stmt = connection.createStatement();
-                stmt.execute(sqlTable.toString());
-            } finally {
-                if (stmt != null) stmt.close();
-            }
+            stmt = connection.createStatement();
+            stmt.execute(sqlTable.toString());
         } catch (SQLException ex) {
+            logger.error("Failed to run SQL: " + sqlTable);
             throw ex;
+        } finally {
+            if (stmt != null) stmt.close();
         }
     }
 }
