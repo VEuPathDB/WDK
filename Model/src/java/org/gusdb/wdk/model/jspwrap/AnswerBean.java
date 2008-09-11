@@ -25,6 +25,8 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.report.Reporter;
+import org.gusdb.wdk.model.user.AnswerFactory;
+import org.gusdb.wdk.model.user.AnswerInfo;
 import org.json.JSONException;
 
 /**
@@ -171,29 +173,52 @@ public class AnswerBean {
     /**
      * @return first child answer for boolean answer, null if it is an answer
      *         for a simple question.
+     * @throws SQLException
+     * @throws WdkUserException
+     * @throws JSONException
+     * @throws WdkModelException
+     * @throws NoSuchAlgorithmException
      */
-    public AnswerBean getFirstChildAnswer() {
+    public AnswerBean getFirstChildAnswer() throws NoSuchAlgorithmException,
+            WdkModelException, JSONException, WdkUserException, SQLException {
         if (!getIsBoolean()) {
             throw new RuntimeException("getFirstChildAnswer can not be called"
                     + " on simple AnswerBean");
         }
+        BooleanQuery query = (BooleanQuery) answer.getIdsQueryInstance().getQuery();
         Map<String, Object> params = answer.getIdsQueryInstance().getValues();
-        Object childAnswer = params.get(BooleanQuery.LEFT_OPERAND_PARAM_PREFIX);
-        return new AnswerBean((Answer) childAnswer);
+        String checkSum = (String) params.get(query.getLeftOperandParam().getName());
+        return getAnswer(checkSum);
     }
 
     /**
      * @return second child answer for boolean answer, null if it is an answer
      *         for a simple question.
+     * @throws SQLException
+     * @throws WdkUserException
+     * @throws JSONException
+     * @throws WdkModelException
+     * @throws NoSuchAlgorithmException
      */
-    public AnswerBean getSecondChildAnswer() {
+    public AnswerBean getSecondChildAnswer() throws NoSuchAlgorithmException,
+            WdkModelException, JSONException, WdkUserException, SQLException {
         if (!getIsBoolean()) {
             throw new RuntimeException("getSecondChildAnswer can not be called"
                     + " on simple AnswerBean");
         }
+        BooleanQuery query = (BooleanQuery) answer.getIdsQueryInstance().getQuery();
         Map<String, Object> params = answer.getIdsQueryInstance().getValues();
-        Object childAnswer = params.get(BooleanQuery.RIGHT_OPERAND_PARAM_PREFIX);
-        return new AnswerBean((Answer) childAnswer);
+        String checkSum = (String) params.get(query.getRightOperandParam().getName());
+        return getAnswer(checkSum);
+    }
+
+    private AnswerBean getAnswer(String checksum)
+            throws NoSuchAlgorithmException, WdkModelException, JSONException,
+            WdkUserException, SQLException {
+        AnswerFactory factory = answer.getQuestion().getWdkModel().getAnswerFactory();
+        AnswerInfo answerInfo = factory.getAnswerInfo(checksum);
+        Answer answer = factory.getAnswer(answerInfo);
+        return new AnswerBean(answer);
     }
 
     public int getPageSize() throws NoSuchAlgorithmException,
@@ -453,7 +478,7 @@ public class AnswerBean {
             JSONException, WdkUserException {
         return answer.getFilterSize(filterName);
     }
-    
+
     public AnswerFilterInstanceBean getFilter() {
         AnswerFilterInstance filter = answer.getFilter();
         if (filter == null) return null;
