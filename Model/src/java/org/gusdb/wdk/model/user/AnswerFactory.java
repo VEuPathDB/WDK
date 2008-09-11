@@ -255,7 +255,8 @@ public class AnswerFactory {
         JSONObject jsParams = new JSONObject(paramClob);
         Map<String, Object> paramValues = new LinkedHashMap<String, Object>();
         for (String param : params.keySet()) {
-            String value = jsParams.getString(param);
+            String value = (jsParams.has(param)) ? jsParams.getString(param)
+                    : null;
             paramValues.put(param, value);
         }
         return paramValues;

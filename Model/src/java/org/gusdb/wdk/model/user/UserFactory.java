@@ -922,12 +922,16 @@ public class UserFactory {
         try {
             constructAnswer(history, answerChecksum);
         } catch (WdkModelException ex) {
+            ex.printStackTrace();
             history.setValid(false);
         } catch (WdkUserException ex) {
+            ex.printStackTrace();
             history.setValid(false);
         } catch (NoSuchAlgorithmException ex) {
+            ex.printStackTrace();
             history.setValid(false);
         } catch (JSONException ex) {
+            ex.printStackTrace();
             history.setValid(false);
         }
 

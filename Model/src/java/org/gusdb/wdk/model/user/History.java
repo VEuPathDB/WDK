@@ -289,7 +289,8 @@ public class History {
             Iterator itKeys = jsParams.keys();
             while (itKeys.hasNext()) {
                 String paramName = itKeys.next().toString();
-                String paramValue = jsParams.getString(paramName);
+                String paramValue = (jsParams.has(paramName)) ? jsParams.getString(paramName)
+                        : null;
                 displayParams.put(paramName, paramValue);
             }
         }
@@ -301,7 +302,8 @@ public class History {
             Map<String, String> displayParams = getDisplayParams();
             JSONObject jsParams = new JSONObject();
             for (String paramName : displayParams.keySet()) {
-                String paramValue = displayParams.get(paramName);
+                Object paramValue = displayParams.get(paramName);
+                if (paramValue == null) paramValue = JSONObject.NULL;
                 jsParams.put(paramName, paramValue);
             }
             return jsParams.toString();
