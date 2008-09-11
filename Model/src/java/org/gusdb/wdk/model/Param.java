@@ -3,6 +3,7 @@ package org.gusdb.wdk.model;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 
@@ -240,7 +241,11 @@ public abstract class Param extends WdkModelBase {
     public String compressValue(Object value) throws WdkModelException,
             NoSuchAlgorithmException {
         // check if the value is already been compressed
-        String strValue = (value != null) ? value.toString() : "";
+        String strValue;
+        if (value == null) strValue = "";
+        else if (value instanceof String) strValue = (String)value;
+        else if (value instanceof String[]) strValue = Arrays.toString((String[])value);
+        else strValue = value.toString();
 
         if (strValue.startsWith(Utilities.COMPRESSED_VALUE_PREFIX))
             return strValue;
