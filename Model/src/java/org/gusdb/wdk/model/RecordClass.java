@@ -627,14 +627,15 @@ public class RecordClass extends WdkModelBase implements
 
         // if the new query is SqlQuery, modify the sql
         if (newQuery instanceof SqlQuery && newParams.size() > 0) {
-            StringBuffer sql = new StringBuffer("SELECT * FROM (");
+            StringBuffer sql = new StringBuffer("SELECT f.* FROM (");
             sql.append(((SqlQuery) newQuery).getSql());
             sql.append(") f WHERE ");
             boolean firstColumn = true;
             for (String columnName : newParams) {
                 if (firstColumn) firstColumn = false;
                 else sql.append(" AND ");
-                sql.append(columnName + " = $$" + columnName + "$$");
+                sql.append("f.").append(columnName);
+                sql.append(" = $$").append(columnName).append("$$");
             }
             ((SqlQuery) newQuery).setSql(sql.toString());
         }

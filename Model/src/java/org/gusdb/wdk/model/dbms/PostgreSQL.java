@@ -115,7 +115,8 @@ public class PostgreSQL extends DBPlatform {
      *      int, int)
      */
     public String getPagedSql(String sql, int startIndex, int endIndex) {
-        StringBuffer buffer = new StringBuffer(sql);
+        StringBuffer buffer = new StringBuffer("SELECT f.* FROM ");
+        buffer.append("(").append(sql).append(") f ");
         buffer.append(" LIMIT ").append(endIndex - startIndex + 1);
         buffer.append(" OFFSET ").append(startIndex - 1);
         return buffer.toString();
