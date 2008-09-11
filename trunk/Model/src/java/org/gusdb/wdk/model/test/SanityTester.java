@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.test;
 
+import java.security.NoSuchAlgorithmException;
+import org.json.JSONException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.ResultSet;
@@ -19,24 +21,25 @@ import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.AttributeField;
-import org.gusdb.wdk.model.Query;
+import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.QuerySet;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
+import org.gusdb.wdk.model.FieldScope;
 import org.gusdb.wdk.model.ParamValuesSet;
-import org.gusdb.wdk.model.RDBMSPlatformI;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.RecordClassSet;
 import org.gusdb.wdk.model.RecordInstance;
-import org.gusdb.wdk.model.ResultList;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.dbms.DBPlatform;
+import org.gusdb.wdk.model.dbms.ResultList;
+import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.xml.XmlAnswer;
 import org.gusdb.wdk.model.xml.XmlQuestion;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
-import org.gusdb.wdk.model.implementation.SqlUtils;
 import org.xml.sax.SAXException;
 
 import com.sun.org.apache.bcel.internal.classfile.Attribute;
@@ -85,7 +88,7 @@ public class SanityTester {
     
     public SanityTester(String modelName, boolean verbose, Integer skipTo,
             Integer stopAfter, boolean failuresOnly, boolean indexOnly)
-            throws WdkModelException, WdkUserException {
+            throws WdkModelException, WdkUserException, NoSuchAlgorithmException, ParserConfigurationException, TransformerException, IOException, SAXException, SQLException, JSONException, InstantiationException, IllegalAccessException, ClassNotFoundException {
         this.wdkModel = WdkModel.construct(modelName);
         this.verbose = verbose;
         this.failuresOnly = failuresOnly;
@@ -99,7 +102,7 @@ public class SanityTester {
     // Private Methods
     // ------------------------------------------------------------------
 
-    private void testQuestionSets() throws SQLException, WdkModelException {
+    private void testQuestionSets() throws SQLException, WdkModelException, NoSuchAlgorithmException, JSONException, WdkUserException {
 
         System.out.println("Sanity Test:  Checking questions" + newline);
 
@@ -140,17 +143,16 @@ public class SanityTester {
 	Exception caughtException = null;
 
 	try {
-	    Answer answer = question.makeAnswer(paramValuesSet.getParamValues(), 1, 100);
+	    Answer answer = question.makeAnswer(paramValuesSet.getParamValues());
 
 	    int resultSize = answer.getResultSize();
 
 	    // get the summary attribute list
-	    Map<String, AttributeField> summary = answer.getSummaryAttributes();
+	    Map<String, AttributeField> summary = answer.getAttributeFieldMap(FieldScope.SUMMARY);
+
 	    // iterate through the page and try every summary attribute of
 	    // each record
-	    while (answer.hasMoreRecordInstances()) {
-		RecordInstance record = answer.getNextRecordInstance();
-		// for (RecordInstance record : answer.getRecordInstances()) {
+	    for (RecordInstance record : answer.getRecordInstances()) {
 		StringBuffer sb = new StringBuffer();
 		for (String attrName : summary.keySet()) {
 		    sb.append(record.getAttributeValue(attrName));
@@ -179,7 +181,7 @@ public class SanityTester {
 		queriesFailed++;
 	    }
 	    if (!passed) System.out.println(BANNER_LINE_top);
-	    String cmd = " [ wdkSummary -model " + wdkModel.getName()
+	    String cmd = " [ wdkSummary -model " + wdkModel.getProjectId()
 		+ " -question " + question.getFullName() 
 		+ " -rows 1 100"
 		+ " -params " + paramValuesSet.getCmdLineString()
@@ -200,7 +202,7 @@ public class SanityTester {
 	    if (!passed) System.out.println(BANNER_LINE_bot + newline);
 
 	    // check the connection usage
-            RDBMSPlatformI platform = wdkModel.getRDBMSPlatform();
+            DBPlatform platform = wdkModel.getQueryPlatform();
 	    if (platform.getActiveCount() > 0) {
 		System.err.println("Connection leak ("
 				   + platform.getActiveCount() + ") for question: "
@@ -209,7 +211,7 @@ public class SanityTester {
 	}
     }
 
-    private void testQuerySets(String queryType) throws SQLException, WdkModelException {
+    private void testQuerySets(String queryType) throws SQLException, WdkModelException, NoSuchAlgorithmException, JSONException, WdkUserException {
 
         System.out.println("Sanity Test:  Checking " + queryType + " queries"
 			   + newline);
@@ -224,7 +226,7 @@ public class SanityTester {
 		// discover number of entities expected in each attribute query
 		String cardinalitySql = querySet.getCardinalitySql();
 		ResultSet rs = 
-		    SqlUtils.executeQuery(wdkModel.getRDBMSPlatform().getDataSource(), 
+		    SqlUtils.executeQuery(wdkModel.getDBPlatform().getDataSource(), 
 					  cardinalitySql);
 		rs.next();
 		minRows = rs.getInt(1);
@@ -301,7 +303,7 @@ public class SanityTester {
 	    }
 	    if (!passed) System.out.println(BANNER_LINE_top);
 
-	    String cmd = " [ wdkQuery -model " + wdkModel.getName()
+	    String cmd = " [ wdkQuery -model " + wdkModel.getProjectId()
 		+ " -query " + query.getFullName() 
 		+ " -params " + paramValuesSet.getCmdLineString()
 		+ " ] ";
@@ -442,11 +444,7 @@ public class SanityTester {
 
     // private static Logger logger = Logger.getLogger(SanityTester.class);
 
-    public static void main(String[] args) throws WdkModelException,
-            SAXException, IOException, ParserConfigurationException,
-            TransformerFactoryConfigurationError, TransformerException,
-						  SQLException,					  
-            WdkUserException {
+    public static void main(String[] args) throws WdkModelException, SAXException, IOException, ParserConfigurationException, TransformerFactoryConfigurationError, TransformerException, NoSuchAlgorithmException, SQLException, JSONException,InstantiationException, IllegalAccessException, WdkUserException, ClassNotFoundException {
         String cmdName = System.getProperty("cmdName");
         String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
 
