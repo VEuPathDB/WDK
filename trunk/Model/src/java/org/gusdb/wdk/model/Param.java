@@ -244,7 +244,15 @@ public abstract class Param extends WdkModelBase {
         String strValue;
         if (value == null) strValue = "";
         else if (value instanceof String) strValue = (String)value;
-        else if (value instanceof String[]) strValue = Arrays.toString((String[])value);
+        else if (value instanceof String[]) {
+            String[] array = (String[]) value;
+            StringBuffer buffer = new StringBuffer();
+            for (String item : array) {
+                if (buffer.length() > 0) buffer.append(",");
+                buffer.append(item);
+            }
+            strValue = buffer.toString();
+        }
         else strValue = value.toString();
 
         if (strValue.startsWith(Utilities.COMPRESSED_VALUE_PREFIX))
