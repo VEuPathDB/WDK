@@ -2,6 +2,7 @@ package org.gusdb.wdk.model;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -211,6 +212,30 @@ public class Answer {
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
         if (resultSize == null) {
+            // get id query
+            StringBuffer sql = new StringBuffer("SELECT count(*) FROM (");
+            sql.append(getIdSql()).append(")");
+            DataSource dataSource = question.getWdkModel().getQueryPlatform().getDataSource();
+            Object obj = SqlUtils.executeScalar(dataSource, sql.toString());
+            if (obj instanceof BigInteger) resultSize = ((BigInteger) obj).intValue();
+            else if (obj instanceof Long) resultSize = (int) ((Long) obj).longValue();
+            else resultSize = Integer.parseInt(obj.toString());
+
+            // check if the estimated size needs to be updated
+            AnswerInfo answerInfo = getAnswerInfo();
+            if (answerInfo.getEstimatedSize() != resultSize) {
+                answerInfo.setEstimatedSize(resultSize);
+                AnswerFactory factory = question.getWdkModel().getAnswerFactory();
+                factory.updateAnswerSize(answerInfo);
+            }
+        }
+        return resultSize.intValue();
+    }
+
+    public Map<String, Integer> getResultSizesByProject()
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
+        if (resultSizesByProject == null) {
             // need to run the query first
             QueryInstance instance = (filter == null) ? idsQueryInstance
                     : filter.makeQueryInstance(this);
@@ -242,23 +267,7 @@ public class Answer {
                 }
             }
             rl.close();
-            resultSize = counter;
-            
-            // check if the estimated size needs to be updated
-            AnswerInfo answerInfo = getAnswerInfo();
-            if (answerInfo.getEstimatedSize() != resultSize) {
-                answerInfo.setEstimatedSize(resultSize);
-                AnswerFactory factory = question.getWdkModel().getAnswerFactory();
-                factory.updateAnswerSize(answerInfo);
-            }
         }
-        return resultSize.intValue();
-    }
-
-    public Map<String, Integer> getResultSizesByProject()
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
-        if (resultSizesByProject == null) getResultSize();
         return resultSizesByProject;
 
     }
@@ -748,8 +757,8 @@ public class Answer {
 
     public Map<String, AttributeField> getAttributeFieldMap(FieldScope scope) {
         Map<String, AttributeField> fields;
-        if (scope == FieldScope.SUMMARY && summaryFieldMap.size() > 0) 
-            fields = new LinkedHashMap<String, AttributeField>(summaryFieldMap);
+        if (scope == FieldScope.SUMMARY && summaryFieldMap.size() > 0) fields = new LinkedHashMap<String, AttributeField>(
+                summaryFieldMap);
         else fields = question.getAttributeFields(scope);
         return fields;
     }
