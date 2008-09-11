@@ -50,10 +50,7 @@ public class ProcessQuestionSetsFlatAction extends ShowQuestionAction {
         qForm.setServlet(servlet);
 
         String qFullName = qSetForm.getQuestionFullName();
-        int dotI = qFullName.indexOf('.');
-        String qSetName = qFullName.substring(0, dotI);
-        String qName = qFullName.substring(dotI + 1, qFullName.length());
-        String pref = qSetName + "_" + qName + "_";
+        String pref = qFullName.replace('.', '_') + "_";
         ParamBean[] params = wdkQuestion.getParams();
         for (int i = 0; i < params.length; i++) {
             ParamBean p = params[i];
