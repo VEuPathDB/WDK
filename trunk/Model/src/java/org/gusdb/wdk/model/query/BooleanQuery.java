@@ -51,14 +51,14 @@ import org.json.JSONObject;
 
 public class BooleanQuery extends SqlQuery {
 
-    public static final String QUERY_NAME_PREFIX = "boolean_query_";
-    public static final String LEFT_OPERAND_PARAM_PREFIX = "boolean_left_operand_";
-    public static final String RIGHT_OPERAND_PARAM_PREFIX = "boolean_right_operand_";
-    public static final String LEFT_FILTER_PARAM = "boolean_left_filter";
-    public static final String RIGHT_FILTER_PARAM = "boolean_right_filter";
+    public static final String QUERY_NAME_PREFIX = "bq_";
+    public static final String LEFT_OPERAND_PARAM_PREFIX = "bq_left_op_";
+    public static final String RIGHT_OPERAND_PARAM_PREFIX = "bq_right_op_";
+    public static final String LEFT_FILTER_PARAM = "bq_left_filter";
+    public static final String RIGHT_FILTER_PARAM = "bq_right_filter";
     public static final String USE_BOOLEAN_FILTER_PARAM = "use_boolean_filter";
 
-    public static final String OPERATOR_PARAM = "boolean_operator";
+    public static final String OPERATOR_PARAM = "bq_operator";
 
     public static String getQueryName(RecordClass recordClass) {
         String rcName = recordClass.getFullName().replace('.', '_');

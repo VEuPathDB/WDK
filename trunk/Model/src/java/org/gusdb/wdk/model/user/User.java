@@ -757,7 +757,7 @@ public class User /* implements Serializable */{
         BooleanExpression exp = new BooleanExpression(this);
         Answer answer = exp.parseExpression(expression, useBooleanFilter);
 
-        logger.debug("Boolean answer: " + answer.getResultSize());
+        logger.debug("Boolean answer size: " + answer.getResultSize());
 
         // save summary list, if no summary list exists
         String summaryKey = answer.getQuestion().getFullName()

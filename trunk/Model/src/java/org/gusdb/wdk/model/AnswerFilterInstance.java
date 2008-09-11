@@ -236,8 +236,7 @@ public class AnswerFilterInstance extends WdkModelBase {
             JSONException, WdkUserException {
         Map<String, Object> values = new LinkedHashMap<String, Object>(
                 paramValueMap);
-        values.put(answerParam.getName(),
-                answer.getAnswerInfo().getAnswerChecksum());
+        values.put(answerParam.getName(), answer.getAnswerInfo().getAnswerChecksum());
         return filterQuery.makeInstance(values);
     }
 }

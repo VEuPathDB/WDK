@@ -79,7 +79,7 @@ public class UnitTestHelper {
                 Question question = questions[index];
                 if (!validateQuestion(question)) continue;
                 Answer answer = makeAnswer(question);
-                answerPool.add(answer);
+                if (answer.getResultSize() > 0) answerPool.add(answer);
             }
 
             answerPools.put(poolName, answerPool);
