@@ -90,11 +90,11 @@ public class BooleanQuestionTest {
         paramValues.put(expansion.getName(), "false");
 
         Answer answer = booleanQuestion.makeAnswer(paramValues);
-
-        Assert.assertTrue(answer.getResultSize() >= left.getResultSize());
-        Assert.assertTrue(answer.getResultSize() >= right.getResultSize());
         
         // try to get the summary of the answer
         logger.debug(answer.printAsSummary());
+
+        Assert.assertTrue(answer.getResultSize() >= left.getResultSize());
+        Assert.assertTrue(answer.getResultSize() >= right.getResultSize());
     }
 }

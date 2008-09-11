@@ -194,13 +194,12 @@ public class Answer {
     public int getPageCount() throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
-	int total;
-	if (getFilter() == null) {
-	    total = getResultSize();
-	}
-	else {
-	    total = getFilterSize(getFilter().getName());
-	}
+        int total;
+        if (getFilter() == null) {
+            total = getResultSize();
+        } else {
+            total = getFilterSize(getFilter().getName());
+        }
         int pageSize = endIndex - startIndex + 1;
         int pageCount = (int) Math.round(Math.ceil((float) total / pageSize));
         logger.debug("#Pages: " + pageCount + ",\t#Total: " + total
@@ -213,11 +212,14 @@ public class Answer {
             WdkUserException {
         if (resultSize == null) {
             // need to run the query first
-            ResultList rl = idsQueryInstance.getResults();
-            String message = idsQueryInstance.getResultMessage();
+            QueryInstance instance = (filter == null) ? idsQueryInstance
+                    : filter.makeQueryInstance(this);
+
+            ResultList rl = instance.getResults();
+            String message = instance.getResultMessage();
             boolean hasMessage = (message != null && message.length() > 0);
             if (hasMessage) {
-                String[] sizes = idsQueryInstance.getResultMessage().split(",");
+                String[] sizes = message.split(",");
                 for (String size : sizes) {
                     String[] parts = size.split(":");
                     resultSizesByProject.put(parts[0],
@@ -241,6 +243,14 @@ public class Answer {
             }
             rl.close();
             resultSize = counter;
+            
+            // check if the estimated size needs to be updated
+            AnswerInfo answerInfo = getAnswerInfo();
+            if (answerInfo.getEstimatedSize() != resultSize) {
+                answerInfo.setEstimatedSize(resultSize);
+                AnswerFactory factory = question.getWdkModel().getAnswerFactory();
+                factory.updateAnswerSize(answerInfo);
+            }
         }
         return resultSize.intValue();
     }
@@ -672,7 +682,6 @@ public class Answer {
 
         // store answer info
         AnswerFactory answerFactory = question.getWdkModel().getAnswerFactory();
-        answerInfo = answerFactory.saveAnswer(this);
 
         this.pageRecordInstances = new LinkedHashMap<PrimaryKeyAttributeValue, RecordInstance>();
 
@@ -774,16 +783,20 @@ public class Answer {
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
         String[] columns = question.getRecordClass().getPrimaryKeyAttributeField().getColumnRefs();
-        int resultSize = getResultSize();
-        Object[][] ids = new String[resultSize][columns.length];
 
-        ResultList resultList = idsQueryInstance.getResults();
-        int rowIndex = 0;
+        QueryInstance instance = (filter == null) ? idsQueryInstance
+                : filter.makeQueryInstance(this);
+        List<Object[]> buffer = new ArrayList<Object[]>();
+        ResultList resultList = instance.getResults();
         while (resultList.next()) {
+            Object[] pkValues = new String[columns.length];
             for (int columnIndex = 0; columnIndex < columns.length; columnIndex++) {
-                ids[rowIndex][columnIndex] = resultList.get(columns[columnIndex]);
+                pkValues[columnIndex] = resultList.get(columns[columnIndex]);
             }
+            buffer.add(pkValues);
         }
+        Object[][] ids = new String[buffer.size()][columns.length];
+        buffer.toArray(ids);
         return ids;
     }
 

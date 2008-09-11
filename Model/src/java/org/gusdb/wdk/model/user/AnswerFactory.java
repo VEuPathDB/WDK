@@ -113,7 +113,8 @@ public class AnswerFactory {
             int answerId = loginPlatform.getNextId(answerSchema, TABLE_ANSWER);
             answerInfo = new AnswerInfo(answerId);
             answerInfo.setAnswerChecksum(answer.getChecksum());
-            answerInfo.setEstimatedSize(answer.getResultSize());
+            // by default, set the size to 0 to avoid invoking the id query
+            answerInfo.setEstimatedSize(0);
             answerInfo.setProjectId(wdkModel.getProjectId());
             answerInfo.setProjectVersion(wdkModel.getVersion());
             answerInfo.setQueryChecksum(answer.getQuestion().getQuery().getChecksum());
@@ -125,6 +126,18 @@ public class AnswerFactory {
         }
         answer.setAnswerInfo(answerInfo);
         return answerInfo;
+    }
+    
+    public void updateAnswerSize(AnswerInfo answerInfo) throws SQLException {
+        int size = answerInfo.getEstimatedSize();
+        int id = answerInfo.getAnswerId();
+        // prepare the sql
+        StringBuffer sql = new StringBuffer("UPDATE ");
+        sql.append(answerSchema).append(TABLE_ANSWER).append(" SET ");
+        sql.append(COLUMN_ESTIMATED_SIZE).append(" = ").append(size);
+        sql.append(" WHERE ").append(COLUMN_ANSWER_ID).append(" = ").append(id);
+        
+        SqlUtils.executeUpdate(loginPlatform.getDataSource(), sql.toString());
     }
 
     public Answer getAnswer(AnswerInfo answerInfo) throws WdkModelException,
