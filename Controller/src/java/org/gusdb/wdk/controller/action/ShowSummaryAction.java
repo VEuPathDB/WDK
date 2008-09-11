@@ -417,7 +417,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
         logger.info("Show the details of an invalid history/question");
 
         String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
-        Map<String, String> params;
+        Map<String, Object> params;
         Map<String, String> paramNames;
         String customName;
         if (qFullName == null || qFullName.length() == 0) {
@@ -429,7 +429,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             qFullName = history.getQuestionName();
             customName = history.getCustomName();
         } else {
-            params = new LinkedHashMap<String, String>();
+            params = new LinkedHashMap<String, Object>();
             paramNames = new LinkedHashMap<String, String>();
             customName = qFullName;
 
