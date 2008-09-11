@@ -38,10 +38,6 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.implementation.ModelXmlParser;
-import org.gusdb.wdk.model.test.SanityModel;
-import org.gusdb.wdk.model.test.SanityQuestion;
-import org.gusdb.wdk.model.test.SanityRecord;
-import org.gusdb.wdk.model.test.SanityTestXmlParser;
 import org.json.JSONException;
 import org.xml.sax.SAXException;
 
@@ -102,14 +98,14 @@ public class StressTemplater {
     private static final Logger logger = Logger.getLogger(StressTemplater.class);
 
     private WdkModel wdkModel;
-    private SanityModel sanityModel;
+//    private SanityModel sanityModel;
 
     private Map<String, QuestionItem> questionItems;
     private Map<String, RecordItem> recordItems;
 
-    public StressTemplater(WdkModel wdkModel, SanityModel sanityModel) {
+    public StressTemplater(WdkModel wdkModel) {
         this.wdkModel = wdkModel;
-        this.sanityModel = sanityModel;
+//        this.sanityModel = sanityModel;
 
         questionItems = new LinkedHashMap<String, QuestionItem>();
         recordItems = new LinkedHashMap<String, RecordItem>();
@@ -130,7 +126,7 @@ public class StressTemplater {
 
         // load the info from the sanity model
         logger.info("Loading info from the sanity model...");
-        loadFromSanityModel();
+//        loadFromSanityModel();
 
         // generate the template file
         logger.info("Generating template file...");
@@ -253,34 +249,34 @@ public class StressTemplater {
         }
     }
 
-    private void loadFromSanityModel() {
-        // get sanity questions
-        SanityQuestion[] questions = sanityModel.getAllSanityQuestions();
-        for (SanityQuestion question : questions) {
-            String questioName = question.getName();
-            QuestionItem questionItem = questionItems.get(questioName);
-            if (questionItem != null) {
-                Map<String, Object> params = question.getParamHash();
-                for (String paramName : params.keySet()) {
-                    if (questionItem.getParams().containsKey(paramName)) {
-                        String paramValue = (String) params.get(paramName);
-                        questionItem.addParamValue(paramName, paramValue);
-                    }
-                }
-            }
-        }
-
-        // get records
-        SanityRecord[] records = sanityModel.getAllSanityRecords();
-        for (SanityRecord record : records) {
-            String recordName = record.getName();
-            RecordItem recordItem = recordItems.get(recordName);
-            if (recordItem != null) {
-                String recordId = record.getPrimaryKey();
-                recordItem.addRecordId(recordId);
-            }
-        }
-    }
+//    private void loadFromSanityModel() {
+//        // get sanity questions
+//        SanityQuestion[] questions = sanityModel.getAllSanityQuestions();
+//        for (SanityQuestion question : questions) {
+//            String questioName = question.getName();
+//            QuestionItem questionItem = questionItems.get(questioName);
+//            if (questionItem != null) {
+//                Map<String, Object> params = question.getParamHash();
+//                for (String paramName : params.keySet()) {
+//                    if (questionItem.getParams().containsKey(paramName)) {
+//                        String paramValue = (String) params.get(paramName);
+//                        questionItem.addParamValue(paramName, paramValue);
+//                    }
+//                }
+//            }
+//        }
+//
+//        // get records
+//        SanityRecord[] records = sanityModel.getAllSanityRecords();
+//        for (SanityRecord record : records) {
+//            String recordName = record.getName();
+//            RecordItem recordItem = recordItems.get(recordName);
+//            if (recordItem != null) {
+//                String recordId = record.getPrimaryKey();
+//                recordItem.addRecordId(recordId);
+//            }
+//        }
+//    }
 
     private void generateTemplate(File file) throws WdkModelException {
         try {
@@ -346,10 +342,10 @@ public class StressTemplater {
 
         ModelXmlParser parser = new ModelXmlParser(gusHome);
         WdkModel wdkModel = parser.parseModel(modelName);
-        SanityTestXmlParser sanityParser = new SanityTestXmlParser(gusHome);
-        SanityModel sanityModel = sanityParser.parseModel(modelName, wdkModel);
+//        SanityTestXmlParser sanityParser = new SanityTestXmlParser(gusHome);
+//        SanityModel sanityModel = sanityParser.parseModel(modelName, wdkModel);
 
-        StressTemplater tester = new StressTemplater(wdkModel, sanityModel);
+        StressTemplater tester = new StressTemplater(wdkModel);
 
         // open the input/output file
         File outFile = new File(gusHome, "/config/" + modelName

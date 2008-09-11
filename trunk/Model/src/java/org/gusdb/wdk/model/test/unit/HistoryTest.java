@@ -19,7 +19,6 @@ import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.RecordBean;
 import org.gusdb.wdk.model.user.History;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
