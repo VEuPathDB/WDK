@@ -680,9 +680,6 @@ public class Answer {
             SQLException, JSONException, WdkModelException, WdkUserException {
         if (pageRecordInstances != null) return;
 
-        // store answer info
-        AnswerFactory answerFactory = question.getWdkModel().getAnswerFactory();
-
         this.pageRecordInstances = new LinkedHashMap<PrimaryKeyAttributeValue, RecordInstance>();
 
         String sql = getPagedIdSql();
@@ -750,11 +747,11 @@ public class Answer {
     }
 
     public Map<String, AttributeField> getAttributeFieldMap(FieldScope scope) {
-        Map<String, AttributeField> summaryFields;
-        if (summaryFieldMap.size() > 0) summaryFields = new LinkedHashMap<String, AttributeField>(
-                summaryFieldMap);
-        else summaryFields = question.getAttributeFields(scope);
-        return summaryFields;
+        Map<String, AttributeField> fields;
+        if (scope == FieldScope.SUMMARY && summaryFieldMap.size() > 0) 
+            fields = new LinkedHashMap<String, AttributeField>(summaryFieldMap);
+        else fields = question.getAttributeFields(scope);
+        return fields;
     }
 
     public void setSumaryAttributes(String[] attributeNames) {
