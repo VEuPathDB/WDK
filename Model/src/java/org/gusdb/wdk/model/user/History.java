@@ -136,13 +136,14 @@ public class History {
 
     /**
      * @return Returns the estimateSize.
-     * @throws WdkUserException 
-     * @throws JSONException 
-     * @throws WdkModelException 
-     * @throws SQLException 
-     * @throws NoSuchAlgorithmException 
+     * @throws WdkUserException
+     * @throws JSONException
+     * @throws WdkModelException
+     * @throws SQLException
+     * @throws NoSuchAlgorithmException
      */
-    public int getEstimateSize() throws NoSuchAlgorithmException, SQLException, WdkModelException, JSONException, WdkUserException {
+    public int getEstimateSize() throws NoSuchAlgorithmException, SQLException,
+            WdkModelException, JSONException, WdkUserException {
         return answer.getAnswerInfo().getEstimatedSize();
     }
 
@@ -324,8 +325,11 @@ public class History {
         Map<String, String> allValues = new LinkedHashMap<String, String>(
                 displayParams);
         for (String paramName : paramValues.keySet()) {
-            if (!allValues.containsKey(paramName))
-                allValues.put(paramName, paramValues.get(paramName).toString());
+            if (!allValues.containsKey(paramName)) {
+                Object value = paramValues.get(paramName);
+                allValues.put(paramName, (value == null) ? ""
+                        : value.toString());
+            }
         }
         return allValues;
     }
