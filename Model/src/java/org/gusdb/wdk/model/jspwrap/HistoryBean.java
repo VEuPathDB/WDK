@@ -252,10 +252,11 @@ public class HistoryBean {
 
     /**
      * @return
+     * @throws WdkUserException 
      * @see org.gusdb.wdk.model.user.History#getParams()
      */
-    public Map<String, String> getParams() {
-        return history.getDisplayParams();
+    public Map<String, Object> getParams() throws WdkUserException {
+        return history.getAnswer().getIdsQueryInstance().getValues();
     }
 
     /**

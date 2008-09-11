@@ -1027,7 +1027,8 @@ public class UserFactory {
             history.setCreatedTime(createTime);
             history.setLastRunTime(lastRunTime);
             history.setCustomName(customName);
-            history.setBoolean(answer.getIsBoolean());
+            history.setBoolean(isBoolean);
+            if (isBoolean) history.setBooleanExpression(booleanExpression);
 
             // update the user's history count
             int historyCount = getHistoryCount(user);
