@@ -4,6 +4,7 @@
 package org.gusdb.wdk.model.query;
 
 import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -15,6 +16,7 @@ import org.gusdb.wdk.model.AbstractEnumParam;
 import org.gusdb.wdk.model.Column;
 import org.gusdb.wdk.model.DatasetParam;
 import org.gusdb.wdk.model.FlatVocabParam;
+import org.gusdb.wdk.model.ParamValuesSet;
 import org.gusdb.wdk.model.Group;
 import org.gusdb.wdk.model.Param;
 import org.gusdb.wdk.model.ParamReference;
@@ -24,6 +26,7 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -79,8 +82,6 @@ public abstract class Query extends WdkModelBase {
         paramMap = new LinkedHashMap<String, Param>();
         columnList = new ArrayList<Column>();
         columnMap = new LinkedHashMap<String, Column>();
-        paramValuesSets = new ArrayList<Map<String,Object>>();
-
     }
 
     /**
@@ -224,17 +225,9 @@ public abstract class Query extends WdkModelBase {
 	paramValuesSets.add(paramValuesSet);
     }
 
-    public List<ParamValuesSet> getParamValuesSets() throws WdkModelException {
+    public List<ParamValuesSet> getParamValuesSets() throws WdkModelException, NoSuchAlgorithmException, SQLException, JSONException, WdkUserException {
 	updateParamValuesSetsWithDefaults();
 	return paramValuesSets;
-    }
-
-    public void setQuerySet(QuerySet querySet) {
-	this.querySet = querySet;
-    }
-
-    public QuerySet getQuerySet() {
-	return querySet;
     }
 
     public WdkModel getWdkModel() {
@@ -340,7 +333,6 @@ public abstract class Query extends WdkModelBase {
                         + "' is duplicated in query " + getFullName());
             } else paramMap.put(paramName, param);
         }
-	updateParamValueSetsWithDefaults();
         paramRefList = null;
         resolved = true;
     }
@@ -421,22 +413,7 @@ public abstract class Query extends WdkModelBase {
         return param;
     }
 
-    private void updateParamValueSetsWithDefaults() {
-	if (paramValuesSets.isEmpty()) {
-	    paramValuesSets.add(new LinkedHashMap<String,Object>());
-	}
-	for (Map<String,Object> paramValuesSet : paramValuesSets) {
-	    for (Param param : getParams()) {
-		String paramName = param.getName();
-		String defaultValue = param.getDefault();
-		if (!paramValuesSet.contains(paramName) && defaultValue != null) {
-		    paramValuesSet.put(paramName, defaultValue);
-		}
-	    }
-	}
-    }
-
-    private void updateParamValuesSetsWithDefaults() throws WdkModelException {
+    private void updateParamValuesSetsWithDefaults() throws WdkModelException, NoSuchAlgorithmException, SQLException, JSONException, WdkUserException {
 	ParamValuesSet querySetDefaults = querySet.getDefaultParamValuesSet();
 	if (paramValuesSets.isEmpty()) {
 	    paramValuesSets.add(new ParamValuesSet());
