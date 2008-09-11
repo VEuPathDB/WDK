@@ -131,7 +131,8 @@ public class AnswerBean {
         StringBuffer sb = new StringBuffer();
         Map<String, Object> params = getInternalParams();
         for (String paramName : params.keySet()) {
-            String paramValue = params.get(paramName).toString();
+            Object value = params.get(paramName);
+            String paramValue = (value == null) ? "" : value.toString();
 
             // check if it's dataset param, if so remove user signature
             Param param = answer.getQuestion().getParamMap().get(paramName);
