@@ -359,34 +359,6 @@ public class Question extends WdkModelBase {
         return dynamicAttributeSet != null;
     }
 
-    /*
-     * <sanityQuestion ref="GeneQuestions.GenesByEcNumber" minOutputLength="1"
-     * maxOutputLength="3" pageStart="1" pageEnd="20"> <sanityParam
-     * name="pf_organism" value="Plasmodium falciparum"/> <sanityParam
-     * name="ec_number_pattern" value="6.1.1.12"/> </sanityQuestion>
-     */
-    public String getSanityTestSuggestion() throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
-        String indent = "    ";
-        String newline = System.getProperty("line.separator");
-        StringBuffer buf = new StringBuffer(newline + newline + indent
-                + "<sanityQuestion ref=\"" + getFullName() + "\"" + newline
-                + indent + indent + indent + "pageStart=\"1\" pageEnd=\"20\""
-                + newline + indent + indent + indent
-                + "minOutputLength=\"FIX_min_len\" "
-                + "maxOutputLength=\"FIX_max_len\">" + newline);
-        for (Param param : getQuery().getParams()) {
-            String paramName = param.getName();
-            String value = param.getDefault();
-            if (value == null) value = "FIX_null_dflt";
-            buf.append(indent + indent + "<sanityParam name=\"" + paramName
-                    + "\" value=\"" + value + "\"/>" + newline);
-        }
-        buf.append(indent + "</sanityQuestion>");
-        return buf.toString();
-    }
-
     /**
      * A indicator to the controller whether this question should make answers
      * that contains all records in one page or not.
