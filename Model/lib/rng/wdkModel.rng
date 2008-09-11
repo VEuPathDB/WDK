@@ -379,6 +379,25 @@
           <data type="boolean" />
       </attribute>
     </optional>
+     <optional>
+       <attribute name="doNotTest">
+           <data type="boolean" />
+       </attribute>
+    </optional>
+    <zeroOrMore>
+      <element name="testParamValues">
+        <optional>
+          <attribute name="minRows"/>
+        </optional>
+        <zeroOrMore>
+          <element name="paramValue">
+            <attribute name="name"/>
+            <text/>
+          </element>
+        </zeroOrMore>
+        <ref name="IncludeExclude" />
+      </element>
+    </zeroOrMore>
     <zeroOrMore>
       <element name="paramRef">
         <attribute name="ref" />
@@ -431,7 +450,35 @@
   <define name="querySet">
     <element name="querySet">
       <attribute name="name" />
+      <optional>
+        <attribute name="queryType">
+          <choice>
+            <value>attribute</value>
+            <value>table</value>
+            <value>vocab</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+         <attribute name="doNotTest">
+             <data type="boolean" />
+         </attribute>
+      </optional>
       <ref name="IncludeExclude" />
+      <zeroOrMore>
+        <element name="defaultTestParamValues">
+          <optional>
+            <attribute name="minRows"/>
+          </optional>
+          <oneOrMore>
+            <element name="paramValue">
+              <attribute name="name"/>
+              <text/>
+            </element>
+          </oneOrMore>
+          <ref name="IncludeExclude" />
+        </element>
+      </zeroOrMore>
       <oneOrMore>
         <ref name="queries" />
       </oneOrMore>
@@ -457,6 +504,11 @@
           <attribute name="internal">
               <data type="boolean" />
           </attribute>
+      </optional>
+      <optional>
+         <attribute name="doNotTest">
+             <data type="boolean" />
+         </attribute>
       </optional>
       <zeroOrMore>
           <element name="description">

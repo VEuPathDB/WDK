@@ -47,6 +47,11 @@ public abstract class Query extends WdkModelBase {
     private List<Column> columnList;
     protected Map<String, Column> columnMap;
 
+    // for sanity testing
+    private boolean doNotTest = false;
+    private List<ParamValuesSet> paramValuesSets
+	= new ArrayList<ParamValuesSet>();
+
     protected WdkModel wdkModel;
     private QuerySet querySet;
 
@@ -74,6 +79,8 @@ public abstract class Query extends WdkModelBase {
         paramMap = new LinkedHashMap<String, Param>();
         columnList = new ArrayList<Column>();
         columnMap = new LinkedHashMap<String, Column>();
+        paramValuesSets = new ArrayList<Map<String,Object>>();
+
     }
 
     /**
@@ -204,6 +211,32 @@ public abstract class Query extends WdkModelBase {
         }
     }
 
+    // exclude this query from sanity testing
+    public void setDoNotTest(boolean doNotTest) {
+	this.doNotTest = doNotTest;
+    }
+
+    public boolean getDoNotTest() {
+	return doNotTest;
+    }
+
+    public void addParamValuesSet(ParamValuesSet paramValuesSet) {
+	paramValuesSets.add(paramValuesSet);
+    }
+
+    public List<ParamValuesSet> getParamValuesSets() throws WdkModelException {
+	updateParamValuesSetsWithDefaults();
+	return paramValuesSets;
+    }
+
+    public void setQuerySet(QuerySet querySet) {
+	this.querySet = querySet;
+    }
+
+    public QuerySet getQuerySet() {
+	return querySet;
+    }
+
     public WdkModel getWdkModel() {
         return wdkModel;
     }
@@ -282,6 +315,15 @@ public abstract class Query extends WdkModelBase {
             }
         }
         columnList = null;
+
+	// exclude paramValuesSets
+	List<ParamValuesSet> tempList = new ArrayList<ParamValuesSet>();
+        for (ParamValuesSet paramValuesSet : paramValuesSets) {
+            if (paramValuesSet.include(projectId)) {
+		tempList.add(paramValuesSet);
+            }
+        }
+	paramValuesSets = tempList;
     }
 
     public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
@@ -298,6 +340,7 @@ public abstract class Query extends WdkModelBase {
                         + "' is duplicated in query " + getFullName());
             } else paramMap.put(paramName, param);
         }
+	updateParamValueSetsWithDefaults();
         paramRefList = null;
         resolved = true;
     }
@@ -376,6 +419,37 @@ public abstract class Query extends WdkModelBase {
         }
         param.resolveReferences(wdkModel);
         return param;
+    }
+
+    private void updateParamValueSetsWithDefaults() {
+	if (paramValuesSets.isEmpty()) {
+	    paramValuesSets.add(new LinkedHashMap<String,Object>());
+	}
+	for (Map<String,Object> paramValuesSet : paramValuesSets) {
+	    for (Param param : getParams()) {
+		String paramName = param.getName();
+		String defaultValue = param.getDefault();
+		if (!paramValuesSet.contains(paramName) && defaultValue != null) {
+		    paramValuesSet.put(paramName, defaultValue);
+		}
+	    }
+	}
+    }
+
+    private void updateParamValuesSetsWithDefaults() throws WdkModelException {
+	ParamValuesSet querySetDefaults = querySet.getDefaultParamValuesSet();
+	if (paramValuesSets.isEmpty()) {
+	    paramValuesSets.add(new ParamValuesSet());
+	}
+	for (ParamValuesSet paramValuesSet : paramValuesSets) {
+	    paramValuesSet.updateWithDefaults(querySetDefaults);
+
+	    for (Param param : getParams()) {
+		String paramName = param.getName();
+		String defaultValue = param.getDefault();
+		paramValuesSet.updateWithDefault(paramName, defaultValue);
+	    }
+	}
     }
 
     void validateValues(Map<String, Object> values) throws WdkModelException {

@@ -144,5 +144,15 @@ public abstract class XmlParser {
         digester.addSetNext( path, method );
     }
     
+    protected void configureParamValuesSet(Digester digester, String path,
+					    String addMethodName) {
+	digester.addObjectCreate(path, ParamValuesSet.class);
+        digester.addSetProperties(path);
+	digester.addCallMethod(path + "/paramValue", "put", 2);
+	digester.addCallParam(path + "/paramValue", 0, "name");
+	digester.addCallParam(path + "/paramValue", 1);
+        digester.addSetNext(path, addMethodName);
+    }
+
     protected abstract Digester configureDigester();
 }
