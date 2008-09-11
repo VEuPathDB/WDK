@@ -160,7 +160,7 @@ public class Oracle extends DBPlatform {
         buffer.append("SELECT b.*, rownum AS row_index FROM (");
         buffer.append(sql);
         buffer.append(") b WHERE rownum <= ").append(endIndex);
-        buffer.append(") n WHERE row_index >= ").append(startIndex);
+        buffer.append(") n WHERE n.row_index >= ").append(startIndex);
         return buffer.toString();
     }
 
