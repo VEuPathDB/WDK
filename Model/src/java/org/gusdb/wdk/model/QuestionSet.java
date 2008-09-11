@@ -117,6 +117,7 @@ public class QuestionSet extends WdkModelBase implements ModelSetI {
     }
 
     public void addQuestion(Question question) throws WdkModelException {
+        question.setQuestionSet(this);
         if (questionList != null) questionList.add(question);
         else questionMap.put(question.getName(), question);
     }

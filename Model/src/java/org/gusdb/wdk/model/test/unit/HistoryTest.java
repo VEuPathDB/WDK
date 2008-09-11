@@ -83,5 +83,14 @@ public class HistoryTest {
                 answer.getQuestion().getRecordClass().getFullName());
         Assert.assertEquals(expression, history.getBooleanExpression());
         Assert.assertEquals(params.length, history.getDisplayParams().size());
+        
+        // load the boolean history
+        history = user.getHistory(history.getHistoryId());
+        answer = history.getAnswer();
+        
+        Assert.assertEquals(recordClass.getFullName(),
+                answer.getQuestion().getRecordClass().getFullName());
+        Assert.assertEquals(expression, history.getBooleanExpression());
+        Assert.assertEquals(params.length, history.getDisplayParams().size());
     }
 }
