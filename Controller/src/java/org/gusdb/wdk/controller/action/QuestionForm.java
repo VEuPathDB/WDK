@@ -5,6 +5,7 @@ import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionError;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
@@ -26,6 +27,7 @@ public class QuestionForm extends QuestionSetForm {
     /**
      * 
      */
+    private static Logger logger = Logger.getLogger(QuestionForm.class);
     private static final long serialVersionUID = -7848685794514383434L;
     private QuestionBean question = null;
     private boolean validating = true;
@@ -36,6 +38,21 @@ public class QuestionForm extends QuestionSetForm {
         resetMappedProps();
     }
 
+
+    public void reset(ActionMapping mapping,
+		      HttpServletRequest request){
+
+
+	String qName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
+
+	if (qName != null && qName.contains("ExperimentQuestions")){
+	    String val = request.getSession().getAttribute("privacy")!=null? (String)request.getSession().getAttribute("privacy"):"public";
+	    setMyProp("studyPrivacy", val);
+	    logger.info("set studyPrivacy to "+val);
+	}
+
+    }
+
     /**
      * validate the properties that have been sent from the HTTP request, and
      * return an ActionErrors object that encapsulates any validation errors
@@ -43,6 +60,7 @@ public class QuestionForm extends QuestionSetForm {
     public ActionErrors validate(ActionMapping mapping,
             HttpServletRequest request) {
         // set the question name into request
+
         request.setAttribute(CConstants.QUESTION_FULLNAME_PARAM, qFullName);
 
         ActionErrors errors = new ActionErrors();
@@ -64,6 +82,7 @@ public class QuestionForm extends QuestionSetForm {
         ParamBean[] params = wdkQuestion.getParams();
         for (int i = 0; i < params.length; i++) {
             ParamBean p = params[i];
+
             try {
                 String[] pVals = null;
                 if ((p instanceof EnumParamBean)
