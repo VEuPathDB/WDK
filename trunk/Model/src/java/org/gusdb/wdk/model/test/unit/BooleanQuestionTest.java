@@ -78,13 +78,7 @@ public class BooleanQuestionTest {
                 right.getAnswerInfo().getAnswerChecksum());
 
         StringParam operator = booleanQuery.getOperatorParam();
-        paramValues.put(operator.getName(), BooleanOperator.Union.getOperator());
-
-        StringParam leftFilter = booleanQuery.getLeftFilterParam();
-        paramValues.put(leftFilter.getName(), null);
-
-        StringParam rightFilter = booleanQuery.getRightFilterParam();
-        paramValues.put(rightFilter.getName(), null);
+        paramValues.put(operator.getName(), BooleanOperator.UNION.getOperator());
 
         StringParam expansion = booleanQuery.getUseBooleanFilter();
         paramValues.put(expansion.getName(), "false");
@@ -96,5 +90,38 @@ public class BooleanQuestionTest {
 
         Assert.assertTrue(answer.getResultSize() >= left.getResultSize());
         Assert.assertTrue(answer.getResultSize() >= right.getResultSize());
+    }
+    
+    @Test
+    public void testAndOperator() throws WdkModelException, NoSuchAlgorithmException, SQLException, JSONException, WdkUserException {
+        Answer left = answers.get(random.nextInt(answers.size()));
+        Answer right = answers.get(random.nextInt(answers.size()));
+
+        Question booleanQuestion = wdkModel.getBooleanQuestion(recordClass);
+        BooleanQuery booleanQuery = (BooleanQuery) booleanQuestion.getQuery();
+        Map<String, Object> paramValues = new LinkedHashMap<String, Object>();
+
+        AnswerParam leftOperand = booleanQuery.getLeftOperandParam();
+        // calling answer info to make sure the answer is saved first
+        paramValues.put(leftOperand.getName(),
+                left.getAnswerInfo().getAnswerChecksum());
+
+        AnswerParam rightOperand = booleanQuery.getRightOperandParam();
+        paramValues.put(rightOperand.getName(),
+                right.getAnswerInfo().getAnswerChecksum());
+
+        StringParam operator = booleanQuery.getOperatorParam();
+        paramValues.put(operator.getName(), BooleanOperator.INTERSECT.getOperator());
+
+        StringParam expansion = booleanQuery.getUseBooleanFilter();
+        paramValues.put(expansion.getName(), "false");
+
+        Answer answer = booleanQuestion.makeAnswer(paramValues);
+        
+        // try to get the summary of the answer
+        logger.debug(answer.printAsTable());
+
+        Assert.assertTrue(answer.getResultSize() <= left.getResultSize());
+        Assert.assertTrue(answer.getResultSize() <= right.getResultSize());
     }
 }

@@ -12,7 +12,7 @@ import java.util.Set;
  */
 public enum BooleanOperator {
 
-    Union("UNION"), Intersect("INTERSECT"), LeftMinus("MINUS"), RightMinus(
+    UNION("UNION"), INTERSECT("INTERSECT"), LEFT_MINUS("MINUS"), RIGHT_MINUS(
             "MINUS");
 
     private static Set<String> unions = new LinkedHashSet<String>();
@@ -25,16 +25,16 @@ public enum BooleanOperator {
         if (intersets.size() == 0)
             initialize(intersets, "intersect", "and", "&", "&&");
         if (leftMinuses.size() == 0)
-            initialize(leftMinuses, "minus", "lminus", "not", "rnot", "-");
+            initialize(leftMinuses, "minus", "lminus", "not", "lnot", "-");
         if (rightMinuses.size() == 0)
             initialize(rightMinuses, "rminus", "rnot", "|-");
 
         name = name.trim().toLowerCase();
 
-        if (unions.contains(name)) return Union;
-        else if (intersets.contains(name)) return Intersect;
-        else if (leftMinuses.contains(name)) return LeftMinus;
-        else if (rightMinuses.contains(name)) return RightMinus;
+        if (unions.contains(name)) return UNION;
+        else if (intersets.contains(name)) return INTERSECT;
+        else if (leftMinuses.contains(name)) return LEFT_MINUS;
+        else if (rightMinuses.contains(name)) return RIGHT_MINUS;
         else throw new WdkModelException("Invalid boolean operator: '" + name
                 + "'");
     }

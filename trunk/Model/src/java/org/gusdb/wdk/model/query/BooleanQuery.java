@@ -54,8 +54,6 @@ public class BooleanQuery extends SqlQuery {
     public static final String QUERY_NAME_PREFIX = "bq_";
     public static final String LEFT_OPERAND_PARAM_PREFIX = "bq_left_op_";
     public static final String RIGHT_OPERAND_PARAM_PREFIX = "bq_right_op_";
-    public static final String LEFT_FILTER_PARAM = "bq_left_filter";
-    public static final String RIGHT_FILTER_PARAM = "bq_right_filter";
     public static final String USE_BOOLEAN_FILTER_PARAM = "use_boolean_filter";
 
     public static final String OPERATOR_PARAM = "bq_operator";
@@ -68,8 +66,6 @@ public class BooleanQuery extends SqlQuery {
     private AnswerParam leftOperand;
     private AnswerParam rightOperand;
     private StringParam operator;
-    private StringParam leftFilter;
-    private StringParam rightFilter;
     private StringParam useBooleanFilter;
     private RecordClass recordClass;
 
@@ -87,19 +83,16 @@ public class BooleanQuery extends SqlQuery {
 
         // create the stringParam for the others
         operator = prepareStringParam(internalParamSet, OPERATOR_PARAM);
-        leftFilter = prepareStringParam(internalParamSet, LEFT_FILTER_PARAM);
-        rightFilter = prepareStringParam(internalParamSet, RIGHT_FILTER_PARAM);
-        useBooleanFilter = prepareStringParam(internalParamSet, USE_BOOLEAN_FILTER_PARAM);
+        useBooleanFilter = prepareStringParam(internalParamSet,
+                USE_BOOLEAN_FILTER_PARAM);
 
         // create the query
         this.setName(BooleanQuery.getQueryName(recordClass));
         this.addParam(leftOperand);
         this.addParam(rightOperand);
         this.addParam(operator);
-        this.addParam(leftFilter);
-        this.addParam(rightFilter);
         this.addParam(useBooleanFilter);
-        
+
         prepareColumns(recordClass);
 
         this.sql = constructSql();
@@ -107,6 +100,12 @@ public class BooleanQuery extends SqlQuery {
 
     private BooleanQuery(BooleanQuery query) {
         super(query);
+
+        this.recordClass = query.recordClass;
+        this.leftOperand = (AnswerParam) paramMap.get(query.leftOperand.getName());
+        this.operator = (StringParam) paramMap.get(query.operator.getName());
+        this.rightOperand = (AnswerParam) paramMap.get(query.rightOperand.getName());
+        this.useBooleanFilter = (StringParam) paramMap.get(query.useBooleanFilter.getName());
     }
 
     /**
@@ -135,20 +134,6 @@ public class BooleanQuery extends SqlQuery {
      */
     public StringParam getOperatorParam() {
         return operator;
-    }
-
-    /**
-     * @return the leftFilter
-     */
-    public StringParam getLeftFilterParam() {
-        return leftFilter;
-    }
-
-    /**
-     * @return the rightFilter
-     */
-    public StringParam getRightFilterParam() {
-        return rightFilter;
     }
 
     /**
@@ -227,7 +212,7 @@ public class BooleanQuery extends SqlQuery {
     @Override
     public QueryInstance makeInstance(Map<String, Object> values)
             throws WdkModelException {
-        return new SqlQueryInstance(this, values);
+        return new BooleanQueryInstance(this, values);
     }
 
     private String constructSql() {
