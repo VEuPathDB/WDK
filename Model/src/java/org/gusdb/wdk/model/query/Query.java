@@ -96,6 +96,10 @@ public abstract class Query extends WdkModelBase {
         this.columnMap = new LinkedHashMap<String, Column>();
         this.wdkModel = query.wdkModel;
         this.querySet = query.querySet;
+        this.doNotTest = query.doNotTest;
+        this.signature = query.signature;
+        this.paramValuesSets = new ArrayList<ParamValuesSet>(query.paramValuesSets);
+        this.wdkModel =query.wdkModel;
 
         // clone columns
         for (String columnName : query.columnMap.keySet()) {

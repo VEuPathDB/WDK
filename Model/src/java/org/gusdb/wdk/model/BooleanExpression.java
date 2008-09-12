@@ -226,23 +226,23 @@ public class BooleanExpression {
                     + "of type " + leftRecordClass.getFullName() + ", but the"
                     + " right operand is of type "
                     + rightRecordClass.getFullName());
+
         Question question = user.getWdkModel().getBooleanQuestion(
                 leftRecordClass);
         BooleanQuery query = (BooleanQuery) question.getQuery();
 
         Map<String, Object> params = new LinkedHashMap<String, Object>();
 
-        params.put(query.getLeftOperandParam().getName(),
-                leftOperand.getChecksum());
+        String leftChecksum = leftOperand.getChecksum();
         AnswerFilterInstance leftFilter = leftOperand.getFilter();
-        params.put(query.getLeftFilterParam().getName(),
-                (leftFilter == null) ? null : leftFilter.getName());
+        if (leftFilter != null) leftChecksum += ":" + leftFilter.getName();
+        params.put(query.getLeftOperandParam().getName(), leftChecksum);
 
-        params.put(query.getRightOperandParam().getName(),
-                rightOperand.getChecksum());
+        String rightChecksum = rightOperand.getChecksum();
         AnswerFilterInstance rightFilter = rightOperand.getFilter();
-        params.put(query.getRightFilterParam().getName(),
-                (rightFilter == null) ? null : rightFilter.getName());
+        if (rightFilter != null) rightChecksum += ":" + rightFilter.getName();
+        params.put(query.getRightOperandParam().getName(),
+                rightChecksum);
 
         params.put(query.getOperatorParam().getName(), operator);
         params.put(query.getUseBooleanFilter().getName(),
