@@ -2,11 +2,11 @@ package org.gusdb.wdk.model;
 
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.util.Map;
 
-import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.ResultFactory;
-import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.user.AnswerFactory;
 import org.gusdb.wdk.model.user.AnswerInfo;
 import org.json.JSONException;
@@ -34,12 +34,19 @@ public class AnswerParam extends Param {
     public String validateValue(Object value) throws WdkModelException {
         // the input should be an answer id
         if (value instanceof String) {
+            String[] parts = parseChecksum((String) value);
+            String checksum = parts[0];
+            String filterName = parts[1];
             try {
                 AnswerFactory answerFactory = wdkModel.getAnswerFactory();
-                AnswerInfo answerInfo = answerFactory.getAnswerInfo((String) value);
+                AnswerInfo answerInfo = answerFactory.getAnswerInfo(checksum);
                 if (answerInfo == null)
                     throw new WdkModelException("The answer of given id '"
-                            + value + "' does not exist");
+                            + checksum + "' does not exist");
+
+                // verify the existance of the filter
+                if (filterName != null) recordClass.getFilter(filterName);
+
                 return null;
             } catch (SQLException ex) {
                 throw new WdkModelException(ex);
@@ -108,24 +115,10 @@ public class AnswerParam extends Param {
     public String getInternalValue(Object value) throws WdkModelException,
             SQLException, NoSuchAlgorithmException, JSONException,
             WdkUserException {
-        // get answer info
-        String answerChecksum = (String) value;
-        AnswerFactory answerFactory = wdkModel.getAnswerFactory();
-        AnswerInfo answerInfo = answerFactory.getAnswerInfo(answerChecksum);
-        if (answerInfo == null) {
-            throw new WdkModelException("The answer of given checksum '"
-                    + answerChecksum + "' does not exist");
-        } else {
-            // construct answer and cache the result
-            Answer answer = answerFactory.getAnswer(answerInfo);
+        // verify the result, but still return the same input
+        validateValue(value);
 
-            // make sure the answer result is cached
-            QueryInstance instance = answer.getIdsQueryInstance();
-            ResultFactory resultFactory = wdkModel.getResultFactory();
-            resultFactory.getInstanceId(instance);
-        }
-        // return the same answerChecksum, since it'll be used in the replaceSql
-        return answerChecksum;
+        return (String) value;
     }
 
     /*
@@ -135,9 +128,13 @@ public class AnswerParam extends Param {
      *      java.lang.String)
      */
     @Override
-    public String replaceSql(String sql, String answerChecksum)
-            throws SQLException, NoSuchAlgorithmException, WdkModelException,
-            JSONException, WdkUserException {
+    public String replaceSql(String sql, String value) throws SQLException,
+            NoSuchAlgorithmException, WdkModelException, JSONException,
+            WdkUserException {
+        String[] parts = parseChecksum(value);
+        String answerChecksum = parts[0];
+        String filter = parts[1];
+
         // get answer info
         AnswerFactory answerFactory = wdkModel.getAnswerFactory();
         AnswerInfo answerInfo = answerFactory.getAnswerInfo(answerChecksum);
@@ -156,17 +153,43 @@ public class AnswerParam extends Param {
         ResultFactory resultFactory = wdkModel.getResultFactory();
         int instanceId = resultFactory.getInstanceId(answer.getIdsQueryInstance());
 
-        // substitute the join conditions
-        StringBuffer condition = new StringBuffer(tableName);
-        condition.append(".").append(CacheFactory.COLUMN_INSTANCE_ID);
-        condition.append(" = ").append(instanceId);
-        sql = sql.replaceAll("\\$\\$" + name + "\\.condition\\$\\$",
-                condition.toString());
+        // construct the inner query that will replace the answerParam macro
+        StringBuffer innerSql = new StringBuffer("SELECT * FROM ");
+        innerSql.append(tableName);
+        innerSql.append(" WHERE ").append(CacheFactory.COLUMN_INSTANCE_ID);
+        innerSql.append(" = ").append(instanceId);
 
-        // substitute the cache table
-        sql = sql.replaceAll("\\$\\$" + name + "\\$\\$", tableName);
+        // apply filter if needed
+        String inner = innerSql.toString();
+        if (filter != null) inner = applyFilter(inner, filter);
+
+        // replace the answer param with the nested sql
+        sql = sql.replaceAll("\\$\\$" + name + "\\$\\$", "(" + inner + ")");
 
         return sql;
+    }
+
+    public Answer getAnswer(String checksumCombo) throws WdkModelException,
+            NoSuchAlgorithmException, JSONException, WdkUserException,
+            SQLException {
+        validateValue(checksumCombo);
+        String[] parts = parseChecksum(checksumCombo);
+        String checksum = parts[0];
+        String filterName = parts[1];
+
+        AnswerFactory answerFactory = wdkModel.getAnswerFactory();
+        AnswerInfo answerInfo = answerFactory.getAnswerInfo(checksum);
+        if (answerInfo == null)
+            throw new WdkModelException("The answer of given id '" + checksum
+                    + "' does not exist");
+        Answer answer = answerFactory.getAnswer(answerInfo);
+
+        // verify the existance of the filter
+        if (filterName != null) {
+            AnswerFilterInstance filter = recordClass.getFilter(filterName);
+            answer.setFilter(filter);
+        }
+        return answer;
     }
 
     /*
@@ -179,4 +202,41 @@ public class AnswerParam extends Param {
     // nothing to add
     }
 
+    private String[] parseChecksum(String value) {
+        value = value.trim();
+        // check if the filter is specified
+        int pos = value.indexOf(":");
+        String checksum = value;
+        String filter = null;
+        if (pos >= 0) {
+            filter = value.substring(pos + 1);
+            if (filter.length() == 0) filter = null;
+            checksum = value.substring(0, pos);
+        }
+        return new String[] { checksum, filter };
+    }
+
+    private String applyFilter(String sql, String filterName)
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
+        AnswerFilterInstance filter = recordClass.getFilter(filterName);
+        SqlQuery query = (SqlQuery) filter.getFilterQuery();
+        Map<String, Param> params = query.getParamMap();
+        AnswerParam answerParam = filter.getAnswerParam();
+        Map<String, Object> paramValues = filter.getParamValueMap();
+
+        String filterSql = query.getSql();
+        // replace the answer param
+        String answerName = answerParam.getName();
+        filterSql = filterSql.replaceAll("\\$\\$" + answerName + "\\$\\$", "("
+                + sql + ")");
+
+        // replace the rest of the params; the answer param has been replaced
+        // and will be ignored here.
+        for (Param param : params.values()) {
+            String value = (String) paramValues.get(param.getName());
+            filterSql = param.replaceSql(filterSql, value);
+        }
+        return filterSql;
+    }
 }
