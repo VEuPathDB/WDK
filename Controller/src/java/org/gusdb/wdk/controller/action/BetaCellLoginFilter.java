@@ -137,9 +137,22 @@ public class BetaCellLoginFilter implements Filter {
 	    guest = factory.getGuestUser();
 	    hsRequest.getSession().setAttribute(CConstants.WDK_USER_KEY, guest);
 	}
-
+	hsRequest.getSession().setAttribute("privacy", "public");
+	hsRequest.getSession().setAttribute("bcbcSessionId", "");	   
     }
 
+
+/**
+@bcbc cookie: Email | fname | lname | status | facultyid | sessionid
+where 
+email= BETACELL_PROFILE.EMAIL
+fname=BETACELL_PROFILE.FIRST_NAME
+lname=BETACELL_PROFILE.LAST_NAME
+status='Private' or 'Public', based on 'member_of_any_group' or 'not'
+facultyid=$_SESSION['id2'] (this is set when someone is logged in,
+regardless of membership status)
+sessionid=sessionid()
+*/
     private void creatWDKUser (String genomicsCookie, HttpServletRequest hsRequest, HttpServletResponse hsResponse) throws Exception{
 	String[] cookieValues = decrypt(genomicsCookie).split("\\|");
 	//String[] cookieValues = genomicsCookie.split("\\|");
@@ -166,6 +179,10 @@ public class BetaCellLoginFilter implements Filter {
 	String email = cookieValues[0];
 	String firstName = cookieValues[1];
 	String lastName = cookieValues[2];
+
+	String privacy = (cookieValues.length>3)?cookieValues[3]:"public";
+	String bcbcSessionId = (cookieValues.length>5)?cookieValues[5]:"";
+
 	String middleName = null, title = null, organization = null;
 	String department = null, address = null, city = null, state = null;
 	String zipCode = null, phoneNumber = null, country = null;
@@ -175,6 +192,8 @@ public class BetaCellLoginFilter implements Filter {
 	try {
 	    UserBean user = factory.loadUser(email);
 	    hsRequest.getSession().setAttribute(CConstants.WDK_USER_KEY, user);
+	    hsRequest.getSession().setAttribute("privacy", privacy);
+	    hsRequest.getSession().setAttribute("bcbcSessionId", bcbcSessionId);
             hsRequest.getSession().setAttribute(CConstants.WDK_LOGIN_ERROR_KEY, "");
 
 	} catch (WdkUserException ex) {
@@ -188,6 +207,8 @@ public class BetaCellLoginFilter implements Filter {
 							 globalPreferences,
 							 projectPreferences);*/
 		hsRequest.getSession().setAttribute(CConstants.WDK_USER_KEY, user);
+		hsRequest.getSession().setAttribute("privacy", privacy);
+		hsRequest.getSession().setAttribute("bcbcSessionId", bcbcSessionId);
 		hsRequest.getSession().setAttribute(CConstants.WDK_LOGIN_ERROR_KEY, "");
 	    }
 	    catch (Exception ex2){
@@ -217,6 +238,7 @@ public class BetaCellLoginFilter implements Filter {
     }
     
     private String decrypt  (String cookieStr) throws Exception {
+	log.info("genomicsCookie before descrypt: "+cookieStr);
     	Cipher cipher = Cipher.getInstance("AES/CBC/NoPadding");
     	SecretKeySpec keySpec = new SecretKeySpec(SECRET_KEY.getBytes(), "AES");
     	IvParameterSpec ivSpec = new IvParameterSpec(IV_PARAMETER.getBytes());
