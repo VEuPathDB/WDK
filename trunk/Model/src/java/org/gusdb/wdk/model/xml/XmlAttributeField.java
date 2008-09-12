@@ -3,10 +3,10 @@
  */
 package org.gusdb.wdk.model.xml;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 import org.gusdb.wdk.model.AttributeField;
-import org.gusdb.wdk.model.ColumnAttributeField;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 
@@ -55,10 +55,9 @@ public class XmlAttributeField extends AttributeField {
      * @see org.gusdb.wdk.model.AttributeField#getDependents()
      */
     @Override
-    public Collection<ColumnAttributeField> getDependents()
-            throws WdkModelException {
+    public Collection<AttributeField> getDependents() throws WdkModelException {
         // TODO Auto-generated method stub
-        return null;
+        return new ArrayList<AttributeField>();
     }
 
     /*

@@ -63,8 +63,8 @@ public class ColumnAttributeField extends AttributeField {
      * @see org.gusdb.wdk.model.AttributeField#getDependents()
      */
     @Override
-    public Collection<ColumnAttributeField> getDependents() {
-        List<ColumnAttributeField> dependents = new ArrayList<ColumnAttributeField>();
+    public Collection<AttributeField> getDependents() {
+        List<AttributeField> dependents = new ArrayList<AttributeField>();
         dependents.add(this);
         return dependents;
     }

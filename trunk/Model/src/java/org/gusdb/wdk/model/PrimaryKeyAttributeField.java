@@ -127,7 +127,7 @@ public class PrimaryKeyAttributeField extends AttributeField {
      * @see org.gusdb.wdk.model.AttributeField#getDependents()
      */
     @Override
-    public Collection<ColumnAttributeField> getDependents() {
-        return new ArrayList<ColumnAttributeField>();
+    public Collection<AttributeField> getDependents() {
+        return new ArrayList<AttributeField>();
     }
 }

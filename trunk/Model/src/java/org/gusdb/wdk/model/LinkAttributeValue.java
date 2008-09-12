@@ -29,7 +29,7 @@ public class LinkAttributeValue extends AttributeValue {
             WdkUserException {
         if (displayText == null) {
             String text = field.getDisplayText();
-            Map<String, ColumnAttributeField> subFields = field.parseFields(text);
+            Map<String, AttributeField> subFields = field.parseFields(text);
             Map<String, Object> values = new LinkedHashMap<String, Object>();
             for (String subField : subFields.keySet()) {
                 AttributeValue value = container.getAttributeValue(subField);
@@ -44,7 +44,7 @@ public class LinkAttributeValue extends AttributeValue {
             SQLException, JSONException, WdkUserException {
         if (this.url == null) {
             String url = field.getUrl();
-            Map<String, ColumnAttributeField> subFields = field.parseFields(url);
+            Map<String, AttributeField> subFields = field.parseFields(url);
             Map<String, Object> values = new LinkedHashMap<String, Object>();
             for (String subField : subFields.keySet()) {
                 AttributeValue value = container.getAttributeValue(subField);

@@ -70,7 +70,7 @@ public class TextAttributeField extends AttributeField {
      * @see org.gusdb.wdk.model.AttributeField#getDependents()
      */
     @Override
-    public Collection<ColumnAttributeField> getDependents()
+    public Collection<AttributeField> getDependents()
             throws WdkModelException {
         return parseFields(text).values();
     }
