@@ -841,7 +841,7 @@ public class User /* implements Serializable */{
         if (summary != null) return summary;
 
         Question question = model.getQuestion(questionFullName);
-        Map<String, AttributeField> attributes = question.getAttributeFields(FieldScope.NON_INTERNAL);
+        Map<String, AttributeField> attributes = question.getSummaryAttributeFields();
         summary = new String[attributes.size()];
         attributes.keySet().toArray(summary);
         return summary;
