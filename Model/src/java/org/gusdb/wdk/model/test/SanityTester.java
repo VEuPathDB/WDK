@@ -148,7 +148,7 @@ public class SanityTester {
 	    int resultSize = answer.getResultSize();
 
 	    // get the summary attribute list
-	    Map<String, AttributeField> summary = answer.getAttributeFieldMap(FieldScope.SUMMARY);
+	    Map<String, AttributeField> summary = answer.getSummaryAttributeFields();
 
 	    // iterate through the page and try every summary attribute of
 	    // each record

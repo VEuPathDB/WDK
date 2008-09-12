@@ -151,7 +151,7 @@ public class Question extends WdkModelBase {
     public void setRecordClassRef(String recordClassRef) {
         this.recordClassRef = recordClassRef;
     }
-    
+
     public void setRecordClass(RecordClass recordClass) {
         this.recordClass = recordClass;
     }
@@ -337,7 +337,7 @@ public class Question extends WdkModelBase {
         String newline = System.getProperty("line.separator");
 
         StringBuffer saNames = new StringBuffer();
-        Map<String, AttributeField> summaryFields = getAttributeFields(FieldScope.SUMMARY);
+        Map<String, AttributeField> summaryFields = getAttributeFields(FieldScope.NON_INTERNAL);
         for (String saName : summaryFields.keySet()) {
             saNames.append(saName + ", ");
         }
@@ -404,6 +404,36 @@ public class Question extends WdkModelBase {
                 : dynamicAttributeSet.getAttributeFieldMap();
     }
 
+    /**
+     * The difference between this method and getAttribute(SUMMARY) is that the
+     * getAttribute(SUMMARY) will get the configured summary list, and if the
+     * list is not configured, it will return all non-internal attribute fields;
+     * meanwhile this method returns the configured list if it is configured,
+     * otherwise it only return a limited number of attribtue fields for display
+     * purpose.
+     * 
+     * @return
+     */
+    public Map<String, AttributeField> getSummaryAttributeFields() {
+        Map<String, AttributeField> attributeFields = new LinkedHashMap<String, AttributeField>();
+
+        // always put primary key as the first field
+        AttributeField pkField = recordClass.getPrimaryKeyAttributeField();
+        attributeFields.put(pkField.getName(), pkField);
+
+        if (defaultSummaryAttributeFields.size() > 0) {
+            attributeFields.putAll(defaultSummaryAttributeFields);
+        } else {
+            Map<String, AttributeField> nonInternalFields = getAttributeFields(FieldScope.NON_INTERNAL);
+            for (String fieldName : nonInternalFields.keySet()) {
+                attributeFields.put(fieldName, nonInternalFields.get(fieldName));
+                if (attributeFields.size() >= Utilities.DEFAULT_SUMMARY_ATTRIBUTE_SIZE)
+                    break;
+            }
+        }
+        return attributeFields;
+    }
+
     public Map<String, AttributeField> getAttributeFields() {
         return getAttributeFields(FieldScope.ALL);
     }
@@ -415,16 +445,11 @@ public class Question extends WdkModelBase {
         AttributeField pkField = recordClass.getPrimaryKeyAttributeField();
         attributeFields.put(pkField.getName(), pkField);
 
-        // handles the summary fields differently, since question may define its
-        // own set
-        if (scope == FieldScope.SUMMARY
-                && defaultSummaryAttributeFields.size() > 0) {
-            attributeFields.putAll(defaultSummaryAttributeFields);
-        } else {
-            attributeFields.putAll(recordClass.getAttributeFieldMap(scope));
-            if (dynamicAttributeSet != null)
-                attributeFields.putAll(dynamicAttributeSet.getAttributeFieldMap(scope));
-        }
+        attributeFields.putAll(recordClass.getAttributeFieldMap(scope));
+
+        if (dynamicAttributeSet != null)
+            attributeFields.putAll(dynamicAttributeSet.getAttributeFieldMap(scope));
+
         return attributeFields;
     }
 

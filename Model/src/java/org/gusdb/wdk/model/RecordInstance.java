@@ -2,10 +2,8 @@ package org.gusdb.wdk.model;
 
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.dbms.ResultList;
@@ -69,7 +67,7 @@ public class RecordInstance extends AttributeValueContainer {
     }
 
     public Map<String, AttributeField> getAttributeFieldMap(FieldScope scope) {
-        if (answer != null) return answer.getAttributeFieldMap(scope);
+        if (answer != null) return answer.getQuestion().getAttributeFields(scope);
         else return recordClass.getAttributeFieldMap(scope);
     }
 
@@ -442,7 +440,7 @@ public class RecordInstance extends AttributeValueContainer {
     // /////////////////////////////////////////////////////////////////////////
 
     public String[] getSummaryAttributeNames() {
-        Map<String, AttributeField> summaryFields = getAttributeFieldMap(FieldScope.SUMMARY);
+        Map<String, AttributeField> summaryFields = getAttributeFieldMap(FieldScope.NON_INTERNAL);
         String[] names = new String[summaryFields.size()];
         summaryFields.keySet().toArray(names);
         return names;
@@ -451,7 +449,7 @@ public class RecordInstance extends AttributeValueContainer {
     public Map<String, AttributeValue> getSummaryAttributeValueMap()
             throws NoSuchAlgorithmException, WdkModelException, SQLException,
             JSONException, WdkUserException {
-        return getAttributeValueMap(FieldScope.SUMMARY);
+        return getAttributeValueMap(FieldScope.NON_INTERNAL);
     }
 
     // /////////////////////////////////////////////////////////////////////////

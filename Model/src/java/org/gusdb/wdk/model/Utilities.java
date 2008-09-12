@@ -56,6 +56,8 @@ public class Utilities {
     public static final String INTERNAL_QUESTION_SET = "internalQuestions";
     
     public static final int DEFAULT_PAGE_SIZE = 20;
+    
+    public static final int DEFAULT_SUMMARY_ATTRIBUTE_SIZE = 6;
 
     public static String encrypt(String data) throws WdkModelException,
             NoSuchAlgorithmException {

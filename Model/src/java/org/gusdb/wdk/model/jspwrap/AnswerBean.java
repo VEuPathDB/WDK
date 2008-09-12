@@ -279,7 +279,7 @@ public class AnswerBean {
     }
 
     public AttributeFieldBean[] getSummaryAttributes() {
-        Map<String, AttributeField> attribs = answer.getAttributeFieldMap(FieldScope.SUMMARY);
+        Map<String, AttributeField> attribs = answer.getSummaryAttributeFields();
         AttributeFieldBean[] beans = new AttributeFieldBean[attribs.size()];
         int index = 0;
         for (AttributeField field : attribs.values()) {
