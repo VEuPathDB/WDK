@@ -377,7 +377,7 @@ public class Answer {
 
         if (pageRecordInstances.size() == 0) return buf.toString();
 
-        Map<String, AttributeField> attributes = getAttributeFieldMap(FieldScope.SUMMARY);
+        Map<String, AttributeField> attributes = getSummaryAttributeFields();
         for (String nextAttName : attributes.keySet()) {
             buf.append(nextAttName + "\t");
         }
@@ -739,13 +739,10 @@ public class Answer {
 
     public List<AttributeField> getDisplayableAttributes() {
         List<AttributeField> displayAttributes = new ArrayList<AttributeField>();
-        Map<String, AttributeField> attributes = question.getAttributeFields();
-        Map<String, AttributeField> summaryAttributes = getAttributeFieldMap(FieldScope.SUMMARY);
+        Map<String, AttributeField> attributes = question.getAttributeFields(FieldScope.NON_INTERNAL);
+        Map<String, AttributeField> summaryAttributes = question.getSummaryAttributeFields();
         for (String attriName : attributes.keySet()) {
             AttributeField attribute = attributes.get(attriName);
-
-            // the sortable attribute cannot be internal
-            if (attribute.isInternal()) continue;
 
             // skip the attributes that are already displayed
             if (summaryAttributes.containsKey(attriName)) continue;
@@ -754,12 +751,12 @@ public class Answer {
         }
         return displayAttributes;
     }
-
-    public Map<String, AttributeField> getAttributeFieldMap(FieldScope scope) {
+    
+    public Map<String, AttributeField> getSummaryAttributeFields() {
         Map<String, AttributeField> fields;
-        if (scope == FieldScope.SUMMARY && summaryFieldMap.size() > 0) fields = new LinkedHashMap<String, AttributeField>(
-                summaryFieldMap);
-        else fields = question.getAttributeFields(scope);
+        if (summaryFieldMap.size() > 0) {
+            fields = new LinkedHashMap<String, AttributeField>(summaryFieldMap);
+        } else fields = question.getSummaryAttributeFields();
         return fields;
     }
 

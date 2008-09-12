@@ -580,8 +580,9 @@ public class User /* implements Serializable */{
         return selected;
     }
 
-    public History[] getHistories(String recordClassName) throws WdkUserException,
-            WdkModelException, SQLException, JSONException {
+    public History[] getHistories(String recordClassName)
+            throws WdkUserException, WdkModelException, SQLException,
+            JSONException {
         Map<Integer, History> map = getHistoriesMap(recordClassName);
         History[] array = new History[map.size()];
         map.values().toArray(array);
@@ -744,14 +745,14 @@ public class User /* implements Serializable */{
         save();
     }
 
-    public History combineHistory(String expression, boolean useBooleanFilter) throws WdkUserException,
-            WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException {
-        return combineHistory(expression,useBooleanFilter, false);
+    public History combineHistory(String expression, boolean useBooleanFilter)
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException {
+        return combineHistory(expression, useBooleanFilter, false);
     }
 
-    private History combineHistory(String expression, boolean useBooleanFilter, boolean deleted)
-            throws WdkUserException, WdkModelException,
+    private History combineHistory(String expression, boolean useBooleanFilter,
+            boolean deleted) throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
         logger.debug("Boolean expression: " + expression);
         BooleanExpression exp = new BooleanExpression(this);
@@ -763,7 +764,7 @@ public class User /* implements Serializable */{
         String summaryKey = answer.getQuestion().getFullName()
                 + SUMMARY_ATTRIBUTES_SUFFIX;
         if (!projectPreferences.containsKey(summaryKey)) {
-            Map<String, AttributeField> summary = answer.getAttributeFieldMap(FieldScope.SUMMARY);
+            Map<String, AttributeField> summary = answer.getSummaryAttributeFields();
             StringBuffer sb = new StringBuffer();
             for (String attrName : summary.keySet()) {
                 if (sb.length() != 0) sb.append(",");
@@ -840,13 +841,9 @@ public class User /* implements Serializable */{
         if (summary != null) return summary;
 
         Question question = model.getQuestion(questionFullName);
-        if (question.getQuery() instanceof BooleanQuery) {
-            summary = new String[0];
-        } else { // ordinary question
-            Map<String, AttributeField> attributes = question.getAttributeFields(FieldScope.SUMMARY);
-            summary = new String[attributes.size()];
-            attributes.keySet().toArray(summary);
-        }
+        Map<String, AttributeField> attributes = question.getAttributeFields(FieldScope.NON_INTERNAL);
+        summary = new String[attributes.size()];
+        attributes.keySet().toArray(summary);
         return summary;
     }
 
