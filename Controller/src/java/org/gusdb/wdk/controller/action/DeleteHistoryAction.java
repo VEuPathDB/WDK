@@ -21,19 +21,24 @@ public class DeleteHistoryAction extends Action {
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
 
-        String histIdstr = request.getParameter(CConstants.WDK_HISTORY_ID_KEY);
-        if (histIdstr != null) {
-            int histId = Integer.parseInt(histIdstr);
-            UserBean wdkUser = (UserBean) request.getSession().getAttribute(
-                    CConstants.WDK_USER_KEY);
-            try {
-                wdkUser.deleteHistory(histId);
-            } catch (Exception e) {
-                e.printStackTrace();
-                // prevent refresh of page after delete from breaking
-            }
+        String[]  histIdstrs = request.getParameterValues(CConstants.WDK_HISTORY_ID_KEY);
+        if (histIdstrs != null) {
+	    for (String histIdstr : histIdstrs) {
+		if (histIdstr != null && histIdstr.length() > 0) {
+		    int histId = Integer.parseInt(histIdstr);
+		    UserBean wdkUser = (UserBean) request.getSession().getAttribute(
+						             CConstants.WDK_USER_KEY);
+		    try {
+			wdkUser.deleteHistory(histId);
+		    } catch (Exception e) {
+			e.printStackTrace();
+			// prevent refresh of page after delete from breaking
+		    }
+		}
+	    }
         } else {
-            throw new Exception("no history id is given for deletion");
+	    // do we really throw an exception here?  why not just do nothing?
+            throw new Exception("no history id was given for deletion");
         }
 
         ActionForward forward = mapping.findForward(CConstants.DELETE_HISTORY_MAPKEY);
