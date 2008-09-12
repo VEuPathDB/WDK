@@ -1,5 +1,8 @@
 package org.gusdb.wdk.controller.action;
 
+import java.util.HashMap;
+import java.util.Date;
+
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -55,22 +58,56 @@ public class GetFilterLinkAction extends Action {
 	url.append("?questionFullName=" + answer.getQuestion().getFullName());
 	url.append(answer.getSummaryUrlParams());
 	url.append("&filter=" + filterName);            
+
+	String link = "<a href='" + url.toString() + "'>" + size + "</a>";
+
+	// check if we already have a cache of this answer
+	HashMap<String, HashMap> cachedAnswers = (HashMap<String, HashMap>) request.getSession().getAttribute("answer_cache");
+	HashMap<String, Date> answerTimes = (HashMap<String, Date>) request.getSession().getAttribute("answer_times");
+	HashMap<String, String> cachedLinks;
+	if (cachedAnswers != null && cachedAnswers.containsKey(answer.getChecksum())) {
+	    // already have cache:  add this link to the cache
+	    cachedLinks = cachedAnswers.get(answer.getChecksum());
+	}
+	else {
+	    // don't have cache:  create a new cache
+	    cachedLinks = new HashMap<String, String>();
+	    if (cachedAnswers == null) {
+		// no answer cache in session: create a new one
+		cachedAnswers = new HashMap<String, HashMap>();
+		answerTimes = new HashMap<String, Date>();
+	    }
+	    else if (cachedAnswers.size() == 3) {
+		Date temp = new Date();
+		String removeKey = "";
+		for (String key : answerTimes.keySet()) {
+		    if (temp.compareTo(answerTimes.get(key)) > 0) {
+			temp = answerTimes.get(key);
+			removeKey = key;
+		    }
+		}
+		cachedAnswers.remove(removeKey);
+		answerTimes.remove(removeKey);
+	    }
+	}
+
+	cachedLinks.put(filterName, link);
+
+	// now answer cache exists & has < 3 answers, add this one
+	cachedAnswers.put(answer.getChecksum(), cachedLinks);
+	answerTimes.put(answer.getChecksum(), new Date());
+
+	request.getSession().setAttribute("answer_cache", cachedAnswers);
+	request.getSession().setAttribute("answer_times", answerTimes);
 	
 	// What header, content type to send?
 	ServletOutputStream out = response.getOutputStream();
 	response.setContentType("text/html");
-	
-	String link = "<a href='" + url.toString() + "'>" + size + "</a>";
 
-	//request.setAttribute("filterLink", url.toString());
-	//request.setAttribute("filterSize", size);
-
+	// print link to response
 	out.print(link);
 	out.flush();
 	out.close();
-	
-	//ActionForward forward = mapping.findForward("filter_link");
-	//return forward;
 
 	return null;
     }
