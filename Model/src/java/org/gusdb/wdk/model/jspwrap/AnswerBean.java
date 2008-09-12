@@ -280,29 +280,24 @@ public class AnswerBean {
 
     public AttributeFieldBean[] getSummaryAttributes() {
         Map<String, AttributeField> attribs = answer.getAttributeFieldMap(FieldScope.SUMMARY);
-        Iterator<String> ai = attribs.keySet().iterator();
-        Vector<AttributeFieldBean> v = new Vector<AttributeFieldBean>();
-        while (ai.hasNext()) {
-            String attribName = ai.next();
-            v.add(new AttributeFieldBean(attribs.get(attribName)));
+        AttributeFieldBean[] beans = new AttributeFieldBean[attribs.size()];
+        int index = 0;
+        for (AttributeField field : attribs.values()) {
+            beans[index++] = new AttributeFieldBean(field);
         }
-        int size = v.size();
-        AttributeFieldBean[] sumAttribs = new AttributeFieldBean[size];
-        v.copyInto(sumAttribs);
-        return sumAttribs;
+        
+        logger.debug("Count: " + beans.length);
+        
+        return beans;
     }
 
     public String[] getSummaryAttributeNames() {
         AttributeFieldBean[] sumAttribs = getSummaryAttributes();
-        Vector<String> v = new Vector<String>();
+        String[] names = new String[sumAttribs.length];
         for (int i = 0; i < sumAttribs.length; i++) {
-            String attribName = sumAttribs[i].getName();
-            v.add(attribName);
+            names[i] = sumAttribs[i].getName();
         }
-        int size = v.size();
-        String[] sumAttribNames = new String[size];
-        v.copyInto(sumAttribNames);
-        return sumAttribNames;
+        return names;
     }
 
     public AttributeFieldBean[] getDownloadAttributes() {
