@@ -168,6 +168,8 @@ public class BooleanQuery extends SqlQuery {
             param = new StringParam();
             param.setName(paramName);
             param.setQuote(false);
+            param.resolveReferences(wdkModel);
+            param.setResources(wdkModel);
             paramSet.addParam(param);
         }
         return param;

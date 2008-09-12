@@ -73,6 +73,8 @@ public class FlatVocabParam extends AbstractEnumParam {
         param.setName(PARAM_SERVED_QUERY);
         param.setDefault(servedQueryName);
         param.setAllowEmpty(true);
+        param.resolveReferences(model);
+        param.setResources(model);
         paramSet.addParam(param);
         query.addParam(param);
         this.query = query;

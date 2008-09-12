@@ -414,6 +414,7 @@ public abstract class Query extends WdkModelBase {
             param.setGroup(group);
         }
         param.resolveReferences(wdkModel);
+        param.setResources(wdkModel);
         return param;
     }
 
