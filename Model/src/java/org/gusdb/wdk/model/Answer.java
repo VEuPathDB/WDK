@@ -638,8 +638,10 @@ public class Answer {
         for (String fieldName : sortingMap.keySet()) {
             AttributeField field = fields.get(fieldName);
             boolean ascend = sortingMap.get(fieldName);
-            for (ColumnAttributeField dependent : field.getDependents()) {
-                Query query = dependent.getColumn().getQuery();
+            for (AttributeField dependent : field.getDependents()) {
+                if (!(dependent instanceof ColumnAttributeField)) continue;
+                
+                Query query = ((ColumnAttributeField)dependent).getColumn().getQuery();
                 String queryName = query.getFullName();
 
                 // handle query
