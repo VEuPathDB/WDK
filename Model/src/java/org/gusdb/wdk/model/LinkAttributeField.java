@@ -111,9 +111,9 @@ public class LinkAttributeField extends AttributeField {
      * @see org.gusdb.wdk.model.AttributeField#getDependents()
      */
     @Override
-    public Collection<ColumnAttributeField> getDependents()
+    public Collection<AttributeField> getDependents()
             throws WdkModelException {
-        Map<String, ColumnAttributeField> dependents = parseFields(url);
+        Map<String, AttributeField> dependents = parseFields(url);
         dependents.putAll(parseFields(displayText));
         return dependents.values();
     }

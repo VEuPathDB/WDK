@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
  */
 public abstract class AttributeField extends Field {
 
-    public abstract Collection<ColumnAttributeField> getDependents()
+    public abstract Collection<AttributeField> getDependents()
             throws WdkModelException;
 
     protected AttributeFieldContainer container;
@@ -33,7 +33,7 @@ public abstract class AttributeField extends Field {
 
     /**
      * @param sortable
-     *                the sortable to set
+     *            the sortable to set
      */
     public void setSortable(boolean sortable) {
         this.sortable = sortable;
@@ -48,7 +48,7 @@ public abstract class AttributeField extends Field {
 
     /**
      * @param align
-     *                the align to set
+     *            the align to set
      */
     public void setAlign(String align) {
         this.align = align;
@@ -63,7 +63,7 @@ public abstract class AttributeField extends Field {
 
     /**
      * @param nowrap
-     *                the nowrap to set
+     *            the nowrap to set
      */
     public void setNowrap(boolean nowrap) {
         this.nowrap = nowrap;
@@ -71,15 +71,15 @@ public abstract class AttributeField extends Field {
 
     /**
      * @param container
-     *                the container to set
+     *            the container to set
      */
     public void setContainer(AttributeFieldContainer container) {
         this.container = container;
     }
 
-    protected Map<String, ColumnAttributeField> parseFields(String text)
+    protected Map<String, AttributeField> parseFields(String text)
             throws WdkModelException {
-        Map<String, ColumnAttributeField> children = new LinkedHashMap<String, ColumnAttributeField>();
+        Map<String, AttributeField> children = new LinkedHashMap<String, AttributeField>();
         Map<String, AttributeField> fields = container.getAttributeFieldMap();
 
         String type = ColumnAttributeField.class.getName();
@@ -89,12 +89,13 @@ public abstract class AttributeField extends Field {
             String fieldName = matcher.group(1);
             if (!fields.containsKey(fieldName)) continue;
             AttributeField field = fields.get(fieldName);
-            if (!(field instanceof ColumnAttributeField))
+            if (!(field instanceof ColumnAttributeField)
+                    && !(field instanceof PrimaryKeyAttributeField))
                 throw new WdkModelException("Only " + type + " can "
                         + "be embedded into the text content. " + fieldName
                         + " is not a " + type + ".");
             if (!children.containsKey(fieldName))
-                children.put(fieldName, (ColumnAttributeField) field);
+                children.put(fieldName, field);
         }
         return children;
     }

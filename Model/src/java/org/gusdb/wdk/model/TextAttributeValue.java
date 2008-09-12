@@ -42,7 +42,7 @@ public class TextAttributeValue extends AttributeValue {
             WdkUserException {
         if (this.text == null) {
             String text = field.getText();
-            Map<String, ColumnAttributeField> subFields = field.parseFields(text);
+            Map<String, AttributeField> subFields = field.parseFields(text);
             Map<String, Object> values = new LinkedHashMap<String, Object>();
             for (String subField : subFields.keySet()) {
                 AttributeValue value = container.getAttributeValue(subField);
