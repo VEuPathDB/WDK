@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -490,6 +491,21 @@ public class Answer {
                     pkField, pkValues);
             RecordInstance record = pageRecordInstances.get(primaryKey);
 
+            if (record == null) {
+                StringBuffer error = new StringBuffer();
+                error.append("Paged attribute query [");
+                error.append(attributeQuery.getFullName());
+                error.append("] returns rows that doesn't match the paged ");
+                error.append("records. (");
+                for (String pkName : pkValues.keySet()) {
+                    error.append(pkName).append(" = ");
+                    error.append(pkValues.get(pkName)).append(", ");
+                }
+                error.append(").\nPaged Attribute SQL:\n").append(sql);
+                error.append("\n").append("Paged ID SQL:\n").append(getPagedIdSql());
+                throw new WdkModelException(error.toString());
+            }
+
             // fill in the column attributes
             for (String columnName : attributeQuery.getColumnMap().keySet()) {
                 AttributeField field = fields.get(columnName);
@@ -640,8 +656,8 @@ public class Answer {
             boolean ascend = sortingMap.get(fieldName);
             for (AttributeField dependent : field.getDependents()) {
                 if (!(dependent instanceof ColumnAttributeField)) continue;
-                
-                Query query = ((ColumnAttributeField)dependent).getColumn().getQuery();
+
+                Query query = ((ColumnAttributeField) dependent).getColumn().getQuery();
                 String queryName = query.getFullName();
 
                 // handle query
@@ -753,7 +769,7 @@ public class Answer {
         }
         return displayAttributes;
     }
-    
+
     public Map<String, AttributeField> getSummaryAttributeFields() {
         Map<String, AttributeField> fields;
         if (summaryFieldMap.size() > 0) {
