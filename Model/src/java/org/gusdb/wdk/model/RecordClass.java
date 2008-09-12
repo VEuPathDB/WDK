@@ -620,6 +620,8 @@ public class RecordClass extends WdkModelBase implements
                 Column column = columns.get(columnName);
                 param.setName(columnName);
                 param.setQuote(column.getType().equals(Column.TYPE_STRING));
+                param.resolveReferences(wdkModel);
+                param.setResources(wdkModel);
                 paramSet.addParam(param);
             }
             newQuery.addParam(param);
