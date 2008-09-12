@@ -148,7 +148,7 @@ public abstract class Reporter implements Iterable<Answer> {
      * @return
      */
     protected Map<String, AttributeField> getSummaryAttributes() {
-        return baseAnswer.getAttributeFieldMap(FieldScope.SUMMARY);
+        return baseAnswer.getSummaryAttributeFields();
     }
 
     public Iterator<Answer> iterator() {

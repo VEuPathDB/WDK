@@ -105,7 +105,7 @@ public class RecordBean {
     public Map<String, AttributeValue> getSummaryAttributes()
             throws NoSuchAlgorithmException, WdkModelException, SQLException,
             JSONException, WdkUserException {
-        return new AttributeValueMap(recordInstance, FieldScope.SUMMARY);
+        return new AttributeValueMap(recordInstance, FieldScope.NON_INTERNAL);
     }
 
     /**
