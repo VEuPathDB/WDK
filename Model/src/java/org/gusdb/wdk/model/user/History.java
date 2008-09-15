@@ -35,6 +35,7 @@ public class History {
     private Date createdTime;
     private Date lastRunTime;
     private String customName;
+    private int estimateSize = 0;
     private Answer answer = null;
     private boolean isBoolean;
     private String booleanExpression;
@@ -142,9 +143,15 @@ public class History {
      * @throws SQLException
      * @throws NoSuchAlgorithmException
      */
-    public int getEstimateSize() throws NoSuchAlgorithmException, SQLException,
-            WdkModelException, JSONException, WdkUserException {
-        return answer.getAnswerInfo().getEstimatedSize();
+    public int getEstimateSize() {
+        return estimateSize;
+    }
+
+    /**
+     * @param estimateSize the estimateSize to set
+     */
+    public void setEstimateSize(int estimateSize) {
+        this.estimateSize = estimateSize;
     }
 
     /**
@@ -214,6 +221,7 @@ public class History {
     public void update(boolean updateTime) throws WdkUserException,
             NoSuchAlgorithmException, SQLException, WdkModelException,
             JSONException {
+        this.estimateSize = answer.getResultSize();
         factory.updateHistory(user, this, updateTime);
     }
 
