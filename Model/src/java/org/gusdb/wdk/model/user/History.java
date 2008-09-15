@@ -46,6 +46,7 @@ public class History {
         this.user = user;
         this.historyId = historyId;
         isDeleted = false;
+        params = new LinkedHashMap<String, Object>();
     }
     
     public User getUser() {
@@ -304,6 +305,7 @@ public class History {
     }
     
     public void setParams( Map< String, Object > params ) {
+        if (params == null) params = new LinkedHashMap<String, Object>();
         this.params = params;
     }
     
