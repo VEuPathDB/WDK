@@ -221,14 +221,6 @@ public class Answer {
             if (obj instanceof BigInteger) resultSize = ((BigInteger) obj).intValue();
             else if (obj instanceof Long) resultSize = (int) ((Long) obj).longValue();
             else resultSize = Integer.parseInt(obj.toString());
-
-            // check if the estimated size needs to be updated
-            AnswerInfo answerInfo = getAnswerInfo();
-            if (answerInfo.getEstimatedSize() != resultSize) {
-                answerInfo.setEstimatedSize(resultSize);
-                AnswerFactory factory = question.getWdkModel().getAnswerFactory();
-                factory.updateAnswerSize(answerInfo);
-            }
         }
         return resultSize.intValue();
     }

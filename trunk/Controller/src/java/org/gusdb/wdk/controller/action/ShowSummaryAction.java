@@ -95,10 +95,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 }
 
                 wdkAnswer = history.getAnswer();
-                // no longer need to update estimated size, thus may not need to
-                // update history at all.
-                // don't update last run time
-                // history.update(false);
+                // update estimated size, but don't update last run time
+                history.update(false);
 
                 // get sorting and summary attributes
                 String questionName = wdkAnswer.getQuestion().getFullName();

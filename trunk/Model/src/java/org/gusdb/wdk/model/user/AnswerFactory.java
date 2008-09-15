@@ -38,7 +38,6 @@ public class AnswerFactory {
     private static final String COLUMN_PROJECT_VERSION = "project_version";
     private static final String COLUMN_QUESTION_NAME = "question_name";
     private static final String COLUMN_QUERY_CHECKSUM = "query_checksum";
-    private static final String COLUMN_ESTIMATED_SIZE = "estimated_size";
     private static final String COLUMN_PARAMS = "params";
     private static final String COLUMN_RESULT_MESSAGE = "result_message";
 
@@ -77,8 +76,6 @@ public class AnswerFactory {
         sql.append(loginPlatform.getStringDataType(200)).append(" NOT NULL, ");
         sql.append(COLUMN_QUERY_CHECKSUM).append(" ");
         sql.append(loginPlatform.getStringDataType(40)).append(" NOT NULL, ");
-        sql.append(COLUMN_ESTIMATED_SIZE).append(" ");
-        sql.append(loginPlatform.getNumberDataType(12)).append(", ");
         sql.append(COLUMN_PARAMS).append(" ");
         sql.append(loginPlatform.getClobDataType()).append(", ");
         sql.append(COLUMN_RESULT_MESSAGE).append(" ");
@@ -113,8 +110,6 @@ public class AnswerFactory {
             int answerId = loginPlatform.getNextId(answerSchema, TABLE_ANSWER);
             answerInfo = new AnswerInfo(answerId);
             answerInfo.setAnswerChecksum(answer.getChecksum());
-            // by default, set the size to 0 to avoid invoking the id query
-            answerInfo.setEstimatedSize(0);
             answerInfo.setProjectId(wdkModel.getProjectId());
             answerInfo.setProjectVersion(wdkModel.getVersion());
             answerInfo.setQueryChecksum(answer.getQuestion().getQuery().getChecksum());
@@ -126,18 +121,6 @@ public class AnswerFactory {
         }
         answer.setAnswerInfo(answerInfo);
         return answerInfo;
-    }
-    
-    public void updateAnswerSize(AnswerInfo answerInfo) throws SQLException {
-        int size = answerInfo.getEstimatedSize();
-        int id = answerInfo.getAnswerId();
-        // prepare the sql
-        StringBuffer sql = new StringBuffer("UPDATE ");
-        sql.append(answerSchema).append(TABLE_ANSWER).append(" SET ");
-        sql.append(COLUMN_ESTIMATED_SIZE).append(" = ").append(size);
-        sql.append(" WHERE ").append(COLUMN_ANSWER_ID).append(" = ").append(id);
-        
-        SqlUtils.executeUpdate(loginPlatform.getDataSource(), sql.toString());
     }
 
     public Answer getAnswer(AnswerInfo answerInfo) throws WdkModelException,
@@ -195,7 +178,6 @@ public class AnswerFactory {
             if (resultSet.next()) {
                 answerInfo = new AnswerInfo(resultSet.getInt(COLUMN_ANSWER_ID));
                 answerInfo.setAnswerChecksum(answerChecksum);
-                answerInfo.setEstimatedSize(resultSet.getInt(COLUMN_ESTIMATED_SIZE));
                 answerInfo.setProjectId(projectId);
                 answerInfo.setProjectVersion(resultSet.getString(COLUMN_PROJECT_VERSION));
                 answerInfo.setQueryChecksum(resultSet.getString(COLUMN_QUERY_CHECKSUM));
@@ -214,12 +196,11 @@ public class AnswerFactory {
         sql.append(answerSchema).append(TABLE_ANSWER).append(" (");
         sql.append(COLUMN_ANSWER_ID).append(", ");
         sql.append(COLUMN_ANSWER_CHECKSUM).append(", ");
-        sql.append(COLUMN_ESTIMATED_SIZE).append(", ");
         sql.append(COLUMN_PROJECT_ID).append(", ");
         sql.append(COLUMN_PROJECT_VERSION).append(", ");
         sql.append(COLUMN_QUESTION_NAME).append(", ");
         sql.append(COLUMN_QUERY_CHECKSUM).append(", ");
-        sql.append(COLUMN_PARAMS).append(") VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        sql.append(COLUMN_PARAMS).append(") VALUES (?, ?, ?, ?, ?, ?, ?)");
 
         PreparedStatement ps = null;
         try {
@@ -227,12 +208,11 @@ public class AnswerFactory {
             ps = SqlUtils.getPreparedStatement(dataSource, sql.toString());
             ps.setInt(1, answerInfo.getAnswerId());
             ps.setString(2, answerInfo.getAnswerChecksum());
-            ps.setInt(3, answerInfo.getEstimatedSize());
-            ps.setString(4, answerInfo.getProjectId());
-            ps.setString(5, answerInfo.getProjectVersion());
-            ps.setString(6, answerInfo.getQuestionName());
-            ps.setString(7, answerInfo.getQueryChecksum());
-            loginPlatform.updateClobData(ps, 8, paramClob, false);
+            ps.setString(3, answerInfo.getProjectId());
+            ps.setString(4, answerInfo.getProjectVersion());
+            ps.setString(5, answerInfo.getQuestionName());
+            ps.setString(6, answerInfo.getQueryChecksum());
+            loginPlatform.updateClobData(ps, 7, paramClob, false);
 
             ps.executeUpdate();
         } finally {

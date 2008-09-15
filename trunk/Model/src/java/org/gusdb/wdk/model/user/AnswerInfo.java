@@ -15,7 +15,6 @@ public class AnswerInfo {
     private String projectVersion;
     private String questionName;
     private String queryChecksum;
-    private int estimatedSize;
     private String resultMessage;
 
     public AnswerInfo(int answerId) {
@@ -95,21 +94,6 @@ public class AnswerInfo {
      */
     public void setQueryChecksum(String queryChecksum) {
         this.queryChecksum = queryChecksum;
-    }
-
-    /**
-     * @return the estimatedSize
-     */
-    public int getEstimatedSize() {
-        return estimatedSize;
-    }
-
-    /**
-     * @param estimatedSize
-     *            the estimatedSize to set
-     */
-    public void setEstimatedSize(int estimatedSize) {
-        this.estimatedSize = estimatedSize;
     }
 
     /**

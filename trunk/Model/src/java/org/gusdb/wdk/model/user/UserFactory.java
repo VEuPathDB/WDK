@@ -834,7 +834,8 @@ public class UserFactory {
                     dataSource, "SELECT h.history_id, a."
                             + AnswerFactory.COLUMN_ANSWER_CHECKSUM
                             + ", h.create_time, h.last_run_time, "
-                            + " h.answer_filter, h.custom_name, h.is_boolean, "
+                            + " h.answer_filter, h.estimate_size, "
+                            + " h.custom_name, h.is_boolean, "
                             + " h.is_deleted, display_params FROM " + hisTable
                             + " h, " + ansTable + " a "
                             + "WHERE h.answer_id = a."
@@ -877,7 +878,8 @@ public class UserFactory {
                     dataSource, "SELECT a."
                             + AnswerFactory.COLUMN_ANSWER_CHECKSUM
                             + ", h.create_time, h.last_run_time, "
-                            + " h.answer_filter, h.custom_name, h.is_boolean,"
+                            + " h.answer_filter, h.estimate_size, "
+                            + " h.estimate_size, h.custom_name, h.is_boolean,"
                             + " h.is_deleted, h.display_params               "
                             + "FROM " + hisTable + " h, " + ansTable + " a "
                             + "WHERE h.answer_id = a."
@@ -908,6 +910,7 @@ public class UserFactory {
 
         history.setCreatedTime(new Date(createTime.getTime()));
         history.setLastRunTime(new Date(lastRunTime.getTime()));
+        history.setEstimateSize(rsHistory.getInt("estimate_size"));
         history.setCustomName(rsHistory.getString("custom_name"));
         history.setBoolean(rsHistory.getBoolean("is_boolean"));
         history.setDeleted(rsHistory.getBoolean("is_deleted"));
@@ -965,6 +968,7 @@ public class UserFactory {
         int answerId = answer.getAnswerInfo().getAnswerId();
         int userId = user.getUserId();
 
+        int estimateSize = answer.getResultSize();
         boolean isBoolean = answer.getIsBoolean();
         String customName = (isBoolean) ? booleanExpression : null;
         if (customName != null && customName.length() > 4000)
@@ -1001,18 +1005,19 @@ public class UserFactory {
                 psHistory = connection.prepareStatement("INSERT INTO "
                         + hisTable + " (history_id, user_id, answer_id, "
                         + "create_time, last_run_time, answer_filter, "
-                        + "custom_name, is_boolean, is_deleted, display_params"
-                        + ") VALUES (" + maxIdSql
-                        + ", ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                        + "estimate_size, custom_name, is_boolean, is_deleted,"
+                        + " display_params) VALUES (" + maxIdSql
+                        + ", ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
                 psHistory.setInt(1, userId);
                 psHistory.setInt(2, answerId);
                 psHistory.setTimestamp(3, new Timestamp(createTime.getTime()));
                 psHistory.setTimestamp(4, new Timestamp(lastRunTime.getTime()));
                 psHistory.setString(5, filterName);
-                psHistory.setString(6, customName);
-                psHistory.setBoolean(7, isBoolean);
-                psHistory.setBoolean(8, deleted);
-                platform.updateClobData(psHistory, 9, booleanExpression, false);
+                psHistory.setInt(6, estimateSize);
+                psHistory.setString(7, customName);
+                psHistory.setBoolean(8, isBoolean);
+                psHistory.setBoolean(9, deleted);
+                platform.updateClobData(psHistory, 10, booleanExpression, false);
                 psHistory.executeUpdate();
 
                 // query to get the new history id
@@ -1030,6 +1035,7 @@ public class UserFactory {
             history.setAnswer(answer);
             history.setCreatedTime(createTime);
             history.setLastRunTime(lastRunTime);
+            history.setEstimateSize(estimateSize);
             history.setCustomName(customName);
             history.setBoolean(isBoolean);
             if (isBoolean) history.setBooleanExpression(booleanExpression);
@@ -1080,13 +1086,14 @@ public class UserFactory {
         try {
             psHistory = SqlUtils.getPreparedStatement(dataSource, "UPDATE "
                     + loginSchema + "histories SET custom_name = ?, "
-                    + "last_run_time = ?, is_deleted = ? "
+                    + "estimate_size = ?, last_run_time = ?, is_deleted = ? "
                     + "WHERE user_id = ? AND history_id = ?");
             psHistory.setString(1, history.getBaseCustomName());
-            psHistory.setTimestamp(2, new Timestamp(lastRunTime.getTime()));
-            psHistory.setBoolean(3, history.isDeleted());
-            psHistory.setInt(4, user.getUserId());
-            psHistory.setInt(5, history.getHistoryId());
+            psHistory.setInt(2, history.getEstimateSize());
+            psHistory.setTimestamp(3, new Timestamp(lastRunTime.getTime()));
+            psHistory.setBoolean(4, history.isDeleted());
+            psHistory.setInt(5, user.getUserId());
+            psHistory.setInt(6, history.getHistoryId());
             int result = psHistory.executeUpdate();
             if (result == 0)
                 throw new WdkUserException("The history #"
