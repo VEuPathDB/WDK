@@ -793,12 +793,7 @@ public class User /* implements Serializable */{
         if (sortingAttributes != null) return sortingAttributes;
 
         Question question = model.getQuestion(questionFullName);
-        if (question.getQuery() instanceof BooleanQuery) {
-            // boolean question has no sorting attributes by default
-            return new LinkedHashMap<String, Boolean>();
-        } else { // ordinary question
-            return question.getDefaultSortingAttributes();
-        }
+        return question.getDefaultSortingAttributes();
     }
 
     public Map<String, Boolean> getSortingAttributesByChecksum(

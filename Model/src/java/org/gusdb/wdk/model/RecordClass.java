@@ -441,12 +441,11 @@ public class RecordClass extends WdkModelBase implements
                 }
                 if (instance.isBooleanExpansion()) {
                     if (booleanExpansionFilter != null)
-                        throw new WdkModelException("The boolean expansion " +
-                        		"filter of type "
-                                        + getFullName() + " is defined more "
-                                        + "than once: ["
-                                        + booleanExpansionFilter.getName()
-                                        + "] and [" + instance.getName() + "]");
+                        throw new WdkModelException("The boolean expansion "
+                                + "filter of type " + getFullName()
+                                + " is defined more " + "than once: ["
+                                + booleanExpansionFilter.getName() + "] and ["
+                                + instance.getName() + "]");
                     booleanExpansionFilter = instance;
                 }
             }
@@ -457,6 +456,9 @@ public class RecordClass extends WdkModelBase implements
         for (AnswerFilterLayout layout : filterLayoutMap.values()) {
             layout.resolveReferences(model);
         }
+
+        // create column attribute fields for primary keys if needed.
+        createPriamryKeySubFields();
 
         resolved = true;
     }
@@ -868,5 +870,32 @@ public class RecordClass extends WdkModelBase implements
      */
     public void setType(String type) {
         this.type = type;
+    }
+
+    /**
+     * Make sure all pk columns has a corresponding ColumnAttributeField
+     */
+    private void createPriamryKeySubFields() {
+        // make sure the record has at least one attribute query, otherwise skip
+        // this process
+        if (attributeQueries.size() == 0) return;
+
+        String[] pkColumns = primaryKeyField.getColumnRefs();
+        // use the first attribute query as the underlying query for the column
+        // attribute fields for the primary key; every atribute query returns
+        // primary key columns.
+        Query attributeQuery = attributeQueries.values().iterator().next();
+        Map<String, Column> columns = attributeQuery.getColumnMap();
+        for (String name : pkColumns) {
+            if (attributeFieldsMap.containsKey(name)) continue;
+
+            ColumnAttributeField field = new ColumnAttributeField();
+            field.setName(name);
+            field.setRecordClass(this);
+            field.setContainer(this);
+            Column column = columns.get(name);
+            field.setColumn(column);
+            attributeFieldsMap.put(name, field);
+        }
     }
 }

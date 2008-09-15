@@ -252,7 +252,7 @@ public class HistoryBean {
 
     /**
      * @return
-     * @throws WdkUserException 
+     * @throws WdkUserException
      * @see org.gusdb.wdk.model.user.History#getParams()
      */
     public Map<String, Object> getParams() throws WdkUserException {
@@ -283,10 +283,10 @@ public class HistoryBean {
     }
 
     public void setFilterSize(int filterSize) {
-	history.setFilterSize(filterSize);
+        history.setFilterSize(filterSize);
     }
 
     public int getFilterSize() {
-	return history.getFilterSize();
+        return history.getFilterSize();
     }
 }

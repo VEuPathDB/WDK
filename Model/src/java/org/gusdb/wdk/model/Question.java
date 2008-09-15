@@ -561,6 +561,13 @@ public class Question extends WdkModelBase {
             count++;
             if (count >= User.SORTING_LEVEL) break;
         }
+        
+        // has to sort at least on something, primary key as default
+        if (map.size() == 0) {
+            String pkName = recordClass.getPrimaryKeyAttributeField().getName();
+            map.put(pkName, true);
+        }
+        
         return map;
     }
 

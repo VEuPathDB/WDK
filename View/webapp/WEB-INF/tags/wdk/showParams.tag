@@ -5,6 +5,7 @@ display the parameter values for an non-boolean answer.
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="bean" uri="http://jakarta.apache.org/struts/tags-bean" %>
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
+<%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
 
 <%@ attribute name="wdkAnswer"
               type="org.gusdb.wdk.model.jspwrap.AnswerBean"
@@ -22,8 +23,8 @@ display the parameter values for an non-boolean answer.
             <td align="right" valign="top" class="medium"><b>Query</b></td>
             <td valign="top" class="medium">&nbsp;:&nbsp;</td>
             <td class="medium">${wdkQuestionName}</td>
-       </tr>
-       <tr>
+        </tr>
+        <tr>
             <td align="right" valign="top" class="medium"><b>Parameter</b></td>
             <td valign="top" class="medium">&nbsp;:&nbsp;</td>
             <td>
@@ -47,7 +48,8 @@ display the parameter values for an non-boolean answer.
                                       </c:if>
                                    </c:when>
                                    <c:when test="${qP.class.name eq 'org.gusdb.wdk.model.jspwrap.AnswerParamBean'}">
-                                      History #${aP}
+                                      <jsp:setProperty name="qP" property="answerChecksum" value="${aP}" />
+                                      <wdk:showParams wdkAnswer="${qP.answer}" />
                                    </c:when>
                                    <c:otherwise>
                                       <jsp:setProperty name="qP" property="paramValue" value="${aP}" />
@@ -62,5 +64,14 @@ display the parameter values for an non-boolean answer.
                 </table>
             </td>
         </tr>
+        <!-- display filter info -->
+        <c:set var="filter" value="${wdkAnswer.filter}" />
+        <c:if test="${filter != null}">
+            <tr>
+                <td align="right" valign="top" class="medium"><b>Filter</b></td>
+                <td valign="top" class="medium">&nbsp;:&nbsp;</td>
+                <td class="medium">${filter.displayName}</td>
+            </tr>
+        </c:if>
     </table>
 </div>

@@ -127,7 +127,7 @@ public class PrimaryKeyAttributeField extends AttributeField {
      * @see org.gusdb.wdk.model.AttributeField#getDependents()
      */
     @Override
-    public Collection<AttributeField> getDependents() {
-        return new ArrayList<AttributeField>();
+    public Collection<AttributeField> getDependents() throws WdkModelException {
+        return parseFields(text).values();
     }
 }

@@ -130,6 +130,7 @@ CREATE TABLE userlogins.histories
   answer_id NUMBER(12) NOT NULL,
   create_time timestamp NOT NULL,
   last_run_time timestamp NOT NULL,
+  estimate_size NUMBER(12),
   answer_filter varchar(100),
   custom_name varchar(4000),
   is_boolean NUMBER(1),
