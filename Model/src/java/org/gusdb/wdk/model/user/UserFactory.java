@@ -941,6 +941,7 @@ public class UserFactory {
         Object[] subTypeInfo = { null, false };
         Map<String, Object> params = parseParams(history.isBoolean(),
                 instanceContent, subTypeInfo);
+        history.setParams(params);
         Answer answer;
         if (history.isBoolean()) {
             String expression = (String) params.get(Utilities.BOOLEAN_EXPRESSION_PARAM_KEY);
@@ -964,7 +965,6 @@ public class UserFactory {
             String[] summaryAttributes = user.getSummaryAttributes(questionName);
             answer.setSumaryAttributes(summaryAttributes);
         }
-        history.setParams(params);
         history.setAnswer(answer);
     }
 
