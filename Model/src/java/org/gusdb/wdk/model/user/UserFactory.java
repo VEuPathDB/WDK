@@ -913,7 +913,7 @@ public class UserFactory {
         // * the third is subtype value, and
         // * the fourth is expand flag, and
         // * param-value pair starts from the fifth item
-        if (parts[1].equals(Utilities.SUB_TYPE)) {
+        if (parts.length > 1 && parts[1].equals(Utilities.SUB_TYPE)) {
             base = 4;
             subTypeInfo[0] = parts[2];
             subTypeInfo[1] = Boolean.parseBoolean(parts[3]);
@@ -921,7 +921,8 @@ public class UserFactory {
 
         Map<String, Object> params = new LinkedHashMap<String, Object>();
         if (isBoolean) {// the last part for boolean is a boolean expression
-            params.put(Utilities.BOOLEAN_EXPRESSION_PARAM_KEY, parts[base]);
+            String expression = (parts.length == 1) ? parts[0] : parts[base];
+            params.put(Utilities.BOOLEAN_EXPRESSION_PARAM_KEY, expression);
         } else {
             for (int i = base; i < parts.length; i++) {
                 String pvPair = parts[i];
