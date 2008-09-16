@@ -8,7 +8,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +15,6 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
@@ -25,7 +23,6 @@ import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
-import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.user.AnswerFactory;
 import org.gusdb.wdk.model.user.AnswerInfo;
@@ -526,15 +523,15 @@ public class Answer {
 
         // combine the id query with attribute query
         String attributeSql = getAttributeSql(attributeQuery);
-        StringBuffer sql = new StringBuffer("SELECT a.* FROM (");
+        StringBuffer sql = new StringBuffer("SELECT aq.* FROM (");
         sql.append(idSql);
-        sql.append(") i, (").append(attributeSql).append(") a WHERE ");
+        sql.append(") pidq, (").append(attributeSql).append(") aq WHERE ");
 
         boolean firstColumn = true;
         for (String column : pkField.getColumnRefs()) {
             if (firstColumn) firstColumn = false;
             else sql.append(" AND ");
-            sql.append("a.").append(column).append(" = i.").append(column);
+            sql.append("aq.").append(column).append(" = pidq.").append(column);
         }
         return sql.toString();
     }
@@ -547,31 +544,13 @@ public class Answer {
         if (dynaQuery != null && queryName.equals(dynaQuery.getFullName())) {
             // the dynamic query doesn't have sql defined, the sql will be
             // constructed from the id query cache table.
-            String cacheTable = CacheFactory.normalizeTableName(idsQueryInstance.getQuery().getFullName());
-            int instanceId = idsQueryInstance.getInstanceId();
-
-            StringBuffer sql = new StringBuffer("SELECT * FROM ");
-            sql.append(cacheTable).append(" WHERE ");
-            sql.append(CacheFactory.COLUMN_INSTANCE_ID);
-            sql.append(" = ").append(instanceId);
-            return sql.toString();
-        } else if (!(attributeQuery instanceof SqlQuery)
-                || attributeQuery.isCached()) {
-            // cache the attribute query, and use the cache; no params needed
-            // for attribute query
+            return idsQueryInstance.getCachedSql();
+        } else {
+            // make an instance from the attribute query, and attribute query has no params
             Map<String, Object> params = new LinkedHashMap<String, Object>();
             QueryInstance queryInstance = attributeQuery.makeInstance(params);
-            String cacheTable = CacheFactory.normalizeTableName(queryName);
-            int instanceId = resultFactory.getInstanceId(queryInstance);
-
-            StringBuffer sql = new StringBuffer("SELECT * FROM ");
-            sql.append(cacheTable);
-            sql.append(" WHERE ");
-            sql.append(CacheFactory.COLUMN_INSTANCE_ID).append(" = ");
-            sql.append(instanceId);
-            return sql.toString();
-        } else return ((SqlQuery) attributeQuery).getSql();
-
+            return queryInstance.getSql();
+        }
     }
 
     private String getPagedIdSql() throws NoSuchAlgorithmException,
@@ -586,8 +565,8 @@ public class Answer {
         List<String> orderClauses = new ArrayList<String>();
         prepareSortingSqls(attributeSqls, orderClauses);
 
-        StringBuffer sql = new StringBuffer("SELECT i.* FROM (");
-        sql.append(idSql).append(") i");
+        StringBuffer sql = new StringBuffer("SELECT idq.* FROM (");
+        sql.append(idSql).append(") idq");
         // add all tables involved
         for (String shortName : attributeSqls.keySet()) {
             sql.append(", (").append(attributeSqls.get(shortName)).append(") ");
@@ -604,7 +583,7 @@ public class Answer {
                     firstClause = false;
                 } else sql.append(" AND ");
 
-                sql.append("i.").append(column);
+                sql.append("idq.").append(column);
                 sql.append(" = ");
                 sql.append(shortName).append(".").append(column);
             }
@@ -655,7 +634,7 @@ public class Answer {
                 // handle query
                 if (!queryNames.containsKey(queryName)) {
                     // query not processed yet, process it
-                    String shortName = "a" + queryNames.size();
+                    String shortName = "aq" + queryNames.size();
                     String sql = getAttributeSql(query);
                     queryNames.put(queryName, shortName);
                     querySqls.put(queryName, sql);

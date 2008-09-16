@@ -6,19 +6,18 @@ package org.gusdb.wdk.model.query;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.Column;
 import org.gusdb.wdk.model.Param;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.CacheFactory;
+import org.gusdb.wdk.model.dbms.QueryInfo;
 import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.json.JSONException;
@@ -30,10 +29,6 @@ import org.json.JSONObject;
  */
 public abstract class QueryInstance {
 
-    public abstract void createCache(Connection connection, String tableName,
-            int instanceId) throws WdkModelException, SQLException,
-            NoSuchAlgorithmException, JSONException, WdkUserException;
-
     public abstract void insertToCache(Connection connection, String tableName,
             int instanceId) throws WdkModelException, SQLException,
             NoSuchAlgorithmException, JSONException, WdkUserException;
@@ -44,11 +39,10 @@ public abstract class QueryInstance {
     protected abstract void appendSJONContent(JSONObject jsInstance)
             throws JSONException;
 
-    protected abstract ResultList getUncachedResults(Column[] columns,
-            Integer startIndex, Integer endIndex) throws WdkModelException,
-            SQLException, NoSuchAlgorithmException, JSONException,
-            WdkUserException;
-    
+    protected abstract ResultList getUncachedResults()
+            throws WdkModelException, SQLException, NoSuchAlgorithmException,
+            JSONException, WdkUserException;
+
     private static final Logger logger = Logger.getLogger(QueryInstance.class);
 
     private Integer instanceId;
@@ -168,22 +162,8 @@ public abstract class QueryInstance {
 
     public ResultList getResults() throws NoSuchAlgorithmException,
             SQLException, WdkModelException, JSONException, WdkUserException {
-        Column[] columns = query.getColumns();
-        return getResultsLocal(columns, null, null);
-    }
-
-    public ResultList getResults(Column[] columns, int startIndex, int endIndex)
-            throws NoSuchAlgorithmException, SQLException, WdkModelException,
-            JSONException, WdkUserException {
-        return getResultsLocal(columns, startIndex, endIndex);
-    }
-
-    private ResultList getResultsLocal(Column[] columns, Integer startIndex,
-            Integer endIndex) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
-        if (cached) return getCachedResults(columns, startIndex, endIndex);
-        else return getUncachedResults(columns, startIndex, endIndex);
+        if (cached) return getCachedResults();
+        else return getUncachedResults();
     }
 
     public int getResultSize() throws NoSuchAlgorithmException, SQLException,
@@ -200,11 +180,10 @@ public abstract class QueryInstance {
         return values;
     }
 
-    private ResultList getCachedResults(Column[] columns, Integer startIndex,
-            Integer endIndex) throws NoSuchAlgorithmException, SQLException,
-            WdkModelException, JSONException, WdkUserException {
+    private ResultList getCachedResults() throws NoSuchAlgorithmException,
+            SQLException, WdkModelException, JSONException, WdkUserException {
         ResultFactory factory = wdkModel.getResultFactory();
-        return factory.getCachedResults(this, columns, startIndex, endIndex);
+        return factory.getCachedResults(this);
     }
 
     protected Map<String, String> getInternalParamValues()
@@ -227,9 +206,12 @@ public abstract class QueryInstance {
         return internalValues;
     }
 
-    protected String getCachedSql() throws NoSuchAlgorithmException,
+    public String getCachedSql() throws NoSuchAlgorithmException,
             SQLException, WdkModelException, JSONException, WdkUserException {
-        String cacheTable = CacheFactory.normalizeTableName(query.getFullName());
+        CacheFactory cacheFactory = wdkModel.getResultFactory().getCacheFactory();
+        QueryInfo queryInfo = cacheFactory.getQueryInfo(getQuery());
+        
+        String cacheTable = queryInfo.getCacheTable();
         int instanceId = getInstanceId();
 
         StringBuffer sql = new StringBuffer("SELECT * FROM ");
@@ -237,31 +219,5 @@ public abstract class QueryInstance {
         sql.append(CacheFactory.COLUMN_INSTANCE_ID);
         sql.append(" = ").append(instanceId);
         return sql.toString();
-    }
-
-    protected void createCacheFromSql(Connection connection, String tableName,
-            int instanceId, String sql) throws SQLException {
-        // create table
-        StringBuffer sqlTable = new StringBuffer("CREATE TABLE ");
-        sqlTable.append(tableName);
-        sqlTable.append(" AS SELECT ");
-        sqlTable.append(" f.*, ");
-        sqlTable.append(instanceId);
-        sqlTable.append(" AS ");
-        sqlTable.append(CacheFactory.COLUMN_INSTANCE_ID);
-        sqlTable.append(" FROM (");
-        sqlTable.append(sql);
-        sqlTable.append(") f");
-
-        Statement stmt = null;
-        try {
-            stmt = connection.createStatement();
-            stmt.execute(sqlTable.toString());
-        } catch (SQLException ex) {
-            logger.error("Failed to run SQL: " + sqlTable);
-            throw ex;
-        } finally {
-            if (stmt != null) stmt.close();
-        }
     }
 }

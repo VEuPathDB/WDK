@@ -16,6 +16,7 @@ import org.gusdb.wdk.model.Column;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.json.JSONException;
 
@@ -28,38 +29,47 @@ public class ResultFactory {
     private DBPlatform platform;
     private CacheFactory cacheFactory;
 
-    public ResultFactory(WdkModel wdkModel) {
+    public ResultFactory(WdkModel wdkModel) throws SQLException {
         this.platform = wdkModel.getQueryPlatform();
-        this.cacheFactory = new CacheFactory(platform);
+        this.cacheFactory = new CacheFactory(wdkModel, platform);
     }
 
     public CacheFactory getCacheFactory() {
         return cacheFactory;
     }
 
-    public ResultList getCachedResults(QueryInstance instance,
-            Column[] displayColumns, Integer startIndex, Integer endIndex)
+    public ResultList getCachedResults(QueryInstance instance)
             throws SQLException, NoSuchAlgorithmException, WdkModelException,
             JSONException, WdkUserException {
-        int instanceId = getInstanceId(instance);
 
-        // get the composed sql
-        String sql = composeSql(instance, displayColumns, instanceId,
-                startIndex, endIndex);
+        // get the cached sql
+        QueryInfo queryInfo = cacheFactory.getQueryInfo(instance.getQuery());
+        StringBuffer sql = new StringBuffer("SELECT ");
+        boolean firstColumn = true;
+        for (Column column : instance.getQuery().getColumns()) {
+            if (firstColumn) firstColumn = false;
+            else sql.append(", ");
+            sql.append(column.getName());
+        }
+        sql.append(" FROM ").append(queryInfo.getCacheTable());
+        sql.append(" WHERE ").append(CacheFactory.COLUMN_INSTANCE_ID);
+        sql.append(" = ").append(instance.getInstanceId());
 
         // get the resultList
         DataSource dataSource = platform.getDataSource();
-        ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql);
+        ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql.toString());
         return new SqlResultList(resultSet);
     }
 
     public int getInstanceId(QueryInstance instance) throws SQLException,
             NoSuchAlgorithmException, WdkModelException, JSONException,
             WdkUserException {
+        QueryInfo queryInfo = cacheFactory.getQueryInfo(instance.getQuery());
+
         // get the query instance id; null if not exist
-        Integer instanceId = queryInstanceId(instance);
+        Integer instanceId = checkInstanceId(instance, queryInfo);
         if (instanceId == null) // instance cache not exist, create it
-            instanceId = createCache(instance);
+            instanceId = createCache(instance, queryInfo);
         instance.setInstanceId(instanceId);
         return instanceId;
     }
@@ -69,8 +79,9 @@ public class ResultFactory {
             WdkUserException {
         // make sure the instance is cached
         getInstanceId(instance);
-        String queryName = instance.getQuery().getFullName();
-        return CacheFactory.normalizeTableName(queryName);
+        Query query = instance.getQuery();
+        QueryInfo queryInfo = cacheFactory.getQueryInfo(query);
+        return queryInfo.getCacheTable();
     }
 
     /**
@@ -84,15 +95,15 @@ public class ResultFactory {
      * @throws WdkModelException
      * @throws NoSuchAlgorithmException
      */
-    private Integer queryInstanceId(QueryInstance instance)
+    private Integer checkInstanceId(QueryInstance instance, QueryInfo queryInfo)
             throws SQLException, NoSuchAlgorithmException, WdkModelException,
             JSONException {
         StringBuffer sql = new StringBuffer("SELECT ");
         sql.append(CacheFactory.COLUMN_INSTANCE_ID);
-        sql.append(" FROM ").append(CacheFactory.TABLE_CACHE_INDEX);
-        sql.append(" WHERE ").append(CacheFactory.COLUMN_QUERY_NAME);
-        sql.append(" = '").append(instance.getQuery().getFullName());
-        sql.append("' AND ").append(CacheFactory.COLUMN_INSTANCE_CHECKSUM);
+        sql.append(" FROM ").append(CacheFactory.TABLE_INSTANCE);
+        sql.append(" WHERE ").append(CacheFactory.COLUMN_QUERY_ID);
+        sql.append(" = ").append(queryInfo.getQueryId());
+        sql.append(" AND ").append(CacheFactory.COLUMN_INSTANCE_CHECKSUM);
         sql.append(" = '").append(instance.getChecksum()).append("'");
 
         DataSource dataSource = platform.getDataSource();
@@ -100,25 +111,24 @@ public class ResultFactory {
         return (id == null) ? null : Integer.parseInt(id.toString());
     }
 
-    private int createCache(QueryInstance instance) throws JSONException,
-            SQLException, WdkUserException, NoSuchAlgorithmException,
-            WdkModelException {
+    private int createCache(QueryInstance instance, QueryInfo queryInfo)
+            throws JSONException, SQLException, WdkUserException,
+            NoSuchAlgorithmException, WdkModelException {
         DataSource dataSource = platform.getDataSource();
 
         // start transaction
         Connection connection = dataSource.getConnection();
         connection.setAutoCommit(false);
         try {
-            // create cache index
-            int instanceId = addCacheIndex(connection, instance);
+            // add instance into cache index table, and get instanceId back
+            int instanceId = addCacheInstance(connection, queryInfo, instance);
 
-            // check whether to create the cache or insert into existing cache
-            String queryName = instance.getQuery().getFullName();
-            String tableName = CacheFactory.normalizeTableName(queryName);
-            if (!platform.checkTableExists(null, tableName)) {
-                instance.createCache(connection, tableName, instanceId);
-                createIndexOnCache(connection, tableName, instanceId);
-            } else instance.insertToCache(connection, tableName, instanceId);
+            // check whether need to create the cache;
+            String cacheTable = queryInfo.getCacheTable();
+            if (!platform.checkTableExists(null, cacheTable))
+                createCacheTable(connection, instance, cacheTable);
+
+            instance.insertToCache(connection, cacheTable, instanceId);
 
             connection.commit();
             return instanceId;
@@ -143,56 +153,57 @@ public class ResultFactory {
         }
     }
 
-    private void createIndexOnCache(Connection connection, String tableName,
-            int instanceId) throws SQLException {
+    private void createCacheTable(Connection connection,
+            QueryInstance instance, String cacheTable) throws WdkModelException,
+            SQLException, NoSuchAlgorithmException, JSONException,
+            WdkUserException {
+        Column[] columns = instance.getQuery().getColumns();
 
-        // create index
+        StringBuffer sqlTable = new StringBuffer("CREATE TABLE ");
+        sqlTable.append(cacheTable).append(" (");
+
+        // define the instance id column
+        sqlTable.append(CacheFactory.COLUMN_INSTANCE_ID).append(" ");
+        sqlTable.append(platform.getNumberDataType(12)).append(" NOT NULL");
+
+        // define the rest of the columns
+        for (Column column : columns) {
+            int width = column.getWidth();
+            String type;
+            if (column.getType() == Column.TYPE_NUMBER) type = platform.getNumberDataType(width);
+            else type = platform.getStringDataType(width);
+
+            sqlTable.append(", ").append(column.getName()).append(" ");
+            sqlTable.append(type);
+        }
+        sqlTable.append(")");
+
+        // create cache index
         StringBuffer sqlIndex = new StringBuffer("CREATE INDEX ");
-        sqlIndex.append(tableName).append("_id ON ").append(tableName);
-        sqlIndex.append(" (").append(CacheFactory.COLUMN_INSTANCE_ID);
-        sqlIndex.append(")");
+        sqlIndex.append(cacheTable).append("_idx ON ").append(cacheTable);
+        sqlIndex.append(" (").append(CacheFactory.COLUMN_INSTANCE_ID).append(")");
 
         Statement stmt = null;
         try {
             stmt = connection.createStatement();
+            stmt.execute(sqlTable.toString());
             stmt.execute(sqlIndex.toString());
         } finally {
             if (stmt != null) stmt.close();
         }
+        
     }
 
-    private String composeSql(QueryInstance instance, Column[] columns,
-            int instanceId, Integer startIndex, Integer endIndex) {
-        String queryName = instance.getQuery().getFullName();
-        String tableName = CacheFactory.normalizeTableName(queryName);
-        StringBuffer sql = new StringBuffer("SELECT ");
-        boolean firstColumn = true;
-        for (Column column : instance.getQuery().getColumns()) {
-            if (firstColumn) firstColumn = false;
-            else sql.append(", ");
-            sql.append(column.getName());
-        }
-        sql.append(" FROM ").append(tableName);
-        sql.append(" WHERE ").append(CacheFactory.COLUMN_INSTANCE_ID);
-        sql.append(" = ").append(instanceId);
-
-        // check if we need to do paging
-        if (startIndex != null && endIndex != null) {
-            return platform.getPagedSql(sql.toString(), startIndex, endIndex);
-        } else return sql.toString();
-    }
-
-    private int addCacheIndex(Connection connection, QueryInstance instance)
-            throws SQLException, NoSuchAlgorithmException, WdkModelException,
-            JSONException {
+    private int addCacheInstance(Connection connection, QueryInfo queryInfo,
+            QueryInstance instance) throws SQLException,
+            NoSuchAlgorithmException, WdkModelException, JSONException {
         // get a new id for the instance
-        int instanceId = platform.getNextId(null,
-                CacheFactory.TABLE_CACHE_INDEX);
+        int instanceId = platform.getNextId(null, CacheFactory.TABLE_INSTANCE);
 
         StringBuffer sql = new StringBuffer("INSERT INTO ");
-        sql.append(CacheFactory.TABLE_CACHE_INDEX).append(" (");
+        sql.append(CacheFactory.TABLE_INSTANCE).append(" (");
         sql.append(CacheFactory.COLUMN_INSTANCE_ID).append(", ");
-        sql.append(CacheFactory.COLUMN_QUERY_NAME).append(", ");
+        sql.append(CacheFactory.COLUMN_QUERY_ID).append(", ");
         sql.append(CacheFactory.COLUMN_INSTANCE_CHECKSUM).append(", ");
         sql.append(CacheFactory.COLUMN_RESULT_MESSAGE);
         sql.append(") VALUES (?, ?, ?, ?)");
@@ -201,7 +212,7 @@ public class ResultFactory {
         try {
             ps = connection.prepareStatement(sql.toString());
             ps.setInt(1, instanceId);
-            ps.setString(2, instance.getQuery().getFullName());
+            ps.setInt(2, queryInfo.getQueryId());
             ps.setString(3, instance.getChecksum());
             platform.updateClobData(ps, 4, instance.getResultMessage(), false);
             ps.executeUpdate();

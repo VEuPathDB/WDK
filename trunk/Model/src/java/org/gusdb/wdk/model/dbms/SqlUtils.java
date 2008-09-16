@@ -64,7 +64,7 @@ public final class SqlUtils {
                     stmt.close();
                 }
             } finally {
-                connection.close();
+                if (connection != null) connection.close();
             }
         }
     }
@@ -77,8 +77,10 @@ public final class SqlUtils {
             ps = connection.prepareStatement(sql);
             return ps;
         } catch (SQLException ex) {
-            logger.error("Failed to prepare query: '" + sql + "'");
+            logger.error("Failed to prepare query:\n" + sql);
             closeStatement(ps);
+
+            if (ps == null && connection != null) connection.close();
             throw ex;
         }
     }
@@ -100,11 +102,11 @@ public final class SqlUtils {
             stmt = connection.createStatement();
             return stmt.executeUpdate(sql);
         } catch (SQLException ex) {
-            logger.error("Failed to run nonQuery: '" + sql + "'");
+            logger.error("Failed to run nonQuery:\n" + sql);
             throw ex;
         } finally {
-            if (stmt == null) connection.close();
-            else closeStatement(stmt);
+            closeStatement(stmt);
+            if (stmt == null && connection != null) connection.close();
         }
     }
 
@@ -127,8 +129,8 @@ public final class SqlUtils {
             resultSet = stmt.executeQuery(sql);
             return resultSet;
         } catch (SQLException ex) {
-            logger.error("Failed to run query: '" + sql + "'");
-            if (resultSet == null) connection.close();
+            logger.error("Failed to run query:\n" + sql);
+            if (resultSet == null && connection != null) connection.close();
             closeResultSet(resultSet);
             throw ex;
         }

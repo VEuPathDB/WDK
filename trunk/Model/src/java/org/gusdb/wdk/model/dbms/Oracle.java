@@ -11,11 +11,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.apache.commons.dbcp.DelegatingConnection;
-import org.gusdb.wdk.model.WdkModel;
-
 import oracle.jdbc.driver.OracleDriver;
 import oracle.sql.CLOB;
+
+import org.apache.commons.dbcp.DelegatingConnection;
 
 /**
  * @author Jerric Gao
@@ -155,12 +154,12 @@ public class Oracle extends DBPlatform {
     public String getPagedSql(String sql, int startIndex, int endIndex) {
         StringBuffer buffer = new StringBuffer();
         // construct the outer query
-        buffer.append("SELECT n.* FROM (");
+        buffer.append("SELECT lb.* FROM (");
         // construct the inner nested query
-        buffer.append("SELECT b.*, rownum AS row_index FROM (");
+        buffer.append("SELECT ub.*, rownum AS row_index FROM (");
         buffer.append(sql);
-        buffer.append(") b WHERE rownum <= ").append(endIndex);
-        buffer.append(") n WHERE n.row_index >= ").append(startIndex);
+        buffer.append(") ub WHERE rownum <= ").append(endIndex);
+        buffer.append(") lb WHERE lb.row_index >= ").append(startIndex);
         return buffer.toString();
     }
 
