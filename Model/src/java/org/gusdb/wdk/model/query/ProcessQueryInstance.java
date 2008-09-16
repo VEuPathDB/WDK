@@ -10,7 +10,6 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Map;
 
 import javax.xml.rpc.ServiceException;
@@ -21,7 +20,6 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ArrayResultList;
 import org.gusdb.wdk.model.dbms.CacheFactory;
-import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wsf.client.WsfService;
 import org.gusdb.wsf.client.WsfServiceServiceLocator;
@@ -65,48 +63,6 @@ public class ProcessQueryInstance extends QueryInstance {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.query.QueryInstance#createCache(java.sql.Connection,
-     *      java.lang.String)
-     */
-    @Override
-    public void createCache(Connection connection, String tableName,
-            int instanceId) throws WdkModelException {
-        DBPlatform platform = query.getWdkModel().getQueryPlatform();
-        Column[] columns = query.getColumns();
-
-        StringBuffer sqlTable = new StringBuffer("CREATE TABLE ");
-        sqlTable.append(tableName);
-        sqlTable.append(" (");
-
-        sqlTable.append(CacheFactory.COLUMN_INSTANCE_ID);
-        sqlTable.append(" ");
-        sqlTable.append(platform.getNumberDataType(12));
-        sqlTable.append(" NOT NULL");
-
-        for (Column column : columns) {
-            sqlTable.append(", ");
-            sqlTable.append(column.getName());
-            sqlTable.append(" ");
-            sqlTable.append(platform.getStringDataType(column.getWidth()));
-        }
-        sqlTable.append(")");
-
-        Statement stmt = null;
-        try {
-            try {
-                stmt = connection.createStatement();
-                stmt.execute(sqlTable.toString());
-            } catch (SQLException ex) {
-                if (stmt != null) stmt.close();
-            }
-        } catch (SQLException ex) {
-            throw new WdkModelException(ex);
-        }
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
      * @see org.gusdb.wdk.model.query.QueryInstance#insertToCache(java.sql.Connection,
      *      java.lang.String)
      */
@@ -135,7 +91,7 @@ public class ProcessQueryInstance extends QueryInstance {
         PreparedStatement ps = null;
         try {
             ps = connection.prepareStatement(sql.toString());
-            ResultList resultList = getUncachedResults(columns, null, null);
+            ResultList resultList = getUncachedResults();
             int rowId = 0;
             while (resultList.next()) {
                 int columnId = 1;
@@ -163,8 +119,7 @@ public class ProcessQueryInstance extends QueryInstance {
      *      java.lang.Integer, java.lang.Integer)
      */
     @Override
-    protected ResultList getUncachedResults(Column[] columns,
-            Integer startIndex, Integer endIndex) throws WdkModelException,
+    protected ResultList getUncachedResults() throws WdkModelException,
             SQLException, NoSuchAlgorithmException, JSONException,
             WdkUserException {
         // prepare parameters and columns
@@ -176,6 +131,7 @@ public class ProcessQueryInstance extends QueryInstance {
             params[idx++] = param + "=" + value;
         }
 
+        Column[] columns = query.getColumns();
         String[] columnNames = new String[columns.length];
         for (int i = 0; i < columns.length; i++) {
             columnNames[i] = columns[i].getName();

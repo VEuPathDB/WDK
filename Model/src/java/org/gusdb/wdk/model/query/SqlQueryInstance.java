@@ -13,7 +13,6 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
-
 import org.gusdb.wdk.model.Column;
 import org.gusdb.wdk.model.Param;
 import org.gusdb.wdk.model.WdkModelException;
@@ -64,39 +63,15 @@ public class SqlQueryInstance extends QueryInstance {
      *      java.lang.Integer)
      */
     @Override
-    protected ResultList getUncachedResults(Column[] columns,
-            Integer startIndex, Integer endIndex) throws WdkModelException,
+    protected ResultList getUncachedResults() throws WdkModelException,
             SQLException, NoSuchAlgorithmException, JSONException,
             WdkUserException {
         String sql = getUncachedSql();
 
         DBPlatform platform = query.getWdkModel().getQueryPlatform();
-        if (startIndex != null || endIndex != null) {
-            sql = platform.getPagedSql(sql, startIndex, endIndex);
-        }
-
-        // logger.debug("paged sql: " + sql);
-
         DataSource dataSource = platform.getDataSource();
         ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql);
         return new SqlResultList(resultSet);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.query.QueryInstance#createCache(java.sql.Connection,
-     *      java.lang.String)
-     */
-    @Override
-    public void createCache(Connection connection, String tableName,
-            int instanceId) throws SQLException, WdkModelException,
-            NoSuchAlgorithmException, JSONException, WdkUserException {
-        // get the sql with param values applied.
-        String sql = getUncachedSql();
-
-        // create table
-        createCacheFromSql(connection, tableName, instanceId, sql);
     }
 
     /*

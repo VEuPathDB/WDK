@@ -8,6 +8,10 @@ public class Column extends WdkModelBase {
 
     public final static String TYPE_NUMBER = "number";
     public final static String TYPE_STRING = "string";
+    
+    private final static int DEFAULT_NUMBER_WIDTH = 12;
+    private final static int DEFAULT_STRING_WIDTH = 2000;
+    
     /**
      * 
      */
@@ -18,7 +22,7 @@ public class Column extends WdkModelBase {
     private String name;
     private Query query;
     private String type = TYPE_STRING;
-    private int width = 100; // for wsColumns (width of datatype)
+    private int width = 0; // for wsColumns (width of datatype)
 
     /**
      * The name is used by WSF service.
@@ -67,7 +71,10 @@ public class Column extends WdkModelBase {
     }
 
     public int getWidth() {
-        return width;
+        if (width == 0) {
+            if (type == TYPE_NUMBER) return DEFAULT_NUMBER_WIDTH;
+            else return DEFAULT_STRING_WIDTH;
+        } else return width;
     }
 
     /**

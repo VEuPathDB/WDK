@@ -29,6 +29,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.CacheFactory;
+import org.gusdb.wdk.model.dbms.QueryInfo;
 import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.implementation.ModelXmlParser;
@@ -73,11 +74,12 @@ public class QueryTester {
             WdkUserException, NoSuchAlgorithmException, SQLException,
             JSONException {
         QueryInstance instance = getInstance(querySetName, queryName, paramHash);
-        ResultFactory factory = wdkModel.getResultFactory();
-        Query query = instance.getQuery();
-        String tableName = CacheFactory.normalizeTableName(query.getFullName());
-        int instanceId = factory.getInstanceId(instance);
-        return tableName + ":" + instanceId;
+        ResultFactory resultFactory = wdkModel.getResultFactory();
+        CacheFactory cacheFactory = resultFactory.getCacheFactory();
+        QueryInfo queryInfo = cacheFactory.getQueryInfo(instance.getQuery());
+        String cacheTable = queryInfo.getCacheTable();
+        int instanceId = instance.getInstanceId();
+        return cacheTable + ":" + instanceId;
     }
 
     public WdkModel getWdkModel() {
