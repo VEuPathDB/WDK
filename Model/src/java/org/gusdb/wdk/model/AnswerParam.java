@@ -5,7 +5,7 @@ import java.sql.SQLException;
 import java.util.Map;
 
 import org.gusdb.wdk.model.dbms.CacheFactory;
-import org.gusdb.wdk.model.dbms.ResultFactory;
+import org.gusdb.wdk.model.dbms.QueryInfo;
 import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.user.AnswerFactory;
 import org.gusdb.wdk.model.user.AnswerInfo;
@@ -145,17 +145,16 @@ public class AnswerParam extends Param {
         // get cache table name
         String questionName = answerInfo.getQuestionName();
         Question question = (Question) wdkModel.resolveReference(questionName);
-        String queryName = question.getQuery().getFullName();
-        String tableName = CacheFactory.normalizeTableName(queryName);
+        CacheFactory cacheFactory = wdkModel.getResultFactory().getCacheFactory();
+        QueryInfo queryInfo = cacheFactory.getQueryInfo(question.getQuery());
 
         // get query instance id
         Answer answer = answerFactory.getAnswer(answerInfo);
-        ResultFactory resultFactory = wdkModel.getResultFactory();
-        int instanceId = resultFactory.getInstanceId(answer.getIdsQueryInstance());
+        int instanceId = answer.getIdsQueryInstance().getInstanceId();
 
         // construct the inner query that will replace the answerParam macro
         StringBuffer innerSql = new StringBuffer("SELECT * FROM ");
-        innerSql.append(tableName);
+        innerSql.append(queryInfo.getCacheTable());
         innerSql.append(" WHERE ").append(CacheFactory.COLUMN_INSTANCE_ID);
         innerSql.append(" = ").append(instanceId);
 

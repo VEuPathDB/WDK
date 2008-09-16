@@ -452,6 +452,7 @@ public abstract class Query extends WdkModelBase {
                     param.validateValue(value);
                 }
             } catch (Exception ex) {
+                ex.printStackTrace();
                 errMsg = ex.getMessage();
                 if (errMsg == null) errMsg = ex.getClass().getName();
             }
