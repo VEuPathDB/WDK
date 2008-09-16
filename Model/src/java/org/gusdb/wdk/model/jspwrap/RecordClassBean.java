@@ -172,6 +172,12 @@ public class RecordClassBean {
         return beans;
     }
 
+    public AnswerFilterInstanceBean getFilter(String filterName)
+	throws WdkModelException {
+	AnswerFilterInstance instance = recordClass.getFilter(filterName);
+	return new AnswerFilterInstanceBean(instance);
+    }
+
     /**
      * Get the newly created record instance from the project id and primary key
      * set to the class
