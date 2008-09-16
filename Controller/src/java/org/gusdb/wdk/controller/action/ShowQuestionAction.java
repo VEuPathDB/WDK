@@ -61,8 +61,10 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
                 qSetForm = new QuestionSetForm();
                 request.setAttribute(CConstants.QUESTIONSETFORM_KEY, qSetForm);
             }
+	
             qSetForm.setQuestionFullName(qFullName);
             prepareQuestionSetForm(getServlet(), qSetForm);
+
 
             ServletContext svltCtx = getServlet().getServletContext();
             String customViewDir = (String) svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
@@ -93,7 +95,7 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
                 // summary
                 // page " + forward.getPath() + " directly");
             }
-
+ 
             return forward;
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -238,6 +240,20 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
                 hasAllParams = false;
                 pVal = p.getDefault();
             }
+	    
+	    	    if(p.getName().contains("studyPrivacy")){
+		String val = null;
+		if(request.getSession().getAttribute("privacy") != null){
+		    val = (String)request.getSession().getAttribute("privacy");
+		    pVal = val.length() > 0 ? val:"public";
+		}
+		else{
+		    pVal = "public";
+		}
+		logger.info("set "+p.getName()+" to "+pVal);
+	    }
+	    
+
             qForm.getMyProps().put(p.getName(), pVal);
         }
 
