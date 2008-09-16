@@ -59,6 +59,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
         }
 
         QuestionForm qForm = (QuestionForm) form;
+
         // TRICKY: this is for action forward from
         // ProcessQuestionSetsFlatAction
         qForm.cleanup();
@@ -86,6 +87,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
             params = handleMultiPickParams(new LinkedHashMap<String, Object>(
                     qForm.getMyProps()));
             handleDatasetParams(wdkUser, wdkQuestion, params);
+	
+	      handleSessionParam(params, request);
 
             // get sorting key, if have
             String sortingChecksum = request.getParameter(CConstants.WDK_SORTING_KEY);
@@ -291,6 +294,21 @@ public class ShowSummaryAction extends ShowQuestionAction {
             }
         }
     }
+
+
+   protected void handleSessionParam(Map<String, Object> params, 
+				      HttpServletRequest request) {
+       String pVal = null;
+       for (String paramName : params.keySet()) {
+	   if(paramName.contains("studyPrivacy")){
+	       pVal = request.getSession().getAttribute("privacy") != null? (String)request.getSession().getAttribute("privacy"):"public";
+	       params.put(paramName, pVal);
+	       logger.info("set "+paramName+" to "+pVal);
+	   }
+	
+       }
+    
+   }
 
     protected AnswerBean booleanAnswerPaging(HttpServletRequest request,
             Object answerMaker) throws WdkModelException, WdkUserException {
