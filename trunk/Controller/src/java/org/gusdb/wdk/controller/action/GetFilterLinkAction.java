@@ -52,6 +52,8 @@ public class GetFilterLinkAction extends Action {
 	
 	int size = answer.getFilterSize(filterName);
 
+        String description = answer.getQuestion().getRecordClass().getFilter(filterName).getDescription();
+
 	//need to build link to summary page for specified filter
 	ActionForward showSummary = mapping.findForward(CConstants.SHOW_SUMMARY_MAPKEY);
 	StringBuffer url = new StringBuffer(showSummary.getPath());
@@ -59,7 +61,11 @@ public class GetFilterLinkAction extends Action {
 	url.append(answer.getSummaryUrlParams());
 	url.append("&filter=" + filterName);            
 
-	String link = "<a href='" + url.toString() + "'>" + size + "</a>";
+	String link = "<a href='" + url.toString() + "' onmouseover=displayDetails('" +
+	    filterName + "') onmouseout=hideDetails('" + filterName + "')>" + size + "</a>";
+	link += "<div class='hidden' id='div_" + filterName + "'>" + description + "</div>";
+
+	System.out.println("link text sent to client: " + link);
 
 	// check if we already have a cache of this answer
 	HashMap<String, HashMap> cachedAnswers = (HashMap<String, HashMap>) request.getSession().getAttribute("answer_cache");
