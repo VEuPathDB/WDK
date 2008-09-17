@@ -86,7 +86,17 @@ public class StepBean {
     }
 
     public String getDataType() {
-	return step.getDataType();
+	String retVal = "";
+	try {
+	    retVal = step.getDataType();
+	}
+	catch (Exception ex) {
+	    System.out.println(ex);
+	    ex.printStackTrace();
+	}
+	finally {
+	    return retVal;
+	}
     }
 
     public String getShortDisplayName() 

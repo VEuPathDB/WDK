@@ -799,7 +799,7 @@ public class UserFactory {
     }
 
 
-    Answer createAnswer(User user, AnswerValue result, String booleanExpression)
+    private Answer createAnswer(User user, AnswerValue result, String booleanExpression)
  	throws WdkUserException, WdkModelException {
 	//int userId = user.getUserId();
         String questionName = result.getQuestion().getFullName();
@@ -814,7 +814,18 @@ public class UserFactory {
         if (!isBoolean)
             params = qinstance.getQuery().getFullName()
                     + qinstance.getParamsContent();
+	else {
+	    // change booleanExpression to use answer ids
+	    int stepId = Integer.parseInt(params.substring(0, params.indexOf(" ")));
+	    Step step = loadStep(user, stepId);
+	    params = step.getAnswer().getAnswerId() + params.substring(params.indexOf(" "), params.length());
 
+	    stepId = Integer.parseInt(params.substring(params.lastIndexOf(" ") + 1, params.length()));
+	    step = loadStep(user, stepId);
+	    params = params.substring(0, params.lastIndexOf(" ") + 1) + step.getAnswer().getAnswerId();
+	    logger.debug("Original boolean expression: " + booleanExpression);
+	    logger.debug("Translated boolean expression: " + params);
+	}
         // check whether the Answer exists or not
 	PreparedStatement psAnswer = null;
 	PreparedStatement psCheck = null;
@@ -835,7 +846,13 @@ public class UserFactory {
             if (rsAnswer.next()) {
                 // get existing Answer
                 int answerId = rsAnswer.getInt("answer_id");
-                Answer answer = loadAnswer(user, answerId);
+		String leftChildId = null;
+		String rightChildId = null;
+		if (isBoolean) {
+		    leftChildId = booleanExpression.substring(0, booleanExpression.indexOf(" "));
+		    rightChildId = booleanExpression.substring(booleanExpression.lastIndexOf(" ") + 1, booleanExpression.length());
+		}
+                Answer answer = loadAnswer(user, answerId, leftChildId, rightChildId);
 
 		return answer;
             }
@@ -898,7 +915,7 @@ public class UserFactory {
         }
     }
 
-    Answer loadAnswer(User user, int answerId) 
+    private Answer loadAnswer(User user, int answerId, String leftChildId, String rightChildId) 
 	throws WdkUserException {
 	ResultSet rsHistory = null;
 	PreparedStatement psHistory = null;
@@ -910,7 +927,7 @@ public class UserFactory {
 	    psHistory.setInt(1, answerId);
 	    rsHistory = psHistory.executeQuery();
 	    if (!rsHistory.next()) 
-		throw new SQLException("The global history #" + answerId + "does not exist.");
+		throw new SQLException("The global history #" + answerId + " does not exist.");
 
 	    Answer answer = new Answer(this, user, answerId);
             answer.setEstimateSize(rsHistory.getInt("estimate_size"));
@@ -932,15 +949,21 @@ public class UserFactory {
             try {
                 AnswerValue result;
                 if (answer.isBoolean()) {
-                    result = constructBooleanAnswerValue(user, paramsClob);
+		    // need to translate back to user ids in boolean expression
+		    // in order to correctly reconstruct answer value
+		    String boolExp = leftChildId + paramsClob.substring(paramsClob.indexOf(" "), paramsClob.lastIndexOf(" ") + 1)
+			+ rightChildId;
+                    result = constructBooleanAnswerValue(user, boolExp);
                     answer.setBooleanExpression(paramsClob);
                 } else {
                     result = constructAnswerValue(user, questionName, params);
                 }
                 answer.setAnswerValue(result);
             } catch (WdkModelException ex) {
+		System.out.println("Answer has no AnswerValue!");
                 answer.setValid(false);
             } catch (WdkUserException ex) {
+		System.out.println("Answer has no AnswerValue!");
                 answer.setValid(false);
 	    }
 	    
@@ -981,13 +1004,13 @@ public class UserFactory {
 
             while (rsUserAnswer.next()) {
                 // load history info
-                int userAnswerId = rsUserAnswer.getInt("display_id");
+                int stepId = rsUserAnswer.getInt("display_id");
 		int internalId = rsUserAnswer.getInt("step_id");
 		int answerId = rsUserAnswer.getInt("answer_id");
                 Timestamp createTime = rsUserAnswer.getTimestamp("create_time");
                 Timestamp lastRunTime = rsUserAnswer.getTimestamp("last_run_time");
 
-                Step userAnswer = new Step(this, user, userAnswerId, internalId);
+                Step userAnswer = new Step(this, user, stepId, internalId);
 		Answer answer = new Answer(this, user, answerId);
 		userAnswer.setAnswer(answer);
                 userAnswer.setCreatedTime(new Date(createTime.getTime()));
@@ -1023,15 +1046,15 @@ public class UserFactory {
                         result = constructAnswerValue(user, questionName, params);
                     }
                     userAnswer.setAnswerValue(result);
-                    userAnswers.put(userAnswerId, userAnswer);
+                    userAnswers.put(stepId, userAnswer);
                 } catch (WdkModelException ex) {
                     // invalid userAnswer
                     userAnswer.setValid(false);
-                    invalidUserAnswers.put(userAnswerId, userAnswer);
+                    invalidUserAnswers.put(stepId, userAnswer);
                 } catch (WdkUserException ex) {
                     // invalid userAnswer
                     userAnswer.setValid(false);
-                    invalidUserAnswers.put(userAnswerId, userAnswer);
+                    invalidUserAnswers.put(stepId, userAnswer);
                 }
             }
         } catch (SQLException ex) {
@@ -1047,55 +1070,58 @@ public class UserFactory {
         return userAnswers;
     }
 
-    Step loadStep(User user, int userAnswerId) throws WdkUserException {
-        ResultSet rsUserAnswer = null;
-	PreparedStatement psUserAnswer = null;
+    // get left child id, right child id in here
+    Step loadStep(User user, int stepId) throws WdkUserException {
+        ResultSet rsStep = null;
+	PreparedStatement psStep = null;
         try {
-            psUserAnswer = SqlUtils.getPreparedStatement(
+            psStep = SqlUtils.getPreparedStatement(
                     dataSource, "SELECT step_id, answer_id, create_time, last_run_time, "
-                            + "custom_name, is_deleted FROM "
+                            + "custom_name, is_deleted, left_child_id, right_child_id FROM "
                             + loginSchema + "steps WHERE user_id = ? "
                             + "AND project_id = ? AND display_id = ? "
                             + "ORDER BY last_run_time DESC");
-            psUserAnswer.setInt(1, user.getUserId());
-            psUserAnswer.setString(2, projectId);
-            psUserAnswer.setInt(3, userAnswerId);
-            rsUserAnswer = psUserAnswer.executeQuery();
-            if (!rsUserAnswer.next())
-                throw new SQLException("The history #" + userAnswerId
+            psStep.setInt(1, user.getUserId());
+            psStep.setString(2, projectId);
+            psStep.setInt(3, stepId);
+            rsStep = psStep.executeQuery();
+            if (!rsStep.next())
+                throw new SQLException("The history #" + stepId
                         + " of user " + user.getEmail() + " doesn't exist.");
 
-            // load UserAnswer info
-            Timestamp createTime = rsUserAnswer.getTimestamp("create_time");
-            Timestamp lastRunTime = rsUserAnswer.getTimestamp("last_run_time");
-	    int internalId = rsUserAnswer.getInt("step_id");
+            // load Step info
+            Timestamp createTime = rsStep.getTimestamp("create_time");
+            Timestamp lastRunTime = rsStep.getTimestamp("last_run_time");
+	    int internalId = rsStep.getInt("step_id");
 
-            Step userAnswer = new Step(this, user, userAnswerId, internalId);
-            userAnswer.setCreatedTime(new Date(createTime.getTime()));
-            userAnswer.setLastRunTime(new Date(lastRunTime.getTime()));
-            userAnswer.setCustomName(rsUserAnswer.getString("custom_name"));
-            userAnswer.setDeleted(rsUserAnswer.getBoolean("is_deleted"));
+            Step step = new Step(this, user, stepId, internalId);
+            step.setCreatedTime(new Date(createTime.getTime()));
+            step.setLastRunTime(new Date(lastRunTime.getTime()));
+            step.setCustomName(rsStep.getString("custom_name"));
+            step.setDeleted(rsStep.getBoolean("is_deleted"));
 
 	    // load Answer
-	    int answerId = rsUserAnswer.getInt("answer_id");
-	    Answer answer = loadAnswer(user, answerId);
+	    int answerId = rsStep.getInt("answer_id");
+	    String leftChildId = rsStep.getString("left_child_id");
+	    String rightChildId = rsStep.getString("right_child_id");
+	    Answer answer = loadAnswer(user, answerId, leftChildId, rightChildId);
 
-	    userAnswer.setAnswer(answer);
+	    step.setAnswer(answer);
 
-            return userAnswer;
+            return step;
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
         } finally {
             try {
-		SqlUtils.closeStatement(psUserAnswer);
-                SqlUtils.closeResultSet(rsUserAnswer);
+		SqlUtils.closeStatement(psStep);
+                SqlUtils.closeResultSet(rsStep);
             } catch (SQLException ex) {
                 throw new WdkUserException(ex);
             }
         }
     }
 
-    // TODO: Change for new Step object
+    // parse boolexp to pass left_child_id, right_child_id to loadAnswer
     Step createStep(User user, AnswerValue result, String booleanExpression, boolean deleted)
 	throws WdkUserException, WdkModelException { 
 	int userId = user.getUserId();
@@ -1139,7 +1165,13 @@ public class UserFactory {
 	    // Load Answer if exists;  if not, create it
 	    if (rsAnswer.next()) {
 		int answerId = rsAnswer.getInt("answer_id");
-		answer = loadAnswer(user, answerId);
+		String leftChildId = null;
+		String rightChildId = null;
+		if (isBoolean) {
+		    leftChildId = booleanExpression.substring(0, booleanExpression.indexOf(" "));
+		    rightChildId = booleanExpression.substring(booleanExpression.lastIndexOf(" ") + 1, booleanExpression.length());
+		}
+		answer = loadAnswer(user, answerId, leftChildId, rightChildId);
 		System.out.println("Answer id: " + answerId);
 	    }
 	    else {
@@ -1150,7 +1182,7 @@ public class UserFactory {
             Date createTime = new Date();
             Date lastRunTime = new Date(createTime.getTime());
 	    
-            int userAnswerId = -1;
+            int stepId = -1;
             int internalId = Integer.parseInt(platform.getNextId(loginSchema,
                     "steps"));
             connection = dataSource.getConnection();
@@ -1184,15 +1216,15 @@ public class UserFactory {
                         + "steps WHERE user_id = ?");
                 psMax.setInt(1, userId);
                 rsMax = psMax.executeQuery();
-                if (rsMax.next()) userAnswerId = rsMax.getInt("max_id");
+                if (rsMax.next()) stepId = rsMax.getInt("max_id");
 
                 connection.commit();
             }
-	    if (userAnswerId < 0) {
+	    if (stepId < 0) {
 		throw new WdkModelException("An unknown error occurred while creating step.");
 	    }
             // create the History
-            Step userAnswer = new Step(this, user, userAnswerId, internalId);
+            Step userAnswer = new Step(this, user, stepId, internalId);
 	    userAnswer.setAnswer(answer);
             userAnswer.setAnswerValue(result);
             userAnswer.setCreatedTime(createTime);
@@ -1243,14 +1275,17 @@ public class UserFactory {
 	    int rightChildId;
 	    if (booleanExpression != null && booleanExpression.length() != 0) {
 
-	    psUpdateAnswerTree = SqlUtils.getPreparedStatement(
+		psUpdateAnswerTree = SqlUtils.getPreparedStatement(
 	            dataSource, "UPDATE " + loginSchema +
 		    "steps SET left_child_id = ?, "
 		    + "right_child_id = ? "
 		    + "WHERE step_id = ?");
+		System.out.println("Updating answer tree: " + booleanExpression);
 		leftChildId = Integer.parseInt(booleanExpression.substring(0, booleanExpression.indexOf(" ")));
+		System.out.println("Left: " + leftChildId);
 		rightChildId = Integer.parseInt(booleanExpression.substring(booleanExpression.lastIndexOf(" ") + 1,
 									    booleanExpression.length()));
+		System.out.println("Right: " + rightChildId);
 		psUpdateAnswerTree.setInt(1, leftChildId);
 		psUpdateAnswerTree.setInt(2, rightChildId);
 		psUpdateAnswerTree.setInt(3, userAnswer.getInternalId());

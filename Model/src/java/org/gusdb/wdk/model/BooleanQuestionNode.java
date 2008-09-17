@@ -300,6 +300,10 @@ public class BooleanQuestionNode {
             booleanValues.put(BooleanQuery.SECOND_ANSWER_PARAM_NAME,
                     secondChildAnswerValue);
 
+	    for (String key : booleanValues.keySet()) {
+		System.out.println(key + "\t:\t" + booleanValues.get(key));
+	    }
+
             Map<String, AttributeField> firstSummaryAtts = firstChildAnswerValue.getSummaryAttributes();
             Map<String, AttributeField> secondSummaryAtts = secondChildAnswerValue.getSummaryAttributes();
 
