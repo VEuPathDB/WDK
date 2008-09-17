@@ -9,7 +9,7 @@ package org.gusdb.wdk.model;
  */
 public enum ColumnType {
 
-    STRING("string", 2000), NUMBER("number", 12), FLOAT("float", 12), BOOLEAN(
+    STRING("string", 1999), NUMBER("number", 12), FLOAT("float", 12), BOOLEAN(
             "boolean", 1), CLOB("clob", 0), DATE("date", 0);
 
     public static ColumnType parse(String name) throws WdkModelException {
