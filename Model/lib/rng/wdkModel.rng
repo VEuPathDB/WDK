@@ -359,7 +359,7 @@
     <attribute name="name" />
     <ref name="IncludeExclude" />
     <optional>
-        <attribute name="type">
+        <attribute name="columnType">
            <choice>
               <value>string</value>
               <value>clob</value>

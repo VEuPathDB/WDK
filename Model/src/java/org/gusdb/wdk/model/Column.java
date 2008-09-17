@@ -44,7 +44,7 @@ public class Column extends WdkModelBase {
         return name;
     }
 
-    public void setType(String typeName) throws WdkModelException {
+    public void setColumnType(String typeName) throws WdkModelException {
         this.type = ColumnType.parse(typeName);
     }
 
