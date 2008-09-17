@@ -233,6 +233,9 @@ public class AnswerParam extends Param {
         // replace the rest of the params; the answer param has been replaced
         // and will be ignored here.
         for (Param param : params.values()) {
+            if (param.getFullName().equals(answerParam.getFullName()))
+                continue;
+            
             String value = (String) paramValues.get(param.getName());
             filterSql = param.replaceSql(filterSql, value);
         }
