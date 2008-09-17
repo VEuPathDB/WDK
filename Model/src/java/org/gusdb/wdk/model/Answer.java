@@ -614,12 +614,26 @@ public class Answer {
 
     private String getIdSql() throws NoSuchAlgorithmException, SQLException,
             WdkModelException, JSONException, WdkUserException {
+        String[] pkColumns = question.getRecordClass().getPrimaryKeyAttributeField().getColumnRefs();
+        
+        StringBuffer sql = new StringBuffer("SELECT DISTINCT ");
+        boolean firstColumn = true;
+        for (String column : pkColumns) {
+            if (firstColumn) firstColumn = false;
+            else sql.append(", ");
+            sql.append(column);
+        }
+        sql.append(" FROM (");
+        
+        String innerSql;
         if (filter != null) { // get a filter
             QueryInstance instance = filter.makeQueryInstance(this);
-            return instance.getSql();
+            innerSql = instance.getSql();
         } else { // get the id query directly
-            return idsQueryInstance.getSql();
+            innerSql = idsQueryInstance.getSql();
         }
+        sql.append(innerSql).append(")");
+        return sql.toString();
     }
 
     private void prepareSortingSqls(Map<String, String> sqls,
