@@ -144,7 +144,7 @@ public class ProcessQueryInstance extends QueryInstance {
 
         StringBuffer resultMessage = new StringBuffer();
         try {
-            WsfResult result = getResult(query.getProcessClass(), invokeKey,
+            WsfResult result = getResult(query.getProcessName(), invokeKey,
                     params, columnNames, query.isLocal());
             this.resultMessage = result.getMessage();
             this.signal = result.getSignal();
