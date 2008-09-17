@@ -102,14 +102,13 @@ public class SqlQueryInstance extends QueryInstance {
 
         Statement stmt = null;
         try {
-            try {
-                stmt = connection.createStatement();
-                stmt.execute(buffer.toString());
-            } finally {
-                if (stmt != null) stmt.close();
-            }
+            stmt = connection.createStatement();
+            stmt.execute(buffer.toString());
         } catch (SQLException ex) {
-            throw new WdkModelException(ex);
+            logger.error("Fail to run SQL:\n" + buffer);
+            throw ex;
+        } finally {
+            if (stmt != null) stmt.close();
         }
     }
 
