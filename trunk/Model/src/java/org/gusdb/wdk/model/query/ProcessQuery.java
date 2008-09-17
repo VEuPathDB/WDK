@@ -16,7 +16,7 @@ import org.json.JSONObject;
  */
 public class ProcessQuery extends Query {
 
-    private String processClass;
+    private String processName;
     private String webServiceUrl;
     private boolean local = false;
 
@@ -26,7 +26,7 @@ public class ProcessQuery extends Query {
 
     private ProcessQuery(ProcessQuery query) {
         super(query);
-        this.processClass = query.processClass;
+        this.processName = query.processName;
         this.webServiceUrl = query.webServiceUrl;
         this.local = query.local;
     }
@@ -34,16 +34,16 @@ public class ProcessQuery extends Query {
     /**
      * @return the processClass
      */
-    public String getProcessClass() {
-        return this.processClass;
+    public String getProcessName() {
+        return this.processName;
     }
 
     /**
      * @param processClass
      *                the processClass to set
      */
-    public void setProcessClass(String processClass) {
-        this.processClass = processClass;
+    public void setProcessName(String processName) {
+        this.processName = processName;
     }
 
     /**
@@ -97,7 +97,7 @@ public class ProcessQuery extends Query {
      */
     @Override
     protected void appendJSONContent(JSONObject jsQuery) throws JSONException {
-        jsQuery.put("process", this.processClass);
+        jsQuery.put("process", this.processName);
         if (!local) jsQuery.put("url", this.webServiceUrl);
     }
 

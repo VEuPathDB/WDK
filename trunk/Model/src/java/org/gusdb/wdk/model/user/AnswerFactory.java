@@ -105,15 +105,15 @@ public class AnswerFactory {
         // check if answer has been saved.
         AnswerInfo answerInfo = getAnswerInfo(answerChecksum);
         if (answerInfo == null) {
-
+            Question question = answer.getQuestion();
             // the answer hasn't been stored, create an answerInfo, and save it
             int answerId = loginPlatform.getNextId(answerSchema, TABLE_ANSWER);
             answerInfo = new AnswerInfo(answerId);
             answerInfo.setAnswerChecksum(answer.getChecksum());
             answerInfo.setProjectId(wdkModel.getProjectId());
             answerInfo.setProjectVersion(wdkModel.getVersion());
-            answerInfo.setQueryChecksum(answer.getQuestion().getQuery().getChecksum());
-            answerInfo.setQuestionName(answer.getQuestion().getFullName());
+            answerInfo.setQueryChecksum(question.getQuery().getChecksum());
+            answerInfo.setQuestionName(question.getFullName());
             answerInfo.setResultMessage(answer.getResultMessage());
 
             String paramClob = answer.getIdsQueryInstance().getParamJSONObject().toString();
@@ -132,11 +132,12 @@ public class AnswerFactory {
         // check if the query checksum matches
         Query query = question.getQuery();
         String queryChecksum = query.getChecksum();
-        if (!queryChecksum.equals(answerInfo.getQueryChecksum())) {
+        String savedChecksum = answerInfo.getQueryChecksum();
+        if (!queryChecksum.equals(savedChecksum)) {
             throw new WdkModelException("the query checksum in database for "
-                    + query.getChecksum() + " does not match the one in the "
-                    + "model. The query may have been changed, and the answer "
-                    + "is no longer usable.");
+                    + savedChecksum + " does not match the one in the "
+                    + "model (" + queryChecksum + "). The query may have been "
+                    + "changed, and the answer is no longer usable.");
         }
 
         // get and parse the params
