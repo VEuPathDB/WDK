@@ -47,6 +47,8 @@
                     <attribute name="showConnectionsInterval">
                         <data type="unsignedLong" />
                     </attribute>
+                </optional>
+                <optional>
                     <attribute name="showConnectionsDuration">
                         <data type="unsignedLong" />
                     </attribute>

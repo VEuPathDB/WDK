@@ -620,8 +620,10 @@ public class RecordClass extends WdkModelBase implements
             } else {
                 param = new StringParam();
                 Column column = columns.get(columnName);
+                ColumnType type = column.getType();
+                boolean quote = type.isText();
                 param.setName(columnName);
-                param.setQuote(column.getType().equals(Column.TYPE_STRING));
+                param.setQuote(quote);
                 param.resolveReferences(wdkModel);
                 param.setResources(wdkModel);
                 paramSet.addParam(param);

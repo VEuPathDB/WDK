@@ -49,6 +49,18 @@ public class ShowRecordAction extends Action {
         StringBuffer urlParams = new StringBuffer();
         for (String column : pkColumns) {
             String value = request.getParameter(column);
+            // to be backward compatible with older urls
+            
+            // make project id optional 
+            if (value == null && column.equals("project_id")) {
+                value = request.getParameter("projectId");
+                if (value == null) value = wdkModel.getProjectId();
+            }
+            
+            // recognize old primary keys
+            if (value == null) value = request.getParameter("primaryKey");
+            if (value == null) value = request.getParameter("id");
+            
             if (value == null)
                 throw new WdkModelException("The required primary key value "
                         + column + " for recordClass "
