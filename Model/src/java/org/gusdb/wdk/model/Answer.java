@@ -460,9 +460,14 @@ public class Answer {
             WdkUserException {
         initPageRecordInstances();
 
+        WdkModel wdkModel = question.getWdkModel();
+        // has to get a clean copy of the attribute query, without pk params
+        // appended
+        attributeQuery = (Query) wdkModel.resolveReference(attributeQuery.getFullName());
+
         // get and run the paged attribute query sql
         String sql = getPagedAttributeSql(attributeQuery);
-        DBPlatform platform = question.getWdkModel().getQueryPlatform();
+        DBPlatform platform = wdkModel.getQueryPlatform();
         DataSource dataSource = platform.getDataSource();
         ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql);
         ResultList resultList = new SqlResultList(resultSet);
@@ -491,7 +496,8 @@ public class Answer {
                     error.append(pkValues.get(pkName)).append(", ");
                 }
                 error.append(").\nPaged Attribute SQL:\n").append(sql);
-                error.append("\n").append("Paged ID SQL:\n").append(getPagedIdSql());
+                error.append("\n").append("Paged ID SQL:\n").append(
+                        getPagedIdSql());
                 throw new WdkModelException(error.toString());
             }
 
@@ -546,7 +552,8 @@ public class Answer {
             // constructed from the id query cache table.
             return idsQueryInstance.getCachedSql();
         } else {
-            // make an instance from the attribute query, and attribute query has no params
+            // make an instance from the attribute query, and attribute query
+            // has no params
             Map<String, Object> params = new LinkedHashMap<String, Object>();
             QueryInstance queryInstance = attributeQuery.makeInstance(params);
             return queryInstance.getSql();
@@ -622,6 +629,7 @@ public class Answer {
         Map<String, String> querySqls = new LinkedHashMap<String, String>();
         Map<String, String> queryNames = new LinkedHashMap<String, String>();
         Map<String, String> orderClauses = new LinkedHashMap<String, String>();
+        WdkModel wdkModel = question.getWdkModel();
         for (String fieldName : sortingMap.keySet()) {
             AttributeField field = fields.get(fieldName);
             boolean ascend = sortingMap.get(fieldName);
@@ -630,6 +638,9 @@ public class Answer {
 
                 Query query = ((ColumnAttributeField) dependent).getColumn().getQuery();
                 String queryName = query.getFullName();
+                // cannot use the attribute query from record, need to get it
+                // back from wdkModel, since the query has pk params appended
+                query = (Query) wdkModel.resolveReference(queryName);
 
                 // handle query
                 if (!queryNames.containsKey(queryName)) {
