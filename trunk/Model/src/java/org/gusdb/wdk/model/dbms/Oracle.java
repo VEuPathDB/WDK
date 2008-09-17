@@ -194,4 +194,12 @@ public class Oracle extends DBPlatform {
     public String getDateDataType() {
         return "TIMESTAMP";
     }
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.dbms.DBPlatform#getFloatDataType(int)
+     */
+    @Override
+    public String getFloatDataType(int size) {
+        return "FLOAT(" + size + ")";
+    }
 }

@@ -108,6 +108,8 @@ public abstract class DBPlatform {
             throws SQLException;
 
     public abstract String getNumberDataType(int size);
+    
+    public abstract String getFloatDataType(int size);
 
     public abstract String getStringDataType(int size);
 

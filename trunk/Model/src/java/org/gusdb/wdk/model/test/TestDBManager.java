@@ -18,6 +18,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.gusdb.wdk.model.Column;
+import org.gusdb.wdk.model.ColumnType;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.dbms.DBPlatform;
@@ -107,13 +108,13 @@ public class TestDBManager {
                         String[] parts = nextLine.split("\t", columnIds.size());
                         for (int i = 0; i < parts.length; i++) {
                             String nextValue = parts[i];
-                            String type = columnTypes.get(columnIds.get(i));
+                            ColumnType type = ColumnType.parse(columnIds.get(i));
 
                             if (nextValue.trim().equals("")
-                                    && type.equals(Column.TYPE_NUMBER))
+                                    && !type.isText())
                                 nextValue = "0";
 
-                            if (type.equals(Column.TYPE_NUMBER)) {
+                            if (!type.isText()) {
                                 ps.setObject(i + 1, Integer.parseInt(nextValue));
                             } else {
                                 ps.setObject(i + 1, nextValue);
@@ -181,9 +182,9 @@ public class TestDBManager {
 
             // decide the type
             if (type.startsWith("number")) {
-                columnTypes.put(pieces[0], Column.TYPE_NUMBER);
+                columnTypes.put(pieces[0], ColumnType.NUMBER.getType());
             } else {
-                columnTypes.put(pieces[0], Column.TYPE_STRING);
+                columnTypes.put(pieces[0], ColumnType.STRING.getType());
             }
         }
         sql.append(")");
