@@ -359,7 +359,16 @@
     <attribute name="name" />
     <ref name="IncludeExclude" />
     <optional>
-      <attribute name="specialType" />
+        <attribute name="type">
+           <choice>
+              <value>string</value>
+              <value>clob</value>
+              <value>boolean</value>
+              <value>date</value>
+              <value>float</value>
+              <value>number</value>
+           </choice>
+       </attribute>
     </optional>
     <optional>
       <attribute name="width">

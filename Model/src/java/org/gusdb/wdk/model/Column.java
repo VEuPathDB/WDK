@@ -6,12 +6,6 @@ import org.json.JSONObject;
 
 public class Column extends WdkModelBase {
 
-    public final static String TYPE_NUMBER = "number";
-    public final static String TYPE_STRING = "string";
-    
-    private final static int DEFAULT_NUMBER_WIDTH = 12;
-    private final static int DEFAULT_STRING_WIDTH = 2000;
-    
     /**
      * 
      */
@@ -21,7 +15,7 @@ public class Column extends WdkModelBase {
 
     private String name;
     private Query query;
-    private String type = TYPE_STRING;
+    private ColumnType type = ColumnType.STRING;
     private int width = 0; // for wsColumns (width of datatype)
 
     /**
@@ -50,11 +44,15 @@ public class Column extends WdkModelBase {
         return name;
     }
 
-    public void setType(String type) {
+    public void setType(String typeName) throws WdkModelException {
+        this.type = ColumnType.parse(typeName);
+    }
+
+    public void setType(ColumnType type) {
         this.type = type;
     }
 
-    public String getType() {
+    public ColumnType getType() {
         return type;
     }
 
@@ -71,10 +69,7 @@ public class Column extends WdkModelBase {
     }
 
     public int getWidth() {
-        if (width == 0) {
-            if (type == TYPE_NUMBER) return DEFAULT_NUMBER_WIDTH;
-            else return DEFAULT_STRING_WIDTH;
-        } else return width;
+        return (width == 0) ? type.getDefaultWidth() : width;
     }
 
     /**
