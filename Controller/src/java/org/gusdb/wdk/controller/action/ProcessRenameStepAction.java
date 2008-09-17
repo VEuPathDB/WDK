@@ -27,17 +27,17 @@ public class ProcessRenameStepAction extends Action {
             HttpServletRequest request, HttpServletResponse response )
             throws Exception {
         
-        String histIdstr = request.getParameter( "user_answer_id" );
-        String customName = request.getParameter( "customStepName" );
+        String stepIdstr = request.getParameter( "stepId" );
+        String customName = request.getParameter( "customName" );
         
         // TEST
         logger.info( "Set custom name: '" + customName + "'" );
-        if ( histIdstr != null ) {
-            int histId = Integer.parseInt( histIdstr );
+        if ( stepIdstr != null ) {
+            int stepId = Integer.parseInt( stepIdstr );
             UserBean wdkUser = ( UserBean ) request.getSession().getAttribute(
                     CConstants.WDK_USER_KEY );
             try {
-                StepBean userAnswer = wdkUser.getStep( histId );
+                StepBean userAnswer = wdkUser.getStep( stepId );
                 userAnswer.setCustomName( customName );
                 userAnswer.update( false );
             } catch ( Exception e ) {
@@ -45,7 +45,7 @@ public class ProcessRenameStepAction extends Action {
                 // prevent refresh of page after delete from breaking
             }
         } else {
-            throw new Exception( "no user userAnswer id is given for update" );
+            throw new Exception( "no step id is given for update" );
         }
         
         // ActionForward forward =
