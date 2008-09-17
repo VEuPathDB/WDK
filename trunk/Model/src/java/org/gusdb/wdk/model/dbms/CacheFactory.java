@@ -333,15 +333,15 @@ public class CacheFactory {
 
         // delete rows from cache index table
         try {
-            SqlUtils.executeUpdate(dataSource, "DELETE FROM " + TABLE_QUERY);
-        } catch (SQLException ex) {
-            logger.error("Cannot delete rows from [" + TABLE_QUERY + "]. "
-                    + ex.getMessage());
-        }
-        try {
             SqlUtils.executeUpdate(dataSource, "DELETE FROM " + TABLE_INSTANCE);
         } catch (SQLException ex) {
             logger.error("Cannot delete rows from [" + TABLE_INSTANCE + "]. "
+                    + ex.getMessage());
+        }
+        try {
+            SqlUtils.executeUpdate(dataSource, "DELETE FROM " + TABLE_QUERY);
+        } catch (SQLException ex) {
+            logger.error("Cannot delete rows from [" + TABLE_QUERY + "]. "
                     + ex.getMessage());
         }
     }
