@@ -735,11 +735,11 @@ public class Question extends WdkModelBase {
         propertyLists = null;
     }
 
-    private Query createDynamicAttributeQuery() {
+    private Query createDynamicAttributeQuery() throws WdkModelException {
         SqlQuery query = new SqlQuery();
         query.setIsCacheable(false);
         query.setName(this.query.getName() + DYNAMIC_QUERY_SUFFIX);
-        query.setQuerySet(this.query.getQuerySet());
+        this.query.getQuerySet().addQuery(query);
 
         // set the columns, which as the same column as the id query
         query.setColumns(this.query.getColumns());
