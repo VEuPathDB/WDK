@@ -233,12 +233,12 @@ public class BooleanExpression {
 
         Map<String, Object> params = new LinkedHashMap<String, Object>();
 
-        String leftChecksum = leftOperand.getChecksum();
+        String leftChecksum = leftOperand.getAnswerInfo().getAnswerChecksum();
         AnswerFilterInstance leftFilter = leftOperand.getFilter();
         if (leftFilter != null) leftChecksum += ":" + leftFilter.getName();
         params.put(query.getLeftOperandParam().getName(), leftChecksum);
 
-        String rightChecksum = rightOperand.getChecksum();
+        String rightChecksum = rightOperand.getAnswerInfo().getAnswerChecksum();
         AnswerFilterInstance rightFilter = rightOperand.getFilter();
         if (rightFilter != null) rightChecksum += ":" + rightFilter.getName();
         params.put(query.getRightOperandParam().getName(),
