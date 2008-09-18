@@ -453,7 +453,7 @@ public class ModelXmlParser extends XmlParser {
                 ProcessQuery.class, "addQuery");
 
 	// testParamValues
-	configureParamValuesSet(digester, "wdkModel/querySet/wsQuery/testParamValues", "addParamValuesSet");
+	configureParamValuesSet(digester, "wdkModel/querySet/processQuery/testParamValues", "addParamValuesSet");
 
         configureNode(digester, "wdkModel/querySet/processQuery/paramRef",
                 ParamReference.class, "addParamRef");
