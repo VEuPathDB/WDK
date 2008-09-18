@@ -4,6 +4,7 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.AnswerFilterInstance;
 import org.gusdb.wdk.model.AnswerParam;
 import org.gusdb.wdk.model.BooleanOperator;
@@ -30,6 +31,8 @@ import org.json.JSONException;
 
 public class BooleanQueryInstance extends SqlQueryInstance {
 
+    private static final Logger logger = Logger.getLogger(BooleanQueryInstance.class);
+    
     private BooleanQuery booleanQuery;
 
     /**
@@ -59,6 +62,8 @@ public class BooleanQueryInstance extends SqlQueryInstance {
         StringParam useBooleanFilter = booleanQuery.getUseBooleanFilter();
         String strBooleanFlag = (String) values.get(useBooleanFilter.getName());
         boolean booleanFlag = Boolean.parseBoolean(strBooleanFlag);
+        
+        logger.info("Boolean expansion flag: " + booleanFlag);
 
         // construct the filter query for the first child
         AnswerParam leftParam = booleanQuery.getLeftOperandParam();
@@ -136,6 +141,9 @@ public class BooleanQueryInstance extends SqlQueryInstance {
             String value = (String) paramValues.get(param.getName());
             filterSql = param.replaceSql(filterSql, value);
         }
+        
+        logger.info("Boolean expanded SQL:\n" + filterSql);
+        
         return filterSql;
     }
 }
