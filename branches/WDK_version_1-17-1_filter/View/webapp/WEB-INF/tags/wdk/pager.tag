@@ -85,19 +85,19 @@
    <c:if test="${resultSize < 1000}">
       <td>
         <pg:page>
-           &nbsp;<a href="javascript:GetResultsPage('${pageUrl}&altPageSize=${resultSize}')">All</a> 
+           &nbsp;<a href="javascript:GetResultsPage('${pageUrl}&altPageSize=${resultSize}')">All</a> &nbsp;&nbsp;
         </pg:page>
       </td>
    </c:if>
    
       <td nowrap>
         <pg:page>
-          To page: 
+          &nbsp;&nbsp;&nbsp;Jump To page: 
           <input type="text" id="${pager_id}_pageNumber" size="5" value="${currentPageNumber}"/>
           <input type="hidden" id="pageUrl" value="${pageUrl}" />
           <font size="-1">
             [1..<span id="${pager_id}_pageCount">${wdkAnswer.pageCount}</span>]
-            &nbsp;per page:
+            &nbsp;&nbsp;Results Per Page:
           </font>
           
           <!-- display the choice of page size -->
