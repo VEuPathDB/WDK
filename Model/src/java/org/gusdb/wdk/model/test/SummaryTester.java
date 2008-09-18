@@ -124,6 +124,7 @@ public class SummaryTester {
                 // print the size of the answer
                 System.out.println("Total # of records: "
                         + answer.getResultSize());
+                System.out.println("Answer Checksum: " + answer.getAnswerInfo().getAnswerChecksum());
 
                 // load configuration for output format
                 if (!hasFormat) format = "tabular";
