@@ -12,6 +12,7 @@ import java.util.Vector;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.AnswerFilterInstance;
+import org.gusdb.wdk.model.AnswerParam;
 import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.DatasetParam;
 import org.gusdb.wdk.model.FieldScope;
@@ -25,8 +26,6 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.report.Reporter;
-import org.gusdb.wdk.model.user.AnswerFactory;
-import org.gusdb.wdk.model.user.AnswerInfo;
 import org.json.JSONException;
 
 /**
@@ -188,8 +187,9 @@ public class AnswerBean {
         }
         BooleanQuery query = (BooleanQuery) answer.getIdsQueryInstance().getQuery();
         Map<String, Object> params = answer.getIdsQueryInstance().getValues();
-        String checkSum = (String) params.get(query.getLeftOperandParam().getName());
-        return getAnswer(checkSum);
+        AnswerParam param = query.getLeftOperandParam();
+        String checkSum = (String) params.get(param.getName());
+        return new AnswerBean(param.getAnswer(checkSum));
     }
 
     /**
@@ -209,17 +209,9 @@ public class AnswerBean {
         }
         BooleanQuery query = (BooleanQuery) answer.getIdsQueryInstance().getQuery();
         Map<String, Object> params = answer.getIdsQueryInstance().getValues();
-        String checkSum = (String) params.get(query.getRightOperandParam().getName());
-        return getAnswer(checkSum);
-    }
-
-    private AnswerBean getAnswer(String checksum)
-            throws NoSuchAlgorithmException, WdkModelException, JSONException,
-            WdkUserException, SQLException {
-        AnswerFactory factory = answer.getQuestion().getWdkModel().getAnswerFactory();
-        AnswerInfo answerInfo = factory.getAnswerInfo(checksum);
-        Answer answer = factory.getAnswer(answerInfo);
-        return new AnswerBean(answer);
+        AnswerParam param = query.getRightOperandParam();
+        String checkSum = (String) params.get(param.getName());
+        return new AnswerBean(param.getAnswer(checkSum));
     }
 
     public int getPageSize() throws NoSuchAlgorithmException,
