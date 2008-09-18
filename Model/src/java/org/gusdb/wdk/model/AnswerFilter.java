@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.gusdb.wdk.model.query.Query;
+import org.gusdb.wdk.model.query.SqlQuery;
 import org.json.JSONException;
 
 /**
@@ -85,7 +86,7 @@ public class AnswerFilter extends WdkModelBase {
             WdkUserException {
         if (resolved) return;
         // resolve the reference to the filter query
-        Query query = (Query)wdkModel.resolveReference(queryRef);
+        SqlQuery query = (SqlQuery)wdkModel.resolveReference(queryRef);
         // make sure the query has exactly one answerParam
         AnswerParam answerParam = null;
         for (Param param : query.getParams()) {
