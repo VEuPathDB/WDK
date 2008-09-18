@@ -36,7 +36,8 @@
         gotoPageUrl = gotoPageUrl.replace(/\&pageSize=\d+/, "");
         gotoPageUrl += "&pager.offset=" + pageOffset;
         gotoPageUrl += "&pageSize=" + pageSize;
-        window.location.href = gotoPageUrl;
+        //window.location.href = gotoPageUrl;
+		GetResultsPage(gotoPageUrl);
     }
 //-->
 </script>
@@ -48,11 +49,11 @@
       <td nowrap>
       
   <pg:first>
-    <a href="${pageUrl}">First</a>
+    <a href="javascript:GetResultsPage('${pageUrl}')"><img src="/assets/images/arrow_first.gif"/></a>
   </pg:first>
 
   <pg:prev>
-    <a href="${pageUrl}">Previous</a>
+    <a href="javascript:GetResultsPage('${pageUrl}')"><img src="/assets/images/arrow_prev.gif"/></a>
   </pg:prev>
 
   <pg:pages>
@@ -63,18 +64,18 @@
           <b>${pageNumber}</b>
         </c:when>
         <c:otherwise>
-          <a href="${pageUrl}">${pageNumber}</a>
+          <a href="javascript:GetResultsPage('${pageUrl}')">${pageNumber}</a>
         </c:otherwise>
       </c:choose>
     </c:if>
   </pg:pages>
 
   <pg:next>
-    <a href="${pageUrl}">Next</a>
+    <a href="javascript:GetResultsPage('${pageUrl}')"><img src="/assets/images/arrow_next.gif"/></a>
   </pg:next>
 
   <pg:last>
-    <a href="${pageUrl}">Last</a>
+    <a href="javascript:GetResultsPage('${pageUrl}')"><img src="/assets/images/arrow_last.gif"/></a>
     
   </pg:last>
   
@@ -84,7 +85,7 @@
    <c:if test="${resultSize < 1000}">
       <td>
         <pg:page>
-           &nbsp;<a href="${pageUrl}&altPageSize=${resultSize}">All</a> 
+           &nbsp;<a href="javascript:GetResultsPage('${pageUrl}&altPageSize=${resultSize}')">All</a> 
         </pg:page>
       </td>
    </c:if>
