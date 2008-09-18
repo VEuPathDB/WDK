@@ -9,7 +9,6 @@ import org.gusdb.wdk.model.AnswerFilterInstance;
 import org.gusdb.wdk.model.AnswerParam;
 import org.gusdb.wdk.model.BooleanOperator;
 import org.gusdb.wdk.model.Column;
-import org.gusdb.wdk.model.Param;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.StringParam;
 import org.gusdb.wdk.model.WdkModelException;
@@ -103,8 +102,10 @@ public class BooleanQueryInstance extends SqlQueryInstance {
         innerSql = answerParam.replaceSql(innerSql, answerChecksum);
 
         // apply the filter query if needed
-        if (booleanFlag && recordClass.getBooleanExpansionFilter() != null)
-            innerSql = constructBooleanExpansionSql(innerSql);
+        AnswerFilterInstance filter = recordClass.getBooleanExpansionFilter();
+        if (booleanFlag && filter != null) {
+            innerSql = filter.applyFilter(innerSql);
+        }
 
         // limit the column oupt
         StringBuffer sql = new StringBuffer("SELECT ");
@@ -118,32 +119,5 @@ public class BooleanQueryInstance extends SqlQueryInstance {
         }
         sql.append(" FROM (").append(innerSql).append(") f");
         return sql.toString();
-    }
-
-    private String constructBooleanExpansionSql(String sql)
-            throws NoSuchAlgorithmException, SQLException, WdkModelException,
-            JSONException, WdkUserException {
-        RecordClass recordClass = booleanQuery.getRecordClass();
-        AnswerFilterInstance filter = recordClass.getBooleanExpansionFilter();
-        SqlQuery query = (SqlQuery) filter.getFilterQuery();
-        Map<String, Param> params = query.getParamMap();
-        AnswerParam answerParam = filter.getAnswerParam();
-        Map<String, Object> paramValues = filter.getParamValueMap();
-
-        String filterSql = query.getSql();
-        // replace the answer param
-        String answerName = answerParam.getName();
-        filterSql = filterSql.replaceAll("\\$\\$" + answerName + "\\$\\$", "("
-                + sql + ")");
-
-        // replace the rest of the params
-        for (Param param : params.values()) {
-            String value = (String) paramValues.get(param.getName());
-            filterSql = param.replaceSql(filterSql, value);
-        }
-        
-        logger.info("Boolean expanded SQL:\n" + filterSql);
-        
-        return filterSql;
     }
 }
