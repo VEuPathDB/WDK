@@ -236,7 +236,8 @@ public class AnswerParam extends Param {
             if (param.getFullName().equals(answerParam.getFullName()))
                 continue;
             
-            String value = (String) paramValues.get(param.getName());
+            Object objValue = paramValues.get(param.getName());
+            String value = param.getInternalValue(objValue);
             filterSql = param.replaceSql(filterSql, value);
         }
         return filterSql;
