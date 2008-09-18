@@ -329,6 +329,8 @@ public class WdkModel {
         } else {
             booleanQuestion = new Question();
             booleanQuestion.setName(qname);
+            booleanQuestion.setDisplayName("Combine "
+                    + recordClass.getDisplayName() + " results");
             booleanQuestion.setRecordClass(recordClass);
             booleanQuestion.setQuery(getBooleanQuery(recordClass));
             booleanQuestion.setWdkModel(this);
@@ -437,8 +439,8 @@ public class WdkModel {
                 emailSubject, emailContent);
 
         platform = (DBPlatform) Class.forName(platformClass).newInstance();
-        platform.initialize(this, "QUERY", connectionUrl, login, password, minIdle, maxIdle,
-                maxWait, maxActive);
+        platform.initialize(this, "QUERY", connectionUrl, login, password,
+                minIdle, maxIdle, maxWait, maxActive);
         ResultFactory resultFactory = new ResultFactory(this);
         // 2008
         this.webServiceUrl = modelConfig.getWebServiceUrl();
