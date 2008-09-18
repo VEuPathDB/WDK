@@ -85,8 +85,10 @@ public class BooleanQuery extends SqlQuery {
 
         // create the stringParam for the others
         operator = prepareStringParam(internalParamSet, OPERATOR_PARAM);
+        operator.setPrompt("Operator");
         useBooleanFilter = prepareStringParam(internalParamSet,
                 USE_BOOLEAN_FILTER_PARAM);
+        useBooleanFilter.setPrompt("Use Expand Filter");
 
         // create the query
         this.setName(BooleanQuery.getQueryName(recordClass));
