@@ -10,7 +10,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.SqlQuery;
 import org.json.JSONException;
@@ -33,7 +32,7 @@ public class AnswerFilterInstance extends WdkModelBase {
     private Map<String, Object> paramValueMap = new LinkedHashMap<String, Object>();
 
     private RecordClass recordClass;
-    private Query filterQuery;
+    private SqlQuery filterQuery;
     private AnswerParam answerParam;
 
     /**
@@ -129,7 +128,7 @@ public class AnswerFilterInstance extends WdkModelBase {
     /**
      * @return the filterQuery
      */
-    public Query getFilterQuery() {
+    public SqlQuery getFilterQuery() {
         return filterQuery;
     }
 
@@ -137,7 +136,7 @@ public class AnswerFilterInstance extends WdkModelBase {
      * @param filterQuery
      *            the filterQuery to set
      */
-    void setFilterQuery(Query filterQuery) {
+    void setFilterQuery(SqlQuery filterQuery) {
         this.filterQuery = filterQuery;
     }
 
@@ -210,14 +209,6 @@ public class AnswerFilterInstance extends WdkModelBase {
             WdkUserException {
         if (resolved) return;
 
-        // the boolean expansion filter query must be a SqlQuery, since the sql
-        // will be customized differently
-        if (isBooleanExpansion && !(filterQuery instanceof SqlQuery))
-            throw new WdkModelException("The boolean expansion filter "
-                    + "instance [" + getName() + "] of type "
-                    + recordClass.getFullName()
-                    + " must reference to a sqlQuery.");
-
         // make sure the params provides match with those in the filter query
         Map<String, Param> params = filterQuery.getParamMap();
         for (String paramName : paramValueMap.keySet()) {
@@ -236,7 +227,33 @@ public class AnswerFilterInstance extends WdkModelBase {
             JSONException, WdkUserException {
         Map<String, Object> values = new LinkedHashMap<String, Object>(
                 paramValueMap);
-        values.put(answerParam.getName(), answer.getAnswerInfo().getAnswerChecksum());
+        values.put(answerParam.getName(),
+                answer.getAnswerInfo().getAnswerChecksum());
         return filterQuery.makeInstance(values);
     }
+
+    public String applyFilter(String sql) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
+        Map<String, Param> params = filterQuery.getParamMap();
+
+        String filterSql = filterQuery.getSql();
+        // replace the answer param
+        String answerName = answerParam.getName();
+        filterSql = filterSql.replaceAll("\\$\\$" + answerName + "\\$\\$", "("
+                + sql + ")");
+
+        // replace the rest of the params; the answer param has been replaced
+        // and will be ignored here.
+        for (Param param : params.values()) {
+            if (param.getFullName().equals(answerParam.getFullName()))
+                continue;
+
+            Object objValue = paramValueMap.get(param.getName());
+            String value = param.getInternalValue(objValue);
+            filterSql = param.replaceSql(filterSql, value);
+        }
+        return filterSql;
+    }
+
 }
