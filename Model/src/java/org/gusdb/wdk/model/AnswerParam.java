@@ -2,11 +2,9 @@ package org.gusdb.wdk.model;
 
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
-import java.util.Map;
 
 import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.QueryInfo;
-import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.user.AnswerFactory;
 import org.gusdb.wdk.model.user.AnswerInfo;
 import org.json.JSONException;
@@ -133,7 +131,7 @@ public class AnswerParam extends Param {
             WdkUserException {
         String[] parts = parseChecksum(value);
         String answerChecksum = parts[0];
-        String filter = parts[1];
+        String filterName = parts[1];
 
         // get answer info
         AnswerFactory answerFactory = wdkModel.getAnswerFactory();
@@ -160,7 +158,10 @@ public class AnswerParam extends Param {
 
         // apply filter if needed
         String inner = innerSql.toString();
-        if (filter != null) inner = applyFilter(inner, filter);
+        if (filterName != null) {
+            AnswerFilterInstance filter = recordClass.getFilter(filterName);
+            inner = filter.applyFilter(inner);
+        }
 
         // replace the answer param with the nested sql
         sql = sql.replaceAll("\\$\\$" + name + "\\$\\$", "(" + inner + ")");
@@ -213,33 +214,5 @@ public class AnswerParam extends Param {
             checksum = value.substring(0, pos);
         }
         return new String[] { checksum, filter };
-    }
-
-    private String applyFilter(String sql, String filterName)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
-        AnswerFilterInstance filter = recordClass.getFilter(filterName);
-        SqlQuery query = (SqlQuery) filter.getFilterQuery();
-        Map<String, Param> params = query.getParamMap();
-        AnswerParam answerParam = filter.getAnswerParam();
-        Map<String, Object> paramValues = filter.getParamValueMap();
-
-        String filterSql = query.getSql();
-        // replace the answer param
-        String answerName = answerParam.getName();
-        filterSql = filterSql.replaceAll("\\$\\$" + answerName + "\\$\\$", "("
-                + sql + ")");
-
-        // replace the rest of the params; the answer param has been replaced
-        // and will be ignored here.
-        for (Param param : params.values()) {
-            if (param.getFullName().equals(answerParam.getFullName()))
-                continue;
-            
-            Object objValue = paramValues.get(param.getName());
-            String value = param.getInternalValue(objValue);
-            filterSql = param.replaceSql(filterSql, value);
-        }
-        return filterSql;
     }
 }
