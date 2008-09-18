@@ -78,8 +78,10 @@ public class BooleanQuery extends SqlQuery {
         ParamSet internalParamSet = wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
         leftOperand = prepareOperand(internalParamSet, recordClass,
                 LEFT_OPERAND_PARAM_PREFIX + rcName);
+        leftOperand.setPrompt("Left Operand");
         rightOperand = prepareOperand(internalParamSet, recordClass,
                 RIGHT_OPERAND_PARAM_PREFIX + rcName);
+        rightOperand.setPrompt("Right Operand");
 
         // create the stringParam for the others
         operator = prepareStringParam(internalParamSet, OPERATOR_PARAM);
