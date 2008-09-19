@@ -113,14 +113,13 @@ public class SanityTester {
 		Query query = question.getQuery();
 		if (query.getDoNotTest() || query.getQuerySet().getDoNotTest()) continue;
 		for (ParamValuesSet paramValuesSet : query.getParamValuesSets()) {
-		    testQuestion(questionSet, question, paramValuesSet);
+		    testQuestion(question, paramValuesSet);
 		}
 	    }
 	}
     }
 
-    private void testQuestion(QuestionSet questionSet, Question question,
-			      ParamValuesSet paramValuesSet) {
+    private void testQuestion(Question question, ParamValuesSet paramValuesSet) {
 
 	testCount++;
 	if (skipTo != null && testCount < skipTo) return;
@@ -173,12 +172,12 @@ public class SanityTester {
 	} finally {
 	    long end = System.currentTimeMillis();
 	    if (passed) {
-		queriesPassed++;
+		questionsPassed++;
 		prefix = "";
 		status = " passed.";
 	    }
 	    else {
-		queriesFailed++;
+		questionsFailed++;
 	    }
 	    if (!passed) System.out.println(BANNER_LINE_top);
 	    String cmd = " [ wdkSummary -model " + wdkModel.getProjectId()
@@ -266,25 +265,25 @@ public class SanityTester {
 	String status = " FAILED!";
 	int sanityMin = minRows;
 	int sanityMax = MAXROWS;
-	int counter = 0;
+	int count = 0;
 	long start = System.currentTimeMillis();
 	String returned = "";
 	String expected = "";
 	Exception caughtException = null;
 
 	try {
-	    QueryTester queryTester = new QueryTester(wdkModel);
-	    ResultList rs = 
-		queryTester.getResult(querySet.getName(),
-				      query.getName(),
-				      paramValuesSet.getParamValues());
+	    if (queryType.equals("attribute")) {
+		count = testAttributeQuery_Count();
+		start = System.currentTimeMillis();
+		testAttributeQuery_Time();
+	    } else {
+		start = System.currentTimeMillis();
+		count = testRegularQuery();
+	    }
 
-	    while (rs.next()) { counter++; }
-	    rs.close();
+	    passed = (count >= sanityMin && count <= sanityMax);
 
-	    passed = (counter >= sanityMin && counter <= sanityMax);
-
-	    returned = " It returned " + counter + " rows. ";
+	    returned = " It returned " + count + " rows. ";
 	    if (sanityMin != 1 || sanityMax != MAXROWS)
 		expected = "Expected (" + sanityMin + " - " + sanityMax + ") ";
 
@@ -314,6 +313,121 @@ public class SanityTester {
 		+ status 
 		+ returned
 		+ expected
+		+ cmd
+		+ newline;
+	    if (!passed || !failuresOnly) System.out.println(msg);
+	    if (caughtException != null)
+		caughtException.printStackTrace(System.err);
+	    if (!passed) System.out.println(BANNER_LINE_bot + newline);
+	}
+    }
+
+    private int testNonAttributeQuery(QuerySet querySet, Query query, ParamValuesSet paramValuesSet)  throws SQLException, WdkModelException, NoSuchAlgorithmException, JSONException, WdkUserException {
+	
+	int count = 0;
+	QueryTester queryTester = new QueryTester(wdkModel);
+	ResultList rs = 
+	    queryTester.getResult(querySet.getName(),
+				  query.getName(),
+				  paramValuesSet.getParamValues());
+	
+	while (rs.next()) { count++; }
+	rs.close();
+    }
+
+    private int testAttributeQuery_Count(Query query, ParamValuesSet paramValuesSet) throws NoSuchAlgorithmException, SQLException, WdkModelException, JSONException, WdkUserException {
+
+        SqlQueryInstance instance =
+	    (SqlQueryInstance) query.makeInstance(new HashMap<String, Object>());
+
+        String sql = "select count(*) as count from (" 
+	    + instance.getUncachedSql()
+	    + ")";
+
+        DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
+        ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql);
+	int count = ResultSet.getInt("count");
+	SqlUtils.closeResultSet(resultSet);
+        return count;
+    }
+
+    private int testAttributeQuery_Timing(Query query, ParamValuesSet paramValuesSet) throws NoSuchAlgorithmException, SQLException, WdkModelException, JSONException, WdkUserException {
+
+        SqlQueryInstance instance = (SqlQueryInstance) query.makeInstance(new HashMap<String, Object>());
+
+        String sql = "select * from (" 
+	    + instance.getUncachedSql()
+	    + ") " + paramValueSet.getWhereClause();
+
+        DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
+        ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql);
+	SqlUtils.closeResultSet(resultSet);
+    }
+
+
+    private void testRecordSets() throws SQLException, WdkModelException, NoSuchAlgorithmException, JSONException, WdkUserException {
+
+        System.out.println("Sanity Test:  Checking records" + newline);
+
+	for (RecordClassSet recordClassSet : wdkModel.getAllRecordClassSets()) {
+	    if (recordClassSet.getDoNotTest()) continue;
+
+	    for (RecordClass recordClass : recordClassSet.getRecordClasses()) {
+		testRecordClass(recordClass, paramValuesSet);
+	    }
+	}
+    }
+
+    private void testRecordClass(RecordClass recordClass, ParamValuesSet paramValuesSet) {
+
+	testCount++;
+	if (skipTo != null && testCount < skipTo) return;
+	if (stopAfter != null && testCount > stopAfter) return;
+	if (indexOnly) {
+	    System.out.println(" [test: " + testCount + "]"
+			       + " RECORD " + recordClass.getFullName()
+			       + newline);
+	    return;
+	}
+	long start = System.currentTimeMillis();
+	boolean passed = false;
+	String status = " FAILED!";
+	String prefix = "***";
+	Exception caughtException = null;
+	String source_id = paramValuesSet.getParamValues().get("source_id");
+	String project_id = paramValuesSet.getParamValues().get("project_id");
+
+	try {
+
+	    RecordInstance recordInstance
+		= recordClass.makeRecordInstance(project_id, source_id);
+	    
+	    String riString = nextRecordInstance.print();
+
+	} catch (Exception e) {
+	    returned = " It threw an exception.";
+	    caughtException = e;
+	} finally {
+	    long end = System.currentTimeMillis();
+	    if (passed) {
+		recordsPassed++;
+		prefix = "";
+		status = " passed.";
+	    }
+	    else {
+		recordsFailed++;
+	    }
+	    if (!passed) System.out.println(BANNER_LINE_top);
+	    String cmd = " [ wdkRecord -model " + wdkModel.getProjectId()
+		+ " -record " + question.getFullName() 
+		+ " -projectId " + project_id
+		+ " -sourceId " + source_id
+		+ " ] ";
+
+	    String msg = prefix + ((end - start) / 1000F)
+		+ " [test: " + testCount + "]" 
+		+ " RECORD " + record.getFullName()
+		+ status 
 		+ cmd
 		+ newline;
 	    if (!passed || !failuresOnly) System.out.println(msg);

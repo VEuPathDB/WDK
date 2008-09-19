@@ -68,6 +68,16 @@ public class ParamValuesSet extends WdkModelBase {
 	return buf.toString();
     }
 
+    public String getWhereClause() {
+	StringBuffer buf = new StringBuffer();
+	String delim = "where ";
+	for (String paramName : paramValues.keySet()) {
+	    buf.append(delim + paramName + " = '" + paramValues.get(paramName) + "' ");
+	    delim = "and ";
+	}
+	return buf.toString();
+    }
+
     public void resolveReferences(WdkModel wodkModel)
 	throws WdkModelException, NoSuchAlgorithmException, SQLException,
 	       JSONException, WdkUserException {
