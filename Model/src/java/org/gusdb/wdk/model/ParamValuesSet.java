@@ -78,6 +78,16 @@ public class ParamValuesSet extends WdkModelBase {
 	return buf.toString();
     }
 
+    public String getNamesAsString() {
+	StringBuffer buf = new StringBuffer();
+	String delim = "";
+	for (String paramName : paramValues.keySet()) {
+	    buf.append(delim + paramName);
+	    delim = ", ";
+	}
+	return buf.toString();
+    }
+
     public void resolveReferences(WdkModel wodkModel)
 	throws WdkModelException, NoSuchAlgorithmException, SQLException,
 	       JSONException, WdkUserException {

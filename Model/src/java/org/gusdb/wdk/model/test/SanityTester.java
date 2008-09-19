@@ -276,9 +276,9 @@ public class SanityTester {
 
 	try {
 	    if (queryType.equals("attribute")) {
-		count = testAttributeQuery_Count(query);
+		count = testAttributeQuery_Count(query, paramValuesSet);
 		start = System.currentTimeMillis();
-		testAttributeQuery_Time(query, paramValuesSet);
+		testAttributeQuery_Time(query, paramValuesSet, count);
 	    } else {
 		start = System.currentTimeMillis();
 		count = testNonAttributeQuery(querySet, query, paramValuesSet);
@@ -339,23 +339,26 @@ public class SanityTester {
 	return count;
     }
 
-    private int testAttributeQuery_Count(Query query) throws NoSuchAlgorithmException, SQLException, WdkModelException, JSONException, WdkUserException {
+    private int testAttributeQuery_Count(Query query, ParamValuesSet paramValuesSet) throws NoSuchAlgorithmException, SQLException, WdkModelException, JSONException, WdkUserException {
 
         SqlQueryInstance instance =
 	    (SqlQueryInstance) query.makeInstance(new HashMap<String, Object>());
 
-        String sql = "select count(*) as count from (" 
+        String sql = "select count (*) from (select distinct " 
+	    + paramValuesSet.getNamesAsString()
+	    + " from (" 
 	    + instance.getUncachedSql()
-	    + ")";
+	    + "))";
 
         DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
         ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql);
+	resultSet.next();
 	int count = resultSet.getInt(1);
 	SqlUtils.closeResultSet(resultSet);
         return count;
     }
 
-    private void testAttributeQuery_Time(Query query, ParamValuesSet paramValuesSet) throws NoSuchAlgorithmException, SQLException, WdkModelException, JSONException, WdkUserException {
+    private void testAttributeQuery_Time(Query query, ParamValuesSet paramValuesSet, int count) throws NoSuchAlgorithmException, SQLException, WdkModelException, JSONException, WdkUserException {
 
         SqlQueryInstance instance = (SqlQueryInstance) query.makeInstance(new HashMap<String, Object>());
 
@@ -365,6 +368,14 @@ public class SanityTester {
 
         DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
         ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql);
+	if (count > 0 && !resultSet.next()) {
+	    String msg= "no row returned for "
+		+ query.getFullName() 
+		+ " using where clause ("
+		+ paramValuesSet.getWhereClause()
+		+ ")";
+	    throw new WdkModelException(msg);
+	}
 	SqlUtils.closeResultSet(resultSet);
     }
 

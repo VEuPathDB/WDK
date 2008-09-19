@@ -50,15 +50,6 @@ public class QuerySet extends WdkModelBase implements ModelSetI {
         return array;
     }
     public void setQueryType(String type) {
-	if (!type.equals(TYPE_ATTRIBUTE) && !type.equals(TYPE_TABLE)
-	    && !type.equals(TYPE_VOCAB)) {
-	    String msg = "Query type " + type
-		+ " is not valid.  Allowed types are: "
-		+ TYPE_ATTRIBUTE + ", " 
-		+ TYPE_VOCAB + " and " 
-		+ TYPE_TABLE;
-	    throw new IllegalArgumentException(msg);
-	}
 	this.queryType = type;
     }
 

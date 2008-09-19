@@ -459,15 +459,17 @@
   <define name="querySet">
     <element name="querySet">
       <attribute name="name" />
-      <optional>
-        <attribute name="queryType">
+      <attribute name="queryType">
           <choice>
             <value>attribute</value>
             <value>table</value>
+            <value>id</value>
+            <value>transform</value>
+            <value>utility</value>
+            <value>summary</value>
             <value>vocab</value>
           </choice>
-        </attribute>
-      </optional>
+      </attribute>
       <optional>
          <attribute name="doNotTest">
              <data type="boolean" />
