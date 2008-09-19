@@ -7,6 +7,7 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.Map;
+import java.text.DateFormat;
 
 import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.AnswerFilterInstance;
@@ -45,6 +46,10 @@ public class HistoryBean {
      */
     public Date getCreatedTime() {
         return history.getCreatedTime();
+    }
+
+    public String getDisplayCreatedTime() {
+	return DateFormat.getDateInstance(DateFormat.SHORT).format(history.getCreatedTime());
     }
 
     /*
@@ -109,6 +114,10 @@ public class HistoryBean {
      */
     public Date getLastRunTime() {
         return history.getLastRunTime();
+    }
+
+    public String getDisplayLastRunTime() {
+	return DateFormat.getDateInstance(DateFormat.SHORT).format(history.getLastRunTime());
     }
 
     /*

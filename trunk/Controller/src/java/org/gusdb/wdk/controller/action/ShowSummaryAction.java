@@ -95,8 +95,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 }
 
                 wdkAnswer = history.getAnswer();
-                // update estimated size, but don't update last run time
-                history.update(false);
+                history.update(true);
 
                 // get sorting and summary attributes
                 String questionName = wdkAnswer.getQuestion().getFullName();
@@ -173,6 +172,9 @@ public class ShowSummaryAction extends ShowQuestionAction {
                         // no. create new history.
                         history = wdkUser.createHistory(wdkAnswer);
                     }
+		    else {
+			history.update(true);
+		    }
                 } catch (SQLException ex) {
                     // couldn't find history: create history
                     history = wdkUser.createHistory(wdkAnswer);
