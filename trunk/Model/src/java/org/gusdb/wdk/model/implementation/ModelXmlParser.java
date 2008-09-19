@@ -448,7 +448,7 @@ public class ModelXmlParser extends XmlParser {
         digester.addCallMethod("wdkModel/querySet/sqlQuery/sqlParamValue",
                 "setText", 0);
 
-        // wsQuery
+        // processQuery
         configureNode(digester, "wdkModel/querySet/processQuery",
                 ProcessQuery.class, "addQuery");
 
