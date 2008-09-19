@@ -821,6 +821,16 @@ public class RecordClass extends WdkModelBase implements
             }
         }
         filterLayoutList = null;
+
+	// exclude paramValuesSets
+        for (ParamValuesSet pvs : unexcludedParamValuesSets) {
+            if (pvs.include(projectId)) {
+                if (paramValuesSet != null)
+                    throw new WdkModelException("Duplicate <paramValues> included in record class " + getName() + " for projectId " + projectId);
+		paramValuesSet = pvs;
+
+            }
+	}
     }
 
     public void addFilter(AnswerFilter filter) {

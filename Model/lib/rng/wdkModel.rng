@@ -612,7 +612,26 @@
       <optional>
         <attribute name="displayName" />
       </optional>
+      <optional>
+         <attribute name="doNotTest">
+             <data type="boolean" />
+         </attribute>
+      </optional>
       <ref name="IncludeExclude" />
+      <zeroOrMore>
+        <element name="defaultTestParamValues">
+          <optional>
+            <attribute name="minRows"/>
+          </optional>
+          <oneOrMore>
+            <element name="paramValue">
+              <attribute name="name"/>
+              <text/>
+            </element>
+          </oneOrMore>
+          <ref name="IncludeExclude" />
+        </element>
+      </zeroOrMore>
       <optional>
          <attribute name="attributeOrdering" />
       </optional>
