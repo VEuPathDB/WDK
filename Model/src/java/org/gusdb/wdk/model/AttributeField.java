@@ -82,7 +82,6 @@ public abstract class AttributeField extends Field {
         Map<String, AttributeField> children = new LinkedHashMap<String, AttributeField>();
         Map<String, AttributeField> fields = container.getAttributeFieldMap();
 
-        String type = ColumnAttributeField.class.getName();
         Pattern pattern = Pattern.compile("\\$\\$(.+?)\\$\\$", Pattern.DOTALL);
         Matcher matcher = pattern.matcher(text);
         while (matcher.find()) {
@@ -91,9 +90,9 @@ public abstract class AttributeField extends Field {
             AttributeField field = fields.get(fieldName);
             if (!(field instanceof ColumnAttributeField)
                     && !(field instanceof PrimaryKeyAttributeField))
-                throw new WdkModelException("Only " + type + " can "
-                        + "be embedded into the text content. " + fieldName
-                        + " is not a " + type + ".");
+                throw new WdkModelException("Only columnAttribute or "
+                        + "primaryKeyAttribute can be embedded into the text "
+                        + "content. " + fieldName + " is of type " + field.getClass().getSimpleName());
             if (!children.containsKey(fieldName))
                 children.put(fieldName, field);
         }
