@@ -393,6 +393,7 @@ public class SanityTester {
 
     private void testRecordClass(RecordClass recordClass, ParamValuesSet paramValuesSet) {
 
+	
 	testCount++;
 	if (skipTo != null && testCount < skipTo) return;
 	if (stopAfter != null && testCount > stopAfter) return;
@@ -412,8 +413,8 @@ public class SanityTester {
 
 	    RecordInstance recordInstance
 		= recordClass.makeRecordInstance(paramValuesSet.getParamValues());
-	    
 	    String riString = recordInstance.print();
+	    passed = true;
 
 	} catch (Exception e) {
 	    caughtException = e;
@@ -427,16 +428,11 @@ public class SanityTester {
 	    else {
 		recordsFailed++;
 	    }
-	    String source_id =
-		(String)paramValuesSet.getParamValues().get("source_id");
-	    String project_id =
-		(String)paramValuesSet.getParamValues().get("project_id");
 
 	    if (!passed) System.out.println(BANNER_LINE_top);
 	    String cmd = " [ wdkRecord -model " + wdkModel.getProjectId()
-		+ " -record " + recordClass.getFullName() 
-		+ " -projectId " + project_id
-		+ " -sourceId " + source_id
+		+ " -record " + recordClass.getName() 
+		+ " -primaryKey " + paramValuesSet.getCmdLineString()
 		+ " ] ";
 
 	    String msg = prefix + ((end - start) / 1000F)
@@ -605,8 +601,11 @@ public class SanityTester {
 	sanityTester.testQuerySets(QuerySet.TYPE_ATTRIBUTE);
 	sanityTester.testQuerySets(QuerySet.TYPE_TABLE);
 	sanityTester.testQuestionSets();
-	if (sanityTester.printSummaryLine()) {
-	    System.exit(1);
-        }
+	sanityTester.testRecordSets();
+	if (!indexOnly) {
+	    if (sanityTester.printSummaryLine()) {
+		System.exit(1);
+	    }
+	}
     }
 }

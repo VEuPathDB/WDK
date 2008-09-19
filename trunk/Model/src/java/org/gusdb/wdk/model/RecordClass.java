@@ -181,7 +181,7 @@ public class RecordClass extends WdkModelBase implements
     }
 
     public ParamValuesSet getParamValuesSet() {
-        return paramValuesSet;
+        return paramValuesSet == null? new ParamValuesSet() : paramValuesSet;
     }
 
     // ////////////////////////////////////////////////////////////
