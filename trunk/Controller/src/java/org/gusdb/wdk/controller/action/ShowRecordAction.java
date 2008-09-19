@@ -59,6 +59,7 @@ public class ShowRecordAction extends Action {
             
             // recognize old primary keys
             if (value == null) value = request.getParameter("primary_key");
+            if (value == null) value = request.getParameter("primaryKey");
             if (value == null) value = request.getParameter("id");
             
             if (value == null)
