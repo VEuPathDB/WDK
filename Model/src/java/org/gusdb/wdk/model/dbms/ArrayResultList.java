@@ -26,7 +26,7 @@ public class ArrayResultList<T> implements ResultList {
     public ArrayResultList(Column[] columns, T[][] result)
             throws WdkModelException {
         this.result = result;
-        this.rowIndex = 0;
+        this.rowIndex = -1;
         this.columns = new LinkedHashMap<String, Integer>();
 
         int columnIndex = 0;
