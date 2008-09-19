@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.ResultSet;
 import java.util.Map;
+import java.util.HashMap;
+import javax.sql.DataSource;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -40,6 +42,7 @@ import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.xml.XmlAnswer;
 import org.gusdb.wdk.model.xml.XmlQuestion;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
+import org.gusdb.wdk.model.query.SqlQueryInstance;
 import org.xml.sax.SAXException;
 
 import com.sun.org.apache.bcel.internal.classfile.Attribute;
@@ -273,12 +276,12 @@ public class SanityTester {
 
 	try {
 	    if (queryType.equals("attribute")) {
-		count = testAttributeQuery_Count();
+		count = testAttributeQuery_Count(query);
 		start = System.currentTimeMillis();
-		testAttributeQuery_Time();
+		testAttributeQuery_Time(query, paramValuesSet);
 	    } else {
 		start = System.currentTimeMillis();
-		count = testRegularQuery();
+		count = testNonAttributeQuery(querySet, query, paramValuesSet);
 	    }
 
 	    passed = (count >= sanityMin && count <= sanityMax);
@@ -333,9 +336,10 @@ public class SanityTester {
 	
 	while (rs.next()) { count++; }
 	rs.close();
+	return count;
     }
 
-    private int testAttributeQuery_Count(Query query, ParamValuesSet paramValuesSet) throws NoSuchAlgorithmException, SQLException, WdkModelException, JSONException, WdkUserException {
+    private int testAttributeQuery_Count(Query query) throws NoSuchAlgorithmException, SQLException, WdkModelException, JSONException, WdkUserException {
 
         SqlQueryInstance instance =
 	    (SqlQueryInstance) query.makeInstance(new HashMap<String, Object>());
@@ -346,18 +350,18 @@ public class SanityTester {
 
         DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
         ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql);
-	int count = ResultSet.getInt("count");
+	int count = resultSet.getInt(1);
 	SqlUtils.closeResultSet(resultSet);
         return count;
     }
 
-    private int testAttributeQuery_Timing(Query query, ParamValuesSet paramValuesSet) throws NoSuchAlgorithmException, SQLException, WdkModelException, JSONException, WdkUserException {
+    private void testAttributeQuery_Time(Query query, ParamValuesSet paramValuesSet) throws NoSuchAlgorithmException, SQLException, WdkModelException, JSONException, WdkUserException {
 
         SqlQueryInstance instance = (SqlQueryInstance) query.makeInstance(new HashMap<String, Object>());
 
         String sql = "select * from (" 
 	    + instance.getUncachedSql()
-	    + ") " + paramValueSet.getWhereClause();
+	    + ") " + paramValuesSet.getWhereClause();
 
         DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
         ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql);
@@ -370,10 +374,8 @@ public class SanityTester {
         System.out.println("Sanity Test:  Checking records" + newline);
 
 	for (RecordClassSet recordClassSet : wdkModel.getAllRecordClassSets()) {
-	    if (recordClassSet.getDoNotTest()) continue;
-
 	    for (RecordClass recordClass : recordClassSet.getRecordClasses()) {
-		testRecordClass(recordClass, paramValuesSet);
+		testRecordClass(recordClass, recordClass.getParamValuesSet());
 	    }
 	}
     }
@@ -394,18 +396,15 @@ public class SanityTester {
 	String status = " FAILED!";
 	String prefix = "***";
 	Exception caughtException = null;
-	String source_id = paramValuesSet.getParamValues().get("source_id");
-	String project_id = paramValuesSet.getParamValues().get("project_id");
 
 	try {
 
 	    RecordInstance recordInstance
-		= recordClass.makeRecordInstance(project_id, source_id);
+		= recordClass.makeRecordInstance(paramValuesSet.getParamValues());
 	    
-	    String riString = nextRecordInstance.print();
+	    String riString = recordInstance.print();
 
 	} catch (Exception e) {
-	    returned = " It threw an exception.";
 	    caughtException = e;
 	} finally {
 	    long end = System.currentTimeMillis();
@@ -417,16 +416,21 @@ public class SanityTester {
 	    else {
 		recordsFailed++;
 	    }
+	    String source_id =
+		(String)paramValuesSet.getParamValues().get("source_id");
+	    String project_id =
+		(String)paramValuesSet.getParamValues().get("project_id");
+
 	    if (!passed) System.out.println(BANNER_LINE_top);
 	    String cmd = " [ wdkRecord -model " + wdkModel.getProjectId()
-		+ " -record " + question.getFullName() 
+		+ " -record " + recordClass.getFullName() 
 		+ " -projectId " + project_id
 		+ " -sourceId " + source_id
 		+ " ] ";
 
 	    String msg = prefix + ((end - start) / 1000F)
 		+ " [test: " + testCount + "]" 
-		+ " RECORD " + record.getFullName()
+		+ " RECORD " + recordClass.getFullName()
 		+ status 
 		+ cmd
 		+ newline;
