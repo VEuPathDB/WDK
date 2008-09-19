@@ -47,7 +47,7 @@ public class Utilities {
 
     public static final String PARAM_PROJECT_ID = COLUMN_PROJECT_ID;
 
-    public static final String ALIAS_NEW_KEY_COLUMN_PREFIX = "new_";
+    public static final String ALIAS_OLD_KEY_COLUMN_PREFIX = "old_";
 
     public static final String INTERNAL_PARAM_SET = "internalParams";
 

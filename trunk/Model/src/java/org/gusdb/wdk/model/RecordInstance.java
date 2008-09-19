@@ -20,7 +20,6 @@ public class RecordInstance extends AttributeValueContainer {
 
     private Map<String, TableValue> tableValueCache = new LinkedHashMap<String, TableValue>();
 
-    private Map<String, Integer> summaryAttributeMap = new LinkedHashMap<String, Integer>();
     private Answer answer;
 
     /**
@@ -29,7 +28,7 @@ public class RecordInstance extends AttributeValueContainer {
      * @param primaryKey
      * @throws WdkModelException
      */
-    public RecordInstance(RecordClass recordClass,
+    RecordInstance(RecordClass recordClass,
             PrimaryKeyAttributeValue primaryKey) throws WdkModelException {
         super(primaryKey);
         this.recordClass = recordClass;
@@ -38,22 +37,14 @@ public class RecordInstance extends AttributeValueContainer {
     }
 
     /**
-     * @param answer
-     * @param primaryKey
-     * @throws WdkModelException
-     */
-    public RecordInstance(Answer answer, PrimaryKeyAttributeValue primaryKey)
-            throws WdkModelException {
-        this(answer.getQuestion().getRecordClass(), primaryKey);
-
-        this.answer = answer;
-    }
-
-    /**
      * @return
      */
     public RecordClass getRecordClass() {
         return recordClass;
+    }
+    
+    void setAnswer(Answer answer) {
+        this.answer = answer;
     }
 
     /*

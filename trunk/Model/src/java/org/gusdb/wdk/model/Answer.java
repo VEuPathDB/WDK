@@ -632,7 +632,8 @@ public class Answer {
         } else { // get the id query directly
             innerSql = idsQueryInstance.getSql();
         }
-        sql.append(innerSql).append(")");
+        sql.append(innerSql).append(") bidq");
+        
         return sql.toString();
     }
 
@@ -710,7 +711,8 @@ public class Answer {
         DataSource dataSource = platform.getDataSource();
         ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql);
         ResultList resultList = new SqlResultList(resultSet);
-        PrimaryKeyAttributeField pkField = question.getRecordClass().getPrimaryKeyAttributeField();
+        RecordClass recordClass = question.getRecordClass();
+        PrimaryKeyAttributeField pkField = recordClass.getPrimaryKeyAttributeField();
         while (resultList.next()) {
             // get primary key. the primary key is supposed to be translated to
             // the current ones from the id query, and no more translation
@@ -724,7 +726,8 @@ public class Answer {
             }
             PrimaryKeyAttributeValue primaryKey = new PrimaryKeyAttributeValue(
                     pkField, pkValues);
-            RecordInstance record = new RecordInstance(this, primaryKey);
+            RecordInstance record = recordClass.makeRecordInstance(pkValues);
+            record.setAnswer(this);
             pageRecordInstances.put(primaryKey, record);
         }
     }

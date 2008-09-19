@@ -48,8 +48,7 @@ public class RecordClass extends WdkModelBase implements
 
     // for sanity testing
     private boolean doNotTest = false;
-    private List<ParamValuesSet> unexcludedParamValuesSets =
-	new ArrayList<ParamValuesSet>();
+    private List<ParamValuesSet> unexcludedParamValuesSets = new ArrayList<ParamValuesSet>();
     private ParamValuesSet paramValuesSet;
 
     /**
@@ -170,19 +169,19 @@ public class RecordClass extends WdkModelBase implements
     }
 
     public void setDoNotTest(boolean doNotTest) {
-	this.doNotTest = doNotTest;
+        this.doNotTest = doNotTest;
     }
 
     public boolean getDoNotTest() {
-	return doNotTest;
+        return doNotTest;
     }
 
     public void addParamValuesSet(ParamValuesSet paramValuesSet) {
-	unexcludedParamValuesSets.add(paramValuesSet);
+        unexcludedParamValuesSets.add(paramValuesSet);
     }
 
     public ParamValuesSet getParamValuesSet() {
-	return paramValuesSet;
+        return paramValuesSet;
     }
 
     // ////////////////////////////////////////////////////////////
@@ -373,6 +372,7 @@ public class RecordClass extends WdkModelBase implements
         this.wdkModel = model;
 
         // resolve the references for attribute queries
+        String[] paramNames = primaryKeyField.getColumnRefs();
         for (AttributeQueryReference reference : attributesQueryRefList) {
             // validate attribute query
             Query query = (Query) model.resolveReference(reference.getTwoPartName());
@@ -403,7 +403,7 @@ public class RecordClass extends WdkModelBase implements
                 attributeFieldsMap.put(fieldName, field);
             }
 
-            Query attributeQuery = prepareQuery(query);
+            Query attributeQuery = prepareQuery(query, paramNames);
             attributeQueries.put(query.getFullName(), attributeQuery);
         }
 
@@ -526,13 +526,13 @@ public class RecordClass extends WdkModelBase implements
         validateAttributeQuery(query);
 
         Map<String, Column> columnMap = query.getColumnMap();
-        // make sure the attribute query returns new primary key columns
+        // make sure the attribute query also returns old primary key columns
         for (String column : primaryKeyField.getColumnRefs()) {
-            column = Utilities.ALIAS_NEW_KEY_COLUMN_PREFIX + column;
+            column = Utilities.ALIAS_OLD_KEY_COLUMN_PREFIX + column;
             if (!columnMap.containsKey(column))
                 throw new WdkModelException("The attribute query "
                         + query.getFullName() + " of " + getFullName()
-                        + " does not return the required new primary key "
+                        + " does not return the required old primary key "
                         + "column " + column);
         }
     }
@@ -606,34 +606,37 @@ public class RecordClass extends WdkModelBase implements
             JSONException, WdkUserException {
         // nothing to look up
         if (aliasQuery == null) return pkValues;
+        
+        Map<String, Object> oldValues = new LinkedHashMap<String, Object>();
+        for (String param : pkValues.keySet()) {
+            String oldParam = Utilities.ALIAS_OLD_KEY_COLUMN_PREFIX + param;
+            oldValues.put(oldParam, pkValues.get(param));
+        }
 
-        QueryInstance instance = aliasQuery.makeInstance(pkValues);
+        QueryInstance instance = aliasQuery.makeInstance(oldValues);
         ResultList resultList = instance.getResults();
-        Map<String, Object> result = new LinkedHashMap<String, Object>();
+        Map<String, Object> newValue = new LinkedHashMap<String, Object>();
         if (resultList.next()) {
-            for (Column column : aliasQuery.getColumns()) {
-                String columnName = column.getName();
-                result.put(columnName, resultList.get(columnName));
+            for (String param : pkValues.keySet()) {
+                newValue.put(param, resultList.get(param));
             }
-        } else result.putAll(pkValues); // no alias found, use the original ones
+        } else newValue.putAll(pkValues); // no alias found, use the original ones
         resultList.close();
-        return result;
+        return newValue;
     }
 
-    Query prepareQuery(Query query) throws WdkModelException {
+    Query prepareQuery(Query query, String[] paramNames) throws WdkModelException {
         Map<String, Column> columns = query.getColumnMap();
-        String[] pkColumns = primaryKeyField.getColumnRefs();
         Map<String, Param> originalParams = query.getParamMap();
         Query newQuery = query.clone();
 
         // find the new params to be created
         List<String> newParams = new ArrayList<String>();
-        for (String column : pkColumns) {
+        for (String column : paramNames) {
             if (!originalParams.containsKey(column)) newParams.add(column);
         }
 
-        // create primary key params for the query, using primary key column
-        // names
+        // create the missing params for the query
         ParamSet paramSet = wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
         for (String columnName : newParams) {
             StringParam param;
@@ -671,20 +674,16 @@ public class RecordClass extends WdkModelBase implements
     }
 
     private Query prepareAliasQuery(Query query) throws WdkModelException {
-        // the alias query should return columns for new primary key columns,
-        // with a prefix "new_".
-        Map<String, Column> columns = query.getColumnMap();
-        String[] primaryKeyColumns = primaryKeyField.getColumnRefs();
-        for (String columnName : primaryKeyColumns) {
-            String column = Utilities.ALIAS_NEW_KEY_COLUMN_PREFIX + columnName;
-            if (!columns.containsKey(column))
-                throw new WdkModelException("Alias query "
-                        + query.getFullName() + " doesn't have column "
-                        + column);
+        // the alias query should also return columns for old primary key
+        // columns, with a prefix "old_".
+        String[] pkColumns = primaryKeyField.getColumnRefs();
+        String[] paramNames = new String[pkColumns.length];
+        for(int i = 0; i < pkColumns.length; i++) {
+            paramNames[i] = Utilities.ALIAS_OLD_KEY_COLUMN_PREFIX + pkColumns[i];
         }
 
         // and it should be a valid attribute query too
-        return prepareQuery(query);
+        return prepareQuery(query, paramNames);
     }
 
     /*
