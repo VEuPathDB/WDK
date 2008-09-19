@@ -59,9 +59,10 @@ public class NestedRecordList extends WdkModelBase {
         Query query = question.getQuery();
         query.resolveReferences(model);
         parentRecordClass.validateQuery(query);
+        String[] paramNames = parentRecordClass.getPrimaryKeyAttributeField().getColumnRefs();
 
         // prepare the query and add primary key params
-        query = parentRecordClass.prepareQuery(query);
+        query = parentRecordClass.prepareQuery(query, paramNames);
         question.setQuery(query);
     }
 

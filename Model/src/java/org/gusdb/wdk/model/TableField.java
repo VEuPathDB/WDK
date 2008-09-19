@@ -98,7 +98,8 @@ public class TableField extends Field implements AttributeFieldContainer {
         recordClass.validateQuery(query);
 
         // prepare the query and add primary key params
-        query = recordClass.prepareQuery(query);
+        String[] paramNames = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
+        query = recordClass.prepareQuery(query, paramNames);
         this.query = query;
 
         Column[] columns = query.getColumns();
