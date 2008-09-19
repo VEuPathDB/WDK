@@ -46,6 +46,12 @@ public class RecordClass extends WdkModelBase implements
     private List<NestedRecordList> nestedRecordListQuestionRefList = new ArrayList<NestedRecordList>();
     private Map<String, NestedRecordList> nestedRecordListQuestionRefs = new LinkedHashMap<String, NestedRecordList>();
 
+    // for sanity testing
+    private boolean doNotTest = false;
+    private List<ParamValuesSet> unexcludedParamValuesSets =
+	new ArrayList<ParamValuesSet>();
+    private ParamValuesSet paramValuesSet;
+
     /**
      * This object is not initialized until the first time the RecordClass is
      * asked for a nestedRecordQuestion. At that point it is given the questions
@@ -161,6 +167,22 @@ public class RecordClass extends WdkModelBase implements
 
     public void addReporterRef(ReporterRef reporter) {
         reporterList.add(reporter);
+    }
+
+    public void setDoNotTest(boolean doNotTest) {
+	this.doNotTest = doNotTest;
+    }
+
+    public boolean getDoNotTest() {
+	return doNotTest;
+    }
+
+    public void addParamValuesSet(ParamValuesSet paramValuesSet) {
+	unexcludedParamValuesSets.add(paramValuesSet);
+    }
+
+    public ParamValuesSet getParamValuesSet() {
+	return paramValuesSet;
     }
 
     // ////////////////////////////////////////////////////////////
