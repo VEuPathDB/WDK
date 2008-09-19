@@ -619,7 +619,7 @@
       </optional>
       <ref name="IncludeExclude" />
       <zeroOrMore>
-        <element name="defaultTestParamValues">
+        <element name="testParamValues">
           <optional>
             <attribute name="minRows"/>
           </optional>
