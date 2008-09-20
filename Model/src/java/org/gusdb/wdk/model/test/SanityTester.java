@@ -386,6 +386,7 @@ public class SanityTester {
 
 	for (RecordClassSet recordClassSet : wdkModel.getAllRecordClassSets()) {
 	    for (RecordClass recordClass : recordClassSet.getRecordClasses()) {
+		if (recordClass.getDoNotTest()) continue;
 		testRecordClass(recordClass, recordClass.getParamValuesSet());
 	    }
 	}
