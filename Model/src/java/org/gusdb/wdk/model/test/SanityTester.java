@@ -82,7 +82,6 @@ public class SanityTester {
     boolean indexOnly;
     String modelName;
     private Boolean doNotTest;
-    private static final int MAXROWS = 1000000000;
 
     public static final String BANNER_LINE_top = "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv";
     public static final String BANNER_LINE_bot = "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^";
@@ -136,7 +135,7 @@ public class SanityTester {
 	}
 	long start = System.currentTimeMillis();
 	int sanityMin = paramValuesSet.getMinRows();
-	int sanityMax = MAXROWS;
+	int sanityMax = paramValuesSet.getMaxRows();
 	boolean passed = false;
 	String status = " FAILED!";
 	String prefix = "***";
@@ -166,7 +165,7 @@ public class SanityTester {
 	    passed = (resultSize >= sanityMin && resultSize <= sanityMax);
 
 	    returned = " It returned " + resultSize + " rows. ";
-	    if (sanityMin != 1 || sanityMax != MAXROWS)
+	    if (sanityMin != 1 || sanityMax != paramValuesSet.MAXROWS)
 		expected = "Expected (" + sanityMin + " - " + sanityMax + ") ";
 
 	} catch (Exception e) {
@@ -222,33 +221,36 @@ public class SanityTester {
 	    if (!querySet.getQueryType().equals(queryType)
 		  || querySet.getDoNotTest()) continue;
 
-	    int minRows = 0;
+	    int minRows = -1;
+	    int maxRows = -1;
 	    if (queryType.equals("attribute")) {
-		/*
 		// discover number of entities expected in each attribute query
-		String cardinalitySql = querySet.getCardinalitySql();
-		ResultSet rs = 
-		    SqlUtils.executeQuery(wdkModel.getDBPlatform().getDataSource(), 
-					  cardinalitySql);
-		rs.next();
-		minRows = rs.getInt(1);
-		SqlUtils.closeResultSet(rs);
-		*/
+		String testRowCountSql = querySet.getTestRowCountSql();
+		if (testRowCountSql != null) {
+		    ResultSet rs = 
+			SqlUtils.executeQuery(wdkModel.getQueryPlatform().getDataSource(), 
+					      testRowCountSql);
+		    rs.next();
+		    minRows = maxRows = rs.getInt(1);
+		    SqlUtils.closeResultSet(rs);
+		}	    
 	    }
 
 	    for (Query query : querySet.getQueries()) {
 		if (query.getDoNotTest()) continue;
 		for (ParamValuesSet paramValuesSet : query.getParamValuesSets()) {
-		    if (!queryType.equals("attribute"))
+		    if (!queryType.equals("attribute")) {
 			minRows = paramValuesSet.getMinRows();
-		    testQuery(querySet, query, queryType, minRows, paramValuesSet);
+			maxRows = paramValuesSet.getMaxRows();
+		    }
+		    testQuery(querySet, query, queryType, minRows, maxRows, paramValuesSet);
 		}
 	    }
 	}
     }
 
     private void testQuery(QuerySet querySet, Query query, String queryType,
-			   int minRows, ParamValuesSet paramValuesSet) {
+			   int minRows, int maxRows, ParamValuesSet paramValuesSet) {
 
 	String typeUpperCase = queryType.toUpperCase();
 
@@ -267,7 +269,7 @@ public class SanityTester {
 	String prefix = "***";
 	String status = " FAILED!";
 	int sanityMin = minRows;
-	int sanityMax = MAXROWS;
+	int sanityMax = maxRows;
 	int count = 0;
 	long start = System.currentTimeMillis();
 	String returned = "";
@@ -287,7 +289,7 @@ public class SanityTester {
 	    passed = (count >= sanityMin && count <= sanityMax);
 
 	    returned = " It returned " + count + " rows. ";
-	    if (sanityMin != 1 || sanityMax != MAXROWS)
+	    if (sanityMin != 1 || sanityMax != paramValuesSet.MAXROWS)
 		expected = "Expected (" + sanityMin + " - " + sanityMax + ") ";
 
 	} catch (Exception e) {

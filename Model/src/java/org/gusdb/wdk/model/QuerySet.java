@@ -22,7 +22,9 @@ public class QuerySet extends WdkModelBase implements ModelSetI {
     private List<ParamValuesSet> unexcludedDefaultParamValuesSets =
 	new ArrayList<ParamValuesSet>();
     private ParamValuesSet defaultParamValuesSet;
-    private String cardinalitySql;
+    private List<WdkModelText> unexcludedTestRowCountSqls =
+	new ArrayList<WdkModelText>();
+    private String testRowCountSql;
 
     public void setName(String name) {
         this.name = name;
@@ -74,12 +76,12 @@ public class QuerySet extends WdkModelBase implements ModelSetI {
     }
 
     // sql that returns number of rows expected by all queries in this query set
-    public void setCardinalitySql(String sql) {
-	this.cardinalitySql = sql;
+    public void addTestRowCountSql(WdkModelText text) {
+	unexcludedTestRowCountSqls.add(text);
     }
 
-    public String getCardinalitySql() {
-	return cardinalitySql;
+    public String getTestRowCountSql() {
+	return testRowCountSql;
     }
 
     public boolean contains(String queryName) {
@@ -149,7 +151,17 @@ public class QuerySet extends WdkModelBase implements ModelSetI {
 
             }
         }
-    }
+
+ 	// exclude textRowCountSqls
+        for (WdkModelText text : unexcludedTestRowCountSqls) {
+            if (text.include(projectId)) {
+                if (testRowCountSql != null)
+                    throw new WdkModelException("Duplicate <testRowCountSql> included in query set " + getName() + " for projectId " + projectId);
+		testRowCountSql = text.getText();
+
+            }
+        }
+   }
     // ///////////////////////////////////////////////////////////////
     // ///// protected
     // ///////////////////////////////////////////////////////////////
