@@ -429,6 +429,11 @@ public class ModelXmlParser extends XmlParser {
 	// defaultTestParamValues
 	configureParamValuesSet(digester, "wdkModel/querySet/defaultTestParamValues", "addDefaultParamValuesSet");
 
+	// cardinalitySql
+        configureNode(digester, "wdkModel/querySet/testRowCountSql",
+                WdkModelText.class, "addTestRowCountSql");
+        digester.addCallMethod("wdkModel/querySet/testRowCountSql", "setText", 0);
+
         // sqlQuery
         configureNode(digester, "wdkModel/querySet/sqlQuery", SqlQuery.class,
                 "addQuery");
