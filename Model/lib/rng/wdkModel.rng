@@ -490,6 +490,12 @@
           <ref name="IncludeExclude" />
         </element>
       </zeroOrMore>
+      <zeroOrMore>
+        <element name="testRowCountSql">
+          <text/>
+          <ref name="IncludeExclude" />
+        </element>
+      </zeroOrMore>
       <oneOrMore>
         <ref name="queries" />
       </oneOrMore>

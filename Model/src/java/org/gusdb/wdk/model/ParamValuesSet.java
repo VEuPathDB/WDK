@@ -9,6 +9,8 @@ import java.util.Map;
 public class ParamValuesSet extends WdkModelBase {
     private String name;
     private Integer minRows;
+    private Integer maxRows;
+    public static final int MAXROWS = 1000000000;
     private Map<String,Object> paramValues
 	= new LinkedHashMap<String,Object>();
 
@@ -26,6 +28,14 @@ public class ParamValuesSet extends WdkModelBase {
 
     public int getMinRows() {
         return minRows == null? 1 : minRows;
+    }
+
+    public void setMaxRows(int maxRows) {
+        this.maxRows = new Integer(maxRows);
+    }
+
+    public int getMaxRows() {
+        return maxRows == null? MAXROWS : maxRows;
     }
 
     public void put(String name, String value) {
