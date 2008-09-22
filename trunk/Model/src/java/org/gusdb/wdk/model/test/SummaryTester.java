@@ -33,6 +33,8 @@ import org.json.JSONException;
 
 public class SummaryTester {
 
+    private static final String ARG_FILTER = "answer_filter";
+
     public static void main(String[] args) throws Exception {
 
         String cmdName = System.getProperty("cmdName");
@@ -87,8 +89,8 @@ public class SummaryTester {
 
             // get filter
             AnswerFilterInstance filter = null;
-            if (cmdLine.hasOption("filter")) {
-                String filterName = cmdLine.getOptionValue("filter");
+            if (cmdLine.hasOption(ARG_FILTER)) {
+                String filterName = cmdLine.getOptionValue(ARG_FILTER);
                 filter = question.getRecordClass().getFilter(filterName);
             }
 
@@ -124,7 +126,8 @@ public class SummaryTester {
                 // print the size of the answer
                 System.out.println("Total # of records: "
                         + answer.getResultSize());
-                System.out.println("Answer Checksum: " + answer.getAnswerInfo().getAnswerChecksum());
+                System.out.println("Answer Checksum: "
+                        + answer.getAnswerInfo().getAnswerChecksum());
 
                 // load configuration for output format
                 if (!hasFormat) format = "tabular";
@@ -140,9 +143,9 @@ public class SummaryTester {
             }
         } catch (Exception ex) {
             ex.printStackTrace();
-//            System.exit(-1);
+            // System.exit(-1);
         }
-//        System.exit(0);
+        // System.exit(0);
     }
 
     private static Map<String, String> loadConfiguration(String configFileName)
@@ -261,7 +264,7 @@ public class SummaryTester {
         options.addOption(config);
 
         // the sub type input
-        Option filter = new Option("filter", true, "The filter to be used "
+        Option filter = new Option(ARG_FILTER, true, "The filter to be used "
                 + "to filter out the result");
         options.addOption(filter);
 
@@ -327,7 +330,7 @@ public class SummaryTester {
                 + " [-showQuery]\n"
                 + " [-toXml <xmlFile>|-fullRecords]\n"
                 + " [-format tabular | gff3 | fullRecords [-config <config_file>]]\n"
-                + " [-filter <filter_name>]\n"
+                + " [-" + ARG_FILTER + " <filter_name>]\n"
                 + " -params param_1_name param_1_value ...\n";
 
         String header = newline
