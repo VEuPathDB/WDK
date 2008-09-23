@@ -28,6 +28,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.report.Reporter;
 import org.json.JSONException;
 
@@ -48,6 +49,7 @@ public class SummaryTester {
         String[] params = null;
         boolean haveParams = cmdLine.hasOption("params");
         if (haveParams) params = cmdLine.getOptionValues("params");
+        boolean useDefaults = cmdLine.hasOption("d");
 
         boolean toXml = cmdLine.hasOption("toXml");
         String xmlFileName = cmdLine.getOptionValue("toXml");
@@ -81,10 +83,11 @@ public class SummaryTester {
 
             QuestionSet questionSet = wdkModel.getQuestionSet(questionSetName);
             Question question = questionSet.getQuestion(questionName);
+	    Query query = question.getQuery();
 
             Map<String, Object> paramValues = new LinkedHashMap<String, Object>();
             if (haveParams) {
-                paramValues = parseParamArgs(params);
+                paramValues = QueryTester.parseParamArgs(params, useDefaults, query);
             }
 
             // get filter
@@ -238,6 +241,10 @@ public class SummaryTester {
                 + "but required otherwise.");
         rows.setArgs(2);
         options.addOption(rows);
+
+        // use defaults
+        Option useDefaults = new Option("d", "Use default values for unprovided parameters");
+        options.addOption(useDefaults);
 
         // show query
         Option showQuery = new Option("showQuery", "Show the query as it will "
