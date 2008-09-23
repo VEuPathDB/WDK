@@ -24,6 +24,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.query.Query;
+import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.QuerySet;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
@@ -330,11 +331,10 @@ public class SanityTester {
     private int testNonAttributeQuery(QuerySet querySet, Query query, ParamValuesSet paramValuesSet)  throws SQLException, WdkModelException, NoSuchAlgorithmException, JSONException, WdkUserException {
 	
 	int count = 0;
-	QueryTester queryTester = new QueryTester(wdkModel);
-	ResultList rs = 
-	    queryTester.getResult(querySet.getName(),
-				  query.getName(),
-				  paramValuesSet.getParamValues());
+	
+	QueryInstance instance =
+	    query.makeInstance(paramValuesSet.getParamValues());
+	ResultList rs = instance.getResults();
 	
 	while (rs.next()) { count++; }
 	rs.close();
