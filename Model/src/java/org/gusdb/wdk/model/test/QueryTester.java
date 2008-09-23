@@ -21,6 +21,7 @@ import org.apache.commons.cli.ParseException;
 import org.gusdb.wdk.model.Column;
 import org.gusdb.wdk.model.FlatVocabParam;
 import org.gusdb.wdk.model.Param;
+import org.gusdb.wdk.model.ParamValuesSet;
 import org.gusdb.wdk.model.QuerySet;
 import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.StringParam;
@@ -47,33 +48,21 @@ public class QueryTester {
         this.wdkModel = wdkModel;
     }
 
-    // ////////////////////////////////////////////////////////////////////
-    // /////////// public methods /////////////////////////////////////
-    // ////////////////////////////////////////////////////////////////////
-
-    public ResultList getResult(String querySetName, String queryName,
+    private String showSql(Query query,
             Map<String, Object> paramHash) throws WdkModelException,
             WdkUserException, NoSuchAlgorithmException, SQLException,
             JSONException {
-        QueryInstance instance = getInstance(querySetName, queryName, paramHash);
-        return instance.getResults();
-    }
-
-    public String showSql(String querySetName, String queryName,
-            Map<String, Object> paramHash) throws WdkModelException,
-            WdkUserException, NoSuchAlgorithmException, SQLException,
-            JSONException {
-        QueryInstance instance = getInstance(querySetName, queryName, paramHash);
+        QueryInstance instance = query.makeInstance(paramHash);
         if (instance instanceof SqlQueryInstance) {
             return ((SqlQueryInstance) instance).getUncachedSql();
         } else return instance.getSql();
     }
 
-    public String showResultTable(String querySetName, String queryName,
+    private String showResultTable(Query query,
             Map<String, Object> paramHash) throws WdkModelException,
             WdkUserException, NoSuchAlgorithmException, SQLException,
             JSONException {
-        QueryInstance instance = getInstance(querySetName, queryName, paramHash);
+        QueryInstance instance = query.makeInstance(paramHash);
         ResultFactory resultFactory = wdkModel.getResultFactory();
         CacheFactory cacheFactory = resultFactory.getCacheFactory();
         QueryInfo queryInfo = cacheFactory.getQueryInfo(instance.getQuery());
@@ -82,7 +71,7 @@ public class QueryTester {
         return cacheTable + ":" + instanceId;
     }
 
-    public WdkModel getWdkModel() {
+    private WdkModel getWdkModel() {
         return this.wdkModel;
     }
 
@@ -90,16 +79,7 @@ public class QueryTester {
     // /////////// protected methods //////////////////////////////////
     // ////////////////////////////////////////////////////////////////////
 
-    QueryInstance getInstance(String querySetName, String queryName,
-            Map<String, Object> paramHash) throws WdkModelException,
-            WdkUserException {
-        QuerySet querySet = wdkModel.getQuerySet(querySetName);
-        Query query = querySet.getQuery(queryName);
-        QueryInstance instance = query.makeInstance(paramHash);
-        return instance;
-    }
-
-    void displayQuery(Query query) throws WdkModelException,
+    private void displayParams(Query query) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
         String newline = System.getProperty("line.separator");
@@ -115,7 +95,7 @@ public class QueryTester {
         System.out.println("");
     }
 
-    Map<String, Object> parseParamArgs(String[] params) {
+    Map<String, Object> parseParamArgs(String[] params, boolean useDefaults, Query query)  throws WdkModelException, NoSuchAlgorithmException, SQLException, JSONException, WdkUserException {
 
         Map<String, Object> h = new LinkedHashMap<String, Object>();
 
@@ -126,10 +106,19 @@ public class QueryTester {
         for (int i = 0; i < params.length; i += 2) {
             h.put(params[i], params[i + 1]);
         }
+	if (useDefaults && !query.getParamValuesSets().isEmpty()) {
+	    ParamValuesSet pvs = query.getParamValuesSets().get(0);
+	    Map<String,Object> map = pvs.getParamValues();
+	    for (String paramName : map.keySet() ) {
+		if (!h.containsKey(paramName)) {
+		    h.put(paramName, map.get(paramName));
+		}
+	    }
+	}
         return h;
     }
 
-    String formatParamPrompt(Param param) throws WdkModelException,
+    private String formatParamPrompt(Param param) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
         String newline = System.getProperty("line.separator");
@@ -138,7 +127,7 @@ public class QueryTester {
 
         if (param instanceof FlatVocabParam) {
             FlatVocabParam enumParam = (FlatVocabParam) param;
-            prompt += " (chose one";
+            prompt += " (choose one";
             if (enumParam.getMultiPick().booleanValue()) prompt += " or more";
             prompt += "):";
             String[] vocab = enumParam.getVocab();
@@ -185,6 +174,8 @@ public class QueryTester {
         String fullQueryName = cmdLine.getOptionValue("query");
         boolean returnResultAsTable = cmdLine.hasOption("returnTable");
         boolean showQuery = cmdLine.hasOption("showQuery");
+        boolean showParams = cmdLine.hasOption("showParams");
+        boolean useDefaults = cmdLine.hasOption("d");
         boolean haveParams = cmdLine.hasOption("params");
         // boolean paging = cmdLine.hasOption("rows");
         String[] params = new String[0];
@@ -199,25 +190,30 @@ public class QueryTester {
         WdkModel wdkModel = parser.parseModel(modelName);
 
         QueryTester tester = new QueryTester(wdkModel);
+        QuerySet querySet = wdkModel.getQuerySet(querySetName);
+        Query query = querySet.getQuery(queryName);
 
-        Map<String, Object> paramHash = tester.parseParamArgs(params);
-        if (showQuery) {
-            String query = tester.showSql(querySetName, queryName, paramHash);
-            String newline = System.getProperty("line.separator");
-            String newlineQuery = query.replaceAll("^\\s\\s\\s", newline);
-            newlineQuery = newlineQuery.replaceAll("(\\S)\\s\\s\\s", "$1"
-                    + newline);
-            System.out.println(newline + newlineQuery + newline);
-        } else if (returnResultAsTable) {
-            String table = tester.showResultTable(querySetName, queryName,
-                    paramHash);
-            System.out.println(table);
-        } else {
-            Query query = wdkModel.getQuerySet(querySetName).getQuery(queryName);
-
-            ResultList rs = tester.getResult(querySetName, queryName, paramHash);
-            print(query, rs);
-        }
+	if (showParams) {
+	    tester.displayParams(query);
+	} else {
+	    Map<String, Object> paramHash =
+		tester.parseParamArgs(params, useDefaults, query);
+	    if (showQuery) {
+		String querySql = tester.showSql(query, paramHash);
+		String newline = System.getProperty("line.separator");
+		String newlineQuery = querySql.replaceAll("^\\s\\s\\s", newline);
+		newlineQuery = newlineQuery.replaceAll("(\\S)\\s\\s\\s", "$1"
+						       + newline);
+		System.out.println(newline + newlineQuery + newline);
+	    } else if (returnResultAsTable) {
+		String table = tester.showResultTable(query, paramHash);
+		System.out.println(table);
+	    } else {
+		QueryInstance instance = query.makeInstance(paramHash);
+		ResultList rs = instance.getResults();
+		print(query, rs);
+	    }
+	}
         System.exit(0);
     }
 
@@ -243,9 +239,12 @@ public class QueryTester {
     }
 
     private static void addOption(Options options, String argName, String desc) {
+	addOption(options, argName, true, desc, true);
+    }
 
-        Option option = new Option(argName, true, desc);
-        option.setRequired(true);
+     private static void addOption(Options options, String argName, boolean hasArg, String desc, boolean required) {
+       Option option = new Option(argName, hasArg, desc);
+        option.setRequired(required);
         option.setArgName(argName);
 
         options.addOption(option);
@@ -263,6 +262,14 @@ public class QueryTester {
         // query name
         addOption(options, "query",
                 "The full name (set.element) of the query to run.");
+
+        // show params
+        addOption(options, "showParams", false,
+                "Show the names of the parameters expected by the query", false);
+
+        // show params
+        addOption(options, "d", false,
+                "Use default values for unprovided parameters", false);
 
         OptionGroup specialOperations = new OptionGroup();
 
@@ -323,11 +330,12 @@ public class QueryTester {
         String newline = System.getProperty("line.separator");
         String cmdlineSyntax = cmdName + " -model model_name"
                 + " -query full_query_name"
+                + " [-d | -showParams]"
                 + " [-returnTable -rows start end | -returnSize | -showQuery]"
                 + " [-params param_1_name param_1_value ...]";
 
         String header = newline
-                + "Run a query found in a WDK Model xml file.  If run without -params, displays the parameters for the specified query"
+                + "Run a query found in a WDK Model xml file. Specify -d to use default parameter values for all unprovided parameters.  Specify -showParams to display the namew of the parameters the query takes"
                 + newline + newline + "Options:";
 
         String footer = " ";

@@ -146,7 +146,7 @@ public class QuerySet extends WdkModelBase implements ModelSetI {
         for (ParamValuesSet paramValuesSet : unexcludedDefaultParamValuesSets) {
             if (paramValuesSet.include(projectId)) {
                 if (defaultParamValuesSet != null)
-                    throw new WdkModelException("Duplicate <defaultParamValues> included in query set " + getName() + " for projectId " + projectId);
+                    throw new WdkModelException("Duplicate <defaultTestParamValues> included in query set " + getName() + " for projectId " + projectId);
 		defaultParamValuesSet = paramValuesSet;
 
             }
