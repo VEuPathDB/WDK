@@ -95,7 +95,7 @@ public class QueryTester {
         System.out.println("");
     }
 
-    Map<String, Object> parseParamArgs(String[] params, boolean useDefaults, Query query)  throws WdkModelException, NoSuchAlgorithmException, SQLException, JSONException, WdkUserException {
+    static Map<String, Object> parseParamArgs(String[] params, boolean useDefaults, Query query)  throws WdkModelException, NoSuchAlgorithmException, SQLException, JSONException, WdkUserException {
 
         Map<String, Object> h = new LinkedHashMap<String, Object>();
 
