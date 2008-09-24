@@ -5,6 +5,9 @@ import org.json.JSONException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import javax.sql.DataSource;
@@ -28,7 +31,6 @@ import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.QuerySet;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
-import org.gusdb.wdk.model.FieldScope;
 import org.gusdb.wdk.model.ParamValuesSet;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.RecordClassSet;
@@ -46,7 +48,6 @@ import org.gusdb.wdk.model.xml.XmlQuestionSet;
 import org.gusdb.wdk.model.query.SqlQueryInstance;
 import org.xml.sax.SAXException;
 
-import com.sun.org.apache.bcel.internal.classfile.Attribute;
 
 /**
  * SanityTester.java " [-project project_id]" +
@@ -73,8 +74,8 @@ public class SanityTester {
     int questionsPassed = 0;
     int questionsFailed = 0;
     int testCount = 0;
-    Integer skipTo; // skip tests before this one
-    Integer stopAfter; // stop after this test
+    boolean[] testFilter;
+    String testFilterString;
     static final String newline = System.getProperty("line.separator");
 
     WdkModel wdkModel;
@@ -82,23 +83,21 @@ public class SanityTester {
     boolean failuresOnly;
     boolean indexOnly;
     String modelName;
-    private Boolean doNotTest;
 
     public static final String BANNER_LINE_top = "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv";
     public static final String BANNER_LINE_bot = "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^";
 
     private static final Logger logger = Logger.getLogger(SanityTester.class);
     
-    public SanityTester(String modelName, boolean verbose, Integer skipTo,
-            Integer stopAfter, boolean failuresOnly, boolean indexOnly)
+    public SanityTester(String modelName, boolean verbose, String testFilterString, boolean failuresOnly, boolean indexOnly)
             throws WdkModelException, WdkUserException, NoSuchAlgorithmException, ParserConfigurationException, TransformerException, IOException, SAXException, SQLException, JSONException, InstantiationException, IllegalAccessException, ClassNotFoundException {
         this.wdkModel = WdkModel.construct(modelName);
         this.verbose = verbose;
         this.failuresOnly = failuresOnly;
         this.indexOnly = indexOnly;
         this.modelName = modelName;
-        this.skipTo = skipTo;
-        this.stopAfter = stopAfter;
+        this.testFilterString = testFilterString;
+        testFilter = parseTestFilter(testFilterString);       
     }
 
     // ------------------------------------------------------------------
@@ -123,10 +122,7 @@ public class SanityTester {
     }
 
     private void testQuestion(Question question, ParamValuesSet paramValuesSet) {
-
-	testCount++;
-	if (skipTo != null && testCount < skipTo) return;
-	if (stopAfter != null && testCount > stopAfter) return;
+	if (!checkTestFilter(testCount++)) return;
 	if (indexOnly) {
 	    System.out.println(" [test: " + testCount + "]"
 			       + " QUESTION " + question.getFullName()
@@ -255,9 +251,7 @@ public class SanityTester {
 
 	String typeUpperCase = queryType.toUpperCase();
 
-	testCount++;
-	if (skipTo != null && testCount < skipTo) return;
-	if (stopAfter != null && testCount > stopAfter) return;
+	if (!checkTestFilter(testCount++)) return;
 	if (indexOnly) {
 	    System.out.println(" [test: " + testCount + "] " 
 			       + typeUpperCase + " QUERY " 
@@ -394,12 +388,14 @@ public class SanityTester {
 	}
     }
 
+    private boolean checkTestFilter(int testIndex) {
+	return testFilter == null || testFilter[testIndex]; 
+    }
+
     private void testRecordClass(RecordClass recordClass, ParamValuesSet paramValuesSet) {
 
 	
-	testCount++;
-	if (skipTo != null && testCount < skipTo) return;
-	if (stopAfter != null && testCount > stopAfter) return;
+	if (!checkTestFilter(testCount++)) return;
 	if (indexOnly) {
 	    System.out.println(" [test: " + testCount + "]"
 			       + " RECORD " + recordClass.getFullName()
@@ -416,7 +412,7 @@ public class SanityTester {
 
 	    RecordInstance recordInstance
 		= recordClass.makeRecordInstance(paramValuesSet.getParamValues());
-	    String riString = recordInstance.print();
+	    recordInstance.print();
 	    passed = true;
 
 	} catch (Exception e) {
@@ -476,8 +472,7 @@ public class SanityTester {
 
         StringBuffer resultLine = new StringBuffer(
                 "***Sanity test summary***" + newline);
-        resultLine.append("Skipped to: " + skipTo + newline);
-        resultLine.append("Stopped after: " + stopAfter + newline);
+        resultLine.append("TestFilter: " + testFilterString + newline);
         resultLine.append("Total Passed: " + totalPassed + newline);
         resultLine.append("Total Failed: " + totalFailed + newline);
         resultLine.append("   " + queriesPassed + " queries passed, "
@@ -514,13 +509,9 @@ public class SanityTester {
         options.addOption(verbose);
 
         // verbose
-        Option skipTo = new Option("skipTo", true,
-                "Skip tests before this one.  Provide the integer test number.");
-        options.addOption(skipTo);
-
-        Option stopAfter = new Option("stopAfter", true,
-                "Stop after this test.  Provide the integer test number.");
-        options.addOption(stopAfter);
+        Option filter = new Option("t", true,
+                "Optional list of tests to run (default=all).  E.g., 1,4-17,62");
+        options.addOption(filter);
 
         Option failuresOnly = new Option("failuresOnly",
                 "Only print failures only.");
@@ -551,12 +542,25 @@ public class SanityTester {
         return cmdLine;
     }
 
+    static boolean[] parseTestFilter(String listStr) {
+	String[] ranges = listStr.split(",");
+	boolean [] filter = new boolean[1000]; // assume no more than 1000 tests
+	Arrays.fill(filter, false);
+	for (String range : ranges) {
+	    String[] points = range.split("-");
+	    int min = Integer.parseInt(points[0])-1;
+	    int max = points.length == 1? min : Integer.parseInt(points[1])-1;
+	    Arrays.fill(filter, min, max, true);
+	}
+	return filter;
+    }
+
     static void usage(String cmdName, Options options) {
 
         String newline = System.getProperty("line.separator");
         String cmdlineSyntax = cmdName
                 + " -model model_name"
-                + " [-verbose] [-skipTo testnum] [-stopAfter testnum]  [-failuresOnly | -indexOnly";
+                + " [-verbose] [-t testfilter] [-failuresOnly | -indexOnly";
 
         String header = newline
                 + "Run a test on all queries and records in a wdk model."
@@ -581,14 +585,7 @@ public class SanityTester {
 
         String modelName = cmdLine.getOptionValue("model");
 
-        String skipToStr = cmdLine.getOptionValue("skipTo");
-
-        Integer skipTo = skipToStr == null ? null : Integer.decode(skipToStr);
-
-        String stopAfterStr = cmdLine.getOptionValue("stopAfter");
-
-        Integer stopAfter = stopAfterStr == null ? null
-                : Integer.decode(stopAfterStr);
+        String testFilterString = cmdLine.getOptionValue("t");
 
         boolean verbose = cmdLine.hasOption("verbose");
 
@@ -597,7 +594,7 @@ public class SanityTester {
         boolean indexOnly = cmdLine.hasOption("indexOnly");
 
         SanityTester sanityTester = new SanityTester(modelName, 
-                verbose, skipTo, stopAfter, failuresOnly,
+                verbose, testFilterString, failuresOnly,
                 indexOnly);
 
        	sanityTester.testQuerySets(QuerySet.TYPE_VOCAB);
