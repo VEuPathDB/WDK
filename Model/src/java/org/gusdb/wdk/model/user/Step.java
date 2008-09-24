@@ -35,6 +35,8 @@ public class Step {
     private Answer answer = null;
     private boolean isDeleted;
     private Boolean isDepended;
+    private boolean isCollapsible = false;
+    private String collapsedName = null;
     
     private boolean isValid = true;
     private String version;
@@ -51,18 +53,6 @@ public class Step {
         isDeleted = false;
     }
 
-    //public Step(UserAnswer filterUserAnswer) {
-    //this.filterUserAnswer = filterUserAnswer;
-    //}
-
-    //public Step(UserAnswer filterUserAnswer, Step childStep,
-    //	    Step previousStep, Step nextStep) {
-    //this.previousStep = previousStep;
-    //this.nextStep = nextStep;
-    //this.filterUserAnswer = filterUserAnswer;
-    //this.childStep = childStep;
-    //}
-
     public Step getPreviousStep() {
         return previousStep;
     }
@@ -71,47 +61,14 @@ public class Step {
 	return nextStep;
     }
 
-    //public UserAnswer getFilterUserAnswer() {
-    //return filterUserAnswer;
-    //}
-
     public Step getChildStep() {
 	return childStep;
     }
-
-    //public UserAnswer getChildStepUserAnswer() {
-    //return childStep.getFilterUserAnswer();
-    //}
-
-    //public String getShortName() 
-    //throws WdkModelException, WdkUserException {
-    //if (getIsFirstStep()) {
-    //    return filterUserAnswer.getShortDisplayName();
-    //}
-    //else {
-    //    return childStep.getFilterUserAnswer().getShortDisplayName();
-    //}
-    //}
-
-    //public String getDataType() {
-    //return filterUserAnswer.getDataType();
-    //}
 
     public int getResultSize()
 	throws WdkModelException, WdkUserException {
 	return answer.getAnswerValue().getResultSize();
     }
-
-    //public int getFilterResultSize()
-    //throws WdkModelException, WdkUserException {
-    //return filterUserAnswer.getAnswerValue().getResultSize();
-    //}
-
-    // Need to check whether subquery is a Step or a UserAnswer
-    //public int getSubQueryResultSize()
-    //throws WdkModelException, WdkUserException {
-    //return ((Step)childStep).getFilterResultSize();
-    //}
 
     // Needs to be updated for transforms
     public String getOperation() throws WdkUserException {
@@ -365,6 +322,22 @@ public class Step {
         this.isDeleted = isDeleted;
     }
     
+    public boolean isCollapsible() {
+	return isCollapsible;
+    }
+    
+    public void setCollapsible(boolean isCollapsible) {
+	this.isCollapsible = isCollapsible;
+    }
+
+    public String getCollapsedName() {
+	return collapsedName;
+    }
+
+    public void setCollapsedName(String collapsedName) {
+	this.collapsedName = collapsedName;
+    }
+
     public String getCacheFullTable() throws WdkModelException {
         return answer.getCacheFullTable();
     }

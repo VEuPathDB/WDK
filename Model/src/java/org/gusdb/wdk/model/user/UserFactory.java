@@ -1223,22 +1223,22 @@ public class UserFactory {
 	    if (stepId < 0) {
 		throw new WdkModelException("An unknown error occurred while creating step.");
 	    }
-            // create the History
-            Step userAnswer = new Step(this, user, stepId, internalId);
-	    userAnswer.setAnswer(answer);
-            userAnswer.setAnswerValue(result);
-            userAnswer.setCreatedTime(createTime);
-            userAnswer.setLastRunTime(lastRunTime);
-            userAnswer.setCustomName(customName);
+            // create the Step
+            Step step = new Step(this, user, stepId, internalId);
+	    step.setAnswer(answer);
+            step.setAnswerValue(result);
+            step.setCreatedTime(createTime);
+            step.setLastRunTime(lastRunTime);
+            step.setCustomName(customName);
 	    
 	    // Need to insert children into steps table
 	    // NOTE:  This will continue to assume we're working in simple,
 	    // two-operand booleans!  Need to find a way to not do this!
 	    if (isBoolean) {
-		updateUserAnswerTree(user, userAnswer, booleanExpression);
+		updateStepTree(user, step, booleanExpression);
 	    }
-	    else if (userAnswer.isTransform()) {
-		updateUserAnswerTree(user, userAnswer, null);
+	    else if (step.isTransform()) {
+		updateStepTree(user, step, null);
 	    }
 
             // update the user's history count
@@ -1246,7 +1246,7 @@ public class UserFactory {
             int historyCount = getHistoryCount(user);
             user.setHistoryCount(historyCount);
 
-            return userAnswer;
+            return step;
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
         } finally {
@@ -1264,9 +1264,7 @@ public class UserFactory {
         }
     }
 
-    // Note:  this function still assumes two-operand booleans.  will need
-    // to be rewritten?
-    private void updateUserAnswerTree(User user, Step userAnswer, String booleanExpression) 
+    private void updateStepTree(User user, Step step, String booleanExpression) 
 	throws WdkUserException {
 	PreparedStatement psUpdateAnswerTree = null;
 
@@ -1288,13 +1286,13 @@ public class UserFactory {
 		System.out.println("Right: " + rightChildId);
 		psUpdateAnswerTree.setInt(1, leftChildId);
 		psUpdateAnswerTree.setInt(2, rightChildId);
-		psUpdateAnswerTree.setInt(3, userAnswer.getInternalId());
+		psUpdateAnswerTree.setInt(3, step.getInternalId());
 	    }
 	    else {
 		psUpdateAnswerTree = SqlUtils.getPreparedStatement(dataSource, "UPDATE " + loginSchema +
 								   "steps SET left_child_id = ? "
 								   + "WHERE step_id = ?");
-		Param[] params = userAnswer.getAnswerValue().getQuestion().getParams();
+		Param[] params = step.getAnswerValue().getQuestion().getParams();
 		HistoryParam histParam = null;
 		for ( Param param : params ) {
 		    if ( param instanceof HistoryParam ) {
@@ -1305,10 +1303,10 @@ public class UserFactory {
 		if (histParam == null) 
 		    throw new WdkUserException("Transform query has no HistoryParam.");
 
-		Map<String, Object> paramVals = userAnswer.getAnswerValue().getParams();
+		Map<String, Object> paramVals = step.getAnswerValue().getParams();
 		leftChildId = Integer.parseInt((String) paramVals.get(histParam.getName()));
 		psUpdateAnswerTree.setInt(1, leftChildId);
-		psUpdateAnswerTree.setInt(2, userAnswer.getInternalId());
+		psUpdateAnswerTree.setInt(2, step.getInternalId());
 	    }
 	    psUpdateAnswerTree.executeUpdate();
 	} catch (SQLException ex) {
@@ -1323,13 +1321,13 @@ public class UserFactory {
     }
 
     /**
-     * This method only update the custom name, the time stamp of last running
+     * This method updates the custom name, the time stamp of last running, isDeleted, isCollapsible, and collapsed name
      * 
      * @param user
      * @param userAnswer
      * @throws WdkUserException
      */
-    void updateStep(User user, Step userAnswer, boolean updateTime)
+    void updateStep(User user, Step step, boolean updateTime)
             throws WdkUserException {
         // check email existence
         if (!isExist(user.getEmail()))
@@ -1337,33 +1335,35 @@ public class UserFactory {
                     + " doesn't exist. Updating operation cancelled.");
 
         // TEST
-        logger.info("Save custom name: '" + userAnswer.getBaseCustomName() + "'");
+        logger.info("Save custom name: '" + step.getBaseCustomName() + "'");
 
         // update custom name
-        Date lastRunTime = (updateTime) ? new Date() : userAnswer.getLastRunTime();
-        PreparedStatement psUserAnswer = null;
+        Date lastRunTime = (updateTime) ? new Date() : step.getLastRunTime();
+        PreparedStatement psStep = null;
         try {
-            psUserAnswer = SqlUtils.getPreparedStatement(dataSource, "UPDATE "
+            psStep = SqlUtils.getPreparedStatement(dataSource, "UPDATE "
                     + loginSchema + "steps SET custom_name = ?, "
-                    + " last_run_time = ?, is_deleted = ?"
-                    + "WHERE step_id = ?");
-            psUserAnswer.setString(1, userAnswer.getBaseCustomName());
-            psUserAnswer.setTimestamp(2, new Timestamp(lastRunTime.getTime()));
-            psUserAnswer.setBoolean(3, userAnswer.isDeleted());
-            psUserAnswer.setInt(4, userAnswer.getInternalId());
-            int result = psUserAnswer.executeUpdate();
+                    + "last_run_time = ?, is_deleted = ?, is_collapsible = ?, "
+                    + "collapsed_name = ? WHERE step_id = ?");
+            psStep.setString(1, step.getBaseCustomName());
+            psStep.setTimestamp(2, new Timestamp(lastRunTime.getTime()));
+            psStep.setBoolean(3, step.isDeleted());
+	    psStep.setBoolean(4, step.isCollapsible());
+	    psStep.setString(5, step.getCollapsedName());
+            psStep.setInt(6, step.getInternalId());
+            int result = psStep.executeUpdate();
             if (result == 0)
                 throw new WdkUserException("The history #"
-                        + userAnswer.getStepId() + " of user "
+                        + step.getStepId() + " of user "
                         + user.getEmail() + " cannot be found.");
 
             // update the last run stamp
-            userAnswer.setLastRunTime(lastRunTime);
+            step.setLastRunTime(lastRunTime);
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
         } finally {
             try {
-                SqlUtils.closeStatement(psUserAnswer);
+                SqlUtils.closeStatement(psStep);
             } catch (SQLException ex) {
                 throw new WdkUserException(ex);
             }
@@ -1495,15 +1495,19 @@ public class UserFactory {
 	    Step leftChild = importStep(user, exportStep.getPreviousStep());
 	    Step rightChild = importStep(user, exportStep.getChildStep());
 	    booleanExpression = leftChild.getStepId() + " " + exportStep.getOperation() + " " + rightChild.getStepId();
-	    return createStep(user, exportStep.getAnswerValue(), booleanExpression, exportStep.isDeleted());
 	}
 	// Is this step a transform?  Load depended step first.
 	else if (exportStep.isTransform()) {
 	    throw new WdkModelException("Not implemented yet!!!");
 	}
-	else {
-	    return createStep(user, exportStep.getAnswerValue(), booleanExpression, exportStep.isDeleted());
-	}
+
+	importStep = createStep(user, exportStep.getAnswerValue(), booleanExpression, exportStep.isDeleted());
+	importStep.setCollapsible(exportStep.isCollapsible());
+	importStep.setCollapsedName(exportStep.getCollapsedName());
+
+	updateStep(user, importStep, false);
+
+	return importStep;
     }
 
     // TODO: SQL needs to be changed to work w/ new steps table
@@ -2197,32 +2201,6 @@ public class UserFactory {
         }
     }
 
-    void deleteStep(User user, int userAnswerId)
-	throws WdkUserException {
-        PreparedStatement psUserAnswer = null;
-        try {
-            // remove user answer
-            psUserAnswer = SqlUtils.getPreparedStatement(dataSource, "DELETE "
-                    + "FROM " + loginSchema + "steps WHERE user_id = ? "
-                    + "AND project_id = ? AND display_id = ?");
-            psUserAnswer.setInt(1, user.getUserId());
-            psUserAnswer.setString(2, projectId);
-            psUserAnswer.setInt(3, userAnswerId);
-            int result = psUserAnswer.executeUpdate();
-            if (result == 0)
-                throw new WdkUserException("The user answer #" + userAnswerId
-                        + " of user " + user.getEmail() + " cannot be found.");
-        } catch (SQLException ex) {
-            throw new WdkUserException(ex);
-        } finally {
-            try {
-                SqlUtils.closeStatement(psUserAnswer);
-            } catch (SQLException ex) {
-                throw new WdkUserException(ex);
-            }
-        }
-    }
-
     void deleteHistory(User user, int historyId) throws WdkUserException {
         PreparedStatement psHistory = null;
         try {
@@ -2248,12 +2226,6 @@ public class UserFactory {
         }
     }
 
-    // TODO: Do we really offer this in the world where Step == UserAnswer?
-    void deleteSteps(User user, boolean allProjects)
-	throws WdkUserException {
-	throw new WdkUserException("UserFactory.deleteUserAnswers() is not implemented.");
-    }
-
     void deleteHistories(User user, boolean allProjects)
             throws WdkUserException {
         PreparedStatement psHistory = null;
@@ -2277,16 +2249,6 @@ public class UserFactory {
                 throw new WdkUserException(ex);
             }
         }
-    }
-
-    // TODO: Do we really offer this in the world where Step == UserAnswer?
-    public void deleteInvalidSteps(User user)
-	throws WdkUserException, WdkModelException {
-	Map<Integer, Step> invalidUserAnswers = new LinkedHashMap<Integer, Step>();
-	loadSteps(user, invalidUserAnswers);
-	for (int userAnswerId : invalidUserAnswers.keySet()) {
-	    deleteStep(user, userAnswerId);
-	}
     }
 
     public void deleteStrategy(User user, int strategyId) 

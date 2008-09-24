@@ -743,24 +743,9 @@ public class User /* implements Serializable */{
         userFactory.deleteHistories(this, allProjects);
     }
 
-    public void deleteSteps()
-	throws WdkUserException {
-	userFactory.deleteSteps(this, false);
-    }
-
-    public void deleteSteps(boolean allProjects)
-	throws WdkUserException {
-	userFactory.deleteSteps(this, allProjects);
-    }
-
     public void deleteInvalidHistories() throws WdkUserException,
             WdkModelException {
         userFactory.deleteInvalidHistories(this);
-    }
-
-    public void deleteInvalidSteps()
-	throws WdkUserException, WdkModelException {
-	userFactory.deleteInvalidSteps(this);
     }
 
     public void deleteHistory(int historyId) throws WdkUserException,
