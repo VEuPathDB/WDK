@@ -543,6 +543,8 @@ public class SanityTester {
     }
 
     static boolean[] parseTestFilter(String listStr) {
+	if (listStr == null) return null;
+
 	String[] ranges = listStr.split(",");
 	boolean [] filter = new boolean[1000]; // assume no more than 1000 tests
 	Arrays.fill(filter, false);
@@ -550,7 +552,7 @@ public class SanityTester {
 	    String[] points = range.split("-");
 	    int min = Integer.parseInt(points[0])-1;
 	    int max = points.length == 1? min : Integer.parseInt(points[1])-1;
-	    Arrays.fill(filter, min, max, true);
+	    Arrays.fill(filter, min, max+1, true);
 	}
 	return filter;
     }
