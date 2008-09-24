@@ -1194,4 +1194,9 @@ public class User /* implements Serializable */{
             throw new WdkUserException(
                     "Remote login failed. The remote key is expired.");
     }
+
+    public Strategy importStrategyByGlobalId(int globalId)
+	throws WdkModelException, WdkUserException {
+	return userFactory.importStrategyByGlobalId(this, globalId);
+    }
 }

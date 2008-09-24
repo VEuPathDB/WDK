@@ -1001,5 +1001,13 @@ public class UserBean /* implements Serializable */{
         user.updateHistory(history.getHistory(), expression);
     }
 
+    /*
+     * @see org.gusdb.wdk.model.user.User#importStrategyByGlobalId(int)
+     */
+    public StrategyBean importStrategyByGlobalId(int globalId)
+	throws WdkModelException, WdkUserException {
+	return new StrategyBean(user.importStrategyByGlobalId(globalId));
+    }
+
     // ********************************* END ***********************************
 }

@@ -1439,70 +1439,71 @@ public class UserFactory {
 	}
     }
 
-    private Strategy importStrategy(User user, int userId, int strategyId)
+    Strategy importStrategyByGlobalId(User user, int globalId)
+	throws WdkUserException, WdkModelException {
+	ResultSet rsStrategy = null;
+	try {
+	    // Get user_id, strategy_id from strategies by signature
+	    PreparedStatement psStrategy = SqlUtils.getPreparedStatement(
+		     dataSource, "SELECT user_id, display_id FROM "
+		     + loginSchema + "strategies WHERE "
+		     + "strategy_id = ?");
+	    psStrategy.setInt(1, globalId);
+	    rsStrategy = psStrategy.executeQuery();
+	    if (!rsStrategy.next())
+		throw new WdkUserException("The strategy with global id " + globalId + " doesn't exist.");
+
+	    int userId = rsStrategy.getInt("user_id");
+	    int strategyId = rsStrategy.getInt("display_id");
+
+	    return importStrategy(user, userId, strategyId);
+	} catch (SQLException ex) {
+	    throw new WdkUserException(ex);
+	} finally {
+	    try {
+		SqlUtils.closeResultSet(rsStrategy);
+	    } catch (SQLException ex) {
+		throw new WdkUserException(ex);
+	    }
+	}
+    }
+
+    private Strategy importStrategy(User user, int exportUserId, int strategyId)
 	throws WdkUserException, WdkModelException {
 	
 	// Load export User by user_id
-	User exportUser = loadUser(userId);
+	User exportUser = loadUser(exportUserId);
 	// Load Strategy by export User, strategy_id
 	Strategy exportStrat = loadStrategy(exportUser, strategyId);
-	/**
-	 *
-	 *  TODO:  REWRITE FOR NEW UNIFIED STEP/UA OBJECT
-	 *
-	 *
-	 */
-	/*
-	Step[] exportSteps = exportStrat.getAllSteps();
-	// can we initialize to something better?
-	int userAnswerId = -1;
 
-	UserAnswer userAnswer = null;
-	// Iterate over Steps in Strategy
-	for ( Step step : exportSteps ) {
-	    //    If isBoolean, update the booleanExpression properly
-	    if (step.getFilterStep().isBoolean()) {
-		int childAnswerId;
-		if (step.getChildStep().getStrategy() != null) {
-		    Strategy subStrat = importStrategy(user, userId, step.getChildStep().getStrategy().getStrategyId());
-		    userAnswer = createUserAnswer(user, subStrat.getLatestStep().getFilterUserAnswer().getAnswerValue(), null, false);
-		}
-		else {
-		    userAnswer = createUserAnswer(user, step.getChildStep().getFilterUserAnswer().getAnswerValue(), null, false);
-		}
-		childAnswerId = userAnswer.getStepId();
-		
-		String booleanExpression = userAnswerId + " " + step.getOperation() + " " + childAnswerId;
-		userAnswer = user.combineUserAnswer(booleanExpression);
-		userAnswerId = userAnswer.getStepId();
-	    }
-	    else {
-		if (step.getFilterUserAnswer().isTransform()) {
-		    //find history param in the UserAnswer
-		    Param[] params = step.getFilterUserAnswer().getAnswerValue().getQuestion().getParams();
-		    HistoryParam histParam = null;
-		    for ( Param param : params ) {
-			if ( param instanceof HistoryParam ) {
-			    histParam = (HistoryParam)param;
-			}
-		    }
-		    
-		    if (histParam == null) 
-			throw new WdkUserException("Transform query has no HistoryParam.");
-		    
-		    //update the history param so it is correct for the import user
-		    Map<String, Object> paramVals = step.getFilterUserAnswer().getAnswerValue().getParams();
-		    paramVals.put(histParam.getName(), userAnswerId);
-		}
-		
-		userAnswer = createUserAnswer(user, step.getFilterUserAnswer().getAnswerValue(), null, false);
-		userAnswerId = userAnswer.getStepId();
-	    }
-	}
+	Step importLatest = importStep(user, exportStrat.getLatestStep());
       
-	return createStrategy(user, userAnswer, exportStrat.getName(), exportStrat.getIsSaved());
-	*/
-	return exportStrat;
+	return createStrategy(user, importLatest, exportStrat.getName(), exportStrat.getIsSaved());
+    }
+
+    private Step importStep(User user, Step exportStep)
+	throws WdkUserException, WdkModelException {
+	Step importStep;
+	String booleanExpression = null;
+
+	if (exportStep.getUser() == user) {
+	    return exportStep;
+	}
+
+	// Is this step a boolean?  Load depended steps first.
+	if (exportStep.isBoolean()) {
+	    Step leftChild = importStep(user, exportStep.getPreviousStep());
+	    Step rightChild = importStep(user, exportStep.getChildStep());
+	    booleanExpression = leftChild.getStepId() + " " + exportStep.getOperation() + " " + rightChild.getStepId();
+	    return createStep(user, exportStep.getAnswerValue(), booleanExpression, exportStep.isDeleted());
+	}
+	// Is this step a transform?  Load depended step first.
+	else if (exportStep.isTransform()) {
+	    throw new WdkModelException("Not implemented yet!!!");
+	}
+	else {
+	    return createStep(user, exportStep.getAnswerValue(), booleanExpression, exportStep.isDeleted());
+	}
     }
 
     // TODO: SQL needs to be changed to work w/ new steps table
