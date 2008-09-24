@@ -586,11 +586,6 @@ public class UserBean /* implements Serializable */{
         user.deleteHistories();
     }
 
-    public void deleteSteps()
-	throws WdkUserException {
-	user.deleteSteps();
-    }
-
     /*
      * (non-Javadoc)
      * 
@@ -628,11 +623,6 @@ public class UserBean /* implements Serializable */{
     public void deleteHistory(int historyId) throws WdkUserException,
             WdkModelException {
         user.deleteHistory(historyId);
-    }
-
-    public void deleteStep(int userAnswerId)
-	throws WdkUserException, WdkModelException {
-	user.deleteStep(userAnswerId);
     }
 
     public void deleteStrategy(int strategyId)
@@ -673,11 +663,6 @@ public class UserBean /* implements Serializable */{
     public void deleteInvalidHistories() throws WdkUserException,
             WdkModelException {
         user.deleteInvalidHistories();
-    }
-
-    public void deleteInvalidSteps()
-	throws WdkUserException, WdkModelException {
-	user.deleteInvalidSteps();
     }
 
     public Map<String, List<HistoryBean>> getHistoriesByCategory()

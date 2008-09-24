@@ -201,6 +201,22 @@ public class StepBean {
         step.setDeleted(isDeleted);
     }
     
+    public boolean getIsCollapsible() {
+	return step.isCollapsible();
+    }
+
+    public void setIsCollapsible(boolean isCollapsible) {
+	step.setCollapsible(isCollapsible);
+    }
+
+    public String getCollapsedName() {
+	return step.getCollapsedName();
+    }
+
+    public void setCollapsedName(String collapsedName) {
+	step.setCollapsedName(collapsedName);
+    }
+    
     public String getCacheFullTable() throws WdkModelException {
         return step.getCacheFullTable();
     }
