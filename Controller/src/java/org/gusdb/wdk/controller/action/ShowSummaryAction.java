@@ -192,8 +192,9 @@ public class ShowSummaryAction extends ShowQuestionAction {
 	    activeStrategies = new ArrayList<Integer>();
 	}
 	//activeStrategies.put(new Integer(strategy.getStrategyId()),strategy);
-	activeStrategies.add(0, new Integer(strategy.getStrategyId()));
-	
+	if (!activeStrategies.contains(new Integer(strategy.getStrategyId()))) {
+		activeStrategies.add(0, new Integer(strategy.getStrategyId()));
+	}
 	request.getSession().setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY, activeStrategies);  
 	
         int userAnswerId = userAnswer.getStepId();
