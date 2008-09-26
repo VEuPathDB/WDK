@@ -1,7 +1,17 @@
-DROP SCHEMA IF EXISTS userlogins CASCADE;
 
+DROP SEQUENCE userlogins.users_pkseq;
+DROP SEQUENCE userlogins.dataset_indices_pkseq;
 
-CREATE SCHEMA userlogins AUTHORIZATION postgres;
+DROP TABLE userlogins.clob_values;
+DROP TABLE userlogins.user_datasets;
+DROP TABLE userlogins.dataset_values;
+DROP TABLE userlogins.dataset_indices;
+DROP TABLE userlogins.histories;
+DROP TABLE userlogins.preferences;
+DROP TABLE userlogins.user_roles;
+DROP TABLE userlogins.users;
+DROP TABLE userlogins.sorting_attributes;
+DROP TABLE userlogins.summary_attributes;
 
 
 CREATE SEQUENCE userlogins.users_pkseq INCREMENT BY 1 START WITH 1;
@@ -111,7 +121,7 @@ CREATE TABLE userlogins.dataset_values
       REFERENCES userlogins.dataset_indices (dataset_id)
 );
 
-CREATE INDEX DATASET_VALUES_ID_INDEX ON userlogins.dataset_values (dataset_id);
+CREATE INDEX userlogins3.dataset_values_idx01 ON userlogins.dataset_values (dataset_id);
 
 
 CREATE TABLE userlogins.user_datasets
