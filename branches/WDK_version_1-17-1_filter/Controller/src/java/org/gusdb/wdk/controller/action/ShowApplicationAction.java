@@ -57,29 +57,44 @@ public class ShowApplicationAction extends ShowSummaryAction {
             request.getSession().setAttribute(CConstants.WDK_USER_KEY, wdkUser);
         }
 
+	/* HashMap in session code
 	HashMap<Integer,StrategyBean> activeStrategies = (HashMap<Integer,StrategyBean>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
-
 	Integer[] keys = activeStrategies.keySet().toArray(new Integer[0]);
 
 	StrategyBean strategy = activeStrategies.get(keys[0]);
-	StepBean step = strategy.getLatestStep();
-	AnswerValueBean wdkAnswerValue = step.getAnswerValue();
+	*/
 
-	String questionName = wdkAnswerValue.getQuestion().getFullName();
-	Map<String, Boolean> sortingAttributes = wdkUser.getSortingAttributes(questionName);
-	String[] summaryAttributes = wdkUser.getSummaryAttributes(questionName);
-	
-	Map<String, Object> params = wdkAnswerValue.getInternalParams();
-	//reformulate the AnswerValueBean in order to set all necessary request attributes
-	wdkAnswerValue = summaryPaging(request, null, params, sortingAttributes,
-				      summaryAttributes, wdkAnswerValue);
+	/* ArrayList in session code */
+	ArrayList<Integer> activeStrategies = (ArrayList<Integer>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
 
-        request.setAttribute(CConstants.WDK_QUESTION_PARAMS_KEY, params);
-        request.setAttribute(CConstants.WDK_ANSWER_KEY, wdkAnswerValue);
-        request.setAttribute(CConstants.WDK_HISTORY_KEY, step);
-	request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
-        //request.setAttribute("wdk_summary_url", requestUrl);
-        //request.setAttribute("wdk_query_string", queryString);
+	StrategyBean strategy = null;
+	ArrayList<StrategyBean> strategyObjects = new ArrayList<StrategyBean>(activeStrategies.size());
+	for (int i = 0; i < activeStrategies.size(); ++i) {
+	    strategy = wdkUser.getStrategy(activeStrategies.get(i).intValue());
+	    strategyObjects.add(strategy);
+	}
+	/* End */
+	if (strategy != null) {
+	    StepBean step = strategy.getLatestStep();
+	    AnswerValueBean wdkAnswerValue = step.getAnswerValue();
+	    
+	    String questionName = wdkAnswerValue.getQuestion().getFullName();
+	    Map<String, Boolean> sortingAttributes = wdkUser.getSortingAttributes(questionName);
+	    String[] summaryAttributes = wdkUser.getSummaryAttributes(questionName);
+	    
+	    Map<String, Object> params = wdkAnswerValue.getInternalParams();
+	    //reformulate the AnswerValueBean in order to set all necessary request attributes
+	    wdkAnswerValue = summaryPaging(request, null, params, sortingAttributes,
+					   summaryAttributes, wdkAnswerValue);
+	    
+	    request.setAttribute(CConstants.WDK_QUESTION_PARAMS_KEY, params);
+	    request.setAttribute(CConstants.WDK_ANSWER_KEY, wdkAnswerValue);
+	    request.setAttribute(CConstants.WDK_HISTORY_KEY, step);
+	    request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
+	    //request.setAttribute("wdk_summary_url", requestUrl);
+	    //request.setAttribute("wdk_query_string", queryString);
+	}
+	request.setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY, strategyObjects);
 
 	ActionForward forward = mapping.findForward(CConstants.SHOW_APPLICATION_MAPKEY);
 	

@@ -184,12 +184,15 @@ public class ShowSummaryAction extends ShowQuestionAction {
 	    queryString = request.getQueryString();
 	}
 
-	HashMap<Integer,StrategyBean> activeStrategies = (HashMap<Integer,StrategyBean>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
+	//HashMap<Integer,StrategyBean> activeStrategies = (HashMap<Integer,StrategyBean>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
+	ArrayList<Integer> activeStrategies = (ArrayList<Integer>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
 
 	if (activeStrategies == null) {
-	    activeStrategies = new HashMap<Integer,StrategyBean>();
+	    //activeStrategies = new HashMap<Integer,StrategyBean>();
+	    activeStrategies = new ArrayList<Integer>();
 	}
-	activeStrategies.put(new Integer(strategy.getStrategyId()),strategy);
+	//activeStrategies.put(new Integer(strategy.getStrategyId()),strategy);
+	activeStrategies.add(new Integer(strategy.getStrategyId()));
 	
 	request.getSession().setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY, activeStrategies);  
 	
