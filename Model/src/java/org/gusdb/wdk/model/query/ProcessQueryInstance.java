@@ -10,16 +10,19 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Map;
 
 import javax.xml.rpc.ServiceException;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Column;
+import org.gusdb.wdk.model.ColumnType;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ArrayResultList;
 import org.gusdb.wdk.model.dbms.CacheFactory;
+import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wsf.client.WsfService;
 import org.gusdb.wsf.client.WsfServiceServiceLocator;
@@ -206,6 +209,62 @@ public class ProcessQueryInstance extends QueryInstance {
             NoSuchAlgorithmException, JSONException, WdkUserException {
         // always get sql that queries on the cached result
         return getCachedSql();
+    }
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.query.QueryInstance#createCache(java.sql.Connection, java.lang.String, int)
+     */
+    @Override
+    public void createCache(Connection connection, String tableName,
+            int instanceId)
+            throws WdkModelException, SQLException, NoSuchAlgorithmException,
+            JSONException, WdkUserException {
+        DBPlatform platform = query.getWdkModel().getQueryPlatform();
+        Column[] columns = query.getColumns();
+
+        StringBuffer sqlTable = new StringBuffer("CREATE TABLE ");
+        sqlTable.append(tableName).append(" (");
+
+        // define the instance id column
+        sqlTable.append(CacheFactory.COLUMN_INSTANCE_ID).append(" ");
+        sqlTable.append(platform.getNumberDataType(12)).append(" NOT NULL");
+
+        // define the rest of the columns
+        for (Column column : columns) {
+            int width = column.getWidth();
+            ColumnType type = column.getType();
+
+            String strType;
+            if (type == ColumnType.BOOLEAN) {
+                strType = platform.getBooleanDataType();
+            } else if (type == ColumnType.CLOB) {
+                strType = platform.getClobDataType();
+            } else if (type == ColumnType.DATE) {
+                strType = platform.getDateDataType();
+            } else if (type == ColumnType.FLOAT) {
+                strType = platform.getFloatDataType(width);
+            } else if (type == ColumnType.NUMBER) {
+                strType = platform.getNumberDataType(width);
+            } else if (type == ColumnType.STRING) {
+                strType = platform.getStringDataType(width);
+            } else {
+                throw new WdkModelException("Unknown data type [" + type
+                        + "] of column [" + column.getName() + "]");
+            }
+
+            sqlTable.append(", ").append(column.getName()).append(" ");
+            sqlTable.append(strType);
+        }
+        sqlTable.append(")");
+
+        Statement stmt = null;
+        try {
+            stmt = connection.createStatement();
+            stmt.execute(sqlTable.toString());
+        } finally {
+            if (stmt != null) stmt.close();
+        }
+
     }
 
 }
