@@ -141,4 +141,35 @@ public class SqlQueryInstance extends QueryInstance {
         if (isCached()) return getCachedSql();
         else return getUncachedSql();
     }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.query.QueryInstance#createCache(java.sql.Connection,
+     *      java.lang.String, int)
+     */
+    @Override
+    public void createCache(Connection connection, String tableName,
+            int instanceId) throws NoSuchAlgorithmException, WdkModelException,
+            SQLException, JSONException, WdkUserException {
+        // get the sql with param values applied.
+        String sql = getUncachedSql();
+
+        StringBuffer buffer = new StringBuffer("CREATE TABLE ");
+        buffer.append(tableName).append(" AS ").append("SELECT ");
+        buffer.append(instanceId).append(" AS ").append(
+                CacheFactory.COLUMN_INSTANCE_ID);
+        buffer.append(", f.* FROM (").append(sql).append(") f");
+
+        Statement stmt = null;
+        try {
+            stmt = connection.createStatement();
+            stmt.execute(buffer.toString());
+        } catch (SQLException ex) {
+            logger.error("Fail to run SQL:\n" + buffer);
+            throw ex;
+        } finally {
+            if (stmt != null) stmt.close();
+        }
+    }
 }

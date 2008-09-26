@@ -13,7 +13,6 @@ import java.sql.Statement;
 import javax.sql.DataSource;
 
 import org.gusdb.wdk.model.Column;
-import org.gusdb.wdk.model.ColumnType;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -126,8 +125,10 @@ public class ResultFactory {
 
             // check whether need to create the cache;
             String cacheTable = queryInfo.getCacheTable();
-            if (!platform.checkTableExists(null, cacheTable))
-                createCacheTable(connection, instance, cacheTable);
+            if (!platform.checkTableExists(null, cacheTable)) {
+                instance.createCache(connection, cacheTable, instanceId);
+                createCacheTableIndex(connection, cacheTable);
+            }
 
             instance.insertToCache(connection, cacheTable, instanceId);
 
@@ -154,47 +155,8 @@ public class ResultFactory {
         }
     }
 
-    private void createCacheTable(Connection connection,
-            QueryInstance instance, String cacheTable)
-            throws WdkModelException, SQLException, NoSuchAlgorithmException,
-            JSONException, WdkUserException {
-        Column[] columns = instance.getQuery().getColumns();
-
-        StringBuffer sqlTable = new StringBuffer("CREATE TABLE ");
-        sqlTable.append(cacheTable).append(" (");
-
-        // define the instance id column
-        sqlTable.append(CacheFactory.COLUMN_INSTANCE_ID).append(" ");
-        sqlTable.append(platform.getNumberDataType(12)).append(" NOT NULL");
-
-        // define the rest of the columns
-        for (Column column : columns) {
-            int width = column.getWidth();
-            ColumnType type = column.getType();
-
-            String strType;
-            if (type == ColumnType.BOOLEAN) {
-                strType = platform.getBooleanDataType();
-            } else if (type == ColumnType.CLOB) {
-                strType = platform.getClobDataType();
-            } else if (type == ColumnType.DATE) {
-                strType = platform.getDateDataType();
-            } else if (type == ColumnType.FLOAT) {
-                strType = platform.getFloatDataType(width);
-            } else if (type == ColumnType.NUMBER) {
-                strType = platform.getNumberDataType(width);
-            } else if (type == ColumnType.STRING) {
-                strType = platform.getStringDataType(width);
-            } else {
-                throw new WdkModelException("Unknown data type [" + type
-                        + "] of column [" + column.getName() + "]");
-            }
-
-            sqlTable.append(", ").append(column.getName()).append(" ");
-            sqlTable.append(strType);
-        }
-        sqlTable.append(")");
-
+    private void createCacheTableIndex(Connection connection, String cacheTable)
+            throws SQLException {
         // create cache index
         StringBuffer sqlIndex = new StringBuffer("CREATE INDEX ");
         sqlIndex.append(cacheTable).append("_idx ON ").append(cacheTable);
@@ -204,12 +166,10 @@ public class ResultFactory {
         Statement stmt = null;
         try {
             stmt = connection.createStatement();
-            stmt.execute(sqlTable.toString());
             stmt.execute(sqlIndex.toString());
         } finally {
             if (stmt != null) stmt.close();
         }
-
     }
 
     private int addCacheInstance(Connection connection, QueryInfo queryInfo,

@@ -29,6 +29,10 @@ import org.json.JSONObject;
  */
 public abstract class QueryInstance {
 
+    public abstract void createCache(Connection connection, String tableName,
+            int instanceId) throws NoSuchAlgorithmException, WdkModelException,
+            SQLException, JSONException, WdkUserException;
+
     public abstract void insertToCache(Connection connection, String tableName,
             int instanceId) throws WdkModelException, SQLException,
             NoSuchAlgorithmException, JSONException, WdkUserException;
@@ -206,11 +210,11 @@ public abstract class QueryInstance {
         return internalValues;
     }
 
-    public String getCachedSql() throws NoSuchAlgorithmException,
-            SQLException, WdkModelException, JSONException, WdkUserException {
+    public String getCachedSql() throws NoSuchAlgorithmException, SQLException,
+            WdkModelException, JSONException, WdkUserException {
         CacheFactory cacheFactory = wdkModel.getResultFactory().getCacheFactory();
         QueryInfo queryInfo = cacheFactory.getQueryInfo(getQuery());
-        
+
         String cacheTable = queryInfo.getCacheTable();
         int instanceId = getInstanceId();
 

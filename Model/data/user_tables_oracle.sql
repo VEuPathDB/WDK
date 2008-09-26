@@ -1,18 +1,3 @@
-CREATE USER userlogins
-IDENTIFIED BY loginpwd
-QUOTA UNLIMITED ON users 
-QUOTA UNLIMITED ON gus
-DEFAULT TABLESPACE gus
-TEMPORARY TABLESPACE temp;
-
-ALTER USER userlogins ACCOUNT LOCK;
-
-GRANT SCHEMA_OWNER TO userlogins;
-GRANT GUS_R TO userlogins;
-GRANT GUS_W TO userlogins;
-GRANT CREATE VIEW TO userlogins;
-
-
 
 DROP SEQUENCE userlogins.users_pkseq;
 DROP SEQUENCE userlogins.dataset_indices_pkseq;
@@ -168,7 +153,7 @@ CREATE TABLE userlogins.dataset_values
       REFERENCES userlogins.dataset_indices (dataset_id)
 );
 
-CREATE INDEX DATASET_VALUES_ID_INDEX ON userlogins.dataset_values (dataset_id);
+CREATE INDEX userlogins.dataset_values_idx01 ON userlogins.dataset_values (dataset_id);
 
 GRANT insert, update, delete on userlogins.dataset_values to GUS_W;
 GRANT select on userlogins.dataset_values to GUS_R;
