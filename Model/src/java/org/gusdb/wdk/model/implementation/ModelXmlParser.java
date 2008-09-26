@@ -640,6 +640,16 @@ public class ModelXmlParser extends XmlParser {
                 "setText", 0);
     }
 
+    private void configureParamValuesSet(Digester digester, String path,
+					    String addMethodName) {
+	digester.addObjectCreate(path, ParamValuesSet.class);
+        digester.addSetProperties(path);
+	digester.addCallMethod(path + "/paramValue", "put", 2);
+	digester.addCallParam(path + "/paramValue", 0, "name");
+	digester.addCallParam(path + "/paramValue", 1);
+        digester.addSetNext(path, addMethodName);
+    }
+
     private void configureXmlRecordClassSet(Digester digester) {
         // load XmlRecordClassSet
         configureNode(digester, "wdkModel/xmlRecordClassSet",
