@@ -29,6 +29,10 @@ public class StrategyBean {
 	return strategy.getStrategyId();
     }
 
+    public int getInternalId() {
+	return strategy.getInternalId();
+    }
+
     public StepBean getStep(int index) {
 	return new StepBean(strategy.getStep(index));
     }

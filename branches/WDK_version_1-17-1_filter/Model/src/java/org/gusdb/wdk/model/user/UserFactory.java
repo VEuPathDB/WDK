@@ -2258,7 +2258,7 @@ public class UserFactory {
             // remove history
             psStrategy = SqlUtils.getPreparedStatement(dataSource, "DELETE "
                     + "FROM " + loginSchema + "strategies WHERE user_id = ? "
-                    + "AND project_id = ? AND strategy_id = ?");
+                    + "AND project_id = ? AND display_id = ?");
             psStrategy.setInt(1, user.getUserId());
             psStrategy.setString(2, projectId);
             psStrategy.setInt(3, strategyId);
