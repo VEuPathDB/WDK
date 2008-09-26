@@ -8,6 +8,7 @@ import java.net.URL;
 import java.rmi.RemoteException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -91,6 +92,7 @@ public class ProcessQueryInstance extends QueryInstance {
         }
         sql.append(")");
 
+        DBPlatform platform = query.getWdkModel().getQueryPlatform();
         PreparedStatement ps = null;
         try {
             ps = connection.prepareStatement(sql.toString());
@@ -100,7 +102,23 @@ public class ProcessQueryInstance extends QueryInstance {
                 int columnId = 1;
                 for (Column column : columns) {
                     String value = (String) resultList.get(column.getName());
-                    ps.setString(columnId++, value);
+                    
+                    // determine the type
+                    ColumnType type = column.getType();
+                    if (type == ColumnType.BOOLEAN) {
+                        ps.setBoolean(columnId, Boolean.parseBoolean(value));
+                    } else if (type == ColumnType.CLOB) {
+                        platform.updateClobData(ps, columnId, value, false);
+                    } else if (type == ColumnType.DATE) {
+                        ps.setDate(columnId, Date.valueOf(value));
+                    } else if (type == ColumnType.FLOAT) {
+                        ps.setFloat(columnId, Float.parseFloat(value));
+                    } else if (type == ColumnType.NUMBER) {
+                        ps.setInt(columnId, Integer.parseInt(value));
+                    } else {
+                        ps.setString(columnId, value);
+                    } 
+                    columnId++;
                 }
                 ps.addBatch();
 
