@@ -16,6 +16,7 @@ import org.gusdb.wdk.model.Column;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.ProcessQueryInstance;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.json.JSONException;
@@ -128,9 +129,15 @@ public class ResultFactory {
             if (!platform.checkTableExists(null, cacheTable)) {
                 instance.createCache(connection, cacheTable, instanceId);
                 createCacheTableIndex(connection, cacheTable);
-            }
 
-            instance.insertToCache(connection, cacheTable, instanceId);
+                // the SqlQuery create & insert data at the same time; but
+                // ProcessQuery does it in two steps
+                if (instance instanceof ProcessQueryInstance)
+                    instance.insertToCache(connection, cacheTable, instanceId);
+            } else {
+                // insert result into existing cache table
+                instance.insertToCache(connection, cacheTable, instanceId);
+            }
 
             connection.commit();
             return instanceId;
