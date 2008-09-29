@@ -43,6 +43,7 @@ public class Step {
 
     private Step nextStep = null;
     private Step previousStep = null;
+    private Step parentStep = null;
     private Step childStep = null;
 
     Step( UserFactory factory, User user, int userAnswerId, int internalId) {
@@ -59,6 +60,10 @@ public class Step {
 
     public Step getNextStep() {
 	return nextStep;
+    }
+
+    public Step getParentStep() {
+	return parentStep;
     }
 
     public Step getChildStep() {
@@ -78,6 +83,10 @@ public class Step {
 	return answer.getAnswerValue().getBooleanOperation();
     }
     
+    public void setParentStep(Step parentStep) {
+	this.parentStep = parentStep;
+    }
+
     public void setChildStep(Step childStep) {
 	this.childStep = childStep;
     }

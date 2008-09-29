@@ -37,10 +37,10 @@ public class ProcessRenameStepAction extends Action {
             UserBean wdkUser = ( UserBean ) request.getSession().getAttribute(
                     CConstants.WDK_USER_KEY );
             try {
-                StepBean userAnswer = wdkUser.getStep( stepId );
-                userAnswer.setCustomName( customName );
-                userAnswer.update( false );
-            } catch ( Exception e ) {
+                StepBean step = wdkUser.getStep( stepId );
+		step.setCustomName( customName );
+		step.update( false );
+	    } catch ( Exception e ) {
                 e.printStackTrace();
                 // prevent refresh of page after delete from breaking
             }

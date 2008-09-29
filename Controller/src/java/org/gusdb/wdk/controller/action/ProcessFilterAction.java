@@ -80,68 +80,73 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	StepBean step;
         AnswerValueBean wdkAnswerValue;
 	StrategyBean strategy;
-	String boolExp;
 
+	String boolExp = request.getParameter("booleanExpression");
+	String insertStratIdstr = request.getParameter("insertStrategy");
 
-        // get question
-        String qFullName = request.getParameter( CConstants.QUESTION_FULLNAME_PARAM );
-        QuestionBean wdkQuestion = getQuestionByFullName( qFullName );
-        //FilterForm fForm = prepareFilterForm( wdkQuestion, request,
-	//      ( FilterForm ) form );
-        QuestionForm fForm = prepareQuestionForm( wdkQuestion, request,
-                ( QuestionForm ) form );
-        
-	// validate & parse params
-        Map< String, String > params = prepareParams( wdkUser, request, fForm );
-
-	Map<String, Object> internalParams = fForm.getMyProps();
-
-	// Having booleanExpression present causes question to break (due to unrecognized
-	// parameter).  Remove booleanExpression from params, and set using inherited method
-	// from BooleanExpressionForm.
-	boolExp = internalParams.remove("booleanExpression").toString();
-
-	// Get question name
-	String questionName = wdkQuestion.getFullName();
-	
-	internalParams = handleMultiPickParams(new LinkedHashMap<String, Object>(fForm.getMyProps()));
-	handleDatasetParams(wdkUser, wdkQuestion, internalParams);
-	
-	// How much if this is needed to answer the question?  What is only needed for summary?
-
-	// get sorting key, if have
-	String sortingChecksum = request.getParameter(CConstants.WDK_SORTING_KEY);
-	Map<String, Boolean> sortingAttributes;
-	if (sortingChecksum != null) {
-	    sortingAttributes = wdkUser.getSortingAttributesByChecksum(sortingChecksum);
-	    request.setAttribute("wdk_sorting_checksum", sortingChecksum);
-	} else {
-	    sortingAttributes = wdkUser.getSortingAttributes(questionName);
+	// are we inserting an existing step?
+	if (insertStratIdstr != null && insertStratIdstr.length() != 0) {
+	    // yes:  load step, create a new step w/ same answervalue
+	    StrategyBean insertStrat = wdkUser.getStrategy(Integer.parseInt(insertStratIdstr));
+	    step = insertStrat.getLatestStep();
+	    wdkAnswerValue = step.getAnswerValue();
+	}
+	else {
+	    // no: get question
+	    String qFullName = request.getParameter( CConstants.QUESTION_FULLNAME_PARAM );
+	    QuestionBean wdkQuestion = getQuestionByFullName( qFullName );
+	    QuestionForm fForm = prepareQuestionForm( wdkQuestion, request,
+						      ( QuestionForm ) form );
+	    
+	    // validate & parse params
+	    Map< String, String > params = prepareParams( wdkUser, request, fForm );
+	    
+	    Map<String, Object> internalParams = fForm.getMyProps();
+	    
+	    // Having booleanExpression present causes question to break (due to unrecognized
+	    // parameter).  Remove booleanExpression from params.
+	    //boolExp = internalParams.remove("booleanExpression").toString();
+	    
+	    // Get question name
+	    String questionName = wdkQuestion.getFullName();
+	    
+	    internalParams = handleMultiPickParams(new LinkedHashMap<String, Object>(fForm.getMyProps()));
+	    handleDatasetParams(wdkUser, wdkQuestion, internalParams);
+	    
+	    // get sorting key, if have
+	    String sortingChecksum = request.getParameter(CConstants.WDK_SORTING_KEY);
+	    Map<String, Boolean> sortingAttributes;
+	    if (sortingChecksum != null) {
+		sortingAttributes = wdkUser.getSortingAttributesByChecksum(sortingChecksum);
+		request.setAttribute("wdk_sorting_checksum", sortingChecksum);
+	    } else {
+		sortingAttributes = wdkUser.getSortingAttributes(questionName);
+	    }
+	    
+	    // get summary key, if have
+	    String summaryChecksum = request.getParameter(CConstants.WDK_SUMMARY_KEY);
+	    String[] summaryAttributes = null;
+	    if (summaryChecksum != null) {
+		summaryAttributes = wdkUser.getSummaryAttributesByChecksum(summaryChecksum);
+		request.setAttribute("wdk_summary_checksum", sortingChecksum);
+	    } else {
+		summaryAttributes = wdkUser.getSummaryAttributes(questionName);
+	    }
+	    
+	    try {
+		wdkAnswerValue = summaryPaging(request, wdkQuestion, internalParams,
+					       sortingAttributes, summaryAttributes);
+	    } catch (WdkModelException ex) {
+		logger.error(ex);
+		ex.printStackTrace();
+		return showError(wdkModel, wdkUser, mapping, request, response);
+	    } catch (WdkUserException ex) {
+		logger.error(ex);
+		ex.printStackTrace();
+		return showError(wdkModel, wdkUser, mapping, request, response);
+	    }
 	}
 	
-	// get summary key, if have
-	String summaryChecksum = request.getParameter(CConstants.WDK_SUMMARY_KEY);
-	String[] summaryAttributes = null;
-	if (summaryChecksum != null) {
-	    summaryAttributes = wdkUser.getSummaryAttributesByChecksum(summaryChecksum);
-	    request.setAttribute("wdk_summary_checksum", sortingChecksum);
-	} else {
-	    summaryAttributes = wdkUser.getSummaryAttributes(questionName);
-	}
-	
-	try {
-	    wdkAnswerValue = summaryPaging(request, wdkQuestion, internalParams,
-				      sortingAttributes, summaryAttributes);
-	} catch (WdkModelException ex) {
-	    logger.error(ex);
-	    ex.printStackTrace();
-	    return showError(wdkModel, wdkUser, mapping, request, response);
-	} catch (WdkUserException ex) {
-	    logger.error(ex);
-	    ex.printStackTrace();
-	    return showError(wdkModel, wdkUser, mapping, request, response);
-	}
-
 	// get strategy
 	strategy = wdkUser.getStrategy(Integer.parseInt(strProtoId));
 	
