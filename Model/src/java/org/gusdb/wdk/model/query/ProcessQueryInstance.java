@@ -282,7 +282,5 @@ public class ProcessQueryInstance extends QueryInstance {
         } finally {
             if (stmt != null) stmt.close();
         }
-
     }
-
 }
