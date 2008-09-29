@@ -14,15 +14,6 @@ public class StepBean {
 	this.step = step;
     }
 
-    //public void setStrategy(UserStrategyBean strategy)
-    //throws WdkUserException {
-    //step.setStrategy(strategy.strategy);
-    //}
-	
-    //public UserStrategyBean getStrategy() {
-    //return new UserStrategyBean(step.getStrategy());
-    //}
-
     public StepBean getPreviousStep() {
 	if (step.getPreviousStep() != null) {
 	    return new StepBean(step.getPreviousStep());
@@ -47,12 +38,12 @@ public class StepBean {
 	}
     }
 
-    //public UserAnswerBean getChildStepUserAnswer() {
-    //if (step.getChildStep() != null) {
-    //    return new UserAnswerBean(step.getChildStepUserAnswer());
-    //}
-    //return null;
-    //}
+    public StepBean getParentStep() {
+	if (step.getParentStep() != null) {
+	    return new StepBean(step.getParentStep());
+	}
+	return null;
+    }
 
     public StepBean getChildStep() {
 	if (step.getChildStep() != null) {
@@ -61,16 +52,9 @@ public class StepBean {
 	return null;
     }
 
-    //public UserAnswerBean getFilterUserAnswer() {
-    //if (step.getFilterUserAnswer() != null) {
-    //    return new UserAnswerBean(step.getFilterUserAnswer());
-    //}
-    //return null;
-    //}
-
-    //public void setFilterUserAnswer(UserAnswerBean answer) {
-    //step.setFilterUserAnswer(answer.userAnswer);
-    //}
+    public void setParentStep(StepBean parentStep) {
+	step.setParentStep(parentStep.step);
+    }
 
     public void setChildStep(StepBean childStep) {
 	step.setChildStep(childStep.step);
@@ -98,16 +82,6 @@ public class StepBean {
 	throws WdkModelException, WdkUserException {
 	return step.getResultSize();
     }
-
-    //public int getFilterResultSize()
-    //throws WdkModelException, WdkUserException {
-    //return step.getFilterResultSize();
-    //}
-
-    //public int getSubQueryResultSize()
-    //throws WdkModelException, WdkUserException {
-    //return step.getSubQueryResultSize();
-    //}
 
     public String getOperation() throws WdkUserException {
 	return step.getOperation();
