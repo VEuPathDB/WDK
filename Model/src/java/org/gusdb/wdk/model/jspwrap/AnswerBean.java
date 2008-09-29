@@ -317,7 +317,7 @@ public class AnswerBean {
 
     public AttributeFieldBean[] getAllReportMakerAttributes() {
         Question question = answer.getQuestion();
-        Map<String, AttributeField> attribs = question.getAttributeFields(FieldScope.REPORT_MAKER);
+        Map<String, AttributeField> attribs = question.getAttributeFieldMap(FieldScope.REPORT_MAKER);
         Iterator<String> ai = attribs.keySet().iterator();
         Vector<AttributeFieldBean> v = new Vector<AttributeFieldBean>();
         while (ai.hasNext()) {

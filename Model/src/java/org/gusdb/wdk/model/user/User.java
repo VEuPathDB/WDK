@@ -18,13 +18,11 @@ import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.BooleanExpression;
 import org.gusdb.wdk.model.DatasetParam;
-import org.gusdb.wdk.model.FieldScope;
 import org.gusdb.wdk.model.Param;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.query.BooleanQuery;
 import org.json.JSONException;
 
 /**
@@ -793,7 +791,7 @@ public class User /* implements Serializable */{
         if (sortingAttributes != null) return sortingAttributes;
 
         Question question = model.getQuestion(questionFullName);
-        return question.getDefaultSortingAttributes();
+        return question.getSortingAttributeMap();
     }
 
     public Map<String, Boolean> getSortingAttributesByChecksum(
@@ -836,7 +834,7 @@ public class User /* implements Serializable */{
         if (summary != null) return summary;
 
         Question question = model.getQuestion(questionFullName);
-        Map<String, AttributeField> attributes = question.getSummaryAttributeFields();
+        Map<String, AttributeField> attributes = question.getSummaryAttributeFieldMap();
         summary = new String[attributes.size()];
         attributes.keySet().toArray(summary);
         return summary;

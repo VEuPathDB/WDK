@@ -11,6 +11,7 @@ import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.SqlQuery;
+import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 
 public class RecordClass extends WdkModelBase implements
@@ -83,6 +84,12 @@ public class RecordClass extends WdkModelBase implements
 
     private AnswerFilterInstance defaultFilter;
     private AnswerFilterInstance booleanExpansionFilter;
+
+    private List<AttributeList> attributeLists = new ArrayList<AttributeList>();
+
+    private String[] defaultSummaryAttributeNames;
+    private Map<String, AttributeField> defaultSummaryAttributeFields = new LinkedHashMap<String, AttributeField>();
+    private Map<String, Boolean> defaultSortingMap = new LinkedHashMap<String, Boolean>();
 
     // ////////////////////////////////////////////////////////////////////
     // Called at model creation time
@@ -181,7 +188,7 @@ public class RecordClass extends WdkModelBase implements
     }
 
     public ParamValuesSet getParamValuesSet() {
-        return paramValuesSet == null? new ParamValuesSet() : paramValuesSet;
+        return paramValuesSet == null ? new ParamValuesSet() : paramValuesSet;
     }
 
     // ////////////////////////////////////////////////////////////
@@ -479,6 +486,20 @@ public class RecordClass extends WdkModelBase implements
             layout.resolveReferences(model);
         }
 
+        // resolve default summary attributes
+        if (defaultSummaryAttributeNames != null) {
+            Map<String, AttributeField> attributeFields = getAttributeFieldMap();
+            for (String fieldName : defaultSummaryAttributeNames) {
+                AttributeField field = attributeFields.get(fieldName);
+                if (field == null)
+                    throw new WdkModelException("Summary attribute field ["
+                            + fieldName + "] defined in question ["
+                            + getFullName() + "] is invalid.");
+                defaultSummaryAttributeFields.put(fieldName, field);
+            }
+        }
+        defaultSummaryAttributeNames = null;
+
         // create column attribute fields for primary keys if needed.
         createPriamryKeySubFields();
 
@@ -606,7 +627,7 @@ public class RecordClass extends WdkModelBase implements
             JSONException, WdkUserException {
         // nothing to look up
         if (aliasQuery == null) return pkValues;
-        
+
         Map<String, Object> oldValues = new LinkedHashMap<String, Object>();
         for (String param : pkValues.keySet()) {
             String oldParam = Utilities.ALIAS_OLD_KEY_COLUMN_PREFIX + param;
@@ -620,12 +641,14 @@ public class RecordClass extends WdkModelBase implements
             for (String param : pkValues.keySet()) {
                 newValue.put(param, resultList.get(param));
             }
-        } else newValue.putAll(pkValues); // no alias found, use the original ones
+        } else newValue.putAll(pkValues); // no alias found, use the original
+        // ones
         resultList.close();
         return newValue;
     }
 
-    Query prepareQuery(Query query, String[] paramNames) throws WdkModelException {
+    Query prepareQuery(Query query, String[] paramNames)
+            throws WdkModelException {
         Map<String, Column> columns = query.getColumnMap();
         Map<String, Param> originalParams = query.getParamMap();
         Query newQuery = query.clone();
@@ -678,8 +701,9 @@ public class RecordClass extends WdkModelBase implements
         // columns, with a prefix "old_".
         String[] pkColumns = primaryKeyField.getColumnRefs();
         String[] paramNames = new String[pkColumns.length];
-        for(int i = 0; i < pkColumns.length; i++) {
-            paramNames[i] = Utilities.ALIAS_OLD_KEY_COLUMN_PREFIX + pkColumns[i];
+        for (int i = 0; i < pkColumns.length; i++) {
+            paramNames[i] = Utilities.ALIAS_OLD_KEY_COLUMN_PREFIX
+                    + pkColumns[i];
         }
 
         // and it should be a valid attribute query too
@@ -822,15 +846,34 @@ public class RecordClass extends WdkModelBase implements
         }
         filterLayoutList = null;
 
-	// exclude paramValuesSets
+        // exclude paramValuesSets
         for (ParamValuesSet pvs : unexcludedParamValuesSets) {
             if (pvs.include(projectId)) {
                 if (paramValuesSet != null)
-                    throw new WdkModelException("Duplicate <paramValues> included in record class " + getName() + " for projectId " + projectId);
-		paramValuesSet = pvs;
+                    throw new WdkModelException(
+                            "Duplicate <paramValues> included in record class "
+                                    + getName() + " for projectId " + projectId);
+                paramValuesSet = pvs;
 
             }
-	}
+        }
+
+        // exclude summary and sorting attribute list
+        boolean hasAttributeList = false;
+        for (AttributeList attributeList : attributeLists) {
+            if (attributeList.include(projectId)) {
+                if (hasAttributeList) {
+                    throw new WdkModelException("The question " + getFullName()
+                            + " has more than one <attributesList> for "
+                            + "project " + projectId);
+                } else {
+                    this.defaultSummaryAttributeNames = attributeList.getSummaryAttributeNames();
+                    this.defaultSortingMap = attributeList.getSortingAttributeMap();
+                    hasAttributeList = true;
+                }
+            }
+        }
+        attributeLists = null;
     }
 
     public void addFilter(AnswerFilter filter) {
@@ -930,5 +973,46 @@ public class RecordClass extends WdkModelBase implements
             field.setColumn(column);
             attributeFieldsMap.put(name, field);
         }
+    }
+
+    public void addAttributeList(AttributeList attributeList) {
+        this.attributeLists.add(attributeList);
+    }
+
+    public Map<String, AttributeField> getSummaryAttributeFieldMap() {
+        Map<String, AttributeField> attributeFields = new LinkedHashMap<String, AttributeField>();
+
+        // always put primary key as the first field
+        attributeFields.put(primaryKeyField.getName(), primaryKeyField);
+
+        if (defaultSummaryAttributeFields.size() > 0) {
+            attributeFields.putAll(defaultSummaryAttributeFields);
+        } else {
+            Map<String, AttributeField> nonInternalFields = getAttributeFieldMap(FieldScope.NON_INTERNAL);
+            for (String fieldName : nonInternalFields.keySet()) {
+                attributeFields.put(fieldName, nonInternalFields.get(fieldName));
+                if (attributeFields.size() >= Utilities.DEFAULT_SUMMARY_ATTRIBUTE_SIZE)
+                    break;
+            }
+        }
+        return attributeFields;
+    }
+
+    public Map<String, Boolean> getSortingAttributeMap() {
+        Map<String, Boolean> map = new LinkedHashMap<String, Boolean>();
+        int count = 0;
+        for (String attrName : defaultSortingMap.keySet()) {
+            map.put(attrName, defaultSortingMap.get(attrName));
+            count++;
+            if (count >= User.SORTING_LEVEL) break;
+        }
+
+        // has to sort at least on something, primary key as default
+        if (map.size() == 0) {
+            String pkName = primaryKeyField.getName();
+            map.put(pkName, true);
+        }
+
+        return map;
     }
 }

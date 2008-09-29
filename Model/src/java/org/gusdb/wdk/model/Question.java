@@ -179,7 +179,7 @@ public class Question extends WdkModelBase {
 
     public Map<String, Field> getFields(FieldScope scope) {
         Map<String, Field> fields = new LinkedHashMap<String, Field>();
-        Map<String, AttributeField> attributes = getAttributeFields(scope);
+        Map<String, AttributeField> attributes = getAttributeFieldMap(scope);
         Map<String, TableField> tables = recordClass.getTableFieldMap(scope);
 
         fields.putAll(attributes);
@@ -337,7 +337,7 @@ public class Question extends WdkModelBase {
         String newline = System.getProperty("line.separator");
 
         StringBuffer saNames = new StringBuffer();
-        Map<String, AttributeField> summaryFields = getAttributeFields(FieldScope.NON_INTERNAL);
+        Map<String, AttributeField> summaryFields = getAttributeFieldMap(FieldScope.NON_INTERNAL);
         for (String saName : summaryFields.keySet()) {
             saNames.append(saName + ", ");
         }
@@ -400,7 +400,8 @@ public class Question extends WdkModelBase {
     // /////////////////////////////////////////////////////////////////////
 
     Map<String, AttributeField> getDynamicAttributeFields() {
-        return dynamicAttributeSet == null ? new LinkedHashMap<String, AttributeField>()
+        return dynamicAttributeSet == null
+                ? new LinkedHashMap<String, AttributeField>()
                 : dynamicAttributeSet.getAttributeFieldMap();
     }
 
@@ -414,7 +415,7 @@ public class Question extends WdkModelBase {
      * 
      * @return
      */
-    public Map<String, AttributeField> getSummaryAttributeFields() {
+    public Map<String, AttributeField> getSummaryAttributeFieldMap() {
         Map<String, AttributeField> attributeFields = new LinkedHashMap<String, AttributeField>();
 
         // always put primary key as the first field
@@ -424,21 +425,16 @@ public class Question extends WdkModelBase {
         if (defaultSummaryAttributeFields.size() > 0) {
             attributeFields.putAll(defaultSummaryAttributeFields);
         } else {
-            Map<String, AttributeField> nonInternalFields = getAttributeFields(FieldScope.NON_INTERNAL);
-            for (String fieldName : nonInternalFields.keySet()) {
-                attributeFields.put(fieldName, nonInternalFields.get(fieldName));
-                if (attributeFields.size() >= Utilities.DEFAULT_SUMMARY_ATTRIBUTE_SIZE)
-                    break;
-            }
+            attributeFields = recordClass.getSummaryAttributeFieldMap();
         }
         return attributeFields;
     }
 
-    public Map<String, AttributeField> getAttributeFields() {
-        return getAttributeFields(FieldScope.ALL);
+    public Map<String, AttributeField> getAttributeFieldMap() {
+        return getAttributeFieldMap(FieldScope.ALL);
     }
 
-    public Map<String, AttributeField> getAttributeFields(FieldScope scope) {
+    public Map<String, AttributeField> getAttributeFieldMap(FieldScope scope) {
         Map<String, AttributeField> attributeFields = new LinkedHashMap<String, AttributeField>();
 
         // always put primary key as the first field
@@ -477,7 +473,7 @@ public class Question extends WdkModelBase {
 
         // resolve default summary attributes
         if (defaultSummaryAttributeNames != null) {
-            Map<String, AttributeField> attributeFields = getAttributeFields();
+            Map<String, AttributeField> attributeFields = getAttributeFieldMap();
             for (String fieldName : defaultSummaryAttributeNames) {
                 AttributeField field = attributeFields.get(fieldName);
                 if (field == null)
@@ -553,7 +549,7 @@ public class Question extends WdkModelBase {
     //
     // return question;
     // }
-    public Map<String, Boolean> getDefaultSortingAttributes() {
+    public Map<String, Boolean> getSortingAttributeMap() {
         Map<String, Boolean> map = new LinkedHashMap<String, Boolean>();
         int count = 0;
         for (String attrName : defaultSortingMap.keySet()) {
@@ -561,21 +557,11 @@ public class Question extends WdkModelBase {
             count++;
             if (count >= User.SORTING_LEVEL) break;
         }
-        
-        // has to sort at least on something, primary key as default
-        if (map.size() == 0) {
-            String pkName = recordClass.getPrimaryKeyAttributeField().getName();
-            map.put(pkName, true);
-        }
-        
-        return map;
-    }
 
-    /**
-     * @return the sortingAttributeMap
-     */
-    public Map<String, Boolean> getSortingAttributeMap() {
-        return new LinkedHashMap<String, Boolean>(this.defaultSortingMap);
+        // no sorting map defined, use the definition in recordClass
+        if (map.size() == 0) map = recordClass.getSortingAttributeMap();
+
+        return map;
     }
 
     /**

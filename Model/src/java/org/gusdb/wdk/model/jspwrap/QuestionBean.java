@@ -117,7 +117,7 @@ public class QuestionBean {
     }
 
     public Map<String, AttributeFieldBean> getSummaryAttributesMap() {
-        Map<String, AttributeField> attribs = question.getSummaryAttributeFields();
+        Map<String, AttributeField> attribs = question.getSummaryAttributeFieldMap();
         Map<String, AttributeFieldBean> beanMap = new LinkedHashMap<String, AttributeFieldBean>();
         for (AttributeField field : attribs.values()) {
             beanMap.put(field.getName(), new AttributeFieldBean(field));
@@ -126,7 +126,7 @@ public class QuestionBean {
     }
 
     public Map<String, AttributeFieldBean> getDisplayableAttributeFields() {
-        Map<String, AttributeField> attribs = question.getAttributeFields(FieldScope.NON_INTERNAL);
+        Map<String, AttributeField> attribs = question.getAttributeFieldMap(FieldScope.NON_INTERNAL);
         Map<String, AttributeFieldBean> beanMap = new LinkedHashMap<String, AttributeFieldBean>();
         for (AttributeField field : attribs.values()) {
             beanMap.put(field.getName(), new AttributeFieldBean(field));
@@ -135,7 +135,7 @@ public class QuestionBean {
     }
 
     public Map<String, AttributeFieldBean> getReportMakerAttributesMap() {
-        Map<String, AttributeField> attribs = question.getAttributeFields(FieldScope.REPORT_MAKER);
+        Map<String, AttributeField> attribs = question.getAttributeFieldMap(FieldScope.REPORT_MAKER);
         Iterator<String> ai = attribs.keySet().iterator();
 
         Map<String, AttributeFieldBean> rmaMap = new LinkedHashMap<String, AttributeFieldBean>();

@@ -107,7 +107,7 @@ public class SummaryTester {
                 return;
             }
 
-            Map<String, Boolean> sortingMap = question.getDefaultSortingAttributes();
+            Map<String, Boolean> sortingMap = question.getSortingAttributeMap();
 
             for (int i = 0; i < rows.length; i += 2) {
                 int nextStartRow = Integer.parseInt(rows[i]);
@@ -178,7 +178,7 @@ public class SummaryTester {
             WdkUserException, IOException, NoSuchAlgorithmException,
             SQLException, JSONException {
 
-        Map<String, Boolean> sortingMap = question.getDefaultSortingAttributes();
+        Map<String, Boolean> sortingMap = question.getSortingAttributeMap();
 
         Answer answer = question.makeAnswer(paramValues, 1, 2, sortingMap,
                 filter);
