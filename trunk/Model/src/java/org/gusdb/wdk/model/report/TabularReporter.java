@@ -137,7 +137,7 @@ public class TabularReporter extends Reporter {
         if (fieldsList == null) {
             columns.addAll(summary.values());
         } else {
-            Map<String, AttributeField> attributes = getQuestion().getAttributeFields(
+            Map<String, AttributeField> attributes = getQuestion().getAttributeFieldMap(
                     FieldScope.REPORT_MAKER);
             String[] fields = fieldsList.split(",");
             for (String column : fields) {

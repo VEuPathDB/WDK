@@ -474,7 +474,7 @@ public class Answer {
 
         // fill in the column attributes
         PrimaryKeyAttributeField pkField = question.getRecordClass().getPrimaryKeyAttributeField();
-        Map<String, AttributeField> fields = question.getAttributeFields();
+        Map<String, AttributeField> fields = question.getAttributeFieldMap();
         while (resultList.next()) {
             // get primary key
             Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
@@ -615,7 +615,7 @@ public class Answer {
     private String getIdSql() throws NoSuchAlgorithmException, SQLException,
             WdkModelException, JSONException, WdkUserException {
         String[] pkColumns = question.getRecordClass().getPrimaryKeyAttributeField().getColumnRefs();
-        
+
         StringBuffer sql = new StringBuffer("SELECT DISTINCT ");
         boolean firstColumn = true;
         for (String column : pkColumns) {
@@ -624,7 +624,7 @@ public class Answer {
             sql.append(column);
         }
         sql.append(" FROM (");
-        
+
         String innerSql;
         if (filter != null) { // get a filter
             QueryInstance instance = filter.makeQueryInstance(this);
@@ -633,14 +633,14 @@ public class Answer {
             innerSql = idsQueryInstance.getSql();
         }
         sql.append(innerSql).append(") bidq");
-        
+
         return sql.toString();
     }
 
     private void prepareSortingSqls(Map<String, String> sqls,
             Collection<String> orders) throws WdkModelException, JSONException,
             NoSuchAlgorithmException, SQLException, WdkUserException {
-        Map<String, AttributeField> fields = question.getAttributeFields();
+        Map<String, AttributeField> fields = question.getAttributeFieldMap();
         Map<String, String> querySqls = new LinkedHashMap<String, String>();
         Map<String, String> queryNames = new LinkedHashMap<String, String>();
         Map<String, String> orderClauses = new LinkedHashMap<String, String>();
@@ -756,8 +756,8 @@ public class Answer {
 
     public List<AttributeField> getDisplayableAttributes() {
         List<AttributeField> displayAttributes = new ArrayList<AttributeField>();
-        Map<String, AttributeField> attributes = question.getAttributeFields(FieldScope.NON_INTERNAL);
-        Map<String, AttributeField> summaryAttributes = question.getSummaryAttributeFields();
+        Map<String, AttributeField> attributes = question.getAttributeFieldMap(FieldScope.NON_INTERNAL);
+        Map<String, AttributeField> summaryAttributes = question.getSummaryAttributeFieldMap();
         for (String attriName : attributes.keySet()) {
             AttributeField attribute = attributes.get(attriName);
 
@@ -773,7 +773,7 @@ public class Answer {
         Map<String, AttributeField> fields;
         if (summaryFieldMap.size() > 0) {
             fields = new LinkedHashMap<String, AttributeField>(summaryFieldMap);
-        } else fields = question.getSummaryAttributeFields();
+        } else fields = question.getSummaryAttributeFieldMap();
         return fields;
     }
 
@@ -782,9 +782,9 @@ public class Answer {
         // always put the primary key as the first attribute
         PrimaryKeyAttributeField pkField = question.getRecordClass().getPrimaryKeyAttributeField();
         summaryFields.put(pkField.getName(), pkField);
+        Map<String, AttributeField> fields = question.getAttributeFieldMap();
         for (String attributeName : attributeNames) {
-            AttributeField field = question.getAttributeFields().get(
-                    attributeName);
+            AttributeField field = fields.get(attributeName);
             summaryFields.put(attributeName, field);
         }
         summaryFieldMap.clear();
