@@ -178,7 +178,7 @@ public class FullRecordReporter extends Reporter {
         for (String column : pkColumns) {
             sqlInsert.append(column).append(", ");
         }
-        sqlInsert.append(", table_name, row_count, content) VALUES (");
+        sqlInsert.append(" table_name, row_count, content) VALUES (");
         for (String column : pkColumns) {
             sqlInsert.append("?, ");
         }
@@ -186,7 +186,7 @@ public class FullRecordReporter extends Reporter {
 
         // construct the query sql
         StringBuffer sqlQuery = new StringBuffer("SELECT ");
-        sqlQuery.append("count(*) AS cache_fount FROM ").append(tableCache);
+        sqlQuery.append("count(*) AS cache_count FROM ").append(tableCache);
         sqlQuery.append(" WHERE ");
         for (String column : pkColumns) {
             sqlQuery.append(column).append(" = ? AND ");
