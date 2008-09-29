@@ -58,7 +58,7 @@ public class RecordInstance extends AttributeValueContainer {
     }
 
     public Map<String, AttributeField> getAttributeFieldMap(FieldScope scope) {
-        if (answer != null) return answer.getQuestion().getAttributeFields(scope);
+        if (answer != null) return answer.getQuestion().getAttributeFieldMap(scope);
         else return recordClass.getAttributeFieldMap(scope);
     }
 
@@ -287,7 +287,7 @@ public class RecordInstance extends AttributeValueContainer {
         Map<String, Object> params = primaryKey.getValues();
         int pageStart = 1;
         int pageEnd = Utilities.MAXIMUM_RECORD_INSTANCES;
-        Map<String, Boolean> sortingMap = question.getDefaultSortingAttributes();
+        Map<String, Boolean> sortingMap = question.getSortingAttributeMap();
         AnswerFilterInstance filter = question.getRecordClass().getDefaultFilter();
         // create an answer with maximium allowed rows
         return question.makeAnswer(params, pageStart, pageEnd, sortingMap,

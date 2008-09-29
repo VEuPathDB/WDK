@@ -95,6 +95,20 @@
             </oneOrMore>
         </element>
     </define>  
+    
+  <!-- Attribute List -->
+  <define name="attributesList">
+     <element name="attributesList">
+        <ref name="IncludeExclude" />
+        <optional>
+            <attribute name="summary" />
+        </optional>
+        <optional>
+            <attribute name="sorting" />
+        </optional>
+     </element>
+  </define>
+
   
   <!-- Params -->
 
@@ -641,6 +655,9 @@
       <optional>
          <attribute name="attributeOrdering" />
       </optional>
+      <optional>
+        <attribute name="summaryAttributesList" />
+      </optional>
 
       <zeroOrMore>  
         <choice>
@@ -649,6 +666,7 @@
           <ref name="textAttribute" />
           <ref name="linkAttribute" />
           <ref name="table" />
+          <ref name="attributesList" />
         
           <element name="reporter">
              <attribute name="name" />
@@ -809,15 +827,7 @@
                  <text />
              </element>
              
-             <element name="attributesList">
-                <ref name="IncludeExclude" />
-                <optional>
-                    <attribute name="summary" />
-                </optional>
-                <optional>
-                    <attribute name="sorting" />
-                </optional>
-             </element>
+             <ref name="attributesList" />
              
              <element name="dynamicAttributes">
                 <ref name="IncludeExclude" />
@@ -834,8 +844,6 @@
       
     </element>
   </define>
-    
-  <!-- Attributes -->
   
   <!-- Schema subtype shared elements -->
   <define name="FieldBaseContents">
