@@ -1515,7 +1515,7 @@ public class UserFactory {
 	// Get name, saved, latest step_id, and all latest step data
 	// FROM strategy table JOIN step table
 	// Create strategy object
-	// Create latest UserAnswer/Step objects
+	// Create latest Step objects
 	// while we get have a non-empty parent stack:
 	//   remove latest parent from stack
 
@@ -1602,6 +1602,7 @@ public class UserFactory {
 			steps.put(currentStepIdObj, currentStep);
 		    
 			parentStep.setChildStep(currentStep);
+			currentStep.setParentStep(parentStep);
 		    }
 		}
 	    }
