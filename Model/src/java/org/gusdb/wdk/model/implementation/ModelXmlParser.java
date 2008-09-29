@@ -323,6 +323,9 @@ public class ModelXmlParser extends XmlParser {
                 "wdkModel/recordClassSet/recordClass/primaryKeyAttribute/text",
                 "setText", 0);
 
+        configureNode(digester, "wdkModel/recordClassSet/recordClass/attributesList",
+                AttributeList.class, "addAttributeList");
+
 	// defaultTestParamValues
 	configureParamValuesSet(digester, "wdkModel/recordClassSet/recordClass/testParamValues", "addParamValuesSet");
 
@@ -597,10 +600,10 @@ public class ModelXmlParser extends XmlParser {
                 "wdkModel/questionSet/question/propertyList/value", "setText",
                 0);
 
-        // dynamic attribute set
         configureNode(digester, "wdkModel/questionSet/question/attributesList",
                 AttributeList.class, "addAttributeList");
 
+        // dynamic attribute set
         configureNode(digester,
                 "wdkModel/questionSet/question/dynamicAttributes",
                 DynamicAttributeSet.class, "addDynamicAttributeSet");
