@@ -23,9 +23,17 @@ Otherwise a standard select menu is used.
 <c:set var="pNam" value="${qP.name}"/>
 <c:set var="opt" value="0"/>
 
-<html:select  property="myMultiProp(${pNam})" styleId="${qP.id}">
-    <c:set var="opt" value="${opt+1}"/>
-    <c:set var="sel" value=""/>
-    <c:if test="${opt == 1}"><c:set var="sel" value="selected"/></c:if>      
-    <html:options property="values(${pNam})" labelProperty="labels(${pNam})"/>
-</html:select>
+<c:choose>
+  <c:when test="${qp.isReadonly}">
+    <bean:write name="qForm" property="myProp(${pNam})"/>
+    <html:hidden property="myProp(${pNam})"/>
+  </c:when>
+  <c:otherwise>
+    <html:select  property="myMultiProp(${pNam})" styleId="${qP.id}">
+        <c:set var="opt" value="${opt+1}"/>
+        <c:set var="sel" value=""/>
+        <c:if test="${opt == 1}"><c:set var="sel" value="selected"/></c:if>      
+        <html:options property="values(${pNam})" labelProperty="labels(${pNam})"/>
+    </html:select>
+  </c:otherwise>
+</c:choose>
