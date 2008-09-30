@@ -26,7 +26,7 @@ Otherwise a standard select menu is used.
 <c:choose>
   <c:when test="${qp.isReadonly}">
     <bean:write name="qForm" property="myProp(${pNam})"/>
-    <html:hidden property="myProp(${pNam})"/>
+    <html:hidden property="myProp(${pNam})" value="${requestScope[pNam]}"/>
   </c:when>
   <c:otherwise>
     <html:select  property="myMultiProp(${pNam})" styleId="${qP.id}">
