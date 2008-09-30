@@ -1,0 +1,7 @@
+WEBAPP_NAME=wdk-sample
+
+WEBSITE_NAME=Sample Site
+
+SAMPLE_URL=http://www.google.com
+
+PROJECT_ID=SampleDB
