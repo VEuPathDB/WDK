@@ -68,10 +68,13 @@ public class ShowApplicationAction extends ShowSummaryAction {
 	ArrayList<Integer> activeStrategies = (ArrayList<Integer>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
 
 	StrategyBean strategy = null;
-	ArrayList<StrategyBean> strategyObjects = new ArrayList<StrategyBean>(activeStrategies.size());
-	for (int i = 0; i < activeStrategies.size(); ++i) {
-	    strategy = wdkUser.getStrategy(activeStrategies.get(i).intValue());
-	    strategyObjects.add(strategy);
+	ArrayList<StrategyBean> strategyObjects = null;
+	if (activeStrategies != null) {
+	    strategyObjects = new ArrayList<StrategyBean>(activeStrategies.size());
+	    for (int i = 0; i < activeStrategies.size(); ++i) {
+		strategy = wdkUser.getStrategy(activeStrategies.get(i).intValue());
+		strategyObjects.add(strategy);
+	    }
 	}
 	/* End */
 	if (strategy != null) {
@@ -93,6 +96,11 @@ public class ShowApplicationAction extends ShowSummaryAction {
 	    request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
 	    //request.setAttribute("wdk_summary_url", requestUrl);
 	    //request.setAttribute("wdk_query_string", queryString);
+	}
+	
+	String showHist = request.getParameter("showHistory");
+	if (showHist != null && Boolean.valueOf(showHist)) {
+	    request.setAttribute("showHistory", Boolean.valueOf(showHist));
 	}
 	request.setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY, strategyObjects);
 
