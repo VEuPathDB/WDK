@@ -858,4 +858,27 @@ public class Answer {
     public void setAnswerInfo(AnswerInfo answerInfo) {
         this.answerInfo = answerInfo;
     }
+
+    public PrimaryKeyAttributeValue[] getAllPkValues()
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
+        ResultList resultList = idsQueryInstance.getResults();
+        PrimaryKeyAttributeField pkField = question.getRecordClass().getPrimaryKeyAttributeField();
+        String[] pkColumns = pkField.getColumnRefs();
+        List<PrimaryKeyAttributeValue> pkValues = new ArrayList<PrimaryKeyAttributeValue>();
+        while (resultList.next()) {
+            Map<String, Object> values = new LinkedHashMap<String, Object>();
+            for (String column : pkColumns) {
+                values.put(column, resultList.get(column));
+            }
+            PrimaryKeyAttributeValue pkValue = new PrimaryKeyAttributeValue(
+                    pkField, values);
+            pkValues.add(pkValue);
+        }
+        resultList.close();
+
+        PrimaryKeyAttributeValue[] array = new PrimaryKeyAttributeValue[pkValues.size()];
+        pkValues.toArray(array);
+        return array;
+    }
 }
