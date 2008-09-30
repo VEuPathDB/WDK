@@ -18,6 +18,7 @@ import org.gusdb.wdk.model.DatasetParam;
 import org.gusdb.wdk.model.FieldScope;
 import org.gusdb.wdk.model.FlatVocabParam;
 import org.gusdb.wdk.model.Param;
+import org.gusdb.wdk.model.PrimaryKeyAttributeValue;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.RecordInstance;
@@ -277,9 +278,9 @@ public class AnswerBean {
         for (AttributeField field : attribs.values()) {
             beans[index++] = new AttributeFieldBean(field);
         }
-        
+
         logger.debug("Count: " + beans.length);
-        
+
         return beans;
     }
 
@@ -471,5 +472,26 @@ public class AnswerBean {
         AnswerFilterInstance filter = answer.getFilter();
         if (filter == null) return null;
         return new AnswerFilterInstanceBean(filter);
+    }
+
+    /**
+     * @return
+     * @throws WdkModelException
+     * @throws NoSuchAlgorithmException
+     * @throws SQLException
+     * @throws JSONException
+     * @throws WdkUserException
+     * @see org.gusdb.wdk.model.Answer#getAllPkValues()
+     */
+    public String getAllIdList() throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
+        PrimaryKeyAttributeValue[] pkValues = answer.getAllPkValues();
+        StringBuffer buffer = new StringBuffer();
+        for (PrimaryKeyAttributeValue pkValue : pkValues) {
+            if (buffer.length() > 0) buffer.append(",");
+            buffer.append(pkValue.getValue());
+        }
+        return buffer.toString();
     }
 }
