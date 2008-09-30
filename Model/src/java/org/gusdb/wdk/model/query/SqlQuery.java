@@ -146,6 +146,7 @@ public class SqlQuery extends Query {
             // escape the & $ \ chars in the value
             sql = sql.replaceAll(pattern, Matcher.quoteReplacement(value));
         }
+	if (sql == null) throw new WdkModelException("null sql in " + getQuerySet().getName() + "." + getName());
         // verify the all param macros have been replaced
         Matcher matcher = Pattern.compile("&&([^&]+)&&").matcher(sql);
         if (matcher.find())
