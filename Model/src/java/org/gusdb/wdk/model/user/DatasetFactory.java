@@ -29,10 +29,13 @@ public class DatasetFactory {
     private static Logger logger = Logger.getLogger(DatasetFactory.class);
 
     private DBPlatform platform;
+    private String userSchema;
     private String datasetSchema;
 
-    public DatasetFactory(DBPlatform platform, String datasetSchema) {
+    public DatasetFactory(DBPlatform platform, String userSchema,
+            String datasetSchema) {
         this.platform = platform;
+        this.userSchema = userSchema;
         this.datasetSchema = datasetSchema;
     }
 
@@ -41,7 +44,8 @@ public class DatasetFactory {
     }
 
     public Dataset makeDataset(User user, String uploadFile, String[] values)
-            throws WdkUserException, WdkModelException, NoSuchAlgorithmException {
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException {
         // put the dataset into index
         Dataset dataset = putDatasetIndex(values);
 
@@ -231,11 +235,11 @@ public class DatasetFactory {
         Dataset ds = getUserDataset(user, dataset);
         String sql;
         if (ds != null) {
-            sql = "UPDATE " + datasetSchema + "user_datasets SET "
+            sql = "UPDATE " + userSchema + "user_datasets SET "
                     + "create_time = ?, upload_file = ? WHERE dataset_id = ? "
                     + "AND user_id = ?";
         } else {
-            sql = "INSERT INTO " + datasetSchema + "user_datasets (create_time"
+            sql = "INSERT INTO " + userSchema + "user_datasets (create_time"
                     + ", upload_file, dataset_id, user_id) VALUES (?, ?, ?, ?)";
         }
 
@@ -275,7 +279,7 @@ public class DatasetFactory {
         PreparedStatement psInsert = null;
         try {
             PreparedStatement ps = SqlUtils.getPreparedStatement(dataSource,
-                    "SELECT create_time, upload_file FROM " + datasetSchema
+                    "SELECT create_time, upload_file FROM " + userSchema
                             + "user_datasets WHERE user_id = ? "
                             + "AND dataset_id = ?");
             ps.setInt(1, userId);
@@ -289,7 +293,7 @@ public class DatasetFactory {
                 Date createTime = new Date(System.currentTimeMillis());
                 String uploadFile = ""; // empty upload file
                 psInsert = SqlUtils.getPreparedStatement(dataSource, "INSERT "
-                        + "INTO " + datasetSchema + "user_datasets "
+                        + "INTO " + userSchema + "user_datasets "
                         + "(dataset_id, user_id, create_time, upload_file) "
                         + "VALUES (?, ?, ?, ?)");
                 psInsert.setInt(1, datasetId);

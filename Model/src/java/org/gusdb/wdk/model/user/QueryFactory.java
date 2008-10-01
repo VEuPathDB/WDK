@@ -17,6 +17,11 @@ import org.gusdb.wdk.model.dbms.SqlUtils;
 
 public class QueryFactory {
 
+    private static final String TABLE_CLOB_VALUES = "clob_values";
+
+    private static final String COLUMN_CLOB_CHECKSUM = "clob_checksum";
+    private static final String COLUMN_CLOB_VALUE = "clob_value";
+
     // private static final Logger logger = Logger.getLogger( QueryFactory.class
     // );
 
@@ -48,8 +53,9 @@ public class QueryFactory {
 
             // configuration not exists, add one
             psInsert = SqlUtils.getPreparedStatement(dataSource, "INSERT INTO"
-                    + " " + querySchema + "summary_attributes "
-                    + "(summary_checksum, attributes) VALUES (?, ?)");
+                    + " " + querySchema + TABLE_CLOB_VALUES + " ("
+                    + COLUMN_CLOB_CHECKSUM + ", " + COLUMN_CLOB_VALUE
+                    + ") VALUES (?, ?)");
             psInsert.setString(1, checksum);
             psInsert.setString(2, summaryContent);
             psInsert.execute();
@@ -72,15 +78,16 @@ public class QueryFactory {
         ResultSet rsSelect = null;
         try {
             PreparedStatement psSelect = SqlUtils.getPreparedStatement(
-                    dataSource, "SELECT attributes FROM " + querySchema
-                            + "summary_attributes WHERE summary_checksum = ?");
+                    dataSource, "SELECT " + COLUMN_CLOB_VALUE + " FROM "
+                            + querySchema + TABLE_CLOB_VALUES + " WHERE "
+                            + COLUMN_CLOB_CHECKSUM + " = ?");
             psSelect.setString(1, summaryChecksum);
             rsSelect = psSelect.executeQuery();
 
             if (!rsSelect.next()) return null;
 
             // get the configuration
-            String summaryContent = rsSelect.getString("attributes");
+            String summaryContent = rsSelect.getString(COLUMN_CLOB_VALUE);
             String[] attributes = summaryContent.split(",");
             for (int i = 0; i < attributes.length; i++) {
                 attributes[i] = attributes[i].trim();
@@ -124,8 +131,9 @@ public class QueryFactory {
 
             // sorting not exists, add one
             psInsert = SqlUtils.getPreparedStatement(dataSource, "INSERT INTO"
-                    + " " + querySchema + "sorting_attributes "
-                    + "(sorting_checksum, attributes) VALUES (?, ?)");
+                    + " " + querySchema + TABLE_CLOB_VALUES + " ("
+                    + COLUMN_CLOB_CHECKSUM + ", " + COLUMN_CLOB_VALUE
+                    + ") VALUES (?, ?)");
             psInsert.setString(1, checksum);
             psInsert.setString(2, columnsContent);
             psInsert.execute();
@@ -148,15 +156,16 @@ public class QueryFactory {
         ResultSet rsSelect = null;
         try {
             PreparedStatement psSelect = SqlUtils.getPreparedStatement(
-                    dataSource, "SELECT attributes FROM " + querySchema
-                            + "sorting_attributes WHERE sorting_checksum = ?");
+                    dataSource, "SELECT " + COLUMN_CLOB_VALUE + " FROM "
+                            + querySchema + TABLE_CLOB_VALUES + " WHERE "
+                            + COLUMN_CLOB_CHECKSUM + " = ?");
             psSelect.setString(1, sortingChecksum);
             rsSelect = psSelect.executeQuery();
 
             if (!rsSelect.next()) return null;
 
             // get the sorting attributes
-            String sortingContent = rsSelect.getString("attributes");
+            String sortingContent = rsSelect.getString(COLUMN_CLOB_VALUE);
             String[] sortingPairs = sortingContent.split(",");
             Map<String, Boolean> attributes = new LinkedHashMap<String, Boolean>();
             for (String sortingPair : sortingPairs) {
@@ -197,8 +206,9 @@ public class QueryFactory {
 
             // clob value does not exist, add one
             psInsert = SqlUtils.getPreparedStatement(dataSource, "INSERT INTO"
-                    + " " + querySchema + "clob_values (clob_checksum, "
-                    + "clob_value) VALUES (?, ?)");
+                    + " " + querySchema + TABLE_CLOB_VALUES + " ("
+                    + COLUMN_CLOB_CHECKSUM + ", " + COLUMN_CLOB_VALUE
+                    + ") VALUES (?, ?)");
             psInsert.setString(1, checksum);
             psInsert.setString(2, paramValue);
             psInsert.execute();
@@ -220,14 +230,15 @@ public class QueryFactory {
         ResultSet rs = null;
         try {
             PreparedStatement ps = SqlUtils.getPreparedStatement(dataSource,
-                    "SELECT clob_value FROM " + querySchema + "clob_values "
-                            + "WHERE clob_checksum = ?");
+                    "SELECT " + COLUMN_CLOB_VALUE + " FROM " + querySchema
+                            + TABLE_CLOB_VALUES + " WHERE "
+                            + COLUMN_CLOB_CHECKSUM + " = ?");
             ps.setString(1, paramChecksum);
             rs = ps.executeQuery();
 
             if (!rs.next()) return null;
 
-            String clobValue = platform.getClobData(rs, "clob_value");
+            String clobValue = platform.getClobData(rs, COLUMN_CLOB_VALUE);
             return clobValue;
         } catch (SQLException ex) {
             throw new WdkModelException(ex);

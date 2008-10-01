@@ -49,51 +49,6 @@ public class AnswerFactory {
         this.wdkModel = wdkModel;
         this.loginPlatform = wdkModel.getAuthenticationPlatform();
         this.answerSchema = wdkModel.getModelConfig().getUserDB().getWdkEngineSchema();
-
-        // create the answer table if needed
-        createTables();
-    }
-
-    private void createTables() throws SQLException {
-        // check if answer table exists
-        if (!loginPlatform.checkTableExists(answerSchema, TABLE_ANSWER))
-            createAnswerTable();
-    }
-
-    private void createAnswerTable() throws SQLException {
-        // construct sql to create the table
-        StringBuffer sql = new StringBuffer("CREATE TABLE ");
-        sql.append(answerSchema).append(TABLE_ANSWER).append(" (");
-        sql.append(COLUMN_ANSWER_ID).append(" ");
-        sql.append(loginPlatform.getNumberDataType(12)).append(" NOT NULL, ");
-        sql.append(COLUMN_ANSWER_CHECKSUM).append(" ");
-        sql.append(loginPlatform.getStringDataType(40)).append(" NOT NULL, ");
-        sql.append(COLUMN_PROJECT_ID).append(" ");
-        sql.append(loginPlatform.getStringDataType(50)).append(" NOT NULL, ");
-        sql.append(COLUMN_PROJECT_VERSION).append(" ");
-        sql.append(loginPlatform.getStringDataType(50)).append(" NOT NULL, ");
-        sql.append(COLUMN_QUESTION_NAME).append(" ");
-        sql.append(loginPlatform.getStringDataType(200)).append(" NOT NULL, ");
-        sql.append(COLUMN_QUERY_CHECKSUM).append(" ");
-        sql.append(loginPlatform.getStringDataType(40)).append(" NOT NULL, ");
-        sql.append(COLUMN_PARAMS).append(" ");
-        sql.append(loginPlatform.getClobDataType()).append(", ");
-        sql.append(COLUMN_RESULT_MESSAGE).append(" ");
-        sql.append(loginPlatform.getClobDataType()).append(", ");
-        sql.append("CONSTRAINT \"").append(TABLE_ANSWER).append("_PK\" ");
-        sql.append("PRIMARY KEY (").append(COLUMN_ANSWER_ID).append("), ");
-        sql.append("CONSTRAINT \"").append(TABLE_ANSWER).append("_UQ1\" ");
-        sql.append("UNIQUE (").append(COLUMN_PROJECT_ID).append(", ");
-        sql.append(COLUMN_ANSWER_CHECKSUM).append(") )");
-
-        // execute the DDL
-        DataSource dataSource = loginPlatform.getDataSource();
-        SqlUtils.executeUpdate(dataSource, sql.toString());
-
-        // create the sequence for the answer table
-        String sequenceName = answerSchema + TABLE_ANSWER
-                + DBPlatform.ID_SEQUENCE_SUFFIX;
-        loginPlatform.createSequence(sequenceName, 1, 1);
     }
 
     public AnswerInfo saveAnswer(Answer answer) throws SQLException,
