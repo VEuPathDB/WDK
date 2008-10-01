@@ -120,6 +120,14 @@ public class StepBean {
         step.setLastRunTime(lastRunTime);
     }
 
+    public Date getCreatedTime() {
+	return step.getLastRunTime();
+    }
+
+    public void setCreatedTime( Date lastRunTime ) {
+        step.setLastRunTime(lastRunTime);
+    }
+
     public boolean getIsBoolean() {
         return step.isBoolean();
     }

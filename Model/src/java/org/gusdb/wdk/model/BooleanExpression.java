@@ -34,7 +34,7 @@ public class BooleanExpression {
     
     /**
      * this function accept a boolean expression that defines the combination of
-     * cached answers in current user's history. In the expression answers can
+     * cached answers in current user's step. In the expression answers can
      * be identified by their IDs or names. For example,
      * <code>#1 UNION "ans_gene"</code>, where the answer ID starts with #,
      * and answer name can be quoted by double quote (the double quote is
@@ -142,22 +142,22 @@ public class BooleanExpression {
     private BooleanQuestionNode buildLeaf( String block,
             Map< String, String > replace ) throws WdkUserException,
             WdkModelException {
-        // the block must be a history id or an id starting with '#'
+        // the block must be a step id or an id starting with '#'
         String strId = ( block.charAt( 0 ) == '#' ) ? block.substring( 1 )
                 : block;
-        int historyId;
+        int stepId;
         try {
-            historyId = Integer.parseInt( strId );
+            stepId = Integer.parseInt( strId );
         } catch ( NumberFormatException ex ) {
-            throw new WdkUserException( "Invalid history Id: " + orgExp );
+            throw new WdkUserException( "Invalid step Id: " + orgExp );
         }
         
-        // get history
-        Step history = user.getStep( historyId );
-        if ( !history.isValid() )
-            throw new WdkUserException( "The history #" + historyId
+        // get step
+        Step step = user.getStep( stepId );
+        if ( !step.isValid() )
+            throw new WdkUserException( "The step #" + stepId
                     + " is invalid." );
-        AnswerValue answer = history.getAnswerValue();
+        AnswerValue answer = step.getAnswerValue();
         
         // create a leaf BooleanQuestionNode from the answer
         BooleanQuestionNode leaf = new BooleanQuestionNode(

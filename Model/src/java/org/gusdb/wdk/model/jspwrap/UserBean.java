@@ -740,6 +740,26 @@ public class UserBean /* implements Serializable */{
 	return beans;
     }
 
+    public StepBean[] getSteps()
+	throws WdkUserException, WdkModelException {
+	Step[] userAnswers = user.getSteps();
+	StepBean[] beans = new StepBean[userAnswers.length];
+	for (int i = 0; i < userAnswers.length; ++i) {
+	    beans[i] = new StepBean(userAnswers[i]);
+	}
+	return beans;
+    }
+
+    public StepBean[] getInvalidSteps()
+	throws WdkUserException, WdkModelException {
+	Step[] userAnswers = user.getInvalidSteps();
+	StepBean[] beans = new StepBean[userAnswers.length];
+	for (int i = 0; i < userAnswers.length; ++i) {
+	    beans[i] = new StepBean(userAnswers[i]);
+	}
+	return beans;
+    }
+
     /*
      * (non-Javadoc)
      * 
