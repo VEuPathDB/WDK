@@ -379,14 +379,7 @@ public class User /* implements Serializable */{
 
     public Strategy createStrategy(Step answer, boolean saved) 
 	throws WdkUserException, WdkModelException {
-        Date now = new Date();
-	String name = answer.getAnswer().getAnswerValue().getQuestion().getRecordClass().getType() + " Strategy for ";
-	name += getFirstName();
-	if (!isGuest()) {
-	    name += " " + getLastName();
-	}
-	name += now;
-	return createStrategy(answer, name, saved);
+	return createStrategy(answer, null, saved);
     }
 
     public Strategy createStrategy(Step answer, String name, boolean saved)
