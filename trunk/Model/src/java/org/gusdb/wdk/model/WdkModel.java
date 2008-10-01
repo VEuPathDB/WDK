@@ -70,7 +70,7 @@ public class WdkModel {
     private String projectId;
 
     private DBPlatform platform;
-    private DBPlatform authenPlatform;
+    private DBPlatform userPlatform;
 
     private List<QuerySet> querySetList = new ArrayList<QuerySet>();
     private Map<String, ModelSetI> querySets = new LinkedHashMap<String, ModelSetI>();
@@ -407,14 +407,17 @@ public class WdkModel {
         String emailSubject = modelConfig.getEmailSubject();
         String emailContent = modelConfig.getEmailContent();
 
+        String userSchema = userDB.getUserSchema();
+        String engineSchema = userDB.getWdkEngineSchema();
+
         // initialize authentication factory
         // set the max active as half of the model's configuration
 
-        authenPlatform = (DBPlatform) Class.forName(userDB.getPlatformClass()).newInstance();
-        authenPlatform.initialize(this, "USER", userDB);
-        userFactory = new UserFactory(this, projectId, authenPlatform,
-                userDB.getUserSchema(), modelConfig.getDefaultRole(), smtpServer, supportEmail,
-                emailSubject, emailContent);
+        userPlatform = (DBPlatform) Class.forName(userDB.getPlatformClass()).newInstance();
+        userPlatform.initialize(this, "USER", userDB);
+        userFactory = new UserFactory(this, projectId, userPlatform,
+                userSchema, modelConfig.getDefaultRole(), smtpServer,
+                supportEmail, emailSubject, emailContent);
 
         platform = (DBPlatform) Class.forName(appDB.getPlatformClass()).newInstance();
         platform.initialize(this, "APP", appDB);
@@ -424,10 +427,11 @@ public class WdkModel {
         this.resultFactory = resultFactory;
 
         // initialize dataset factory with the login preferences
-        datasetFactory = new DatasetFactory(authenPlatform, userDB.getWdkEngineSchema());
+        datasetFactory = new DatasetFactory(userPlatform, userSchema,
+                engineSchema);
 
         // initialize QueryFactory in user schema too
-        queryFactory = new QueryFactory(authenPlatform, userDB.getWdkEngineSchema());
+        queryFactory = new QueryFactory(userPlatform, engineSchema);
 
         // initialize answerFactory
         answerFactory = new AnswerFactory(this);
@@ -446,7 +450,7 @@ public class WdkModel {
 
     // Function Added by Cary P. Feb 7, 2008
     public DBPlatform getAuthenticationPlatform() {
-        return authenPlatform;
+        return userPlatform;
     }
 
     public UserFactory getUserFactory() throws WdkUserException {
