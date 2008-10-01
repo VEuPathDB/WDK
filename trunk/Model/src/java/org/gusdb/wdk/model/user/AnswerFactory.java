@@ -48,7 +48,7 @@ public class AnswerFactory {
     public AnswerFactory(WdkModel wdkModel) throws SQLException {
         this.wdkModel = wdkModel;
         this.loginPlatform = wdkModel.getAuthenticationPlatform();
-        this.answerSchema = wdkModel.getModelConfig().getAnswerSchema();
+        this.answerSchema = wdkModel.getModelConfig().getUserDB().getWdkEngineSchema();
 
         // create the answer table if needed
         createTables();

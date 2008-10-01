@@ -400,57 +400,34 @@ public class WdkModel {
         // assign projectId
         this.projectId = modelConfig.getProjectId();
         this.modelConfig = modelConfig;
-
-        String connectionUrl = modelConfig.getConnectionUrl();
-        String login = modelConfig.getLogin();
-        String password = modelConfig.getPassword();
-        String platformClass = modelConfig.getPlatformClass();
-        Integer maxIdle = modelConfig.getMaxIdle();
-        Integer minIdle = modelConfig.getMinIdle();
-        Integer maxWait = modelConfig.getMaxWait();
-        Integer maxActive = modelConfig.getMaxActive();
-        Integer initialSize = modelConfig.getInitialSize();
-
-        // also load the connection info for authentication database
-        String authenPlatformClass = modelConfig.getAuthenticationPlatformClass();
-        String authenLogin = modelConfig.getAuthenticationLogin();
-        String authenPassword = modelConfig.getAuthenticationPassword();
-        String authenConnection = modelConfig.getAuthenticationConnectionUrl();
-
-        String loginSchema = modelConfig.getLoginSchema();
-
-        String defaultRole = modelConfig.getDefaultRole();
+        ModelConfigApplicationDB appDB = modelConfig.getApplicationDB();
+        ModelConfigUserDB userDB = modelConfig.getUserDB();
         String smtpServer = modelConfig.getSmtpServer();
         String supportEmail = modelConfig.getSupportEmail();
         String emailSubject = modelConfig.getEmailSubject();
         String emailContent = modelConfig.getEmailContent();
 
-        boolean enableQueryLogger = modelConfig.isEnableQueryLogger();
-        String queryLoggerFile = modelConfig.getQueryLoggerFile();
-
         // initialize authentication factory
         // set the max active as half of the model's configuration
 
-        authenPlatform = (DBPlatform) Class.forName(authenPlatformClass).newInstance();
-        authenPlatform.initialize(this, "LOGIN", authenConnection, authenLogin,
-                authenPassword, minIdle, maxIdle, maxWait, maxActive / 2);
+        authenPlatform = (DBPlatform) Class.forName(userDB.getPlatformClass()).newInstance();
+        authenPlatform.initialize(this, "USER", userDB);
         userFactory = new UserFactory(this, projectId, authenPlatform,
-                loginSchema, defaultRole, smtpServer, supportEmail,
+                userDB.getUserSchema(), modelConfig.getDefaultRole(), smtpServer, supportEmail,
                 emailSubject, emailContent);
 
-        platform = (DBPlatform) Class.forName(platformClass).newInstance();
-        platform.initialize(this, "QUERY", connectionUrl, login, password,
-                minIdle, maxIdle, maxWait, maxActive);
+        platform = (DBPlatform) Class.forName(appDB.getPlatformClass()).newInstance();
+        platform.initialize(this, "APP", appDB);
         ResultFactory resultFactory = new ResultFactory(this);
         // 2008
         this.webServiceUrl = modelConfig.getWebServiceUrl();
         this.resultFactory = resultFactory;
 
         // initialize dataset factory with the login preferences
-        datasetFactory = new DatasetFactory(authenPlatform, loginSchema);
+        datasetFactory = new DatasetFactory(authenPlatform, userDB.getWdkEngineSchema());
 
         // initialize QueryFactory in user schema too
-        queryFactory = new QueryFactory(authenPlatform, loginSchema);
+        queryFactory = new QueryFactory(authenPlatform, userDB.getWdkEngineSchema());
 
         // initialize answerFactory
         answerFactory = new AnswerFactory(this);
