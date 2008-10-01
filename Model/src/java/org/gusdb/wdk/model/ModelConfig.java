@@ -1,7 +1,5 @@
 package org.gusdb.wdk.model;
 
-import org.gusdb.wdk.model.dbms.DBPlatform;
-
 /**
  * @author
  * @modified Jan 6, 2006 - Jerric add a property for the name of query history
@@ -10,48 +8,56 @@ import org.gusdb.wdk.model.dbms.DBPlatform;
 public class ModelConfig {
 
     private String modelName;
-    private String connectionUrl;
-    private String login;
-    private String password;
-    private String platformClass;
-    private Integer maxIdle;
-    private Integer maxWait;
-    private Integer maxActive;
-    private Integer minIdle;
-    private Integer initialSize;
     private String webServiceUrl;
 
-    // the fields for authentication use
-    private String authenticationLogin;
-    private String authenticationPassword;
-    private String authenticationConnectionUrl;
-    private String authenticationPlatformClass;
-
-    private String answerSchema;
-    private String loginSchema;
-    private String defaultRole;
-    private String smtpServer;
+    private String defaultRole = "wdk_user";
 
     // the information for registration email
+    private String smtpServer;
     private String supportEmail;
+
     private String emailSubject;
     private String emailContent;
 
-    // query logger property
-    private boolean enableQueryLogger = false;
-    private String queryLoggerFile;
-
-    private boolean showConnections = false;
-    private long showConnectionsInternval = 10;
-    private long showConnectionsDuration = 60; 
+    private ModelConfigUserDB userDB;
+    private ModelConfigApplicationDB appDB;
 
     /**
      * The projectId is not part of the config file content, it is input by the
      * user
      */
     private String projectId;
-
     private String gusHome;
+
+    /**
+     * @return the projectId
+     */
+    public String getProjectId() {
+        return this.projectId;
+    }
+
+    /**
+     * @param projectId
+     *            the projectId to set
+     */
+    public void setProjectId(String projectId) {
+        this.projectId = projectId;
+    }
+
+    /**
+     * @return the gusHome
+     */
+    public String getGusHome() {
+        return this.gusHome;
+    }
+
+    /**
+     * @param gusHome
+     *            the gusHome to set
+     */
+    public void setGusHome(String gusHome) {
+        this.gusHome = gusHome;
+    }
 
     /**
      * @return the modelName
@@ -68,176 +74,12 @@ public class ModelConfig {
         this.modelName = modelName;
     }
 
-    public void setPlatformClass(String platformClass) {
-        this.platformClass = platformClass;
-    }
-
-    public String getPlatformClass() {
-        return platformClass;
-    }
-
-    public void setConnectionUrl(String connectionUrl) {
-        this.connectionUrl = connectionUrl;
-    }
-
-    public String getConnectionUrl() {
-        return connectionUrl;
-    }
-
-    public void setLogin(String login) {
-        this.login = login;
-    }
-
-    public String getLogin() {
-        return login;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public Integer getInitialSize() {
-        return initialSize;
-    }
-
-    public void setInitialSize(Integer initialSize) {
-        this.initialSize = initialSize;
-    }
-
-    public Integer getMinIdle() {
-        return minIdle;
-    }
-
-    public void setMinIdle(Integer minIdle) {
-        this.minIdle = minIdle;
-    }
-
-    public Integer getMaxIdle() {
-        return maxIdle;
-    }
-
-    public void setMaxIdle(Integer maxIdle) {
-        this.maxIdle = maxIdle;
-    }
-
-    public Integer getMaxWait() {
-        return maxWait;
-    }
-
-    public void setMaxWait(Integer maxWait) {
-        this.maxWait = maxWait;
-    }
-
-    public Integer getMaxActive() {
-        return maxActive;
-    }
-
-    public void setMaxActive(Integer maxActive) {
-        this.maxActive = maxActive;
-    }
-
     public String getWebServiceUrl() {
         return webServiceUrl;
     }
 
     public void setWebServiceUrl(String urlString) {
         webServiceUrl = urlString;
-    }
-
-    /**
-     * @return Returns the authenticationConnectionUrl.
-     */
-    public String getAuthenticationConnectionUrl() {
-        return authenticationConnectionUrl;
-    }
-
-    /**
-     * @param authenticationConnectionUrl
-     *            The authenticationConnectionUrl to set.
-     */
-    public void setAuthenticationConnectionUrl(
-            String authenticationConnectionUrl) {
-        this.authenticationConnectionUrl = authenticationConnectionUrl;
-    }
-
-    /**
-     * @return Returns the authenticationLogin.
-     */
-    public String getAuthenticationLogin() {
-        return authenticationLogin;
-    }
-
-    /**
-     * @param authenticationLogin
-     *            The authenticationLogin to set.
-     */
-    public void setAuthenticationLogin(String authenticationLogin) {
-        this.authenticationLogin = authenticationLogin;
-    }
-
-    /**
-     * @return Returns the authenticationPassword.
-     */
-    public String getAuthenticationPassword() {
-        return authenticationPassword;
-    }
-
-    /**
-     * @param authenticationPassword
-     *            The authenticationPassword to set.
-     */
-    public void setAuthenticationPassword(String authenticationPassword) {
-        this.authenticationPassword = authenticationPassword;
-    }
-
-    /**
-     * @return Returns the loginSchema.
-     */
-    public String getLoginSchema() {
-        return loginSchema;
-    }
-
-    /**
-     * @param loginSchema
-     *            The loginSchema to set.
-     */
-    public void setLoginSchema(String loginSchema) {
-        this.loginSchema = DBPlatform.normalizeSchema(loginSchema);
-    }
-
-    /**
-     * @return Returns the defaultRole.
-     */
-    public String getDefaultRole() {
-        return defaultRole;
-    }
-
-    /**
-     * @param defaultRole
-     *            The defaultRole to set.
-     */
-    public void setDefaultRole(String defaultRole) {
-        this.defaultRole = defaultRole;
-    }
-
-    /**
-     * @return Returns the authenticationPlatformClass.
-     */
-    public String getAuthenticationPlatformClass() {
-        return authenticationPlatformClass;
-    }
-
-    /**
-     * @param authenticationPlatformClass
-     *            The authenticationPlatformClass to set.
-     */
-    public void setAuthenticationPlatformClass(
-            String authenticationPlatformClass) {
-        this.authenticationPlatformClass = authenticationPlatformClass;
     }
 
     /**
@@ -294,120 +136,47 @@ public class ModelConfig {
     }
 
     /**
-     * @return the enableQueryLogger
+     * @return the userDB
      */
-    public boolean isEnableQueryLogger() {
-        return enableQueryLogger;
+    public ModelConfigUserDB getUserDB() {
+        return userDB;
     }
 
     /**
-     * @param enableQueryLogger
-     *            the enableQueryLogger to set
+     * @param userDB
+     *            the userDB to set
      */
-    public void setEnableQueryLogger(boolean enableQueryLogger) {
-        this.enableQueryLogger = enableQueryLogger;
+    public void setUserDB(ModelConfigUserDB userDB) {
+        this.userDB = userDB;
     }
 
     /**
-     * @return the queryLoggerFile
+     * @return the appDB
      */
-    public String getQueryLoggerFile() {
-        return queryLoggerFile;
+    public ModelConfigApplicationDB getApplicationDB() {
+        return appDB;
     }
 
     /**
-     * @param queryLoggerFile
-     *            the queryLoggerFile to set
+     * @param appDB
+     *            the appDB to set
      */
-    public void setQueryLoggerFile(String queryLoggerFile) {
-        this.queryLoggerFile = queryLoggerFile;
+    public void setApplicationDB(ModelConfigApplicationDB appDB) {
+        this.appDB = appDB;
     }
 
     /**
-     * @return the projectId
+     * @return the defaultRole
      */
-    public String getProjectId() {
-        return this.projectId;
+    public String getDefaultRole() {
+        return defaultRole;
     }
 
     /**
-     * @param projectId
-     *            the projectId to set
+     * @param defaultRole
+     *            the defaultRole to set
      */
-    public void setProjectId(String projectId) {
-        this.projectId = projectId;
-    }
-
-    /**
-     * @return the gusHome
-     */
-    public String getGusHome() {
-        return this.gusHome;
-    }
-
-    /**
-     * @param gusHome
-     *            the gusHome to set
-     */
-    public void setGusHome(String gusHome) {
-        this.gusHome = gusHome;
-    }
-
-    /**
-     * @return the answerSchema
-     */
-    public String getAnswerSchema() {
-        return answerSchema;
-    }
-
-    /**
-     * @param answerSchema
-     *            the answerSchema to set
-     */
-    public void setAnswerSchema(String answerSchema) {
-        this.answerSchema = DBPlatform.normalizeSchema(answerSchema);
-    }
-
-    /**
-     * @return the showConnections
-     */
-    public boolean isShowConnections() {
-        return showConnections;
-    }
-
-    /**
-     * @param showConnections
-     *            the showConnections to set
-     */
-    public void setShowConnections(boolean showConnections) {
-        this.showConnections = showConnections;
-    }
-
-    /**
-     * @return the showConnectionsInternval
-     */
-    public long getShowConnectionsInternval() {
-        return showConnectionsInternval;
-    }
-
-    /**
-     * @param showConnectionsInternval the showConnectionsInternval to set
-     */
-    public void setShowConnectionsInternval(long showConnectionsInternval) {
-        this.showConnectionsInternval = showConnectionsInternval;
-    }
-
-    /**
-     * @return the showConnectionsDuration
-     */
-    public long getShowConnectionsDuration() {
-        return showConnectionsDuration;
-    }
-
-    /**
-     * @param showConnectionsDuration the showConnectionsDuration to set
-     */
-    public void setShowConnectionsDuration(long showConnectionsDuration) {
-        this.showConnectionsDuration = showConnectionsDuration;
+    public void setDefaultRole(String defaultRole) {
+        this.defaultRole = defaultRole;
     }
 }
