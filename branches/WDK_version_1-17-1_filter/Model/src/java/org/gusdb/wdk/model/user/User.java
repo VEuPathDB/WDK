@@ -543,8 +543,6 @@ public class User /* implements Serializable */{
 	Map<Integer, Step> invalidSteps = new LinkedHashMap<Integer, Step>();
 	Map<Integer, Step> userAnswers = userFactory.loadSteps(this, invalidSteps);
 
-	// update the user answer count?  we need to have one first
-
 	return userAnswers;
     }
 
@@ -681,6 +679,24 @@ public class User /* implements Serializable */{
 	Step[] array = new Step[map.size()];
 	map.values().toArray(array);
 	return array;
+    }
+
+    public Step[] getSteps()
+	throws WdkUserException, WdkModelException {
+	Map<Integer, Step> map = getStepsMap();
+	Step[] array = new Step[map.size()];
+	map.values().toArray(array);
+	return array;
+    }
+
+    public Step[] getInvalidSteps() throws WdkUserException,
+            WdkModelException {
+        Map<Integer, Step> steps = new LinkedHashMap<Integer, Step>();
+        userFactory.loadSteps(this, steps);
+
+        Step[] array = new Step[steps.size()];
+        steps.values().toArray(array);
+        return array;
     }
 
     public Map<Integer, Strategy> getStrategiesMap(String dataType)

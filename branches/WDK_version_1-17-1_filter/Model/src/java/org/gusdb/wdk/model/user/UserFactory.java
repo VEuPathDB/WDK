@@ -980,15 +980,14 @@ public class UserFactory {
         }
     }
 
-    // TODO:  Rewrite for Steps?
-    Map<Integer, Step> loadSteps(User user, Map<Integer,Step> invalidUserAnswers)
+    Map<Integer, Step> loadSteps(User user, Map<Integer,Step> invalidSteps)
 	throws WdkUserException, WdkModelException {
-        Map<Integer, Step> userAnswers = new LinkedHashMap<Integer, Step>();
+        Map<Integer, Step> steps = new LinkedHashMap<Integer, Step>();
 
-        ResultSet rsUserAnswer = null;
-	PreparedStatement psUserAnswer = null;
+        ResultSet rsStep = null;
+	PreparedStatement psStep = null;
         try {
-            psUserAnswer = SqlUtils.getPreparedStatement(
+            psStep = SqlUtils.getPreparedStatement(
                     dataSource, "SELECT step_id, display_id, question_name, create_time"
                             + ", last_run_time, custom_name, estimate_size, "
                             + "is_boolean, is_deleted, params, "
@@ -998,76 +997,76 @@ public class UserFactory {
                             + "AND ua.project_id = ? AND ga.answer_id = ua.answer_id "
 		            + "AND ga.project_id = ua.project_id "
 		            + "ORDER BY last_run_time DESC");
-            psUserAnswer.setInt(1, user.getUserId());
-            psUserAnswer.setString(2, projectId);
-            rsUserAnswer = psUserAnswer.executeQuery();
+            psStep.setInt(1, user.getUserId());
+            psStep.setString(2, projectId);
+            rsStep = psStep.executeQuery();
 
-            while (rsUserAnswer.next()) {
+            while (rsStep.next()) {
                 // load history info
-                int stepId = rsUserAnswer.getInt("display_id");
-		int internalId = rsUserAnswer.getInt("step_id");
-		int answerId = rsUserAnswer.getInt("answer_id");
-                Timestamp createTime = rsUserAnswer.getTimestamp("create_time");
-                Timestamp lastRunTime = rsUserAnswer.getTimestamp("last_run_time");
+                int stepId = rsStep.getInt("display_id");
+		int internalId = rsStep.getInt("step_id");
+		int answerId = rsStep.getInt("answer_id");
+                Timestamp createTime = rsStep.getTimestamp("create_time");
+                Timestamp lastRunTime = rsStep.getTimestamp("last_run_time");
 
-                Step userAnswer = new Step(this, user, stepId, internalId);
+                Step step = new Step(this, user, stepId, internalId);
 		Answer answer = new Answer(this, user, answerId);
-		userAnswer.setAnswer(answer);
-                userAnswer.setCreatedTime(new Date(createTime.getTime()));
-                userAnswer.setLastRunTime(new Date(lastRunTime.getTime()));
-                userAnswer.setCustomName(rsUserAnswer.getString("custom_name"));
-                userAnswer.setEstimateSize(rsUserAnswer.getInt("estimate_size"));
-                userAnswer.setBoolean(rsUserAnswer.getBoolean("is_boolean"));
-                userAnswer.setDeleted(rsUserAnswer.getBoolean("is_deleted"));
+		step.setAnswer(answer);
+                step.setCreatedTime(new Date(createTime.getTime()));
+                step.setLastRunTime(new Date(lastRunTime.getTime()));
+                step.setCustomName(rsStep.getString("custom_name"));
+                step.setEstimateSize(rsStep.getInt("estimate_size"));
+                step.setBoolean(rsStep.getBoolean("is_boolean"));
+                step.setDeleted(rsStep.getBoolean("is_deleted"));
 
-                String paramsClob = platform.getClobData(rsUserAnswer, "params");
-                String questionName = rsUserAnswer.getString("question_name");
-                userAnswer.setQuestionName(questionName);
+                String paramsClob = platform.getClobData(rsStep, "params");
+                String questionName = rsStep.getString("question_name");
+                step.setQuestionName(questionName);
 
                 // re-construct the result
                 AnswerValue result;
 
                 // get the params
                 Map<String, Object> params;
-                if (userAnswer.isBoolean()) {
+                if (step.isBoolean()) {
                     params = new LinkedHashMap<String, Object>();
                     params.put("Boolean Expression", paramsClob);
                 } else {
                     params = parseParams(paramsClob);
                 }
-                userAnswer.setParams(params);
+                step.setParams(params);
 
                 // construct answer of the history
                 try {
-                    if (userAnswer.isBoolean()) {
+                    if (step.isBoolean()) {
                         result = constructBooleanAnswerValue(user, paramsClob);
-                        userAnswer.setBooleanExpression(paramsClob);
+                        step.setBooleanExpression(paramsClob);
                     } else {
                         result = constructAnswerValue(user, questionName, params);
                     }
-                    userAnswer.setAnswerValue(result);
-                    userAnswers.put(stepId, userAnswer);
+                    step.setAnswerValue(result);
+                    steps.put(stepId, step);
                 } catch (WdkModelException ex) {
-                    // invalid userAnswer
-                    userAnswer.setValid(false);
-                    invalidUserAnswers.put(stepId, userAnswer);
+                    // invalid step
+                    step.setValid(false);
+                    invalidSteps.put(stepId, step);
                 } catch (WdkUserException ex) {
-                    // invalid userAnswer
-                    userAnswer.setValid(false);
-                    invalidUserAnswers.put(stepId, userAnswer);
+                    // invalid step
+                    step.setValid(false);
+                    invalidSteps.put(stepId, step);
                 }
             }
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
         } finally {
             try {
-		SqlUtils.closeStatement(psUserAnswer);
-                SqlUtils.closeResultSet(rsUserAnswer);
+		SqlUtils.closeStatement(psStep);
+                SqlUtils.closeResultSet(rsStep);
             } catch (SQLException ex) {
                 throw new WdkUserException(ex);
             }
         }
-        return userAnswers;
+        return steps;
     }
 
     // get left child id, right child id in here
@@ -1141,10 +1140,10 @@ public class UserFactory {
 
 	PreparedStatement psAnswer = null;
 	PreparedStatement psCheck = null;
-	PreparedStatement psUserAnswer = null;
+	PreparedStatement psStep = null;
 	PreparedStatement psMax = null;
 	ResultSet rsAnswer = null;
-        ResultSet rsUserAnswer = null;
+        ResultSet rsStep = null;
         ResultSet rsMax = null;
 
         Connection connection = null;
@@ -1178,7 +1177,7 @@ public class UserFactory {
 		answer = createAnswer(user, result, booleanExpression);
 	    }
 	
-	    // Now that we have the Answer, create the UserAnswer
+	    // Now that we have the Answer, create the Step
             Date createTime = new Date();
             Date lastRunTime = new Date(createTime.getTime());
 	    
@@ -1190,7 +1189,7 @@ public class UserFactory {
 		
                 connection.setAutoCommit(false);
 		
-                psUserAnswer = connection.prepareStatement("INSERT INTO "
+                psStep = connection.prepareStatement("INSERT INTO "
 			+ loginSchema + "steps (display_id, step_id,"
                         + "user_id, answer_id, project_id, create_time, "
                         + "last_run_time, custom_name, is_deleted) VALUES "
@@ -1200,15 +1199,15 @@ public class UserFactory {
                         + " UNION SELECT count(*) AS max_id FROM "
                         + loginSchema + "steps WHERE user_id = ?) f), "
                         + "?, ?, ?, ?, ?, ?, ?, 0)");
-                psUserAnswer.setInt(1, userId);
-		psUserAnswer.setInt(2, internalId);
-                psUserAnswer.setInt(3, userId);
-		psUserAnswer.setInt(4, answer.getAnswerId());
-                psUserAnswer.setString(5, projectId);
-		psUserAnswer.setTimestamp(6, new Timestamp(createTime.getTime()));
-                psUserAnswer.setTimestamp(7, new Timestamp(lastRunTime.getTime()));
-                psUserAnswer.setString(8, customName);
-		psUserAnswer.executeUpdate();
+                psStep.setInt(1, userId);
+		psStep.setInt(2, internalId);
+                psStep.setInt(3, userId);
+		psStep.setInt(4, answer.getAnswerId());
+                psStep.setString(5, projectId);
+		psStep.setTimestamp(6, new Timestamp(createTime.getTime()));
+                psStep.setTimestamp(7, new Timestamp(lastRunTime.getTime()));
+                psStep.setString(8, customName);
+		psStep.executeUpdate();
 
                 // query to get the new history id
                 psMax = connection.prepareStatement("SELECT"
@@ -1254,9 +1253,9 @@ public class UserFactory {
                 if (connection != null) connection.setAutoCommit(true);
 		SqlUtils.closeStatement(psAnswer);
 		SqlUtils.closeStatement(psCheck);
-		SqlUtils.closeStatement(psUserAnswer);
+		SqlUtils.closeStatement(psStep);
                 SqlUtils.closeResultSet(rsAnswer);
-		SqlUtils.closeResultSet(rsUserAnswer);
+		SqlUtils.closeResultSet(rsStep);
 		SqlUtils.closeResultSet(rsMax);
 	    } catch (SQLException ex) {
                 throw new WdkUserException(ex);
@@ -1324,7 +1323,7 @@ public class UserFactory {
      * This method updates the custom name, the time stamp of last running, isDeleted, isCollapsible, and collapsed name
      * 
      * @param user
-     * @param userAnswer
+     * @param step
      * @throws WdkUserException
      */
     void updateStep(User user, Step step, boolean updateTime)
