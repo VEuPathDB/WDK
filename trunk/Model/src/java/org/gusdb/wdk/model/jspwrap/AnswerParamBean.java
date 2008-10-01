@@ -44,9 +44,13 @@ public class AnswerParamBean extends ParamBean {
         this.answerChecksum = checksum;
     }
 
-    public AnswerBean getAnswer() throws NoSuchAlgorithmException,
-            WdkModelException, JSONException, WdkUserException, SQLException {
+    public AnswerBean getAnswer() throws Exception {
+        try {
         Answer answer = answerParam.getAnswer(answerChecksum);
         return new AnswerBean(answer);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw ex;
+        }
     }
 }
