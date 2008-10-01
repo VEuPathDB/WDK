@@ -1690,7 +1690,7 @@ public class UserFactory {
     }
 
     // Note:  this function only adds the necessary row in strategies;  updating of answers
-    // and steps, is handled in other functions.  Once the Step
+    // and steps tables is handled in other functions.  Once the Step
     // object exists, all of this data is already in the db.
     Strategy createStrategy(User user, Step root, String name, boolean saved)
 	throws WdkUserException, WdkModelException {
@@ -1726,7 +1726,7 @@ public class UserFactory {
 		psStrategy.setInt(3, userId);
 		psStrategy.setInt(4, root.getStepId());
 		psStrategy.setBoolean(5, saved);
-		psStrategy.setString(6, name);
+		psStrategy.setString(6, " ");
 		psStrategy.setString(7, projectId);
 		psStrategy.executeUpdate();
 
@@ -1748,7 +1748,16 @@ public class UserFactory {
 	    // update the user's strategy count
             int strategyCount = getStrategyCount(user);
             user.setStrategyCount(strategyCount);
-	    return loadStrategy(user, strategyId);
+	    Strategy strat = loadStrategy(user, strategyId);
+
+	    // don't like setting the name this way, but how else to get display id into name before we know
+	    // what the display id is?
+	    if (name == null) {
+		name = "Strategy " + strat.getStrategyId();
+	    }
+	    strat.setName(name);
+	    strat.update(false);
+	    return strat;
 	}
 	catch (SQLException ex) {
 	    throw new WdkUserException(ex);
