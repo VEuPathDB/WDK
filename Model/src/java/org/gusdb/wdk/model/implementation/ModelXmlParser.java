@@ -51,7 +51,6 @@ import org.gusdb.wdk.model.EnumItem;
 import org.gusdb.wdk.model.EnumItemList;
 import org.gusdb.wdk.model.EnumParam;
 import org.gusdb.wdk.model.FlatVocabParam;
-import org.gusdb.wdk.model.ParamValuesSet;
 import org.gusdb.wdk.model.Group;
 import org.gusdb.wdk.model.GroupSet;
 import org.gusdb.wdk.model.LinkAttributeField;
@@ -63,6 +62,7 @@ import org.gusdb.wdk.model.ParamConfiguration;
 import org.gusdb.wdk.model.ParamReference;
 import org.gusdb.wdk.model.ParamSet;
 import org.gusdb.wdk.model.ParamSuggestion;
+import org.gusdb.wdk.model.ParamValuesSet;
 import org.gusdb.wdk.model.PrimaryKeyAttributeField;
 import org.gusdb.wdk.model.PropertyList;
 import org.gusdb.wdk.model.QuerySet;
@@ -140,8 +140,12 @@ public class ModelXmlParser extends XmlParser {
         // load property map
         Map<String, String> properties = getPropMap(modelPropURL);
 
-        // add project id into the prop map automatically
+        // add several config into the prop map automatically
         properties.put(Utilities.PARAM_PROJECT_ID, projectId);
+        properties.put("user_dblink", config.getApplicationDB().getUserDbLink());
+        properties.put("user_schema", config.getUserDB().getUserSchema());
+        properties.put("wdk_engine_schema",
+                config.getUserDB().getWdkEngineSchema());
 
         InputStream modelXmlStream = substituteProps(masterDoc, properties);
 
@@ -323,11 +327,14 @@ public class ModelXmlParser extends XmlParser {
                 "wdkModel/recordClassSet/recordClass/primaryKeyAttribute/text",
                 "setText", 0);
 
-        configureNode(digester, "wdkModel/recordClassSet/recordClass/attributesList",
+        configureNode(digester,
+                "wdkModel/recordClassSet/recordClass/attributesList",
                 AttributeList.class, "addAttributeList");
 
-	// defaultTestParamValues
-	configureParamValuesSet(digester, "wdkModel/recordClassSet/recordClass/testParamValues", "addParamValuesSet");
+        // defaultTestParamValues
+        configureParamValuesSet(digester,
+                "wdkModel/recordClassSet/recordClass/testParamValues",
+                "addParamValuesSet");
 
         // reporter
         configureNode(digester, "wdkModel/recordClassSet/recordClass/reporter",
@@ -429,20 +436,25 @@ public class ModelXmlParser extends XmlParser {
         configureNode(digester, "wdkModel/querySet", QuerySet.class,
                 "addQuerySet");
 
-	// defaultTestParamValues
-	configureParamValuesSet(digester, "wdkModel/querySet/defaultTestParamValues", "addDefaultParamValuesSet");
+        // defaultTestParamValues
+        configureParamValuesSet(digester,
+                "wdkModel/querySet/defaultTestParamValues",
+                "addDefaultParamValuesSet");
 
-	// cardinalitySql
+        // cardinalitySql
         configureNode(digester, "wdkModel/querySet/testRowCountSql",
                 WdkModelText.class, "addTestRowCountSql");
-        digester.addCallMethod("wdkModel/querySet/testRowCountSql", "setText", 0);
+        digester.addCallMethod("wdkModel/querySet/testRowCountSql", "setText",
+                0);
 
         // sqlQuery
         configureNode(digester, "wdkModel/querySet/sqlQuery", SqlQuery.class,
                 "addQuery");
 
-	// testParamValues
-	configureParamValuesSet(digester, "wdkModel/querySet/sqlQuery/testParamValues", "addParamValuesSet");
+        // testParamValues
+        configureParamValuesSet(digester,
+                "wdkModel/querySet/sqlQuery/testParamValues",
+                "addParamValuesSet");
 
         configureNode(digester, "wdkModel/querySet/sqlQuery/sql",
                 WdkModelText.class, "addSql");
@@ -463,8 +475,10 @@ public class ModelXmlParser extends XmlParser {
         configureNode(digester, "wdkModel/querySet/processQuery",
                 ProcessQuery.class, "addQuery");
 
-	// testParamValues
-	configureParamValuesSet(digester, "wdkModel/querySet/processQuery/testParamValues", "addParamValuesSet");
+        // testParamValues
+        configureParamValuesSet(digester,
+                "wdkModel/querySet/processQuery/testParamValues",
+                "addParamValuesSet");
 
         configureNode(digester, "wdkModel/querySet/processQuery/paramRef",
                 ParamReference.class, "addParamRef");
@@ -644,12 +658,12 @@ public class ModelXmlParser extends XmlParser {
     }
 
     private void configureParamValuesSet(Digester digester, String path,
-					    String addMethodName) {
-	digester.addObjectCreate(path, ParamValuesSet.class);
+            String addMethodName) {
+        digester.addObjectCreate(path, ParamValuesSet.class);
         digester.addSetProperties(path);
-	digester.addCallMethod(path + "/paramValue", "put", 2);
-	digester.addCallParam(path + "/paramValue", 0, "name");
-	digester.addCallParam(path + "/paramValue", 1);
+        digester.addCallMethod(path + "/paramValue", "put", 2);
+        digester.addCallParam(path + "/paramValue", 0, "name");
+        digester.addCallParam(path + "/paramValue", 1);
         digester.addSetNext(path, addMethodName);
     }
 

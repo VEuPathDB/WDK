@@ -15,7 +15,7 @@ import org.apache.commons.dbcp.PoolableConnectionFactory;
 import org.apache.commons.dbcp.PoolingDataSource;
 import org.apache.commons.pool.impl.GenericObjectPool;
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.ModelConfig;
+import org.gusdb.wdk.model.ModelConfigDB;
 import org.gusdb.wdk.model.WdkModel;
 
 /**
@@ -38,9 +38,8 @@ public abstract class DBPlatform {
          * @see java.lang.Runnable#run()
          */
         public void run() {
-            ModelConfig config = platform.wdkModel.getModelConfig();
-            long interval = config.getShowConnectionsInternval();
-            long duration = config.getShowConnectionsDuration();
+            long interval = dbConfig.getShowConnectionsInterval();
+            long duration = dbConfig.getShowConnectionsDuration();
             long startTime = System.currentTimeMillis();
             while (true) {
                 StringBuffer display = new StringBuffer();
@@ -99,6 +98,7 @@ public abstract class DBPlatform {
     private GenericObjectPool connectionPool;
     private String name;
     private WdkModel wdkModel;
+    private ModelConfigDB dbConfig;
 
     // #########################################################################
     // the Abstract methods that are platform dependent
@@ -108,7 +108,7 @@ public abstract class DBPlatform {
             throws SQLException;
 
     public abstract String getNumberDataType(int size);
-    
+
     public abstract String getFloatDataType(int size);
 
     public abstract String getStringDataType(int size);
@@ -138,6 +138,20 @@ public abstract class DBPlatform {
     // #########################################################################
     // Common methods are platform independent
     // #########################################################################
+
+    /**
+     * @return the wdkModel
+     */
+    public WdkModel getWdkModel() {
+        return wdkModel;
+    }
+
+    /**
+     * @return the dbConfig
+     */
+    public ModelConfigDB getDbConfig() {
+        return dbConfig;
+    }
 
     public DataSource getDataSource() {
         return dataSource;
@@ -171,14 +185,15 @@ public abstract class DBPlatform {
      * @param maxActive
      */
     public void initialize(WdkModel wdkModel, String name,
-            String connectionUrl, String login, String password, int minIdle,
-            int maxIdle, int maxWait, int maxActive) {
+            ModelConfigDB dbConfig) {
         this.wdkModel = wdkModel;
         this.name = name;
+        this.dbConfig = dbConfig;
 
         connectionPool = new GenericObjectPool(null);
         ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(
-                connectionUrl, login, password);
+                dbConfig.getConnectionUrl(), dbConfig.getLogin(),
+                dbConfig.getPassword());
 
         // create abandoned configuration
         String validationQuery = null;
@@ -188,10 +203,10 @@ public abstract class DBPlatform {
                 validationQuery, defaultReadOnly, defaultAutoCommit);
 
         // configure the connection pool
-        connectionPool.setMaxWait(maxWait);
-        connectionPool.setMaxIdle(maxIdle);
-        connectionPool.setMinIdle(minIdle);
-        connectionPool.setMaxActive(maxActive);
+        connectionPool.setMaxWait(dbConfig.getMaxWait());
+        connectionPool.setMaxIdle(dbConfig.getMaxIdle());
+        connectionPool.setMinIdle(dbConfig.getMinIdle());
+        connectionPool.setMaxActive(dbConfig.getMaxActive());
 
         // configure validationQuery tests
         connectionPool.setTestOnBorrow(true);
@@ -201,10 +216,10 @@ public abstract class DBPlatform {
         PoolingDataSource dataSource = new PoolingDataSource(connectionPool);
         dataSource.setAccessToUnderlyingConnectionAllowed(true);
         this.dataSource = dataSource;
-        this.defaultSchema = login;
+        this.defaultSchema = DBPlatform.normalizeSchema(dbConfig.getLogin());
 
         // start the connection monitor if needed
-        if (this.wdkModel.getModelConfig().isShowConnections())
+        if (dbConfig.isShowConnections())
             (new Thread(new DisplayConnections(this))).start();
     }
 

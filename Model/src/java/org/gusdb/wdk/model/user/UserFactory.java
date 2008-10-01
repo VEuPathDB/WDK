@@ -1251,7 +1251,7 @@ public class UserFactory {
 
     private int getHistoryCount(User user) throws WdkUserException {
         String hisTable = loginSchema + "histories";
-        String ansTable = wdkModel.getModelConfig().getAnswerSchema()
+        String ansTable = wdkModel.getModelConfig().getUserDB().getWdkEngineSchema()
                 + AnswerFactory.TABLE_ANSWER;
         ResultSet rsHistory = null;
         try {
