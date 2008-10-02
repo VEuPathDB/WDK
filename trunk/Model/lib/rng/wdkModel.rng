@@ -73,7 +73,9 @@
         <element name="propertyList">
             <ref name="PropertyListContent"/>
         </element>
-    </define>  
+    </define>
+    
+    
 
     <!-- define category list -->
     <define name="categories">
