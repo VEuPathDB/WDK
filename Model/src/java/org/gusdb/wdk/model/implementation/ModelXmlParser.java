@@ -13,6 +13,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Result;
@@ -141,14 +142,16 @@ public class ModelXmlParser extends XmlParser {
         Map<String, String> properties = getPropMap(modelPropURL);
 
         // add several config into the prop map automatically
-        if (!properties.containsKey("PROJECT_ID"))
+        if (!properties.containsKey("PROJECT_ID")) {
             properties.put("PROJECT_ID", projectId);
+        }
         if (!properties.containsKey("USER_DBLINK")) {
             String userDbLink = config.getApplicationDB().getUserDbLink();
             properties.put("USER_DBLINK", userDbLink);
         }
-        if (!properties.containsKey("USER_SCHEMA"))
+        if (!properties.containsKey("USER_SCHEMA")) {
             properties.put("USER_SCHEMA", config.getUserDB().getUserSchema());
+        }
         if (!properties.containsKey("WDK_ENGINE_SCHEMA")) {
             String engineSchema = config.getUserDB().getWdkEngineSchema();
             properties.put("WDK_ENGINE_SCHEMA", engineSchema);
@@ -226,7 +229,8 @@ public class ModelXmlParser extends XmlParser {
 
     private InputStream substituteProps(Document masterDoc,
             Map<String, String> properties)
-            throws TransformerFactoryConfigurationError, TransformerException {
+            throws TransformerFactoryConfigurationError, TransformerException,
+            WdkModelException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
         // transform the DOM doc to a string
@@ -236,15 +240,31 @@ public class ModelXmlParser extends XmlParser {
         transformer.transform(source, result);
         String content = new String(out.toByteArray());
 
-        // substitute prop macros
-        for (String propName : properties.keySet()) {
+        Pattern pattern = Pattern.compile("\\@([\\w\\.\\-]+)\\@",
+                Pattern.MULTILINE);
+        Matcher matcher = pattern.matcher(content);
+
+        // search and substitute the property macros
+        StringBuffer buffer = new StringBuffer();
+        int prevPos = 0;
+        while (matcher.find()) {
+            String propName = matcher.group(1);
+
+            // check if the property macro is defined
+            if (!properties.containsKey(propName))
+                throw new WdkModelException("The property macro '" + propName
+                        + "' is not defined in the model.prop file");
+
             String propValue = properties.get(propName);
-            content = content.replaceAll("\\@" + propName + "\\@",
-                    Matcher.quoteReplacement(propValue));
+            buffer.append(content.subSequence(prevPos, matcher.start()));
+            buffer.append(propValue);
+            prevPos = matcher.end();
         }
+        if (prevPos < content.length())
+            buffer.append(content.substring(prevPos));
 
         // construct input stream
-        return new ByteArrayInputStream(content.getBytes());
+        return new ByteArrayInputStream(buffer.toString().getBytes());
     }
 
     protected Digester configureDigester() {
