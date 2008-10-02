@@ -28,10 +28,10 @@ GRANT select ON wdkstorage.dataset_indices_pkseq TO GUS_W;
 GRANT select ON wdkstorage.dataset_indices_pkseq TO GUS_R;
 
 
-CREATE SEQUENCE wdkstorage.answwer_pkseq INCREMENT BY 1 START WITH 1;
+CREATE SEQUENCE wdkstorage.answer_pkseq INCREMENT BY 1 START WITH 1;
 
-GRANT select ON wdkstorage.answwer_pkseq TO GUS_W;
-GRANT select ON wdkstorage.answwer_pkseq TO GUS_R;
+GRANT select ON wdkstorage.answer_pkseq TO GUS_W;
+GRANT select ON wdkstorage.answer_pkseq TO GUS_R;
 
 
 CREATE SEQUENCE userlogins3.users_pkseq INCREMENT BY 1 START WITH 1;
@@ -62,10 +62,7 @@ CREATE TABLE wdkstorage.answer
 
 GRANT insert, update, delete ON wdkstorage.answer TO GUS_W;
 GRANT select ON wdkstorage.answer TO GUS_R;
-
-GRANT insert, update, delete ON wdkstorage.sorting_attributes TO GUS_W;
-GRANT select ON wdkstorage.sorting_attributes TO GUS_R;
-
+GRANT references ON wdkstorage.answer TO userlogins3;
 
 
 CREATE TABLE wdkstorage.dataset_indices
@@ -81,6 +78,7 @@ CREATE TABLE wdkstorage.dataset_indices
 
 GRANT insert, update, delete ON wdkstorage.dataset_indices TO GUS_W;
 GRANT select ON wdkstorage.dataset_indices TO GUS_R;
+GRANT references ON wdkstorage.dataset_indices TO userlogins3;
 
 
 CREATE TABLE wdkstorage.dataset_values
@@ -185,7 +183,7 @@ CREATE TABLE userlogins3.histories
   display_params CLOB,
   CONSTRAINT "HISTORIES_PK" PRIMARY KEY (user_id, history_id),
   CONSTRAINT "HISTORY_USER_ID_FK" FOREIGN KEY (user_id)
-      REFERENCES userlogins3.users (user_id)
+      REFERENCES userlogins3.users (user_id),
   CONSTRAINT "HISTORY_ANSWER_ID_FK" FOREIGN KEY (answer_id)
       REFERENCES wdkstorage.answer (answer_id)
 );
@@ -202,7 +200,7 @@ CREATE TABLE userlogins3.user_datasets
   upload_file VARCHAR(2000),
   CONSTRAINT "USER_DATASET_PK" PRIMARY KEY (dataset_id, user_id),
   CONSTRAINT "USER_DATASETS_DS_ID_FK" FOREIGN KEY (dataset_id)
-      REFERENCES userlogins3.dataset_indices (dataset_id),
+      REFERENCES wdkstorage.dataset_indices (dataset_id),
   CONSTRAINT "USER_DATASETS_USER_ID_FK" FOREIGN KEY (user_id)
       REFERENCES userlogins3.users (user_id)
 );
