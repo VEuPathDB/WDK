@@ -66,6 +66,7 @@ import org.gusdb.wdk.model.ParamSuggestion;
 import org.gusdb.wdk.model.ParamValuesSet;
 import org.gusdb.wdk.model.PrimaryKeyAttributeField;
 import org.gusdb.wdk.model.PropertyList;
+import org.gusdb.wdk.model.PropertyMacro;
 import org.gusdb.wdk.model.QuerySet;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
@@ -165,7 +166,7 @@ public class ModelXmlParser extends XmlParser {
         model.setXmlDataDir(new File(xmlDataDir)); // consider refactoring
         model.configure(config);
         model.setResources();
-        model.setProperties(properties); // consider removing it
+        model.setProperties(properties);
 
         return model;
     }
@@ -251,9 +252,7 @@ public class ModelXmlParser extends XmlParser {
             String propName = matcher.group(1);
 
             // check if the property macro is defined
-            if (!properties.containsKey(propName))
-                throw new WdkModelException("The property macro '" + propName
-                        + "' is not defined in the model.prop file");
+            if (!properties.containsKey(propName)) continue;
 
             String propValue = properties.get(propName);
             buffer.append(content.subSequence(prevPos, matcher.start()));
@@ -291,7 +290,7 @@ public class ModelXmlParser extends XmlParser {
         digester.addCallMethod("wdkModel/defaultPropertyList/value", "setText",
                 0);
 
-        // default property list
+        // categories
         configureNode(digester, "wdkModel/categories", Categories.class,
                 "addCategories");
 
@@ -302,6 +301,10 @@ public class ModelXmlParser extends XmlParser {
                 WdkModelText.class, "addQuestionRef");
         digester.addCallMethod("wdkModel/categories/category/questionRef",
                 "setText", 0);
+
+        // configure property macros
+        configureNode(digester, "wdkModel/propertyMacro", PropertyMacro.class,
+                "addPropertyMacro");
 
         // configure all sub nodes of recordClassSet
         configureRecordClassSet(digester);

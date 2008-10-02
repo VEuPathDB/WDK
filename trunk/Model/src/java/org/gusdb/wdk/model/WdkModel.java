@@ -7,8 +7,10 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -102,11 +104,13 @@ public class WdkModel {
     private List<WdkModelText> introductions = new ArrayList<WdkModelText>();
     private String introduction;
 
+    private List<PropertyMacro> propertyMacroList = new ArrayList<PropertyMacro>();
+    private Set<String> propertyMacroSet = new LinkedHashSet<String>();
+
     private ResultFactory resultFactory;
 
     private AnswerFactory answerFactory;
 
-    @Deprecated
     private Map<String, String> properties;
 
     private String webServiceUrl;
@@ -190,13 +194,18 @@ public class WdkModel {
         return introduction;
     }
 
-    @Deprecated
     public Map<String, String> getProperties() {
         return properties;
     }
 
-    @Deprecated
-    public void setProperties(Map<String, String> properties) {
+    public void setProperties(Map<String, String> properties)
+            throws WdkModelException {
+        // make sure all the declared macros are present
+        for (String macro : propertyMacroSet) {
+            if (!properties.containsKey(macro))
+                throw new WdkModelException("Required property macro '" + macro
+                        + "' is not defined in the model.prop file");
+        }
         this.properties = properties;
     }
 
@@ -436,6 +445,17 @@ public class WdkModel {
         // initialize answerFactory
         answerFactory = new AnswerFactory(this);
 
+        // set the exception header
+        WdkModelException.modelName = getProjectId();
+        WdkUserException.modelName = getProjectId();
+
+        // before the resources are excluded, the internal sets need to be
+        // created.
+        createInternalSets();
+
+        // exclude resources that are not used by this project
+        excludeResources();
+
         // resolve references in the model objects
         resolveReferences();
     }
@@ -497,17 +517,6 @@ public class WdkModel {
     private void resolveReferences() throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
-        // set the exception header
-        WdkModelException.modelName = getProjectId();
-        WdkUserException.modelName = getProjectId();
-
-        // before the resources are excluded, the internal sets need to be
-        // created.
-        createInternalSets();
-
-        // exclude resources that are not used by this project
-        excludeResources();
-
         // Since we use Map here, the order of the sets in allModelSets are
         // random. However, if QuestionSet is resolved before a RecordSet, and
         // it goes down to resolve: QuestionSet -> Question -> RecordClass, and
@@ -672,6 +681,19 @@ public class WdkModel {
             }
         }
         categoriesList = null;
+
+        // exclude categories
+        for (PropertyMacro macro : propertyMacroList) {
+            if (macro.include(projectId)) {
+                String name = macro.getName();
+                if (propertyMacroSet.contains(name))
+                    throw new WdkModelException("More than one property macros"
+                            + " '" + name + "' are defined");
+                macro.excludeResources(projectId);
+                propertyMacroSet.add(name);
+            }
+        }
+        propertyMacroList = null;
     }
 
     private void createInternalSets() {
@@ -903,5 +925,9 @@ public class WdkModel {
         Categories[] array = new Categories[categoriesMap.size()];
         categoriesMap.values().toArray(array);
         return array;
+    }
+
+    public void addPropertyMacro(PropertyMacro macro) {
+        propertyMacroList.add(macro);
     }
 }
