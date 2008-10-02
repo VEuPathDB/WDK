@@ -141,11 +141,18 @@ public class ModelXmlParser extends XmlParser {
         Map<String, String> properties = getPropMap(modelPropURL);
 
         // add several config into the prop map automatically
-        properties.put(Utilities.PARAM_PROJECT_ID, projectId);
-        properties.put("user_dblink", config.getApplicationDB().getUserDbLink());
-        properties.put("user_schema", config.getUserDB().getUserSchema());
-        properties.put("wdk_engine_schema",
-                config.getUserDB().getWdkEngineSchema());
+        if (!properties.containsKey("PROJECT_ID"))
+            properties.put("PROJECT_ID", projectId);
+        if (!properties.containsKey("USER_DBLINK")) {
+            String userDbLink = config.getApplicationDB().getUserDbLink();
+            properties.put("USER_DBLINK", userDbLink);
+        }
+        if (!properties.containsKey("USER_SCHEMA"))
+            properties.put("USER_SCHEMA", config.getUserDB().getUserSchema());
+        if (!properties.containsKey("WDK_ENGINE_SCHEMA")) {
+            String engineSchema = config.getUserDB().getWdkEngineSchema();
+            properties.put("WDK_ENGINE_SCHEMA", engineSchema);
+        }
 
         InputStream modelXmlStream = substituteProps(masterDoc, properties);
 
