@@ -41,6 +41,8 @@
 
           <ref name="categories" />
           
+          <ref name="propertyMacro" />
+          
         </choice>
       </oneOrMore>
     </element>
@@ -75,7 +77,14 @@
         </element>
     </define>
     
-    
+
+    <!-- define property macro -->
+    <define name="propertyMacro">
+        <element name="propertyMacro">
+            <attribute name="name"/>
+            <ref name="IncludeExclude"/>
+        </element>
+    </define>
 
     <!-- define category list -->
     <define name="categories">
