@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.ArrayList;
 import java.util.Set;
 
 import org.gusdb.wdk.model.AnswerValue;
@@ -397,5 +398,38 @@ public class Step {
     
     public String getQuestionName() {
 	return answer.getQuestionName();
+    }
+
+    /* functions for navigating/manipulating step tree */
+    public Step getStep(int index) {
+	Step[] steps = getAllSteps();
+	return steps[index];
+    }
+
+    public Step[] getAllSteps() {
+	ArrayList<Step> allSteps = new ArrayList<Step>();
+	allSteps = buildAllStepsArray(allSteps, this);
+	return allSteps.toArray(new Step[allSteps.size()]);
+    }
+
+    public int getLength() {
+	return getAllSteps().length;
+    }
+
+    private ArrayList<Step> buildAllStepsArray(ArrayList<Step> array, Step step) {
+	if (step.getIsFirstStep()) {
+	    array.add(step);
+	}
+	else {
+	    array = buildAllStepsArray(array, step.getPreviousStep());
+	    array.add(step);
+	}
+	return array;
+    }
+
+    public void addStep(Step step) 
+	throws WdkUserException {
+	step.setPreviousStep(this);
+	this.setNextStep(step);
     }
 }

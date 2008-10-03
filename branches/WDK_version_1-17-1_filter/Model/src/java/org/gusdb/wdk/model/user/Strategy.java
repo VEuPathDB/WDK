@@ -69,36 +69,21 @@ public class Strategy {
     }
 
     public Step getStep(int index) {
-	Step[] steps = getAllSteps();
-	return steps[index];
+	return latestStep.getStep(index);
     }
 
     public Step[] getAllSteps() {
-	ArrayList<Step> allSteps = new ArrayList<Step>();
-	allSteps = buildAllStepsArray(allSteps, latestStep);
-	return allSteps.toArray(new Step[allSteps.size()]);
+	return latestStep.getAllSteps();
     }
 
     public int getLength() {
-	return getAllSteps().length;
-    }
-
-    private ArrayList<Step> buildAllStepsArray(ArrayList<Step> array, Step step) {
-	if (step.getIsFirstStep()) {
-	    array.add(step);
-	}
-	else {
-	    array = buildAllStepsArray(array, step.getPreviousStep());
-	    array.add(step);
-	}
-	return array;
+	return latestStep.getLength();
     }
 
     public void addStep(Step step) 
 	throws WdkUserException {
 	if (latestStep != null) {
-	    step.setPreviousStep(latestStep);
-	    latestStep.setNextStep(step);
+	    latestStep.addStep(step);
 	}
 	setLatestStep(step);
     }
