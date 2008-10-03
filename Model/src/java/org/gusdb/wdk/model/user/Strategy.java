@@ -23,6 +23,10 @@ public class Strategy {
 	this.name = name;
 	isSaved = false;
     }
+    
+    public User getUser() {
+        return user;
+    }
 
     public void setName(String name) {
 	this.name = name;

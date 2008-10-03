@@ -598,12 +598,22 @@ public class User /* implements Serializable */{
 
     public Strategy[] getInvalidStrategies()
 	throws WdkUserException, WdkModelException {
-	Map<Integer, Strategy> strategies = new LinkedHashMap<Integer, Strategy>();
-	userFactory.loadStrategies(this, strategies);
-
-	Strategy[] array = new Strategy[strategies.size()];
-	strategies.values().toArray(array);
-	return array;
+	try {
+	    Map<Integer, Strategy> strategies = new LinkedHashMap<Integer, Strategy>();
+	    userFactory.loadStrategies(this, strategies);
+	    
+	    Strategy[] array = new Strategy[strategies.size()];
+	    strategies.values().toArray(array);
+	    return array;
+	}
+	catch(WdkUserException ex) {
+	    System.out.println(ex);
+	    throw ex;
+	}
+	catch(WdkModelException ex) {
+	    System.out.println(ex);
+	    throw ex;
+	}
     }
 
     public Strategy[] getStrategies()
@@ -933,10 +943,38 @@ public class User /* implements Serializable */{
         return createHistory(answer, expression, false);
     }
 
+    // Note:  deleted is being ignored now.  Does this have any effect at all?
     private Step combineStep(String expression, boolean deleted)
 	throws WdkUserException, WdkModelException {
-	AnswerValue answer = parseExpression(expression);
-	return createStep(answer, expression, false);
+	//AnswerValue answer = parseExpression(expression);
+	//return createStep(answer, expression, false);
+	return parseExpressionStep(expression);
+    }
+
+    private Step parseExpressionStep(String expression) throws WdkUserException,
+            WdkModelException {
+        logger.debug("Boolean expression: " + expression);
+        BooleanExpression exp = new BooleanExpression(this);
+        Map<String, String> operatorMap = getWdkModel().getBooleanOperators();
+        Step step =  exp.parseExpressionStep(expression, operatorMap);
+	AnswerValue answer = step.getAnswerValue();
+
+        logger.debug("Boolean answer: " + answer.getResultSize());
+
+        // save summary list, if not summary list exists
+        String summaryKey = answer.getQuestion().getFullName()
+                + SUMMARY_ATTRIBUTES_SUFFIX;
+        if (!projectPreferences.containsKey(summaryKey)) {
+            Map<String, AttributeField> summary = answer.getSummaryAttributes();
+            StringBuffer sb = new StringBuffer();
+            for (String attrName : summary.keySet()) {
+                if (sb.length() != 0) sb.append(",");
+                sb.append(attrName);
+            }
+            projectPreferences.put(summaryKey, sb.toString());
+            save();
+        }
+        return step;
     }
 
     private AnswerValue parseExpression(String expression) throws WdkUserException,

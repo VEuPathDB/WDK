@@ -953,6 +953,7 @@ public class UserFactory {
 		    // in order to correctly reconstruct answer value
 		    String boolExp = leftChildId + paramsClob.substring(paramsClob.indexOf(" "), paramsClob.lastIndexOf(" ") + 1)
 			+ rightChildId;
+		    System.out.println("Boolean Expression sent to constructBooleanAnswerValue: " + boolExp);
                     result = constructBooleanAnswerValue(user, boolExp);
                     answer.setBooleanExpression(paramsClob);
                 } else {
@@ -988,73 +989,43 @@ public class UserFactory {
 	PreparedStatement psStep = null;
         try {
             psStep = SqlUtils.getPreparedStatement(
-                    dataSource, "SELECT step_id, display_id, question_name, create_time"
-                            + ", last_run_time, custom_name, estimate_size, "
-                            + "is_boolean, is_deleted, params, "
-		            + "ga.answer_id AS answer_id FROM "
-                            + loginSchema + "steps ua, " + loginSchema
-		            + "answers ga WHERE ua.user_id = ? "
-                            + "AND ua.project_id = ? AND ga.answer_id = ua.answer_id "
-		            + "AND ga.project_id = ua.project_id "
+                    dataSource, "SELECT step_id, display_id, answer_id, create_time, "
+                            + "last_run_time, custom_name, is_deleted, "
+                            + "left_child_id, right_child_id FROM "
+                            + loginSchema + "steps WHERE user_id = ? "
+                            + "AND project_id = ? "
 		            + "ORDER BY last_run_time DESC");
             psStep.setInt(1, user.getUserId());
             psStep.setString(2, projectId);
             rsStep = psStep.executeQuery();
 
             while (rsStep.next()) {
-                // load history info
-                int stepId = rsStep.getInt("display_id");
+		// load Step info
+		Timestamp createTime = rsStep.getTimestamp("create_time");
+		Timestamp lastRunTime = rsStep.getTimestamp("last_run_time");
 		int internalId = rsStep.getInt("step_id");
+		int stepId = rsStep.getInt("display_id");
+		
+		Step step = new Step(this, user, stepId, internalId);
+		step.setCreatedTime(new Date(createTime.getTime()));
+		step.setLastRunTime(new Date(lastRunTime.getTime()));
+		step.setCustomName(rsStep.getString("custom_name"));
+		step.setDeleted(rsStep.getBoolean("is_deleted"));
+		
+		// load Answer
 		int answerId = rsStep.getInt("answer_id");
-                Timestamp createTime = rsStep.getTimestamp("create_time");
-                Timestamp lastRunTime = rsStep.getTimestamp("last_run_time");
+		String leftChildId = rsStep.getString("left_child_id");
+		String rightChildId = rsStep.getString("right_child_id");
+		Answer answer = loadAnswer(user, answerId, leftChildId, rightChildId);
 
-                Step step = new Step(this, user, stepId, internalId);
-		Answer answer = new Answer(this, user, answerId);
 		step.setAnswer(answer);
-                step.setCreatedTime(new Date(createTime.getTime()));
-                step.setLastRunTime(new Date(lastRunTime.getTime()));
-                step.setCustomName(rsStep.getString("custom_name"));
-                step.setEstimateSize(rsStep.getInt("estimate_size"));
-                step.setBoolean(rsStep.getBoolean("is_boolean"));
-                step.setDeleted(rsStep.getBoolean("is_deleted"));
 
-                String paramsClob = platform.getClobData(rsStep, "params");
-                String questionName = rsStep.getString("question_name");
-                step.setQuestionName(questionName);
-
-                // re-construct the result
-                AnswerValue result;
-
-                // get the params
-                Map<String, Object> params;
-                if (step.isBoolean()) {
-                    params = new LinkedHashMap<String, Object>();
-                    params.put("Boolean Expression", paramsClob);
-                } else {
-                    params = parseParams(paramsClob);
-                }
-                step.setParams(params);
-
-                // construct answer of the history
-                try {
-                    if (step.isBoolean()) {
-                        result = constructBooleanAnswerValue(user, paramsClob);
-                        step.setBooleanExpression(paramsClob);
-                    } else {
-                        result = constructAnswerValue(user, questionName, params);
-                    }
-                    step.setAnswerValue(result);
-                    steps.put(stepId, step);
-                } catch (WdkModelException ex) {
-                    // invalid step
-                    step.setValid(false);
-                    invalidSteps.put(stepId, step);
-                } catch (WdkUserException ex) {
-                    // invalid step
-                    step.setValid(false);
-                    invalidSteps.put(stepId, step);
-                }
+		if (step.isValid()) {
+		    steps.put(stepId, step);
+		}
+		else {
+		    invalidSteps.put(stepId, step);
+		}
             }
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
@@ -1066,6 +1037,8 @@ public class UserFactory {
                 throw new WdkUserException(ex);
             }
         }
+	System.out.println("Steps: " + steps.size());
+	System.out.println("Invalid: " + invalidSteps.size());
         return steps;
     }
 
@@ -1277,12 +1250,9 @@ public class UserFactory {
 		    "steps SET left_child_id = ?, "
 		    + "right_child_id = ? "
 		    + "WHERE step_id = ?");
-		System.out.println("Updating answer tree: " + booleanExpression);
 		leftChildId = Integer.parseInt(booleanExpression.substring(0, booleanExpression.indexOf(" ")));
-		System.out.println("Left: " + leftChildId);
 		rightChildId = Integer.parseInt(booleanExpression.substring(booleanExpression.lastIndexOf(" ") + 1,
 									    booleanExpression.length()));
-		System.out.println("Right: " + rightChildId);
 		psUpdateAnswerTree.setInt(1, leftChildId);
 		psUpdateAnswerTree.setInt(2, rightChildId);
 		psUpdateAnswerTree.setInt(3, step.getInternalId());
@@ -1409,35 +1379,6 @@ public class UserFactory {
 	}
     }
 
-    Strategy importStrategyBySignature(User user, String signature)
-	throws WdkUserException, WdkModelException {
-	ResultSet rsStrategy = null;
-	try {
-	    // Get user_id, strategy_id from strategies by signature
-	    PreparedStatement psStrategy = SqlUtils.getPreparedStatement(
-		     dataSource, "SELECT user_id, strategy_id FROM "
-		     + loginSchema + "strategies WHERE "
-		     + "signature = ?");
-	    psStrategy.setString(1, signature);
-	    rsStrategy = psStrategy.executeQuery();
-	    if (!rsStrategy.next())
-		throw new WdkUserException("The strategy with signature '" + signature + "' doesn't exist.");
-
-	    int userId = rsStrategy.getInt("user_id");
-	    int strategyId = rsStrategy.getInt("strategy_id");
-
-	    return importStrategy(user, userId, strategyId);
-	} catch (SQLException ex) {
-	    throw new WdkUserException(ex);
-	} finally {
-	    try {
-		SqlUtils.closeResultSet(rsStrategy);
-	    } catch (SQLException ex) {
-		throw new WdkUserException(ex);
-	    }
-	}
-    }
-
     Strategy importStrategyByGlobalId(User user, int globalId)
 	throws WdkUserException, WdkModelException {
 	ResultSet rsStrategy = null;
@@ -1455,6 +1396,9 @@ public class UserFactory {
 	    int userId = rsStrategy.getInt("user_id");
 	    int strategyId = rsStrategy.getInt("display_id");
 
+	    if (userId == user.getUserId()) {
+		return loadStrategy(user, strategyId);
+	    }
 	    return importStrategy(user, userId, strategyId);
 	} catch (SQLException ex) {
 	    throw new WdkUserException(ex);
@@ -1961,11 +1905,27 @@ public class UserFactory {
 
     private AnswerValue constructBooleanAnswerValue(User user, String expression)
             throws WdkUserException, WdkModelException {
-        BooleanExpression exp = new BooleanExpression(user);
-        Map<String, String> operatorMap = getWdkModel().getBooleanOperators();
-        BooleanQuestionNode root = exp.parseExpression(expression, operatorMap);
+	try {
+	    BooleanExpression exp = new BooleanExpression(user);
+	    Map<String, String> operatorMap = getWdkModel().getBooleanOperators();
+	    BooleanQuestionNode root = exp.parseExpression(expression, operatorMap);
+	    
+	    return root.makeAnswerValue(1, user.getItemsPerPage());
+	}
+	catch (WdkModelException ex) {
+	    System.out.println("###### constructBooleanAnswerValue ######");
+	    System.out.println(ex);
+	    ex.printStackTrace();
+	    System.out.println("###### END constructBooleanAnswerValue ######");
+	}
+	catch (WdkUserException ex) {
+	    System.out.println("###### constructBooleanAnswerValue ######");
+	    System.out.println(ex);
+	    ex.printStackTrace();
+	    System.out.println("###### END constructBooleanAnswerValue ######");
+	}
 
-        return root.makeAnswerValue(1, user.getItemsPerPage());
+	return null;
     }
 
 

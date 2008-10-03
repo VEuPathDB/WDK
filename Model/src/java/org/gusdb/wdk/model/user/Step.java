@@ -37,8 +37,6 @@ public class Step {
     private Boolean isDepended;
     private boolean isCollapsible = false;
     private String collapsedName = null;
-    
-    private boolean isValid = true;
     private String version;
 
     private Step nextStep = null;
@@ -355,7 +353,7 @@ public class Step {
      * @return the isValid
      */
     public boolean isValid() {
-        return isValid;
+        return answer.isValid();
     }
     
     /**
@@ -363,7 +361,7 @@ public class Step {
      *            the isValid to set
      */
     public void setValid( boolean isValid ) {
-        this.isValid = isValid;
+        answer.setValid(isValid);
     }
     
     /**
