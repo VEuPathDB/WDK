@@ -38,13 +38,13 @@ public class StrategyBean {
     }
 
     public StepBean getStep(int index) {
-	return new StepBean(strategy.getStep(index));
+	StepBean latestStep = new StepBean(strategy.getLatestStep());
+	return latestStep.getStep(index);
     }
 
     public StepBean[] getAllSteps() {
-	ArrayList<StepBean> allSteps = new ArrayList<StepBean>();
-	allSteps = buildAllStepsArray(allSteps, getLatestStep());
-	return allSteps.toArray(new StepBean[allSteps.size()]);
+	StepBean latestStep = new StepBean(strategy.getLatestStep());
+	return latestStep.getAllSteps();
     }
 
     public void addStep(StepBean step)
@@ -64,16 +64,5 @@ public class StrategyBean {
     public void update(boolean overwrite)
 	throws WdkUserException, WdkModelException {
 	strategy.update(overwrite);
-    }
-
-    private ArrayList<StepBean> buildAllStepsArray(ArrayList<StepBean> array, StepBean step) {
-	if (step.getIsFirstStep()) {
-	    array.add(step);
-	}
-	else {
-	    array = buildAllStepsArray(array, step.getPreviousStep());
-	    array.add(step);
-	}
-	return array;
     }
 }

@@ -249,5 +249,26 @@ public class StepBean {
 	return step.getQuestionName();
     }
 
+    /* functions for navigating/manipulating step tree */
+    public StepBean getStep(int index) {
+	return new StepBean(step.getStep(index));
+    }
 
+    public StepBean[] getAllSteps() {
+	Step[] steps = step.getAllSteps();
+	StepBean[] beans = new StepBean[steps.length];
+	for (int i = 0; i < steps.length; ++i) {
+	    beans[i] = new StepBean(steps[i]);
+	}
+	return beans;
+    }
+
+    public int getLength() {
+	return step.getLength();
+    }
+
+    public void addStep(StepBean next) 
+	throws WdkUserException {
+	step.addStep(next.step);
+    }
 }
