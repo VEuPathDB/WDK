@@ -113,13 +113,10 @@ public class BooleanExpression {
         expression = expression.replaceAll( "\\s", " " ).trim();
         
         // build the BooleanQuestionNode tree, use it to create Steps at internal nodes
-        BooleanQuestionNode root = parseBlockStep( expression, replace, operatorMap );
-	expression = expression.replaceAll(expression, replace.get(expression));
-	System.out.println("expression in BE.java.118: " + expression);
-	AnswerValue answer = root.makeAnswerValue(1, user.getItemsPerPage());
-	Step step = user.createStep(answer, expression, false);
+	Map<BooleanQuestionNode, Step> stepsMap = new LinkedHashMap<BooleanQuestionNode, Step>();
+	BooleanQuestionNode root = parseBlockStep( expression, stepsMap, replace, operatorMap );
 	
-        return step;
+        return stepsMap.get(root);
     }
 
     private String replaceLiterals( String expression,
@@ -179,7 +176,7 @@ public class BooleanExpression {
         }
     }
     
-    private BooleanQuestionNode parseBlockStep( String block,
+    private BooleanQuestionNode parseBlockStep( String block, Map<BooleanQuestionNode, Step> stepsMap,
             Map< String, String > replace, Map< String, String > operatorMap )
             throws WdkUserException, WdkModelException {
         // check if the expression can be divided further
@@ -198,7 +195,7 @@ public class BooleanExpression {
         String[ ] triplet = getTriplet( block );
         
         if ( triplet.length == 1 ) { // only remove one pair of parentheses
-            BooleanQuestionNode node = parseBlock( triplet[ 0 ], replace, operatorMap );
+            BooleanQuestionNode node = parseBlockStep( triplet[ 0 ], stepsMap, replace, operatorMap );
 	    if (replace.containsKey(triplet[0])) {
 		newBlock = newBlock.replaceAll(triplet[0], replace.get(triplet[0]));
 	    }
@@ -207,13 +204,13 @@ public class BooleanExpression {
 	    return node;
         } else { // a triplet
             // create BooleanQuestionNode for each piece
-            BooleanQuestionNode left = parseBlock( triplet[ 0 ], replace,
+            BooleanQuestionNode left = parseBlockStep( triplet[ 0 ], stepsMap, replace,
                     operatorMap );
 	    // need to replace all references to triplet[0] with id of new step
 	    if (replace.containsKey(triplet[0])) {
 		newBlock = newBlock.replaceAll(triplet[0], replace.get(triplet[0]));
 	    }
-            BooleanQuestionNode right = parseBlock( triplet[ 2 ], replace,
+            BooleanQuestionNode right = parseBlockStep( triplet[ 2 ], stepsMap, replace,
                     operatorMap );
 	    // need to replace all references to triplet[2] with id of new step
 	    if (replace.containsKey(triplet[2])) {
@@ -224,7 +221,7 @@ public class BooleanExpression {
             BooleanQuestionNode node = BooleanQuestionNode.combine( left, right, triplet[ 1 ],
                     user.getWdkModel(), operatorMap );
 	    AnswerValue answer = node.makeAnswerValue(1, user.getItemsPerPage());
-	    user.createStep(answer, newBlock, false);
+	    stepsMap.put(node, user.createStep(answer, newBlock, false));
 	    System.out.println("newBlock in BE.java.228: " + newBlock);
 	    replace.put(block, newBlock);
 
