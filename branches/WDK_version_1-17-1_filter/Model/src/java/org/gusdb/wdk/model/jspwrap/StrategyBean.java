@@ -12,7 +12,11 @@ public class StrategyBean {
     public StrategyBean(Strategy strategy) {
 	this.strategy = strategy;
     }
-    
+        
+    public UserBean getUser() {
+        return new UserBean(strategy.getUser());
+    }
+
     public String getName() {
 	return strategy.getName();
     }

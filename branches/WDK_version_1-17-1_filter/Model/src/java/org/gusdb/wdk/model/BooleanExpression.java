@@ -79,11 +79,49 @@ public class BooleanExpression {
         // delete extra white spaces
         expression = expression.replaceAll( "\\s", " " ).trim();
         
-        // build the BooleanQuestionNode tree
-        BooleanQuestionNode root = parseBlock( expression, replace, operatorMap );
-        return root;
+        // build the BooleanQuestionNode tree, use it to create Steps at internal nodes
+        return parseBlock( expression, replace, operatorMap );
     }
     
+    public Step parseExpressionStep( String expression,
+            Map< String, String > operatorMap ) throws WdkUserException,
+            WdkModelException {
+        this.orgExp = expression;
+        // TEST
+        // System.out.println("Expression: " + expression);
+        
+        // replace the literals in the expression
+        Map< String, String > replace = new LinkedHashMap< String, String >();
+        expression = replaceLiterals( expression, replace ).trim();
+        
+        // validate the expression by number of parentheses
+        int count = 0;
+        for ( int i = 0; i < expression.length(); i++ ) {
+            if ( expression.charAt( i ) == '(' ) count++;
+            else if ( expression.charAt( i ) == ')' ) count--;
+            if ( count < 0 )
+                throw new WdkUserException( "Bad parentheses: " + orgExp );
+        }
+        if ( count != 0 )
+            throw new WdkUserException( "Bad parentheses: " + orgExp );
+        
+        // insert a space before open parenthes; it's used when getting operator
+        expression = expression.replaceAll( "\\(", Matcher.quoteReplacement(" (") );
+        expression = expression.replaceAll( "\\+", " + " );
+        expression = expression.replaceAll( "\\-", " - " );
+        // delete extra white spaces
+        expression = expression.replaceAll( "\\s", " " ).trim();
+        
+        // build the BooleanQuestionNode tree, use it to create Steps at internal nodes
+        BooleanQuestionNode root = parseBlockStep( expression, replace, operatorMap );
+	expression = expression.replaceAll(expression, replace.get(expression));
+	System.out.println("expression in BE.java.118: " + expression);
+	AnswerValue answer = root.makeAnswerValue(1, user.getItemsPerPage());
+	Step step = user.createStep(answer, expression, false);
+	
+        return step;
+    }
+
     private String replaceLiterals( String expression,
             Map< String, String > replace ) throws WdkUserException {
         // split the expression by quotes, and literals are the even items. If
@@ -110,7 +148,7 @@ public class BooleanExpression {
         }
         return sb.toString();
     }
-    
+
     private BooleanQuestionNode parseBlock( String block,
             Map< String, String > replace, Map< String, String > operatorMap )
             throws WdkUserException, WdkModelException {
@@ -119,15 +157,17 @@ public class BooleanExpression {
         int spaces = block.indexOf( " " );
         int parenthese = block.indexOf( "(" );
         // it's a leaf node
-        if ( spaces < 0 && parenthese < 0 ) return buildLeaf( block, replace );
-        
+        if ( spaces < 0 && parenthese < 0 ) {
+	    return buildLeaf( block, replace );
+        }
+
         // otherwise, need to divide further
         String[ ] triplet = getTriplet( block );
         
         if ( triplet.length == 1 ) { // only remove one pair of parentheses
             return parseBlock( triplet[ 0 ], replace, operatorMap );
         } else { // a triplet
-            // create BooleanQuestioNode for each piece
+            // create BooleanQuestionNode for each piece
             BooleanQuestionNode left = parseBlock( triplet[ 0 ], replace,
                     operatorMap );
             BooleanQuestionNode right = parseBlock( triplet[ 2 ], replace,
@@ -136,6 +176,59 @@ public class BooleanExpression {
             // combine left & right sub-tree to form a new tree
             return BooleanQuestionNode.combine( left, right, triplet[ 1 ],
                     user.getWdkModel(), operatorMap );
+        }
+    }
+    
+    private BooleanQuestionNode parseBlockStep( String block,
+            Map< String, String > replace, Map< String, String > operatorMap )
+            throws WdkUserException, WdkModelException {
+        // check if the expression can be divided further
+        // to do so, just need to check if there're spaces
+        int spaces = block.indexOf( " " );
+        int parenthese = block.indexOf( "(" );
+	String newBlock = block;
+        // it's a leaf node
+        if ( spaces < 0 && parenthese < 0 ) {
+	    System.out.println("newBlock in BE.java.192: " + newBlock);
+	    replace.put(block, newBlock);
+	    return buildLeaf( block, replace );
+        }
+
+        // otherwise, need to divide further
+        String[ ] triplet = getTriplet( block );
+        
+        if ( triplet.length == 1 ) { // only remove one pair of parentheses
+            BooleanQuestionNode node = parseBlock( triplet[ 0 ], replace, operatorMap );
+	    if (replace.containsKey(triplet[0])) {
+		newBlock = newBlock.replaceAll(triplet[0], replace.get(triplet[0]));
+	    }
+	    System.out.println("newBlock in BE.java.205: " + newBlock);
+	    replace.put(block, newBlock);
+	    return node;
+        } else { // a triplet
+            // create BooleanQuestionNode for each piece
+            BooleanQuestionNode left = parseBlock( triplet[ 0 ], replace,
+                    operatorMap );
+	    // need to replace all references to triplet[0] with id of new step
+	    if (replace.containsKey(triplet[0])) {
+		newBlock = newBlock.replaceAll(triplet[0], replace.get(triplet[0]));
+	    }
+            BooleanQuestionNode right = parseBlock( triplet[ 2 ], replace,
+                    operatorMap );
+	    // need to replace all references to triplet[2] with id of new step
+	    if (replace.containsKey(triplet[2])) {
+		newBlock = newBlock.replaceAll(triplet[2], replace.get(triplet[2]));
+            }
+
+            // combine left & right sub-tree to form a new tree
+            BooleanQuestionNode node = BooleanQuestionNode.combine( left, right, triplet[ 1 ],
+                    user.getWdkModel(), operatorMap );
+	    AnswerValue answer = node.makeAnswerValue(1, user.getItemsPerPage());
+	    user.createStep(answer, newBlock, false);
+	    System.out.println("newBlock in BE.java.228: " + newBlock);
+	    replace.put(block, newBlock);
+
+	    return node;
         }
     }
     
