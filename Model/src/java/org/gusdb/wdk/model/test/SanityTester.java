@@ -141,6 +141,7 @@ public class SanityTester {
 	Exception caughtException = null;
 
 	try {
+	    question.getQuery().setIsCacheable(false);
 	    Answer answer = question.makeAnswer(paramValuesSet.getParamValues());
 
 	    int resultSize = answer.getResultSize();
@@ -269,6 +270,7 @@ public class SanityTester {
 	long start = System.currentTimeMillis();
 	String returned = "";
 	String expected = "";
+	String params = "";
 	Exception caughtException = null;
 
 	try {
@@ -277,6 +279,7 @@ public class SanityTester {
 		start = System.currentTimeMillis();
 		testAttributeQuery_Time(query, paramValuesSet, count);
 	    } else {
+		params =  " -params " + paramValuesSet.getCmdLineString();
 		start = System.currentTimeMillis();
 		count = testNonAttributeQuery(querySet, query, paramValuesSet);
 	    }
@@ -304,7 +307,7 @@ public class SanityTester {
 
 	    String cmd = " [ wdkQuery -model " + wdkModel.getProjectId()
 		+ " -query " + query.getFullName() 
-		+ " -params " + paramValuesSet.getCmdLineString()
+		+ params
 		+ " ] ";
 
 	    String msg = prefix + ((end - start) / 1000F)
@@ -340,6 +343,10 @@ public class SanityTester {
         SqlQueryInstance instance =
 	    (SqlQueryInstance) query.makeInstance(new HashMap<String, Object>());
 
+	if (paramValuesSet.getParamValues().size() != 2) {
+	    throw new WdkUserException("mising <defaultTestParamValues> for querySet " 
+				       + query.getQuerySet().getName());
+	}
         String sql = "select count (*) from (select distinct " 
 	    + paramValuesSet.getNamesAsString()
 	    + " from (" 
@@ -430,7 +437,7 @@ public class SanityTester {
 
 	    if (!passed) System.out.println(BANNER_LINE_top);
 	    String cmd = " [ wdkRecord -model " + wdkModel.getProjectId()
-		+ " -record " + recordClass.getName() 
+		+ " -record " + recordClass.getFullName() 
 		+ " -primaryKey " + paramValuesSet.getCmdLineString()
 		+ " ] ";
 
