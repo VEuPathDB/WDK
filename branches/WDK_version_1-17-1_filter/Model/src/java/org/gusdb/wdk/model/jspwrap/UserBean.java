@@ -599,8 +599,14 @@ public class UserBean /* implements Serializable */{
 
     public StepBean createStep(AnswerValueBean answer)
 	throws WdkUserException, WdkModelException {
-	Step userAnswer = user.createStep(answer.answer);
-	return new StepBean(userAnswer);
+	Step step = user.createStep(answer.answer);
+	return new StepBean(step);
+    }
+
+    public StepBean createStep(AnswerValueBean answer, String booleanExpression, boolean deleted)
+	throws WdkUserException, WdkModelException {
+	Step step = user.createStep(answer.answer, booleanExpression, deleted);
+	return new StepBean(step);
     }
 
     public StrategyBean createStrategy(StepBean root, boolean saved)

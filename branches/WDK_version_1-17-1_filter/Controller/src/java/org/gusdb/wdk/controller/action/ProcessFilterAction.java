@@ -62,7 +62,6 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	// Make sure a strategy is specified
 	String strProtoId = request.getParameter("strategy");
 
-	System.out.println("Filter strategy: " + strProtoId);
 	if (strProtoId == null || strProtoId.length() == 0) {
 	    throw new WdkModelException("No strategy was specified for filtering!");
 	}
@@ -79,7 +78,9 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 
 	StepBean step;
         AnswerValueBean wdkAnswerValue;
-	StrategyBean strategy;
+
+	// get strategy
+	StrategyBean strategy = wdkUser.getStrategy(Integer.parseInt(strProtoId));
 
 	String boolExp = request.getParameter("booleanExpression");
 	String insertStratIdstr = request.getParameter("insertStrategy");
@@ -88,8 +89,10 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	if (insertStratIdstr != null && insertStratIdstr.length() != 0) {
 	    // yes:  load step, create a new step w/ same answervalue
 	    StrategyBean insertStrat = wdkUser.getStrategy(Integer.parseInt(insertStratIdstr));
-	    step = insertStrat.getLatestStep();
+	    step = cloneStrategy(wdkUser, insertStrat.getLatestStep());
 	    wdkAnswerValue = step.getAnswerValue();
+	    step.setIsCollapsible(true);
+	    step.setCollapsedName("Copy of " + insertStrat.getName());
 	}
 	else {
 	    // no: get question
@@ -145,13 +148,12 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 		ex.printStackTrace();
 		return showError(wdkModel, wdkUser, mapping, request, response);
 	    }
+	    
+	    
+	    // create step for filter subquery
+	    step = wdkUser.createStep(wdkAnswerValue);
 	}
 	
-	// get strategy
-	strategy = wdkUser.getStrategy(Integer.parseInt(strProtoId));
-	
-	// create step for filter subquery
-	step = wdkUser.createStep(wdkAnswerValue);
         int stepId = step.getStepId();
 
 	StepBean childStep = step;
@@ -517,5 +519,25 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 params.put(paramName, paramValue);
             }
         }
+    }
+
+    private StepBean cloneStrategy(UserBean user, StepBean step)
+	throws WdkUserException, WdkModelException {
+	StepBean cloneStep = null;
+	String prevStepId = null;
+	for (int i = 0; i < step.getLength(); ++i) {
+	    cloneStep = step.getStep(i);
+	    AnswerValueBean answerValue = cloneStep.getAnswerValue();
+	    String childStepId = null;
+	    String op = null;
+	    if (cloneStep.getChildStep() != null) {
+		childStepId = cloneStrategy(user, cloneStep.getChildStep()).getStepId() + "";
+		op = answerValue.getBooleanOperation();
+	    }
+	    String cloneBoolExp = prevStepId + " " + op + " " + childStepId;
+	    cloneStep = user.createStep(answerValue, cloneBoolExp, false);
+	    prevStepId = cloneStep.getStepId() + "";
+	}
+	return cloneStep;
     }
 }
