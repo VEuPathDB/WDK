@@ -1,6 +1,6 @@
 package org.gusdb.wdk.controller.action;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -27,15 +27,17 @@ public class CloseStrategyAction extends Action {
 				  HttpServletResponse response)
 	throws Exception {
 	
-	HashMap<Integer, StrategyBean> activeStrategies = (HashMap<Integer, StrategyBean>) request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
+	ArrayList<Integer> activeStrategies = (ArrayList<Integer>) request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
 
 	if (activeStrategies != null) {
 	    String stratIdstr = request.getParameter("strategy");
 	    if (stratIdstr == null || stratIdstr.length() == 0) {
 		throw new Exception("No strategy specified to close!");
 	    }
-	    activeStrategies.remove(Integer.parseInt(stratIdstr));
+	    System.out.println("Removing: " + activeStrategies.remove(activeStrategies.indexOf(Integer.parseInt(stratIdstr))));
 	}
+
+	request.getSession().setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY, activeStrategies);
 
 	return null;
     }
