@@ -112,7 +112,7 @@ public class Migrator {
             IOException, SAXException, SQLException, JSONException,
             WdkUserException, InstantiationException, IllegalAccessException,
             ClassNotFoundException {
-        commandName = System.getProperty("cmdName");
+        commandName = System.getProperty("cmdName", "migrate");
 
         CommandLineParser parser = new BasicParser();
         String modelName = null;
@@ -212,9 +212,11 @@ public class Migrator {
      * 
      * @throws SQLException
      * @throws NoSuchAlgorithmException
+     * @throws JSONException 
      */
     public void migrate() throws WdkModelException, WdkUserException,
-            NoSuchAlgorithmException, SQLException {
-        System.out.println("Do nothing");
+            NoSuchAlgorithmException, SQLException, JSONException {
+        throw new UnsupportedOperationException("The subclass must implement"
+                + " this method.");
     }
 }

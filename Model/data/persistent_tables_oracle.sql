@@ -56,9 +56,12 @@ CREATE TABLE wdkstorage.answer
   query_checksum  VARCHAR(40) NOT NULL,
   params CLOB,
   result_message CLOB,
+  prev_answer_id NUMBER(12),
   CONSTRAINT "answer_pk" PRIMARY KEY (answer_id),
   CONSTRAINT "answer_uq1" UNIQUE (project_id, answer_checksum)
 );
+
+CREATE INDEX wdkstorage.answer_idx01 ON wdkstorage.answer (prev_answer_id);
 
 GRANT insert, update, delete ON wdkstorage.answer TO GUS_W;
 GRANT select ON wdkstorage.answer TO GUS_R;
@@ -76,6 +79,8 @@ CREATE TABLE wdkstorage.dataset_indices
   CONSTRAINT "DATASET_CHECKSUM_UNIQUE" UNIQUE (dataset_checksum)
 );
 
+CREATE INDEX wdkstorage.dataset_indices_idx01 ON wdkstorage.dataset_indices (prev_dataset_id);
+
 GRANT insert, update, delete ON wdkstorage.dataset_indices TO GUS_W;
 GRANT select ON wdkstorage.dataset_indices TO GUS_R;
 GRANT references ON wdkstorage.dataset_indices TO userlogins3;
@@ -84,7 +89,7 @@ GRANT references ON wdkstorage.dataset_indices TO userlogins3;
 CREATE TABLE wdkstorage.dataset_values
 (
   dataset_id NUMBER(12) NOT NULL,
-  dataset_value VARCHAR(1999) NOT NULL,
+  dataset_value VARCHAR(4000) NOT NULL,
   CONSTRAINT "DATASET_VALUES_DATASET_ID_FK" FOREIGN KEY (dataset_id)
       REFERENCES wdkstorage.dataset_indices (dataset_id)
 );
@@ -135,6 +140,8 @@ CREATE TABLE userlogins3.users
   CONSTRAINT "USER_PK" PRIMARY KEY (user_id),
   CONSTRAINT "USER_EMAIL_UNIQUE" UNIQUE (email)
 );
+
+CREATE INDEX userlogins3.users_idx01 ON userlogins3.users (prev_user_id);
 
 GRANT insert, update, delete ON userlogins3.users TO GUS_W;
 GRANT select ON userlogins3.users TO GUS_R;
