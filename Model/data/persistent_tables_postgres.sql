@@ -55,6 +55,7 @@ CREATE TABLE wdkstorage.answer
   query_checksum  varchar(40) NOT NULL,
   params TEXT,
   result_message TEXT,
+  prev_answer_id NUMERIC(12),
   CONSTRAINT "answer_pk" PRIMARY KEY (answer_id),
   CONSTRAINT "answer_uq1" UNIQUE (project_id, answer_checksum)
 );
@@ -75,8 +76,10 @@ CREATE TABLE wdkstorage.dataset_indices
   dataset_size NUMERIC(12) NOT NULL,
   PREV_DATASET_ID NUMERIC(12),
   CONSTRAINT "DATASET_INDICES_PK" PRIMARY KEY (dataset_id),
-  CONSTRAINT "DATASET_CHECKSUM_UNIQUE" UNIQUE (dataset_checksum)
+  CONSTRAINT "DATASET_INDICES_UQ1" UNIQUE (dataset_checksum)
 );
+
+CREATE INDEX wdkstorage.dataset_indices_idx01 ON wdkstorage.dataset_indices (prev_dataset_id);
 
 GRANT insert, update, delete on wdkstorage.dataset_indices to GUS_W;
 GRANT select on wdkstorage.dataset_indices to GUS_R;
@@ -85,7 +88,7 @@ GRANT select on wdkstorage.dataset_indices to GUS_R;
 CREATE TABLE wdkstorage.dataset_values
 (
   dataset_id NUMERIC(12) NOT NULL,
-  dataset_value varchar(1999) NOT NULL,
+  dataset_value varchar(4000) NOT NULL,
   CONSTRAINT "DATASET_VALUES_DATASET_ID_FK" FOREIGN KEY (dataset_id)
       REFERENCES wdkstorage.dataset_indices (dataset_id)
 );
