@@ -41,7 +41,7 @@
 
           <ref name="categories" />
           
-          <ref name="propertyMacro" />
+          <ref name="declaredMacro" />
           
         </choice>
       </oneOrMore>
@@ -78,10 +78,13 @@
     </define>
     
 
-    <!-- define property macro -->
-    <define name="propertyMacro">
-        <element name="propertyMacro">
+    <!-- define declared macro -->
+    <define name="declaredMacro">
+        <element name="declaredMacro">
             <attribute name="name"/>
+            <optional>
+                <attribute name="usedBy" />
+            </optional>
             <ref name="IncludeExclude"/>
         </element>
     </define>

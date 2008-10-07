@@ -16,6 +16,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.implementation.ModelXmlParser;
@@ -38,6 +39,8 @@ import org.xml.sax.SAXException;
 public class WdkModel {
 
     public static final String WDK_VERSION = "1.18";
+
+    private static final Logger logger = Logger.getLogger(WdkModel.class);
 
     /**
      * Convenience method for constructing a model from the configuration
@@ -104,8 +107,10 @@ public class WdkModel {
     private List<WdkModelText> introductions = new ArrayList<WdkModelText>();
     private String introduction;
 
-    private List<PropertyMacro> propertyMacroList = new ArrayList<PropertyMacro>();
-    private Set<String> propertyMacroSet = new LinkedHashSet<String>();
+    private List<MacroDeclaration> macroList = new ArrayList<MacroDeclaration>();
+    private Set<String> modelMacroSet = new LinkedHashSet<String>();
+    private Set<String> jspMacroSet = new LinkedHashSet<String>();
+    private Set<String> perlMacroSet = new LinkedHashSet<String>();
 
     private ResultFactory resultFactory;
 
@@ -198,12 +203,29 @@ public class WdkModel {
         return properties;
     }
 
-    public void setProperties(Map<String, String> properties)
-            throws WdkModelException {
-        // make sure all the declared macros are present
-        for (String macro : propertyMacroSet) {
+    public void setProperties(Map<String, String> properties,
+            Set<String> replacedMacros) throws WdkModelException {
+        // make sure all the declared model macros are present
+        for (String macro : modelMacroSet) {
+            // macro not provided, error
             if (!properties.containsKey(macro))
-                throw new WdkModelException("Required property macro '" + macro
+                throw new WdkModelException("Required model macro '" + macro
+                        + "' is not defined in the model.prop file");
+            // macro provided but not used, warning, but not error
+            if (!replacedMacros.contains(macro))
+                logger.warn("The model macro '" + macro + "' is never used in"
+                        + " the model xml files.");
+        }
+        // make sure all the declared jsp macros are present
+        for (String macro : jspMacroSet) {
+            if (!properties.containsKey(macro))
+                throw new WdkModelException("Required jsp macro '" + macro
+                        + "' is not defined in the model.prop file");
+        }
+        // make sure all the declared perl macros are present
+        for (String macro : perlMacroSet) {
+            if (!properties.containsKey(macro))
+                throw new WdkModelException("Required perl macro '" + macro
                         + "' is not defined in the model.prop file");
         }
         this.properties = properties;
@@ -683,17 +705,31 @@ public class WdkModel {
         categoriesList = null;
 
         // exclude categories
-        for (PropertyMacro macro : propertyMacroList) {
+        for (MacroDeclaration macro : macroList) {
             if (macro.include(projectId)) {
                 String name = macro.getName();
-                if (propertyMacroSet.contains(name))
-                    throw new WdkModelException("More than one property macros"
-                            + " '" + name + "' are defined");
                 macro.excludeResources(projectId);
-                propertyMacroSet.add(name);
+                if (macro.isUsedByModel()) {
+                    if (modelMacroSet.contains(name))
+                        throw new WdkModelException("More than one model "
+                                + "macros '" + name + "' are defined");
+                    modelMacroSet.add(name);
+                }
+                if (macro.isUsedByJsp()) {
+                    if (jspMacroSet.contains(name))
+                        throw new WdkModelException("More than one jsp "
+                                + "macros '" + name + "' are defined");
+                    jspMacroSet.add(name);
+                }
+                if (macro.isUsedByPerl()) {
+                    if (perlMacroSet.contains(name))
+                        throw new WdkModelException("More than one perl "
+                                + "macros '" + name + "' are defined");
+                    perlMacroSet.add(name);
+                }
             }
         }
-        propertyMacroList = null;
+        macroList = null;
     }
 
     private void createInternalSets() {
@@ -927,7 +963,7 @@ public class WdkModel {
         return array;
     }
 
-    public void addPropertyMacro(PropertyMacro macro) {
-        propertyMacroList.add(macro);
+    public void addMacroDeclaration(MacroDeclaration macro) {
+        macroList.add(macro);
     }
 }
