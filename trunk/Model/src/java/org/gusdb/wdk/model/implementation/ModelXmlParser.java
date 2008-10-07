@@ -10,8 +10,10 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -66,7 +68,7 @@ import org.gusdb.wdk.model.ParamSuggestion;
 import org.gusdb.wdk.model.ParamValuesSet;
 import org.gusdb.wdk.model.PrimaryKeyAttributeField;
 import org.gusdb.wdk.model.PropertyList;
-import org.gusdb.wdk.model.PropertyMacro;
+import org.gusdb.wdk.model.MacroDeclaration;
 import org.gusdb.wdk.model.QuerySet;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
@@ -158,7 +160,9 @@ public class ModelXmlParser extends XmlParser {
             properties.put("WDK_ENGINE_SCHEMA", engineSchema);
         }
 
-        InputStream modelXmlStream = substituteProps(masterDoc, properties);
+        Set<String> replacedMacros = new LinkedHashSet<String>();
+        InputStream modelXmlStream = substituteProps(masterDoc, properties,
+                replacedMacros);
 
         WdkModel model = (WdkModel) digester.parse(modelXmlStream);
 
@@ -166,7 +170,7 @@ public class ModelXmlParser extends XmlParser {
         model.setXmlDataDir(new File(xmlDataDir)); // consider refactoring
         model.configure(config);
         model.setResources();
-        model.setProperties(properties);
+        model.setProperties(properties, replacedMacros);
 
         return model;
     }
@@ -229,7 +233,7 @@ public class ModelXmlParser extends XmlParser {
     }
 
     private InputStream substituteProps(Document masterDoc,
-            Map<String, String> properties)
+            Map<String, String> properties, Set<String> replacedMacros)
             throws TransformerFactoryConfigurationError, TransformerException,
             WdkModelException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -258,6 +262,8 @@ public class ModelXmlParser extends XmlParser {
             buffer.append(content.subSequence(prevPos, matcher.start()));
             buffer.append(propValue);
             prevPos = matcher.end();
+
+            replacedMacros.add(propName);
         }
         if (prevPos < content.length())
             buffer.append(content.substring(prevPos));
@@ -303,8 +309,8 @@ public class ModelXmlParser extends XmlParser {
                 "setText", 0);
 
         // configure property macros
-        configureNode(digester, "wdkModel/propertyMacro", PropertyMacro.class,
-                "addPropertyMacro");
+        configureNode(digester, "wdkModel/declaredMacro",
+                MacroDeclaration.class, "addMacroDeclaration");
 
         // configure all sub nodes of recordClassSet
         configureRecordClassSet(digester);
