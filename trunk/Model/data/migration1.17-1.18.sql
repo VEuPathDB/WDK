@@ -1,4 +1,5 @@
 /* delete test data */
+/*
 DELETE FROM userlogins3.histories;
 DELETE FROM userlogins3.preferences;
 DELETE FROM userlogins3.user_datasets;
@@ -14,8 +15,6 @@ DROP SEQUENCE wdkstorage.dataset_indices_pkseq;
 DROP SEQUENCE wdkstorage.answer_pkseq;
 DROP SEQUENCE userlogins3.users_pkseq;
 
-   
-/* re-create sequences */
 CREATE SEQUENCE wdkstorage.dataset_indices_pkseq INCREMENT BY 1 START WITH 1;
 
 GRANT select ON wdkstorage.dataset_indices_pkseq TO GUS_W;
@@ -32,7 +31,7 @@ CREATE SEQUENCE userlogins3.users_pkseq INCREMENT BY 1 START WITH 1;
 
 GRANT select ON userlogins3.users_pkseq TO GUS_W;
 GRANT select ON userlogins3.users_pkseq TO GUS_R;
-
+*/
 
 /* copy user information */
 INSERT INTO userlogins3.users
