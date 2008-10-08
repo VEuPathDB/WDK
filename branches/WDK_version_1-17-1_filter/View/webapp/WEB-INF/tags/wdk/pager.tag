@@ -49,11 +49,11 @@
       <td nowrap>
       
   <pg:first>
-    <a href="javascript:GetResultsPage('${pageUrl}')"><img src="/assets/images/arrow_first.gif"/></a>
+    <a href="javascript:GetResultsPage('${pageUrl}')"><img src="/assets/images/arrow_first.gif" alt="Go to the first results page"/></a>
   </pg:first>
 
   <pg:prev>
-    <a href="javascript:GetResultsPage('${pageUrl}')"><img src="/assets/images/arrow_prev.gif"/></a>
+    <a href="javascript:GetResultsPage('${pageUrl}')"><img src="/assets/images/arrow_prev.gif" alt="Go to the previous results page"/></a>
   </pg:prev>
 
   <pg:pages>
@@ -71,11 +71,11 @@
   </pg:pages>
 
   <pg:next>
-    <a href="javascript:GetResultsPage('${pageUrl}')"><img src="/assets/images/arrow_next.gif"/></a>
+    <a href="javascript:GetResultsPage('${pageUrl}')"><img src="/assets/images/arrow_next.gif" alt="Go to the next results page"/></a>
   </pg:next>
 
   <pg:last>
-    <a href="javascript:GetResultsPage('${pageUrl}')"><img src="/assets/images/arrow_last.gif"/></a>
+    <a href="javascript:GetResultsPage('${pageUrl}')"><img src="/assets/images/arrow_last.gif" alt="Go to the last results page"/></a>
     
   </pg:last>
   

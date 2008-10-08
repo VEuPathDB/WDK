@@ -37,7 +37,7 @@
           </c:choose>
 
           <td><b>${q.displayName}</b></td>
-          <td><a href="<c:url value="/showQuestion.do?questionFullName=${q.fullName}"/>"><img src="<c:url value="/images/go.gif"/>" border="0"></td>
+          <td><a href="<c:url value="/showQuestion.do?questionFullName=${q.fullName}"/>"><img src="<c:url value="/images/go.gif"/>" alt="Search" border="0"></td>
           <td>&nbsp;&nbsp;</td>
           <td><c:set var="desc" value="${q.description}"/>
               <c:if test="${fn:length(desc) > 163}">
