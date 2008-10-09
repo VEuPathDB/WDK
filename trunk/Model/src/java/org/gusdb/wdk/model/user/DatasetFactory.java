@@ -104,16 +104,13 @@ public class DatasetFactory {
         // dataset doesn't exist in the database, save it
 
         // compose the summary
-        int pos = 0;
-        while (true) {
-            int nextPos = valueContent.indexOf(",", pos + 1);
-            if (nextPos >= Utilities.MAX_PARAM_VALUE_SIZE - 3) break;
-            pos = nextPos;
-            if (pos < 0) break;
-        }
         String summary;
-        if (pos > 0) summary = valueContent.substring(0, pos).trim() + "...";
-        else summary = valueContent;
+        if (valueContent.length() > Utilities.MAX_PARAM_VALUE_SIZE) {
+            int pos = Utilities.MAX_PARAM_VALUE_SIZE - 3;
+            int prevPos = valueContent.lastIndexOf(',', pos);
+            if (prevPos > 0) pos = prevPos;
+            summary = valueContent.substring(0, pos).trim() + "...";
+        } else summary = valueContent;
 
         DataSource dataSource = platform.getDataSource();
         PreparedStatement psIndex = null;
