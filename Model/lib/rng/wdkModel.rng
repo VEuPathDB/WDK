@@ -742,7 +742,7 @@
                   <attribute name="displayName" />
                   <ref name="IncludeExclude"/>
                   <optional>
-                    <attribute name="isDefault">
+                    <attribute name="default">
                       <data type="boolean" />
                     </attribute>
                   </optional>
