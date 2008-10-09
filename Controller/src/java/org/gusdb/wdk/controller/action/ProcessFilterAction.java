@@ -93,6 +93,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	    wdkAnswerValue = step.getAnswerValue();
 	    step.setIsCollapsible(true);
 	    step.setCollapsedName("Copy of " + insertStrat.getName());
+	    step.update(false);
 	}
 	else {
 	    // no: get question
