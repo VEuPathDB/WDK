@@ -14,6 +14,7 @@ public class Strategy {
     private int internalId;
     private boolean isSaved;
     private String name;
+    private String savedName = null;
 
     Strategy( UserFactory factory, User user, int strategyId, int internalId, String name ) {
 	this.factory = factory;
@@ -34,6 +35,14 @@ public class Strategy {
     
     public String getName() {
 	return name;
+    }
+
+    public void setSavedName(String savedName) {
+	this.savedName = savedName;
+    }
+    
+    public String getSavedName() {
+	return savedName;
     }
 
     public void setIsSaved(boolean saved) {
