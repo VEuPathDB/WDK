@@ -102,12 +102,14 @@ public class DatasetFactory {
         
         // compose the summary
         int pos = 0;
-        while ( pos >= 0 && pos < Utilities.MAX_PARAM_VALUE_SIZE - 3 ) {
-            pos = valueContent.indexOf( ",", pos + 1 );
+        while (true) {
+            int nextPos = valueContent.indexOf(",", pos + 1);
+            if (nextPos >= Utilities.MAX_PARAM_VALUE_SIZE - 3) break;
+            pos = nextPos;
+            if (pos < 0) break;
         }
         String summary;
-        if ( pos >= 0 ) summary = valueContent.substring( 0, pos ).trim()
-                + "...";
+        if (pos > 0) summary = valueContent.substring(0, pos).trim() + "...";
         else summary = valueContent;
         
         DataSource dataSource = platform.getDataSource();
