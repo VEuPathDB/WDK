@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.jspwrap;
 import java.util.ArrayList;
 
 import org.gusdb.wdk.model.user.Strategy;
+import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 
@@ -55,6 +56,14 @@ public class StrategyBean {
     public void setLatestStep(StepBean step) 
 	throws WdkUserException {
 	strategy.setLatestStep(step.step);
+    }
+
+    public StepBean getStepById(int stepId) {
+	Step target = strategy.getStepById(stepId);
+	if (target != null) {
+	    return new StepBean(target);
+	}
+	return null;
     }
 
     public int getLength() {

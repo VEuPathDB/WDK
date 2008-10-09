@@ -102,6 +102,10 @@ public class Strategy {
 	this.latestStep = step;
     }
 
+    public Step getStepById(int id) {
+	return latestStep.getStepById(id);
+    }
+
     public void update(boolean overwrite)
 	throws WdkUserException, WdkModelException {
 	factory.updateStrategy(user, this, overwrite);

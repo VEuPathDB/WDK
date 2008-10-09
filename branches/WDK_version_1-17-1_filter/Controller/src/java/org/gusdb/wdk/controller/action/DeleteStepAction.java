@@ -27,8 +27,8 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
 /**
  *  This Action handles moving a step in a search strategy to a different
- *  position.  It moves the step, updates the relevant filter userAnswers,
- *  and forwards to ShowSummaryAction
+ *  position.  It moves the step, updates the subsequent steps, and
+ *  forwards to ShowSummaryAction
  **/
 
 public class DeleteStepAction extends Action {
@@ -41,10 +41,10 @@ public class DeleteStepAction extends Action {
 
 
 	// Make sure a strategy is specified
-	String strProtoId = request.getParameter("strategy");
+	String strStratId = request.getParameter("strategy");
 
-	System.out.println("Filter strategy: " + strProtoId);
-	if (strProtoId == null || strProtoId.length() == 0) {
+	System.out.println("Strategy: " + strStratId);
+	if (strStratId == null || strStratId.length() == 0) {
 	    throw new WdkModelException("No strategy was specified for deleting a step!");
 	}
 
@@ -57,7 +57,6 @@ public class DeleteStepAction extends Action {
             request.getSession().setAttribute( CConstants.WDK_USER_KEY, wdkUser );
         }
 
-	StepBean userAnswer, filterHist;
         AnswerValueBean wdkAnswerValue;
 	StrategyBean strategy;
 	StepBean step, newStep;
@@ -71,7 +70,7 @@ public class DeleteStepAction extends Action {
 	    throw new WdkModelException("No step was specified to delete!");
 	}
 
-	strategy = wdkUser.getStrategy(Integer.parseInt(strProtoId));
+	strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
 	stepIx = Integer.valueOf(deleteStep);
 	step = strategy.getStep(stepIx);
 
@@ -79,7 +78,7 @@ public class DeleteStepAction extends Action {
 	if (step.getIsFirstStep()) {
 	    // if there are two steps, we're just moving to the second step as a one-step strategy
 	    if (strategy.getLength() == 2) {
-		// update step so that filter user answer is the subquery answer from the second step
+		// update step so that it is the child step of the second step
 		step = step.getNextStep().getChildStep();
 	    }
 	    // if there are more than two steps, we need to convert the second step into a first step
@@ -94,8 +93,7 @@ public class DeleteStepAction extends Action {
 		    boolExp = newStep.getBooleanExpression();
 		    boolExp = step.getStepId() + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
 		    System.out.println("Delete boolExp " + i + ": " + boolExp);
-		    userAnswer = wdkUser.combineStep(boolExp);
-		    newStep = userAnswer;
+		    newStep = wdkUser.combineStep(boolExp);
 		    step = newStep;
 		}
 	    }
@@ -110,8 +108,7 @@ public class DeleteStepAction extends Action {
 	    }
 	}
 	else {
-	    // if this is not the last step, then filter userAnswer of the next step needs
-	    // to point to filter userAnswer of the previous step
+	    // if this is not the last step, then the next step needs to point to the previous step
 	    if (stepIx < strategy.getLength() - 1) {
 		step = step.getPreviousStep();
 		//need to start by updating the step after the deleted step so that it
@@ -122,8 +119,7 @@ public class DeleteStepAction extends Action {
 		    boolExp = newStep.getBooleanExpression();
 		    boolExp = step.getStepId() + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
 		    System.out.println("Delete boolExp " + i + ": " + boolExp);
-		    userAnswer = wdkUser.combineStep(boolExp);
-		    newStep = userAnswer;
+		    newStep = wdkUser.combineStep(boolExp);
 		    step = newStep;
 		}
 	    }
@@ -149,7 +145,7 @@ public class DeleteStepAction extends Action {
 	// 5. forward to strategy page
 	ActionForward showSummary = mapping.findForward( CConstants.SHOW_STRATEGY_MAPKEY );
 	StringBuffer url = new StringBuffer( showSummary.getPath() );
-	url.append("?strategy=" + URLEncoder.encode(strProtoId));
+	url.append("?strategy=" + URLEncoder.encode(strStratId));
 	String viewStep = request.getParameter("step");
 	if (viewStep != null && viewStep.length() != 0) {
 	    if (Integer.valueOf(viewStep) > Integer.valueOf(deleteStep)) {

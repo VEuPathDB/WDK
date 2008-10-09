@@ -263,6 +263,14 @@ public class StepBean {
 	return beans;
     }
 
+    public StepBean getStepById(int stepId) {
+	Step target = step.getStepById(stepId);
+	if (target != null) {
+	    return new StepBean(target);
+	}
+	return null;
+    }
+
     public int getLength() {
 	return step.getLength();
     }
