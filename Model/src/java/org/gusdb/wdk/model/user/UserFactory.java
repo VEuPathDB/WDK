@@ -990,8 +990,8 @@ public class UserFactory {
         try {
             psStep = SqlUtils.getPreparedStatement(
                     dataSource, "SELECT step_id, display_id, answer_id, create_time, "
-                            + "last_run_time, custom_name, is_deleted, "
-                            + "left_child_id, right_child_id FROM "
+                            + "last_run_time, custom_name, is_deleted, is_collapsible, "
+                            + "collapsed_name, left_child_id, right_child_id FROM "
                             + loginSchema + "steps WHERE user_id = ? "
                             + "AND project_id = ? "
 		            + "ORDER BY last_run_time DESC");
@@ -1011,6 +1011,8 @@ public class UserFactory {
 		step.setLastRunTime(new Date(lastRunTime.getTime()));
 		step.setCustomName(rsStep.getString("custom_name"));
 		step.setDeleted(rsStep.getBoolean("is_deleted"));
+		step.setCollapsible(rsStep.getBoolean("is_collapsible"));
+		step.setCollapsedName(rsStep.getString("collapsed_name"));
 		
 		// load Answer
 		int answerId = rsStep.getInt("answer_id");
@@ -1049,7 +1051,8 @@ public class UserFactory {
         try {
             psStep = SqlUtils.getPreparedStatement(
                     dataSource, "SELECT step_id, answer_id, create_time, last_run_time, "
-                            + "custom_name, is_deleted, left_child_id, right_child_id FROM "
+                            + "custom_name, is_deleted, left_child_id, right_child_id, "
+		            + "is_collapsible, collapsed_name FROM "
                             + loginSchema + "steps WHERE user_id = ? "
                             + "AND project_id = ? AND display_id = ? "
                             + "ORDER BY last_run_time DESC");
@@ -1071,6 +1074,8 @@ public class UserFactory {
             step.setLastRunTime(new Date(lastRunTime.getTime()));
             step.setCustomName(rsStep.getString("custom_name"));
             step.setDeleted(rsStep.getBoolean("is_deleted"));
+	    step.setCollapsible(rsStep.getBoolean("is_collapsible"));
+	    step.setCollapsedName(rsStep.getString("collapsed_name"));
 
 	    // load Answer
 	    int answerId = rsStep.getInt("answer_id");
@@ -1453,7 +1458,6 @@ public class UserFactory {
 	return importStep;
     }
 
-    // TODO: SQL needs to be changed to work w/ new steps table
     Strategy loadStrategy(User user, int userStrategyId) throws WdkUserException {
 	// Get name, saved, latest step_id, and all latest step data
 	// FROM strategy table JOIN step table
@@ -1490,6 +1494,17 @@ public class UserFactory {
 
 	    Strategy strategy = new Strategy(this, user, userStrategyId, internalId, rsStrategy.getString("name"));
 	    strategy.setIsSaved(rsStrategy.getBoolean("is_saved"));
+	    
+	    // Set saved name, if any
+	    if (strategy.getName().matches("^New Strategy [\\d]+\\*$")) {
+		System.out.println("Name matches: " + strategy.getName());
+		// Don't set saved name; it's null.
+	    }
+	    else {
+		System.out.println("Name does not match: " + strategy.getName());
+		// Remove any * from name, set as saved name
+		strategy.setSavedName(strategy.getName().replaceAll("\\*", ""));
+	    }
 
 	    // Now add step_id to a stack, and go into while loop
 	    int currentStepId = rsStrategy.getInt("root_step_id");
@@ -1524,7 +1539,6 @@ public class UserFactory {
 		if (rsAnswerTree.next()) {
 		    parentStep = steps.get(parentAnswerId);
 		    
-		    // TODO:  need to check if currentStepId < 1?
 		    // left child
 		    currentStepId = rsAnswerTree.getInt("left_child_id");
 		    if (currentStepId >= 1) {
@@ -1579,33 +1593,38 @@ public class UserFactory {
 	int userId = user.getUserId();
 
         try {
-	    if (strategy.getIsSaved()) {
-		if (!overwrite) {
-		    Strategy newStrat = createStrategy(user, strategy.getLatestStep(),
-							       strategy.getName(), false);
-		    strategy.setStrategyId(newStrat.getStrategyId());
-		    strategy.setInternalId(newStrat.getInternalId());
-		    strategy.setIsSaved(newStrat.getIsSaved());
-		    return;
-		}
-		else {
-		    PreparedStatement psCheck = SqlUtils.getPreparedStatement(
+	    if (overwrite) {
+		// If we're overwriting, need to look up saved strategy id by name
+		PreparedStatement psCheck = SqlUtils.getPreparedStatement(
                     dataSource, "SELECT strategy_id, display_id FROM " + loginSchema
                             + "strategies WHERE user_id = ? AND project_id = ? "
                             + "AND name = ? AND saved = ?");
-		    psCheck.setInt(1, userId);
-		    psCheck.setString(2, projectId);
-		    psCheck.setString(3, strategy.getName());
-		    psCheck.setBoolean(4, strategy.getIsSaved());
-		    rsStrategy = psCheck.executeQuery();
-
-		    if (rsStrategy.next()) {
-			strategy.setStrategyId(rsStrategy.getInt("display_id"));
-			strategy.setInternalId(rsStrategy.getInt("strategy_id"));
-		    }
+		psCheck.setInt(1, userId);
+		psCheck.setString(2, projectId);
+		psCheck.setString(3, strategy.getName().replaceFirst("\\*", ""));
+		psCheck.setBoolean(4, strategy.getIsSaved());
+		rsStrategy = psCheck.executeQuery();
+	    
+		// If there's already a saved strategy with this strategy's name,
+		// we need to overwrite the saved strategy & delete the unsaved one.
+		if (rsStrategy.next()) {
+		    Strategy copy = strategy;
+		    strategy.setStrategyId(rsStrategy.getInt("display_id"));
+		    strategy.setInternalId(rsStrategy.getInt("strategy_id"));
+		    user.deleteStrategy(copy.getStrategyId());
 		}
 	    }
-
+	    else if (strategy.getIsSaved()) {
+		// If we're not overwriting a saved strategy, then we're modifying
+		// it.  We need to get an unsaved copy to modify.
+		Strategy newStrat = createStrategy(user, strategy.getLatestStep(),
+						   strategy.getName() + "*", false);
+		strategy.setStrategyId(newStrat.getStrategyId());
+		strategy.setInternalId(newStrat.getInternalId());
+		strategy.setIsSaved(false);
+		return;
+	    }
+	    
             psStrategy = SqlUtils.getPreparedStatement(dataSource, "UPDATE "
                     + loginSchema + "strategies SET name = ?, "
                     + "root_step_id = ?, is_saved = ?"
@@ -1640,8 +1659,10 @@ public class UserFactory {
 	int userId = user.getUserId();
 
 	PreparedStatement psMax = null;
+	PreparedStatement psCheckName = null;
 	PreparedStatement psStrategy = null;
         ResultSet rsMax = null;
+	ResultSet rsCheckName = null;
 
         Connection connection = null;
 	try {
@@ -1651,9 +1672,53 @@ public class UserFactory {
 
             connection = dataSource.getConnection();
             synchronized (connection) {
+		// If name is not null, check if strategy exists
+		if (name != null) {
+		    psCheckName = SqlUtils.getPreparedStatement(
+			dataSource, "SELECT display_id FROM " + loginSchema + "strategies "
+			+ "WHERE user_id = ? AND project_id = ? AND name = ?");
+		    psCheckName.setInt(1, userId);
+		    psCheckName.setString(2, projectId);
+		    psCheckName.setString(3, name);
+		    rsCheckName = psCheckName.executeQuery();
 
+		    if (rsCheckName.next()) return loadStrategy(user, rsCheckName.getInt("display_id"));
+		}
+		// otherwise, generate default name
+		else {
+		    psCheckName = SqlUtils.getPreparedStatement(
+			dataSource, "SELECT name FROM " + loginSchema + "strategies "
+			+ "WHERE user_id = ? AND project_id = ? AND name LIKE 'New Strategy %' "
+			+ "ORDER BY name");
+		    psCheckName.setInt(1, userId);
+		    psCheckName.setString(2, projectId);
+		    rsCheckName = psCheckName.executeQuery();
+
+		    int i = 1;
+		    while (rsCheckName.next()) {
+			name = rsCheckName.getString("name");
+			try {
+			    // Need to isolate the integer part of "New Strategy x*" and parse the value of x
+			    // This is written to allow names that are similar to the above format, but don't
+			    // match it perfectly (if users pick lazy names when saving, like "New Strategy 1 Saved"
+			    int test = Integer.parseInt(name.replaceFirst("New Strategy ", "").replaceFirst("\\*", ""));
+			    if (i == test) {
+				i++;
+			    }
+			    else
+				break;
+			} catch (NumberFormatException ex) {
+			    // Have to do this b/c Java Integer has no tryParse.  It's perfectly acceptable
+			    // for a name to start with "New Strategy " w/out fitting into our default name
+			    // schema.  For example, a user could name a strategy "New Strategy for Me."
+			    // We just ignore it when determining number for default name.
+			}
+		    }
+		    name = "New Strategy " + i + "*";
+		}
+						    
                 connection.setAutoCommit(false);
-		
+ 
 		// insert the row into strategies
 		psStrategy = SqlUtils.getPreparedStatement(
 			dataSource, "INSERT INTO " + loginSchema + "strategies "
@@ -1669,7 +1734,7 @@ public class UserFactory {
 		psStrategy.setInt(3, userId);
 		psStrategy.setInt(4, root.getStepId());
 		psStrategy.setBoolean(5, saved);
-		psStrategy.setString(6, " ");
+		psStrategy.setString(6, name);
 		psStrategy.setString(7, projectId);
 		psStrategy.executeUpdate();
 
@@ -1691,16 +1756,7 @@ public class UserFactory {
 	    // update the user's strategy count
             int strategyCount = getStrategyCount(user);
             user.setStrategyCount(strategyCount);
-	    Strategy strat = loadStrategy(user, strategyId);
-
-	    // don't like setting the name this way, but how else to get display id into name before we know
-	    // what the display id is?
-	    if (name == null) {
-		name = "Strategy " + strat.getStrategyId();
-	    }
-	    strat.setName(name);
-	    strat.update(false);
-	    return strat;
+	    return loadStrategy(user, strategyId);
 	}
 	catch (SQLException ex) {
 	    throw new WdkUserException(ex);
