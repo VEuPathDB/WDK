@@ -1,5 +1,7 @@
 package org.gusdb.wdk.controller.action;
 
+import java.util.ArrayList;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -27,8 +29,12 @@ public class DeleteStrategyAction extends Action {
 	    for (int i = 0; i < stratIdstr.length; ++i) {
 		int stratId = Integer.parseInt(stratIdstr[i]);
 		UserBean wdkUser = (UserBean) request.getSession().getAttribute(CConstants.WDK_USER_KEY);
+		ArrayList<Integer> activeStrategies = (ArrayList<Integer>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
 		try {
 		    wdkUser.deleteStrategy(stratId);
+		    if (activeStrategies.contains(Integer.parseInt(stratIdstr[i]))) {
+			activeStrategies.remove(activeStrategies.indexOf(Integer.parseInt(stratIdstr[i])));
+		    }
 		} catch (Exception e) {
 		    e.printStackTrace();
 		    // prevent refresh of page after delete from breaking
