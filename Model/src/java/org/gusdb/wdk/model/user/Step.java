@@ -28,7 +28,7 @@ public class Step {
         
     private UserFactory factory;
     private User user;
-    private int userAnswerId;
+    private int stepId;
     private int internalId;
     private Date createdTime;
     private Date lastRunTime;
@@ -45,10 +45,10 @@ public class Step {
     private Step parentStep = null;
     private Step childStep = null;
 
-    Step( UserFactory factory, User user, int userAnswerId, int internalId) {
+    Step( UserFactory factory, User user, int stepId, int internalId) {
         this.factory = factory;
         this.user = user;
-        this.userAnswerId = userAnswerId;
+        this.stepId = stepId;
 	this.internalId = internalId;
         isDeleted = false;
     }
@@ -178,10 +178,10 @@ public class Step {
     }
     
     /**
-     * @return Returns the userAnswerId.
+     * @return Returns the stepId.
      */
     public int getStepId() {
-        return userAnswerId;
+        return stepId;
     }
     
     /**
@@ -431,5 +431,25 @@ public class Step {
 	throws WdkUserException {
 	step.setPreviousStep(this);
 	this.setNextStep(step);
+    }
+
+    public Step getStepById(int stepId) {
+	Step target;
+	if (this.stepId == stepId) {
+	    return this;
+	}
+	if (childStep != null) {
+	    target = childStep.getStepById(stepId);
+	    if (target != null) {
+		return target;
+	    }
+	}
+	if (previousStep != null) {
+	    target = previousStep.getStepById(stepId);
+	    if (target != null) {
+		return target;
+	    }
+	}
+	return null;
     }
 }

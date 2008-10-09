@@ -59,9 +59,9 @@ public class ShowStrategyAction extends ShowQuestionAction {
 
 
 	// Make sure a protocol is specified
-	String strProtoId = request.getParameter("strategy");
+	String strStratId = request.getParameter("strategy");
 
-	if (strProtoId == null || strProtoId.length() == 0) {
+	if (strStratId == null || strStratId.length() == 0) {
 	    throw new WdkModelException("No strategy was specified for loading!");
 	}
 
@@ -74,7 +74,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
             request.getSession().setAttribute( CConstants.WDK_USER_KEY, wdkUser );
         }
 
-	StrategyBean strategy = wdkUser.getStrategy(Integer.parseInt(strProtoId));
+	StrategyBean strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
 	//HashMap<Integer,StrategyBean> activeStrategies = (HashMap<Integer,StrategyBean>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
 
 	//activeStrategies.put(new Integer(strategy.getStrategyId()),strategy);
@@ -85,7 +85,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
 	// forward to strategyPage.jsp
 	ActionForward showSummary = mapping.findForward( CConstants.SHOW_STRATEGY_MAPKEY );
 	StringBuffer url = new StringBuffer( showSummary.getPath() );
-	url.append("?strategy=" + URLEncoder.encode(strProtoId));
+	url.append("?strategy=" + URLEncoder.encode(strStratId));
 	String viewStep = request.getParameter("step");
 	if (viewStep != null && viewStep.length() != 0) {
 	    url.append("&step=" + URLEncoder.encode(viewStep));
