@@ -100,7 +100,7 @@ public class LinkAttributeField extends AttributeField {
      */
     @Override
     public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
-        // try parse the url & visible
+        // try parse the url & displayText
         parseFields(url);
         parseFields(displayText);
     }

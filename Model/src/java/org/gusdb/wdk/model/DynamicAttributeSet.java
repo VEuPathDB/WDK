@@ -113,7 +113,7 @@ public class DynamicAttributeSet extends WdkModelBase {
                         + recordClass.getFullName());
             AttributeField field = attributeFieldMap.get(fieldName);
             field.setRecordClass(recordClass);
-            field.setContainer(recordClass);
+            field.setContainer(question);
             if (field instanceof ColumnAttributeField) {
                 // need to set the column before resolving references
                 Column column = columns.get(fieldName);

@@ -26,7 +26,7 @@ import org.json.JSONException;
  *          2007) $ $Author$
  */
 
-public class Question extends WdkModelBase {
+public class Question extends WdkModelBase implements AttributeFieldContainer {
 
     public static final String BOOLEAN_QUESTION_PREFIX = "boolean_question_";
 
