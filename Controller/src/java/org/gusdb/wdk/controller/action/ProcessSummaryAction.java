@@ -51,8 +51,8 @@ public class ProcessSummaryAction extends Action {
             String userAnswerId = request.getParameter( CConstants.WDK_HISTORY_ID_KEY );
             if ( userAnswerId == null || userAnswerId.length() == 0 ) {
 		// Check for strategy in here?  Sure, why not.
-		String strategyId = request.getParameter("strategy");
-		String stepIx = request.getParameter("step");
+		String strategyId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
+		String stepIx = request.getParameter(CConstants.WDK_STEP_IX_KEY);
 		if (strategyId == null || strategyId.length() == 0) 
 		    throw new WdkModelException("Missing parameters for this action" );
 

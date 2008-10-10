@@ -92,6 +92,8 @@ public class ShowApplicationAction extends ShowSummaryAction {
 	    
 	    request.setAttribute(CConstants.WDK_QUESTION_PARAMS_KEY, params);
 	    request.setAttribute(CConstants.WDK_ANSWER_KEY, wdkAnswerValue);
+	    request.setAttribute(CConstants.WDK_STEP_KEY, step);
+	    // Attaching as history also, b/c UI still expects it.
 	    request.setAttribute(CConstants.WDK_HISTORY_KEY, step);
 	    request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
 	    //request.setAttribute("wdk_summary_url", requestUrl);

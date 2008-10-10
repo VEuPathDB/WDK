@@ -30,8 +30,10 @@ public class CConstants {
     public static final String WDK_ANSWER_KEY = "wdkAnswer";
     public static final String WDK_STRATEGY_KEY = "wdkStrategy";
     public static final String WDK_STRATEGY_COLLECTION_KEY = "wdkActiveStrategies";
-    public static final String WDK_STRATEGY_ID_KEY = "strategy_id";
-    public static final String WDK_STEP_KEY = "step";
+    public static final String WDK_STRATEGY_ID_KEY = "strategy";
+    public static final String WDK_STEP_KEY = "wdkStep";
+    public static final String WDK_STEP_ID_KEY = "step";
+    public static final String WDK_STEP_IX_KEY = "step";
     public static final String WDK_REPORT_FORMATS_KEY = "wdkReportFormats";
     public static final String WDK_REPORT_FORMAT_KEY = "wdkReportFormat";
     public static final String WDK_RECORD_KEY = "wdkRecord";

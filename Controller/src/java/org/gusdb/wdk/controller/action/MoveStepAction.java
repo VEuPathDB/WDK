@@ -39,13 +39,13 @@ public class MoveStepAction extends Action {
 				  HttpServletRequest request, HttpServletResponse response)
 	throws Exception {
 	// Make sure strategy, step, and moveto are defined
-	String strProtoId = request.getParameter("strategy");
+	String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
 	String strMoveFromIx = request.getParameter("movefrom");
 	String op = request.getParameter("op");
 	String strMoveToIx = request.getParameter("moveto");
 
 	// Make sure necessary arguments are provided
-	if (strProtoId == null || strProtoId.length() == 0) {
+	if (strStratId == null || strStratId.length() == 0) {
 	    throw new WdkModelException("No strategy was specified for moving steps!");
 	}
 	if (strMoveFromIx == null || strMoveFromIx.length() == 0) {
@@ -72,7 +72,7 @@ public class MoveStepAction extends Action {
 		request.getSession().setAttribute( CConstants.WDK_USER_KEY, wdkUser );
 	    }
 	    
-	    StrategyBean strategy = wdkUser.getStrategy(Integer.parseInt(strProtoId));
+	    StrategyBean strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
 	    
 	    StepBean moveFromStep = strategy.getStep(moveFromIx);
 	    StepBean moveToStep = strategy.getStep(moveToIx);
@@ -82,8 +82,6 @@ public class MoveStepAction extends Action {
 	    int length = strategy.getLength();
 
 	    String boolExp;
-
-	    StepBean userAnswer;
 
 	    if (stubIx < 0) {
 		step = null;
@@ -103,16 +101,14 @@ public class MoveStepAction extends Action {
 			// assuming boolean, will need to add case for non-boolean op
 			boolExp = moveFromStep.getBooleanExpression();
 			boolExp = step.getStepId() + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
-			userAnswer = wdkUser.combineStep(boolExp);
+			moveFromStep = wdkUser.combineStep(boolExp);
 			// may also need clone method here?
-			moveFromStep = userAnswer;
 			step = moveFromStep;
 		    }
 		    //again, assuming boolean, will need to add case for non-boolean
 		    boolExp = moveToStep.getBooleanExpression();
 		    boolExp = step.getStepId() + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
-		    userAnswer = wdkUser.combineStep(boolExp);
-		    moveToStep = userAnswer;
+		    moveToStep = wdkUser.combineStep(boolExp);
 		    step = moveToStep;
 		}
 		else if (i == moveFromIx) {
@@ -128,8 +124,7 @@ public class MoveStepAction extends Action {
 			//again, assuming boolean, will need to add case for non-boolean
 			boolExp = newStep.getBooleanExpression();
 			boolExp = step.getStepId() + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
-			userAnswer = wdkUser.combineStep(boolExp);
-			newStep = userAnswer;
+			newStep = wdkUser.combineStep(boolExp);
 			step = moveToStep;
 		    }
 		}
@@ -145,7 +140,7 @@ public class MoveStepAction extends Action {
 	// Forward to ShowStrategyAction
 	ActionForward showSummary = mapping.findForward( CConstants.SHOW_STRATEGY_MAPKEY );
 	StringBuffer url = new StringBuffer( showSummary.getPath() );
-	url.append("?strategy=" + URLEncoder.encode(strProtoId));
+	url.append("?strategy=" + URLEncoder.encode(strStratId));
 	String viewStep = request.getParameter("step");
 	if (viewStep != null && viewStep.length() != 0) {
 	    url.append("&step=" + URLEncoder.encode(viewStep));

@@ -60,7 +60,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 
 
 	// Make sure a strategy is specified
-	String strProtoId = request.getParameter("strategy");
+	String strProtoId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
 
 	if (strProtoId == null || strProtoId.length() == 0) {
 	    throw new WdkModelException("No strategy was specified for filtering!");

@@ -23,7 +23,7 @@ public class DeleteStrategyAction extends Action {
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
 
-        String[] stratIdstr = request.getParameterValues("strategy");
+        String[] stratIdstr = request.getParameterValues(CConstants.WDK_STRATEGY_ID_KEY);
 		
 	if (stratIdstr != null && stratIdstr.length != 0) {
 	    for (int i = 0; i < stratIdstr.length; ++i) {

@@ -27,31 +27,21 @@ public class ProcessBooleanExpressionAction extends Action {
 			throws Exception {
 		try {
 			BooleanExpressionForm beForm = (BooleanExpressionForm) form;
-			String userAnswerValueIdStr = processBooleanExpression(request, beForm);
+			String strategyIdStr = processBooleanExpression(request, beForm);
 
 			ActionForward fwd = mapping
 					.findForward(CConstants.PROCESS_BOOLEAN_EXPRESSION_MAPKEY);
 			String path = fwd.getPath();
 			if (path.indexOf("?") > 0) {
-			    if (path.indexOf(CConstants.WDK_HISTORY_ID_KEY) < 0) {
-				path += "&" + CConstants.WDK_HISTORY_ID_KEY + "="
-				    + userAnswerValueIdStr;
+			    if (path.indexOf(CConstants.WDK_STRATEGY_ID_KEY) < 0) {
+				path += "&" + CConstants.WDK_STRATEGY_ID_KEY + "="
+				    + strategyIdStr;
 			    }
 			} else {
-			    path += "?" + CConstants.WDK_HISTORY_ID_KEY + "="
-				+ userAnswerValueIdStr;
+			    path += "?" + CConstants.WDK_STRATEGY_ID_KEY + "="
+				+ strategyIdStr;
 			}
 
-			/* Step code
-			String stepKey = request.getParameter("addStep");
-			if (stepKey != null && stepKey.length() != 0) {
-			    path += "&strategy=" + Integer.parseInt(request.getAttribute(CConstants.WDK_STRATEGY_ID_KEY).toString());
-			    request.removeAttribute(CConstants.WDK_STRATEGY_ID_KEY);
-			    fwd = new ActionForward(path);
-			    fwd.setRedirect(true);
-			    return fwd;
-			}
-			*/
 			return new ActionForward(path);
 		} catch (Exception ex) {
 		    ex.printStackTrace();
@@ -64,33 +54,12 @@ public class ProcessBooleanExpressionAction extends Action {
 			WdkUserException {
 		UserBean wdkUser = (UserBean) request.getSession().getAttribute(
 				CConstants.WDK_USER_KEY);
-		StepBean userAnswer = wdkUser.combineStep(beForm
+		StepBean step = wdkUser.combineStep(beForm
 				.getBooleanExpression());
-		int userAnswerId = userAnswer.getStepId();
-		/*
-		// 1. Check for strategy id
-		// 2. If exists, load strategy
-		//    i. Check for Step object
-		//   ii. If exists, add filter userAnswer & add step to strategy
-		//  iii. Remove attributes for Step object
+		StrategyBean strategy = wdkUser.createStrategy(step, false);
+		int strategyId = strategy.getStrategyId();
 
-		String strProtoId = request.getParameter("strategy");
- 	
-		if (strProtoId != null && strProtoId.length() != 0) {
-		    StrategyBean strategy = wdkUser.getStrategy(Integer.parseInt(strProtoId));
-		    String stepKey = request.getParameter("addStep");
-		    if (stepKey != null && stepKey.length() != 0) {
-			StepBean subQuery = (StepBean) request.getSession().getAttribute(stepKey);
-			StepBean step = new StepBean(userAnswer);
-			step.setChildStep(subQuery);
-			strategy.addStep(step);
-			strategy.update();
-			request.getSession().removeAttribute(stepKey);
-			request.setAttribute(CConstants.WDK_STRATEGY_ID_KEY, strategy.getStrategyId());
-		    }
-		}
-		*/
-		request.setAttribute(CConstants.WDK_HISTORY_ID_KEY, userAnswerId);
-		return Integer.toString(userAnswerId);
+		//request.setAttribute(CConstants.WDK_STRATEGY_ID_KEY, strategyId);
+		return Integer.toString(strategyId);
 	}
 }

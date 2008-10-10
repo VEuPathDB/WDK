@@ -30,14 +30,15 @@ public class CloseStrategyAction extends Action {
 	ArrayList<Integer> activeStrategies = (ArrayList<Integer>) request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
 
 	if (activeStrategies != null) {
-	    String stratIdstr = request.getParameter("strategy");
+	    String stratIdstr = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
 	    if (stratIdstr == null || stratIdstr.length() == 0) {
 		throw new Exception("No strategy specified to close!");
 	    }
-	    System.out.println("Removing: " + activeStrategies.remove(activeStrategies.indexOf(Integer.parseInt(stratIdstr))));
+	    if (activeStrategies.contains(Integer.parseInt(stratIdstr))) {
+		activeStrategies.remove(activeStrategies.indexOf(Integer.parseInt(stratIdstr)));
+		request.getSession().setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY, activeStrategies);
+	    }
 	}
-
-	request.getSession().setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY, activeStrategies);
 
 	return null;
     }

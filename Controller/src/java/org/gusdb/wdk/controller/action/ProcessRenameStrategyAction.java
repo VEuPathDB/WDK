@@ -27,7 +27,7 @@ public class ProcessRenameStrategyAction extends Action {
             HttpServletRequest request, HttpServletResponse response )
             throws Exception {
         
-        String stratIdstr = request.getParameter( "strategy" );
+        String stratIdstr = request.getParameter( CConstants.WDK_STRATEGY_ID_KEY );
         String customName = request.getParameter( "name" );
         
         // TEST

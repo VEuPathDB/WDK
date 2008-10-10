@@ -41,7 +41,7 @@ public class DeleteStepAction extends Action {
 
 
 	// Make sure a strategy is specified
-	String strStratId = request.getParameter("strategy");
+	String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
 
 	System.out.println("Strategy: " + strStratId);
 	if (strStratId == null || strStratId.length() == 0) {

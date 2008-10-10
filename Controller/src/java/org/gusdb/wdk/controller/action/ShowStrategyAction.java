@@ -59,7 +59,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
 
 
 	// Make sure a protocol is specified
-	String strStratId = request.getParameter("strategy");
+	String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
 
 	if (strStratId == null || strStratId.length() == 0) {
 	    throw new WdkModelException("No strategy was specified for loading!");
@@ -80,6 +80,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
 	//activeStrategies.put(new Integer(strategy.getStrategyId()),strategy);
 	
 	//request.getSession().setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY, activeStrategies);
+	request.setAttribute(CConstants.WDK_STEP_KEY, strategy.getLatestStep());
 	request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
 
 	// forward to strategyPage.jsp

@@ -36,8 +36,8 @@ public class ExpandStepAction extends Action {
     public ActionForward execute( ActionMapping mapping, ActionForm form,
 				  HttpServletRequest request, HttpServletResponse response )
 	throws Exception {
-	String strStratId = request.getParameter("strategy");
-	String strStepId = request.getParameter("step");
+	String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
+	String strStepId = request.getParameter(CConstants.WDK_STEP_ID_KEY);
 	
 	if (strStratId == null || strStratId.length() == 0) {
 	    throw new WdkModelException("No strategy was specified for expanding a step!");
@@ -69,7 +69,8 @@ public class ExpandStepAction extends Action {
 	}
 	
 	// Add branch (Step object) to request as strategy
-	request.setAttribute(CConstants.WDK_STRATEGY_KEY, step);
+	request.setAttribute(CConstants.WDK_STEP_KEY, step);
+	request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
 
 	// forward to strategyPage.jsp
 	ActionForward showSummary = mapping.findForward( CConstants.SHOW_STRATEGY_MAPKEY );
