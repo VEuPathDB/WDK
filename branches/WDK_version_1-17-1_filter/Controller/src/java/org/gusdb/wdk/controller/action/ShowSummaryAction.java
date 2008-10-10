@@ -72,10 +72,10 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
 	// Get userAnswer id & strategy id from request (if they exist)
         String strHistId = request.getParameter(CConstants.WDK_HISTORY_ID_KEY);
-	String strProtoId = request.getParameter("strategy");
+	String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
 
-	if (strProtoId != null && strProtoId.length() != 0) {
-	    strategy = wdkUser.getStrategy(Integer.parseInt(strProtoId));
+	if (strStratId != null && strStratId.length() != 0) {
+	    strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
 	    String stepIndex = request.getParameter("step");
 	    StepBean[] steps = strategy.getAllSteps();
 	    if (stepIndex != null && stepIndex.length() != 0)
@@ -252,7 +252,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
 	
 	// if we got a strategy id in the URL, go to summary page
 	/*
-	if (strProtoId != null && strProtoId.length() != 0) {
+	if (strStratId != null && strStratId.length() != 0) {
 	    String resultsOnly = request.getParameter(CConstants.WDK_RESULT_SET_ONLY_KEY);
 	    // forward to the results page, if requested
 	    if (resultsOnly != null && Boolean.valueOf(resultsOnly)) {

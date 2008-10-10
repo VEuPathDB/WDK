@@ -33,10 +33,11 @@ public class ImportStrategyAction extends Action {
 	throws Exception {
 	System.out.println("Entering ImportStrategyAction...");
 
-	String strategyId = request.getParameter("strategy");
+	// Change to importing by answer id
+	String strategyId = request.getParameter("answer");
 
 	if (strategyId == null || strategyId.length() == 0) {
-	    throw new WdkModelException("No strategy was specified for importing!");
+	    throw new WdkModelException("No answer was specified for importing!");
 	}
 
 	//load model, user
