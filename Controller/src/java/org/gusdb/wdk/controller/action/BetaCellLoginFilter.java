@@ -79,7 +79,7 @@ public class BetaCellLoginFilter implements Filter {
 	if (log.isTraceEnabled()){
 	    log.trace("entering doFilter(" + request + ", " + response + ", " + fc + ")");
 	}
-	log.info("entering doFilter(" + request + ", " + response + ", " + fc + ")");
+
 	// make sure we've got an HTTP request
 	if (!(request instanceof HttpServletRequest)
 	    || !(response instanceof HttpServletResponse)) {
@@ -90,30 +90,36 @@ public class BetaCellLoginFilter implements Filter {
 
 	HttpServletRequest hsRequest = (HttpServletRequest) request;
 	HttpServletResponse hsResponse = (HttpServletResponse) response;
-	
-	Cookie[] cookies = hsRequest.getCookies();
-	String genomicsCookie = getCookieValue(cookies, BCBC_COOKIE_NAME, "");
+	String path = hsRequest.getServletPath();
 
-	genomicsCookie = (new URLDecoder()).decode(genomicsCookie);
-	log.info("genomicsCookie: "+genomicsCookie);
+	if(path.endsWith(".do") || path.endsWith(".jsp")){
+	    log.info("entering doFilter(" + request + ", " + response + ", " + fc + ")");
+
 	
-	if(!genomicsCookie.equals("") && genomicsCookie.length() > 0){
-	    try{
-		creatWDKUser(genomicsCookie, hsRequest, hsResponse);
-	    }catch(Exception ex){
-		log.error(ex.getMessage());
+	    Cookie[] cookies = hsRequest.getCookies();
+	    String genomicsCookie = getCookieValue(cookies, BCBC_COOKIE_NAME, "");
+
+	    genomicsCookie = (new URLDecoder()).decode(genomicsCookie);
+	    log.info("genomicsCookie: "+genomicsCookie);
+	
+	    if(!genomicsCookie.equals("") && genomicsCookie.length() > 0){
+		try{
+		    creatWDKUser(genomicsCookie, hsRequest, hsResponse);
+		}catch(Exception ex){
+		    log.error(ex.getMessage());
+		}
+	    }
+	    else{
+		try{
+		    logOutUser(hsRequest, hsResponse);
+		}catch(Exception ex){
+		    log.error(ex.getMessage());
+		}
 	    }
 	}
-	else{
-	    try{
-		logOutUser(hsRequest, hsResponse);
-	    }catch(Exception ex){
-		log.error(ex.getMessage());
-	    }
-	}
-	
+
 	fc.doFilter(request, response);
-	log.info("returning from doFilter()");
+//	log.info("returning from doFilter()");
     }
 
     //*********************************************************************
@@ -160,6 +166,17 @@ sessionid=sessionid()
 
 	UserFactoryBean factory = wdkModel.getUserFactory();
 
+	String email = cookieValues[0];
+	String firstName = cookieValues[1];
+	String lastName = cookieValues[2];
+
+	String privacy = (cookieValues.length>3)?cookieValues[3]:"public";
+	String bcbcSessionId = (cookieValues.length>5)?cookieValues[5]:"";
+
+	String middleName = null, title = null, organization = null;
+	String department = null, address = null, city = null, state = null;
+	String zipCode = null, phoneNumber = null, country = null;
+
 	// get the current user
 	UserBean guest = (UserBean) hsRequest.getSession().getAttribute(CConstants.WDK_USER_KEY);
 	// if guest is null, means the session is timed out, create the guest
@@ -172,20 +189,12 @@ sessionid=sessionid()
 	if (!guest.getGuest()) { 
 	    // user has been logged in, redirect back, do nothing
 	    log.info("user already logged in, do nothing");
+	    hsRequest.getSession().setAttribute("privacy", privacy);
+	    hsRequest.getSession().setAttribute("bcbcSessionId", bcbcSessionId);
 	    return;
 	    //	    hsResponse.sendRedirect(hsResponse.encodeRedirectURL(hsRequest.getRequestURL().toString()));
 	}
 	
-	String email = cookieValues[0];
-	String firstName = cookieValues[1];
-	String lastName = cookieValues[2];
-
-	String privacy = (cookieValues.length>3)?cookieValues[3]:"public";
-	String bcbcSessionId = (cookieValues.length>5)?cookieValues[5]:"";
-
-	String middleName = null, title = null, organization = null;
-	String department = null, address = null, city = null, state = null;
-	String zipCode = null, phoneNumber = null, country = null;
 	Map<String, String> globalPreferences = new LinkedHashMap<String, String>();
 	Map<String, String> projectPreferences = new LinkedHashMap<String, String>();
 
