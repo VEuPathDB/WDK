@@ -967,6 +967,7 @@ public class RecordClass extends WdkModelBase implements
 
             ColumnAttributeField field = new ColumnAttributeField();
             field.setName(name);
+            field.setInternal(true);
             field.setRecordClass(this);
             field.setContainer(this);
             Column column = columns.get(name);
