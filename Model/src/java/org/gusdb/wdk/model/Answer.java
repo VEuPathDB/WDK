@@ -106,8 +106,6 @@ public class Answer {
 
     private AnswerFilterInstance filter;
 
-    private Map<Map<String, Object>, Map<String, Object>> pkValuesMap;
-
     // ------------------------------------------------------------------
     // Constructor
     // ------------------------------------------------------------------
@@ -889,52 +887,5 @@ public class Answer {
         PrimaryKeyAttributeValue[] array = new PrimaryKeyAttributeValue[pkValues.size()];
         pkValues.toArray(array);
         return array;
-    }
-
-    Map<String, Object> lookupPrimaryKeys(Map<String, Object> pkValues)
-            throws NoSuchAlgorithmException, WdkModelException, SQLException,
-            JSONException, WdkUserException {
-        // nothing to look up
-        Query aliasQuery = question.getRecordClass().getAliasQuery();
-        if (aliasQuery == null) return pkValues;
-
-        initializePrimaryKeyMaps();
-
-        Map<String, Object> newValues = pkValuesMap.get(pkValues);
-        return (newValues == null) ? pkValues : newValues;
-    }
-
-    private void initializePrimaryKeyMaps() throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
-        if (pkValuesMap != null) return;
-
-        logger.debug("initializing alias query...");
-
-        RecordClass recordClass = question.getRecordClass();
-        Query aliasQuery = recordClass.getAliasQuery();
-        if (aliasQuery == null) return;
-
-        // join the original alias query with paged id query
-        WdkModel wdkModel = question.getWdkModel();
-        aliasQuery = (Query) wdkModel.resolveReference(aliasQuery.getFullName());
-        String sql = getPagedAttributeSql(aliasQuery);
-        DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
-        ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql);
-        ResultList resultList = new SqlResultList(resultSet);
-        String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
-        pkValuesMap = new LinkedHashMap<Map<String,Object>, Map<String,Object>>();
-        while (resultList.next()) {
-            Map<String, Object> oldValues = new LinkedHashMap<String, Object>();
-            Map<String, Object> newValues = new LinkedHashMap<String, Object>();
-            for (String column : pkColumns) {
-                String oldColumn = Utilities.ALIAS_OLD_KEY_COLUMN_PREFIX
-                        + column;
-                oldValues.put(oldColumn, resultList.get(oldColumn));
-                newValues.put(column, resultList.get(column));
-            }
-            pkValuesMap.put(oldValues, newValues);
-        }
-        logger.debug("Alias query initialized.");
     }
 }
