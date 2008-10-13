@@ -29,13 +29,9 @@ import org.xml.sax.SAXException;
  */
 public class ApplicationInitListener implements ServletContextListener {
 
-    private DBPlatform platform;
-    private DBPlatform authPlatform;
-
     public void contextDestroyed(ServletContextEvent sce) {
         try {
-            getPlatform().close();
-            getAuthPlatform().close();
+            DBPlatform.closeAllPlatforms();
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
@@ -70,22 +66,6 @@ public class ApplicationInitListener implements ServletContextListener {
         }
     }
 
-    protected DBPlatform getPlatform() {
-        return platform;
-    }
-
-    protected DBPlatform getAuthPlatform() {
-        return authPlatform;
-    }
-
-    protected void setPlatform(DBPlatform platform) {
-        this.platform = platform;
-    }
-
-    protected void setAuthPlatform(DBPlatform authPlatform) {
-        this.authPlatform = authPlatform;
-    }
-
     private void initMemberVars(ServletContext application, String modelName,
             String customViewDir, String alwaysGoToSummary, String loginUrl)
             throws WdkModelException, NoSuchAlgorithmException,
@@ -96,10 +76,6 @@ public class ApplicationInitListener implements ServletContextListener {
         WdkModel wdkModelRaw = WdkModel.construct(modelName);
 
         WdkModelBean wdkModel = new WdkModelBean(wdkModelRaw);
-
-        setPlatform(wdkModelRaw.getQueryPlatform());
-
-        setAuthPlatform(wdkModelRaw.getAuthenticationPlatform());
 
         application.setAttribute(CConstants.WDK_MODEL_KEY, wdkModel);
         application.setAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY,
