@@ -811,6 +811,7 @@ public class UserFactory {
         String qiChecksum = qinstance.getChecksum();
         String signature = qinstance.getQuery().getSignature();
         String params = booleanExpression;
+	System.out.println("Creating answer with boolean expression: " + booleanExpression);
         if (!isBoolean)
             params = qinstance.getQuery().getFullName()
                     + qinstance.getParamsContent();
@@ -953,6 +954,9 @@ public class UserFactory {
 		    // in order to correctly reconstruct answer value
 		    String boolExp = leftChildId + paramsClob.substring(paramsClob.indexOf(" "), paramsClob.lastIndexOf(" ") + 1)
 			+ rightChildId;
+		    System.out.println("Left: " + leftChildId);
+		    System.out.println("Right: " + rightChildId);
+		    System.out.println("Clob: " + paramsClob);
 		    System.out.println("Boolean Expression sent to constructBooleanAnswerValue: " + boolExp);
                     result = constructBooleanAnswerValue(user, boolExp);
                     answer.setBooleanExpression(paramsClob);
@@ -1112,6 +1116,7 @@ public class UserFactory {
         String qiChecksum = qinstance.getChecksum();
         String signature = qinstance.getQuery().getSignature();
         String params = booleanExpression;
+	System.out.println("Creating step with boolean expression: " + booleanExpression);
         if (!isBoolean)
             params = qinstance.getQuery().getFullName()
                     + qinstance.getParamsContent();
@@ -1388,6 +1393,32 @@ public class UserFactory {
 	throws WdkUserException, WdkModelException {
 	ResultSet rsStrategy = null;
 	try {
+	    // Check if user already has a copy of this strategy...if so, get ID and load it
+	    //     Note:  Could also modify to take export user ID, check if export
+	    //            user has this strategy (by answer ID), and import that
+	    //            instance of the strategy.
+	    PreparedStatement psStrategy = SqlUtils.getPreparedStatement(
+		     dataSource, "SELECT sr.display_id FROM " + loginSchema + "strategies sr, "
+		     + loginSchema + "steps sp WHERE sr.user_id = ? AND sr.project_id = ? "
+		     + "AND sr.root_step_id = sp.display_id AND sp.answer_id = ?");
+	    psStrategy.setInt(1, user.getUserId());
+	    psStrategy.setString(2, projectId);
+	    psStrategy.setInt(3, globalId);
+	    rsStrategy = psStrategy.executeQuery();
+
+	    if (rsStrategy.next()) {
+		int strategyId = rsStrategy.getInt("display_id");
+		return loadStrategy(user, strategyId);
+	    }
+	    
+	    // If user does not already have a copy of this strategy, need to look up the answers
+	    // recursively, construct step objects
+	    
+	    Step latestStep = importStep(user, loadAnswer(user, globalId, null, null));
+	    // Need to create strategy & then load it so that AnswerValues are created properly
+	    Strategy strategy = createStrategy(user, latestStep, null, false);
+	    return loadStrategy(user, strategy.getStrategyId());
+	    /*
 	    // Get user_id, strategy_id from strategies by signature
 	    PreparedStatement psStrategy = SqlUtils.getPreparedStatement(
 		     dataSource, "SELECT user_id, display_id FROM "
@@ -1405,6 +1436,7 @@ public class UserFactory {
 		return loadStrategy(user, strategyId);
 	    }
 	    return importStrategy(user, userId, strategyId);
+	    */
 	} catch (SQLException ex) {
 	    throw new WdkUserException(ex);
 	} finally {
@@ -1416,6 +1448,7 @@ public class UserFactory {
 	}
     }
 
+    /*
     private Strategy importStrategy(User user, int exportUserId, int strategyId)
 	throws WdkUserException, WdkModelException {
 	
@@ -1428,7 +1461,46 @@ public class UserFactory {
       
 	return createStrategy(user, importLatest, exportStrat.getName(), exportStrat.getIsSaved());
     }
+    */
 
+    private Step importStep(User user, Answer answer)
+	throws WdkUserException, WdkModelException {
+	Step step;
+	String booleanExpression = null;
+
+	// Is this answer a boolean?  Import depended steps first.
+	if (answer.isBoolean()) {
+	    booleanExpression = answer.getBooleanExpression();
+	    String[] expParts = booleanExpression.split(" ");
+	    Answer leftAnswer = loadAnswer(user, Integer.parseInt(expParts[expParts.length - 3]), null, null);
+	    Step leftChild = importStep(user, leftAnswer);
+	    Answer rightAnswer = loadAnswer(user, Integer.parseInt(expParts[expParts.length - 1]), null, null);
+	    Step rightChild = importStep(user, rightAnswer);
+	    // If leftChild is a boolean or a transform, it's collapsible & should have collapsed name
+	    if (rightChild.isBoolean() || rightChild.isTransform()) {
+		rightChild.setCollapsible(true);
+		rightChild.setCollapsedName("Substrategy");
+		rightChild.update(false);
+	    }
+	    booleanExpression = leftChild.getStepId() + " " + expParts[expParts.length - 2] + " " + rightChild.getStepId();
+	    // Need to reload answer w/ step ids so we can reconstruct the AnswerValue
+	    answer = loadAnswer(user, answer.getAnswerId(),  Integer.toString(leftChild.getStepId()), Integer.toString(rightChild.getStepId()));
+	}
+	// Is this step a transform?  Import depended steps first.
+	else if (answer.isTransform()) {
+	    throw new WdkModelException("Not implemented yet!!!");
+	}
+
+	step = createStep(user, answer.getAnswerValue(), booleanExpression, false);
+	// Need to determine how these should be set.
+	//importStep.setCollapsible();
+	//importStep.setCollapsedName();
+	//updateStep(user, importStep, false);
+
+	return step;
+    }
+
+    /*
     private Step importStep(User user, Step exportStep)
 	throws WdkUserException, WdkModelException {
 	Step importStep;
@@ -1457,6 +1529,7 @@ public class UserFactory {
 
 	return importStep;
     }
+    */
 
     Strategy loadStrategy(User user, int userStrategyId) throws WdkUserException {
 	// Get name, saved, latest step_id, and all latest step data
@@ -1496,12 +1569,8 @@ public class UserFactory {
 	    strategy.setIsSaved(rsStrategy.getBoolean("is_saved"));
 	    
 	    // Set saved name, if any
-	    if (strategy.getName().matches("^New Strategy [\\d]+\\*$")) {
-		System.out.println("Name matches: " + strategy.getName());
-		// Don't set saved name; it's null.
-	    }
-	    else {
-		System.out.println("Name does not match: " + strategy.getName());
+	    if (!strategy.getName().matches("^New Strategy [\\d]+\\*$")) {
+		//System.out.println("Name does not match: " + strategy.getName());
 		// Remove any * from name, set as saved name
 		strategy.setSavedName(strategy.getName().replaceAll("\\*", ""));
 	    }

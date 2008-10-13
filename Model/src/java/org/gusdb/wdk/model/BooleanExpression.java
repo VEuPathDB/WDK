@@ -105,12 +105,17 @@ public class BooleanExpression {
         if ( count != 0 )
             throw new WdkUserException( "Bad parentheses: " + orgExp );
         
+        System.out.println("Expression: " + expression);
         // insert a space before open parenthes; it's used when getting operator
         expression = expression.replaceAll( "\\(", Matcher.quoteReplacement(" (") );
+        System.out.println("Expression: " + expression);
         expression = expression.replaceAll( "\\+", " + " );
+        System.out.println("Expression: " + expression);
         expression = expression.replaceAll( "\\-", " - " );
+        System.out.println("Expression: " + expression);
         // delete extra white spaces
         expression = expression.replaceAll( "\\s", " " ).trim();
+        System.out.println("Expression: " + expression);
         
         // build the BooleanQuestionNode tree, use it to create Steps at internal nodes
 	Map<BooleanQuestionNode, Step> stepsMap = new LinkedHashMap<BooleanQuestionNode, Step>();
@@ -186,8 +191,6 @@ public class BooleanExpression {
 	String newBlock = block;
         // it's a leaf node
         if ( spaces < 0 && parenthese < 0 ) {
-	    System.out.println("newBlock in BE.java.192: " + newBlock);
-	    replace.put(block, newBlock);
 	    return buildLeaf( block, replace );
         }
 
@@ -195,35 +198,26 @@ public class BooleanExpression {
         String[ ] triplet = getTriplet( block );
         
         if ( triplet.length == 1 ) { // only remove one pair of parentheses
-            BooleanQuestionNode node = parseBlockStep( triplet[ 0 ], stepsMap, replace, operatorMap );
-	    if (replace.containsKey(triplet[0])) {
-		newBlock = newBlock.replaceAll(triplet[0], replace.get(triplet[0]));
-	    }
-	    System.out.println("newBlock in BE.java.205: " + newBlock);
-	    replace.put(block, newBlock);
-	    return node;
-        } else { // a triplet
+            return parseBlockStep( triplet[ 0 ], stepsMap, replace, operatorMap );
+	} else { // a triplet
             // create BooleanQuestionNode for each piece
             BooleanQuestionNode left = parseBlockStep( triplet[ 0 ], stepsMap, replace,
                     operatorMap );
-	    // need to replace all references to triplet[0] with id of new step
-	    if (replace.containsKey(triplet[0])) {
-		newBlock = newBlock.replaceAll(triplet[0], replace.get(triplet[0]));
+	    if (stepsMap.containsKey(left)) {
+		newBlock = newBlock.replaceAll(triplet[0], Integer.toString(stepsMap.get(left).getStepId()));
 	    }
             BooleanQuestionNode right = parseBlockStep( triplet[ 2 ], stepsMap, replace,
                     operatorMap );
-	    // need to replace all references to triplet[2] with id of new step
-	    if (replace.containsKey(triplet[2])) {
-		newBlock = newBlock.replaceAll(triplet[2], replace.get(triplet[2]));
-            }
+	    if (stepsMap.containsKey(right)) {
+		newBlock = newBlock.replaceAll(triplet[0], Integer.toString(stepsMap.get(right).getStepId()));
+	    }
 
             // combine left & right sub-tree to form a new tree
             BooleanQuestionNode node = BooleanQuestionNode.combine( left, right, triplet[ 1 ],
                     user.getWdkModel(), operatorMap );
 	    AnswerValue answer = node.makeAnswerValue(1, user.getItemsPerPage());
+	    
 	    stepsMap.put(node, user.createStep(answer, newBlock, false));
-	    System.out.println("newBlock in BE.java.228: " + newBlock);
-	    replace.put(block, newBlock);
 
 	    return node;
         }
