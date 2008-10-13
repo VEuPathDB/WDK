@@ -25,7 +25,6 @@ import org.gusdb.wdk.model.ParamValuesSet;
 import org.gusdb.wdk.model.QuerySet;
 import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.StringParam;
-import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -33,7 +32,6 @@ import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.QueryInfo;
 import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
-import org.gusdb.wdk.model.implementation.ModelXmlParser;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.SqlQueryInstance;
@@ -48,20 +46,18 @@ public class QueryTester {
         this.wdkModel = wdkModel;
     }
 
-    private String showSql(Query query,
-            Map<String, Object> paramHash) throws WdkModelException,
-            WdkUserException, NoSuchAlgorithmException, SQLException,
-            JSONException {
+    private String showSql(Query query, Map<String, Object> paramHash)
+            throws WdkModelException, WdkUserException,
+            NoSuchAlgorithmException, SQLException, JSONException {
         QueryInstance instance = query.makeInstance(paramHash);
         if (instance instanceof SqlQueryInstance) {
             return ((SqlQueryInstance) instance).getUncachedSql();
         } else return instance.getSql();
     }
 
-    private String showResultTable(Query query,
-            Map<String, Object> paramHash) throws WdkModelException,
-            WdkUserException, NoSuchAlgorithmException, SQLException,
-            JSONException {
+    private String showResultTable(Query query, Map<String, Object> paramHash)
+            throws WdkModelException, WdkUserException,
+            NoSuchAlgorithmException, SQLException, JSONException {
         QueryInstance instance = query.makeInstance(paramHash);
         ResultFactory resultFactory = wdkModel.getResultFactory();
         CacheFactory cacheFactory = resultFactory.getCacheFactory();
@@ -69,10 +65,6 @@ public class QueryTester {
         String cacheTable = queryInfo.getCacheTable();
         int instanceId = instance.getInstanceId();
         return cacheTable + ":" + instanceId;
-    }
-
-    private WdkModel getWdkModel() {
-        return this.wdkModel;
     }
 
     // ////////////////////////////////////////////////////////////////////
@@ -95,7 +87,10 @@ public class QueryTester {
         System.out.println("");
     }
 
-    static Map<String, Object> parseParamArgs(String[] params, boolean useDefaults, Query query)  throws WdkModelException, NoSuchAlgorithmException, SQLException, JSONException, WdkUserException {
+    static Map<String, Object> parseParamArgs(String[] params,
+            boolean useDefaults, Query query) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
 
         Map<String, Object> h = new LinkedHashMap<String, Object>();
 
@@ -106,15 +101,15 @@ public class QueryTester {
         for (int i = 0; i < params.length; i += 2) {
             h.put(params[i], params[i + 1]);
         }
-	if (useDefaults && !query.getParamValuesSets().isEmpty()) {
-	    ParamValuesSet pvs = query.getParamValuesSets().get(0);
-	    Map<String,Object> map = pvs.getParamValues();
-	    for (String paramName : map.keySet() ) {
-		if (!h.containsKey(paramName)) {
-		    h.put(paramName, map.get(paramName));
-		}
-	    }
-	}
+        if (useDefaults && !query.getParamValuesSets().isEmpty()) {
+            ParamValuesSet pvs = query.getParamValuesSets().get(0);
+            Map<String, Object> map = pvs.getParamValues();
+            for (String paramName : map.keySet()) {
+                if (!h.containsKey(paramName)) {
+                    h.put(paramName, map.get(paramName));
+                }
+            }
+        }
         return h;
     }
 
@@ -163,7 +158,6 @@ public class QueryTester {
             IOException, SAXException, InstantiationException,
             IllegalAccessException, ClassNotFoundException {
         String cmdName = System.getProperty("cmdName");
-        String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
 
         // process args
         Options options = declareOptions();
@@ -186,34 +180,33 @@ public class QueryTester {
         String queryName = ref.getElementName();
 
         // read config info
-        ModelXmlParser parser = new ModelXmlParser(gusHome);
-        WdkModel wdkModel = parser.parseModel(modelName);
+        WdkModel wdkModel = WdkModel.construct(modelName);
 
         QueryTester tester = new QueryTester(wdkModel);
         QuerySet querySet = wdkModel.getQuerySet(querySetName);
         Query query = querySet.getQuery(queryName);
 
-	if (showParams) {
-	    tester.displayParams(query);
-	} else {
-	    Map<String, Object> paramHash =
-		tester.parseParamArgs(params, useDefaults, query);
-	    if (showQuery) {
-		String querySql = tester.showSql(query, paramHash);
-		String newline = System.getProperty("line.separator");
-		String newlineQuery = querySql.replaceAll("^\\s\\s\\s", newline);
-		newlineQuery = newlineQuery.replaceAll("(\\S)\\s\\s\\s", "$1"
-						       + newline);
-		System.out.println(newline + newlineQuery + newline);
-	    } else if (returnResultAsTable) {
-		String table = tester.showResultTable(query, paramHash);
-		System.out.println(table);
-	    } else {
-		QueryInstance instance = query.makeInstance(paramHash);
-		ResultList rs = instance.getResults();
-		print(query, rs);
-	    }
-	}
+        if (showParams) {
+            tester.displayParams(query);
+        } else {
+            Map<String, Object> paramHash = QueryTester.parseParamArgs(params,
+                    useDefaults, query);
+            if (showQuery) {
+                String querySql = tester.showSql(query, paramHash);
+                String newline = System.getProperty("line.separator");
+                String newlineQuery = querySql.replaceAll("^\\s\\s\\s", newline);
+                newlineQuery = newlineQuery.replaceAll("(\\S)\\s\\s\\s", "$1"
+                        + newline);
+                System.out.println(newline + newlineQuery + newline);
+            } else if (returnResultAsTable) {
+                String table = tester.showResultTable(query, paramHash);
+                System.out.println(table);
+            } else {
+                QueryInstance instance = query.makeInstance(paramHash);
+                ResultList rs = instance.getResults();
+                print(query, rs);
+            }
+        }
         System.exit(0);
     }
 
@@ -239,11 +232,12 @@ public class QueryTester {
     }
 
     private static void addOption(Options options, String argName, String desc) {
-	addOption(options, argName, true, desc, true);
+        addOption(options, argName, true, desc, true);
     }
 
-     private static void addOption(Options options, String argName, boolean hasArg, String desc, boolean required) {
-       Option option = new Option(argName, hasArg, desc);
+    private static void addOption(Options options, String argName,
+            boolean hasArg, String desc, boolean required) {
+        Option option = new Option(argName, hasArg, desc);
         option.setRequired(required);
         option.setArgName(argName);
 
@@ -329,8 +323,7 @@ public class QueryTester {
 
         String newline = System.getProperty("line.separator");
         String cmdlineSyntax = cmdName + " -model model_name"
-                + " -query full_query_name"
-                + " [-d | -showParams]"
+                + " -query full_query_name" + " [-d | -showParams]"
                 + " [-returnTable -rows start end | -returnSize | -showQuery]"
                 + " [-params param_1_name param_1_value ...]";
 

@@ -13,11 +13,9 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Reference;
-import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.implementation.ModelXmlParser;
 import org.gusdb.wdk.model.xml.XmlAnswer;
 import org.gusdb.wdk.model.xml.XmlQuestion;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
@@ -35,7 +33,6 @@ public class XmlQuestionTester {
             WdkUserException, InstantiationException, IllegalAccessException,
             ClassNotFoundException {
         String cmdName = System.getProperty("cmdName");
-        String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
 
         // process args
         Options options = declareOptions();
@@ -55,8 +52,7 @@ public class XmlQuestionTester {
         String questionSetName = ref.getSetName();
         String questionName = ref.getElementName();
 
-        ModelXmlParser parser = new ModelXmlParser(gusHome);
-        WdkModel wdkModel = parser.parseModel(modelName);
+        WdkModel wdkModel = WdkModel.construct(modelName);
 
         XmlQuestionSet questionSet = wdkModel.getXmlQuestionSet(questionSetName);
         XmlQuestion question = questionSet.getQuestion(questionName);

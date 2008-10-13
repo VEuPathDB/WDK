@@ -17,15 +17,12 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.gusdb.wdk.model.AttributeValue;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.RecordInstance;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.RecordBean;
 import org.json.JSONException;
-import org.w3c.dom.Attr;
 import org.xml.sax.SAXException;
 
 public class RecordTester {
@@ -64,14 +61,14 @@ public class RecordTester {
         // create instance
         RecordClass recordClass = (RecordClass) wdkModel.resolveReference(recordClassFullName);
         Map<String, Object> pkValues = parsePrimaryKeyArgs(primaryKeyArray);
-        RecordInstance recordInstance = recordClass.makeRecordInstance(pkValues);
-        
+        RecordInstance recordInstance = new RecordInstance(recordClass, pkValues);
+
         // try to get all attributes
         recordInstance.getAttributeValueMap();
-        
+
         // try to get all tables
         recordInstance.getTables();
-        
+
         System.out.println("Record creation took: "
                 + ((System.currentTimeMillis() - st) / 1000F) + " seconds.");
         st = System.currentTimeMillis();
@@ -83,7 +80,7 @@ public class RecordTester {
         long end = System.currentTimeMillis();
         System.out.println("Total time spent: " + ((end - start) / 1000F)
                 + " seconds.");
-//        System.exit(0);
+        // System.exit(0);
     }
 
     private static Map<String, Object> parsePrimaryKeyArgs(String[] array) {

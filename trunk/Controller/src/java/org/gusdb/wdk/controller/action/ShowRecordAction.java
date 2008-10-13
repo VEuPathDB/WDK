@@ -50,18 +50,18 @@ public class ShowRecordAction extends Action {
         for (String column : pkColumns) {
             String value = request.getParameter(column);
             // to be backward compatible with older urls
-            
-            // make project id optional 
+
+            // make project id optional
             if (value == null && column.equals("project_id")) {
                 value = request.getParameter("projectId");
                 if (value == null) value = wdkModel.getProjectId();
             }
-            
+
             // recognize old primary keys
             if (value == null) value = request.getParameter("primary_key");
             if (value == null) value = request.getParameter("primaryKey");
             if (value == null) value = request.getParameter("id");
-            
+
             if (value == null)
                 throw new WdkModelException("The required primary key value "
                         + column + " for recordClass "
@@ -73,7 +73,7 @@ public class ShowRecordAction extends Action {
             urlParams.append(URLEncoder.encode(value, "UTF-8"));
         }
 
-        RecordBean wdkRecord = wdkRecordClass.makeRecord(pkValues);
+        RecordBean wdkRecord = new RecordBean(wdkRecordClass, pkValues);
 
         request.setAttribute(CConstants.WDK_RECORD_KEY, wdkRecord);
 

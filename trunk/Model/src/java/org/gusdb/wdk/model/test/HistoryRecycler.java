@@ -20,7 +20,6 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.implementation.ModelXmlParser;
 import org.gusdb.wdk.model.user.UserFactory;
 import org.json.JSONException;
 import org.xml.sax.SAXException;
@@ -29,6 +28,7 @@ import org.xml.sax.SAXException;
  * @author xingao
  * 
  */
+@Deprecated
 public class HistoryRecycler implements Runnable {
 
     private static final String STOP_SIGNAL_FILE = "recycle-history.stop";

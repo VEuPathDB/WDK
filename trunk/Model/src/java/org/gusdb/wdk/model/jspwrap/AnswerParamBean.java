@@ -3,7 +3,6 @@
  */
 package org.gusdb.wdk.model.jspwrap;
 
-import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 
 import org.gusdb.wdk.model.Answer;
