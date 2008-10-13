@@ -204,12 +204,14 @@ public class BooleanExpression {
             BooleanQuestionNode left = parseBlockStep( triplet[ 0 ], stepsMap, replace,
                     operatorMap );
 	    if (stepsMap.containsKey(left)) {
+		newBlock = newBlock.replaceAll("\\(" + triplet[0] + "\\)", Integer.toString(stepsMap.get(left).getStepId()));
 		newBlock = newBlock.replaceAll(triplet[0], Integer.toString(stepsMap.get(left).getStepId()));
 	    }
             BooleanQuestionNode right = parseBlockStep( triplet[ 2 ], stepsMap, replace,
                     operatorMap );
 	    if (stepsMap.containsKey(right)) {
-		newBlock = newBlock.replaceAll(triplet[0], Integer.toString(stepsMap.get(right).getStepId()));
+		newBlock = newBlock.replaceAll("\\(" + triplet[2] + "\\)", Integer.toString(stepsMap.get(right).getStepId()));
+		newBlock = newBlock.replaceAll(triplet[2], Integer.toString(stepsMap.get(right).getStepId()));
 	    }
 
             // combine left & right sub-tree to form a new tree
