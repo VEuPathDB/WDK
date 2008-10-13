@@ -92,7 +92,7 @@ public abstract class DBPlatform {
         return string.replaceAll("'", "''");
     }
     
-    public static void closeAllPlatforms() throws Exception {
+    public static void closeAllPlatforms() {
         for (DBPlatform platform : platforms) {
             platform.close();
         }
