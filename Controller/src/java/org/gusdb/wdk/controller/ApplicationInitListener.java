@@ -18,7 +18,6 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.DBPlatform;
-import org.gusdb.wdk.model.implementation.ModelXmlParser;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.json.JSONException;
 import org.xml.sax.SAXException;
@@ -46,7 +45,6 @@ public class ApplicationInitListener implements ServletContextListener {
 
         ServletContext application = sce.getServletContext();
 
-        String gusHome = application.getRealPath(application.getInitParameter(Utilities.SYSTEM_PROPERTY_GUS_HOME));
         String modelName = application.getInitParameter(Utilities.ARGUMENT_PROJECT_ID);
 
         String customViewDir = application.getInitParameter(CConstants.WDK_CUSTOMVIEWDIR_PARAM);
@@ -54,7 +52,7 @@ public class ApplicationInitListener implements ServletContextListener {
         String loginUrl = application.getInitParameter(CConstants.WDK_LOGIN_URL_PARAM);
 
         try {
-            initMemberVars(application, gusHome, modelName, customViewDir,
+            initMemberVars(application, modelName, customViewDir,
                     alwaysGoToSummary, loginUrl);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
@@ -88,16 +86,14 @@ public class ApplicationInitListener implements ServletContextListener {
         this.authPlatform = authPlatform;
     }
 
-    private void initMemberVars(ServletContext application, String gusHome,
-            String modelName, String customViewDir, String alwaysGoToSummary,
-            String loginUrl) throws WdkModelException,
-            NoSuchAlgorithmException, ParserConfigurationException,
-            TransformerFactoryConfigurationError, TransformerException,
-            IOException, SAXException, SQLException, JSONException,
-            WdkUserException, InstantiationException, IllegalAccessException,
-            ClassNotFoundException {
-        ModelXmlParser parser = new ModelXmlParser(gusHome);
-        WdkModel wdkModelRaw = parser.parseModel(modelName);
+    private void initMemberVars(ServletContext application, String modelName,
+            String customViewDir, String alwaysGoToSummary, String loginUrl)
+            throws WdkModelException, NoSuchAlgorithmException,
+            ParserConfigurationException, TransformerFactoryConfigurationError,
+            TransformerException, IOException, SAXException, SQLException,
+            JSONException, WdkUserException, InstantiationException,
+            IllegalAccessException, ClassNotFoundException {
+        WdkModel wdkModelRaw = WdkModel.construct(modelName);
 
         WdkModelBean wdkModel = new WdkModelBean(wdkModelRaw);
 
