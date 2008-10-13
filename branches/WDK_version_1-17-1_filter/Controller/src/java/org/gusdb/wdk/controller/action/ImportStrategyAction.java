@@ -1,6 +1,6 @@
 package org.gusdb.wdk.controller.action;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServlet;
@@ -50,14 +50,17 @@ public class ImportStrategyAction extends Action {
 
 	StrategyBean strategy = wdkUser.importStrategyByGlobalId(Integer.parseInt(strategyId));
 
-	HashMap<Integer,StrategyBean> activeStrategies = (HashMap<Integer,StrategyBean>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
+	ArrayList<Integer> activeStrategies = (ArrayList<Integer>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
 
 	if (activeStrategies == null) {
-	    activeStrategies = new HashMap<Integer,StrategyBean>();
+	    //activeStrategies = new HashMap<Integer,StrategyBean>();
+	    activeStrategies = new ArrayList<Integer>();
 	}
-	activeStrategies.put(new Integer(strategy.getStrategyId()),strategy);
-	
-	request.getSession().setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY, activeStrategies); 
+	//activeStrategies.put(new Integer(strategy.getStrategyId()),strategy);
+	if (!activeStrategies.contains(new Integer(strategy.getStrategyId()))) {
+		activeStrategies.add(0, new Integer(strategy.getStrategyId()));
+	}
+	request.getSession().setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY, activeStrategies);
  
 	ActionForward forward = mapping.findForward(CConstants.SHOW_APPLICATION_MAPKEY);
 	forward = new ActionForward(forward.getPath(), true);
