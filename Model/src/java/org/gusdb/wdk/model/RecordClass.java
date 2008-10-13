@@ -7,9 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Query;
-import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
@@ -281,15 +279,6 @@ public class RecordClass extends WdkModelBase implements
 
     public Reference getReference() throws WdkModelException {
         return new Reference(getFullName());
-    }
-
-    public RecordInstance makeRecordInstance(Map<String, Object> pkValues)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
-        pkValues = lookupSourceId(pkValues);
-        PrimaryKeyAttributeValue primaryKeyValue = new PrimaryKeyAttributeValue(
-                primaryKeyField, pkValues);
-        return new RecordInstance(this, primaryKeyValue);
     }
 
     public Map<String, ReporterRef> getReporterMap() {
@@ -620,31 +609,6 @@ public class RecordClass extends WdkModelBase implements
             }
         }
         return orderedAttsMap;
-    }
-
-    private Map<String, Object> lookupSourceId(Map<String, Object> pkValues)
-            throws WdkModelException, SQLException, NoSuchAlgorithmException,
-            JSONException, WdkUserException {
-        // nothing to look up
-        if (aliasQuery == null) return pkValues;
-
-        Map<String, Object> oldValues = new LinkedHashMap<String, Object>();
-        for (String param : pkValues.keySet()) {
-            String oldParam = Utilities.ALIAS_OLD_KEY_COLUMN_PREFIX + param;
-            oldValues.put(oldParam, pkValues.get(param));
-        }
-
-        QueryInstance instance = aliasQuery.makeInstance(oldValues);
-        ResultList resultList = instance.getResults();
-        Map<String, Object> newValue = new LinkedHashMap<String, Object>();
-        if (resultList.next()) {
-            for (String param : pkValues.keySet()) {
-                newValue.put(param, resultList.get(param));
-            }
-        } else newValue.putAll(pkValues); // no alias found, use the original
-        // ones
-        resultList.close();
-        return newValue;
     }
 
     Query prepareQuery(Query query, String[] paramNames)
@@ -1015,5 +979,9 @@ public class RecordClass extends WdkModelBase implements
         }
 
         return map;
+    }
+    
+    public Query getAliasQuery() {
+        return aliasQuery;
     }
 }

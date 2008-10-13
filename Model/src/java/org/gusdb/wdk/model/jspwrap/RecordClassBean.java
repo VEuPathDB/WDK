@@ -1,7 +1,5 @@
 package org.gusdb.wdk.model.jspwrap;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -14,8 +12,6 @@ import org.gusdb.wdk.model.ReporterRef;
 import org.gusdb.wdk.model.TableField;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
-import org.json.JSONException;
 
 /**
  * A wrapper on a {@link RecordClass} that provides simplified access for
@@ -24,10 +20,6 @@ import org.json.JSONException;
 public class RecordClassBean {
 
     RecordClass recordClass;
-
-    // the variables used to store the ids for the record instance to be created
-    private String projectId;
-    private String recordId;
 
     public RecordClassBean(RecordClass recordClass) {
         this.recordClass = recordClass;
@@ -67,16 +59,6 @@ public class RecordClassBean {
         return fieldBeans;
     }
 
-    public RecordBean makeRecord(Map<String, Object> pkValues)
-            throws NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
-        try {
-            return new RecordBean(recordClass.makeRecordInstance(pkValues));
-        } catch (WdkModelException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
     public QuestionBean[] getQuestions() {
         WdkModel wdkModel = recordClass.getWdkModel();
         Question questions[] = wdkModel.getQuestions(recordClass);
@@ -96,22 +78,6 @@ public class RecordClassBean {
                 reporters.put(name, ref.getDisplayName());
         }
         return reporters;
-    }
-
-    /**
-     * @param projectId
-     *            the projectId to set
-     */
-    public void setProjectId(String projectId) {
-        this.projectId = projectId;
-    }
-
-    /**
-     * @param recordId
-     *            the recordId to set
-     */
-    public void setRecordId(String recordId) {
-        this.recordId = recordId;
     }
 
     public String[] getPrimaryKeyColumns() {
@@ -177,15 +143,4 @@ public class RecordClassBean {
 	AnswerFilterInstance instance = recordClass.getFilter(filterName);
 	return new AnswerFilterInstanceBean(instance);
     }
-
-    /**
-     * Get the newly created record instance from the project id and primary key
-     * set to the class
-     * 
-     * @return
-     */
-    // public RecordBean getRecord() {
-    // return makeRecord(projectId, recordId);
-    // }
-
 }

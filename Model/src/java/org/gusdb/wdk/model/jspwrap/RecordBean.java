@@ -33,6 +33,12 @@ public class RecordBean {
         this.recordInstance = recordInstance;
     }
 
+    public RecordBean(RecordClassBean recordClass, Map<String, Object> pkValues)
+            throws NoSuchAlgorithmException, WdkModelException, SQLException,
+            JSONException, WdkUserException {
+        recordInstance = new RecordInstance(recordClass.recordClass, pkValues);
+    }
+
     /**
      * modified by Jerric
      * 

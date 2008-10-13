@@ -64,6 +64,8 @@ public abstract class QueryInstance {
         this.wdkModel = query.getWdkModel();
         this.cached = query.isCached();
 
+        logger.debug("validating param values of query [" + query.getFullName()
+                + "]");
         setValues(values);
     }
 
@@ -166,8 +168,16 @@ public abstract class QueryInstance {
 
     public ResultList getResults() throws NoSuchAlgorithmException,
             SQLException, WdkModelException, JSONException, WdkUserException {
-        if (cached) return getCachedResults();
-        else return getUncachedResults();
+        logger.debug("retrieving results of query [" + query.getFullName()
+                + "]");
+
+        ResultList resultList = (cached) ? getCachedResults()
+                : getUncachedResults();
+
+        logger.debug("results of query [" + query.getFullName()
+                + "] retrieved.");
+
+        return resultList;
     }
 
     public int getResultSize() throws NoSuchAlgorithmException, SQLException,

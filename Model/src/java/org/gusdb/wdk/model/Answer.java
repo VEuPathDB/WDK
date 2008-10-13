@@ -106,6 +106,8 @@ public class Answer {
 
     private AnswerFilterInstance filter;
 
+    private Map<Map<String, Object>, Map<String, Object>> pkValuesMap;
+
     // ------------------------------------------------------------------
     // Constructor
     // ------------------------------------------------------------------
@@ -149,6 +151,7 @@ public class Answer {
         if (filter == null)
             filter = question.getRecordClass().getDefaultFilter();
         this.filter = filter;
+        logger.debug("Answer created.");
     }
 
     /**
@@ -513,6 +516,8 @@ public class Answer {
                 }
             }
         }
+        logger.debug("Attribute query [" + attributeQuery.getFullName()
+                + "] integrated.");
     }
 
     // ------------------------------------------------------------------
@@ -609,6 +614,9 @@ public class Answer {
 
         DBPlatform platform = question.getWdkModel().getQueryPlatform();
         pagedIdSql = platform.getPagedSql(sql.toString(), startIndex, endIndex);
+
+        logger.debug("paged id sql constructed.");
+
         return pagedIdSql;
     }
 
@@ -633,6 +641,8 @@ public class Answer {
             innerSql = idsQueryInstance.getSql();
         }
         sql.append(innerSql).append(") bidq");
+
+        logger.debug("id sql constructed.");
 
         return sql.toString();
     }
@@ -704,6 +714,7 @@ public class Answer {
             SQLException, JSONException, WdkModelException, WdkUserException {
         if (pageRecordInstances != null) return;
 
+        logger.debug("Initializing paged records......");
         this.pageRecordInstances = new LinkedHashMap<PrimaryKeyAttributeValue, RecordInstance>();
 
         String sql = getPagedIdSql();
@@ -724,12 +735,10 @@ public class Answer {
             for (String column : pkField.getColumnRefs()) {
                 pkValues.put(column, resultList.get(column));
             }
-            PrimaryKeyAttributeValue primaryKey = new PrimaryKeyAttributeValue(
-                    pkField, pkValues);
-            RecordInstance record = recordClass.makeRecordInstance(pkValues);
-            record.setAnswer(this);
-            pageRecordInstances.put(primaryKey, record);
+            RecordInstance record = new RecordInstance(this, pkValues);
+            pageRecordInstances.put(record.getPrimaryKey(), record);
         }
+        logger.debug("Paged records initialized.");
     }
 
     /**
@@ -880,5 +889,52 @@ public class Answer {
         PrimaryKeyAttributeValue[] array = new PrimaryKeyAttributeValue[pkValues.size()];
         pkValues.toArray(array);
         return array;
+    }
+
+    Map<String, Object> lookupPrimaryKeys(Map<String, Object> pkValues)
+            throws NoSuchAlgorithmException, WdkModelException, SQLException,
+            JSONException, WdkUserException {
+        // nothing to look up
+        Query aliasQuery = question.getRecordClass().getAliasQuery();
+        if (aliasQuery == null) return pkValues;
+
+        initializePrimaryKeyMaps();
+
+        Map<String, Object> newValues = pkValuesMap.get(pkValues);
+        return (newValues == null) ? pkValues : newValues;
+    }
+
+    private void initializePrimaryKeyMaps() throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
+        if (pkValuesMap != null) return;
+
+        logger.debug("initializing alias query...");
+
+        RecordClass recordClass = question.getRecordClass();
+        Query aliasQuery = recordClass.getAliasQuery();
+        if (aliasQuery == null) return;
+
+        // join the original alias query with paged id query
+        WdkModel wdkModel = question.getWdkModel();
+        aliasQuery = (Query) wdkModel.resolveReference(aliasQuery.getFullName());
+        String sql = getPagedAttributeSql(aliasQuery);
+        DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
+        ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql);
+        ResultList resultList = new SqlResultList(resultSet);
+        String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
+        pkValuesMap = new LinkedHashMap<Map<String,Object>, Map<String,Object>>();
+        while (resultList.next()) {
+            Map<String, Object> oldValues = new LinkedHashMap<String, Object>();
+            Map<String, Object> newValues = new LinkedHashMap<String, Object>();
+            for (String column : pkColumns) {
+                String oldColumn = Utilities.ALIAS_OLD_KEY_COLUMN_PREFIX
+                        + column;
+                oldValues.put(oldColumn, resultList.get(oldColumn));
+                newValues.put(column, resultList.get(column));
+            }
+            pkValuesMap.put(oldValues, newValues);
+        }
+        logger.debug("Alias query initialized.");
     }
 }

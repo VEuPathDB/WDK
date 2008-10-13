@@ -16,7 +16,6 @@ public class RecordInstance extends AttributeValueContainer {
     private static Logger logger = Logger.getLogger(RecordInstance.class);
 
     private RecordClass recordClass;
-    private PrimaryKeyAttributeValue primaryKey;
 
     private Map<String, TableValue> tableValueCache = new LinkedHashMap<String, TableValue>();
 
@@ -27,13 +26,40 @@ public class RecordInstance extends AttributeValueContainer {
      * @param recordClass
      * @param primaryKey
      * @throws WdkModelException
+     * @throws WdkUserException
+     * @throws JSONException
+     * @throws SQLException
+     * @throws NoSuchAlgorithmException
      */
-    RecordInstance(RecordClass recordClass,
-            PrimaryKeyAttributeValue primaryKey) throws WdkModelException {
-        super(primaryKey);
+    public RecordInstance(RecordClass recordClass, Map<String, Object> pkValues)
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
         this.recordClass = recordClass;
 
-        this.primaryKey = primaryKey;
+        pkValues = lookupPrimaryKeys(pkValues);
+        PrimaryKeyAttributeValue primaryKey = new PrimaryKeyAttributeValue(
+                recordClass.getPrimaryKeyAttributeField(), pkValues);
+        setPrimaryKey(primaryKey);
+    }
+
+    /**
+     * @throws WdkUserException
+     * @throws JSONException
+     * @throws SQLException
+     * @throws WdkModelException
+     * @throws NoSuchAlgorithmException
+     * 
+     */
+    public RecordInstance(Answer answer, Map<String, Object> pkValues)
+            throws NoSuchAlgorithmException, WdkModelException, SQLException,
+            JSONException, WdkUserException {
+        this.answer = answer;
+        this.recordClass = answer.getQuestion().getRecordClass();
+
+        pkValues = answer.lookupPrimaryKeys(pkValues);
+        PrimaryKeyAttributeValue primaryKey = new PrimaryKeyAttributeValue(
+                recordClass.getPrimaryKeyAttributeField(), pkValues);
+        setPrimaryKey(primaryKey);
     }
 
     /**
@@ -41,10 +67,6 @@ public class RecordInstance extends AttributeValueContainer {
      */
     public RecordClass getRecordClass() {
         return recordClass;
-    }
-    
-    void setAnswer(Answer answer) {
-        this.answer = answer;
     }
 
     /*
@@ -58,7 +80,8 @@ public class RecordInstance extends AttributeValueContainer {
     }
 
     public Map<String, AttributeField> getAttributeFieldMap(FieldScope scope) {
-        if (answer != null) return answer.getQuestion().getAttributeFieldMap(scope);
+        if (answer != null) return answer.getQuestion().getAttributeFieldMap(
+                scope);
         else return recordClass.getAttributeFieldMap(scope);
     }
 
@@ -113,6 +136,7 @@ public class RecordInstance extends AttributeValueContainer {
         } finally {
             if (resultList != null) resultList.close();
         }
+        logger.debug("column attributes are cached.");
     }
 
     /*
@@ -482,5 +506,33 @@ public class RecordInstance extends AttributeValueContainer {
             buf.append(":   " + attribute.getBriefValue());
             buf.append(newline);
         }
+    }
+
+    private Map<String, Object> lookupPrimaryKeys(Map<String, Object> pkValues)
+            throws WdkModelException, SQLException, NoSuchAlgorithmException,
+            JSONException, WdkUserException {
+        // nothing to look up
+        Query aliasQuery = recordClass.getAliasQuery();
+        if (aliasQuery == null) return pkValues;
+
+        // get alias from the alias query
+        Map<String, Object> newValue = new LinkedHashMap<String, Object>();
+        Map<String, Object> oldValues = new LinkedHashMap<String, Object>();
+        for (String param : pkValues.keySet()) {
+            String oldParam = Utilities.ALIAS_OLD_KEY_COLUMN_PREFIX + param;
+            oldValues.put(oldParam, pkValues.get(param));
+        }
+
+        QueryInstance instance = aliasQuery.makeInstance(oldValues);
+        ResultList resultList = instance.getResults();
+        if (resultList.next()) {
+            for (String param : pkValues.keySet()) {
+                newValue.put(param, resultList.get(param));
+            }
+            // no alias found, use the original ones
+        } else newValue.putAll(pkValues);
+        resultList.close();
+
+        return newValue;
     }
 }
