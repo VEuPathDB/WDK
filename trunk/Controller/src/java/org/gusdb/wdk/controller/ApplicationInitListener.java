@@ -23,7 +23,7 @@ import org.json.JSONException;
 import org.xml.sax.SAXException;
 
 /**
- * A class that is initialised at the start of the web application. This makes
+ * A class that is initialized at the start of the web application. This makes
  * sure global resources are available to all the contexts that need them
  * 
  */
@@ -42,6 +42,8 @@ public class ApplicationInitListener implements ServletContextListener {
         ServletContext application = sce.getServletContext();
 
         String modelName = application.getInitParameter(Utilities.ARGUMENT_PROJECT_ID);
+        String gusHome = application.getInitParameter(Utilities.SYSTEM_PROPERTY_GUS_HOME);
+        System.setProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME, gusHome);
 
         String customViewDir = application.getInitParameter(CConstants.WDK_CUSTOMVIEWDIR_PARAM);
         String alwaysGoToSummary = application.getInitParameter(CConstants.WDK_ALWAYSGOTOSUMMARY_PARAM);
