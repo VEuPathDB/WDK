@@ -18,11 +18,9 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.implementation.ModelXmlParser;
 import org.json.JSONException;
 import org.xml.sax.SAXException;
 
@@ -131,9 +129,7 @@ public class Migrator {
         }
 
         // parse the wdk model
-        String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
-        ModelXmlParser modelParser = new ModelXmlParser(gusHome);
-        wdkModel = modelParser.parseModel(modelName);
+        wdkModel = WdkModel.construct(modelName);
     }
 
     public String getOldVersion() {

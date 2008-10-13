@@ -1,7 +1,7 @@
 package org.gusdb.wdk.controller.action;
 
-import java.util.HashMap;
 import java.util.Date;
+import java.util.HashMap;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -18,7 +18,6 @@ import org.gusdb.wdk.model.jspwrap.AnswerBean;
 import org.gusdb.wdk.model.jspwrap.HistoryBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
-import org.gusdb.wdk.model.user.User;
 
 /**
  * @author Charles

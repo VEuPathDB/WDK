@@ -25,11 +25,10 @@ public abstract class AttributeValueContainer {
 
     protected PrimaryKeyAttributeValue primaryKey;
 
-    private Map<String, AttributeValue> attributeValueCache;
+    private Map<String, AttributeValue> attributeValueCache = new LinkedHashMap<String, AttributeValue>();
 
-    AttributeValueContainer(PrimaryKeyAttributeValue primaryKey) {
-        attributeValueCache = new LinkedHashMap<String, AttributeValue>();
-
+    void setPrimaryKey(PrimaryKeyAttributeValue primaryKey) {
+        this.primaryKey = primaryKey;
         attributeValueCache.put(primaryKey.getAttributeField().getName(),
                 primaryKey);
     }

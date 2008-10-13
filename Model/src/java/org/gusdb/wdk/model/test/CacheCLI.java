@@ -103,8 +103,8 @@ public class CacheCLI extends BaseCLI {
         boolean dropCache = (Boolean) getOptionValue(ARG_DROP);
         boolean dropSingleCache = (getOptionValue(ARG_DROP_SINGLE) != null);
         boolean recreateCache = (Boolean) getOptionValue(ARG_RECREATE);
-        boolean noSchemaOutput = (Boolean) getOptionValue(ARG_NO_SCHEMA);
-        boolean forceDrop = (Boolean) getOptionValue(ARG_FORCE_DROP);
+        // boolean noSchemaOutput = (Boolean) getOptionValue(ARG_NO_SCHEMA);
+        // boolean forceDrop = (Boolean) getOptionValue(ARG_FORCE_DROP);
 
         try {
             // read config info

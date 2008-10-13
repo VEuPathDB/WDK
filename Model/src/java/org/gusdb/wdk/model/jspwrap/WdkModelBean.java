@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.jspwrap;
 
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Vector;
@@ -27,8 +26,7 @@ public class WdkModelBean {
         this.model = model;
     }
 
-    @Deprecated
-    public Map getProperties() {
+    public Map<String, String> getProperties() {
         return model.getProperties();
     }
 
@@ -67,19 +65,14 @@ public class WdkModelBean {
      *         {array of
      * @link QuestionBean}
      */
-    public Map getQuestionsByCategory() {
+    public Map<String, Map<String, QuestionBean[]>> getQuestionsByCategory() {
         Map<String, Map<String, Question[]>> qByCat = model.getQuestionsByCategories();
 
         Map<String, Map<String, QuestionBean[]>> qBeanByCat = new LinkedHashMap<String, Map<String, QuestionBean[]>>();
-        Iterator recI = qByCat.keySet().iterator();
-        while (recI.hasNext()) {
-            String recType = (String) recI.next();
+        for (String recType : qByCat.keySet()) {
             Map<String, Question[]> recMap = qByCat.get(recType);
-            Iterator catI = recMap.keySet().iterator();
-            while (catI.hasNext()) {
-                String cat = (String) catI.next();
+            for (String cat : recMap.keySet()) {
                 Question[] questions = recMap.get(cat);
-
                 QuestionBean[] qBeans = new QuestionBean[questions.length];
                 for (int i = 0; i < questions.length; i++) {
                     qBeans[i] = new QuestionBean(questions[i]);
@@ -104,15 +97,14 @@ public class WdkModelBean {
         Map<String, QuestionSet> qSets = model.getQuestionSets();
         Map<String, QuestionSetBean> qSetBeans = new LinkedHashMap<String, QuestionSetBean>();
         for (String qSetKey : qSets.keySet()) {
-            QuestionSetBean qSetBean = new QuestionSetBean(
-                    qSets.get(qSetKey));
+            QuestionSetBean qSetBean = new QuestionSetBean(qSets.get(qSetKey));
             qSetBeans.put(qSetKey, qSetBean);
         }
         return qSetBeans;
     }
 
     public QuestionSetBean[] getQuestionSets() {
-        Map<String, QuestionSetBean> qSetMap = getQuestionsByCategory(); 
+        Map<String, QuestionSetBean> qSetMap = getQuestionSetsMap();
         QuestionSetBean[] qSetBeans = new QuestionSetBean[qSetMap.size()];
         qSetMap.values().toArray(qSetBeans);
         return qSetBeans;
@@ -173,7 +165,7 @@ public class WdkModelBean {
     /**
      * @return Map of questionSetName --> {@link XmlQuestionSetBean}
      */
-    public Map getXmlQuestionSetsMap() {
+    public Map<String, XmlQuestionSetBean> getXmlQuestionSetsMap() {
         XmlQuestionSetBean[] qSets = getXmlQuestionSets();
         Map<String, XmlQuestionSetBean> qSetsMap = new LinkedHashMap<String, XmlQuestionSetBean>();
         for (int i = 0; i < qSets.length; i++) {

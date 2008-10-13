@@ -65,7 +65,7 @@ public class XmlQuestionSetBean {
     /**
      * @return Map of questionName --> {@link XmlQuestionBean}
      */
-    public Map getQuestionsMap() {
+    public Map<String, XmlQuestionBean> getQuestionsMap() {
         XmlQuestionBean[] qs = getQuestions();
         Map<String, XmlQuestionBean> qsMap = new LinkedHashMap<String, XmlQuestionBean>();
         for (int i = 0; i < qs.length; i++) {

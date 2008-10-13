@@ -5,18 +5,20 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.json.JSONException;
 
 public class TableValue implements Collection<Map<String, AttributeValue>> {
+
+    private static final Logger logger = Logger.getLogger(TableValue.class);
 
     private static class TableValueRow extends AttributeValueContainer
             implements Map<String, AttributeValue> {
@@ -67,11 +69,13 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
         private TableValueRow(TableValue tableValue)
                 throws NoSuchAlgorithmException, WdkModelException,
                 JSONException, SQLException {
-            super(tableValue.primaryKey);
+            this.setPrimaryKey(tableValue.primaryKey);
             this.fields = tableValue.getTableField().getAttributeFieldMap();
         }
 
-        /* (non-Javadoc)
+        /*
+         * (non-Javadoc)
+         * 
          * @see org.gusdb.wdk.model.AttributeValueContainer#getAttributeFieldMap()
          */
         @Override
@@ -296,28 +300,36 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#add(java.lang.Object)
      */
     public boolean add(Map<String, AttributeValue> e) {
         throw new UnsupportedOperationException("Not supported");
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#addAll(java.util.Collection)
      */
     public boolean addAll(Collection<? extends Map<String, AttributeValue>> c) {
         throw new UnsupportedOperationException("Not supported");
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#clear()
      */
     public void clear() {
         throw new UnsupportedOperationException("Not supported");
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#contains(java.lang.Object)
      */
     public boolean contains(Object o) {
@@ -330,7 +342,9 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#containsAll(java.util.Collection)
      */
     public boolean containsAll(Collection<?> c) {
@@ -343,7 +357,9 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#isEmpty()
      */
     public boolean isEmpty() {
@@ -356,28 +372,36 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#remove(java.lang.Object)
      */
     public boolean remove(Object o) {
         throw new UnsupportedOperationException("Not supported");
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#removeAll(java.util.Collection)
      */
     public boolean removeAll(Collection<?> c) {
         throw new UnsupportedOperationException("Not supported");
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#retainAll(java.util.Collection)
      */
     public boolean retainAll(Collection<?> c) {
         throw new UnsupportedOperationException("Not supported");
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#size()
      */
     public int size() {
@@ -390,7 +414,9 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#toArray()
      */
     public Object[] toArray() {
@@ -403,7 +429,9 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#toArray(T[])
      */
     public <T> T[] toArray(T[] a) {
@@ -415,10 +443,11 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
             throw new RuntimeException(ex);
         }
     }
-    
-    private void initializeRows() throws NoSuchAlgorithmException, SQLException, WdkModelException, JSONException, WdkUserException {
+
+    private void initializeRows() throws NoSuchAlgorithmException,
+            SQLException, WdkModelException, JSONException, WdkUserException {
         if (rows != null) return;
-        
+
         rows = new ArrayList<Map<String, AttributeValue>>();
         ResultList resultList = instance.getResults();
         try {
@@ -439,9 +468,12 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
         } finally {
             resultList.close();
         }
+        logger.debug("Table value rows initialized.");
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.util.Collection#iterator()
      */
     public Iterator<Map<String, AttributeValue>> iterator() {

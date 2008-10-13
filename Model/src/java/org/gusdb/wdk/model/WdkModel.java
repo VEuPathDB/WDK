@@ -65,10 +65,13 @@ public class WdkModel {
             TransformerException, IOException, SAXException, SQLException,
             JSONException, WdkUserException, InstantiationException,
             IllegalAccessException, ClassNotFoundException {
+        logger.debug("Constructing wdk model...");
         String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
 
         ModelXmlParser parser = new ModelXmlParser(gusHome);
-        return parser.parseModel(projectId);
+        WdkModel wdkModel = parser.parseModel(projectId);
+        logger.debug("Model ready to use.");
+        return wdkModel;
     }
 
     private ModelConfig modelConfig;
@@ -766,7 +769,8 @@ public class WdkModel {
         return buf.toString();
     }
 
-    protected String showSet(String setType, Map setMap) {
+    protected String showSet(String setType,
+            Map<String, ? extends ModelSetI> setMap) {
         StringBuffer buf = new StringBuffer();
         String newline = System.getProperty("line.separator");
         buf.append(newline);
@@ -776,8 +780,7 @@ public class WdkModel {
                 + " Sets oooooooooooooooooooooooooo" + newline);
         buf.append("ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
                 + newline + newline);
-        for (Object objSet : setMap.values()) {
-            ModelSetI set = (ModelSetI) objSet;
+        for (ModelSetI set : setMap.values()) {
             buf.append("=========================== " + set.getName()
                     + " ===============================" + newline + newline);
             buf.append(set).append(newline);
@@ -965,5 +968,15 @@ public class WdkModel {
 
     public void addMacroDeclaration(MacroDeclaration macro) {
         macroList.add(macro);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#finalize()
+     */
+    @Override
+    protected void finalize() throws Throwable {
+        logger.debug("Model unloaded.");
     }
 }

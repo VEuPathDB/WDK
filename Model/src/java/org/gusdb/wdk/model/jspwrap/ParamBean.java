@@ -5,7 +5,6 @@ import java.sql.SQLException;
 
 import org.gusdb.wdk.model.Param;
 import org.gusdb.wdk.model.Utilities;
-import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.json.JSONException;

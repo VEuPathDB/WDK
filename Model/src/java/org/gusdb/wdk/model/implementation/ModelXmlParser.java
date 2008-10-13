@@ -124,6 +124,8 @@ public class ModelXmlParser extends XmlParser {
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException, InstantiationException, IllegalAccessException,
             ClassNotFoundException {
+        logger.debug("Parsing model...");
+        
         // get model config
         ModelConfig config = getModelConfig(projectId);
         String modelName = config.getModelName();
@@ -134,9 +136,12 @@ public class ModelXmlParser extends XmlParser {
                 + "/model.prop");
 
         // validate the master model file
+        logger.debug("Validating model files...");
         if (!validate(modelURL))
             throw new WdkModelException("Master model validation failed.");
 
+        logger.debug("Combining & preparing DOM...");
+        
         // replace any <import> tag with content from sub-models in the
         // master model, and build the master document
         Document masterDoc = buildMasterDocument(modelURL);
@@ -164,6 +169,7 @@ public class ModelXmlParser extends XmlParser {
         InputStream modelXmlStream = substituteProps(masterDoc, properties,
                 replacedMacros);
 
+        logger.debug("Parsing model DOM...");
         WdkModel model = (WdkModel) digester.parse(modelXmlStream);
 
         model.setXmlSchema(xmlSchemaURL); // set schema for xml data
@@ -772,7 +778,6 @@ public class ModelXmlParser extends XmlParser {
             InstantiationException, IllegalAccessException,
             ClassNotFoundException {
         String cmdName = System.getProperty("cmdName");
-        String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
 
         // process args
         Options options = declareOptions();
@@ -780,8 +785,7 @@ public class ModelXmlParser extends XmlParser {
         String projectId = cmdLine.getOptionValue(Utilities.ARGUMENT_PROJECT_ID);
 
         // create a parser, and parse the model file
-        ModelXmlParser parser = new ModelXmlParser(gusHome);
-        WdkModel wdkModel = parser.parseModel(projectId);
+        WdkModel wdkModel = WdkModel.construct(projectId);
 
         // print out the model content
         System.out.println(wdkModel.toString());

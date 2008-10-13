@@ -37,7 +37,6 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.implementation.ModelXmlParser;
 import org.json.JSONException;
 import org.xml.sax.SAXException;
 
@@ -340,8 +339,7 @@ public class StressTemplater {
 
         String modelName = cmdLine.getOptionValue("model");
 
-        ModelXmlParser parser = new ModelXmlParser(gusHome);
-        WdkModel wdkModel = parser.parseModel(modelName);
+        WdkModel wdkModel = WdkModel.construct(modelName);
 //        SanityTestXmlParser sanityParser = new SanityTestXmlParser(gusHome);
 //        SanityModel sanityModel = sanityParser.parseModel(modelName, wdkModel);
 
