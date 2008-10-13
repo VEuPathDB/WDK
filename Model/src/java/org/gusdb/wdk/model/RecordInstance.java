@@ -56,7 +56,7 @@ public class RecordInstance extends AttributeValueContainer {
         this.answer = answer;
         this.recordClass = answer.getQuestion().getRecordClass();
 
-        pkValues = answer.lookupPrimaryKeys(pkValues);
+        // the record instance from answer doesn't need the pk value translation
         PrimaryKeyAttributeValue primaryKey = new PrimaryKeyAttributeValue(
                 recordClass.getPrimaryKeyAttributeField(), pkValues);
         setPrimaryKey(primaryKey);
