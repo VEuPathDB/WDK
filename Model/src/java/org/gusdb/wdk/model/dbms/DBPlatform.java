@@ -6,6 +6,8 @@ package org.gusdb.wdk.model.dbms;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.sql.DataSource;
 
@@ -65,6 +67,8 @@ public abstract class DBPlatform {
     public static final String ID_SEQUENCE_SUFFIX = "_pkseq";
 
     private static final Logger logger = Logger.getLogger(DBPlatform.class);
+    
+    private static List<DBPlatform> platforms = new ArrayList<DBPlatform>();
 
     // #########################################################################
     // Platform related helper functions
@@ -86,6 +90,12 @@ public abstract class DBPlatform {
 
     public static String normalizeString(String string) {
         return string.replaceAll("'", "''");
+    }
+    
+    public static void closeAllPlatforms() throws Exception {
+        for (DBPlatform platform : platforms) {
+            platform.close();
+        }
     }
 
     // #########################################################################
@@ -139,6 +149,9 @@ public abstract class DBPlatform {
     // Common methods are platform independent
     // #########################################################################
 
+    public DBPlatform() {
+        platforms.add(this);
+    }
     /**
      * @return the wdkModel
      */
