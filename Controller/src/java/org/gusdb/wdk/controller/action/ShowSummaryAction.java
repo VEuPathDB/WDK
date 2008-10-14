@@ -49,6 +49,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
+	logger.debug("start action.");
 
         // get user, or create one, if not exist
         WdkModelBean wdkModel = (WdkModelBean) servlet.getServletContext().getAttribute(
@@ -231,6 +232,9 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
         // make ActionForward
         ActionForward forward = getForward(wdkAnswer, mapping, historyId);
+
+        logger.debug("finish action.");
+
         return forward;
     }
 
@@ -238,6 +242,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
             ActionMapping mapping, int historyId) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
+        logger.debug("start getting forward");
+
         ServletContext svltCtx = getServlet().getServletContext();
         String customViewDir = (String) svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
         String customViewFile1 = customViewDir + File.separator
@@ -274,6 +280,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
         } else {
             forward = mapping.findForward(CConstants.SHOW_SUMMARY_MAPKEY);
         }
+        
+        logger.debug("end getting forward");
         return forward;
     }
 
@@ -333,6 +341,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
             Map<String, Boolean> sortingAttributes, String[] summaryAttributes,
             AnswerBean wdkAnswer) throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, SQLException, JSONException {
+        logger.debug("start summary paging");
+
         UserBean wdkUser = (UserBean) request.getSession().getAttribute(
                 CConstants.WDK_USER_KEY);
         int start = 1;
@@ -405,6 +415,9 @@ public class ShowSummaryAction extends ShowQuestionAction {
         request.setAttribute("wdk_paging_end", new Integer(end));
         request.setAttribute("wdk_paging_url", request.getRequestURI());
         request.setAttribute("wdk_paging_params", editedParamNames);
+
+        logger.debug("end summary paging");
+
         return wdkAnswer;
     }
 
