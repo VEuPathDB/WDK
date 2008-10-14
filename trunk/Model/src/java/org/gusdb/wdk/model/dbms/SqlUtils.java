@@ -98,9 +98,13 @@ public final class SqlUtils {
         Connection connection = null;
         Statement stmt = null;
         try {
+            long start = System.currentTimeMillis();
             connection = dataSource.getConnection();
             stmt = connection.createStatement();
-            return stmt.executeUpdate(sql);
+            int result = stmt.executeUpdate(sql);
+            logger.debug("SQL Update " + (System.currentTimeMillis() - start)
+                    + " ms; SQL:\n" + sql);
+            return result;
         } catch (SQLException ex) {
             logger.error("Failed to run nonQuery:\n" + sql);
             throw ex;
@@ -124,9 +128,12 @@ public final class SqlUtils {
         ResultSet resultSet = null;
         Connection connection = null;
         try {
+            long start = System.currentTimeMillis();
             connection = dataSource.getConnection();
             Statement stmt = connection.createStatement();
             resultSet = stmt.executeQuery(sql);
+            logger.debug("SQL Query " + (System.currentTimeMillis() - start)
+                    + " ms; SQL:\n" + sql);
             return resultSet;
         } catch (SQLException ex) {
             logger.error("Failed to run query:\n" + sql);
