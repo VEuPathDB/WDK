@@ -59,14 +59,13 @@ public class WdkModel {
      * @throws InstantiationException
      * @throws WdkUserException
      */
-    public static WdkModel construct(String projectId)
+    public static WdkModel construct(String projectId, String gusHome)
             throws WdkModelException, NoSuchAlgorithmException,
             ParserConfigurationException, TransformerFactoryConfigurationError,
             TransformerException, IOException, SAXException, SQLException,
             JSONException, WdkUserException, InstantiationException,
             IllegalAccessException, ClassNotFoundException {
         logger.debug("Constructing wdk model...");
-        String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
 
         ModelXmlParser parser = new ModelXmlParser(gusHome);
         WdkModel wdkModel = parser.parseModel(projectId);

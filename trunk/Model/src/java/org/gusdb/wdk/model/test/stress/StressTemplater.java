@@ -339,7 +339,7 @@ public class StressTemplater {
 
         String modelName = cmdLine.getOptionValue("model");
 
-        WdkModel wdkModel = WdkModel.construct(modelName);
+        WdkModel wdkModel = WdkModel.construct(modelName, gusHome);
 //        SanityTestXmlParser sanityParser = new SanityTestXmlParser(gusHome);
 //        SanityModel sanityModel = sanityParser.parseModel(modelName, wdkModel);
 
