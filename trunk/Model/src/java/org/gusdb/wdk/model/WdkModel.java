@@ -383,6 +383,11 @@ public class WdkModel {
             booleanQuery = (BooleanQuery) internalQuerySet.getQuery(queryName);
         } else {
             booleanQuery = new BooleanQuery(recordClass);
+            
+            // make sure we create index on primary keys
+            String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
+            booleanQuery.setIndexColumns(pkColumns);
+
             internalQuerySet.addQuery(booleanQuery);
         }
         return booleanQuery;
