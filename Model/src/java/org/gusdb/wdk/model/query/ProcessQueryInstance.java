@@ -283,4 +283,22 @@ public class ProcessQueryInstance extends QueryInstance {
             if (stmt != null) stmt.close();
         }
     }
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.query.QueryInstance#getResultSize()
+     */
+    @Override
+    public int getResultSize() throws NoSuchAlgorithmException, SQLException,
+            WdkModelException, JSONException, WdkUserException {
+        if (!cached) {
+            int count = 0;
+            ResultList resultList = getResults();
+            while (resultList.next()) {
+                count++;
+            }
+            return count;
+        } else return super.getResultSize();
+    }
+    
+    
 }
