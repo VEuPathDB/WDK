@@ -60,6 +60,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
 
 	// Make sure a protocol is specified
 	String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
+	String strBranchId = null;
 
 	if (strStratId == null || strStratId.length() == 0) {
 	    throw new WdkModelException("No strategy was specified for loading!");
@@ -73,6 +74,11 @@ public class ShowStrategyAction extends ShowQuestionAction {
             wdkUser = wdkModel.getUserFactory().getGuestUser();
             request.getSession().setAttribute( CConstants.WDK_USER_KEY, wdkUser );
         }
+
+	if (strStratId.indexOf("_") > 0) {
+	    strBranchId = strStratId.split("_")[1];
+	    strStratId = strStratId.split("_")[0];
+	}
 
 	StrategyBean strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
 	//HashMap<Integer,StrategyBean> activeStrategies = (HashMap<Integer,StrategyBean>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
@@ -92,13 +98,22 @@ public class ShowStrategyAction extends ShowQuestionAction {
 	}
 	request.getSession().setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY, activeStrategies);  
 
-	request.setAttribute(CConstants.WDK_STEP_KEY, strategy.getLatestStep());
+	if (strBranchId == null) {
+	    request.setAttribute(CConstants.WDK_STEP_KEY, strategy.getLatestStep());
+	    //request.setAttribute(CConstants.WDK_STEP_KEY, null);
+	}
+	else {
+	    request.setAttribute(CConstants.WDK_STEP_KEY, strategy.getStepById(Integer.parseInt(strBranchId)));
+	}
 	request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
 
 	// forward to strategyPage.jsp
 	ActionForward showSummary = mapping.findForward( CConstants.SHOW_STRATEGY_MAPKEY );
 	StringBuffer url = new StringBuffer( showSummary.getPath() );
 	url.append("?strategy=" + URLEncoder.encode(strStratId));
+	if (strBranchId != null) {
+	    url.append("_" + URLEncoder.encode(strStratId));
+	}
 	String viewStep = request.getParameter("step");
 	if (viewStep != null && viewStep.length() != 0) {
 	    url.append("&step=" + URLEncoder.encode(viewStep));

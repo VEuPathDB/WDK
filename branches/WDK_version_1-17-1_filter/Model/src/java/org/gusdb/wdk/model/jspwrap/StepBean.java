@@ -53,11 +53,21 @@ public class StepBean {
     }
 
     public void setParentStep(StepBean parentStep) {
-	step.setParentStep(parentStep.step);
+	if (parentStep != null) {
+	    step.setParentStep(parentStep.step);
+	}
+	else {
+	    step.setParentStep(null);
+	}
     }
 
     public void setChildStep(StepBean childStep) {
-	step.setChildStep(childStep.step);
+	if (childStep != null) {
+	    step.setChildStep(childStep.step);
+	}
+	else {
+	    step.setChildStep(null);
+	}
     }
 
     public String getCustomName() 

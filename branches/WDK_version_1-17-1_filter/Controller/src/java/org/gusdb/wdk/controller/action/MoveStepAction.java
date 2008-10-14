@@ -40,6 +40,7 @@ public class MoveStepAction extends Action {
 	throws Exception {
 	// Make sure strategy, step, and moveto are defined
 	String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
+	String strBranchId = null;
 	String strMoveFromIx = request.getParameter("movefrom");
 	String op = request.getParameter("op");
 	String strMoveToIx = request.getParameter("moveto");
@@ -71,15 +72,25 @@ public class MoveStepAction extends Action {
 		wdkUser = wdkModel.getUserFactory().getGuestUser();
 		request.getSession().setAttribute( CConstants.WDK_USER_KEY, wdkUser );
 	    }
-	    
+	    if (strStratId.indexOf("_") > 0) {
+		strBranchId = strStratId.split("_")[1];
+		strStratId = strStratId.split("_")[0];
+	    }
+
 	    StrategyBean strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
-	    
 	    StepBean moveFromStep = strategy.getStep(moveFromIx);
 	    StepBean moveToStep = strategy.getStep(moveToIx);
-	    StepBean step, newStep;
+	    StepBean step, newStep, targetStep;
+
+	    if (strBranchId == null) {
+		targetStep = strategy.getLatestStep();
+	    }
+	    else {
+		targetStep = strategy.getStepById(Integer.parseInt(strBranchId));
+	    }
 
 	    int stubIx = Math.min(moveFromIx, moveToIx) - 1;
-	    int length = strategy.getLength();
+	    int length = targetStep.getLength();
 
 	    String boolExp;
 
@@ -87,7 +98,7 @@ public class MoveStepAction extends Action {
 		step = null;
 	    }
 	    else {
-		step = strategy.getStep(stubIx);
+		step = targetStep.getStep(stubIx);
 	    }
 
 	    for (int i = stubIx + 1; i < length; ++i) {
@@ -115,7 +126,7 @@ public class MoveStepAction extends Action {
 		    //do nothing; this step was moved, so we just ignore it.
 		}
 		else {
-		    newStep = strategy.getStep(i);
+		    newStep = targetStep.getStep(i);
 		    if (step == null) {
 			// need clone method?
 			step = newStep.getChildStep();
@@ -133,6 +144,27 @@ public class MoveStepAction extends Action {
 	    // set next step to null so we can set strategy pointer
 	    newStep = null;
 	    step.setNextStep(newStep);
+	    step.setParentStep(targetStep.getParentStep());
+
+	    while (step.getParentStep() != null) {
+		//go to parent, update subsequent steps
+		StepBean parentStep = step.getParentStep();
+		if (parentStep != null) {
+		    //update parent, then update subsequent
+		    boolExp = parentStep.getBooleanExpression();
+		    boolExp = parentStep.getPreviousStep().getStepId() + boolExp.substring(boolExp.indexOf(" "), boolExp.lastIndexOf(" ") + 1) + step.getStepId();
+		    step = wdkUser.combineStep(boolExp);
+		    while (parentStep.getNextStep() != null) {
+			parentStep = parentStep.getNextStep();
+			// need to check if step is a transform (in which case there's no boolean expression; we need to update history param
+			boolExp = parentStep.getBooleanExpression();
+			boolExp = step.getStepId() + boolExp.substring(boolExp.indexOf(" "), boolExp.lastIndexOf(" ") + 1) + parentStep.getChildStep().getStepId();
+			step = wdkUser.combineStep(boolExp);
+		    }
+		    step.setParentStep(parentStep.getParentStep());
+		}
+	    }
+
 	    strategy.setLatestStep(step);
 	    strategy.update(false);
 	}
@@ -141,6 +173,9 @@ public class MoveStepAction extends Action {
 	ActionForward showSummary = mapping.findForward( CConstants.SHOW_STRATEGY_MAPKEY );
 	StringBuffer url = new StringBuffer( showSummary.getPath() );
 	url.append("?strategy=" + URLEncoder.encode(strStratId));
+	if (strBranchId != null) {
+	    url.append("_" + URLEncoder.encode(strBranchId));
+	}
 	String viewStep = request.getParameter("step");
 	if (viewStep != null && viewStep.length() != 0) {
 	    url.append("&step=" + URLEncoder.encode(viewStep));

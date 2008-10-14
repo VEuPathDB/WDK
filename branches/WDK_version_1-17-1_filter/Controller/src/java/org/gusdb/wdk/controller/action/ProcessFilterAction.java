@@ -60,9 +60,9 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 
 
 	// Make sure a strategy is specified
-	String strProtoId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
+	String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
 
-	if (strProtoId == null || strProtoId.length() == 0) {
+	if (strStratId == null || strStratId.length() == 0) {
 	    throw new WdkModelException("No strategy was specified for filtering!");
 	}
 
@@ -74,13 +74,19 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             wdkUser = wdkModel.getUserFactory().getGuestUser();
             request.getSession().setAttribute( CConstants.WDK_USER_KEY, wdkUser );
         }
-
-
+       
+	String strBranchId = null;
 	StepBean step;
         AnswerValueBean wdkAnswerValue;
 
+	// did we get strategyId_stepId?
+	if (strStratId.indexOf("_") > 0) {
+	    strBranchId = strStratId.split("_")[1];
+	    strStratId = strStratId.split("_")[0];
+	}
+
 	// get strategy
-	StrategyBean strategy = wdkUser.getStrategy(Integer.parseInt(strProtoId));
+	StrategyBean strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
 
 	String boolExp = request.getParameter("booleanExpression");
 	String insertStratIdstr = request.getParameter("insertStrategy");
@@ -106,10 +112,6 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	    Map< String, String > params = prepareParams( wdkUser, request, fForm );
 	    
 	    Map<String, Object> internalParams = fForm.getMyProps();
-	    
-	    // Having booleanExpression present causes question to break (due to unrecognized
-	    // parameter).  Remove booleanExpression from params.
-	    //boolExp = internalParams.remove("booleanExpression").toString();
 	    
 	    // Get question name
 	    String questionName = wdkQuestion.getFullName();
@@ -158,6 +160,13 @@ public class ProcessFilterAction extends ProcessQuestionAction {
         int stepId = step.getStepId();
 
 	StepBean childStep = step;
+	StepBean originalStep;
+	if (strBranchId == null) {
+	    originalStep = strategy.getLatestStep();
+	}
+	else {
+	    originalStep = strategy.getStepById(Integer.parseInt(strBranchId));
+	}
 
 	// Are we revising or inserting a step?
 	String reviseStep = request.getParameter("revise");
@@ -170,8 +179,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	
 	if ((reviseStep == null || reviseStep.length() == 0) &&
 	    (insertStep == null || insertStep.length() == 0)) {
-	    step = strategy.getLatestStep();
-	    boolExp = step.getStepId() + " " + op + " " + stepId;
+	    boolExp = originalStep.getStepId() + " " + op + " " + stepId;
 	    System.out.println("Boolean expression for add: " + boolExp);
 	    
 	    // now create step for operation query
@@ -179,12 +187,9 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	    stepId = step.getStepId();
 	    
 	    step.setChildStep(childStep);
-	    
-	    // no insert specified,  so add step at end.
-	    strategy.addStep(step);
 	}
 	else {
-	    int stratLen = strategy.getLength();
+	    int stratLen = originalStep.getLength();
 	    int targetIx;
 	    boolean isRevise;
 
@@ -194,7 +199,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 		targetIx = Integer.parseInt(insertStep);
 	    
 	    if (stratLen > 1 || !isRevise) {
-		step = strategy.getStep(targetIx);
+		step = originalStep.getStep(targetIx);
 		if (step.getIsFirstStep()) {
 		    if (isRevise) {
 			boolExp = step.getNextStep().getBooleanExpression();
@@ -229,79 +234,48 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 		System.out.println("Updating subsequent steps.");
 		for (int i = targetIx; i < stratLen; ++i) {
 		    System.out.println("Updating step " + i);
-		    step = strategy.getStep(i);
+		    step = originalStep.getStep(i);
 		    boolExp = step.getBooleanExpression();
 		    boolExp = stepId + boolExp.substring(boolExp.indexOf(" "), boolExp.lastIndexOf(" ") + 1) + step.getChildStep().getStepId();
 		    step = wdkUser.combineStep(boolExp);
 		    stepId = step.getStepId();
 		}
 	    }
-	    
-	    /*
-	    if (reviseStep != null && reviseStep.length() != 0) {
-		targetIx = Integer.parseInt(reviseStep);
-		
-		step = strategy.getStep(targetIx);
-		if (step.getIsFirstStep()) {
-		    // build boolExp for switching to new first query
-		    if (step.getNextStep() != null) {
-			boolExp = step.getNextStep().getBooleanExpression();
-			boolExp = stepId + boolExp.substring(boolExp.indexOf(" "), boolExp.lastIndexOf(" ") + 1) + step.getNextStep().getChildStep().getStepId();
-		    }
-		    else {
-			boolExp = null;
-		    }
-		    targetIx++;
-		}
-		else {
-		    // build standard boolExp for non-first step
-		    boolExp = step.getPreviousStep().getStepId() + " " + op + " " + stepId;
-		}
-		targetIx++;
-	    }
-	    else {
-		targetIx = Integer.parseInt(insertStep);
-
-		step = strategy.getStep(targetIx);
-		if (step.getIsFirstStep()) {
-		    boolExp = stepId +  " " + op + " " + step.getStepId();
-		    targetIx++;
-		}
-		else {
-		    // the inserted step has to point to the step at insertIx - 1
-		    step = step.getPreviousStep();
-		    boolExp = step.getStepId() + " " + op + " " + stepId;
-		}
-	    }
-	    
-	    System.out.println("Boolean expression for revise/insert: " + boolExp);
-	    // now create step for operation query
-	    step = wdkUser.combineStep(boolExp);
-	    stepId = step.getStepId();
-	    
-	    step.setChildStep(childStep);
-	    
-	    System.out.println("Updating subsequent steps.");
-	    for (int i = targetIx; i < stratLen; ++i) {
-		System.out.println("Updating step " + i);
-		step = strategy.getStep(i);
-		boolExp = step.getBooleanExpression();
-		boolExp = stepId + boolExp.substring(boolExp.indexOf(" "), boolExp.lastIndexOf(" ") + 1) + step.getChildStep().getStepId();
-		step = wdkUser.combineStep(boolExp);
-		stepId = step.getStepId();
-	    }
-	    */
-
-	    // set latest step
-	    strategy.setLatestStep(step);
 	}
+
+	step.setParentStep(originalStep.getParentStep());
+	// if step has a parent step, need to continue updating the rest of the strategy.
+	while (step.getParentStep() != null) {
+	    //go to parent, update subsequent steps
+	    StepBean parentStep = step.getParentStep();
+	    if (parentStep != null) {
+		//update parent, then update subsequent
+		boolExp = parentStep.getBooleanExpression();
+		boolExp = parentStep.getPreviousStep().getStepId() + boolExp.substring(boolExp.indexOf(" "), boolExp.lastIndexOf(" ") + 1) + step.getStepId();
+		step = wdkUser.combineStep(boolExp);
+		while (parentStep.getNextStep() != null) {
+		    parentStep = parentStep.getNextStep();
+		    // need to check if step is a transform (in which case there's no boolean expression; we need to update history param
+		    boolExp = parentStep.getBooleanExpression();
+		    boolExp = step.getStepId() + boolExp.substring(boolExp.indexOf(" "), boolExp.lastIndexOf(" ") + 1) + parentStep.getChildStep().getStepId();
+		    step = wdkUser.combineStep(boolExp);
+		}
+		step.setParentStep(parentStep.getParentStep());
+	    }
+	}
+
+	// set latest step
+	strategy.setLatestStep(step);
 
 	// in either case, update and forward to show strategy
 	strategy.update(false);
 
 	ActionForward showSummary = mapping.findForward( CConstants.SHOW_STRATEGY_MAPKEY );
 	StringBuffer url = new StringBuffer( showSummary.getPath() );
-	url.append("?strategy=" + URLEncoder.encode(strProtoId));
+	url.append("?strategy=" + URLEncoder.encode(strStratId));
+	if (strBranchId != null) {
+	    url.append("_" + URLEncoder.encode(strBranchId));
+	}
 	String viewStep = request.getParameter("step");
 	if (viewStep != null && viewStep.length() != 0) {
 	    url.append("&step=" + URLEncoder.encode(viewStep));
