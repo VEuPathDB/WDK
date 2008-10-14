@@ -103,7 +103,7 @@ public final class SqlUtils {
             stmt = connection.createStatement();
             int result = stmt.executeUpdate(sql);
             logger.debug("SQL Update " + (System.currentTimeMillis() - start)
-                    + " ms; SQL:\n" + sql);
+                    + " ms;");
             return result;
         } catch (SQLException ex) {
             logger.error("Failed to run nonQuery:\n" + sql);
@@ -133,7 +133,7 @@ public final class SqlUtils {
             Statement stmt = connection.createStatement();
             resultSet = stmt.executeQuery(sql);
             logger.debug("SQL Query " + (System.currentTimeMillis() - start)
-                    + " ms; SQL:\n" + sql);
+                    + " ms;");
             return resultSet;
         } catch (SQLException ex) {
             logger.error("Failed to run query:\n" + sql);

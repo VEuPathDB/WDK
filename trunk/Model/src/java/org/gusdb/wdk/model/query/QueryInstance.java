@@ -10,6 +10,8 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import javax.sql.DataSource;
+
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Param;
 import org.gusdb.wdk.model.Utilities;
@@ -20,6 +22,7 @@ import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.QueryInfo;
 import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
+import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -57,6 +60,7 @@ public abstract class QueryInstance {
     protected boolean cached;
 
     private String checksum;
+    private Integer resultSize;
 
     protected QueryInstance(Query query, Map<String, Object> values)
             throws WdkModelException {
@@ -183,12 +187,16 @@ public abstract class QueryInstance {
 
     public int getResultSize() throws NoSuchAlgorithmException, SQLException,
             WdkModelException, JSONException, WdkUserException {
-        ResultList resultList = getResults();
-        int count = 0;
-        while (resultList.next()) {
-            count++;
+        logger.debug("start getting query size");
+        if (resultSize == null) {
+            StringBuffer sql = new StringBuffer("SELECT count(*) FROM (");
+            sql.append(getSql()).append(") f");
+            DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
+            Object objSize = SqlUtils.executeScalar(dataSource, sql.toString());
+            resultSize = Integer.parseInt(objSize.toString());
         }
-        return count;
+        logger.debug("end getting query size");
+        return resultSize;
     }
 
     public Map<String, Object> getValues() {

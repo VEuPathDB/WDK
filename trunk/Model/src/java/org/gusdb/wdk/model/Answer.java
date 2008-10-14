@@ -99,6 +99,7 @@ public class Answer {
     private Map<PrimaryKeyAttributeValue, RecordInstance> pageRecordInstances;
 
     private Integer resultSize; // size of total result
+    private Map<String, Integer> resultSizesByFilter = new LinkedHashMap<String, Integer>();
     private Map<String, Integer> resultSizesByProject;
 
     private Map<String, Boolean> sortingMap;
@@ -163,10 +164,18 @@ public class Answer {
         this.startIndex = startIndex;
         this.endIndex = endIndex;
 
+        this.answerInfo = answerInfo;
         this.idsQueryInstance = answer.idsQueryInstance;
         this.isBoolean = answer.isBoolean;
         this.question = answer.question;
         this.resultFactory = answer.resultFactory;
+        this.resultSize = answer.resultSize;
+        this.resultSizesByFilter = new LinkedHashMap<String, Integer>(
+                answer.resultSizesByFilter);
+        if (answer.resultSizesByProject != null)
+            this.resultSizesByProject = new LinkedHashMap<String, Integer>(
+                    resultSizesByProject);
+
         this.sortingMap = new LinkedHashMap<String, Boolean>(answer.sortingMap);
         this.summaryFieldMap = new LinkedHashMap<String, AttributeField>(
                 answer.summaryFieldMap);
@@ -210,17 +219,8 @@ public class Answer {
     public int getResultSize() throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
-        if (resultSize == null) {
-            // get id query
-            StringBuffer sql = new StringBuffer("SELECT count(*) FROM (");
-            sql.append(getIdSql()).append(")");
-            DataSource dataSource = question.getWdkModel().getQueryPlatform().getDataSource();
-            Object obj = SqlUtils.executeScalar(dataSource, sql.toString());
-            if (obj instanceof BigInteger) resultSize = ((BigInteger) obj).intValue();
-            else if (obj instanceof Long) resultSize = (int) ((Long) obj).longValue();
-            else resultSize = Integer.parseInt(obj.toString());
-        }
-        return resultSize.intValue();
+        if (resultSize == null) resultSize = idsQueryInstance.getResultSize();
+        return resultSize;
     }
 
     public Map<String, Integer> getResultSizesByProject()
@@ -841,10 +841,15 @@ public class Answer {
     public int getFilterSize(String filterName)
             throws NoSuchAlgorithmException, SQLException, WdkModelException,
             JSONException, WdkUserException {
-        RecordClass recordClass = question.getRecordClass();
-        AnswerFilterInstance filter = recordClass.getFilter(filterName);
-        QueryInstance instance = filter.makeQueryInstance(this);
-        return instance.getResultSize();
+        Integer size = resultSizesByFilter.get(filterName);
+        if (size == null) {
+            RecordClass recordClass = question.getRecordClass();
+            AnswerFilterInstance filter = recordClass.getFilter(filterName);
+            QueryInstance instance = filter.makeQueryInstance(this);
+            size = instance.getResultSize();
+            resultSizesByFilter.put(filterName, size);
+        }
+        return size;
     }
 
     /**
