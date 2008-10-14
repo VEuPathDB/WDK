@@ -73,15 +73,23 @@ public class ShowSummaryAction extends ShowQuestionAction {
 	// Get userAnswer id & strategy id from request (if they exist)
         String strHistId = request.getParameter(CConstants.WDK_HISTORY_ID_KEY);
 	String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
+	String strBranchId = null;
 
 	if (strStratId != null && strStratId.length() != 0) {
+	    if (strStratId.indexOf("_") > 0) {
+		strBranchId = strStratId.split("_")[1];
+		strStratId = strStratId.split("_")[0];
+	    }
+	    StepBean targetStep;
 	    strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
+	    if (strBranchId == null) {
+		targetStep = strategy.getLatestStep();
+	    }
+	    else {
+		targetStep = strategy.getStepById(Integer.parseInt(strBranchId));
+	    }
 	    String stepIndex = request.getParameter("step");
-	    StepBean[] steps = strategy.getAllSteps();
-	    if (stepIndex != null && stepIndex.length() != 0)
-		step = steps[Integer.parseInt(stepIndex)];
-	    else
-		step = steps[steps.length - 1];
+	    step = targetStep.getStep(Integer.parseInt(stepIndex));
 	    String subQuery = request.getParameter("subquery");
 	    if (subQuery != null && subQuery.length() != 0 && Boolean.valueOf(subQuery)) {
 		strHistId = Integer.toString(step.getChildStep().getStepId());

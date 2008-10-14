@@ -38,6 +38,7 @@ public class ExpandStepAction extends Action {
 	throws Exception {
 	String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
 	String strStepId = request.getParameter(CConstants.WDK_STEP_ID_KEY);
+	String strBranchId = null;
 	
 	if (strStratId == null || strStratId.length() == 0) {
 	    throw new WdkModelException("No strategy was specified for expanding a step!");
@@ -55,8 +56,25 @@ public class ExpandStepAction extends Action {
             request.getSession().setAttribute( CConstants.WDK_USER_KEY, wdkUser );
         }
 
+	if (strStratId.indexOf("_") > 0) {
+	    strBranchId = strStratId.split("_")[1];
+	    strStratId = strStratId.split("_")[0];
+	}
+
 	StrategyBean strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
-	StepBean step = strategy.getStepById(Integer.parseInt(strStepId));
+	StepBean latestStep;
+	if (strBranchId == null) {
+	    latestStep = strategy.getLatestStep();
+	}
+	else {
+	    latestStep = strategy.getStepById(Integer.parseInt(strBranchId));
+	}
+
+	StepBean step = latestStep.getStepById(Integer.parseInt(strStepId));
+	System.out.println("Target step: " + strStepId);
+	System.out.println("Actual step: " + step.getStepId());
+	System.out.println("Step collapsed name: " + step.getCollapsedName());
+	System.out.println("Step collapsible? : " + step.getIsCollapsible());
 
 	if (!step.getIsCollapsible()) {
 	    String branch = request.getParameter("collapsedName");
@@ -76,6 +94,9 @@ public class ExpandStepAction extends Action {
 	ActionForward showSummary = mapping.findForward( CConstants.SHOW_STRATEGY_MAPKEY );
 	StringBuffer url = new StringBuffer( showSummary.getPath() );
 	url.append("?strategy=" + URLEncoder.encode(strStratId));
+	if (strBranchId != null) {
+	    url.append("_" + URLEncoder.encode(strBranchId));
+	}
 	ActionForward forward = new ActionForward( url.toString() );
 	forward.setRedirect( false );
 	return forward;

@@ -42,6 +42,7 @@ public class DeleteStepAction extends Action {
 
 	// Make sure a strategy is specified
 	String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
+	String strBranchId = null;
 
 	System.out.println("Strategy: " + strStratId);
 	if (strStratId == null || strStratId.length() == 0) {
@@ -59,6 +60,7 @@ public class DeleteStepAction extends Action {
 
         AnswerValueBean wdkAnswerValue;
 	StrategyBean strategy;
+	StepBean targetStep;
 	StepBean step, newStep;
 	String boolExp;
 	int stepIx;
@@ -70,31 +72,42 @@ public class DeleteStepAction extends Action {
 	    throw new WdkModelException("No step was specified to delete!");
 	}
 
+	if (strStratId.indexOf("_") > 0) {
+	    strBranchId = strStratId.split("_")[1];
+	    strStratId = strStratId.split("_")[0];
+	}
+
 	strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
+	if (strBranchId == null) {
+	    targetStep = strategy.getLatestStep();
+	}
+	else {
+	    targetStep = strategy.getStepById(Integer.parseInt(strBranchId));
+	}
+
 	stepIx = Integer.valueOf(deleteStep);
-	step = strategy.getStep(stepIx);
+	step = targetStep.getStep(stepIx);
 
 	// are we deleting the first step?
 	if (step.getIsFirstStep()) {
 	    // if there are two steps, we're just moving to the second step as a one-step strategy
-	    if (strategy.getLength() == 2) {
+	    if (targetStep.getLength() == 2) {
 		// update step so that it is the child step of the second step
 		step = step.getNextStep().getChildStep();
 	    }
 	    // if there are more than two steps, we need to convert the second step into a first step
 	    // (i.e., so that it doesn't have an operation) and then update all steps after the second step
-	    else if (strategy.getLength() > 2) {
+	    else if (targetStep.getLength() > 2) {
 		step = step.getNextStep();
 		step = step.getChildStep();
 		//we need to update starting w/ step 3
 		stepIx += 2;
-		for (int i = stepIx; i < strategy.getLength(); ++i) {
-		    newStep = strategy.getStep(i);
+		for (int i = stepIx; i < targetStep.getLength(); ++i) {
+		    newStep = targetStep.getStep(i);
 		    boolExp = newStep.getBooleanExpression();
-		    boolExp = step.getStepId() + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
+		    boolExp = step.getStepId() + boolExp.substring(boolExp.indexOf(" "), boolExp.lastIndexOf(" ") + 1) + newStep.getChildStep().getStepId();
 		    System.out.println("Delete boolExp " + i + ": " + boolExp);
-		    newStep = wdkUser.combineStep(boolExp);
-		    step = newStep;
+		    step = wdkUser.combineStep(boolExp);
 		}
 	    }
 	    // not sure what to do here, but something has to happen...
@@ -109,18 +122,17 @@ public class DeleteStepAction extends Action {
 	}
 	else {
 	    // if this is not the last step, then the next step needs to point to the previous step
-	    if (stepIx < strategy.getLength() - 1) {
+	    if (stepIx < targetStep.getLength() - 1) {
 		step = step.getPreviousStep();
 		//need to start by updating the step after the deleted step so that it
 		//points to the step before the deleted step, then update subsequent steps
 		stepIx++;
-		for (int i = stepIx; i < strategy.getLength(); ++i) {
-		    newStep = strategy.getStep(i);
+		for (int i = stepIx; i < targetStep.getLength(); ++i) {
+		    newStep = targetStep.getStep(i);
 		    boolExp = newStep.getBooleanExpression();
-		    boolExp = step.getStepId() + boolExp.substring(boolExp.indexOf(" "), boolExp.length());
+		    boolExp = step.getStepId() + boolExp.substring(boolExp.indexOf(" "), boolExp.lastIndexOf(" ") + 1) + newStep.getChildStep().getStepId();
 		    System.out.println("Delete boolExp " + i + ": " + boolExp);
-		    newStep = wdkUser.combineStep(boolExp);
-		    step = newStep;
+		    step = wdkUser.combineStep(boolExp);
 		}
 	    }
 	    // if this is the last step, then we just set the previous step as the last step of the strategy
@@ -134,8 +146,27 @@ public class DeleteStepAction extends Action {
 	newStep = null;
 	System.out.println("Setting nextStep to null");
 	step.setNextStep(newStep);
-	// set the latest step, and update the strategy
-	
+
+	// follow any parent pointers, update parent strategies
+	step.setParentStep(targetStep.getParentStep());
+	while (step.getParentStep() != null) {
+	    //go to parent, update subsequent steps
+	    StepBean parentStep = step.getParentStep();
+	    if (parentStep != null) {
+		//update parent, then update subsequent
+		boolExp = parentStep.getBooleanExpression();
+		boolExp = parentStep.getPreviousStep().getStepId() + boolExp.substring(boolExp.indexOf(" "), boolExp.lastIndexOf(" ") + 1) + step.getStepId();
+		step = wdkUser.combineStep(boolExp);
+		while (parentStep.getNextStep() != null) {
+		    parentStep = parentStep.getNextStep();
+		    // need to check if step is a transform (in which case there's no boolean expression; we need to update history param
+		    boolExp = parentStep.getBooleanExpression();
+		    boolExp = step.getStepId() + boolExp.substring(boolExp.indexOf(" "), boolExp.lastIndexOf(" ") + 1) + parentStep.getChildStep().getStepId();
+		    step = wdkUser.combineStep(boolExp);
+		}
+		step.setParentStep(parentStep.getParentStep());
+	    }
+	}	
 	System.out.println("Setting latest step");
 	strategy.setLatestStep(step);
 	System.out.println("Updating strategy");
@@ -146,6 +177,9 @@ public class DeleteStepAction extends Action {
 	ActionForward showSummary = mapping.findForward( CConstants.SHOW_STRATEGY_MAPKEY );
 	StringBuffer url = new StringBuffer( showSummary.getPath() );
 	url.append("?strategy=" + URLEncoder.encode(strStratId));
+	if (strBranchId != null) {
+	    url.append("_" + URLEncoder.encode(strBranchId));
+	}
 	String viewStep = request.getParameter("step");
 	if (viewStep != null && viewStep.length() != 0) {
 	    if (Integer.valueOf(viewStep) > Integer.valueOf(deleteStep)) {

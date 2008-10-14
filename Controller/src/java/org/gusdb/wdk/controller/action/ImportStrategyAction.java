@@ -57,9 +57,9 @@ public class ImportStrategyAction extends Action {
 	    activeStrategies = new ArrayList<Integer>();
 	}
 	//activeStrategies.put(new Integer(strategy.getStrategyId()),strategy);
-	if (!activeStrategies.contains(new Integer(strategy.getStrategyId()))) {
-		activeStrategies.add(0, new Integer(strategy.getStrategyId()));
-	}
+	activeStrategies.remove(new Integer(strategy.getStrategyId()));
+	activeStrategies.add(0, new Integer(strategy.getStrategyId()));
+	
 	request.getSession().setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY, activeStrategies);
  
 	ActionForward forward = mapping.findForward(CConstants.SHOW_APPLICATION_MAPKEY);
