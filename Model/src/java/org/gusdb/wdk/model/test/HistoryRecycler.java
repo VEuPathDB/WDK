@@ -86,7 +86,8 @@ public class HistoryRecycler implements Runnable {
         System.out.println("========== Start recycling histories on "
                 + modelName + " ==========");
         // construct model
-        WdkModel wdkModel = WdkModel.construct(modelName);
+        String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
+        WdkModel wdkModel = WdkModel.construct(modelName, gusHome);
         UserFactory factory = wdkModel.getUserFactory();
 
         // construct query signature

@@ -19,6 +19,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.RecordInstance;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -52,7 +53,8 @@ public class RecordTester {
         long st = System.currentTimeMillis();
 
         // initialize the model
-        WdkModel wdkModel = WdkModel.construct(modelName);
+        String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
+        WdkModel wdkModel = WdkModel.construct(modelName, gusHome);
 
         System.out.println("Model initialization took: "
                 + ((System.currentTimeMillis() - st) / 1000F) + " seconds.");

@@ -30,6 +30,7 @@ import org.gusdb.wdk.model.QuestionSet;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.RecordClassSet;
 import org.gusdb.wdk.model.RecordInstance;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -89,7 +90,8 @@ public class SanityTester {
             TransformerException, IOException, SAXException, SQLException,
             JSONException, InstantiationException, IllegalAccessException,
             ClassNotFoundException {
-        this.wdkModel = WdkModel.construct(modelName);
+        String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
+        this.wdkModel = WdkModel.construct(modelName, gusHome);
         this.verbose = verbose;
         this.failuresOnly = failuresOnly;
         this.indexOnly = indexOnly;

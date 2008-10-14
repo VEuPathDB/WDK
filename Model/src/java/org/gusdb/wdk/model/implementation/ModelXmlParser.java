@@ -783,9 +783,10 @@ public class ModelXmlParser extends XmlParser {
         Options options = declareOptions();
         CommandLine cmdLine = parseOptions(cmdName, options, args);
         String projectId = cmdLine.getOptionValue(Utilities.ARGUMENT_PROJECT_ID);
+        String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
 
         // create a parser, and parse the model file
-        WdkModel wdkModel = WdkModel.construct(projectId);
+        WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
 
         // print out the model content
         System.out.println(wdkModel.toString());

@@ -43,14 +43,13 @@ public class ApplicationInitListener implements ServletContextListener {
 
         String modelName = application.getInitParameter(Utilities.ARGUMENT_PROJECT_ID);
         String gusHome = application.getInitParameter(Utilities.SYSTEM_PROPERTY_GUS_HOME);
-        System.setProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME, gusHome);
 
         String customViewDir = application.getInitParameter(CConstants.WDK_CUSTOMVIEWDIR_PARAM);
         String alwaysGoToSummary = application.getInitParameter(CConstants.WDK_ALWAYSGOTOSUMMARY_PARAM);
         String loginUrl = application.getInitParameter(CConstants.WDK_LOGIN_URL_PARAM);
 
         try {
-            initMemberVars(application, modelName, customViewDir,
+            initMemberVars(application, modelName, gusHome, customViewDir,
                     alwaysGoToSummary, loginUrl);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
@@ -69,13 +68,14 @@ public class ApplicationInitListener implements ServletContextListener {
     }
 
     private void initMemberVars(ServletContext application, String modelName,
-            String customViewDir, String alwaysGoToSummary, String loginUrl)
-            throws WdkModelException, NoSuchAlgorithmException,
-            ParserConfigurationException, TransformerFactoryConfigurationError,
-            TransformerException, IOException, SAXException, SQLException,
-            JSONException, WdkUserException, InstantiationException,
-            IllegalAccessException, ClassNotFoundException {
-        WdkModel wdkModelRaw = WdkModel.construct(modelName);
+            String gusHome, String customViewDir, String alwaysGoToSummary,
+            String loginUrl) throws WdkModelException,
+            NoSuchAlgorithmException, ParserConfigurationException,
+            TransformerFactoryConfigurationError, TransformerException,
+            IOException, SAXException, SQLException, JSONException,
+            WdkUserException, InstantiationException, IllegalAccessException,
+            ClassNotFoundException {
+        WdkModel wdkModelRaw = WdkModel.construct(modelName, gusHome);
 
         WdkModelBean wdkModel = new WdkModelBean(wdkModelRaw);
 

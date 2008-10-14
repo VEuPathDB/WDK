@@ -24,6 +24,7 @@ import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
 import org.gusdb.wdk.model.RecordInstance;
 import org.gusdb.wdk.model.Reference;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -79,15 +80,18 @@ public class SummaryTester {
         String questionSetName = ref.getSetName();
         String questionName = ref.getElementName();
         try {
-            WdkModel wdkModel = WdkModel.construct(cmdLine.getOptionValue("model"));
+            String modelName = cmdLine.getOptionValue("model");
+            String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
+            WdkModel wdkModel = WdkModel.construct(modelName, gusHome);
 
             QuestionSet questionSet = wdkModel.getQuestionSet(questionSetName);
             Question question = questionSet.getQuestion(questionName);
-	    Query query = question.getQuery();
+            Query query = question.getQuery();
 
             Map<String, Object> paramValues = new LinkedHashMap<String, Object>();
             if (haveParams) {
-                paramValues = QueryTester.parseParamArgs(params, useDefaults, query);
+                paramValues = QueryTester.parseParamArgs(params, useDefaults,
+                        query);
             }
 
             // get filter
@@ -243,7 +247,8 @@ public class SummaryTester {
         options.addOption(rows);
 
         // use defaults
-        Option useDefaults = new Option("d", "Use default values for unprovided parameters");
+        Option useDefaults = new Option("d",
+                "Use default values for unprovided parameters");
         options.addOption(useDefaults);
 
         // show query

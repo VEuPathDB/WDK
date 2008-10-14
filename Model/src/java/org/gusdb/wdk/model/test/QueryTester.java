@@ -25,6 +25,7 @@ import org.gusdb.wdk.model.ParamValuesSet;
 import org.gusdb.wdk.model.QuerySet;
 import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.StringParam;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -180,7 +181,8 @@ public class QueryTester {
         String queryName = ref.getElementName();
 
         // read config info
-        WdkModel wdkModel = WdkModel.construct(modelName);
+        String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
+        WdkModel wdkModel = WdkModel.construct(modelName, gusHome);
 
         QueryTester tester = new QueryTester(wdkModel);
         QuerySet querySet = wdkModel.getQuerySet(querySetName);
