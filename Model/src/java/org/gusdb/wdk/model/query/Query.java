@@ -60,6 +60,8 @@ public abstract class Query extends WdkModelBase {
 
     // cache the signature
     private String signature;
+    
+    private String[] indexColumns;
 
     // =========================================================================
     // Abstract methods
@@ -82,6 +84,14 @@ public abstract class Query extends WdkModelBase {
         paramMap = new LinkedHashMap<String, Param>();
         columnList = new ArrayList<Column>();
         columnMap = new LinkedHashMap<String, Column>();
+    }
+    
+    public void setIndexColumns(String[] indexColumns) {
+        this.indexColumns = indexColumns;
+    }
+    
+    public String[] getIndexColumns() {
+        return indexColumns;
     }
 
     /**
