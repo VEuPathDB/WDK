@@ -18,6 +18,7 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -68,7 +69,8 @@ public class StressTestAnalyzer {
         this.testTag = testTag;
 
         // load WdkModel
-        WdkModel wdkModel = WdkModel.construct(modelName);
+        String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
+        WdkModel wdkModel = WdkModel.construct(modelName, gusHome);
         dataSource = wdkModel.getQueryPlatform().getDataSource();
     }
 

@@ -31,15 +31,15 @@ public class TestDBManager {
         String cmdName = System.getProperty("cmdName");
         CommandLine cmdLine = parseOptions(cmdName, options, args);
 
+        String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
         String modelName = cmdLine.getOptionValue("model");
 
-        WdkModel wdkModel = WdkModel.construct(modelName);
+        WdkModel wdkModel = WdkModel.construct(modelName, gusHome);
         DBPlatform platform = wdkModel.getQueryPlatform();
 
         boolean drop = cmdLine.hasOption("drop");
         boolean create = cmdLine.hasOption("create");
 
-        String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
         String tableDir;
         if (cmdLine.hasOption("tableDir")) {
             tableDir = cmdLine.getOptionValue("tableDir");

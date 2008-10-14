@@ -58,7 +58,8 @@ public class UnitTestHelper {
         if (wdkModel == null) {
             logger.info("Loading model...");
             String projectId = System.getProperty(Utilities.ARGUMENT_PROJECT_ID);
-            wdkModel = WdkModel.construct(projectId);
+            String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
+            wdkModel = WdkModel.construct(projectId, gusHome);
         }
         return wdkModel;
     }

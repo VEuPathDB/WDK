@@ -4,6 +4,7 @@
 package org.gusdb.wdk.model.test;
 
 import org.apache.commons.cli.ParseException;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wsf.util.BaseCLI;
@@ -108,7 +109,8 @@ public class CacheCLI extends BaseCLI {
 
         try {
             // read config info
-            WdkModel wdkModel = WdkModel.construct(projectId);
+            String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
+            WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
             CacheFactory factory = wdkModel.getResultFactory().getCacheFactory();
 
             long start = System.currentTimeMillis();

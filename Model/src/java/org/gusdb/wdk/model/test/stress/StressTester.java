@@ -144,7 +144,7 @@ public class StressTester {
         gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
 
         // load the model
-        WdkModel wdkModel = WdkModel.construct(modelName);
+        WdkModel wdkModel = WdkModel.construct(modelName, gusHome);
         dataSource = wdkModel.getQueryPlatform().getDataSource();
 
         // initialize the stress-test result table
