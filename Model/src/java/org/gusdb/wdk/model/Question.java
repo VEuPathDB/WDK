@@ -484,6 +484,10 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
             }
         }
         defaultSummaryAttributeNames = null;
+        
+        // make sure we create index on primary keys
+        String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
+        query.setIndexColumns(pkColumns);
 
         resolved = true;
     }

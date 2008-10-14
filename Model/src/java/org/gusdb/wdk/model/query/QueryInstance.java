@@ -85,7 +85,8 @@ public abstract class QueryInstance {
             SQLException, WdkModelException, JSONException, WdkUserException {
         if (instanceId == null) {
             ResultFactory resultFactory = wdkModel.getResultFactory();
-            instanceId = resultFactory.getInstanceId(this);
+            String[] indexColumns = query.getIndexColumns();
+            instanceId = resultFactory.getInstanceId(this, indexColumns);
         }
         return instanceId;
     }

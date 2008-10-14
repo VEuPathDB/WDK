@@ -62,7 +62,7 @@ public class ResultFactory {
         return new SqlResultList(resultSet);
     }
 
-    public int getInstanceId(QueryInstance instance) throws SQLException,
+    public int getInstanceId(QueryInstance instance, String[] indexColumns) throws SQLException,
             NoSuchAlgorithmException, WdkModelException, JSONException,
             WdkUserException {
         QueryInfo queryInfo = cacheFactory.getQueryInfo(instance.getQuery());
@@ -70,16 +70,16 @@ public class ResultFactory {
         // get the query instance id; null if not exist
         Integer instanceId = checkInstanceId(instance, queryInfo);
         if (instanceId == null) // instance cache not exist, create it
-            instanceId = createCache(instance, queryInfo);
+            instanceId = createCache(instance, queryInfo, indexColumns);
         instance.setInstanceId(instanceId);
         return instanceId;
     }
 
-    public String getCacheTable(QueryInstance instance) throws SQLException,
+    public String getCacheTable(QueryInstance instance, String[] indexColumn) throws SQLException,
             WdkModelException, NoSuchAlgorithmException, JSONException,
             WdkUserException {
         // make sure the instance is cached
-        getInstanceId(instance);
+        getInstanceId(instance, indexColumn);
         Query query = instance.getQuery();
         QueryInfo queryInfo = cacheFactory.getQueryInfo(query);
         return queryInfo.getCacheTable();
@@ -112,7 +112,7 @@ public class ResultFactory {
         return (id == null) ? null : Integer.parseInt(id.toString());
     }
 
-    private int createCache(QueryInstance instance, QueryInfo queryInfo)
+    private int createCache(QueryInstance instance, QueryInfo queryInfo, String[] indexColumns)
             throws JSONException, SQLException, WdkUserException,
             NoSuchAlgorithmException, WdkModelException {
         DataSource dataSource = platform.getDataSource();
@@ -128,7 +128,7 @@ public class ResultFactory {
             String cacheTable = queryInfo.getCacheTable();
             if (!platform.checkTableExists(null, cacheTable)) {
                 instance.createCache(connection, cacheTable, instanceId);
-                createCacheTableIndex(connection, cacheTable);
+                createCacheTableIndex(connection, cacheTable, indexColumns);
 
                 // the SqlQuery create & insert data at the same time; but
                 // ProcessQuery does it in two steps
@@ -162,18 +162,35 @@ public class ResultFactory {
         }
     }
 
-    private void createCacheTableIndex(Connection connection, String cacheTable)
+    private void createCacheTableIndex(Connection connection, String cacheTable, String[] indexColumns)
             throws SQLException {
-        // create cache index
-        StringBuffer sqlIndex = new StringBuffer("CREATE INDEX ");
-        sqlIndex.append(cacheTable).append("_idx ON ").append(cacheTable);
-        sqlIndex.append(" (").append(CacheFactory.COLUMN_INSTANCE_ID).append(
-                ")");
+        // create index on query instance id
+        StringBuffer sqlId = new StringBuffer("CREATE INDEX ");
+        sqlId.append(cacheTable).append("_idx01 ON ").append(cacheTable);
+        sqlId.append(" (").append(CacheFactory.COLUMN_INSTANCE_ID).append(")");
+        
+        // create index on other columns
+        StringBuffer sqlOther = null;
+        if (indexColumns != null) {
+            sqlOther = new StringBuffer("CREATE INDEX ");
+            sqlOther.append(cacheTable).append("_idx02 ON ").append(cacheTable);
+            sqlOther.append(" (");
+            boolean firstColumn = true;
+            for (String column : indexColumns) {
+                if (firstColumn) firstColumn = false;
+                else sqlOther.append(", ");
+                sqlOther.append(column);
+            }
+            sqlOther.append(")");
+        }
 
         Statement stmt = null;
         try {
             stmt = connection.createStatement();
-            stmt.execute(sqlIndex.toString());
+            
+            stmt.execute(sqlId.toString());
+            if (indexColumns != null)
+                stmt.execute(sqlOther.toString());
         } finally {
             if (stmt != null) stmt.close();
         }
