@@ -65,7 +65,8 @@ public class WdkModel {
             TransformerException, IOException, SAXException, SQLException,
             JSONException, WdkUserException, InstantiationException,
             IllegalAccessException, ClassNotFoundException {
-        logger.debug("Constructing wdk model...");
+        logger.debug("Constructing wdk model [" + projectId + "] (GUS_HOME="
+                + gusHome + ")...");
 
         ModelXmlParser parser = new ModelXmlParser(gusHome);
         WdkModel wdkModel = parser.parseModel(projectId);
@@ -383,7 +384,7 @@ public class WdkModel {
             booleanQuery = (BooleanQuery) internalQuerySet.getQuery(queryName);
         } else {
             booleanQuery = new BooleanQuery(recordClass);
-            
+
             // make sure we create index on primary keys
             String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
             booleanQuery.setIndexColumns(pkColumns);
