@@ -105,17 +105,12 @@ public class BooleanExpression {
         if ( count != 0 )
             throw new WdkUserException( "Bad parentheses: " + orgExp );
         
-        System.out.println("Expression: " + expression);
         // insert a space before open parenthes; it's used when getting operator
         expression = expression.replaceAll( "\\(", Matcher.quoteReplacement(" (") );
-        System.out.println("Expression: " + expression);
         expression = expression.replaceAll( "\\+", " + " );
-        System.out.println("Expression: " + expression);
         expression = expression.replaceAll( "\\-", " - " );
-        System.out.println("Expression: " + expression);
         // delete extra white spaces
         expression = expression.replaceAll( "\\s", " " ).trim();
-        System.out.println("Expression: " + expression);
         
         // build the BooleanQuestionNode tree, use it to create Steps at internal nodes
 	Map<BooleanQuestionNode, Step> stepsMap = new LinkedHashMap<BooleanQuestionNode, Step>();
@@ -263,6 +258,52 @@ public class BooleanExpression {
     private String[ ] getTriplet( String block ) throws WdkUserException {
         int pos;
         
+	// get the right part
+	if (block.charAt(block.length() - 1) == ')') {
+            int parenthese = 1;
+	    pos = block.length() - 1;
+            // find the paired closing parenthese
+	    while ( pos >= 0 && parenthese > 0 ) {
+		if (block.charAt( pos ) == '(' ) parenthese--;
+		if (block.charAt( pos ) == ')' ) parenthese++;
+                if ( parenthese < 0 )
+                    throw new WdkUserException( "Bad parentheses: " + orgExp );
+		pos--;
+            }
+            if ( parenthese != 0 )
+                throw new WdkUserException( "Bad parentheses: " + orgExp );
+        } else { // no parenthese, then must be separated with space
+	    pos = block.lastIndexOf( " " );
+        }
+	String right = block.substring( pos ).trim();
+        // remove parenthese if necessary
+        int bound = right.length() - 1;
+        if ( right.charAt( 0 ) == '(' && right.charAt( bound ) == ')' )
+            right = right.substring( 1, bound ).trim();
+        
+        // there's only one part
+        if ( pos == 0 ) return new String[ ] { right };
+        
+        // grab operator
+        String remain = block.substring( 0, pos ).trim();
+        int start = remain.lastIndexOf( " " );
+        if ( start < 0 )
+            throw new WdkUserException( "Incomplete expression: " + orgExp );
+        String operator = remain.substring( start ).trim();
+        
+        // grab left piece
+        String left = remain.substring( 0, start ).trim();
+        // remove parenthese if necessary
+        bound = left.length() - 1;
+        if ( left.charAt( 0 ) == '(' && left.charAt( bound ) == ')' )
+            left = left.substring( 1, bound ).trim();
+        return new String[ ] { left, operator, right };
+    }
+
+    /* This is the original getTriplet, which parses left-to-right instead of right-to-left
+    private String[ ] getTriplet( String block ) throws WdkUserException {
+        int pos;
+        
         // get the left part
         if ( block.charAt( 0 ) == '(' ) {
             int parenthese = 1;
@@ -305,7 +346,8 @@ public class BooleanExpression {
             right = right.substring( 1, bound ).trim();
         return new String[ ] { left, operator, right };
     }
-    
+    */
+
     public Set< Integer > getOperands( String expression ) {
         Set< Integer > operands = new LinkedHashSet< Integer >();
         // assuming operands are all digits, or digits heading with #

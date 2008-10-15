@@ -89,7 +89,12 @@ public class ShowSummaryAction extends ShowQuestionAction {
 		targetStep = strategy.getStepById(Integer.parseInt(strBranchId));
 	    }
 	    String stepIndex = request.getParameter("step");
-	    step = targetStep.getStep(Integer.parseInt(stepIndex));
+	    if (stepIndex != null && stepIndex.length() != 0) {
+		step = targetStep.getStep(Integer.parseInt(stepIndex));
+	    }
+	    else {
+		step = targetStep;
+	    }
 	    String subQuery = request.getParameter("subquery");
 	    if (subQuery != null && subQuery.length() != 0 && Boolean.valueOf(subQuery)) {
 		strHistId = Integer.toString(step.getChildStep().getStepId());

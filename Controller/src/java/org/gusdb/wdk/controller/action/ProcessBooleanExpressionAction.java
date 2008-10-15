@@ -59,7 +59,6 @@ public class ProcessBooleanExpressionAction extends Action {
 		StrategyBean strategy = wdkUser.createStrategy(step, false);
 		int strategyId = strategy.getStrategyId();
 
-		//request.setAttribute(CConstants.WDK_STRATEGY_ID_KEY, strategyId);
 		return Integer.toString(strategyId);
 	}
 }

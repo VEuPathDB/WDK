@@ -811,7 +811,6 @@ public class UserFactory {
         String qiChecksum = qinstance.getChecksum();
         String signature = qinstance.getQuery().getSignature();
         String params = booleanExpression;
-	System.out.println("Creating answer with boolean expression: " + booleanExpression);
         if (!isBoolean)
             params = qinstance.getQuery().getFullName()
                     + qinstance.getParamsContent();
@@ -954,10 +953,10 @@ public class UserFactory {
 		    // in order to correctly reconstruct answer value
 		    String boolExp = leftChildId + paramsClob.substring(paramsClob.indexOf(" "), paramsClob.lastIndexOf(" ") + 1)
 			+ rightChildId;
-		    System.out.println("Left: " + leftChildId);
-		    System.out.println("Right: " + rightChildId);
-		    System.out.println("Clob: " + paramsClob);
-		    System.out.println("Boolean Expression sent to constructBooleanAnswerValue: " + boolExp);
+		    //System.out.println("Left: " + leftChildId);
+		    //System.out.println("Right: " + rightChildId);
+		    //System.out.println("Clob: " + paramsClob);
+		    //System.out.println("Boolean Expression sent to constructBooleanAnswerValue: " + boolExp);
                     result = constructBooleanAnswerValue(user, boolExp);
                     answer.setBooleanExpression(paramsClob);
                 } else {
@@ -1116,7 +1115,6 @@ public class UserFactory {
         String qiChecksum = qinstance.getChecksum();
         String signature = qinstance.getQuery().getSignature();
         String params = booleanExpression;
-	System.out.println("Creating step with boolean expression: " + booleanExpression);
         if (!isBoolean)
             params = qinstance.getQuery().getFullName()
                     + qinstance.getParamsContent();
