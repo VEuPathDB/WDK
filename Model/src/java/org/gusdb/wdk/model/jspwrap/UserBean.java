@@ -711,6 +711,36 @@ public class UserBean /* implements Serializable */{
 	return category;
     }
 
+    public Map<String, List<StrategyBean>> getUnsavedStrategiesByCategory()
+	throws WdkUserException, WdkModelException {
+	Map<String, List<Strategy>> strategies = user.getUnsavedStrategiesByCategory();
+	Map<String, List<StrategyBean>> category = new LinkedHashMap<String, List<StrategyBean>>();
+	for (String type : strategies.keySet()) {
+	    List<Strategy> list = strategies.get(type);
+	    List<StrategyBean> beans = new ArrayList<StrategyBean>();
+	    for (Strategy strategy : list) {
+		beans.add(new StrategyBean(strategy));
+	    }
+	    category.put(type, beans);
+	}
+	return category;
+    }
+
+    public Map<String, List<StrategyBean>> getSavedStrategiesByCategory()
+	throws WdkUserException, WdkModelException {
+	Map<String, List<Strategy>> strategies = user.getSavedStrategiesByCategory();
+	Map<String, List<StrategyBean>> category = new LinkedHashMap<String, List<StrategyBean>>();
+	for (String type : strategies.keySet()) {
+	    List<Strategy> list = strategies.get(type);
+	    List<StrategyBean> beans = new ArrayList<StrategyBean>();
+	    for (Strategy strategy : list) {
+		beans.add(new StrategyBean(strategy));
+	    }
+	    category.put(type, beans);
+	}
+	return category;
+    }
+
     /*
      * (non-Javadoc)
      * 

@@ -643,6 +643,48 @@ public class User /* implements Serializable */{
 	return category;
     }
 
+    public Map<String, List<Strategy>> getUnsavedStrategiesByCategory()
+	throws WdkUserException, WdkModelException {
+	Map<Integer, Strategy> strategies = getStrategiesMap();
+	Map<String, List<Strategy>> category = new LinkedHashMap<String, List<Strategy>>();
+	for (Strategy strategy : strategies.values()) {
+	    if (!strategy.getIsSaved()) {
+		String type = strategy.getDataType();
+		List<Strategy> list;
+		if (category.containsKey(type)) {
+		    list = category.get(type);
+		}
+		else {
+		    list = new ArrayList<Strategy>();
+		    category.put(type, list);
+		}
+		list.add(strategy);
+	    }
+	}
+	return category;
+    }
+
+    public Map<String, List<Strategy>> getSavedStrategiesByCategory()
+	throws WdkUserException, WdkModelException {
+	Map<Integer, Strategy> strategies = getStrategiesMap();
+	Map<String, List<Strategy>> category = new LinkedHashMap<String, List<Strategy>>();
+	for (Strategy strategy : strategies.values()) {
+	    if (strategy.getIsSaved()) {
+		String type = strategy.getDataType();
+		List<Strategy> list;
+		if (category.containsKey(type)) {
+		    list = category.get(type);
+		}
+		else {
+		    list = new ArrayList<Strategy>();
+		    category.put(type, list);
+		}
+		list.add(strategy);
+	    }
+	}
+	return category;
+    }
+
     /**
      * * The result array is sorted by last_run_time, the lastest at the first
      * 
