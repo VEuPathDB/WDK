@@ -117,6 +117,11 @@ public class DynamicAttributeSet extends WdkModelBase {
             if (field instanceof ColumnAttributeField) {
                 // need to set the column before resolving references
                 Column column = columns.get(fieldName);
+                if (column == null)
+                    throw new WdkModelException("Dynamic column attribute of "
+                            + "question [" + question.getFullName() + "] is "
+                            + "define, but the underlying id query doesn't"
+                            + " have the " + "column '" + fieldName + "'");
                 ((ColumnAttributeField) field).setColumn(column);
             }
             field.resolveReferences(wodkModel);
