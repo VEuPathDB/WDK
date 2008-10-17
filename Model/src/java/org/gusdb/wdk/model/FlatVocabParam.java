@@ -110,11 +110,14 @@ public class FlatVocabParam extends AbstractEnumParam {
             while (result.next()) {
                 String term = result.get(COLUMN_TERM).toString();
                 String value = result.get(COLUMN_INTERNAL).toString();
-                String display = hasDisplay ? result.get(COLUMN_DISPLAY).toString()
-                        : term;
+                String display = hasDisplay
+                        ? result.get(COLUMN_DISPLAY).toString() : term;
                 termInternalMap.put(term, value);
                 termDisplayMap.put(term, display);
             }
+            if (termInternalMap.size() == 0)
+                throw new WdkModelException("No item returned by the query of"
+                        + " FlatVocabParam " + getFullName());
         }
     }
 

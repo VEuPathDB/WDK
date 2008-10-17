@@ -11,7 +11,6 @@
 	<classpathentry kind="lib" path="lib/java/commons-digester-1.7.jar"/>
 	<classpathentry kind="lib" path="lib/java/WSF-Client.jar"/>
 	<classpathentry kind="lib" path="lib/java/itext-2.0.4.jar"/>
-	<classpathentry kind="lib" path="lib/java/junit-4.3.1.jar"/>
 	<classpathentry kind="lib" path="lib/java/db_driver/ojdbc14.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/WSF Plugin"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/WSF Service"/>
@@ -29,5 +28,8 @@
 	<classpathentry kind="lib" path="/WSF Plugin/lib/java/commons-cli-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/java/db_driver/postgresql-8.3-603.jdbc3.jar"/>
 	<classpathentry kind="lib" path="lib/java/commons-dbcp-1.2.2.jar"/>
+	<classpathentry kind="lib" path="/WSF Service/lib/java/commons-discovery-0.2.jar"/>
+	<classpathentry kind="lib" path="/WSF Test/lib/java/junit-4.4.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/WSF Test"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>
