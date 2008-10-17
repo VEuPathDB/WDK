@@ -28,6 +28,7 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.jspwrap.AnswerBean;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.report.Reporter;
@@ -135,6 +136,9 @@ public class SummaryTester {
                         + answer.getResultSize());
                 System.out.println("Answer Checksum: "
                         + answer.getAnswerInfo().getAnswerChecksum());
+                
+                AnswerBean answerBean = new AnswerBean(answer);
+                answerBean.getResultSizesByProject();
 
                 // load configuration for output format
                 if (!hasFormat) format = "tabular";
