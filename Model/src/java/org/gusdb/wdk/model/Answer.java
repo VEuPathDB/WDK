@@ -227,6 +227,7 @@ public class Answer {
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException {
         if (resultSizesByProject == null) {
+            resultSizesByProject = new LinkedHashMap<String, Integer>();
             // need to run the query first
             QueryInstance instance = (filter == null) ? idsQueryInstance
                     : filter.makeQueryInstance(this);
