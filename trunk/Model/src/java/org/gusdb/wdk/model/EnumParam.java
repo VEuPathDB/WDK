@@ -101,8 +101,9 @@ public class EnumParam extends AbstractEnumParam {
                 }
             }
         }
-        if (enumItemList == null)
-            throw new WdkModelException("No enumList available in enumParam "
+        enumItemLists = null;
+        if (enumItemList == null || enumItemList.getEnumItems().length == 0)
+            throw new WdkModelException("No enum items available in enumParam "
                     + getFullName());
     }
 
