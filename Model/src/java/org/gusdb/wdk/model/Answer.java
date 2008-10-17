@@ -174,7 +174,7 @@ public class Answer {
                 answer.resultSizesByFilter);
         if (answer.resultSizesByProject != null)
             this.resultSizesByProject = new LinkedHashMap<String, Integer>(
-                    resultSizesByProject);
+                    answer.resultSizesByProject);
 
         this.sortingMap = new LinkedHashMap<String, Boolean>(answer.sortingMap);
         this.summaryFieldMap = new LinkedHashMap<String, AttributeField>(
