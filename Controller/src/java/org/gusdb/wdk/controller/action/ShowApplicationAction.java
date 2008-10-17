@@ -57,13 +57,6 @@ public class ShowApplicationAction extends ShowSummaryAction {
             request.getSession().setAttribute(CConstants.WDK_USER_KEY, wdkUser);
         }
 
-	/* HashMap in session code
-	HashMap<Integer,StrategyBean> activeStrategies = (HashMap<Integer,StrategyBean>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
-	Integer[] keys = activeStrategies.keySet().toArray(new Integer[0]);
-
-	StrategyBean strategy = activeStrategies.get(keys[0]);
-	*/
-
 	/* ArrayList in session code */
 	ArrayList<Integer> activeStrategies = (ArrayList<Integer>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
 

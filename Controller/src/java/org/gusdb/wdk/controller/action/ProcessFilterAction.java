@@ -88,6 +88,14 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	// get strategy
 	StrategyBean strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
 
+	ArrayList<Integer> activeStrategies = (ArrayList<Integer>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
+	int index = -1;
+	
+	if (activeStrategies != null && !activeStrategies.contains(new Integer(strategy.getStrategyId()))) {
+	    index = activeStrategies.indexOf(new Integer(strategy.getStrategyId()));
+	    activeStrategies.remove(index);
+	}
+
 	String boolExp = request.getParameter("booleanExpression");
 	String insertStratIdstr = request.getParameter("insertStrategy");
 
@@ -270,9 +278,15 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	// in either case, update and forward to show strategy
 	strategy.update(false);
 
+	
+	if (activeStrategies != null && index >= 0) {
+	    activeStrategies.add(index, new Integer(strategy.getStrategyId()));
+	}
+	request.getSession().setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY, activeStrategies);
+
 	ActionForward showSummary = mapping.findForward( CConstants.SHOW_STRATEGY_MAPKEY );
 	StringBuffer url = new StringBuffer( showSummary.getPath() );
-	url.append("?strategy=" + URLEncoder.encode(strStratId));
+	url.append("?strategy=" + URLEncoder.encode(Integer.toString(strategy.getStrategyId())));
 	if (strBranchId != null) {
 	    url.append("_" + URLEncoder.encode(strBranchId));
 	}

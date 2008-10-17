@@ -1,6 +1,7 @@
 package org.gusdb.wdk.controller.action;
 
 import java.net.URLEncoder;
+import java.util.ArrayList;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServlet;
@@ -78,6 +79,15 @@ public class DeleteStepAction extends Action {
 	}
 
 	strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
+
+	ArrayList<Integer> activeStrategies = (ArrayList<Integer>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
+	int index = -1;
+	
+	if (activeStrategies != null && !activeStrategies.contains(new Integer(strategy.getStrategyId()))) {
+	    index = activeStrategies.indexOf(new Integer(strategy.getStrategyId()));
+	    activeStrategies.remove(index);
+	}
+
 	if (strBranchId == null) {
 	    targetStep = strategy.getLatestStep();
 	}
@@ -167,16 +177,19 @@ public class DeleteStepAction extends Action {
 		step.setParentStep(parentStep.getParentStep());
 	    }
 	}	
-	System.out.println("Setting latest step");
+
 	strategy.setLatestStep(step);
-	System.out.println("Updating strategy");
 	strategy.update(false);
-	System.out.println("Done, making forward.");
+
+	if (activeStrategies != null && index >= 0) {
+	    activeStrategies.add(index, new Integer(strategy.getStrategyId()));
+	}
+	request.getSession().setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY, activeStrategies);
 
 	// 5. forward to strategy page
 	ActionForward showSummary = mapping.findForward( CConstants.SHOW_STRATEGY_MAPKEY );
 	StringBuffer url = new StringBuffer( showSummary.getPath() );
-	url.append("?strategy=" + URLEncoder.encode(strStratId));
+	url.append("?strategy=" + URLEncoder.encode(Integer.toString(strategy.getStrategyId())));
 	if (strBranchId != null) {
 	    url.append("_" + URLEncoder.encode(strBranchId));
 	}

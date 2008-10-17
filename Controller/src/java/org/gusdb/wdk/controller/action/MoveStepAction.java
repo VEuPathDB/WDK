@@ -2,6 +2,7 @@ package org.gusdb.wdk.controller.action;
 
 import java.net.URLEncoder;
 import java.util.Date;
+import java.util.ArrayList;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServlet;
@@ -59,25 +60,33 @@ public class MoveStepAction extends Action {
 	    throw new WdkModelException("No destination was specified for moving!");
 	}
 
+	// load model, user
+	WdkModelBean wdkModel = ( WdkModelBean ) servlet.getServletContext().getAttribute(CConstants.WDK_MODEL_KEY );
+	UserBean wdkUser = ( UserBean ) request.getSession().getAttribute(CConstants.WDK_USER_KEY );
+	if ( wdkUser == null ) {
+	    wdkUser = wdkModel.getUserFactory().getGuestUser();
+	    request.getSession().setAttribute( CConstants.WDK_USER_KEY, wdkUser );
+	}
+	if (strStratId.indexOf("_") > 0) {
+	    strBranchId = strStratId.split("_")[1];
+	    strStratId = strStratId.split("_")[0];
+	}
+	
+	StrategyBean strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
+
+	ArrayList<Integer> activeStrategies = (ArrayList<Integer>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
+	int index = -1;
+	
+	if (activeStrategies != null && !activeStrategies.contains(new Integer(strategy.getStrategyId()))) {
+	    index = activeStrategies.indexOf(new Integer(strategy.getStrategyId()));
+	    activeStrategies.remove(index);
+	}
+
 	int moveFromIx = Integer.valueOf(strMoveFromIx);
 	int moveToIx = Integer.valueOf(strMoveToIx);
 
 	// No need to load anything if there's nothing to move
 	if (moveFromIx != moveToIx) {
-	    // load model, user
-	    WdkModelBean wdkModel = ( WdkModelBean ) servlet.getServletContext().getAttribute(CConstants.WDK_MODEL_KEY );
-	    UserBean wdkUser = ( UserBean ) request.getSession().getAttribute(
-									      CConstants.WDK_USER_KEY );
-	    if ( wdkUser == null ) {
-		wdkUser = wdkModel.getUserFactory().getGuestUser();
-		request.getSession().setAttribute( CConstants.WDK_USER_KEY, wdkUser );
-	    }
-	    if (strStratId.indexOf("_") > 0) {
-		strBranchId = strStratId.split("_")[1];
-		strStratId = strStratId.split("_")[0];
-	    }
-
-	    StrategyBean strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
 	    StepBean moveFromStep = strategy.getStep(moveFromIx);
 	    StepBean moveToStep = strategy.getStep(moveToIx);
 	    StepBean step, newStep, targetStep;
@@ -168,11 +177,16 @@ public class MoveStepAction extends Action {
 	    strategy.setLatestStep(step);
 	    strategy.update(false);
 	}
+
+	if (activeStrategies != null && index >= 0) {
+	    activeStrategies.add(index, new Integer(strategy.getStrategyId()));
+	}
+	request.getSession().setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY, activeStrategies);
 	
 	// Forward to ShowStrategyAction
 	ActionForward showSummary = mapping.findForward( CConstants.SHOW_STRATEGY_MAPKEY );
 	StringBuffer url = new StringBuffer( showSummary.getPath() );
-	url.append("?strategy=" + URLEncoder.encode(strStratId));
+	url.append("?strategy=" + URLEncoder.encode(Integer.toString(strategy.getStrategyId())));
 	if (strBranchId != null) {
 	    url.append("_" + URLEncoder.encode(strBranchId));
 	}

@@ -3,6 +3,9 @@
  */
 package org.gusdb.wdk.controller.action;
 
+import java.util.ArrayList;
+import java.net.URLEncoder;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -16,7 +19,7 @@ import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 
 /**
- * @author xingao
+ * @author ctreatma
  * 
  */
 public class ProcessRenameStrategyAction extends Action {
@@ -27,28 +30,60 @@ public class ProcessRenameStrategyAction extends Action {
             HttpServletRequest request, HttpServletResponse response )
             throws Exception {
         
-        String stratIdstr = request.getParameter( CConstants.WDK_STRATEGY_ID_KEY );
+        String strStratId = request.getParameter( CConstants.WDK_STRATEGY_ID_KEY );
         String customName = request.getParameter( "name" );
         
         // TEST
+	if (customName == null || customName.length() == 0) {
+	    throw new Exception("No name was given for saving Strategy.");
+	}
         logger.info( "Set custom name: '" + customName + "'" );
-        if ( stratIdstr != null ) {
-            int stratId = Integer.parseInt( stratIdstr );
-            UserBean wdkUser = ( UserBean ) request.getSession().getAttribute(
-                    CConstants.WDK_USER_KEY );
-            try {
-                StrategyBean strategy = wdkUser.getStrategy( stratId );
-                strategy.setName( customName );
-		
-                strategy.update(true);
-            } catch ( Exception e ) {
-                e.printStackTrace();
-                // prevent refresh of page after delete from breaking
-            }
-        } else {
-            throw new Exception( "no user history id is given for update" );
+        if ( strStratId == null || strStratId.length() == 0) {
+            throw new Exception( "No Strategy was given for saving" );
         }
-        
+
+	int stratId = Integer.parseInt( strStratId );
+	UserBean wdkUser = ( UserBean ) request.getSession().getAttribute(CConstants.WDK_USER_KEY );
+	
+	StrategyBean strategy = wdkUser.getStrategy( stratId );
+	strategy.setName( customName );
+	strategy.setIsSaved(true);
+	
+	ArrayList<Integer> activeStrategies = (ArrayList<Integer>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
+	int index = -1;
+	
+	if (activeStrategies != null && !activeStrategies.contains(new Integer(strategy.getStrategyId()))) {
+	    index = activeStrategies.indexOf(new Integer(strategy.getStrategyId()));
+	    activeStrategies.remove(index);
+	}
+	
+	strategy.update(true);
+	
+	if (activeStrategies != null && index >= 0) {
+	    activeStrategies.add(index, new Integer(strategy.getStrategyId()));
+	}
+	request.getSession().setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY, activeStrategies);
+	
+	request.setAttribute(CConstants.WDK_STEP_KEY, strategy.getLatestStep());
+  	request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
+
+	// forward to strategyPage.jsp
+	ActionForward showSummary = mapping.findForward( CConstants.SHOW_STRATEGY_MAPKEY );
+	StringBuffer url = new StringBuffer( showSummary.getPath() );
+	url.append("?strategy=" + URLEncoder.encode(Integer.toString(strategy.getStrategyId())));
+	String viewStep = request.getParameter("step");
+	if (viewStep != null && viewStep.length() != 0) {
+	    url.append("&step=" + URLEncoder.encode(viewStep));
+	}
+	String subQuery = request.getParameter("subquery");
+	if (subQuery != null && subQuery.length() != 0) {
+	    url.append("&subquery=" + URLEncoder.encode(subQuery));
+	}
+	ActionForward forward = new ActionForward( url.toString() );
+	forward.setRedirect( false );
+	return forward;
+
+	/*
         // get the referer link and possibly an url to the client's original
         // page if user invoked a separate login form page.
         String referer = ( String ) request.getParameter( CConstants.WDK_REFERER_URL_KEY );
@@ -68,6 +103,7 @@ public class ProcessRenameStrategyAction extends Action {
         forward.setPath( forwardUrl );
         
         return forward;
+	*/
     }
     
 }

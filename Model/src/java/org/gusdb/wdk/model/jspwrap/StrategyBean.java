@@ -26,6 +26,22 @@ public class StrategyBean {
 	strategy.setName(name);
     }
 
+    public String getSavedName() {
+	return strategy.getSavedName();
+    }
+
+    public void setSavedName(String name) {
+	strategy.setSavedName(name);
+    }
+
+    public void setIsSaved(boolean saved) {
+	strategy.setIsSaved(saved);
+    }
+
+    public boolean getIsSaved() {
+	return strategy.getIsSaved();
+    }
+
     public StepBean getLatestStep() {
 	return new StepBean(strategy.getLatestStep());
     }
