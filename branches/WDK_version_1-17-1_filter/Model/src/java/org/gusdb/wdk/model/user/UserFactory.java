@@ -1662,14 +1662,17 @@ public class UserFactory {
         try {
 	    if (overwrite) {
 		// If we're overwriting, need to look up saved strategy id by name
+		// (only if the saved strategy is not the one we're updating, i.e.
+		// the saved strategy id != this strategy id)
 		PreparedStatement psCheck = SqlUtils.getPreparedStatement(
                     dataSource, "SELECT strategy_id, display_id FROM " + loginSchema
                             + "strategies WHERE user_id = ? AND project_id = ? "
-                            + "AND name = ? AND saved = ?");
+                            + "AND name = ? AND is_saved = ? AND display_id <> ?");
 		psCheck.setInt(1, userId);
 		psCheck.setString(2, projectId);
-		psCheck.setString(3, strategy.getName().replaceFirst("\\*", ""));
-		psCheck.setBoolean(4, strategy.getIsSaved());
+		psCheck.setString(3, strategy.getName().replaceAll("\\*", ""));
+		psCheck.setBoolean(4, true);
+		psCheck.setInt(5, strategy.getStrategyId());
 		rsStrategy = psCheck.executeQuery();
 	    
 		// If there's already a saved strategy with this strategy's name,
@@ -1678,6 +1681,7 @@ public class UserFactory {
 		    Strategy copy = strategy;
 		    strategy.setStrategyId(rsStrategy.getInt("display_id"));
 		    strategy.setInternalId(rsStrategy.getInt("strategy_id"));
+		    strategy.setIsSaved(true);
 		    user.deleteStrategy(copy.getStrategyId());
 		}
 	    }
@@ -1686,10 +1690,11 @@ public class UserFactory {
 		// it.  We need to get an unsaved copy to modify.
 		Strategy newStrat = createStrategy(user, strategy.getLatestStep(),
 						   strategy.getName() + "*", false);
+		strategy.setName(newStrat.getName());
+		strategy.setSavedName(newStrat.getSavedName());
 		strategy.setStrategyId(newStrat.getStrategyId());
 		strategy.setInternalId(newStrat.getInternalId());
 		strategy.setIsSaved(false);
-		return;
 	    }
 	    
             psStrategy = SqlUtils.getPreparedStatement(dataSource, "UPDATE "
@@ -1768,7 +1773,7 @@ public class UserFactory {
 			    // Need to isolate the integer part of "New Strategy x*" and parse the value of x
 			    // This is written to allow names that are similar to the above format, but don't
 			    // match it perfectly (if users pick lazy names when saving, like "New Strategy 1 Saved"
-			    int test = Integer.parseInt(name.replaceFirst("New Strategy ", "").replaceFirst("\\*", ""));
+			    int test = Integer.parseInt(name.replaceFirst("New Strategy ", "").replaceAll("\\*", ""));
 			    if (i == test) {
 				i++;
 			    }
