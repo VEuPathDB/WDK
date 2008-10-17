@@ -2,7 +2,6 @@ package org.gusdb.wdk.model;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -164,7 +163,7 @@ public class Answer {
         this.startIndex = startIndex;
         this.endIndex = endIndex;
 
-        this.answerInfo = answerInfo;
+        this.answerInfo = answer.answerInfo;
         this.idsQueryInstance = answer.idsQueryInstance;
         this.isBoolean = answer.isBoolean;
         this.question = answer.question;
