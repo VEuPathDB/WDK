@@ -25,7 +25,7 @@ public class BooleanExpressionForm extends ActionForm {
     private String booleanExpression = null;
     private String historySectionId = null;
 
-    private boolean useBooleanFilter = false;
+    private boolean useBooleanFilter = true;
 
     public void setBooleanExpression(String be) {
         booleanExpression = be;
