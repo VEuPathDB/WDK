@@ -219,6 +219,14 @@ public class AnswerFilterInstance extends WdkModelBase {
                         + " does not exist in the" + " filter query ["
                         + filterQuery.getFullName() + "]");
         }
+        // make sure the required param is defined
+        for (String paramName : params.keySet()) {
+            if (answerParam.getName().equals(paramName)) continue;
+            if (!paramValueMap.containsKey(paramName))
+                throw new WdkModelException("The required param value of ["
+                        + paramName + "] is not assigned to filter ["
+                        + getName() + "]");
+        }
         resolved = true;
     }
 
