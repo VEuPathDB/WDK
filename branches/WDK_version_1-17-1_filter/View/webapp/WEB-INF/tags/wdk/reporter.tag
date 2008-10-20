@@ -5,7 +5,7 @@
 
 
 <c:set value="${requestScope.wdkAnswer}" var="wdkAnswer"/>
-<c:set var="user_answer_id" value="${requestScope.user_answer_id}"/>
+<c:set var="step_id" value="${requestScope.step_id}"/>
 
 <c:set var="formats" value="${requestScope.wdkReportFormats}"/>
 <c:set var="format" value="${requestScope.wdkReportFormat}"/>
@@ -44,12 +44,12 @@ function changeFormat(e)
 <c:if test='${wdkAnswer.resultSize != 0}'>
 
 <!-- the supported format -->
-<form name="formatForm" method="get" action="<c:url value='/downloadUserAnswer.do' />">
+<form name="formatForm" method="get" action="<c:url value='/downloadStep.do' />">
   <table>
     <tr>
       <td>
         <b>Format:</b>
-        <input type="hidden" name="user_answer_id" value="${user_answer_id}"/>
+        <input type="hidden" name="step_id" value="${step_id}"/>
       </td>
       <td>
         <select name="wdkReportFormat" onChange="return changeFormat();">
