@@ -83,7 +83,7 @@ public class DeleteStepAction extends Action {
 	ArrayList<Integer> activeStrategies = (ArrayList<Integer>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
 	int index = -1;
 	
-	if (activeStrategies != null && !activeStrategies.contains(new Integer(strategy.getStrategyId()))) {
+	if (activeStrategies != null && activeStrategies.contains(new Integer(strategy.getStrategyId()))) {
 	    index = activeStrategies.indexOf(new Integer(strategy.getStrategyId()));
 	    activeStrategies.remove(index);
 	}
