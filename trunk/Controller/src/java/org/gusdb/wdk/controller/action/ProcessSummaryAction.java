@@ -42,6 +42,7 @@ public class ProcessSummaryAction extends Action {
         
         // get the query string
         String queryString = request.getQueryString();
+        logger.debug("url before process: " + queryString);
         
         // get question
         String questionName = request.getParameter( CConstants.QUESTION_FULLNAME_PARAM );
@@ -147,6 +148,8 @@ public class ProcessSummaryAction extends Action {
                 + CConstants.WDK_SUMMARY_ARRANGE_ORDER_KEY + "=[^&]*", "" );
         queryString = queryString.replaceAll( "&"
                 + CConstants.WDK_SUMMARY_SORTING_ORDER_KEY + "=[^&]*", "" );
+
+        logger.debug("url after process: " + queryString);
         
         // construct url to show summary action
         ActionForward showSummary = mapping.findForward( CConstants.PQ_SHOW_SUMMARY_MAPKEY );
