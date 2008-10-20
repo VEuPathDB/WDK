@@ -142,6 +142,7 @@ public class Answer {
         this.endIndex = endIndex;
 
         // get sorting columns
+        if (sortingMap == null) sortingMap = new LinkedHashMap<String, Boolean>();
         this.sortingMap = sortingMap;
         this.summaryFieldMap = new LinkedHashMap<String, AttributeField>();
 
