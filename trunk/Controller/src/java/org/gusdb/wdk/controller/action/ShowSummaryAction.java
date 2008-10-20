@@ -49,7 +49,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
-	logger.debug("start action.");
+        logger.debug("start action.");
 
         // get user, or create one, if not exist
         WdkModelBean wdkModel = (WdkModelBean) servlet.getServletContext().getAttribute(
@@ -172,10 +172,9 @@ public class ShowSummaryAction extends ShowQuestionAction {
                             wdkAnswer.getChecksum())) {
                         // no. create new history.
                         history = wdkUser.createHistory(wdkAnswer);
+                    } else {
+                        history.update(true);
                     }
-		    else {
-			history.update(true);
-		    }
                 } catch (SQLException ex) {
                     // couldn't find history: create history
                     history = wdkUser.createHistory(wdkAnswer);
@@ -190,11 +189,12 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
         int historyId = history.getHistoryId();
 
-	if (wdkAnswer.getFilter() != null) {
-	    history.setFilterSize(wdkAnswer.getFilterSize(wdkAnswer.getFilter().getName()));
-	}
+        if (wdkAnswer.getFilter() != null) {
+            history.setFilterSize(wdkAnswer.getFilterSize(wdkAnswer.getFilter().getName()));
+        }
 
         String requestUrl = request.getRequestURI() + "?"
+                + CConstants.WDK_HISTORY_ID_KEY + "=" + historyId + "&"
                 + request.getQueryString();
 
         // return only the result size, if requested
@@ -280,7 +280,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
         } else {
             forward = mapping.findForward(CConstants.SHOW_SUMMARY_MAPKEY);
         }
-        
+
         logger.debug("end getting forward");
         return forward;
     }
@@ -392,9 +392,9 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
         int totalSize = wdkAnswer.getResultSize();
 
-	if (wdkAnswer.getFilter() != null) {
-	    totalSize = wdkAnswer.getFilterSize(wdkAnswer.getFilter().getName());
-	}
+        if (wdkAnswer.getFilter() != null) {
+            totalSize = wdkAnswer.getFilterSize(wdkAnswer.getFilter().getName());
+        }
 
         if (end > totalSize) {
             end = totalSize;
