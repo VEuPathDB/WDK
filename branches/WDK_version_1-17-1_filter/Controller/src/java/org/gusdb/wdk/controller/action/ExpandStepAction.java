@@ -76,6 +76,10 @@ public class ExpandStepAction extends Action {
 	System.out.println("Step collapsed name: " + step.getCollapsedName());
 	System.out.println("Step collapsible? : " + step.getIsCollapsible());
 
+	if (step.getParentStep() == null) {
+	    throw new WdkModelException("Only top-row steps can be expanded!");
+	}
+
 	if (!step.getIsCollapsible()) {
 	    String branch = request.getParameter("collapsedName");
 	    if (branch == null || branch.length() == 0) {
