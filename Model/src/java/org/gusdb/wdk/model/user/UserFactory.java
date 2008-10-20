@@ -1211,9 +1211,6 @@ public class UserFactory {
             step.setLastRunTime(lastRunTime);
             step.setCustomName(customName);
 	    
-	    // Need to insert children into steps table
-	    // NOTE:  This will continue to assume we're working in simple,
-	    // two-operand booleans!  Need to find a way to not do this!
 	    if (isBoolean) {
 		updateStepTree(user, step, booleanExpression);
 	    }
@@ -1252,7 +1249,6 @@ public class UserFactory {
 	    int leftChildId;
 	    int rightChildId;
 	    if (booleanExpression != null && booleanExpression.length() != 0) {
-
 		psUpdateAnswerTree = SqlUtils.getPreparedStatement(
 	            dataSource, "UPDATE " + loginSchema +
 		    "steps SET left_child_id = ?, "

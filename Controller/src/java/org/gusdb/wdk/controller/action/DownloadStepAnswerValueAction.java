@@ -89,13 +89,13 @@ public class DownloadStepAnswerValueAction extends Action {
     
     protected AnswerValueBean getAnswerValueBean( HttpServletRequest request )
             throws Exception {
-        String histIdstr = request.getParameter( "user_answer_id" );
+        String histIdstr = request.getParameter( "step_id" );
         if ( histIdstr == null ) {
-            histIdstr = ( String ) request.getAttribute( "user_answer_id" );
+            histIdstr = ( String ) request.getAttribute( "step_id" );
         }
         if ( histIdstr != null ) {
             int histId = Integer.parseInt( histIdstr );
-            request.setAttribute( "user_answer_id", histId );
+            request.setAttribute( "step_id", histId );
             
             UserBean wdkUser = ( UserBean ) request.getSession().getAttribute(
                     CConstants.WDK_USER_KEY );
