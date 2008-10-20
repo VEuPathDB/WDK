@@ -284,7 +284,7 @@ public class StressTester {
         QuestionSet[] qsets = wdkModel.getAllQuestionSets();
         for (QuestionSet qset : qsets) {
             // skip the internal questions
-            if (qset.getInternal()) continue;
+            if (qset.isInternal()) continue;
 
             Question[] questions = qset.getQuestions();
             for (Question question : questions) {

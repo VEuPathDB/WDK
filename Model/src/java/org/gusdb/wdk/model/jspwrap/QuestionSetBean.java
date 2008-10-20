@@ -43,7 +43,7 @@ public class QuestionSetBean {
     }
 
     public Boolean getInternal() {
-        return questionSet.getInternal();
+        return questionSet.isInternal();
     }
 
     public String getDisplayName() {
