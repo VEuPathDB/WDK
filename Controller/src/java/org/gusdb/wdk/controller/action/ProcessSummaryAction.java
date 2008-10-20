@@ -89,12 +89,12 @@ public class ProcessSummaryAction extends Action {
                         attributeName, ascending );
                 
                 // add/replace sorting key
-                String sortingParam = "&" + CConstants.WDK_SORTING_KEY + "="
+                String sortingParam = CConstants.WDK_SORTING_KEY + "="
                         + checksum;
                 if ( sortingChecksum == null ) {
-                    queryString += sortingParam;
+                    queryString += "&" + sortingParam;
                 } else {
-                    queryString = queryString.replaceAll( "&"
+                    queryString = queryString.replaceAll( "\\b"
                             + CConstants.WDK_SORTING_KEY + "=[^&]*",
                             sortingParam );
                 }
@@ -124,12 +124,12 @@ public class ProcessSummaryAction extends Action {
                                 + command );
                     }
                     // add/replace summary key
-                    String summaryParam = "&" + CConstants.WDK_SUMMARY_KEY
+                    String summaryParam = CConstants.WDK_SUMMARY_KEY
                             + "=" + checksum;
                     if ( summaryChecksum == null ) {
-                        queryString += summaryParam;
+                        queryString += "&" + summaryParam;
                     } else {
-                        queryString = queryString.replaceAll( "&"
+                        queryString = queryString.replaceAll( "\\b"
                                 + CConstants.WDK_SUMMARY_KEY + "=[^&]*",
                                 summaryParam );
                     }
