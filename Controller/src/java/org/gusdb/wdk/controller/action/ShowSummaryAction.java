@@ -193,9 +193,9 @@ public class ShowSummaryAction extends ShowQuestionAction {
             history.setFilterSize(wdkAnswer.getFilterSize(wdkAnswer.getFilter().getName()));
         }
 
-        String requestUrl = request.getRequestURI() + "?"
-                + CConstants.WDK_HISTORY_ID_KEY + "=" + historyId + "&"
-                + request.getQueryString();
+        String pageUrl = request.getRequestURI() + "?"
+                + CConstants.WDK_HISTORY_ID_KEY + "=" + historyId;
+        String requestUrl = pageUrl + "&" + request.getQueryString();
 
         // return only the result size, if requested
         if (request.getParameterMap().containsKey(
@@ -205,12 +205,16 @@ public class ShowSummaryAction extends ShowQuestionAction {
             return null;
         }
 
+        String queryString = request.getQueryString() + "&"
+                + CConstants.WDK_HISTORY_ID_KEY + "=" + historyId;
+
         request.setAttribute(CConstants.WDK_QUESTION_PARAMS_KEY,
                 wdkAnswer.getInternalParams());
         request.setAttribute(CConstants.WDK_ANSWER_KEY, wdkAnswer);
         request.setAttribute(CConstants.WDK_HISTORY_KEY, history);
+        request.setAttribute("wdk_paging_url", pageUrl);
         request.setAttribute("wdk_summary_url", requestUrl);
-        request.setAttribute("wdk_query_string", request.getQueryString());
+        request.setAttribute("wdk_query_string", queryString);
 
         // TODO - the alwaysGoToSummary is deprecated by
         // "noSummaryOnSingleRecord" attribute of question bean
@@ -409,11 +413,11 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 editedParamNames.add(key);
             }
         }
+
         request.setAttribute("wdk_paging_total", new Integer(totalSize));
         request.setAttribute("wdk_paging_pageSize", new Integer(pageSize));
         request.setAttribute("wdk_paging_start", new Integer(start));
         request.setAttribute("wdk_paging_end", new Integer(end));
-        request.setAttribute("wdk_paging_url", request.getRequestURI());
         request.setAttribute("wdk_paging_params", editedParamNames);
 
         logger.debug("end summary paging");
