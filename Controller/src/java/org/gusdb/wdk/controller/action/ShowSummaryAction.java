@@ -213,7 +213,6 @@ public class ShowSummaryAction extends ShowQuestionAction {
         request.setAttribute(CConstants.WDK_ANSWER_KEY, wdkAnswer);
         request.setAttribute(CConstants.WDK_HISTORY_KEY, history);
         request.setAttribute("wdk_paging_url", pageUrl);
-        request.setAttribute("wdk_summary_url", requestUrl);
         request.setAttribute("wdk_query_string", queryString);
 
         // TODO - the alwaysGoToSummary is deprecated by
@@ -414,6 +413,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             }
         }
 
+        request.setAttribute("wdk_summary_url", request.getRequestURI());
         request.setAttribute("wdk_paging_total", new Integer(totalSize));
         request.setAttribute("wdk_paging_pageSize", new Integer(pageSize));
         request.setAttribute("wdk_paging_start", new Integer(start));
