@@ -64,11 +64,11 @@ public class QuestionSet extends WdkModelBase implements ModelSetI {
 	return doNotTest;
     }
 
-    public Boolean getInternal() {
+    public boolean isInternal() {
         return this.internal;
     }
 
-    public void setInternal(Boolean internal) {
+    public void setInternal(boolean internal) {
         this.internal = internal;
     }
 
@@ -139,7 +139,7 @@ public class QuestionSet extends WdkModelBase implements ModelSetI {
         StringBuffer buf = new StringBuffer("QuestionSet: name='" + getName()
                 + "'" + newline + "  displayName='" + getDisplayName() + "'"
                 + newline + "  description='" + getDescription() + "'"
-                + newline + "  internal='" + getInternal() + "'" + newline);
+                + newline + "  internal='" + isInternal() + "'" + newline);
         buf.append(newline);
 
         for (Question question : questionMap.values()) {
