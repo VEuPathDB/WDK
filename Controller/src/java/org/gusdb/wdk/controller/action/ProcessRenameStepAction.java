@@ -38,7 +38,12 @@ public class ProcessRenameStepAction extends Action {
                     CConstants.WDK_USER_KEY );
             try {
                 StepBean step = wdkUser.getStep( stepId );
-		step.setCustomName( customName );
+		if (step.getIsCollapsible()) {
+		    step.setCollapsedName( customName );
+		}
+		else {
+		    step.setCustomName( customName );
+		}
 		step.update( false );
 	    } catch ( Exception e ) {
                 e.printStackTrace();
