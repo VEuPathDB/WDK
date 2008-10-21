@@ -116,6 +116,10 @@ public class ProcessQueryInstance extends QueryInstance {
                     } else if (type == ColumnType.NUMBER) {
                         ps.setInt(columnId, Integer.parseInt(value));
                     } else {
+                        if (value != null && value.length() > 4000) {
+                            logger.warn("Column [" + column.getName() + "] value truncated.");
+                            value = value.substring(0, 3997) + "...";
+                        }
                         ps.setString(columnId, value);
                     } 
                     columnId++;

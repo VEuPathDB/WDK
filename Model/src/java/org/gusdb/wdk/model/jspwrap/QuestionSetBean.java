@@ -42,7 +42,7 @@ public class QuestionSetBean {
         return questionSet.getName();
     }
 
-    public Boolean getInternal() {
+    public boolean isInternal() {
         return questionSet.isInternal();
     }
 
