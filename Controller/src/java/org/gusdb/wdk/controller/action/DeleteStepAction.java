@@ -159,6 +159,9 @@ public class DeleteStepAction extends Action {
 
 	// follow any parent pointers, update parent strategies
 	step.setParentStep(targetStep.getParentStep());
+	step.setIsCollapsible(targetStep.getIsCollapsible());
+	step.setCollapsedName(targetStep.getCollapsedName());
+	step.update(false);
 	while (step.getParentStep() != null) {
 	    //go to parent, update subsequent steps
 	    StepBean parentStep = step.getParentStep();
@@ -175,6 +178,9 @@ public class DeleteStepAction extends Action {
 		    step = wdkUser.combineStep(boolExp);
 		}
 		step.setParentStep(parentStep.getParentStep());
+		step.setIsCollapsible(parentStep.getIsCollapsible());
+		step.setCollapsedName(parentStep.getCollapsedName());
+		step.update(false);
 	    }
 	}	
 
