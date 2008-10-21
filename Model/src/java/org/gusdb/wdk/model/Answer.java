@@ -660,7 +660,8 @@ public class Answer {
             for (AttributeField dependent : field.getDependents()) {
                 if (!(dependent instanceof ColumnAttributeField)) continue;
 
-                Query query = ((ColumnAttributeField) dependent).getColumn().getQuery();
+                Column column = ((ColumnAttributeField)dependent).getColumn();
+                Query query = column.getQuery();
                 String queryName = query.getFullName();
                 // cannot use the attribute query from record, need to get it
                 // back from wdkModel, since the query has pk params appended
@@ -676,15 +677,19 @@ public class Answer {
                 }
 
                 // handle column
-                String dependentName = dependent.getName();
-                if (!orderClauses.containsKey(dependentName)) {
+                String sortingColumn = column.getSortingColumn();
+                if (sortingColumn == null) sortingColumn = column.getName();
+                boolean ignoreCase = column.isIgnoreCase();
+                if (!orderClauses.containsKey(sortingColumn)) {
                     // dependent not processed, process it
                     StringBuffer clause = new StringBuffer();
+                    if (ignoreCase) clause.append("lower(");
                     clause.append(queryNames.get(queryName));
                     clause.append(".");
-                    clause.append(dependentName);
+                    clause.append(sortingColumn);
+                    if (ignoreCase) clause.append(")");
                     clause.append(ascend ? " ASC" : " DESC");
-                    orderClauses.put(dependentName, clause.toString());
+                    orderClauses.put(sortingColumn, clause.toString());
                 }
             }
         }

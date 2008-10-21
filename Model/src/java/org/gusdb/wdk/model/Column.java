@@ -23,7 +23,9 @@ public class Column extends WdkModelBase {
      */
     private String wsName;
 
-    private boolean lowerCase = false;
+    private boolean ignoreCase = false;
+
+    private String sortingColumn;
 
     public Column() {}
 
@@ -33,7 +35,8 @@ public class Column extends WdkModelBase {
         this.type = column.type;
         this.width = column.width;
         this.wsName = column.wsName;
-        this.lowerCase = column.lowerCase;
+        this.ignoreCase = column.ignoreCase;
+        this.sortingColumn = column.sortingColumn;
     }
 
     public void setName(String name) {
@@ -87,21 +90,6 @@ public class Column extends WdkModelBase {
         this.wsName = wsName;
     }
 
-    /**
-     * @return the lowerCase
-     */
-    public boolean isLowerCase() {
-        return lowerCase;
-    }
-
-    /**
-     * @param lowerCase
-     *            the lowerCase to set
-     */
-    public void setLowerCase(boolean lowerCase) {
-        this.lowerCase = lowerCase;
-    }
-
     public JSONObject getJSONContent() throws JSONException {
         JSONObject jsColumn = new JSONObject();
         jsColumn.put("name", name);
@@ -132,10 +120,43 @@ public class Column extends WdkModelBase {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model.WdkModel)
+     * @see
+     * org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model
+     * .WdkModel)
      */
     @Override
     public void resolveReferences(WdkModel wodkModel) throws WdkModelException {
     // nothing to resolve
     }
+
+    /**
+     * @return the sortingColumn
+     */
+    public String getSortingColumn() {
+        return sortingColumn;
+    }
+
+    /**
+     * @param sortingColumn
+     *            the sortingColumn to set
+     */
+    public void setSortingColumn(String sortingColumn) {
+        this.sortingColumn = sortingColumn;
+    }
+
+    /**
+     * @return the ignoreCase
+     */
+    public boolean isIgnoreCase() {
+        return ignoreCase;
+    }
+
+    /**
+     * @param ignoreCase
+     *            the ignoreCase to set
+     */
+    public void setIgnoreCase(boolean ignoreCase) {
+        this.ignoreCase = ignoreCase;
+    }
+
 }
