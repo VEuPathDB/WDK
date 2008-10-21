@@ -52,15 +52,14 @@ public abstract class Query extends WdkModelBase {
 
     // for sanity testing
     private boolean doNotTest = false;
-    private List<ParamValuesSet> paramValuesSets
-	= new ArrayList<ParamValuesSet>();
+    private List<ParamValuesSet> paramValuesSets = new ArrayList<ParamValuesSet>();
 
     protected WdkModel wdkModel;
     private QuerySet querySet;
 
     // cache the signature
     private String signature;
-    
+
     private String[] indexColumns;
 
     // =========================================================================
@@ -85,11 +84,11 @@ public abstract class Query extends WdkModelBase {
         columnList = new ArrayList<Column>();
         columnMap = new LinkedHashMap<String, Column>();
     }
-    
+
     public void setIndexColumns(String[] indexColumns) {
         this.indexColumns = indexColumns;
     }
-    
+
     public String[] getIndexColumns() {
         return indexColumns;
     }
@@ -108,8 +107,9 @@ public abstract class Query extends WdkModelBase {
         this.querySet = query.querySet;
         this.doNotTest = query.doNotTest;
         this.signature = query.signature;
-        this.paramValuesSets = new ArrayList<ParamValuesSet>(query.paramValuesSets);
-        this.wdkModel =query.wdkModel;
+        this.paramValuesSets = new ArrayList<ParamValuesSet>(
+                query.paramValuesSets);
+        this.wdkModel = query.wdkModel;
 
         // clone columns
         for (String columnName : query.columnMap.keySet()) {
@@ -148,7 +148,7 @@ public abstract class Query extends WdkModelBase {
 
     /**
      * @param querySet
-     *                the querySet to set
+     *            the querySet to set
      */
     public void setQuerySet(QuerySet querySet) {
         this.querySet = querySet;
@@ -163,7 +163,7 @@ public abstract class Query extends WdkModelBase {
 
     /**
      * @param cached
-     *                the cached to set
+     *            the cached to set
      */
     public void setIsCacheable(boolean cached) {
         this.cached = cached;
@@ -228,28 +228,30 @@ public abstract class Query extends WdkModelBase {
 
     // exclude this query from sanity testing
     public void setDoNotTest(boolean doNotTest) {
-	this.doNotTest = doNotTest;
+        this.doNotTest = doNotTest;
     }
 
     public boolean getDoNotTest() {
-	return doNotTest;
+        return doNotTest;
     }
 
     public void addParamValuesSet(ParamValuesSet paramValuesSet) {
-	paramValuesSets.add(paramValuesSet);
+        paramValuesSets.add(paramValuesSet);
     }
 
-    public List<ParamValuesSet> getParamValuesSets() throws WdkModelException, NoSuchAlgorithmException, SQLException, JSONException, WdkUserException {
-	updateParamValuesSetsWithDefaults();
-	return paramValuesSets;
+    public List<ParamValuesSet> getParamValuesSets() throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
+        updateParamValuesSetsWithDefaults();
+        return paramValuesSets;
     }
 
     public WdkModel getWdkModel() {
         return wdkModel;
     }
 
-    public String getChecksum() throws JSONException,
-            NoSuchAlgorithmException, WdkModelException {
+    public String getChecksum() throws JSONException, NoSuchAlgorithmException,
+            WdkModelException {
         if (signature == null) {
             JSONObject jsQuery = getJSONContent();
             signature = Utilities.encrypt(jsQuery.toString());
@@ -323,19 +325,19 @@ public abstract class Query extends WdkModelBase {
         }
         columnList = null;
 
-	// exclude paramValuesSets
-	List<ParamValuesSet> tempList = new ArrayList<ParamValuesSet>();
+        // exclude paramValuesSets
+        List<ParamValuesSet> tempList = new ArrayList<ParamValuesSet>();
         for (ParamValuesSet paramValuesSet : paramValuesSets) {
             if (paramValuesSet.include(projectId)) {
-		tempList.add(paramValuesSet);
+                tempList.add(paramValuesSet);
             }
         }
-	paramValuesSets = tempList;
+        paramValuesSets = tempList;
     }
 
     public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
         if (resolved) return;
-        
+
         this.wdkModel = wdkModel;
 
         // resolve the params
@@ -348,6 +350,18 @@ public abstract class Query extends WdkModelBase {
             } else paramMap.put(paramName, param);
         }
         paramRefList = null;
+
+        // resolve columns
+        for (Column column : columnMap.values()) {
+            String sortingColumn = column.getSortingColumn();
+            if (sortingColumn == null) continue;
+            if (!columnMap.containsKey(sortingColumn))
+                throw new WdkModelException("Query [" + getFullName()
+                        + "] has a column [" + column.getName()
+                        + "] with sortingColumn [" + sortingColumn
+                        + "], but the sorting column doesn't exist in "
+                        + "the same query.");
+        }
         resolved = true;
     }
 
@@ -428,20 +442,22 @@ public abstract class Query extends WdkModelBase {
         return param;
     }
 
-    private void updateParamValuesSetsWithDefaults() throws WdkModelException, NoSuchAlgorithmException, SQLException, JSONException, WdkUserException {
-	ParamValuesSet querySetDefaults = querySet.getDefaultParamValuesSet();
-	if (paramValuesSets.isEmpty()) {
-	    paramValuesSets.add(new ParamValuesSet());
-	}
-	for (ParamValuesSet paramValuesSet : paramValuesSets) {
-	    paramValuesSet.updateWithDefaults(querySetDefaults);
+    private void updateParamValuesSetsWithDefaults() throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
+        ParamValuesSet querySetDefaults = querySet.getDefaultParamValuesSet();
+        if (paramValuesSets.isEmpty()) {
+            paramValuesSets.add(new ParamValuesSet());
+        }
+        for (ParamValuesSet paramValuesSet : paramValuesSets) {
+            paramValuesSet.updateWithDefaults(querySetDefaults);
 
-	    for (Param param : getParams()) {
-		String paramName = param.getName();
-		String defaultValue = param.getDefault();
-		paramValuesSet.updateWithDefault(paramName, defaultValue);
-	    }
-	}
+            for (Param param : getParams()) {
+                String paramName = param.getName();
+                String defaultValue = param.getDefault();
+                paramValuesSet.updateWithDefault(paramName, defaultValue);
+            }
+        }
     }
 
     void validateValues(Map<String, Object> values) throws WdkModelException {
@@ -498,7 +514,9 @@ public abstract class Query extends WdkModelBase {
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Object#toString()
      */
     @Override
@@ -506,7 +524,7 @@ public abstract class Query extends WdkModelBase {
         StringBuffer buffer = new StringBuffer(getFullName());
         buffer.append(": params{");
         boolean firstParam = true;
-        for(Param param : paramMap.values()) {
+        for (Param param : paramMap.values()) {
             if (firstParam) firstParam = false;
             else buffer.append(", ");
             buffer.append(param.getName()).append("[");
@@ -522,5 +540,5 @@ public abstract class Query extends WdkModelBase {
         buffer.append("}");
         return buffer.toString();
     }
-    
+
 }

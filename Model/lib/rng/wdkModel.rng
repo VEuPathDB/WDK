@@ -403,6 +403,17 @@
           <data type="unsignedShort" />
       </attribute>
     </optional>
+      
+      <!-- the sortingTable & sortingColumn will be removed, since they are not used any longer -->
+      <optional>
+        <attribute name="sortingColumn" />
+      </optional>
+      
+      <optional>
+        <attribute name="ignoreCase">
+            <data type="boolean" />
+        </attribute>
+      </optional>
   </define>
 
   <define name="QueryBaseContents">
@@ -611,20 +622,6 @@
   <define name="sqlColumn">
     <element name="column">
       <ref name="ColumnBaseContents" />
-      
-      <!-- the sortingTable & sortingColumn will be removed, since they are not used any longer -->
-      <optional>
-        <attribute name="sortingTable" />
-      </optional>
-      <optional>
-        <attribute name="sortingColumn" />
-      </optional>
-      
-      <optional>
-        <attribute name="lowerCase">
-            <data type="boolean" />
-        </attribute>
-      </optional>
     </element>
   </define>
     
