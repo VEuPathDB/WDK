@@ -56,7 +56,9 @@ public class ProcessQueryInstance extends QueryInstance {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.query.QueryInstance#appendSJONContent(org.json.JSONObject)
+     * @see
+     * org.gusdb.wdk.model.query.QueryInstance#appendSJONContent(org.json.JSONObject
+     * )
      */
     @Override
     protected void appendSJONContent(JSONObject jsInstance)
@@ -67,8 +69,9 @@ public class ProcessQueryInstance extends QueryInstance {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.query.QueryInstance#insertToCache(java.sql.Connection,
-     *      java.lang.String)
+     * @see
+     * org.gusdb.wdk.model.query.QueryInstance#insertToCache(java.sql.Connection
+     * , java.lang.String)
      */
     @Override
     public void insertToCache(Connection connection, String tableName,
@@ -102,7 +105,7 @@ public class ProcessQueryInstance extends QueryInstance {
                 int columnId = 1;
                 for (Column column : columns) {
                     String value = (String) resultList.get(column.getName());
-                    
+
                     // determine the type
                     ColumnType type = column.getType();
                     if (type == ColumnType.BOOLEAN) {
@@ -116,12 +119,14 @@ public class ProcessQueryInstance extends QueryInstance {
                     } else if (type == ColumnType.NUMBER) {
                         ps.setInt(columnId, Integer.parseInt(value));
                     } else {
-                        if (value != null && value.length() > 4000) {
-                            logger.warn("Column [" + column.getName() + "] value truncated.");
-                            value = value.substring(0, 3997) + "...";
+                        int width = column.getWidth();
+                        if (value != null && value.length() > width) {
+                            logger.warn("Column [" + column.getName()
+                                    + "] value truncated.");
+                            value = value.substring(0, width - 3) + "...";
                         }
                         ps.setString(columnId, value);
-                    } 
+                    }
                     columnId++;
                 }
                 ps.addBatch();
@@ -140,8 +145,9 @@ public class ProcessQueryInstance extends QueryInstance {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.query.QueryInstance#getUncachedResults(org.gusdb.wdk.model.Column[],
-     *      java.lang.Integer, java.lang.Integer)
+     * @see
+     * org.gusdb.wdk.model.query.QueryInstance#getUncachedResults(org.gusdb.
+     * wdk.model.Column[], java.lang.Integer, java.lang.Integer)
      */
     @Override
     protected ResultList getUncachedResults() throws WdkModelException,
@@ -233,14 +239,17 @@ public class ProcessQueryInstance extends QueryInstance {
         return getCachedSql();
     }
 
-    /* (non-Javadoc)
-     * @see org.gusdb.wdk.model.query.QueryInstance#createCache(java.sql.Connection, java.lang.String, int)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.gusdb.wdk.model.query.QueryInstance#createCache(java.sql.Connection,
+     * java.lang.String, int)
      */
     @Override
     public void createCache(Connection connection, String tableName,
-            int instanceId)
-            throws WdkModelException, SQLException, NoSuchAlgorithmException,
-            JSONException, WdkUserException {
+            int instanceId) throws WdkModelException, SQLException,
+            NoSuchAlgorithmException, JSONException, WdkUserException {
         DBPlatform platform = query.getWdkModel().getQueryPlatform();
         Column[] columns = query.getColumns();
 
@@ -288,7 +297,9 @@ public class ProcessQueryInstance extends QueryInstance {
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.query.QueryInstance#getResultSize()
      */
     @Override
@@ -303,6 +314,5 @@ public class ProcessQueryInstance extends QueryInstance {
             return count;
         } else return super.getResultSize();
     }
-    
-    
+
 }
