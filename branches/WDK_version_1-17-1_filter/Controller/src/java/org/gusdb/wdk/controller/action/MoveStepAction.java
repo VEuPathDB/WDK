@@ -154,6 +154,9 @@ public class MoveStepAction extends Action {
 	    newStep = null;
 	    step.setNextStep(newStep);
 	    step.setParentStep(targetStep.getParentStep());
+	    step.setIsCollapsible(targetStep.getIsCollapsible());
+	    step.setCollapsedName(targetStep.getCollapsedName());
+	    step.update(false);
 
 	    while (step.getParentStep() != null) {
 		//go to parent, update subsequent steps
@@ -171,6 +174,9 @@ public class MoveStepAction extends Action {
 			step = wdkUser.combineStep(boolExp);
 		    }
 		    step.setParentStep(parentStep.getParentStep());
+		    step.setIsCollapsible(parentStep.getIsCollapsible());
+		    step.setCollapsedName(parentStep.getCollapsedName());
+		    step.update(false);
 		}
 	    }
 

@@ -252,6 +252,9 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	}
 
 	step.setParentStep(originalStep.getParentStep());
+	step.setIsCollapsible(originalStep.getIsCollapsible());
+	step.setCollapsedName(originalStep.getCollapsedName());
+	step.update(false);
 	// if step has a parent step, need to continue updating the rest of the strategy.
 	while (step.getParentStep() != null) {
 	    //go to parent, update subsequent steps
@@ -269,6 +272,9 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 		    step = wdkUser.combineStep(boolExp);
 		}
 		step.setParentStep(parentStep.getParentStep());
+		step.setIsCollapsible(parentStep.getIsCollapsible());
+		step.setCollapsedName(parentStep.getCollapsedName());
+		step.update(false);
 	    }
 	}
 
