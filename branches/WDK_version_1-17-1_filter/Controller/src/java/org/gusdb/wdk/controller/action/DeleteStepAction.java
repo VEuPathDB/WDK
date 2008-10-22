@@ -162,6 +162,11 @@ public class DeleteStepAction extends Action {
 	step.setIsCollapsible(targetStep.getIsCollapsible());
 	step.setCollapsedName(targetStep.getCollapsedName());
 	step.update(false);
+	    
+	if (strBranchId != null) {
+	    strBranchId = Integer.toString(step.getStepId());
+	}
+
 	while (step.getParentStep() != null) {
 	    //go to parent, update subsequent steps
 	    StepBean parentStep = step.getParentStep();
