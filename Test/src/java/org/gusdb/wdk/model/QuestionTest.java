@@ -5,6 +5,7 @@ package org.gusdb.wdk.model;
 
 import java.util.Map;
 
+import org.gusdb.wdk.model.query.Query;
 import org.junit.Test;
 import org.junit.Assert;
 
@@ -114,9 +115,9 @@ public class QuestionTest extends WdkModelTestBase {
         String fullName = SAMPLE_QUESTION_SET + "." + SAMPLE_QUESTION;
         Question question = (Question) wdkModel.resolveReference(fullName);
 
-        String[] summaryList = question.getSummaryAttributeNames();
-        Assert.assertTrue("summary list is missing", summaryList != null
-                && summaryList.length > 0);
+        Map<String, AttributeField> summaryMap = question.getSummaryAttributeFieldMap();
+        Assert.assertTrue("summary list is missing", summaryMap != null
+                && summaryMap.size() > 0);
 
         Map<String, Boolean> sortList = question.getSortingAttributeMap();
         Assert.assertTrue("sorting list is missing", sortList != null

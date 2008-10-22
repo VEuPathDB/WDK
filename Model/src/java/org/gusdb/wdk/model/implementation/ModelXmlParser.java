@@ -57,6 +57,7 @@ import org.gusdb.wdk.model.FlatVocabParam;
 import org.gusdb.wdk.model.Group;
 import org.gusdb.wdk.model.GroupSet;
 import org.gusdb.wdk.model.LinkAttributeField;
+import org.gusdb.wdk.model.MacroDeclaration;
 import org.gusdb.wdk.model.ModelConfig;
 import org.gusdb.wdk.model.ModelConfigParser;
 import org.gusdb.wdk.model.NestedRecord;
@@ -68,7 +69,6 @@ import org.gusdb.wdk.model.ParamSuggestion;
 import org.gusdb.wdk.model.ParamValuesSet;
 import org.gusdb.wdk.model.PrimaryKeyAttributeField;
 import org.gusdb.wdk.model.PropertyList;
-import org.gusdb.wdk.model.MacroDeclaration;
 import org.gusdb.wdk.model.QuerySet;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
@@ -787,7 +787,7 @@ public class ModelXmlParser extends XmlParser {
 
         // create a parser, and parse the model file
         WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
-
+        
         // print out the model content
         System.out.println(wdkModel.toString());
         System.exit(0);

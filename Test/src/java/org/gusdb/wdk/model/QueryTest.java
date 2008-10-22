@@ -3,8 +3,13 @@
  */
 package org.gusdb.wdk.model;
 
-import org.gusdb.wdk.model.implementation.SqlQuery;
-import org.gusdb.wdk.model.implementation.WSQuery;
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
+
+import org.gusdb.wdk.model.query.ProcessQuery;
+import org.gusdb.wdk.model.query.Query;
+import org.gusdb.wdk.model.query.SqlQuery;
+import org.json.JSONException;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -89,7 +94,7 @@ public class QueryTest extends WdkModelTestBase {
     @Test
     public void testGetWsQuery() throws WdkModelException {
         // get query by reference
-        WSQuery query = (WSQuery) wdkModel.resolveReference(SAMPLE_QUERY_SET
+        ProcessQuery query = (ProcessQuery) wdkModel.resolveReference(SAMPLE_QUERY_SET
                 + "." + SAMPLE_WS_QUERY);
 
         // get process name and url
@@ -102,9 +107,15 @@ public class QueryTest extends WdkModelTestBase {
      * param; however, it is configured to be true in this query.
      * 
      * @throws WdkModelException
+     * @throws WdkUserException
+     * @throws JSONException
+     * @throws SQLException
+     * @throws NoSuchAlgorithmException
      */
     @Test
-    public void testGetCustomEnumParam() throws WdkModelException {
+    public void testGetCustomEnumParam() throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
         // get query by reference
         SqlQuery query = (SqlQuery) wdkModel.resolveReference(SAMPLE_QUERY_SET
                 + "." + SAMPLE_SQL_QUERY);
@@ -120,9 +131,15 @@ public class QueryTest extends WdkModelTestBase {
      * this param; however, it is configured to be false in this query
      * 
      * @throws WdkModelException
+     * @throws WdkUserException
+     * @throws JSONException
+     * @throws SQLException
+     * @throws NoSuchAlgorithmException
      */
     @Test
-    public void testGetCustomVocabParam() throws WdkModelException {
+    public void testGetCustomVocabParam() throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
         // get query by reference
         SqlQuery query = (SqlQuery) wdkModel.resolveReference(SAMPLE_QUERY_SET
                 + "." + SAMPLE_SQL_QUERY);
