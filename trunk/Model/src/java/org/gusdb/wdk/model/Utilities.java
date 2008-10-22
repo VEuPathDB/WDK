@@ -49,11 +49,11 @@ public class Utilities {
 
     public static final String ALIAS_OLD_KEY_COLUMN_PREFIX = "old_";
 
-    public static final String INTERNAL_PARAM_SET = "internalParams";
+    public static final String INTERNAL_PARAM_SET = "InternalParams";
 
-    public static final String INTERNAL_QUERY_SET = "internalQueries";
+    public static final String INTERNAL_QUERY_SET = "InternalQueries";
 
-    public static final String INTERNAL_QUESTION_SET = "internalQuestions";
+    public static final String INTERNAL_QUESTION_SET = "InternalQuestions";
     
     public static final int DEFAULT_PAGE_SIZE = 20;
     

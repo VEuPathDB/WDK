@@ -3,6 +3,10 @@
  */
 package org.gusdb.wdk.model;
 
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
+
+import org.json.JSONException;
 import org.junit.Assert;
 
 /**
@@ -86,9 +90,15 @@ public class ParamTest extends WdkModelTestBase {
      * similar to stringParam
      * 
      * @throws WdkModelException
+     * @throws WdkUserException
+     * @throws JSONException
+     * @throws SQLException
+     * @throws NoSuchAlgorithmException
      */
     @org.junit.Test
-    public void testGetStringParam() throws WdkModelException {
+    public void testGetStringParam() throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
         StringParam param = (StringParam) wdkModel.resolveReference(SAMPLE_PARAM_SET
                 + "." + SAMPLE_STRING_PARAM);
         Assert.assertNotNull(param);
@@ -104,9 +114,15 @@ public class ParamTest extends WdkModelTestBase {
      * test getting a flat vocab param, and iterate on its terms and internals
      * 
      * @throws WdkModelException
+     * @throws WdkUserException
+     * @throws JSONException
+     * @throws SQLException
+     * @throws NoSuchAlgorithmException
      */
     @org.junit.Test
-    public void testGetFlatVocabParam() throws WdkModelException {
+    public void testGetFlatVocabParam() throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
         FlatVocabParam param = (FlatVocabParam) wdkModel.resolveReference(SAMPLE_PARAM_SET
                 + "." + SAMPLE_FLAT_VOCAB_PARAM);
         Assert.assertNotNull(param);
@@ -119,7 +135,7 @@ public class ParamTest extends WdkModelTestBase {
 
         // terms and internals are equal, since the useTermOnly is true
         Assert.assertArrayEquals(terms, internals);
-        
+
         // get the default value
         Assert.assertEquals("Optional 1,Optional 3", param.getDefault());
     }
@@ -128,9 +144,15 @@ public class ParamTest extends WdkModelTestBase {
      * test getting an enum param and iterate on its terms and internals
      * 
      * @throws WdkModelException
+     * @throws WdkUserException
+     * @throws JSONException
+     * @throws SQLException
+     * @throws NoSuchAlgorithmException
      */
     @org.junit.Test
-    public void testGetEnumParam() throws WdkModelException {
+    public void testGetEnumParam() throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
         EnumParam param = (EnumParam) wdkModel.resolveReference(SAMPLE_PARAM_SET
                 + "." + SAMPLE_ENUM_PARAM);
         Assert.assertNotNull(param);
@@ -153,7 +175,7 @@ public class ParamTest extends WdkModelTestBase {
         for (String display : displays) {
             Assert.assertNotNull(display);
         }
-        
+
         // verify the default value
         Assert.assertEquals("False", param.getDefault());
     }

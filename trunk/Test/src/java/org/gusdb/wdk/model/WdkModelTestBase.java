@@ -4,12 +4,15 @@
 package org.gusdb.wdk.model;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import org.gusdb.wdk.model.implementation.ModelXmlParser;
+import org.json.JSONException;
 import org.xml.sax.SAXException;
 
 /**
@@ -36,12 +39,21 @@ public abstract class WdkModelTestBase {
      * @throws TransformerException
      * @throws TransformerFactoryConfigurationError
      * @throws ParserConfigurationException
+     * @throws ClassNotFoundException
+     * @throws IllegalAccessException
+     * @throws InstantiationException
+     * @throws WdkUserException
+     * @throws JSONException
+     * @throws SQLException
+     * @throws NoSuchAlgorithmException
      */
     @org.junit.Before
-    public void initializeModel()
-            throws WdkModelException, ParserConfigurationException,
-            TransformerFactoryConfigurationError, TransformerException,
-            IOException, SAXException {
+    public void initializeModel() throws WdkModelException,
+            ParserConfigurationException, TransformerFactoryConfigurationError,
+            TransformerException, IOException, SAXException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException, InstantiationException, IllegalAccessException,
+            ClassNotFoundException {
         // get input from the system environment
         projectId = System.getProperty(Utilities.ARGUMENT_PROJECT_ID);
         gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
@@ -49,14 +61,14 @@ public abstract class WdkModelTestBase {
         // GUS_HOME is required
         if (gusHome == null || gusHome.length() == 0)
             throw new WdkModelException("Required "
-                    + Utilities.SYSTEM_PROPERTY_GUS_HOME + " property is missing.");
+                    + Utilities.SYSTEM_PROPERTY_GUS_HOME
+                    + " property is missing.");
 
         // project id is optional
         if (projectId == null || projectId.length() == 0)
             projectId = SAMPLE_PROJECT_ID;
 
         // initialize the model
-        ModelXmlParser parser = new ModelXmlParser(gusHome);
-        wdkModel = parser.parseModel(projectId);
+        wdkModel = WdkModel.construct(projectId, gusHome);
     }
 }

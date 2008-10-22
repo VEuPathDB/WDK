@@ -18,7 +18,7 @@ public class WdkModelTest extends WdkModelTestBase {
      */
     @org.junit.Test
     public void testGetModelInfo() {
-        String name = wdkModel.getName();
+        String name = wdkModel.getProjectId();
         Assert.assertTrue("the model name is not set", name != null
                 && name.length() > 0);
 
