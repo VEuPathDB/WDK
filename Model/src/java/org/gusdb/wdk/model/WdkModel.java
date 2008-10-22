@@ -395,7 +395,7 @@ public class WdkModel {
     }
 
     // ModelSetI's
-    private void addSet(ModelSetI set, Map<String, ModelSetI> setMap)
+    private void addSet(ModelSetI set, Map<String, ? super ModelSetI> setMap)
             throws WdkModelException {
         String setName = set.getName();
         if (allModelSets.containsKey(setName)) {
@@ -479,12 +479,11 @@ public class WdkModel {
         WdkModelException.modelName = getProjectId();
         WdkUserException.modelName = getProjectId();
 
-        // before the resources are excluded, the internal sets need to be
-        // created.
-        createInternalSets();
-
         // exclude resources that are not used by this project
         excludeResources();
+
+        // internal sets will be created if author hasn't define them
+        createInternalSets();
 
         // resolve references in the model objects
         resolveReferences();
@@ -740,24 +739,31 @@ public class WdkModel {
         macroList = null;
     }
 
-    private void createInternalSets() {
+    private void createInternalSets() throws WdkModelException {
         // create a param set to hold all internal params, that is, the params
         // created at run-time.
-        ParamSet internalParamSet = new ParamSet();
-        internalParamSet.setName(Utilities.INTERNAL_PARAM_SET);
-        addParamSet(internalParamSet);
+        if (!paramSets.containsKey(Utilities.INTERNAL_PARAM_SET)) {
+            ParamSet internalParamSet = new ParamSet();
+            internalParamSet.setName(Utilities.INTERNAL_PARAM_SET);
+            addSet(internalParamSet, paramSets);
+        }
 
         // create a query set to hold all internal queries, that is, the queries
         // created at run-time.
-        QuerySet internalQuerySet = new QuerySet();
-        internalQuerySet.setName(Utilities.INTERNAL_QUERY_SET);
-        addQuerySet(internalQuerySet);
+        if (!querySets.containsKey(Utilities.INTERNAL_QUERY_SET)) {
+            QuerySet internalQuerySet = new QuerySet();
+            internalQuerySet.setName(Utilities.INTERNAL_QUERY_SET);
+            addSet(internalQuerySet, querySets);
+        }
 
         // create a query set to hold all internal questions, that is, the
         // questions created at run-time.
-        QuestionSet internalQuestionSet = new QuestionSet();
-        internalQuestionSet.setName(Utilities.INTERNAL_QUESTION_SET);
-        addQuestionSet(internalQuestionSet);
+        if (!questionSets.containsKey(Utilities.INTERNAL_QUESTION_SET)) {
+            QuestionSet internalQuestionSet = new QuestionSet();
+            internalQuestionSet.setInternal(true);
+            internalQuestionSet.setName(Utilities.INTERNAL_QUESTION_SET);
+            addSet(internalQuestionSet, questionSets);
+        }
     }
 
     public String toString() {

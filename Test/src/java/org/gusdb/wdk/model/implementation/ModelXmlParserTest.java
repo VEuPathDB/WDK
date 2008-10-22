@@ -4,6 +4,8 @@
 package org.gusdb.wdk.model.implementation;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -12,17 +14,19 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelTestBase;
+import org.gusdb.wdk.model.WdkUserException;
+import org.json.JSONException;
 import org.junit.Assert;
 import org.xml.sax.SAXException;
 
 /**
  * @author Jerric this test suite covers the test on ModelXmlParser. - test
- * validation - test single valid model - test multi-part valid model - test
- * single invalid model - test mutli-part invalid model - test substitution -
- * test property substitution - test complete prop list - test incomplete prop
- * list - test import substitution - test successful import - test missing
- * import file - test model construction - test parse single model - test parse
- * multi-part model
+ *         validation - test single valid model - test multi-part valid model -
+ *         test single invalid model - test mutli-part invalid model - test
+ *         substitution - test property substitution - test complete prop list -
+ *         test incomplete prop list - test import substitution - test
+ *         successful import - test missing import file - test model
+ *         construction - test parse single model - test parse multi-part model
  */
 public class ModelXmlParserTest extends WdkModelTestBase {
 
@@ -58,14 +62,22 @@ public class ModelXmlParserTest extends WdkModelTestBase {
      * @throws TransformerException
      * @throws TransformerFactoryConfigurationError
      * @throws ParserConfigurationException
+     * @throws ClassNotFoundException
+     * @throws IllegalAccessException
+     * @throws InstantiationException
+     * @throws WdkUserException
+     * @throws JSONException
+     * @throws SQLException
+     * @throws NoSuchAlgorithmException
      */
     @org.junit.Test
-    public void testParseModel()
-            throws WdkModelException, ParserConfigurationException,
-            TransformerFactoryConfigurationError, TransformerException,
-            IOException, SAXException {
-        ModelXmlParser parser = new ModelXmlParser(gusHome);
-        WdkModel wdkModel = parser.parseModel(projectId);
+    public void testParseModel() throws WdkModelException,
+            ParserConfigurationException, TransformerFactoryConfigurationError,
+            TransformerException, IOException, SAXException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException, InstantiationException, IllegalAccessException,
+            ClassNotFoundException {
+        WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
         Assert.assertNotNull(wdkModel);
     }
 
@@ -79,15 +91,23 @@ public class ModelXmlParserTest extends WdkModelTestBase {
      * @throws TransformerException
      * @throws TransformerFactoryConfigurationError
      * @throws ParserConfigurationException
+     * @throws ClassNotFoundException
+     * @throws IllegalAccessException
+     * @throws InstantiationException
+     * @throws WdkUserException
+     * @throws JSONException
+     * @throws SQLException
+     * @throws NoSuchAlgorithmException
      */
-    @org.junit.Test(expected = WdkModelException.class)
-    public void testParseModelBadSyntax()
-            throws WdkModelException, ParserConfigurationException,
-            TransformerFactoryConfigurationError, TransformerException,
-            IOException, SAXException {
+    @org.junit.Test(expected = Exception.class)
+    public void testParseModelBadSyntax() throws WdkModelException,
+            ParserConfigurationException, TransformerFactoryConfigurationError,
+            TransformerException, IOException, SAXException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException, InstantiationException, IllegalAccessException,
+            ClassNotFoundException {
         String modelName = SAMPLE_DB_BAD_SYNTAX;
-        ModelXmlParser parser = new ModelXmlParser(gusHome);
-        parser.parseModel(modelName);
+        WdkModel.construct(modelName, gusHome);
     }
 
     /**
@@ -100,12 +120,21 @@ public class ModelXmlParserTest extends WdkModelTestBase {
      * @throws TransformerException
      * @throws TransformerFactoryConfigurationError
      * @throws ParserConfigurationException
+     * @throws ClassNotFoundException
+     * @throws IllegalAccessException
+     * @throws InstantiationException
+     * @throws WdkUserException
+     * @throws JSONException
+     * @throws SQLException
+     * @throws NoSuchAlgorithmException
      */
     @org.junit.Test(expected = IOException.class)
-    public void testParseModelBadImport()
-            throws WdkModelException, ParserConfigurationException,
-            TransformerFactoryConfigurationError, TransformerException,
-            IOException, SAXException {
+    public void testParseModelBadImport() throws WdkModelException,
+            ParserConfigurationException, TransformerFactoryConfigurationError,
+            TransformerException, IOException, SAXException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException, InstantiationException, IllegalAccessException,
+            ClassNotFoundException {
         String modelName = SAMPLE_DB_BAD_IMPORT;
         ModelXmlParser parser = new ModelXmlParser(gusHome);
         parser.parseModel(modelName);
@@ -121,15 +150,23 @@ public class ModelXmlParserTest extends WdkModelTestBase {
      * @throws TransformerException
      * @throws TransformerFactoryConfigurationError
      * @throws ParserConfigurationException
+     * @throws ClassNotFoundException
+     * @throws IllegalAccessException
+     * @throws InstantiationException
+     * @throws WdkUserException
+     * @throws JSONException
+     * @throws SQLException
+     * @throws NoSuchAlgorithmException
      */
     @org.junit.Test(expected = WdkModelException.class)
-    public void testParseModelBadSub()
-            throws WdkModelException, ParserConfigurationException,
-            TransformerFactoryConfigurationError, TransformerException,
-            IOException, SAXException {
+    public void testParseModelBadSub() throws WdkModelException,
+            ParserConfigurationException, TransformerFactoryConfigurationError,
+            TransformerException, IOException, SAXException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException, InstantiationException, IllegalAccessException,
+            ClassNotFoundException {
         String modelName = SAMPLE_DB_BAD_SUB;
-        ModelXmlParser parser = new ModelXmlParser(gusHome);
-        parser.parseModel(modelName);
+        WdkModel.construct(modelName, gusHome);
     }
 
     /**
@@ -142,14 +179,22 @@ public class ModelXmlParserTest extends WdkModelTestBase {
      * @throws TransformerException
      * @throws TransformerFactoryConfigurationError
      * @throws ParserConfigurationException
+     * @throws ClassNotFoundException
+     * @throws IllegalAccessException
+     * @throws InstantiationException
+     * @throws WdkUserException
+     * @throws JSONException
+     * @throws SQLException
+     * @throws NoSuchAlgorithmException
      */
     @org.junit.Test(expected = WdkModelException.class)
-    public void testParseModelBadRef()
-            throws WdkModelException, ParserConfigurationException,
-            TransformerFactoryConfigurationError, TransformerException,
-            IOException, SAXException {
+    public void testParseModelBadRef() throws WdkModelException,
+            ParserConfigurationException, TransformerFactoryConfigurationError,
+            TransformerException, IOException, SAXException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException, InstantiationException, IllegalAccessException,
+            ClassNotFoundException {
         String modelName = SAMPLE_DB_BAD_REF;
-        ModelXmlParser parser = new ModelXmlParser(gusHome);
-        parser.parseModel(modelName);
+        WdkModel.construct(modelName, gusHome);
     }
 }
