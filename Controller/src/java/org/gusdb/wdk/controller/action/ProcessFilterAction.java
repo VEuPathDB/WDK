@@ -255,6 +255,11 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	step.setIsCollapsible(originalStep.getIsCollapsible());
 	step.setCollapsedName(originalStep.getCollapsedName());
 	step.update(false);
+	    
+	if (strBranchId != null) {
+	    strBranchId = Integer.toString(step.getStepId());
+	}
+	
 	// if step has a parent step, need to continue updating the rest of the strategy.
 	while (step.getParentStep() != null) {
 	    //go to parent, update subsequent steps
