@@ -1,4 +1,108 @@
 ------------------------------------------------------------------------------
+ooooooooooooooooooooooooooo  WDK Version 1.18  ooooooooooooooooooooooooooooooo
+------------------------------------------------------------------------------
+
+Summary: This is a major release, many of the model code have been rewritten, 
+         including new caching strategy, and primaryKey can now have multiple 
+         columns, and new filter mechanism has been added.
+
+
+=========================== Model Features ===========================
+
+* The persistent tables are changed (check out the sql script in Model/data);
+  Answer persistent data is put into answer schema, and user persistent data is
+  put into user schema;
+  
+* The caching tables are changed. Caching index tables include "Query" and 
+  "QueryInstance", and they are created automatically. Cache tables are
+  created per question, and query_instance_id is used to identify the result
+  set for each query instance.
+
+* Authors are required to define <primaryKeyAttribute> for each <recordClass>,
+  which can have one or more columns to be used as combined primary key. (For
+  compatibility consideration, a "project_id" column is suggested).
+
+* the id queries (queries referred by questions) are required to return all
+  primary key columns, and WDK will verify it on model loading time;
+
+* the attribute queries (queries referred by <attributeQueryRef> in records are 
+  required to return all primary key columns too. An attribute query is supposed 
+  to return rows for all records, and one row per unique primary key; it should 
+  not have any param defined.
+
+* the table queries (queries referred by <table> in records) are required to
+  return all primary key columns too; (This constraint may be removed in the
+  future releases;) It can have optional params and the param name must match
+  any of the primary key columns.
+
+* <historyParam> is removed, and replaced by <answerParam>; answerParam is
+  required to define an associated recordClass;
+
+* <answerFilter> and <answerFilterInstance> are used to define filters on the 
+  results of a given recordClass type. A filter instance can be applied to any 
+  questions of that recordClass type. A filter query must have one answerParam, 
+  and optional other params; the values for the other params should be defined 
+  in <answerFilterInstance>; while the value of the answerParam is fetched 
+  automatically at rum-time. User can define a default filter, and it will be 
+  applied automatically for all answers of the given recordClass type. If a
+  booleanExpansion flag is assigned, all boolean results will be expanded by
+  that filter before the boolean operation.
+
+* <answerFilterLayout> provides directives to layout a group of filters on GUI; 
+  but it's up to the UI to decide the final display;
+
+* "sortingTable" property is deprecated, and if a "sortingColumn" is specified, 
+  it must be an existing column in the same query;
+
+* "lowerCase" property is changed to "ignoreCase"; if it's specified, the case 
+  of the values will be ignored when sorting on the column;
+
+* Author can nest other attributes in primaryKeyAttribute(<text>),
+  textAttribute(<text>) and linkAttribute(<displayText>, <url>), but only
+  columnAttribute and primaryKeyAttribute are allow in such nesting; the syntax 
+  is similar to params, for example, $$source_id$$;
+
+* An columnAttribute will be created by WDK for each primary column, if the 
+  author doesn't define one.
+  
+* the model-config.xml format changed. The data is grouped into appDb and 
+  userDb, and some of the configurations become optional.
+  
+* property declarations added in the model; WDK will make sure all the declared
+  properties present in model prop.
+  
+* More model validations; WDK now catches many of the model inconsistancies at
+  loading time, and better error messages.
+  
+* Sanity tests are integrated into the model, and the command lines are easier
+  to use. "-d" will allow wdkQuery and wdkSummary use default values as input;
+  
+* "-filter" in wdkSummary to display a view on command-line;
+
+* wsQuery is renamed to processQuery to reflect its nature.
+
+
+=========================== View Features ===========================
+
+* Filter summary and view are added to the summary page.
+
+* User can click on a filter to view the filtered results;
+
+* A history item is created for each filter result; and we also display filter
+  name on history page, if a history has a filter applied
+
+* User can choose to expand all boolean operands before boolean operations.
+
+* for every new query from the query page, a history item is created, even if
+  the params of this query is identical to a previous history.
+
+============================= Bug Fixes ==============================
+
+* Improved error messages, and more model errors are caught in model loading 
+  phase.
+
+
+------------------------------------------------------------------------------
 ooooooooooooooooooooooooooo  WDK Version 1.17  ooooooooooooooooooooooooooooooo
 ------------------------------------------------------------------------------
 
