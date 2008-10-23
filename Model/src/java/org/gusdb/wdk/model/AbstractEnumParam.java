@@ -4,10 +4,8 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.json.JSONException;
 
@@ -20,8 +18,8 @@ public abstract class AbstractEnumParam extends Param {
     protected boolean multiPick = false;
     protected Map<String, String> termInternalMap;
     protected Map<String, String> termDisplayMap;
-    protected Map<String, Set<String>> termChildrenMap;
-    
+    protected List<EnumParamTermNode> termTreeList;
+
     protected boolean quote = true;
 
     private List<ParamConfiguration> useTermOnlies = new ArrayList<ParamConfiguration>();
@@ -40,26 +38,13 @@ public abstract class AbstractEnumParam extends Param {
         if (param.termInternalMap != null)
             this.termInternalMap = new LinkedHashMap<String, String>(
                     param.termInternalMap);
-        if (param.termChildrenMap != null) {
-            this.termChildrenMap = copyMap(param.termChildrenMap);
+        if (param.termTreeList != null) {
+            this.termTreeList = new ArrayList<EnumParamTermNode>(
+                    param.termTreeList);
         }
         this.quote = param.quote;
         this.useTermOnly = param.useTermOnly;
         this.displayType = param.displayType;
-    }
-
-    private Map<String, Set<String>> copyMap(Map<String, Set<String>> oldMap) {
-        Map<String, Set<String>> newMap = new LinkedHashMap<String, Set<String>>();
-        for (String key : oldMap.keySet()) {
-            Set<String> oldChildren = oldMap.get(key);
-            if (oldChildren == null || oldChildren.size() == 0) {
-                newMap.put(key, null);
-            } else {
-                Set<String> newChildren = new LinkedHashSet<String>(oldChildren);
-                newMap.put(key, newChildren);
-            }
-        }
-        return newMap;
     }
 
     // ///////////////////////////////////////////////////////////////////
@@ -148,10 +133,13 @@ public abstract class AbstractEnumParam extends Param {
         return array;
     }
 
-    public Map<String, Set<String>> getVocabChildren() throws NoSuchAlgorithmException,
-            WdkModelException, SQLException, JSONException, WdkUserException {
+    public EnumParamTermNode[] getVocabTreeRoots()
+            throws NoSuchAlgorithmException, WdkModelException, SQLException,
+            JSONException, WdkUserException {
         initVocabMap();
-        return copyMap(termChildrenMap);
+        EnumParamTermNode[] array = new EnumParamTermNode[termTreeList.size()];
+        termTreeList.toArray(array);
+        return array;
     }
 
     public String[] getVocabInternal() throws WdkModelException,
@@ -323,20 +311,36 @@ public abstract class AbstractEnumParam extends Param {
         if (!hasUseTermOnly) useTermOnly = paramSet.isUseTermOnly();
         useTermOnlies = null;
     }
-    
-    protected void initTreeMap(Map<String, String> termParentMap) throws WdkModelException {
-        // construct the term children map
+
+    protected void initTreeMap(Map<String, String> termParentMap)
+            throws WdkModelException {
+        termTreeList = new ArrayList<EnumParamTermNode>();
+
+        // construct index
+        Map<String, EnumParamTermNode> indexMap = new LinkedHashMap<String, EnumParamTermNode>();
+        for (String term : termParentMap.keySet()) {
+            EnumParamTermNode node = new EnumParamTermNode(term);
+            node.setDisplay(termDisplayMap.get(term));
+            indexMap.put(term, node);
+
+            // check if the node is root
+            String parentTerm = termParentMap.get(term);
+            if (parentTerm != null && !termInternalMap.containsKey(parentTerm))
+                parentTerm = null;
+            if (parentTerm == null) {
+                termTreeList.add(node);
+                termParentMap.put(term, parentTerm);
+            }
+        }
+        // construct the relationships
         for (String term : termParentMap.keySet()) {
             String parentTerm = termParentMap.get(term);
+            // skip if parent doesn't exist
             if (parentTerm == null) continue;
-            if (!termChildrenMap.containsKey(parentTerm)) continue;
-            
-            Set<String> children = termChildrenMap.get(parentTerm);
-            if (children == null) {
-                children = new LinkedHashSet<String>();
-                termChildrenMap.put(parentTerm, children);
-            }
-            children.add(term);
+
+            EnumParamTermNode node = indexMap.get(term);
+            EnumParamTermNode parent = indexMap.get(parentTerm);
+            parent.addChild(node);
         }
     }
 }

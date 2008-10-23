@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.json.JSONObject;
 
@@ -38,7 +37,6 @@ public class EnumParam extends AbstractEnumParam {
         if (termInternalMap == null) {
             termInternalMap = new LinkedHashMap<String, String>();
             termDisplayMap = new LinkedHashMap<String, String>();
-            termChildrenMap = new LinkedHashMap<String, Set<String>>();
 
             Map<String, String> termParentMap = new LinkedHashMap<String, String>();
             
@@ -48,7 +46,6 @@ public class EnumParam extends AbstractEnumParam {
                 termInternalMap.put(term, item.getInternal());
                 termDisplayMap.put(term, item.getDisplay());
                 termParentMap.put(term, item.getParentTerm());
-                termChildrenMap.put(term, null);
             }
             initTreeMap(termParentMap);
         }
