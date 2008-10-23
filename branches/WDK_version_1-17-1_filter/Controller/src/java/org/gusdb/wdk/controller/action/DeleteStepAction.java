@@ -2,6 +2,7 @@ package org.gusdb.wdk.controller.action;
 
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Map;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServlet;
@@ -20,9 +21,17 @@ import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
+import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
+import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
+import org.gusdb.wdk.model.jspwrap.DatasetBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
+import org.gusdb.wdk.model.jspwrap.HistoryParamBean;
+import org.gusdb.wdk.model.jspwrap.ParamBean;
+import org.gusdb.wdk.model.jspwrap.EnumParamBean;
+import org.gusdb.wdk.model.jspwrap.QuestionBean;
+import org.gusdb.wdk.model.jspwrap.RecordBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
@@ -32,7 +41,7 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
  *  forwards to ShowSummaryAction
  **/
 
-public class DeleteStepAction extends Action {
+public class DeleteStepAction extends ProcessFilterAction {
     private static final Logger logger = Logger.getLogger(DeleteStepAction.class);
     
     public ActionForward execute( ActionMapping mapping, ActionForm form,
@@ -65,6 +74,12 @@ public class DeleteStepAction extends Action {
 	StepBean step, newStep;
 	String boolExp;
 	int stepIx;
+	
+	QuestionBean wdkQuestion;
+	Map<String, Object> internalParams;
+	Map<String, Boolean> sortingAttributes;
+	String questionName;
+	String[] summaryAttributes = null;
 
 	// Are we revising or deleting a step?
 	String deleteStep = request.getParameter("step");
@@ -114,10 +129,37 @@ public class DeleteStepAction extends Action {
 		stepIx += 2;
 		for (int i = stepIx; i < targetStep.getLength(); ++i) {
 		    newStep = targetStep.getStep(i);
-		    boolExp = newStep.getBooleanExpression();
-		    boolExp = step.getStepId() + boolExp.substring(boolExp.indexOf(" "), boolExp.lastIndexOf(" ") + 1) + newStep.getChildStep().getStepId();
-		    System.out.println("Delete boolExp " + i + ": " + boolExp);
-		    step = wdkUser.combineStep(boolExp);
+		    if (newStep.getIsTransform()) {
+			// Get question
+			wdkQuestion = newStep.getAnswerValue().getQuestion();
+			questionName = wdkQuestion.getFullName();
+			ParamBean[] params = wdkQuestion.getParams();
+			// Get internal params
+			internalParams = newStep.getAnswerValue().getParams();
+			// Change HistoryParam
+			HistoryParamBean histParam = null;
+			String oldValue = null;
+			for ( ParamBean param : params ) {
+			    if ( param instanceof HistoryParamBean ) {
+				histParam = (HistoryParamBean)param;
+			    }
+			}
+			
+			internalParams.put(histParam.getName(), wdkUser.getSignature() + ":" + step.getStepId());
+			// Get sortingAttributes
+			sortingAttributes = wdkUser.getSortingAttributes(questionName);
+			// Get summary attributes
+			summaryAttributes = wdkUser.getSummaryAttributes(questionName);
+			wdkAnswerValue = summaryPaging(request, wdkQuestion, internalParams,
+						       sortingAttributes, summaryAttributes);
+			step = wdkUser.createStep(wdkAnswerValue);
+		    }
+		    else {
+			boolExp = newStep.getBooleanExpression();
+			boolExp = step.getStepId() + boolExp.substring(boolExp.indexOf(" "), boolExp.lastIndexOf(" ") + 1) + newStep.getChildStep().getStepId();
+			System.out.println("Delete boolExp " + i + ": " + boolExp);
+			step = wdkUser.combineStep(boolExp);
+		    }
 		}
 	    }
 	    // not sure what to do here, but something has to happen...
@@ -139,10 +181,37 @@ public class DeleteStepAction extends Action {
 		stepIx++;
 		for (int i = stepIx; i < targetStep.getLength(); ++i) {
 		    newStep = targetStep.getStep(i);
-		    boolExp = newStep.getBooleanExpression();
-		    boolExp = step.getStepId() + boolExp.substring(boolExp.indexOf(" "), boolExp.lastIndexOf(" ") + 1) + newStep.getChildStep().getStepId();
-		    System.out.println("Delete boolExp " + i + ": " + boolExp);
-		    step = wdkUser.combineStep(boolExp);
+		    if (newStep.getIsTransform()) {
+			// Get question
+			wdkQuestion = newStep.getAnswerValue().getQuestion();
+			questionName = wdkQuestion.getFullName();
+			ParamBean[] params = wdkQuestion.getParams();
+			// Get internal params
+			internalParams = newStep.getAnswerValue().getParams();
+			// Change HistoryParam
+			HistoryParamBean histParam = null;
+			String oldValue = null;
+			for ( ParamBean param : params ) {
+			    if ( param instanceof HistoryParamBean ) {
+				histParam = (HistoryParamBean)param;
+			    }
+			}
+			
+			internalParams.put(histParam.getName(), wdkUser.getSignature() + ":" + step.getStepId());
+			// Get sortingAttributes
+			sortingAttributes = wdkUser.getSortingAttributes(questionName);
+			// Get summary attributes
+			summaryAttributes = wdkUser.getSummaryAttributes(questionName);
+			wdkAnswerValue = summaryPaging(request, wdkQuestion, internalParams,
+						       sortingAttributes, summaryAttributes);
+			step = wdkUser.createStep(wdkAnswerValue); 
+		    }
+		    else {
+			boolExp = newStep.getBooleanExpression();
+			boolExp = step.getStepId() + boolExp.substring(boolExp.indexOf(" "), boolExp.lastIndexOf(" ") + 1) + newStep.getChildStep().getStepId();
+			System.out.println("Delete boolExp " + i + ": " + boolExp);
+			step = wdkUser.combineStep(boolExp);
+		    }
 		}
 	    }
 	    // if this is the last step, then we just set the previous step as the last step of the strategy
@@ -151,10 +220,7 @@ public class DeleteStepAction extends Action {
 	    }
 	}
 
-	// set nextStep to null so we can set the strategy pointer later
-	System.out.println("Before nulling nextStep");
 	newStep = null;
-	System.out.println("Setting nextStep to null");
 	step.setNextStep(newStep);
 
 	// follow any parent pointers, update parent strategies
@@ -178,9 +244,36 @@ public class DeleteStepAction extends Action {
 		while (parentStep.getNextStep() != null) {
 		    parentStep = parentStep.getNextStep();
 		    // need to check if step is a transform (in which case there's no boolean expression; we need to update history param
-		    boolExp = parentStep.getBooleanExpression();
-		    boolExp = step.getStepId() + boolExp.substring(boolExp.indexOf(" "), boolExp.lastIndexOf(" ") + 1) + parentStep.getChildStep().getStepId();
-		    step = wdkUser.combineStep(boolExp);
+		    if (parentStep.getIsTransform()) {
+			// Get question
+			wdkQuestion = parentStep.getAnswerValue().getQuestion();
+			questionName = wdkQuestion.getFullName();
+			ParamBean[] params = wdkQuestion.getParams();
+			// Get internal params
+			internalParams = parentStep.getAnswerValue().getParams();
+			// Change HistoryParam
+			HistoryParamBean histParam = null;
+			String oldValue = null;
+			for ( ParamBean param : params ) {
+			    if ( param instanceof HistoryParamBean ) {
+				histParam = (HistoryParamBean)param;
+			    }
+			}
+			
+			internalParams.put(histParam.getName(), wdkUser.getSignature() + ":" + step.getStepId());
+			// Get sortingAttributes
+			sortingAttributes = wdkUser.getSortingAttributes(questionName);
+			// Get summary attributes
+			summaryAttributes = wdkUser.getSummaryAttributes(questionName);
+			wdkAnswerValue = summaryPaging(request, wdkQuestion, internalParams,
+						       sortingAttributes, summaryAttributes);
+			step = wdkUser.createStep(wdkAnswerValue);
+		    }
+		    else {
+			boolExp = parentStep.getBooleanExpression();
+			boolExp = step.getStepId() + boolExp.substring(boolExp.indexOf(" "), boolExp.lastIndexOf(" ") + 1) + parentStep.getChildStep().getStepId();
+			step = wdkUser.combineStep(boolExp);
+		    }
 		}
 		step.setParentStep(parentStep.getParentStep());
 		step.setIsCollapsible(parentStep.getIsCollapsible());

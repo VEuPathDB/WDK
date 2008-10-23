@@ -31,28 +31,49 @@ public class HistoryParam extends Param {
     public String validateValue(Object value) throws WdkModelException {
         String compound = value.toString();
         String[] parts = compound.split(":");
-        if (parts.length != 2)
+        if (parts.length > 2)
             return "Invalid value format of HistoryParam " + name + ": "
                     + value;
 
-        // the input have a valid user id and history id
-        String signature = parts[0].trim();
-        String strHistId = parts[1].trim();
-        if (strHistId.matches("\\d+")) {
-            int historyId = Integer.parseInt(strHistId);
-            try {
-                User user = factory.loadUserBySignature(signature);
-                //user.getHistory(historyId);
-		user.getStep(historyId);
-            } catch (WdkUserException ex) {
-                ex.printStackTrace();
-                return ex.getMessage();
-            }
-            return null;
-        } else {
-            return "Invalid value format of HistoryParam " + name + ": "
+	else if (parts.length == 1) {
+	    //the input have a valid answer id
+	    int answerId = Integer.parseInt(parts[0].trim());
+	    try {
+		User user = factory.createGuestUser();
+		factory.loadAnswer(user, answerId, null, null);
+	    } catch (WdkUserException ex) {
+		ex.printStackTrace();
+		return ex.getMessage();
+	    }
+	}
+	else {
+	    // the input have a valid user id and step id
+	    // or valid user id and history id
+	    String signature = parts[0].trim();
+	    String strHistId = parts[1].trim();
+	    if (strHistId.matches("\\d+")) {
+		int historyId = Integer.parseInt(strHistId);
+		try {
+		    User user = factory.loadUserBySignature(signature);
+		    user.getHistory(historyId);
+		} catch (WdkUserException ex) {
+		    try {
+			User user = factory.loadUserBySignature(signature);
+			user.getStep(historyId);
+		    } catch (WdkUserException e) {
+			e.printStackTrace();
+			return e.getMessage();
+		    }
+		} finally {
+		    return null;
+		}
+	    } else {
+		return "Invalid value format of HistoryParam " + name + ": "
                     + value;
-        }
+	    }
+	}
+	return "Invalid value format of HistoryParam " + name + ": "
+	    + value;
     }
 
     /*

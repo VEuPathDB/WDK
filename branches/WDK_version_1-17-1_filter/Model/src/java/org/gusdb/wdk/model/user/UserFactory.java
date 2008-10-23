@@ -799,7 +799,7 @@ public class UserFactory {
     }
 
 
-    private Answer createAnswer(User user, AnswerValue result, String booleanExpression)
+    private Answer createAnswer(User user, AnswerValue result, String booleanExpression, String qiChecksum, String signature, String params)
  	throws WdkUserException, WdkModelException {
 	//int userId = user.getUserId();
         String questionName = result.getQuestion().getFullName();
@@ -807,14 +807,8 @@ public class UserFactory {
         boolean isBoolean = result.getIsBoolean();
 
         int estimateSize = result.getResultSize();
-        QueryInstance qinstance = result.getIdsQueryInstance();
-        String qiChecksum = qinstance.getChecksum();
-        String signature = qinstance.getQuery().getSignature();
-        String params = booleanExpression;
-        if (!isBoolean)
-            params = qinstance.getQuery().getFullName()
-                    + qinstance.getParamsContent();
-	else {
+
+	if (isBoolean) {
 	    // change booleanExpression to use answer ids
 	    int stepId = Integer.parseInt(params.substring(0, params.indexOf(" ")));
 	    Step step = loadStep(user, stepId);
@@ -915,7 +909,7 @@ public class UserFactory {
         }
     }
 
-    private Answer loadAnswer(User user, int answerId, String leftChildId, String rightChildId) 
+    public Answer loadAnswer(User user, int answerId, String leftChildId, String rightChildId) 
 	throws WdkUserException {
 	ResultSet rsHistory = null;
 	PreparedStatement psHistory = null;
@@ -960,6 +954,20 @@ public class UserFactory {
                     result = constructBooleanAnswerValue(user, boolExp);
                     answer.setBooleanExpression(paramsClob);
                 } else {
+		    // Change HistoryParam, if exists
+		    Question question = (Question) wdkModel.resolveReference(questionName);
+		    Param[] paramsMap = question.getParams();
+		    HistoryParam histParam = null;
+		    String oldValue = null;
+		    for ( Param param : paramsMap ) {
+			if ( param instanceof HistoryParam ) {
+			    histParam = (HistoryParam)param;
+			}
+		    }
+	
+		    if (histParam != null) { 
+			params.put(histParam.getName(), user.getSignature() + ":" + leftChildId);
+		    }
                     result = constructAnswerValue(user, questionName, params);
                 }
                 answer.setAnswerValue(result);
@@ -1112,12 +1120,38 @@ public class UserFactory {
 
         int estimateSize = result.getResultSize();
         QueryInstance qinstance = result.getIdsQueryInstance();
+
+	// Change HistoryParam, if exists, and set original child step id;
+	Param[] paramsMap = result.getQuestion().getParams();
+	HistoryParam histParam = null;
+	String oldValue = null;
+	for ( Param param : paramsMap ) {
+	    if ( param instanceof HistoryParam ) {
+		histParam = (HistoryParam)param;
+	    }
+	}
+	
+	if (histParam != null) { 
+	    Map<String, Object> paramVals = result.getParams();
+	    oldValue = (String) paramVals.get(histParam.getName());
+	    int stepId = Integer.parseInt(oldValue.split(":")[1]);
+	    paramVals.put(histParam.getName(), loadStep(user, stepId).getAnswer().getAnswerId());
+	    qinstance.setValues(paramVals);
+	}
+
         String qiChecksum = qinstance.getChecksum();
         String signature = qinstance.getQuery().getSignature();
         String params = booleanExpression;
         if (!isBoolean)
             params = qinstance.getQuery().getFullName()
                     + qinstance.getParamsContent();
+	
+	// Revert HistoryParam after calculating the above
+	if (histParam != null) { 
+	    Map<String, Object> paramVals = result.getParams();
+	    paramVals.put(histParam.getName(), oldValue);
+	    qinstance.setValues(paramVals);
+	}
 
 	PreparedStatement psAnswer = null;
 	PreparedStatement psCheck = null;
@@ -1151,11 +1185,14 @@ public class UserFactory {
 		    leftChildId = booleanExpression.substring(0, booleanExpression.indexOf(" "));
 		    rightChildId = booleanExpression.substring(booleanExpression.lastIndexOf(" ") + 1, booleanExpression.length());
 		}
+		else if (oldValue != null) {
+		    leftChildId = oldValue.split(":")[1];
+		}
 		answer = loadAnswer(user, answerId, leftChildId, rightChildId);
 		System.out.println("Answer id: " + answerId);
 	    }
 	    else {
-		answer = createAnswer(user, result, booleanExpression);
+		answer = createAnswer(user, result, booleanExpression, qiChecksum, signature, params);
 	    }
 	
 	    // Now that we have the Answer, create the Step
@@ -1277,7 +1314,8 @@ public class UserFactory {
 		    throw new WdkUserException("Transform query has no HistoryParam.");
 
 		Map<String, Object> paramVals = step.getAnswerValue().getParams();
-		leftChildId = Integer.parseInt((String) paramVals.get(histParam.getName()));
+		String val = (String) paramVals.get(histParam.getName());
+		leftChildId = Integer.parseInt(val.split(":")[1]);
 		psUpdateAnswerTree.setInt(1, leftChildId);
 		psUpdateAnswerTree.setInt(2, step.getInternalId());
 	    }
@@ -1409,28 +1447,9 @@ public class UserFactory {
 	    // recursively, construct step objects
 	    
 	    Step latestStep = importStep(user, loadAnswer(user, globalId, null, null));
-	    // Need to create strategy & then load it so that AnswerValues are created properly
+	    // Need to create strategy & then load it so that all AnswerValues are created properly
 	    Strategy strategy = createStrategy(user, latestStep, null, false);
 	    return loadStrategy(user, strategy.getStrategyId());
-	    /*
-	    // Get user_id, strategy_id from strategies by signature
-	    PreparedStatement psStrategy = SqlUtils.getPreparedStatement(
-		     dataSource, "SELECT user_id, display_id FROM "
-		     + loginSchema + "strategies WHERE "
-		     + "strategy_id = ?");
-	    psStrategy.setInt(1, globalId);
-	    rsStrategy = psStrategy.executeQuery();
-	    if (!rsStrategy.next())
-		throw new WdkUserException("The strategy with global id " + globalId + " doesn't exist.");
-
-	    int userId = rsStrategy.getInt("user_id");
-	    int strategyId = rsStrategy.getInt("display_id");
-
-	    if (userId == user.getUserId()) {
-		return loadStrategy(user, strategyId);
-	    }
-	    return importStrategy(user, userId, strategyId);
-	    */
 	} catch (SQLException ex) {
 	    throw new WdkUserException(ex);
 	} finally {
@@ -1441,21 +1460,6 @@ public class UserFactory {
 	    }
 	}
     }
-
-    /*
-    private Strategy importStrategy(User user, int exportUserId, int strategyId)
-	throws WdkUserException, WdkModelException {
-	
-	// Load export User by user_id
-	User exportUser = loadUser(exportUserId);
-	// Load Strategy by export User, strategy_id
-	Strategy exportStrat = loadStrategy(exportUser, strategyId);
-
-	Step importLatest = importStep(user, exportStrat.getLatestStep());
-      
-	return createStrategy(user, importLatest, exportStrat.getName(), exportStrat.getIsSaved());
-    }
-    */
 
     private Step importStep(User user, Answer answer)
 	throws WdkUserException, WdkModelException {
@@ -1480,11 +1484,25 @@ public class UserFactory {
 	    // Need to reload answer w/ step ids so we can reconstruct the AnswerValue
 	    answer = loadAnswer(user, answer.getAnswerId(),  Integer.toString(leftChild.getStepId()), Integer.toString(rightChild.getStepId()));
 	}
+	
 	// Is this step a transform?  Import depended steps first.
-	else if (answer.isTransform()) {
-	    throw new WdkModelException("Not implemented yet!!!");
+	Param[] paramsMap = answer.getAnswerValue().getQuestion().getParams();
+	HistoryParam histParam = null;
+	
+	for ( Param param : paramsMap ) {
+	    if ( param instanceof HistoryParam ) {
+		histParam = (HistoryParam)param;
+	    }
 	}
-
+	
+	if (histParam != null) { 
+	    Map<String, Object> paramVals = answer.getAnswerValue().getParams();
+	    String oldValue = (String) paramVals.get(histParam.getName());
+	    Answer leftAnswer = loadAnswer(user, Integer.parseInt(oldValue), null, null);
+	    Step leftChild = importStep(user, leftAnswer);
+	    answer = loadAnswer(user, answer.getAnswerId(), Integer.toString(leftChild.getStepId()), null);
+	}
+	
 	step = createStep(user, answer.getAnswerValue(), booleanExpression, false);
 	// Need to determine how these should be set.
 	//importStep.setCollapsible();
@@ -1493,37 +1511,6 @@ public class UserFactory {
 
 	return step;
     }
-
-    /*
-    private Step importStep(User user, Step exportStep)
-	throws WdkUserException, WdkModelException {
-	Step importStep;
-	String booleanExpression = null;
-
-	if (exportStep.getUser() == user) {
-	    return exportStep;
-	}
-
-	// Is this step a boolean?  Load depended steps first.
-	if (exportStep.isBoolean()) {
-	    Step leftChild = importStep(user, exportStep.getPreviousStep());
-	    Step rightChild = importStep(user, exportStep.getChildStep());
-	    booleanExpression = leftChild.getStepId() + " " + exportStep.getOperation() + " " + rightChild.getStepId();
-	}
-	// Is this step a transform?  Load depended step first.
-	else if (exportStep.isTransform()) {
-	    throw new WdkModelException("Not implemented yet!!!");
-	}
-
-	importStep = createStep(user, exportStep.getAnswerValue(), booleanExpression, exportStep.isDeleted());
-	importStep.setCollapsible(exportStep.isCollapsible());
-	importStep.setCollapsedName(exportStep.getCollapsedName());
-
-	updateStep(user, importStep, false);
-
-	return importStep;
-    }
-    */
 
     Strategy loadStrategy(User user, int userStrategyId) throws WdkUserException {
 	// Get name, saved, latest step_id, and all latest step data

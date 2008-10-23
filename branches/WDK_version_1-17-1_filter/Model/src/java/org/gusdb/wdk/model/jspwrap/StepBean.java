@@ -106,6 +106,10 @@ public class StepBean {
 	return new AnswerValueBean(step.getAnswerValue());
     }
 
+    public int getAnswerId() {
+	return step.getAnswerId();
+    }
+
     public int getStepId() {
 	return step.getStepId();
     }
@@ -142,7 +146,7 @@ public class StepBean {
         return step.isBoolean();
     }
 
-    public boolean isTransform() {
+    public boolean getIsTransform() {
 	return step.isTransform();
     }
 

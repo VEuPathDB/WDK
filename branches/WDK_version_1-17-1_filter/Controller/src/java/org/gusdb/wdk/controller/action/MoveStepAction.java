@@ -3,6 +3,7 @@ package org.gusdb.wdk.controller.action;
 import java.net.URLEncoder;
 import java.util.Date;
 import java.util.ArrayList;
+import java.util.Map;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServlet;
@@ -21,9 +22,17 @@ import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
+import org.gusdb.wdk.model.jspwrap.BooleanQuestionNodeBean;
+import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
+import org.gusdb.wdk.model.jspwrap.DatasetBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
+import org.gusdb.wdk.model.jspwrap.HistoryParamBean;
+import org.gusdb.wdk.model.jspwrap.ParamBean;
+import org.gusdb.wdk.model.jspwrap.EnumParamBean;
+import org.gusdb.wdk.model.jspwrap.QuestionBean;
+import org.gusdb.wdk.model.jspwrap.RecordBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
@@ -33,7 +42,7 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
  *  and forwards to ShowSummaryAction
  **/
 
-public class MoveStepAction extends Action {
+public class MoveStepAction extends ProcessFilterAction {
     private static final Logger logger = Logger.getLogger(MoveStepAction.class);
 
     public ActionForward execture(ActionMapping mapping, ActionForm form,
@@ -73,6 +82,13 @@ public class MoveStepAction extends Action {
 	}
 	
 	StrategyBean strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
+	
+        AnswerValueBean wdkAnswerValue;
+	QuestionBean wdkQuestion;
+	Map<String, Object> internalParams;
+	Map<String, Boolean> sortingAttributes;
+	String questionName;
+	String[] summaryAttributes = null;
 
 	ArrayList<Integer> activeStrategies = (ArrayList<Integer>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
 	int index = -1;
@@ -113,8 +129,6 @@ public class MoveStepAction extends Action {
 	    for (int i = stubIx + 1; i < length; ++i) {
 		if (i == moveToIx) {
 		    if (step == null) {
-			// used to be step = new StepBean(moveFromStep.getChildStepUserAnswer());
-			// may need a clone method so that step is a separate object from moveFromStep
 			step = moveFromStep.getChildStep();
 		    }
 		    else {
@@ -137,7 +151,6 @@ public class MoveStepAction extends Action {
 		else {
 		    newStep = targetStep.getStep(i);
 		    if (step == null) {
-			// need clone method?
 			step = newStep.getChildStep();
 		    }
 		    else {
@@ -173,9 +186,36 @@ public class MoveStepAction extends Action {
 		    while (parentStep.getNextStep() != null) {
 			parentStep = parentStep.getNextStep();
 			// need to check if step is a transform (in which case there's no boolean expression; we need to update history param
-			boolExp = parentStep.getBooleanExpression();
-			boolExp = step.getStepId() + boolExp.substring(boolExp.indexOf(" "), boolExp.lastIndexOf(" ") + 1) + parentStep.getChildStep().getStepId();
-			step = wdkUser.combineStep(boolExp);
+			if (parentStep.getIsTransform()) {
+			    // Get question
+			    wdkQuestion = parentStep.getAnswerValue().getQuestion();
+			    questionName = wdkQuestion.getFullName();
+			    ParamBean[] params = wdkQuestion.getParams();
+			    // Get internal params
+			    internalParams = parentStep.getAnswerValue().getParams();
+			    // Change HistoryParam
+			    HistoryParamBean histParam = null;
+			    String oldValue = null;
+			    for ( ParamBean param : params ) {
+				if ( param instanceof HistoryParamBean ) {
+				    histParam = (HistoryParamBean)param;
+				}
+			    }
+			    
+			    internalParams.put(histParam.getName(), wdkUser.getSignature() + ":" + step.getStepId());
+			    // Get sortingAttributes
+			    sortingAttributes = wdkUser.getSortingAttributes(questionName);
+			    // Get summary attributes
+			    summaryAttributes = wdkUser.getSummaryAttributes(questionName);
+			    wdkAnswerValue = summaryPaging(request, wdkQuestion, internalParams,
+							   sortingAttributes, summaryAttributes);
+			    step = wdkUser.createStep(wdkAnswerValue); 
+			}
+			else {
+			    boolExp = parentStep.getBooleanExpression();
+			    boolExp = step.getStepId() + boolExp.substring(boolExp.indexOf(" "), boolExp.lastIndexOf(" ") + 1) + parentStep.getChildStep().getStepId();
+			    step = wdkUser.combineStep(boolExp);
+			}
 		    }
 		    step.setParentStep(parentStep.getParentStep());
 		    step.setIsCollapsible(parentStep.getIsCollapsible());
