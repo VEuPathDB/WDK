@@ -3,9 +3,7 @@ package org.gusdb.wdk.model;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Query;
@@ -101,7 +99,6 @@ public class FlatVocabParam extends AbstractEnumParam {
         if (termInternalMap == null) {
             termInternalMap = new LinkedHashMap<String, String>();
             termDisplayMap = new LinkedHashMap<String, String>();
-            termChildrenMap = new LinkedHashMap<String, Set<String>>();
 
             // check if the query has "display" column
             boolean hasDisplay = query.getColumnMap().containsKey(
@@ -132,11 +129,11 @@ public class FlatVocabParam extends AbstractEnumParam {
 
                 termInternalMap.put(term, value);
                 termDisplayMap.put(term, display);
-                termChildrenMap.put(term, null);
             }
             if (termInternalMap.size() == 0)
                 throw new WdkModelException("No item returned by the query of"
                         + " FlatVocabParam " + getFullName());
+            initTreeMap(termParentMap);
         }
     }
 

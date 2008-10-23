@@ -3,10 +3,10 @@ package org.gusdb.wdk.model.jspwrap;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Map;
-import java.util.Set;
 
 import org.gusdb.wdk.model.AbstractEnumParam;
 import org.gusdb.wdk.model.EnumParam;
+import org.gusdb.wdk.model.EnumParamTermNode;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.json.JSONException;
@@ -59,9 +59,9 @@ public class EnumParamBean extends ParamBean {
         return ((AbstractEnumParam) param).getDisplayType();
     }
 
-    public Map<String, Set<String>> VocabChildren()
+    public EnumParamTermNode[] getVocabTreeRoots()
             throws NoSuchAlgorithmException, WdkModelException, SQLException,
             JSONException, WdkUserException {
-        return ((AbstractEnumParam) param).getVocabChildren();
+        return ((AbstractEnumParam) param).getVocabTreeRoots();
     }
 }

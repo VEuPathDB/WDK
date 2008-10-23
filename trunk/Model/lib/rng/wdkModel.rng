@@ -340,7 +340,7 @@
         <ref name="ParamBaseContents" />
         <optional>
             <attribute name="multiPick">
-                <data type="boolean" />
+                <data type="boolean" />  
             </attribute>
         </optional>
         <optional>
