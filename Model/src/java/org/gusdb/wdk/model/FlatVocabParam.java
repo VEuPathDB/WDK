@@ -133,7 +133,7 @@ public class FlatVocabParam extends AbstractEnumParam {
             if (termInternalMap.size() == 0)
                 throw new WdkModelException("No item returned by the query of"
                         + " FlatVocabParam " + getFullName());
-            initTreeMap(termParentMap);
+            if (hasParent) initTreeMap(termParentMap);
         }
     }
 
