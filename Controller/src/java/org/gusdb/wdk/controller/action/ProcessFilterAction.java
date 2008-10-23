@@ -78,6 +78,14 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	String strBranchId = null;
 	StepBean step;
         AnswerValueBean wdkAnswerValue;
+	
+	QuestionBean wdkQuestion;
+	Map<String, Object> internalParams;
+	Map<String, Boolean> sortingAttributes;
+	String questionName;
+	String[] summaryAttributes = null;
+
+	boolean isTransform = false;
 
 	// did we get strategyId_stepId?
 	if (strStratId.indexOf("_") > 0) {
@@ -97,12 +105,12 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	}
 
 	String boolExp = request.getParameter("booleanExpression");
-	String insertStratIdstr = request.getParameter("insertStrategy");
+	String insertStratIdStr = request.getParameter("insertStrategy");
 
 	// are we inserting an existing step?
-	if (insertStratIdstr != null && insertStratIdstr.length() != 0) {
+	if (insertStratIdStr != null && insertStratIdStr.length() != 0) {
 	    // yes:  load step, create a new step w/ same answervalue
-	    StrategyBean insertStrat = wdkUser.getStrategy(Integer.parseInt(insertStratIdstr));
+	    StrategyBean insertStrat = wdkUser.getStrategy(Integer.parseInt(insertStratIdStr));
 	    step = cloneStrategy(wdkUser, insertStrat.getLatestStep());
 	    wdkAnswerValue = step.getAnswerValue();
 	    step.setIsCollapsible(true);
@@ -112,24 +120,23 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	else {
 	    // no: get question
 	    String qFullName = request.getParameter( CConstants.QUESTION_FULLNAME_PARAM );
-	    QuestionBean wdkQuestion = getQuestionByFullName( qFullName );
+	    wdkQuestion = getQuestionByFullName( qFullName );
 	    QuestionForm fForm = prepareQuestionForm( wdkQuestion, request,
 						      ( QuestionForm ) form );
 	    
 	    // validate & parse params
 	    Map< String, String > params = prepareParams( wdkUser, request, fForm );
 	    
-	    Map<String, Object> internalParams = fForm.getMyProps();
+	    internalParams = fForm.getMyProps();
 	    
 	    // Get question name
-	    String questionName = wdkQuestion.getFullName();
+	    questionName = wdkQuestion.getFullName();
 	    
 	    internalParams = handleMultiPickParams(new LinkedHashMap<String, Object>(fForm.getMyProps()));
 	    handleDatasetParams(wdkUser, wdkQuestion, internalParams);
 	    
 	    // get sorting key, if have
 	    String sortingChecksum = request.getParameter(CConstants.WDK_SORTING_KEY);
-	    Map<String, Boolean> sortingAttributes;
 	    if (sortingChecksum != null) {
 		sortingAttributes = wdkUser.getSortingAttributesByChecksum(sortingChecksum);
 		request.setAttribute("wdk_sorting_checksum", sortingChecksum);
@@ -139,7 +146,6 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	    
 	    // get summary key, if have
 	    String summaryChecksum = request.getParameter(CConstants.WDK_SUMMARY_KEY);
-	    String[] summaryAttributes = null;
 	    if (summaryChecksum != null) {
 		summaryAttributes = wdkUser.getSummaryAttributesByChecksum(summaryChecksum);
 		request.setAttribute("wdk_summary_checksum", sortingChecksum);
@@ -163,6 +169,9 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	    
 	    // create step for filter subquery
 	    step = wdkUser.createStep(wdkAnswerValue);
+	    // We only set isTransform = true if we're running a new query & it's a transform
+	    // If we're inserting a strategy, it has to be a boolean (given current operations, at least)
+	    isTransform = step.getIsTransform();
 	}
 	
         int stepId = step.getStepId();
@@ -185,16 +194,20 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	}
 	System.out.println("Op: " + op);
 	
+	boolExp = null;
 	if ((reviseStep == null || reviseStep.length() == 0) &&
 	    (insertStep == null || insertStep.length() == 0)) {
-	    boolExp = originalStep.getStepId() + " " + op + " " + stepId;
-	    System.out.println("Boolean expression for add: " + boolExp);
-	    
-	    // now create step for operation query
-	    step = wdkUser.combineStep(boolExp);
-	    stepId = step.getStepId();
-	    
-	    step.setChildStep(childStep);
+	    if (!isTransform) {
+		// now create step for operation query, if it's a boolean
+		boolExp = originalStep.getStepId() + " " + op + " " + stepId;
+		System.out.println("Boolean expression for add: " + boolExp);
+		step = wdkUser.combineStep(boolExp);
+		stepId = step.getStepId();
+		
+		step.setChildStep(childStep);
+	    }
+	    // implied:  since step is a transform (and we aren't inserting a strategy), we've
+	    // already run the filter query (b/c the transform is just a query w/ a history param
 	}
 	else {
 	    int stratLen = originalStep.getLength();
@@ -210,32 +223,71 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 		step = originalStep.getStep(targetIx);
 		if (step.getIsFirstStep()) {
 		    if (isRevise) {
-			boolExp = step.getNextStep().getBooleanExpression();
-			boolExp = stepId + boolExp.substring(boolExp.indexOf(" "), boolExp.lastIndexOf(" ") + 1) + step.getNextStep().getChildStep().getStepId();
+			if (step.getNextStep().getIsTransform()) {
+			    // Get question
+			    wdkQuestion = step.getAnswerValue().getQuestion();
+			    questionName = wdkQuestion.getFullName();
+			    ParamBean[] params = wdkQuestion.getParams();
+			    // Get internal params
+			    internalParams = step.getAnswerValue().getParams();
+			    // Change HistoryParam
+			    HistoryParamBean histParam = null;
+			    String oldValue = null;
+			    for ( ParamBean param : params ) {
+				if ( param instanceof HistoryParamBean ) {
+				    histParam = (HistoryParamBean)param;
+				}
+			    }
+			    
+			    internalParams.put(histParam.getName(), wdkUser.getSignature() + ":" + stepId);
+			    // Get sortingAttributes
+			    sortingAttributes = wdkUser.getSortingAttributes(questionName);
+			    // Get summary attributes
+			    summaryAttributes = wdkUser.getSummaryAttributes(questionName);
+			    wdkAnswerValue = summaryPaging(request, wdkQuestion, internalParams,
+							   sortingAttributes, summaryAttributes);
+			    step = wdkUser.createStep(wdkAnswerValue);
+			}
+			else {
+			    boolExp = step.getNextStep().getBooleanExpression();
+			    boolExp = stepId + boolExp.substring(boolExp.indexOf(" "), boolExp.lastIndexOf(" ") + 1) + step.getNextStep().getChildStep().getStepId();
+			}
 			targetIx++;
 		    }
 		    else {
+			// if inserting before first step, there has to be a boolean expression
+			// b/c existing first step is a regular non-boolean, non-transform query
 			boolExp = stepId +  " " + op + " " + step.getStepId();
 		    }
 		    targetIx++;
 		}
 		else {
 		    if (isRevise) {
-			// build standard boolExp for non-first step
-			boolExp = step.getPreviousStep().getStepId() + " " + op + " " + stepId;
+			if (!isTransform) {
+			    // build standard boolExp for non-first step
+			    boolExp = step.getPreviousStep().getStepId() + " " + op + " " + stepId;
+			}
+			// implied:  if we're revising a transform step, we've already run the revised query,
+			// so we just need to update subsequent steps
 			targetIx++;
 		    }
 		    else {
-			// the inserted step has to point to the step at insertIx - 1
-			step = step.getPreviousStep();
-			boolExp = step.getStepId() + " " + op + " " + stepId;
+			if (!isTransform) {
+			    // need to check if this is boolean or not
+			    // the inserted step has to point to the step at insertIx - 1
+			    boolExp = step.getPreviousStep().getStepId() + " " + op + " " + stepId;
+			}
+			// implied:  if we're inserting a transform, the HistoryParam should already
+			// be pointing to the step at insertIx - 1, so we just need to update subsequent steps.
 		    }
 		}
 
-		System.out.println("Boolean expression for revise/insert: " + boolExp);
-		// now create step for operation query
-		step = wdkUser.combineStep(boolExp);
-		stepId = step.getStepId();
+		if (boolExp != null) {
+		    System.out.println("Boolean expression for revise/insert: " + boolExp);
+		    // now create step for operation query
+		    step = wdkUser.combineStep(boolExp);
+		    stepId = step.getStepId();
+		}
 		
 		step.setChildStep(childStep);
 		
@@ -243,9 +295,36 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 		for (int i = targetIx; i < stratLen; ++i) {
 		    System.out.println("Updating step " + i);
 		    step = originalStep.getStep(i);
-		    boolExp = step.getBooleanExpression();
-		    boolExp = stepId + boolExp.substring(boolExp.indexOf(" "), boolExp.lastIndexOf(" ") + 1) + step.getChildStep().getStepId();
-		    step = wdkUser.combineStep(boolExp);
+		    if (step.getIsTransform()) {
+			// Get question
+			wdkQuestion = step.getAnswerValue().getQuestion();
+			questionName = wdkQuestion.getFullName();
+			ParamBean[] params = wdkQuestion.getParams();
+			// Get internal params
+			internalParams = step.getAnswerValue().getParams();
+			// Change HistoryParam
+			HistoryParamBean histParam = null;
+			String oldValue = null;
+			for ( ParamBean param : params ) {
+			    if ( param instanceof HistoryParamBean ) {
+				histParam = (HistoryParamBean)param;
+			    }
+			}
+			
+			internalParams.put(histParam.getName(), wdkUser.getSignature() + ":" + stepId);
+			// Get sortingAttributes
+			sortingAttributes = wdkUser.getSortingAttributes(questionName);
+			// Get summary attributes
+			summaryAttributes = wdkUser.getSummaryAttributes(questionName);
+			wdkAnswerValue = summaryPaging(request, wdkQuestion, internalParams,
+						       sortingAttributes, summaryAttributes);
+			step = wdkUser.createStep(wdkAnswerValue);
+		    }
+		    else {
+			boolExp = step.getBooleanExpression();
+			boolExp = stepId + boolExp.substring(boolExp.indexOf(" "), boolExp.lastIndexOf(" ") + 1) + step.getChildStep().getStepId();
+			step = wdkUser.combineStep(boolExp);
+		    }
 		    stepId = step.getStepId();
 		}
 	    }
@@ -264,23 +343,48 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	while (step.getParentStep() != null) {
 	    //go to parent, update subsequent steps
 	    StepBean parentStep = step.getParentStep();
-	    if (parentStep != null) {
-		//update parent, then update subsequent
-		boolExp = parentStep.getBooleanExpression();
-		boolExp = parentStep.getPreviousStep().getStepId() + boolExp.substring(boolExp.indexOf(" "), boolExp.lastIndexOf(" ") + 1) + step.getStepId();
-		step = wdkUser.combineStep(boolExp);
-		while (parentStep.getNextStep() != null) {
-		    parentStep = parentStep.getNextStep();
-		    // need to check if step is a transform (in which case there's no boolean expression; we need to update history param
+	    //update parent, then update subsequent
+	    boolExp = parentStep.getBooleanExpression();
+	    boolExp = parentStep.getPreviousStep().getStepId() + boolExp.substring(boolExp.indexOf(" "), boolExp.lastIndexOf(" ") + 1) + step.getStepId();
+	    step = wdkUser.combineStep(boolExp);
+	    while (parentStep.getNextStep() != null) {
+		parentStep = parentStep.getNextStep();
+		// need to check if step is a transform (in which case there's no boolean expression; we need to update history param
+		if (parentStep.getIsTransform()) {
+		    // Get question
+		    wdkQuestion = parentStep.getAnswerValue().getQuestion();
+		    questionName = wdkQuestion.getFullName();
+		    ParamBean[] params = wdkQuestion.getParams();
+		    // Get internal params
+		    internalParams = parentStep.getAnswerValue().getParams();
+		    // Change HistoryParam
+		    HistoryParamBean histParam = null;
+		    String oldValue = null;
+		    for ( ParamBean param : params ) {
+			if ( param instanceof HistoryParamBean ) {
+			    histParam = (HistoryParamBean)param;
+			}
+		    }
+		    
+		    internalParams.put(histParam.getName(), wdkUser.getSignature() + ":" + stepId);
+		    // Get sortingAttributes
+		    sortingAttributes = wdkUser.getSortingAttributes(questionName);
+		    // Get summary attributes
+		    summaryAttributes = wdkUser.getSummaryAttributes(questionName);
+		    wdkAnswerValue = summaryPaging(request, wdkQuestion, internalParams,
+						   sortingAttributes, summaryAttributes);
+		    step = wdkUser.createStep(wdkAnswerValue);
+		}
+		else {
 		    boolExp = parentStep.getBooleanExpression();
 		    boolExp = step.getStepId() + boolExp.substring(boolExp.indexOf(" "), boolExp.lastIndexOf(" ") + 1) + parentStep.getChildStep().getStepId();
 		    step = wdkUser.combineStep(boolExp);
 		}
-		step.setParentStep(parentStep.getParentStep());
-		step.setIsCollapsible(parentStep.getIsCollapsible());
-		step.setCollapsedName(parentStep.getCollapsedName());
-		step.update(false);
 	    }
+	    step.setParentStep(parentStep.getParentStep());
+	    step.setIsCollapsible(parentStep.getIsCollapsible());
+	    step.setCollapsedName(parentStep.getCollapsedName());
+	    step.update(false);
 	}
 
 	// set latest step

@@ -206,6 +206,9 @@ public class Step {
 	return answer;
     }
 
+    public int getAnswerId() {
+	return answer.getAnswerId();
+    }
 
     /**
      * @return Returns the result.
