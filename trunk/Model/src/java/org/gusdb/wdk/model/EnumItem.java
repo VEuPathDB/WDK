@@ -5,6 +5,7 @@ public class EnumItem extends WdkModelBase {
     private String display;
     private String term;
     private String internal;
+    private String parentTerm;
     private boolean isDefault = false;
 
     /**
@@ -22,6 +23,7 @@ public class EnumItem extends WdkModelBase {
         this.term = enumItem.term;
         this.internal = enumItem.internal;
         this.isDefault = enumItem.isDefault;
+        this.parentTerm = enumItem.parentTerm;
     }
 
     /**
@@ -33,7 +35,7 @@ public class EnumItem extends WdkModelBase {
 
     /**
      * @param display
-     *                the display to set
+     *            the display to set
      */
     public void setDisplay(String display) {
         this.display = display;
@@ -64,7 +66,7 @@ public class EnumItem extends WdkModelBase {
 
     /**
      * @param isDefault
-     *                the isDefault to set
+     *            the isDefault to set
      */
     public void setDefault(boolean isDefault) {
         this.isDefault = isDefault;
@@ -83,10 +85,27 @@ public class EnumItem extends WdkModelBase {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model.WdkModel)
+     * @see
+     * org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model
+     * .WdkModel)
      */
     @Override
     public void resolveReferences(WdkModel wodkModel) throws WdkModelException {
     // do nothing.
+    }
+
+    /**
+     * @return the parentTerm
+     */
+    public String getParentTerm() {
+        return parentTerm;
+    }
+
+    /**
+     * @param parentTerm
+     *            the parentTerm to set
+     */
+    public void setParentTerm(String parentTerm) {
+        this.parentTerm = parentTerm;
     }
 }

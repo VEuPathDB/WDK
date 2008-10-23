@@ -291,17 +291,24 @@
                                     <data type="boolean" />
                                 </attribute>
                             </optional>
-                            <optional>
-                                <element name="display">
+                            <interleave>
+                                <element name="term">
                                     <text />
                                 </element>
-                            </optional>
-                            <element name="term">
-                                <text />
-                            </element>
-                            <element name="internal">
-                                <text />
-                            </element>
+                                <element name="internal">
+                                    <text />
+                                </element>
+                                <optional>
+                                    <element name="display">
+                                        <text />
+                                    </element>
+                                </optional>
+                                <optional>
+                                    <element name="parentTerm">
+                                        <text />
+                                    </element>
+                                </optional>
+                            </interleave>
                         </element>
                     </oneOrMore>
                 </element>
@@ -346,6 +353,7 @@
                <choice>
                   <value>listBox</value>
                   <value>checkBox</value>
+                  <value>treeBox</value>
                </choice>
            </attribute>
        </optional>
