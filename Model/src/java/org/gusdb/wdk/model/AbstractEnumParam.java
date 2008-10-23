@@ -4,8 +4,10 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.json.JSONException;
 
@@ -18,6 +20,8 @@ public abstract class AbstractEnumParam extends Param {
     protected boolean multiPick = false;
     protected Map<String, String> termInternalMap;
     protected Map<String, String> termDisplayMap;
+    protected Map<String, Set<String>> termChildrenMap;
+    
     protected boolean quote = true;
 
     private List<ParamConfiguration> useTermOnlies = new ArrayList<ParamConfiguration>();
@@ -36,9 +40,26 @@ public abstract class AbstractEnumParam extends Param {
         if (param.termInternalMap != null)
             this.termInternalMap = new LinkedHashMap<String, String>(
                     param.termInternalMap);
+        if (param.termChildrenMap != null) {
+            this.termChildrenMap = copyMap(param.termChildrenMap);
+        }
         this.quote = param.quote;
         this.useTermOnly = param.useTermOnly;
         this.displayType = param.displayType;
+    }
+
+    private Map<String, Set<String>> copyMap(Map<String, Set<String>> oldMap) {
+        Map<String, Set<String>> newMap = new LinkedHashMap<String, Set<String>>();
+        for (String key : oldMap.keySet()) {
+            Set<String> oldChildren = oldMap.get(key);
+            if (oldChildren == null || oldChildren.size() == 0) {
+                newMap.put(key, null);
+            } else {
+                Set<String> newChildren = new LinkedHashSet<String>(oldChildren);
+                newMap.put(key, newChildren);
+            }
+        }
+        return newMap;
     }
 
     // ///////////////////////////////////////////////////////////////////
@@ -67,7 +88,8 @@ public abstract class AbstractEnumParam extends Param {
 
     @Override
     public String validateValue(Object value) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException, WdkUserException {
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
         // check if null value is allowed; if so, pass
         if (allowEmpty && value == null) return null;
 
@@ -100,7 +122,7 @@ public abstract class AbstractEnumParam extends Param {
         if (allowEmpty && termList == null) return getEmptyValue();
 
         // the input is a list of terms
-        String[] terms = (String[]) decompressValue((String)termList);
+        String[] terms = (String[]) decompressValue((String) termList);
         initVocabMap();
         StringBuffer buf = new StringBuffer();
         for (String term : terms) {
@@ -124,6 +146,12 @@ public abstract class AbstractEnumParam extends Param {
         String[] array = new String[termInternalMap.size()];
         termInternalMap.keySet().toArray(array);
         return array;
+    }
+
+    public Map<String, Set<String>> getVocabChildren() throws NoSuchAlgorithmException,
+            WdkModelException, SQLException, JSONException, WdkUserException {
+        initVocabMap();
+        return copyMap(termChildrenMap);
     }
 
     public String[] getVocabInternal() throws WdkModelException,
@@ -294,5 +322,21 @@ public abstract class AbstractEnumParam extends Param {
         // if no useTermOnly setting, use parent's
         if (!hasUseTermOnly) useTermOnly = paramSet.isUseTermOnly();
         useTermOnlies = null;
+    }
+    
+    protected void initTreeMap(Map<String, String> termParentMap) throws WdkModelException {
+        // construct the term children map
+        for (String term : termParentMap.keySet()) {
+            String parentTerm = termParentMap.get(term);
+            if (parentTerm == null) continue;
+            if (!termChildrenMap.containsKey(parentTerm)) continue;
+            
+            Set<String> children = termChildrenMap.get(parentTerm);
+            if (children == null) {
+                children = new LinkedHashSet<String>();
+                termChildrenMap.put(parentTerm, children);
+            }
+            children.add(term);
+        }
     }
 }
