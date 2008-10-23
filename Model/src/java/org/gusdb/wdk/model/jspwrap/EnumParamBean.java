@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.jspwrap;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.Set;
 
 import org.gusdb.wdk.model.AbstractEnumParam;
 import org.gusdb.wdk.model.EnumParam;
@@ -56,5 +57,11 @@ public class EnumParamBean extends ParamBean {
 
     public String getDisplayType() {
         return ((AbstractEnumParam) param).getDisplayType();
+    }
+
+    public Map<String, Set<String>> VocabChildren()
+            throws NoSuchAlgorithmException, WdkModelException, SQLException,
+            JSONException, WdkUserException {
+        return ((AbstractEnumParam) param).getVocabChildren();
     }
 }
