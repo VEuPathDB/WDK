@@ -130,29 +130,7 @@ public class DeleteStepAction extends ProcessFilterAction {
 		for (int i = stepIx; i < targetStep.getLength(); ++i) {
 		    newStep = targetStep.getStep(i);
 		    if (newStep.getIsTransform()) {
-			// Get question
-			wdkQuestion = newStep.getAnswerValue().getQuestion();
-			questionName = wdkQuestion.getFullName();
-			ParamBean[] params = wdkQuestion.getParams();
-			// Get internal params
-			internalParams = newStep.getAnswerValue().getParams();
-			// Change HistoryParam
-			HistoryParamBean histParam = null;
-			String oldValue = null;
-			for ( ParamBean param : params ) {
-			    if ( param instanceof HistoryParamBean ) {
-				histParam = (HistoryParamBean)param;
-			    }
-			}
-			
-			internalParams.put(histParam.getName(), wdkUser.getSignature() + ":" + step.getStepId());
-			// Get sortingAttributes
-			sortingAttributes = wdkUser.getSortingAttributes(questionName);
-			// Get summary attributes
-			summaryAttributes = wdkUser.getSummaryAttributes(questionName);
-			wdkAnswerValue = summaryPaging(request, wdkQuestion, internalParams,
-						       sortingAttributes, summaryAttributes);
-			step = wdkUser.createStep(wdkAnswerValue);
+			step = updateTransform(request, wdkUser, newStep, step.getStepId());
 		    }
 		    else {
 			boolExp = newStep.getBooleanExpression();
@@ -182,29 +160,7 @@ public class DeleteStepAction extends ProcessFilterAction {
 		for (int i = stepIx; i < targetStep.getLength(); ++i) {
 		    newStep = targetStep.getStep(i);
 		    if (newStep.getIsTransform()) {
-			// Get question
-			wdkQuestion = newStep.getAnswerValue().getQuestion();
-			questionName = wdkQuestion.getFullName();
-			ParamBean[] params = wdkQuestion.getParams();
-			// Get internal params
-			internalParams = newStep.getAnswerValue().getParams();
-			// Change HistoryParam
-			HistoryParamBean histParam = null;
-			String oldValue = null;
-			for ( ParamBean param : params ) {
-			    if ( param instanceof HistoryParamBean ) {
-				histParam = (HistoryParamBean)param;
-			    }
-			}
-			
-			internalParams.put(histParam.getName(), wdkUser.getSignature() + ":" + step.getStepId());
-			// Get sortingAttributes
-			sortingAttributes = wdkUser.getSortingAttributes(questionName);
-			// Get summary attributes
-			summaryAttributes = wdkUser.getSummaryAttributes(questionName);
-			wdkAnswerValue = summaryPaging(request, wdkQuestion, internalParams,
-						       sortingAttributes, summaryAttributes);
-			step = wdkUser.createStep(wdkAnswerValue); 
+			step = updateTransform(request, wdkUser, newStep, step.getStepId());
 		    }
 		    else {
 			boolExp = newStep.getBooleanExpression();
@@ -245,29 +201,7 @@ public class DeleteStepAction extends ProcessFilterAction {
 		    parentStep = parentStep.getNextStep();
 		    // need to check if step is a transform (in which case there's no boolean expression; we need to update history param
 		    if (parentStep.getIsTransform()) {
-			// Get question
-			wdkQuestion = parentStep.getAnswerValue().getQuestion();
-			questionName = wdkQuestion.getFullName();
-			ParamBean[] params = wdkQuestion.getParams();
-			// Get internal params
-			internalParams = parentStep.getAnswerValue().getParams();
-			// Change HistoryParam
-			HistoryParamBean histParam = null;
-			String oldValue = null;
-			for ( ParamBean param : params ) {
-			    if ( param instanceof HistoryParamBean ) {
-				histParam = (HistoryParamBean)param;
-			    }
-			}
-			
-			internalParams.put(histParam.getName(), wdkUser.getSignature() + ":" + step.getStepId());
-			// Get sortingAttributes
-			sortingAttributes = wdkUser.getSortingAttributes(questionName);
-			// Get summary attributes
-			summaryAttributes = wdkUser.getSummaryAttributes(questionName);
-			wdkAnswerValue = summaryPaging(request, wdkQuestion, internalParams,
-						       sortingAttributes, summaryAttributes);
-			step = wdkUser.createStep(wdkAnswerValue);
+			step = updateTransform(request, wdkUser, parentStep, step.getStepId());
 		    }
 		    else {
 			boolExp = parentStep.getBooleanExpression();
