@@ -6,31 +6,21 @@ Provides form input element for a given term tree node of EnumParam.
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="bean" uri="http://jakarta.apache.org/struts/tags-bean" %>
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
-<%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
 
+<c:set var="qP" value="${requestScope.recurse_enum_param}"/>
+<c:set var="node" value="${requestScope.recurse_term_node}"/>
 
-<%@ attribute name="param"
-              type="org.gusdb.wdk.model.jspwrap.EnumParamBean"
-              required="true"
-              description="parameter name"
-%>
-
-<%@ attribute name="node"
-              type="org.gusdb.wdk.model.EnumParamTermNode"
-              required="true"
-              description="Term Node"
-%>
+<c:set var="children" value="${node.children}" />
+<c:set var="pNam" value="${qP.name}" />
 
 <%-- display param term --%>
 <div id="${pNam}-info" class="term-node">
-    <c:set var="pNam" value="${param.name}" />
-    
     <c:choose>
-        <c:when test="${fn:length(node.children) == 0}">
-            <img src="images/spacer.gif width="19" height="19" />
+        <c:when test="${fn:length(children) == 0}">
+            <img src="images/spacer.gif" width="19" height="19" />
         </c:when>
         <c:otherwise>
-            <img src="images/minus.gif width="19" height="19" />
+            <img src="images/minus.gif" width="19" height="19" />
         </c:otherwise>
     </c:choose>
     
@@ -49,7 +39,8 @@ Provides form input element for a given term tree node of EnumParam.
 
 <%-- recursively display children terms --%>
 <div id="${pNam}-child" class="term-children">
-    <c:forEach items="${node.children}" var="child">
-        <wdk:enumParamInputNode param="${param}" node="${child}" />
-    <c:/forEach>  
+    <c:forEach items="${children}" var="child">
+        <c:set var="recurse_term_node" value="${child}" scope="request"/>
+        <c:import url="/WEB-INF/includes/enumParamInputNode.jsp" />
+    </c:forEach>  
 </div>

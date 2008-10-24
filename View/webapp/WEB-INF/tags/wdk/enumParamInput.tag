@@ -12,7 +12,6 @@ Otherwise a standard select menu is used.
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="bean" uri="http://jakarta.apache.org/struts/tags-bean" %>
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
-<%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
 
 <%@ attribute name="qp"
               type="org.gusdb.wdk.model.jspwrap.EnumParamBean"
@@ -62,12 +61,16 @@ Otherwise a standard select menu is used.
     </c:when>
     
     <%-- use a tree list --%>
-    <c:when test="treeBox">
+    <c:when test="${displayType eq 'treeBox'}">
+        <c:set var="recurse_enum_param" value="${qP}" scope="request"/>
         <c:forEach items="${qP.vocabTreeRoots}" var="root">
-            <wdk:enumParamInputNode param="${qP}" node="${root}" />
-        <c:/forEach>
+            <c:set var="recurse_term_node" value="${root}" scope="request"/>
+            <c:import url="/WEB-INF/includes/enumParamInputNode.jsp"/>
+        </c:forEach>
+        <c:remove var="recurse_term_node" scope="request"/>
+        <c:remove var="recurse_enum_param" scope="request"/>
     </c:when>
-    
+
     <c:otherwise>
       <html:select  property="myMultiProp(${pNam})" multiple="1" styleId="${pNam}">
         <c:set var="opt" value="${opt+1}"/>
