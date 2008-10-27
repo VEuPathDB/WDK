@@ -24,6 +24,8 @@ Otherwise a standard select menu is used.
 <c:set var="opt" value="0"/>
 <c:set var="displayType" value="${qP.displayType}"/>
 
+<div class="param">
+
 <c:choose>
 <c:when test="${qP.multiPick}">
   <%-- multiPick is true, use checkboxes or scroll pane --%>
@@ -31,19 +33,19 @@ Otherwise a standard select menu is used.
     <c:when test="${displayType eq 'checkBox' || (displayType == null && fn:length(qP.vocab) < 15)}"><%-- use checkboxes --%>
       <c:set var="i" value="0"/>
       <table border="1" cellspacing="0"><tr><td>
-      <c:forEach items="${qP.displayMap}" var="enumItem">
+      <c:forEach items="${qP.displayMap}" var="entity">
         <c:if test="${i == 0}"><c:set var="checked" value="checked"/></c:if>
         <c:if test="${i > 0}"><br></c:if>
         
         <c:choose>
         <%-- test for param labels to italicize --%>
         <c:when test="${pNam == 'organism' or pNam == 'ecorganism'}">
-          <html:multibox property="myMultiProp(${pNam})" value="${enumItem.key}" styleId="${pNam}" />
-          <i>${enumItem.value}</i>&nbsp;
+          <html:multibox property="myMultiProp(${pNam})" value="${entity.key}" styleId="${pNam}" />
+          <i>${entity.value}</i>&nbsp;
         </c:when>
         <c:otherwise> <%-- use multiselect menu --%>
-          <html:multibox property="myMultiProp(${pNam})" value="${enumItem.key}" styleId="${pNam}" />
-          ${enumItem.value}&nbsp;
+          <html:multibox property="myMultiProp(${pNam})" value="${entity.key}" styleId="${pNam}" />
+          ${entity.value}&nbsp;
         </c:otherwise>
         </c:choose> 
         
@@ -57,6 +59,18 @@ Otherwise a standard select menu is used.
       </tr>
       </table>
     </c:when>
+    
+    <%-- use a tree list --%>
+    <c:when test="${displayType eq 'treeBox'}">
+        <c:set var="recurse_enum_param" value="${qP}" scope="request"/>
+        <c:forEach items="${qP.vocabTreeRoots}" var="root">
+            <c:set var="recurse_term_node" value="${root}" scope="request"/>
+            <c:import url="/WEB-INF/includes/enumParamInputNode.jsp"/>
+        </c:forEach>
+        <c:remove var="recurse_term_node" scope="request"/>
+        <c:remove var="recurse_enum_param" scope="request"/>
+    </c:when>
+
     <c:otherwise>
       <html:select  property="myMultiProp(${pNam})" multiple="1" styleId="${pNam}">
         <c:set var="opt" value="${opt+1}"/>
@@ -80,3 +94,5 @@ Otherwise a standard select menu is used.
   </html:select>
 </c:otherwise>
 </c:choose>
+
+</div>

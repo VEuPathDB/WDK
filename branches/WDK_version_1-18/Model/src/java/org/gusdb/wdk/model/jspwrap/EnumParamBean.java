@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.gusdb.wdk.model.AbstractEnumParam;
 import org.gusdb.wdk.model.EnumParam;
+import org.gusdb.wdk.model.EnumParamTermNode;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.json.JSONException;
@@ -56,5 +57,11 @@ public class EnumParamBean extends ParamBean {
 
     public String getDisplayType() {
         return ((AbstractEnumParam) param).getDisplayType();
+    }
+
+    public EnumParamTermNode[] getVocabTreeRoots()
+            throws NoSuchAlgorithmException, WdkModelException, SQLException,
+            JSONException, WdkUserException {
+        return ((AbstractEnumParam) param).getVocabTreeRoots();
     }
 }

@@ -18,6 +18,7 @@ public class FlatVocabParam extends AbstractEnumParam {
     private static final String COLUMN_TERM = "term";
     private static final String COLUMN_INTERNAL = "internal";
     private static final String COLUMN_DISPLAY = "display";
+    private static final String COLUMN_PARENT_TERM = "parentTerm";
 
     private Query query;
     private String queryTwoPartName;
@@ -59,7 +60,8 @@ public class FlatVocabParam extends AbstractEnumParam {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.Param#resolveReferences(org.gusdb.wdk.model.WdkModel)
+     * @see
+     * org.gusdb.wdk.model.Param#resolveReferences(org.gusdb.wdk.model.WdkModel)
      */
     @Override
     public void resolveReferences(WdkModel model) throws WdkModelException {
@@ -99,7 +101,13 @@ public class FlatVocabParam extends AbstractEnumParam {
             termDisplayMap = new LinkedHashMap<String, String>();
 
             // check if the query has "display" column
-            boolean hasDisplay = query.getColumnMap().containsKey("display");
+            boolean hasDisplay = query.getColumnMap().containsKey(
+                    COLUMN_DISPLAY);
+            boolean hasParent = query.getColumnMap().containsKey(
+                    COLUMN_PARENT_TERM);
+
+            Map<String, String> termParentMap = null;
+            if (hasParent) termParentMap = new LinkedHashMap<String, String>();
 
             // prepare param values
             Map<String, Object> values = new LinkedHashMap<String, Object>();
@@ -112,12 +120,20 @@ public class FlatVocabParam extends AbstractEnumParam {
                 String value = result.get(COLUMN_INTERNAL).toString();
                 String display = hasDisplay
                         ? result.get(COLUMN_DISPLAY).toString() : term;
+                if (hasParent) {
+                    Object parent = result.get(COLUMN_PARENT_TERM);
+                    String parentTerm = (parent == null) ? null
+                            : parent.toString();
+                    termParentMap.put(term, parentTerm);
+                }
+
                 termInternalMap.put(term, value);
                 termDisplayMap.put(term, display);
             }
             if (termInternalMap.size() == 0)
                 throw new WdkModelException("No item returned by the query of"
                         + " FlatVocabParam " + getFullName());
+            if (hasParent) initTreeMap(termParentMap);
         }
     }
 

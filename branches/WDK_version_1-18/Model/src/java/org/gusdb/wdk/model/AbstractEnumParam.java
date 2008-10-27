@@ -18,6 +18,8 @@ public abstract class AbstractEnumParam extends Param {
     protected boolean multiPick = false;
     protected Map<String, String> termInternalMap;
     protected Map<String, String> termDisplayMap;
+    protected List<EnumParamTermNode> termTreeList;
+
     protected boolean quote = true;
 
     private List<ParamConfiguration> useTermOnlies = new ArrayList<ParamConfiguration>();
@@ -36,6 +38,10 @@ public abstract class AbstractEnumParam extends Param {
         if (param.termInternalMap != null)
             this.termInternalMap = new LinkedHashMap<String, String>(
                     param.termInternalMap);
+        if (param.termTreeList != null) {
+            this.termTreeList = new ArrayList<EnumParamTermNode>(
+                    param.termTreeList);
+        }
         this.quote = param.quote;
         this.useTermOnly = param.useTermOnly;
         this.displayType = param.displayType;
@@ -67,7 +73,8 @@ public abstract class AbstractEnumParam extends Param {
 
     @Override
     public String validateValue(Object value) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException, WdkUserException {
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
         // check if null value is allowed; if so, pass
         if (allowEmpty && value == null) return null;
 
@@ -100,7 +107,7 @@ public abstract class AbstractEnumParam extends Param {
         if (allowEmpty && termList == null) return getEmptyValue();
 
         // the input is a list of terms
-        String[] terms = (String[]) decompressValue((String)termList);
+        String[] terms = (String[]) decompressValue((String) termList);
         initVocabMap();
         StringBuffer buf = new StringBuffer();
         for (String term : terms) {
@@ -123,6 +130,15 @@ public abstract class AbstractEnumParam extends Param {
         initVocabMap();
         String[] array = new String[termInternalMap.size()];
         termInternalMap.keySet().toArray(array);
+        return array;
+    }
+
+    public EnumParamTermNode[] getVocabTreeRoots()
+            throws NoSuchAlgorithmException, WdkModelException, SQLException,
+            JSONException, WdkUserException {
+        initVocabMap();
+        EnumParamTermNode[] array = new EnumParamTermNode[termTreeList.size()];
+        termTreeList.toArray(array);
         return array;
     }
 
@@ -294,5 +310,37 @@ public abstract class AbstractEnumParam extends Param {
         // if no useTermOnly setting, use parent's
         if (!hasUseTermOnly) useTermOnly = paramSet.isUseTermOnly();
         useTermOnlies = null;
+    }
+
+    protected void initTreeMap(Map<String, String> termParentMap)
+            throws WdkModelException {
+        termTreeList = new ArrayList<EnumParamTermNode>();
+
+        // construct index
+        Map<String, EnumParamTermNode> indexMap = new LinkedHashMap<String, EnumParamTermNode>();
+        for (String term : termParentMap.keySet()) {
+            EnumParamTermNode node = new EnumParamTermNode(term);
+            node.setDisplay(termDisplayMap.get(term));
+            indexMap.put(term, node);
+
+            // check if the node is root
+            String parentTerm = termParentMap.get(term);
+            if (parentTerm != null && !termInternalMap.containsKey(parentTerm))
+                parentTerm = null;
+            if (parentTerm == null) {
+                termTreeList.add(node);
+                termParentMap.put(term, parentTerm);
+            }
+        }
+        // construct the relationships
+        for (String term : termParentMap.keySet()) {
+            String parentTerm = termParentMap.get(term);
+            // skip if parent doesn't exist
+            if (parentTerm == null) continue;
+
+            EnumParamTermNode node = indexMap.get(term);
+            EnumParamTermNode parent = indexMap.get(parentTerm);
+            parent.addChild(node);
+        }
     }
 }
