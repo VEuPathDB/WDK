@@ -79,6 +79,10 @@ public class ProcessSummaryAction extends Action {
 		else 
 		    step = targetStep.getStep(Integer.parseInt(stepIx));
 		
+		String subQuery = request.getParameter("subquery");
+		if (subQuery != null && subQuery.length() != 0 && Boolean.valueOf(subQuery)) {
+		    step = step.getChildStep();
+		}
 		stepId = Integer.toString(step.getStepId());
 	    }
             AnswerValueBean answer = step.getAnswerValue();
