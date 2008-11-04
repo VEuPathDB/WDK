@@ -89,22 +89,22 @@ public class DownloadStepAnswerValueAction extends Action {
     
     protected AnswerValueBean getAnswerValueBean( HttpServletRequest request )
             throws Exception {
-        String histIdstr = request.getParameter( "step_id" );
-        if ( histIdstr == null ) {
-            histIdstr = ( String ) request.getAttribute( "step_id" );
+        String stepIdstr = request.getParameter( "step_id" );
+        if ( stepIdstr == null ) {
+            stepIdstr = ( String ) request.getAttribute( "step_id" );
         }
-        if ( histIdstr != null ) {
-            int histId = Integer.parseInt( histIdstr );
-            request.setAttribute( "step_id", histId );
+        if ( stepIdstr != null ) {
+            int stepId = Integer.parseInt( stepIdstr );
+            request.setAttribute( "step_id", stepId );
             
             UserBean wdkUser = ( UserBean ) request.getSession().getAttribute(
                     CConstants.WDK_USER_KEY );
             
-            StepBean userAnswer = wdkUser.getStep( histId );
-            return userAnswer.getAnswerValue();
+            StepBean step = wdkUser.getStep( stepId );
+            return step.getAnswerValue();
         } else {
             throw new Exception(
-                    "no userAnswer id is given for which to download the result" );
+                    "no step id is given for which to download the result" );
         }
     }
 }
