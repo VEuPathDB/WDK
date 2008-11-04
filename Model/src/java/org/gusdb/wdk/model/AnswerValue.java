@@ -281,55 +281,59 @@ public class AnswerValue {
         return question.isSummaryAttribute(attName);
     }
 
-    private void releaseRecordInstances() {
+    public void releaseRecordInstances() {
         if (pageRecordInstances != null && pageRecordInstances.length > 0) {
-        //    pageRecordInstances = new RecordInstance[0];
-          pageRecordInstances = null;
-          recordInstanceCursor = 0;
+            pageRecordInstances = new RecordInstance[0];
+	    //pageRecordInstances = null;
+	    recordInstanceCursor = 0;
         }
     }
 
-    // Returns null if we have already returned the last instance
-    public RecordInstance getNextRecordInstance() { //throws WdkModelException {
-    	//logger.info("getNextRecordIsntance() Cursor = " + recordInstanceCursor);
-        //try {
-            //initPageRecordInstances();
-
-            //RecordInstance nextInstance = null;
-            //if (recordInstanceCursor < pageRecordInstances.length) {
-               RecordInstance nextInstance = pageRecordInstances[recordInstanceCursor];
-                recordInstanceCursor++;
-            //}
-            //if (nextInstance == null) {
-                // clean up the record instances
-              //  releaseRecordInstances();
-            //}
-           return nextInstance;
-        //} catch (WdkModelException ex) {
-         //   releaseRecordInstances();
-         //   throw ex;
-        //}
+    public void resetRecordCounter() {
+	recordInstanceCursor = 0;
     }
 
-    public boolean hasMoreRecordInstances() { //throws WdkModelException {
+    // Returns null if we have already returned the last instance
+    public RecordInstance getNextRecordInstance() throws WdkModelException {
+    	//logger.info("getNextRecordIsntance() Cursor = " + recordInstanceCursor);
+        try {
+            initPageRecordInstances();
+
+            RecordInstance nextInstance = null;
+            if (recordInstanceCursor < pageRecordInstances.length) {
+		nextInstance = pageRecordInstances[recordInstanceCursor];
+                recordInstanceCursor++;
+            }
+            if (nextInstance == null) {
+                //clean up the record instances
+		//releaseRecordInstances();
+            }
+	    return nextInstance;
+        } catch (WdkModelException ex) {
+            releaseRecordInstances();
+	    throw ex;
+        }
+    }
+
+    public boolean hasMoreRecordInstances() throws WdkModelException {
         //logger.info("hasMoreRecordInstances() Cursor = " + recordInstanceCursor);
-        //try {
-        //    initPageRecordInstances();
+        try {
+            initPageRecordInstances();
 
             if (pageRecordInstances == null) {
-                //logger.warn("pageRecordInstances is still null");
+                logger.warn("pageRecordInstances is still null");
                 return false;
             }
             if (recordInstanceCursor >= pageRecordInstances.length){
-            	releaseRecordInstances();
+            	//releaseRecordInstances();
                 return false;
             } else { 
             	return true;
             }
-        //} catch (Exception ex) {
-        //    releaseRecordInstances();
-        //    throw new WdkModelException();
-        //}
+        } catch (Exception ex) {
+            releaseRecordInstances();
+            throw new WdkModelException();
+        }
     }
 
     public Integer getDatasetId() throws WdkModelException {
