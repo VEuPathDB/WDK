@@ -400,7 +400,8 @@ public class AnswerValueBean {
         public RecordBeanList() {
         	super();
         	try {
-        		answer.initPageRecordInstances();
+		    answer.resetRecordCounter();
+		    answer.initPageRecordInstances();
         	} catch (WdkModelException ex) {}
         	
         	
@@ -411,19 +412,19 @@ public class AnswerValueBean {
         }
         
         public boolean hasNext() {
-         //   try {
+            try {
                 return answer.hasMoreRecordInstances();
-         //   } catch ( WdkModelException exp ) {
-         //       throw new RuntimeException( exp );
-         //   }
+            } catch ( WdkModelException exp ) {
+                throw new RuntimeException( exp );
+	    }
         }
         
         public Object next() {
-           // try {
+	    try {
                 return new RecordBean( answer.getNextRecordInstance() );
-           // } catch ( WdkModelException exp ) {
-           //     throw new RuntimeException( exp );
-           // }
+	    } catch ( WdkModelException exp ) {
+                throw new RuntimeException( exp );
+	    }
         }
         
         public void remove() {
