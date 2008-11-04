@@ -14,12 +14,12 @@
     <c:when test="${isNode}">
     <div>
        <nested:write property="booleanOperation"/><br>
-       <nested:nest property="firstChildRecordPage">
+       <nested:nest property="firstChildAnswerValue">
           <jsp:include page="/WEB-INF/includes/bqShowNode.jsp"/>
        </nested:nest>
     </div>
     <div>
-       <nested:nest property="secondChildRecordPage">
+       <nested:nest property="secondChildAnswerValue">
           <jsp:include page="/WEB-INF/includes/bqShowNode.jsp"/>
        </nested:nest>
     </div>
