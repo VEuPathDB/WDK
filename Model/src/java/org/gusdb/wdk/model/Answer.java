@@ -244,7 +244,8 @@ public class Answer {
                 }
             }
             int counter = 0;
-            resultSizesByProject = new LinkedHashMap<String, Integer>();
+	    // with this line, summary page in PORTAL does not show the results per project. You need to reload the page to get them. Seems to be working fine without this line. Jerric might want to check later. Cristina.
+            //resultSizesByProject = new LinkedHashMap<String, Integer>();
 
             while (rl.next()) {
                 counter++;
