@@ -104,6 +104,7 @@ public class CConstants {
     public static final String GET_DOWNLOAD_RESULT_MAPKEY = "get_download_result";
     public static final String GET_DOWNLOAD_CONFIG_MAPKEY = "get_download_config";
     public static final String SHOW_QUERY_HISTORY_MAPKEY = "show_query_history";
+    public static final String SHOW_STRAT_HISTORY_MAPKEY = "show_strat_history";
     public static final String DOWNLOAD_HISTORY_ANSWER_MAPKEY = "download_history_answer";
     public static final String DELETE_HISTORY_MAPKEY = "delete_history";
     public static final String RENAME_HISTORY_MAPKEY = "rename_history";
