@@ -1670,9 +1670,36 @@ public class UserFactory {
 	    }
 	    else if (strategy.getIsSaved()) {
 		// If we're not overwriting a saved strategy, then we're modifying
-		// it.  We need to get an unsaved copy to modify.
+		// it.  We need to get an unsaved copy to modify.  Generate unsaved name
+		PreparedStatement psCheck = SqlUtils.getPreparedStatement(
+                    dataSource, "SELECT name FROM " + loginSchema + "strategies "
+		            + "WHERE user_id = ? AND project_id = ? "
+                            + "AND name LIKE ? ORDER BY name");
+		psCheck.setInt(1, userId);
+		psCheck.setString(2, projectId);
+		psCheck.setString(3, strategy.getSavedName() + "%");
+		System.out.println("About to run name check query.");
+		rsStrategy = psCheck.executeQuery();
+		System.out.println("Done running name check query.");
+		
+		String append = "*";
+		String name;
+		while (rsStrategy.next()) {
+		    name = rsStrategy.getString("name");
+		    if (name.equals(strategy.getSavedName() + append)) {
+			if (append.indexOf("(") < 0) {
+			    append += "(1)";
+			}
+			else {
+			    int current = Integer.parseInt(append.substring(append.indexOf("(")+1, append.indexOf(")")));
+			    append = "*(" + current + ")";
+			}
+		    }
+		}
+		System.out.println("Got through the name check.");
+
 		Strategy newStrat = createStrategy(user, strategy.getLatestStep(),
-						   strategy.getName() + "*", false);
+						   strategy.getName() + append, false);
 		strategy.setName(newStrat.getName());
 		strategy.setSavedName(newStrat.getSavedName());
 		strategy.setStrategyId(newStrat.getStrategyId());
@@ -2427,6 +2454,7 @@ public class UserFactory {
             }
             System.out.println("done.");
         } catch (SQLException ex) {
+	    ex.printStackTrace();
             throw new WdkUserException(ex);
         } finally {
             try {
