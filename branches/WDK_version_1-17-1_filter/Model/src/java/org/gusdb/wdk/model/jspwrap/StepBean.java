@@ -75,6 +75,11 @@ public class StepBean {
 	return step.getCustomName();
     }
 
+    public String getBaseCustomName() 
+	throws WdkUserException {
+	return step.getBaseCustomName();
+    }
+
     public void setCustomName(String customName) {
 	step.setCustomName(customName);
     }

@@ -127,6 +127,7 @@ public class CConstants {
     public static final String CREATE_DATASET_MAPKEY = "create_dataset";
     public static final String RESULTSONLY_MAPKEY = "results_only";
     public static final String SHOW_STRATEGY_MAPKEY = "show_strategy";
+    public static final String DELETE_STRATEGY_MAPKEY = "delete_strategy";
     public static final String SHOW_APPLICATION_MAPKEY = "show_application";
 
     //button click detectors, used in action, action forms, and jsp pages

@@ -45,9 +45,9 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
 /**
  * This Action is called by the ActionServlet when a WDK filter is requested.  It
- * 1) reads param values from input form bean, 2) runs the filter query 3) completes
- * the partial boolean expression that was passed in 4) forwards control to
- * ProcessBooleanExpressionAction
+ * 1) reads param values from input form bean, 2) runs the step query 3) completes
+ * the partial boolean expression that was passed in, if any 4) adds/inserts/edits
+ * step in strategy 5) forwards to application page
  */
 
 public class ProcessFilterAction extends ProcessQuestionAction {
@@ -63,7 +63,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
 
 	if (strStratId == null || strStratId.length() == 0) {
-	    throw new WdkModelException("No strategy was specified for filtering!");
+	    throw new WdkModelException("No strategy was specified for processing!");
 	}
 
 	// load model, user
@@ -167,7 +167,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	    }
 	    
 	    
-	    // create step for filter subquery
+	    // create step for subquery
 	    step = wdkUser.createStep(wdkAnswerValue);
 	    // We only set isTransform = true if we're running a new query & it's a transform
 	    // If we're inserting a strategy, it has to be a boolean (given current operations, at least)
@@ -223,6 +223,9 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 		step = originalStep.getStep(targetIx);
 		if (step.getIsFirstStep()) {
 		    if (isRevise) {
+			// carry over custom name from original query, if any
+			childStep.setCustomName(step.getBaseCustomName());
+			childStep.update(false);
 			if (step.getNextStep().getIsTransform()) {
 			    step = updateTransform(request, wdkUser, step.getNextStep(), stepId);
 			}
@@ -242,6 +245,9 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 		else {
 		    if (isRevise) {
 			if (!isTransform) {
+			    // check if we've changed the query itself, or just the operation
+			    childStep.setCustomName(step.getChildStep().getBaseCustomName());
+			    childStep.update(false);
 			    // build standard boolExp for non-first step
 			    boolExp = step.getPreviousStep().getStepId() + " " + op + " " + stepId;
 			}
@@ -590,7 +596,10 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	summaryAttributes = wdkUser.getSummaryAttributes(questionName);
 	wdkAnswerValue = summaryPaging(request, wdkQuestion, internalParams,
 				       sortingAttributes, summaryAttributes);
-	return wdkUser.createStep(wdkAnswerValue);
+	StepBean newStep = wdkUser.createStep(wdkAnswerValue);
+	newStep.setCustomName(step.getBaseCustomName());
+	newStep.update(false);
+	return newStep;
     }
 
     private StepBean cloneStrategy(UserBean user, StepBean step)
