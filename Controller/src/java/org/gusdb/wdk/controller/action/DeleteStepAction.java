@@ -140,12 +140,19 @@ public class DeleteStepAction extends ProcessFilterAction {
 		    }
 		}
 	    }
-	    // not sure what to do here, but something has to happen...
+	    else if (strBranchId != null) {
+		// If this is the only step in a branch, unexpand the step & return nothing?  ui will have to know to close?
+		step.setIsCollapsible(false);
+		step.setCollapsedName(null);
+		step.update(false);
+		return null;
+	    }
 	    else {
-		// eventually we'll support deleting strategies...?
-		// for now, throw error
-		//throw new WdkUserException("Can't delete the only step in a one-step search strategy!");
-		ActionForward forward = new ActionForward("");
+		// Delete the strategy if this is the only step in the main strategy;
+		ActionForward forward = mapping.findForward( CConstants.DELETE_STRATEGY_MAPKEY );
+		StringBuffer url = new StringBuffer( forward.getPath() );
+		url.append("?strategy=" + URLEncoder.encode(strStratId));
+		forward = new ActionForward( url.toString() );
 		forward.setRedirect( true );
 		return forward;
 	    }

@@ -830,15 +830,11 @@ public class User /* implements Serializable */{
         historyCount--;
     }
 
-    public void deleteStep(int userAnswerId)
+    public void deleteStep(int stepId)
 	throws WdkUserException, WdkModelException {
-	Step userAnswer = getStep(userAnswerId);
-	// Need to check if we can actually delete from DB or not
-	// For now, this will just hide the Step
-	userAnswer.setDeleted(true);
-	userAnswer.update(false);
-
-	// need a user answer count?
+	Step step = getStep(stepId);
+	step.setDeleted(true);
+	step.update(false);
     }
 
     public void deleteStrategy(int strategyId)
