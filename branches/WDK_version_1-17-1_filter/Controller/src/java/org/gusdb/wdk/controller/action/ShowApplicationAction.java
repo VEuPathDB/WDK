@@ -57,8 +57,7 @@ public class ShowApplicationAction extends ShowSummaryAction {
             request.getSession().setAttribute(CConstants.WDK_USER_KEY, wdkUser);
         }
 
-	/* ArrayList in session code */
-	ArrayList<Integer> activeStrategies = (ArrayList<Integer>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
+	ArrayList<Integer> activeStrategies = wdkUser.getActiveStrategies();
 
 	StrategyBean strategy = null;
 	ArrayList<StrategyBean> strategyObjects = null;
@@ -98,7 +97,7 @@ public class ShowApplicationAction extends ShowSummaryAction {
 	    request.setAttribute("showHistory", Boolean.valueOf(showHist));
 	}
 	request.setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY, strategyObjects);
-
+	
 	ActionForward forward = mapping.findForward(CConstants.SHOW_APPLICATION_MAPKEY);
 	
 	return forward;

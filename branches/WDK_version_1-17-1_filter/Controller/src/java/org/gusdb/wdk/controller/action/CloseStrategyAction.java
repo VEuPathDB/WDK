@@ -11,7 +11,8 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
-import org.gusdb.wdk.model.jspwrap.StrategyBean;
+import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.model.jspwrap.UserBean;
 
 /**
  *  This action is called by the UI in order to "close" a strategy.  It removes
@@ -26,8 +27,16 @@ public class CloseStrategyAction extends Action {
 				  HttpServletRequest request,
 				  HttpServletResponse response)
 	throws Exception {
+	// load model, user
+	WdkModelBean wdkModel = ( WdkModelBean ) servlet.getServletContext().getAttribute(CConstants.WDK_MODEL_KEY );
+        UserBean wdkUser = ( UserBean ) request.getSession().getAttribute(
+                CConstants.WDK_USER_KEY );
+        if ( wdkUser == null ) {
+            wdkUser = wdkModel.getUserFactory().getGuestUser();
+            request.getSession().setAttribute( CConstants.WDK_USER_KEY, wdkUser );
+        }
 	
-	ArrayList<Integer> activeStrategies = (ArrayList<Integer>) request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
+	ArrayList<Integer> activeStrategies = wdkUser.getActiveStrategies();
 
 	if (activeStrategies != null) {
 	    String stratIdstr = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
@@ -36,7 +45,7 @@ public class CloseStrategyAction extends Action {
 	    }
 	    if (activeStrategies.contains(Integer.parseInt(stratIdstr))) {
 		activeStrategies.remove(activeStrategies.indexOf(Integer.parseInt(stratIdstr)));
-		request.getSession().setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY, activeStrategies);
+		wdkUser.setActiveStrategies(activeStrategies);
 	    }
 	}
 

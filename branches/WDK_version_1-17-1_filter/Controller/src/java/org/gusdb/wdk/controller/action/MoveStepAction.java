@@ -90,7 +90,8 @@ public class MoveStepAction extends ProcessFilterAction {
 	String questionName;
 	String[] summaryAttributes = null;
 
-	ArrayList<Integer> activeStrategies = (ArrayList<Integer>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
+	//ArrayList<Integer> activeStrategies = (ArrayList<Integer>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
+	ArrayList<Integer> activeStrategies = wdkUser.getActiveStrategies();
 	int index = -1;
 	
 	if (activeStrategies != null && activeStrategies.contains(new Integer(strategy.getStrategyId()))) {
@@ -209,7 +210,8 @@ public class MoveStepAction extends ProcessFilterAction {
 	if (activeStrategies != null && index >= 0) {
 	    activeStrategies.add(index, new Integer(strategy.getStrategyId()));
 	}
-	request.getSession().setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY, activeStrategies);
+	//request.getSession().setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY, activeStrategies);
+	wdkUser.setActiveStrategies(activeStrategies);
 	
 	// Forward to ShowStrategyAction
 	ActionForward showSummary = mapping.findForward( CConstants.SHOW_STRATEGY_MAPKEY );

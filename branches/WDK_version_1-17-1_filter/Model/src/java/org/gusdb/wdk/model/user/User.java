@@ -81,6 +81,9 @@ public class User /* implements Serializable */{
     int historyCount;
     int strategyCount;
 
+    // keep track of user's open strategies; don't serialize
+    transient ArrayList<Integer> activeStrategies;
+
     public User() {
         userRoles = new LinkedHashSet<String>();
 
@@ -89,6 +92,8 @@ public class User /* implements Serializable */{
 
         historyCount = 0;
 	strategyCount = 0;
+
+	activeStrategies = new ArrayList<Integer>();
     }
 
     User(WdkModel model, int userId, String email, String signature)
@@ -355,6 +360,25 @@ public class User /* implements Serializable */{
         this.guest = guest;
     }
 
+    public ArrayList<Integer> getActiveStrategies() {
+	return activeStrategies;
+    }
+
+    public void setActiveStrategies(ArrayList<Integer> activeStrategies) {
+	this.activeStrategies = activeStrategies;
+    }
+    /*
+    public void openStrategy(Integer strategyId) {
+	if (!activeStrategies.contains(strategyId)) {
+	    activeStrategies.add(0, strategyId);
+	}
+    }
+
+    public void closeStrategy(Integer strategyId) {
+	activeStrategies.remove(strategyId);
+    }
+    */
+
     public History createHistory(AnswerValue answer) throws WdkUserException,
             WdkModelException {
         return createHistory(answer, null, false);
@@ -387,6 +411,63 @@ public class User /* implements Serializable */{
 	return userFactory.createStrategy(this, answer, name, saved);
     }
 
+    public Step mergeStep(Step step, Map<Integer, Integer> stepsMap) throws WdkUserException, WdkModelException {
+	Step newStep;
+	
+	if (!step.isTransform() && !step.isBoolean()) {
+	    // step is not a transform or a boolean, so it can be copied directly.
+	    newStep = createStep(step.getAnswerValue(), null, step.isDeleted());
+	    newStep.setCustomName(step.getBaseCustomName());
+	    newStep.update(false);
+	    stepsMap.put(step.getStepId(), newStep.getStepId());
+	}
+	else {
+	    // step is transform or boolean;  need to merge child/previous step first.
+	    if (step.getPreviousStep() != null && !stepsMap.containsKey(step.getPreviousStep().getStepId())) {
+		mergeStep(step.getPreviousStep(), stepsMap);
+	    }
+	    if (step.getChildStep() != null && !stepsMap.containsKey(step.getChildStep().getStepId())) {
+		mergeStep(step.getChildStep(), stepsMap);
+	    }
+	    
+	    // can merge, needs to repack the param values
+	    if (step.isBoolean()) {
+		// merge boolean step
+		String expression = stepsMap.get(step.getPreviousStep().getStepId()) + " " + step.getOperation() + " " + stepsMap.get(step.getChildStep().getStepId());
+		newStep = combineStep(expression, step.isDeleted());
+	    } else {
+		// merge transform step
+		AnswerValue answer = step.getAnswerValue();
+		Question question = answer.getQuestion();
+		int startIndex = answer.getStartRecordInstanceI();
+		int endIndex = answer.getEndRecordInstanceI();
+		Param[] params = question.getParams();
+		Map<String, Object> values = answer.getParams();
+		for (Param param : params) {
+		    if (param instanceof HistoryParam) {
+			String compound = values.get(param.getName()).toString();
+			// two parts: user_signature, step_id
+			String parts[] = compound.split(":");
+			int stepId = Integer.parseInt(parts[1].trim());
+			Integer newId = stepsMap.get(stepId);
+			// replace the signature with current user's
+			String newValue = this.signature + ":" + newId;
+			values.put(param.getName(), newValue);
+		    }
+		}
+		answer = question.makeAnswerValue(values, startIndex, endIndex);
+		newStep = createStep(answer, null,
+				     step.isDeleted());
+		newStep.setCustomName(step.getBaseCustomName());
+		newStep.update();
+		stepsMap.put(step.getStepId(),
+			     newStep.getStepId());
+	    }
+	}
+
+	return newStep;
+    }
+
     /**
      * this method is only called by UserFactory during the login process, it
      * merges the existing history of the current guest user into the logged-in
@@ -401,6 +482,28 @@ public class User /* implements Serializable */{
         logger.debug("Merging user #" + user.getUserId() + " into user #"
                 + userId + "...");
 
+	// merge strategies, return ids map for updating session?  or store ids list in user?
+	Map<Integer, Integer> stepsMap = new LinkedHashMap<Integer, Integer>();
+	Map<Integer, Integer> strategiesMap = new LinkedHashMap<Integer, Integer>();
+	Map<Integer, Strategy> strategies = user.getStrategiesMap();
+	for (Strategy strategy : strategies.values()) {
+	    Step newStep = mergeStep(strategy.getLatestStep(), stepsMap);
+	    Strategy newStrategy = createStrategy(newStep, strategy.getSavedName(), strategy.getIsSaved());
+	    strategiesMap.put(strategy.getStrategyId(), newStrategy.getStrategyId());
+	}
+	// update list of active strategies so ids are correct for logged in user
+	ArrayList<Integer> oldActiveStrategies = user.getActiveStrategies();
+	for (Integer strategyId : oldActiveStrategies) {
+	    this.activeStrategies.add(strategiesMap.get(strategyId));
+	}
+        // TEST
+        StringBuffer sb = new StringBuffer("The strategy Mapping: ");
+        for (int strategyId : strategiesMap.keySet()) {
+            sb.append("(" + strategyId + "-" + strategiesMap.get(strategyId) + ") ");
+        }
+        logger.info(sb.toString().trim());
+
+	/*
         // merge histories
         // a history can be merged only if its all components have been merged
         Map<Integer, Integer> historyMap = new LinkedHashMap<Integer, Integer>();
@@ -507,12 +610,7 @@ public class User /* implements Serializable */{
             }
             histories = pendings;
         }
-        // TEST
-        StringBuffer sb = new StringBuffer("The history Mapping: ");
-        for (int histId : historyMap.keySet()) {
-            sb.append("(" + histId + "-" + historyMap.get(histId) + ") ");
-        }
-        logger.info(sb.toString().trim());
+	*/
     }
 
     /**

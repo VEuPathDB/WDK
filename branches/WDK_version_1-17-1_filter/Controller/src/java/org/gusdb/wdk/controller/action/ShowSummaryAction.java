@@ -197,19 +197,17 @@ public class ShowSummaryAction extends ShowQuestionAction {
 	    queryString = request.getQueryString();
 	}
 
-	//HashMap<Integer,StrategyBean> activeStrategies = (HashMap<Integer,StrategyBean>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
-	ArrayList<Integer> activeStrategies = (ArrayList<Integer>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
+	ArrayList<Integer> activeStrategies = wdkUser.getActiveStrategies();
 
 	if (activeStrategies == null) {
-	    //activeStrategies = new HashMap<Integer,StrategyBean>();
 	    activeStrategies = new ArrayList<Integer>();
 	}
-	//activeStrategies.put(new Integer(strategy.getStrategyId()),strategy);
+
 	if (!activeStrategies.contains(new Integer(strategy.getStrategyId()))) {
 		activeStrategies.add(0, new Integer(strategy.getStrategyId()));
 	}
-	request.getSession().setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY, activeStrategies);  
-	
+	wdkUser.setActiveStrategies(activeStrategies);
+
         int userAnswerId = userAnswer.getStepId();
 
 	String requestUrl = request.getRequestURI() + "?" + queryString;
