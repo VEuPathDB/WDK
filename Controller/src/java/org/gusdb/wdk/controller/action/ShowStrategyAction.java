@@ -81,26 +81,19 @@ public class ShowStrategyAction extends ShowQuestionAction {
 	}
 
 	StrategyBean strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
-	//HashMap<Integer,StrategyBean> activeStrategies = (HashMap<Integer,StrategyBean>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
 
-	//activeStrategies.put(new Integer(strategy.getStrategyId()),strategy);
-	
-	//request.getSession().setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY, activeStrategies);
-	ArrayList<Integer> activeStrategies = (ArrayList<Integer>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
+	ArrayList<Integer> activeStrategies = wdkUser.getActiveStrategies();
 
 	if (activeStrategies == null) {
-	    //activeStrategies = new HashMap<Integer,StrategyBean>();
 	    activeStrategies = new ArrayList<Integer>();
 	}
-	//activeStrategies.put(new Integer(strategy.getStrategyId()),strategy);
 	if (!activeStrategies.contains(new Integer(strategy.getStrategyId()))) {
 		activeStrategies.add(0, new Integer(strategy.getStrategyId()));
 	}
-	request.getSession().setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY, activeStrategies);  
+	wdkUser.setActiveStrategies(activeStrategies);
 
 	if (strBranchId == null) {
 	    request.setAttribute(CConstants.WDK_STEP_KEY, strategy.getLatestStep());
-	    //request.setAttribute(CConstants.WDK_STEP_KEY, null);
 	}
 	else {
 	    request.setAttribute(CConstants.WDK_STEP_KEY, strategy.getStepById(Integer.parseInt(strBranchId)));

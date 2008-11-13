@@ -49,7 +49,7 @@ public class ProcessRenameStrategyAction extends Action {
 	strategy.setName( customName );
 	strategy.setIsSaved(true);
 	
-	ArrayList<Integer> activeStrategies = (ArrayList<Integer>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
+	ArrayList<Integer> activeStrategies = wdkUser.getActiveStrategies();
 	int index = -1;
 	
 	if (activeStrategies != null && activeStrategies.contains(new Integer(strategy.getStrategyId()))) {
@@ -62,8 +62,8 @@ public class ProcessRenameStrategyAction extends Action {
 	if (activeStrategies != null && index >= 0) {
 	    activeStrategies.add(index, new Integer(strategy.getStrategyId()));
 	}
-	request.getSession().setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY, activeStrategies);
-	
+	wdkUser.setActiveStrategies(activeStrategies);
+
 	request.setAttribute(CConstants.WDK_STEP_KEY, strategy.getLatestStep());
   	request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
 

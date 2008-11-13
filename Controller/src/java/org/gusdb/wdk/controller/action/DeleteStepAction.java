@@ -95,7 +95,8 @@ public class DeleteStepAction extends ProcessFilterAction {
 
 	strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
 
-	ArrayList<Integer> activeStrategies = (ArrayList<Integer>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
+	//ArrayList<Integer> activeStrategies = (ArrayList<Integer>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
+	ArrayList<Integer> activeStrategies = wdkUser.getActiveStrategies();
 	int index = -1;
 	
 	if (activeStrategies != null && activeStrategies.contains(new Integer(strategy.getStrategyId()))) {
@@ -229,7 +230,8 @@ public class DeleteStepAction extends ProcessFilterAction {
 	if (activeStrategies != null && index >= 0) {
 	    activeStrategies.add(index, new Integer(strategy.getStrategyId()));
 	}
-	request.getSession().setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY, activeStrategies);
+	//request.getSession().setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY, activeStrategies);
+	wdkUser.setActiveStrategies(activeStrategies);
 
 	// 5. forward to strategy page
 	ActionForward showSummary = mapping.findForward( CConstants.SHOW_STRATEGY_MAPKEY );

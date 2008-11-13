@@ -345,6 +345,14 @@ public class UserBean /* implements Serializable */{
         user.changePassword(oldPassword, newPassword, confirmPassword);
     }
 
+    public void setActiveStrategies(ArrayList<Integer> activeStrategies) {
+	user.setActiveStrategies(activeStrategies);
+    }
+
+    public ArrayList<Integer> getActiveStrategies() {
+	return user.getActiveStrategies();
+    }
+
     //
     // //
     // *************************************************************************
