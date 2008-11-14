@@ -32,7 +32,7 @@ public class ProcessRenameStrategyAction extends Action {
         
         String strStratId = request.getParameter( CConstants.WDK_STRATEGY_ID_KEY );
         String customName = request.getParameter( "name" );
-        
+        boolean checkName = Boolean.valueOf(request.getParameter( "checkName" )).booleanValue();
         // TEST
 	if (customName == null || customName.length() == 0) {
 	    throw new Exception("No name was given for saving Strategy.");
@@ -52,6 +52,14 @@ public class ProcessRenameStrategyAction extends Action {
 	ArrayList<Integer> activeStrategies = wdkUser.getActiveStrategies();
 	int index = -1;
 	
+	if (checkName) {
+	    if (wdkUser.checkNameExists(strategy, customName)) {
+		// if we've been asked to check the user-specified name, and it already exists, do
+		// nothing.  we need to confirm that the user wants to overwrite the existing strategy
+		return null;
+	    }
+	}
+
 	if (activeStrategies != null && activeStrategies.contains(new Integer(strategy.getStrategyId()))) {
 	    index = activeStrategies.indexOf(new Integer(strategy.getStrategyId()));
 	    activeStrategies.remove(index);
@@ -82,28 +90,6 @@ public class ProcessRenameStrategyAction extends Action {
 	ActionForward forward = new ActionForward( url.toString() );
 	forward.setRedirect( false );
 	return forward;
-
-	/*
-        // get the referer link and possibly an url to the client's original
-        // page if user invoked a separate login form page.
-        String referer = ( String ) request.getParameter( CConstants.WDK_REFERER_URL_KEY );
-        if ( referer == null ) referer = request.getHeader( "referer" );
-        String originUrl = request.getParameter( CConstants.WDK_ORIGIN_URL_KEY );
-        
-        ActionForward forward = new ActionForward();
-        forward.setRedirect( true );
-        String forwardUrl;
-        if ( originUrl != null ) {
-            forwardUrl = originUrl;
-            request.getSession().setAttribute( CConstants.WDK_ORIGIN_URL_KEY,
-                    null );
-        } else {
-            forwardUrl = referer;
-        }
-        forward.setPath( forwardUrl );
-        
-        return forward;
-	*/
     }
     
 }

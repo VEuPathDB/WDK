@@ -617,6 +617,11 @@ public class UserBean /* implements Serializable */{
 	return new StepBean(step);
     }
 
+    public boolean checkNameExists(StrategyBean strategy, String name) 
+	throws WdkUserException, WdkModelException {
+	return user.checkNameExists(strategy.strategy, name);
+    }
+
     public StrategyBean createStrategy(StepBean root, boolean saved)
 	throws WdkUserException, WdkModelException {
 	Strategy strategy = user.createStrategy(root.step, saved);
