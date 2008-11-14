@@ -1653,7 +1653,7 @@ public class UserFactory {
                             + "AND name = ? AND is_saved = ? AND display_id <> ?");
 		psCheck.setInt(1, userId);
 		psCheck.setString(2, projectId);
-		psCheck.setString(3, strategy.getName().replaceAll("\\*", ""));
+		psCheck.setString(3, strategy.getName().replaceAll("\\**", ""));
 		psCheck.setBoolean(4, true);
 		psCheck.setInt(5, strategy.getStrategyId());
 		rsStrategy = psCheck.executeQuery();
@@ -1661,11 +1661,11 @@ public class UserFactory {
 		// If there's already a saved strategy with this strategy's name,
 		// we need to overwrite the saved strategy & delete the unsaved one.
 		if (rsStrategy.next()) {
-		    Strategy copy = strategy;
+		    int idToDelete = strategy.getStrategyId();
 		    strategy.setStrategyId(rsStrategy.getInt("display_id"));
 		    strategy.setInternalId(rsStrategy.getInt("strategy_id"));
 		    strategy.setIsSaved(true);
-		    user.deleteStrategy(copy.getStrategyId());
+		    user.deleteStrategy(idToDelete);
 		}
 	    }
 	    else if (strategy.getIsSaved()) {
@@ -1731,6 +1731,36 @@ public class UserFactory {
             }
         }
 	
+    }
+
+    boolean checkNameExists(Strategy strategy, String name)
+	throws WdkUserException, WdkModelException {
+	PreparedStatement psCheckName = null;
+	ResultSet rsCheckName = null;
+	try {
+	    psCheckName = SqlUtils.getPreparedStatement(
+		dataSource, "SELECT display_id FROM " + loginSchema + "strategies "
+		+ "WHERE user_id = ? AND project_id = ? AND name = ? and display_id <> ?");
+	    psCheckName.setInt(1, strategy.getUser().getUserId());
+	    psCheckName.setString(2, projectId);
+	    psCheckName.setString(3, name);
+	    psCheckName.setInt(4, strategy.getStrategyId());
+	    rsCheckName = psCheckName.executeQuery();
+	    
+	    if (rsCheckName.next()) return true;
+	    
+	    return false;
+	}
+	catch (SQLException ex) {
+	    throw new WdkUserException(ex);
+	}
+	finally {
+            try {
+		SqlUtils.closeResultSet(rsCheckName);
+	    } catch (SQLException ex) {
+                throw new WdkUserException(ex);
+            }
+        }
     }
 
     // Note:  this function only adds the necessary row in strategies;  updating of answers

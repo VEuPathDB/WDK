@@ -401,6 +401,11 @@ public class User /* implements Serializable */{
 	return userFactory.createStep(this, result, booleanExpression, deleted);
     }
 
+    public boolean checkNameExists(Strategy strategy, String name) 
+	throws WdkUserException, WdkModelException {
+	return userFactory.checkNameExists(strategy, name);
+    }
+
     public Strategy createStrategy(Step answer, boolean saved) 
 	throws WdkUserException, WdkModelException {
 	return createStrategy(answer, null, saved);
@@ -488,7 +493,7 @@ public class User /* implements Serializable */{
 	Map<Integer, Strategy> strategies = user.getStrategiesMap();
 	for (Strategy strategy : strategies.values()) {
 	    Step newStep = mergeStep(strategy.getLatestStep(), stepsMap);
-	    Strategy newStrategy = createStrategy(newStep, strategy.getSavedName(), strategy.getIsSaved());
+	    Strategy newStrategy = createStrategy(newStep, null, false);
 	    strategiesMap.put(strategy.getStrategyId(), newStrategy.getStrategyId());
 	}
 	// update list of active strategies so ids are correct for logged in user
