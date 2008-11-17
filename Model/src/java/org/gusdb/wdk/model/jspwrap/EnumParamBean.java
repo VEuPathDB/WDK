@@ -59,9 +59,12 @@ public class EnumParamBean extends ParamBean {
         return ((AbstractEnumParam) param).getDisplayType();
     }
 
-    public EnumParamTermNode[] getVocabTreeRoots()
-            throws NoSuchAlgorithmException, WdkModelException, SQLException,
-            JSONException, WdkUserException {
-        return ((AbstractEnumParam) param).getVocabTreeRoots();
+    public EnumParamTermNode[] getVocabTreeRoots() throws Exception {
+        try {
+        	return ((AbstractEnumParam) param).getVocabTreeRoots();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw ex;
+        }
     }
 }
