@@ -204,12 +204,7 @@ public class Answer {
 	public int getPageCount() throws WdkModelException,
 			NoSuchAlgorithmException, SQLException, JSONException,
 			WdkUserException {
-		int total;
-		if (getFilter() == null) {
-			total = getResultSize();
-		} else {
-			total = getFilterSize(getFilter().getName());
-		}
+        int total = getResultSize();
 		int pageSize = endIndex - startIndex + 1;
 		int pageCount = (int) Math.round(Math.ceil((float) total / pageSize));
 		logger.debug("#Pages: " + pageCount + ",\t#Total: " + total
@@ -220,9 +215,14 @@ public class Answer {
 	public int getResultSize() throws WdkModelException,
 			NoSuchAlgorithmException, SQLException, JSONException,
 			WdkUserException {
-		if (resultSize == null)
-			resultSize = idsQueryInstance.getResultSize();
-		return resultSize;
+        if (resultSize == null){
+            if (getFilter() == null) {
+                resultSize = idsQueryInstance.getResultSize();
+            } else {
+                resultSize = getFilterSize(getFilter().getName());
+            }
+        }
+        return resultSize;
 	}
 
 	public Map<String, Integer> getResultSizesByProject()
