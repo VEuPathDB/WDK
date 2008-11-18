@@ -24,13 +24,14 @@ Otherwise a standard select menu is used.
 <c:set var="opt" value="0"/>
 <c:set var="displayType" value="${qP.displayType}"/>
 
-<div class="param">
+<!--<div class="param">-->
 
 <c:choose>
 <c:when test="${qP.multiPick}">
   <%-- multiPick is true, use checkboxes or scroll pane --%>
   <c:choose>
     <c:when test="${displayType eq 'checkBox' || (displayType == null && fn:length(qP.vocab) < 15)}"><%-- use checkboxes --%>
+	 <div class="param multiPick">
       <c:set var="i" value="0"/>
       <table border="1" cellspacing="0"><tr><td>
       <c:forEach items="${qP.displayMap}" var="entity">
@@ -62,6 +63,7 @@ Otherwise a standard select menu is used.
     
     <%-- use a tree list --%>
     <c:when test="${displayType eq 'treeBox'}">
+		<div class="param tree">
         <c:set var="recurse_enum_param" value="${qP}" scope="request"/>
         <c:forEach items="${qP.vocabTreeRoots}" var="root">
             <c:set var="recurse_term_node" value="${root}" scope="request"/>
@@ -72,6 +74,7 @@ Otherwise a standard select menu is used.
     </c:when>
 
     <c:otherwise>
+	  <div class="param multiPick">
       <html:select  property="myMultiProp(${pNam})" multiple="1" styleId="${pNam}">
         <c:set var="opt" value="${opt+1}"/>
         <c:set var="sel" value=""/>
@@ -83,8 +86,10 @@ Otherwise a standard select menu is used.
   
     </c:otherwise>
 </c:choose>
+</div>
 </c:when>
 <c:otherwise>
+  <div class="param">
   <%-- multiPick is false, use pull down menu --%>
   <html:select  property="myMultiProp(${pNam})" styleId="${pNam}">
     <c:set var="opt" value="${opt+1}"/>
@@ -92,7 +97,8 @@ Otherwise a standard select menu is used.
     <c:if test="${opt == 1}"><c:set var="sel" value="selected"/></c:if>      
     <html:options property="values(${pNam})" labelProperty="labels(${pNam})"/>
   </html:select>
+  </div>
 </c:otherwise>
 </c:choose>
 
-</div>
+<!--</div>-->

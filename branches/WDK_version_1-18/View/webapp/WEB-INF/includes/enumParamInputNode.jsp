@@ -20,11 +20,11 @@ Provides form input element for a given term tree node of EnumParam.
             <img src="images/spacer.gif" width="19" height="19" />
         </c:when>
         <c:otherwise>
-            <img src="images/minus.gif" width="19" height="19" />
+            <img class="switch plus" src="images/plus.gif" width="19" height="19" onclick="toggleChildren(this)"/>
         </c:otherwise>
     </c:choose>
     
-    <html:multibox property="myMultiProp(${pNam})" value="${node.term}" styleId="${pNam}" />
+    <html:multibox property="myMultiProp(${pNam})" value="${node.term}" styleId="${pNam}" onclick="toggleChildrenCheck(this)" />
     
     <c:choose>
     <%-- test for param labels to italicize --%>
@@ -35,12 +35,15 @@ Provides form input element for a given term tree node of EnumParam.
             ${node.display}&nbsp;
         </c:otherwise>
     </c:choose>
-</div>
+
 
 <%-- recursively display children terms --%>
+<c:if test="${fn:length(children) != 0}">
 <div id="${pNam}-child" class="term-children">
     <c:forEach items="${children}" var="child">
         <c:set var="recurse_term_node" value="${child}" scope="request"/>
         <c:import url="/WEB-INF/includes/enumParamInputNode.jsp" />
     </c:forEach>  
+</div>
+</c:if>
 </div>
