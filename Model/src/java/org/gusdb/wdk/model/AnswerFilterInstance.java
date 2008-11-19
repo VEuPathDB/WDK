@@ -12,6 +12,8 @@ import java.util.Map;
 
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.SqlQuery;
+import org.gusdb.wdk.model.query.param.AnswerParam;
+import org.gusdb.wdk.model.query.param.Param;
 import org.json.JSONException;
 
 /**
@@ -28,8 +30,8 @@ public class AnswerFilterInstance extends WdkModelBase {
     private List<WdkModelText> descriptionList = new ArrayList<WdkModelText>();
     private String description;
 
-    private List<AnswerFilterInstanceParam> paramValueList = new ArrayList<AnswerFilterInstanceParam>();
-    private Map<String, Object> paramValueMap = new LinkedHashMap<String, Object>();
+    private List<WdkModelText> paramValueList = new ArrayList<WdkModelText>();
+    private Map<String, String> paramValueMap = new LinkedHashMap<String, String>();
 
     private RecordClass recordClass;
     private SqlQuery filterQuery;
@@ -106,7 +108,7 @@ public class AnswerFilterInstance extends WdkModelBase {
         this.descriptionList.add(description);
     }
 
-    public void addParamValue(AnswerFilterInstanceParam param) {
+    public void addParamValue(WdkModelText param) {
         this.paramValueList.add(param);
     }
 
@@ -181,7 +183,7 @@ public class AnswerFilterInstance extends WdkModelBase {
         descriptionList = null;
 
         // exclude the param values
-        for (AnswerFilterInstanceParam param : paramValueList) {
+        for (WdkModelText param : paramValueList) {
             if (param.include(projectId)) {
                 param.excludeResources(projectId);
                 String paramName = param.getName();
@@ -201,7 +203,9 @@ public class AnswerFilterInstance extends WdkModelBase {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model.WdkModel)
+     * @see
+     * org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model
+     * .WdkModel)
      */
     @Override
     public void resolveReferences(WdkModel wodkModel) throws WdkModelException,
@@ -230,13 +234,13 @@ public class AnswerFilterInstance extends WdkModelBase {
         resolved = true;
     }
 
-    public QueryInstance makeQueryInstance(Answer answer)
+    public QueryInstance makeQueryInstance(AnswerValue answerValue)
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException {
-        Map<String, Object> values = new LinkedHashMap<String, Object>(
+        Map<String, String> values = new LinkedHashMap<String, String>(
                 paramValueMap);
         values.put(answerParam.getName(),
-                answer.getAnswerInfo().getAnswerChecksum());
+                answerValue.getAnswer().getAnswerChecksum());
         return filterQuery.makeInstance(values);
     }
 
@@ -257,11 +261,9 @@ public class AnswerFilterInstance extends WdkModelBase {
             if (param.getFullName().equals(answerParam.getFullName()))
                 continue;
 
-            Object objValue = paramValueMap.get(param.getName());
-            String value = param.getInternalValue(objValue);
-            filterSql = param.replaceSql(filterSql, value);
+            String external = paramValueMap.get(param.getName());
+            filterSql = param.replaceSql(filterSql, external);
         }
         return filterSql;
     }
-
 }

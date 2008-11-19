@@ -187,15 +187,6 @@ public class WdkModelBean {
         return new UserFactoryBean(model.getUserFactory());
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.WdkModel#getBooleanOperators()
-     */
-    public Map<String, String> getBooleanOperators() {
-        return model.getBooleanOperators();
-    }
-
     /**
      * @param questionFullName
      * @return
@@ -211,5 +202,14 @@ public class WdkModelBean {
 
     public String getName() {
         return model.getProjectId();
+    }
+
+    /**
+     * @param paramName
+     * @return
+     * @see org.gusdb.wdk.model.WdkModel#queryParamDisplayName(java.lang.String)
+     */
+    public String queryParamDisplayName(String paramName) {
+        return model.queryParamDisplayName(paramName);
     }
 }

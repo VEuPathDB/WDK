@@ -3,6 +3,8 @@
  */
 package org.gusdb.wdk.model.query;
 
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -14,6 +16,7 @@ import java.util.regex.Pattern;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
+import org.gusdb.wdk.model.WdkUserException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -25,13 +28,13 @@ public class SqlQuery extends Query {
 
     private List<WdkModelText> sqlList;
     protected String sql;
-    private List<SqlParamValue> sqlMacroList;
+    private List<WdkModelText> sqlMacroList;
     private Map<String, String> sqlMacroMap;
 
     public SqlQuery() {
         super();
         sqlList = new ArrayList<WdkModelText>();
-        sqlMacroList = new ArrayList<SqlParamValue>();
+        sqlMacroList = new ArrayList<WdkModelText>();
         sqlMacroMap = new LinkedHashMap<String, String>();
     }
 
@@ -45,7 +48,7 @@ public class SqlQuery extends Query {
         this.sqlList.add(sql);
     }
 
-    public void addSqlParamValue(SqlParamValue sqlMacro) {
+    public void addSqlParamValue(WdkModelText sqlMacro) {
         this.sqlMacroList.add(sqlMacro);
     }
 
@@ -69,7 +72,7 @@ public class SqlQuery extends Query {
      * @see org.gusdb.wdk.model.query.Query#makeInstance()
      */
     @Override
-    public QueryInstance makeInstance(Map<String, Object> values)
+    public QueryInstance makeInstance(Map<String, String> values)
             throws WdkModelException {
         return new SqlQueryInstance(this, values);
     }
@@ -77,7 +80,8 @@ public class SqlQuery extends Query {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.query.Query#appendJSONContent(org.json.JSONObject)
+     * @see
+     * org.gusdb.wdk.model.query.Query#appendJSONContent(org.json.JSONObject)
      */
     @Override
     protected void appendJSONContent(JSONObject jsQuery) throws JSONException {
@@ -116,7 +120,7 @@ public class SqlQuery extends Query {
         sqlList = null;
 
         // exclude macros
-        for (SqlParamValue macro : sqlMacroList) {
+        for (WdkModelText macro : sqlMacroList) {
             if (macro.include(projectId)) {
                 macro.excludeResources(projectId);
                 String name = macro.getName();
@@ -133,10 +137,14 @@ public class SqlQuery extends Query {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.query.Query#resolveReferences(org.gusdb.wdk.model.WdkModel)
+     * @see
+     * org.gusdb.wdk.model.query.Query#resolveReferences(org.gusdb.wdk.model
+     * .WdkModel)
      */
     @Override
-    public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
+    public void resolveReferences(WdkModel wdkModel) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
         super.resolveReferences(wdkModel);
 
         // apply the sql macros into sql
@@ -146,7 +154,9 @@ public class SqlQuery extends Query {
             // escape the & $ \ chars in the value
             sql = sql.replaceAll(pattern, Matcher.quoteReplacement(value));
         }
-	if (sql == null) throw new WdkModelException("null sql in " + getQuerySet().getName() + "." + getName());
+        if (sql == null)
+            throw new WdkModelException("null sql in "
+                    + getQuerySet().getName() + "." + getName());
         // verify the all param macros have been replaced
         Matcher matcher = Pattern.compile("&&([^&]+)&&").matcher(sql);
         if (matcher.find())

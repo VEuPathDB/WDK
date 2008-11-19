@@ -4,12 +4,15 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 import javax.sql.DataSource;
 
 import org.gusdb.wdk.model.Utilities;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.DBPlatform;
@@ -25,35 +28,43 @@ public class QueryFactory {
     // private static final Logger logger = Logger.getLogger( QueryFactory.class
     // );
 
-    private String querySchema;
-    private DBPlatform platform;
+    private WdkModel wdkModel;
+    private String wdkSchema;
+    private DBPlatform userPlatform;
+    private DataSource dataSource;
 
-    public QueryFactory(DBPlatform platform, String querySchema) {
-        this.platform = platform;
-        this.querySchema = querySchema;
+    public QueryFactory(WdkModel wdkModel) {
+        this.wdkModel = wdkModel;
+        this.userPlatform = this.wdkModel.getUserPlatform();
+        this.dataSource = userPlatform.getDataSource();
+        this.wdkSchema = wdkModel.getModelConfig().getUserDB().getWdkEngineSchema();
     }
 
     public String makeSummaryChecksum(String[] summaryAttributes)
             throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException {
+        Set<String> usedAttributes = new HashSet<String>();
         // create checksum for config columns
         StringBuffer sb = new StringBuffer();
         for (String attribute : summaryAttributes) {
+            // skip redundant attributes
+            if (usedAttributes.contains(attribute)) continue;
+            
             if (sb.length() > 0) sb.append(", ");
             sb.append(attribute);
+            usedAttributes.add(attribute);
         }
         String summaryContent = sb.toString();
         String checksum = Utilities.encrypt(summaryContent);
 
         // check if the configuration exists
-        DataSource dataSource = platform.getDataSource();
         PreparedStatement psInsert = null;
         try {
             if (null != getSummaryAttributes(checksum)) return checksum;
 
             // configuration not exists, add one
             psInsert = SqlUtils.getPreparedStatement(dataSource, "INSERT INTO"
-                    + " " + querySchema + TABLE_CLOB_VALUES + " ("
+                    + " " + wdkSchema + TABLE_CLOB_VALUES + " ("
                     + COLUMN_CLOB_CHECKSUM + ", " + COLUMN_CLOB_VALUE
                     + ") VALUES (?, ?)");
             psInsert.setString(1, checksum);
@@ -74,12 +85,11 @@ public class QueryFactory {
 
     public String[] getSummaryAttributes(String summaryChecksum)
             throws WdkUserException {
-        DataSource dataSource = platform.getDataSource();
         ResultSet rsSelect = null;
         try {
             PreparedStatement psSelect = SqlUtils.getPreparedStatement(
                     dataSource, "SELECT " + COLUMN_CLOB_VALUE + " FROM "
-                            + querySchema + TABLE_CLOB_VALUES + " WHERE "
+                            + wdkSchema + TABLE_CLOB_VALUES + " WHERE "
                             + COLUMN_CLOB_CHECKSUM + " = ?");
             psSelect.setString(1, summaryChecksum);
             rsSelect = psSelect.executeQuery();
@@ -124,14 +134,13 @@ public class QueryFactory {
         String checksum = Utilities.encrypt(columnsContent);
 
         // check if the sorting exists
-        DataSource dataSource = platform.getDataSource();
         PreparedStatement psInsert = null;
         try {
             if (null != getSortingAttributes(checksum)) return checksum;
 
             // sorting not exists, add one
             psInsert = SqlUtils.getPreparedStatement(dataSource, "INSERT INTO"
-                    + " " + querySchema + TABLE_CLOB_VALUES + " ("
+                    + " " + wdkSchema + TABLE_CLOB_VALUES + " ("
                     + COLUMN_CLOB_CHECKSUM + ", " + COLUMN_CLOB_VALUE
                     + ") VALUES (?, ?)");
             psInsert.setString(1, checksum);
@@ -152,12 +161,11 @@ public class QueryFactory {
 
     public Map<String, Boolean> getSortingAttributes(String sortingChecksum)
             throws WdkUserException {
-        DataSource dataSource = platform.getDataSource();
         ResultSet rsSelect = null;
         try {
             PreparedStatement psSelect = SqlUtils.getPreparedStatement(
                     dataSource, "SELECT " + COLUMN_CLOB_VALUE + " FROM "
-                            + querySchema + TABLE_CLOB_VALUES + " WHERE "
+                            + wdkSchema + TABLE_CLOB_VALUES + " WHERE "
                             + COLUMN_CLOB_CHECKSUM + " = ?");
             psSelect.setString(1, sortingChecksum);
             rsSelect = psSelect.executeQuery();
@@ -198,7 +206,6 @@ public class QueryFactory {
         // make the checksum
         String checksum = Utilities.encrypt(paramValue);
 
-        DataSource dataSource = platform.getDataSource();
         PreparedStatement psInsert = null;
         try {
             // get the clob with the new checksum
@@ -206,7 +213,7 @@ public class QueryFactory {
 
             // clob value does not exist, add one
             psInsert = SqlUtils.getPreparedStatement(dataSource, "INSERT INTO"
-                    + " " + querySchema + TABLE_CLOB_VALUES + " ("
+                    + " " + wdkSchema + TABLE_CLOB_VALUES + " ("
                     + COLUMN_CLOB_CHECKSUM + ", " + COLUMN_CLOB_VALUE
                     + ") VALUES (?, ?)");
             psInsert.setString(1, checksum);
@@ -226,11 +233,10 @@ public class QueryFactory {
     }
 
     public String getClobValue(String paramChecksum) throws WdkModelException {
-        DataSource dataSource = platform.getDataSource();
         ResultSet rs = null;
         try {
             PreparedStatement ps = SqlUtils.getPreparedStatement(dataSource,
-                    "SELECT " + COLUMN_CLOB_VALUE + " FROM " + querySchema
+                    "SELECT " + COLUMN_CLOB_VALUE + " FROM " + wdkSchema
                             + TABLE_CLOB_VALUES + " WHERE "
                             + COLUMN_CLOB_CHECKSUM + " = ?");
             ps.setString(1, paramChecksum);
@@ -238,7 +244,7 @@ public class QueryFactory {
 
             if (!rs.next()) return null;
 
-            String clobValue = platform.getClobData(rs, COLUMN_CLOB_VALUE);
+            String clobValue = userPlatform.getClobData(rs, COLUMN_CLOB_VALUE);
             return clobValue;
         } catch (SQLException ex) {
             throw new WdkModelException(ex);

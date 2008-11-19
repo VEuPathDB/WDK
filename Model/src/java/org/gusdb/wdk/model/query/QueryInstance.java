@@ -13,7 +13,6 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.Param;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -55,14 +54,14 @@ public abstract class QueryInstance {
     private Integer instanceId;
     protected Query query;
     protected WdkModel wdkModel;
-    protected Map<String, Object> values;
+    protected Map<String, String> values;
     protected String resultMessage;
     protected boolean cached;
 
     private String checksum;
     private Integer resultSize;
 
-    protected QueryInstance(Query query, Map<String, Object> values)
+    protected QueryInstance(Query query, Map<String, String> values)
             throws WdkModelException {
         this.query = query;
         this.wdkModel = query.getWdkModel();
@@ -103,9 +102,11 @@ public abstract class QueryInstance {
         this.instanceId = instanceId;
     }
 
-    private void setValues(Map<String, Object> values) throws WdkModelException {
-        values = new LinkedHashMap<String, Object>(values);
-        // apply empty values, and validate them on assignment
+    private void setValues(Map<String, String> values) throws WdkModelException {
+        values = new LinkedHashMap<String, String>(values);
+        
+        // fill the empty values
+        query.fillEmptyValues(values);
         query.validateValues(values);
         // passed, assign the value
         this.values = values;
@@ -136,7 +137,7 @@ public abstract class QueryInstance {
     }
 
     public String getChecksum() throws NoSuchAlgorithmException,
-            WdkModelException, JSONException {
+            WdkModelException, JSONException, WdkUserException, SQLException {
         if (checksum == null) {
             JSONObject jsQuery = getJSONContent();
             checksum = Utilities.encrypt(jsQuery.toString());
@@ -145,7 +146,8 @@ public abstract class QueryInstance {
     }
 
     public JSONObject getJSONContent() throws JSONException,
-            NoSuchAlgorithmException, WdkModelException {
+            NoSuchAlgorithmException, WdkModelException, WdkUserException,
+            SQLException {
         JSONObject jsInstance = new JSONObject();
         jsInstance.put("query", query.getFullName());
         jsInstance.put("querySignature", query.getChecksum());
@@ -158,7 +160,9 @@ public abstract class QueryInstance {
         return jsInstance;
     }
 
-    public JSONObject getParamJSONObject() throws JSONException {
+    public JSONObject getParamJSONObject() throws JSONException,
+            NoSuchAlgorithmException, WdkUserException, WdkModelException,
+            SQLException {
         // construct param-value map; param is sorted by name
         String[] paramNames = new String[values.size()];
         values.keySet().toArray(paramNames);
@@ -166,7 +170,8 @@ public abstract class QueryInstance {
 
         JSONObject jsParams = new JSONObject();
         for (String paramName : paramNames) {
-            jsParams.put(paramName, values.get(paramName));
+            String value = values.get(paramName);
+            jsParams.put(paramName, value);
         }
         return jsParams;
     }
@@ -199,7 +204,7 @@ public abstract class QueryInstance {
         return resultSize;
     }
 
-    public Map<String, Object> getValues() {
+    public Map<String, String> getValues() {
         return values;
     }
 
@@ -207,26 +212,6 @@ public abstract class QueryInstance {
             SQLException, WdkModelException, JSONException, WdkUserException {
         ResultFactory factory = wdkModel.getResultFactory();
         return factory.getCachedResults(this);
-    }
-
-    protected Map<String, String> getInternalParamValues()
-            throws WdkModelException, SQLException, NoSuchAlgorithmException,
-            JSONException, WdkUserException {
-        Map<String, String> internalValues = new LinkedHashMap<String, String>();
-        Map<String, Param> params = query.getParamMap();
-        for (String paramName : values.keySet()) {
-            Param param = params.get(paramName);
-            Object externalValue = values.get(paramName);
-
-            String internalValue = param.getInternalValue(externalValue);
-            if (internalValue == null)
-                throw new WdkModelException("The internal value of param '"
-                        + paramName + "' with given term '" + externalValue
-                        + "' cannot be found.");
-
-            internalValues.put(paramName, internalValue);
-        }
-        return internalValues;
     }
 
     public String getCachedSql() throws NoSuchAlgorithmException, SQLException,

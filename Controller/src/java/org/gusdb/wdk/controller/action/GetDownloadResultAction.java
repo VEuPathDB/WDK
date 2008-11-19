@@ -13,14 +13,14 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
-import org.gusdb.wdk.model.jspwrap.AnswerBean;
-import org.gusdb.wdk.model.jspwrap.HistoryBean;
+import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
+import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.report.Reporter;
 
 /**
  * This Action is called by the ActionServlet when a download submit is made. It
- * 1) find selected fields (may be all fields in answer bean) 2) use AnswerBean
+ * 1) find selected fields (may be all fields in answer bean) 2) use AnswerValueBean
  * to get and format results 3) forward control to a jsp page that displays the
  * result
  */
@@ -40,13 +40,13 @@ public class GetDownloadResultAction extends Action {
             }
             if ( histIdstr == null )
                 throw new Exception(
-                        "no history id is given for which to download the result" );
+                        "no userAnswer id is given for which to download the result" );
             
             int histId = Integer.parseInt( histIdstr );
             UserBean wdkUser = ( UserBean ) request.getSession().getAttribute(
                     CConstants.WDK_USER_KEY );
-            HistoryBean history = wdkUser.getHistory( histId );
-            AnswerBean wdkAnswer = history.getAnswer();
+            StepBean userAnswer = wdkUser.getStep( histId );
+            AnswerValueBean wdkAnswerValue = userAnswer.getAnswerValue();
             
             // get reporter name
             String reporterName = request.getParameter( CConstants.WDK_REPORT_FORMAT_KEY );
@@ -73,7 +73,7 @@ public class GetDownloadResultAction extends Action {
             }
             
             // make report
-            Reporter reporter = wdkAnswer.createReport( reporterName, config );
+            Reporter reporter = wdkAnswerValue.createReport( reporterName, config );
             reporter.configure( config );
             
             ServletOutputStream out = response.getOutputStream();

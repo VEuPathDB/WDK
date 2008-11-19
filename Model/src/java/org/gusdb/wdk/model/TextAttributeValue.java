@@ -46,7 +46,8 @@ public class TextAttributeValue extends AttributeValue {
             Map<String, Object> values = new LinkedHashMap<String, Object>();
             for (String subField : subFields.keySet()) {
                 AttributeValue value = container.getAttributeValue(subField);
-                values.put(subField, value.getValue());
+                Object object = value.getValue();
+                values.put(subField, (object == null) ? "" : object.toString());
             }
             this.text = Utilities.replaceMacros(text, values);
         }

@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.sql.DataSource;
@@ -21,10 +22,8 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.Answer;
+import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.AttributeField;
-import org.gusdb.wdk.model.ParamValuesSet;
-import org.gusdb.wdk.model.QuerySet;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
 import org.gusdb.wdk.model.RecordClass;
@@ -39,7 +38,9 @@ import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.query.QuerySet;
 import org.gusdb.wdk.model.query.SqlQueryInstance;
+import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.json.JSONException;
 import org.xml.sax.SAXException;
 
@@ -143,16 +144,16 @@ public class SanityTester {
 
         try {
             question.getQuery().setIsCacheable(false);
-            Answer answer = question.makeAnswer(paramValuesSet.getParamValues());
+            AnswerValue answerValue = question.makeAnswerValue(paramValuesSet.getParamValues());
 
-            int resultSize = answer.getResultSize();
+            int resultSize = answerValue.getResultSize();
 
             // get the summary attribute list
-            Map<String, AttributeField> summary = answer.getSummaryAttributeFields();
+            Map<String, AttributeField> summary = answerValue.getSummaryAttributeFields();
 
             // iterate through the page and try every summary attribute of
             // each record
-            for (RecordInstance record : answer.getRecordInstances()) {
+            for (RecordInstance record : answerValue.getRecordInstances()) {
                 StringBuffer sb = new StringBuffer();
                 for (String attrName : summary.keySet()) {
                     sb.append(record.getAttributeValue(attrName));
@@ -333,7 +334,7 @@ public class SanityTester {
             ParamValuesSet paramValuesSet) throws NoSuchAlgorithmException,
             SQLException, WdkModelException, JSONException, WdkUserException {
 
-        SqlQueryInstance instance = (SqlQueryInstance) query.makeInstance(new HashMap<String, Object>());
+        SqlQueryInstance instance = (SqlQueryInstance) query.makeInstance(new HashMap<String, String>());
 
         if (paramValuesSet.getParamValues().size() != 2) {
             throw new WdkUserException(
@@ -357,7 +358,7 @@ public class SanityTester {
             throws NoSuchAlgorithmException, SQLException, WdkModelException,
             JSONException, WdkUserException {
 
-        SqlQueryInstance instance = (SqlQueryInstance) query.makeInstance(new HashMap<String, Object>());
+        SqlQueryInstance instance = (SqlQueryInstance) query.makeInstance(new HashMap<String, String>());
 
         String sql = "select * from (" + instance.getUncachedSql() + ") "
                 + paramValuesSet.getWhereClause();
@@ -406,9 +407,13 @@ public class SanityTester {
         Exception caughtException = null;
 
         try {
-
+            Map<String, String> paramValues = paramValuesSet.getParamValues();
+            Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
+            for (String key : paramValues.keySet()) {
+                pkValues.put(key, paramValues.get(key));
+            }
             RecordInstance recordInstance = new RecordInstance(recordClass,
-                    paramValuesSet.getParamValues());
+                    pkValues);
             recordInstance.print();
             passed = true;
 
@@ -450,8 +455,7 @@ public class SanityTester {
      *            records that passed the test and the second is the number of
      *            records that failed.
      * 
-     * @param return
-     *            true if one or more tests failed; false otherwise.
+     * @param return true if one or more tests failed; false otherwise.
      */
 
     private boolean printSummaryLine() {

@@ -74,14 +74,15 @@ public class StressTestAnalyzer {
         dataSource = wdkModel.getQueryPlatform().getDataSource();
     }
 
-    public long getTaskCount() throws SQLException {
+    public long getTaskCount() throws SQLException, WdkModelException {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT count(*) FROM " + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
         return (Long) SqlUtils.executeScalar(dataSource, sb.toString());
     }
 
-    public long getTaskCount(String taskType) throws SQLException {
+    public long getTaskCount(String taskType) throws SQLException,
+            WdkModelException {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT count(*) FROM " + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
@@ -89,7 +90,7 @@ public class StressTestAnalyzer {
         return (Long) SqlUtils.executeScalar(dataSource, sb.toString());
     }
 
-    public long getSucceededTaskCount() throws SQLException {
+    public long getSucceededTaskCount() throws SQLException, WdkModelException {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT count(*) FROM " + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
@@ -97,7 +98,8 @@ public class StressTestAnalyzer {
         return (Long) SqlUtils.executeScalar(dataSource, sb.toString());
     }
 
-    public long getSucceededTaskCount(String taskType) throws SQLException {
+    public long getSucceededTaskCount(String taskType) throws SQLException,
+            WdkModelException {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT count(*) FROM " + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
@@ -106,7 +108,7 @@ public class StressTestAnalyzer {
         return (Long) SqlUtils.executeScalar(dataSource, sb.toString());
     }
 
-    public long getFailedTaskCount() throws SQLException {
+    public long getFailedTaskCount() throws SQLException, WdkModelException {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT count(*) FROM " + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
@@ -114,7 +116,8 @@ public class StressTestAnalyzer {
         return (Long) SqlUtils.executeScalar(dataSource, sb.toString());
     }
 
-    public long getFailedTaskCount(String taskType) throws SQLException {
+    public long getFailedTaskCount(String taskType) throws SQLException,
+            WdkModelException {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT count(*) FROM " + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
@@ -123,7 +126,8 @@ public class StressTestAnalyzer {
         return (Long) SqlUtils.executeScalar(dataSource, sb.toString());
     }
 
-    public long getTaskCount(ResultType resultType) throws SQLException {
+    public long getTaskCount(ResultType resultType) throws SQLException,
+            WdkModelException {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT count(*) FROM " + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
@@ -132,7 +136,7 @@ public class StressTestAnalyzer {
     }
 
     public long getTaskCount(ResultType resultType, String taskType)
-            throws SQLException {
+            throws SQLException, WdkModelException {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT count(*) FROM " + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
@@ -141,13 +145,14 @@ public class StressTestAnalyzer {
         return (Long) SqlUtils.executeScalar(dataSource, sb.toString());
     }
 
-    public float getTaskSuccessRatio() throws SQLException {
+    public float getTaskSuccessRatio() throws SQLException, WdkModelException {
         long total = getTaskCount();
         long succeeded = getSucceededTaskCount();
         return ((float) succeeded / total);
     }
 
-    public float getTaskSuccessRatio(String taskType) throws SQLException {
+    public float getTaskSuccessRatio(String taskType) throws SQLException,
+            WdkModelException {
         long total = getTaskCount(taskType);
         long succeeded = getSucceededTaskCount(taskType);
         return (total == 0) ? 0 : ((float) succeeded / total);
@@ -259,7 +264,7 @@ public class StressTestAnalyzer {
         return (average / 1000F);
     }
 
-    public void print() throws SQLException {
+    public void print() throws SQLException, WdkModelException {
         // print out results
 
         // print out all types results

@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.Answer;
+import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.AttributeValue;
 import org.gusdb.wdk.model.FieldScope;
@@ -44,8 +44,8 @@ public class TabularReporter extends Reporter {
     private boolean hasHeader = true;
     private String divider = "\t";
 
-    public TabularReporter(Answer answer, int startIndex, int endIndex) {
-        super(answer, startIndex, endIndex);
+    public TabularReporter(AnswerValue answerValue, int startIndex, int endIndex) {
+        super(answerValue, startIndex, endIndex);
     }
 
     /*
@@ -171,8 +171,8 @@ public class TabularReporter extends Reporter {
 
         // get page based answers with a maximum size (defined in
         // PageAnswerIterator)
-        for (Answer answer : this) {
-            for (RecordInstance record : answer.getRecordInstances()) {
+        for (AnswerValue answerValue : this) {
+            for (RecordInstance record : answerValue.getRecordInstances()) {
                 for (AttributeField field : fields) {
                     AttributeValue value = record.getAttributeValue(field.getName());
                     writer.print(value.getValue());
@@ -208,8 +208,8 @@ public class TabularReporter extends Reporter {
 
             // get page based answers with a maximum size (defined in
             // PageAnswerIterator)
-            for (Answer answer : this) {
-                for (RecordInstance record : answer.getRecordInstances()) {
+            for (AnswerValue answerValue : this) {
+                for (RecordInstance record : answerValue.getRecordInstances()) {
                     count++;
 
                     if (count % 2 == 1) {
@@ -271,8 +271,8 @@ public class TabularReporter extends Reporter {
 
         // get page based answers with a maximum size (defined in
         // PageAnswerIterator)
-        for (Answer answer : this) {
-            for (RecordInstance record : answer.getRecordInstances()) {
+        for (AnswerValue answerValue : this) {
+            for (RecordInstance record : answerValue.getRecordInstances()) {
                 writer.println("<tr>");
                 for (AttributeField field : fields) {
                     AttributeValue value = record.getAttributeValue(field.getName());

@@ -15,13 +15,13 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 
-import org.gusdb.wdk.model.Answer;
+import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.AnswerBean;
-import org.gusdb.wdk.model.jspwrap.HistoryBean;
+import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
+import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.json.JSONException;
@@ -39,7 +39,7 @@ public class HistoryBeanTest {
     private UserBean user;
     private Random random;
     private RecordClass recordClass;
-    private List<AnswerBean> answers;
+    private List<AnswerValueBean> answers;
 
     public HistoryBeanTest() throws NoSuchAlgorithmException,
             WdkModelException, ParserConfigurationException,
@@ -52,47 +52,49 @@ public class HistoryBeanTest {
         this.user = modelBean.getUserFactory().getGuestUser();
         this.random = new Random();
         this.recordClass = wdkModel.getAllRecordClassSets()[0].getRecordClasses()[0];
-        List<Answer> answers = UnitTestHelper.getAnswerPool(recordClass);
-        this.answers = new ArrayList<AnswerBean>();
-        for (Answer answer : answers) {
-            this.answers.add(new AnswerBean(answer));
+        List<AnswerValue> answerValues = UnitTestHelper.getAnswerPool(recordClass);
+        this.answers = new ArrayList<AnswerValueBean>();
+        for (AnswerValue answerValue : answerValues) {
+            this.answers.add(new AnswerValueBean(answerValue));
         }
     }
 
     @Test
     public void testCreateBooleanHistory() throws NoSuchAlgorithmException,
             WdkModelException, JSONException, WdkUserException, SQLException {
-        AnswerBean leftAnswer = answers.get(random.nextInt(answers.size()));
-        HistoryBean leftHistory = user.createHistory(leftAnswer);
-        AnswerBean rightAnswer = answers.get(random.nextInt(answers.size()));
-        HistoryBean rightHistory = user.createHistory(rightAnswer);
+        AnswerValueBean leftAnswer = answers.get(random.nextInt(answers.size()));
+        StepBean leftStep = user.createStep(leftAnswer.getQuestion(),
+                leftAnswer.getParams(), (String) null);
+        AnswerValueBean rightAnswer = answers.get(random.nextInt(answers.size()));
+        StepBean rightStep = user.createStep(rightAnswer.getQuestion(),
+                rightAnswer.getParams(), (String) null);
 
-        String expression = leftHistory.getHistoryId() + " OR "
-                + rightHistory.getHistoryId();
-        HistoryBean history = user.combineHistory(expression, false);
-        AnswerBean answer = history.getAnswer();
-        Map<String, Object> params = answer.getParams();
+        String expression = leftStep.getStepId() + " OR "
+                + rightStep.getStepId();
+        StepBean step = user.combineStep(expression, false);
+        AnswerValueBean answerValue = step.getAnswerValue();
+        Map<String, String> params = answerValue.getParams();
 
         Assert.assertEquals(recordClass.getFullName(),
-                answer.getQuestion().getRecordClass().getFullName());
-        Assert.assertEquals(expression, history.getBooleanExpression());
-        Assert.assertEquals(params.size(), history.getParams().size());
+                answerValue.getQuestion().getRecordClass().getFullName());
+        Assert.assertEquals(expression, step.getBooleanExpression());
+        Assert.assertEquals(params.size(), step.getParams().size());
         Assert.assertEquals(leftAnswer.getChecksum(),
-                answer.getFirstChildAnswer().getChecksum());
+                answerValue.getFirstChildAnswer().getChecksum());
         Assert.assertEquals(rightAnswer.getChecksum(),
-                answer.getSecondChildAnswer().getChecksum());
+                answerValue.getSecondChildAnswer().getChecksum());
 
         // load the boolean history
-        history = user.getHistory(history.getHistoryId());
-        answer = history.getAnswer();
+        step = user.getStep(step.getStepId());
+        answerValue = step.getAnswerValue();
 
         Assert.assertEquals(recordClass.getFullName(),
-                answer.getQuestion().getRecordClass().getFullName());
-        Assert.assertEquals(expression, history.getBooleanExpression());
-        Assert.assertEquals(params.size(), history.getParams().size());
+                answerValue.getQuestion().getRecordClass().getFullName());
+        Assert.assertEquals(expression, step.getBooleanExpression());
+        Assert.assertEquals(params.size(), step.getParams().size());
         Assert.assertEquals(leftAnswer.getChecksum(),
-                answer.getFirstChildAnswer().getChecksum());
+                answerValue.getFirstChildAnswer().getChecksum());
         Assert.assertEquals(rightAnswer.getChecksum(),
-                answer.getSecondChildAnswer().getChecksum());
+                answerValue.getSecondChildAnswer().getChecksum());
     }
 }

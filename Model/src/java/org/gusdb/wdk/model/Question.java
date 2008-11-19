@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.SqlQuery;
+import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 
@@ -82,6 +83,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
 
     private boolean ignoreSubType = false;
 
+    private String shortDisplayName;
+
     // /////////////////////////////////////////////////////////////////////
     // setters called at initialization
     // /////////////////////////////////////////////////////////////////////
@@ -119,6 +122,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         this.wdkModel = question.wdkModel;
 
         this.noSummaryOnSingleRecord = question.noSummaryOnSingleRecord;
+        this.shortDisplayName = question.shortDisplayName;
     }
 
     /**
@@ -204,14 +208,15 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
      * @throws SQLException
      * @throws NoSuchAlgorithmException
      */
-    public Answer makeAnswer(Map<String, Object> paramValues)
+    public AnswerValue makeAnswerValue(Map<String, String> paramValues)
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
         int pageStart = 1;
         int pageEnd = Utilities.DEFAULT_PAGE_SIZE;
         Map<String, Boolean> sortingMap = this.defaultSortingMap;
         AnswerFilterInstance filter = recordClass.getDefaultFilter();
-        return makeAnswer(paramValues, pageStart, pageEnd, sortingMap, filter);
+        return makeAnswerValue(paramValues, pageStart, pageEnd, sortingMap,
+                filter);
     }
 
     /**
@@ -228,16 +233,16 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
      * @throws SQLException
      * @throws NoSuchAlgorithmException
      */
-    public Answer makeAnswer(Map<String, Object> paramValues, int pageStart,
-            int pageEnd, Map<String, Boolean> sortingAttributes,
+    public AnswerValue makeAnswerValue(Map<String, String> paramValues,
+            int pageStart, int pageEnd, Map<String, Boolean> sortingAttributes,
             AnswerFilterInstance filter) throws WdkUserException,
             WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException {
         QueryInstance qi = query.makeInstance(paramValues);
-        Answer answer = new Answer(this, qi, pageStart, pageEnd,
+        AnswerValue answerValue = new AnswerValue(this, qi, pageStart, pageEnd,
                 sortingAttributes, filter);
 
-        return answer;
+        return answerValue;
     }
 
     public Param[] getParams() {
@@ -484,7 +489,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
             }
         }
         defaultSummaryAttributeNames = null;
-        
+
         // make sure we create index on primary keys
         String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
         query.setIndexColumns(pkColumns);
@@ -734,5 +739,13 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         // set the columns, which as the same column as the id query
         query.setColumns(this.query.getColumns());
         return query;
+    }
+
+    public void setShortDisplayName(String shortDisplayName) {
+        this.shortDisplayName = shortDisplayName;
+    }
+
+    public String getShortDisplayName() {
+        return (shortDisplayName == null) ? getDisplayName() : shortDisplayName;
     }
 }

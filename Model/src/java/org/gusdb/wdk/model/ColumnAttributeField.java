@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.gusdb.wdk.model.query.Column;
+
 public class ColumnAttributeField extends AttributeField {
 
     private static final long serialVersionUID = 6599899173932240144L;

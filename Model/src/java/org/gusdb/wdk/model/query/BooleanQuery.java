@@ -2,14 +2,13 @@ package org.gusdb.wdk.model.query;
 
 import java.util.Map;
 
-import org.gusdb.wdk.model.AnswerParam;
-import org.gusdb.wdk.model.Column;
-import org.gusdb.wdk.model.ParamSet;
 import org.gusdb.wdk.model.PrimaryKeyAttributeField;
 import org.gusdb.wdk.model.RecordClass;
-import org.gusdb.wdk.model.StringParam;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.query.param.AnswerParam;
+import org.gusdb.wdk.model.query.param.ParamSet;
+import org.gusdb.wdk.model.query.param.StringParam;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -193,7 +192,8 @@ public class BooleanQuery extends SqlQuery {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.query.Query#appendJSONContent(org.json.JSONObject)
+     * @see
+     * org.gusdb.wdk.model.query.Query#appendJSONContent(org.json.JSONObject)
      */
     @Override
     protected void appendJSONContent(JSONObject jsQuery) throws JSONException {
@@ -216,7 +216,7 @@ public class BooleanQuery extends SqlQuery {
      * @see org.gusdb.wdk.model.query.Query#makeInstance()
      */
     @Override
-    public QueryInstance makeInstance(Map<String, Object> values)
+    public QueryInstance makeInstance(Map<String, String> values)
             throws WdkModelException {
         return new BooleanQueryInstance(this, values);
     }

@@ -122,9 +122,9 @@ public class UserFactoryBean {
      * 
      * @see org.gusdb.wdk.model.user.UserFactory#loadUser(java.lang.String)
      */
-    public UserBean loadUser(String email) throws WdkModelException,
+    public UserBean getUserByEmail(String email) throws WdkModelException,
             WdkUserException {
-        User user = userFactory.loadUser(email);
+        User user = userFactory.getUserByEmail(email);
         return new UserBean(user);
     }
 
@@ -135,9 +135,9 @@ public class UserFactoryBean {
      * @throws WdkModelException
      * @see org.gusdb.wdk.model.user.UserFactory#loadUserBySignature(java.lang.String)
      */
-    public UserBean loadUserBySignature(String signature)
+    public UserBean getUser(String signature)
             throws WdkUserException, WdkModelException {
-        User user = userFactory.loadUserBySignature(signature);
+        User user = userFactory.getUser(signature);
         return new UserBean(user);
     }
 
@@ -146,9 +146,9 @@ public class UserFactoryBean {
      * 
      * @see org.gusdb.wdk.model.user.UserFactory#loadUser(int)
      */
-    public UserBean loadUser(int userId) throws WdkUserException,
+    public UserBean getUser(int userId) throws WdkUserException,
             WdkModelException {
-        User user = userFactory.loadUser(userId);
+        User user = userFactory.getUser(userId);
         return new UserBean(user);
     }
 
@@ -157,6 +157,6 @@ public class UserFactoryBean {
     }
 
     public UserBean getUser() throws WdkUserException, WdkModelException {
-        return (signature == null) ? null : loadUserBySignature(signature);
+        return (signature == null) ? null : getUser(signature);
     }
 }

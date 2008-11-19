@@ -8,6 +8,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.gusdb.wdk.model.WdkModelException;
+
 /**
  * @author Jerric Gao
  * 
@@ -26,7 +28,7 @@ public class PostgreSQL extends DBPlatform {
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.dbms.DBPlatform#createSequence(java.lang.String,
-     *      int, int)
+     * int, int)
      */
     @Override
     public void createSequence(String sequence, int start, int increment)
@@ -54,7 +56,7 @@ public class PostgreSQL extends DBPlatform {
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.dbms.DBPlatform#getClobData(java.sql.ResultSet,
-     *      java.lang.String)
+     * java.lang.String)
      */
     @Override
     public String getClobData(ResultSet rs, String columnName)
@@ -85,9 +87,10 @@ public class PostgreSQL extends DBPlatform {
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.dbms.DBPlatform#getNextId(java.lang.String,
-     *      java.lang.String)
+     * java.lang.String)
      */
-    public int getNextId(String schema, String table) throws SQLException {
+    public int getNextId(String schema, String table) throws SQLException,
+            WdkModelException {
         schema = normalizeSchema(schema);
 
         StringBuffer sql = new StringBuffer("SELECT nextval('");
@@ -110,7 +113,7 @@ public class PostgreSQL extends DBPlatform {
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.dbms.DBPlatform#getPagedSql(java.lang.String,
-     *      int, int)
+     * int, int)
      */
     public String getPagedSql(String sql, int startIndex, int endIndex) {
         StringBuffer buffer = new StringBuffer("SELECT f.* FROM ");
@@ -132,8 +135,9 @@ public class PostgreSQL extends DBPlatform {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.dbms.DBPlatform#updateClobData(java.sql.PreparedStatement,
-     *      int, java.lang.String, boolean)
+     * @see
+     * org.gusdb.wdk.model.dbms.DBPlatform#updateClobData(java.sql.PreparedStatement
+     * , int, java.lang.String, boolean)
      */
     public int updateClobData(PreparedStatement ps, int columnIndex,
             String content, boolean commit) throws SQLException {
@@ -148,7 +152,7 @@ public class PostgreSQL extends DBPlatform {
      */
     @Override
     public boolean checkTableExists(String schema, String tableName)
-            throws SQLException {
+            throws SQLException, WdkModelException {
         StringBuffer sql = new StringBuffer("SELECT count(*) FROM pg_tables ");
         sql.append("WHERE tablename = '").append(tableName).append("'");
         if (schema == null) schema = defaultSchema;
@@ -170,7 +174,9 @@ public class PostgreSQL extends DBPlatform {
         return "TIMESTAMP";
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.dbms.DBPlatform#getFloatDataType(int)
      */
     @Override

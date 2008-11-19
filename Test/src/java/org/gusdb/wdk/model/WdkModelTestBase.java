@@ -11,7 +11,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 
-import org.gusdb.wdk.model.implementation.ModelXmlParser;
 import org.json.JSONException;
 import org.xml.sax.SAXException;
 

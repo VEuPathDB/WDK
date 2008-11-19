@@ -1,13 +1,16 @@
 package org.gusdb.wdk.controller.action;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionForm;
@@ -38,15 +41,15 @@ public class ProcessQuestionAction extends ShowQuestionAction {
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
-        System.out.println("Entering ProcessQuestionAction..");
+        logger.debug("Entering ProcessQuestionAction..");
 
-        UserBean wdkUser = (UserBean) request.getSession().getAttribute(
-                CConstants.WDK_USER_KEY);
+        HttpSession session = request.getSession();
+        UserBean wdkUser = (UserBean) session.getAttribute(CConstants.WDK_USER_KEY);
         if (wdkUser == null) {
             WdkModelBean wdkModel = (WdkModelBean) servlet.getServletContext().getAttribute(
                     CConstants.WDK_MODEL_KEY);
             wdkUser = wdkModel.getUserFactory().getGuestUser();
-            request.getSession().setAttribute(CConstants.WDK_USER_KEY, wdkUser);
+            session.setAttribute(CConstants.WDK_USER_KEY, wdkUser);
         }
 
         // get question
@@ -58,6 +61,7 @@ public class ProcessQuestionAction extends ShowQuestionAction {
         // the params has been validated, and now is parsed, and if the size of
         // the value is too long, ti will be replaced is checksum
         Map<String, String> params = prepareParams(wdkUser, request, qForm);
+        params = getCompressedParams(wdkQuestion, params);
 
         // construct the url to summary page
         ActionForward showSummary = mapping.findForward(CConstants.PQ_SHOW_SUMMARY_MAPKEY);
@@ -83,24 +87,23 @@ public class ProcessQuestionAction extends ShowQuestionAction {
         return forward;
     }
 
-    private Map<String, String> prepareParams(UserBean user,
+    protected Map<String, String> prepareParams(UserBean user,
             HttpServletRequest request, QuestionForm qform)
-            throws WdkModelException, WdkUserException,
-            NoSuchAlgorithmException {
-        QuestionBean question = qform.getQuestion();
-        Map<String, Object> params = qform.getMyProps();
-        Map<String, Object> paramObjects = qform.getMyPropObjects();
-        Map<String, String> compressedParams = new LinkedHashMap<String, String>();
+            throws WdkModelException, WdkUserException, FileNotFoundException,
+            IOException, NoSuchAlgorithmException, SQLException {
+        String userSignature = user.getSignature();
 
-        ParamBean[] paramDefinitions = question.getParams();
-        for (ParamBean param : paramDefinitions) {
-            String paramName = param.getName();
-            String paramValue = null;
+        QuestionBean question = qform.getQuestion();
+        Map<String, String> paramValues = qform.getMyProps();
+        Map<String, ParamBean> params = question.getParamsMap();
+        for (String paramName : paramValues.keySet()) {
+            ParamBean param = params.get(paramName);
+
             if (param instanceof DatasetParamBean) {
                 // get the input type
                 String type = request.getParameter(paramName + "_type");
                 if (type == null)
-                    throw new WdkModelException("Missing input parameter: "
+                    throw new WdkUserException("Missing input parameter: "
                             + paramName + "_type.");
 
                 String data;
@@ -108,25 +111,33 @@ public class ProcessQuestionAction extends ShowQuestionAction {
                 if (type.equalsIgnoreCase("data")) {
                     data = request.getParameter(paramName + "_data");
                 } else if (type.equalsIgnoreCase("file")) {
-                    FormFile file = (FormFile) paramObjects.get(paramName
+                    FormFile file = (FormFile) qform.getMyPropObject(paramName
                             + "_file");
                     uploadFile = file.getFileName();
-                    try {
-                        data = new String(file.getFileData());
-
-                    } catch (IOException ex) {
-                        throw new WdkModelException(ex);
-                    }
+                    data = new String(file.getFileData());
                 } else {
-                    throw new WdkModelException("Invalid input type for "
+                    throw new WdkUserException("Invalid input type for "
                             + "Dataset " + paramName + ": " + type);
                 }
                 String[] values = Utilities.toArray(data);
                 DatasetBean dataset = user.createDataset(uploadFile, values);
-                paramValue = dataset.getChecksum();
-            } else {
-                paramValue = param.compressValue(params.get(paramName));
+                int userDatasetId = dataset.getUserDatasetId();
+                String paramValue = userSignature + ":" + userDatasetId;
+                paramValues.put(paramName, paramValue);
             }
+        }
+        return paramValues;
+    }
+
+    private Map<String, String> getCompressedParams(QuestionBean question,
+            Map<String, String> paramValues) throws NoSuchAlgorithmException,
+            WdkModelException {
+        Map<String, ParamBean> params = question.getParamsMap();
+        Map<String, String> compressedParams = new LinkedHashMap<String, String>();
+        for (String paramName : paramValues.keySet()) {
+            ParamBean param = params.get(paramName);
+            String paramValue = paramValues.get(paramName);
+            paramValue = param.compressValue(paramValue);
             compressedParams.put(paramName, paramValue);
         }
         return compressedParams;

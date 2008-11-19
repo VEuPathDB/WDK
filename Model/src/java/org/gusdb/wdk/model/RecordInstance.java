@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.dbms.ResultList;
+import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.json.JSONException;
@@ -19,7 +20,7 @@ public class RecordInstance extends AttributeValueContainer {
 
     private Map<String, TableValue> tableValueCache = new LinkedHashMap<String, TableValue>();
 
-    private Answer answer;
+    private AnswerValue answerValue;
 
     /**
      * 
@@ -50,11 +51,11 @@ public class RecordInstance extends AttributeValueContainer {
      * @throws NoSuchAlgorithmException
      * 
      */
-    public RecordInstance(Answer answer, Map<String, Object> pkValues)
+    public RecordInstance(AnswerValue answerValue, Map<String, Object> pkValues)
             throws NoSuchAlgorithmException, WdkModelException, SQLException,
             JSONException, WdkUserException {
-        this.answer = answer;
-        this.recordClass = answer.getQuestion().getRecordClass();
+        this.answerValue = answerValue;
+        this.recordClass = answerValue.getQuestion().getRecordClass();
 
         // the record instance from answer doesn't need the pk value translation
         PrimaryKeyAttributeValue primaryKey = new PrimaryKeyAttributeValue(
@@ -80,7 +81,7 @@ public class RecordInstance extends AttributeValueContainer {
     }
 
     public Map<String, AttributeField> getAttributeFieldMap(FieldScope scope) {
-        if (answer != null) return answer.getQuestion().getAttributeFieldMap(
+        if (answerValue != null) return answerValue.getQuestion().getAttributeFieldMap(
                 scope);
         else return recordClass.getAttributeFieldMap(scope);
     }
@@ -88,14 +89,16 @@ public class RecordInstance extends AttributeValueContainer {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.AttributeValueContainer#fillColumnAttributeValues(org.gusdb.wdk.model.query.Query)
+     * @see
+     * org.gusdb.wdk.model.AttributeValueContainer#fillColumnAttributeValues
+     * (org.gusdb.wdk.model.query.Query)
      */
     @Override
     protected void fillColumnAttributeValues(Query attributeQuery)
             throws WdkModelException, NoSuchAlgorithmException, JSONException,
             SQLException, WdkUserException {
-        if (answer != null) {
-            answer.integrateAttributesQuery(attributeQuery);
+        if (answerValue != null) {
+            answerValue.integrateAttributesQuery(attributeQuery);
             return;
         }
 
@@ -103,8 +106,8 @@ public class RecordInstance extends AttributeValueContainer {
         String queryName = attributeQuery.getFullName();
 
         Query query;
-        if (answer != null) {
-            Query dynaQuery = answer.getQuestion().getDynamicAttributeQuery();
+        if (answerValue != null) {
+            Query dynaQuery = answerValue.getQuestion().getDynamicAttributeQuery();
             if (dynaQuery != null && dynaQuery.getFullName().equals(queryName)) {
                 query = dynaQuery;
             } else {
@@ -142,7 +145,9 @@ public class RecordInstance extends AttributeValueContainer {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.AttributeValueContainer#getAttributeField(java.lang.String)
+     * @see
+     * org.gusdb.wdk.model.AttributeValueContainer#getAttributeField(java.lang
+     * .String)
      */
     public AttributeField getAttributeField(String fieldName)
             throws WdkModelException {
@@ -266,7 +271,7 @@ public class RecordInstance extends AttributeValueContainer {
         if (nq != null) {
             for (int i = 0; i < nq.length; i++) {
                 Question nextNq = nq[i];
-                Answer a = getNestedRecordAnswer(nextNq);
+                AnswerValue a = getNestedRecordAnswer(nextNq);
                 // TODO
                 // the reset function is no longer available; instead call
                 // cloneAnswer() to get a new answer object and work on it
@@ -297,7 +302,7 @@ public class RecordInstance extends AttributeValueContainer {
         if (nql != null) {
             for (int i = 0; i < nql.length; i++) {
                 Question nextNql = nql[i];
-                Answer a = getNestedRecordAnswer(nextNql);
+                AnswerValue a = getNestedRecordAnswer(nextNql);
                 RecordInstance[] records = a.getRecordInstances();
                 if (records != null) riListMap.put(nextNql.getName(), records);
             }
@@ -305,16 +310,16 @@ public class RecordInstance extends AttributeValueContainer {
         return riListMap;
     }
 
-    private Answer getNestedRecordAnswer(Question question)
+    private AnswerValue getNestedRecordAnswer(Question question)
             throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, SQLException, JSONException {
-        Map<String, Object> params = primaryKey.getValues();
+        Map<String, String> params = primaryKey.getValues();
         int pageStart = 1;
         int pageEnd = Utilities.MAXIMUM_RECORD_INSTANCES;
         Map<String, Boolean> sortingMap = question.getSortingAttributeMap();
         AnswerFilterInstance filter = question.getRecordClass().getDefaultFilter();
         // create an answer with maximium allowed rows
-        return question.makeAnswer(params, pageStart, pageEnd, sortingMap,
+        return question.makeAnswerValue(params, pageStart, pageEnd, sortingMap,
                 filter);
     }
 
@@ -478,7 +483,8 @@ public class RecordInstance extends AttributeValueContainer {
      * 
      * @param summaryAttributes
      *            and
-     * @param nonSummaryAttributes.
+     * @param nonSummaryAttributes
+     *            .
      */
 
     private void splitSummaryAttributeValue(
@@ -517,10 +523,11 @@ public class RecordInstance extends AttributeValueContainer {
 
         // get alias from the alias query
         Map<String, Object> newValue = new LinkedHashMap<String, Object>();
-        Map<String, Object> oldValues = new LinkedHashMap<String, Object>();
+        Map<String, String> oldValues = new LinkedHashMap<String, String>();
         for (String param : pkValues.keySet()) {
             String oldParam = Utilities.ALIAS_OLD_KEY_COLUMN_PREFIX + param;
-            oldValues.put(oldParam, pkValues.get(param));
+            String value = Utilities.parseValue(pkValues.get(param));
+            oldValues.put(oldParam, value);
         }
 
         QueryInstance instance = aliasQuery.makeInstance(oldValues);

@@ -7,8 +7,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.gusdb.wdk.model.query.Column;
+import org.gusdb.wdk.model.query.ColumnType;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.SqlQuery;
+import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.param.ParamSet;
+import org.gusdb.wdk.model.query.param.ParamValuesSet;
+import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 

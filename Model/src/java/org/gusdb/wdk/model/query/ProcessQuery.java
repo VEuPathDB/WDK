@@ -3,10 +3,13 @@
  */
 package org.gusdb.wdk.model.query;
 
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -40,7 +43,7 @@ public class ProcessQuery extends Query {
 
     /**
      * @param processClass
-     *                the processClass to set
+     *            the processClass to set
      */
     public void setProcessName(String processName) {
         this.processName = processName;
@@ -62,7 +65,7 @@ public class ProcessQuery extends Query {
 
     /**
      * @param local
-     *                the local to set
+     *            the local to set
      */
     public void setLocal(boolean local) {
         this.local = local;
@@ -71,12 +74,16 @@ public class ProcessQuery extends Query {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.query.Query#resolveReferences(org.gusdb.wdk.model.WdkModel)
+     * @see
+     * org.gusdb.wdk.model.query.Query#resolveReferences(org.gusdb.wdk.model
+     * .WdkModel)
      */
     @Override
-    public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
+    public void resolveReferences(WdkModel wdkModel) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
         super.resolveReferences(wdkModel);
-        webServiceUrl = wdkModel.getWebServiceUrl();
+        webServiceUrl = wdkModel.getModelConfig().getWebServiceUrl();
     }
 
     /*
@@ -85,7 +92,7 @@ public class ProcessQuery extends Query {
      * @see org.gusdb.wdk.model.query.Query#makeInstance()
      */
     @Override
-    public QueryInstance makeInstance(Map<String, Object> values)
+    public QueryInstance makeInstance(Map<String, String> values)
             throws WdkModelException {
         return new ProcessQueryInstance(this, values);
     }
@@ -93,7 +100,8 @@ public class ProcessQuery extends Query {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.query.Query#appendJSONContent(org.json.JSONObject)
+     * @see
+     * org.gusdb.wdk.model.query.Query#appendJSONContent(org.json.JSONObject)
      */
     @Override
     protected void appendJSONContent(JSONObject jsQuery) throws JSONException {

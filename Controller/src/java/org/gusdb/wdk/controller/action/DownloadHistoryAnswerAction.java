@@ -15,9 +15,9 @@ import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.jspwrap.AnswerBean;
-import org.gusdb.wdk.model.jspwrap.HistoryBean;
+import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.RecordClassBean;
+import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 
 /**
@@ -32,10 +32,10 @@ public class DownloadHistoryAnswerAction extends Action {
     public ActionForward execute( ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response )
             throws Exception {
-        AnswerBean wdkAnswer = getAnswerBean( request );
+        AnswerValueBean answerValue = getAnswerValue( request );
         
         // get a list of supported reporters
-        RecordClassBean recordClass = wdkAnswer.getQuestion().getRecordClass();
+        RecordClassBean recordClass = answerValue.getQuestion().getRecordClass();
         String fullName = recordClass.getFullName();
         Map< String, String > reporters = recordClass.getReporters();
         
@@ -48,9 +48,9 @@ public class DownloadHistoryAnswerAction extends Action {
         if ( reporter != null ) {
             request.setAttribute( CConstants.WDK_REPORT_FORMAT_KEY, reporter );
         }
-        request.setAttribute( CConstants.WDK_ANSWER_KEY, wdkAnswer );
+        request.setAttribute( CConstants.WDK_ANSWER_KEY, answerValue );
         request.setAttribute( CConstants.WDK_QUESTION_PARAMS_KEY,
-                wdkAnswer.getInternalParams() );
+                answerValue.getInternalParams() );
         
         // get forward
         ActionForward forward;
@@ -87,21 +87,21 @@ public class DownloadHistoryAnswerAction extends Action {
         return forward;
     }
     
-    protected AnswerBean getAnswerBean( HttpServletRequest request )
+    protected AnswerValueBean getAnswerValue( HttpServletRequest request )
             throws Exception {
         String histIdstr = request.getParameter( CConstants.WDK_HISTORY_ID_KEY );
         if ( histIdstr == null ) {
             histIdstr = ( String ) request.getAttribute( CConstants.WDK_HISTORY_ID_KEY );
         }
         if ( histIdstr != null ) {
-            int histId = Integer.parseInt( histIdstr );
-            request.setAttribute( CConstants.WDK_HISTORY_ID_KEY, histId );
+            int displayId = Integer.parseInt( histIdstr );
+            request.setAttribute( CConstants.WDK_HISTORY_ID_KEY, displayId );
             
             UserBean wdkUser = ( UserBean ) request.getSession().getAttribute(
                     CConstants.WDK_USER_KEY );
             
-            HistoryBean history = wdkUser.getHistory( histId );
-            return history.getAnswer();
+            StepBean step = wdkUser.getStep( displayId );
+            return step.getAnswerValue();
         } else {
             throw new Exception(
                     "no history id is given for which to download the result" );

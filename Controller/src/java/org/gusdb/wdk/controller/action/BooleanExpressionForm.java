@@ -10,7 +10,7 @@ import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 
 /**
- * form bean for holding the boolean expression string fro queryHistory.jsp page
+ * form bean for holding the boolean expression string fro queryStep.jsp page
  */
 
 public class BooleanExpressionForm extends ActionForm {
@@ -23,7 +23,7 @@ public class BooleanExpressionForm extends ActionForm {
     private static Logger logger = Logger.getLogger(BooleanExpressionForm.class);
 
     private String booleanExpression = null;
-    private String historySectionId = null;
+    private String userAnswerSectionId = null;
 
     private boolean useBooleanFilter = true;
 
@@ -35,12 +35,12 @@ public class BooleanExpressionForm extends ActionForm {
         return booleanExpression;
     }
 
-    public void setHistorySectionId(String si) {
-        historySectionId = si;
+    public void setStepSectionId(String si) {
+        userAnswerSectionId = si;
     }
 
-    public String getHistorySectionId() {
-        return historySectionId;
+    public String getStepSectionId() {
+        return userAnswerSectionId;
     }
 
     /**
@@ -65,6 +65,7 @@ public class BooleanExpressionForm extends ActionForm {
     public ActionErrors validate(ActionMapping mapping,
             HttpServletRequest request) {
         ActionErrors errors = new ActionErrors();
+
         String errMsg = null;
         try {
             UserBean wdkUser = ActionUtility.getUser(getServlet(), request);

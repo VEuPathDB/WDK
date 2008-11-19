@@ -1,7 +1,8 @@
 package org.gusdb.wdk.controller.action;
 
 import java.util.Date;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -14,8 +15,8 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.jspwrap.AnswerBean;
-import org.gusdb.wdk.model.jspwrap.HistoryBean;
+import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
+import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
@@ -26,94 +27,103 @@ public class GetFilterLinkAction extends Action {
     private static Logger logger = Logger.getLogger(GetFilterLinkAction.class);
 
     public ActionForward execute(ActionMapping mapping, ActionForm form,
-				 HttpServletRequest request,
-				 HttpServletResponse response)
-	throws Exception {
-	
-	WdkModelBean wdkModel = (WdkModelBean) servlet.getServletContext().getAttribute(CConstants.WDK_MODEL_KEY);
-	UserBean wdkUser = (UserBean) request.getSession().getAttribute(CConstants.WDK_USER_KEY);
-	if (wdkUser == null) {
-	    wdkUser = wdkModel.getUserFactory().getGuestUser();
-	    request.getSession().setAttribute(CConstants.WDK_USER_KEY, wdkUser);
-	}
+            HttpServletRequest request, HttpServletResponse response)
+            throws Exception {
+        logger.debug("Entering GetFilterLinkAction...");
 
-	//get the history id
-	String historyId = request.getParameter(CConstants.WDK_HISTORY_ID_KEY);
-	String filterName = request.getParameter("filter");
+        WdkModelBean wdkModel = (WdkModelBean) servlet.getServletContext().getAttribute(
+                CConstants.WDK_MODEL_KEY);
+        UserBean wdkUser = (UserBean) request.getSession().getAttribute(
+                CConstants.WDK_USER_KEY);
+        if (wdkUser == null) {
+            wdkUser = wdkModel.getUserFactory().getGuestUser();
+            request.getSession().setAttribute(CConstants.WDK_USER_KEY, wdkUser);
+        }
 
-	if (historyId == null || historyId.length() == 0 ||
-	    filterName == null || filterName.length() == 0) {
-	    throw new WdkModelException("Missing parameters for GetFilterLinkAction.");
-	}
+        // get the history id
+        String displayId = request.getParameter(CConstants.WDK_HISTORY_ID_KEY);
+        String filterName = request.getParameter("filter");
 
-	HistoryBean history = wdkUser.getHistory(Integer.parseInt(historyId));
-	AnswerBean answer = history.getAnswer();
-	
-	int size = answer.getFilterSize(filterName);
+        if (displayId == null || displayId.length() == 0 || filterName == null
+                || filterName.length() == 0) {
+            throw new WdkModelException(
+                    "Missing parameters for GetFilterLinkAction.");
+        }
 
-        String description = answer.getQuestion().getRecordClass().getFilter(filterName).getDescription();
+        StepBean step = wdkUser.getStep(Integer.parseInt(displayId));
+        AnswerValueBean answerValue = step.getAnswerValue();
 
-	//need to build link to summary page for specified filter
-	ActionForward showSummary = mapping.findForward(CConstants.SHOW_SUMMARY_MAPKEY);
-	StringBuffer url = new StringBuffer(showSummary.getPath());
-	url.append("?questionFullName=" + answer.getQuestion().getFullName());
-	url.append(answer.getSummaryUrlParams());
-	url.append("&filter=" + filterName);            
+        int size = answerValue.getFilterSize(filterName);
 
-	String link = "<a href='" + url.toString() + "' onmouseover=displayDetails('" +
-	    filterName + "') onmouseout=hideDetails('" + filterName + "')>" + size + "</a>";
-	link += "<div class='hidden' id='div_" + filterName + "'>" + description + "</div>";
+        String description = answerValue.getQuestion().getRecordClass().getFilter(
+                filterName).getDescription();
 
-	System.out.println("link text sent to client: " + link);
+        // need to build link to summary page for specified filter
+        ActionForward showSummary = mapping.findForward(CConstants.SHOW_SUMMARY_MAPKEY);
+        StringBuffer url = new StringBuffer(showSummary.getPath());
+        url.append("?questionFullName="
+                + answerValue.getQuestion().getFullName());
+        url.append(answerValue.getSummaryUrlParams());
+        url.append("&filter=" + filterName);
 
-	// check if we already have a cache of this answer
-	HashMap<String, HashMap> cachedAnswers = (HashMap<String, HashMap>) request.getSession().getAttribute("answer_cache");
-	HashMap<String, Date> answerTimes = (HashMap<String, Date>) request.getSession().getAttribute("answer_times");
-	HashMap<String, String> cachedLinks;
-	if (cachedAnswers != null && cachedAnswers.containsKey(answer.getChecksum())) {
-	    // already have cache:  add this link to the cache
-	    cachedLinks = cachedAnswers.get(answer.getChecksum());
-	}
-	else {
-	    // don't have cache:  create a new cache
-	    cachedLinks = new HashMap<String, String>();
-	    if (cachedAnswers == null) {
-		// no answer cache in session: create a new one
-		cachedAnswers = new HashMap<String, HashMap>();
-		answerTimes = new HashMap<String, Date>();
-	    }
-	    else if (cachedAnswers.size() == 3) {
-		Date temp = new Date();
-		String removeKey = "";
-		for (String key : answerTimes.keySet()) {
-		    if (temp.compareTo(answerTimes.get(key)) > 0) {
-			temp = answerTimes.get(key);
-			removeKey = key;
-		    }
-		}
-		cachedAnswers.remove(removeKey);
-		answerTimes.remove(removeKey);
-	    }
-	}
+        String link = "<a href='" + url.toString()
+                + "' onmouseover=displayDetails('" + filterName
+                + "') onmouseout=hideDetails('" + filterName + "')>" + size
+                + "</a>";
+        link += "<div class='hidden' id='div_" + filterName + "'>"
+                + description + "</div>";
 
-	cachedLinks.put(filterName, link);
+        System.out.println("link text sent to client: " + link);
 
-	// now answer cache exists & has < 3 answers, add this one
-	cachedAnswers.put(answer.getChecksum(), cachedLinks);
-	answerTimes.put(answer.getChecksum(), new Date());
+        // check if we already have a cache of this answer
+        Map<String, Map<String, String>> cachedAnswers = (Map<String, Map<String, String>>) request.getSession().getAttribute(
+                "answer_cache");
+        Map<String, Date> answerTimes = (Map<String, Date>) request.getSession().getAttribute(
+                "answer_times");
+        Map<String, String> cachedLinks;
+        if (cachedAnswers != null
+                && cachedAnswers.containsKey(answerValue.getChecksum())) {
+            // already have cache: add this link to the cache
+            cachedLinks = cachedAnswers.get(answerValue.getChecksum());
+        } else {
+            // don't have cache: create a new cache
+            cachedLinks = new LinkedHashMap<String, String>();
+            if (cachedAnswers == null) {
+                // no answer cache in session: create a new one
+                cachedAnswers = new LinkedHashMap<String, Map<String, String>>();
+                answerTimes = new LinkedHashMap<String, Date>();
+            } else if (cachedAnswers.size() == 3) {
+                Date temp = new Date();
+                String removeKey = "";
+                for (String key : answerTimes.keySet()) {
+                    if (temp.compareTo(answerTimes.get(key)) > 0) {
+                        temp = answerTimes.get(key);
+                        removeKey = key;
+                    }
+                }
+                cachedAnswers.remove(removeKey);
+                answerTimes.remove(removeKey);
+            }
+        }
 
-	request.getSession().setAttribute("answer_cache", cachedAnswers);
-	request.getSession().setAttribute("answer_times", answerTimes);
-	
-	// What header, content type to send?
-	ServletOutputStream out = response.getOutputStream();
-	response.setContentType("text/html");
+        cachedLinks.put(filterName, link);
 
-	// print link to response
-	out.print(link);
-	out.flush();
-	out.close();
+        // now answer cache exists & has < 3 answers, add this one
+        cachedAnswers.put(answerValue.getChecksum(), cachedLinks);
+        answerTimes.put(answerValue.getChecksum(), new Date());
 
-	return null;
+        request.getSession().setAttribute("answer_cache", cachedAnswers);
+        request.getSession().setAttribute("answer_times", answerTimes);
+
+        // What header, content type to send?
+        ServletOutputStream out = response.getOutputStream();
+        response.setContentType("text/html");
+
+        // print link to response
+        out.print(link);
+        out.flush();
+        out.close();
+
+        return null;
     }
 }

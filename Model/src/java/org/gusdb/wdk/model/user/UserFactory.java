@@ -9,7 +9,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -17,7 +16,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -36,9 +34,8 @@ import javax.mail.internet.MimeMessage;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.Answer;
-import org.gusdb.wdk.model.AnswerFilterInstance;
-import org.gusdb.wdk.model.RecordClass;
+import org.gusdb.wdk.model.ModelConfig;
+import org.gusdb.wdk.model.ModelConfigUserDB;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -53,6 +50,18 @@ import org.json.JSONException;
 public class UserFactory {
 
     static final String TABLE_USER = "users";
+
+    static final String COLUMN_USER_ID = "user_id";
+
+    public static final String GUEST_USER_PREFIX = "WDK_GUEST_";
+
+    public static final String GLOBAL_PREFERENCE_KEY = "[Global]";
+
+    private static final String EMAIL_MACRO_USER_NAME = "USER_NAME";
+    private static final String EMAIL_MACRO_EMAIL = "EMAIL";
+    private static final String EMAIL_MACRO_PASSWORD = "PASSWORD";
+
+    private static Logger logger = Logger.getLogger(UserFactory.class);
 
     /*
      * Inner class to act as a JAF datasource to send HTML e-mail content
@@ -119,51 +128,33 @@ public class UserFactory {
         }
     }
 
-    public static final String GUEST_USER_PREFIX = "WDK_GUEST_";
-
-    public static final String GLOBAL_PREFERENCE_KEY = "[Global]";
-
-    private static Logger logger = Logger.getLogger(UserFactory.class);
-
     private DBPlatform platform;
     private DataSource dataSource;
 
-    private String loginSchema;
+    private String userSchema;
     private String defaultRole;
-    private String smtpServer;
 
     private String projectId;
 
     // WdkModel is used by the legacy code, may consider to be removed
     private WdkModel wdkModel;
 
-    // the information for registration email
-    private String supportEmail;
-    private String emailSubject;
-    private String emailContent;
-
-    public UserFactory(WdkModel wdkModel, String projectId,
-            DBPlatform platform, String loginSchema, String defaultRole,
-            String smtpServer, String supportEmail, String emailSubject,
-            String emailContent) {
-        this.platform = platform;
-        this.dataSource = platform.getDataSource();
+    public UserFactory(WdkModel wdkModel) {
         this.wdkModel = wdkModel;
-        this.projectId = projectId;
-        this.loginSchema = loginSchema;
-        this.defaultRole = defaultRole;
-        this.smtpServer = smtpServer;
-        this.supportEmail = supportEmail;
-        this.emailContent = emailContent;
-        this.emailSubject = emailSubject;
-    }
+        this.platform = wdkModel.getUserPlatform();
+        this.dataSource = platform.getDataSource();
+        this.projectId = wdkModel.getProjectId();
 
-    public WdkModel getWdkModel() {
-        return wdkModel;
+        ModelConfig modelConfig = wdkModel.getModelConfig();
+        ModelConfigUserDB userDB = modelConfig.getUserDB();
+        this.userSchema = userDB.getUserSchema();
+        this.defaultRole = modelConfig.getDefaultRole();
     }
 
     public void sendEmail(String email, String reply, String subject,
             String content) throws WdkUserException {
+        String smtpServer = wdkModel.getModelConfig().getSmtpServer();
+
         logger.debug("Sending message to: " + email + ", reply: " + reply
                 + ", using SMPT: " + smtpServer);
 
@@ -205,21 +196,6 @@ public class UserFactory {
         return projectId;
     }
 
-    /**
-     * @return Returns the smtpServer.
-     */
-    public String getSmtpServer() {
-        return smtpServer;
-    }
-
-    /**
-     * @param smtpServer
-     *            The smtpServer to set.
-     */
-    public void setSmtpServer(String smtpServer) {
-        this.smtpServer = smtpServer;
-    }
-
     public User createUser(String email, String lastName, String firstName,
             String middleName, String title, String organization,
             String department, String address, String city, String state,
@@ -256,13 +232,13 @@ public class UserFactory {
                         + "' has been registered. Please choose another one.");
 
             // get a new userId
-            int userId = platform.getNextId(loginSchema, "users");
+            int userId = platform.getNextId(userSchema, "users");
             String signature = encrypt(userId + "_" + email);
             Date registerTime = new Date();
             Date lastActiveTime = new Date();
 
             psUser = SqlUtils.getPreparedStatement(dataSource, "INSERT INTO "
-                    + loginSchema + "users (user_id, email, passwd, is_guest, "
+                    + userSchema + "users (user_id, email, passwd, is_guest, "
                     + "register_time, last_active, last_name, first_name, "
                     + "middle_name, title, organization, department, address, "
                     + "city, state, zip_code, phone_number, country,signature)"
@@ -338,14 +314,14 @@ public class UserFactory {
         PreparedStatement psUser = null;
         try {
             // get a new user id
-            int userId = platform.getNextId(loginSchema, "users");
+            int userId = platform.getNextId(userSchema, "users");
             String email = GUEST_USER_PREFIX + userId;
             Date registerTime = new Date();
             Date lastActiveTime = new Date();
             String signature = encrypt(userId + "_" + email);
             String firstName = "Guest #" + userId;
             psUser = SqlUtils.getPreparedStatement(dataSource, "INSERT INTO "
-                    + loginSchema + "users (user_id, email, passwd, is_guest, "
+                    + userSchema + "users (user_id, email, passwd, is_guest, "
                     + "register_time, last_active, first_name, signature) "
                     + "VALUES (?, ?, ' ', 1, ?, ?, ?, ?)");
             psUser.setInt(1, userId);
@@ -407,7 +383,7 @@ public class UserFactory {
 
             // query on the database to see if the pair match
             PreparedStatement ps = SqlUtils.getPreparedStatement(dataSource,
-                    "SELECT user_id " + "FROM " + loginSchema + "users WHERE "
+                    "SELECT user_id " + "FROM " + userSchema + "users WHERE "
                             + "email = ? AND passwd = ?");
             ps.setString(1, email);
             ps.setString(2, password);
@@ -417,7 +393,7 @@ public class UserFactory {
             int userId = rs.getInt("user_id");
 
             // passed validation, load user information
-            return loadUser(userId);
+            return getUser(userId);
         } catch (NoSuchAlgorithmException ex) {
             throw new WdkUserException(ex);
         } catch (SQLException ex) {
@@ -439,14 +415,14 @@ public class UserFactory {
      * @throws WdkUserException
      * @throws WdkModelException
      */
-    public User loadUser(String email) throws WdkUserException {
+    public User getUserByEmail(String email) throws WdkUserException {
         email = email.trim();
 
         ResultSet rsUser = null;
         try {
             // get user information
             PreparedStatement psUser = SqlUtils.getPreparedStatement(
-                    dataSource, "SELECT user_id FROM " + loginSchema
+                    dataSource, "SELECT user_id FROM " + userSchema
                             + "users WHERE email = ?");
             psUser.setString(1, email);
             rsUser = psUser.executeQuery();
@@ -456,7 +432,7 @@ public class UserFactory {
 
             // read user info
             int userId = rsUser.getInt("user_id");
-            return loadUser(userId);
+            return getUser(userId);
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
         } finally {
@@ -468,13 +444,13 @@ public class UserFactory {
         }
     }
 
-    public User loadUserBySignature(String signature) throws WdkUserException,
+    public User getUser(String signature) throws WdkUserException,
             WdkModelException {
         ResultSet rsUser = null;
         try {
             // get user information
             PreparedStatement psUser = SqlUtils.getPreparedStatement(
-                    dataSource, "SELECT user_id FROM " + loginSchema
+                    dataSource, "SELECT user_id FROM " + userSchema
                             + "users WHERE signature = ?");
             psUser.setString(1, signature);
             rsUser = psUser.executeQuery();
@@ -484,7 +460,7 @@ public class UserFactory {
 
             // read user info
             int userId = rsUser.getInt("user_id");
-            return loadUser(userId);
+            return getUser(userId);
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
         } finally {
@@ -496,7 +472,8 @@ public class UserFactory {
         }
     }
 
-    public User loadUser(int userId) throws WdkUserException {
+    public User getUser(int userId) throws WdkUserException {
+        StepFactory stepFactory = wdkModel.getStepFactory();
         ResultSet rsUser = null;
         try {
             // get user information
@@ -505,7 +482,7 @@ public class UserFactory {
                     "SELECT email, signature, is_guest, last_name, "
                             + "first_name, middle_name, title, organization, "
                             + "department, address, city, state, zip_code, "
-                            + "phone_number, country FROM " + loginSchema
+                            + "phone_number, country FROM " + userSchema
                             + "users WHERE user_id = ?");
             psUser.setInt(1, userId);
             rsUser = psUser.executeQuery();
@@ -538,8 +515,8 @@ public class UserFactory {
             loadPreferences(user);
 
             // load history count
-            int historyCount = getHistoryCount(user);
-            user.setHistoryCount(historyCount);
+            int historyCount = stepFactory.getStepCount(user);
+            user.setStepCount(historyCount);
 
             // update user active timestamp
             updateUser(user);
@@ -558,7 +535,7 @@ public class UserFactory {
 
     public User[] queryUsers(String emailPattern) throws WdkUserException,
             WdkModelException {
-        String sql = "SELECT user_id, email FROM " + loginSchema + "users";
+        String sql = "SELECT user_id, email FROM " + userSchema + "users";
 
         if (emailPattern != null && emailPattern.length() > 0) {
             emailPattern = emailPattern.replace('*', '%');
@@ -572,7 +549,7 @@ public class UserFactory {
             rs = SqlUtils.executeQuery(dataSource, sql);
             while (rs.next()) {
                 int userId = rs.getInt("user_id");
-                User user = loadUser(userId);
+                User user = getUser(userId);
                 users.add(user);
             }
         } catch (SQLException ex) {
@@ -590,7 +567,7 @@ public class UserFactory {
     }
 
     public void checkConsistancy() throws WdkUserException {
-        String sql = "SELECT user_id, email FROM " + loginSchema + "users "
+        String sql = "SELECT user_id, email FROM " + userSchema + "users "
                 + "where signature is null";
 
         ResultSet rs = null;
@@ -598,20 +575,20 @@ public class UserFactory {
         try {
             // update user's register time
             int count = SqlUtils.executeUpdate(dataSource, "UPDATE "
-                    + loginSchema + "users SET register_time = last_active "
+                    + userSchema + "users SET register_time = last_active "
                     + "WHERE register_time is null");
             System.out.println(count + " users with empty register_time have "
                     + "been updated");
 
             // update history's is_delete field
-            count = SqlUtils.executeUpdate(dataSource, "UPDATE " + loginSchema
+            count = SqlUtils.executeUpdate(dataSource, "UPDATE " + userSchema
                     + "histories SET is_deleted = 0 WHERE is_deleted is null");
             System.out.println(count + " histories with empty is_deleted have "
                     + "been updated");
 
             // update user's signature
             psUser = SqlUtils.getPreparedStatement(dataSource, "Update "
-                    + loginSchema + "users SET signature = ? WHERE user_id = ?");
+                    + userSchema + "users SET signature = ? WHERE user_id = ?");
 
             rs = SqlUtils.executeQuery(dataSource, sql);
             while (rs.next()) {
@@ -644,7 +621,7 @@ public class UserFactory {
         try {
             // load the user's roles
             PreparedStatement psRole = SqlUtils.getPreparedStatement(
-                    dataSource, "SELECT " + "user_role from " + loginSchema
+                    dataSource, "SELECT " + "user_role from " + userSchema
                             + "user_roles " + "WHERE user_id = ?");
             psRole.setInt(1, user.getUserId());
             rsRole = psRole.executeQuery();
@@ -669,13 +646,13 @@ public class UserFactory {
         try {
             // before that, remove the records first
             psRoleDelete = SqlUtils.getPreparedStatement(dataSource, "DELETE "
-                    + "FROM " + loginSchema + "user_roles WHERE user_id = ?");
+                    + "FROM " + userSchema + "user_roles WHERE user_id = ?");
             psRoleDelete.setInt(1, userId);
             psRoleDelete.execute();
 
             // Then get a prepared statement to do the insertion
             psRoleInsert = SqlUtils.getPreparedStatement(dataSource, "INSERT "
-                    + "INTO " + loginSchema + "user_roles (user_id, user_role)"
+                    + "INTO " + userSchema + "user_roles (user_id, user_role)"
                     + " VALUES (?, ?)");
             String[] roles = user.getUserRoles();
             for (String role : roles) {
@@ -718,7 +695,7 @@ public class UserFactory {
 
             // save the user's basic information
             psUser = SqlUtils.getPreparedStatement(dataSource, "UPDATE "
-                    + loginSchema + "users SET is_guest = ?, "
+                    + userSchema + "users SET is_guest = ?, "
                     + "last_active = ?, last_name = ?, first_name = ?, "
                     + "middle_name = ?, organization = ?, department = ?, "
                     + "title = ?,  address = ?, city = ?, state = ?, "
@@ -770,7 +747,7 @@ public class UserFactory {
         try {
             Date lastActiveTime = new Date();
             psUser = SqlUtils.getPreparedStatement(dataSource, "UPDATE "
-                    + loginSchema + "users SET last_active = ?"
+                    + userSchema + "users SET last_active = ?"
                     + " WHERE user_id = ?");
             psUser.setDate(1, new java.sql.Date(lastActiveTime.getTime()));
             psUser.setInt(2, user.getUserId());
@@ -799,7 +776,7 @@ public class UserFactory {
             Timestamp timestamp = new Timestamp(calendar.getTime().getTime());
 
             PreparedStatement psUser = SqlUtils.getPreparedStatement(
-                    dataSource, "SELECT email FROM " + loginSchema + "users "
+                    dataSource, "SELECT email FROM " + userSchema + "users "
                             + "WHERE email " + "LIKE '" + GUEST_USER_PREFIX
                             + "%' AND last_active < ?");
             psUser.setTimestamp(1, timestamp);
@@ -821,462 +798,6 @@ public class UserFactory {
         }
     }
 
-    Map<Integer, History> loadHistories(User user,
-            Map<Integer, History> invalidHistories) throws WdkUserException,
-            WdkModelException, SQLException, JSONException {
-        Map<Integer, History> histories = new LinkedHashMap<Integer, History>();
-
-        String hisTable = loginSchema + "histories";
-        String ansTable = wdkModel.getAnswerFactory().getAnswerTable();
-        ResultSet rsHistory = null;
-        try {
-            PreparedStatement psHistory = SqlUtils.getPreparedStatement(
-                    dataSource, "SELECT h.history_id, a."
-                            + AnswerFactory.COLUMN_ANSWER_CHECKSUM
-                            + ", h.create_time, h.last_run_time, "
-                            + " h.answer_filter, h.estimate_size, "
-                            + " h.custom_name, h.is_boolean, "
-                            + " h.is_deleted, display_params FROM " + hisTable
-                            + " h, " + ansTable + " a "
-                            + "WHERE h.answer_id = a."
-                            + AnswerFactory.COLUMN_ANSWER_ID
-                            + " AND h.user_id = ? AND a."
-                            + AnswerFactory.COLUMN_PROJECT_ID + " = ? "
-                            + "ORDER BY h.last_run_time DESC");
-            psHistory.setInt(1, user.getUserId());
-            psHistory.setString(2, projectId);
-            rsHistory = psHistory.executeQuery();
-
-            while (rsHistory.next()) {
-                // load history info
-                int historyId = rsHistory.getInt("history_id");
-
-                History history = loadHistory(user, historyId, rsHistory);
-
-                if (history.isValid()) histories.put(historyId, history);
-                else invalidHistories.put(historyId, history);
-            }
-            // now compute the dependencies of the histories
-            History[] array = new History[histories.size()];
-            histories.values().toArray(array);
-            for (History history : histories.values()) {
-                history.computeDependencies(array);
-            }
-        } finally {
-            SqlUtils.closeResultSet(rsHistory);
-        }
-        return histories;
-    }
-
-    History loadHistory(User user, int historyId) throws WdkUserException,
-            SQLException, JSONException {
-        String hisTable = loginSchema + "histories";
-        String ansTable = wdkModel.getAnswerFactory().getAnswerTable();
-        ResultSet rsHistory = null;
-        try {
-            PreparedStatement psHistory = SqlUtils.getPreparedStatement(
-                    dataSource, "SELECT a."
-                            + AnswerFactory.COLUMN_ANSWER_CHECKSUM
-                            + ", h.create_time, h.last_run_time, "
-                            + " h.answer_filter, h.estimate_size, "
-                            + " h.estimate_size, h.custom_name, h.is_boolean,"
-                            + " h.is_deleted, h.display_params               "
-                            + "FROM " + hisTable + " h, " + ansTable + " a "
-                            + "WHERE h.answer_id = a."
-                            + AnswerFactory.COLUMN_ANSWER_ID
-                            + " AND h.user_id = ? AND h.history_id = ? "
-                            + "ORDER BY h.last_run_time DESC");
-            psHistory.setInt(1, user.getUserId());
-            psHistory.setInt(2, historyId);
-            rsHistory = psHistory.executeQuery();
-            if (!rsHistory.next())
-                throw new SQLException("The history #" + historyId
-                        + " of user " + user.getEmail() + " doesn't exist.");
-
-            return loadHistory(user, historyId, rsHistory);
-        } finally {
-            SqlUtils.closeResultSet(rsHistory);
-        }
-    }
-
-    private History loadHistory(User user, int historyId, ResultSet rsHistory)
-            throws SQLException, JSONException {
-        History history = new History(this, user, historyId);
-
-        // load history info
-        String answerChecksum = rsHistory.getString(AnswerFactory.COLUMN_ANSWER_CHECKSUM);
-        Timestamp createTime = rsHistory.getTimestamp("create_time");
-        Timestamp lastRunTime = rsHistory.getTimestamp("last_run_time");
-
-        history.setCreatedTime(new Date(createTime.getTime()));
-        history.setLastRunTime(new Date(lastRunTime.getTime()));
-        history.setEstimateSize(rsHistory.getInt("estimate_size"));
-        history.setCustomName(rsHistory.getString("custom_name"));
-        history.setBoolean(rsHistory.getBoolean("is_boolean"));
-        history.setDeleted(rsHistory.getBoolean("is_deleted"));
-
-        // get answer filter
-        history.setFilterName(rsHistory.getString("answer_filter"));
-
-        String displayParams = platform.getClobData(rsHistory, "display_params");
-        history.setDisplayParams(displayParams);
-
-        // re-construct the answer
-        try {
-            constructAnswer(history, answerChecksum);
-        } catch (WdkModelException ex) {
-            ex.printStackTrace();
-            history.setValid(false);
-        } catch (WdkUserException ex) {
-            ex.printStackTrace();
-            history.setValid(false);
-        } catch (NoSuchAlgorithmException ex) {
-            ex.printStackTrace();
-            history.setValid(false);
-        } catch (JSONException ex) {
-            ex.printStackTrace();
-            history.setValid(false);
-        }
-
-        return history;
-    }
-
-    private void constructAnswer(History history, String answerChecksum)
-            throws WdkModelException, WdkUserException,
-            NoSuchAlgorithmException, SQLException, JSONException {
-        AnswerFactory answerFactory = wdkModel.getAnswerFactory();
-        AnswerInfo answerInfo = answerFactory.getAnswerInfo(answerChecksum);
-        if (answerInfo == null)
-            throw new WdkModelException("The answer with checksum '"
-                    + answerChecksum + "' does not exist");
-
-        Answer answer = answerFactory.getAnswer(answerInfo);
-
-        // resolve the filter
-        RecordClass recordClass = answer.getQuestion().getRecordClass();
-        String filterName = history.getFilterName();
-        AnswerFilterInstance filter = recordClass.getFilterMap().get(filterName);
-        if (filterName != null && filter == null) history.setValid(false);
-        else answer.setFilter(filter);
-        history.setAnswer(answer);
-    }
-
-    History createHistory(User user, Answer answer, String booleanExpression,
-            boolean deleted) throws SQLException, NoSuchAlgorithmException,
-            WdkModelException, JSONException, WdkUserException {
-        // save answer
-        int answerId = answer.getAnswerInfo().getAnswerId();
-        int userId = user.getUserId();
-
-        int estimateSize = answer.getResultSize();
-        boolean isBoolean = answer.getIsBoolean();
-        String customName = (isBoolean) ? booleanExpression : null;
-        if (customName != null && customName.length() > 4000)
-            customName = customName.substring(0, 4000);
-        AnswerFilterInstance filter = answer.getFilter();
-        String filterName = (filter == null) ? null : filter.getName();
-
-        String hisTable = loginSchema + "histories";
-
-        // check whether the answer exist or not
-        PreparedStatement psHistory = null;
-        ResultSet rsMax = null;
-
-        Connection connection = dataSource.getConnection();
-        try {
-            // always get a new history id
-            // int historyId = getMaxHistoryId( userId ) + 1;
-            // instead of getting a new history id, we start a transaction,
-            // insert a new history with generated id, and read it back
-            Date createTime = new Date();
-            Date lastRunTime = new Date(createTime.getTime());
-
-            int historyId = 1;
-
-            synchronized (connection) {
-                connection.setAutoCommit(false);
-
-                String maxIdSql = "(SELECT max(max_id)+1  FROM ("
-                        + " SELECT max(history_id) AS max_id FROM " + hisTable
-                        + " WHERE user_id = " + userId
-                        + " UNION SELECT count(*) AS max_id FROM " + hisTable
-                        + " WHERE user_id = " + userId + ") f)";
-
-                psHistory = connection.prepareStatement("INSERT INTO "
-                        + hisTable + " (history_id, user_id, answer_id, "
-                        + "create_time, last_run_time, answer_filter, "
-                        + "estimate_size, custom_name, is_boolean, is_deleted,"
-                        + " display_params) VALUES (" + maxIdSql
-                        + ", ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                psHistory.setInt(1, userId);
-                psHistory.setInt(2, answerId);
-                psHistory.setTimestamp(3, new Timestamp(createTime.getTime()));
-                psHistory.setTimestamp(4, new Timestamp(lastRunTime.getTime()));
-                psHistory.setString(5, filterName);
-                psHistory.setInt(6, estimateSize);
-                psHistory.setString(7, customName);
-                psHistory.setBoolean(8, isBoolean);
-                psHistory.setBoolean(9, deleted);
-                platform.updateClobData(psHistory, 10, booleanExpression, false);
-                psHistory.executeUpdate();
-
-                // query to get the new history id
-                PreparedStatement psMax = connection.prepareStatement("SELECT"
-                        + " max(history_id) AS max_id FROM " + hisTable
-                        + " WHERE user_id = ?");
-                psMax.setInt(1, userId);
-                rsMax = psMax.executeQuery();
-                if (rsMax.next()) historyId = rsMax.getInt("max_id");
-
-                connection.commit();
-            }
-            // create the History
-            History history = new History(this, user, historyId);
-            history.setAnswer(answer);
-            history.setCreatedTime(createTime);
-            history.setLastRunTime(lastRunTime);
-            history.setEstimateSize(estimateSize);
-            history.setCustomName(customName);
-            history.setBoolean(isBoolean);
-            if (isBoolean) history.setBooleanExpression(booleanExpression);
-
-            // update the user's history count
-            int historyCount = getHistoryCount(user);
-            user.setHistoryCount(historyCount);
-
-            return history;
-        } catch (SQLException ex) {
-            connection.rollback();
-            throw ex;
-        } catch (WdkUserException ex) {
-            connection.rollback();
-            throw ex;
-        } finally {
-            if (connection != null) connection.setAutoCommit(true);
-            SqlUtils.closeStatement(psHistory);
-            SqlUtils.closeResultSet(rsMax);
-        }
-    }
-
-    /**
-     * This method only update the custom name, the time stamp of last running
-     * 
-     * @param user
-     * @param history
-     * @throws WdkUserException
-     * @throws JSONException
-     * @throws WdkModelException
-     * @throws SQLException
-     * @throws NoSuchAlgorithmException
-     */
-    void updateHistory(User user, History history, boolean updateTime)
-            throws WdkUserException, NoSuchAlgorithmException, SQLException,
-            WdkModelException, JSONException {
-        // check email existence
-        if (!isExist(user.getEmail()))
-            throw new WdkUserException("The user " + user.getEmail()
-                    + " doesn't exist. Updating operation cancelled.");
-
-        // TEST
-        logger.debug("Save custom name: '" + history.getBaseCustomName() + "'");
-
-        // update custom name
-        Date lastRunTime = (updateTime) ? new Date() : history.getLastRunTime();
-        PreparedStatement psHistory = null;
-        try {
-            psHistory = SqlUtils.getPreparedStatement(dataSource, "UPDATE "
-                    + loginSchema + "histories SET custom_name = ?, "
-                    + "estimate_size = ?, last_run_time = ?, is_deleted = ? "
-                    + "WHERE user_id = ? AND history_id = ?");
-            psHistory.setString(1, history.getBaseCustomName());
-            psHistory.setInt(2, history.getEstimateSize());
-            psHistory.setTimestamp(3, new Timestamp(lastRunTime.getTime()));
-            psHistory.setBoolean(4, history.isDeleted());
-            psHistory.setInt(5, user.getUserId());
-            psHistory.setInt(6, history.getHistoryId());
-            int result = psHistory.executeUpdate();
-            if (result == 0)
-                throw new WdkUserException("The history #"
-                        + history.getHistoryId() + " of user "
-                        + user.getEmail() + " cannot be found.");
-
-            // update the last run stamp
-            history.setLastRunTime(lastRunTime);
-        } catch (SQLException ex) {
-            throw new WdkUserException(ex);
-        } finally {
-            try {
-                SqlUtils.closeStatement(psHistory);
-            } catch (SQLException ex) {
-                throw new WdkUserException(ex);
-            }
-        }
-    }
-
-    void deleteHistory(User user, int historyId) throws WdkUserException {
-        PreparedStatement psHistory = null;
-        try {
-            // remove history
-            psHistory = SqlUtils.getPreparedStatement(dataSource, "DELETE "
-                    + "FROM " + loginSchema + "histories "
-                    + "WHERE user_id = ? AND history_id = ?");
-            psHistory.setInt(1, user.getUserId());
-            psHistory.setInt(2, historyId);
-            int result = psHistory.executeUpdate();
-            if (result == 0)
-                throw new WdkUserException("The history #" + historyId
-                        + " of user " + user.getEmail() + " cannot be found.");
-        } catch (SQLException ex) {
-            throw new WdkUserException(ex);
-        } finally {
-            try {
-                SqlUtils.closeStatement(psHistory);
-            } catch (SQLException ex) {
-                throw new WdkUserException(ex);
-            }
-        }
-    }
-
-    void deleteHistories(User user, boolean allProjects)
-            throws WdkUserException {
-        PreparedStatement psHistory = null;
-        String hisTable = loginSchema + "histories";
-        String ansTable = wdkModel.getAnswerFactory().getAnswerTable();
-        try {
-            StringBuffer sql = new StringBuffer();
-            sql.append("DELETE FROM " + hisTable + " WHERE user_id = ?");
-            if (!allProjects) {
-                sql.append("AND answer_id IN (");
-                sql.append("SELECT h.answer_id FROM ");
-                sql.append(hisTable).append(" h, ").append(ansTable).append(
-                        " a ");
-                sql.append("WHERE h.answer_id = a.answer_id AND a.project_id = ?");
-            }
-            psHistory = SqlUtils.getPreparedStatement(dataSource,
-                    sql.toString());
-
-            psHistory.setInt(1, user.getUserId());
-            if (!allProjects) psHistory.setString(2, projectId);
-            psHistory.executeUpdate();
-        } catch (SQLException ex) {
-            throw new WdkUserException(ex);
-        } finally {
-            try {
-                SqlUtils.closeStatement(psHistory);
-            } catch (SQLException ex) {
-                throw new WdkUserException(ex);
-            }
-        }
-    }
-
-    public void deleteInvalidHistories(User user) throws WdkUserException,
-            WdkModelException, SQLException, JSONException {
-        // get invalid histories
-        Map<Integer, History> invalidHistories = new LinkedHashMap<Integer, History>();
-        loadHistories(user, invalidHistories);
-        for (int historyId : invalidHistories.keySet()) {
-            deleteHistory(user, historyId);
-        }
-    }
-
-    // public void deleteInvalidHistories(Map<String, String> signatures)
-    // throws WdkUserException {
-    // ResultSet rsHistory = null;
-    // PreparedStatement psDelete = null;
-    // try {
-    // // get invalid histories
-    // PreparedStatement psHistory = SqlUtils.getPreparedStatement(
-    // dataSource, "SELECT user_id, history_id, question_name, "
-    // + "is_boolean, signature FROM " + loginSchema
-    // + "histories where project_id = ?");
-    // psHistory.setString(1, projectId);
-    // rsHistory = psHistory.executeQuery();
-    // Set<HistoryKey> histories = new LinkedHashSet<HistoryKey>();
-    // while (rsHistory.next()) {
-    // int userId = rsHistory.getInt("user_id");
-    // int historyId = rsHistory.getInt("history_id");
-    // String questionName = rsHistory.getString("question_name");
-    // boolean isBoolean = rsHistory.getBoolean("is_boolean");
-    // String signature = rsHistory.getString("signature");
-    // if (!isBoolean) {
-    // if (!signatures.containsKey(questionName)) {
-    // // check if the question still exists
-    // histories.add(new HistoryKey(userId, historyId));
-    // continue;
-    // } else if (!signature.equals(signatures.get(questionName))) {
-    // // check if the parameter names/number has been changed
-    // histories.add(new HistoryKey(userId, historyId));
-    // continue;
-    // }
-    // }
-    // // check if the history has valid parameter values by trying
-    // // to make an answer
-    // try {
-    // User user = loadUser(userId);
-    // History history = loadHistory(user, historyId);
-    // // remove deleted, undepended histories
-    // if (history.isDeleted() && !history.isDepended())
-    // histories.add(new HistoryKey(userId, historyId));
-    // } catch (WdkModelException ex) {
-    // histories.add(new HistoryKey(userId, historyId));
-    // }
-    //
-    // }
-    //
-    // System.out.print(histories.size()
-    // + " invalid Histories found. Deleting them...");
-    //
-    // // delete invalid histories
-    // psDelete = SqlUtils.getPreparedStatement(dataSource, "DELETE FROM "
-    // + loginSchema + "histories WHERE user_id = ? AND "
-    // + "project_id = ? AND history_id = ?");
-    // for (HistoryKey history : histories) {
-    // psDelete.setInt(1, history.userId);
-    // psDelete.setString(2, projectId);
-    // psDelete.setInt(3, history.historyId);
-    // psDelete.executeUpdate();
-    // }
-    // System.out.println("done.");
-    // } catch (SQLException ex) {
-    // throw new WdkUserException(ex);
-    // } finally {
-    // try {
-    // SqlUtils.closeResultSet(rsHistory);
-    // SqlUtils.closeStatement(psDelete);
-    // } catch (SQLException ex) {
-    // throw new WdkUserException(ex);
-    // }
-    // }
-    // }
-
-    private int getHistoryCount(User user) throws WdkUserException {
-        String hisTable = loginSchema + "histories";
-        String ansTable = wdkModel.getModelConfig().getUserDB().getWdkEngineSchema()
-                + AnswerFactory.TABLE_ANSWER;
-        ResultSet rsHistory = null;
-        try {
-            PreparedStatement psHistory = SqlUtils.getPreparedStatement(
-                    dataSource, "SELECT count(h.history_id) AS num FROM "
-                            + hisTable + " h, " + ansTable + " a "
-                            + "WHERE h.answer_id = a.answer_id "
-                            + " AND h.user_id = ? AND a.project_id = ? "
-                            + " AND is_deleted = 0");
-            psHistory.setInt(1, user.getUserId());
-            psHistory.setString(2, projectId);
-            rsHistory = psHistory.executeQuery();
-            rsHistory.next();
-            return rsHistory.getInt("num");
-        } catch (SQLException ex) {
-            throw new WdkUserException(ex);
-        } finally {
-            try {
-                SqlUtils.closeResultSet(rsHistory);
-            } catch (SQLException ex) {
-                throw new WdkUserException(ex);
-            }
-        }
-    }
-
     private void savePreferences(User user) throws WdkUserException {
         int userId = user.getUserId();
         PreparedStatement psDelete = null;
@@ -1284,7 +805,7 @@ public class UserFactory {
         try {
             // delete preferences
             psDelete = SqlUtils.getPreparedStatement(dataSource, "DELETE FROM "
-                    + loginSchema + "preferences WHERE user_id = ? "
+                    + userSchema + "preferences WHERE user_id = ? "
                     + "AND project_id = ?");
             psDelete.setInt(1, userId);
             psDelete.setString(2, GLOBAL_PREFERENCE_KEY);
@@ -1295,7 +816,7 @@ public class UserFactory {
 
             // insert preferences
             psInsert = SqlUtils.getPreparedStatement(dataSource, "INSERT INTO "
-                    + loginSchema + "preferences (user_id, project_id, "
+                    + userSchema + "preferences (user_id, project_id, "
                     + "preference_name, preference_value) "
                     + "VALUES (?, ?, ?, ?)");
             Map<String, String> global = user.getGlobalPreferences();
@@ -1335,7 +856,7 @@ public class UserFactory {
         try {
             // load global preferences
             psGlobal = SqlUtils.getPreparedStatement(dataSource, "SELECT "
-                    + "preference_name, preference_value FROM " + loginSchema
+                    + "preference_name, preference_value FROM " + userSchema
                     + "preferences WHERE user_id = ? AND project_id = '"
                     + GLOBAL_PREFERENCE_KEY + "'");
             psGlobal.setInt(1, userId);
@@ -1348,7 +869,7 @@ public class UserFactory {
 
             // load project specific preferences
             psProject = SqlUtils.getPreparedStatement(dataSource, "SELECT "
-                    + "preference_name, preference_value FROM " + loginSchema
+                    + "preference_name, preference_value FROM " + userSchema
                     + "preferences WHERE user_id = ? AND project_id = ?");
             psProject.setInt(1, userId);
             psProject.setString(2, projectId);
@@ -1373,7 +894,7 @@ public class UserFactory {
 
     public void resetPassword(String email) throws WdkUserException,
             WdkModelException {
-        User user = loadUser(email);
+        User user = getUserByEmail(email);
         resetPassword(user);
     }
 
@@ -1397,13 +918,24 @@ public class UserFactory {
 
         savePassword(email, password);
 
+        ModelConfig modelConfig = wdkModel.getModelConfig();
+        String emailContent = modelConfig.getEmailContent();
+        String supportEmail = modelConfig.getSupportEmail();
+        String emailSubject = modelConfig.getEmailSubject();
+
         // send an email to the user
-        String message = emailContent.replaceAll("\\$\\$FIRST_NAME\\$\\$",
-                Matcher.quoteReplacement(user.getFirstName()));
-        message = message.replaceAll("\\$\\$EMAIL\\$\\$",
-                Matcher.quoteReplacement(email));
-        message = message.replaceAll("\\$\\$PASSWORD\\$\\$",
+        String pattern = "\\$\\$" + EMAIL_MACRO_USER_NAME + "\\$\\$";
+        String name = user.getFirstName() + " " + user.getLastName();
+        String message = emailContent.replaceAll(pattern,
+                Matcher.quoteReplacement(name));
+
+        pattern = "\\$\\$" + EMAIL_MACRO_EMAIL + "\\$\\$";
+        message = message.replaceAll(pattern, Matcher.quoteReplacement(email));
+
+        pattern = "\\$\\$" + EMAIL_MACRO_PASSWORD + "\\$\\$";
+        message = message.replaceAll(pattern,
                 Matcher.quoteReplacement(password));
+
         sendEmail(user.getEmail(), supportEmail, emailSubject, message);
     }
 
@@ -1427,7 +959,7 @@ public class UserFactory {
 
             // check if the old password matches
             ps = SqlUtils.getPreparedStatement(dataSource, "SELECT count(*) "
-                    + "FROM " + loginSchema + "users WHERE email =? "
+                    + "FROM " + userSchema + "users WHERE email =? "
                     + "AND passwd = ?");
             ps.setString(1, email);
             ps.setString(2, oldPassword);
@@ -1462,7 +994,7 @@ public class UserFactory {
             // encrypt the password, and save it
             String encrypted = encrypt(password);
             ps = SqlUtils.getPreparedStatement(dataSource, "UPDATE "
-                    + loginSchema + "users SET passwd = ? " + "WHERE email = ?");
+                    + userSchema + "users SET passwd = ? " + "WHERE email = ?");
             ps.setString(1, encrypted);
             ps.setString(2, email);
             ps.execute();
@@ -1487,7 +1019,7 @@ public class UserFactory {
         ResultSet rs = null;
         try {
             ps = SqlUtils.getPreparedStatement(dataSource, "SELECT count(*) "
-                    + "FROM " + loginSchema + "users WHERE email = ?");
+                    + "FROM " + userSchema + "users WHERE email = ?");
             ps.setString(1, email);
             rs = ps.executeQuery();
             rs.next();
@@ -1517,50 +1049,29 @@ public class UserFactory {
     }
 
     public void deleteUser(String email) throws WdkUserException,
-            WdkModelException {
+            WdkModelException, SQLException {
         // get user id
-        User user = loadUser(email);
+        User user = getUserByEmail(email);
 
-        // delete history from all projects
-        user.deleteHistories(true);
+        // delete strategies and steps from all projects
+        user.deleteStrategies(true);
+        user.deleteSteps(true);
 
         String where = " WHERE user_id = " + user.getUserId();
         try {
             // delete preference
-            String sql = "DELETE FROM " + loginSchema + "preferences" + where;
+            String sql = "DELETE FROM " + userSchema + "preferences" + where;
             SqlUtils.executeUpdate(dataSource, sql);
 
             // delete user roles
-            sql = "DELETE FROM " + loginSchema + "user_roles" + where;
+            sql = "DELETE FROM " + userSchema + "user_roles" + where;
             SqlUtils.executeUpdate(dataSource, sql);
 
             // delete user
-            sql = "DELETE FROM " + loginSchema + "users" + where;
+            sql = "DELETE FROM " + userSchema + "users" + where;
             SqlUtils.executeUpdate(dataSource, sql);
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
         }
-    }
-
-    public String getLoginSchema() {
-        return loginSchema;
-    }
-
-    public static void main(String[] args) {
-        StringBuffer buffer = new StringBuffer();
-        Random rand = new Random();
-        for (int i = 0; i < 8; i++) {
-            int value = rand.nextInt(36);
-            if (value < 10) { // number
-                buffer.append(value);
-                // } else if (value < 36) { // upper case letters
-                // buffer.append((char) ('A' + value - 10));
-            } else { // lower case letters
-                buffer.append((char) ('a' + value - 10));
-            }
-        }
-        String password = buffer.toString();
-
-        System.out.println("random passwd: " + password);
     }
 }
