@@ -74,11 +74,13 @@ public class StepFactory {
     private String userSchema;
     private String wdkSchema;
     private DBPlatform userPlatform;
-    private DataSource dataSource = userPlatform.getDataSource();
+    private DataSource dataSource;
 
     public StepFactory(WdkModel wdkModel) {
         this.wdkModel = wdkModel;
         this.userPlatform = wdkModel.getUserPlatform();
+        dataSource = userPlatform.getDataSource();
+        
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         this.userSchema = userDB.getUserSchema();
         this.wdkSchema = userDB.getWdkEngineSchema();

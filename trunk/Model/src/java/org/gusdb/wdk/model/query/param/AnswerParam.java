@@ -40,7 +40,6 @@ public class AnswerParam extends Param {
         super(param);
         this.recordClassRef = param.recordClassRef;
         this.recordClass = param.recordClass;
-        this.answerFactory = wdkModel.getAnswerFactory();
     }
 
     @Override
