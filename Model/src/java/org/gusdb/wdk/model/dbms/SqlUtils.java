@@ -15,6 +15,7 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.WdkModelException;
 
 /**
  * @author Jerric Gao
@@ -145,23 +146,27 @@ public final class SqlUtils {
 
     /**
      * Run the scalar value and returns a single value. If the query returns no
-     * rows or more than one row, a SQLException will be thrown; if the query
-     * returns a single row with many columns, the value in the first column
-     * will be returned.
+     * rows or more than one row, a WdkModelException will be thrown; if the
+     * query returns a single row with many columns, the value in the first
+     * column will be returned.
      * 
      * @param dataSource
      * @param sql
-     * @return
+     * @return the first column of the first row in the result
      * @throws SQLException
+     *             database or query failure
+     * @throws WdkModelException
+     *             query returns no row
      */
     public static Object executeScalar(DataSource dataSource, String sql)
-            throws SQLException {
+            throws SQLException, WdkModelException {
         ResultSet resultSet = null;
         try {
             resultSet = executeQuery(dataSource, sql);
-            Object value = null;
-            if (resultSet.next()) value = resultSet.getObject(1);
-            return value;
+            if (!resultSet.next())
+                throw new WdkModelException("The SQL doesn't return any row:\n"
+                        + sql);
+            return resultSet.getObject(1);
         } finally {
             closeResultSet(resultSet);
         }

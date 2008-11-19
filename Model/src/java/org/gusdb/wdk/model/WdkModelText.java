@@ -14,7 +14,23 @@ import org.json.JSONException;
  */
 public class WdkModelText extends WdkModelBase {
 
+    protected String name;
     private String text;
+
+    /**
+     * @return the name
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * @param name
+     *            the name to set
+     */
+    public void setName(String name) {
+        this.name = name;
+    }
 
     /**
      * @return the text
@@ -25,7 +41,7 @@ public class WdkModelText extends WdkModelBase {
 
     /**
      * @param text
-     *                the text to set
+     *            the text to set
      */
     public void setText(String text) {
         this.text = text;
@@ -44,7 +60,9 @@ public class WdkModelText extends WdkModelBase {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model.WdkModel)
+     * @see
+     * org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model
+     * .WdkModel)
      */
     @Override
     public void resolveReferences(WdkModel wodkModel) throws WdkModelException,

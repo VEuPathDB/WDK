@@ -3,7 +3,7 @@
  */
 package org.gusdb.wdk.model.jspwrap;
 
-import org.gusdb.wdk.model.xml.XmlAnswer;
+import org.gusdb.wdk.model.xml.XmlAnswerValue;
 import org.gusdb.wdk.model.xml.XmlRecordInstance;
 
 import java.util.LinkedHashMap;
@@ -15,12 +15,12 @@ import java.util.Map;
  */
 public class XmlAnswerBean {
 
-    private XmlAnswer answer;
+    private XmlAnswerValue answer;
 
     /**
      * 
      */
-    public XmlAnswerBean(XmlAnswer answer) {
+    public XmlAnswerBean(XmlAnswerValue answer) {
         this.answer = answer;
     }
 

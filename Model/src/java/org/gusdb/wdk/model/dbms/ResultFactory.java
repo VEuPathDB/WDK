@@ -12,10 +12,10 @@ import java.sql.Statement;
 
 import javax.sql.DataSource;
 
-import org.gusdb.wdk.model.Column;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.ProcessQueryInstance;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
@@ -62,9 +62,9 @@ public class ResultFactory {
         return new SqlResultList(resultSet);
     }
 
-    public int getInstanceId(QueryInstance instance, String[] indexColumns) throws SQLException,
-            NoSuchAlgorithmException, WdkModelException, JSONException,
-            WdkUserException {
+    public int getInstanceId(QueryInstance instance, String[] indexColumns)
+            throws SQLException, NoSuchAlgorithmException, WdkModelException,
+            JSONException, WdkUserException {
         QueryInfo queryInfo = cacheFactory.getQueryInfo(instance.getQuery());
 
         // get the query instance id; null if not exist
@@ -75,9 +75,9 @@ public class ResultFactory {
         return instanceId;
     }
 
-    public String getCacheTable(QueryInstance instance, String[] indexColumn) throws SQLException,
-            WdkModelException, NoSuchAlgorithmException, JSONException,
-            WdkUserException {
+    public String getCacheTable(QueryInstance instance, String[] indexColumn)
+            throws SQLException, WdkModelException, NoSuchAlgorithmException,
+            JSONException, WdkUserException {
         // make sure the instance is cached
         getInstanceId(instance, indexColumn);
         Query query = instance.getQuery();
@@ -95,10 +95,11 @@ public class ResultFactory {
      * @throws JSONException
      * @throws WdkModelException
      * @throws NoSuchAlgorithmException
+     * @throws WdkUserException
      */
     private Integer checkInstanceId(QueryInstance instance, QueryInfo queryInfo)
             throws SQLException, NoSuchAlgorithmException, WdkModelException,
-            JSONException {
+            JSONException, WdkUserException {
         StringBuffer sql = new StringBuffer("SELECT ");
         sql.append(CacheFactory.COLUMN_INSTANCE_ID);
         sql.append(" FROM ").append(CacheFactory.TABLE_INSTANCE);
@@ -108,13 +109,18 @@ public class ResultFactory {
         sql.append(" = '").append(instance.getChecksum()).append("'");
 
         DataSource dataSource = platform.getDataSource();
-        Object id = SqlUtils.executeScalar(dataSource, sql.toString());
-        return (id == null) ? null : Integer.parseInt(id.toString());
+        try {
+            Object id = SqlUtils.executeScalar(dataSource, sql.toString());
+            return Integer.parseInt(id.toString());
+        } catch (WdkModelException ex) {
+            // the instance doesn't exist
+            return null;
+        }
     }
 
-    private int createCache(QueryInstance instance, QueryInfo queryInfo, String[] indexColumns)
-            throws JSONException, SQLException, WdkUserException,
-            NoSuchAlgorithmException, WdkModelException {
+    private int createCache(QueryInstance instance, QueryInfo queryInfo,
+            String[] indexColumns) throws JSONException, SQLException,
+            WdkUserException, NoSuchAlgorithmException, WdkModelException {
         DataSource dataSource = platform.getDataSource();
 
         // start transaction
@@ -162,13 +168,13 @@ public class ResultFactory {
         }
     }
 
-    private void createCacheTableIndex(Connection connection, String cacheTable, String[] indexColumns)
-            throws SQLException {
+    private void createCacheTableIndex(Connection connection,
+            String cacheTable, String[] indexColumns) throws SQLException {
         // create index on query instance id
         StringBuffer sqlId = new StringBuffer("CREATE INDEX ");
         sqlId.append(cacheTable).append("_idx01 ON ").append(cacheTable);
         sqlId.append(" (").append(CacheFactory.COLUMN_INSTANCE_ID).append(")");
-        
+
         // create index on other columns
         StringBuffer sqlOther = null;
         if (indexColumns != null) {
@@ -187,10 +193,9 @@ public class ResultFactory {
         Statement stmt = null;
         try {
             stmt = connection.createStatement();
-            
+
             stmt.execute(sqlId.toString());
-            if (indexColumns != null)
-                stmt.execute(sqlOther.toString());
+            if (indexColumns != null) stmt.execute(sqlOther.toString());
         } finally {
             if (stmt != null) stmt.close();
         }
@@ -198,7 +203,8 @@ public class ResultFactory {
 
     private int addCacheInstance(Connection connection, QueryInfo queryInfo,
             QueryInstance instance) throws SQLException,
-            NoSuchAlgorithmException, WdkModelException, JSONException {
+            NoSuchAlgorithmException, WdkModelException, JSONException,
+            WdkUserException {
         // get a new id for the instance
         int instanceId = platform.getNextId(null, CacheFactory.TABLE_INSTANCE);
 

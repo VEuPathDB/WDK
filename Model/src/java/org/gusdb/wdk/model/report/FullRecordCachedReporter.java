@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.Answer;
+import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.AttributeValue;
 import org.gusdb.wdk.model.Field;
@@ -49,8 +49,8 @@ public class FullRecordCachedReporter extends Reporter {
 
     private boolean hasEmptyTable = false;
 
-    public FullRecordCachedReporter(Answer answer, int startIndex, int endIndex) {
-        super(answer, startIndex, endIndex);
+    public FullRecordCachedReporter(AnswerValue answerValue, int startIndex, int endIndex) {
+        super(answerValue, startIndex, endIndex);
     }
 
     /**
@@ -208,8 +208,8 @@ public class FullRecordCachedReporter extends Reporter {
 
             // get page based answers with a maximum size (defined in
             // PageAnswerIterator)
-            for (Answer answer : this) {
-                for (RecordInstance record : answer.getRecordInstances()) {
+            for (AnswerValue answerValue : this) {
+                for (RecordInstance record : answerValue.getRecordInstances()) {
                     // print out attributes of the record first
                     for (AttributeField attribute : attributes) {
                         AttributeValue value = record.getAttributeValue(attribute.getName());
@@ -223,7 +223,7 @@ public class FullRecordCachedReporter extends Reporter {
                     if (tables.size() == 0) continue;
 
                     // get the cached data of the record
-                    Map<String, Object> pkValues = record.getPrimaryKey().getValues();
+                    Map<String, String> pkValues = record.getPrimaryKey().getValues();
                     for (int index = 0; index < pkColumns.length; index++) {
                         Object value = pkValues.get(pkColumns[index]);
                         ps.setObject(index + 1, value);

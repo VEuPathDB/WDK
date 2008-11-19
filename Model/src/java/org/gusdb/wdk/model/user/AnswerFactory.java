@@ -12,8 +12,7 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import org.gusdb.wdk.model.Answer;
-import org.gusdb.wdk.model.Param;
+import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -21,6 +20,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.query.Query;
+import org.gusdb.wdk.model.query.param.Param;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -30,7 +30,7 @@ import org.json.JSONObject;
  */
 public class AnswerFactory {
 
-    static final String TABLE_ANSWER = "answer";
+    static final String TABLE_ANSWER = "answers";
 
     static final String COLUMN_ANSWER_ID = "answer_id";
     static final String COLUMN_ANSWER_CHECKSUM = "answer_checksum";
@@ -39,55 +39,55 @@ public class AnswerFactory {
     private static final String COLUMN_QUESTION_NAME = "question_name";
     private static final String COLUMN_QUERY_CHECKSUM = "query_checksum";
     private static final String COLUMN_PARAMS = "params";
-    private static final String COLUMN_RESULT_MESSAGE = "result_message";
+    private static final String COLUMN_ESTIMATE_SIZE = "estimate_size";
 
     private WdkModel wdkModel;
-    private DBPlatform loginPlatform;
-    private String answerSchema;
+    private DBPlatform userPlatform;
+    private String wdkSchema;
 
     public AnswerFactory(WdkModel wdkModel) throws SQLException {
         this.wdkModel = wdkModel;
-        this.loginPlatform = wdkModel.getAuthenticationPlatform();
-        this.answerSchema = wdkModel.getModelConfig().getUserDB().getWdkEngineSchema();
+        this.userPlatform = wdkModel.getUserPlatform();
+        this.wdkSchema = wdkModel.getModelConfig().getUserDB().getWdkEngineSchema();
     }
 
-    public AnswerInfo saveAnswer(Answer answer) throws SQLException,
+    public Answer saveAnswerValue(AnswerValue answerValue) throws SQLException,
             NoSuchAlgorithmException, WdkModelException, JSONException,
             WdkUserException {
         // use transaction
-        String answerChecksum = answer.getChecksum();
+        String answerChecksum = answerValue.getChecksum();
 
         // check if answer has been saved.
-        AnswerInfo answerInfo = getAnswerInfo(answerChecksum);
-        if (answerInfo == null) {
-            Question question = answer.getQuestion();
+        Answer answer = getAnswer(answerChecksum);
+        if (answer == null) {
+            Question question = answerValue.getQuestion();
             // the answer hasn't been stored, create an answerInfo, and save it
-            int answerId = loginPlatform.getNextId(answerSchema, TABLE_ANSWER);
-            answerInfo = new AnswerInfo(answerId);
-            answerInfo.setAnswerChecksum(answer.getChecksum());
-            answerInfo.setProjectId(wdkModel.getProjectId());
-            answerInfo.setProjectVersion(wdkModel.getVersion());
-            answerInfo.setQueryChecksum(question.getQuery().getChecksum());
-            answerInfo.setQuestionName(question.getFullName());
-            answerInfo.setResultMessage(answer.getResultMessage());
+            int answerId = userPlatform.getNextId(wdkSchema, TABLE_ANSWER);
+            answer = new Answer(this, answerId);
+            answer.setAnswerChecksum(answerValue.getChecksum());
+            answer.setProjectId(wdkModel.getProjectId());
+            answer.setProjectVersion(wdkModel.getVersion());
+            answer.setQueryChecksum(question.getQuery().getChecksum());
+            answer.setQuestionName(question.getFullName());
+            answer.setEstimateSize(answerValue.getResultSize());
 
-            String paramClob = answer.getIdsQueryInstance().getParamJSONObject().toString();
-            saveAnswerInfo(answerInfo, paramClob);
+            String paramClob = answerValue.getIdsQueryInstance().getParamJSONObject().toString();
+            saveAnswer(answer, paramClob);
         }
-        answer.setAnswerInfo(answerInfo);
-        return answerInfo;
+        answerValue.setAnswerInfo(answer);
+        return answer;
     }
 
-    public Answer getAnswer(AnswerInfo answerInfo) throws WdkModelException,
+    AnswerValue getAnswerValue(Answer answer) throws WdkModelException,
             NoSuchAlgorithmException, JSONException, WdkUserException,
             SQLException {
         // get question
-        Question question = (Question) wdkModel.resolveReference(answerInfo.getQuestionName());
+        Question question = (Question) wdkModel.resolveReference(answer.getQuestionName());
 
         // check if the query checksum matches
         Query query = question.getQuery();
         String queryChecksum = query.getChecksum();
-        String savedChecksum = answerInfo.getQueryChecksum();
+        String savedChecksum = answer.getQueryChecksum();
         if (!queryChecksum.equals(savedChecksum)) {
             throw new WdkModelException("the query checksum in database for "
                     + savedChecksum + " does not match the one in the "
@@ -96,14 +96,14 @@ public class AnswerFactory {
         }
 
         // get and parse the params
-        String paramClob = getParamsClob(answerInfo.getAnswerChecksum());
-        Map<String, Object> pvalues = parseParams(query.getParamMap(),
+        String paramClob = getParamsClob(answer.getAnswerChecksum());
+        Map<String, String> pvalues = parseParams(query.getParamMap(),
                 paramClob);
 
         // create the answer with default page size
-        Answer answer = question.makeAnswer(pvalues);
-        answer.setAnswerInfo(answerInfo);
-        return answer;
+        AnswerValue answerValue = question.makeAnswerValue(pvalues);
+        answerValue.setAnswerInfo(answer);
+        return answerValue;
     }
 
     /**
@@ -112,63 +112,66 @@ public class AnswerFactory {
      *         return null.
      * @throws SQLException
      */
-    public AnswerInfo getAnswerInfo(String answerChecksum) throws SQLException {
+    public Answer getAnswer(String answerChecksum) throws SQLException {
         String projectId = wdkModel.getProjectId();
 
         // construct the query
         StringBuffer sql = new StringBuffer("SELECT * FROM ");
-        sql.append(answerSchema).append(TABLE_ANSWER);
+        sql.append(wdkSchema).append(TABLE_ANSWER);
         sql.append(" WHERE ").append(COLUMN_PROJECT_ID).append(" = ? ");
         sql.append(" AND ").append(COLUMN_ANSWER_CHECKSUM).append(" = ?");
 
         ResultSet resultSet = null;
         PreparedStatement ps = null;
-        AnswerInfo answerInfo = null;
+        Answer answer = null;
         try {
-            DataSource dataSource = loginPlatform.getDataSource();
+            DataSource dataSource = userPlatform.getDataSource();
             ps = SqlUtils.getPreparedStatement(dataSource, sql.toString());
             ps.setString(1, projectId);
             ps.setString(2, answerChecksum);
             resultSet = ps.executeQuery();
 
             if (resultSet.next()) {
-                answerInfo = new AnswerInfo(resultSet.getInt(COLUMN_ANSWER_ID));
-                answerInfo.setAnswerChecksum(answerChecksum);
-                answerInfo.setProjectId(projectId);
-                answerInfo.setProjectVersion(resultSet.getString(COLUMN_PROJECT_VERSION));
-                answerInfo.setQueryChecksum(resultSet.getString(COLUMN_QUERY_CHECKSUM));
-                answerInfo.setQuestionName(resultSet.getString(COLUMN_QUESTION_NAME));
+                answer = new Answer(this, resultSet.getInt(COLUMN_ANSWER_ID));
+                answer.setAnswerChecksum(answerChecksum);
+                answer.setProjectId(projectId);
+                answer.setProjectVersion(resultSet.getString(COLUMN_PROJECT_VERSION));
+                answer.setQueryChecksum(resultSet.getString(COLUMN_QUERY_CHECKSUM));
+                answer.setQuestionName(resultSet.getString(COLUMN_QUESTION_NAME));
+                answer.setEstimateSize(resultSet.getInt(COLUMN_ESTIMATE_SIZE));
             }
         } finally {
             SqlUtils.closeResultSet(resultSet);
         }
-        return answerInfo;
+        return answer;
     }
 
-    private void saveAnswerInfo(AnswerInfo answerInfo, String paramClob)
+    private void saveAnswer(Answer answer, String paramClob)
             throws SQLException {
         // prepare the sql
         StringBuffer sql = new StringBuffer("INSERT INTO ");
-        sql.append(answerSchema).append(TABLE_ANSWER).append(" (");
+        sql.append(wdkSchema).append(TABLE_ANSWER).append(" (");
         sql.append(COLUMN_ANSWER_ID).append(", ");
         sql.append(COLUMN_ANSWER_CHECKSUM).append(", ");
         sql.append(COLUMN_PROJECT_ID).append(", ");
         sql.append(COLUMN_PROJECT_VERSION).append(", ");
         sql.append(COLUMN_QUESTION_NAME).append(", ");
         sql.append(COLUMN_QUERY_CHECKSUM).append(", ");
-        sql.append(COLUMN_PARAMS).append(") VALUES (?, ?, ?, ?, ?, ?, ?)");
+        sql.append(COLUMN_ESTIMATE_SIZE).append(", ");
+        sql.append(COLUMN_PARAMS).append(") VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
 
         PreparedStatement ps = null;
         try {
-            DataSource dataSource = loginPlatform.getDataSource();
+            DataSource dataSource = userPlatform.getDataSource();
             ps = SqlUtils.getPreparedStatement(dataSource, sql.toString());
-            ps.setInt(1, answerInfo.getAnswerId());
-            ps.setString(2, answerInfo.getAnswerChecksum());
-            ps.setString(3, answerInfo.getProjectId());
-            ps.setString(4, answerInfo.getProjectVersion());
-            ps.setString(5, answerInfo.getQuestionName());
-            ps.setString(6, answerInfo.getQueryChecksum());
-            loginPlatform.updateClobData(ps, 7, paramClob, false);
+            ps.setInt(1, answer.getAnswerId());
+            ps.setString(2, answer.getAnswerChecksum());
+            ps.setString(3, answer.getProjectId());
+            ps.setString(4, answer.getProjectVersion());
+            ps.setString(5, answer.getQuestionName());
+            ps.setString(6, answer.getQueryChecksum());
+            ps.setInt(7, answer.getEstimateSize());
+            userPlatform.updateClobData(ps, 8, paramClob, false);
 
             ps.executeUpdate();
         } finally {
@@ -180,18 +183,18 @@ public class AnswerFactory {
         // construct the sql
         StringBuffer sql = new StringBuffer("SELECT ");
         sql.append(COLUMN_PARAMS);
-        sql.append(" FROM ").append(answerSchema).append(TABLE_ANSWER);
+        sql.append(" FROM ").append(wdkSchema).append(TABLE_ANSWER);
         sql.append(" WHERE ").append(COLUMN_PROJECT_ID).append(" = ?");
         sql.append(" AND ").append(COLUMN_ANSWER_CHECKSUM).append(" = ?");
 
         ResultSet resultSet = null;
         try {
             PreparedStatement ps = SqlUtils.getPreparedStatement(
-                    loginPlatform.getDataSource(), sql.toString());
+                    userPlatform.getDataSource(), sql.toString());
             ps.setString(1, wdkModel.getProjectId());
             ps.setString(2, answerChecksum);
             resultSet = ps.executeQuery();
-            if (resultSet.next()) return loginPlatform.getClobData(resultSet,
+            if (resultSet.next()) return userPlatform.getClobData(resultSet,
                     COLUMN_PARAMS);
             else return null;
         } finally {
@@ -199,19 +202,15 @@ public class AnswerFactory {
         }
     }
 
-    private Map<String, Object> parseParams(Map<String, Param> params,
+    private Map<String, String> parseParams(Map<String, Param> params,
             String paramClob) throws JSONException {
         JSONObject jsParams = new JSONObject(paramClob);
-        Map<String, Object> paramValues = new LinkedHashMap<String, Object>();
+        Map<String, String> paramValues = new LinkedHashMap<String, String>();
         for (String param : params.keySet()) {
             String value = (jsParams.has(param)) ? jsParams.getString(param)
                     : null;
             paramValues.put(param, value);
         }
         return paramValues;
-    }
-
-    String getAnswerTable() {
-        return answerSchema + TABLE_ANSWER;
     }
 }

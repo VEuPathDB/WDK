@@ -13,8 +13,6 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.Column;
-import org.gusdb.wdk.model.Param;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.CacheFactory;
@@ -22,6 +20,7 @@ import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlResultList;
 import org.gusdb.wdk.model.dbms.SqlUtils;
+import org.gusdb.wdk.model.query.param.Param;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -39,8 +38,12 @@ public class SqlQueryInstance extends QueryInstance {
      * @param query
      * @param values
      * @throws WdkModelException
+     * @throws SQLException
+     * @throws JSONException
+     * @throws WdkUserException
+     * @throws NoSuchAlgorithmException
      */
-    protected SqlQueryInstance(SqlQuery query, Map<String, Object> values)
+    protected SqlQueryInstance(SqlQuery query, Map<String, String> values)
             throws WdkModelException {
         super(query, values);
         this.query = query;
@@ -49,7 +52,9 @@ public class SqlQueryInstance extends QueryInstance {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.query.QueryInstance#appendSJONContent(org.json.JSONObject)
+     * @see
+     * org.gusdb.wdk.model.query.QueryInstance#appendSJONContent(org.json.JSONObject
+     * )
      */
     @Override
     protected void appendSJONContent(JSONObject jsInstance) {
@@ -59,8 +64,9 @@ public class SqlQueryInstance extends QueryInstance {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.query.QueryInstance#getUncachedResults(java.lang.Integer,
-     *      java.lang.Integer)
+     * @see
+     * org.gusdb.wdk.model.query.QueryInstance#getUncachedResults(java.lang.
+     * Integer, java.lang.Integer)
      */
     @Override
     protected ResultList getUncachedResults() throws WdkModelException,
@@ -77,8 +83,9 @@ public class SqlQueryInstance extends QueryInstance {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.query.QueryInstance#insertToCache(java.sql.Connection,
-     *      java.lang.String)
+     * @see
+     * org.gusdb.wdk.model.query.QueryInstance#insertToCache(java.sql.Connection
+     * , java.lang.String)
      */
     @Override
     public void insertToCache(Connection connection, String tableName,
@@ -115,7 +122,7 @@ public class SqlQueryInstance extends QueryInstance {
     public String getUncachedSql() throws WdkModelException, SQLException,
             NoSuchAlgorithmException, JSONException, WdkUserException {
         Map<String, Param> params = query.getParamMap();
-        Map<String, String> paramValues = getInternalParamValues();
+        Map<String, String> paramValues = getValues();
         String sql = query.getSql();
         for (String paramName : paramValues.keySet()) {
             Param param = params.get(paramName);
@@ -145,8 +152,9 @@ public class SqlQueryInstance extends QueryInstance {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.query.QueryInstance#createCache(java.sql.Connection,
-     *      java.lang.String, int)
+     * @see
+     * org.gusdb.wdk.model.query.QueryInstance#createCache(java.sql.Connection,
+     * java.lang.String, int)
      */
     @Override
     public void createCache(Connection connection, String tableName,

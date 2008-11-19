@@ -25,8 +25,13 @@ public class PrimaryKeyAttributeValue extends AttributeValue {
         this.pkValues = new LinkedHashMap<String, Object>(pkValues);
     }
 
-    public Map<String, Object> getValues() {
-        return new LinkedHashMap<String, Object>(pkValues);
+    public Map<String, String> getValues() throws SQLException {
+        Map<String, String> values = new LinkedHashMap<String, String>();
+        for (String column : pkValues.keySet()) {
+            String value = Utilities.parseValue(pkValues.get(column));
+            values.put(column, value);
+        }
+        return values;
     }
 
     public Object getValue() throws WdkModelException,

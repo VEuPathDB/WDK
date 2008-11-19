@@ -6,21 +6,21 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.gusdb.wdk.model.AbstractEnumParam;
-import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.AnswerFilterInstance;
-import org.gusdb.wdk.model.AnswerParam;
+import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.AttributeField;
-import org.gusdb.wdk.model.DatasetParam;
 import org.gusdb.wdk.model.Field;
 import org.gusdb.wdk.model.FieldScope;
 import org.gusdb.wdk.model.Group;
-import org.gusdb.wdk.model.Param;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.TableField;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.param.AbstractEnumParam;
+import org.gusdb.wdk.model.query.param.AnswerParam;
+import org.gusdb.wdk.model.query.param.DatasetParam;
+import org.gusdb.wdk.model.query.param.Param;
 import org.json.JSONException;
 
 /**
@@ -229,7 +229,7 @@ public class QuestionBean {
      * @throws SQLException
      * @throws NoSuchAlgorithmException
      */
-    public AnswerBean makeAnswer(Map<String, Object> paramValues,
+    public AnswerValueBean makeAnswerValue(Map<String, String> paramValues,
             int pageStart, int pageEnd, Map<String, Boolean> sortingMap,
             String filterName) throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, SQLException, JSONException {
@@ -238,9 +238,9 @@ public class QuestionBean {
             RecordClass recordClass = question.getRecordClass();
             filter = recordClass.getFilter(filterName);
         }
-        Answer answer = question.makeAnswer(paramValues, pageStart, pageEnd,
-                sortingMap, filter);
-        return new AnswerBean(answer);
+        AnswerValue answerValue = question.makeAnswerValue(paramValues,
+                pageStart, pageEnd, sortingMap, filter);
+        return new AnswerValueBean(answerValue);
     }
 
     public String getDescription() {
@@ -283,10 +283,10 @@ public class QuestionBean {
      * @throws NoSuchAlgorithmException
      * @see org.gusdb.wdk.model.Question#makeAnswer(java.util.Map)
      */
-    public AnswerBean makeAnswer(Map<String, Object> paramValues)
+    public AnswerValueBean makeAnswerValue(Map<String, String> paramValues)
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
-        return new AnswerBean(question.makeAnswer(paramValues));
+        return new AnswerValueBean(question.makeAnswerValue(paramValues));
     }
 
     /**

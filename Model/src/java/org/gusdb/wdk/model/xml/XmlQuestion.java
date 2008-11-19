@@ -15,7 +15,6 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
-import org.gusdb.wdk.model.implementation.XmlConverter;
 
 /**
  * @author Jerric
@@ -214,9 +213,9 @@ public class XmlQuestion extends WdkModelBase {
         this.model = model;
     }
 
-    public XmlAnswer makeAnswer(Map<String, String> params, int startIndex,
+    public XmlAnswerValue makeAnswer(Map<String, String> params, int startIndex,
             int endIndex) throws WdkModelException {
-        XmlAnswer answer;
+        XmlAnswerValue answer;
         InputStream inXmlStream = null;
         InputStream inXslStream = null;
         ByteArrayOutputStream outXmlStream = null;

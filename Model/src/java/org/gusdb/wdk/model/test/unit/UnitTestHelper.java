@@ -19,11 +19,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.Answer;
-import org.gusdb.wdk.model.AnswerParam;
-import org.gusdb.wdk.model.DatasetParam;
-import org.gusdb.wdk.model.Param;
-import org.gusdb.wdk.model.ParamValuesSet;
+import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.Utilities;
@@ -31,6 +27,10 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.ProcessQuery;
+import org.gusdb.wdk.model.query.param.AnswerParam;
+import org.gusdb.wdk.model.query.param.DatasetParam;
+import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.json.JSONException;
 import org.xml.sax.SAXException;
 
@@ -47,7 +47,7 @@ public class UnitTestHelper {
     // use a fixed random number generator in order to use cache.
     private static Random random = new Random(1);
     private static WdkModel wdkModel;
-    private static Map<String, List<Answer>> answerPools = new LinkedHashMap<String, List<Answer>>();
+    private static Map<String, List<AnswerValue>> answerPools = new LinkedHashMap<String, List<AnswerValue>>();
 
     public static WdkModel getModel() throws NoSuchAlgorithmException,
             WdkModelException, ParserConfigurationException,
@@ -64,14 +64,14 @@ public class UnitTestHelper {
         return wdkModel;
     }
 
-    public static List<Answer> getAnswerPool(RecordClass recordClass)
+    public static List<AnswerValue> getAnswerPool(RecordClass recordClass)
             throws NoSuchAlgorithmException, WdkUserException,
             WdkModelException, SQLException, JSONException {
         String poolName = recordClass.getFullName();
-        List<Answer> answerPool = answerPools.get(poolName);
+        List<AnswerValue> answerPool = answerPools.get(poolName);
         if (answerPool == null) {
             logger.info("Preparing answer pool...");
-            answerPool = new ArrayList<Answer>();
+            answerPool = new ArrayList<AnswerValue>();
             Question[] questions = wdkModel.getQuestions(recordClass);
 
             // create a random list that indicate the questions to be selected
@@ -87,13 +87,13 @@ public class UnitTestHelper {
                 Question question = questions[index];
                 if (!validateQuestion(question)) continue;
                 logger.debug("Making answer....");
-                Answer answer = makeAnswer(question);
-                if (answer.getResultSize() > 0) answerPool.add(answer);
+                AnswerValue answerValue = makeAnswer(question);
+                if (answerValue.getResultSize() > 0) answerPool.add(answerValue);
             }
 
             answerPools.put(poolName, answerPool);
         }
-        return new ArrayList<Answer>(answerPool);
+        return new ArrayList<AnswerValue>(answerPool);
     }
 
     private static boolean validateQuestion(Question question) {
@@ -108,12 +108,12 @@ public class UnitTestHelper {
         return true;
     }
 
-    private static Answer makeAnswer(Question question)
+    private static AnswerValue makeAnswer(Question question)
             throws NoSuchAlgorithmException, WdkUserException,
             WdkModelException, SQLException, JSONException {
         List<ParamValuesSet> valueSets = question.getQuery().getParamValuesSets();
         ParamValuesSet valueSet = valueSets.get(random.nextInt(valueSets.size()));
-        Map<String, Object> values = valueSet.getParamValues();
-        return question.makeAnswer(values);
+        Map<String, String> values = valueSet.getParamValues();
+        return question.makeAnswerValue(values);
     }
 }

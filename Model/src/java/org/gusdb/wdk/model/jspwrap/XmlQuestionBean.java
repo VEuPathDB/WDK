@@ -6,7 +6,7 @@ package org.gusdb.wdk.model.jspwrap;
 import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.xml.XmlAnswer;
+import org.gusdb.wdk.model.xml.XmlAnswerValue;
 import org.gusdb.wdk.model.xml.XmlQuestion;
 
 /**
@@ -95,7 +95,7 @@ public class XmlQuestionBean {
      */
     public XmlAnswerBean makeAnswer(Map<String, String> params, int startIndex,
             int endIndex) throws WdkModelException {
-        XmlAnswer answer = question.makeAnswer(params, startIndex, endIndex);
+        XmlAnswerValue answer = question.makeAnswer(params, startIndex, endIndex);
         return new XmlAnswerBean(answer);
     }
 

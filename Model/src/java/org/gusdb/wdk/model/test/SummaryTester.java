@@ -18,7 +18,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.gusdb.wdk.model.Answer;
+import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.AnswerFilterInstance;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
@@ -28,7 +28,7 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.AnswerBean;
+import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.report.Reporter;
@@ -89,7 +89,7 @@ public class SummaryTester {
             Question question = questionSet.getQuestion(questionName);
             Query query = question.getQuery();
 
-            Map<String, Object> paramValues = new LinkedHashMap<String, Object>();
+            Map<String, String> paramValues = new LinkedHashMap<String, String>();
             if (haveParams) {
                 paramValues = QueryTester.parseParamArgs(params, useDefaults,
                         query);
@@ -118,14 +118,14 @@ public class SummaryTester {
                 int nextStartRow = Integer.parseInt(rows[i]);
                 int nextEndRow = Integer.parseInt(rows[i + 1]);
 
-                Answer answer = question.makeAnswer(paramValues, nextStartRow,
-                        nextEndRow, sortingMap, filter);
+                AnswerValue answerValue = question.makeAnswerValue(paramValues,
+                        nextStartRow, nextEndRow, sortingMap, filter);
 
                 // this is wrong. it only shows one attribute query, not
                 // all. Fix this in Answer by saving a list of attribute
                 // queries, not just one.
                 if (cmdLine.hasOption("showQuery")) {
-                    System.out.println(getLowLevelQuery(answer));
+                    System.out.println(getLowLevelQuery(answerValue));
                     System.exit(0);
                 }
 
@@ -133,18 +133,19 @@ public class SummaryTester {
 
                 // print the size of the answer
                 System.out.println("Total # of records: "
-                        + answer.getResultSize());
+                        + answerValue.getResultSize());
                 System.out.println("Answer Checksum: "
-                        + answer.getAnswerInfo().getAnswerChecksum());
-                
-                AnswerBean answerBean = new AnswerBean(answer);
-                answerBean.getResultSizesByProject();
+                        + answerValue.getAnswer().getAnswerChecksum());
+
+                AnswerValueBean answerValueBean = new AnswerValueBean(
+                        answerValue);
+                answerValueBean.getResultSizesByProject();
 
                 // load configuration for output format
                 if (!hasFormat) format = "tabular";
                 Map<String, String> config = loadConfiguration(configFile);
 
-                Reporter reporter = answer.createReport(format, config,
+                Reporter reporter = answerValue.createReport(format, config,
                         nextStartRow, nextEndRow);
 
                 reporter.write(System.out);
@@ -181,18 +182,18 @@ public class SummaryTester {
     }
 
     private static void writeSummaryAsXml(Question question,
-            Map<String, Object> paramValues, String xmlFile,
+            Map<String, String> paramValues, String xmlFile,
             AnswerFilterInstance filter) throws WdkModelException,
             WdkUserException, IOException, NoSuchAlgorithmException,
             SQLException, JSONException {
 
         Map<String, Boolean> sortingMap = question.getSortingAttributeMap();
 
-        Answer answer = question.makeAnswer(paramValues, 1, 2, sortingMap,
-                filter);
-        int resultSize = answer.getResultSize();
-        answer = question.makeAnswer(paramValues, 1, resultSize, sortingMap,
-                filter);
+        AnswerValue answerValue = question.makeAnswerValue(paramValues, 1, 2,
+                sortingMap, filter);
+        int resultSize = answerValue.getResultSize();
+        answerValue = question.makeAnswerValue(paramValues, 1, resultSize,
+                sortingMap, filter);
         FileWriter fw = new FileWriter(new File(xmlFile), false);
 
         String newline = System.getProperty("line.separator");
@@ -201,18 +202,18 @@ public class SummaryTester {
         fw.write("<" + question.getFullName() + ">" + newline);
         fw.close();
         fw = new FileWriter(new File(xmlFile), true);
-        for (RecordInstance ri : answer.getRecordInstances()) {
+        for (RecordInstance ri : answerValue.getRecordInstances()) {
             fw.write(ri.toXML(ident) + newline);
         }
         fw.write("</" + question.getFullName() + ">" + newline);
         fw.close();
     }
 
-    private static String getLowLevelQuery(Answer answer)
+    private static String getLowLevelQuery(AnswerValue answerValue)
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException {
         // QueryInstance instance = answer.getAttributesQueryInstance();
-        QueryInstance instance = answer.getIdsQueryInstance();
+        QueryInstance instance = answerValue.getIdsQueryInstance();
         String query = instance.getSql();
         String newline = System.getProperty("line.separator");
         String newlineQuery = query.replaceAll("^\\s\\s\\s", newline);

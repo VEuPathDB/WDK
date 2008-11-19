@@ -18,7 +18,7 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.Answer;
+import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.AttributeValue;
 import org.gusdb.wdk.model.Field;
@@ -62,8 +62,8 @@ public class FullRecordReporter extends Reporter {
 
     private boolean hasEmptyTable = false;
 
-    public FullRecordReporter(Answer answer, int startIndex, int endIndex) {
-        super(answer, startIndex, endIndex);
+    public FullRecordReporter(AnswerValue answerValue, int startIndex, int endIndex) {
+        super(answerValue, startIndex, endIndex);
     }
 
     /**
@@ -208,7 +208,7 @@ public class FullRecordReporter extends Reporter {
 
             // get page based answers with a maximum size (defined in
             // PageAnswerIterator)
-            for (Answer pageAnswer : this) {
+            for (AnswerValue pageAnswer : this) {
                 for (RecordInstance record : pageAnswer.getRecordInstances()) {
                     // print out attributes of the record first
                     formatAttributes(record, attributes, writer);
@@ -279,7 +279,7 @@ public class FullRecordReporter extends Reporter {
     }
 
     private void formatTables(RecordInstance record, Set<TableField> tables,
-            PrintWriter writer, Answer answer, PreparedStatement psInsert,
+            PrintWriter writer, AnswerValue answerValue, PreparedStatement psInsert,
             PreparedStatement psQuery) throws WdkModelException, SQLException,
             NoSuchAlgorithmException, JSONException, WdkUserException {
         DBPlatform platform = getQuestion().getWdkModel().getQueryPlatform();
@@ -314,7 +314,7 @@ public class FullRecordReporter extends Reporter {
 
             // check if the record has been cached
             if (tableCache != null) {
-                Map<String, Object> pkValues = record.getPrimaryKey().getValues();
+                Map<String, String> pkValues = record.getPrimaryKey().getValues();
                 for (int index = 1; index <= pkColumns.length; index++) {
                     Object value = pkValues.get(pkColumns[index - 1]);
                     psQuery.setObject(index, value);
@@ -363,8 +363,8 @@ public class FullRecordReporter extends Reporter {
 
             // get page based answers with a maximum size (defined in
             // PageAnswerIterator)
-            for (Answer answer : this) {
-                for (RecordInstance record : answer.getRecordInstances()) {
+            for (AnswerValue answerValue : this) {
+                for (RecordInstance record : answerValue.getRecordInstances()) {
                     // print out attributes of the record first
                     for (AttributeField field : attributes) {
                         AttributeValue value = record.getAttributeValue(field.getName());

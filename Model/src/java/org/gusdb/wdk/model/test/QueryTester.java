@@ -18,13 +18,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.gusdb.wdk.model.Column;
-import org.gusdb.wdk.model.FlatVocabParam;
-import org.gusdb.wdk.model.Param;
-import org.gusdb.wdk.model.ParamValuesSet;
-import org.gusdb.wdk.model.QuerySet;
 import org.gusdb.wdk.model.Reference;
-import org.gusdb.wdk.model.StringParam;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -33,9 +27,15 @@ import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.QueryInfo;
 import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
+import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.query.QuerySet;
 import org.gusdb.wdk.model.query.SqlQueryInstance;
+import org.gusdb.wdk.model.query.param.FlatVocabParam;
+import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.param.ParamValuesSet;
+import org.gusdb.wdk.model.query.param.StringParam;
 import org.json.JSONException;
 import org.xml.sax.SAXException;
 
@@ -47,7 +47,7 @@ public class QueryTester {
         this.wdkModel = wdkModel;
     }
 
-    private String showSql(Query query, Map<String, Object> paramHash)
+    private String showSql(Query query, Map<String, String> paramHash)
             throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, SQLException, JSONException {
         QueryInstance instance = query.makeInstance(paramHash);
@@ -56,7 +56,7 @@ public class QueryTester {
         } else return instance.getSql();
     }
 
-    private String showResultTable(Query query, Map<String, Object> paramHash)
+    private String showResultTable(Query query, Map<String, String> paramHash)
             throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, SQLException, JSONException {
         QueryInstance instance = query.makeInstance(paramHash);
@@ -88,12 +88,12 @@ public class QueryTester {
         System.out.println("");
     }
 
-    static Map<String, Object> parseParamArgs(String[] params,
+    static Map<String, String> parseParamArgs(String[] params,
             boolean useDefaults, Query query) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
 
-        Map<String, Object> h = new LinkedHashMap<String, Object>();
+        Map<String, String> h = new LinkedHashMap<String, String>();
 
         if (params.length % 2 != 0) {
             throw new IllegalArgumentException(
@@ -104,7 +104,7 @@ public class QueryTester {
         }
         if (useDefaults && !query.getParamValuesSets().isEmpty()) {
             ParamValuesSet pvs = query.getParamValuesSets().get(0);
-            Map<String, Object> map = pvs.getParamValues();
+            Map<String, String> map = pvs.getParamValues();
             for (String paramName : map.keySet()) {
                 if (!h.containsKey(paramName)) {
                     h.put(paramName, map.get(paramName));
@@ -191,7 +191,7 @@ public class QueryTester {
         if (showParams) {
             tester.displayParams(query);
         } else {
-            Map<String, Object> paramHash = QueryTester.parseParamArgs(params,
+            Map<String, String> paramHash = QueryTester.parseParamArgs(params,
                     useDefaults, query);
             if (showQuery) {
                 String querySql = tester.showSql(query, paramHash);

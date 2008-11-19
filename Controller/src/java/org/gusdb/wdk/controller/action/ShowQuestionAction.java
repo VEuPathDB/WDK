@@ -22,10 +22,10 @@ import org.gusdb.wdk.model.jspwrap.AnswerParamBean;
 import org.gusdb.wdk.model.jspwrap.DatasetBean;
 import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
 import org.gusdb.wdk.model.jspwrap.EnumParamBean;
-import org.gusdb.wdk.model.jspwrap.HistoryBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.QuestionSetBean;
+import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.json.JSONException;
@@ -43,7 +43,7 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
-        System.out.println("Entering ShowQuestionAction..");
+        logger.debug("Entering ShowQuestionAction..");
 
         try {
             String qFullName = ((QuestionSetForm) form).getQuestionFullName();
@@ -134,123 +134,81 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
         // get the current user
-        WdkModelBean wdkModel = (WdkModelBean) getServlet().getServletContext().getAttribute(
+        ActionServlet servlet = getServlet();
+        WdkModelBean wdkModel = (WdkModelBean) servlet.getServletContext().getAttribute(
                 CConstants.WDK_MODEL_KEY);
+
         UserBean user = (UserBean) request.getSession().getAttribute(
                 CConstants.WDK_USER_KEY);
         if (user == null) {
             user = wdkModel.getUserFactory().getGuestUser();
             request.getSession().setAttribute(CConstants.WDK_USER_KEY, user);
         }
+        String userSignature = user.getSignature();
 
-        String signature = user.getSignature();
-
-        ActionServlet servlet = getServlet();
         qForm.setServlet(servlet);
 
-        ParamBean[] params = wdkQuestion.getParams();
-
         boolean hasAllParams = true;
-        for (int i = 0; i < params.length; i++) {
-            ParamBean p = params[i];
-            Object pVal = null;
-            if (p instanceof EnumParamBean) {
-                // not assuming fixed order, so call once, use twice.
-                String[] flatVocab = ((EnumParamBean) p).getVocab();
-                String[] labels = ((EnumParamBean) p).getDisplays();
-                qForm.getMyValues().put(p.getName(), flatVocab);
-                qForm.getMyLabels().put(p.getName(),
-                        getLengthBoundedLabels(labels));
+        ParamBean[] params = wdkQuestion.getParams();
+        for (ParamBean param : params) {
+            String paramName = param.getName();
+            String[] paramValues = request.getParameterValues(paramName);
 
-                // get values from the request
-                String[] cgiParamValSet = request.getParameterValues(p.getName());
-                if (cgiParamValSet == null) {// get values from the form
-                    cgiParamValSet = qForm.getMyMultiProp(p.getName());
-                }
-
-                if (cgiParamValSet != null && cgiParamValSet.length == 1) {
-                    // try to decompress the value
-                    cgiParamValSet = (String[]) p.decompressValue(cgiParamValSet[0]);
-                }
-
-                if (cgiParamValSet != null && cgiParamValSet.length > 0) {
-                    // use the user's selection from revise url
-                    pVal = cgiParamValSet;
-                } else { // no selection made, then use the default ones;
-                    String defaultSelection = p.getDefault();
-                    if (defaultSelection == null) {
-                        // just select the first one as the default
-                        pVal = new String[] { flatVocab[0] };
-                    } else { // use the value by the author
-                        String[] defaults = defaultSelection.split(",");
-                        for (int idx = 0; idx < defaults.length; idx++) {
-                            defaults[idx] = defaults[idx].trim();
-                        }
-                        pVal = defaults;
-                    }
-                }
-            } else if (p instanceof AnswerParamBean) {
-                // get type, as in RecordClass full name
-                AnswerParamBean answerParam = (AnswerParamBean) p;
-                HistoryBean[] histories = answerParam.getHistories(user);
-                String[] values = new String[histories.length];
-                String[] labels = new String[histories.length];
-                for (int idx = 0; idx < histories.length; idx++) {
-                    HistoryBean history = histories[idx];
-                    values[idx] = history.getChecksum();
-                    labels[idx] = "#" + history.getHistoryId() + " "
-                            + history.getCustomName();
-                }
-                qForm.getMyValues().put(p.getName(), values);
-                qForm.getMyLabels().put(p.getName(),
-                        getLengthBoundedLabels(labels));
-
-                // get the value
-                String cgiParamVal = request.getParameter(p.getName());
-                if (cgiParamVal == null)
-                    cgiParamVal = qForm.getMyMultiProp(p.getName())[0];
-                if (cgiParamVal == null) {
-                    // just select the first one as the default
-                    if (values.length > 0) pVal = new String[] { values[0] };
-                } else { // use the value by the author
-                    pVal = new String[] { cgiParamVal };
-                }
-            } else {
-                // get the value
-                String cgiParamVal = request.getParameter(p.getName());
-                if (cgiParamVal == null)
-                    cgiParamVal = qForm.getMyProp(p.getName());
-                if (cgiParamVal != null)
-                    cgiParamVal = (String) p.decompressValue(cgiParamVal);
-
-                if (p instanceof DatasetParamBean && cgiParamVal != null
-                        && cgiParamVal.length() != 0) {
-                    String datasetChecksum = cgiParamVal;
-                    DatasetBean dataset = user.getDataset(datasetChecksum);
-                    request.setAttribute(p.getName(), dataset);
-                }
-
-                if (cgiParamVal == null) cgiParamVal = p.getDefault();
-                pVal = cgiParamVal;
+            // if no value assigned, use the default value
+            if (paramValues == null || paramValues.length == 0) {
+                paramValues = null;
+                String defaultValue = param.getDefault();
+                if (defaultValue != null)
+                    paramValues = defaultValue.split(",");
             }
 
-            /*
-             * System.out.println( "DEBUG: param " + p.getName() + " = '" + pVal +
-             * "'" );
-             */
-            if (pVal == null) {
-                hasAllParams = false;
-                pVal = p.getDefault();
+            // handle the additional information
+            if (param instanceof EnumParamBean) {
+                EnumParamBean enumParam = (EnumParamBean) param;
+                String[] terms = enumParam.getVocab();
+                String[] labels = enumParam.getDisplays();
+                qForm.setMyLabels(paramName, getLengthBoundedLabels(labels));
+                qForm.setMyValues(paramName, getLengthBoundedLabels(terms));
+
+                // if no default is assigned, use the first enum item
+                if (paramValues == null)
+                    paramValues = new String[] { terms[0] };
+            } else if (param instanceof AnswerParamBean) {
+                AnswerParamBean answerParam = (AnswerParamBean) param;
+                StepBean[] steps = answerParam.getSteps(user);
+                String[] terms = new String[steps.length];
+                String[] labels = new String[steps.length];
+                for (int idx = 0; idx < steps.length; idx++) {
+                    StepBean step = steps[idx];
+                    terms[idx] = userSignature + ":" + step.getStepId();
+                    labels[idx] = "#" + step.getStepId() + " - "
+                            + step.getCustomName();
+                }
+                qForm.setMyLabels(paramName, getLengthBoundedLabels(labels));
+                qForm.setMyValues(paramName, getLengthBoundedLabels(terms));
+
+                // if no step is assigned, use the first step
+                if (paramValues == null)
+                    paramValues = new String[] { terms[0] };
+            } else if (param instanceof DatasetParamBean) {
+                DatasetParamBean datasetParam = (DatasetParamBean) param;
+
+                // check if the param value is assigned
+                if (paramValues != null) {
+                    datasetParam.setCombinedKey(paramValues[0]);
+                    DatasetBean dataset = datasetParam.getDataset();
+                    request.setAttribute(paramName, dataset);
+                }
             }
-            qForm.getMyProps().put(p.getName(), pVal);
+            if (paramValues == null) hasAllParams = false;
+            else qForm.setMyMultiProp(paramName, paramValues);
         }
 
         qForm.setQuestion(wdkQuestion);
         qForm.setParamsFilled(hasAllParams);
 
-        if (request.getParameter(CConstants.VALIDATE_PARAM) == "0") {
+        if (request.getParameter(CConstants.VALIDATE_PARAM) == "0")
             qForm.setNonValidating();
-        }
 
         request.setAttribute(CConstants.QUESTIONFORM_KEY, qForm);
         request.setAttribute(CConstants.WDK_QUESTION_KEY, wdkQuestion);
@@ -263,7 +221,7 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
     }
 
     static String[] getLengthBoundedLabels(String[] labels, int maxLength) {
-        Vector v = new Vector();
+        Vector<String> v = new Vector<String>();
         int halfLen = maxLength / 2;
         for (String l : labels) {
             int len = l.length();

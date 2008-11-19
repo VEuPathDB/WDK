@@ -6,6 +6,11 @@ package org.gusdb.wdk.model;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 
+import org.gusdb.wdk.model.query.param.EnumParam;
+import org.gusdb.wdk.model.query.param.FlatVocabParam;
+import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.param.ParamSet;
+import org.gusdb.wdk.model.query.param.StringParam;
 import org.json.JSONException;
 import org.junit.Assert;
 
