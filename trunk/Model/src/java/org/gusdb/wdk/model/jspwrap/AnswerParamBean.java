@@ -3,13 +3,14 @@
  */
 package org.gusdb.wdk.model.jspwrap;
 
+import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 
-import org.gusdb.wdk.model.Answer;
-import org.gusdb.wdk.model.AnswerParam;
+import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.json.JSONException;
 
 /**
@@ -27,10 +28,11 @@ public class AnswerParamBean extends ParamBean {
         this.answerParam = answerParam;
     }
 
-    public HistoryBean[] getHistories(UserBean user) throws WdkUserException,
-            WdkModelException, SQLException, JSONException {
+    public StepBean[] getSteps(UserBean user) throws WdkUserException,
+            WdkModelException, SQLException, JSONException,
+            NoSuchAlgorithmException {
         RecordClass recordClass = answerParam.getRecordClass();
-        return user.getHistories(recordClass.getFullName());
+        return user.getSteps(recordClass.getFullName());
     }
 
     /**
@@ -43,10 +45,10 @@ public class AnswerParamBean extends ParamBean {
         this.answerChecksum = checksum;
     }
 
-    public AnswerBean getAnswer() throws Exception {
+    public AnswerValueBean getAnswerValue() throws Exception {
         try {
-        Answer answer = answerParam.getAnswer(answerChecksum);
-        return new AnswerBean(answer);
+            AnswerValue answerValue = answerParam.getAnswerValue(answerChecksum);
+            return new AnswerValueBean(answerValue);
         } catch (Exception ex) {
             ex.printStackTrace();
             throw ex;

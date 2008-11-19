@@ -6,8 +6,8 @@ package org.gusdb.wdk.model.dbms;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.gusdb.wdk.model.Column;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.query.Column;
 
 /**
  * @author Jerric Gao

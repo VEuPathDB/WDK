@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.gusdb.wdk.model.query.SqlQuery;
+import org.gusdb.wdk.model.query.param.AnswerParam;
+import org.gusdb.wdk.model.query.param.Param;
 import org.json.JSONException;
 
 /**

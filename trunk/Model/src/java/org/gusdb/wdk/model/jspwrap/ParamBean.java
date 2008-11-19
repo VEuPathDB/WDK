@@ -3,10 +3,10 @@ package org.gusdb.wdk.model.jspwrap;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 
-import org.gusdb.wdk.model.Param;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.param.Param;
 import org.json.JSONException;
 
 /**
@@ -85,34 +85,11 @@ public class ParamBean {
      * @throws SQLException
      * @throws NoSuchAlgorithmException
      */
-    public String validateValue(Object val) throws WdkModelException,
+    public void validateValue(String val) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
-        if (val != null && val instanceof String) {
-            if (((String) val).length() == 0) val = null;
-        }
-        return param.validateValue(val);
-    }
-
-    /**
-     * @param value
-     * @return
-     * @throws WdkModelException
-     * @throws NoSuchAlgorithmException
-     * @see org.gusdb.wdk.model.Param#compressValue(java.lang.Object)
-     */
-    public String compressValue(Object value) throws WdkModelException,
-            NoSuchAlgorithmException {
-        return param.compressValue(value);
-    }
-
-    /**
-     * @param value
-     * @return
-     * @throws WdkModelException
-     */
-    public Object decompressValue(String value) throws WdkModelException {
-        return param.decompressValue(value);
+        if (val != null && val.length() == 0) val = null;
+        param.validateValue(val);
     }
 
     public void setParamValue(String paramValue) {
@@ -126,24 +103,42 @@ public class ParamBean {
     }
 
     public String getDecompressedValue() throws WdkModelException {
-        Object object = decompressValue(paramValue);
-        if (object == null) return null;
-        String strValue;
-        if (object instanceof String[]) {
-            String[] array = (String[]) object;
-            StringBuffer sb = new StringBuffer();
-            for (String value : array) {
-                if (sb.length() > 0) sb.append(", ");
-                sb.append(value);
-            }
-            strValue = sb.toString();
-        } else strValue = object.toString();
+        String value = param.decompressValue(paramValue);
+        if (value == null) return null;
 
         // truncation only happens if truncateLength is > 0; otherwise, use
         // original value
-        if (truncateLength > 0 && strValue.length() > truncateLength) {
-            strValue = strValue.substring(0, truncateLength) + "...";
+        if (truncateLength > 0 && value.length() > truncateLength) {
+            value = value.substring(0, truncateLength) + "...";
         }
-        return strValue;
+        return value;
+    }
+
+    /**
+     * @param value
+     * @return
+     * @throws WdkUserException
+     * @throws WdkModelException
+     * @throws NoSuchAlgorithmException
+     * @throws JSONException
+     * @throws SQLException
+     * @see org.gusdb.wdk.model.query.param.Param#prepareValue(java.lang.String)
+     */
+    public String prepareValue(String value)
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, JSONException, SQLException {
+        return param.prepareValue(value);
+    }
+
+    /**
+     * @param value
+     * @return
+     * @throws WdkModelException
+     * @throws NoSuchAlgorithmException
+     * @see org.gusdb.wdk.model.query.param.Param#compressValue(java.lang.String)
+     */
+    public String compressValue(String value) throws WdkModelException,
+            NoSuchAlgorithmException {
+        return param.compressValue(value);
     }
 }

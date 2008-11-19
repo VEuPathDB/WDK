@@ -28,6 +28,12 @@ public class CConstants {
     public static final String WDK_QUESTION_KEY = "wdkQuestion";
     public static final String WDK_QUESTION_PARAMS_KEY = "wdkQuestionParams";
     public static final String WDK_ANSWER_KEY = "wdkAnswer";
+    public static final String WDK_STRATEGY_KEY = "wdkStrategy";
+    public static final String WDK_STRATEGY_COLLECTION_KEY = "wdkActiveStrategies";
+    public static final String WDK_STRATEGY_ID_KEY = "strategy";
+    public static final String WDK_STEP_KEY = "wdkStep";
+    public static final String WDK_STEP_ID_KEY = "step";
+    public static final String WDK_STEP_IX_KEY = "step";
     public static final String WDK_REPORT_FORMATS_KEY = "wdkReportFormats";
     public static final String WDK_REPORT_FORMAT_KEY = "wdkReportFormat";
     public static final String WDK_RECORD_KEY = "wdkRecord";
@@ -50,6 +56,7 @@ public class CConstants {
     public static final String WDK_ALT_PAGE_SIZE_KEY = "altPageSize";
     public static final String WDK_ALL_RECORD_IDS_KEY = "allRecordIds";
     public static final String WDK_RESULT_SIZE_ONLY_KEY = "resultSizeOnly";
+    public static final String WDK_RESULT_SET_ONLY_KEY = "resultsOnly";
     
     // constants for remote logins
     public static final String WDK_REMOTE_URL_KEY = "remoteUrl";
@@ -97,6 +104,7 @@ public class CConstants {
     public static final String GET_DOWNLOAD_RESULT_MAPKEY = "get_download_result";
     public static final String GET_DOWNLOAD_CONFIG_MAPKEY = "get_download_config";
     public static final String SHOW_QUERY_HISTORY_MAPKEY = "show_query_history";
+    public static final String SHOW_STRAT_HISTORY_MAPKEY = "show_strat_history";
     public static final String DOWNLOAD_HISTORY_ANSWER_MAPKEY = "download_history_answer";
     public static final String DELETE_HISTORY_MAPKEY = "delete_history";
     public static final String RENAME_HISTORY_MAPKEY = "rename_history";
@@ -117,6 +125,10 @@ public class CConstants {
     public static final String DELETE_DATASET_MAPKEY = "delete_dataset";
     public static final String SHOW_CREATE_DATASET_MAPKEY = "show_create_dataset";
     public static final String CREATE_DATASET_MAPKEY = "create_dataset";
+    public static final String RESULTSONLY_MAPKEY = "results_only";
+    public static final String SHOW_STRATEGY_MAPKEY = "show_strategy";
+    public static final String DELETE_STRATEGY_MAPKEY = "delete_strategy";
+    public static final String SHOW_APPLICATION_MAPKEY = "show_application";
 
     //button click detectors, used in action, action forms, and jsp pages
     public static final String PQ_SUBMIT_KEY = "questionSubmit"; //match question.jsp
@@ -144,6 +156,10 @@ public class CConstants {
     public static final String NEXT_QUESTION_OPERAND_SUFFIX = "_nextQuestionOperand"; //match WEB-INF/includes/booleanQuestionNode.jsp
     public static final String NEXT_BOOLEAN_OPERATION_SUFFIX = "_nextBooleanOperation"; //match WEB-INF/includes/booleanQuestionNode.jsp
 
+    //keys for WDK cookies
+    public static final String WDK_LOGIN_COOKIE_KEY = "wdk_check_auth";
+    public static final String WDK_LOGIN_SECRET_KEY = "grep 'model name' /proc/cpuinfo | md5sum";
+
     //name of webapp init params, from web.xml, used in ApplicationInitListener.java
     protected static final String WDK_MODELCONFIGXML_PARAM = "wdkModelConfigXml_param";
     protected static final String WDK_MODELXML_PARAM = "wdkModelXml_param";
@@ -156,7 +172,6 @@ public class CConstants {
     protected static final String WDK_XMLSCHEMA_PARAM = "wdkXmlSchema_param";   // the schema for xml data source
     protected static final String WDK_XMLDATA_DIR_PARAM = "wdkXmlDataDir_param";
     protected static final String WDK_LOGIN_URL_PARAM = "wdkLoginUrl_param";
-    public static final String WDK_EXPAND_SUBTYPE_PARAM = "expandSubType";
     
 
     //default value of webapp init params, from web.xml, used in ApplicationInitListener.java

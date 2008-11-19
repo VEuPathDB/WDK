@@ -25,13 +25,13 @@ import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.AnswerBean;
+import org.gusdb.wdk.model.jspwrap.AnswerFilterInstanceBean;
+import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
-import org.gusdb.wdk.model.jspwrap.HistoryBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
-import org.gusdb.wdk.model.jspwrap.RecordBean;
-import org.gusdb.wdk.model.jspwrap.RecordClassBean;
+import org.gusdb.wdk.model.jspwrap.StepBean;
+import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.json.JSONException;
@@ -49,7 +49,6 @@ public class ShowSummaryAction extends ShowQuestionAction {
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
-        logger.debug("start action.");
 
         // get user, or create one, if not exist
         WdkModelBean wdkModel = (WdkModelBean) servlet.getServletContext().getAttribute(
@@ -64,252 +63,242 @@ public class ShowSummaryAction extends ShowQuestionAction {
         QuestionForm qForm = (QuestionForm) form;
         // TRICKY: this is for action forward from
         // ProcessQuestionSetsFlatAction
-        qForm.cleanup();
+        qForm.reset();
 
-        HistoryBean history;
-        AnswerBean wdkAnswer;
-        Map<String, Object> params;
+        StepBean step;
+        StrategyBean strategy = null;
+        Map<String, String> params;
 
-        String strHistId = request.getParameter(CConstants.WDK_HISTORY_ID_KEY);
+        // Get userAnswer id & strategy id from request (if they exist)
+        String strStepId = request.getParameter(CConstants.WDK_HISTORY_ID_KEY);
+        String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
+        String strBranchId = null;
 
-        QuestionBean wdkQuestion = (QuestionBean) request.getAttribute(CConstants.WDK_QUESTION_KEY);
-        if (wdkQuestion == null) {
-            wdkQuestion = qForm.getQuestion();
-        }
-        if (wdkQuestion == null) {
-            String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
-            if (qFullName != null)
-                wdkQuestion = getQuestionByFullName(qFullName);
-        }
-        if (wdkQuestion == null) {
-            // no question, we're just loading history.
-            if (strHistId == null || strHistId.length() == 0) {
-                return showError(wdkModel, wdkUser, mapping, request, response);
-            } else {
-                // given a history id, load it
-                history = wdkUser.getHistory(Integer.parseInt(strHistId));
-
-                // check if history is still valid
-                if (!history.isValid()) {
-                    return showError(wdkModel, wdkUser, mapping, request,
-                            response);
-                }
-
-                wdkAnswer = history.getAnswer();
-                history.update(true);
-
-                // get sorting and summary attributes
-                String questionName = wdkAnswer.getQuestion().getFullName();
-                Map<String, Boolean> sortingAttributes = wdkUser.getSortingAttributes(questionName);
-                String[] summaryAttributes = wdkUser.getSummaryAttributes(questionName);
-
-                params = wdkAnswer.getInternalParams();
-
-                wdkAnswer = summaryPaging(request, null, params,
-                        sortingAttributes, summaryAttributes, wdkAnswer);
+        if (strStratId != null && strStratId.length() != 0) {
+            if (strStratId.indexOf("_") > 0) {
+                strBranchId = strStratId.split("_")[1];
+                strStratId = strStratId.split("_")[0];
             }
-        } else {
+            StepBean targetStep;
+            strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
+            if (strBranchId == null) {
+                targetStep = strategy.getLatestStep();
+            } else {
+                targetStep = strategy.getStepById(Integer.parseInt(strBranchId));
+            }
+            String stepIndex = request.getParameter("step");
+            if (stepIndex != null && stepIndex.length() != 0) {
+                step = targetStep.getStep(Integer.parseInt(stepIndex));
+            } else {
+                step = targetStep;
+            }
+            String subQuery = request.getParameter("subquery");
+            if (subQuery != null && subQuery.length() != 0
+                    && Boolean.valueOf(subQuery)) {
+                strStepId = Integer.toString(step.getChildStep().getStepId());
+            } else {
+                strStepId = Integer.toString(step.getStepId());
+            }
+        }
+
+        String filterName = request.getParameter("filter");
+
+        if (strStepId != null && strStepId.length() != 0) {
+            QuestionBean wdkQuestion = (QuestionBean) request.getAttribute(CConstants.WDK_QUESTION_KEY);
+            if (wdkQuestion == null) {
+                wdkQuestion = qForm.getQuestion();
+            }
+            if (wdkQuestion == null) {
+                String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
+                if (qFullName != null)
+                    wdkQuestion = getQuestionByFullName(qFullName);
+            }
+            if (wdkQuestion == null) {
+                return showError(wdkModel, wdkUser, mapping, request, response);
+            }
             String questionName = wdkQuestion.getFullName();
 
-            params = handleMultiPickParams(new LinkedHashMap<String, Object>(
-                    qForm.getMyProps()));
-            handleDatasetParams(wdkUser, wdkQuestion, params);
+            // saving user preference has to happen before summaryPaging(),
+            // where they will be used.
 
-            // get sorting key, if have
+            // update sorting key, if have
             String sortingChecksum = request.getParameter(CConstants.WDK_SORTING_KEY);
-            Map<String, Boolean> sortingAttributes;
+            if (sortingChecksum != null)
+                wdkUser.applySortingChecksum(questionName, sortingChecksum);
+
+            // get summary key, if have
+            String summaryChecksum = request.getParameter(CConstants.WDK_SUMMARY_KEY);
+            if (summaryChecksum != null)
+                wdkUser.applySummaryChecksum(questionName, summaryChecksum);
+
+            params = qForm.getMyProps();
+
+            // make the answer
+            try {
+                step = summaryPaging(request, wdkQuestion, params, filterName);
+            } catch (Exception ex) {
+                logger.error(ex);
+                ex.printStackTrace();
+                return showError(wdkModel, wdkUser, mapping, request, response);
+            }
+
+        } else {
+            step = wdkUser.getStep(Integer.parseInt(strStepId));
+
+            // check if userAnswer is still valid
+            if (!step.getIsValid())
+                return showError(wdkModel, wdkUser, mapping, request, response);
+
+            int actualSize = step.getAnswerValue().getResultSize();
+            if (step.getEstimateSize() != actualSize) {
+                step.setEstimateSize(actualSize);
+                step.update();
+            }
+
+            String questionName = step.getQuestionName();
+
+            // update sorting key, if have
+            String sortingChecksum = request.getParameter(CConstants.WDK_SORTING_KEY);
             if (sortingChecksum != null) {
-                sortingAttributes = wdkUser.getSortingAttributesByChecksum(sortingChecksum);
-                // request.setAttribute("wdk_sorting_checksum",
-                // sortingChecksum);
-            } else {
-                sortingAttributes = wdkUser.getSortingAttributes(questionName);
+                wdkUser.applySortingChecksum(questionName, sortingChecksum);
+
             }
 
             // get summary key, if have
             String summaryChecksum = request.getParameter(CConstants.WDK_SUMMARY_KEY);
-            String[] summaryAttributes = null;
-            if (summaryChecksum != null) {
-                summaryAttributes = wdkUser.getSummaryAttributesByChecksum(summaryChecksum);
-                // request.setAttribute("wdk_summary_checksum",
-                // sortingChecksum);
-            } else {
-                summaryAttributes = wdkUser.getSummaryAttributes(questionName);
-            }
+            if (summaryChecksum != null)
+                wdkUser.applySummaryChecksum(questionName, summaryChecksum);
+        }
+        wdkUser.save();
 
-            RecordClassBean recordClass = wdkQuestion.getRecordClass();
+        // get sorting and summary attributes
+        AnswerValueBean wdkAnswerValue = step.getAnswerValue();
 
-            // make the answer
-            try {
-                wdkAnswer = summaryPaging(request, wdkQuestion, params,
-                        sortingAttributes, summaryAttributes);
-            } catch (WdkModelException ex) {
-                logger.error(ex);
-                ex.printStackTrace();
-                return showError(wdkModel, wdkUser, mapping, request, response);
-            } catch (WdkUserException ex) {
-                logger.error(ex);
-                ex.printStackTrace();
-                return showError(wdkModel, wdkUser, mapping, request, response);
-            }
+        // DO NOT delete empty userAnswer -- it will screw up strategies
+        // if (userAnswer != null && userAnswer.getEstimateSize() == 0)
+        // wdkUser.deleteStep(userAnswer.getStepId());
 
-            // was history specified?
-            if (strHistId == null || strHistId.length() == 0) {
-                history = wdkUser.createHistory(wdkAnswer);
-            } else {
-                // try loading
-                try {
-                    history = wdkUser.getHistory(Integer.parseInt(strHistId));
+        String queryString;
 
-                    // check if history is still valid
-                    if (!history.isValid()) {
-                        return showError(wdkModel, wdkUser, mapping, request,
-                                response);
-                    }
-
-                    // is this the right history?
-                    if (!history.getAnswer().getChecksum().equals(
-                            wdkAnswer.getChecksum())) {
-                        // no. create new history.
-                        history = wdkUser.createHistory(wdkAnswer);
-                    } else {
-                        history.update(true);
-                    }
-                } catch (SQLException ex) {
-                    // couldn't find history: create history
-                    history = wdkUser.createHistory(wdkAnswer);
-                } catch (Exception ex) {
-                    logger.error(ex);
-                    ex.printStackTrace();
-                    return showError(wdkModel, wdkUser, mapping, request,
-                            response);
-                }
-            }
+        if (strategy == null) {
+            strategy = wdkUser.createStrategy(step, false);
+            queryString = "strategy=" + strategy.getStrategyId();
+        } else {
+            queryString = request.getQueryString();
         }
 
-        int historyId = history.getHistoryId();
+        ArrayList<Integer> activeStrategies = wdkUser.getActiveStrategies();
 
-        if (wdkAnswer.getFilter() != null) {
-            history.setFilterSize(wdkAnswer.getFilterSize(wdkAnswer.getFilter().getName()));
+        if (activeStrategies == null) {
+            activeStrategies = new ArrayList<Integer>();
         }
 
-        String pageUrl = request.getRequestURI() + "?"
-                + CConstants.WDK_HISTORY_ID_KEY + "=" + historyId;
-        String requestUrl = pageUrl + "&" + request.getQueryString();
+        if (!activeStrategies.contains(new Integer(strategy.getStrategyId()))) {
+            activeStrategies.add(0, new Integer(strategy.getStrategyId()));
+        }
+        wdkUser.setActiveStrategies(activeStrategies);
+
+        String requestUrl = request.getRequestURI() + "?" + queryString;
 
         // return only the result size, if requested
         if (request.getParameterMap().containsKey(
                 CConstants.WDK_RESULT_SIZE_ONLY_KEY)) {
             PrintWriter writer = response.getWriter();
-            writer.print(wdkAnswer.getResultSize());
+            writer.print(wdkAnswerValue.getResultSize());
             return null;
         }
 
-        String queryString = request.getQueryString() + "&"
-                + CConstants.WDK_HISTORY_ID_KEY + "=" + historyId;
-
         request.setAttribute(CConstants.WDK_QUESTION_PARAMS_KEY,
-                wdkAnswer.getInternalParams());
-        request.setAttribute(CConstants.WDK_ANSWER_KEY, wdkAnswer);
-        request.setAttribute(CConstants.WDK_HISTORY_KEY, history);
+                wdkAnswerValue.getInternalParams());
+        request.setAttribute(CConstants.WDK_ANSWER_KEY, wdkAnswerValue);
+        request.setAttribute(CConstants.WDK_HISTORY_KEY, step);
+        request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
         request.setAttribute("wdk_summary_url", requestUrl);
         request.setAttribute("wdk_query_string", queryString);
 
-        // TODO - the alwaysGoToSummary is deprecated by
-        // "noSummaryOnSingleRecord" attribute of question bean
-        //
-        // boolean alwaysGoToSummary = false;
-        // if (CConstants.YES.equalsIgnoreCase((String)
-        // getServlet().getServletContext().getAttribute(
-        // CConstants.WDK_ALWAYSGOTOSUMMARY_KEY))
-        // ||
-        // CConstants.YES.equalsIgnoreCase(request.getParameter(CConstants.ALWAYS_GOTO_SUMMARY_PARAM)))
-        // {
-        // alwaysGoToSummary = true;
-        // }
-        // if
-        // (CConstants.NO.equalsIgnoreCase(request.getParameter(CConstants.ALWAYS_GOTO_SUMMARY_PARAM)))
-        // {
-        // alwaysGoToSummary = false;
-        // }
-
         // make ActionForward
-        ActionForward forward = getForward(wdkAnswer, mapping, historyId);
+        ActionForward forward;
 
-        logger.debug("finish action.");
+        String resultsOnly = request.getParameter(CConstants.WDK_RESULT_SET_ONLY_KEY);
+        // forward to the results page, if requested
+        if (resultsOnly != null && Boolean.valueOf(resultsOnly)) {
+            forward = mapping.findForward(CConstants.RESULTSONLY_MAPKEY);
+        }
+        // otherwise, forward to the full summary page
+        else {
+            forward = mapping.findForward(CConstants.SHOW_APPLICATION_MAPKEY);
+            forward = new ActionForward(forward.getPath(), true);
+        }
+
+        // System.out.println("From forward: " + forward.getPath());
+
+        // if we got a strategy id in the URL, go to summary page
+        /*
+         * if (strStratId != null && strStratId.length() != 0) { String
+         * resultsOnly =
+         * request.getParameter(CConstants.WDK_RESULT_SET_ONLY_KEY); // forward
+         * to the results page, if requested if (resultsOnly != null &&
+         * Boolean.valueOf(resultsOnly)) { forward =
+         * mapping.findForward(CConstants.RESULTSONLY_MAPKEY); } // otherwise,
+         * forward to the full summary page else { forward =
+         * getForward(wdkAnswerValue, mapping, userAnswerId); }
+         * 
+         * System.out.println("From forward: " + forward.getPath()); } // if
+         * not, redirect back to ShowSummary, with corrected URL else { forward
+         * = mapping.findForward("reload_summary"); String path =
+         * forward.getPath() + "?" + queryString; System.out.println(path);
+         * forward = new ActionForward(path, true); }
+         */
 
         return forward;
     }
 
-    private ActionForward getForward(AnswerBean wdkAnswer,
-            ActionMapping mapping, int historyId) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
-        logger.debug("start getting forward");
-
-        ServletContext svltCtx = getServlet().getServletContext();
-        String customViewDir = (String) svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
-        String customViewFile1 = customViewDir + File.separator
-                + wdkAnswer.getQuestion().getFullName() + ".summary.jsp";
-        String customViewFile2 = customViewDir + File.separator
-                + wdkAnswer.getRecordClass().getFullName() + ".summary.jsp";
-        String customViewFile3 = customViewDir + File.separator
-                + CConstants.WDK_CUSTOM_SUMMARY_PAGE;
-        ActionForward forward = null;
-
-        if (wdkAnswer.getResultSize() == 1 && !wdkAnswer.getIsDynamic()
-                && wdkAnswer.getQuestion().isNoSummaryOnSingleRecord()) {
-            RecordBean rec = (RecordBean) wdkAnswer.getRecords().next();
-            forward = mapping.findForward(CConstants.SKIPTO_RECORD_MAPKEY);
-            String path = forward.getPath() + "?name="
-                    + rec.getRecordClass().getFullName();
-
-            Map<String, Object> pkValues = rec.getPrimaryKey().getValues();
-            for (String pkColumn : pkValues.keySet()) {
-                Object value = pkValues.get(pkColumn);
-                path += "&" + pkColumn + "=" + value;
-            }
-            return new ActionForward(path, true);
-        }
-
-        if (ApplicationInitListener.resourceExists(customViewFile1, svltCtx)) {
-            forward = new ActionForward(customViewFile1);
-        } else if (ApplicationInitListener.resourceExists(customViewFile2,
-                svltCtx)) {
-            forward = new ActionForward(customViewFile2);
-        } else if (ApplicationInitListener.resourceExists(customViewFile3,
-                svltCtx)) {
-            forward = new ActionForward(customViewFile3);
-        } else {
-            forward = mapping.findForward(CConstants.SHOW_SUMMARY_MAPKEY);
-        }
-
-        logger.debug("end getting forward");
-        return forward;
-    }
-
-    protected Map<String, Object> handleMultiPickParams(
-            Map<String, Object> params) {
-        for (String paramName : params.keySet()) {
-            Object paramVal = params.get(paramName);
-            String paramValStr = null;
-            if (paramVal instanceof String[]) {
-                String[] pVals = (String[]) paramVal;
-                StringBuffer sb = new StringBuffer();
-                for (String pVal : pVals) {
-                    if (sb.length() > 0) sb.append(",");
-                    sb.append(pVal);
-                }
-                paramValStr = sb.toString();
-            } else {
-                paramValStr = (paramVal == null ? null : paramVal.toString());
-            }
-            params.put(paramName, paramValStr);
-            // System.err.println("*** debug params: (k, v) = " + paramName + ",
-            // " + paramValStr);
-        }
-        return params;
-    }
+    //
+    // private ActionForward getForward(AnswerValueBean wdkAnswerValue,
+    // ActionMapping mapping, int userAnswerId) throws WdkModelException,
+    // SQLException, NoSuchAlgorithmException, JSONException,
+    // WdkUserException {
+    // ServletContext svltCtx = getServlet().getServletContext();
+    // String customViewDir = (String)
+    // svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
+    // String customViewFile1 = customViewDir + File.separator
+    // + wdkAnswerValue.getQuestion().getFullName() + ".summary.jsp";
+    // String customViewFile2 = customViewDir + File.separator
+    // + wdkAnswerValue.getRecordClass().getFullName()
+    // + ".summary.jsp";
+    // String customViewFile3 = customViewDir + File.separator
+    // + CConstants.WDK_CUSTOM_SUMMARY_PAGE;
+    // ActionForward forward = null;
+    //
+    // if (wdkAnswerValue.getResultSize() == 1
+    // && !wdkAnswerValue.getIsDynamic()
+    // && wdkAnswerValue.getQuestion().isNoSummaryOnSingleRecord()) {
+    // RecordBean rec = (RecordBean) wdkAnswerValue.getRecords().next();
+    // forward = mapping.findForward(CConstants.SKIPTO_RECORD_MAPKEY);
+    // String path = forward.getPath() + "?name="
+    // + rec.getRecordClass().getFullName();
+    //
+    // Map<String, String> pkValues = rec.getPrimaryKey().getValues();
+    // for (String pkColumn : pkValues.keySet()) {
+    // String value = pkValues.get(pkColumn);
+    // path += "&" + pkColumn + "=" + value;
+    // }
+    // return new ActionForward(path, true);
+    // }
+    //
+    // if (ApplicationInitListener.resourceExists(customViewFile1, svltCtx)) {
+    // forward = new ActionForward(customViewFile1);
+    // } else if (ApplicationInitListener.resourceExists(customViewFile2,
+    // svltCtx)) {
+    // forward = new ActionForward(customViewFile2);
+    // } else if (ApplicationInitListener.resourceExists(customViewFile3,
+    // svltCtx)) {
+    // forward = new ActionForward(customViewFile3);
+    // } else {
+    // forward = mapping.findForward(CConstants.SHOW_SUMMARY_MAPKEY);
+    // }
+    // return forward;
+    // }
 
     protected void handleDatasetParams(UserBean user, QuestionBean question,
             Map<String, Object> params) {
@@ -324,27 +313,21 @@ public class ShowSummaryAction extends ShowQuestionAction {
         }
     }
 
-    protected AnswerBean booleanAnswerPaging(HttpServletRequest request,
-            Object answerMaker) throws WdkModelException, WdkUserException,
+    public static StepBean summaryPaging(HttpServletRequest request,
+            StepBean step) throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, SQLException, JSONException {
-        return summaryPaging(request, answerMaker, null, null, null, null);
+        QuestionBean question = step.getAnswerValue().getQuestion();
+        Map<String, String> params = step.getParams();
+        AnswerFilterInstanceBean filter = step.getAnswerValue().getFilter();
+        String filterName = (filter == null) ? null : filter.getName();
+        return summaryPaging(request, question, params, filterName);
     }
 
-    protected AnswerBean summaryPaging(HttpServletRequest request,
-            Object answerMaker, Map<String, Object> params,
-            Map<String, Boolean> sortingAttributes, String[] summaryAttributes)
+    public static StepBean summaryPaging(HttpServletRequest request,
+            QuestionBean question, Map<String, String> params, String filterName)
             throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, SQLException, JSONException {
-        return summaryPaging(request, answerMaker, params, sortingAttributes,
-                summaryAttributes, null);
-    }
-
-    private AnswerBean summaryPaging(HttpServletRequest request,
-            Object answerMaker, Map<String, Object> params,
-            Map<String, Boolean> sortingAttributes, String[] summaryAttributes,
-            AnswerBean wdkAnswer) throws WdkModelException, WdkUserException,
-            NoSuchAlgorithmException, SQLException, JSONException {
-        logger.debug("start summary paging");
+        logger.debug("start summary paging...");
 
         UserBean wdkUser = (UserBean) request.getSession().getAttribute(
                 CConstants.WDK_USER_KEY);
@@ -352,6 +335,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
         if (request.getParameter("pager.offset") != null) {
             start = Integer.parseInt(request.getParameter("pager.offset"));
             start++;
+            if (start < 1) start = 1;
         }
         int pageSize = wdkUser.getItemsPerPage();
         String pageSizeKey = request.getParameter(CConstants.WDK_PAGE_SIZE_KEY);
@@ -363,48 +347,28 @@ public class ShowSummaryAction extends ShowQuestionAction {
             if (altPageSizeKey != null)
                 pageSize = Integer.parseInt(altPageSizeKey);
         }
-
-        if (wdkAnswer != null) {
-            answerMaker = wdkAnswer.getQuestion();
-            params = wdkAnswer.getInternalParams();
-        }
-        if (start < 1) {
-            start = 1;
-        }
         int end = start + pageSize - 1;
 
         logger.info("Make answer with start=" + start + ", end=" + end);
 
-        // get filter
-        String filterName = request.getParameter("filter");
-
-        if (answerMaker instanceof QuestionBean) {
-            QuestionBean question = (QuestionBean) answerMaker;
-            // check if the question is supposed to make answers containing all
-            // records in one page
-            if (question.isFullAnswer()) {
-                start = 1;
-                end = Utilities.MAXIMUM_RECORD_INSTANCES;
-            }
-            wdkAnswer = question.makeAnswer(params, start, end,
-                    sortingAttributes, filterName);
-            wdkAnswer.setSumaryAttribute(summaryAttributes);
-        } else {
-            throw new RuntimeException("unexpected answerMaker: " + answerMaker);
+        // check if the question is supposed to make answers containing all
+        // records in one page
+        if (question.isFullAnswer()) {
+            start = 1;
+            end = Utilities.MAXIMUM_RECORD_INSTANCES;
         }
 
-        int totalSize = wdkAnswer.getResultSize();
+        StepBean step = wdkUser.createStep(question, params, filterName);
+        AnswerValueBean answerValue = step.getAnswerValue();
+        int totalSize = answerValue.getResultSize();
+        if (end > totalSize) end = totalSize;
 
-        if (wdkAnswer.getFilter() != null) {
-            totalSize = wdkAnswer.getFilterSize(wdkAnswer.getFilter().getName());
-        }
-
-        if (end > totalSize) {
-            end = totalSize;
-        }
+        if (start != answerValue.getStartIndex()
+                || end != answerValue.getEndIndex())
+            answerValue = answerValue.makeAnswerValue(start, end);
 
         List<String> editedParamNames = new ArrayList<String>();
-        for (Enumeration en = request.getParameterNames(); en.hasMoreElements();) {
+        for (Enumeration<?> en = request.getParameterNames(); en.hasMoreElements();) {
             String key = (String) en.nextElement();
             if (!key.equals(CConstants.WDK_PAGE_SIZE_KEY)
                     && !key.equals(CConstants.WDK_ALT_PAGE_SIZE_KEY)
@@ -412,73 +376,74 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 editedParamNames.add(key);
             }
         }
-
-        request.setAttribute("wdk_paging_url", request.getRequestURI());
         request.setAttribute("wdk_paging_total", new Integer(totalSize));
         request.setAttribute("wdk_paging_pageSize", new Integer(pageSize));
         request.setAttribute("wdk_paging_start", new Integer(start));
         request.setAttribute("wdk_paging_end", new Integer(end));
+        request.setAttribute("wdk_paging_url", request.getRequestURI());
         request.setAttribute("wdk_paging_params", editedParamNames);
 
         logger.debug("end summary paging");
 
-        return wdkAnswer;
+        return step;
     }
 
     private ActionForward showError(WdkModelBean wdkModel, UserBean wdkUser,
             ActionMapping mapping, HttpServletRequest request,
             HttpServletResponse response) throws WdkModelException,
-            WdkUserException, UnsupportedEncodingException, SQLException,
-            JSONException {
+            WdkUserException, SQLException, JSONException,
+            NoSuchAlgorithmException {
         // TEST
-        logger.info("Show the details of an invalid history/question");
+        logger.info("Show the details of an invalid userAnswer/question");
 
         String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
-        Map<String, Object> params;
+        Map<String, String> params;
         Map<String, String> paramNames;
         String customName;
         if (qFullName == null || qFullName.length() == 0) {
             String strHistId = request.getParameter(CConstants.WDK_HISTORY_ID_KEY);
-            int historyId = Integer.parseInt(strHistId);
-            HistoryBean history = wdkUser.getHistory(historyId);
-            params = history.getParams();
-            paramNames = history.getParamNames();
-            qFullName = history.getQuestionName();
-            customName = history.getCustomName();
+            int userAnswerId = Integer.parseInt(strHistId);
+            StepBean step = wdkUser.getStep(userAnswerId);
+            params = step.getParams();
+            paramNames = step.getParamNames();
+            qFullName = step.getQuestionName();
+            customName = step.getCustomName();
         } else {
-            params = new LinkedHashMap<String, Object>();
+            params = new LinkedHashMap<String, String>();
             paramNames = new LinkedHashMap<String, String>();
             customName = qFullName;
 
             // get params from request
-            Map parameters = request.getParameterMap();
+            Map<?, ?> parameters = request.getParameterMap();
             for (Object object : parameters.keySet()) {
-                String pName;
-                pName = URLDecoder.decode((String) object, "utf-8");
-                Object objValue = parameters.get(object);
-                String pValue = null;
-                if (objValue != null) {
-                    pValue = objValue.toString();
-                    if (objValue instanceof String[]) {
-                        StringBuffer sb = new StringBuffer();
-                        String[] array = (String[]) objValue;
-                        for (String v : array) {
-                            if (sb.length() > 0) sb.append(", ");
-                            sb.append(v);
+                try {
+                    String pName;
+                    pName = URLDecoder.decode((String) object, "utf-8");
+                    Object objValue = parameters.get(object);
+                    String pValue = null;
+                    if (objValue != null) {
+                        pValue = objValue.toString();
+                        if (objValue instanceof String[]) {
+                            StringBuffer sb = new StringBuffer();
+                            String[] array = (String[]) objValue;
+                            for (String v : array) {
+                                if (sb.length() > 0) sb.append(", ");
+                                sb.append(v);
+                            }
+                            pValue = sb.toString();
                         }
-                        pValue = sb.toString();
+                        pValue = URLDecoder.decode(pValue, "utf-8");
                     }
-                    pValue = URLDecoder.decode(pValue, "utf-8");
-                }
-                if (pName.startsWith("myProp(")) {
-                    pName = pName.substring(7, pName.length() - 1).trim();
-                    params.put(pName, pValue);
+                    if (pName.startsWith("myProp(")) {
+                        pName = pName.substring(7, pName.length() - 1).trim();
+                        params.put(pName, pValue);
 
-                    // HACK
-                    // String displayName = wdkModel.getParamDisplayName(pName);
-                    String displayName = null;
-                    if (displayName == null) displayName = pName;
-                    paramNames.put(pName, displayName);
+                        String displayName = wdkModel.queryParamDisplayName(pName);
+                        if (displayName == null) displayName = pName;
+                        paramNames.put(pName, displayName);
+                    }
+                } catch (UnsupportedEncodingException ex) {
+                    throw new WdkModelException(ex);
                 }
             }
         }
@@ -505,6 +470,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
         ActionForward forward = new ActionForward(url);
         forward.setRedirect(false);
+
         return forward;
     }
 }

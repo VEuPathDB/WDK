@@ -147,7 +147,7 @@ public class Migrator {
     }
 
     public String getNewSchema() throws WdkUserException {
-        return wdkModel.getUserFactory().getLoginSchema();
+        return wdkModel.getModelConfig().getUserDB().getUserSchema();
     }
 
     public WdkModel getWdkModel() {

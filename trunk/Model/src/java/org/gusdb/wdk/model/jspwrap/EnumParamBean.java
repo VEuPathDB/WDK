@@ -4,11 +4,11 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Map;
 
-import org.gusdb.wdk.model.AbstractEnumParam;
-import org.gusdb.wdk.model.EnumParam;
-import org.gusdb.wdk.model.EnumParamTermNode;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.param.AbstractEnumParam;
+import org.gusdb.wdk.model.query.param.EnumParam;
+import org.gusdb.wdk.model.query.param.EnumParamTermNode;
 import org.json.JSONException;
 
 /**
@@ -59,9 +59,17 @@ public class EnumParamBean extends ParamBean {
         return ((AbstractEnumParam) param).getDisplayType();
     }
 
-    public EnumParamTermNode[] getVocabTreeRoots()
-            throws NoSuchAlgorithmException, WdkModelException, SQLException,
-            JSONException, WdkUserException {
-        return ((AbstractEnumParam) param).getVocabTreeRoots();
+    public EnumParamTermNode[] getVocabTreeRoots() throws Exception {
+        try {
+            return ((AbstractEnumParam) param).getVocabTreeRoots();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw ex;
+        }
+    }
+
+    public String[] getTerms(String termList) throws NoSuchAlgorithmException,
+            WdkModelException, SQLException, JSONException, WdkUserException {
+        return ((AbstractEnumParam) param).getTerms(termList);
     }
 }

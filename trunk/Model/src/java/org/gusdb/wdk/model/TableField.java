@@ -4,33 +4,34 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
+import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 
 public class TableField extends Field implements AttributeFieldContainer {
 
-    private static final Logger logger = WdkLogManager.getLogger("org.gusdb.wdk.model.TableField");
+    private static final Logger logger = Logger.getLogger(TableField.class);
 
-	private String queryTwoPartName;
-	private Query query;
-	private List<AttributeField> attributeFieldList = new ArrayList<AttributeField>();
-	private Map<String, AttributeField> attributeFieldMap = new LinkedHashMap<String, AttributeField>();
+    private String queryTwoPartName;
+    private Query query;
+    private List<AttributeField> attributeFieldList = new ArrayList<AttributeField>();
+    private Map<String, AttributeField> attributeFieldMap = new LinkedHashMap<String, AttributeField>();
 
-	private List<WdkModelText> descriptions = new ArrayList<WdkModelText>();
-	private String description;
+    private List<WdkModelText> descriptions = new ArrayList<WdkModelText>();
+    private String description;
 
-	Query getQuery() {
-		return query;
-	}
+    Query getQuery() {
+        return query;
+    }
 
-	void setQuery(Query query) {
-		this.query = query;
-	}
+    void setQuery(Query query) {
+        this.query = query;
+    }
 
-	public void setQueryRef(String queryRef) {
-		this.queryTwoPartName = queryRef;
-	}
+    public void setQueryRef(String queryRef) {
+        this.queryTwoPartName = queryRef;
+    }
 
     public void addAttributeField(AttributeField attributeField) {
         attributeField.setRecordClass(recordClass);
@@ -38,9 +39,9 @@ public class TableField extends Field implements AttributeFieldContainer {
         attributeFieldList.add(attributeField);
     }
 
-	public String getQueryRef() {
-		return queryTwoPartName;
-	}
+    public String getQueryRef() {
+        return queryTwoPartName;
+    }
 
     public AttributeField[] getAttributeFields() {
         return getAttributeFields(FieldScope.ALL);
@@ -53,9 +54,10 @@ public class TableField extends Field implements AttributeFieldContainer {
         return array;
     }
 
-	public void addDescription(WdkModelText description) {
-		this.descriptions.add(description);
-	}
+    public void addDescription(WdkModelText description) {
+        this.descriptions.add(description);
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -65,11 +67,11 @@ public class TableField extends Field implements AttributeFieldContainer {
         return getAttributeFieldMap(FieldScope.ALL);
     }
 
-	public String getDescription() {
-		return (description == null) ? "" : description;
-	}
+    public String getDescription() {
+        return (description == null) ? "" : description;
+    }
 
-	public Map<String, AttributeField> getAttributeFieldMap(FieldScope scope) {
+    public Map<String, AttributeField> getAttributeFieldMap(FieldScope scope) {
         Map<String, AttributeField> map = new LinkedHashMap<String, AttributeField>();
         for (AttributeField field : attributeFieldMap.values()) {
             if ((scope == FieldScope.ALL)
@@ -87,7 +89,8 @@ public class TableField extends Field implements AttributeFieldContainer {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.Field#resolveReferences(org.gusdb.wdk.model.WdkModel)
+     * @see
+     * org.gusdb.wdk.model.Field#resolveReferences(org.gusdb.wdk.model.WdkModel)
      */
     @Override
     public void resolveReferences(WdkModel model) throws WdkModelException {
@@ -111,52 +114,52 @@ public class TableField extends Field implements AttributeFieldContainer {
         }
     }
 
-	/*
-	 * (non-Javadoc) Should never be called, but is necessary because TableField
-	 * implements FieldI.
-	 * 
-	 * @see org.gusdb.wdk.model.FieldI#getTruncateTo()
-	 */
-	public int getTruncateTo() {
-		throw new RuntimeException("getTruncate does not apply to TableField");
-	}
+    /*
+     * (non-Javadoc) Should never be called, but is necessary because TableField
+     * implements FieldI.
+     * 
+     * @see org.gusdb.wdk.model.FieldI#getTruncateTo()
+     */
+    public int getTruncateTo() {
+        throw new RuntimeException("getTruncate does not apply to TableField");
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
-	 */
-	@Override
-	public void excludeResources(String projectId) throws WdkModelException {
-		// exclude descriptions
-		boolean hasDescription = false;
-		for (WdkModelText description : descriptions) {
-			if (description.include(projectId)) {
-				if (hasDescription) {
-					throw new WdkModelException("The table field " + name
-							+ " of recordClass " + recordClass.getFullName()
-							+ " has more than one description for project "
-							+ projectId);
-				} else {
-					this.description = description.getText();
-					hasDescription = true;
-				}
-			}
-		}
-		descriptions = null;
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
+     */
+    @Override
+    public void excludeResources(String projectId) throws WdkModelException {
+        // exclude descriptions
+        boolean hasDescription = false;
+        for (WdkModelText description : descriptions) {
+            if (description.include(projectId)) {
+                if (hasDescription) {
+                    throw new WdkModelException("The table field " + name
+                            + " of recordClass " + recordClass.getFullName()
+                            + " has more than one description for project "
+                            + projectId);
+                } else {
+                    this.description = description.getText();
+                    hasDescription = true;
+                }
+            }
+        }
+        descriptions = null;
 
-		// exclude attributes
-		for (AttributeField field : attributeFieldList) {
-			if (field.include(projectId)) {
-				field.excludeResources(projectId);
-				String fieldName = field.getName();
-				if (attributeFieldMap.containsKey(fieldName))
-					throw new WdkModelException("The attributeField "
-							+ fieldName + " is duplicated in table "
-							+ this.name);
-				attributeFieldMap.put(fieldName, field);
-			}
-		}
-		attributeFieldList = null;
-	}
+        // exclude attributes
+        for (AttributeField field : attributeFieldList) {
+            if (field.include(projectId)) {
+                field.excludeResources(projectId);
+                String fieldName = field.getName();
+                if (attributeFieldMap.containsKey(fieldName))
+                    throw new WdkModelException("The attributeField "
+                            + fieldName + " is duplicated in table "
+                            + this.name);
+                attributeFieldMap.put(fieldName, field);
+            }
+        }
+        attributeFieldList = null;
+    }
 }

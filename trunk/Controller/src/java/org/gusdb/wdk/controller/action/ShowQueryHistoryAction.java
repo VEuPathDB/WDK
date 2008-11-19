@@ -25,15 +25,23 @@ public class ShowQueryHistoryAction extends Action {
             throws Exception {
 
         ServletContext svltCtx = getServlet().getServletContext();
-        String customViewDir = (String) svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
+        String historyType = request.getParameter("type");
+	String customViewDir = (String) svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
         String customViewFile = customViewDir + File.separator
                 + CConstants.WDK_CUSTOM_HISTORY_PAGE;
         ActionForward forward = null;
-        if (ApplicationInitListener.resourceExists(customViewFile, svltCtx)) {
-            forward = new ActionForward(customViewFile);
-        } else {
-            forward = mapping.findForward(CConstants.SHOW_QUERY_HISTORY_MAPKEY);
-        }
+	
+	if (historyType != null && historyType.equals(CConstants.SHOW_QUERY_HISTORY_MAPKEY)) {
+	    if (ApplicationInitListener.resourceExists(customViewFile, svltCtx)) {
+		forward = new ActionForward(customViewFile);
+	    } else {
+		forward = mapping.findForward(CConstants.SHOW_QUERY_HISTORY_MAPKEY);
+	    }
+	}
+	else {
+	    forward = mapping.findForward(CConstants.SHOW_STRAT_HISTORY_MAPKEY);
+	}
+
         return forward;
     }
 }

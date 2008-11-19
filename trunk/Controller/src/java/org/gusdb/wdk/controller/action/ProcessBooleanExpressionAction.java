@@ -14,12 +14,13 @@ import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.HistoryBean;
+import org.gusdb.wdk.model.jspwrap.StepBean;
+import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.json.JSONException;
 
 /**
- * This Action is process boolean expression on queryHistory.jsp page.
+ * This Action is process boolean expression on queryStep.jsp page.
  * 
  */
 
@@ -32,18 +33,18 @@ public class ProcessBooleanExpressionAction extends Action {
             throws Exception {
         try {
             BooleanExpressionForm beForm = (BooleanExpressionForm) form;
-            String userAnswerIdStr = processBooleanExpression(request, beForm);
+            String strategyIdStr = processBooleanExpression(request, beForm);
 
             ActionForward fwd = mapping.findForward(CConstants.PROCESS_BOOLEAN_EXPRESSION_MAPKEY);
             String path = fwd.getPath();
             if (path.indexOf("?") > 0) {
-                if (path.indexOf(CConstants.WDK_HISTORY_ID_KEY) < 0) {
-                    path += "&" + CConstants.WDK_HISTORY_ID_KEY + "="
-                            + userAnswerIdStr;
+                if (path.indexOf(CConstants.WDK_STRATEGY_ID_KEY) < 0) {
+                    path += "&" + CConstants.WDK_STRATEGY_ID_KEY + "="
+                            + strategyIdStr;
                 }
             } else {
-                path += "?" + CConstants.WDK_HISTORY_ID_KEY + "="
-                        + userAnswerIdStr;
+                path += "?" + CConstants.WDK_STRATEGY_ID_KEY + "="
+                        + strategyIdStr;
             }
 
             return new ActionForward(path);
@@ -62,13 +63,13 @@ public class ProcessBooleanExpressionAction extends Action {
         String expression = beForm.getBooleanExpression();
         boolean useBooleanFilter = beForm.isUseBooleanFilter();
 
-        logger.info("Boolean Expression: " + expression);
-	logger.info("Use Boolean Filter: " + useBooleanFilter);
+        StepBean step = wdkUser.combineStep(expression, useBooleanFilter);
+        StrategyBean strategy = wdkUser.createStrategy(step, false);
+        int strategyId = strategy.getStrategyId();
 
-        HistoryBean history = wdkUser.combineHistory(expression,
-                useBooleanFilter);
-        int historyId = history.getHistoryId();
-        request.setAttribute(CConstants.WDK_HISTORY_ID_KEY, historyId);
-        return Integer.toString(historyId);
+        logger.info("Boolean Expression: " + expression);
+        logger.info("Use Boolean Filter: " + useBooleanFilter);
+
+        return Integer.toString(strategyId);
     }
 }

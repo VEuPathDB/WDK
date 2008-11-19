@@ -12,21 +12,18 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.AbstractEnumParam;
-import org.gusdb.wdk.model.Column;
-import org.gusdb.wdk.model.DatasetParam;
-import org.gusdb.wdk.model.FlatVocabParam;
-import org.gusdb.wdk.model.ParamValuesSet;
 import org.gusdb.wdk.model.Group;
-import org.gusdb.wdk.model.Param;
-import org.gusdb.wdk.model.ParamReference;
-import org.gusdb.wdk.model.QuerySet;
-import org.gusdb.wdk.model.StringParam;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.param.AbstractEnumParam;
+import org.gusdb.wdk.model.query.param.FlatVocabParam;
+import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.param.ParamReference;
+import org.gusdb.wdk.model.query.param.ParamValuesSet;
+import org.gusdb.wdk.model.query.param.StringParam;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -69,7 +66,7 @@ public abstract class Query extends WdkModelBase {
     protected abstract void appendJSONContent(JSONObject jsQuery)
             throws JSONException;
 
-    public abstract QueryInstance makeInstance(Map<String, Object> values)
+    public abstract QueryInstance makeInstance(Map<String, String> values)
             throws WdkModelException;
 
     public abstract Query clone();
@@ -335,7 +332,9 @@ public abstract class Query extends WdkModelBase {
         paramValuesSets = tempList;
     }
 
-    public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
+    public void resolveReferences(WdkModel wdkModel) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
         if (resolved) return;
 
         this.wdkModel = wdkModel;
@@ -366,7 +365,9 @@ public abstract class Query extends WdkModelBase {
     }
 
     private Param resolveParamReference(WdkModel wdkModel,
-            ParamReference paramRef) throws WdkModelException {
+            ParamReference paramRef) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
         String twoPartName = paramRef.getTwoPartName();
         Param param = (Param) wdkModel.resolveReference(twoPartName);
         // clone the param to have different default values
@@ -460,23 +461,16 @@ public abstract class Query extends WdkModelBase {
         }
     }
 
-    void validateValues(Map<String, Object> values) throws WdkModelException {
-        // fill the empty values
-        fillEmptyValues(values);
-
+    void validateValues(Map<String, String> values) throws WdkModelException {
         Map<Param, String[]> errors = null;
 
         // then check that all params have supplied values
         for (Param param : paramMap.values()) {
-            Object value = values.get(param.getName());
+            String value = values.get(param.getName());
             String errMsg = null;
             try {
-                // validate dataset param by getting the dataset id
-                if (param instanceof DatasetParam) {
-                    param.getInternalValue(value.toString());
-                } else {
-                    param.validateValue(value);
-                }
+                // validate param
+                param.validateValue(value);
             } catch (Exception ex) {
                 ex.printStackTrace();
                 errMsg = ex.getMessage();
@@ -497,8 +491,7 @@ public abstract class Query extends WdkModelBase {
         }
     }
 
-    private void fillEmptyValues(Map<String, Object> values)
-            throws WdkModelException {
+    void fillEmptyValues(Map<String, String> values) throws WdkModelException {
         for (String paramName : values.keySet()) {
             if (!paramMap.containsKey(paramName))
                 throw new WdkModelException("Param '" + paramName

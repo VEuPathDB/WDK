@@ -2,6 +2,7 @@ package org.gusdb.wdk.model;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.sql.Clob;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -18,7 +19,8 @@ public class Utilities {
      * an index to a dataset obejct; if the param is of other types, then the
      * value of the param can be found in the clob values table by the checksum
      */
-    public static final String COMPRESSED_VALUE_PREFIX = "[C]";
+    public static final String PARAM_COMPRESSE_PREFIX = "[C]";
+    public static final String DATASET_PARAM_KEY_PREFIX = "[K]";
 
     /**
      * The maximum size for parameter values that will be displayed in thr URL
@@ -54,9 +56,9 @@ public class Utilities {
     public static final String INTERNAL_QUERY_SET = "InternalQueries";
 
     public static final String INTERNAL_QUESTION_SET = "InternalQuestions";
-    
+
     public static final int DEFAULT_PAGE_SIZE = 20;
-    
+
     public static final int DEFAULT_SUMMARY_ATTRIBUTE_SIZE = 6;
 
     public static String encrypt(String data) throws WdkModelException,
@@ -109,5 +111,15 @@ public class Utilities {
             sb.append(value);
         }
         return sb.toString();
+    }
+
+    public static String parseValue(Object objValue) throws SQLException {
+        String value;
+        if (objValue == null) value = null;
+        else if (objValue instanceof Clob) {
+            Clob clob = (Clob) objValue;
+            value = clob.getSubString(1, (int) clob.length());
+        } else value = objValue.toString();
+        return value;
     }
 }

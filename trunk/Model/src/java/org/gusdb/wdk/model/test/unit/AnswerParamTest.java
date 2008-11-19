@@ -17,14 +17,14 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.Answer;
-import org.gusdb.wdk.model.AnswerParam;
-import org.gusdb.wdk.model.Param;
+import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.param.AnswerParam;
+import org.gusdb.wdk.model.query.param.Param;
 import org.json.JSONException;
 import org.junit.Assert;
 import org.junit.Test;
@@ -39,7 +39,7 @@ public class AnswerParamTest {
     private static final Logger logger = Logger.getLogger(AnswerParamTest.class);
 
     private WdkModel wdkModel;
-    private List<Answer> answers;
+    private List<AnswerValue> answerValues;
     private RecordClass recordClass;
     private Random random = new Random();
     private List<Question> questions;
@@ -51,7 +51,7 @@ public class AnswerParamTest {
         // get a list of questions that has a single answer param
         questions = loadQuestions();
 
-        answers = UnitTestHelper.getAnswerPool(recordClass);
+        answerValues = UnitTestHelper.getAnswerPool(recordClass);
         
         Assert.assertTrue(questions.size() > 0);
     }
@@ -72,12 +72,12 @@ public class AnswerParamTest {
     
     @Test
     public void testUseAnswerParam() throws NoSuchAlgorithmException, SQLException, WdkModelException, JSONException, WdkUserException {
-        Answer operand = answers.get(random.nextInt(answers.size()));
-        String checksum = operand.getAnswerInfo().getAnswerChecksum();
+        AnswerValue operand = answerValues.get(random.nextInt(answerValues.size()));
+        String checksum = operand.getAnswer().getAnswerChecksum();
         
         Question question = questions.get(random.nextInt(questions.size()));
         Param[] params = question.getParams();
-        Map<String, Object> paramValues = new LinkedHashMap<String, Object>();
+        Map<String, String> paramValues = new LinkedHashMap<String, String>();
         for(Param param : params) {
             if (param instanceof AnswerParam) {
                 paramValues.put(param.getName(), checksum);
@@ -85,7 +85,7 @@ public class AnswerParamTest {
                 paramValues.put(param.getName(), param.getDefault());
             }
         }
-        Answer result = question.makeAnswer(paramValues);
+        AnswerValue result = question.makeAnswerValue(paramValues);
         logger.debug("Answer param result: " + result.getResultMessage());
     }
 }

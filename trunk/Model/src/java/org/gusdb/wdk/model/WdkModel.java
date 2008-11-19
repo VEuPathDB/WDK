@@ -19,10 +19,13 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.ResultFactory;
-import org.gusdb.wdk.model.implementation.ModelXmlParser;
 import org.gusdb.wdk.model.query.BooleanQuery;
+import org.gusdb.wdk.model.query.QuerySet;
+import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.user.AnswerFactory;
 import org.gusdb.wdk.model.user.DatasetFactory;
+import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.QueryFactory;
 import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
@@ -34,7 +37,7 @@ import org.xml.sax.SAXException;
 
 /**
  * @author
- * @modified Jan 6, 2006 - Jerric Add a historyFactory in the model
+ * @modified Jan 6, 2006 - Jerric Add a stepFactory in the model
  */
 public class WdkModel {
 
@@ -121,8 +124,6 @@ public class WdkModel {
 
     private Map<String, String> properties;
 
-    private String webServiceUrl;
-
     /**
      * xmlSchemaURL is used by the XmlQuestions. This is the only place where
      * XmlQuestion can find it.
@@ -132,6 +133,7 @@ public class WdkModel {
     private File xmlDataDir;
 
     private UserFactory userFactory;
+    private StepFactory stepFactory;
     private DatasetFactory datasetFactory;
     private QueryFactory queryFactory;
 
@@ -441,38 +443,20 @@ public class WdkModel {
         this.modelConfig = modelConfig;
         ModelConfigApplicationDB appDB = modelConfig.getApplicationDB();
         ModelConfigUserDB userDB = modelConfig.getUserDB();
-        String smtpServer = modelConfig.getSmtpServer();
-        String supportEmail = modelConfig.getSupportEmail();
-        String emailSubject = modelConfig.getEmailSubject();
-        String emailContent = modelConfig.getEmailContent();
-
-        String userSchema = userDB.getUserSchema();
-        String engineSchema = userDB.getWdkEngineSchema();
 
         // initialize authentication factory
         // set the max active as half of the model's configuration
 
-        userPlatform = (DBPlatform) Class.forName(userDB.getPlatformClass()).newInstance();
-        userPlatform.initialize(this, "USER", userDB);
-        userFactory = new UserFactory(this, projectId, userPlatform,
-                userSchema, modelConfig.getDefaultRole(), smtpServer,
-                supportEmail, emailSubject, emailContent);
-
         platform = (DBPlatform) Class.forName(appDB.getPlatformClass()).newInstance();
         platform.initialize(this, "APP", appDB);
-        ResultFactory resultFactory = new ResultFactory(this);
-        // 2008
-        this.webServiceUrl = modelConfig.getWebServiceUrl();
-        this.resultFactory = resultFactory;
+        userPlatform = (DBPlatform) Class.forName(userDB.getPlatformClass()).newInstance();
+        userPlatform.initialize(this, "USER", userDB);
 
-        // initialize dataset factory with the login preferences
-        datasetFactory = new DatasetFactory(userPlatform, userSchema,
-                engineSchema);
-
-        // initialize QueryFactory in user schema too
-        queryFactory = new QueryFactory(userPlatform, engineSchema);
-
-        // initialize answerFactory
+        resultFactory = new ResultFactory(this);
+        userFactory = new UserFactory(this);
+        stepFactory = new StepFactory(this);
+        datasetFactory = new DatasetFactory(this);
+        queryFactory = new QueryFactory(this);
         answerFactory = new AnswerFactory(this);
 
         // set the exception header
@@ -498,16 +482,16 @@ public class WdkModel {
     }
 
     // Function Added by Cary P. Feb 7, 2008
-    public DBPlatform getAuthenticationPlatform() {
+    public DBPlatform getUserPlatform() {
         return userPlatform;
     }
 
-    public UserFactory getUserFactory() throws WdkUserException {
+    public UserFactory getUserFactory() {
         return userFactory;
     }
 
-    public String getWebServiceUrl() {
-        return webServiceUrl;
+    public StepFactory getStepFactory() {
+        return stepFactory;
     }
 
     public Object resolveReference(String twoPartName) throws WdkModelException {
@@ -897,33 +881,6 @@ public class WdkModel {
         return projectId;
     }
 
-    public Map<String, String> getBooleanOperators() {
-        Map<String, String> map = new LinkedHashMap<String, String>();
-        map.put("and", "INTERSECT");
-        map.put("AND", "INTERSECT");
-        map.put("intersect", "INTERSECT");
-        map.put("INTERSECT", "INTERSECT");
-        map.put("&&", "INTERSECT");
-
-        map.put("or", "UNION");
-        map.put("OR", "UNION");
-        map.put("union", "UNION");
-        map.put("UNION", "UNION");
-        map.put("||", "UNION");
-        map.put("+", "UNION");
-
-        String minus = platform.getMinusOperator();
-        map.put("minus", minus);
-        map.put("MINUS", minus);
-        map.put("not", minus);
-        map.put("NOT", minus);
-        map.put("except", minus);
-        map.put("EXCEPT", minus);
-        map.put("-", minus);
-
-        return map;
-    }
-
     public String getQuestionDisplayName(String questionFullName) {
         try {
             Question question = (Question) resolveReference(questionFullName);
@@ -989,5 +946,16 @@ public class WdkModel {
     @Override
     protected void finalize() throws Throwable {
         logger.debug("Model unloaded.");
+    }
+    
+    public String queryParamDisplayName(String paramName) {
+        for (String paramSetName : paramSets.keySet()) {
+            ParamSet paramSet = (ParamSet) paramSets.get(paramSetName);
+            for (Param param : paramSet.getParams()) {
+                if (param.getName().equals(paramName))
+                    return param.getPrompt();
+            }
+        }
+        return paramName;
     }
 }

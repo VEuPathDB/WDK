@@ -14,12 +14,11 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.Answer;
+import org.gusdb.wdk.model.AnswerFilterInstance;
+import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.AttributeField;
-import org.gusdb.wdk.model.BooleanExpression;
-import org.gusdb.wdk.model.DatasetParam;
-import org.gusdb.wdk.model.Param;
 import org.gusdb.wdk.model.Question;
+import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -46,9 +45,10 @@ public class User /* implements Serializable */{
 
     private Logger logger = Logger.getLogger(User.class);
 
-    private/* transient */WdkModel model;
-    private/* transient */UserFactory userFactory;
-    private/* transient */DatasetFactory datasetFactory;
+    private WdkModel wdkModel;
+    private UserFactory userFactory;
+    private StepFactory stepFactory;
+    private DatasetFactory datasetFactory;
     private int userId;
     private String signature;
 
@@ -78,23 +78,25 @@ public class User /* implements Serializable */{
     private Map<String, String> projectPreferences;
 
     // cache the history count in memory
-    int historyCount;
+    private int stepCount;
+    private int strategyCount;
 
-    public User() {
+    // keep track of user's open strategies; don't serialize
+    private transient ArrayList<Integer> activeStrategies;
+
+    User(WdkModel model, int userId, String email, String signature)
+            throws WdkUserException {
+        strategyCount = 0;
+        this.userId = userId;
+        this.email = email;
+        this.signature = signature;
+
         userRoles = new LinkedHashSet<String>();
 
         globalPreferences = new LinkedHashMap<String, String>();
         projectPreferences = new LinkedHashMap<String, String>();
 
-        historyCount = 0;
-    }
-
-    User(WdkModel model, int userId, String email, String signature)
-            throws WdkUserException {
-        this();
-        this.userId = userId;
-        this.email = email;
-        this.signature = signature;
+        stepCount = 0;
 
         setWdkModel(model);
     }
@@ -106,13 +108,14 @@ public class User /* implements Serializable */{
      * @throws WdkUserException
      */
     public void setWdkModel(WdkModel wdkModel) throws WdkUserException {
-        this.model = wdkModel;
-        this.userFactory = model.getUserFactory();
-        this.datasetFactory = model.getDatasetFactory();
+        this.wdkModel = wdkModel;
+        this.userFactory = wdkModel.getUserFactory();
+        this.stepFactory = wdkModel.getStepFactory();
+        this.datasetFactory = wdkModel.getDatasetFactory();
     }
 
     public WdkModel getWdkModel() {
-        return this.model;
+        return this.wdkModel;
     }
 
     /**
@@ -353,17 +356,42 @@ public class User /* implements Serializable */{
         this.guest = guest;
     }
 
-    public History createHistory(Answer answer) throws WdkUserException,
-            WdkModelException, NoSuchAlgorithmException, JSONException,
-            SQLException {
-        return createHistory(answer, null, false);
+    public Step createStep(Question question, Map<String, String> paramValues,
+            String filterName) throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException {
+        AnswerFilterInstance filter = null;
+        if (filterName != null) {
+            RecordClass recordClass = question.getRecordClass();
+            filter = recordClass.getFilter(filterName);
+        }
+        return createStep(question, paramValues, filter);
     }
 
-    private History createHistory(Answer answer, String booleanExpression,
+    public Step createStep(Question question, Map<String, String> paramValues,
+            AnswerFilterInstance filter) throws WdkUserException,
+            WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException {
+        return stepFactory.createStep(this, question, paramValues, filter);
+    }
+
+    public Step createStep(Question question, Map<String, String> paramValues,
+            AnswerFilterInstance filter, int pageStart, int pageEnd,
             boolean deleted) throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, JSONException, SQLException {
-        return userFactory.createHistory(this, answer, booleanExpression,
-                deleted);
+            NoSuchAlgorithmException, SQLException, JSONException {
+        return stepFactory.createStep(this, question, paramValues, filter,
+                pageStart, pageEnd, deleted);
+    }
+
+    public Strategy createStrategy(Step step, boolean saved)
+            throws WdkUserException, WdkModelException, SQLException,
+            JSONException {
+        return createStrategy(step, null, saved);
+    }
+
+    public Strategy createStrategy(Step step, String name, boolean saved)
+            throws WdkUserException, WdkModelException, SQLException,
+            JSONException {
+        return stepFactory.createStrategy(this, step, name, saved);
     }
 
     /**
@@ -384,269 +412,307 @@ public class User /* implements Serializable */{
         logger.debug("Merging user #" + user.getUserId() + " into user #"
                 + userId + "...");
 
-        // merge histories
-        // a history can be merged only if its all components have been merged
-        Map<Integer, Integer> historyMap = new LinkedHashMap<Integer, Integer>();
-        Map<Integer, History> histories = user.getHistoriesMap();
-        while (!histories.isEmpty()) {
-            // for each round, only merge the histories that have no components,
-            // or all of its components have been merged
-            Map<Integer, History> pendings = new LinkedHashMap<Integer, History>();
-            for (History history : histories.values()) {
-                Set<Integer> components = history.getComponentHistories();
+        // first of all we import all the strategies
+        Set<Integer> importedSteps = new LinkedHashSet<Integer>();
+        Map<Integer, Integer> strategiesMap = new LinkedHashMap<Integer, Integer>();
+        for (Strategy strategy : user.getStrategies()) {
+            // the root step is considered as imported
+            Step rootStep = strategy.getLatestStep();
 
-                if (components.isEmpty()) {
-                    // no components, can merge
-                    History newHistory = createHistory(history.getAnswer(),
-                            null, history.isDeleted());
-                    newHistory.setCustomName(history.getBaseCustomName());
-                    newHistory.update();
-                    historyMap.put(history.getHistoryId(),
-                            newHistory.getHistoryId());
+            // import the strategy
+            Strategy newStrategy = this.importStrategy(strategy);
 
-                    logger.info("Merging history #" + history.getHistoryId()
-                            + " -> #" + newHistory.getHistoryId());
+            importedSteps.add(rootStep.getDisplayId());
+            strategiesMap.put(strategy.getStrategyId(),
+                    newStrategy.getStrategyId());
+        }
 
-                    continue;
-                }
+        // update list of active strategies so ids are correct for logged in
+        // user
+        ArrayList<Integer> oldActiveStrategies = user.getActiveStrategies();
+        for (Integer strategyId : oldActiveStrategies) {
+            this.activeStrategies.add(strategiesMap.get(strategyId));
+        }
 
-                // histories with components, the components need ed to be
-                // merged first
-                boolean canMerge = true;
-                for (Integer compId : components) {
-                    if (!historyMap.containsKey(compId)) {
-                        // still have components not merged
-                        canMerge = false;
-                        break;
-                    }
-                }
-                if (!canMerge) {
-                    pendings.put(history.getHistoryId(), history);
-                    continue;
-                }
+        // then import the steps that do not belong to any strategies; that is,
+        // only the root steps who are not imported yet.
+        for (Step step : user.getSteps()) {
+            if (stepFactory.isStepDepended(user, step.getDisplayId()))
+                continue;
 
-                StringBuffer sbLog = new StringBuffer();
-                sbLog.append("History #" + history.getHistoryId()
-                        + " has components: ");
-                for (int compId : components) {
-                    sbLog.append(compId + ", ");
-                }
-                logger.info(sbLog);
+            stepFactory.importStep(this, step);
+        }
+    }
 
-                // can merge, needs to repack the param values
-                History newHistory;
-                if (history.isBoolean()) {
-                    // merge boolean history
-                    String expression = history.getBooleanExpression();
-                    for (Integer compId : components) {
-                        Integer newId = historyMap.get(compId);
-                        expression = expression.replaceAll("\\b"
-                                + compId.toString() + "\\b", "WDK"
-                                + newId.toString() + "WDK");
-                    }
-                    expression = expression.replaceAll("WDK", "");
-                    newHistory = combineHistory(expression, history.isDeleted());
-                } else {
-                    // merge histories with DatasetParam/HistoryParam
-                    Answer answer = history.getAnswer();
-                    Question question = answer.getQuestion();
-                    int startIndex = answer.getStartIndex();
-                    int endIndex = answer.getEndIndex();
-                    Param[] params = question.getParams();
-                    Map<String, Object> values = answer.getIdsQueryInstance().getValues();
-                    for (Param param : params) {
-                        if (param instanceof DatasetParam) {
-                            // merge dataset, by creating new datasets with the
-                            // previous values
-                            String compound = values.get(param.getName()).toString();
-                            // two parts: user_signature, dataset_id
-                            String parts[] = compound.split(":");
-                            String datasetChecksum = parts[1].trim();
+    public Map<Integer, Step> getStepsMap() throws WdkUserException,
+            WdkModelException, SQLException, JSONException {
+        Map<Integer, Step> invalidSteps = new LinkedHashMap<Integer, Step>();
+        Map<Integer, Step> userAnswers = stepFactory.loadSteps(this,
+                invalidSteps);
 
-                            // now make new dataset for the new user
-                            String newValue = this.signature + ":"
-                                    + datasetChecksum;
-                            values.put(param.getName(), newValue);
-                        }
-                    }
-                    answer = question.makeAnswer(values, startIndex, endIndex,
-                            answer.getSortingMap(), answer.getFilter());
-                    newHistory = createHistory(answer, null,
-                            history.isDeleted());
-                }
-                newHistory.setCustomName(history.getBaseCustomName());
-                newHistory.setDeleted(history.isDeleted());
-                newHistory.update();
-                historyMap.put(history.getHistoryId(),
-                        newHistory.getHistoryId());
+        return userAnswers;
+    }
+
+    public Map<Integer, Strategy> getStrategiesMap() throws WdkUserException,
+            WdkModelException, JSONException, SQLException {
+        Map<Integer, Strategy> invalidStrategies = new LinkedHashMap<Integer, Strategy>();
+        Map<Integer, Strategy> strategies = stepFactory.loadStrategies(this,
+                invalidStrategies);
+
+        strategyCount = strategies.size();
+        return strategies;
+    }
+
+    public Map<String, List<Step>> getStepsByCategory()
+            throws WdkUserException, WdkModelException, SQLException,
+            JSONException, NoSuchAlgorithmException {
+        Map<Integer, Step> steps = getStepsMap();
+        Map<String, List<Step>> category = new LinkedHashMap<String, List<Step>>();
+        for (Step step : steps.values()) {
+            // not include the histories marked as 'deleted'
+            if (step.isDeleted()) continue;
+
+            String type = step.getType();
+            List<Step> list;
+            if (category.containsKey(type)) {
+                list = category.get(type);
+            } else {
+                list = new ArrayList<Step>();
+                category.put(type, list);
             }
-            histories = pendings;
+            list.add(step);
         }
-        // TEST
-        StringBuffer sb = new StringBuffer("The history Mapping: ");
-        for (int histId : historyMap.keySet()) {
-            sb.append("(" + histId + "-" + historyMap.get(histId) + ") ");
-        }
-        logger.info(sb.toString().trim());
+        return category;
     }
 
-    /**
-     * get an array of cached histories in the current project site; if the
-     * cache is expired. it will be refreshed from the database. The result
-     * array is sorted by last_run_time, the lastest at the first
-     * 
-     * @return
-     * @throws WdkModelException
-     * @throws WdkUserException
-     * @throws JSONException
-     * @throws SQLException
-     */
-    public Map<Integer, History> getHistoriesMap() throws WdkUserException,
-            WdkModelException, SQLException, JSONException {
-        Map<Integer, History> invalidHistories = new LinkedHashMap<Integer, History>();
-        Map<Integer, History> histories = userFactory.loadHistories(this,
-                invalidHistories);
+    public Strategy[] getInvalidStrategies() throws WdkUserException,
+            WdkModelException, JSONException, SQLException {
+        try {
+            Map<Integer, Strategy> strategies = new LinkedHashMap<Integer, Strategy>();
+            stepFactory.loadStrategies(this, strategies);
 
-        // update the history count
-        historyCount = 0;
-        for (History history : histories.values()) {
-            if (!history.isDeleted()) historyCount++;
+            Strategy[] array = new Strategy[strategies.size()];
+            strategies.values().toArray(array);
+            return array;
+        } catch (WdkUserException ex) {
+            System.out.println(ex);
+            throw ex;
+        } catch (WdkModelException ex) {
+            System.out.println(ex);
+            throw ex;
         }
-        return histories;
     }
 
-    public History[] getInvalidHistories() throws WdkUserException,
-            WdkModelException, SQLException, JSONException {
-        Map<Integer, History> histories = new LinkedHashMap<Integer, History>();
-        userFactory.loadHistories(this, histories);
-
-        History[] array = new History[histories.size()];
-        histories.values().toArray(array);
-        return array;
-    }
-
-    public History[] getHistories() throws WdkUserException, WdkModelException,
-            SQLException, JSONException {
-        Map<Integer, History> map = getHistoriesMap();
-        History[] array = new History[map.size()];
+    public Strategy[] getStrategies() throws WdkUserException,
+            WdkModelException, JSONException, SQLException {
+        Map<Integer, Strategy> map = getStrategiesMap();
+        Strategy[] array = new Strategy[map.size()];
         map.values().toArray(array);
         return array;
     }
 
-    public Map<String, List<History>> getHistoriesByCategory()
-            throws WdkUserException, WdkModelException, SQLException,
-            JSONException {
-        Map<Integer, History> histories = getHistoriesMap();
-        Map<String, List<History>> category = new LinkedHashMap<String, List<History>>();
-        for (History history : histories.values()) {
-            // not include the histories marked as 'deleted'
-            if (history.isDeleted()) continue;
-
-            String type = history.getDataType();
-            List<History> list;
+    public Map<String, List<Strategy>> getStrategiesByCategory()
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, JSONException, SQLException {
+        Map<Integer, Strategy> strategies = getStrategiesMap();
+        Map<String, List<Strategy>> category = new LinkedHashMap<String, List<Strategy>>();
+        for (Strategy strategy : strategies.values()) {
+            String type = strategy.getType();
+            List<Strategy> list;
             if (category.containsKey(type)) {
                 list = category.get(type);
             } else {
-                list = new ArrayList<History>();
+                list = new ArrayList<Strategy>();
                 category.put(type, list);
             }
-            list.add(history);
+            list.add(strategy);
+        }
+        return category;
+    }
+
+    public Map<String, List<Strategy>> getUnsavedStrategiesByCategory()
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, JSONException, SQLException {
+        Map<Integer, Strategy> strategies = getStrategiesMap();
+        Map<String, List<Strategy>> category = new LinkedHashMap<String, List<Strategy>>();
+        for (Strategy strategy : strategies.values()) {
+            if (!strategy.getIsSaved()) {
+                String type = strategy.getType();
+                List<Strategy> list;
+                if (category.containsKey(type)) {
+                    list = category.get(type);
+                } else {
+                    list = new ArrayList<Strategy>();
+                    category.put(type, list);
+                }
+                list.add(strategy);
+            }
         }
         return category;
     }
 
     /**
-     * * The result array is sorted by last_run_time, the lastest at the first
-     * 
-     * @param dataType
      * @return
-     * @throws WdkModelException
      * @throws WdkUserException
+     * @throws WdkModelException
+     * @throws NoSuchAlgorithmException
      * @throws JSONException
      * @throws SQLException
      */
-    public Map<Integer, History> getHistoriesMap(String recordClassName)
-            throws WdkUserException, WdkModelException, SQLException,
-            JSONException {
-        Map<Integer, History> histories = getHistoriesMap();
-        Map<Integer, History> selected = new LinkedHashMap<Integer, History>();
-        for (int historyId : histories.keySet()) {
-            History history = histories.get(historyId);
-            if (recordClassName.equalsIgnoreCase(history.getDataType()))
-                selected.put(historyId, history);
+    public Map<String, List<Strategy>> getSavedStrategiesByCategory()
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, JSONException, SQLException {
+        Map<Integer, Strategy> strategies = getStrategiesMap();
+        Map<String, List<Strategy>> category = new LinkedHashMap<String, List<Strategy>>();
+        for (Strategy strategy : strategies.values()) {
+            if (strategy.getIsSaved()) {
+                String type = strategy.getType();
+                List<Strategy> list;
+                if (category.containsKey(type)) {
+                    list = category.get(type);
+                } else {
+                    list = new ArrayList<Strategy>();
+                    category.put(type, list);
+                }
+                list.add(strategy);
+            }
+        }
+        return category;
+    }
+
+    public Map<Integer, Step> getStepsMap(String dataType)
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, JSONException, SQLException {
+        Map<Integer, Step> steps = getStepsMap();
+        Map<Integer, Step> selected = new LinkedHashMap<Integer, Step>();
+        for (int stepDisplayId : steps.keySet()) {
+            Step step = steps.get(stepDisplayId);
+            if (dataType.equalsIgnoreCase(step.getType()))
+                selected.put(stepDisplayId, step);
         }
         return selected;
     }
 
-    public History[] getHistories(String recordClassName)
-            throws WdkUserException, WdkModelException, SQLException,
-            JSONException {
-        Map<Integer, History> map = getHistoriesMap(recordClassName);
-        History[] array = new History[map.size()];
+    public Step[] getSteps(String dataType) throws WdkUserException,
+            WdkModelException, NoSuchAlgorithmException, JSONException,
+            SQLException {
+        Map<Integer, Step> map = getStepsMap(dataType);
+        Step[] array = new Step[map.size()];
         map.values().toArray(array);
         return array;
     }
 
-    /**
-     * if the history of the given id doesn't exist, a null is returned
-     * 
-     * @param historyId
-     * @return
-     * @throws WdkUserException
-     * @throws WdkModelException
-     * @throws JSONException
-     * @throws SQLException
-     */
-    public History getHistory(int historyId) throws WdkUserException,
+    public Step[] getSteps() throws WdkUserException, WdkModelException,
+            SQLException, JSONException {
+        Map<Integer, Step> map = getStepsMap();
+        Step[] array = new Step[map.size()];
+        map.values().toArray(array);
+        return array;
+    }
+
+    public Step[] getInvalidSteps() throws WdkUserException, WdkModelException,
+            SQLException, JSONException {
+        Map<Integer, Step> steps = new LinkedHashMap<Integer, Step>();
+        stepFactory.loadSteps(this, steps);
+
+        Step[] array = new Step[steps.size()];
+        steps.values().toArray(array);
+        return array;
+    }
+
+    public Map<Integer, Strategy> getStrategiesMap(String dataType)
+            throws WdkUserException, WdkModelException, JSONException,
+            SQLException, NoSuchAlgorithmException {
+        Map<Integer, Strategy> strategies = getStrategiesMap();
+        Map<Integer, Strategy> selected = new LinkedHashMap<Integer, Strategy>();
+        for (int strategyId : strategies.keySet()) {
+            Strategy strategy = strategies.get(strategyId);
+            if (dataType.equalsIgnoreCase(strategy.getType()))
+                selected.put(strategyId, strategy);
+        }
+        return selected;
+    }
+
+    public Strategy[] getStrategies(String dataType) throws WdkUserException,
+            WdkModelException, NoSuchAlgorithmException, JSONException,
+            SQLException {
+        Map<Integer, Strategy> map = getStrategiesMap(dataType);
+        Strategy[] array = new Strategy[map.size()];
+        map.values().toArray(array);
+        return array;
+    }
+
+    public Step getStep(int displayId) throws WdkUserException,
             WdkModelException, SQLException, JSONException {
-        return userFactory.loadHistory(this, historyId);
+        return stepFactory.loadStep(this, displayId);
     }
 
-    public void deleteHistories() throws WdkUserException {
-        userFactory.deleteHistories(this, false);
+    public Strategy getStrategy(int userStrategyId) throws WdkUserException,
+            WdkModelException, JSONException, SQLException {
+        return stepFactory.loadStrategy(this, userStrategyId);
     }
 
-    public void deleteHistories(boolean allProjects) throws WdkUserException {
-        userFactory.deleteHistories(this, allProjects);
+    public void deleteSteps() throws WdkUserException, SQLException {
+        deleteSteps(false);
     }
 
-    public void deleteInvalidHistories() throws WdkUserException,
+    public void deleteSteps(boolean allProjects) throws WdkUserException,
+            SQLException {
+        stepFactory.deleteSteps(this, allProjects);
+        stepCount = 0;
+    }
+
+    public void deleteInvalidSteps() throws WdkUserException,
             WdkModelException, SQLException, JSONException {
-        userFactory.deleteInvalidHistories(this);
+        stepFactory.deleteInvalidSteps(this);
     }
 
-    public void deleteHistory(int historyId) throws WdkUserException,
+    public void deleteInvalidStrategies() throws WdkUserException,
+            WdkModelException, SQLException, JSONException {
+        stepFactory.deleteInvalidStrategies(this);
+    }
+
+    public void deleteStep(int displayId) throws WdkUserException,
             WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException {
-        // check the dependencies of the history
-        History history = getHistory(historyId);
-        if (history.isDepended()) {
-            // the history is depended by other nodes, mark it as delete, but
-            // don't really delete it from the database
-            history.setDeleted(true);
-            history.update(false);
-
-            // TEST
-            logger.info("History #" + historyId + " of user " + email
-                    + " is depended by other histories. Marked as deleted.");
-        } else {
-            // delete the history from the database
-            userFactory.deleteHistory(this, historyId);
-        }
+        stepFactory.deleteStep(this, displayId);
         // decrement the history count
-        historyCount--;
+        stepCount--;
     }
 
-    public int getHistoryCount() throws WdkUserException {
-        return historyCount;
+    public void deleteStrategy(int strategyId) throws WdkUserException,
+            WdkModelException, SQLException {
+        stepFactory.deleteStrategy(this, strategyId);
+        strategyCount--;
+    }
+
+    public void deleteStrategies() throws SQLException {
+        deleteStrategies(false);
+    }
+
+    public void deleteStrategies(boolean allProjects) throws SQLException {
+        stepFactory.deleteStrategies(this, allProjects);
+        strategyCount = 0;
+    }
+
+    public int getStepCount() throws WdkUserException {
+        return stepCount;
+    }
+
+    public int getStrategyCount() throws WdkUserException {
+        return strategyCount;
+    }
+
+    public void setStrategyCount(int strategyCount) {
+        this.strategyCount = strategyCount;
     }
 
     /**
-     * @param historyCount
-     *            The historyCount to set.
+     * @param stepCount
+     *            The stepCount to set.
      */
-    void setHistoryCount(int historyCount) {
-        this.historyCount = historyCount;
+    void setStepCount(int stepCount) {
+        this.stepCount = stepCount;
     }
 
     public void setProjectPreference(String prefName, String prefValue) {
@@ -698,30 +764,20 @@ public class User /* implements Serializable */{
         return datasetFactory;
     }
 
-    public Dataset getDataset(String datasetChecksum) throws WdkUserException {
-        Dataset dataset = datasetFactory.getDataset(this, datasetChecksum);
-        if (dataset == null)
-            throw new WdkUserException("Dataset of the checksum "
-                    + datasetChecksum + " cannot be found");
-        logger.info("dataset #" + dataset.getDatasetId()
-                + " is uploaded from: " + dataset.getUploadFile());
-        return dataset;
+    public Dataset getDataset(String datasetChecksum) throws WdkUserException,
+            SQLException, WdkModelException {
+        return datasetFactory.getDataset(this, datasetChecksum);
     }
 
-    public Dataset getDataset(int datasetId) throws WdkUserException {
-        Dataset dataset = datasetFactory.getDataset(this, datasetId);
-        if (dataset == null)
-            throw new WdkUserException("Dataset #" + datasetId
-                    + " cannot be found");
-        logger.info("dataset #" + datasetId + " is uploaded from: "
-                + dataset.getUploadFile());
-        return dataset;
+    public Dataset getDataset(int userDatasetId) throws SQLException,
+            WdkModelException {
+        return datasetFactory.getDataset(this, userDatasetId);
     }
 
     public Dataset createDataset(String uploadFile, String[] values)
             throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException {
-        return datasetFactory.makeDataset(this, uploadFile, values);
+            NoSuchAlgorithmException, SQLException {
+        return datasetFactory.getDataset(this, uploadFile, values);
     }
 
     public void save() throws WdkUserException {
@@ -743,26 +799,38 @@ public class User /* implements Serializable */{
         save();
     }
 
-    public History combineHistory(String expression, boolean useBooleanFilter)
-            throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException {
-        return combineHistory(expression, useBooleanFilter, false);
+    public void updateStep(Step step, String expression,
+            boolean useBooleanFilter) throws WdkUserException,
+            WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException {
+        // get a new hidden step, in order to get the new answer
+        Step newStep = combineStep(expression, useBooleanFilter, true);
+        step.setAnswer(newStep.getAnswer());
+        stepFactory.deleteStep(this, newStep.getDisplayId());
+        stepFactory.updateStep(this, step, true);
     }
 
-    private History combineHistory(String expression, boolean useBooleanFilter,
+    public Step combineStep(String expression) throws WdkUserException,
+            WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException {
+        return combineStep(expression, false, false);
+    }
+
+    public Step combineStep(String expression, boolean useBooleanFilter,
             boolean deleted) throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
         logger.debug("Boolean expression: " + expression);
         BooleanExpression exp = new BooleanExpression(this);
-        Answer answer = exp.parseExpression(expression, useBooleanFilter);
+        Step step = exp.parseExpression(expression, useBooleanFilter);
+        AnswerValue answerValue = step.getAnswer().getAnswerValue();
 
-        logger.debug("Boolean answer size: " + answer.getResultSize());
+        logger.debug("Boolean answer size: " + answerValue.getResultSize());
 
         // save summary list, if no summary list exists
-        String summaryKey = answer.getQuestion().getFullName()
+        String summaryKey = answerValue.getQuestion().getFullName()
                 + SUMMARY_ATTRIBUTES_SUFFIX;
         if (!projectPreferences.containsKey(summaryKey)) {
-            Map<String, AttributeField> summary = answer.getSummaryAttributeFields();
+            Map<String, AttributeField> summary = answerValue.getSummaryAttributeFields();
             StringBuffer sb = new StringBuffer();
             for (String attrName : summary.keySet()) {
                 if (sb.length() != 0) sb.append(",");
@@ -772,7 +840,7 @@ public class User /* implements Serializable */{
             save();
         }
 
-        return createHistory(answer, expression, deleted);
+        return step;
     }
 
     public void validateExpression(String expression) throws WdkModelException,
@@ -787,17 +855,21 @@ public class User /* implements Serializable */{
             throws WdkUserException, WdkModelException {
         String sortKey = questionFullName + SORTING_ATTRIBUTES_SUFFIX;
         String sortingChecksum = projectPreferences.get(sortKey);
-        Map<String, Boolean> sortingAttributes = getSortingAttributesByChecksum(sortingChecksum);
+        if (sortingChecksum == null) return null;
+
+        QueryFactory queryFactory = wdkModel.getQueryFactory();
+        Map<String, Boolean> sortingAttributes = queryFactory.getSortingAttributes(sortingChecksum);
         if (sortingAttributes != null) return sortingAttributes;
 
-        Question question = model.getQuestion(questionFullName);
+        // user doesn't have preference, use the default one of the question
+        Question question = wdkModel.getQuestion(questionFullName);
         return question.getSortingAttributeMap();
     }
 
     public Map<String, Boolean> getSortingAttributesByChecksum(
             String sortingChecksum) throws WdkUserException {
         if (sortingChecksum == null) return null;
-        QueryFactory queryFactory = model.getQueryFactory();
+        QueryFactory queryFactory = wdkModel.getQueryFactory();
         return queryFactory.getSortingAttributes(sortingChecksum);
     }
 
@@ -813,7 +885,7 @@ public class User /* implements Serializable */{
         }
 
         // save and get sorting checksum
-        QueryFactory queryFactory = model.getQueryFactory();
+        QueryFactory queryFactory = wdkModel.getQueryFactory();
         String sortingChecksum = queryFactory.makeSortingChecksum(sortingMap);
 
         applySortingChecksum(questionFullName, sortingChecksum);
@@ -830,96 +902,46 @@ public class User /* implements Serializable */{
             throws WdkUserException, WdkModelException {
         String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX;
         String summaryChecksum = projectPreferences.get(summaryKey);
-        String[] summary = getSummaryAttributesByChecksum(summaryChecksum);
+        if (summaryChecksum == null) return null;
+
+        // get summary list
+        QueryFactory queryFactory = wdkModel.getQueryFactory();
+        String[] summary = queryFactory.getSummaryAttributes(summaryChecksum);
         if (summary != null) return summary;
 
-        Question question = model.getQuestion(questionFullName);
+        // user does't have preference, use the default of the question
+        Question question = wdkModel.getQuestion(questionFullName);
         Map<String, AttributeField> attributes = question.getSummaryAttributeFieldMap();
         summary = new String[attributes.size()];
         attributes.keySet().toArray(summary);
         return summary;
     }
 
-    public String[] getSummaryAttributesByChecksum(String summaryChecksum)
-            throws WdkUserException {
-        if (summaryChecksum == null) return null;
-        // get summary list
-        QueryFactory queryFactory = model.getQueryFactory();
-        return queryFactory.getSummaryAttributes(summaryChecksum);
-    }
-
-    public String addSummaryAttribute(String questionFullName, String attrName)
-            throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException {
-        Set<String> summaryAttributes = new LinkedHashSet<String>();
-        String[] summary = getSummaryAttributes(questionFullName);
-        for (String attributeName : summary) {
-            summaryAttributes.add(attributeName);
-        }
-        summaryAttributes.add(attrName);
-
-        // save the summary attribute list
-        String[] attributes = new String[summaryAttributes.size()];
-        summaryAttributes.toArray(attributes);
-
-        return applySummaryChecksum(questionFullName, attributes);
-    }
-
-    public String removeSummaryAttribute(String questionFullName,
-            String attrName) throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException {
-        Set<String> summaryAttributes = new LinkedHashSet<String>();
-        String[] summary = getSummaryAttributes(questionFullName);
-        for (String attributeName : summary) {
-            if (!attributeName.equals(attrName))
-                summaryAttributes.add(attributeName);
-        }
-
-        // save the summary attribute list
-        String[] attributes = new String[summaryAttributes.size()];
-        summaryAttributes.toArray(attributes);
-
-        return applySummaryChecksum(questionFullName, attributes);
-    }
-
-    public void resetSummaryAttribute(String questionFullName) {
+    public void resetSummaryAttributes(String questionFullName) {
         String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX;
         projectPreferences.remove(summaryKey);
     }
 
-    public String arrangeSummaryAttribute(String questionFullName,
-            String attrName, boolean moveLeft) throws WdkUserException,
-            WdkModelException, NoSuchAlgorithmException {
-        String[] summary = getSummaryAttributes(questionFullName);
-
-        // TEST
-        StringBuffer theSb = new StringBuffer();
-        for (String name : summary) {
-            theSb.append(name + ", ");
-        }
-        logger.info("Summary before: " + theSb.toString());
-
-        for (int i = 0; i < summary.length; i++) {
-            if (attrName.equals(summary[i])) {
-                if (moveLeft && i > 0) {
-                    summary[i] = summary[i - 1];
-                    summary[i - 1] = attrName;
-                } else if (!moveLeft && i < summary.length - 1) {
-                    summary[i] = summary[i + 1];
-                    summary[i + 1] = attrName;
-                }
-                break;
-            }
+    public String setSummaryAttributes(String questionFullName,
+            String[] summaryNames) throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException {
+        // make sure all the attribute names exist
+        Question question = (Question) wdkModel.resolveReference(questionFullName);
+        Map<String, AttributeField> attributes = question.getAttributeFieldMap();
+        for (String summaryName : summaryNames) {
+            if (!attributes.containsKey(summaryName))
+                throw new WdkModelException("Invalid summary attribute ["
+                        + summaryName + "] for question [" + questionFullName
+                        + "]");
         }
 
-        // TEST
-        theSb = new StringBuffer();
-        for (String name : summary) {
-            theSb.append(name + ", ");
-        }
-        logger.info("Summary after: " + theSb.toString());
+        // create checksum
+        QueryFactory queryFactory = wdkModel.getQueryFactory();
+        String summaryChecksum = queryFactory.makeSummaryChecksum(summaryNames);
 
-        return applySummaryChecksum(questionFullName, summary);
+        applySummaryChecksum(questionFullName, summaryChecksum);
+
+        return summaryChecksum;
     }
 
     /**
@@ -930,15 +952,11 @@ public class User /* implements Serializable */{
      * @throws WdkModelException
      * @throws NoSuchAlgorithmException
      */
-    public String applySummaryChecksum(String questionFullName,
-            String[] attributes) throws WdkModelException, WdkUserException,
+    public void applySummaryChecksum(String questionFullName,
+            String summaryChecksum) throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException {
-        QueryFactory queryFactory = model.getQueryFactory();
-        String summaryChecksum = queryFactory.makeSummaryChecksum(attributes);
-
         String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX;
         projectPreferences.put(summaryKey, summaryChecksum);
-        return summaryChecksum;
     }
 
     public String createRemoteKey() throws WdkUserException {
@@ -989,4 +1007,39 @@ public class User /* implements Serializable */{
             throw new WdkUserException(
                     "Remote login failed. The remote key is expired.");
     }
+
+    public Strategy importStrategy(String strategyKey)
+            throws NoSuchAlgorithmException, WdkModelException,
+            WdkUserException, SQLException, JSONException {
+        String[] parts = strategyKey.split(":");
+        String userSignature = parts[0];
+        int displayId = Integer.parseInt(parts[1]);
+        User user = userFactory.getUser(userSignature);
+        Strategy oldStrategy = user.getStrategy(displayId);
+        return importStrategy(oldStrategy);
+    }
+
+    public Strategy importStrategy(Strategy oldStrategy)
+            throws WdkModelException, WdkUserException,
+            NoSuchAlgorithmException, SQLException, JSONException {
+        Strategy newStrategy = stepFactory.importStrategy(this, oldStrategy);
+        newStrategy.setSavedName(oldStrategy.getSavedName());
+        newStrategy.setIsSaved(oldStrategy.getIsSaved());
+        newStrategy.update(true);
+        return newStrategy;
+    }
+
+    public ArrayList<Integer> getActiveStrategies() {
+        return activeStrategies;
+    }
+
+    public void setActiveStrategies(ArrayList<Integer> activeStrategies) {
+        this.activeStrategies = activeStrategies;
+    }
+
+    public boolean checkNameExists(Strategy strategy, String name)
+            throws SQLException {
+        return stepFactory.checkNameExists(strategy, name);
+    }
+
 }

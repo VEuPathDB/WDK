@@ -15,6 +15,7 @@ import oracle.jdbc.driver.OracleDriver;
 import oracle.sql.CLOB;
 
 import org.apache.commons.dbcp.DelegatingConnection;
+import org.gusdb.wdk.model.WdkModelException;
 
 /**
  * @author Jerric Gao
@@ -103,7 +104,7 @@ public class Oracle extends DBPlatform {
      *      java.lang.String)
      */
     @Override
-    public int getNextId(String schema, String table) throws SQLException {
+    public int getNextId(String schema, String table) throws SQLException, WdkModelException {
         schema = normalizeSchema(schema);
 
         StringBuffer sql = new StringBuffer("SELECT ");
@@ -170,7 +171,7 @@ public class Oracle extends DBPlatform {
      */
     @Override
     public boolean checkTableExists(String schema, String tableName)
-            throws SQLException {
+            throws SQLException, WdkModelException {
         StringBuffer sql = new StringBuffer("SELECT count(*) FROM ALL_TABLES ");
         sql.append("WHERE table_name = '");
         sql.append(tableName.toUpperCase()).append("'");

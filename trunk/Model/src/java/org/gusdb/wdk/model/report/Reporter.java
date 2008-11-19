@@ -11,7 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.Answer;
+import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.FieldScope;
 import org.gusdb.wdk.model.Question;
@@ -26,24 +26,24 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  * @author xingao
  * 
  */
-public abstract class Reporter implements Iterable<Answer> {
+public abstract class Reporter implements Iterable<AnswerValue> {
 
     public static final String FIELD_FORMAT = "downloadType";
 
     private final static Logger logger = Logger.getLogger(Reporter.class);
 
-    private class PageAnswerIterator implements Iterator<Answer> {
+    private class PageAnswerIterator implements Iterator<AnswerValue> {
 
         private static final int MAX_PAGE_SIZE = 100;
 
-        private Answer baseAnswer;
+        private AnswerValue baseAnswer;
         private int endIndex;
         private int startIndex;
 
-        PageAnswerIterator(Answer answer, int startIndex, int endIndex)
+        PageAnswerIterator(AnswerValue answerValue, int startIndex, int endIndex)
                 throws WdkModelException, NoSuchAlgorithmException,
                 SQLException, JSONException, WdkUserException {
-            this.baseAnswer = answer;
+            this.baseAnswer = answerValue;
 
             // determine the end index, which should be no bigger result size,
             // since the index starts from 1
@@ -58,7 +58,7 @@ public abstract class Reporter implements Iterable<Answer> {
             return (startIndex <= endIndex);
         }
 
-        public Answer next() {
+        public AnswerValue next() {
             // decide the new end index for the page answer
             int pageEndIndex = Math.min(endIndex, startIndex + MAX_PAGE_SIZE
                     - 1);
@@ -66,10 +66,10 @@ public abstract class Reporter implements Iterable<Answer> {
             logger.debug("Getting records #" + startIndex + " to #"
                     + pageEndIndex);
 
-            Answer answer = new Answer(baseAnswer, startIndex, pageEndIndex);
+            AnswerValue answerValue = new AnswerValue(baseAnswer, startIndex, pageEndIndex);
             // update the current index
             startIndex = pageEndIndex + 1;
-            return answer;
+            return answerValue;
         }
 
         public void remove() {
@@ -87,14 +87,14 @@ public abstract class Reporter implements Iterable<Answer> {
 
     protected WdkModel wdkModel;
 
-    protected Answer baseAnswer;
+    protected AnswerValue baseAnswer;
     private int startIndex;
     private int endIndex;
 
     protected String format = "plain";
 
-    protected Reporter(Answer answer, int startIndex, int endIndex) {
-        this.baseAnswer = answer;
+    protected Reporter(AnswerValue answerValue, int startIndex, int endIndex) {
+        this.baseAnswer = answerValue;
         this.startIndex = startIndex;
         this.endIndex = endIndex;
 
@@ -151,7 +151,7 @@ public abstract class Reporter implements Iterable<Answer> {
         return baseAnswer.getSummaryAttributeFields();
     }
 
-    public Iterator<Answer> iterator() {
+    public Iterator<AnswerValue> iterator() {
         try {
             return new PageAnswerIterator(baseAnswer, startIndex, endIndex);
         } catch (WdkModelException ex) {

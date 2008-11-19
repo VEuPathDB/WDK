@@ -19,6 +19,7 @@ import org.apache.commons.pool.impl.GenericObjectPool;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.ModelConfigDB;
 import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelException;
 
 /**
  * @author Jerric Gao
@@ -67,7 +68,7 @@ public abstract class DBPlatform {
     public static final String ID_SEQUENCE_SUFFIX = "_pkseq";
 
     private static final Logger logger = Logger.getLogger(DBPlatform.class);
-    
+
     private static List<DBPlatform> platforms = new ArrayList<DBPlatform>();
 
     // #########################################################################
@@ -91,7 +92,7 @@ public abstract class DBPlatform {
     public static String normalizeString(String string) {
         return string.replaceAll("'", "''");
     }
-    
+
     public static void closeAllPlatforms() throws Exception {
         for (DBPlatform platform : platforms) {
             platform.close();
@@ -115,7 +116,7 @@ public abstract class DBPlatform {
     // #########################################################################
 
     public abstract int getNextId(String schema, String table)
-            throws SQLException;
+            throws SQLException, WdkModelException;
 
     public abstract String getNumberDataType(int size);
 
@@ -143,7 +144,7 @@ public abstract class DBPlatform {
     public abstract String getPagedSql(String sql, int startIndex, int endIndex);
 
     public abstract boolean checkTableExists(String schema, String tableName)
-            throws SQLException;
+            throws SQLException, WdkModelException;
 
     // #########################################################################
     // Common methods are platform independent
@@ -152,6 +153,7 @@ public abstract class DBPlatform {
     public DBPlatform() {
         platforms.add(this);
     }
+
     /**
      * @return the wdkModel
      */
