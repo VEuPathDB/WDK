@@ -918,8 +918,15 @@ public class UserFactory {
         // get answer filter
         history.setFilterName(rsHistory.getString("answer_filter"));
 
-        String displayParams = platform.getClobData(rsHistory, "display_params");
-        history.setDisplayParams(displayParams);
+        if (history.isBoolean()) {
+        String expression = platform.getClobData(rsHistory, "display_params");
+        history.setBooleanExpression(expression);
+        }
+        
+        // get and cache the param values
+        AnswerFactory answerFactory = wdkModel.getAnswerFactory();
+        Map<String, Object> params = answerFactory.getParams(answerChecksum);
+        history.setParams(params);
 
         // re-construct the answer
         try {

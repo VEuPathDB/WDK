@@ -49,7 +49,8 @@ public class HistoryBean {
     }
 
     public String getDisplayCreatedTime() {
-	return DateFormat.getDateInstance(DateFormat.SHORT).format(history.getCreatedTime());
+        return DateFormat.getDateInstance(DateFormat.SHORT).format(
+                history.getCreatedTime());
     }
 
     /*
@@ -117,7 +118,8 @@ public class HistoryBean {
     }
 
     public String getDisplayLastRunTime() {
-	return DateFormat.getDateInstance(DateFormat.SHORT).format(history.getLastRunTime());
+        return DateFormat.getDateInstance(DateFormat.SHORT).format(
+                history.getLastRunTime());
     }
 
     /*
@@ -265,7 +267,7 @@ public class HistoryBean {
      * @see org.gusdb.wdk.model.user.History#getParams()
      */
     public Map<String, Object> getParams() throws WdkUserException {
-        return history.getAnswer().getIdsQueryInstance().getValues();
+        return history.getParams();
     }
 
     /**

@@ -7,13 +7,13 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.sql.DataSource;
 
 import org.gusdb.wdk.model.Answer;
-import org.gusdb.wdk.model.Param;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -96,9 +96,7 @@ public class AnswerFactory {
         }
 
         // get and parse the params
-        String paramClob = getParamsClob(answerInfo.getAnswerChecksum());
-        Map<String, Object> pvalues = parseParams(query.getParamMap(),
-                paramClob);
+        Map<String, Object> pvalues = getParams(answerInfo.getAnswerChecksum());
 
         // create the answer with default page size
         Answer answer = question.makeAnswer(pvalues);
@@ -199,14 +197,16 @@ public class AnswerFactory {
         }
     }
 
-    private Map<String, Object> parseParams(Map<String, Param> params,
-            String paramClob) throws JSONException {
+    Map<String, Object> getParams(String answerChecksum) throws JSONException, SQLException {
+        String paramClob = getParamsClob(answerChecksum);
+
         JSONObject jsParams = new JSONObject(paramClob);
         Map<String, Object> paramValues = new LinkedHashMap<String, Object>();
-        for (String param : params.keySet()) {
-            String value = (jsParams.has(param)) ? jsParams.getString(param)
-                    : null;
-            paramValues.put(param, value);
+        Iterator<?> keys = jsParams.keys();
+        while (keys.hasNext()) {
+            String key = (String)keys.next();
+            Object value = jsParams.get(key).toString();
+            paramValues.put(key, value);
         }
         return paramValues;
     }
