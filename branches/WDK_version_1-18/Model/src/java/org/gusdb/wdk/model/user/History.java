@@ -46,6 +46,8 @@ public class History {
     private String filterName;
     private int filterSize;
 
+    private String questionName;
+
     History(UserFactory factory, User user, int historyId) {
         this.factory = factory;
         this.user = user;
@@ -344,5 +346,13 @@ public class History {
      */
     public void setFilterSize(int filterSize) {
         this.filterSize = filterSize;
+    }
+
+    public String getQuestionName() {
+        return questionName;
+    }
+
+    public void setQuestionName(String questionName) {
+        this.questionName = questionName;
     }
 }

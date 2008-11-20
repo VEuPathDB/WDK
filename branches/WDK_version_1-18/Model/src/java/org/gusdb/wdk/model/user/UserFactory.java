@@ -832,7 +832,8 @@ public class UserFactory {
         try {
             PreparedStatement psHistory = SqlUtils.getPreparedStatement(
                     dataSource, "SELECT h.history_id, a."
-                            + AnswerFactory.COLUMN_ANSWER_CHECKSUM
+                            + AnswerFactory.COLUMN_ANSWER_CHECKSUM + ", a."
+                            + AnswerFactory.COLUMN_QUESTION_NAME
                             + ", h.create_time, h.last_run_time, "
                             + " h.answer_filter, h.estimate_size, "
                             + " h.custom_name, h.is_boolean, "
@@ -876,7 +877,8 @@ public class UserFactory {
         try {
             PreparedStatement psHistory = SqlUtils.getPreparedStatement(
                     dataSource, "SELECT a."
-                            + AnswerFactory.COLUMN_ANSWER_CHECKSUM
+                            + AnswerFactory.COLUMN_ANSWER_CHECKSUM + ", a."
+                            + AnswerFactory.COLUMN_QUESTION_NAME
                             + ", h.create_time, h.last_run_time, "
                             + " h.answer_filter, h.estimate_size, "
                             + " h.estimate_size, h.custom_name, h.is_boolean,"
@@ -914,15 +916,17 @@ public class UserFactory {
         history.setCustomName(rsHistory.getString("custom_name"));
         history.setBoolean(rsHistory.getBoolean("is_boolean"));
         history.setDeleted(rsHistory.getBoolean("is_deleted"));
+        history.setQuestionName(rsHistory.getString(AnswerFactory.COLUMN_QUESTION_NAME));
 
         // get answer filter
         history.setFilterName(rsHistory.getString("answer_filter"));
 
         if (history.isBoolean()) {
-        String expression = platform.getClobData(rsHistory, "display_params");
-        history.setBooleanExpression(expression);
+            String expression = platform.getClobData(rsHistory,
+                    "display_params");
+            history.setBooleanExpression(expression);
         }
-        
+
         // get and cache the param values
         AnswerFactory answerFactory = wdkModel.getAnswerFactory();
         Map<String, Object> params = answerFactory.getParams(answerChecksum);
@@ -1042,6 +1046,7 @@ public class UserFactory {
             }
             // create the History
             History history = new History(this, user, historyId);
+            history.setQuestionName(answer.getQuestion().getFullName());
             history.setAnswer(answer);
             history.setCreatedTime(createTime);
             history.setLastRunTime(lastRunTime);
