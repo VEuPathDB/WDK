@@ -1552,8 +1552,8 @@ public class UserFactory {
 	    // Set saved name, if any
 	    if (!strategy.getName().matches("^New Strategy [\\d]+\\*$")) {
 		//System.out.println("Name does not match: " + strategy.getName());
-		// Remove any * from name, set as saved name
-		strategy.setSavedName(strategy.getName().replaceAll("\\*", ""));
+		// Remove any * (and everything after it) from name, set as saved name
+		strategy.setSavedName(strategy.getName().replaceAll("\\*.*", ""));
 	    }
 
 	    // Now add step_id to a stack, and go into while loop
@@ -1653,7 +1653,7 @@ public class UserFactory {
                             + "AND name = ? AND is_saved = ? AND display_id <> ?");
 		psCheck.setInt(1, userId);
 		psCheck.setString(2, projectId);
-		psCheck.setString(3, strategy.getName().replaceAll("\\**", ""));
+		psCheck.setString(3, strategy.getName().replaceAll("\\*.*", ""));
 		psCheck.setBoolean(4, true);
 		psCheck.setInt(5, strategy.getStrategyId());
 		rsStrategy = psCheck.executeQuery();
@@ -1684,19 +1684,17 @@ public class UserFactory {
 		
 		String append = "*";
 		String name;
+		int current = 1;
 		while (rsStrategy.next()) {
 		    name = rsStrategy.getString("name");
 		    if (name.equals(strategy.getSavedName() + append)) {
-			if (append.indexOf("(") < 0) {
-			    append += "(1)";
+			if (append.indexOf("(") >= 0) {
+			    current++;
 			}
-			else {
-			    int current = Integer.parseInt(append.substring(append.indexOf("(")+1, append.indexOf(")")));
-			    append = "*(" + current + ")";
-			}
+			append = "*(" + current + ")";
 		    }
 		}
-		System.out.println("Got through the name check.");
+		System.out.println("Got through the name check. Append: " + append);
 
 		Strategy newStrat = createStrategy(user, strategy.getLatestStep(),
 						   strategy.getName() + append, false);
@@ -1813,7 +1811,7 @@ public class UserFactory {
 			    // Need to isolate the integer part of "New Strategy x*" and parse the value of x
 			    // This is written to allow names that are similar to the above format, but don't
 			    // match it perfectly (if users pick lazy names when saving, like "New Strategy 1 Saved"
-			    int test = Integer.parseInt(name.replaceFirst("New Strategy ", "").replaceAll("\\*", ""));
+			    int test = Integer.parseInt(name.replaceFirst("New Strategy ", "").replaceAll("\\*.*", ""));
 			    if (i == test) {
 				i++;
 			    }
