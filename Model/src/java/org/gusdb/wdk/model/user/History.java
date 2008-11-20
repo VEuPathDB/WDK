@@ -6,21 +6,18 @@ package org.gusdb.wdk.model.user;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
 import org.gusdb.wdk.model.Answer;
-import org.gusdb.wdk.model.AnswerParam;
 import org.gusdb.wdk.model.BooleanExpression;
 import org.gusdb.wdk.model.Param;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * @author xingao
@@ -44,7 +41,7 @@ public class History {
 
     private boolean isValid = true;
 
-    private Map<String, String> displayParams;
+    private Map<String, Object> params;
     private String filterName;
     private int filterSize;
 
@@ -53,6 +50,7 @@ public class History {
         this.user = user;
         this.historyId = historyId;
         isDeleted = false;
+        params = new LinkedHashMap<String, Object>();
     }
 
     public User getUser() {
@@ -289,59 +287,12 @@ public class History {
         this.isValid = isValid;
     }
 
-    public void setDisplayParams(String paramClob) throws JSONException {
-        displayParams = new LinkedHashMap<String, String>();
-        if (isBoolean) booleanExpression = paramClob;
-        else if (paramClob != null && paramClob.length() > 0) {
-            JSONObject jsParams = new JSONObject(paramClob);
-            Iterator itKeys = jsParams.keys();
-            while (itKeys.hasNext()) {
-                String paramName = itKeys.next().toString();
-                String paramValue = (jsParams.has(paramName)) ? jsParams.getString(paramName)
-                        : null;
-                displayParams.put(paramName, paramValue);
-            }
-        }
+    public void setParams(Map<String, Object> params) throws JSONException {
+        params = new LinkedHashMap<String, Object>(params);
     }
 
-    public String getDisplayParamClob() throws JSONException {
-        if (isBoolean) return booleanExpression;
-        else {
-            Map<String, String> displayParams = getDisplayParams();
-            JSONObject jsParams = new JSONObject();
-            for (String paramName : displayParams.keySet()) {
-                Object paramValue = displayParams.get(paramName);
-                if (paramValue == null) paramValue = JSONObject.NULL;
-                jsParams.put(paramName, paramValue);
-            }
-            return jsParams.toString();
-        }
-    }
-
-    public Map<String, String> getDisplayParams() {
-        QueryInstance instance = answer.getIdsQueryInstance();
-        Param[] params = instance.getQuery().getParams();
-        Map<String, Object> paramValues = instance.getValues();
-        if (displayParams == null) {
-            displayParams = new LinkedHashMap<String, String>();
-            for (Param param : params) {
-                if (!(param instanceof AnswerParam)) continue;
-                String value = paramValues.get(param.getName()).toString();
-                displayParams.put(param.getName(), value);
-            }
-        }
-
-        // append the rest of the params
-        Map<String, String> allValues = new LinkedHashMap<String, String>(
-                displayParams);
-        for (String paramName : paramValues.keySet()) {
-            if (!allValues.containsKey(paramName)) {
-                Object value = paramValues.get(paramName);
-                allValues.put(paramName, (value == null) ? ""
-                        : value.toString());
-            }
-        }
-        return allValues;
+    public Map<String, Object> getParams() {
+        return new LinkedHashMap<String, Object>(params);
     }
 
     public Map<String, String> getParamPrompts() throws WdkModelException {

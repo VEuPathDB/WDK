@@ -60,7 +60,7 @@ public class HistoryTest {
         Assert.assertTrue(history.getHistoryId() > 0);
         Assert.assertEquals(answer.getChecksum(),
                 history.getAnswer().getChecksum());
-        Assert.assertEquals(params.length, history.getDisplayParams().size());
+        Assert.assertEquals(params.length, history.getParams().size());
     }
 
     @Test
@@ -81,7 +81,7 @@ public class HistoryTest {
         Assert.assertEquals(recordClass.getFullName(),
                 answer.getQuestion().getRecordClass().getFullName());
         Assert.assertEquals(expression, history.getBooleanExpression());
-        Assert.assertEquals(params.length, history.getDisplayParams().size());
+        Assert.assertEquals(params.length, history.getParams().size());
         
         // load the boolean history
         history = user.getHistory(history.getHistoryId());
@@ -90,6 +90,6 @@ public class HistoryTest {
         Assert.assertEquals(recordClass.getFullName(),
                 answer.getQuestion().getRecordClass().getFullName());
         Assert.assertEquals(expression, history.getBooleanExpression());
-        Assert.assertEquals(params.length, history.getDisplayParams().size());
+        Assert.assertEquals(params.length, history.getParams().size());
     }
 }
