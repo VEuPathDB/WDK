@@ -14,6 +14,7 @@ import java.util.Set;
 import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.BooleanExpression;
 import org.gusdb.wdk.model.Param;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.QueryInstance;
@@ -146,7 +147,8 @@ public class History {
     }
 
     /**
-     * @param estimateSize the estimateSize to set
+     * @param estimateSize
+     *            the estimateSize to set
      */
     public void setEstimateSize(int estimateSize) {
         this.estimateSize = estimateSize;
@@ -297,10 +299,18 @@ public class History {
 
     public Map<String, String> getParamPrompts() throws WdkModelException {
         Map<String, String> paramNames = new LinkedHashMap<String, String>();
-        QueryInstance instance = answer.getIdsQueryInstance();
-        Param[] params = instance.getQuery().getParams();
-        for (Param param : params) {
-            paramNames.put(param.getName(), param.getPrompt());
+        if (isValid) {
+            QueryInstance instance = answer.getIdsQueryInstance();
+            Param[] params = instance.getQuery().getParams();
+            for (Param param : params) {
+                paramNames.put(param.getName(), param.getPrompt());
+            }
+        } else {
+            WdkModel wdkModel = user.getWdkModel();
+            for (String paramName : params.keySet()) {
+                String displayName = wdkModel.queryParamDisplayName(paramName);
+                paramNames.put(paramName, displayName);
+            }
         }
 
         return paramNames;
