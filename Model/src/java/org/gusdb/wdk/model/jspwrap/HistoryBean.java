@@ -276,7 +276,7 @@ public class HistoryBean {
      * @see org.gusdb.wdk.model.user.History#getQuestionName()
      */
     public String getQuestionName() throws WdkUserException {
-        return history.getAnswer().getQuestion().getFullName();
+        return history.getQuestionName();
     }
 
     /**
