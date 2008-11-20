@@ -900,7 +900,7 @@ public class UserFactory {
     }
 
     private History loadHistory(User user, int historyId, ResultSet rsHistory)
-            throws SQLException, JSONException {
+            throws JSONException, SQLException {
         History history = new History(this, user, historyId);
 
         // load history info
@@ -934,6 +934,9 @@ public class UserFactory {
             ex.printStackTrace();
             history.setValid(false);
         } catch (JSONException ex) {
+            ex.printStackTrace();
+            history.setValid(false);
+        } catch (SQLException ex) {
             ex.printStackTrace();
             history.setValid(false);
         }

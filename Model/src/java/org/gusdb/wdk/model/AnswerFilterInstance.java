@@ -4,13 +4,18 @@
 package org.gusdb.wdk.model;
 
 import java.security.NoSuchAlgorithmException;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.gusdb.wdk.model.query.QueryInstance;
+import javax.sql.DataSource;
+
+import org.gusdb.wdk.model.dbms.ResultList;
+import org.gusdb.wdk.model.dbms.SqlResultList;
+import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.query.SqlQuery;
 import org.json.JSONException;
 
@@ -34,6 +39,8 @@ public class AnswerFilterInstance extends WdkModelBase {
     private RecordClass recordClass;
     private SqlQuery filterQuery;
     private AnswerParam answerParam;
+
+    private WdkModel wdkModel;
 
     /**
      * @return the name
@@ -201,13 +208,17 @@ public class AnswerFilterInstance extends WdkModelBase {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model.WdkModel)
+     * @see
+     * org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model
+     * .WdkModel)
      */
     @Override
-    public void resolveReferences(WdkModel wodkModel) throws WdkModelException,
+    public void resolveReferences(WdkModel wdkModel) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
         if (resolved) return;
+
+        this.wdkModel = wdkModel;
 
         // make sure the params provides match with those in the filter query
         Map<String, Param> params = filterQuery.getParamMap();
@@ -230,14 +241,20 @@ public class AnswerFilterInstance extends WdkModelBase {
         resolved = true;
     }
 
-    public QueryInstance makeQueryInstance(Answer answer)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
-        Map<String, Object> values = new LinkedHashMap<String, Object>(
-                paramValueMap);
-        values.put(answerParam.getName(),
-                answer.getAnswerInfo().getAnswerChecksum());
-        return filterQuery.makeInstance(values);
+    public ResultList getResults(Answer answer) throws SQLException,
+            NoSuchAlgorithmException, WdkModelException, JSONException,
+            WdkUserException {
+        // use only the id query sql as input
+        String sql = answer.getIdsQueryInstance().getSql();
+        sql = applyFilter(sql);
+        DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
+        ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql);
+        try {
+            return new SqlResultList(resultSet);
+        } catch (SQLException ex) {
+            resultSet.close();
+            throw ex;
+        }
     }
 
     public String applyFilter(String sql) throws WdkModelException,
