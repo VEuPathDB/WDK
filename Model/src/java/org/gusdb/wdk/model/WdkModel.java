@@ -990,4 +990,15 @@ public class WdkModel {
     protected void finalize() throws Throwable {
         logger.debug("Model unloaded.");
     }
+
+    public String queryParamDisplayName(String paramName) {
+        for (String paramSetName : paramSets.keySet()) {
+            ParamSet paramSet = (ParamSet) paramSets.get(paramSetName);
+            for (Param param : paramSet.getParams()) {
+                if (param.getName().equals(paramName))
+                    return param.getPrompt();
+            }
+        }
+        return paramName;
+    }
 }
