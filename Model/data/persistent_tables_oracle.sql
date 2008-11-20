@@ -14,7 +14,7 @@ DROP TABLE userlogins4.preferences;
 DROP TABLE userlogins4.user_roles;
 DROP TABLE userlogins4.users;
 
-DROP TABLE wdkstorage2.answer;
+DROP TABLE wdkstorage2.answers;
 DROP TABLE wdkstorage2.clob_values;
 DROP TABLE wdkstorage2.dataset_values;
 DROP TABLE wdkstorage2.dataset_indices;
@@ -68,7 +68,7 @@ GRANT select ON userlogins4.user_datasets_pkseq TO GUS_R;
    ========================================================================= */
 
 
-CREATE TABLE wdkstorage2.answer
+CREATE TABLE wdkstorage2.answers
 (
   answer_id NUMBER(12) NOT NULL,
   answer_checksum VARCHAR(40) NOT NULL,
@@ -76,15 +76,15 @@ CREATE TABLE wdkstorage2.answer
   project_version VARCHAR(50) NOT NULL,
   question_name VARCHAR(200) NOT NULL,
   query_checksum  VARCHAR(40) NOT NULL,
-  estimate_size NUMBER(12),
   params CLOB,
   result_message CLOB,
   prev_answer_id NUMBER(12),
-  CONSTRAINT "answer_pk" PRIMARY KEY (answer_id),
-  CONSTRAINT "answer_uq1" UNIQUE (project_id, answer_checksum)
+  CONSTRAINT "answers_pk" PRIMARY KEY (answer_id),
+  CONSTRAINT "answers_uq1" UNIQUE (project_id, answer_checksum)
 );
 
-CREATE INDEX wdkstorage2.answer_idx01 ON wdkstorage2.answer (prev_answer_id);
+CREATE INDEX wdkstorage2.answers_idx01 ON wdkstorage2.answers (prev_answer_id);
+
 
 GRANT insert, update, delete ON wdkstorage2.answer TO GUS_W;
 GRANT select ON wdkstorage2.answer TO GUS_R;
@@ -103,6 +103,7 @@ CREATE TABLE wdkstorage2.dataset_indices
 );
 
 CREATE INDEX wdkstorage2.dataset_indices_idx01 ON wdkstorage2.dataset_indices (prev_dataset_id);
+
 
 GRANT insert, update, delete ON wdkstorage2.dataset_indices TO GUS_W;
 GRANT select ON wdkstorage2.dataset_indices TO GUS_R;
@@ -215,11 +216,12 @@ CREATE TABLE userlogins4.steps
   collapsed_name varchar(200),
   is_collapsible NUMBER(1),
   display_params CLOB,
-  CONSTRAINT "HISTORIES_PK" PRIMARY KEY (user_id, history_id),
-  CONSTRAINT "HISTORY_USER_ID_FK" FOREIGN KEY (user_id)
+  CONSTRAINT "STEPS_PK" PRIMARY KEY (step_id),
+  CONSTRAINT "STEPS_UNIQUE" UNIQUE (user_id, display_id),
+  CONSTRAINT "STEPS_USER_ID_FK" FOREIGN KEY (user_id)
       REFERENCES userlogins4.users (user_id),
-  CONSTRAINT "HISTORY_ANSWER_ID_FK" FOREIGN KEY (answer_id)
-      REFERENCES wdkstorage2.answer (answer_id)
+  CONSTRAINT "STEPS_ANSWER_ID_FK" FOREIGN KEY (answer_id)
+      REFERENCES wdkstorage2.answers (answer_id)
 );
 
 GRANT insert, update, delete ON userlogins4.histories TO GUS_W;
@@ -237,8 +239,8 @@ CREATE TABLE userlogins4.strategies
      name varchar(200),
      CONSTRAINT "STRATEGIES_PK" PRIMARY KEY (strategy_id),
      CONSTRAINT "STRATEGIES_UNIQUE" UNIQUE (user_id, display_id, project_id),
-     CONSTRAINT "STRATEGIES_STEP_FK" FOREIGN KEY (root_step_id, user_id, project_id)
-         REFERENCES userlogins4.steps (display_id, user_id, project_id),
+     CONSTRAINT "STRATEGIES_STEP_FK" FOREIGN KEY (user_id, root_step_id)
+         REFERENCES userlogins4.steps (user_id, display_id),
      CONSTRAINT "STRATEGIES_USER_ID_FK" FOREIGN KEY (user_id)
          REFERENCES userlogins4.users (user_id)
 );

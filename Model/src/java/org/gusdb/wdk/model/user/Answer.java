@@ -23,7 +23,6 @@ public class Answer {
     private String projectVersion;
     private String questionName;
     private String queryChecksum;
-    private int estimateSize;
 
     private AnswerFactory answerFactory;
     private AnswerValue answerValue;
@@ -130,20 +129,5 @@ public class Answer {
             throw new WdkModelException("The checksum of the AnswerValue does "
                     + "not match the one stored in Answer.");
         this.answerValue = answerValue;
-    }
-
-    /**
-     * @return the estimateSize
-     */
-    public int getEstimateSize() {
-        return estimateSize;
-    }
-
-    /**
-     * @param estimateSize
-     *            the estimateSize to set
-     */
-    public void setEstimateSize(int estimateSize) {
-        this.estimateSize = estimateSize;
     }
 }
