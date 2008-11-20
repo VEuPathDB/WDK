@@ -216,7 +216,7 @@ public class AnswerValue {
     public int getResultSize() throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
-        if (resultSize == null){
+        if (resultSize == null) {
             if (getFilter() == null) {
                 resultSize = idsQueryInstance.getResultSize();
             } else {
@@ -232,36 +232,38 @@ public class AnswerValue {
         if (resultSizesByProject == null) {
             resultSizesByProject = new LinkedHashMap<String, Integer>();
             // need to run the query first
-            QueryInstance instance = (filter == null) ? idsQueryInstance
-                    : filter.makeQueryInstance(this);
+            ResultList resultList;
+            String message = null;
+            if (filter == null) {
+                resultList = idsQueryInstance.getResults();
+                message = idsQueryInstance.getResultMessage();
+            } else resultList = filter.getResults(this);
 
-            ResultList rl = instance.getResults();
-            String message = instance.getResultMessage();
-            boolean hasMessage = (message != null && message.length() > 0);
-            if (hasMessage) {
-                String[] sizes = message.split(",");
-                for (String size : sizes) {
-                    String[] parts = size.split(":");
-                    resultSizesByProject.put(parts[0],
-                            Integer.parseInt(parts[1]));
+            try {
+                boolean hasMessage = (message != null && message.length() > 0);
+                if (hasMessage) {
+                    String[] sizes = message.split(",");
+                    for (String size : sizes) {
+                        String[] parts = size.split(":");
+                        resultSizesByProject.put(parts[0],
+                                Integer.parseInt(parts[1]));
+                    }
+                } else {
+                    while (resultList.next()) {
+                        if (!hasMessage) {
+                            // also count by project
+                            String project = resultList.get(
+                                    Utilities.COLUMN_PROJECT_ID).toString();
+                            int subCounter = 0;
+                            if (resultSizesByProject.containsKey(project))
+                                subCounter = resultSizesByProject.get(project);
+                            resultSizesByProject.put(project, ++subCounter);
+                        }
+                    }
                 }
+            } finally {
+                resultList.close();
             }
-            int counter = 0;
-            resultSizesByProject = new LinkedHashMap<String, Integer>();
-
-            while (rl.next()) {
-                counter++;
-
-                if (!hasMessage) {
-                    // also count by project
-                    String project = rl.get(Utilities.COLUMN_PROJECT_ID).toString();
-                    int subCounter = 0;
-                    if (resultSizesByProject.containsKey(project))
-                        subCounter = resultSizesByProject.get(project);
-                    resultSizesByProject.put(project, ++subCounter);
-                }
-            }
-            rl.close();
         }
         return resultSizesByProject;
 
@@ -632,13 +634,9 @@ public class AnswerValue {
         }
         sql.append(" FROM (");
 
-        String innerSql;
-        if (filter != null) { // get a filter
-            QueryInstance instance = filter.makeQueryInstance(this);
-            innerSql = instance.getSql();
-        } else { // get the id query directly
-            innerSql = idsQueryInstance.getSql();
-        }
+        String innerSql = idsQueryInstance.getSql();
+        // get a filter
+        if (filter != null) innerSql = filter.applyFilter(innerSql);
         sql.append(innerSql).append(") bidq");
 
         logger.debug("id sql constructed.");
@@ -834,11 +832,12 @@ public class AnswerValue {
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
         String[] columns = question.getRecordClass().getPrimaryKeyAttributeField().getColumnRefs();
-
-        QueryInstance instance = (filter == null) ? idsQueryInstance
-                : filter.makeQueryInstance(this);
         List<Object[]> buffer = new ArrayList<Object[]>();
-        ResultList resultList = instance.getResults();
+
+        ResultList resultList;
+        if (filter == null) resultList = idsQueryInstance.getResults();
+        else resultList = filter.getResults(this);
+
         while (resultList.next()) {
             Object[] pkValues = new String[columns.length];
             for (int columnIndex = 0; columnIndex < columns.length; columnIndex++) {
@@ -868,8 +867,18 @@ public class AnswerValue {
         if (size == null) {
             RecordClass recordClass = question.getRecordClass();
             AnswerFilterInstance filter = recordClass.getFilter(filterName);
-            QueryInstance instance = filter.makeQueryInstance(this);
-            size = instance.getResultSize();
+
+            String innerSql = idsQueryInstance.getSql();
+            innerSql = filter.applyFilter(innerSql);
+
+            StringBuffer sql = new StringBuffer("SELECT count(*) FROM ");
+            sql.append("(").append(innerSql).append(") f");
+
+            WdkModel wdkModel = question.getWdkModel();
+            DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
+            Object result = SqlUtils.executeScalar(dataSource, sql.toString());
+            size = Integer.parseInt(result.toString());
+
             resultSizesByFilter.put(filterName, size);
         }
         return size;
@@ -881,7 +890,7 @@ public class AnswerValue {
     public AnswerFilterInstance getFilter() {
         return filter;
     }
-    
+
     public void setFilter(String filterName) throws WdkModelException {
         if (filterName != null) {
             RecordClass recordClass = question.getRecordClass();

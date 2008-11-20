@@ -39,7 +39,6 @@ public class AnswerFactory {
     private static final String COLUMN_QUESTION_NAME = "question_name";
     private static final String COLUMN_QUERY_CHECKSUM = "query_checksum";
     private static final String COLUMN_PARAMS = "params";
-    private static final String COLUMN_ESTIMATE_SIZE = "estimate_size";
 
     private WdkModel wdkModel;
     private DBPlatform userPlatform;
@@ -69,7 +68,6 @@ public class AnswerFactory {
             answer.setProjectVersion(wdkModel.getVersion());
             answer.setQueryChecksum(question.getQuery().getChecksum());
             answer.setQuestionName(question.getFullName());
-            answer.setEstimateSize(answerValue.getResultSize());
 
             String paramClob = answerValue.getIdsQueryInstance().getParamJSONObject().toString();
             saveAnswer(answer, paramClob);
@@ -138,7 +136,6 @@ public class AnswerFactory {
                 answer.setProjectVersion(resultSet.getString(COLUMN_PROJECT_VERSION));
                 answer.setQueryChecksum(resultSet.getString(COLUMN_QUERY_CHECKSUM));
                 answer.setQuestionName(resultSet.getString(COLUMN_QUESTION_NAME));
-                answer.setEstimateSize(resultSet.getInt(COLUMN_ESTIMATE_SIZE));
             }
         } finally {
             SqlUtils.closeResultSet(resultSet);
@@ -157,8 +154,7 @@ public class AnswerFactory {
         sql.append(COLUMN_PROJECT_VERSION).append(", ");
         sql.append(COLUMN_QUESTION_NAME).append(", ");
         sql.append(COLUMN_QUERY_CHECKSUM).append(", ");
-        sql.append(COLUMN_ESTIMATE_SIZE).append(", ");
-        sql.append(COLUMN_PARAMS).append(") VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        sql.append(COLUMN_PARAMS).append(") VALUES (?, ?, ?, ?, ?, ?, ?)");
 
         PreparedStatement ps = null;
         try {
@@ -170,8 +166,7 @@ public class AnswerFactory {
             ps.setString(4, answer.getProjectVersion());
             ps.setString(5, answer.getQuestionName());
             ps.setString(6, answer.getQueryChecksum());
-            ps.setInt(7, answer.getEstimateSize());
-            userPlatform.updateClobData(ps, 8, paramClob, false);
+            userPlatform.updateClobData(ps, 7, paramClob, false);
 
             ps.executeUpdate();
         } finally {
