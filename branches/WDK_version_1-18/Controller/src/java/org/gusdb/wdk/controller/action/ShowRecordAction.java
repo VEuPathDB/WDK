@@ -54,7 +54,10 @@ public class ShowRecordAction extends Action {
             // make project id optional
             if (value == null && column.equals("project_id")) {
                 value = request.getParameter("projectId");
-                if (value == null) value = wdkModel.getProjectId();
+                // handle empty projectId case; some external sites refers to
+                // the site with empty projectId
+                if (value == null || value.trim().length() == 0)
+                    value = wdkModel.getProjectId();
             }
 
             // recognize old primary keys
