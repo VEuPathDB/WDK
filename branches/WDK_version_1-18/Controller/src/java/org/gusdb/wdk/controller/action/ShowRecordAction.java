@@ -52,7 +52,8 @@ public class ShowRecordAction extends Action {
             // to be backward compatible with older urls
 
             // make project id optional
-            if (value == null && column.equals("project_id")) {
+            if (column.equals("project_id")
+                    && (value == null || value.length() == 0)) {
                 value = request.getParameter("projectId");
                 // handle empty projectId case; some external sites refers to
                 // the site with empty projectId
