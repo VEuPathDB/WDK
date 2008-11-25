@@ -3,30 +3,11 @@
  */
 package org.gusdb.wdk.model.test.unit;
 
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactoryConfigurationError;
-
-import org.gusdb.wdk.model.AnswerValue;
-import org.gusdb.wdk.model.Question;
-import org.gusdb.wdk.model.RecordClass;
-import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.BooleanOperator;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.User;
-import org.json.JSONException;
 import org.junit.Assert;
 import org.junit.Test;
-import org.xml.sax.SAXException;
 
 /**
  * @author xingao
@@ -34,68 +15,73 @@ import org.xml.sax.SAXException;
  */
 public class StepTest {
 
-    private WdkModel wdkModel;
     private User user;
-    private Random random;
-    private RecordClass recordClass;
-    private List<AnswerValue> answerValues;
 
-    public StepTest() throws NoSuchAlgorithmException, WdkModelException,
-            ParserConfigurationException, TransformerFactoryConfigurationError,
-            TransformerException, IOException, SAXException, SQLException,
-            JSONException, WdkUserException, InstantiationException,
-            IllegalAccessException, ClassNotFoundException {
-        this.wdkModel = UnitTestHelper.getModel();
-        this.user = wdkModel.getUserFactory().createGuestUser();
-        this.random = new Random();
-        this.recordClass = wdkModel.getAllRecordClassSets()[0].getRecordClasses()[0];
-        this.answerValues = UnitTestHelper.getAnswerPool(recordClass);
+    public StepTest() throws Exception {
+        this.user = UnitTestHelper.getRegisteredUser();
     }
 
     @Test
-    public void testCreateHistory() throws NoSuchAlgorithmException,
-            WdkUserException, WdkModelException, SQLException, JSONException {
-        AnswerValue answerValue = answerValues.get(random.nextInt(answerValues.size()));
-        Question question = answerValue.getQuestion();
-        Map<String, String> paramValues = answerValue.getIdsQueryInstance().getValues();
-        Param[] params = answerValue.getQuestion().getParams();
-        Step step = user.createStep(question, paramValues, (String) null);
+    public void testCreateNormalStep() throws Exception {
+        Step step = UnitTestHelper.createNormalStep(user);
 
-        Assert.assertTrue(step.getDisplayId() > 0);
-        Assert.assertEquals(answerValue.getChecksum(),
-                step.getAnswer().getAnswerChecksum());
-        Assert.assertEquals(params.length, step.getDisplayParams().size());
+        Assert.assertTrue("stepId should be positive", step.getDisplayId() > 0);
+        Assert.assertFalse("Step shouldn't be deleted", step.isDeleted());
+        Assert.assertFalse("This is not combined", step.isCombined());
+        Assert.assertFalse("This is not transform", step.isTransform());
     }
 
     @Test
-    public void testCreateBooleanHistory() throws WdkUserException,
-            NoSuchAlgorithmException, WdkModelException, SQLException,
-            JSONException {
-        AnswerValue leftAnswer = answerValues.get(random.nextInt(answerValues.size()));
-        Step leftStep = user.createStep(leftAnswer.getQuestion(),
-                leftAnswer.getIdsQueryInstance().getValues(), (String) null);
-        AnswerValue rightAnswer = answerValues.get(random.nextInt(answerValues.size()));
-        Step rightStep = user.createStep(rightAnswer.getQuestion(),
-                rightAnswer.getIdsQueryInstance().getValues(), (String) null);
+    public void testCreateBooleanStep() throws Exception {
+        Step leftOperand = UnitTestHelper.createNormalStep(user);
+        Step rightOperand = UnitTestHelper.createNormalStep(user);
 
-        String expression = leftStep.getDisplayId() + " OR "
-                + rightStep.getDisplayId();
+        int leftId = leftOperand.getDisplayId();
+        int rightId = rightOperand.getDisplayId();
+        int leftSize = leftOperand.getResultSize();
+        int rightSize = rightOperand.getResultSize();
+        String operator = BooleanOperator.UNION.getOperator();
+
+        String expression = leftId + " " + operator + " " + rightId;
+
         Step step = user.combineStep(expression);
-        AnswerValue answerValue = step.getAnswer().getAnswerValue();
-        Param[] params = answerValue.getQuestion().getParams();
+        int size = step.getResultSize();
+        Assert.assertTrue("result is boolean", step.isCombined());
+        Assert.assertTrue("total size no smaller than left", size >= leftSize);
+        Assert.assertTrue("total size no smaller than right", size >= rightSize);
+        Assert.assertTrue("total size no bigger than combined",
+                size <= leftSize + rightSize);
+    }
 
-        Assert.assertEquals(recordClass.getFullName(),
-                answerValue.getQuestion().getRecordClass().getFullName());
-        Assert.assertEquals(expression, step.getBooleanExpression());
-        Assert.assertEquals(params.length, step.getDisplayParams().size());
+    @Test
+    public void testCreateComplexBooleanStep() throws Exception {
+        Step operand1 = UnitTestHelper.createNormalStep(user);
+        Step operand2 = UnitTestHelper.createNormalStep(user);
+        Step operand3 = UnitTestHelper.createNormalStep(user);
 
-        // load the boolean history
-        step = user.getStep(step.getDisplayId());
-        answerValue = step.getAnswer().getAnswerValue();
+        int id1 = operand1.getDisplayId();
+        int id2 = operand2.getDisplayId();
+        int id3 = operand3.getDisplayId();
+        int size1 = operand1.getResultSize();
+        int size2 = operand2.getResultSize();
+        int size3 = operand3.getResultSize();
+        String operator = " " + BooleanOperator.INTERSECT.getOperator() + " ";
 
-        Assert.assertEquals(recordClass.getFullName(),
-                answerValue.getQuestion().getRecordClass().getFullName());
-        Assert.assertEquals(expression, step.getBooleanExpression());
-        Assert.assertEquals(params.length, step.getDisplayParams().size());
+        String expression = id1 + operator + "(" + id2 + operator + id3 + ")";
+
+        // get a combo result
+        Step result1 = user.combineStep(expression);
+        int resultSize1 = result1.getResultSize();
+
+        Assert.assertTrue("No bigger than first operand", resultSize1 <= size1);
+        Assert.assertTrue("No bigger than second operand", resultSize1 <= size2);
+        Assert.assertTrue("No bigger than third operand", resultSize1 <= size3);
+
+        // compose the result step by step
+        Step result2 = user.combineStep(id2 + operator + id3);
+        Step result3 = user.combineStep(id1 + operator + result2.getDisplayId());
+
+        // the result of result1 and result3 should be identical
+        Assert.assertEquals("Size equal", resultSize1, result3.getResultSize());
     }
 }

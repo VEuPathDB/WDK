@@ -134,8 +134,8 @@ public abstract class DBPlatform {
 
     public abstract void createSequence(String sequence, int start,
             int increment) throws SQLException;
-
-    public abstract int updateClobData(PreparedStatement ps, int columnIndex,
+    
+    public abstract int setClobData(PreparedStatement ps, int columnIndex,
             String content, boolean commit) throws SQLException;
 
     public abstract String getClobData(ResultSet rs, String columnName)
@@ -145,6 +145,8 @@ public abstract class DBPlatform {
 
     public abstract boolean checkTableExists(String schema, String tableName)
             throws SQLException, WdkModelException;
+    
+    public abstract String convertBoolean(boolean value);
 
     // #########################################################################
     // Common methods are platform independent

@@ -181,7 +181,7 @@ public class Migrator1_12To1_13 extends Migrator {
             int count = 0;
             for (HistoryItem item : histories) {
                 psHistory.setString(1, item.getChecksum());
-                platform.updateClobData(psHistory, 2, item.getParams(), false);
+                platform.setClobData(psHistory, 2, item.getParams(), false);
                 psHistory.setInt(3, item.getUserId());
                 psHistory.setString(4, item.getProjectId());
                 psHistory.setInt(5, item.getHistoryId());

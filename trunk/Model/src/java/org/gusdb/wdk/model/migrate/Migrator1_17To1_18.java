@@ -209,7 +209,7 @@ public class Migrator1_17To1_18 extends Migrator {
         psInsertAnswer.setString(3, projectId);
         psInsertAnswer.setString(4, questionName);
         psInsertAnswer.setString(5, queryChecksum);
-        platform.updateClobData(psInsertAnswer, 6, params, true);
+        platform.setClobData(psInsertAnswer, 6, params, true);
 
         return answerId;
     }
@@ -227,6 +227,6 @@ public class Migrator1_17To1_18 extends Migrator {
         psInsertHistory.setString(7, customName);
         psInsertHistory.setBoolean(8, isBoolean);
         psInsertHistory.setBoolean(9, isDeleted);
-        platform.updateClobData(psInsertHistory, 10, displayParams, true);
+        platform.setClobData(psInsertHistory, 10, displayParams, true);
     }
 }

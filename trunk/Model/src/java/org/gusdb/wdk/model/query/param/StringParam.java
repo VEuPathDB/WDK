@@ -96,7 +96,8 @@ public class StringParam extends Param {
         if (allowEmpty && value == null) return;
 
         if (value == null || value.length() == 0)
-            throw new WdkModelException("Missing the value");
+            throw new WdkModelException("StringParam [" + getFullName()
+                    + "] Missing the value");
 
         value = decompressValue(value);
 

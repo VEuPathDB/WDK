@@ -16,6 +16,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -48,20 +49,27 @@ import org.json.JSONException;
  * 
  */
 public class UserFactory {
-
-    static final String TABLE_USER = "users";
-
-    static final String COLUMN_USER_ID = "user_id";
-
     public static final String GUEST_USER_PREFIX = "WDK_GUEST_";
 
     public static final String GLOBAL_PREFERENCE_KEY = "[Global]";
 
+    private static Logger logger = Logger.getLogger(UserFactory.class);
+
+    // -------------------------------------------------------------------------
+    // data base table and column definitions
+    // -------------------------------------------------------------------------
+    private static final String TABLE_USER = "users";
+
+    static final String COLUMN_USER_ID = "user_id";
+
+    private final String COLUMN_EMAIL = "email";
+
+    // -------------------------------------------------------------------------
+    // the macros used by the registration email
+    // -------------------------------------------------------------------------
     private static final String EMAIL_MACRO_USER_NAME = "USER_NAME";
     private static final String EMAIL_MACRO_EMAIL = "EMAIL";
     private static final String EMAIL_MACRO_PASSWORD = "PASSWORD";
-
-    private static Logger logger = Logger.getLogger(UserFactory.class);
 
     /*
      * Inner class to act as a JAF datasource to send HTML e-mail content
@@ -94,40 +102,9 @@ public class UserFactory {
         }
     }
 
-    static class HistoryKey {
-
-        public int userId;
-        public int historyId;
-
-        public HistoryKey(int userId, int historyId) {
-            this.userId = userId;
-            this.historyId = historyId;
-        }
-
-        /*
-         * (non-Javadoc)
-         * 
-         * @see java.lang.Object#equals(java.lang.Object)
-         */
-        @Override
-        public boolean equals(Object obj) {
-            if (obj instanceof HistoryKey) {
-                HistoryKey hkey = (HistoryKey) obj;
-                return ((this.userId == hkey.userId) && (this.historyId == hkey.historyId));
-            } else return false;
-        }
-
-        /*
-         * (non-Javadoc)
-         * 
-         * @see java.lang.Object#hashCode()
-         */
-        @Override
-        public int hashCode() {
-            return (userId + (userId ^ historyId));
-        }
-    }
-
+    // -------------------------------------------------------------------------
+    // member variables
+    // -------------------------------------------------------------------------
     private DBPlatform platform;
     private DataSource dataSource;
 
@@ -238,7 +215,8 @@ public class UserFactory {
             Date lastActiveTime = new Date();
 
             psUser = SqlUtils.getPreparedStatement(dataSource, "INSERT INTO "
-                    + userSchema + "users (user_id, email, passwd, is_guest, "
+                    + userSchema + TABLE_USER + " (" + COLUMN_USER_ID + ", "
+                    + COLUMN_EMAIL + ", passwd, is_guest, "
                     + "register_time, last_active, last_name, first_name, "
                     + "middle_name, title, organization, department, address, "
                     + "city, state, zip_code, phone_number, country,signature)"
@@ -285,9 +263,13 @@ public class UserFactory {
             saveUserRoles(user);
 
             // save preferences
+            if (globalPreferences == null)
+                globalPreferences = new LinkedHashMap<String, String>();
             for (String param : globalPreferences.keySet()) {
                 user.setGlobalPreference(param, globalPreferences.get(param));
             }
+            if (projectPreferences == null)
+                projectPreferences = new LinkedHashMap<String, String>();
             for (String param : projectPreferences.keySet()) {
                 user.setProjectPreference(param, projectPreferences.get(param));
             }
@@ -413,17 +395,19 @@ public class UserFactory {
      * @param email
      * @return
      * @throws WdkUserException
+     * @throws SQLException
      * @throws WdkModelException
      */
-    public User getUserByEmail(String email) throws WdkUserException {
+    public User getUserByEmail(String email) throws WdkUserException,
+            SQLException {
         email = email.trim();
 
         ResultSet rsUser = null;
         try {
             // get user information
             PreparedStatement psUser = SqlUtils.getPreparedStatement(
-                    dataSource, "SELECT user_id FROM " + userSchema
-                            + "users WHERE email = ?");
+                    dataSource, "SELECT " + COLUMN_USER_ID + " FROM "
+                            + userSchema + TABLE_USER + " WHERE email = ?");
             psUser.setString(1, email);
             rsUser = psUser.executeQuery();
             if (!rsUser.next())
@@ -433,14 +417,8 @@ public class UserFactory {
             // read user info
             int userId = rsUser.getInt("user_id");
             return getUser(userId);
-        } catch (SQLException ex) {
-            throw new WdkUserException(ex);
         } finally {
-            try {
-                SqlUtils.closeResultSet(rsUser);
-            } catch (SQLException ex) {
-                throw new WdkUserException(ex);
-            }
+            SqlUtils.closeResultSet(rsUser);
         }
     }
 
@@ -472,7 +450,7 @@ public class UserFactory {
         }
     }
 
-    public User getUser(int userId) throws WdkUserException {
+    public User getUser(int userId) throws WdkUserException, SQLException {
         StepFactory stepFactory = wdkModel.getStepFactory();
         ResultSet rsUser = null;
         try {
@@ -522,14 +500,8 @@ public class UserFactory {
             updateUser(user);
 
             return user;
-        } catch (SQLException ex) {
-            throw new WdkUserException(ex);
         } finally {
-            try {
-                SqlUtils.closeResultSet(rsUser);
-            } catch (SQLException ex) {
-                throw new WdkUserException(ex);
-            }
+            SqlUtils.closeResultSet(rsUser);
         }
     }
 
@@ -893,7 +865,7 @@ public class UserFactory {
     }
 
     public void resetPassword(String email) throws WdkUserException,
-            WdkModelException {
+            WdkModelException, SQLException {
         User user = getUserByEmail(email);
         resetPassword(user);
     }

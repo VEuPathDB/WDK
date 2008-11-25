@@ -139,7 +139,7 @@ public class PostgreSQL extends DBPlatform {
      * org.gusdb.wdk.model.dbms.DBPlatform#updateClobData(java.sql.PreparedStatement
      * , int, java.lang.String, boolean)
      */
-    public int updateClobData(PreparedStatement ps, int columnIndex,
+    public int setClobData(PreparedStatement ps, int columnIndex,
             String content, boolean commit) throws SQLException {
         ps.setString(columnIndex, content);
         return commit ? ps.executeUpdate() : 0;
@@ -182,5 +182,15 @@ public class PostgreSQL extends DBPlatform {
     @Override
     public String getFloatDataType(int size) {
         return "FLOAT(" + size + ")";
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.dbms.DBPlatform#convertBoolean(boolean)
+     */
+    @Override
+    public String convertBoolean(boolean value) {
+        return value ? "TRUE" : "FALSE";
     }
 }

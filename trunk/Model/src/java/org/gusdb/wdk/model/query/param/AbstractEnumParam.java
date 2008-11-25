@@ -177,10 +177,11 @@ public abstract class AbstractEnumParam extends Param {
     public String getDefault() throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
-        if (defaultValue != null) return defaultValue;
-        String[] vocab = getVocab();
-        if (vocab.length == 0) return null;
-        return vocab[0];
+        if (defaultValue == null || defaultValue.length() == 0) {
+            // use the first term as default
+            initVocabMap();
+            return termInternalMap.keySet().iterator().next();
+        } else return defaultValue;
     }
 
     /**
@@ -285,7 +286,7 @@ public abstract class AbstractEnumParam extends Param {
         // the input is a list of terms
         String[] terms;
         if (multiPick) {
-            terms = termList.split("[^\\\\]\\,");
+            terms = termList.split(",");
             for (int i = 0; i < terms.length; i++)
                 terms[i] = terms[i].trim();
         } else terms = new String[] { termList.trim() };
