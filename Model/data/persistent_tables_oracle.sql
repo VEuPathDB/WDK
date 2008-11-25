@@ -1,23 +1,23 @@
 
-DROP SEQUENCE wdkstorage2.user_datasets_pkseq;
-DROP SEQUENCE wdkstorage2.dataset_indices_pkseq;
-DROP SEQUENCE wdkstorage2.answers_pkseq;
+DROP SEQUENCE wdkengine.dataset_indices_pkseq;
+DROP SEQUENCE wdkengine.answers_pkseq;
 
-DROP SEQUENCE userlogins4.steps_pkseq;
-DROP SEQUENCE userlogins4.strategies_pkseq;
-DROP SEQUENCE userlogins4.users_pkseq;
+DROP SEQUENCE wdkuser.user_datasets_pkseq;
+DROP SEQUENCE wdkuser.steps_pkseq;
+DROP SEQUENCE wdkuser.strategies_pkseq;
+DROP SEQUENCE wdkuser.users_pkseq;
 
-DROP TABLE userlogins4.strategies;
-DROP TABLE userlogins4.steps;
-DROP TABLE userlogins4.user_datasets;
-DROP TABLE userlogins4.preferences;
-DROP TABLE userlogins4.user_roles;
-DROP TABLE userlogins4.users;
+DROP TABLE wdkuser.strategies;
+DROP TABLE wdkuser.steps;
+DROP TABLE wdkuser.user_datasets;
+DROP TABLE wdkuser.preferences;
+DROP TABLE wdkuser.user_roles;
+DROP TABLE wdkuser.users;
 
-DROP TABLE wdkstorage2.answers;
-DROP TABLE wdkstorage2.clob_values;
-DROP TABLE wdkstorage2.dataset_values;
-DROP TABLE wdkstorage2.dataset_indices;
+DROP TABLE wdkengine.answers;
+DROP TABLE wdkengine.clob_values;
+DROP TABLE wdkengine.dataset_values;
+DROP TABLE wdkengine.dataset_indices;
 
 
 
@@ -26,40 +26,40 @@ DROP TABLE wdkstorage2.dataset_indices;
    ========================================================================= */
 
 
-CREATE SEQUENCE wdkstorage2.dataset_indices_pkseq INCREMENT BY 1 START WITH 1;
+CREATE SEQUENCE wdkengine.dataset_indices_pkseq INCREMENT BY 1 START WITH 1;
 
-GRANT select ON wdkstorage2.dataset_indices_pkseq TO GUS_W;
-GRANT select ON wdkstorage2.dataset_indices_pkseq TO GUS_R;
-
-
-CREATE SEQUENCE wdkstorage2.answers_pkseq INCREMENT BY 1 START WITH 1;
-
-GRANT select ON wdkstorage2.answers_pkseq TO GUS_W;
-GRANT select ON wdkstorage2.answers_pkseq TO GUS_R;
+GRANT select ON wdkengine.dataset_indices_pkseq TO GUS_W;
+GRANT select ON wdkengine.dataset_indices_pkseq TO GUS_R;
 
 
-CREATE SEQUENCE userlogins4.users_pkseq INCREMENT BY 1 START WITH 1;
+CREATE SEQUENCE wdkengine.answers_pkseq INCREMENT BY 1 START WITH 1;
 
-GRANT select ON userlogins4.users_pkseq TO GUS_W;
-GRANT select ON userlogins4.users_pkseq TO GUS_R;
-
-
-CREATE SEQUENCE userlogins4.strategies_pkseq INCREMENT BY 1 START WITH 1;
-
-GRANT select ON userlogins4.strategies_pkseq TO GUS_W;
-GRANT select ON userlogins4.strategies_pkseq TO GUS_R;
+GRANT select ON wdkengine.answers_pkseq TO GUS_W;
+GRANT select ON wdkengine.answers_pkseq TO GUS_R;
 
 
-CREATE SEQUENCE userlogins4.steps_pkseq INCREMENT BY 1 START WITH 1;
+CREATE SEQUENCE wdkuser.users_pkseq INCREMENT BY 1 START WITH 1;
 
-GRANT select ON userlogins4.steps_pkseq TO GUS_W;
-GRANT select ON userlogins4.steps_pkseq TO GUS_R;
+GRANT select ON wdkuser.users_pkseq TO GUS_W;
+GRANT select ON wdkuser.users_pkseq TO GUS_R;
 
 
-CREATE SEQUENCE userlogins4.user_datasets_pkseq INCREMENT BY 1 START WITH 1;
+CREATE SEQUENCE wdkuser.strategies_pkseq INCREMENT BY 1 START WITH 1;
 
-GRANT select ON userlogins4.user_datasets_pkseq TO GUS_W;
-GRANT select ON userlogins4.user_datasets_pkseq TO GUS_R;
+GRANT select ON wdkuser.strategies_pkseq TO GUS_W;
+GRANT select ON wdkuser.strategies_pkseq TO GUS_R;
+
+
+CREATE SEQUENCE wdkuser.steps_pkseq INCREMENT BY 1 START WITH 1;
+
+GRANT select ON wdkuser.steps_pkseq TO GUS_W;
+GRANT select ON wdkuser.steps_pkseq TO GUS_R;
+
+
+CREATE SEQUENCE wdkuser.user_datasets_pkseq INCREMENT BY 1 START WITH 1;
+
+GRANT select ON wdkuser.user_datasets_pkseq TO GUS_W;
+GRANT select ON wdkuser.user_datasets_pkseq TO GUS_R;
 
 
 
@@ -68,7 +68,7 @@ GRANT select ON userlogins4.user_datasets_pkseq TO GUS_R;
    ========================================================================= */
 
 
-CREATE TABLE wdkstorage2.answers
+CREATE TABLE wdkengine.answers
 (
   answer_id NUMBER(12) NOT NULL,
   answer_checksum VARCHAR(40) NOT NULL,
@@ -83,15 +83,15 @@ CREATE TABLE wdkstorage2.answers
   CONSTRAINT "answers_uq1" UNIQUE (project_id, answer_checksum)
 );
 
-CREATE INDEX wdkstorage2.answers_idx01 ON wdkstorage2.answers (prev_answer_id);
+CREATE INDEX wdkengine.answers_idx01 ON wdkengine.answers (prev_answer_id);
 
 
-GRANT insert, update, delete ON wdkstorage2.answer TO GUS_W;
-GRANT select ON wdkstorage2.answer TO GUS_R;
-GRANT references ON wdkstorage2.answer TO userlogins4;
+GRANT insert, update, delete ON wdkengine.answer TO GUS_W;
+GRANT select ON wdkengine.answer TO GUS_R;
+GRANT references ON wdkengine.answer TO wdkuser;
 
 
-CREATE TABLE wdkstorage2.dataset_indices
+CREATE TABLE wdkengine.dataset_indices
 (
   dataset_id NUMBER(12) NOT NULL,
   dataset_checksum VARCHAR(40) NOT NULL,
@@ -102,44 +102,44 @@ CREATE TABLE wdkstorage2.dataset_indices
   CONSTRAINT "DATASET_CHECKSUM_UNIQUE" UNIQUE (dataset_checksum)
 );
 
-CREATE INDEX wdkstorage2.dataset_indices_idx01 ON wdkstorage2.dataset_indices (prev_dataset_id);
+CREATE INDEX wdkengine.dataset_indices_idx01 ON wdkengine.dataset_indices (prev_dataset_id);
 
 
-GRANT insert, update, delete ON wdkstorage2.dataset_indices TO GUS_W;
-GRANT select ON wdkstorage2.dataset_indices TO GUS_R;
-GRANT references ON wdkstorage2.dataset_indices TO userlogins4;
+GRANT insert, update, delete ON wdkengine.dataset_indices TO GUS_W;
+GRANT select ON wdkengine.dataset_indices TO GUS_R;
+GRANT references ON wdkengine.dataset_indices TO wdkuser;
 
 
-CREATE TABLE wdkstorage2.dataset_values
+CREATE TABLE wdkengine.dataset_values
 (
   dataset_id NUMBER(12) NOT NULL,
   dataset_value VARCHAR(4000) NOT NULL,
   CONSTRAINT "DATASET_VALUES_DATASET_ID_FK" FOREIGN KEY (dataset_id)
-      REFERENCES wdkstorage2.dataset_indices (dataset_id)
+      REFERENCES wdkengine.dataset_indices (dataset_id)
 );
 
-CREATE INDEX wdkstorage2.dataset_values_idx01 ON wdkstorage2.dataset_values (dataset_id);
+CREATE INDEX wdkengine.dataset_values_idx01 ON wdkengine.dataset_values (dataset_id);
 
-GRANT insert, update, delete ON wdkstorage2.dataset_values TO GUS_W;
-GRANT select ON wdkstorage2.dataset_values TO GUS_R;
+GRANT insert, update, delete ON wdkengine.dataset_values TO GUS_W;
+GRANT select ON wdkengine.dataset_values TO GUS_R;
 
 
-CREATE TABLE wdkstorage2.clob_values
+CREATE TABLE wdkengine.clob_values
 (
   clob_checksum VARCHAR(40) NOT NULL,
   clob_value CLOB NOT NULL,
   CONSTRAINT "CLOB_VALUES_PK" PRIMARY KEY (clob_checksum)
 );
 
-GRANT insert, update, delete ON wdkstorage2.clob_values TO GUS_W;
-GRANT select ON wdkstorage2.clob_values TO GUS_R;
+GRANT insert, update, delete ON wdkengine.clob_values TO GUS_W;
+GRANT select ON wdkengine.clob_values TO GUS_R;
 
 
 /* =========================================================================
    tables in user schema
    ========================================================================= */
    
-CREATE TABLE userlogins4.users
+CREATE TABLE wdkuser.users
 (
   user_id NUMBER(12) NOT NULL,
   email VARCHAR(255) NOT NULL,
@@ -165,26 +165,26 @@ CREATE TABLE userlogins4.users
   CONSTRAINT "USER_EMAIL_UNIQUE" UNIQUE (email)
 );
 
-CREATE INDEX userlogins4.users_idx01 ON userlogins4.users (prev_user_id);
+CREATE INDEX wdkuser.users_idx01 ON wdkuser.users (prev_user_id);
 
-GRANT insert, update, delete ON userlogins4.users TO GUS_W;
-GRANT select ON userlogins4.users TO GUS_R;
+GRANT insert, update, delete ON wdkuser.users TO GUS_W;
+GRANT select ON wdkuser.users TO GUS_R;
 
 
-CREATE TABLE userlogins4.user_roles
+CREATE TABLE wdkuser.user_roles
 (
   user_id NUMBER(12) NOT NULL,
   user_role VARCHAR(50) NOT NULL,
   CONSTRAINT "USER_ROLE_PK" PRIMARY KEY (user_id, user_role),
   CONSTRAINT "USER_ROLE_USER_ID_FK" FOREIGN KEY (user_id)
-      REFERENCES userlogins4.users (user_id) 
+      REFERENCES wdkuser.users (user_id) 
 );
 
-GRANT insert, update, delete ON userlogins4.user_roles TO GUS_W;
-GRANT select ON userlogins4.user_roles TO GUS_R;
+GRANT insert, update, delete ON wdkuser.user_roles TO GUS_W;
+GRANT select ON wdkuser.user_roles TO GUS_R;
 
 
-CREATE TABLE userlogins4.preferences
+CREATE TABLE wdkuser.preferences
 (
   user_id NUMBER(12) NOT NULL,
   project_id VARCHAR(50) NOT NULL,
@@ -192,14 +192,14 @@ CREATE TABLE userlogins4.preferences
   preference_value VARCHAR(4000),
   CONSTRAINT "PREFERENCES_PK" PRIMARY KEY (user_id, project_id, preference_name),
   CONSTRAINT "PREFERENCE_USER_ID_FK" FOREIGN KEY (user_id)
-      REFERENCES userlogins4.users (user_id) 
+      REFERENCES wdkuser.users (user_id) 
 );
 
-GRANT insert, update, delete ON userlogins4.preferences TO GUS_W;
-GRANT select ON userlogins4.preferences TO GUS_R;
+GRANT insert, update, delete ON wdkuser.preferences TO GUS_W;
+GRANT select ON wdkuser.preferences TO GUS_R;
 
 
-CREATE TABLE userlogins4.steps
+CREATE TABLE wdkuser.steps
 (
   step_id NUMBER(12) NOT NULL,
   display_id NUMBER(12) NOT NULL,
@@ -219,16 +219,16 @@ CREATE TABLE userlogins4.steps
   CONSTRAINT "STEPS_PK" PRIMARY KEY (step_id),
   CONSTRAINT "STEPS_UNIQUE" UNIQUE (user_id, display_id),
   CONSTRAINT "STEPS_USER_ID_FK" FOREIGN KEY (user_id)
-      REFERENCES userlogins4.users (user_id),
+      REFERENCES wdkuser.users (user_id),
   CONSTRAINT "STEPS_ANSWER_ID_FK" FOREIGN KEY (answer_id)
-      REFERENCES wdkstorage2.answers (answer_id)
+      REFERENCES wdkengine.answers (answer_id)
 );
 
-GRANT insert, update, delete ON userlogins4.histories TO GUS_W;
-GRANT select ON userlogins4.histories TO GUS_R;
+GRANT insert, update, delete ON wdkuser.histories TO GUS_W;
+GRANT select ON wdkuser.histories TO GUS_R;
 
 
-CREATE TABLE userlogins4.strategies
+CREATE TABLE wdkuser.strategies
 (
      strategy_id NUMBER(12) NOT NULL,
      display_id NUMBER(12) NOT NULL,
@@ -240,16 +240,16 @@ CREATE TABLE userlogins4.strategies
      CONSTRAINT "STRATEGIES_PK" PRIMARY KEY (strategy_id),
      CONSTRAINT "STRATEGIES_UNIQUE" UNIQUE (user_id, display_id, project_id),
      CONSTRAINT "STRATEGIES_STEP_FK" FOREIGN KEY (user_id, root_step_id)
-         REFERENCES userlogins4.steps (user_id, display_id),
+         REFERENCES wdkuser.steps (user_id, display_id),
      CONSTRAINT "STRATEGIES_USER_ID_FK" FOREIGN KEY (user_id)
-         REFERENCES userlogins4.users (user_id)
+         REFERENCES wdkuser.users (user_id)
 );
 
-GRANT insert, update, delete on userlogins4.strategies to GUS_W;
-GRANT select on userlogins4.strategies to GUS_R;
+GRANT insert, update, delete on wdkuser.strategies to GUS_W;
+GRANT select on wdkuser.strategies to GUS_R;
 
 
-CREATE TABLE userlogins4.user_datasets
+CREATE TABLE wdkuser.user_datasets
 (
   user_dataset_id NUMBER(12) NOT NULL,
   dataset_id NUMBER(12) NOT NULL,
@@ -259,10 +259,10 @@ CREATE TABLE userlogins4.user_datasets
   CONSTRAINT "USER_DATASET_PK" PRIMARY KEY (user_dataset_id),
   CONSTRAINT "USER_DATASET_UQ1" UNIQUE (dataset_id, user_id),
   CONSTRAINT "USER_DATASETS_DS_ID_FK" FOREIGN KEY (dataset_id)
-      REFERENCES wdkstorage2.dataset_indices (dataset_id),
+      REFERENCES wdkengine.dataset_indices (dataset_id),
   CONSTRAINT "USER_DATASETS_USER_ID_FK" FOREIGN KEY (user_id)
-      REFERENCES userlogins4.users (user_id)
+      REFERENCES wdkuser.users (user_id)
 );
 
-GRANT insert, update, delete ON userlogins4.user_datasets TO GUS_W;
-GRANT select ON userlogins4.user_datasets TO GUS_R;
+GRANT insert, update, delete ON wdkuser.user_datasets TO GUS_W;
+GRANT select ON wdkuser.user_datasets TO GUS_R;

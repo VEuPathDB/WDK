@@ -164,7 +164,7 @@ public class BooleanExpression {
         // get the right part
         if (block.charAt(block.length() - 1) == ')') {
             int parenthese = 1;
-            pos = block.length() - 1;
+            pos = block.length() - 2;
             // find the paired closing parenthese
             while (pos >= 0 && parenthese > 0) {
                 if (block.charAt(pos) == '(') parenthese--;

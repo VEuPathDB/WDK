@@ -222,7 +222,7 @@ public class ResultFactory {
             ps.setInt(1, instanceId);
             ps.setInt(2, queryInfo.getQueryId());
             ps.setString(3, instance.getChecksum());
-            platform.updateClobData(ps, 4, instance.getResultMessage(), false);
+            platform.setClobData(ps, 4, instance.getResultMessage(), false);
             ps.executeUpdate();
 
             return instanceId;

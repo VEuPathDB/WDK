@@ -3,19 +3,11 @@
  */
 package org.gusdb.wdk.model.test.unit;
 
-import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactoryConfigurationError;
-
-import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.BooleanOperator;
 import org.gusdb.wdk.model.Question;
@@ -26,10 +18,12 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.StringParam;
+import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
-import org.xml.sax.SAXException;
 
 /**
  * @author xingao
@@ -37,45 +31,42 @@ import org.xml.sax.SAXException;
  */
 public class BooleanQuestionTest {
 
-    private static final Logger logger = Logger.getLogger(BooleanQuestionTest.class);
-
     private WdkModel wdkModel;
-    private RecordClass recordClass;
-    private List<AnswerValue> answerValues;
-    private Random random = new Random();
 
-    public BooleanQuestionTest() throws NoSuchAlgorithmException,
-            WdkModelException, ParserConfigurationException,
-            TransformerFactoryConfigurationError, TransformerException,
-            IOException, SAXException, SQLException, JSONException,
-            WdkUserException, InstantiationException, IllegalAccessException,
-            ClassNotFoundException {
+    private RecordClass recordClass;
+    private String leftValue;
+    private String rightValue;
+
+    public BooleanQuestionTest() throws Exception {
         // load the model
         wdkModel = UnitTestHelper.getModel();
-        // pick the first record class
-        recordClass = wdkModel.getAllRecordClassSets()[0].getRecordClasses()[0];
-        answerValues = UnitTestHelper.getAnswerPool(recordClass);
+    }
+
+    @Before
+    public void createOperands() throws Exception {
+        User user = UnitTestHelper.getRegisteredUser();
+        Step left = UnitTestHelper.createNormalStep(user);
+        Step right = UnitTestHelper.createNormalStep(user);
+
+        leftValue = left.getAnswer().getAnswerChecksum();
+        rightValue = right.getAnswer().getAnswerChecksum();
+        recordClass = left.getAnswer().getAnswerValue().getQuestion().getRecordClass();
     }
 
     @Test
     public void testOrOperator() throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
-        AnswerValue left = answerValues.get(random.nextInt(answerValues.size()));
-        AnswerValue right = answerValues.get(random.nextInt(answerValues.size()));
-
         Question booleanQuestion = wdkModel.getBooleanQuestion(recordClass);
         BooleanQuery booleanQuery = (BooleanQuery) booleanQuestion.getQuery();
         Map<String, String> paramValues = new LinkedHashMap<String, String>();
 
-        AnswerParam leftOperand = booleanQuery.getLeftOperandParam();
+        AnswerParam leftParam = booleanQuery.getLeftOperandParam();
         // calling answer info to make sure the answer is saved first
-        paramValues.put(leftOperand.getName(),
-                left.getAnswer().getAnswerChecksum());
+        paramValues.put(leftParam.getName(), leftValue);
 
-        AnswerParam rightOperand = booleanQuery.getRightOperandParam();
-        paramValues.put(rightOperand.getName(),
-                right.getAnswer().getAnswerChecksum());
+        AnswerParam rightParam = booleanQuery.getRightOperandParam();
+        paramValues.put(rightParam.getName(), rightValue);
 
         StringParam operator = booleanQuery.getOperatorParam();
         paramValues.put(operator.getName(), BooleanOperator.UNION.getOperator());
@@ -84,33 +75,31 @@ public class BooleanQuestionTest {
         paramValues.put(expansion.getName(), "false");
 
         AnswerValue answerValue = booleanQuestion.makeAnswerValue(paramValues);
+        int size = answerValue.getResultSize();
 
-        // try to get the summary of the answer
-        logger.debug(answerValue.printAsTable());
+        AnswerValue leftAnswer = leftParam.getAnswerValue(leftValue);
+        AnswerValue rightAnswer = rightParam.getAnswerValue(rightValue);
 
-        Assert.assertTrue(answerValue.getResultSize() >= left.getResultSize());
-        Assert.assertTrue(answerValue.getResultSize() >= right.getResultSize());
+        Assert.assertTrue("bigger than left",
+                size >= leftAnswer.getResultSize());
+        Assert.assertTrue("bigger than right",
+                size >= rightAnswer.getResultSize());
     }
 
     @Test
     public void testAndOperator() throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
-        AnswerValue left = answerValues.get(random.nextInt(answerValues.size()));
-        AnswerValue right = answerValues.get(random.nextInt(answerValues.size()));
-
         Question booleanQuestion = wdkModel.getBooleanQuestion(recordClass);
         BooleanQuery booleanQuery = (BooleanQuery) booleanQuestion.getQuery();
         Map<String, String> paramValues = new LinkedHashMap<String, String>();
 
-        AnswerParam leftOperand = booleanQuery.getLeftOperandParam();
+        AnswerParam leftParam = booleanQuery.getLeftOperandParam();
         // calling answer info to make sure the answer is saved first
-        paramValues.put(leftOperand.getName(),
-                left.getAnswer().getAnswerChecksum());
+        paramValues.put(leftParam.getName(), leftValue);
 
-        AnswerParam rightOperand = booleanQuery.getRightOperandParam();
-        paramValues.put(rightOperand.getName(),
-                right.getAnswer().getAnswerChecksum());
+        AnswerParam rightParam = booleanQuery.getRightOperandParam();
+        paramValues.put(rightParam.getName(), rightValue);
 
         StringParam operator = booleanQuery.getOperatorParam();
         paramValues.put(operator.getName(),
@@ -120,11 +109,76 @@ public class BooleanQuestionTest {
         paramValues.put(expansion.getName(), "false");
 
         AnswerValue answerValue = booleanQuestion.makeAnswerValue(paramValues);
+        int size = answerValue.getResultSize();
 
-        // try to get the summary of the answer
-        logger.debug(answerValue.printAsTable());
+        AnswerValue leftAnswer = leftParam.getAnswerValue(leftValue);
+        AnswerValue rightAnswer = rightParam.getAnswerValue(rightValue);
 
-        Assert.assertTrue(answerValue.getResultSize() <= left.getResultSize());
-        Assert.assertTrue(answerValue.getResultSize() <= right.getResultSize());
+        Assert.assertTrue("smaller than left",
+                size <= leftAnswer.getResultSize());
+        Assert.assertTrue("smaller than right",
+                size <= rightAnswer.getResultSize());
+    }
+
+    @Test
+    public void testLeftMinusOperator() throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
+        Question booleanQuestion = wdkModel.getBooleanQuestion(recordClass);
+        BooleanQuery booleanQuery = (BooleanQuery) booleanQuestion.getQuery();
+        Map<String, String> paramValues = new LinkedHashMap<String, String>();
+
+        AnswerParam leftParam = booleanQuery.getLeftOperandParam();
+        // calling answer info to make sure the answer is saved first
+        paramValues.put(leftParam.getName(), leftValue);
+
+        AnswerParam rightParam = booleanQuery.getRightOperandParam();
+        paramValues.put(rightParam.getName(), rightValue);
+
+        StringParam operator = booleanQuery.getOperatorParam();
+        paramValues.put(operator.getName(),
+                BooleanOperator.LEFT_MINUS.getOperator());
+
+        StringParam expansion = booleanQuery.getUseBooleanFilter();
+        paramValues.put(expansion.getName(), "false");
+
+        AnswerValue answerValue = booleanQuestion.makeAnswerValue(paramValues);
+        int size = answerValue.getResultSize();
+
+        AnswerValue leftAnswer = leftParam.getAnswerValue(leftValue);
+
+        Assert.assertTrue("smaller than left",
+                size <= leftAnswer.getResultSize());
+    }
+
+    @Test
+    public void testRightMinueOperator() throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
+        Question booleanQuestion = wdkModel.getBooleanQuestion(recordClass);
+        BooleanQuery booleanQuery = (BooleanQuery) booleanQuestion.getQuery();
+        Map<String, String> paramValues = new LinkedHashMap<String, String>();
+
+        AnswerParam leftParam = booleanQuery.getLeftOperandParam();
+        // calling answer info to make sure the answer is saved first
+        paramValues.put(leftParam.getName(), leftValue);
+
+        AnswerParam rightParam = booleanQuery.getRightOperandParam();
+        paramValues.put(rightParam.getName(), rightValue);
+
+        StringParam operator = booleanQuery.getOperatorParam();
+        paramValues.put(operator.getName(),
+                BooleanOperator.INTERSECT.getOperator());
+
+        StringParam expansion = booleanQuery.getUseBooleanFilter();
+        paramValues.put(expansion.getName(), "false");
+
+        AnswerValue answerValue = booleanQuestion.makeAnswerValue(paramValues);
+        int size = answerValue.getResultSize();
+
+        AnswerValue rightAnswer = rightParam.getAnswerValue(rightValue);
+
+        Assert.assertTrue("smaller than right",
+                size <= rightAnswer.getResultSize());
     }
 }

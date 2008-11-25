@@ -49,7 +49,7 @@ public class StepFactory {
     private static final String TABLE_STRATEGY = "strategies";
 
     private static final String COLUMN_STEP_ID = "step_id";
-    private static final String COLUMN_DISPLAY_ID = "user_id";
+    private static final String COLUMN_DISPLAY_ID = "display_id";
     private static final String COLUMN_LEFT_CHILD_ID = "left_child_id";
     private static final String COLUMN_RIGHT_CHILD_ID = "right_child_id";
     private static final String COLUMN_CREATE_TIME = "create_time";
@@ -80,7 +80,7 @@ public class StepFactory {
         this.wdkModel = wdkModel;
         this.userPlatform = wdkModel.getUserPlatform();
         dataSource = userPlatform.getDataSource();
-        
+
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         this.userSchema = userDB.getUserSchema();
         this.wdkSchema = userDB.getWdkEngineSchema();
@@ -114,7 +114,9 @@ public class StepFactory {
         // create answer
         AnswerValue answerValue = question.makeAnswerValue(independentValues,
                 pageStart, pageEnd, sortingAttributes, filter);
-        answerValue.setSumaryAttributes(summaryAttributes);
+        if (summaryAttributes != null) {
+            answerValue.setSumaryAttributes(summaryAttributes);
+        }
         Answer answer = answerValue.getAnswer();
 
         // prepare the values to be inserted.
@@ -164,7 +166,7 @@ public class StepFactory {
         Date createTime = new Date();
         Date lastRunTime = new Date(createTime.getTime());
 
-        int displayId = -1;
+        int displayId = 0;
         int stepId = userPlatform.getNextId(userSchema, TABLE_STEP);
         Connection connection = dataSource.getConnection();
 
@@ -177,14 +179,10 @@ public class StepFactory {
                 // get the current display id
                 Statement statement = connection.createStatement();
                 rsMax = statement.executeQuery(sqlMaxId.toString());
-                if (rsMax.next()) {
-                    // has old steps, the new display id will be max+1
+                if (rsMax.next()) // has old steps, get the max of it
                     displayId = rsMax.getInt("max_id");
-                } else {
-                    // does not have old steps, the new display id will be 1
-                    displayId = 1;
-                }
                 rsMax.close();
+                displayId++;
 
                 psInsertStep = connection.prepareStatement(sqlInsertStep.toString());
                 psInsertStep.setInt(1, stepId);
@@ -198,7 +196,7 @@ public class StepFactory {
                 psInsertStep.setInt(7, estimateSize);
                 psInsertStep.setString(8, filterName);
                 psInsertStep.setBoolean(9, deleted);
-                userPlatform.updateClobData(psInsertStep, 10,
+                userPlatform.setClobData(psInsertStep, 10,
                         displayParamContent, false);
                 psInsertStep.executeUpdate();
 
@@ -384,7 +382,7 @@ public class StepFactory {
                             + answerIdColumn + " AND h."
                             + UserFactory.COLUMN_USER_ID + " = ? AND a."
                             + AnswerFactory.COLUMN_PROJECT_ID + " = ? "
-                            + " AND is_deleted = 0");
+                            + " AND is_deleted = " + userPlatform.convertBoolean(false));
             psHistory.setInt(1, user.getUserId());
             psHistory.setString(2, wdkModel.getProjectId());
             rsHistory = psHistory.executeQuery();
@@ -519,7 +517,8 @@ public class StepFactory {
 
             AnswerValue answerValue = answer.getAnswerValue();
             RecordClass recordClass = answerValue.getQuestion().getRecordClass();
-            answerValue.setFilter(recordClass.getFilter(filterName));
+            if (filterName != null)
+                answerValue.setFilter(recordClass.getFilter(filterName));
 
             step.setAnswer(answer);
             step.setValid(true);
@@ -1145,6 +1144,10 @@ public class StepFactory {
         Map<String, String> independentValues = new LinkedHashMap<String, String>();
         for (String paramName : paramValues.keySet()) {
             Param param = params.get(paramName);
+            if (param == null)
+                throw new WdkModelException("param '" + paramName + "' does "
+                        + "not  exist in question " + question.getFullName());
+
             String dependentValue = paramValues.get(paramName);
             String independentValue = param.prepareValue(dependentValue);
             independentValues.put(paramName, independentValue);
@@ -1163,11 +1166,16 @@ public class StepFactory {
 
     private Map<String, String> parseParamContent(String paramContent)
             throws JSONException {
-        JSONObject json = new JSONObject(paramContent);
         Map<String, String> params = new LinkedHashMap<String, String>();
-        for (String paramName : JSONObject.getNames(json)) {
-            String paramValue = json.getString(paramName);
-            params.put(paramName, paramValue);
+        if (paramContent != null && paramContent.length() > 0) {
+            JSONObject json = new JSONObject(paramContent);
+            String[] paramNames = JSONObject.getNames(json);
+            if (paramNames != null) {
+                for (String paramName : paramNames) {
+                    String paramValue = json.getString(paramName);
+                    params.put(paramName, paramValue);
+                }
+            }
         }
         return params;
     }
