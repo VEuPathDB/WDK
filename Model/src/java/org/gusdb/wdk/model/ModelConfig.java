@@ -38,6 +38,9 @@ public class ModelConfig {
     private boolean enableQueryLogger = false;
     private String queryLoggerFile;
 
+    // location of secret key file
+    private String secretKeyFile;
+
     /**
      * The projectId is not part of the config file content, it is input by the
      * user
@@ -314,6 +317,21 @@ public class ModelConfig {
      */
     public void setQueryLoggerFile(String queryLoggerFile) {
         this.queryLoggerFile = queryLoggerFile;
+    }
+
+    /**
+     * @return the secretKeyFile
+     */
+    public String getSecretKeyFile() {
+        return secretKeyFile;
+    }
+
+    /**
+     * @param secretKeyFile
+     *        the secretKeyFile to set
+     */
+    public void setSecretKeyFile(String secretKeyFile) {
+        this.secretKeyFile = secretKeyFile;
     }
 
     /**

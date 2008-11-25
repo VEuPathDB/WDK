@@ -35,6 +35,7 @@
                 <data type="boolean" />
             </attribute>
             <attribute name="queryLoggerFile" />
+            <attribute name="secretKeyFile" />
             <attribute name="supportEmail" />
 
             <element name="emailSubject">

@@ -73,16 +73,11 @@ public class CheckLoginFilter implements Filter {
 		    UserBean guest  = factory.getGuestUser();
 		    		    
 		    // Check if cookie has been modified since it was set by the application.
-		    Runtime rt = Runtime.getRuntime();
-		    Process proc = rt.exec(CConstants.WDK_LOGIN_SECRET_KEY);
-		    InputStream is = proc.getInputStream();
-		    InputStreamReader isr = new InputStreamReader(is);
-		    BufferedReader br = new BufferedReader(isr);
+		    String secretValue = wdkModel.getSecretKey();
 		    MessageDigest digest = MessageDigest.getInstance("MD5");
-		    String secretValue = br.readLine();
 
 		    secretValue = loginCookie.getValue().substring(0, loginCookie.getValue().lastIndexOf("-")) + secretValue;
-		    String cookieHash =  loginCookie.getValue().substring(loginCookie.getValue().lastIndexOf("-")+1);
+		    String cookieHash = loginCookie.getValue().substring(loginCookie.getValue().lastIndexOf("-")+1);
 		    
 		    byte[] encrypted = digest.digest(secretValue.getBytes());
 		    // convert each byte into hex format
