@@ -1,5 +1,8 @@
 package org.gusdb.wdk.model;
 
+import java.security.MessageDigest;
+import java.io.FileReader;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -8,6 +11,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import java.io.IOException;
+import java.io.FileNotFoundException;
+import java.security.NoSuchAlgorithmException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
@@ -68,6 +74,7 @@ public class WdkModel {
     private String name;
     private String displayName;
     private String version; // use default version
+    private String secretKey;
 
     private List<WdkModelText> introductions = new ArrayList<WdkModelText>();
     private String introduction;
@@ -169,6 +176,10 @@ public class WdkModel {
 
     public String getDisplayName() {
         return displayName;
+    }
+
+    public String getSecretKey() {
+        return secretKey;
     }
 
     public void addIntroduction(WdkModelText introduction) {
@@ -393,6 +404,34 @@ public class WdkModel {
 
             String configFile = modelConfig.getGusHome() + "/config/"
                     + projectId + "/model-config.xml";
+
+	    try {
+		// load secret key file & read contents
+		String secretKeyFileLoc = modelConfig.getSecretKeyFile();
+		FileReader secretKeyFile = new FileReader(secretKeyFileLoc);
+		BufferedReader buffer = new BufferedReader(secretKeyFile);
+		StringBuffer contents = new StringBuffer();
+		String line;
+		while ((line = buffer.readLine()) != null) {
+		    contents.append(line);
+		}
+		
+		// hash the contents & store secret key as string in hex format
+		MessageDigest digest = MessageDigest.getInstance("MD5");
+		byte[] hashedContents = digest.digest(contents.toString().getBytes());
+		contents = new StringBuffer();
+		for (byte code : hashedContents) {
+		    contents.append(Integer.toHexString(code & 0xFF));
+		}
+		
+		this.secretKey = contents.toString();
+	    } catch (FileNotFoundException ex) {
+		throw new WdkModelException(ex);
+	    } catch (IOException ex) {
+		throw new WdkModelException(ex);
+	    } catch (NoSuchAlgorithmException ex) {
+		throw new WdkModelException(ex);
+	    }
 
             // initialize authentication factory
             // set the max active as half of the model's configuration

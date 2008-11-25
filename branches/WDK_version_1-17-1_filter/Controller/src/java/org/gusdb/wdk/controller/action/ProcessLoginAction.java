@@ -91,12 +91,7 @@ public class ProcessLoginAction extends Action {
 		loginCookie.setMaxAge(-1);
 	    }
 
-	    Runtime rt = Runtime.getRuntime();
-	    Process proc = rt.exec(CConstants.WDK_LOGIN_SECRET_KEY);
-	    InputStream is = proc.getInputStream();
-	    InputStreamReader isr = new InputStreamReader(is);
-	    BufferedReader br = new BufferedReader(isr);
-	    String secretValue = br.readLine();
+	    String secretValue = wdkModel.getSecretKey();
 
 	    secretValue = loginCookie.getValue() + secretValue;
 
@@ -127,6 +122,8 @@ public class ProcessLoginAction extends Action {
             }
 
 	    forward.setRedirect(true);
+	    /* history ids don't show up in url anymore, so this isn't needed
+
             // login succeeded, redirect to "show_history page if history_id
             // contained in the url. since the history id is invalid/changed
             // after login
@@ -134,6 +131,7 @@ public class ProcessLoginAction extends Action {
                 forward = mapping.findForward(CConstants.SHOW_QUERY_HISTORY_MAPKEY);
                 return forward;
             }
+	    */
         } catch (WdkUserException ex) {
             ex.printStackTrace();
             // user authentication failed, set the error message
@@ -144,7 +142,8 @@ public class ProcessLoginAction extends Action {
                     referer);
             request.getSession().setAttribute(CConstants.WDK_ORIGIN_URL_KEY,
                     request.getParameter(CConstants.WDK_ORIGIN_URL_KEY));
-            forwardUrl = referer;
+	    ActionForward loginPage = mapping.findForward(CConstants.SHOW_LOGIN_MAPKEY);
+            forwardUrl = loginPage.getPath();
         }
         forward.setPath(forwardUrl);
         return forward;

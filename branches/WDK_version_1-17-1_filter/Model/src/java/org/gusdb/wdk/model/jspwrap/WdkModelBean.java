@@ -48,6 +48,10 @@ public class WdkModelBean  {
         return model.getDisplayName();
     }
 
+    public String getSecretKey() {
+        return model.getSecretKey();
+    }
+
     public String getIntroduction() {
         return model.getIntroduction();
     }
