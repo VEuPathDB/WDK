@@ -891,7 +891,9 @@ public class Answer {
     public PrimaryKeyAttributeValue[] getAllPkValues()
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException {
-        ResultList resultList = idsQueryInstance.getResults();
+        ResultList resultList;
+	if (filter == null) resultList = idsQueryInstance.getResults();
+	else resultList = filter.getResults(this);
         PrimaryKeyAttributeField pkField = question.getRecordClass().getPrimaryKeyAttributeField();
         String[] pkColumns = pkField.getColumnRefs();
         List<PrimaryKeyAttributeValue> pkValues = new ArrayList<PrimaryKeyAttributeValue>();
