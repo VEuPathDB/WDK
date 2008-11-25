@@ -111,7 +111,7 @@ public class ProcessQueryInstance extends QueryInstance {
                     if (type == ColumnType.BOOLEAN) {
                         ps.setBoolean(columnId, Boolean.parseBoolean(value));
                     } else if (type == ColumnType.CLOB) {
-                        platform.updateClobData(ps, columnId, value, false);
+                        platform.setClobData(ps, columnId, value, false);
                     } else if (type == ColumnType.DATE) {
                         ps.setDate(columnId, Date.valueOf(value));
                     } else if (type == ColumnType.FLOAT) {

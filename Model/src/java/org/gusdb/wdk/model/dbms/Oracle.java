@@ -35,7 +35,7 @@ public class Oracle extends DBPlatform {
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.dbms.DBPlatform#createSequence(java.lang.String,
-     *      int, int)
+     * int, int)
      */
     @Override
     public void createSequence(String sequence, int start, int increment)
@@ -101,16 +101,18 @@ public class Oracle extends DBPlatform {
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.dbms.DBPlatform#getNextId(java.lang.String,
-     *      java.lang.String)
+     * java.lang.String)
      */
     @Override
-    public int getNextId(String schema, String table) throws SQLException, WdkModelException {
+    public int getNextId(String schema, String table) throws SQLException,
+            WdkModelException {
         schema = normalizeSchema(schema);
 
         StringBuffer sql = new StringBuffer("SELECT ");
         sql.append(schema).append(table).append(ID_SEQUENCE_SUFFIX);
         sql.append(".nextval FROM dual");
-        BigDecimal id = (BigDecimal) SqlUtils.executeScalar(dataSource, sql.toString());
+        BigDecimal id = (BigDecimal) SqlUtils.executeScalar(dataSource,
+                sql.toString());
         return id.intValue();
     }
 
@@ -118,7 +120,7 @@ public class Oracle extends DBPlatform {
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.dbms.DBPlatform#getClobData(java.sql.ResultSet,
-     *      java.lang.String)
+     * java.lang.String)
      */
     @Override
     public String getClobData(ResultSet rs, String columnName)
@@ -131,11 +133,12 @@ public class Oracle extends DBPlatform {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.dbms.DBPlatform#updateClobData(java.sql.PreparedStatement,
-     *      int, java.lang.String, boolean)
+     * @see
+     * org.gusdb.wdk.model.dbms.DBPlatform#updateClobData(java.sql.PreparedStatement
+     * , int, java.lang.String, boolean)
      */
     @Override
-    public int updateClobData(PreparedStatement ps, int columnIndex,
+    public int setClobData(PreparedStatement ps, int columnIndex,
             String content, boolean commit) throws SQLException {
         Connection connection = ((DelegatingConnection) ps.getConnection()).getInnermostDelegate();
         CLOB clob = CLOB.createTemporary(connection, false,
@@ -149,7 +152,7 @@ public class Oracle extends DBPlatform {
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.dbms.DBPlatform#getPagedSql(java.lang.String,
-     *      int, int)
+     * int, int)
      */
     @Override
     public String getPagedSql(String sql, int startIndex, int endIndex) {
@@ -175,7 +178,7 @@ public class Oracle extends DBPlatform {
         StringBuffer sql = new StringBuffer("SELECT count(*) FROM ALL_TABLES ");
         sql.append("WHERE table_name = '");
         sql.append(tableName.toUpperCase()).append("'");
-        
+
         if (schema == null) schema = defaultSchema;
         if (schema.charAt(schema.length() - 1) == '.')
             schema = schema.substring(0, schema.length() - 1);
@@ -196,11 +199,23 @@ public class Oracle extends DBPlatform {
         return "TIMESTAMP";
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.dbms.DBPlatform#getFloatDataType(int)
      */
     @Override
     public String getFloatDataType(int size) {
         return "FLOAT(" + size + ")";
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.dbms.DBPlatform#convertBoolean(boolean)
+     */
+    @Override
+    public String convertBoolean(boolean value) {
+        return value ? "1" : "0";
     }
 }

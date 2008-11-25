@@ -148,8 +148,6 @@ public class AnswerValue {
         this.summaryFieldMap = new LinkedHashMap<String, AttributeField>();
 
         // get the view
-        if (filter == null)
-            filter = question.getRecordClass().getDefaultFilter();
         this.filter = filter;
 
         logger.debug("Answer created.");

@@ -332,7 +332,7 @@ public class FullRecordReporter extends Reporter {
                     }
                     psInsert.setString(index++, table.getName());
                     psInsert.setInt(index++, tableSize);
-                    platform.updateClobData(psInsert, index++, content, false);
+                    platform.setClobData(psInsert, index++, content, false);
                     psInsert.addBatch();
                     needUpdate = true;
                 }

@@ -107,7 +107,9 @@ public class TestDBManager {
                         String[] parts = nextLine.split("\t", columnIds.size());
                         for (int i = 0; i < parts.length; i++) {
                             String nextValue = parts[i];
-                            ColumnType type = ColumnType.parse(columnIds.get(i));
+                            String columnName = columnIds.get(i);
+                            String typeString = columnTypes.get(columnName);
+                            ColumnType type = ColumnType.parse(typeString);
 
                             if (nextValue.trim().equals("")
                                     && !type.isText())

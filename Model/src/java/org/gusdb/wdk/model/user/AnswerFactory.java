@@ -166,7 +166,7 @@ public class AnswerFactory {
             ps.setString(4, answer.getProjectVersion());
             ps.setString(5, answer.getQuestionName());
             ps.setString(6, answer.getQueryChecksum());
-            userPlatform.updateClobData(ps, 7, paramClob, false);
+            userPlatform.setClobData(ps, 7, paramClob, false);
 
             ps.executeUpdate();
         } finally {

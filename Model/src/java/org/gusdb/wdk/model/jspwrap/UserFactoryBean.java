@@ -46,10 +46,9 @@ public class UserFactoryBean {
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.user.UserFactory#createUser(java.lang.String,
-     *      java.lang.String, java.lang.String, java.lang.String,
-     *      java.lang.String, java.lang.String, java.lang.String,
-     *      java.lang.String, java.lang.String, java.lang.String,
-     *      java.lang.String, java.lang.String, java.lang.String)
+     * java.lang.String, java.lang.String, java.lang.String, java.lang.String,
+     * java.lang.String, java.lang.String, java.lang.String, java.lang.String,
+     * java.lang.String, java.lang.String, java.lang.String, java.lang.String)
      */
     public UserBean createUser(String email, String lastName, String firstName,
             String middleName, String title, String organization,
@@ -87,7 +86,7 @@ public class UserFactoryBean {
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.user.UserFactory#authenticate(java.lang.String,
-     *      java.lang.String)
+     * java.lang.String)
      */
     public UserBean login(UserBean guest, String email, String password)
             throws WdkModelException, WdkUserException,
@@ -100,7 +99,7 @@ public class UserFactoryBean {
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.user.UserFactory#sendEmail(java.lang.String,
-     *      java.lang.String, java.lang.String, java.lang.String)
+     * java.lang.String, java.lang.String, java.lang.String)
      */
     public void sendEmail(String email, String reply, String subject,
             String content) throws WdkUserException {
@@ -110,10 +109,12 @@ public class UserFactoryBean {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.user.UserFactory#resetPassword(org.gusdb.wdk.model.user.User)
+     * @see
+     * org.gusdb.wdk.model.user.UserFactory#resetPassword(org.gusdb.wdk.model
+     * .user.User)
      */
     public void resetPassword(String email) throws WdkUserException,
-            WdkModelException {
+            WdkModelException, SQLException {
         userFactory.resetPassword(email);
     }
 
@@ -123,7 +124,7 @@ public class UserFactoryBean {
      * @see org.gusdb.wdk.model.user.UserFactory#loadUser(java.lang.String)
      */
     public UserBean getUserByEmail(String email) throws WdkModelException,
-            WdkUserException {
+            WdkUserException, SQLException {
         User user = userFactory.getUserByEmail(email);
         return new UserBean(user);
     }
@@ -135,8 +136,8 @@ public class UserFactoryBean {
      * @throws WdkModelException
      * @see org.gusdb.wdk.model.user.UserFactory#loadUserBySignature(java.lang.String)
      */
-    public UserBean getUser(String signature)
-            throws WdkUserException, WdkModelException {
+    public UserBean getUser(String signature) throws WdkUserException,
+            WdkModelException {
         User user = userFactory.getUser(signature);
         return new UserBean(user);
     }
@@ -147,7 +148,7 @@ public class UserFactoryBean {
      * @see org.gusdb.wdk.model.user.UserFactory#loadUser(int)
      */
     public UserBean getUser(int userId) throws WdkUserException,
-            WdkModelException {
+            WdkModelException, SQLException {
         User user = userFactory.getUser(userId);
         return new UserBean(user);
     }

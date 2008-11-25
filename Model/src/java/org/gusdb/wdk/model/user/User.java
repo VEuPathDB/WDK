@@ -1042,4 +1042,31 @@ public class User /* implements Serializable */{
         return stepFactory.checkNameExists(strategy, name);
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof User) {
+            User user = (User) obj;
+            if (user.userId != userId) return false;
+            if (!email.equals(user.email)) return false;
+            if (!signature.equals(user.signature)) return false;
+
+            return true;
+        } else return false;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode() {
+        return userId;
+    }
+
 }
