@@ -12,6 +12,7 @@ import java.sql.Statement;
 
 import javax.sql.DataSource;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -26,6 +27,8 @@ import org.json.JSONException;
  * 
  */
 public class ResultFactory {
+
+    private Logger logger = Logger.getLogger(ResultFactory.class);
 
     private DBPlatform platform;
     private CacheFactory cacheFactory;
@@ -148,6 +151,8 @@ public class ResultFactory {
             connection.commit();
             return instanceId;
         } catch (SQLException ex) {
+            logger.error("Failed to create cache for query ["
+                    + instance.getQuery().getFullName() + "]");
             connection.rollback();
             throw ex;
         } catch (WdkUserException ex) {

@@ -49,6 +49,11 @@ public class EnumParam extends AbstractEnumParam {
                 termDisplayMap.put(term, item.getDisplay());
                 termParentMap.put(term, item.getParentTerm());
             }
+            // check if the result is empty
+            if (termInternalMap.isEmpty())
+                throw new WdkModelException("The EnumParam [" + getFullName()
+                        + "] doesn't have any value");
+
             initTreeMap(termParentMap);
         }
     }

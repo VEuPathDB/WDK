@@ -700,6 +700,31 @@ public class UserBean /* implements Serializable */{
         return new StrategyBean(user.getStrategy(displayId));
     }
 
+    public Map<String, List<StrategyBean>> getStrategiesByCategory()
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, JSONException, SQLException {
+        Map<String, List<Strategy>> strategies = user.getStrategiesByCategory();
+        Map<String, List<StrategyBean>> category = new LinkedHashMap<String, List<StrategyBean>>();
+        for (String type : strategies.keySet()) {
+            List<Strategy> list = strategies.get(type);
+            List<StrategyBean> beans = new ArrayList<StrategyBean>();
+            for (Strategy strategy : list) {
+                beans.add(new StrategyBean(strategy));
+            }
+            category.put(type, beans);
+        }
+        return category;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#getStrategyCount()
+     */
+    public int getStrategyCount() throws WdkUserException {
+        return user.getStrategyCount();
+    }
+
     public void validateExpression(String expression) throws WdkModelException,
             NoSuchAlgorithmException, WdkUserException, SQLException,
             JSONException {
