@@ -145,8 +145,6 @@ public class StepFactory {
                 userId);
         sqlMaxId.append(" AND s.").append(answerIdColumn);
         sqlMaxId.append(" = a.").append(answerIdColumn);
-        sqlMaxId.append(" AND a.").append(AnswerFactory.COLUMN_PROJECT_ID);
-        sqlMaxId.append(" = '").append(wdkModel.getProjectId()).append("'");
 
         StringBuffer sqlInsertStep = new StringBuffer("INSERT INTO ");
         sqlInsertStep.append(userSchema).append(TABLE_STEP).append(" (");
@@ -332,7 +330,7 @@ public class StepFactory {
         PreparedStatement psDeleteStrategies = null;
         try {
             StringBuffer sql = new StringBuffer("DELETE FROM ");
-            sql.append(TABLE_STRATEGY).append(" WHERE ");
+            sql.append(userSchema).append(TABLE_STRATEGY).append(" WHERE ");
             sql.append(UserFactory.COLUMN_USER_ID).append(" = ?");
             if (!allProjects) {
                 sql.append(" AND ").append(COLUMN_PROJECT_ID).append(" = ?");

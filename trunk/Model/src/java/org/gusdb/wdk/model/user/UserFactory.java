@@ -305,13 +305,14 @@ public class UserFactory {
             psUser = SqlUtils.getPreparedStatement(dataSource, "INSERT INTO "
                     + userSchema + "users (user_id, email, passwd, is_guest, "
                     + "register_time, last_active, first_name, signature) "
-                    + "VALUES (?, ?, ' ', 1, ?, ?, ?, ?)");
+                    + "VALUES (?, ?, ' ', ?, ?, ?, ?, ?)");
             psUser.setInt(1, userId);
             psUser.setString(2, email);
-            psUser.setDate(3, new java.sql.Date(registerTime.getTime()));
-            psUser.setDate(4, new java.sql.Date(lastActiveTime.getTime()));
-            psUser.setString(5, firstName);
-            psUser.setString(6, signature);
+            psUser.setBoolean(3, true);
+            psUser.setDate(4, new java.sql.Date(registerTime.getTime()));
+            psUser.setDate(5, new java.sql.Date(lastActiveTime.getTime()));
+            psUser.setString(6, firstName);
+            psUser.setString(7, signature);
             psUser.executeUpdate();
 
             User user = new User(wdkModel, userId, email, signature);

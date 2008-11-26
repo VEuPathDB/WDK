@@ -36,7 +36,8 @@ public class NestedRecord extends WdkModelBase {
         this.question = (Question) model.resolveReference(questionTwoPartName);
         question.resolveReferences(model);
 
-        // validate the query
+        // validate the nesting query; the query acts as a table query of the
+        // parent recordClass.
         Query query = question.getQuery();
         query.resolveReferences(model);
         parentRecordClass.validateQuery(query);
