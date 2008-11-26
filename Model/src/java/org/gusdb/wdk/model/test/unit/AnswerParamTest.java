@@ -33,10 +33,12 @@ public class AnswerParamTest {
 
         Question question = UnitTestHelper.getAnswerParamQuestion();
         for (Param param : question.getParams()) {
-            AnswerParam answerParam = (AnswerParam) param;
-            String internalValue = answerParam.prepareValue(externalValue);
-            Assert.assertEquals("user-independent value", answerChecksum,
-                    internalValue);
+            if (param instanceof AnswerParam) {
+                AnswerParam answerParam = (AnswerParam) param;
+                String internalValue = answerParam.prepareValue(externalValue);
+                Assert.assertEquals("user-independent value", answerChecksum,
+                        internalValue);
+            }
         }
     }
 

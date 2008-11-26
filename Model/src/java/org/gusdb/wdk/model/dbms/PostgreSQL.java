@@ -153,12 +153,13 @@ public class PostgreSQL extends DBPlatform {
     @Override
     public boolean checkTableExists(String schema, String tableName)
             throws SQLException, WdkModelException {
+        if (schema == null || schema.length() == 0) schema = defaultSchema;
+        if (schema.endsWith("."))
+            schema = schema.substring(0, schema.length() - 1);
+        tableName = tableName.toLowerCase();
+
         StringBuffer sql = new StringBuffer("SELECT count(*) FROM pg_tables ");
         sql.append("WHERE tablename = '").append(tableName).append("'");
-        if (schema == null) schema = defaultSchema;
-        else if (schema.endsWith(".")) {
-            schema = schema.substring(0, schema.length() - 1);
-        }
         sql.append(" AND schemaname = '").append(schema).append("'");
         long count = (Long) SqlUtils.executeScalar(dataSource, sql.toString());
         return (count > 0);
