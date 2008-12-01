@@ -231,11 +231,11 @@ public class AnswerValue {
             resultSizesByProject = new LinkedHashMap<String, Integer>();
             // need to run the query first
             ResultList resultList;
-            String message = null;
-            if (filter == null) {
+	    // for portal
+            String message = idsQueryInstance.getResultMessage();
+            if (filter == null) 
                 resultList = idsQueryInstance.getResults();
-                message = idsQueryInstance.getResultMessage();
-            } else resultList = filter.getResults(this);
+            else resultList = filter.getResults(this);
 
             try {
                 boolean hasMessage = (message != null && message.length() > 0);
