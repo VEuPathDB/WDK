@@ -15,6 +15,7 @@ import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.StringParam;
@@ -32,6 +33,7 @@ import org.junit.Test;
 public class BooleanQuestionTest {
 
     private WdkModel wdkModel;
+    private DBPlatform platform;
 
     private RecordClass recordClass;
     private String leftValue;
@@ -40,6 +42,7 @@ public class BooleanQuestionTest {
     public BooleanQuestionTest() throws Exception {
         // load the model
         wdkModel = UnitTestHelper.getModel();
+        platform = wdkModel.getQueryPlatform();
     }
 
     @Before
@@ -69,7 +72,7 @@ public class BooleanQuestionTest {
         paramValues.put(rightParam.getName(), rightValue);
 
         StringParam operator = booleanQuery.getOperatorParam();
-        paramValues.put(operator.getName(), BooleanOperator.UNION.getOperator());
+        paramValues.put(operator.getName(), BooleanOperator.UNION.getOperator(platform));
 
         StringParam expansion = booleanQuery.getUseBooleanFilter();
         paramValues.put(expansion.getName(), "false");
@@ -103,7 +106,7 @@ public class BooleanQuestionTest {
 
         StringParam operator = booleanQuery.getOperatorParam();
         paramValues.put(operator.getName(),
-                BooleanOperator.INTERSECT.getOperator());
+                BooleanOperator.INTERSECT.getOperator(platform));
 
         StringParam expansion = booleanQuery.getUseBooleanFilter();
         paramValues.put(expansion.getName(), "false");
@@ -137,7 +140,7 @@ public class BooleanQuestionTest {
 
         StringParam operator = booleanQuery.getOperatorParam();
         paramValues.put(operator.getName(),
-                BooleanOperator.LEFT_MINUS.getOperator());
+                BooleanOperator.LEFT_MINUS.getOperator(platform));
 
         StringParam expansion = booleanQuery.getUseBooleanFilter();
         paramValues.put(expansion.getName(), "false");
@@ -168,7 +171,7 @@ public class BooleanQuestionTest {
 
         StringParam operator = booleanQuery.getOperatorParam();
         paramValues.put(operator.getName(),
-                BooleanOperator.INTERSECT.getOperator());
+                BooleanOperator.INTERSECT.getOperator(platform));
 
         StringParam expansion = booleanQuery.getUseBooleanFilter();
         paramValues.put(expansion.getName(), "false");

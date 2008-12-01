@@ -282,7 +282,7 @@ public class Step {
      */
     public boolean isCombined() throws NoSuchAlgorithmException,
             WdkModelException, JSONException, WdkUserException, SQLException {
-        return answer.getAnswerValue().isCombined();
+        return answer.getAnswerValue().getIdsQueryInstance().getQuery().isCombined();
     }
 
     /**
@@ -295,7 +295,7 @@ public class Step {
      */
     public boolean isTransform() throws NoSuchAlgorithmException,
             WdkModelException, JSONException, WdkUserException, SQLException {
-        return answer.getAnswerValue().isTransform();
+        return answer.getAnswerValue().getIdsQueryInstance().getQuery().isTransform();
     }
 
     /**

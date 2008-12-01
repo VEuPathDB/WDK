@@ -6,6 +6,8 @@ package org.gusdb.wdk.model;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import org.gusdb.wdk.model.dbms.DBPlatform;
+
 /**
  * @author xingao
  * 
@@ -25,9 +27,10 @@ public enum BooleanOperator {
         if (intersets.size() == 0)
             initialize(intersets, "intersect", "and", "&", "&&");
         if (leftMinuses.size() == 0)
-            initialize(leftMinuses, "minus", "lminus", "not", "lnot", "-");
+            initialize(leftMinuses, "minus", "lminus", "not", "lnot", "-",
+                    "except");
         if (rightMinuses.size() == 0)
-            initialize(rightMinuses, "rminus", "rnot", "|-");
+            initialize(rightMinuses, "rminus", "rnot", "|-", "rexcept");
 
         name = name.trim().toLowerCase();
 
@@ -54,7 +57,9 @@ public enum BooleanOperator {
         this.operator = operator;
     }
 
-    public String getOperator() {
-        return operator;
+    public String getOperator(DBPlatform platform) {
+        if (this == LEFT_MINUS || this == RIGHT_MINUS) {
+            return platform.getMinusOperator();
+        } else return operator;
     }
 }

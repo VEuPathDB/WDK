@@ -19,11 +19,9 @@ import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlResultList;
 import org.gusdb.wdk.model.dbms.SqlUtils;
-import org.gusdb.wdk.model.query.BooleanQueryInstance;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
-import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.user.Answer;
@@ -576,8 +574,8 @@ public class AnswerValue {
         List<String> orderClauses = new ArrayList<String>();
         prepareSortingSqls(attributeSqls, orderClauses);
 
-        StringBuffer sql = new StringBuffer("SELECT idq.* FROM (");
-        sql.append(idSql).append(") idq");
+        StringBuffer sql = new StringBuffer("SELECT idq.* FROM ");
+        sql.append(idSql).append(" idq");
         // add all tables involved
         for (String shortName : attributeSqls.keySet()) {
             sql.append(", (").append(attributeSqls.get(shortName)).append(") ");
@@ -623,7 +621,7 @@ public class AnswerValue {
             WdkModelException, JSONException, WdkUserException {
         String[] pkColumns = question.getRecordClass().getPrimaryKeyAttributeField().getColumnRefs();
 
-        StringBuffer sql = new StringBuffer("SELECT DISTINCT ");
+        StringBuffer sql = new StringBuffer("(SELECT DISTINCT ");
         boolean firstColumn = true;
         for (String column : pkColumns) {
             if (firstColumn) firstColumn = false;
@@ -635,7 +633,7 @@ public class AnswerValue {
         String innerSql = idsQueryInstance.getSql();
         // get a filter
         if (filter != null) innerSql = filter.applyFilter(innerSql);
-        sql.append(innerSql).append(") bidq");
+        sql.append(innerSql).append(") bidq)");
 
         logger.debug("id sql constructed.");
 
@@ -929,24 +927,5 @@ public class AnswerValue {
         PrimaryKeyAttributeValue[] array = new PrimaryKeyAttributeValue[pkValues.size()];
         pkValues.toArray(array);
         return array;
-    }
-
-    /**
-     * @return the combined
-     */
-    public boolean isCombined() {
-        // check if the query contains any of the step param
-        for (Param param : idsQueryInstance.getQuery().getParams()) {
-            if (param instanceof AnswerParam) return true;
-        }
-        return false;
-    }
-
-    public boolean isBoolean() {
-        return (idsQueryInstance instanceof BooleanQueryInstance);
-    }
-
-    public boolean isTransform() {
-        return (!isBoolean() && isCombined());
     }
 }

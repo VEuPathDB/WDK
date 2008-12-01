@@ -19,8 +19,9 @@ public class PrimaryKeyAttributeField extends AttributeField {
     private String aliasQueryRef = null;
 
     public PrimaryKeyAttributeField() {
+        // this step should be deprecated
         // add project id into the column list
-        columnRefSet.add(Utilities.COLUMN_PROJECT_ID);
+        // columnRefSet.add(Utilities.COLUMN_PROJECT_ID);
     }
 
     public void addColumnRef(WdkModelText columnRef) {
@@ -81,9 +82,6 @@ public class PrimaryKeyAttributeField extends AttributeField {
             if (columnRef.include(projectId)) {
                 columnRef.excludeResources(projectId);
                 String columnName = columnRef.getText();
-
-                // skip the project id, since it's already in the set
-                if (columnName.equals(Utilities.COLUMN_PROJECT_ID)) continue;
 
                 if (columnRefSet.contains(columnName)) {
                     throw new WdkModelException("The columnRef " + columnRef

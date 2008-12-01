@@ -15,6 +15,7 @@ import org.gusdb.wdk.model.QuestionSet;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
@@ -53,6 +54,11 @@ public class UnitTestHelper {
             String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
             try {
                 wdkModel = WdkModel.construct(projectId, gusHome);
+                
+                // reset the cache
+                logger.info("resetting cache...");
+                CacheFactory cacheFactory = wdkModel.getResultFactory().getCacheFactory();
+                cacheFactory.resetCache();
             } catch (Exception ex) {
                 throw ex;
             }
@@ -127,7 +133,6 @@ public class UnitTestHelper {
             for (Question question : questionSet.getQuestions()) {
                 String rcName = question.getRecordClass().getFullName();
 
-                // skip non-sql question
                 if (!(question.getQuery() instanceof SqlQuery)) continue;
 
                 if (!allAnswerQuestions.containsKey(rcName)) {
