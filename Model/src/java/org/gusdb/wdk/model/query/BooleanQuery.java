@@ -240,4 +240,13 @@ public class BooleanQuery extends SqlQuery {
         sql.append(" FROM $$").append(operand).append("$$");
         sql.append(" WHERE $$").append(operand).append(".condition$$");
     }
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.query.Query#isBoolean()
+     */
+    @Override
+    public boolean isBoolean() {
+        return true;
+    }
+    
 }

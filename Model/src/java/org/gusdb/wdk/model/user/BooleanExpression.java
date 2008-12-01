@@ -18,6 +18,7 @@ import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.json.JSONException;
 
@@ -30,6 +31,7 @@ public class BooleanExpression {
     private static final String STUB_PREFIX = "__STUB__";
 
     private User user;
+    private DBPlatform platform;
 
     private String orgExp;
 
@@ -38,6 +40,7 @@ public class BooleanExpression {
      */
     public BooleanExpression(User user) {
         this.user = user;
+        this.platform = user.getWdkModel().getQueryPlatform();
     }
 
     public Step parseExpression(String expression, boolean useBooleanFilter)
@@ -122,7 +125,8 @@ public class BooleanExpression {
             Step left = parseBlock(triplet[0], replace, useBooleanFilter);
             Step right = parseBlock(triplet[2], replace, useBooleanFilter);
 
-            String operator = BooleanOperator.parse(triplet[1]).getOperator();
+            String operator = BooleanOperator.parse(triplet[1]).getOperator(
+                    platform);
 
             // create boolean answer that wraps the children
             return makeBooleanStep(left, right, operator, useBooleanFilter);

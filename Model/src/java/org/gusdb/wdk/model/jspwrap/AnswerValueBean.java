@@ -242,11 +242,15 @@ public class AnswerValueBean {
     }
 
     public boolean getIsBoolean() {
-        return answerValue.isBoolean();
+        return answerValue.getIdsQueryInstance().getQuery().isBoolean();
     }
 
-    public boolean getIsCombinedAnswer() {
-        return answerValue.isBoolean();
+    public boolean getIsCombined() {
+        return answerValue.getIdsQueryInstance().getQuery().isCombined();
+    }
+
+    public boolean getIsTransform() {
+        return answerValue.getIdsQueryInstance().getQuery().isTransform();
     }
 
     public RecordClassBean getRecordClass() {

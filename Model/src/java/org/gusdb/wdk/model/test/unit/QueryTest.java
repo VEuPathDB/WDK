@@ -15,6 +15,7 @@ import org.gusdb.wdk.model.QuestionSet;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.ProcessQuery;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.param.FlatVocabParam;
@@ -58,6 +59,11 @@ public class QueryTest {
         for (QuestionSet questionSet : wdkModel.getAllQuestionSets()) {
             for (Question question : questionSet.getQuestions()) {
                 Query query = question.getQuery();
+
+                // skip any combined queries and process queries
+                if (query.isCombined() || (query instanceof ProcessQuery))
+                    continue;
+
                 String queryName = query.getFullName();
                 if (!testedQueries.contains(queryName)) {
                     testQuery(query);
