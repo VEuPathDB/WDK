@@ -22,6 +22,7 @@ public class ParamReference extends Reference {
     private Boolean quote;
     private String emptyValue;
     private String displayType;
+    private Boolean visible;
 
     public ParamReference() {
     }
@@ -145,5 +146,13 @@ public class ParamReference extends Reference {
      */
     public void setDisplayType(String displayType) {
         this.displayType = displayType;
+    }
+
+    public Boolean getVisible() {
+        return visible;
+    }
+
+    public void setVisible(Boolean visible) {
+        this.visible = visible;
     }
 }
