@@ -214,9 +214,10 @@ public abstract class QueryInstance {
             JSONException, WdkUserException {
         Map<String, String> internalValues = new LinkedHashMap<String, String>();
         Map<String, Param> params = query.getParamMap();
-        for (String paramName : values.keySet()) {
+        for (String paramName : params.keySet()) {
             Param param = params.get(paramName);
-            Object externalValue = values.get(paramName);
+            Object externalValue = values.containsKey(paramName) ? values.get(paramName)
+                    : param.getDefault();
 
             String internalValue = param.getInternalValue(externalValue);
             if (internalValue == null)

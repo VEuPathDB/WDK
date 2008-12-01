@@ -483,6 +483,11 @@
             </attribute>
         </optional>
         <optional>
+            <attribute name="visible">
+                <data type="boolean" />
+            </attribute>
+        </optional>
+        <optional>
             <attribute name="quote">
                 <data type="boolean" />
             </attribute>
