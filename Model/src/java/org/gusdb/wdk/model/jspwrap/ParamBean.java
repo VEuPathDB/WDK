@@ -141,9 +141,9 @@ public class ParamBean {
 
         // truncation only happens if truncateLength is > 0; otherwise, use
         // original value
-        if (truncateLength > 0 && strValue.length() > truncateLength) {
-            strValue = strValue.substring(0, truncateLength) + "...";
-        }
+        // if (truncateLength > 0 && strValue.length() > truncateLength) {
+        // strValue = strValue.substring(0, truncateLength) + "...";
+        // }
         return strValue;
     }
 }
