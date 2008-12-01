@@ -227,17 +227,17 @@ public class Answer {
 
     public Map<String, Integer> getResultSizesByProject()
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+		   JSONException, WdkUserException {
         if (resultSizesByProject == null) {
             resultSizesByProject = new LinkedHashMap<String, Integer>();
             // need to run the query first
             ResultList resultList;
-            String message = null;
-            if (filter == null) {
-                resultList = idsQueryInstance.getResults();
-                message = idsQueryInstance.getResultMessage();
-            } else resultList = filter.getResults(this);
-
+	    // portal needs this so projects are in alphabetical order
+            String message = idsQueryInstance.getResultMessage();
+            if (filter == null)
+		resultList = idsQueryInstance.getResults();
+            else resultList = filter.getResults(this);
+	
             try {
                 boolean hasMessage = (message != null && message.length() > 0);
                 if (hasMessage) {
@@ -519,7 +519,7 @@ public class Answer {
                 }
             }
         }
-        logger.debug("Attribute query [" + attributeQuery.getFullName()
+        logger.info("Attribute query [" + attributeQuery.getFullName()
                 + "] integrated.");
     }
 
