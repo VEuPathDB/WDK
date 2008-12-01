@@ -10,6 +10,7 @@ import org.gusdb.wdk.model.BooleanOperator;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.StringParam;
 import org.json.JSONException;
@@ -78,16 +79,18 @@ public class BooleanQueryInstance extends SqlQueryInstance {
         String rightSql = constructOperandSql(rightParam, rightChecksum,
                 booleanFlag);
 
-        Object operator = values.get(booleanQuery.getOperatorParam().getName());
-        BooleanOperator op = BooleanOperator.parse((String) operator);
+        String operator = values.get(booleanQuery.getOperatorParam().getName());
+        BooleanOperator op = BooleanOperator.parse(operator);
+        DBPlatform platform = wdkModel.getQueryPlatform();
+        operator = op.getOperator(platform);
 
         if (op == BooleanOperator.RIGHT_MINUS) {
             sql.append("(").append(rightSql).append(") ");
-            sql.append(op.getOperator());
+            sql.append(operator);
             sql.append(" (").append(leftSql).append(")");
         } else {
             sql.append("(").append(leftSql).append(")");
-            sql.append(op.getOperator());
+            sql.append(operator);
             sql.append("(").append(rightSql).append(")");
         }
 

@@ -30,8 +30,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.query.BooleanQuery;
-import org.gusdb.wdk.model.query.BooleanQueryInstance;
-import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
@@ -194,8 +193,8 @@ public class StepFactory {
                 psInsertStep.setInt(7, estimateSize);
                 psInsertStep.setString(8, filterName);
                 psInsertStep.setBoolean(9, deleted);
-                userPlatform.setClobData(psInsertStep, 10,
-                        displayParamContent, false);
+                userPlatform.setClobData(psInsertStep, 10, displayParamContent,
+                        false);
                 psInsertStep.executeUpdate();
 
                 connection.commit();
@@ -380,7 +379,8 @@ public class StepFactory {
                             + answerIdColumn + " AND h."
                             + UserFactory.COLUMN_USER_ID + " = ? AND a."
                             + AnswerFactory.COLUMN_PROJECT_ID + " = ? "
-                            + " AND is_deleted = " + userPlatform.convertBoolean(false));
+                            + " AND is_deleted = "
+                            + userPlatform.convertBoolean(false));
             psHistory.setInt(1, user.getUserId());
             psHistory.setString(2, wdkModel.getProjectId());
             rsHistory = psHistory.executeQuery();
@@ -534,17 +534,16 @@ public class StepFactory {
         Question question = answerValue.getQuestion();
         Map<String, String> displayParams = step.getDisplayParams();
 
-        boolean isBoolean = answerValue.isBoolean();
-        boolean isTransform = answerValue.isTransform();
+        Query query = answerValue.getIdsQueryInstance().getQuery();
+        boolean isBoolean = query.isBoolean();
+        boolean isTransform = query.isTransform();
         int leftStepId = 0;
         int rightStepId = 0;
         String customName;
         if (isBoolean) {
             // boolean result, set the left and right step ids accordingly, and
             // set the constructed boolean expression to custom name.
-            QueryInstance qInstance = answerValue.getIdsQueryInstance();
-            BooleanQueryInstance bqInstance = (BooleanQueryInstance) qInstance;
-            BooleanQuery booleanQuery = (BooleanQuery) bqInstance.getQuery();
+            BooleanQuery booleanQuery = (BooleanQuery) query;
 
             AnswerParam leftParam = booleanQuery.getLeftOperandParam();
             String leftKey = displayParams.get(leftParam.getName());

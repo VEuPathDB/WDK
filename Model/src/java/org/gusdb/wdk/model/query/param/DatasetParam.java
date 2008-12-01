@@ -9,7 +9,6 @@ import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
-import org.gusdb.wdk.model.ModelConfig;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -79,19 +78,23 @@ public class DatasetParam extends Param {
     public String getInternalValue(String datasetChecksum)
             throws WdkModelException, WdkUserException, SQLException {
         int datasetId = getDatasetId(datasetChecksum);
+        return Integer.toString(datasetId);
 
-        ModelConfig config = wdkModel.getModelConfig();
-        String dbLink = config.getApplicationDB().getUserDbLink();
-        String wdkSchema = config.getUserDB().getWdkEngineSchema();
+        // to be compatible with previous model, it returns dataset_id;
+        // in the future, should return a nested SQL that represents the result
 
-        StringBuffer sql = new StringBuffer("SELECT ");
-        sql.append(DatasetFactory.COLUMN_DATASET_VALUE).append(" AS ");
-        sql.append(columnName);
-        sql.append(" FROM ").append(wdkSchema);
-        sql.append(DatasetFactory.TABLE_DATASET_VALUE).append(dbLink);
-        sql.append(" WHERE ").append(DatasetFactory.COLUMN_DATASET_ID);
-        sql.append(" = ").append(datasetId);
-        return sql.toString();
+        // ModelConfig config = wdkModel.getModelConfig();
+        // String dbLink = config.getApplicationDB().getUserDbLink();
+        // String wdkSchema = config.getUserDB().getWdkEngineSchema();
+        //
+        // StringBuffer sql = new StringBuffer("SELECT ");
+        // sql.append(DatasetFactory.COLUMN_DATASET_VALUE).append(" AS ");
+        // sql.append(columnName);
+        // sql.append(" FROM ").append(wdkSchema);
+        // sql.append(DatasetFactory.TABLE_DATASET_VALUE).append(dbLink);
+        // sql.append(" WHERE ").append(DatasetFactory.COLUMN_DATASET_ID);
+        // sql.append(" = ").append(datasetId);
+        // return sql.toString();
     }
 
     /*

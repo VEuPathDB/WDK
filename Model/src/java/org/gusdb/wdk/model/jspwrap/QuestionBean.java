@@ -314,11 +314,17 @@ public class QuestionBean {
         return question.isNoSummaryOnSingleRecord();
     }
 
-    /**
-     * @return
-     * @see org.gusdb.wdk.model.Question#isIgnoreSubType()
-     */
-    public boolean isIgnoreSubType() {
-        return question.isIgnoreSubType();
+
+    public boolean getIsBoolean() {
+        return question.getQuery().isBoolean();
     }
+
+    public boolean getIsCombined() {
+        return question.getQuery().isCombined();
+    }
+
+    public boolean getIsTransform() {
+        return question.getQuery().isTransform();
+    }
+
 }

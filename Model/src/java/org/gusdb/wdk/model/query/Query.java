@@ -19,6 +19,7 @@ import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
+import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.FlatVocabParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamReference;
@@ -505,6 +506,25 @@ public abstract class Query extends WdkModelBase {
                     || (paramName instanceof String && "".equals(value)))
                 values.put(paramName, param.getEmptyValue());
         }
+    }
+
+    /**
+     * @return the combined
+     */
+    public boolean isCombined() {
+        // check if the query contains any of the step param
+        for (Param param : paramMap.values()) {
+            if (param instanceof AnswerParam) return true;
+        }
+        return false;
+    }
+
+    public boolean isBoolean() {
+        return false;
+    }
+
+    public boolean isTransform() {
+        return (!isBoolean() && isCombined());
     }
 
     /*

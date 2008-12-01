@@ -629,6 +629,10 @@ public class RecordClass extends WdkModelBase implements
             if (!originalParams.containsKey(column)) newParams.add(column);
         }
 
+        // get default value for the primary key params
+        ParamValuesSet valueSet = getParamValuesSet();
+        Map<String, String> defaultValues = valueSet.getParamValues();
+
         // create the missing params for the query
         ParamSet paramSet = wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
         for (String columnName : newParams) {
@@ -642,6 +646,10 @@ public class RecordClass extends WdkModelBase implements
                 boolean quote = type.isText();
                 param.setName(columnName);
                 param.setQuote(quote);
+
+                String defaultValue = defaultValues.get(columnName);
+                if (defaultValue != null) param.setDefault(defaultValue);
+
                 param.resolveReferences(wdkModel);
                 param.setResources(wdkModel);
                 paramSet.addParam(param);
@@ -986,7 +994,7 @@ public class RecordClass extends WdkModelBase implements
 
         return map;
     }
-    
+
     public Query getAliasQuery() {
         return aliasQuery;
     }

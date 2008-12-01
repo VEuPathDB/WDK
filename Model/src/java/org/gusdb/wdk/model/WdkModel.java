@@ -353,7 +353,8 @@ public class WdkModel {
     }
 
     public Question getBooleanQuestion(RecordClass recordClass)
-            throws WdkModelException {
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
         // check if the boolean question already exists
         String qname = Question.BOOLEAN_QUESTION_PREFIX
                 + recordClass.getFullName().replace('.', '_');
@@ -367,16 +368,20 @@ public class WdkModel {
             booleanQuestion.setName(qname);
             booleanQuestion.setDisplayName("Combine "
                     + recordClass.getDisplayName() + " results");
-            booleanQuestion.setRecordClass(recordClass);
-            booleanQuestion.setQuery(getBooleanQuery(recordClass));
-            booleanQuestion.setWdkModel(this);
+            booleanQuestion.setRecordClassRef(recordClass.getFullName());
+            BooleanQuery booleanQuery = getBooleanQuery(recordClass);
+            booleanQuestion.setQueryRef(booleanQuery.getFullName());
+            booleanQuestion.excludeResources(projectId);
+            booleanQuestion.resolveReferences(this);
+
             internalSet.addQuestion(booleanQuestion);
         }
         return booleanQuestion;
     }
 
     public BooleanQuery getBooleanQuery(RecordClass recordClass)
-            throws WdkModelException {
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
         // check if the boolean query already exists
         String queryName = BooleanQuery.getQueryName(recordClass);
         QuerySet internalQuerySet = getQuerySet(Utilities.INTERNAL_QUERY_SET);
@@ -390,6 +395,9 @@ public class WdkModel {
             // make sure we create index on primary keys
             String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
             booleanQuery.setIndexColumns(pkColumns);
+
+            booleanQuery.excludeResources(projectId);
+            booleanQuery.resolveReferences(this);
 
             internalQuerySet.addQuery(booleanQuery);
         }
@@ -463,11 +471,11 @@ public class WdkModel {
         WdkModelException.modelName = getProjectId();
         WdkUserException.modelName = getProjectId();
 
-        // exclude resources that are not used by this project
-        excludeResources();
-
         // internal sets will be created if author hasn't define them
         createInternalSets();
+
+        // exclude resources that are not used by this project
+        excludeResources();
 
         // resolve references in the model objects
         resolveReferences();
@@ -726,7 +734,14 @@ public class WdkModel {
     private void createInternalSets() throws WdkModelException {
         // create a param set to hold all internal params, that is, the params
         // created at run-time.
-        if (!paramSets.containsKey(Utilities.INTERNAL_PARAM_SET)) {
+        boolean hasSet = false;
+        for (ParamSet paramSet : paramSetList) {
+            if (paramSet.getName().equals(Utilities.INTERNAL_PARAM_SET)) {
+                hasSet = true;
+                break;
+            }
+        }
+        if (!hasSet) {
             ParamSet internalParamSet = new ParamSet();
             internalParamSet.setName(Utilities.INTERNAL_PARAM_SET);
             addSet(internalParamSet, paramSets);
@@ -734,19 +749,32 @@ public class WdkModel {
 
         // create a query set to hold all internal queries, that is, the queries
         // created at run-time.
-        if (!querySets.containsKey(Utilities.INTERNAL_QUERY_SET)) {
+        hasSet = false;
+        for (QuerySet querySet : querySetList) {
+            if (querySet.getName().equals(Utilities.INTERNAL_QUERY_SET)) {
+                hasSet = true;
+                break;
+            }
+        }
+        if (!hasSet) {
             QuerySet internalQuerySet = new QuerySet();
             internalQuerySet.setName(Utilities.INTERNAL_QUERY_SET);
-            addSet(internalQuerySet, querySets);
+            addQuerySet(internalQuerySet);
         }
 
         // create a query set to hold all internal questions, that is, the
         // questions created at run-time.
-        if (!questionSets.containsKey(Utilities.INTERNAL_QUESTION_SET)) {
+        for (QuestionSet questionSet : questionSetList) {
+            if (questionSet.getName().equals(Utilities.INTERNAL_QUESTION_SET)) {
+                hasSet = true;
+                break;
+            }
+        }
+        if (!hasSet) {
             QuestionSet internalQuestionSet = new QuestionSet();
             internalQuestionSet.setInternal(true);
             internalQuestionSet.setName(Utilities.INTERNAL_QUESTION_SET);
-            addSet(internalQuestionSet, questionSets);
+            addQuestionSet(internalQuestionSet);
         }
     }
 
@@ -947,7 +975,7 @@ public class WdkModel {
     protected void finalize() throws Throwable {
         logger.debug("Model unloaded.");
     }
-    
+
     public String queryParamDisplayName(String paramName) {
         for (String paramSetName : paramSets.keySet()) {
             ParamSet paramSet = (ParamSet) paramSets.get(paramSetName);
