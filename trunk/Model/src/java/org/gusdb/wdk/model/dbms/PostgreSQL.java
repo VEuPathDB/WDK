@@ -103,6 +103,21 @@ public class PostgreSQL extends DBPlatform {
     /*
      * (non-Javadoc)
      * 
+     * @see org.gusdb.wdk.model.dbms.DBPlatform#getNextId(java.lang.String,
+     * java.lang.String)
+     */
+    public String getNextIdSqlExpression(String schema, String table) {
+        schema = normalizeSchema(schema);
+
+        StringBuffer sql = new StringBuffer("nextval('");
+        sql.append(schema).append(table).append(ID_SEQUENCE_SUFFIX);
+        sql.append("')");
+        return sql.toString();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.dbms.DBPlatform#getNumberDataType(int)
      */
     public String getNumberDataType(int size) {
