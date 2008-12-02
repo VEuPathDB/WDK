@@ -23,6 +23,8 @@ public class ModelConfigApplicationDB extends ModelConfigDB {
      *            the userDbLink to set
      */
     public void setUserDbLink(String userDbLink) {
+        if (userDbLink.length() > 0 && !userDbLink.startsWith("@"))
+            userDbLink = "@" + userDbLink;
         this.userDbLink = userDbLink;
     }
 }
