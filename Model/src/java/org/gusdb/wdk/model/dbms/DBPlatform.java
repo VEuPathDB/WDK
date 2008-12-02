@@ -118,6 +118,8 @@ public abstract class DBPlatform {
     public abstract int getNextId(String schema, String table)
             throws SQLException, WdkModelException;
 
+    public abstract String getNextIdSqlExpression(String schema, String table);
+
     public abstract String getNumberDataType(int size);
 
     public abstract String getFloatDataType(int size);
