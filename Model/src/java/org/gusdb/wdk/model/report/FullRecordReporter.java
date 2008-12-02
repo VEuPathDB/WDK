@@ -174,11 +174,13 @@ public class FullRecordReporter extends Reporter {
 
         // construct the insert sql
         StringBuffer sqlInsert = new StringBuffer("INSERT INTO ");
-        sqlInsert.append(tableCache).append(" (");
+        sqlInsert.append(tableCache).append(" (wdk_table_id, ");
         for (String column : pkColumns) {
             sqlInsert.append(column).append(", ");
         }
         sqlInsert.append(" table_name, row_count, content) VALUES (");
+        sqlInsert.append(wdkModel.getUserPlatform().getNextIdSqlExpression("apidb", "wdkTable"));
+        sqlInsert.append(", ");
         for (String column : pkColumns) {
             sqlInsert.append("?, ");
         }

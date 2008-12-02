@@ -119,6 +119,22 @@ public class Oracle extends DBPlatform {
     /*
      * (non-Javadoc)
      * 
+     * @see org.gusdb.wdk.model.dbms.DBPlatform#getNextIdSqlExpression(java.lang.String,
+     * java.lang.String)
+     */
+    @Override
+    public String getNextIdSqlExpression(String schema, String table) {
+        schema = normalizeSchema(schema);
+
+        StringBuffer sql = new StringBuffer("");
+        sql.append(schema).append(table).append(ID_SEQUENCE_SUFFIX);
+        sql.append(".nextval");
+        return sql.toString();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.dbms.DBPlatform#getClobData(java.sql.ResultSet,
      * java.lang.String)
      */
