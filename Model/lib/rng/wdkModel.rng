@@ -473,6 +473,11 @@
           <attribute name="groupRef" />
         </optional>
         <optional>
+          <attribute name="visible">
+            <data type="boolean" />
+          </attribute>
+        </optional>
+        <optional>
           <attribute name="allowEmpty">
             <data type="boolean" />
           </attribute>
