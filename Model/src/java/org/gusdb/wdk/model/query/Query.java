@@ -391,6 +391,7 @@ public abstract class Query extends WdkModelBase {
         Boolean quote = paramRef.getQuote();
         Boolean multiPick = paramRef.isMultiPick();
         Boolean useTermOnly = paramRef.getUseTermOnly();
+        Boolean visible = paramRef.getVisible();
         String queryRef = paramRef.getQueryRef();
         String displayType = paramRef.getDisplayType();
         if (param instanceof AbstractEnumParam) {
@@ -404,6 +405,10 @@ public abstract class Query extends WdkModelBase {
             // if the useTermOnly is set
             if (useTermOnly != null)
                 ((AbstractEnumParam) param).setUseTermOnly(useTermOnly);
+
+            // if the visible is set
+            if (visible != null)
+                ((AbstractEnumParam) param).setVisible(visible);
 
             // if the queryRef is set for FlatVocabParam
             if (queryRef != null) {

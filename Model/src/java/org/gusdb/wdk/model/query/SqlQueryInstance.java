@@ -124,13 +124,14 @@ public class SqlQueryInstance extends QueryInstance {
         Map<String, Param> params = query.getParamMap();
         Map<String, String> paramValues = getValues();
         String sql = query.getSql();
-        for (String paramName : paramValues.keySet()) {
+        for (String paramName : params.keySet()) {
             Param param = params.get(paramName);
             if (param == null)
                 throw new WdkModelException("The param '" + paramName
                         + "' does not exist in query " + query.getFullName());
 
             String value = paramValues.get(paramName);
+            if (value == null) value = param.getDefault();
             sql = param.replaceSql(sql, value);
         }
         return sql;

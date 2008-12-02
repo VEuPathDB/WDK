@@ -185,7 +185,7 @@ public class DatasetParam extends Param {
         String wdkSchema = wdkModel.getModelConfig().getUserDB().getWdkEngineSchema();
         String dbLink = wdkModel.getModelConfig().getApplicationDB().getUserDbLink();
         StringBuffer sql = new StringBuffer("SELECT ");
-        sql.append(DatasetFactory.COLUMN_DATASET_ID).append("FROM ");
+        sql.append(DatasetFactory.COLUMN_DATASET_ID).append(" FROM ");
         sql.append(wdkSchema).append(DatasetFactory.TABLE_DATASET_INDEX);
         sql.append(dbLink).append(" WHERE ");
         sql.append(DatasetFactory.COLUMN_DATASET_CHECKSUM).append(" = ?");
