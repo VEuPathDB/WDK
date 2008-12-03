@@ -66,7 +66,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
         QuestionForm qForm = (QuestionForm) form;
         // TRICKY: this is for action forward from
         // ProcessQuestionSetsFlatAction
-        qForm.reset();
+        // need to double check this, it clean up the input....
+        //qForm.reset();
 
         logger.debug("check existing strategy & step");
 
