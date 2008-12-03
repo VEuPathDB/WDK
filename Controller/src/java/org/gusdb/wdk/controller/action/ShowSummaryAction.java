@@ -49,6 +49,9 @@ public class ShowSummaryAction extends ShowQuestionAction {
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
+        logger.debug("entering showSummary");
+        
+        try {
 
         // get user, or create one, if not exist
         WdkModelBean wdkModel = (WdkModelBean) servlet.getServletContext().getAttribute(
@@ -64,6 +67,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
         // TRICKY: this is for action forward from
         // ProcessQuestionSetsFlatAction
         qForm.reset();
+
+        logger.debug("check existing strategy & step");
 
         StepBean step;
         StrategyBean strategy = null;
@@ -103,7 +108,9 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
         String filterName = request.getParameter("filter");
 
-        if (strStepId != null && strStepId.length() != 0) {
+        if (strStepId == null || strStepId.length() == 0) {
+            logger.debug("create new steps");
+
             QuestionBean wdkQuestion = (QuestionBean) request.getAttribute(CConstants.WDK_QUESTION_KEY);
             if (wdkQuestion == null) {
                 wdkQuestion = qForm.getQuestion();
@@ -143,6 +150,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
             }
 
         } else {
+            logger.debug("load existing step");
+
             step = wdkUser.getStep(Integer.parseInt(strStepId));
 
             // check if userAnswer is still valid
@@ -170,6 +179,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 wdkUser.applySummaryChecksum(questionName, summaryChecksum);
         }
         wdkUser.save();
+
+        logger.debug("step created");
 
         // get sorting and summary attributes
         AnswerValueBean wdkAnswerValue = step.getAnswerValue();
@@ -216,6 +227,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
         request.setAttribute("wdk_summary_url", requestUrl);
         request.setAttribute("wdk_query_string", queryString);
 
+        logger.debug("preparing forward");
+
         // make ActionForward
         ActionForward forward;
 
@@ -250,7 +263,13 @@ public class ShowSummaryAction extends ShowQuestionAction {
          * forward = new ActionForward(path, true); }
          */
 
+        logger.debug("Leaving showSummary");
         return forward;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw ex;
+        }
+
     }
 
     //
