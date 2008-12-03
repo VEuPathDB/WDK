@@ -390,11 +390,6 @@ public class Step {
         this.version = version;
     }
 
-    public Map<String, String> getParams() throws NoSuchAlgorithmException,
-            WdkModelException, JSONException, WdkUserException, SQLException {
-        return answer.getAnswerValue().getIdsQueryInstance().getValues();
-    }
-
     public Map<String, String> getParamNames() throws NoSuchAlgorithmException,
             WdkModelException, JSONException, WdkUserException, SQLException {
         Map<String, Param> params = answer.getAnswerValue().getIdsQueryInstance().getQuery().getParamMap();

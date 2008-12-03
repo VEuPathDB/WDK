@@ -14,6 +14,8 @@ import org.xml.sax.SAXException;
  */
 public class ModelConfigParserTest {
 
+    private static final String SAMPLE_PROJECT_ID = "SampleDB";
+
     private String projectId;
     private String gusHome;
 
@@ -36,7 +38,7 @@ public class ModelConfigParserTest {
 
         // project id is optional
         if (projectId == null || projectId.length() == 0)
-            projectId = WdkModelTestBase.SAMPLE_PROJECT_ID;
+            projectId = SAMPLE_PROJECT_ID;
     }
 
     /**

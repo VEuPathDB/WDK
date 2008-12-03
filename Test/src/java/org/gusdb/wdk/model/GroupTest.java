@@ -10,10 +10,16 @@ import org.junit.Test;
  * @author Jerric
  * 
  */
-public class GroupTest extends WdkModelTestBase {
+public class GroupTest {
 
-    public static final String SAMPLE_GROUP_SET = "sampleGroups";
-    public static final String SAMPLE_GROUP = "sampleGroup";
+    private static final String SAMPLE_GROUP_SET = "sampleGroups";
+    private static final String SAMPLE_GROUP = "sampleGroup";
+    
+    private WdkModel wdkModel;
+    
+    public GroupTest() throws Exception {
+        wdkModel = UnitTestHelper.getModel();
+    }
     
     /**
      * test getting all groups from model

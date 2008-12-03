@@ -1,13 +1,14 @@
 /**
  * 
  */
-package org.gusdb.wdk.model.test.unit;
+package org.gusdb.wdk.model.query.param;
 
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 
 import junit.framework.Assert;
 
+import org.gusdb.wdk.model.UnitTestHelper;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;

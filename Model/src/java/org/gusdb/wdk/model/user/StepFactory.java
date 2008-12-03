@@ -214,11 +214,13 @@ public class StepFactory {
         step.setLastRunTime(lastRunTime);
         step.setDeleted(deleted);
         step.setDisplayParams(displayParams);
-
+        
         // update step dependencies
         updateStepTree(user, step);
+        step.setValid(true);
 
         user.setStepCount(getStepCount(user));
+        
 
         return step;
     }
@@ -227,7 +229,7 @@ public class StepFactory {
             SQLException, WdkModelException {
         PreparedStatement psHistory = null;
         try {
-            if (isStepDepended(user, displayId)) {
+            if (!isStepDepended(user, displayId)) {
                 // remove step
                 psHistory = SqlUtils.getPreparedStatement(dataSource, "DELETE "
                         + "FROM " + userSchema + TABLE_STEP + " WHERE "
@@ -289,7 +291,7 @@ public class StepFactory {
                 sql.append(answerTable).append(" a ");
                 sql.append(" WHERE s.").append(answerIdColumn);
                 sql.append(" = a.").append(answerIdColumn);
-                sql.append(" AND a.").append(projectIdColumn).append(" = ?");
+                sql.append(" AND a.").append(projectIdColumn).append(" = ?)");
             }
             psDeleteSteps = SqlUtils.getPreparedStatement(dataSource,
                     sql.toString());
@@ -477,7 +479,7 @@ public class StepFactory {
             psStep.setInt(3, displayId);
             rsStep = psStep.executeQuery();
             if (!rsStep.next())
-                throw new SQLException("The Step #" + displayId + " of user "
+                throw new WdkUserException("The Step #" + displayId + " of user "
                         + user.getEmail() + " doesn't exist.");
 
             return loadStep(user, rsStep);
