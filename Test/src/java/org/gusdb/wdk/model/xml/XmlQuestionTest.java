@@ -3,8 +3,9 @@
  */
 package org.gusdb.wdk.model.xml;
 
+import org.gusdb.wdk.model.UnitTestHelper;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkModelTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -12,10 +13,16 @@ import org.junit.Test;
  * @author Jerric
  * 
  */
-public class XmlQuestionTest extends WdkModelTestBase {
+public class XmlQuestionTest {
 
-    public static final String SAMPLE_XML_QUESTION_SET = "XmlQuestions";
-    public static final String SAMPLE_XML_QUESTION = "News";
+    private static final String SAMPLE_XML_QUESTION_SET = "XmlQuestions";
+    private static final String SAMPLE_XML_QUESTION = "News";
+
+    private WdkModel wdkModel;
+
+    public XmlQuestionTest() throws Exception {
+        wdkModel = UnitTestHelper.getModel();
+    }
 
     /**
      * test reading questions from the model

@@ -1,10 +1,11 @@
 /**
  * 
  */
-package org.gusdb.wdk.model.test.unit;
+package org.gusdb.wdk.model.user;
 
 import java.sql.SQLException;
 
+import org.gusdb.wdk.model.UnitTestHelper;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;

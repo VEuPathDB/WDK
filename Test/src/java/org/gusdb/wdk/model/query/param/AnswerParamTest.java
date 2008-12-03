@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.gusdb.wdk.model.test.unit;
+package org.gusdb.wdk.model.query.param;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -9,6 +9,7 @@ import java.util.Map;
 import org.gusdb.wdk.model.AnswerFilterInstance;
 import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.Question;
+import org.gusdb.wdk.model.UnitTestHelper;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.user.Step;
