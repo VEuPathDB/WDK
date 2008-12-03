@@ -716,6 +716,16 @@ public class UserBean /* implements Serializable */{
         return category;
     }
 
+    public StrategyBean[] getInvalidStrategies() throws WdkUserException,
+            WdkModelException, JSONException, SQLException {
+        Strategy[] strategies = user.getInvalidStrategies();
+        StrategyBean[] beans = new StrategyBean[strategies.length];
+        for (int i = 0; i < strategies.length; i++) {
+            beans[i] = new StrategyBean(strategies[i]);
+        }
+        return beans;
+    }
+
     /*
      * (non-Javadoc)
      * 
