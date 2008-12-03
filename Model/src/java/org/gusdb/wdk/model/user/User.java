@@ -391,7 +391,7 @@ public class User /* implements Serializable */{
             throws WdkUserException, WdkModelException, SQLException,
             JSONException {
         Strategy strategy = stepFactory.createStrategy(this, step, name, saved);
-        if (strategy != null) strategyCount++;
+        if (strategyCount != null) strategyCount++;
         return strategy;
     }
 
