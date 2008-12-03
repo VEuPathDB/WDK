@@ -146,6 +146,8 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
         }
         String userSignature = user.getSignature();
 
+        logger.debug("strategy count: " + user.getStrategyCount());
+
         qForm.setServlet(servlet);
 
         boolean hasAllParams = true;
