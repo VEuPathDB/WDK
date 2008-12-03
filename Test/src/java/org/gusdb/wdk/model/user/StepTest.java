@@ -158,7 +158,7 @@ public class StepTest {
         }
     }
 
-    @Test(expected = WdkUserException.class)
+    @Test
     public void testDeleteStep() throws Exception {
         // create a step
         Step step = UnitTestHelper.createNormalStep(user);
@@ -170,7 +170,12 @@ public class StepTest {
 
         // now check if the step is really deleted; a WdkUserException should be
         // thrown
-        user.getStep(step.getDisplayId());
+        try {
+            user.getStep(step.getDisplayId());
+            Assert.assertTrue("step is not deleted", false);
+        } catch (WdkUserException ex) {
+            // do nothing, expected
+        }
     }
 
     @Test

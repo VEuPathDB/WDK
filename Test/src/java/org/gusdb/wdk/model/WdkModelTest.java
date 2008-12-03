@@ -35,10 +35,6 @@ public class WdkModelTest {
         String version = wdkModel.getVersion();
         Assert.assertTrue("the model version is not set", version != null
                 && version.length() > 0);
-
-        String introduction = wdkModel.getIntroduction();
-        Assert.assertTrue("the model introduction is not set",
-                introduction != null && introduction.length() > 0);
     }
 
     /**

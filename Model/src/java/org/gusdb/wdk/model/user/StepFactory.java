@@ -214,13 +214,12 @@ public class StepFactory {
         step.setLastRunTime(lastRunTime);
         step.setDeleted(deleted);
         step.setDisplayParams(displayParams);
-        
+
         // update step dependencies
         updateStepTree(user, step);
         step.setValid(true);
 
         user.setStepCount(getStepCount(user));
-        
 
         return step;
     }
@@ -277,6 +276,7 @@ public class StepFactory {
         PreparedStatement psDeleteSteps = null;
         String stepTable = userSchema + TABLE_STEP;
         String answerTable = wdkSchema + AnswerFactory.TABLE_ANSWER;
+        String strategyTable = userSchema + TABLE_STRATEGY;
         String userIdColumn = UserFactory.COLUMN_USER_ID;
         String answerIdColumn = AnswerFactory.COLUMN_ANSWER_ID;
         String projectIdColumn = AnswerFactory.COLUMN_PROJECT_ID;
@@ -291,14 +291,23 @@ public class StepFactory {
                 sql.append(answerTable).append(" a ");
                 sql.append(" WHERE s.").append(answerIdColumn);
                 sql.append(" = a.").append(answerIdColumn);
-                sql.append(" AND a.").append(projectIdColumn).append(" = ?)");
+                sql.append(" AND a.").append(projectIdColumn).append(" = ?");
             }
+            sql.append(" AND ").append(COLUMN_DISPLAY_ID);
+            sql.append(" NOT IN (SELECT ").append(COLUMN_ROOT_STEP_ID);
+            sql.append(" FROM ").append(strategyTable);
+            if (!allProjects)
+                sql.append(" WHERE ").append(COLUMN_PROJECT_ID).append(" = ?");
+            sql.append("))");
             psDeleteSteps = SqlUtils.getPreparedStatement(dataSource,
                     sql.toString());
 
             psDeleteSteps.setInt(1, user.getUserId());
-            if (!allProjects)
-                psDeleteSteps.setString(2, wdkModel.getProjectId());
+            if (!allProjects) {
+                String projectId = wdkModel.getProjectId();
+                psDeleteSteps.setString(2, projectId);
+                psDeleteSteps.setString(3, projectId);
+            }
             psDeleteSteps.executeUpdate();
         } finally {
             SqlUtils.closeStatement(psDeleteSteps);
@@ -479,8 +488,8 @@ public class StepFactory {
             psStep.setInt(3, displayId);
             rsStep = psStep.executeQuery();
             if (!rsStep.next())
-                throw new WdkUserException("The Step #" + displayId + " of user "
-                        + user.getEmail() + " doesn't exist.");
+                throw new WdkUserException("The Step #" + displayId
+                        + " of user " + user.getEmail() + " doesn't exist.");
 
             return loadStep(user, rsStep);
         } finally {
@@ -524,7 +533,6 @@ public class StepFactory {
             step.setValid(true);
         } catch (Exception ex) {
             step.setValid(false);
-            throw new WdkModelException(ex);
         }
         return step;
     }
@@ -854,15 +862,13 @@ public class StepFactory {
             psAnswerTree = SqlUtils.getPreparedStatement(dataSource, "SELECT "
                     + COLUMN_LEFT_CHILD_ID + ", " + COLUMN_RIGHT_CHILD_ID
                     + " FROM " + userSchema + TABLE_STEP + " WHERE "
-                    + userIdColumn + " = ? AND " + COLUMN_DISPLAY_ID
-                    + " = ? AND " + COLUMN_PROJECT_ID + " = ?");
+                    + userIdColumn + " = ? AND " + COLUMN_DISPLAY_ID + " = ?");
 
             while (!answerTree.empty()) {
                 parentAnswerId = answerTree.pop();
 
                 psAnswerTree.setInt(1, user.getUserId());
                 psAnswerTree.setInt(2, parentAnswerId.intValue());
-                psAnswerTree.setString(3, wdkModel.getProjectId());
 
                 rsAnswerTree = psAnswerTree.executeQuery();
 
@@ -984,14 +990,13 @@ public class StepFactory {
     // and steps tables is handled in other functions. Once the Step
     // object exists, all of this data is already in the db.
     Strategy createStrategy(User user, Step root, String name, boolean saved)
-            throws SQLException, WdkModelException, WdkUserException,
+            throws SQLException, WdkUserException, WdkModelException,
             JSONException {
         int userId = user.getUserId();
 
         String userIdColumn = UserFactory.COLUMN_USER_ID;
         ResultSet rsCheckName = null;
         PreparedStatement psCheckName;
-        int strategyId = userPlatform.getNextId(userSchema, TABLE_STRATEGY);
 
         try {
             // If name is not null, check if strategy exists
@@ -1057,13 +1062,15 @@ public class StepFactory {
         PreparedStatement psStrategy = null;
         ResultSet rsMax = null;
         Connection connection = dataSource.getConnection();
+
+        int strategyId = userPlatform.getNextId(userSchema, TABLE_STRATEGY);
         try {
             synchronized (connection) {
                 connection.setAutoCommit(false);
 
                 // get the current max strategy id
                 psMax = connection.prepareStatement("SELECT max("
-                        + COLUMN_DISPLAY_ID + "} max_id FROM " + userSchema
+                        + COLUMN_DISPLAY_ID + ") max_id FROM " + userSchema
                         + TABLE_STRATEGY + " WHERE " + userIdColumn
                         + " = ? AND " + COLUMN_PROJECT_ID + " = ?");
                 psMax.setInt(1, userId);
@@ -1084,7 +1091,7 @@ public class StepFactory {
                 psStrategy.setInt(1, displayId);
                 psStrategy.setInt(2, strategyId);
                 psStrategy.setInt(3, userId);
-                psStrategy.setInt(4, root.getStepId());
+                psStrategy.setInt(4, root.getDisplayId());
                 psStrategy.setBoolean(5, saved);
                 psStrategy.setString(6, name);
                 psStrategy.setString(7, wdkModel.getProjectId());
@@ -1094,6 +1101,7 @@ public class StepFactory {
             }
         } catch (SQLException ex) {
             connection.rollback();
+            throw ex;
         } finally {
             connection.setAutoCommit(true);
             SqlUtils.closeStatement(psStrategy);
@@ -1101,13 +1109,11 @@ public class StepFactory {
         }
 
         // update the user's strategy count
-        int strategyCount = getStrategyCount(user);
-        user.setStrategyCount(strategyCount);
-        return loadStrategy(user, strategyId);
+        user.setStrategyCount(user.getStrategyCount() + 1);
+        return loadStrategy(user, displayId);
     }
 
-    private int getStrategyCount(User user) throws WdkUserException,
-            SQLException {
+    int getStrategyCount(User user) throws WdkUserException, SQLException {
         ResultSet rsStrategy = null;
         try {
             PreparedStatement psStrategy = SqlUtils.getPreparedStatement(

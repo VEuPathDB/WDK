@@ -79,14 +79,13 @@ public class User /* implements Serializable */{
 
     // cache the history count in memory
     private int stepCount;
-    private int strategyCount;
+    private Integer strategyCount;
 
     // keep track of user's open strategies; don't serialize
     private transient ArrayList<Integer> activeStrategies;
 
     User(WdkModel model, int userId, String email, String signature)
             throws WdkUserException {
-        strategyCount = 0;
         this.userId = userId;
         this.email = email;
         this.signature = signature;
@@ -699,7 +698,9 @@ public class User /* implements Serializable */{
         return stepCount;
     }
 
-    public int getStrategyCount() throws WdkUserException {
+    public int getStrategyCount() throws WdkUserException, SQLException {
+        if (strategyCount == null)
+            strategyCount = stepFactory.getStrategyCount(this);
         return strategyCount;
     }
 
