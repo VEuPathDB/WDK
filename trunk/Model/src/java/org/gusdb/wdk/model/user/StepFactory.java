@@ -1108,8 +1108,6 @@ public class StepFactory {
             SqlUtils.closeResultSet(rsMax);
         }
 
-        // update the user's strategy count
-        user.setStrategyCount(user.getStrategyCount() + 1);
         return loadStrategy(user, displayId);
     }
 
