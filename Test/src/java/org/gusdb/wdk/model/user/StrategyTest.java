@@ -59,18 +59,52 @@ public class StrategyTest {
     }
 
     @Test
-    public void testGetStrategies() {
+    public void testGetStrategies() throws Exception {
+        Step step = UnitTestHelper.createNormalStep(user);
+        Strategy strategy = user.createStrategy(step, false);
+        Strategy[] strategies = user.getStrategies();
+
+        boolean hasStrategy = false;
+        for (Strategy loadedStrategy : strategies) {
+            if (strategy.getInternalId() == loadedStrategy.getInternalId()) {
+                compareStrategy(strategy, loadedStrategy);
+
+                hasStrategy = true;
+                break;
+            }
+        }
+        Assert.assertTrue("strategy not found", hasStrategy);
+    }
+
+    @Test
+    public void testDeleteStrategy() throws Exception {
+        Step step = UnitTestHelper.createNormalStep(user);
+        Strategy strategy = user.createStrategy(step, false);
+
+        int count = user.getStrategyCount();
+        user.deleteStrategy(strategy.getStrategyId());
+
+        Assert.assertEquals("strategy count", count - 1,
+                user.getStrategyCount());
+
+        // get a delete strategy, should raise a WdkUserException
+        try {
+            user.getStrategy(strategy.getStrategyId());
+            Assert.assertTrue("strategy not deleted", false);
+        } catch (WdkUserException ex) {
+            // do nothing, expected.
+        }
 
     }
 
     @Test
-    public void testDeleteStrategy() {
+    public void testDeleteStrategies() throws Exception {
+        Step step = UnitTestHelper.createNormalStep(user);
+        user.createStrategy(step, false);
 
-    }
+        user.deleteStrategies();
 
-    @Test
-    public void testDeleteStrategies() {
-
+        Assert.assertEquals("strategy count", 0, user.getStrategyCount());
     }
 
     private void compareStrategy(Strategy expected, Strategy actual)

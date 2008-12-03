@@ -721,7 +721,7 @@ public class UserBean /* implements Serializable */{
      * 
      * @see org.gusdb.wdk.model.user.User#getStrategyCount()
      */
-    public int getStrategyCount() throws WdkUserException {
+    public int getStrategyCount() throws WdkUserException, SQLException {
         return user.getStrategyCount();
     }
 
