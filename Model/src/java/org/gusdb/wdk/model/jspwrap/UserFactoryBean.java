@@ -38,7 +38,8 @@ public class UserFactoryBean {
      * 
      * @see org.gusdb.wdk.model.user.UserFactory#createGuestUser()
      */
-    public UserBean getGuestUser() throws WdkUserException, WdkModelException {
+    public UserBean getGuestUser() throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, SQLException {
         return new UserBean(userFactory.createGuestUser());
     }
 

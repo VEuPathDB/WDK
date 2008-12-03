@@ -292,7 +292,8 @@ public class UserFactory {
         }
     }
 
-    public User createGuestUser() throws WdkUserException, WdkModelException {
+    public User createGuestUser() throws WdkUserException, WdkModelException,
+            SQLException, NoSuchAlgorithmException {
         PreparedStatement psUser = null;
         try {
             // get a new user id
@@ -326,16 +327,8 @@ public class UserFactory {
             logger.info("Guest user #" + userId + " created.");
 
             return user;
-        } catch (SQLException ex) {
-            throw new WdkUserException(ex);
-        } catch (NoSuchAlgorithmException ex) {
-            throw new WdkUserException(ex);
         } finally {
-            try {
-                SqlUtils.closeStatement(psUser);
-            } catch (SQLException ex) {
-                throw new WdkUserException(ex);
-            }
+            SqlUtils.closeStatement(psUser);
         }
     }
 
