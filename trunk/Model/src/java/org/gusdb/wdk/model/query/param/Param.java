@@ -247,7 +247,7 @@ public abstract class Param extends WdkModelBase {
         if (value == null) {
             if (isAllowEmpty()) return null;
             throw new WdkModelException("The param '" + getFullName()
-                    + "' doesn't all empty input.");
+                    + "' doesn't allow empty input.");
         }
 
         // check if the value is compressed; that is, if it has a compression
