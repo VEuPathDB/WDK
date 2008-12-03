@@ -3,6 +3,9 @@
  */
 package org.gusdb.wdk.controller.action;
 
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.struts.action.ActionServlet;
@@ -20,7 +23,7 @@ public class ActionUtility {
 
     public static UserBean getUser(ActionServlet servlet,
             HttpServletRequest request) throws WdkUserException,
-            WdkModelException {
+            WdkModelException, NoSuchAlgorithmException, SQLException {
         // get model
         WdkModelBean wdkModel = (WdkModelBean) servlet.getServletContext().getAttribute(
                 CConstants.WDK_MODEL_KEY);

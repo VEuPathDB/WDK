@@ -3,6 +3,7 @@
  */
 package org.gusdb.wdk.model.user;
 
+import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 
 import org.gusdb.wdk.model.UnitTestHelper;
@@ -29,7 +30,8 @@ public class UserTest {
     }
 
     @Test
-    public void testCreateGuest() throws WdkUserException, WdkModelException {
+    public void testCreateGuest() throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, SQLException {
         User guest1 = userFactory.createGuestUser();
         Assert.assertTrue("guest1", guest1.isGuest());
 
