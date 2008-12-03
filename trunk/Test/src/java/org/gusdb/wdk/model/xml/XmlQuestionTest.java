@@ -64,11 +64,16 @@ public class XmlQuestionTest {
      */
     @org.junit.Test
     public void testGetXmlQuestionSet() throws WdkModelException {
-        XmlQuestionSet questionSet = wdkModel.getXmlQuestionSet(SAMPLE_XML_QUESTION_SET);
-        Assert.assertNotNull("questionSet " + SAMPLE_XML_QUESTION_SET
-                + " should exist", questionSet);
-        String description = questionSet.getDescription().trim();
-        Assert.assertEquals("Data contents from XML data sources", description);
+        XmlQuestionSet[] qsets = wdkModel.getXmlQuestionSets();
+        if (qsets.length > 0) {
+            String qsetName = qsets[0].getName();
+            XmlQuestionSet questionSet = wdkModel.getXmlQuestionSet(qsetName);
+            Assert.assertNotNull("questionSet " + qsets + " should exist",
+                    questionSet);
+            String description = questionSet.getDescription().trim();
+            Assert.assertEquals("Data contents from XML data sources",
+                    description);
+        }
     }
 
     /**
