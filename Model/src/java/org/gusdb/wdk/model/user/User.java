@@ -390,7 +390,9 @@ public class User /* implements Serializable */{
     public Strategy createStrategy(Step step, String name, boolean saved)
             throws WdkUserException, WdkModelException, SQLException,
             JSONException {
-        return stepFactory.createStrategy(this, step, name, saved);
+        Strategy strategy = stepFactory.createStrategy(this, step, name, saved);
+        if (strategy != null) strategyCount++;
+        return strategy;
     }
 
     /**
@@ -682,7 +684,7 @@ public class User /* implements Serializable */{
     public void deleteStrategy(int strategyId) throws WdkUserException,
             WdkModelException, SQLException {
         stepFactory.deleteStrategy(this, strategyId);
-        strategyCount--;
+        if (strategyCount != null) strategyCount--;
     }
 
     public void deleteStrategies() throws SQLException {
