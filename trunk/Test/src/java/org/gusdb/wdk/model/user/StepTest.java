@@ -1,13 +1,20 @@
 /**
  * 
  */
-package org.gusdb.wdk.model.test.unit;
+package org.gusdb.wdk.model.user;
+
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 
 import org.gusdb.wdk.model.BooleanOperator;
+import org.gusdb.wdk.model.UnitTestHelper;
 import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.User;
+import org.json.JSONException;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -16,6 +23,22 @@ import org.junit.Test;
  * 
  */
 public class StepTest {
+
+    public static void compareStep(Step expectedStep, Step actualStep)
+            throws NoSuchAlgorithmException, WdkUserException,
+            WdkModelException, JSONException, SQLException {
+        Assert.assertEquals("step id", expectedStep.getStepId(),
+                actualStep.getStepId());
+        Assert.assertEquals("display id", expectedStep.getDisplayId(),
+                actualStep.getDisplayId());
+        Assert.assertEquals("valid", expectedStep.isValid(),
+                actualStep.isValid());
+        Assert.assertEquals("custom name", expectedStep.getCustomName(),
+                actualStep.getCustomName());
+        Assert.assertEquals("answer checksum",
+                expectedStep.getAnswer().getAnswerChecksum(),
+                actualStep.getAnswer().getAnswerChecksum());
+    }
 
     private WdkModel wdkModel;
     private DBPlatform platform;
@@ -29,7 +52,11 @@ public class StepTest {
 
     @Test
     public void testCreateNormalStep() throws Exception {
+        int stepCount = user.getStepCount();
+
         Step step = UnitTestHelper.createNormalStep(user);
+
+        Assert.assertEquals("step count", stepCount + 1, user.getStepCount());
 
         Assert.assertTrue("stepId should be positive", step.getDisplayId() > 0);
         Assert.assertFalse("Step shouldn't be deleted", step.isDeleted());
@@ -90,5 +117,71 @@ public class StepTest {
 
         // the result of result1 and result3 should be identical
         Assert.assertEquals("Size equal", resultSize1, result3.getResultSize());
+    }
+
+    @Test
+    public void testLoadSteps() throws Exception {
+        // create a step
+        Step step = UnitTestHelper.createNormalStep(user);
+
+        Step[] steps = user.getSteps();
+        Assert.assertTrue("should have steps", steps.length > 0);
+
+        boolean hasStep = false;
+        for (Step loadedStep : steps) {
+            if (loadedStep.getStepId() == step.getStepId()) {
+                compareStep(step, loadedStep);
+
+                hasStep = true;
+                break;
+            }
+        }
+        Assert.assertTrue("step not found", hasStep);
+    }
+
+    @Test
+    public void testLoadStep() throws Exception {
+        // create a step
+        Step step = UnitTestHelper.createNormalStep(user);
+
+        Step loadedStep = user.getStep(step.getDisplayId());
+
+        compareStep(step, loadedStep);
+    }
+
+    @Test
+    public void testGetInvalidSteps() throws Exception {
+        Step[] invalidStep = user.getInvalidSteps();
+        for (Step step : invalidStep) {
+            Assert.assertNotNull("question name", step.getQuestionName());
+            Assert.assertNotNull("params", step.getDisplayParams());
+        }
+    }
+
+    @Test(expected = WdkUserException.class)
+    public void testDeleteStep() throws Exception {
+        // create a step
+        Step step = UnitTestHelper.createNormalStep(user);
+
+        int stepCount = user.getStepCount();
+        user.deleteStep(step.getDisplayId());
+
+        Assert.assertEquals("step count ", stepCount - 1, user.getStepCount());
+
+        // now check if the step is really deleted; a WdkUserException should be
+        // thrown
+        user.getStep(step.getDisplayId());
+    }
+
+    @Test
+    public void testDeleteSteps() throws Exception {
+        // create a step
+        UnitTestHelper.createNormalStep(user);
+
+        user.deleteSteps();
+
+        // the step list should be empty now
+        int stepCount = user.getStepCount();
+        Assert.assertEquals("step count", 0, stepCount);
     }
 }

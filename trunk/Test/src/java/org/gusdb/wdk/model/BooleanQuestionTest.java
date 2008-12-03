@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.gusdb.wdk.model.test.unit;
+package org.gusdb.wdk.model;
 
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;

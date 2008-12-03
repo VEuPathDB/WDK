@@ -11,7 +11,13 @@ import org.junit.Assert;
  * @author Jerric
  * 
  */
-public class WdkModelTest extends WdkModelTestBase {
+public class WdkModelTest {
+
+    private WdkModel wdkModel;
+
+    public WdkModelTest() throws Exception {
+        wdkModel = UnitTestHelper.getModel();
+    }
 
     /**
      * get model name, display name, and version
