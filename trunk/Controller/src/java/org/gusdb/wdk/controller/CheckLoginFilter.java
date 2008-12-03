@@ -17,8 +17,6 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.UserFactoryBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
@@ -46,13 +44,9 @@ public class CheckLoginFilter implements Filter {
             try {
                 wdkUser = wdkModel.getUserFactory().getGuestUser();
                 req.getSession().setAttribute(CConstants.WDK_USER_KEY, wdkUser);
-            } catch (WdkUserException ex) {
+            } catch (Exception ex) {
                 // I have no idea what to do here...
-                System.out.println("Caught WdkUserException in CheckLoginFilter: "
-                        + ex);
-            } catch (WdkModelException ex) {
-                // I have no idea what to do here...
-                System.out.println("Caught WdkModelException in CheckLoginFilter: "
+                System.err.println("Caught WdkUserException in CheckLoginFilter: "
                         + ex);
             }
         }
