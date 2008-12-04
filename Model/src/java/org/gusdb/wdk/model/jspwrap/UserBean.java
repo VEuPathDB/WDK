@@ -653,7 +653,7 @@ public class UserBean /* implements Serializable */{
         user.deleteInvalidStrategies();
     }
 
-    public Map<String, List<StepBean>> getHistoriesByCategory()
+    public Map<String, List<StepBean>> getStepsByCategory()
             throws WdkUserException, WdkModelException, SQLException,
             JSONException, NoSuchAlgorithmException {
         Map<String, List<Step>> steps = user.getStepsByCategory();
@@ -758,7 +758,7 @@ public class UserBean /* implements Serializable */{
      * 
      * @see org.gusdb.wdk.model.user.User#getHistoryCount()
      */
-    public int getHistoryCount() throws WdkUserException {
+    public int getStepCount() throws WdkUserException {
         return user.getStepCount();
     }
 
@@ -973,4 +973,35 @@ public class UserBean /* implements Serializable */{
         return user.checkNameExists(strategy.strategy, name);
     }
 
+    public Map<String, List<StrategyBean>> getSavedStrategiesByCategory()
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, JSONException, SQLException {
+        Map<String, List<Strategy>> strategies = user.getSavedStrategiesByCategory();
+        Map<String, List<StrategyBean>> category = new LinkedHashMap<String, List<StrategyBean>>();
+        for (String type : strategies.keySet()) {
+            List<Strategy> list = strategies.get(type);
+            List<StrategyBean> beans = new ArrayList<StrategyBean>();
+            for (Strategy strategy : list) {
+                beans.add(new StrategyBean(strategy));
+            }
+            category.put(type, beans);
+        }
+        return category;
+    }
+
+    public Map<String, List<StrategyBean>> getUnsavedStrategiesByCategory()
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, JSONException, SQLException {
+        Map<String, List<Strategy>> strategies = user.getUnsavedStrategiesByCategory();
+        Map<String, List<StrategyBean>> category = new LinkedHashMap<String, List<StrategyBean>>();
+        for (String type : strategies.keySet()) {
+            List<Strategy> list = strategies.get(type);
+            List<StrategyBean> beans = new ArrayList<StrategyBean>();
+            for (Strategy strategy : list) {
+                beans.add(new StrategyBean(strategy));
+            }
+            category.put(type, beans);
+        }
+        return category;
+    }
 }
