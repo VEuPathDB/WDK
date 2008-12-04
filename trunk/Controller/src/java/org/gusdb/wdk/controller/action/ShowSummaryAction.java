@@ -183,6 +183,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 String summaryChecksum = request.getParameter(CConstants.WDK_SUMMARY_KEY);
                 if (summaryChecksum != null)
                     wdkUser.applySummaryChecksum(questionName, summaryChecksum);
+                
+                setAttributes(request, wdkUser, step);
             }
             wdkUser.save();
 
@@ -204,6 +206,11 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 queryString = request.getQueryString();
             }
 
+            String requestUrl = request.getRequestURI() + "?" + queryString;
+            request.setAttribute("wdk_summary_url", requestUrl);
+            request.setAttribute("wdk_query_string", queryString);
+            request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
+
             ArrayList<Integer> activeStrategies = wdkUser.getActiveStrategies();
 
             if (activeStrategies == null) {
@@ -215,8 +222,6 @@ public class ShowSummaryAction extends ShowQuestionAction {
             }
             wdkUser.setActiveStrategies(activeStrategies);
 
-            String requestUrl = request.getRequestURI() + "?" + queryString;
-
             // return only the result size, if requested
             if (request.getParameterMap().containsKey(
                     CConstants.WDK_RESULT_SIZE_ONLY_KEY)) {
@@ -224,14 +229,6 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 writer.print(wdkAnswerValue.getResultSize());
                 return null;
             }
-
-            request.setAttribute(CConstants.WDK_QUESTION_PARAMS_KEY,
-                    wdkAnswerValue.getInternalParams());
-            request.setAttribute(CConstants.WDK_ANSWER_KEY, wdkAnswerValue);
-            request.setAttribute(CConstants.WDK_HISTORY_KEY, step);
-            request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
-            request.setAttribute("wdk_summary_url", requestUrl);
-            request.setAttribute("wdk_query_string", queryString);
 
             logger.debug("preparing forward");
 
@@ -393,24 +390,12 @@ public class ShowSummaryAction extends ShowQuestionAction {
         if (end > totalSize) end = totalSize;
 
         if (start != answerValue.getStartIndex()
-                || end != answerValue.getEndIndex())
+                || end != answerValue.getEndIndex()) {
             answerValue = answerValue.makeAnswerValue(start, end);
-
-        List<String> editedParamNames = new ArrayList<String>();
-        for (Enumeration<?> en = request.getParameterNames(); en.hasMoreElements();) {
-            String key = (String) en.nextElement();
-            if (!key.equals(CConstants.WDK_PAGE_SIZE_KEY)
-                    && !key.equals(CConstants.WDK_ALT_PAGE_SIZE_KEY)
-                    && !"start".equals(key) && !"pager.offset".equals(key)) {
-                editedParamNames.add(key);
-            }
+            step.setAnswerValue(answerValue);
         }
-        request.setAttribute("wdk_paging_total", new Integer(totalSize));
-        request.setAttribute("wdk_paging_pageSize", new Integer(pageSize));
-        request.setAttribute("wdk_paging_start", new Integer(start));
-        request.setAttribute("wdk_paging_end", new Integer(end));
-        request.setAttribute("wdk_paging_url", request.getRequestURI());
-        request.setAttribute("wdk_paging_params", editedParamNames);
+
+        setAttributes(request, wdkUser, step);
 
         logger.debug("end summary paging");
 
@@ -501,5 +486,36 @@ public class ShowSummaryAction extends ShowQuestionAction {
         forward.setRedirect(false);
 
         return forward;
+    }
+
+    private static void setAttributes(HttpServletRequest request,
+            UserBean user, StepBean step) throws NoSuchAlgorithmException,
+            WdkUserException, WdkModelException, JSONException, SQLException {
+        AnswerValueBean answerValue = step.getAnswerValue();
+        int totalSize = answerValue.getResultSize();
+        int start = answerValue.getStartIndex();
+        int end = answerValue.getEndIndex();
+        int pageSize = user.getItemsPerPage();
+
+        List<String> editedParamNames = new ArrayList<String>();
+        for (Enumeration<?> en = request.getParameterNames(); en.hasMoreElements();) {
+            String key = (String) en.nextElement();
+            if (!key.equals(CConstants.WDK_PAGE_SIZE_KEY)
+                    && !key.equals(CConstants.WDK_ALT_PAGE_SIZE_KEY)
+                    && !"start".equals(key) && !"pager.offset".equals(key)) {
+                editedParamNames.add(key);
+            }
+        }
+        request.setAttribute("wdk_paging_total", new Integer(totalSize));
+        request.setAttribute("wdk_paging_pageSize", new Integer(pageSize));
+        request.setAttribute("wdk_paging_start", new Integer(start));
+        request.setAttribute("wdk_paging_end", new Integer(end));
+        request.setAttribute("wdk_paging_url", request.getRequestURI());
+        request.setAttribute("wdk_paging_params", editedParamNames);
+
+        request.setAttribute(CConstants.WDK_QUESTION_PARAMS_KEY,
+                answerValue.getInternalParams());
+        request.setAttribute(CConstants.WDK_ANSWER_KEY, answerValue);
+        request.setAttribute(CConstants.WDK_HISTORY_KEY, step);
     }
 }
