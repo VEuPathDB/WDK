@@ -50,222 +50,227 @@ public class ShowSummaryAction extends ShowQuestionAction {
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         logger.debug("entering showSummary");
-        
+
         try {
 
-        // get user, or create one, if not exist
-        WdkModelBean wdkModel = (WdkModelBean) servlet.getServletContext().getAttribute(
-                CConstants.WDK_MODEL_KEY);
-        UserBean wdkUser = (UserBean) request.getSession().getAttribute(
-                CConstants.WDK_USER_KEY);
-        if (wdkUser == null) {
-            wdkUser = wdkModel.getUserFactory().getGuestUser();
-            request.getSession().setAttribute(CConstants.WDK_USER_KEY, wdkUser);
-        }
-
-        QuestionForm qForm = (QuestionForm) form;
-        // TRICKY: this is for action forward from
-        // ProcessQuestionSetsFlatAction
-        // need to double check this, it clean up the input....
-        //qForm.reset();
-
-        logger.debug("check existing strategy & step");
-
-        StepBean step;
-        StrategyBean strategy = null;
-        Map<String, String> params;
-
-        // Get userAnswer id & strategy id from request (if they exist)
-        String strStepId = request.getParameter(CConstants.WDK_HISTORY_ID_KEY);
-        String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
-        String strBranchId = null;
-
-        if (strStratId != null && strStratId.length() != 0) {
-            if (strStratId.indexOf("_") > 0) {
-                strBranchId = strStratId.split("_")[1];
-                strStratId = strStratId.split("_")[0];
+            // get user, or create one, if not exist
+            WdkModelBean wdkModel = (WdkModelBean) servlet.getServletContext().getAttribute(
+                    CConstants.WDK_MODEL_KEY);
+            UserBean wdkUser = (UserBean) request.getSession().getAttribute(
+                    CConstants.WDK_USER_KEY);
+            if (wdkUser == null) {
+                wdkUser = wdkModel.getUserFactory().getGuestUser();
+                request.getSession().setAttribute(CConstants.WDK_USER_KEY,
+                        wdkUser);
             }
-            StepBean targetStep;
-            strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
-            if (strBranchId == null) {
-                targetStep = strategy.getLatestStep();
+
+            QuestionForm qForm = (QuestionForm) form;
+            // TRICKY: this is for action forward from
+            // ProcessQuestionSetsFlatAction
+            // need to double check this, it clean up the input....
+            // qForm.reset();
+
+            logger.debug("check existing strategy & step");
+
+            StepBean step;
+            StrategyBean strategy = null;
+            Map<String, String> params;
+
+            // Get userAnswer id & strategy id from request (if they exist)
+            String strStepId = request.getParameter(CConstants.WDK_HISTORY_ID_KEY);
+            String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
+            String strBranchId = null;
+
+            if (strStratId != null && strStratId.length() != 0) {
+                if (strStratId.indexOf("_") > 0) {
+                    strBranchId = strStratId.split("_")[1];
+                    strStratId = strStratId.split("_")[0];
+                }
+                StepBean targetStep;
+                strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
+                if (strBranchId == null) {
+                    targetStep = strategy.getLatestStep();
+                } else {
+                    targetStep = strategy.getStepById(Integer.parseInt(strBranchId));
+                }
+                String stepIndex = request.getParameter("step");
+                if (stepIndex != null && stepIndex.length() != 0) {
+                    step = targetStep.getStep(Integer.parseInt(stepIndex));
+                } else {
+                    step = targetStep;
+                }
+                String subQuery = request.getParameter("subquery");
+                if (subQuery != null && subQuery.length() != 0
+                        && Boolean.valueOf(subQuery)) {
+                    strStepId = Integer.toString(step.getChildStep().getStepId());
+                } else {
+                    strStepId = Integer.toString(step.getStepId());
+                }
+            }
+
+            String filterName = request.getParameter("filter");
+
+            if (strStepId == null || strStepId.length() == 0) {
+                logger.debug("create new steps");
+
+                QuestionBean wdkQuestion = (QuestionBean) request.getAttribute(CConstants.WDK_QUESTION_KEY);
+                if (wdkQuestion == null) {
+                    wdkQuestion = qForm.getQuestion();
+                }
+                if (wdkQuestion == null) {
+                    String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
+                    if (qFullName != null)
+                        wdkQuestion = getQuestionByFullName(qFullName);
+                }
+                if (wdkQuestion == null) {
+                    return showError(wdkModel, wdkUser, mapping, request,
+                            response);
+                }
+                String questionName = wdkQuestion.getFullName();
+
+                // saving user preference has to happen before summaryPaging(),
+                // where they will be used.
+
+                // update sorting key, if have
+                String sortingChecksum = request.getParameter(CConstants.WDK_SORTING_KEY);
+                if (sortingChecksum != null)
+                    wdkUser.applySortingChecksum(questionName, sortingChecksum);
+
+                // get summary key, if have
+                String summaryChecksum = request.getParameter(CConstants.WDK_SUMMARY_KEY);
+                if (summaryChecksum != null)
+                    wdkUser.applySummaryChecksum(questionName, summaryChecksum);
+
+                params = qForm.getMyProps();
+
+                // make the answer
+                try {
+                    step = summaryPaging(request, wdkQuestion, params,
+                            filterName);
+                } catch (Exception ex) {
+                    logger.error(ex);
+                    ex.printStackTrace();
+                    return showError(wdkModel, wdkUser, mapping, request,
+                            response);
+                }
+
             } else {
-                targetStep = strategy.getStepById(Integer.parseInt(strBranchId));
+                logger.debug("load existing step");
+
+                step = wdkUser.getStep(Integer.parseInt(strStepId));
+
+                // check if userAnswer is still valid
+                if (!step.getIsValid())
+                    return showError(wdkModel, wdkUser, mapping, request,
+                            response);
+
+                int actualSize = step.getAnswerValue().getResultSize();
+                if (step.getEstimateSize() != actualSize) {
+                    step.setEstimateSize(actualSize);
+                    step.update();
+                }
+
+                String questionName = step.getQuestionName();
+
+                // update sorting key, if have
+                String sortingChecksum = request.getParameter(CConstants.WDK_SORTING_KEY);
+                if (sortingChecksum != null) {
+                    wdkUser.applySortingChecksum(questionName, sortingChecksum);
+
+                }
+
+                // get summary key, if have
+                String summaryChecksum = request.getParameter(CConstants.WDK_SUMMARY_KEY);
+                if (summaryChecksum != null)
+                    wdkUser.applySummaryChecksum(questionName, summaryChecksum);
             }
-            String stepIndex = request.getParameter("step");
-            if (stepIndex != null && stepIndex.length() != 0) {
-                step = targetStep.getStep(Integer.parseInt(stepIndex));
+            wdkUser.save();
+
+            logger.debug("step created");
+
+            // get sorting and summary attributes
+            AnswerValueBean wdkAnswerValue = step.getAnswerValue();
+
+            // DO NOT delete empty userAnswer -- it will screw up strategies
+            // if (userAnswer != null && userAnswer.getEstimateSize() == 0)
+            // wdkUser.deleteStep(userAnswer.getStepId());
+
+            String queryString;
+
+            if (strategy == null) {
+                strategy = wdkUser.createStrategy(step, false);
+                queryString = "strategy=" + strategy.getStrategyId();
             } else {
-                step = targetStep;
-            }
-            String subQuery = request.getParameter("subquery");
-            if (subQuery != null && subQuery.length() != 0
-                    && Boolean.valueOf(subQuery)) {
-                strStepId = Integer.toString(step.getChildStep().getStepId());
-            } else {
-                strStepId = Integer.toString(step.getStepId());
-            }
-        }
-
-        String filterName = request.getParameter("filter");
-
-        if (strStepId == null || strStepId.length() == 0) {
-            logger.debug("create new steps");
-
-            QuestionBean wdkQuestion = (QuestionBean) request.getAttribute(CConstants.WDK_QUESTION_KEY);
-            if (wdkQuestion == null) {
-                wdkQuestion = qForm.getQuestion();
-            }
-            if (wdkQuestion == null) {
-                String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
-                if (qFullName != null)
-                    wdkQuestion = getQuestionByFullName(qFullName);
-            }
-            if (wdkQuestion == null) {
-                return showError(wdkModel, wdkUser, mapping, request, response);
-            }
-            String questionName = wdkQuestion.getFullName();
-
-            // saving user preference has to happen before summaryPaging(),
-            // where they will be used.
-
-            // update sorting key, if have
-            String sortingChecksum = request.getParameter(CConstants.WDK_SORTING_KEY);
-            if (sortingChecksum != null)
-                wdkUser.applySortingChecksum(questionName, sortingChecksum);
-
-            // get summary key, if have
-            String summaryChecksum = request.getParameter(CConstants.WDK_SUMMARY_KEY);
-            if (summaryChecksum != null)
-                wdkUser.applySummaryChecksum(questionName, summaryChecksum);
-
-            params = qForm.getMyProps();
-
-            // make the answer
-            try {
-                step = summaryPaging(request, wdkQuestion, params, filterName);
-            } catch (Exception ex) {
-                logger.error(ex);
-                ex.printStackTrace();
-                return showError(wdkModel, wdkUser, mapping, request, response);
+                queryString = request.getQueryString();
             }
 
-        } else {
-            logger.debug("load existing step");
+            ArrayList<Integer> activeStrategies = wdkUser.getActiveStrategies();
 
-            step = wdkUser.getStep(Integer.parseInt(strStepId));
-
-            // check if userAnswer is still valid
-            if (!step.getIsValid())
-                return showError(wdkModel, wdkUser, mapping, request, response);
-
-            int actualSize = step.getAnswerValue().getResultSize();
-            if (step.getEstimateSize() != actualSize) {
-                step.setEstimateSize(actualSize);
-                step.update();
+            if (activeStrategies == null) {
+                activeStrategies = new ArrayList<Integer>();
             }
 
-            String questionName = step.getQuestionName();
+            if (!activeStrategies.contains(new Integer(strategy.getStrategyId()))) {
+                activeStrategies.add(0, new Integer(strategy.getStrategyId()));
+            }
+            wdkUser.setActiveStrategies(activeStrategies);
 
-            // update sorting key, if have
-            String sortingChecksum = request.getParameter(CConstants.WDK_SORTING_KEY);
-            if (sortingChecksum != null) {
-                wdkUser.applySortingChecksum(questionName, sortingChecksum);
+            String requestUrl = request.getRequestURI() + "?" + queryString;
 
+            // return only the result size, if requested
+            if (request.getParameterMap().containsKey(
+                    CConstants.WDK_RESULT_SIZE_ONLY_KEY)) {
+                PrintWriter writer = response.getWriter();
+                writer.print(wdkAnswerValue.getResultSize());
+                return null;
             }
 
-            // get summary key, if have
-            String summaryChecksum = request.getParameter(CConstants.WDK_SUMMARY_KEY);
-            if (summaryChecksum != null)
-                wdkUser.applySummaryChecksum(questionName, summaryChecksum);
-        }
-        wdkUser.save();
+            request.setAttribute(CConstants.WDK_QUESTION_PARAMS_KEY,
+                    wdkAnswerValue.getInternalParams());
+            request.setAttribute(CConstants.WDK_ANSWER_KEY, wdkAnswerValue);
+            request.setAttribute(CConstants.WDK_HISTORY_KEY, step);
+            request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
+            request.setAttribute("wdk_summary_url", requestUrl);
+            request.setAttribute("wdk_query_string", queryString);
 
-        logger.debug("step created");
+            logger.debug("preparing forward");
 
-        // get sorting and summary attributes
-        AnswerValueBean wdkAnswerValue = step.getAnswerValue();
+            // make ActionForward
+            ActionForward forward;
 
-        // DO NOT delete empty userAnswer -- it will screw up strategies
-        // if (userAnswer != null && userAnswer.getEstimateSize() == 0)
-        // wdkUser.deleteStep(userAnswer.getStepId());
+            String resultsOnly = request.getParameter(CConstants.WDK_RESULT_SET_ONLY_KEY);
+            // forward to the results page, if requested
+            if (resultsOnly != null && Boolean.valueOf(resultsOnly)) {
+                forward = mapping.findForward(CConstants.RESULTSONLY_MAPKEY);
+            }
+            // otherwise, forward to the full summary page
+            else {
+                forward = mapping.findForward(CConstants.SHOW_APPLICATION_MAPKEY);
+                forward = new ActionForward(forward.getPath(), true);
+            }
 
-        String queryString;
+            // System.out.println("From forward: " + forward.getPath());
 
-        if (strategy == null) {
-            strategy = wdkUser.createStrategy(step, false);
-            queryString = "strategy=" + strategy.getStrategyId();
-        } else {
-            queryString = request.getQueryString();
-        }
+            // if we got a strategy id in the URL, go to summary page
+            /*
+             * if (strStratId != null && strStratId.length() != 0) { String
+             * resultsOnly =
+             * request.getParameter(CConstants.WDK_RESULT_SET_ONLY_KEY); //
+             * forward to the results page, if requested if (resultsOnly != null
+             * && Boolean.valueOf(resultsOnly)) { forward =
+             * mapping.findForward(CConstants.RESULTSONLY_MAPKEY); } //
+             * otherwise, forward to the full summary page else { forward =
+             * getForward(wdkAnswerValue, mapping, userAnswerId); }
+             * 
+             * System.out.println("From forward: " + forward.getPath()); } // if
+             * not, redirect back to ShowSummary, with corrected URL else {
+             * forward = mapping.findForward("reload_summary"); String path =
+             * forward.getPath() + "?" + queryString; System.out.println(path);
+             * forward = new ActionForward(path, true); }
+             */
 
-        ArrayList<Integer> activeStrategies = wdkUser.getActiveStrategies();
-
-        if (activeStrategies == null) {
-            activeStrategies = new ArrayList<Integer>();
-        }
-
-        if (!activeStrategies.contains(new Integer(strategy.getStrategyId()))) {
-            activeStrategies.add(0, new Integer(strategy.getStrategyId()));
-        }
-        wdkUser.setActiveStrategies(activeStrategies);
-
-        String requestUrl = request.getRequestURI() + "?" + queryString;
-
-        // return only the result size, if requested
-        if (request.getParameterMap().containsKey(
-                CConstants.WDK_RESULT_SIZE_ONLY_KEY)) {
-            PrintWriter writer = response.getWriter();
-            writer.print(wdkAnswerValue.getResultSize());
-            return null;
-        }
-
-        request.setAttribute(CConstants.WDK_QUESTION_PARAMS_KEY,
-                wdkAnswerValue.getInternalParams());
-        request.setAttribute(CConstants.WDK_ANSWER_KEY, wdkAnswerValue);
-        request.setAttribute(CConstants.WDK_HISTORY_KEY, step);
-        request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
-        request.setAttribute("wdk_summary_url", requestUrl);
-        request.setAttribute("wdk_query_string", queryString);
-
-        logger.debug("preparing forward");
-
-        // make ActionForward
-        ActionForward forward;
-
-        String resultsOnly = request.getParameter(CConstants.WDK_RESULT_SET_ONLY_KEY);
-        // forward to the results page, if requested
-        if (resultsOnly != null && Boolean.valueOf(resultsOnly)) {
-            forward = mapping.findForward(CConstants.RESULTSONLY_MAPKEY);
-        }
-        // otherwise, forward to the full summary page
-        else {
-            forward = mapping.findForward(CConstants.SHOW_APPLICATION_MAPKEY);
-            forward = new ActionForward(forward.getPath(), true);
-        }
-
-        // System.out.println("From forward: " + forward.getPath());
-
-        // if we got a strategy id in the URL, go to summary page
-        /*
-         * if (strStratId != null && strStratId.length() != 0) { String
-         * resultsOnly =
-         * request.getParameter(CConstants.WDK_RESULT_SET_ONLY_KEY); // forward
-         * to the results page, if requested if (resultsOnly != null &&
-         * Boolean.valueOf(resultsOnly)) { forward =
-         * mapping.findForward(CConstants.RESULTSONLY_MAPKEY); } // otherwise,
-         * forward to the full summary page else { forward =
-         * getForward(wdkAnswerValue, mapping, userAnswerId); }
-         * 
-         * System.out.println("From forward: " + forward.getPath()); } // if
-         * not, redirect back to ShowSummary, with corrected URL else { forward
-         * = mapping.findForward("reload_summary"); String path =
-         * forward.getPath() + "?" + queryString; System.out.println(path);
-         * forward = new ActionForward(path, true); }
-         */
-
-        logger.debug("Leaving showSummary");
-        return forward;
+            logger.debug("Leaving showSummary");
+            return forward;
         } catch (Exception ex) {
             ex.printStackTrace();
             throw ex;
@@ -367,6 +372,10 @@ public class ShowSummaryAction extends ShowQuestionAction {
             if (altPageSizeKey != null)
                 pageSize = Integer.parseInt(altPageSizeKey);
         }
+        // set the minimal page size
+        if (pageSize < CConstants.MIN_PAGE_SIZE)
+            pageSize = CConstants.MIN_PAGE_SIZE;
+
         int end = start + pageSize - 1;
 
         logger.info("Make answer with start=" + start + ", end=" + end);
