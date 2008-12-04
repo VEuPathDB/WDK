@@ -292,7 +292,7 @@ public class History {
     }
 
     public void setParams(Map<String, Object> params) throws JSONException {
-        params = new LinkedHashMap<String, Object>(params);
+        this.params = new LinkedHashMap<String, Object>(params);
     }
 
     public Map<String, Object> getParams() {
