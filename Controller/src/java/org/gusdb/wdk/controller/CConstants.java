@@ -183,4 +183,6 @@ public class CConstants {
     protected static final String DEFAULT_WDKCUSTOMVIEWDIR = "/customPages/";
     protected static final String DEFAULT_XMLSCHEMA = "/WEB-INF/wdk-model/lib/rng/xmlAnswer.rng";
     protected static final String DEFAULT_XMLDATA_DIR = "/WEB-INF/wdk-model/lib/xml";
+    
+    public static final int MIN_PAGE_SIZE = 5;
 }
