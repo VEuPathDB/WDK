@@ -298,4 +298,9 @@ public class StepBean {
 	throws WdkUserException {
 	step.addStep(next.step);
     }
+
+    public int getIndexFromId(int stepId) 
+	throws WdkUserException {
+	return step.getIndexFromId(stepId);
+    }
 }

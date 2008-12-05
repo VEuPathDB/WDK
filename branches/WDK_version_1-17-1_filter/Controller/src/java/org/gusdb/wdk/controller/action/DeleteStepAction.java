@@ -73,7 +73,6 @@ public class DeleteStepAction extends ProcessFilterAction {
 	StepBean targetStep;
 	StepBean step, newStep;
 	String boolExp;
-	int stepIx;
 	
 	QuestionBean wdkQuestion;
 	Map<String, Object> internalParams;
@@ -111,7 +110,8 @@ public class DeleteStepAction extends ProcessFilterAction {
 	    targetStep = strategy.getStepById(Integer.parseInt(strBranchId));
 	}
 
-	stepIx = Integer.valueOf(deleteStep);
+	int stepId = Integer.valueOf(deleteStep);
+	int stepIx = targetStep.getIndexFromId(stepId);
 	step = targetStep.getStep(stepIx);
 
 	// are we deleting the first step?

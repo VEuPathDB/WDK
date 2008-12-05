@@ -455,4 +455,15 @@ public class Step {
 	}
 	return null;
     }
+
+    public int getIndexFromId(int stepId) 
+	throws WdkUserException {
+	Step[] steps = getAllSteps();
+	for (int i = 0; i < steps.length; ++i) {
+	    if (steps[i].getStepId() == stepId) {
+		return i;
+	    }
+	}
+	throw new WdkUserException("Id not found!");
+    }
 }
