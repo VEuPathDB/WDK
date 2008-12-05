@@ -14,7 +14,9 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.gusdb.wdk.model.Answer;
+import org.gusdb.wdk.model.BooleanExpression;
 import org.gusdb.wdk.model.Question;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -197,16 +199,26 @@ public class AnswerFactory {
         }
     }
 
-    Map<String, Object> getParams(String answerChecksum) throws JSONException, SQLException {
+    Map<String, Object> getParams(String answerChecksum) throws JSONException,
+            SQLException {
         String paramClob = getParamsClob(answerChecksum);
 
-        JSONObject jsParams = new JSONObject(paramClob);
         Map<String, Object> paramValues = new LinkedHashMap<String, Object>();
-        Iterator<?> keys = jsParams.keys();
-        while (keys.hasNext()) {
-            String key = (String)keys.next();
-            Object value = jsParams.get(key).toString();
-            paramValues.put(key, value);
+        if (paramClob == null) {
+            // nothing to parse with
+        } else if (!paramClob.startsWith("{")) {
+            // boolean answer of the old form, the last part should be the expression
+            String[] parts = paramClob.split(Utilities.DATA_DIVIDER);
+            String expression = parts[parts.length - 1].trim();
+            paramValues.put(BooleanExpression.BOOLEAN_EXPRESSION, expression);
+        } else {
+            JSONObject jsParams = new JSONObject(paramClob);
+            Iterator<?> keys = jsParams.keys();
+            while (keys.hasNext()) {
+                String key = (String) keys.next();
+                Object value = jsParams.get(key).toString();
+                paramValues.put(key, value);
+            }
         }
         return paramValues;
     }

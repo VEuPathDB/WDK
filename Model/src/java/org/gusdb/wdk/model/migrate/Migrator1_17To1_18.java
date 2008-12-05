@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 
 import javax.sql.DataSource;
 
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.DBPlatform;
@@ -35,7 +36,6 @@ public class Migrator1_17To1_18 extends Migrator {
 
     private PreparedStatement psInsertAnswer;
     private PreparedStatement psInsertHistory;
-    
 
     private Map<String, Integer> answerKeys;
     private Set<String> historyKeys;
@@ -57,10 +57,10 @@ public class Migrator1_17To1_18 extends Migrator {
 
         System.out.println("Loading existing histories...");
         loadHistories(dataSource);
-        
+
         System.out.println("Loading existing answers...");
         loadAnswers(dataSource);
-        
+
         System.out.println("Loading old histories...");
         prepareStatements(dataSource);
 
@@ -153,8 +153,7 @@ public class Migrator1_17To1_18 extends Migrator {
         return SqlUtils.executeQuery(dataSource, sql.toString());
     }
 
-    private void loadHistories(DataSource dataSource)
-            throws SQLException {
+    private void loadHistories(DataSource dataSource) throws SQLException {
         StringBuffer sql = new StringBuffer("SELECT user_id, history_id FROM ");
         sql.append(NEW_USER_SCHEMA).append("histories ");
         historyKeys = new LinkedHashSet<String>();
@@ -169,7 +168,8 @@ public class Migrator1_17To1_18 extends Migrator {
     }
 
     private void loadAnswers(DataSource dataSource) throws SQLException {
-        StringBuffer sql = new StringBuffer("SELECT answer_id, answer_checksum,");
+        StringBuffer sql = new StringBuffer(
+                "SELECT answer_id, answer_checksum,");
         sql.append(" project_id FROM ").append(NEW_WDK_SCHEMA).append("answer ");
         answerKeys = new LinkedHashMap<String, Integer>();
         ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql.toString());
@@ -187,7 +187,7 @@ public class Migrator1_17To1_18 extends Migrator {
             throws JSONException {
         if (isBoolean) return params; // cannot convert the params
 
-        String[] parts = params.split(Pattern.quote("--WDK_DATA_DIVIDER--"));
+        String[] parts = params.split(Pattern.quote(Utilities.DATA_DIVIDER));
         JSONObject jsParams = new JSONObject();
         for (String part : parts) {
             int pos = part.indexOf('=');
