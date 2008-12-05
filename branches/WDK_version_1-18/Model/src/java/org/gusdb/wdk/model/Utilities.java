@@ -55,6 +55,8 @@ public class Utilities {
 
     public static final String INTERNAL_QUESTION_SET = "InternalQuestions";
     
+    public static final String DATA_DIVIDER = "--WDK_DATA_DIVIDER--";
+    
     public static final int DEFAULT_PAGE_SIZE = 20;
     
     public static final int DEFAULT_SUMMARY_ATTRIBUTE_SIZE = 6;

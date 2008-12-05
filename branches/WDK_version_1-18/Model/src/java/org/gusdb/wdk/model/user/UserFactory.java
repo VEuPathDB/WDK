@@ -38,6 +38,7 @@ import javax.sql.DataSource;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.AnswerFilterInstance;
+import org.gusdb.wdk.model.BooleanExpression;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -921,33 +922,20 @@ public class UserFactory {
         // get answer filter
         history.setFilterName(rsHistory.getString("answer_filter"));
 
-        if (history.isBoolean()) {
-            String expression = platform.getClobData(rsHistory,
-                    "display_params");
-            history.setBooleanExpression(expression);
-        }
-
         // get and cache the param values
         AnswerFactory answerFactory = wdkModel.getAnswerFactory();
         Map<String, Object> params = answerFactory.getParams(answerChecksum);
         history.setParams(params);
 
+        if (history.isBoolean()) {
+            String expression = (String) params.get(BooleanExpression.BOOLEAN_EXPRESSION);
+            history.setBooleanExpression(expression);
+        }
+
         // re-construct the answer
         try {
             constructAnswer(history, answerChecksum);
-        } catch (WdkModelException ex) {
-            ex.printStackTrace();
-            history.setValid(false);
-        } catch (WdkUserException ex) {
-            ex.printStackTrace();
-            history.setValid(false);
-        } catch (NoSuchAlgorithmException ex) {
-            ex.printStackTrace();
-            history.setValid(false);
-        } catch (JSONException ex) {
-            ex.printStackTrace();
-            history.setValid(false);
-        } catch (SQLException ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
             history.setValid(false);
         }

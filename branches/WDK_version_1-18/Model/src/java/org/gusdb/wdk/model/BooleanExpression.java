@@ -23,6 +23,8 @@ import org.json.JSONException;
  */
 public class BooleanExpression {
 
+    public static final String BOOLEAN_EXPRESSION = "Boolean Expression";
+    
     private static final String STUB_PREFIX = "__STUB__";
 
     private User user;
