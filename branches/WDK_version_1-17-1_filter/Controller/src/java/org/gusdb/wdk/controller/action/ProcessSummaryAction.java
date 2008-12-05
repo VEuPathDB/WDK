@@ -47,43 +47,13 @@ public class ProcessSummaryAction extends Action {
         // get question
         String questionName = request.getParameter( CConstants.QUESTION_FULLNAME_PARAM );
         if ( questionName == null || questionName.length() == 0 ) {
-            String stepId = request.getParameter( CConstants.WDK_HISTORY_ID_KEY );
+            String stepId = request.getParameter( CConstants.WDK_STEP_ID_KEY );
 	    StepBean step = null;
 	    if (stepId != null && stepId.length() != 0) {
 		step = wdkUser.getStep(Integer.parseInt( stepId ));
 	    }
 	    else {
-		// Check for strategy in here?  Sure, why not.
-		String strategyId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
-		String stepIx = request.getParameter(CConstants.WDK_STEP_IX_KEY);
-		String strBranchId = null;
-
-		if (strategyId == null || strategyId.length() == 0) 
-		    throw new WdkModelException("Missing parameters for this action" );
-		
-		if (strategyId.indexOf("_") > 0) {
-		    strBranchId = strategyId.split("_")[1];
-		    strategyId = strategyId.split("_")[0];
-		}
-		
-		StrategyBean strategy = wdkUser.getStrategy(Integer.parseInt(strategyId));
-		StepBean targetStep;
-		if (strBranchId == null) {
-		    targetStep = strategy.getLatestStep();
-		}
-		else {
-		    targetStep = strategy.getStepById(Integer.parseInt(strBranchId));
-		}
-		if (stepIx == null || stepIx.length() == 0)
-		    step = targetStep;
-		else 
-		    step = targetStep.getStep(Integer.parseInt(stepIx));
-		
-		String subQuery = request.getParameter("subquery");
-		if (subQuery != null && subQuery.length() != 0 && Boolean.valueOf(subQuery)) {
-		    step = step.getChildStep();
-		}
-		stepId = Integer.toString(step.getStepId());
+		throw new WdkModelException("No step was specified for ProcessSummary!");
 	    }
             AnswerValueBean answer = step.getAnswerValue();
             questionName = answer.getQuestion().getFullName();

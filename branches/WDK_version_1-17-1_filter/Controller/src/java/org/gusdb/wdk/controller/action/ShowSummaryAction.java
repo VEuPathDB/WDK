@@ -70,8 +70,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
 	StepBean step;
         Map<String, Object> params;
 
-	// Get userAnswer id & strategy id from request (if they exist)
-        String strHistId = request.getParameter(CConstants.WDK_HISTORY_ID_KEY);
+	// Get step id & strategy id from request
+        String strHistId = request.getParameter(CConstants.WDK_STEP_ID_KEY);
 	String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
 	String strBranchId = null;
 
@@ -80,28 +80,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
 		strBranchId = strStratId.split("_")[1];
 		strStratId = strStratId.split("_")[0];
 	    }
-	    StepBean targetStep;
 	    strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
-	    if (strBranchId == null) {
-		targetStep = strategy.getLatestStep();
-	    }
-	    else {
-		targetStep = strategy.getStepById(Integer.parseInt(strBranchId));
-	    }
-	    String stepIndex = request.getParameter("step");
-	    if (stepIndex != null && stepIndex.length() != 0) {
-		step = targetStep.getStep(Integer.parseInt(stepIndex));
-	    }
-	    else {
-		step = targetStep;
-	    }
-	    String subQuery = request.getParameter("subquery");
-	    if (subQuery != null && subQuery.length() != 0 && Boolean.valueOf(subQuery)) {
-		strHistId = Integer.toString(step.getChildStep().getStepId());
-	    }
-	    else {
-		strHistId = Integer.toString(step.getStepId());
-	    }
 	}
 
         if (strHistId == null || strHistId.length() == 0) {
@@ -258,32 +237,6 @@ public class ShowSummaryAction extends ShowQuestionAction {
 	    forward = mapping.findForward(CConstants.SHOW_APPLICATION_MAPKEY);
 	    forward = new ActionForward(forward.getPath(), true);
 	}
-	
-	//System.out.println("From forward: " + forward.getPath());
-	
-	// if we got a strategy id in the URL, go to summary page
-	/*
-	if (strStratId != null && strStratId.length() != 0) {
-	    String resultsOnly = request.getParameter(CConstants.WDK_RESULT_SET_ONLY_KEY);
-	    // forward to the results page, if requested
-	    if (resultsOnly != null && Boolean.valueOf(resultsOnly)) {
-		forward = mapping.findForward(CConstants.RESULTSONLY_MAPKEY);
-	    }
-	    // otherwise, forward to the full summary page
-	    else {
-		forward = getForward(wdkAnswerValue, mapping, userAnswerId);
-	    }
-	    
-	    System.out.println("From forward: " + forward.getPath());
-	}
-	// if not, redirect back to ShowSummary, with corrected URL
-	else {
-	    forward = mapping.findForward("reload_summary");
-	    String path = forward.getPath() + "?" + queryString;
-	    System.out.println(path);
-	    forward = new ActionForward(path, true);
-	}
-	*/
 
 	return forward;
     }
