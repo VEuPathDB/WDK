@@ -1,6 +1,8 @@
 package org.gusdb.wdk.model;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
 import java.security.NoSuchAlgorithmException;
@@ -142,6 +144,8 @@ public class WdkModel {
 
     private List<Categories> categoriesList = new ArrayList<Categories>();
     private Map<String, Categories> categoriesMap = new LinkedHashMap<String, Categories>();
+
+    private String secretKey;
 
     /**
      * @param initRecordClassList
@@ -985,5 +989,25 @@ public class WdkModel {
             }
         }
         return paramName;
+    }
+
+    public String getSecretKey() throws NoSuchAlgorithmException,
+            WdkModelException, IOException {
+        if (secretKey == null) {
+            // load secret key file & read contents
+            String secretKeyFileLoc = modelConfig.getSecretKeyFile();
+            BufferedReader buffer = new BufferedReader(new FileReader(
+                    secretKeyFileLoc));
+            StringBuffer contents = new StringBuffer();
+            String line;
+            while ((line = buffer.readLine()) != null) {
+                contents.append(line);
+            }
+            buffer.close();
+            // it is on purpose to call this method, to leave out the heading
+            // zeros.
+            this.secretKey = UserFactory.encrypt(contents.toString());
+        }
+        return secretKey;
     }
 }

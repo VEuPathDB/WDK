@@ -48,7 +48,7 @@ public class StrategyBean {
     }
 
     public int getStrategyId() {
-        return strategy.getStrategyId();
+        return strategy.getDisplayId();
     }
 
     public int getInternalId() {

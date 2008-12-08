@@ -424,8 +424,8 @@ public class User /* implements Serializable */{
             Strategy newStrategy = this.importStrategy(strategy);
 
             importedSteps.add(rootStep.getDisplayId());
-            strategiesMap.put(strategy.getStrategyId(),
-                    newStrategy.getStrategyId());
+            strategiesMap.put(strategy.getDisplayId(),
+                    newStrategy.getDisplayId());
         }
 
         // update list of active strategies so ids are correct for logged in

@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.jspwrap;
 
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Vector;
@@ -212,4 +214,17 @@ public class WdkModelBean {
     public String queryParamDisplayName(String paramName) {
         return model.queryParamDisplayName(paramName);
     }
+
+    /**
+     * @return
+     * @throws NoSuchAlgorithmException
+     * @throws WdkModelException
+     * @throws IOException
+     * @see org.gusdb.wdk.model.WdkModel#getSecretKey()
+     */
+    public String getSecretKey() throws NoSuchAlgorithmException,
+            WdkModelException, IOException {
+        return model.getSecretKey();
+    }
+    
 }

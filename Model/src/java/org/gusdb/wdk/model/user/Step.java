@@ -30,7 +30,7 @@ public class Step {
     private StepFactory stepFactory;
     private User user;
     private int displayId;
-    private int stepId;
+    private int internalId;
     private Date createdTime;
     private Date lastRunTime;
     private String customName;
@@ -52,11 +52,11 @@ public class Step {
 
     private Map<String, String> displayParams = new LinkedHashMap<String, String>();
 
-    Step(StepFactory stepFactory, User user, int displayId, int stepId) {
+    Step(StepFactory stepFactory, User user, int displayId, int internalId) {
         this.stepFactory = stepFactory;
         this.user = user;
         this.displayId = displayId;
-        this.stepId = stepId;
+        this.internalId = internalId;
         isDeleted = false;
     }
 
@@ -211,8 +211,8 @@ public class Step {
     /**
      * @return Returns the stepId.
      */
-    int getStepId() {
-        return stepId;
+    int getInternalId() {
+        return internalId;
     }
 
     /**
@@ -478,5 +478,15 @@ public class Step {
             JSONException, WdkUserException, SQLException {
         Question question = getAnswer().getAnswerValue().getQuestion();
         return question.getRecordClass().getFullName();
+    }
+
+    public int getIndexFromId(int displayId) throws WdkUserException {
+        Step[] steps = getAllSteps();
+        for (int i = 0; i < steps.length; ++i) {
+            if (steps[i].getDisplayId() == displayId) {
+                return i;
+            }
+        }
+        throw new WdkUserException("Id not found!");
     }
 }
