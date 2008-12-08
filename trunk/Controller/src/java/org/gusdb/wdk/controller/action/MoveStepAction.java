@@ -35,22 +35,22 @@ public class MoveStepAction extends ProcessFilterAction {
         // Make sure strategy, step, and moveto are defined
         String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
         String strBranchId = null;
-        String strMoveFromIx = request.getParameter("movefrom");
+        String strMoveFromId = request.getParameter("movefrom");
         String op = request.getParameter("op");
-        String strMoveToIx = request.getParameter("moveto");
+        String strMoveToId = request.getParameter("moveto");
 
         // Make sure necessary arguments are provided
         if (strStratId == null || strStratId.length() == 0) {
             throw new WdkModelException(
                     "No strategy was specified for moving steps!");
         }
-        if (strMoveFromIx == null || strMoveFromIx.length() == 0) {
+        if (strMoveFromId == null || strMoveFromId.length() == 0) {
             throw new WdkModelException("No step was specified for moving!");
         } else if (op == null || op.length() == 0) {
             throw new WdkModelException(
                     "No operation specified for moving first step.");
         }
-        if (strMoveToIx == null || strMoveToIx.length() == 0) {
+        if (strMoveToId == null || strMoveToId.length() == 0) {
             throw new WdkModelException(
                     "No destination was specified for moving!");
         }
@@ -70,9 +70,14 @@ public class MoveStepAction extends ProcessFilterAction {
         }
 
         StrategyBean strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
+        StepBean targetStep;
 
-        // ArrayList<Integer> activeStrategies =
-        // (ArrayList<Integer>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
+        if (strBranchId == null) {
+            targetStep = strategy.getLatestStep();
+        } else {
+            targetStep = strategy.getStepById(Integer.parseInt(strBranchId));
+        }
+
         ArrayList<Integer> activeStrategies = wdkUser.getActiveStrategies();
         int index = -1;
 
@@ -84,20 +89,16 @@ public class MoveStepAction extends ProcessFilterAction {
             activeStrategies.remove(index);
         }
 
-        int moveFromIx = Integer.valueOf(strMoveFromIx);
-        int moveToIx = Integer.valueOf(strMoveToIx);
+        int moveFromId = Integer.valueOf(strMoveFromId);
+        int moveFromIx = targetStep.getIndexFromId(moveFromId);
+        int moveToId = Integer.valueOf(strMoveToId);
+        int moveToIx = targetStep.getIndexFromId(moveToId);
 
         // No need to load anything if there's nothing to move
         if (moveFromIx != moveToIx) {
             StepBean moveFromStep = strategy.getStep(moveFromIx);
             StepBean moveToStep = strategy.getStep(moveToIx);
-            StepBean step, newStep, targetStep;
-
-            if (strBranchId == null) {
-                targetStep = strategy.getLatestStep();
-            } else {
-                targetStep = strategy.getStepById(Integer.parseInt(strBranchId));
-            }
+            StepBean step, newStep;
 
             int stubIx = Math.min(moveFromIx, moveToIx) - 1;
             int length = targetStep.getLength();

@@ -309,4 +309,7 @@ public class StepBean {
         step.setEstimateSize(estimateSize);
     }
 
+    public int getIndexFromId(int stepId) throws WdkUserException {
+        return step.getIndexFromId(stepId);
+    }
 }

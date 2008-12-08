@@ -1,9 +1,6 @@
 package org.gusdb.wdk.controller;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.security.MessageDigest;
 
 import javax.servlet.Filter;
@@ -71,13 +68,8 @@ public class CheckLoginFilter implements Filter {
 
                     // Check if cookie has been modified since it was set by the
                     // application.
-                    Runtime rt = Runtime.getRuntime();
-                    Process proc = rt.exec(CConstants.WDK_LOGIN_SECRET_KEY);
-                    InputStream is = proc.getInputStream();
-                    InputStreamReader isr = new InputStreamReader(is);
-                    BufferedReader br = new BufferedReader(isr);
                     MessageDigest digest = MessageDigest.getInstance("MD5");
-                    String secretValue = br.readLine();
+                    String secretValue = wdkModel.getSecretKey();
 
                     secretValue = loginCookie.getValue().substring(0,
                             loginCookie.getValue().lastIndexOf("-"))

@@ -55,7 +55,6 @@ public class DeleteStepAction extends ProcessFilterAction {
         StepBean targetStep;
         StepBean step, newStep;
         String boolExp;
-        int stepIx;
 
         // Are we revising or deleting a step?
         String deleteStep = request.getParameter("step");
@@ -90,7 +89,8 @@ public class DeleteStepAction extends ProcessFilterAction {
             targetStep = strategy.getStepById(Integer.parseInt(strBranchId));
         }
 
-        stepIx = Integer.valueOf(deleteStep);
+        int stepId = Integer.valueOf(deleteStep);
+        int stepIx = targetStep.getIndexFromId(stepId);
         step = targetStep.getStep(stepIx);
 
         // are we deleting the first step?
