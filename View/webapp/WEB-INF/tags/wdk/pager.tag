@@ -38,6 +38,23 @@
         gotoPageUrl += "&pageSize=" + pageSize;
         window.location.href = gotoPageUrl;
     }
+    
+	function openAdvancedPaging(ele, open_close){
+		var a = document.getElementById("advancedPaging");
+		if(open_close){
+		//	a.style.display = "block";
+			a.style.left = "450px";
+			a.style.top = "410px";
+			ele.attributes[1].value = "openAdvancedPaging(this,false)";
+			ele.value = "Cancel";
+		}else{
+		//	a.style.display = "none";
+			a.style.left = "-999px";
+			a.style.top = "-999px";
+			ele.attributes[1].value = "openAdvancedPaging(this,true)";
+			ele.value = "Advanced Paging";
+		}
+	}
 //-->
 </script>
 
@@ -89,14 +106,16 @@
       </td>
    </c:if>
    
-      <td nowrap>
+      <td>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input style="width:150px" type="button" value="Advanced Paging" onclick="openAdvancedPaging(this, true)"/>
+		<div id="advancedPaging" style="display:block; position:absolute; top:-999px; left:-999px; border:solid 2px #B2BFD4;background-color:#c2cee1;padding:5px">
         <pg:page>
-          To page: 
+          Jump To page:
           <input type="text" id="${pager_id}_pageNumber" size="5" value="${currentPageNumber}"/>
           <input type="hidden" id="pageUrl" value="${pageUrl}" />
           <font size="-1">
             [1..<span id="${pager_id}_pageCount">${wdkAnswer.pageCount}</span>]
-            &nbsp;per page:
+             <br/>Results Per Page:
           </font>
           
           <!-- display the choice of page size -->
@@ -110,6 +129,7 @@
            <input type="button" value="GO" onclick="gotoPage('${pager_id}');"/>
         
         </pg:page>
+       </div>
       </td>
     </tr>
   </table> 

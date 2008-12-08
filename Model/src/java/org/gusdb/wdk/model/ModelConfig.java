@@ -29,6 +29,9 @@ public class ModelConfig {
     private String projectId;
     private String gusHome;
 
+    // location of secret key file
+    private String secretKeyFile;
+
     /**
      * @return the projectId
      */
@@ -178,5 +181,20 @@ public class ModelConfig {
      */
     public void setDefaultRole(String defaultRole) {
         this.defaultRole = defaultRole;
+    }
+
+    /**
+     * @return the secretKeyFile
+     */
+    public String getSecretKeyFile() {
+        return secretKeyFile;
+    }
+
+    /**
+     * @param secretKeyFile
+     *            the secretKeyFile to set
+     */
+    public void setSecretKeyFile(String secretKeyFile) {
+        this.secretKeyFile = secretKeyFile;
     }
 }

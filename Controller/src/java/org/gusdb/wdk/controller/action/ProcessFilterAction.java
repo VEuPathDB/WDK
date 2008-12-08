@@ -171,11 +171,17 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             // w/ a history param
         } else {
             int stratLen = originalStep.getLength();
+            int targetId;
             int targetIx;
             boolean isRevise;
 
-            if (isRevise = (reviseStep != null && reviseStep.length() != 0)) targetIx = Integer.parseInt(reviseStep);
-            else targetIx = Integer.parseInt(insertStep);
+            if (isRevise = (reviseStep != null && reviseStep.length() != 0)) {
+                targetId = Integer.parseInt(reviseStep);
+                targetIx = originalStep.getIndexFromId(targetId);
+            } else {
+                targetId = Integer.parseInt(insertStep);
+                targetIx = originalStep.getIndexFromId(targetId);
+            }
 
             if (stratLen > 1 || !isRevise) {
                 step = originalStep.getStep(targetIx);
@@ -317,22 +323,26 @@ public class ProcessFilterAction extends ProcessQuestionAction {
         // activeStrategies);
         wdkUser.setActiveStrategies(activeStrategies);
 
-        ActionForward showSummary = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
-        StringBuffer url = new StringBuffer(showSummary.getPath());
+        ActionForward showStrategy = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
+        StringBuffer url = new StringBuffer(showStrategy.getPath());
         url.append("?strategy="
                 + URLEncoder.encode(Integer.toString(strategy.getStrategyId()),
                         "UTF-8"));
         if (strBranchId != null) {
             url.append("_" + URLEncoder.encode(strBranchId, "UTF-8"));
         }
-        String viewStep = request.getParameter("step");
-        if (viewStep != null && viewStep.length() != 0) {
-            url.append("&step=" + URLEncoder.encode(viewStep, "UTF-8"));
-        }
-        String subQuery = request.getParameter("subquery");
-        if (subQuery != null && subQuery.length() != 0) {
-            url.append("&subquery=" + URLEncoder.encode(subQuery, "UTF-8"));
-        }
+
+        // NO LONGER NEEDED SINCE WE FORWARD TO SHOWSTRATEGY, WHICH ONLY NEEDS
+        // STRATEGY ID
+        // String viewStep = request.getParameter("step");
+        // if (viewStep != null && viewStep.length() != 0) {
+        // url.append("&step=" + URLEncoder.encode(viewStep, "UTF-8"));
+        // }
+        // String subQuery = request.getParameter("subquery");
+        // if (subQuery != null && subQuery.length() != 0) {
+        // url.append("&subquery=" + URLEncoder.encode(subQuery, "UTF-8"));
+        // }
+
         ActionForward forward = new ActionForward(url.toString());
         forward.setRedirect(true);
         return forward;

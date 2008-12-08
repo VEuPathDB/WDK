@@ -4,13 +4,10 @@
 package org.gusdb.wdk.controller.action;
 
 import java.security.MessageDigest;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.BufferedReader;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.Cookie;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
@@ -34,10 +31,10 @@ public class ProcessLoginAction extends Action {
     /*
      * (non-Javadoc)
      * 
-     * @see org.apache.struts.action.Action#execute(org.apache.struts.action.ActionMapping,
-     *      org.apache.struts.action.ActionForm,
-     *      javax.servlet.http.HttpServletRequest,
-     *      javax.servlet.http.HttpServletResponse)
+     * @seeorg.apache.struts.action.Action#execute(org.apache.struts.action.
+     * ActionMapping, org.apache.struts.action.ActionForm,
+     * javax.servlet.http.HttpServletRequest,
+     * javax.servlet.http.HttpServletResponse)
      */
     @Override
     public ActionForward execute(ActionMapping mapping, ActionForm form,
@@ -74,31 +71,27 @@ public class ProcessLoginAction extends Action {
         // get user's input
         String email = request.getParameter(CConstants.WDK_EMAIL_KEY);
         String password = request.getParameter(CConstants.WDK_PASSWORD_KEY);
-	boolean remember = request.getParameter("remember") != null && request.getParameter("remember").equals("on");
+        boolean remember = request.getParameter("remember") != null
+                && request.getParameter("remember").equals("on");
 
         // authenticate
         try {
             UserBean user = factory.login(guest, email, password);
 
-	    // Create & send cookie
-	    Cookie loginCookie = new Cookie(CConstants.WDK_LOGIN_COOKIE_KEY, user.getUserId() + "-" + user.getEmail());
+            // Create & send cookie
+            Cookie loginCookie = new Cookie(CConstants.WDK_LOGIN_COOKIE_KEY,
+                    user.getUserId() + "-" + user.getEmail());
 
-	    if (remember) {
-		loginCookie.setMaxAge(java.lang.Integer.MAX_VALUE/256);
-		loginCookie.setValue(loginCookie.getValue() + "-remember");
-	    }
-	    else {
-		loginCookie.setMaxAge(-1);
-	    }
+            if (remember) {
+                loginCookie.setMaxAge(java.lang.Integer.MAX_VALUE / 256);
+                loginCookie.setValue(loginCookie.getValue() + "-remember");
+            } else {
+                loginCookie.setMaxAge(-1);
+            }
 
-	    Runtime rt = Runtime.getRuntime();
-	    Process proc = rt.exec(CConstants.WDK_LOGIN_SECRET_KEY);
-	    InputStream is = proc.getInputStream();
-	    InputStreamReader isr = new InputStreamReader(is);
-	    BufferedReader br = new BufferedReader(isr);
-	    String secretValue = br.readLine();
+            String secretValue = wdkModel.getSecretKey();
 
-	    secretValue = loginCookie.getValue() + secretValue;
+            secretValue = loginCookie.getValue() + secretValue;
 
             MessageDigest digest = MessageDigest.getInstance("MD5");
             byte[] encrypted = digest.digest(secretValue.getBytes());
@@ -107,16 +100,18 @@ public class ProcessLoginAction extends Action {
             for (byte code : encrypted) {
                 buffer.append(Integer.toHexString(code & 0xFF));
             }
-	    
-            loginCookie.setValue(loginCookie.getValue() + "-" + buffer.toString());
 
-	    // make sure the cookie is good for whole site, not just webapp
-	    loginCookie.setPath("/");
+            loginCookie.setValue(loginCookie.getValue() + "-"
+                    + buffer.toString());
 
-	    response.addCookie(loginCookie);
+            // make sure the cookie is good for whole site, not just webapp
+            loginCookie.setPath("/");
+
+            response.addCookie(loginCookie);
 
             request.getSession().setAttribute(CConstants.WDK_USER_KEY, user);
-            request.getSession().setAttribute(CConstants.WDK_LOGIN_ERROR_KEY,"");
+            request.getSession().setAttribute(CConstants.WDK_LOGIN_ERROR_KEY,
+                    "");
 
             if (originUrl != null) {
                 forwardUrl = originUrl;
@@ -126,14 +121,16 @@ public class ProcessLoginAction extends Action {
                 forwardUrl = referer;
             }
 
-	    forward.setRedirect(true);
+            forward.setRedirect(true);
+            // history ids don't show up in url anymore, so this isn't needed
             // login succeeded, redirect to "show_history page if history_id
             // contained in the url. since the history id is invalid/changed
             // after login
-            if (forwardUrl.indexOf(CConstants.WDK_HISTORY_ID_KEY) >= 0) {
-                forward = mapping.findForward(CConstants.SHOW_QUERY_HISTORY_MAPKEY);
-                return forward;
-            }
+            // if (forwardUrl.indexOf(CConstants.WDK_HISTORY_ID_KEY) >= 0) {
+            // forward =
+            // mapping.findForward(CConstants.SHOW_QUERY_HISTORY_MAPKEY);
+            // return forward;
+            // }
         } catch (WdkUserException ex) {
             ex.printStackTrace();
             // user authentication failed, set the error message
@@ -144,7 +141,8 @@ public class ProcessLoginAction extends Action {
                     referer);
             request.getSession().setAttribute(CConstants.WDK_ORIGIN_URL_KEY,
                     request.getParameter(CConstants.WDK_ORIGIN_URL_KEY));
-            forwardUrl = referer;
+            ActionForward loginPage = mapping.findForward(CConstants.SHOW_LOGIN_MAPKEY);
+            forwardUrl = loginPage.getPath();
         }
         forward.setPath(forwardUrl);
         return forward;

@@ -12,17 +12,17 @@ public class Strategy {
     private StepFactory stepFactory;
     private User user;
     private Step latestStep;
-    private int strategyId;
+    private int displayId;
     private int internalId;
     private boolean isSaved;
     private String name;
     private String savedName = null;
 
-    Strategy(StepFactory factory, User user, int strategyId, int internalId,
+    Strategy(StepFactory factory, User user, int displayId, int internalId,
             String name) {
         this.stepFactory = factory;
         this.user = user;
-        this.strategyId = strategyId;
+        this.displayId = displayId;
         this.internalId = internalId;
         this.name = name;
         isSaved = false;
@@ -60,12 +60,12 @@ public class Strategy {
         return latestStep;
     }
 
-    void setStrategyId(int strategyId) {
-        this.strategyId = strategyId;
+    void setDisplayId(int displayId) {
+        this.displayId = displayId;
     }
 
-    public int getStrategyId() {
-        return strategyId;
+    public int getDisplayId() {
+        return displayId;
     }
 
     public int getInternalId() {

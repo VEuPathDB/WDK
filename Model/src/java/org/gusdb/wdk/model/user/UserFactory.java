@@ -71,6 +71,17 @@ public class UserFactory {
     private static final String EMAIL_MACRO_EMAIL = "EMAIL";
     private static final String EMAIL_MACRO_PASSWORD = "PASSWORD";
 
+    public static String encrypt(String str) throws NoSuchAlgorithmException {
+        MessageDigest digest = MessageDigest.getInstance("MD5");
+        byte[] encrypted = digest.digest(str.getBytes());
+        // convert each byte into hex format
+        StringBuffer buffer = new StringBuffer();
+        for (byte code : encrypted) {
+            buffer.append(Integer.toHexString(code & 0xFF));
+        }
+        return buffer.toString();
+    }
+
     /*
      * Inner class to act as a JAF datasource to send HTML e-mail content
      */
@@ -1001,17 +1012,6 @@ public class UserFactory {
                 throw new WdkUserException(ex);
             }
         }
-    }
-
-    String encrypt(String str) throws NoSuchAlgorithmException {
-        MessageDigest digest = MessageDigest.getInstance("MD5");
-        byte[] encrypted = digest.digest(str.getBytes());
-        // convert each byte into hex format
-        StringBuffer buffer = new StringBuffer();
-        for (byte code : encrypted) {
-            buffer.append(Integer.toHexString(code & 0xFF));
-        }
-        return buffer.toString();
     }
 
     public void deleteUser(String email) throws WdkUserException,
