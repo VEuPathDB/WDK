@@ -3,7 +3,11 @@ package org.gusdb.wdk.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 public class Category extends WdkModelBase {
+
+    private static final Logger logger = Logger.getLogger(Category.class);
 
     private String name;
     private String displayName;
@@ -65,7 +69,16 @@ public class Category extends WdkModelBase {
         // get the base recordClass
         String recordClassRef = categories.getRecordClassRef();
         for (WdkModelText ref : questionRefs) {
-            Question question = (Question) model.resolveReference(ref.getText().trim());
+            Question question = null;
+            try {
+                question = (Question) model.resolveReference(ref.getText().trim());
+            } catch (WdkModelException ex) {
+                // relax a bit, just ignore the missing questions
+                logger.warn("The question [" + ref + "] is defined in "
+                        + "category [" + name + "], but doesn't exist in the "
+                        + "model.");
+                continue;
+            }
 
             // make sure the recordClass matches
             if (!question.getRecordClass().getFullName().equals(recordClassRef))
@@ -75,5 +88,6 @@ public class Category extends WdkModelBase {
 
             questions.add(question);
         }
+        questionRefs = null;
     }
 }

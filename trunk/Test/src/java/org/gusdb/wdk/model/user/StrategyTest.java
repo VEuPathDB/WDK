@@ -54,7 +54,7 @@ public class StrategyTest {
         Step step = UnitTestHelper.createNormalStep(user);
         Strategy strategy = user.createStrategy(step, false);
 
-        Strategy loadedStrategy = user.getStrategy(strategy.getStrategyId());
+        Strategy loadedStrategy = user.getStrategy(strategy.getDisplayId());
         compareStrategy(strategy, loadedStrategy);
     }
 
@@ -82,14 +82,14 @@ public class StrategyTest {
         Strategy strategy = user.createStrategy(step, false);
 
         int count = user.getStrategyCount();
-        user.deleteStrategy(strategy.getStrategyId());
+        user.deleteStrategy(strategy.getDisplayId());
 
         Assert.assertEquals("strategy count", count - 1,
                 user.getStrategyCount());
 
         // get a delete strategy, should raise a WdkUserException
         try {
-            user.getStrategy(strategy.getStrategyId());
+            user.getStrategy(strategy.getDisplayId());
             Assert.assertTrue("strategy not deleted", false);
         } catch (WdkUserException ex) {
             // do nothing, expected.
@@ -112,8 +112,8 @@ public class StrategyTest {
             WdkUserException, SQLException {
         Assert.assertEquals("internal strategy id", expected.getInternalId(),
                 actual.getInternalId());
-        Assert.assertEquals("strategy id", expected.getStrategyId(),
-                actual.getStrategyId());
+        Assert.assertEquals("strategy id", expected.getDisplayId(),
+                actual.getDisplayId());
         Assert.assertEquals("strategy length", expected.getLength(),
                 actual.getLength());
         Assert.assertEquals("strategy name", expected.getName(),
