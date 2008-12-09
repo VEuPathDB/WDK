@@ -460,7 +460,9 @@ public class Step {
 	throws WdkUserException {
 	Step[] steps = getAllSteps();
 	for (int i = 0; i < steps.length; ++i) {
-	    if (steps[i].getStepId() == stepId) {
+	    if (steps[i].getStepId() == stepId || 
+		(steps[i].getChildStep() != null 
+		 && steps[i].getChildStep().getStepId() == stepId)) {
 		return i;
 	    }
 	}
