@@ -27,8 +27,8 @@ public class StepTest {
     public static void compareStep(Step expectedStep, Step actualStep)
             throws NoSuchAlgorithmException, WdkUserException,
             WdkModelException, JSONException, SQLException {
-        Assert.assertEquals("step id", expectedStep.getStepId(),
-                actualStep.getStepId());
+        Assert.assertEquals("internal id", expectedStep.getInternalId(),
+                actualStep.getInternalId());
         Assert.assertEquals("display id", expectedStep.getDisplayId(),
                 actualStep.getDisplayId());
         Assert.assertEquals("valid", expectedStep.isValid(),
@@ -129,7 +129,7 @@ public class StepTest {
 
         boolean hasStep = false;
         for (Step loadedStep : steps) {
-            if (loadedStep.getStepId() == step.getStepId()) {
+            if (loadedStep.getInternalId() == step.getInternalId()) {
                 compareStep(step, loadedStep);
 
                 hasStep = true;
