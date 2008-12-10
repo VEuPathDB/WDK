@@ -86,9 +86,9 @@ CREATE TABLE wdkengine.answers
 CREATE INDEX wdkengine.answers_idx01 ON wdkengine.answers (prev_answer_id);
 
 
-GRANT insert, update, delete ON wdkengine.answer TO GUS_W;
-GRANT select ON wdkengine.answer TO GUS_R;
-GRANT references ON wdkengine.answer TO wdkuser;
+GRANT insert, update, delete ON wdkengine.answers TO GUS_W;
+GRANT select ON wdkengine.answers TO GUS_R;
+GRANT references ON wdkengine.answers TO wdkuser;
 
 
 CREATE TABLE wdkengine.dataset_indices
@@ -224,8 +224,8 @@ CREATE TABLE wdkuser.steps
       REFERENCES wdkengine.answers (answer_id)
 );
 
-GRANT insert, update, delete ON wdkuser.histories TO GUS_W;
-GRANT select ON wdkuser.histories TO GUS_R;
+GRANT insert, update, delete ON wdkuser.steps TO GUS_W;
+GRANT select ON wdkuser.steps TO GUS_R;
 
 
 CREATE TABLE wdkuser.strategies

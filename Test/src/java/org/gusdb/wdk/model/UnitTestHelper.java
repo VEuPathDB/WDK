@@ -46,6 +46,10 @@ public class UnitTestHelper {
     private static List<Question> normalQuestions;
     private static List<Question> answerQuestions;
     private static List<Question> datasetQuestions;
+    
+    public static Random getRandom() {
+        return random;
+    }
 
     public static WdkModel getModel() throws Exception {
         if (wdkModel == null) {

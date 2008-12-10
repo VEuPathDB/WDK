@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model;
 
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -8,6 +10,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
+import org.json.JSONException;
 
 public class TableField extends Field implements AttributeFieldContainer {
 
@@ -93,7 +96,7 @@ public class TableField extends Field implements AttributeFieldContainer {
      * org.gusdb.wdk.model.Field#resolveReferences(org.gusdb.wdk.model.WdkModel)
      */
     @Override
-    public void resolveReferences(WdkModel model) throws WdkModelException {
+    public void resolveReferences(WdkModel model) throws WdkModelException, NoSuchAlgorithmException, SQLException, JSONException, WdkUserException {
         // resolve Query
         Query query = (Query) model.resolveReference(queryTwoPartName);
 
