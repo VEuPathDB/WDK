@@ -3,6 +3,10 @@
  */
 package org.gusdb.wdk.model;
 
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
+
+import org.json.JSONException;
 
 /**
  * @author Jerric
@@ -11,7 +15,8 @@ package org.gusdb.wdk.model;
 public abstract class Field extends WdkModelBase {
 
     public abstract void resolveReferences(WdkModel wdkModel)
-            throws WdkModelException;
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException;
 
     protected String name;
     protected String displayName;

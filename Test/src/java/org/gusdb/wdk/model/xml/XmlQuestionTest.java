@@ -15,9 +15,6 @@ import org.junit.Test;
  */
 public class XmlQuestionTest {
 
-    private static final String SAMPLE_XML_QUESTION_SET = "XmlQuestions";
-    private static final String SAMPLE_XML_QUESTION = "News";
-
     private WdkModel wdkModel;
 
     public XmlQuestionTest() throws Exception {
@@ -30,17 +27,27 @@ public class XmlQuestionTest {
     @Test
     public void testGetAllXmlQuestions() {
         // validate the references to questions
-        XmlQuestionSet[] questionSets = wdkModel.getXmlQuestionSets();
-        Assert.assertTrue("there must be at least one xml question set",
-                questionSets.length > 0);
-        for (XmlQuestionSet questionSet : questionSets) {
+        for (XmlQuestionSet questionSet : wdkModel.getXmlQuestionSets()) {
+            String setName = questionSet.getName();
+            Assert.assertTrue("set name", setName.trim().length() > 0);
+
             XmlQuestion[] questions = questionSet.getQuestions();
-            Assert.assertTrue("There must be at leasr one question in each "
-                    + "question set", questions.length > 0);
+            Assert.assertTrue("question count > 0", questions.length > 0);
             for (XmlQuestion question : questions) {
+                String qName = question.getName();
+                Assert.assertTrue("name", qName.trim().length() > 0);
+
                 // the question must have reference to record class
-                Assert.assertNotNull("The question must have reference to an "
-                        + "record class", question.getRecordClass());
+                Assert.assertNotNull("record class", question.getRecordClass());
+                Assert.assertNotNull("display name", question.getDisplayName());
+                Assert.assertEquals("question set", setName,
+                        question.getQuestionSet().getName());
+                String fullName = question.getFullName();
+                Assert.assertTrue("fullName starts with",
+                        fullName.startsWith(setName));
+                Assert.assertTrue("fullName ends with",
+                        fullName.endsWith(qName));
+                Assert.assertNotNull("data url", question.getXmlDataURL());
             }
         }
     }
@@ -53,7 +60,7 @@ public class XmlQuestionTest {
      */
     @org.junit.Test(expected = WdkModelException.class)
     public void testGetInvalidXmlQuestionSet() throws WdkModelException {
-        String qsetName = "ToyXmlQuestions";
+        String qsetName = "NonexistXmlQuestions";
         wdkModel.getXmlQuestionSet(qsetName);
     }
 
@@ -64,15 +71,30 @@ public class XmlQuestionTest {
      */
     @org.junit.Test
     public void testGetXmlQuestionSet() throws WdkModelException {
-        XmlQuestionSet[] qsets = wdkModel.getXmlQuestionSets();
-        if (qsets.length > 0) {
-            String qsetName = qsets[0].getName();
-            XmlQuestionSet questionSet = wdkModel.getXmlQuestionSet(qsetName);
-            Assert.assertNotNull("questionSet " + qsets + " should exist",
-                    questionSet);
-            String description = questionSet.getDescription().trim();
-            Assert.assertEquals("Data contents from XML data sources",
-                    description);
+        for (XmlQuestionSet questionSet : wdkModel.getXmlQuestionSets()) {
+            String qsetName = questionSet.getName();
+            XmlQuestionSet qset = wdkModel.getXmlQuestionSet(qsetName);
+            Assert.assertEquals(qsetName, qset.getName());
+        }
+    }
+
+    /**
+     * Test getting question and its properties
+     * 
+     * @throws WdkModelException
+     */
+    @org.junit.Test
+    public void testGetXmlQuestion() throws WdkModelException {
+        for (XmlQuestionSet questionSet : wdkModel.getXmlQuestionSets()) {
+            for (XmlQuestion question : questionSet.getQuestions()) {
+                String name = question.getName();
+                XmlQuestion q = questionSet.getQuestion(name);
+                Assert.assertEquals("by name", name, q.getName());
+
+                String fullName = question.getFullName();
+                q = (XmlQuestion) wdkModel.resolveReference(fullName);
+                Assert.assertEquals("by fullName", fullName, q.getFullName());
+            }
         }
     }
 
@@ -83,30 +105,21 @@ public class XmlQuestionTest {
      */
     @org.junit.Test(expected = WdkModelException.class)
     public void testGetInvalidXmlQuestion() throws WdkModelException {
-        String qName = "ToyXmlQuestion";
-        XmlQuestionSet questionSet = wdkModel.getXmlQuestionSet(SAMPLE_XML_QUESTION_SET);
-        questionSet.getQuestion(qName);
+        String qName = "NonexistXmlQuestion";
+        for (XmlQuestionSet questionSet : wdkModel.getXmlQuestionSets()) {
+            questionSet.getQuestion(qName);
+        }
     }
 
     /**
-     * Test getting question and its properties
+     * the question is excluded from the Sample DB
      * 
      * @throws WdkModelException
      */
-    @org.junit.Test
-    public void testGetXmlQuestion() throws WdkModelException {
-        // get question by question set
-        XmlQuestionSet questionSet = wdkModel.getXmlQuestionSet(SAMPLE_XML_QUESTION_SET);
-        XmlQuestion question1 = questionSet.getQuestion(SAMPLE_XML_QUESTION);
-
-        // get question by question full name
-        String fullName = SAMPLE_XML_QUESTION_SET + "." + SAMPLE_XML_QUESTION;
-        XmlQuestion question2 = (XmlQuestion) wdkModel.resolveReference(fullName);
-        Assert.assertSame(question1, question2);
-
-        // check the description, summary, and help
-        Assert.assertEquals("Retrieve news from XML data source",
-                question2.getDescription());
-        Assert.assertEquals("Sample Xml Question Help", question2.getHelp());
+    @org.junit.Test(expected = WdkModelException.class)
+    public void testGetInvalidXmlQuestionByFull() throws WdkModelException {
+        String fullName = "NonexistXmlQuestionSet.NonexistXmlQuestion";
+        wdkModel.resolveReference(fullName);
     }
+
 }

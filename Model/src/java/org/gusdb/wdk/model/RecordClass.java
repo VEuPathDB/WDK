@@ -618,7 +618,8 @@ public class RecordClass extends WdkModelBase implements
     }
 
     Query prepareQuery(Query query, String[] paramNames)
-            throws WdkModelException {
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
         Map<String, Column> columns = query.getColumnMap();
         Map<String, Param> originalParams = query.getParamMap();
         Query newQuery = query.clone();
@@ -647,12 +648,13 @@ public class RecordClass extends WdkModelBase implements
                 param.setName(columnName);
                 param.setQuote(quote);
 
-                String defaultValue = defaultValues.get(columnName);
-                if (defaultValue != null) param.setDefault(defaultValue);
-
                 param.resolveReferences(wdkModel);
                 param.setResources(wdkModel);
                 paramSet.addParam(param);
+            }
+            if (param.getDefault() == null) {
+                String defaultValue = defaultValues.get(columnName);
+                if (defaultValue != null) param.setDefault(defaultValue);
             }
             newQuery.addParam(param);
         }
@@ -674,7 +676,9 @@ public class RecordClass extends WdkModelBase implements
         return newQuery;
     }
 
-    private Query prepareAliasQuery(Query query) throws WdkModelException {
+    private Query prepareAliasQuery(Query query) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
         // the alias query should also return columns for old primary key
         // columns, with a prefix "old_".
         String[] pkColumns = primaryKeyField.getColumnRefs();
