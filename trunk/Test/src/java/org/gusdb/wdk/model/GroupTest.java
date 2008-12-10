@@ -12,50 +12,88 @@ import org.junit.Test;
  */
 public class GroupTest {
 
-    private static final String SAMPLE_GROUP_SET = "sampleGroups";
-    private static final String SAMPLE_GROUP = "sampleGroup";
-    
     private WdkModel wdkModel;
-    
+
     public GroupTest() throws Exception {
         wdkModel = UnitTestHelper.getModel();
     }
-    
+
     /**
      * test getting all groups from model
      */
     @Test
     public void testGetGroups() {
-        GroupSet[] groupSets = wdkModel.getAllGroupSets();
-        Assert.assertTrue(groupSets.length > 0);
-        for (GroupSet groupSet : groupSets) {
+        for (GroupSet groupSet : wdkModel.getAllGroupSets()) {
             Assert.assertNotNull(groupSet);
             String setName = groupSet.getName();
             Assert.assertTrue(setName.trim().length() > 0);
 
             // validate each group
             Group[] groups = groupSet.getGroups();
-            Assert.assertTrue(groups.length > 0);
+            Assert.assertTrue("group count", groups.length > 0);
             for (Group group : groups) {
-                Assert.assertNotNull(group);
-                Assert.assertTrue(group.getFullName().startsWith(setName));
+                String gName = group.getName();
+                Assert.assertTrue("name", gName.trim().length() > 0);
+
+                Assert.assertEquals("group set", setName,
+                        group.getGroupSet().getName());
+
+                String fullName = group.getFullName();
+                Assert.assertTrue("fullName starts with",
+                        fullName.startsWith(setName));
+                Assert.assertTrue("fullName ends with",
+                        fullName.endsWith(gName));
+
                 Assert.assertTrue(group.getDisplayName().trim().length() > 0);
             }
         }
     }
-    
+
+    /**
+     * @throws WdkModelException
+     */
+    @Test(expected = WdkModelException.class)
+    public void testGetInvalidGroupSet() throws WdkModelException {
+        String gsetName = "NonexistGroupSet";
+        wdkModel.getGroupSet(gsetName);
+    }
+
     /**
      * @throws WdkModelException
      */
     @Test
     public void testGetGroup() throws WdkModelException {
-        // get the group from the set
-        GroupSet groupSet = wdkModel.getGroupSet(SAMPLE_GROUP_SET);
-        Group group1 = groupSet.getGroup(SAMPLE_GROUP);
-        Assert.assertNotNull(group1);
-        
-        // get the group from wdkModel directly
-        Group group2 = (Group)wdkModel.resolveReference(SAMPLE_GROUP_SET + "." + SAMPLE_GROUP);
-        Assert.assertSame(group1, group2);
+        for (GroupSet groupSet : wdkModel.getAllGroupSets()) {
+            for (Group group : groupSet.getGroups()) {
+                String name = group.getName();
+                Group g = groupSet.getGroup(name);
+
+                Assert.assertEquals("by name", name, g.getName());
+                
+                String fullName = group.getFullName();
+                g = (Group)wdkModel.resolveReference(fullName);
+                Assert.assertEquals("by full name", fullName, g.getFullName());
+            }
+        }
+    }
+
+    /**
+     * @throws WdkModelException
+     */
+    @Test(expected = WdkModelException.class)
+    public void testGetInvalidGroup() throws WdkModelException {
+        String gName = "NonexistGroup";
+        for (GroupSet groupSet : wdkModel.getAllGroupSets()) {
+            groupSet.getGroup(gName);
+        }
+    }
+
+    /**
+     * @throws WdkModelException
+     */
+    @Test(expected = WdkModelException.class)
+    public void testGetInvalidGroupByFullName() throws WdkModelException {
+        String fullName = "NonexistGroupSet.NonexistGroup";
+        wdkModel.resolveReference(fullName);
     }
 }

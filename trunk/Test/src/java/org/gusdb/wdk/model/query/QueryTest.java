@@ -91,8 +91,10 @@ public class QueryTest {
             int rows = instance.getResultSize();
 
             String qName = query.getFullName();
-            Assert.assertTrue(qName + " rows less than min", minRows <= rows);
-            Assert.assertTrue(qName + " rows more than max", maxRows >= rows);
+            Assert.assertTrue(qName + " rows less than min (" + minRows + ")",
+                    minRows <= rows);
+            Assert.assertTrue(qName + " rows more than max (" + maxRows + ")",
+                    maxRows >= rows);
 
             setCount++;
         }

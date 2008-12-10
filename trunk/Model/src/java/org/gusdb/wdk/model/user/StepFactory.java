@@ -283,22 +283,22 @@ public class StepFactory {
         try {
             StringBuffer sql = new StringBuffer("DELETE FROM ");
             sql.append(stepTable).append(" WHERE ");
-            sql.append(userIdColumn).append(" = ?");
+            sql.append(userIdColumn).append(" = ? ");
             if (!allProjects) {
-                sql.append("AND ").append(answerIdColumn).append(" IN (");
+                sql.append(" AND ").append(answerIdColumn).append(" IN (");
                 sql.append(" SELECT s.").append(answerIdColumn);
                 sql.append(" FROM ").append(stepTable).append(" s, ");
                 sql.append(answerTable).append(" a ");
                 sql.append(" WHERE s.").append(answerIdColumn);
                 sql.append(" = a.").append(answerIdColumn);
-                sql.append(" AND a.").append(projectIdColumn).append(" = ?");
+                sql.append(" AND a.").append(projectIdColumn).append(" = ?) ");
             }
             sql.append(" AND ").append(COLUMN_DISPLAY_ID);
             sql.append(" NOT IN (SELECT ").append(COLUMN_ROOT_STEP_ID);
             sql.append(" FROM ").append(strategyTable);
             if (!allProjects)
-                sql.append(" WHERE ").append(COLUMN_PROJECT_ID).append(" = ?");
-            sql.append("))");
+                sql.append(" WHERE ").append(COLUMN_PROJECT_ID).append(" = ? ");
+            sql.append(") ");
             psDeleteSteps = SqlUtils.getPreparedStatement(dataSource,
                     sql.toString());
 

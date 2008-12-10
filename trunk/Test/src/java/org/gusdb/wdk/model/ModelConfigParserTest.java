@@ -14,8 +14,6 @@ import org.xml.sax.SAXException;
  */
 public class ModelConfigParserTest {
 
-    private static final String SAMPLE_PROJECT_ID = "SampleDB";
-
     private String projectId;
     private String gusHome;
 
@@ -32,13 +30,12 @@ public class ModelConfigParserTest {
 
         // GUS_HOME is required
         if (gusHome == null || gusHome.length() == 0)
-            throw new WdkModelException("Required "
-                    + Utilities.SYSTEM_PROPERTY_GUS_HOME
-                    + " property is missing.");
+            throw new WdkModelException("Required system property "
+                    + Utilities.SYSTEM_PROPERTY_GUS_HOME + " is missing.");
 
-        // project id is optional
         if (projectId == null || projectId.length() == 0)
-            projectId = SAMPLE_PROJECT_ID;
+            throw new WdkModelException("Required system property "
+                    + Utilities.ARGUMENT_PROJECT_ID + " is missing.");
     }
 
     /**
@@ -54,20 +51,5 @@ public class ModelConfigParserTest {
         ModelConfigParser parser = new ModelConfigParser(gusHome);
         ModelConfig config = parser.parseConfig(projectId);
         Assert.assertNotNull(config);
-    }
-
-    /**
-     * parse an invalid configuration file
-     * 
-     * @throws IOException
-     * @throws SAXException
-     * @throws WdkModelException
-     */
-    @org.junit.Test(expected = WdkModelException.class)
-    public void testParseInvalidConfig() throws SAXException, IOException,
-            WdkModelException {
-        String projectId = "SampleDB_bad_config_syntax";
-        ModelConfigParser parser = new ModelConfigParser(gusHome);
-        parser.parseConfig(projectId);
     }
 }

@@ -5,6 +5,7 @@ package org.gusdb.wdk.model.query.param;
 
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.util.Random;
 
 import junit.framework.Assert;
 
@@ -55,9 +56,56 @@ public class ParamTest {
             }
         }
     }
-    
+
     @Test
-    public void testDatasetParamGetId() {
-        
+    public void testReplaceSql() throws NoSuchAlgorithmException, SQLException,
+            WdkModelException, JSONException, WdkUserException {
+        for (ParamSet paramSet : wdkModel.getAllParamSets()) {
+            for (Param param : paramSet.getParams()) {
+                String defaultValue = param.getDefault();
+                String key = "$$" + param.getName() + "$$";
+                String sql = "SELECT nothing FROM " + key + " WHERE 1 = 2";
+
+                sql = param.replaceSql(sql, defaultValue);
+
+                Assert.assertFalse("key replaced", sql.contains(key));
+            }
+        }
+    }
+
+    @Test
+    public void testCompress() throws NoSuchAlgorithmException,
+            WdkModelException {
+        // generate random input
+        StringBuffer buffer = new StringBuffer();
+        Random rand = UnitTestHelper.getRandom();
+        for (int i = 0; i < 4000; i++) {
+            int code = rand.nextInt(36);
+            int base = (code < 0) ? '0' : 'a';
+            int ch = (char) (code + base);
+            buffer.append(ch);
+        }
+        String origin = buffer.toString();
+
+        for (ParamSet paramSet : wdkModel.getAllParamSets()) {
+            for (Param param : paramSet.getParams()) {
+                // compress
+                String compressed = param.compressValue(origin);
+                Assert.assertTrue("compress",
+                        compressed.length() < origin.length());
+
+                // compress again, should be identical
+                String compressed2 = param.compressValue(origin);
+                Assert.assertEquals("compress again", compressed, compressed2);
+
+                // decompress
+                String decompressed = param.decompressValue(compressed);
+                Assert.assertEquals("decompress", origin, decompressed);
+
+                // only needs to test once
+                return;
+            }
+        }
+
     }
 }

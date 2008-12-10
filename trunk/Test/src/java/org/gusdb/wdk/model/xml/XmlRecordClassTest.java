@@ -15,9 +15,6 @@ import org.junit.Test;
  */
 public class XmlRecordClassTest {
 
-    private static final String SAMPLE_XML_RECORD_CLASS_SET = "XmlRecordClasses";
-    private static final String SAMPLE_XML_RECORD_CLASS = "NewsRecord";
-
     private WdkModel wdkModel;
 
     public XmlRecordClassTest() throws Exception {
@@ -28,23 +25,45 @@ public class XmlRecordClassTest {
      * test reading question from the model
      */
     @Test
-    public void testGetXmlRecordClasses() {
+    public void testGetAllXmlRecordClasseSets() {
         // validate the references to the record classes
-        XmlRecordClassSet[] rcSets = wdkModel.getXmlRecordClassSets();
-        Assert.assertTrue("There must be at least one record class set",
-                rcSets.length > 0);
-        for (XmlRecordClassSet rcSet : rcSets) {
+        for (XmlRecordClassSet rcSet : wdkModel.getXmlRecordClassSets()) {
+            String setName = rcSet.getName();
+            Assert.assertTrue("set name", setName.trim().length() > 0);
+
             XmlRecordClass[] recordClasses = rcSet.getRecordClasses();
-            Assert.assertTrue("There must be at least one Record class in "
-                    + "each query set", recordClasses.length > 0);
+            Assert.assertTrue("record class count", recordClasses.length > 0);
             for (XmlRecordClass recordClass : recordClasses) {
-                // the record class must have at least one attribute
-                Assert.assertTrue(
-                        "The record class must define at least one field",
-                        recordClass.getAttributeFields().length > 0
-                                || recordClass.getTableFields().length > 0);
+                Assert.assertEquals("parent set", setName,
+                        recordClass.getRecordClassSet().getName());
+
+                String name = recordClass.getName();
+                Assert.assertTrue("record class name", name.trim().length() > 0);
+
+                Assert.assertNotNull("type", recordClass.getType());
+
+                String fullName = recordClass.getFullName();
+                Assert.assertTrue("fullName starts with",
+                        fullName.startsWith(setName));
+                Assert.assertTrue("fullName ends with", fullName.endsWith(name));
             }
         }
+    }
+
+    @Test
+    public void testGetXmlRecordClassSet() throws WdkModelException {
+        for (XmlRecordClassSet rcSet : wdkModel.getXmlRecordClassSets()) {
+            String setName = rcSet.getName();
+
+            XmlRecordClassSet set = wdkModel.getXmlRecordClassSet(setName);
+            Assert.assertEquals(setName, set.getName());
+        }
+    }
+
+    @Test(expected = WdkModelException.class)
+    public void testGetInvalidXmlRecordClassSet() throws WdkModelException {
+        String setName = "NonexistXmlSet";
+        wdkModel.getXmlRecordClassSet(setName);
     }
 
     /**
@@ -53,49 +72,108 @@ public class XmlRecordClassTest {
      * @throws WdkModelException
      */
     @Test
-    public void testXmlRecordClass() throws WdkModelException {
-        // get record class by set
-        XmlRecordClassSet rcSet = wdkModel.getXmlRecordClassSet(SAMPLE_XML_RECORD_CLASS_SET);
-        XmlRecordClass rc1 = rcSet.getRecordClass(SAMPLE_XML_RECORD_CLASS);
-        Assert.assertNotNull(rc1);
+    public void testGetXmlRecordClass() throws WdkModelException {
+        for (XmlRecordClassSet rcSet : wdkModel.getXmlRecordClassSets()) {
+            for (XmlRecordClass recordClass : rcSet.getRecordClasses()) {
+                String name = recordClass.getName();
 
-        // get record class directly
-        XmlRecordClass rc2 = (XmlRecordClass) wdkModel.resolveReference(SAMPLE_XML_RECORD_CLASS_SET
-                + "." + SAMPLE_XML_RECORD_CLASS);
-        Assert.assertSame(rc1, rc2);
-        Assert.assertTrue(rc2.getFullName().startsWith(rcSet.getName()));
-    }
+                XmlRecordClass rc = rcSet.getRecordClass(name);
+                Assert.assertEquals("by name", name, rc.getName());
 
-    /**
-     * get the attributes from tables
-     * 
-     * @throws WdkModelException
-     */
-    @Test
-    public void testGetXmlAttributesFromTable() throws WdkModelException {
-        XmlRecordClass recordClass = (XmlRecordClass) wdkModel.resolveReference(SAMPLE_XML_RECORD_CLASS_SET
-                + "." + SAMPLE_XML_RECORD_CLASS);
-
-        XmlTableField table = recordClass.getTableField("relatedLinks");
-        XmlAttributeField[] attributes = table.getAttributeFields();
-        Assert.assertTrue(attributes.length > 0);
-        for (XmlAttributeField attribute : attributes) {
-            Assert.assertNotNull(attribute);
+                String fullName = recordClass.getFullName();
+                rc = (XmlRecordClass) wdkModel.resolveReference(fullName);
+                Assert.assertEquals("by fullName", fullName, rc.getFullName());
+            }
         }
     }
 
-    /**
-     * get link & text attributes that are defined directly in record class
-     * 
-     * @throws WdkModelException
-     */
+    @Test(expected = WdkModelException.class)
+    public void testGetInvalidXmlRecordClass() throws WdkModelException {
+        String rcName = "NonexistXmlRecordClass";
+        for (XmlRecordClassSet rcSet : wdkModel.getXmlRecordClassSets()) {
+            rcSet.getRecordClass(rcName);
+        }
+    }
+
+    @Test(expected = WdkModelException.class)
+    public void testGetInvalidXmlRecordClassByFullName()
+            throws WdkModelException {
+        String fullName = "NonexistSet.NonexistXmlRecordClass";
+        wdkModel.resolveReference(fullName);
+    }
+
     @Test
     public void testGetXmlAttributes() throws WdkModelException {
-        XmlRecordClass recordClass = (XmlRecordClass) wdkModel.resolveReference(SAMPLE_XML_RECORD_CLASS_SET
-                + "." + SAMPLE_XML_RECORD_CLASS);
+        for (XmlRecordClassSet rcSet : wdkModel.getXmlRecordClassSets()) {
+            for (XmlRecordClass rc : rcSet.getRecordClasses()) {
+                for (XmlAttributeField attribute : rc.getAttributeFields()) {
+                    String name = attribute.getName();
+                    Assert.assertTrue("name", name.trim().length() > 0);
+                    Assert.assertTrue("display name",
+                            attribute.getDisplayName().trim().length() > 0);
 
-        // get xml attribute
-        XmlAttributeField linkField = recordClass.getAttributeField("headline");
-        Assert.assertNotNull(linkField);
+                    XmlAttributeField attr = rc.getAttributeField(name);
+                    Assert.assertEquals("by name", name, attr.getName());
+                }
+            }
+        }
+    }
+
+    @Test(expected = WdkModelException.class)
+    public void testGetInvalidXmlAttribute() throws WdkModelException {
+        String attrName = "NonexistAttribute";
+        for (XmlRecordClassSet rcSet : wdkModel.getXmlRecordClassSets()) {
+            for (XmlRecordClass rc : rcSet.getRecordClasses()) {
+                rc.getAttributeField(attrName);
+            }
+        }
+    }
+
+    @Test
+    public void testGetXmlTables() throws WdkModelException {
+        for (XmlRecordClassSet rcSet : wdkModel.getXmlRecordClassSets()) {
+            for (XmlRecordClass rc : rcSet.getRecordClasses()) {
+                for (XmlTableField table : rc.getTableFields()) {
+                    String name = table.getName();
+                    Assert.assertTrue("name", name.trim().length() > 0);
+                    Assert.assertTrue("display name",
+                            table.getDisplayName().trim().length() > 0);
+
+                    XmlTableField tbl = rc.getTableField(name);
+                    Assert.assertEquals("by name", name, tbl.getName());
+
+                    XmlAttributeField[] attributes = table.getAttributeFields();
+                    Assert.assertTrue("attribute count", attributes.length > 0);
+                    for (XmlAttributeField attribute : attributes) {
+                        String attrName = attribute.getName();
+                        XmlAttributeField attr = table.getAttributeField(attrName);
+                        Assert.assertEquals("attribute", attrName,
+                                attr.getName());
+                    }
+                }
+            }
+        }
+    }
+
+    @Test(expected = WdkModelException.class)
+    public void testGetInvalidXmlTable() throws WdkModelException {
+        String attrName = "NonexistTable";
+        for (XmlRecordClassSet rcSet : wdkModel.getXmlRecordClassSets()) {
+            for (XmlRecordClass rc : rcSet.getRecordClasses()) {
+                rc.getTableField(attrName);
+            }
+        }
+    }
+
+    @Test(expected = WdkModelException.class)
+    public void testGetInvalidXmlAttributeByTable() throws WdkModelException {
+        String attrName = "NonexistTable";
+        for (XmlRecordClassSet rcSet : wdkModel.getXmlRecordClassSets()) {
+            for (XmlRecordClass rc : rcSet.getRecordClasses()) {
+                for (XmlTableField table : rc.getTableFields()) {
+                    table.getAttributeField(attrName);
+                }
+            }
+        }
     }
 }

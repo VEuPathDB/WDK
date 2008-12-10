@@ -7,7 +7,9 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 
 import javax.sql.DataSource;
@@ -39,17 +41,20 @@ public class CacheFactory {
     static final String COLUMN_INSTANCE_CHECKSUM = "instance_checksum";
     static final String COLUMN_RESULT_MESSAGE = "result_message";
 
-    private Logger logger = Logger.getLogger(CacheFactory.class);
+    private static Logger logger = Logger.getLogger(CacheFactory.class);
 
     private WdkModel wdkModel;
     private DBPlatform platform;
     private DataSource dataSource;
+
+    private Map<String, QueryInfo> queryInfoMap;
 
     public CacheFactory(WdkModel wdkModel, DBPlatform platform)
             throws SQLException {
         this.wdkModel = wdkModel;
         this.platform = platform;
         this.dataSource = platform.getDataSource();
+        queryInfoMap = new LinkedHashMap<String, QueryInfo>();
     }
 
     public void createCache() {
@@ -299,6 +304,8 @@ public class CacheFactory {
     }
 
     private void dropCacheTables() {
+        queryInfoMap.clear();
+        
         // get a list of cache tables
         StringBuffer sql = new StringBuffer("SELECT DISTINCT ");
         sql.append(COLUMN_TABLE_NAME).append(" FROM ").append(TABLE_QUERY);
@@ -378,6 +385,8 @@ public class CacheFactory {
         } finally {
             SqlUtils.closeStatement(psInsert);
         }
+        String queryKey = getQueryKey(query.getFullName(), query.getChecksum());
+        queryInfoMap.put(queryKey, queryInfo);
         return queryInfo;
     }
 
@@ -387,12 +396,16 @@ public class CacheFactory {
         String queryName = query.getFullName();
         String queryChecksum = query.getChecksum();
 
+        // check if the query table has been seen before
+        String queryKey = getQueryKey(queryName, queryChecksum);
+        QueryInfo queryInfo = queryInfoMap.get(queryKey);
+        if (queryInfo != null) return queryInfo;
+
         StringBuffer sql = new StringBuffer("SELECT * FROM ");
         sql.append(TABLE_QUERY);
         sql.append(" WHERE ").append(COLUMN_QUERY_NAME).append(" = ?");
         sql.append(" AND ").append(COLUMN_QUERY_CHECKSUM).append(" = ?");
 
-        QueryInfo queryInfo = null;
         PreparedStatement ps = null;
         ResultSet resultSet = null;
         try {
@@ -407,11 +420,17 @@ public class CacheFactory {
                 queryInfo.setQueryChecksum(queryChecksum);
                 queryInfo.setQueryId(resultSet.getInt(COLUMN_QUERY_ID));
                 queryInfo.setCacheTable(resultSet.getString(COLUMN_TABLE_NAME));
+
+                queryInfoMap.put(queryKey, queryInfo);
             }
         } finally {
             SqlUtils.closeResultSet(resultSet);
             if (resultSet == null) SqlUtils.closeStatement(ps);
         }
         return queryInfo;
+    }
+
+    private String getQueryKey(String queryName, String queryChecksum) {
+        return queryName + queryChecksum;
     }
 }
