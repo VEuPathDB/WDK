@@ -630,10 +630,6 @@ public class RecordClass extends WdkModelBase implements
             if (!originalParams.containsKey(column)) newParams.add(column);
         }
 
-        // get default value for the primary key params
-        ParamValuesSet valueSet = getParamValuesSet();
-        Map<String, String> defaultValues = valueSet.getParamValues();
-
         // create the missing params for the query
         ParamSet paramSet = wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
         for (String columnName : newParams) {
@@ -652,11 +648,17 @@ public class RecordClass extends WdkModelBase implements
                 param.setResources(wdkModel);
                 paramSet.addParam(param);
             }
+            newQuery.addParam(param);
+        }
+
+        // get default value for the primary key params
+        ParamValuesSet valueSet = getParamValuesSet();
+        Map<String, String> defaultValues = valueSet.getParamValues();
+        for (Param param : newQuery.getParams()) {
             if (param.getDefault() == null) {
-                String defaultValue = defaultValues.get(columnName);
+                String defaultValue = defaultValues.get(param.getName());
                 if (defaultValue != null) param.setDefault(defaultValue);
             }
-            newQuery.addParam(param);
         }
 
         // if the new query is SqlQuery, modify the sql
