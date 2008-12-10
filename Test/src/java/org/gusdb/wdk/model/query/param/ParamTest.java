@@ -63,6 +63,10 @@ public class ParamTest {
         for (ParamSet paramSet : wdkModel.getAllParamSets()) {
             for (Param param : paramSet.getParams()) {
                 String defaultValue = param.getDefault();
+                
+                // skip the param if it doesn't have a default value
+                if (defaultValue == null) continue;
+                
                 String key = "$$" + param.getName() + "$$";
                 String sql = "SELECT nothing FROM " + key + " WHERE 1 = 2";
 
