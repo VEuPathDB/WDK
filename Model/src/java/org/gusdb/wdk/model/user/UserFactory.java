@@ -928,7 +928,14 @@ public class UserFactory {
         history.setParams(params);
 
         if (history.isBoolean()) {
-            String expression = (String) params.get(BooleanExpression.BOOLEAN_EXPRESSION);
+            // get expression from the latest position
+            String expression = platform.getClobData(rsHistory,
+                    "display_params");
+
+            // if it doesn't exist, get the expression from the previous
+            // position
+            if (expression == null || expression.length() == 0)
+                expression = (String) params.get(BooleanExpression.BOOLEAN_EXPRESSION);
             history.setBooleanExpression(expression);
         }
 
