@@ -142,6 +142,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             originalStep = strategy.getLatestStep();
         } else {
             originalStep = strategy.getStepById(Integer.parseInt(strBranchId));
+	    System.out.println("Original step parent boolean expression: " + originalStep.getParentStep().getBooleanExpression());
         }
 
         // Are we revising or inserting a step?
@@ -151,7 +152,6 @@ public class ProcessFilterAction extends ProcessQuestionAction {
         if (op.indexOf(" ") >= 0) {
             op = boolExp.substring(boolExp.indexOf(" "), boolExp.length());
         }
-        System.out.println("Op: " + op);
 
         boolExp = null;
         if ((reviseStep == null || reviseStep.length() == 0)
@@ -164,6 +164,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 stepId = step.getStepId();
 
                 step.setChildStep(childStep);
+		System.out.println("Created step.");
             }
             // implied: since step is a transform (and we aren't inserting a
             // strategy), we've
@@ -194,10 +195,13 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                             step = updateTransform(request, wdkUser,
                                     step.getNextStep(), stepId);
                         } else {
-                            boolExp = step.getNextStep().getBooleanExpression();
-                            boolExp = stepId
-                                    + boolExp.substring(boolExp.indexOf(" "),
-                                            boolExp.lastIndexOf(" ") + 1)
+                            //boolExp = step.getNextStep().getBooleanExpression();
+                            //boolExp = stepId
+                            //        + boolExp.substring(boolExp.indexOf(" "),
+                            //                boolExp.lastIndexOf(" ") + 1)
+                            //        + step.getNextStep().getChildStep().getStepId();
+                            boolExp = stepId + " "
+				+ step.getNextStep().getOperation() + " "
                                     + step.getNextStep().getChildStep().getStepId();
                         }
                         targetIx++;
@@ -256,10 +260,9 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                     if (step.getIsTransform()) {
                         step = updateTransform(request, wdkUser, step, stepId);
                     } else {
-                        boolExp = step.getBooleanExpression();
-                        boolExp = stepId
-                                + boolExp.substring(boolExp.indexOf(" "),
-                                        boolExp.lastIndexOf(" ") + 1)
+                        //boolExp = step.getBooleanExpression();
+                        boolExp = stepId + " "
+			    + step.getOperation() + " "
                                 + step.getChildStep().getStepId();
                         step = wdkUser.combineStep(boolExp, false);
                     }
@@ -284,9 +287,10 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             StepBean parentStep = step.getParentStep();
             // update parent, then update subsequent
             boolExp = parentStep.getBooleanExpression();
-            boolExp = parentStep.getPreviousStep().getStepId()
-                    + boolExp.substring(boolExp.indexOf(" "),
-                            boolExp.lastIndexOf(" ") + 1) + step.getStepId();
+	    System.out.println("Parent boolExp: " + boolExp);
+            boolExp = parentStep.getPreviousStep().getStepId() + " " 
+                    + parentStep.getOperation() +" " + step.getStepId();
+	    System.out.println("Boolean expression for updating parent: " + boolExp);
             step = wdkUser.combineStep(boolExp, false);
             while (parentStep.getNextStep() != null) {
                 parentStep = parentStep.getNextStep();
@@ -297,22 +301,24 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                             step.getStepId());
                 } else {
                     boolExp = parentStep.getBooleanExpression();
-                    boolExp = step.getStepId()
-                            + boolExp.substring(boolExp.indexOf(" "),
-                                    boolExp.lastIndexOf(" ") + 1)
+                    boolExp = step.getStepId() + " "
+			+ parentStep.getOperation() + " "
                             + parentStep.getChildStep().getStepId();
                     step = wdkUser.combineStep(boolExp, false);
                 }
             }
+	    System.out.println("Updating step with parent info.");
             step.setParentStep(parentStep.getParentStep());
             step.setIsCollapsible(parentStep.getIsCollapsible());
             step.setCollapsedName(parentStep.getCollapsedName());
             step.update(false);
         }
 
+	System.out.println("Adding latest step to strategy.");
         // set latest step
         strategy.setLatestStep(step);
 
+	System.out.println("Updating strategy.");
         // in either case, update and forward to show strategy
         strategy.update(false);
 
@@ -332,19 +338,9 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             url.append("_" + URLEncoder.encode(strBranchId, "UTF-8"));
         }
 
-        // NO LONGER NEEDED SINCE WE FORWARD TO SHOWSTRATEGY, WHICH ONLY NEEDS
-        // STRATEGY ID
-        // String viewStep = request.getParameter("step");
-        // if (viewStep != null && viewStep.length() != 0) {
-        // url.append("&step=" + URLEncoder.encode(viewStep, "UTF-8"));
-        // }
-        // String subQuery = request.getParameter("subquery");
-        // if (subQuery != null && subQuery.length() != 0) {
-        // url.append("&subquery=" + URLEncoder.encode(subQuery, "UTF-8"));
-        // }
-
         ActionForward forward = new ActionForward(url.toString());
         forward.setRedirect(true);
+	System.out.println("Leaving ProcessFilterAction...");
         return forward;
     }
 

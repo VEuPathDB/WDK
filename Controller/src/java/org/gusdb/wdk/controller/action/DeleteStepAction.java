@@ -116,10 +116,9 @@ public class DeleteStepAction extends ProcessFilterAction {
                         step = updateTransform(request, wdkUser, newStep,
                                 step.getStepId());
                     } else {
-                        boolExp = newStep.getBooleanExpression();
-                        boolExp = step.getStepId()
-                                + boolExp.substring(boolExp.indexOf(" "),
-                                        boolExp.lastIndexOf(" ") + 1)
+                        //boolExp = newStep.getBooleanExpression();
+                        boolExp = step.getStepId() + " " 
+			    + newStep.getOperation() + " " 
                                 + newStep.getChildStep().getStepId();
                         System.out.println("Delete boolExp " + i + ": "
                                 + boolExp);
@@ -160,10 +159,9 @@ public class DeleteStepAction extends ProcessFilterAction {
                         step = updateTransform(request, wdkUser, newStep,
                                 step.getStepId());
                     } else {
-                        boolExp = newStep.getBooleanExpression();
-                        boolExp = step.getStepId()
-                                + boolExp.substring(boolExp.indexOf(" "),
-                                        boolExp.lastIndexOf(" ") + 1)
+                        //boolExp = newStep.getBooleanExpression();
+                        boolExp = step.getStepId() + " " 
+			    + newStep.getOperation() + " " 
                                 + newStep.getChildStep().getStepId();
                         System.out.println("Delete boolExp " + i + ": "
                                 + boolExp);
@@ -196,10 +194,8 @@ public class DeleteStepAction extends ProcessFilterAction {
             StepBean parentStep = step.getParentStep();
             if (parentStep != null) {
                 // update parent, then update subsequent
-                boolExp = parentStep.getBooleanExpression();
-                boolExp = parentStep.getPreviousStep().getStepId()
-                        + boolExp.substring(boolExp.indexOf(" "),
-                                boolExp.lastIndexOf(" ") + 1)
+                boolExp = parentStep.getPreviousStep().getStepId() + " "
+		    + parentStep.getOperation() + " "
                         + step.getStepId();
                 step = wdkUser.combineStep(boolExp, false);
                 while (parentStep.getNextStep() != null) {
@@ -211,10 +207,8 @@ public class DeleteStepAction extends ProcessFilterAction {
                         step = updateTransform(request, wdkUser, parentStep,
                                 step.getStepId());
                     } else {
-                        boolExp = parentStep.getBooleanExpression();
-                        boolExp = step.getStepId()
-                                + boolExp.substring(boolExp.indexOf(" "),
-                                        boolExp.lastIndexOf(" ") + 1)
+                        boolExp = step.getStepId() + " "
+			    + parentStep.getOperation() + " "
                                 + parentStep.getChildStep().getStepId();
                         step = wdkUser.combineStep(boolExp, false);
                     }
