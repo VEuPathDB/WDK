@@ -27,7 +27,7 @@ public class MoveStepAction extends ProcessFilterAction {
 
     private static final Logger logger = Logger.getLogger(MoveStepAction.class);
 
-    public ActionForward execture(ActionMapping mapping, ActionForm form,
+    public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         logger.debug("Entering MoveStepAction...");
@@ -118,10 +118,9 @@ public class MoveStepAction extends ProcessFilterAction {
                     } else {
                         // assuming boolean, will need to add case for
                         // non-boolean op
-                        boolExp = moveFromStep.getBooleanExpression();
-                        boolExp = step.getStepId()
-                                + boolExp.substring(boolExp.indexOf(" "),
-                                        boolExp.length());
+                        boolExp = step.getStepId() + " "
+			    + moveFromStep.getOperation() + " "
+			    + moveFromStep.getChildStep().getStepId();
                         moveFromStep = wdkUser.combineStep(boolExp, false);
                         // may also need clone method here?
                         step = moveFromStep;
@@ -129,9 +128,9 @@ public class MoveStepAction extends ProcessFilterAction {
                     // again, assuming boolean, will need to add case for
                     // non-boolean
                     boolExp = moveToStep.getBooleanExpression();
-                    boolExp = step.getStepId()
-                            + boolExp.substring(boolExp.indexOf(" "),
-                                    boolExp.length());
+                    boolExp = step.getStepId() + " "
+			    + moveToStep.getOperation() + " "
+			    + moveToStep.getChildStep().getStepId();
                     moveToStep = wdkUser.combineStep(boolExp, false);
                     step = moveToStep;
                 } else if (i == moveFromIx) {
@@ -144,9 +143,9 @@ public class MoveStepAction extends ProcessFilterAction {
                         // again, assuming boolean, will need to add case for
                         // non-boolean
                         boolExp = newStep.getBooleanExpression();
-                        boolExp = step.getStepId()
-                                + boolExp.substring(boolExp.indexOf(" "),
-                                        boolExp.length());
+                        boolExp = step.getStepId() + " "
+			    + newStep.getOperation() + " "
+			    + newStep.getChildStep().getStepId();
                         newStep = wdkUser.combineStep(boolExp, false);
                         step = moveToStep;
                     }
@@ -171,9 +170,8 @@ public class MoveStepAction extends ProcessFilterAction {
                 if (parentStep != null) {
                     // update parent, then update subsequent
                     boolExp = parentStep.getBooleanExpression();
-                    boolExp = parentStep.getPreviousStep().getStepId()
-                            + boolExp.substring(boolExp.indexOf(" "),
-                                    boolExp.lastIndexOf(" ") + 1)
+                    boolExp = parentStep.getPreviousStep().getStepId() + " "
+			+ parentStep.getOperation() + " "
                             + step.getStepId();
                     step = wdkUser.combineStep(boolExp, false);
                     while (parentStep.getNextStep() != null) {
@@ -186,9 +184,8 @@ public class MoveStepAction extends ProcessFilterAction {
                                     parentStep, step.getStepId());
                         } else {
                             boolExp = parentStep.getBooleanExpression();
-                            boolExp = step.getStepId()
-                                    + boolExp.substring(boolExp.indexOf(" "),
-                                            boolExp.lastIndexOf(" ") + 1)
+                            boolExp = step.getStepId() + " "
+				+ parentStep.getOperation() + " "
                                     + parentStep.getChildStep().getStepId();
                             step = wdkUser.combineStep(boolExp, false);
                         }
