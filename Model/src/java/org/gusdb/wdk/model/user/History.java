@@ -14,6 +14,7 @@ import java.util.Set;
 import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.BooleanExpression;
 import org.gusdb.wdk.model.Param;
+import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -87,9 +88,22 @@ public class History {
     public String getCustomName() {
         String name = customName;
         if (name == null || name.length() == 0) {
-            if (isBoolean) name = booleanExpression;
-            else if (answer != null) {
+            if (isBoolean) {
+                // boolean history, use boolean expression as default
+                name = booleanExpression;
+            } else if (answer != null) {
+                // valid normal question, use question display name as default
                 name = answer.getQuestion().getDisplayName();
+            } else {
+                // invalid question, try question display name;
+                try {
+                    WdkModel wdkModel = user.getWdkModel();
+                    Question question = (Question) wdkModel.getQuestion(questionName);
+                    name = question.getDisplayName();
+                } catch (Exception ex) {
+                    // question no longer exists, use the recorded question name
+                    name = questionName;
+                }
             }
         }
         if (name != null) {
