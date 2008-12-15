@@ -48,7 +48,7 @@
             </table>
         </td>
     </tr>
-    <c:if test="${question != null}">
+    <c:if test="${paramUrl != null}">
         <tr>
             <td align="right" valign="top" nowrap><b>Option: </b></td>
             <td>

@@ -818,9 +818,6 @@
            <attribute name="category" />
       </optional>
       <optional>
-           <attribute name="category" />
-      </optional>
-      <optional>
           <attribute name="fullAnswer">
               <data type="boolean" />
           </attribute>
