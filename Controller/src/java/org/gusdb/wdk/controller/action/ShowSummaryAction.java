@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -31,7 +32,6 @@ import org.gusdb.wdk.model.jspwrap.HistoryBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.RecordBean;
-import org.gusdb.wdk.model.jspwrap.RecordClassBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.json.JSONException;
@@ -84,7 +84,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
         if (wdkQuestion == null) {
             // no question, we're just loading history.
             if (strHistId == null || strHistId.length() == 0) {
-                return showError(wdkModel, wdkUser, mapping, request, response);
+                return showError(wdkModel, wdkUser, mapping, request, response,
+                        null);
             } else {
                 // given a history id, load it
                 history = wdkUser.getHistory(Integer.parseInt(strHistId));
@@ -92,7 +93,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 // check if history is still valid
                 if (!history.isValid()) {
                     return showError(wdkModel, wdkUser, mapping, request,
-                            response);
+                            response, history);
                 }
 
                 wdkAnswer = history.getAnswer();
@@ -137,20 +138,15 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 summaryAttributes = wdkUser.getSummaryAttributes(questionName);
             }
 
-            RecordClassBean recordClass = wdkQuestion.getRecordClass();
-
             // make the answer
             try {
                 wdkAnswer = summaryPaging(request, wdkQuestion, params,
                         sortingAttributes, summaryAttributes);
-            } catch (WdkModelException ex) {
+            } catch (Exception ex) {
                 logger.error(ex);
                 ex.printStackTrace();
-                return showError(wdkModel, wdkUser, mapping, request, response);
-            } catch (WdkUserException ex) {
-                logger.error(ex);
-                ex.printStackTrace();
-                return showError(wdkModel, wdkUser, mapping, request, response);
+                return showError(wdkModel, wdkUser, mapping, request, response,
+                        null);
             }
 
             // was history specified?
@@ -164,7 +160,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
                     // check if history is still valid
                     if (!history.isValid()) {
                         return showError(wdkModel, wdkUser, mapping, request,
-                                response);
+                                response, history);
                     }
 
                     // is this the right history?
@@ -182,7 +178,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
                     logger.error(ex);
                     ex.printStackTrace();
                     return showError(wdkModel, wdkUser, mapping, request,
-                            response);
+                            response, null);
                 }
             }
         }
@@ -427,20 +423,18 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
     private ActionForward showError(WdkModelBean wdkModel, UserBean wdkUser,
             ActionMapping mapping, HttpServletRequest request,
-            HttpServletResponse response) throws WdkModelException,
-            WdkUserException, UnsupportedEncodingException, SQLException,
-            JSONException {
+            HttpServletResponse response, HistoryBean history)
+            throws WdkModelException, WdkUserException,
+            UnsupportedEncodingException, SQLException, JSONException {
         // TEST
-        logger.info("Show the details of an invalid history/question");
+        logger.info("Show the details of an invalid "
+                + ((history == null) ? "question" : "history"));
 
-        String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
         Map<String, Object> params;
         Map<String, String> paramNames;
         String customName;
-        if (qFullName == null || qFullName.length() == 0) {
-            String strHistId = request.getParameter(CConstants.WDK_HISTORY_ID_KEY);
-            int historyId = Integer.parseInt(strHistId);
-            HistoryBean history = wdkUser.getHistory(historyId);
+        String qFullName;
+        if (history != null) {
             params = history.getParams();
             paramNames = history.getParamNames();
             qFullName = history.getQuestionName();
@@ -448,6 +442,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
         } else {
             params = new LinkedHashMap<String, Object>();
             paramNames = new LinkedHashMap<String, String>();
+            qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
             customName = qFullName;
 
             // get params from request
@@ -473,18 +468,41 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 if (pName.startsWith("myProp(")) {
                     pName = pName.substring(7, pName.length() - 1).trim();
                     params.put(pName, pValue);
-
-                    // HACK
-                    // String displayName = wdkModel.getParamDisplayName(pName);
-                    String displayName = null;
-                    if (displayName == null) displayName = pName;
-                    paramNames.put(pName, displayName);
+                    paramNames.put(pName, pName);
                 }
             }
         }
-        String qDisplayName = wdkModel.getQuestionDisplayName(qFullName);
-        if (qDisplayName == null) qDisplayName = qFullName;
+        String qDisplayName;
+        try {
+            // try to get the question
+            QuestionBean question = (QuestionBean) wdkModel.getQuestion(qFullName);
+            qDisplayName = question.getDisplayName();
+            Map<String, ParamBean> validParams = question.getParamsMap();
+            Map<String, String> newParamNames = new LinkedHashMap<String, String>();
+            StringBuffer paramUrl= new StringBuffer();
+            for (String paramName : paramNames.keySet()) {
+                String prompt;
+                if (validParams.containsKey(paramName)) {
+                    prompt = validParams.get(paramName).getPrompt();
+                } else {
+                    prompt = paramNames.get(paramName);
+                }
+                newParamNames.put(paramName, prompt);
+                
+                String paramValue = (String)params.get(paramName);
+                if (paramUrl.length() > 0) paramUrl.append("&");
+                paramUrl.append(paramName).append("=");
+                paramUrl.append(URLEncoder.encode(paramValue, "utf-8"));
+            }
+            paramNames = newParamNames;
 
+            request.setAttribute("paramUrl", paramUrl.toString());
+        } catch (Exception ex) {
+            // question no longer exist in the model
+            qDisplayName = qFullName;
+        }
+
+        request.setAttribute("questionFullName", qFullName);
         request.setAttribute("questionDisplayName", qDisplayName);
         request.setAttribute("customName", customName);
         request.setAttribute("params", params);

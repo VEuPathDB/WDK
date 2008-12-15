@@ -212,4 +212,9 @@ public class WdkModelBean {
     public String getName() {
         return model.getProjectId();
     }
+
+    public QuestionBean getQuestion(String questionFullName)
+            throws WdkUserException, WdkModelException {
+        return new QuestionBean(model.getQuestion(questionFullName));
+    }
 }

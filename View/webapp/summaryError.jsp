@@ -48,6 +48,14 @@
             </table>
         </td>
     </tr>
+    <c:if test="${question != null}">
+        <tr>
+            <td align="right" valign="top" nowrap><b>Option: </b></td>
+            <td>
+                <a href="<c:url value="/showQuestion.do?questionFullName=${questionFullName}&${paramUrl}" />">Revise</a>
+            </td>
+        </tr>
+    </c:if>
 </table>
 
 <hr>
