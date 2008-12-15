@@ -314,11 +314,8 @@ public class QuestionBean {
         return question.isNoSummaryOnSingleRecord();
     }
 
-    /**
-     * @return
-     * @see org.gusdb.wdk.model.Question#isIgnoreSubType()
-     */
-    public boolean isIgnoreSubType() {
-        return question.isIgnoreSubType();
+    public String getShortDisplayName() {
+        return question.getShortDisplayName();
     }
+
 }

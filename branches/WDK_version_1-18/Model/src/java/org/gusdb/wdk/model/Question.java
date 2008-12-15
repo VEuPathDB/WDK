@@ -80,7 +80,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
 
     private boolean noSummaryOnSingleRecord = false;
 
-    private boolean ignoreSubType = false;
+    private String shortDisplayName;
 
     // /////////////////////////////////////////////////////////////////////
     // setters called at initialization
@@ -400,8 +400,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     // /////////////////////////////////////////////////////////////////////
 
     Map<String, AttributeField> getDynamicAttributeFields() {
-        return dynamicAttributeSet == null
-                ? new LinkedHashMap<String, AttributeField>()
+        return dynamicAttributeSet == null ? new LinkedHashMap<String, AttributeField>()
                 : dynamicAttributeSet.getAttributeFieldMap();
     }
 
@@ -484,7 +483,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
             }
         }
         defaultSummaryAttributeNames = null;
-        
+
         // make sure we create index on primary keys
         String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
         query.setIndexColumns(pkColumns);
@@ -603,19 +602,13 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         return propLists;
     }
 
-    /**
-     * @return the ignoreSubType
-     */
-    public boolean isIgnoreSubType() {
-        return ignoreSubType;
+    public String getShortDisplayName() {
+        if (shortDisplayName == null) return getDisplayName();
+        else return shortDisplayName;
     }
 
-    /**
-     * @param ignoreSubType
-     *            the ignoreSubType to set
-     */
-    public void setIgnoreSubType(boolean ignoreSubType) {
-        this.ignoreSubType = ignoreSubType;
+    public void setShortDisplayName(String shortDisplayName) {
+        this.shortDisplayName = shortDisplayName;
     }
 
     /*

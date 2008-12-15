@@ -16,6 +16,7 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionServlet;
 import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.AnswerParamBean;
@@ -164,6 +165,10 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
 
                 // get values from the request
                 String[] cgiParamValSet = request.getParameterValues(p.getName());
+                
+                logger.debug("enumParam value: "
+                        + Utilities.fromArray(cgiParamValSet));
+
                 if (cgiParamValSet == null) {// get values from the form
                     cgiParamValSet = qForm.getMyMultiProp(p.getName());
                 }
@@ -235,8 +240,8 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
             }
 
             /*
-             * System.out.println( "DEBUG: param " + p.getName() + " = '" + pVal +
-             * "'" );
+             * System.out.println( "DEBUG: param " + p.getName() + " = '" + pVal
+             * + "'" );
              */
             if (pVal == null) {
                 hasAllParams = false;

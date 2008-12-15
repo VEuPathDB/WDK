@@ -818,6 +818,9 @@
            <attribute name="category" />
       </optional>
       <optional>
+           <attribute name="category" />
+      </optional>
+      <optional>
           <attribute name="fullAnswer">
               <data type="boolean" />
           </attribute>
@@ -828,9 +831,7 @@
           </attribute>
       </optional>
       <optional>
-          <attribute name="ignoreSubType">
-              <data type="boolean" />
-          </attribute>
+          <attribute name="shortDisplayName" />
       </optional>
                  
       <zeroOrMore>
