@@ -8,7 +8,7 @@ display the parameter values for an non-boolean answer.
 <%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
 
 <%@ attribute name="wdkAnswer"
-              type="org.gusdb.wdk.model.jspwrap.AnswerBean"
+              type="org.gusdb.wdk.model.jspwrap.AnswerValueBean"
               required="true"
               description="Answer Object"
 %>
