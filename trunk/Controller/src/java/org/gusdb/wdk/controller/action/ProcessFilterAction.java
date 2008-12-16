@@ -476,10 +476,10 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 childStepId = cloneStrategy(user, cloneStep.getChildStep()).getStepId()
                         + "";
                 op = answerValue.getBooleanOperation();
-            }
-            String cloneBoolExp = prevStepId + " " + op + " " + childStepId;
-            cloneStep = user.combineStep(cloneBoolExp, false);
-            prevStepId = cloneStep.getStepId() + "";
+		String cloneBoolExp = prevStepId + " " + op + " " + childStepId;
+		cloneStep = user.combineStep(cloneBoolExp, false);
+	    }
+            prevStepId = Integer.toString(cloneStep.getStepId());
         }
         return cloneStep;
     }
