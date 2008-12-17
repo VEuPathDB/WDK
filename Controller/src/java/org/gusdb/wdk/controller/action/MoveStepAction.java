@@ -180,7 +180,7 @@ public class MoveStepAction extends ProcessFilterAction {
                         // there's no boolean expression; we need to update
                         // history param
                         if (parentStep.getIsTransform()) {
-                            step = updateTransform(request, wdkUser,
+                            step = updateTransform(wdkUser,
                                     parentStep, step.getStepId());
                         } else {
                             boolExp = parentStep.getBooleanExpression();
