@@ -192,7 +192,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                         childStep.setCustomName(step.getBaseCustomName());
                         childStep.update(false);
                         if (step.getNextStep().getIsTransform()) {
-                            step = updateTransform(request, wdkUser,
+                            step = updateTransform(wdkUser,
                                     step.getNextStep(), stepId);
                         } else {
                             //boolExp = step.getNextStep().getBooleanExpression();
@@ -258,7 +258,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                     System.out.println("Updating step " + i);
                     step = originalStep.getStep(i);
                     if (step.getIsTransform()) {
-                        step = updateTransform(request, wdkUser, step, stepId);
+                        step = updateTransform(wdkUser, step, stepId);
                     } else {
                         //boolExp = step.getBooleanExpression();
                         boolExp = stepId + " "
@@ -297,7 +297,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 // need to check if step is a transform (in which case there's
                 // no boolean expression; we need to update history param
                 if (parentStep.getIsTransform()) {
-                    step = updateTransform(request, wdkUser, parentStep,
+                    step = updateTransform(wdkUser, parentStep,
                             step.getStepId());
                 } else {
                     boolExp = parentStep.getBooleanExpression();
@@ -429,10 +429,9 @@ public class ProcessFilterAction extends ProcessQuestionAction {
         return forward;
     }
 
-    protected StepBean updateTransform(HttpServletRequest request,
-            UserBean wdkUser, StepBean step, int newStepId)
-            throws WdkModelException, WdkUserException,
-            NoSuchAlgorithmException, JSONException, SQLException {
+    protected StepBean updateTransform(UserBean wdkUser, StepBean step, int newStepId)
+	throws WdkModelException, WdkUserException, NoSuchAlgorithmException,
+	       SQLException, JSONException {
         QuestionBean wdkQuestion;
         Map<String, String> internalParams;
 
@@ -455,16 +454,15 @@ public class ProcessFilterAction extends ProcessQuestionAction {
         AnswerFilterInstanceBean filter = step.getAnswerValue().getFilter();
         String filterName = (filter == null) ? null : filter.getName();
 
-        StepBean newStep = ShowSummaryAction.summaryPaging(request,
-                wdkQuestion, internalParams, filterName);
+        StepBean newStep = wdkUser.createStep(wdkQuestion, internalParams, filterName);
         newStep.setCustomName(step.getBaseCustomName());
         newStep.update(false);
         return newStep;
     }
 
     private StepBean cloneStrategy(UserBean user, StepBean step)
-            throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException {
+	throws WdkUserException, WdkModelException,
+	       NoSuchAlgorithmException, SQLException, JSONException {
         StepBean cloneStep = null;
         String prevStepId = null;
         for (int i = 0; i < step.getLength(); ++i) {
@@ -478,6 +476,9 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 op = answerValue.getBooleanOperation();
 		String cloneBoolExp = prevStepId + " " + op + " " + childStepId;
 		cloneStep = user.combineStep(cloneBoolExp, false);
+	    }
+	    else if (cloneStep.getIsTransform()) {
+		cloneStep = updateTransform(user, cloneStep, Integer.parseInt(prevStepId));
 	    }
             prevStepId = Integer.toString(cloneStep.getStepId());
         }

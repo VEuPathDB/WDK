@@ -113,7 +113,7 @@ public class DeleteStepAction extends ProcessFilterAction {
                 for (int i = stepIx; i < targetStep.getLength(); ++i) {
                     newStep = targetStep.getStep(i);
                     if (newStep.getIsTransform()) {
-                        step = updateTransform(request, wdkUser, newStep,
+                        step = updateTransform(wdkUser, newStep,
                                 step.getStepId());
                     } else {
                         //boolExp = newStep.getBooleanExpression();
@@ -156,7 +156,7 @@ public class DeleteStepAction extends ProcessFilterAction {
                 for (int i = stepIx; i < targetStep.getLength(); ++i) {
                     newStep = targetStep.getStep(i);
                     if (newStep.getIsTransform()) {
-                        step = updateTransform(request, wdkUser, newStep,
+                        step = updateTransform(wdkUser, newStep,
                                 step.getStepId());
                     } else {
                         //boolExp = newStep.getBooleanExpression();
@@ -204,7 +204,7 @@ public class DeleteStepAction extends ProcessFilterAction {
                     // there's no boolean expression; we need to update history
                     // param
                     if (parentStep.getIsTransform()) {
-                        step = updateTransform(request, wdkUser, parentStep,
+                        step = updateTransform(wdkUser, parentStep,
                                 step.getStepId());
                     } else {
                         boolExp = step.getStepId() + " "
