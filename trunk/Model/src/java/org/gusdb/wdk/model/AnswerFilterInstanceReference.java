@@ -12,10 +12,9 @@ import org.json.JSONException;
  * @author xingao
  * 
  */
-public class AnswerFilterLayoutInstance extends WdkModelBase {
+public class AnswerFilterInstanceReference extends WdkModelBase {
 
     private String ref;
-    private String layout;
 
     private RecordClass recordClass;
 
@@ -34,21 +33,6 @@ public class AnswerFilterLayoutInstance extends WdkModelBase {
      */
     public void setRef(String ref) {
         this.ref = ref;
-    }
-
-    /**
-     * @return the layout
-     */
-    public String getLayout() {
-        return layout;
-    }
-
-    /**
-     * @param layout
-     *            the layout to set
-     */
-    public void setLayout(String layout) {
-        this.layout = layout;
     }
 
     /**

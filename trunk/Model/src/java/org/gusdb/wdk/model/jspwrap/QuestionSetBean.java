@@ -54,6 +54,7 @@ public class QuestionSetBean {
         return questionSet.getDescription();
     }
 
+    @Deprecated
     public Map<String, Set<QuestionBean>> getQuestionsByCategory() {
         Map<String, Set<QuestionBean>> questions = new LinkedHashMap<String, Set<QuestionBean>>();
         Question[] qs = questionSet.getQuestions();
