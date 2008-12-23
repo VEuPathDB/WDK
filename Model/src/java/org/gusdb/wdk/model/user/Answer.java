@@ -120,14 +120,4 @@ public class Answer {
             answerValue = answerFactory.getAnswerValue(this);
         return answerValue;
     }
-
-    void setAnswerValue(AnswerValue answerValue) throws WdkModelException,
-            NoSuchAlgorithmException, JSONException, WdkUserException,
-            SQLException {
-        // make sure the checksum matches
-        if (!answerValue.getChecksum().equals(answerChecksum))
-            throw new WdkModelException("The checksum of the AnswerValue does "
-                    + "not match the one stored in Answer.");
-        this.answerValue = answerValue;
-    }
 }

@@ -27,9 +27,11 @@ public class AnswerFilterLayout extends WdkModelBase {
     private List<WdkModelText> descriptionList = new ArrayList<WdkModelText>();
     private String description;
 
-    private List<AnswerFilterLayoutInstance> instanceList = new ArrayList<AnswerFilterLayoutInstance>();
+    private List<WdkModelText> layoutList = new ArrayList<WdkModelText>();
+    private String layout;
+
+    private List<AnswerFilterInstanceReference> referenceList = new ArrayList<AnswerFilterInstanceReference>();
     private Map<String, AnswerFilterInstance> instanceMap = new LinkedHashMap<String, AnswerFilterInstance>();
-    private Map<String, String> layoutMap = new LinkedHashMap<String, String>();
 
     /*
      * (non-Javadoc)
@@ -49,8 +51,10 @@ public class AnswerFilterLayout extends WdkModelBase {
      */
     void setRecordClass(RecordClass recordClass) {
         this.recordClass = recordClass;
-        for (AnswerFilterLayoutInstance instance : instanceList) {
-            instance.setRecordClass(recordClass);
+        if (referenceList != null) {
+            for (AnswerFilterInstanceReference reference : referenceList) {
+                reference.setRecordClass(recordClass);
+            }
         }
     }
 
@@ -110,8 +114,17 @@ public class AnswerFilterLayout extends WdkModelBase {
         return description;
     }
 
-    public void addInstance(AnswerFilterLayoutInstance instance) {
-        this.instanceList.add(instance);
+    public void addReference(AnswerFilterInstanceReference reference) {
+        if (recordClass != null) reference.setRecordClass(recordClass);
+        this.referenceList.add(reference);
+    }
+
+    public void addLayout(WdkModelText layout) {
+        this.layoutList.add(layout);
+    }
+
+    public String getLayout() {
+        return layout;
     }
 
     @Override
@@ -131,38 +144,55 @@ public class AnswerFilterLayout extends WdkModelBase {
         descriptionList = null;
 
         // exclude the instances
-        List<AnswerFilterLayoutInstance> newInstances = new ArrayList<AnswerFilterLayoutInstance>();
-        for (AnswerFilterLayoutInstance instance : instanceList) {
-            if (instance.include(projectId)) {
-                instance.excludeResources(projectId);
-                newInstances.add(instance);
+        List<AnswerFilterInstanceReference> newReferences = new ArrayList<AnswerFilterInstanceReference>();
+        for (AnswerFilterInstanceReference reference : referenceList) {
+            if (reference.include(projectId)) {
+                reference.excludeResources(projectId);
+                newReferences.add(reference);
             }
         }
-        instanceList = newInstances;
+        referenceList = newReferences;
+
+        // exclude the labels
+        for (WdkModelText layout : layoutList) {
+            if (layout.include(projectId)) {
+                layout.excludeResources(projectId);
+                if (this.layout != null)
+                    throw new WdkModelException("The layout is defined more "
+                            + "than once in filter layout [" + name + "]");
+                this.layout = layout.getText();
+            }
+        }
+        layoutList = null;
+        // make sure the layout is defined
+        if (layout == null)
+            throw new WdkModelException("The layout is not defined in "
+                    + "filter layout [" + name + "]");
     }
 
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model.WdkModel)
+     * @see
+     * org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model
+     * .WdkModel)
      */
     @Override
     public void resolveReferences(WdkModel wodkModel) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
         if (resolved) return;
+
         // resolve the instances
-        for (AnswerFilterLayoutInstance instance : instanceList) {
-            instance.resolveReferences(wodkModel);
-            String ref = instance.getRef();
-            if (layoutMap.containsKey(ref))
-                throw new WdkModelException("The same filter instance [" + ref
-                        + "] is referenced more than once " + "in the layout ["
-                        + name + "]");
-            layoutMap.put(instance.getRef(), instance.getLayout());
-            instanceMap.put(ref, instance.getInstance());
+        for (AnswerFilterInstanceReference reference : referenceList) {
+            reference.resolveReferences(wodkModel);
+            String ref = reference.getRef();
+            if (instanceMap.containsKey(ref))
+                throw new WdkModelException("More than one instance [" + ref
+                        + "] are defined in filter layout [" + name + "]");
+            instanceMap.put(ref, reference.getInstance());
         }
-        instanceList = null;
+        referenceList = null;
 
         resolved = true;
     }
@@ -175,9 +205,5 @@ public class AnswerFilterLayout extends WdkModelBase {
         AnswerFilterInstance[] array = new AnswerFilterInstance[instanceMap.size()];
         instanceMap.values().toArray(array);
         return array;
-    }
-
-    public Map<String, String> getlayoutMap() {
-        return new LinkedHashMap<String, String>(layoutMap);
     }
 }

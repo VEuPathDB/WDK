@@ -76,8 +76,16 @@ public class AnswerFilterLayoutBean {
      * @return
      * @see org.gusdb.wdk.model.AnswerFilterLayout#getlayoutMap()
      */
-    public Map<String, String> getlayoutMap() {
-        return new LinkedHashMap<String, String>(layout.getlayoutMap());
+    public String getLayout() {
+        return layout.getLayout();
+    }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.AnswerFilterLayout#isVisible()
+     */
+    public boolean isVisible() {
+        return layout.isVisible();
     }
 
 }

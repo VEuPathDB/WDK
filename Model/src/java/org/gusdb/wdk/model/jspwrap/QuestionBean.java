@@ -256,6 +256,7 @@ public class QuestionBean {
      * 
      * @see org.gusdb.wdk.model.Question#getCategory()
      */
+    @Deprecated
     public String getCategory() {
         return question.getCategory();
     }

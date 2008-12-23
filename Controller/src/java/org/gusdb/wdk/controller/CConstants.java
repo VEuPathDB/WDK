@@ -57,6 +57,7 @@ public class CConstants {
     public static final String WDK_ALL_RECORD_IDS_KEY = "allRecordIds";
     public static final String WDK_RESULT_SIZE_ONLY_KEY = "resultSizeOnly";
     public static final String WDK_RESULT_SET_ONLY_KEY = "resultsOnly";
+    public static final String WDK_FILTER_KEY = "wdkFilter";
     
     // constants for remote logins
     public static final String WDK_REMOTE_URL_KEY = "remoteUrl";

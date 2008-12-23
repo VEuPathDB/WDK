@@ -1,0 +1,17 @@
+/* WDK filter related styles */
+
+.filter-layout .layout-handle {
+    cursor: pointer;
+}
+
+.filter-layout .instance a.link {
+    display: none;
+}
+
+.filter-layout .instance count-url {
+    display: none;
+}
+
+.filter-layout .layout-content td, .filter-layout .layout-content th {
+    border: 1px solid #000000;
+}

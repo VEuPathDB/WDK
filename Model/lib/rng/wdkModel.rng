@@ -723,6 +723,7 @@
             <attribute name="name" />
             <attribute name="displayName" />
             <ref name="IncludeExclude" />
+
             <optional>
               <attribute name="visible">
                 <data type="boolean" />
@@ -739,6 +740,9 @@
                   <attribute name="ref" />
                   <attribute name="layout" />
                   <ref name="IncludeExclude"/>
+                </element>
+                <element name="layout">
+                  <text />
                 </element>
               </choice>
             </zeroOrMore>
@@ -830,11 +834,6 @@
       </optional>
       <optional>
         <attribute name="noSummaryOnSingleRecord">
-          <data type="boolean" />
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="ignoreSubType">
           <data type="boolean" />
         </attribute>
       </optional>
