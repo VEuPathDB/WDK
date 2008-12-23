@@ -61,7 +61,8 @@
         </c:choose>
     </c:set>
     <div class="layout-content" ${contentStyle}>
-        ${layoutText}
+        <div>${layout.description}</div>
+        <div>${layoutText}</div>
     </div>
 </div>
 
