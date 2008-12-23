@@ -738,7 +738,6 @@
                 </element>
                 <element name="instanceRef">
                   <attribute name="ref" />
-                  <attribute name="layout" />
                   <ref name="IncludeExclude"/>
                 </element>
                 <element name="layout">
