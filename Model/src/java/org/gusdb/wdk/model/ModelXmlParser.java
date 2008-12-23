@@ -365,7 +365,7 @@ public class ModelXmlParser extends XmlParser {
         configureNode(
                 digester,
                 "wdkModel/recordClassSet/recordClass/answerFilterLayout/instanceRef",
-                AnswerFilterInstanceReference.class, "addInstance");
+                AnswerFilterInstanceReference.class, "addReference");
         configureNode(
                 digester,
                 "wdkModel/recordClassSet/recordClass/answerFilterLayout/layout",
