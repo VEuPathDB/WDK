@@ -720,12 +720,13 @@
             <attribute name="name" />
             <attribute name="displayName" />
             <ref name="IncludeExclude" />
+
             <optional>
               <attribute name="visible">
                 <data type="boolean" />
               </attribute>
             </optional>
-            
+
             <zeroOrMore>
               <choice>
                 <element name="description">
@@ -734,8 +735,10 @@
                 </element>
                 <element name="instanceRef">
                   <attribute name="ref" />
-                  <attribute name="layout" />
                   <ref name="IncludeExclude"/>
+                </element>
+                <element name="layout">
+                  <text />
                 </element>
               </choice>
             </zeroOrMore>

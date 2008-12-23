@@ -389,20 +389,20 @@ public class ModelXmlParser extends XmlParser {
                 "setValue", 0);
 
         // filter layouts
-        configureNode(digester,
-                "wdkModel/recordClassSet/recordClass/answerFilterLayout",
-                AnswerFilterLayout.class, "addFilterLayout");
-        configureNode(
-                digester,
-                "wdkModel/recordClassSet/recordClass/answerFilterLayout/description",
-                WdkModelText.class, "addDescription");
-        digester.addCallMethod(
-                "wdkModel/recordClassSet/recordClass/answerFilterLayout/description",
-                "setText", 0);
-        configureNode(
-                digester,
-                "wdkModel/recordClassSet/recordClass/answerFilterLayout/instanceRef",
-                AnswerFilterLayoutInstance.class, "addInstance");
+//        configureNode(digester,
+//                "wdkModel/recordClassSet/recordClass/answerFilterLayout",
+//                AnswerFilterLayout.class, "addFilterLayout");
+//        configureNode(
+//                digester,
+//                "wdkModel/recordClassSet/recordClass/answerFilterLayout/description",
+//                WdkModelText.class, "addDescription");
+//        digester.addCallMethod(
+//                "wdkModel/recordClassSet/recordClass/answerFilterLayout/description",
+//                "setText", 0);
+//        configureNode(
+//                digester,
+//                "wdkModel/recordClassSet/recordClass/answerFilterLayout/instanceRef",
+//                AnswerFilterLayoutInstance.class, "addInstance");
 
         // filter instances
         configureNode(digester,
