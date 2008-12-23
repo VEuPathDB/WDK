@@ -165,7 +165,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 if (summaryChecksum != null)
                     wdkUser.applySummaryChecksum(questionName, summaryChecksum);
 
-                setAttributes(request, wdkUser, step);
+                prepareAttributes(request, wdkUser, step);
             }
             wdkUser.save();
 
@@ -356,7 +356,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             step.setAnswerValue(answerValue);
         }
 
-        setAttributes(request, wdkUser, step);
+        prepareAttributes(request, wdkUser, step);
 
         logger.debug("end summary paging");
 
@@ -449,7 +449,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
         return forward;
     }
 
-    private static void setAttributes(HttpServletRequest request,
+    private static void prepareAttributes(HttpServletRequest request,
             UserBean user, StepBean step) throws NoSuchAlgorithmException,
             WdkUserException, WdkModelException, JSONException, SQLException {
         AnswerValueBean answerValue = step.getAnswerValue();
