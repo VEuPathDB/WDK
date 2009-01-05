@@ -124,12 +124,13 @@ public class ProcessSummaryAction extends Action {
                     } else if (command.equalsIgnoreCase("remove")) {
                         summaryList.remove(attributeName);
                     } else if (command.equalsIgnoreCase("arrange")) {
-                        String arrangeOrder = request.getParameter(CConstants.WDK_SUMMARY_ARRANGE_ORDER_KEY);
-                        boolean moveLeft = arrangeOrder.equalsIgnoreCase("true");
-                        int fromIndex = summaryList.indexOf(attributeName);
-                        int toIndex = moveLeft ? fromIndex - 1 : fromIndex + 1;
-                        summaryList.set(fromIndex, summaryList.get(toIndex));
-                        summaryList.set(toIndex, attributeName);
+			// Get the attribute that will be to the left of attributeName after attributeName is moved
+			String attributeToLeft = request.getParameter(CConstants.WDK_SUMMARY_ARRANGE_ORDER_KEY);
+			// If attributeToLeft is null (or not in list), make attributeName the first element.
+			// Otherwise, make it the first element AFTER attributeToLeft
+			int toIndex = summaryList.indexOf(attributeToLeft) + 1;
+			summaryList.remove(attributeName);
+			summaryList.add(toIndex, attributeName);
                     } else {
                         throw new WdkModelException("Unknown command: "
                                 + command);
