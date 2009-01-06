@@ -14,7 +14,7 @@ function WdkFilter() {
             
             var src = this.src;
             src = src.substr(0, src.lastIndexOf("/") + 1);
-            if (children.css("display") == "none") {
+            if (children.css("display")) {
 				this.src = src + "plus.gif";
 			} else {
 				this.src = src + "minus.gif";
