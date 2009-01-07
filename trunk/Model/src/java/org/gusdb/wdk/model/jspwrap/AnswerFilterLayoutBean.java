@@ -76,8 +76,8 @@ public class AnswerFilterLayoutBean {
      * @return
      * @see org.gusdb.wdk.model.AnswerFilterLayout#getlayoutMap()
      */
-    public String getLayout() {
-        return layout.getLayout();
+    public String getFileName() {
+        return layout.getFileName();
     }
 
     /**
