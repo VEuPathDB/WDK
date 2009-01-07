@@ -729,6 +729,9 @@
                 <data type="boolean" />
               </attribute>
             </optional>
+            <optional>
+              <attribute name="fileName" />
+            </optional>
 
             <zeroOrMore>
               <choice>
@@ -739,9 +742,6 @@
                 <element name="instanceRef">
                   <attribute name="ref" />
                   <ref name="IncludeExclude"/>
-                </element>
-                <element name="layout">
-                  <text />
                 </element>
               </choice>
             </zeroOrMore>

@@ -23,12 +23,10 @@ public class AnswerFilterLayout extends WdkModelBase {
     private String name;
     private String displayName;
     private boolean visible = true;
+    private String fileName;
 
     private List<WdkModelText> descriptionList = new ArrayList<WdkModelText>();
     private String description;
-
-    private List<WdkModelText> layoutList = new ArrayList<WdkModelText>();
-    private String layout;
 
     private List<AnswerFilterInstanceReference> referenceList = new ArrayList<AnswerFilterInstanceReference>();
     private Map<String, AnswerFilterInstance> instanceMap = new LinkedHashMap<String, AnswerFilterInstance>();
@@ -119,14 +117,6 @@ public class AnswerFilterLayout extends WdkModelBase {
         this.referenceList.add(reference);
     }
 
-    public void addLayout(WdkModelText layout) {
-        this.layoutList.add(layout);
-    }
-
-    public String getLayout() {
-        return layout;
-    }
-
     @Override
     public void excludeResources(String projectId) throws WdkModelException {
         // exclude the descriptions
@@ -152,22 +142,6 @@ public class AnswerFilterLayout extends WdkModelBase {
             }
         }
         referenceList = newReferences;
-
-        // exclude the labels
-        for (WdkModelText layout : layoutList) {
-            if (layout.include(projectId)) {
-                layout.excludeResources(projectId);
-                if (this.layout != null)
-                    throw new WdkModelException("The layout is defined more "
-                            + "than once in filter layout [" + name + "]");
-                this.layout = layout.getText();
-            }
-        }
-        layoutList = null;
-        // make sure the layout is defined
-        if (layout == null)
-            throw new WdkModelException("The layout is not defined in "
-                    + "filter layout [" + name + "]");
     }
 
     /*
@@ -205,5 +179,24 @@ public class AnswerFilterLayout extends WdkModelBase {
         AnswerFilterInstance[] array = new AnswerFilterInstance[instanceMap.size()];
         instanceMap.values().toArray(array);
         return array;
+    }
+
+    /**
+     * @return the fileName
+     */
+    public String getFileName() {
+        // check if returns a default file name
+        if (fileName == null || fileName.length() == 0) {
+            return recordClass.getFullName() + "." + this.name + ".jsp";
+        } else return fileName;
+    }
+
+    /**
+     * @param fileName
+     *            the fileName to set
+     */
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+        if (this.fileName != null) this.fileName = this.fileName.trim();
     }
 }

@@ -1,17 +1,35 @@
 /* WDK filter related styles */
 
-.filter-layout .layout-handle {
+.filter-layout .layout-info > .handle {
     cursor: pointer;
 }
 
-.filter-layout .instance a.link {
+.filter-layout .layout-info .display {
+    font-weight: bold;
+}
+
+.filter-layout .layout-detail .description {
+    color: #333333;
+}
+
+.filter-instance {
+
+}
+
+.filter-instance .current {
+    backgroun-color: yellow;
+}
+
+.filter-instance .count-url {
     display: none;
 }
 
-.filter-layout .instance count-url {
-    display: none;
+.filter-instance .link-url {
+    font-size: 2pt;
 }
 
-.filter-layout .layout-content td, .filter-layout .layout-content th {
-    border: 1px solid #000000;
+.filter-instance .instance-detail {
+    display: none;
+    overflow: visible;
+    postion: absolue;
 }
