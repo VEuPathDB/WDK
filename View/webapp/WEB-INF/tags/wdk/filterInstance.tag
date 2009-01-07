@@ -10,12 +10,14 @@
               description="The current answer value"
 %>
 
-<%@ attribute name="instance"
-              type="org.gusdb.wdk.model.jspwrap.AnswerFilterInstance"
+<%@ attribute name="instanceName"
+              type="string"
               required="true"
-              description="a filter instance"
+              description="the name of the filter instance"
 %>
 
+<c:set var="recordClass" value="${answerValue.recordClass}" />
+<c:set var="instance" value="recordClass.filterMap[instanceName]" />
 
 <c:set var="current">
     <c:set var="currentFilter" value="${answerValue.Filter}" />
