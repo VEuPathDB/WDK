@@ -29,18 +29,19 @@ public class WsfClientCLI extends BaseCLI {
 
     /**
      * @param args
+     * @throws Exception
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         String cmdName = System.getProperty("cmdName");
-        CacheCLI cacher = new CacheCLI(cmdName,
-                "Manages the cache tables of WDK");
+        WsfClientCLI client = new WsfClientCLI(cmdName,
+                "Invoke a WSF web service directly");
         try {
-            cacher.parseCommandLine(args);
+            client.parseCommandLine(args);
         } catch (ParseException ex) {
-            cacher.printUsage();
+            client.printUsage();
             System.exit(-1);
         }
-        cacher.invoke();
+        client.invoke();
         System.exit(0);
     }
 
