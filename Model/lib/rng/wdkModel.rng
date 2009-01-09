@@ -730,6 +730,11 @@
               </attribute>
             </optional>
             <optional>
+              <attribute name="vertical">
+                <data type="boolean" />
+              </attribute>
+            </optional>
+            <optional>
               <attribute name="fileName" />
             </optional>
 
