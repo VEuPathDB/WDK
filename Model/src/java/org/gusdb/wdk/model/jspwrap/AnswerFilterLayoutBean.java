@@ -88,4 +88,12 @@ public class AnswerFilterLayoutBean {
         return layout.isVisible();
     }
 
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.AnswerFilterLayout#isVertical()
+     */
+    public boolean isVertical() {
+        return layout.isVertical();
+    }
+
 }
