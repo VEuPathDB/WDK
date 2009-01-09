@@ -24,6 +24,7 @@ public class AnswerFilterLayout extends WdkModelBase {
     private String displayName;
     private boolean visible = true;
     private String fileName;
+    private boolean vertical = false;
 
     private List<WdkModelText> descriptionList = new ArrayList<WdkModelText>();
     private String description;
@@ -199,4 +200,20 @@ public class AnswerFilterLayout extends WdkModelBase {
         this.fileName = fileName;
         if (this.fileName != null) this.fileName = this.fileName.trim();
     }
+
+    /**
+     * @return the vertical
+     */
+    public boolean isVertical() {
+        return vertical;
+    }
+
+    /**
+     * @param vertical
+     *            the vertical to set
+     */
+    public void setVertical(boolean vertical) {
+        this.vertical = vertical;
+    }
+
 }
