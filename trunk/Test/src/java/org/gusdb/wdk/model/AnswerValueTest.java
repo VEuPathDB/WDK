@@ -4,6 +4,7 @@
 package org.gusdb.wdk.model;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -46,10 +47,10 @@ public class AnswerValueTest {
     @Test
     public void testAddSummaryAttibute() throws Exception {
         Step step = UnitTestHelper.createNormalStep(user);
-        AnswerValue answer = step.getAnswer().getAnswerValue();
+        AnswerValue answerValue = step.getAnswer().getAnswerValue();
 
-        Map<String, AttributeField> displayFields = answer.getDisplayableAttributeMap();
-        Map<String, AttributeField> summaryFields = answer.getSummaryAttributeFieldMap();
+        Map<String, AttributeField> displayFields = answerValue.getDisplayableAttributeMap();
+        Map<String, AttributeField> summaryFields = answerValue.getSummaryAttributeFieldMap();
         
         AttributeField field = displayFields.values().iterator().next();
         
@@ -62,14 +63,66 @@ public class AnswerValueTest {
         String[] summaryList = new String[list.size()];
         list.toArray(summaryList);
         
-        answer.setSumaryAttributes(summaryList);
+        answerValue.setSumaryAttributes(summaryList);
         
-        displayFields = answer.getDisplayableAttributeMap();
-        summaryFields = answer.getSummaryAttributeFieldMap();
+        displayFields = answerValue.getDisplayableAttributeMap();
+        summaryFields = answerValue.getSummaryAttributeFieldMap();
         
         Assert.assertFalse(displayFields.containsKey(field.getName()));
         for(String name : summaryList) {
             Assert.assertTrue(summaryFields.containsKey(name));
+        }
+    }
+
+    @Test
+    public void testDeleteSummaryAttibute() throws Exception {
+        Step step = UnitTestHelper.createNormalStep(user);
+        AnswerValue answerValue = step.getAnswer().getAnswerValue();
+
+        Map<String, AttributeField> displayFields = answerValue.getDisplayableAttributeMap();
+        Map<String, AttributeField> summaryFields = answerValue.getSummaryAttributeFieldMap();
+        
+        // skip the primary key field
+        Iterator<AttributeField> it = summaryFields.values().iterator();
+        it.next();
+        AttributeField field = it.next();
+        
+        // prepare the summary list
+        List<String> list = new ArrayList<String>();
+        for (AttributeField f : summaryFields.values()) {
+            if (f.equals(field)) continue;
+            list.add(f.getName());
+        }
+        String[] summaryList = new String[list.size()];
+        list.toArray(summaryList);
+        
+        answerValue.setSumaryAttributes(summaryList);
+        
+        displayFields = answerValue.getDisplayableAttributeMap();
+        summaryFields = answerValue.getSummaryAttributeFieldMap();
+        
+        Assert.assertTrue(displayFields.containsKey(field.getName()));
+        Assert.assertFalse(summaryFields.containsKey(field.getName()));
+        for(String name : summaryList) {
+            Assert.assertTrue(summaryFields.containsKey(name));
+        }
+    }
+    
+    @Test
+    public void testGetFilterSizes() throws Exception {
+        Step step = UnitTestHelper.createNormalStep(user);
+        AnswerValue answerValue = step.getAnswer().getAnswerValue();
+        AnswerFilterInstance currentFilter = answerValue.getFilter();
+        int size = answerValue.getResultSize();
+        
+        AnswerFilterInstance[] filters = answerValue.getQuestion().getRecordClass().getFilters();
+        for(AnswerFilterInstance filter : filters) {
+            int filterSize = answerValue.getFilterSize(filter.getName());
+            if (filter.equals(currentFilter)) {
+                Assert.assertEquals(size, filterSize);
+            } else {
+                Assert.assertTrue(filterSize >= 0);
+            }
         }
     }
 }

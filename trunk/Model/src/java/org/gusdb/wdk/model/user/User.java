@@ -973,7 +973,7 @@ public class User /* implements Serializable */{
         String key = Long.toString(now.getTime()) + "->"
                 + Integer.toString(userId);
         try {
-            key = userFactory.encrypt(key);
+            key = UserFactory.encrypt(key);
         } catch (NoSuchAlgorithmException ex) {
             throw new WdkUserException(ex);
         }
