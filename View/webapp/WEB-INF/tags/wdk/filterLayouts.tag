@@ -4,6 +4,16 @@
 <%@ taglib prefix="nested" uri="http://jakarta.apache.org/struts/tags-nested" %>
 
 
+<%@ attribute name="strategyId"
+              required="true"
+              description="The current strategy id"
+%>
+
+<%@ attribute name="stepId"
+              required="true"
+              description="The current stepId"
+%>
+
 <%@ attribute name="answerValue"
               type="org.gusdb.wdk.model.jspwrap.AnswerValueBean"
               required="true"
@@ -11,7 +21,12 @@
 %>
 
 <c:set var="answer_value" value="${answerValue}" scope="request"/>
+<c:set var="strategy_id" value="${strategyId}" scope="request"/>
+<c:set var="step_id" value="${stepId}" scope="request"/>
+
 <c:set var="recordClass" value="${answerValue.recordClass}" />
+
+<link rel="stylesheet" href="<c:url value='/assets/css/wdkFilter.css' />" type="text/css">
 
 <c:forEach items="${recordClass.filterLayouts}" var="layout">
     <div class="filter-layout" id="${layout.name}">
@@ -28,12 +43,20 @@
         </div>
         <div class="layout-detail">
             <div class="description">${layout.description}</div>
-        
+ 
             <c:set var="filter_layout" value="${layout}" scope="request"/>
-            <jsp:include page="/WEB-INF/includes/${layout.fileName}"/>
+            <c:set var="fileName" value="${layout.fileName}" />
+            <c:if test="${fn:length(fileName) == 0}">
+                <c:set var="fileName" value="filterTableLayout.jsp" />
+            </c:if>
+            <jsp:include page="/WEB-INF/includes/${fileName}"/>
             <c:remove var="filter_layout" scope="request"/>
         </div>
     </div>
 </c:forEach>
 
 <c:remove var="answer_value" scope="request"/>
+<c:remove var="strategy_id" scope="request"/>
+<c:remove var="step_id" scope="request"/>
+
+<script type="text/javascript" src='<c:url value="/assets/js/wdkFilter.js"/>'></script>
