@@ -12,12 +12,25 @@
     color: #333333;
 }
 
+.filter-layout .layout-detail table {
+    border: 1px solid black;
+    margin: 2px;
+    border-collapse: separate;
+}
+
+.filter-layout .layout-detail td, .filter-layout .layout-detail th {
+    text-align: center;
+    font-size: 10pt;
+    padding: 2px;
+    border: 1px solid black;
+}
+
 .filter-instance {
 
 }
 
 .filter-instance .current {
-    backgroun-color: yellow;
+    background-color: yellow;
 }
 
 .filter-instance .count-url {
@@ -25,11 +38,24 @@
 }
 
 .filter-instance .link-url {
-    font-size: 2pt;
+    font-size: 10pt;
 }
 
 .filter-instance .instance-detail {
     display: none;
     overflow: visible;
-    postion: absolue;
+    position: absolute;
+    border: 3px double #997733;
+    background-color: #DEEEFF;
+    padding: 3px;
+}
+
+.filter-instance .instance-detail .display {
+    text-align: center;
+    font-weight: bold;
+    font-size: 10pt;
+}
+
+.filter-instance .instance-detail .description {
+    font-size: 9pt;
 }

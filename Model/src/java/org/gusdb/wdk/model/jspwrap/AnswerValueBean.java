@@ -286,8 +286,6 @@ public class AnswerValueBean {
             beans[index++] = new AttributeFieldBean(field);
         }
 
-        logger.debug("Count: " + beans.length);
-
         return beans;
     }
 
