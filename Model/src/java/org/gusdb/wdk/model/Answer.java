@@ -770,7 +770,7 @@ public class Answer {
     public List<AttributeField> getDisplayableAttributes() {
         List<AttributeField> displayAttributes = new ArrayList<AttributeField>();
         Map<String, AttributeField> attributes = question.getAttributeFieldMap(FieldScope.NON_INTERNAL);
-        Map<String, AttributeField> summaryAttributes = question.getSummaryAttributeFieldMap();
+        Map<String, AttributeField> summaryAttributes = this.getSummaryAttributeFields();
         for (String attriName : attributes.keySet()) {
             AttributeField attribute = attributes.get(attriName);
 
