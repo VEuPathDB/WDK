@@ -79,6 +79,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             // Get userAnswer id & strategy id from request (if they exist)
             String strStepId = request.getParameter(CConstants.WDK_STEP_ID_KEY);
             String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
+            String filterName = request.getParameter("filter");
             // String strBranchId = null;
 
             if (strStratId != null && strStratId.length() != 0) {
@@ -89,15 +90,12 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
             }
 
-            String filterName = request.getParameter("filter");
-
             if (strStepId == null || strStepId.length() == 0) {
                 logger.debug("create new steps");
 
                 QuestionBean wdkQuestion = (QuestionBean) request.getAttribute(CConstants.WDK_QUESTION_KEY);
-                if (wdkQuestion == null) {
-                    wdkQuestion = qForm.getQuestion();
-                }
+                if (wdkQuestion == null) wdkQuestion = qForm.getQuestion();
+
                 if (wdkQuestion == null) {
                     String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
                     if (qFullName != null)
@@ -109,18 +107,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 }
                 String questionName = wdkQuestion.getFullName();
 
-                // saving user preference has to happen before summaryPaging(),
-                // where they will be used.
-
-                // update sorting key, if have
-                String sortingChecksum = request.getParameter(CConstants.WDK_SORTING_KEY);
-                if (sortingChecksum != null)
-                    wdkUser.applySortingChecksum(questionName, sortingChecksum);
-
-                // get summary key, if have
-                String summaryChecksum = request.getParameter(CConstants.WDK_SUMMARY_KEY);
-                if (summaryChecksum != null)
-                    wdkUser.applySummaryChecksum(questionName, summaryChecksum);
+                updateSortingSummary(request, wdkUser, questionName);
 
                 params = qForm.getMyProps();
 
@@ -151,20 +138,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
                     step.update();
                 }
 
-                String questionName = step.getQuestionName();
-
-                // update sorting key, if have
-                String sortingChecksum = request.getParameter(CConstants.WDK_SORTING_KEY);
-                if (sortingChecksum != null) {
-                    wdkUser.applySortingChecksum(questionName, sortingChecksum);
-
-                }
-
-                // get summary key, if have
-                String summaryChecksum = request.getParameter(CConstants.WDK_SUMMARY_KEY);
-                if (summaryChecksum != null)
-                    wdkUser.applySummaryChecksum(questionName, summaryChecksum);
-
+                updateSortingSummary(request, wdkUser, step.getQuestionName());
                 prepareAttributes(request, wdkUser, step);
             }
             wdkUser.save();
@@ -173,6 +147,18 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
             // get sorting and summary attributes
             AnswerValueBean wdkAnswerValue = step.getAnswerValue();
+
+            // return only the result size, if requested
+            if (request.getParameterMap().containsKey(
+                    CConstants.WDK_RESULT_SIZE_ONLY_KEY)) {
+                int size = (filterName == null)
+                        ? wdkAnswerValue.getResultSize()
+                        : wdkAnswerValue.getFilterSize(filterName);
+
+                PrintWriter writer = response.getWriter();
+                writer.print(size);
+                return null;
+            }
 
             // DO NOT delete empty userAnswer -- it will screw up strategies
             // if (userAnswer != null && userAnswer.getEstimateSize() == 0)
@@ -202,14 +188,6 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 activeStrategies.add(0, new Integer(strategy.getStrategyId()));
             }
             wdkUser.setActiveStrategies(activeStrategies);
-
-            // return only the result size, if requested
-            if (request.getParameterMap().containsKey(
-                    CConstants.WDK_RESULT_SIZE_ONLY_KEY)) {
-                PrintWriter writer = response.getWriter();
-                writer.print(wdkAnswerValue.getResultSize());
-                return null;
-            }
 
             logger.debug("preparing forward");
 
@@ -431,5 +409,23 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 answerValue.getInternalParams());
         request.setAttribute(CConstants.WDK_ANSWER_KEY, answerValue);
         request.setAttribute(CConstants.WDK_HISTORY_KEY, step);
+    }
+
+    private void updateSortingSummary(HttpServletRequest request,
+            UserBean wdkUser, String questionName)
+            throws NoSuchAlgorithmException, WdkModelException,
+            WdkUserException {
+        // update sorting key, if have
+        String sortingChecksum = request.getParameter(CConstants.WDK_SORTING_KEY);
+        if (sortingChecksum != null) {
+            wdkUser.applySortingChecksum(questionName, sortingChecksum);
+
+        }
+
+        // get summary key, if have
+        String summaryChecksum = request.getParameter(CConstants.WDK_SUMMARY_KEY);
+        if (summaryChecksum != null)
+            wdkUser.applySummaryChecksum(questionName, summaryChecksum);
+
     }
 }
