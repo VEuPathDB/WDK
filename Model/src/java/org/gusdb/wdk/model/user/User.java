@@ -833,7 +833,7 @@ public class User /* implements Serializable */{
         String summaryKey = answerValue.getQuestion().getFullName()
                 + SUMMARY_ATTRIBUTES_SUFFIX;
         if (!projectPreferences.containsKey(summaryKey)) {
-            Map<String, AttributeField> summary = answerValue.getSummaryAttributeFields();
+            Map<String, AttributeField> summary = answerValue.getSummaryAttributeFieldMap();
             StringBuffer sb = new StringBuffer();
             for (String attrName : summary.keySet()) {
                 if (sb.length() != 0) sb.append(",");

@@ -13,7 +13,6 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.AttributeField;
-import org.gusdb.wdk.model.FieldScope;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -148,7 +147,7 @@ public abstract class Reporter implements Iterable<AnswerValue> {
      * @return
      */
     protected Map<String, AttributeField> getSummaryAttributes() {
-        return baseAnswer.getSummaryAttributeFields();
+        return baseAnswer.getSummaryAttributeFieldMap();
     }
 
     public Iterator<AnswerValue> iterator() {

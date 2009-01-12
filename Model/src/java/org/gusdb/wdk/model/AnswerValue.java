@@ -367,7 +367,7 @@ public class AnswerValue {
 
         if (pageRecordInstances.size() == 0) return buf.toString();
 
-        Map<String, AttributeField> attributes = getSummaryAttributeFields();
+        Map<String, AttributeField> attributes = getSummaryAttributeFieldMap();
         for (String nextAttName : attributes.keySet()) {
             buf.append(nextAttName + "\t");
         }
@@ -778,23 +778,28 @@ public class AnswerValue {
     public Map<String, Boolean> getSortingMap() {
         return new LinkedHashMap<String, Boolean>(sortingMap);
     }
-
+    
     public List<AttributeField> getDisplayableAttributes() {
-        List<AttributeField> displayAttributes = new ArrayList<AttributeField>();
+        Map<String, AttributeField> map = getDisplayableAttributeMap();
+        return new ArrayList<AttributeField>(map.values());
+    }
+
+    public Map<String, AttributeField> getDisplayableAttributeMap() {
+        Map<String, AttributeField> displayAttributes = new LinkedHashMap<String, AttributeField>();
         Map<String, AttributeField> attributes = question.getAttributeFieldMap(FieldScope.NON_INTERNAL);
-        Map<String, AttributeField> summaryAttributes = question.getSummaryAttributeFieldMap();
+        Map<String, AttributeField> summaryAttributes = this.getSummaryAttributeFieldMap();
         for (String attriName : attributes.keySet()) {
             AttributeField attribute = attributes.get(attriName);
 
             // skip the attributes that are already displayed
             if (summaryAttributes.containsKey(attriName)) continue;
 
-            displayAttributes.add(attribute);
+            displayAttributes.put(attriName, attribute);
         }
         return displayAttributes;
     }
 
-    public Map<String, AttributeField> getSummaryAttributeFields() {
+    public Map<String, AttributeField> getSummaryAttributeFieldMap() {
         Map<String, AttributeField> fields;
         if (summaryFieldMap.size() > 0) {
             fields = new LinkedHashMap<String, AttributeField>(summaryFieldMap);
