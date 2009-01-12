@@ -186,10 +186,7 @@ public class AnswerFilterLayout extends WdkModelBase {
      * @return the fileName
      */
     public String getFileName() {
-        // check if returns a default file name
-        if (fileName == null || fileName.length() == 0) {
-            return recordClass.getFullName() + "." + this.name + ".jsp";
-        } else return fileName;
+        return fileName;
     }
 
     /**
