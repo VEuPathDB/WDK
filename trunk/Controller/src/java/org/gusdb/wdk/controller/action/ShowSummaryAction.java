@@ -236,53 +236,6 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
     }
 
-    //
-    // private ActionForward getForward(AnswerValueBean wdkAnswerValue,
-    // ActionMapping mapping, int userAnswerId) throws WdkModelException,
-    // SQLException, NoSuchAlgorithmException, JSONException,
-    // WdkUserException {
-    // ServletContext svltCtx = getServlet().getServletContext();
-    // String customViewDir = (String)
-    // svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
-    // String customViewFile1 = customViewDir + File.separator
-    // + wdkAnswerValue.getQuestion().getFullName() + ".summary.jsp";
-    // String customViewFile2 = customViewDir + File.separator
-    // + wdkAnswerValue.getRecordClass().getFullName()
-    // + ".summary.jsp";
-    // String customViewFile3 = customViewDir + File.separator
-    // + CConstants.WDK_CUSTOM_SUMMARY_PAGE;
-    // ActionForward forward = null;
-    //
-    // if (wdkAnswerValue.getResultSize() == 1
-    // && !wdkAnswerValue.getIsDynamic()
-    // && wdkAnswerValue.getQuestion().isNoSummaryOnSingleRecord()) {
-    // RecordBean rec = (RecordBean) wdkAnswerValue.getRecords().next();
-    // forward = mapping.findForward(CConstants.SKIPTO_RECORD_MAPKEY);
-    // String path = forward.getPath() + "?name="
-    // + rec.getRecordClass().getFullName();
-    //
-    // Map<String, String> pkValues = rec.getPrimaryKey().getValues();
-    // for (String pkColumn : pkValues.keySet()) {
-    // String value = pkValues.get(pkColumn);
-    // path += "&" + pkColumn + "=" + value;
-    // }
-    // return new ActionForward(path, true);
-    // }
-    //
-    // if (ApplicationInitListener.resourceExists(customViewFile1, svltCtx)) {
-    // forward = new ActionForward(customViewFile1);
-    // } else if (ApplicationInitListener.resourceExists(customViewFile2,
-    // svltCtx)) {
-    // forward = new ActionForward(customViewFile2);
-    // } else if (ApplicationInitListener.resourceExists(customViewFile3,
-    // svltCtx)) {
-    // forward = new ActionForward(customViewFile3);
-    // } else {
-    // forward = mapping.findForward(CConstants.SHOW_SUMMARY_MAPKEY);
-    // }
-    // return forward;
-    // }
-
     protected void handleDatasetParams(UserBean user, QuestionBean question,
             Map<String, Object> params) {
         Map<String, ParamBean> paramDefinitions = question.getParamsMap();
