@@ -685,16 +685,6 @@ public class UserBean /* implements Serializable */{
         return beans;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.user.User#getHistory(int)
-     */
-    public StepBean getStep(int displayId) throws WdkUserException,
-            WdkModelException, SQLException, JSONException {
-        return new StepBean(user.getStep(displayId));
-    }
-
     public StrategyBean getStrategy(int displayId) throws WdkUserException,
             WdkModelException, JSONException, SQLException {
         return new StrategyBean(user.getStrategy(displayId));
