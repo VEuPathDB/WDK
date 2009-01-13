@@ -994,4 +994,18 @@ public class UserBean /* implements Serializable */{
         }
         return category;
     }
+
+    /**
+     * @param displayId
+     * @return
+     * @throws WdkUserException
+     * @throws WdkModelException
+     * @throws SQLException
+     * @throws JSONException
+     * @see org.gusdb.wdk.model.user.User#getStep(int)
+     */
+    public StepBean getStep(int displayId) throws WdkUserException,
+            WdkModelException, SQLException, JSONException {
+        return new StepBean(user.getStep(displayId));
+    }
 }
