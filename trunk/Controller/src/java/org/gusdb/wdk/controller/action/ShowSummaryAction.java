@@ -73,7 +73,6 @@ public class ShowSummaryAction extends ShowQuestionAction {
             logger.debug("check existing strategy & step");
 
             StepBean step;
-            StrategyBean strategy = null;
             Map<String, String> params;
 
             // Get userAnswer id & strategy id from request (if they exist)
@@ -81,14 +80,6 @@ public class ShowSummaryAction extends ShowQuestionAction {
             String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
             String filterName = request.getParameter("filter");
             // String strBranchId = null;
-
-            if (strStratId != null && strStratId.length() != 0) {
-                if (strStratId.indexOf("_") > 0) {
-                    // strBranchId = strStratId.split("_")[1];
-                    strStratId = strStratId.split("_")[0];
-                }
-                strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
-            }
 
             if (strStepId == null || strStepId.length() == 0) {
                 logger.debug("create new steps");
@@ -164,8 +155,16 @@ public class ShowSummaryAction extends ShowQuestionAction {
             // if (userAnswer != null && userAnswer.getEstimateSize() == 0)
             // wdkUser.deleteStep(userAnswer.getStepId());
 
+            StrategyBean strategy = null;
+            if (strStratId != null && strStratId.length() != 0) {
+                if (strStratId.indexOf("_") > 0) {
+                    // strBranchId = strStratId.split("_")[1];
+                    strStratId = strStratId.split("_")[0];
+                }
+                strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
+            }
+            
             String queryString;
-
             if (strategy == null) {
                 strategy = wdkUser.createStrategy(step, false);
                 queryString = "strategy=" + strategy.getStrategyId();
