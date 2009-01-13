@@ -213,10 +213,11 @@ public class AnswerValue {
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
         if (resultSize == null) {
-            if (getFilter() == null) {
+            if (filter == null) {
                 resultSize = idsQueryInstance.getResultSize();
             } else {
-                resultSize = getFilterSize(getFilter().getName());
+                resultSize = getFilterSize(filter.getName());
+                resultSizesByFilter.put(filter.getName(), resultSize);
             }
         }
         return resultSize;
@@ -229,10 +230,9 @@ public class AnswerValue {
             resultSizesByProject = new LinkedHashMap<String, Integer>();
             // need to run the query first
             ResultList resultList;
-	    // for portal
+            // for portal
             String message = idsQueryInstance.getResultMessage();
-            if (filter == null) 
-                resultList = idsQueryInstance.getResults();
+            if (filter == null) resultList = idsQueryInstance.getResults();
             else resultList = filter.getResults(this);
 
             try {
@@ -778,7 +778,7 @@ public class AnswerValue {
     public Map<String, Boolean> getSortingMap() {
         return new LinkedHashMap<String, Boolean>(sortingMap);
     }
-    
+
     public List<AttributeField> getDisplayableAttributes() {
         Map<String, AttributeField> map = getDisplayableAttributeMap();
         return new ArrayList<AttributeField>(map.values());
@@ -857,6 +857,7 @@ public class AnswerValue {
             AnswerFactory answerFactory = question.getWdkModel().getAnswerFactory();
             answer = answerFactory.getAnswer(getChecksum());
             if (answer == null) answer = answerFactory.saveAnswerValue(this);
+            answer.setAnswerValue(this);
         }
         return answer;
     }
@@ -907,7 +908,7 @@ public class AnswerValue {
         this.filter = filter;
     }
 
-    public void setAnswerInfo(Answer answer) {
+    public void setAnswer(Answer answer) {
         this.answer = answer;
     }
 

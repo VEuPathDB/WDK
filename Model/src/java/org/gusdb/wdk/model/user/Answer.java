@@ -116,8 +116,14 @@ public class Answer {
 
     public AnswerValue getAnswerValue() throws NoSuchAlgorithmException,
             WdkModelException, JSONException, WdkUserException, SQLException {
-        if (answerValue == null)
+        if (answerValue == null) {
             answerValue = answerFactory.getAnswerValue(this);
+            answerValue.setAnswer(this);
+        }
         return answerValue;
+    }
+
+    public void setAnswerValue(AnswerValue answerValue) {
+        this.answerValue = answerValue;
     }
 }
