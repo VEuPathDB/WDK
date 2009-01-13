@@ -38,16 +38,14 @@
 
 <div class="filter-instance">
     <c:if test="${current}"><div class="current"></c:if>
-        <c:url var="linkUrl" value="/processSummary.do?strategy=${strategyId}&step=${stepId}&command=filter&filter=${instance.name}" />
-        <a class="link-url" href="${linkUrl}">
+        <c:url var="linkUrl" value="/processFilter.do?strategy=${strategyId}&step=${stepId}&command=filter&filter=${instance.name}" />
+        <c:url var="countUrl" value="/showSummary.do?strategy=${strategyId}&step=${stepId}&command=filter&filter=${instance.name}&resultSizeOnly=1" />
+        <a class="link-url" href="${linkUrl}" countref="${countUrl}">
             <c:choose>
                 <c:when test="${current}">${answerValue.resultSize}</c:when>
                 <c:otherwise><img class="loading" src="<c:url value="/images/loading.gif" />" /></c:otherwise>
             </c:choose>
         </a>
-        <span class="count-url">
-            <c:url value="/showSummary.do?strategy=${strategyId}&step=${stepId}&command=filter&filter=${instance.name}&resultSizeOnly=1" />
-        </span>
         <div class="instance-detail">
             <div class="display">${instance.displayName}</div>
             <div class="description">${instance.description}</div>

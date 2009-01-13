@@ -50,7 +50,7 @@ function WdkFilter() {
         $(".filter-instance .loading:first").parents(".filter-instance").each(function() {
             // load the result count of the filter
             var link = $(this).find(".link-url");
-            var countUrl = $(this).find(".count-url").text();
+            var countUrl = link.attr("countref");
             countUrl = countUrl.replace(/\s/, "");
             $.get(countUrl, 
                   '', 
