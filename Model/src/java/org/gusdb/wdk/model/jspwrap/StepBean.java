@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.jspwrap;
 
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.text.DateFormat;
 import java.util.Date;
 import java.util.Map;
 
@@ -134,6 +135,10 @@ public class StepBean {
         return step.getEstimateSize();
     }
 
+    public String getLastRunTimeFormatted() {
+        return DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(step.getLastRunTime());
+    }
+
     public Date getLastRunTime() {
         return step.getLastRunTime();
     }
@@ -142,12 +147,12 @@ public class StepBean {
         step.setLastRunTime(lastRunTime);
     }
 
-    public Date getCreatedTime() {
-        return step.getLastRunTime();
+    public String getCreatedTimeFormatted() {
+        return DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(step.getCreatedTime());
     }
 
-    public void setCreatedTime(Date lastRunTime) {
-        step.setLastRunTime(lastRunTime);
+    public Date getCreatedTime() {
+        return step.getCreatedTime();
     }
 
     public boolean getIsBoolean() throws NoSuchAlgorithmException,
