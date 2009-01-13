@@ -67,8 +67,7 @@ public abstract class QueryInstance {
         this.wdkModel = query.getWdkModel();
         this.cached = query.isCached();
 
-        logger.debug("validating param values of query [" + query.getFullName()
-                + "]");
+        // logger.debug("validating param values of query [" + query.getFullName() + "]");
         setValues(values);
     }
 
