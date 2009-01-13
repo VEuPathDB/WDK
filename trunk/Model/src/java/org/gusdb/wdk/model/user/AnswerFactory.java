@@ -72,7 +72,7 @@ public class AnswerFactory {
             String paramClob = answerValue.getIdsQueryInstance().getParamJSONObject().toString();
             saveAnswer(answer, paramClob);
         }
-        answerValue.setAnswerInfo(answer);
+        answerValue.setAnswer(answer);
         return answer;
     }
 
@@ -100,7 +100,7 @@ public class AnswerFactory {
 
         // create the answer with default page size
         AnswerValue answerValue = question.makeAnswerValue(pvalues);
-        answerValue.setAnswerInfo(answer);
+        answerValue.setAnswer(answer);
         return answerValue;
     }
 
