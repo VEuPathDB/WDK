@@ -84,6 +84,11 @@ public class User /* implements Serializable */{
     // keep track of user's open strategies; don't serialize
     private transient ArrayList<Integer> activeStrategies;
 
+    /**
+     * cache the last step. This data may have impact on the memory usage.
+     */
+    private Step cachedStep;
+
     User(WdkModel model, int userId, String email, String signature)
             throws WdkUserException {
         this.userId = userId;
@@ -645,7 +650,9 @@ public class User /* implements Serializable */{
 
     public Step getStep(int displayId) throws WdkUserException,
             WdkModelException, SQLException, JSONException {
-        return stepFactory.loadStep(this, displayId);
+        if (cachedStep == null || cachedStep.getDisplayId() != displayId)
+            cachedStep = stepFactory.loadStep(this, displayId);
+        return cachedStep;
     }
 
     public Strategy getStrategy(int userStrategyId) throws WdkUserException,
