@@ -26,7 +26,8 @@
 }
 
 .filter-instance {
-
+    text-align: center;
+    vertical-align: middle;
 }
 
 .filter-instance .current {
@@ -34,7 +35,7 @@
 }
 
 .filter-instance .link-url {
-    font-size: 16px;
+    font-size: 10px;
 }
 
 .filter-instance .instance-detail {
