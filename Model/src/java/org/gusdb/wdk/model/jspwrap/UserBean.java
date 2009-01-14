@@ -1002,10 +1002,11 @@ public class UserBean /* implements Serializable */{
      * @throws WdkModelException
      * @throws SQLException
      * @throws JSONException
+     * @throws NoSuchAlgorithmException 
      * @see org.gusdb.wdk.model.user.User#getStep(int)
      */
     public StepBean getStep(int displayId) throws WdkUserException,
-            WdkModelException, SQLException, JSONException {
+            WdkModelException, SQLException, JSONException, NoSuchAlgorithmException {
         return new StepBean(user.getStep(displayId));
     }
 }

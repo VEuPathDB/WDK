@@ -135,7 +135,7 @@ public class BooleanExpression {
 
     private Step buildLeaf(String block, Map<String, String> replace)
             throws WdkUserException, WdkModelException, SQLException,
-            JSONException {
+            JSONException, NoSuchAlgorithmException {
         // the block must be a history id or an id starting with '#'
         String strId = (block.charAt(0) == '#') ? block.substring(1) : block;
         int stepDisplayId;

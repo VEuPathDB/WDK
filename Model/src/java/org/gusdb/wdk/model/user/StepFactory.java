@@ -525,9 +525,15 @@ public class StepFactory {
             Answer answer = answerFactory.getAnswer(answerChecksum);
 
             AnswerValue answerValue = answer.getAnswerValue();
+            // set filter
             RecordClass recordClass = answerValue.getQuestion().getRecordClass();
             if (filterName != null)
                 answerValue.setFilter(recordClass.getFilter(filterName));
+
+            // set sorting & summarys
+            String questionName = answerValue.getQuestion().getFullName();
+            answerValue.setSortingMap(user.getSortingAttributes(questionName));
+            answerValue.setSumaryAttributes(user.getSummaryAttributes(questionName));
 
             step.setAnswer(answer);
             step.setValid(true);
