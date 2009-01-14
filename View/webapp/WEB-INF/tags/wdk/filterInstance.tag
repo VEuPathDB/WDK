@@ -46,7 +46,7 @@
                 <c:otherwise><img class="loading" src="<c:url value="/images/loading.gif" />" /></c:otherwise>
             </c:choose>
         </a>
-        <div class="instance-detail">
+        <div class="instance-detail" style="display: none;">
             <div class="display">${instance.displayName}</div>
             <div class="description">${instance.description}</div>
         </div>
