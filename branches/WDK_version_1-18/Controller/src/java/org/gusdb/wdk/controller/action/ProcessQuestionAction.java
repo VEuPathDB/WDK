@@ -76,6 +76,13 @@ public class ProcessQuestionAction extends ShowQuestionAction {
             url.append("&" + CConstants.WDK_ALT_PAGE_SIZE_KEY);
             url.append("=" + altPageSizeKey);
         }
+        
+        // pass along the skip param
+        String skipToDownloadKey = request.getParameter(CConstants.WDK_SKIPTO_DOWNLOAD_PARAM);
+        if (skipToDownloadKey != null && skipToDownloadKey.length() > 0) {
+            url.append("&" + CConstants.WDK_SKIPTO_DOWNLOAD_PARAM);
+            url.append("=" + skipToDownloadKey);
+        }
 
         // construct the forward to show_summary action
         ActionForward forward = new ActionForward(url.toString());
