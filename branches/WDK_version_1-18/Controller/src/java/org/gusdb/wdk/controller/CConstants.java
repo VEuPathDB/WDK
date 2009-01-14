@@ -51,6 +51,10 @@ public class CConstants {
     public static final String WDK_ALL_RECORD_IDS_KEY = "allRecordIds";
     public static final String WDK_RESULT_SIZE_ONLY_KEY = "resultSizeOnly";
     
+    // param names in the url
+    public static final String WDK_HISTORY_ID_PARAM = "wdk_history_id";
+    public static final String WDK_SKIPTO_DOWNLOAD_PARAM = "skipto_download";
+    
     // constants for remote logins
     public static final String WDK_REMOTE_URL_KEY = "remoteUrl";
     public static final String WDK_REMOTE_ACTION_KEY = "remoteAction";
@@ -86,6 +90,7 @@ public class CConstants {
     public static final String SHOW_SUMMARY_MAPKEY = "show_summary";
     public static final String SHOW_ERROR_MAPKEY = "show_error";
     public static final String SKIPTO_RECORD_MAPKEY = "skip_to_record";
+    public static final String SKIPTO_DOWNLOAD_MAPKEY = "skip_to_download";
     public static final String SHOW_RECORD_MAPKEY = "show_record";
     public static final String PQ_SHOW_SUMMARY_MAPKEY = "pq_show_summary";
     public static final String PQ_START_BOOLEAN_MAPKEY = "pq_start_boolean";

@@ -216,8 +216,10 @@ public abstract class QueryInstance {
         Map<String, Param> params = query.getParamMap();
         for (String paramName : params.keySet()) {
             Param param = params.get(paramName);
+            String defaultValue = param.getDefault();
+            if (param.isAllowEmpty()) defaultValue = param.getEmptyValue();
             Object externalValue = values.containsKey(paramName) ? values.get(paramName)
-                    : param.getDefault();
+                    : defaultValue;
 
             String internalValue = param.getInternalValue(externalValue);
             if (internalValue == null)

@@ -211,36 +211,19 @@ public class ShowSummaryAction extends ShowQuestionAction {
         request.setAttribute("wdk_summary_url", requestUrl);
         request.setAttribute("wdk_query_string", queryString);
 
-        // TODO - the alwaysGoToSummary is deprecated by
-        // "noSummaryOnSingleRecord" attribute of question bean
-        //
-        // boolean alwaysGoToSummary = false;
-        // if (CConstants.YES.equalsIgnoreCase((String)
-        // getServlet().getServletContext().getAttribute(
-        // CConstants.WDK_ALWAYSGOTOSUMMARY_KEY))
-        // ||
-        // CConstants.YES.equalsIgnoreCase(request.getParameter(CConstants.ALWAYS_GOTO_SUMMARY_PARAM)))
-        // {
-        // alwaysGoToSummary = true;
-        // }
-        // if
-        // (CConstants.NO.equalsIgnoreCase(request.getParameter(CConstants.ALWAYS_GOTO_SUMMARY_PARAM)))
-        // {
-        // alwaysGoToSummary = false;
-        // }
-
         // make ActionForward
-        ActionForward forward = getForward(wdkAnswer, mapping, historyId);
+        ActionForward forward = getForward(request, wdkAnswer, mapping,
+                historyId);
 
         logger.debug("finish action.");
 
         return forward;
     }
 
-    private ActionForward getForward(AnswerBean wdkAnswer,
-            ActionMapping mapping, int historyId) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    private ActionForward getForward(HttpServletRequest request,
+            AnswerBean wdkAnswer, ActionMapping mapping, int historyId)
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
         logger.debug("start getting forward");
 
         ServletContext svltCtx = getServlet().getServletContext();
@@ -253,7 +236,14 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 + CConstants.WDK_CUSTOM_SUMMARY_PAGE;
         ActionForward forward = null;
 
-        if (wdkAnswer.getResultSize() == 1 && !wdkAnswer.getIsDynamic()
+        if (request.getParameterMap().containsKey(
+                CConstants.WDK_SKIPTO_DOWNLOAD_PARAM)) {
+            // go to download page directly
+            forward = mapping.findForward(CConstants.SKIPTO_RECORD_MAPKEY);
+            String path = forward.getPath() + "?"
+                    + CConstants.WDK_HISTORY_ID_PARAM + "=" + historyId;
+            return new ActionForward(path, true);
+        } else if (wdkAnswer.getResultSize() == 1 && !wdkAnswer.getIsDynamic()
                 && wdkAnswer.getQuestion().isNoSummaryOnSingleRecord()) {
             RecordBean rec = (RecordBean) wdkAnswer.getRecords().next();
             forward = mapping.findForward(CConstants.SKIPTO_RECORD_MAPKEY);
@@ -479,7 +469,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             qDisplayName = question.getDisplayName();
             Map<String, ParamBean> validParams = question.getParamsMap();
             Map<String, String> newParamNames = new LinkedHashMap<String, String>();
-            StringBuffer paramUrl= new StringBuffer();
+            StringBuffer paramUrl = new StringBuffer();
             for (String paramName : paramNames.keySet()) {
                 String prompt;
                 if (validParams.containsKey(paramName)) {
@@ -488,8 +478,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
                     prompt = paramNames.get(paramName);
                 }
                 newParamNames.put(paramName, prompt);
-                
-                String paramValue = (String)params.get(paramName);
+
+                String paramValue = (String) params.get(paramName);
                 if (paramUrl.length() > 0) paramUrl.append("&");
                 paramUrl.append(paramName).append("=");
                 paramUrl.append(URLEncoder.encode(paramValue, "utf-8"));
