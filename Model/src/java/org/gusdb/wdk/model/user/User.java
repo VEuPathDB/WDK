@@ -649,9 +649,15 @@ public class User /* implements Serializable */{
     }
 
     public Step getStep(int displayId) throws WdkUserException,
-            WdkModelException, SQLException, JSONException {
-        if (cachedStep == null || cachedStep.getDisplayId() != displayId)
+            WdkModelException, SQLException, JSONException, NoSuchAlgorithmException {
+        if (cachedStep == null || cachedStep.getDisplayId() != displayId) {
             cachedStep = stepFactory.loadStep(this, displayId);
+        } else { // update the sorting and summary attributes
+            AnswerValue answerValue = cachedStep.getAnswer().getAnswerValue();
+            String questionName = answerValue.getQuestion().getFullName();
+            answerValue.setSortingMap(getSortingAttributes(questionName));
+            answerValue.setSumaryAttributes(getSummaryAttributes(questionName));
+        }
         return cachedStep;
     }
 

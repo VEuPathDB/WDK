@@ -779,6 +779,26 @@ public class AnswerValue {
         return new LinkedHashMap<String, Boolean>(sortingMap);
     }
 
+    /**
+     * Set a new sorting map
+     * @param sortingMap
+     * @throws WdkModelException
+     */
+    public void setSortingMap(Map<String, Boolean> sortingMap) throws WdkModelException {
+        // make sure all sorting columns exist
+        Map<String, AttributeField> attributes = question.getAttributeFieldMap();
+        for (String attributeName : sortingMap.keySet()) {
+            if (!attributes.containsKey(attributeName))
+                throw new WdkModelException("the assigned sorting attribute ["
+                        + attributeName + "] doesn't exist in the answer of "
+                        + "question " + question.getFullName());
+        }
+        this.sortingMap.clear();
+        this.sortingMap.putAll(sortingMap);
+        this.pagedIdSql = null;
+        this.pageRecordInstances = null;
+    }
+
     public List<AttributeField> getDisplayableAttributes() {
         Map<String, AttributeField> map = getDisplayableAttributeMap();
         return new ArrayList<AttributeField>(map.values());
