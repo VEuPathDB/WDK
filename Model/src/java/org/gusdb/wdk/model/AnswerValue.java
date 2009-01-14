@@ -781,10 +781,16 @@ public class AnswerValue {
 
     /**
      * Set a new sorting map
+     * 
      * @param sortingMap
      * @throws WdkModelException
      */
-    public void setSortingMap(Map<String, Boolean> sortingMap) throws WdkModelException {
+    public void setSortingMap(Map<String, Boolean> sortingMap)
+            throws WdkModelException {
+        if (sortingMap == null) {
+            this.sortingMap.clear();
+            return;
+        }
         // make sure all sorting columns exist
         Map<String, AttributeField> attributes = question.getAttributeFieldMap();
         for (String attributeName : sortingMap.keySet()) {
@@ -828,6 +834,10 @@ public class AnswerValue {
     }
 
     public void setSumaryAttributes(String[] attributeNames) {
+        if (attributeNames == null) {
+            this.summaryFieldMap.clear();
+            return;
+        }
         Map<String, AttributeField> summaryFields = new LinkedHashMap<String, AttributeField>();
         // always put the primary key as the first attribute
         PrimaryKeyAttributeField pkField = question.getRecordClass().getPrimaryKeyAttributeField();
