@@ -122,8 +122,8 @@
         </td></tr>
 
   <tr><td valign="top">&nbsp;</td>
-      <td align="center"><input type="button" value="select all" onclick="check(1)">
-          <input type="button" value="clear all" selected="yes" onclick="check(0)">
+      <td align="center"><input type="button" value="select all" onclick="checkFields(1)">
+          <input type="button" value="clear all" selected="yes" onclick="checkFields(0)">
         </td></tr>
 
   <tr><td valign="top"><b>Column names: </b></td>
