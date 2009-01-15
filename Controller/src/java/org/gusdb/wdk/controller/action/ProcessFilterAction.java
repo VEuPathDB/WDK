@@ -148,6 +148,8 @@ public class ProcessFilterAction extends ProcessQuestionAction {
         // Are we revising or inserting a step?
         String reviseStep = request.getParameter("revise");
         String insertStep = request.getParameter("insert");
+	Map<Integer,Integer> stepIdsMap;
+	int targetStepId;
         String op = boolExp;
         if (op.indexOf(" ") >= 0) {
             op = boolExp.substring(boolExp.indexOf(" "), boolExp.length());
@@ -156,32 +158,31 @@ public class ProcessFilterAction extends ProcessQuestionAction {
         boolExp = null;
         if ((reviseStep == null || reviseStep.length() == 0)
                 && (insertStep == null || insertStep.length() == 0)) {
+	    targetStepId = originalStep.getStepId();
             if (!isTransform) {
                 // now create step for operation query, if it's a boolean
                 boolExp = originalStep.getStepId() + " " + op + " " + stepId;
-                System.out.println("Boolean expression for add: " + boolExp);
                 step = wdkUser.combineStep(boolExp, false);
                 stepId = step.getStepId();
 
                 step.setChildStep(childStep);
-		System.out.println("Created step.");
             }
             // implied: since step is a transform (and we aren't inserting a
             // strategy), we've
             // already run the filter query (b/c the transform is just a query
             // w/ a history param
+	    stepIdsMap = strategy.addStep(targetStepId, step);
         } else {
             int stratLen = originalStep.getLength();
-            int targetId;
             int targetIx;
             boolean isRevise;
 
             if (isRevise = (reviseStep != null && reviseStep.length() != 0)) {
-                targetId = Integer.parseInt(reviseStep);
-                targetIx = originalStep.getIndexFromId(targetId);
+                targetStepId = Integer.parseInt(reviseStep);
+                targetIx = originalStep.getIndexFromId(targetStepId);
             } else {
-                targetId = Integer.parseInt(insertStep);
-                targetIx = originalStep.getIndexFromId(targetId);
+                targetStepId = Integer.parseInt(insertStep);
+                targetIx = originalStep.getIndexFromId(targetStepId);
             }
 
             if (stratLen > 1 || !isRevise) {
@@ -195,14 +196,9 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                             step = updateTransform(wdkUser,
                                     step.getNextStep(), stepId);
                         } else {
-                            //boolExp = step.getNextStep().getBooleanExpression();
-                            //boolExp = stepId
-                            //        + boolExp.substring(boolExp.indexOf(" "),
-                            //                boolExp.lastIndexOf(" ") + 1)
-                            //        + step.getNextStep().getChildStep().getStepId();
                             boolExp = stepId + " "
 				+ step.getNextStep().getOperation() + " "
-                                    + step.getNextStep().getChildStep().getStepId();
+				+ step.getNextStep().getChildStep().getStepId();
                         }
                         targetIx++;
                     } else {
@@ -213,7 +209,8 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                         boolExp = stepId + " " + op + " " + step.getStepId();
                     }
                     targetIx++;
-                } else {
+                }
+		else {
                     if (isRevise) {
                         if (!isTransform) {
                             // check if we've changed the query itself, or just
@@ -222,7 +219,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                             childStep.update(false);
                             // build standard boolExp for non-first step
                             boolExp = step.getPreviousStep().getStepId() + " "
-                                    + op + " " + stepId;
+				+ op + " " + stepId;
                         }
                         // implied: if we're revising a transform step, we've
                         // already run the revised query,
@@ -234,7 +231,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                             // the inserted step has to point to the step at
                             // insertIx - 1
                             boolExp = step.getPreviousStep().getStepId() + " "
-                                    + op + " " + stepId;
+				+ op + " " + stepId;
                         }
                         // implied: if we're inserting a transform, the
                         // HistoryParam should already
@@ -242,85 +239,23 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                         // need to update subsequent steps.
                     }
                 }
-
+		
                 if (boolExp != null) {
-                    System.out.println("Boolean expression for revise/insert: "
-                            + boolExp);
                     // now create step for operation query
                     step = wdkUser.combineStep(boolExp, false);
                     stepId = step.getStepId();
                 }
-
+		
                 step.setChildStep(childStep);
+		targetStepId = originalStep.getStep(targetIx).getStepId();
+	    }
+	    stepIdsMap = strategy.editOrInsertStep(targetStepId, step);
+	}
 
-                System.out.println("Updating subsequent steps.");
-                for (int i = targetIx; i < stratLen; ++i) {
-                    System.out.println("Updating step " + i);
-                    step = originalStep.getStep(i);
-                    if (step.getIsTransform()) {
-                        step = updateTransform(wdkUser, step, stepId);
-                    } else {
-                        //boolExp = step.getBooleanExpression();
-                        boolExp = stepId + " "
-			    + step.getOperation() + " "
-                                + step.getChildStep().getStepId();
-                        step = wdkUser.combineStep(boolExp, false);
-                    }
-                    stepId = step.getStepId();
-                }
-            }
-        }
-
-        step.setParentStep(originalStep.getParentStep());
-        step.setIsCollapsible(originalStep.getIsCollapsible());
-        step.setCollapsedName(originalStep.getCollapsedName());
-        step.update(false);
-
-        if (strBranchId != null) {
-            strBranchId = Integer.toString(step.getStepId());
-        }
-
-        // if step has a parent step, need to continue updating the rest of the
-        // strategy.
-        while (step.getParentStep() != null) {
-            // go to parent, update subsequent steps
-            StepBean parentStep = step.getParentStep();
-            // update parent, then update subsequent
-            boolExp = parentStep.getBooleanExpression();
-	    System.out.println("Parent boolExp: " + boolExp);
-            boolExp = parentStep.getPreviousStep().getStepId() + " " 
-                    + parentStep.getOperation() +" " + step.getStepId();
-	    System.out.println("Boolean expression for updating parent: " + boolExp);
-            step = wdkUser.combineStep(boolExp, false);
-            while (parentStep.getNextStep() != null) {
-                parentStep = parentStep.getNextStep();
-                // need to check if step is a transform (in which case there's
-                // no boolean expression; we need to update history param
-                if (parentStep.getIsTransform()) {
-                    step = updateTransform(wdkUser, parentStep,
-                            step.getStepId());
-                } else {
-                    boolExp = parentStep.getBooleanExpression();
-                    boolExp = step.getStepId() + " "
-			+ parentStep.getOperation() + " "
-                            + parentStep.getChildStep().getStepId();
-                    step = wdkUser.combineStep(boolExp, false);
-                }
-            }
-	    System.out.println("Updating step with parent info.");
-            step.setParentStep(parentStep.getParentStep());
-            step.setIsCollapsible(parentStep.getIsCollapsible());
-            step.setCollapsedName(parentStep.getCollapsedName());
-            step.update(false);
-        }
-
-	System.out.println("Adding latest step to strategy.");
-        // set latest step
-        strategy.setLatestStep(step);
-
-	System.out.println("Updating strategy.");
-        // in either case, update and forward to show strategy
-        strategy.update(false);
+	// If a branch id was specified, look up the new branch id in stepIdsMap
+	if (strBranchId != null) {
+	    strBranchId = stepIdsMap.get(Integer.valueOf(strBranchId)).toString();
+	} 
 
         if (activeStrategies != null && index >= 0) {
             activeStrategies.add(index, new Integer(strategy.getStrategyId()));
@@ -429,6 +364,31 @@ public class ProcessFilterAction extends ProcessQuestionAction {
         return forward;
     }
 
+    private StepBean cloneStrategy(UserBean user, StepBean step)
+	throws WdkUserException, WdkModelException,
+	       NoSuchAlgorithmException, SQLException, JSONException {
+        StepBean cloneStep = null;
+        String prevStepId = null;
+        for (int i = 0; i < step.getLength(); ++i) {
+            cloneStep = step.getStep(i);
+            AnswerValueBean answerValue = cloneStep.getAnswerValue();
+            String childStepId = null;
+            String op = null;
+            if (cloneStep.getChildStep() != null) {
+                childStepId = cloneStrategy(user, cloneStep.getChildStep()).getStepId()
+                        + "";
+                op = answerValue.getBooleanOperation();
+		String cloneBoolExp = prevStepId + " " + op + " " + childStepId;
+		cloneStep = user.combineStep(cloneBoolExp, false);
+	    }
+	    else if (cloneStep.getIsTransform()) {
+		cloneStep = updateTransform(user, cloneStep, Integer.parseInt(prevStepId));
+	    }
+            prevStepId = Integer.toString(cloneStep.getStepId());
+        }
+        return cloneStep;
+    }
+
     protected StepBean updateTransform(UserBean wdkUser, StepBean step, int newStepId)
 	throws WdkModelException, WdkUserException, NoSuchAlgorithmException,
 	       SQLException, JSONException {
@@ -460,28 +420,4 @@ public class ProcessFilterAction extends ProcessQuestionAction {
         return newStep;
     }
 
-    private StepBean cloneStrategy(UserBean user, StepBean step)
-	throws WdkUserException, WdkModelException,
-	       NoSuchAlgorithmException, SQLException, JSONException {
-        StepBean cloneStep = null;
-        String prevStepId = null;
-        for (int i = 0; i < step.getLength(); ++i) {
-            cloneStep = step.getStep(i);
-            AnswerValueBean answerValue = cloneStep.getAnswerValue();
-            String childStepId = null;
-            String op = null;
-            if (cloneStep.getChildStep() != null) {
-                childStepId = cloneStrategy(user, cloneStep.getChildStep()).getStepId()
-                        + "";
-                op = answerValue.getBooleanOperation();
-		String cloneBoolExp = prevStepId + " " + op + " " + childStepId;
-		cloneStep = user.combineStep(cloneBoolExp, false);
-	    }
-	    else if (cloneStep.getIsTransform()) {
-		cloneStep = updateTransform(user, cloneStep, Integer.parseInt(prevStepId));
-	    }
-            prevStepId = Integer.toString(cloneStep.getStepId());
-        }
-        return cloneStep;
-    }
 }

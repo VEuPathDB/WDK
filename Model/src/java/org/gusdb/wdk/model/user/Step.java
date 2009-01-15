@@ -85,7 +85,7 @@ public class Step {
     public String getOperation() throws WdkUserException,
             NoSuchAlgorithmException, WdkModelException, JSONException,
             SQLException {
-        if (getIsFirstStep()) {
+        if (isFirstStep()) {
             throw new WdkUserException(
                     "getOperation cannot be called on the first Step.");
         }
@@ -112,7 +112,7 @@ public class Step {
         this.previousStep = previousStep;
     }
 
-    public boolean getIsFirstStep() {
+    public boolean isFirstStep() {
         return (previousStep == null);
     }
 
@@ -425,7 +425,7 @@ public class Step {
     }
 
     private ArrayList<Step> buildAllStepsArray(ArrayList<Step> array, Step step) {
-        if (step.getIsFirstStep()) {
+        if (step.isFirstStep()) {
             array.add(step);
         } else {
             array = buildAllStepsArray(array, step.getPreviousStep());

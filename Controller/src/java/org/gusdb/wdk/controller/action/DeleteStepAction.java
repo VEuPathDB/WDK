@@ -2,6 +2,7 @@ package org.gusdb.wdk.controller.action;
 
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -83,151 +84,28 @@ public class DeleteStepAction extends ProcessFilterAction {
             activeStrategies.remove(index);
         }
 
-        if (strBranchId == null) {
-            targetStep = strategy.getLatestStep();
-        } else {
-            targetStep = strategy.getStepById(Integer.parseInt(strBranchId));
-        }
+	System.out.println("Deleting step: " + deleteStep);
+	Map<Integer,Integer> stepIdsMap = strategy.deleteStep(Integer.valueOf(deleteStep), (strBranchId != null));
+	// If a branch was specified, look up the new branch id in the stepIdsMap
+	if (strBranchId != null) {
+	    strBranchId = stepIdsMap.get(Integer.valueOf(strBranchId)).toString();
+	}
 
-        int stepId = Integer.valueOf(deleteStep);
-        int stepIx = targetStep.getIndexFromId(stepId);
-        step = targetStep.getStep(stepIx);
-
-        // are we deleting the first step?
-        if (step.getIsFirstStep()) {
-            // if there are two steps, we're just moving to the second step as a
-            // one-step strategy
-            if (targetStep.getLength() == 2) {
-                // update step so that it is the child step of the second step
-                step = step.getNextStep().getChildStep();
-            }
-            // if there are more than two steps, we need to convert the second
-            // step into a first step
-            // (i.e., so that it doesn't have an operation) and then update all
-            // steps after the second step
-            else if (targetStep.getLength() > 2) {
-                step = step.getNextStep();
-                step = step.getChildStep();
-                // we need to update starting w/ step 3
-                stepIx += 2;
-                for (int i = stepIx; i < targetStep.getLength(); ++i) {
-                    newStep = targetStep.getStep(i);
-                    if (newStep.getIsTransform()) {
-                        step = updateTransform(wdkUser, newStep,
-                                step.getStepId());
-                    } else {
-                        //boolExp = newStep.getBooleanExpression();
-                        boolExp = step.getStepId() + " " 
-			    + newStep.getOperation() + " " 
-                                + newStep.getChildStep().getStepId();
-                        System.out.println("Delete boolExp " + i + ": "
-                                + boolExp);
-                        step = wdkUser.combineStep(boolExp, false);
-                    }
-                }
-            } else if (strBranchId != null) {
-                // If this is the only step in a branch, unexpand the step &
-                // return nothing? ui will have to know to close?
-                step.setIsCollapsible(false);
-                step.setCollapsedName(null);
-                step.update(false);
-                return null;
-            } else {
-                // Delete the strategy if this is the only step in the main
-                // strategy;
-                ActionForward forward = mapping.findForward(CConstants.DELETE_STRATEGY_MAPKEY);
-                StringBuffer url = new StringBuffer(forward.getPath());
-                url.append("?strategy="
-                        + URLEncoder.encode(strStratId, "utf-8"));
-                forward = new ActionForward(url.toString());
-                forward.setRedirect(true);
-                return forward;
-            }
-        } else {
-            // if this is not the last step, then the next step needs to point
-            // to the previous step
-            if (stepIx < targetStep.getLength() - 1) {
-                step = step.getPreviousStep();
-                // need to start by updating the step after the deleted step so
-                // that it
-                // points to the step before the deleted step, then update
-                // subsequent steps
-                stepIx++;
-                for (int i = stepIx; i < targetStep.getLength(); ++i) {
-                    newStep = targetStep.getStep(i);
-                    if (newStep.getIsTransform()) {
-                        step = updateTransform(wdkUser, newStep,
-                                step.getStepId());
-                    } else {
-                        //boolExp = newStep.getBooleanExpression();
-                        boolExp = step.getStepId() + " " 
-			    + newStep.getOperation() + " " 
-                                + newStep.getChildStep().getStepId();
-                        System.out.println("Delete boolExp " + i + ": "
-                                + boolExp);
-                        step = wdkUser.combineStep(boolExp, false);
-                    }
-                }
-            }
-            // if this is the last step, then we just set the previous step as
-            // the last step of the strategy
-            else {
-                step = step.getPreviousStep();
-            }
-        }
-
-        newStep = null;
-        step.setNextStep(newStep);
-
-        // follow any parent pointers, update parent strategies
-        step.setParentStep(targetStep.getParentStep());
-        step.setIsCollapsible(targetStep.getIsCollapsible());
-        step.setCollapsedName(targetStep.getCollapsedName());
-        step.update(false);
-
-        if (strBranchId != null) {
-            strBranchId = Integer.toString(step.getStepId());
-        }
-
-        while (step.getParentStep() != null) {
-            // go to parent, update subsequent steps
-            StepBean parentStep = step.getParentStep();
-            if (parentStep != null) {
-                // update parent, then update subsequent
-                boolExp = parentStep.getPreviousStep().getStepId() + " "
-		    + parentStep.getOperation() + " "
-                        + step.getStepId();
-                step = wdkUser.combineStep(boolExp, false);
-                while (parentStep.getNextStep() != null) {
-                    parentStep = parentStep.getNextStep();
-                    // need to check if step is a transform (in which case
-                    // there's no boolean expression; we need to update history
-                    // param
-                    if (parentStep.getIsTransform()) {
-                        step = updateTransform(wdkUser, parentStep,
-                                step.getStepId());
-                    } else {
-                        boolExp = step.getStepId() + " "
-			    + parentStep.getOperation() + " "
-                                + parentStep.getChildStep().getStepId();
-                        step = wdkUser.combineStep(boolExp, false);
-                    }
-                }
-                step.setParentStep(parentStep.getParentStep());
-                step.setIsCollapsible(parentStep.getIsCollapsible());
-                step.setCollapsedName(parentStep.getCollapsedName());
-                step.update(false);
-            }
-        }
-
-        strategy.setLatestStep(step);
-        strategy.update(false);
+	// If strategy was marked for deletion as a result of deleting
+	// the step, forward to DeleteStrategy
+	if (strategy.getIsDeleted()) {
+	    ActionForward forward = mapping.findForward(CConstants.DELETE_STRATEGY_MAPKEY);
+	    StringBuffer url = new StringBuffer(forward.getPath());
+	    url.append("?strategy="
+		       + URLEncoder.encode(strStratId, "utf-8"));
+	    forward = new ActionForward(url.toString());
+	    forward.setRedirect(true);
+	    return forward;
+	}
 
         if (activeStrategies != null && index >= 0) {
             activeStrategies.add(index, new Integer(strategy.getStrategyId()));
         }
-        // request.getSession().setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY,
-        // activeStrategies);
         wdkUser.setActiveStrategies(activeStrategies);
 
         // 5. forward to strategy page

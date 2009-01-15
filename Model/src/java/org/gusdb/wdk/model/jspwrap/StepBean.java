@@ -107,7 +107,7 @@ public class StepBean {
     }
 
     public boolean getIsFirstStep() {
-        return step.getIsFirstStep();
+        return step.isFirstStep();
     }
 
     public AnswerValueBean getAnswerValue() throws WdkUserException,
