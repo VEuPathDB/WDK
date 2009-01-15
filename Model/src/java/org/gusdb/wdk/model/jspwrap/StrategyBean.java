@@ -1,6 +1,8 @@
 package org.gusdb.wdk.model.jspwrap;
 
 import java.sql.SQLException;
+import java.security.NoSuchAlgorithmException;
+import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -17,6 +19,10 @@ public class StrategyBean {
 
     public UserBean getUser() {
         return new UserBean(strategy.getUser());
+    }
+
+    public boolean getIsDeleted() {
+	return strategy.isDeleted();
     }
 
     public String getName() {
@@ -88,5 +94,29 @@ public class StrategyBean {
     public void update(boolean overwrite) throws WdkUserException,
             WdkModelException, SQLException, JSONException {
         strategy.update(overwrite);
+    }
+
+    public Map<Integer,Integer> addStep(int targetStepId, StepBean step) 
+	throws WdkModelException, WdkUserException, JSONException, 
+	       NoSuchAlgorithmException, SQLException {
+	return strategy.addStep(targetStepId, step.step);
+    }
+
+    public Map<Integer,Integer> editOrInsertStep(int targetStepId, StepBean step) 
+	throws WdkModelException, WdkUserException, JSONException, 
+	       NoSuchAlgorithmException, SQLException {
+	return strategy.editOrInsertStep(targetStepId, step.step);
+    }
+
+    public Map<Integer,Integer> moveStep(int moveFromId, int moveToId, String branch) 
+	throws WdkModelException, WdkUserException, JSONException, 
+	       NoSuchAlgorithmException, SQLException {
+	return strategy.moveStep(moveFromId, moveToId, branch);
+    }
+
+    public Map<Integer,Integer> deleteStep(int stepId, boolean isBranch) 
+	throws WdkModelException, WdkUserException, JSONException, 
+	       NoSuchAlgorithmException, SQLException {
+	return strategy.deleteStep(stepId, isBranch);
     }
 }
