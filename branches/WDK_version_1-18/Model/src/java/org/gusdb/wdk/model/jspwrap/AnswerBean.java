@@ -74,7 +74,7 @@ public class AnswerBean {
     }
 
     private static Logger logger = Logger.getLogger(AnswerBean.class);
-    Answer answer;
+    public Answer answer;
     Map downloadConfigMap = null;
 
     String customName = null;

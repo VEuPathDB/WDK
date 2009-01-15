@@ -722,6 +722,7 @@ public class Answer {
         this.pageRecordInstances = new LinkedHashMap<PrimaryKeyAttributeValue, RecordInstance>();
 
         String sql = getPagedIdSql();
+
         DBPlatform platform = question.getWdkModel().getQueryPlatform();
         DataSource dataSource = platform.getDataSource();
         ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql);

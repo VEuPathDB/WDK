@@ -201,6 +201,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
             return null;
         }
 
+        logger.debug("records: " + wdkAnswer.answer.getPageSize());
+
         String queryString = request.getQueryString() + "&"
                 + CConstants.WDK_HISTORY_ID_KEY + "=" + historyId;
 
@@ -239,7 +241,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
         if (request.getParameterMap().containsKey(
                 CConstants.WDK_SKIPTO_DOWNLOAD_PARAM)) {
             // go to download page directly
-            forward = mapping.findForward(CConstants.SKIPTO_RECORD_MAPKEY);
+            forward = mapping.findForward(CConstants.SKIPTO_DOWNLOAD_MAPKEY);
             String path = forward.getPath() + "?"
                     + CConstants.WDK_HISTORY_ID_PARAM + "=" + historyId;
             return new ActionForward(path, true);

@@ -185,7 +185,8 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
                     String defaultSelection = p.getDefault();
                     if (defaultSelection == null) {
                         // just select the first one as the default
-                        pVal = new String[] { flatVocab[0] };
+                        if (flatVocab.length > 0) pVal = new String[] { flatVocab[0] };
+                        else pVal = new String[0];
                     } else { // use the value by the author
                         String[] defaults = defaultSelection.split(",");
                         for (int idx = 0; idx < defaults.length; idx++) {
