@@ -131,9 +131,8 @@ public abstract class Param extends WdkModelBase {
         return help;
     }
 
-    public void setDefault(String defaultValue) {
-        if (defaultValue == null) return; // use the current one
-        this.defaultValue = defaultValue;
+    public void setDefault(String value) {
+        this.defaultValue = value;
     }
 
     public String getDefault() throws WdkModelException,

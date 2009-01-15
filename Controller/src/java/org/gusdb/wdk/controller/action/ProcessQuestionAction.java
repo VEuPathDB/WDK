@@ -79,6 +79,7 @@ public class ProcessQuestionAction extends ShowQuestionAction {
         
         // pass along the skip param
         String skipToDownloadKey = request.getParameter(CConstants.WDK_SKIPTO_DOWNLOAD_PARAM);
+        logger.debug("skipto download: " + skipToDownloadKey);
         if (skipToDownloadKey != null && skipToDownloadKey.length() > 0) {
             url.append("&" + CConstants.WDK_SKIPTO_DOWNLOAD_PARAM);
             url.append("=" + skipToDownloadKey);

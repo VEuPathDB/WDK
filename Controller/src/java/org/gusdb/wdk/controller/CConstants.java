@@ -53,7 +53,7 @@ public class CConstants {
     
     // param names in the url
     public static final String WDK_HISTORY_ID_PARAM = "wdk_history_id";
-    public static final String WDK_SKIPTO_DOWNLOAD_PARAM = "skipto_download";
+    public static final String WDK_SKIPTO_DOWNLOAD_PARAM = "skip_to_download";
     
     // constants for remote logins
     public static final String WDK_REMOTE_URL_KEY = "remoteUrl";
