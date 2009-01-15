@@ -673,11 +673,6 @@ public class StepFactory {
         }
     }
 
-    // Not sure about this one...maybe I'll just go the lazy route and select
-    // all strategy ids for the
-    // user, then load them w/ loadStrategy...don't think there's a clever join
-    // to do this in one
-    // sitting
     Map<Integer, Strategy> loadStrategies(User user,
             Map<Integer, Strategy> invalidStrategies) throws WdkUserException,
             WdkModelException, JSONException, SQLException {
@@ -687,10 +682,12 @@ public class StepFactory {
         ResultSet rsStrategyIds = null;
 
         try {
-            psStrategyIds = SqlUtils.getPreparedStatement(dataSource, "SELECT "
-                    + COLUMN_DISPLAY_ID + " FROM " + userSchema
-                    + TABLE_STRATEGY + " WHERE " + UserFactory.COLUMN_USER_ID
-                    + " = ? AND " + COLUMN_PROJECT_ID + " = ?");
+            psStrategyIds = SqlUtils.getPreparedStatement(dataSource, "SELECT s." + COLUMN_DISPLAY_ID
+			  + " FROM " + userSchema + TABLE_STRATEGY + " s, " + userSchema + TABLE_STEP
+			  + " h WHERE s." + UserFactory.COLUMN_USER_ID + " = ? AND s." + COLUMN_PROJECT_ID
+                          + " = ? AND h." + UserFactory.COLUMN_USER_ID + " = s." + UserFactory.COLUMN_USER_ID
+                          + " AND h." + COLUMN_DISPLAY_ID + " = s." + COLUMN_ROOT_STEP_ID + " ORDER BY h."
+			  + COLUMN_LAST_RUN_TIME + " DESC");
             psStrategyIds.setInt(1, user.getUserId());
             psStrategyIds.setString(2, wdkModel.getProjectId());
             rsStrategyIds = psStrategyIds.executeQuery();

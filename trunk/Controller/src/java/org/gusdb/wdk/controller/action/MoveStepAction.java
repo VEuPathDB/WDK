@@ -2,6 +2,7 @@ package org.gusdb.wdk.controller.action;
 
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -70,13 +71,6 @@ public class MoveStepAction extends ProcessFilterAction {
         }
 
         StrategyBean strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
-        StepBean targetStep;
-
-        if (strBranchId == null) {
-            targetStep = strategy.getLatestStep();
-        } else {
-            targetStep = strategy.getStepById(Integer.parseInt(strBranchId));
-        }
 
         ArrayList<Integer> activeStrategies = wdkUser.getActiveStrategies();
         int index = -1;
@@ -90,117 +84,14 @@ public class MoveStepAction extends ProcessFilterAction {
         }
 
         int moveFromId = Integer.valueOf(strMoveFromId);
-        int moveFromIx = targetStep.getIndexFromId(moveFromId);
         int moveToId = Integer.valueOf(strMoveToId);
-        int moveToIx = targetStep.getIndexFromId(moveToId);
 
-        // No need to load anything if there's nothing to move
-        if (moveFromIx != moveToIx) {
-            StepBean moveFromStep = strategy.getStep(moveFromIx);
-            StepBean moveToStep = strategy.getStep(moveToIx);
-            StepBean step, newStep;
-
-            int stubIx = Math.min(moveFromIx, moveToIx) - 1;
-            int length = targetStep.getLength();
-
-            String boolExp;
-
-            if (stubIx < 0) {
-                step = null;
-            } else {
-                step = targetStep.getStep(stubIx);
-            }
-
-            for (int i = stubIx + 1; i < length; ++i) {
-                if (i == moveToIx) {
-                    if (step == null) {
-                        step = moveFromStep.getChildStep();
-                    } else {
-                        // assuming boolean, will need to add case for
-                        // non-boolean op
-                        boolExp = step.getStepId() + " "
-			    + moveFromStep.getOperation() + " "
-			    + moveFromStep.getChildStep().getStepId();
-                        moveFromStep = wdkUser.combineStep(boolExp, false);
-                        // may also need clone method here?
-                        step = moveFromStep;
-                    }
-                    // again, assuming boolean, will need to add case for
-                    // non-boolean
-                    boolExp = moveToStep.getBooleanExpression();
-                    boolExp = step.getStepId() + " "
-			    + moveToStep.getOperation() + " "
-			    + moveToStep.getChildStep().getStepId();
-                    moveToStep = wdkUser.combineStep(boolExp, false);
-                    step = moveToStep;
-                } else if (i == moveFromIx) {
-                    // do nothing; this step was moved, so we just ignore it.
-                } else {
-                    newStep = targetStep.getStep(i);
-                    if (step == null) {
-                        step = newStep.getChildStep();
-                    } else {
-                        // again, assuming boolean, will need to add case for
-                        // non-boolean
-                        boolExp = newStep.getBooleanExpression();
-                        boolExp = step.getStepId() + " "
-			    + newStep.getOperation() + " "
-			    + newStep.getChildStep().getStepId();
-                        newStep = wdkUser.combineStep(boolExp, false);
-                        step = moveToStep;
-                    }
-                }
-            }
-
-            // set next step to null so we can set strategy pointer
-            newStep = null;
-            step.setNextStep(newStep);
-            step.setParentStep(targetStep.getParentStep());
-            step.setIsCollapsible(targetStep.getIsCollapsible());
-            step.setCollapsedName(targetStep.getCollapsedName());
-            step.update(false);
-
-            if (strBranchId != null) {
-                strBranchId = Integer.toString(step.getStepId());
-            }
-
-            while (step.getParentStep() != null) {
-                // go to parent, update subsequent steps
-                StepBean parentStep = step.getParentStep();
-                if (parentStep != null) {
-                    // update parent, then update subsequent
-                    boolExp = parentStep.getBooleanExpression();
-                    boolExp = parentStep.getPreviousStep().getStepId() + " "
-			+ parentStep.getOperation() + " "
-                            + step.getStepId();
-                    step = wdkUser.combineStep(boolExp, false);
-                    while (parentStep.getNextStep() != null) {
-                        parentStep = parentStep.getNextStep();
-                        // need to check if step is a transform (in which case
-                        // there's no boolean expression; we need to update
-                        // history param
-                        if (parentStep.getIsTransform()) {
-                            step = updateTransform(wdkUser,
-                                    parentStep, step.getStepId());
-                        } else {
-                            boolExp = parentStep.getBooleanExpression();
-                            boolExp = step.getStepId() + " "
-				+ parentStep.getOperation() + " "
-                                    + parentStep.getChildStep().getStepId();
-                            step = wdkUser.combineStep(boolExp, false);
-                        }
-                    }
-                    step.setParentStep(parentStep.getParentStep());
-                    step.setIsCollapsible(parentStep.getIsCollapsible());
-                    step.setCollapsedName(parentStep.getCollapsedName());
-                    step.update(false);
-                }
-            }
-
-            strategy.setLatestStep(step);
-            strategy.update(false);
-        }
-
+	Map<Integer,Integer> stepIdsMap = strategy.moveStep(moveFromId, moveToId, strBranchId);
+	
+	if (strBranchId != null) {
+	    strBranchId = stepIdsMap.get(Integer.valueOf(strBranchId)).toString();
+	}
+        
         if (activeStrategies != null && index >= 0) {
             activeStrategies.add(index, new Integer(strategy.getStrategyId()));
         }
