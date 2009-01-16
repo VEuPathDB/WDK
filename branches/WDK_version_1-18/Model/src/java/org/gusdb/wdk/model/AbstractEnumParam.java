@@ -191,26 +191,20 @@ public abstract class AbstractEnumParam extends Param {
             WdkUserException {
         if (defaultValue != null) return defaultValue;
 
-        if (displayType.equals("treeBox")) {
-            EnumParamTermNode[] nodes = getVocabTreeRoots();
-            StringBuffer buffer = new StringBuffer();
-            Stack<EnumParamTermNode> stack = new Stack<EnumParamTermNode>();
-            stack.push(nodes[0]);
-            while (!stack.empty()) {
-                EnumParamTermNode node = stack.pop();
-                if (buffer.length() > 0) buffer.append(",");
-                buffer.append(node.getTerm());
-                
-                for(EnumParamTermNode child : node.getChildren()) {
-                    stack.push(child);
-                }
+        EnumParamTermNode[] nodes = getVocabTreeRoots();
+        StringBuffer buffer = new StringBuffer();
+        Stack<EnumParamTermNode> stack = new Stack<EnumParamTermNode>();
+        stack.push(nodes[0]);
+        while (!stack.empty()) {
+            EnumParamTermNode node = stack.pop();
+            if (buffer.length() > 0) buffer.append(",");
+            buffer.append(node.getTerm());
+            
+            for(EnumParamTermNode child : node.getChildren()) {
+                stack.push(child);
             }
-            return buffer.toString();
-        } else {
-            String[] vocab = getVocab();
-            if (vocab.length == 0) return null;
-            return vocab[0];
         }
+        return buffer.toString();
     }
 
     /**
