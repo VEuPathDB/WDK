@@ -39,7 +39,7 @@ Provides form input element for a given term tree node of EnumParam.
 
 <%-- recursively display children terms --%>
 <c:if test="${fn:length(children) != 0}">
-<div id="${pNam}-child" class="term-children">
+<div id="${pNam}-child" class="term-children" style="padding-left:20px;">
     <c:forEach items="${children}" var="child">
         <c:set var="recurse_term_node" value="${child}" scope="request"/>
         <c:import url="/WEB-INF/includes/enumParamInputNode.jsp" />
