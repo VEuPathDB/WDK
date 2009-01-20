@@ -59,6 +59,7 @@ Otherwise a standard select menu is used.
       </td>
       </tr>
       </table>
+     </div>
     </c:when>
     
     <%-- use a tree list --%>
@@ -71,22 +72,24 @@ Otherwise a standard select menu is used.
         </c:forEach>
         <c:remove var="recurse_term_node" scope="request"/>
         <c:remove var="recurse_enum_param" scope="request"/>
+
+        <%@ include file="/WEB-INF/includes/selectAllParamOpt.jsp" %>
+      </div>
     </c:when>
 
     <c:otherwise>
       <div class="param-multiPick">
-      <html:select  property="myMultiProp(${pNam})" multiple="1" styleId="${pNam}">
-        <c:set var="opt" value="${opt+1}"/>
-        <c:set var="sel" value=""/>
-        <c:if test="${opt == 1}"><c:set var="sel" value="selected"/></c:if>      
-        <html:options property="values(${pNam})" labelProperty="labels(${pNam})" />
-      </html:select>
+        <html:select  property="myMultiProp(${pNam})" multiple="1" styleId="${pNam}">
+          <c:set var="opt" value="${opt+1}"/>
+          <c:set var="sel" value=""/>
+          <c:if test="${opt == 1}"><c:set var="sel" value="selected"/></c:if>      
+          <html:options property="values(${pNam})" labelProperty="labels(${pNam})" />
+        </html:select>
   
-      <%@ include file="/WEB-INF/includes/selectAllParamOpt.jsp" %>
-  
+        <%@ include file="/WEB-INF/includes/selectAllParamOpt.jsp" %>
+      </div>
     </c:otherwise>
   </c:choose>
-  </div>
 </c:when>
 <c:otherwise>
   <div class="param">
