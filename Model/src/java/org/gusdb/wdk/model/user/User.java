@@ -17,11 +17,13 @@ import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.AnswerFilterInstance;
 import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.AttributeField;
+import org.gusdb.wdk.model.BooleanOperator;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.BooleanQuery;
 import org.json.JSONException;
 
 /**
@@ -649,7 +651,8 @@ public class User /* implements Serializable */{
     }
 
     public Step getStep(int displayId) throws WdkUserException,
-            WdkModelException, SQLException, JSONException, NoSuchAlgorithmException {
+            WdkModelException, SQLException, JSONException,
+            NoSuchAlgorithmException {
         if (cachedStep == null || cachedStep.getDisplayId() != displayId) {
             cachedStep = stepFactory.loadStep(this, displayId);
         } else { // update the sorting and summary attributes
@@ -1085,4 +1088,53 @@ public class User /* implements Serializable */{
         return userId;
     }
 
+    public Step createBooleanStep(Step leftStep, Step rightStep,
+            BooleanOperator operator, boolean useBooleanFilter,
+            AnswerFilterInstance filter) throws WdkModelException,
+            NoSuchAlgorithmException, WdkUserException, SQLException,
+            JSONException {
+        // make sure the left & right step belongs to the user
+        if (leftStep.getUser().getUserId() != userId)
+            throw new WdkUserException("The Left Step ["
+                    + leftStep.getDisplayId()
+                    + "] doesn't belong to the user #" + userId);
+        if (rightStep.getUser().getUserId() != userId)
+            throw new WdkUserException("The Right Step ["
+                    + rightStep.getDisplayId()
+                    + "] doesn't belong to the user #" + userId);
+
+        AnswerValue leftAnswerValue = leftStep.getAnswer().getAnswerValue();
+        AnswerValue rightAnswerValue = rightStep.getAnswer().getAnswerValue();
+
+        // verify the record type of the operands
+        RecordClass leftRecordClass = leftAnswerValue.getQuestion().getRecordClass();
+        RecordClass rightRecordClass = rightAnswerValue.getQuestion().getRecordClass();
+        if (!leftRecordClass.getFullName().equals(
+                rightRecordClass.getFullName()))
+            throw new WdkUserException("Boolean operation cannot be applied "
+                    + "to results of different record types. Left operand is "
+                    + "of type " + leftRecordClass.getFullName() + ", but the"
+                    + " right operand is of type "
+                    + rightRecordClass.getFullName());
+
+        Question question = wdkModel.getBooleanQuestion(leftRecordClass);
+        BooleanQuery booleanQuery = (BooleanQuery) question.getQuery();
+
+        Map<String, String> params = new LinkedHashMap<String, String>();
+
+        String leftName = booleanQuery.getLeftOperandParam().getName();
+        String leftKey = signature + ":" + leftStep.getDisplayId();
+        params.put(leftName, leftKey);
+
+        String rightName = booleanQuery.getRightOperandParam().getName();
+        String rightKey = signature + ":" + rightStep.getDisplayId();
+        params.put(rightName, rightKey);
+
+        String operatorString = operator.getOperator(wdkModel.getQueryPlatform());
+        params.put(booleanQuery.getOperatorParam().getName(), operatorString);
+        params.put(booleanQuery.getUseBooleanFilter().getName(),
+                Boolean.toString(useBooleanFilter));
+
+        return createStep(question, params, filter);
+    }
 }
