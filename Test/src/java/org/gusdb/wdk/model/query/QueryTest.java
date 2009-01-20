@@ -39,6 +39,7 @@ public class QueryTest {
     public void testVocabQueries() throws Exception {
         WdkModel wdkModel = UnitTestHelper.getModel();
         Set<String> testedQueries = new HashSet<String>();
+        // test queries from base flatVocabParams
         for (ParamSet paramSet : wdkModel.getAllParamSets()) {
             for (Param param : paramSet.getParams()) {
                 if (param instanceof FlatVocabParam) {
@@ -46,6 +47,20 @@ public class QueryTest {
                     String queryName = query.getFullName();
                     if (!testedQueries.contains(queryName)) {
                         testQuery(query);
+                        testedQueries.add(queryName);
+                    }
+                }
+            }
+        }
+        // test queries from customized flatVocabParams
+        for (QuerySet querySet : wdkModel.getAllQuerySets()) {
+            for (Query query : querySet.getQueries()) {
+                for (Param param : query.getParams()) {
+                    if (!(param instanceof FlatVocabParam)) continue;
+                    Query flatQuery = ((FlatVocabParam) param).getQuery();
+                    String queryName = flatQuery.getFullName();
+                    if (!testedQueries.contains(queryName)) {
+                        testQuery(flatQuery);
                         testedQueries.add(queryName);
                     }
                 }

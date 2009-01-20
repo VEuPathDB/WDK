@@ -32,7 +32,7 @@ import org.json.JSONObject;
 public class DatasetParam extends Param {
 
     private static final String USER_DEPENDENT_PATTERN = "\\w+:\\d+";
-    private static final String USER_INDEPENDENT_PATTERN = "\\w+";
+    private static final String USER_CHECKSUM_PATTERN = "\\w+";
 
     private String columnName = DatasetFactory.COLUMN_DATASET_VALUE;
 
@@ -49,10 +49,10 @@ public class DatasetParam extends Param {
      * @see org.gusdb.wdk.model.Param#validateValue(java.lang.Object)
      */
     @Override
-    public void validateValue(String datasetChecksum) throws WdkModelException,
-            WdkUserException, SQLException {
+    public void validateValue(String independentValue)
+            throws WdkModelException, WdkUserException, SQLException {
         // try getting the dataset id
-        getDatasetId(datasetChecksum);
+        getInternalValue(independentValue);
     }
 
     /*
@@ -75,11 +75,18 @@ public class DatasetParam extends Param {
      * @throws SQLException
      */
     @Override
-    public String getInternalValue(String datasetChecksum)
+    public String getInternalValue(String independentValue)
             throws WdkModelException, WdkUserException, SQLException {
-        int datasetId = getDatasetId(datasetChecksum);
-        return Integer.toString(datasetId);
-
+        // check if the value is a checksum
+        if (independentValue.matches(USER_CHECKSUM_PATTERN)) {
+            int datasetId = getDatasetId(independentValue);
+            return Integer.toString(datasetId);
+        } else { // a normal value
+            // currently cannot handle it
+            throw new WdkModelException("the input to dataset param ["
+                    + getFullName() + "] has to be a checksum, but it is '"
+                    + independentValue + "'");
+        }
         // to be compatible with previous model, it returns dataset_id;
         // in the future, should return a nested SQL that represents the result
 
@@ -176,12 +183,6 @@ public class DatasetParam extends Param {
      */
     private int getDatasetId(String datasetChecksum) throws SQLException,
             WdkModelException {
-        if (!datasetChecksum.matches(USER_INDEPENDENT_PATTERN))
-            throw new WdkModelException("The user-dependent input to the "
-                    + "datasetParam [" + getFullName() + "] should "
-                    + "be in form such as 'user_key:step_display_id'; "
-                    + "instead, it is '" + datasetChecksum + "'");
-
         String wdkSchema = wdkModel.getModelConfig().getUserDB().getWdkEngineSchema();
         String dbLink = wdkModel.getModelConfig().getApplicationDB().getUserDbLink();
         StringBuffer sql = new StringBuffer("SELECT ");
