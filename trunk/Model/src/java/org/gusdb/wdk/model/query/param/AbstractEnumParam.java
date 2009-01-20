@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
@@ -178,9 +179,21 @@ public abstract class AbstractEnumParam extends Param {
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
         if (defaultValue == null || defaultValue.length() == 0) {
-            // use the first term as default
-            initVocabMap();
-            return termInternalMap.keySet().iterator().next();
+            // select a tree branch by default
+            EnumParamTermNode[] roots = getVocabTreeRoots();
+            StringBuffer buffer = new StringBuffer();
+            Stack<EnumParamTermNode> stack = new Stack<EnumParamTermNode>();
+            stack.push(roots[0]);
+            while (!stack.empty()) {
+                EnumParamTermNode node = stack.pop();
+                if (buffer.length() > 0) buffer.append(",");
+                buffer.append(node.getTerm());
+                
+                for(EnumParamTermNode child : node.getChildren()) {
+                    stack.push(child);
+                }
+            }
+            return buffer.toString();
         } else return defaultValue;
     }
 

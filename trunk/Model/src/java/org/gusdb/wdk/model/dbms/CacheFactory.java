@@ -39,6 +39,7 @@ public class CacheFactory {
 
     public static final String COLUMN_INSTANCE_ID = "instance_id";
     static final String COLUMN_INSTANCE_CHECKSUM = "instance_checksum";
+    static final String COLUMN_PARAMS = "params";
     static final String COLUMN_RESULT_MESSAGE = "result_message";
 
     private static Logger logger = Logger.getLogger(CacheFactory.class);
@@ -278,6 +279,8 @@ public class CacheFactory {
         sql.append(platform.getNumberDataType(12)).append(" NOT NULL, ");
         sql.append(COLUMN_INSTANCE_CHECKSUM).append(" ");
         sql.append(platform.getStringDataType(40)).append(" NOT NULL, ");
+        sql.append(COLUMN_PARAMS).append(", ");
+        sql.append(platform.getClobDataType());
         sql.append(COLUMN_RESULT_MESSAGE).append(" ");
         sql.append(platform.getClobDataType());
 

@@ -1004,4 +1004,8 @@ public class RecordClass extends WdkModelBase implements
     public Query getAliasQuery() {
         return aliasQuery;
     }
+    
+    public String getChecksum() {
+        return null;
+    }
 }

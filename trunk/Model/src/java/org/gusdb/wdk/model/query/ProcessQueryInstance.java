@@ -200,9 +200,13 @@ public class ProcessQueryInstance extends QueryInstance {
             JSONException, WdkUserException {
         Map<String, String> internalValues = new LinkedHashMap<String, String>();
         Map<String, Param> params = query.getParamMap();
-        for (String paramName : values.keySet()) {
+        for (String paramName : params.keySet()) {
             Param param = params.get(paramName);
             String externalValue = values.get(paramName);
+            if (externalValue == null) {
+                externalValue = param.getDefault();
+                if (param.isAllowEmpty()) externalValue = param.getEmptyValue();
+            }
 
             String internalValue = param.getInternalValue(externalValue);
             if (internalValue == null)

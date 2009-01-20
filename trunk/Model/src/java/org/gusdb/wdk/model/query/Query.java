@@ -55,9 +55,6 @@ public abstract class Query extends WdkModelBase {
     protected WdkModel wdkModel;
     private QuerySet querySet;
 
-    // cache the signature
-    private String signature;
-
     private String[] indexColumns;
 
     // =========================================================================
@@ -104,7 +101,6 @@ public abstract class Query extends WdkModelBase {
         this.wdkModel = query.wdkModel;
         this.querySet = query.querySet;
         this.doNotTest = query.doNotTest;
-        this.signature = query.signature;
         this.paramValuesSets = new ArrayList<ParamValuesSet>(
                 query.paramValuesSets);
         this.wdkModel = query.wdkModel;
@@ -250,11 +246,8 @@ public abstract class Query extends WdkModelBase {
 
     public String getChecksum() throws JSONException, NoSuchAlgorithmException,
             WdkModelException {
-        if (signature == null) {
-            JSONObject jsQuery = getJSONContent();
-            signature = Utilities.encrypt(jsQuery.toString());
-        }
-        return signature;
+        JSONObject jsQuery = getJSONContent();
+        return Utilities.encrypt(jsQuery.toString());
     }
 
     private JSONObject getJSONContent() throws JSONException {
