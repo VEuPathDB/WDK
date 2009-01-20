@@ -131,7 +131,10 @@ public class SqlQueryInstance extends QueryInstance {
                         + "' does not exist in query " + query.getFullName());
 
             String value = paramValues.get(paramName);
-            if (value == null) value = param.getDefault();
+            if (value == null) {
+                value = param.getDefault();
+                if (param.isAllowEmpty()) value = param.getEmptyValue();
+            }
             sql = param.replaceSql(sql, value);
         }
         return sql;
