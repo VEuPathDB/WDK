@@ -67,7 +67,6 @@ public class ProcessFilterAction extends ProcessQuestionAction {
         }
 
         String strBranchId = null;
-        StepBean step;
 
         QuestionBean wdkQuestion;
 
@@ -101,13 +100,14 @@ public class ProcessFilterAction extends ProcessQuestionAction {
         String filterName = request.getParameter("filter");
 
         // are we inserting an existing step?
+        StepBean childStep;
         if (insertStratIdStr != null && insertStratIdStr.length() != 0) {
             // yes: load step, create a new step w/ same answervalue
             StrategyBean insertStrat = wdkUser.getStrategy(Integer.parseInt(insertStratIdStr));
-            step = cloneStrategy(wdkUser, insertStrat.getLatestStep());
-            step.setIsCollapsible(true);
-            step.setCollapsedName("Copy of " + insertStrat.getName());
-            step.update(false);
+            childStep = cloneStrategy(wdkUser, insertStrat.getLatestStep());
+            childStep.setIsCollapsible(true);
+            childStep.setCollapsedName("Copy of " + insertStrat.getName());
+            childStep.update(false);
         } else {
             // no: get question
             String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
@@ -119,8 +119,8 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             Map<String, String> params = prepareParams(wdkUser, request, fForm);
 
             try {
-                step = ShowSummaryAction.summaryPaging(request, wdkQuestion,
-                        params, filterName);
+                childStep = ShowSummaryAction.summaryPaging(request,
+                        wdkQuestion, params, filterName);
             } catch (Exception ex) {
                 logger.error(ex);
                 ex.printStackTrace();
@@ -131,25 +131,25 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             // it's a transform
             // If we're inserting a strategy, it has to be a boolean (given
             // current operations, at least)
-            isTransform = step.getIsTransform();
+            isTransform = childStep.getIsTransform();
         }
 
-        int stepId = step.getStepId();
+        int stepId = childStep.getStepId();
 
-        StepBean childStep = step;
         StepBean originalStep;
         if (strBranchId == null) {
             originalStep = strategy.getLatestStep();
         } else {
             originalStep = strategy.getStepById(Integer.parseInt(strBranchId));
-	    System.out.println("Original step parent boolean expression: " + originalStep.getParentStep().getBooleanExpression());
+            System.out.println("Original step parent boolean expression: "
+                    + originalStep.getParentStep().getBooleanExpression());
         }
 
         // Are we revising or inserting a step?
         String reviseStep = request.getParameter("revise");
         String insertStep = request.getParameter("insert");
-	Map<Integer,Integer> stepIdsMap;
-	int targetStepId;
+        Map<Integer, Integer> stepIdsMap;
+        int targetStepId;
         String op = boolExp;
         if (op.indexOf(" ") >= 0) {
             op = boolExp.substring(boolExp.indexOf(" "), boolExp.length());
@@ -158,7 +158,9 @@ public class ProcessFilterAction extends ProcessQuestionAction {
         boolExp = null;
         if ((reviseStep == null || reviseStep.length() == 0)
                 && (insertStep == null || insertStep.length() == 0)) {
-	    targetStepId = originalStep.getStepId();
+            // add new step
+            targetStepId = originalStep.getStepId();
+            StepBean step = null;
             if (!isTransform) {
                 // now create step for operation query, if it's a boolean
                 boolExp = originalStep.getStepId() + " " + op + " " + stepId;
@@ -171,20 +173,21 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             // strategy), we've
             // already run the filter query (b/c the transform is just a query
             // w/ a history param
-	    stepIdsMap = strategy.addStep(targetStepId, step);
-        } else {
+            stepIdsMap = strategy.addStep(targetStepId, step);
+        } else { // insert or edit
             int stratLen = originalStep.getLength();
             int targetIx;
-            boolean isRevise;
+            boolean isRevise = (reviseStep != null && reviseStep.length() != 0);
 
-            if (isRevise = (reviseStep != null && reviseStep.length() != 0)) {
+            if (isRevise) { // revise step
                 targetStepId = Integer.parseInt(reviseStep);
                 targetIx = originalStep.getIndexFromId(targetStepId);
-            } else {
+            } else { // insert a step
                 targetStepId = Integer.parseInt(insertStep);
                 targetIx = originalStep.getIndexFromId(targetStepId);
             }
 
+            StepBean step = null;
             if (stratLen > 1 || !isRevise) {
                 step = originalStep.getStep(targetIx);
                 if (step.getIsFirstStep()) {
@@ -193,12 +196,14 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                         childStep.setCustomName(step.getBaseCustomName());
                         childStep.update(false);
                         if (step.getNextStep().getIsTransform()) {
-                            step = updateTransform(wdkUser,
-                                    step.getNextStep(), stepId);
+                            step = updateTransform(wdkUser, step.getNextStep(),
+                                    stepId);
                         } else {
-                            boolExp = stepId + " "
-				+ step.getNextStep().getOperation() + " "
-				+ step.getNextStep().getChildStep().getStepId();
+                            boolExp = stepId
+                                    + " "
+                                    + step.getNextStep().getOperation()
+                                    + " "
+                                    + step.getNextStep().getChildStep().getStepId();
                         }
                         targetIx++;
                     } else {
@@ -209,8 +214,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                         boolExp = stepId + " " + op + " " + step.getStepId();
                     }
                     targetIx++;
-                }
-		else {
+                } else {
                     if (isRevise) {
                         if (!isTransform) {
                             // check if we've changed the query itself, or just
@@ -219,7 +223,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                             childStep.update(false);
                             // build standard boolExp for non-first step
                             boolExp = step.getPreviousStep().getStepId() + " "
-				+ op + " " + stepId;
+                                    + op + " " + stepId;
                         }
                         // implied: if we're revising a transform step, we've
                         // already run the revised query,
@@ -231,7 +235,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                             // the inserted step has to point to the step at
                             // insertIx - 1
                             boolExp = step.getPreviousStep().getStepId() + " "
-				+ op + " " + stepId;
+                                    + op + " " + stepId;
                         }
                         // implied: if we're inserting a transform, the
                         // HistoryParam should already
@@ -239,23 +243,23 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                         // need to update subsequent steps.
                     }
                 }
-		
+
                 if (boolExp != null) {
                     // now create step for operation query
                     step = wdkUser.combineStep(boolExp, false);
                     stepId = step.getStepId();
                 }
-		
-                step.setChildStep(childStep);
-		targetStepId = originalStep.getStep(targetIx).getStepId();
-	    }
-	    stepIdsMap = strategy.editOrInsertStep(targetStepId, step);
-	}
 
-	// If a branch id was specified, look up the new branch id in stepIdsMap
-	if (strBranchId != null) {
-	    strBranchId = stepIdsMap.get(Integer.valueOf(strBranchId)).toString();
-	} 
+                step.setChildStep(childStep);
+                targetStepId = originalStep.getStep(targetIx).getStepId();
+            }
+            stepIdsMap = strategy.editOrInsertStep(targetStepId, step);
+        }
+
+        // If a branch id was specified, look up the new branch id in stepIdsMap
+        if (strBranchId != null) {
+            strBranchId = stepIdsMap.get(Integer.valueOf(strBranchId)).toString();
+        }
 
         if (activeStrategies != null && index >= 0) {
             activeStrategies.add(index, new Integer(strategy.getStrategyId()));
@@ -275,7 +279,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 
         ActionForward forward = new ActionForward(url.toString());
         forward.setRedirect(true);
-	System.out.println("Leaving ProcessFilterAction...");
+        System.out.println("Leaving ProcessFilterAction...");
         return forward;
     }
 
@@ -365,8 +369,8 @@ public class ProcessFilterAction extends ProcessQuestionAction {
     }
 
     private StepBean cloneStrategy(UserBean user, StepBean step)
-	throws WdkUserException, WdkModelException,
-	       NoSuchAlgorithmException, SQLException, JSONException {
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException {
         StepBean cloneStep = null;
         String prevStepId = null;
         for (int i = 0; i < step.getLength(); ++i) {
@@ -378,20 +382,20 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 childStepId = cloneStrategy(user, cloneStep.getChildStep()).getStepId()
                         + "";
                 op = answerValue.getBooleanOperation();
-		String cloneBoolExp = prevStepId + " " + op + " " + childStepId;
-		cloneStep = user.combineStep(cloneBoolExp, false);
-	    }
-	    else if (cloneStep.getIsTransform()) {
-		cloneStep = updateTransform(user, cloneStep, Integer.parseInt(prevStepId));
-	    }
+                String cloneBoolExp = prevStepId + " " + op + " " + childStepId;
+                cloneStep = user.combineStep(cloneBoolExp, false);
+            } else if (cloneStep.getIsTransform()) {
+                cloneStep = updateTransform(user, cloneStep,
+                        Integer.parseInt(prevStepId));
+            }
             prevStepId = Integer.toString(cloneStep.getStepId());
         }
         return cloneStep;
     }
 
-    protected StepBean updateTransform(UserBean wdkUser, StepBean step, int newStepId)
-	throws WdkModelException, WdkUserException, NoSuchAlgorithmException,
-	       SQLException, JSONException {
+    protected StepBean updateTransform(UserBean wdkUser, StepBean step,
+            int newStepId) throws WdkModelException, WdkUserException,
+            NoSuchAlgorithmException, SQLException, JSONException {
         QuestionBean wdkQuestion;
         Map<String, String> internalParams;
 
@@ -414,7 +418,8 @@ public class ProcessFilterAction extends ProcessQuestionAction {
         AnswerFilterInstanceBean filter = step.getAnswerValue().getFilter();
         String filterName = (filter == null) ? null : filter.getName();
 
-        StepBean newStep = wdkUser.createStep(wdkQuestion, internalParams, filterName);
+        StepBean newStep = wdkUser.createStep(wdkQuestion, internalParams,
+                filterName);
         newStep.setCustomName(step.getBaseCustomName());
         newStep.update(false);
         return newStep;

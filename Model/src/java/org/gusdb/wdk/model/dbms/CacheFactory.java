@@ -279,8 +279,8 @@ public class CacheFactory {
         sql.append(platform.getNumberDataType(12)).append(" NOT NULL, ");
         sql.append(COLUMN_INSTANCE_CHECKSUM).append(" ");
         sql.append(platform.getStringDataType(40)).append(" NOT NULL, ");
-        sql.append(COLUMN_PARAMS).append(", ");
-        sql.append(platform.getClobDataType());
+        sql.append(COLUMN_PARAMS).append(" ");
+        sql.append(platform.getClobDataType()).append(", ");
         sql.append(COLUMN_RESULT_MESSAGE).append(" ");
         sql.append(platform.getClobDataType());
 
