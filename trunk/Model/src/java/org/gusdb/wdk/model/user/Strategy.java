@@ -5,6 +5,8 @@ import java.sql.SQLException;
 import java.util.Map;
 import java.util.HashMap;
 
+import org.gusdb.wdk.model.AnswerFilterInstance;
+import org.gusdb.wdk.model.BooleanOperator;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.json.JSONException;
@@ -36,11 +38,11 @@ public class Strategy {
     }
 
     public boolean isDeleted() {
-	return isDeleted;
+        return isDeleted;
     }
 
     private void setDeleted(boolean isDeleted) {
-	this.isDeleted = isDeleted;
+        this.isDeleted = isDeleted;
     }
 
     public void setName(String name) {
@@ -125,54 +127,55 @@ public class Strategy {
     }
 
     public Map<Integer, Integer> addStep(int targetStepId, Step step)
-	throws WdkModelException, WdkUserException, JSONException, 
-	       NoSuchAlgorithmException, SQLException  {
-	return updateStepTree(targetStepId, step);
+            throws WdkModelException, WdkUserException, JSONException,
+            NoSuchAlgorithmException, SQLException {
+        return updateStepTree(targetStepId, step);
     }
 
     public Map<Integer, Integer> editOrInsertStep(int targetStepId, Step step)
-	throws WdkModelException, WdkUserException, JSONException, 
-	       NoSuchAlgorithmException, SQLException  {
-	return updateStepTree(targetStepId, step);
+            throws WdkModelException, WdkUserException, JSONException,
+            NoSuchAlgorithmException, SQLException {
+        return updateStepTree(targetStepId, step);
     }
 
     public Map<Integer, Integer> deleteStep(int stepId, boolean isBranch)
-	throws WdkModelException, WdkUserException, JSONException, 
-	       NoSuchAlgorithmException, SQLException  {
+            throws WdkModelException, WdkUserException, JSONException,
+            NoSuchAlgorithmException, SQLException {
         Step step = latestStep.getStepByDisplayId(stepId);
-	int targetStepId = step.getDisplayId();
+        int targetStepId = step.getDisplayId();
 
         // are we deleting the first step?
         if (step.isFirstStep()) {
             if (step.getNextStep() != null) {
-		// if there are at least two steps, we need to turn the child step
-		// of step 2 into a first step (no operation)
-		System.out.println("Moving to second step to replace first step...");
-		targetStepId = step.getNextStep().getDisplayId();
+                // if there are at least two steps, we need to turn the child
+                // step
+                // of step 2 into a first step (no operation)
+                System.out.println("Moving to second step to replace first step...");
+                targetStepId = step.getNextStep().getDisplayId();
                 step = step.getNextStep().getChildStep();
             } else if (isBranch) {
-		System.out.println("Step is only step in a branch...");
+                System.out.println("Step is only step in a branch...");
                 // If this is the only step in a branch, unexpand the step &
                 // return nothing? ui will have to know to close?
                 step.setCollapsible(false);
                 step.setCollapsedName(null);
                 step.update(false);
             } else {
-		System.out.println("Step is only step in main strategy...");
-		this.setDeleted(true);
+                System.out.println("Step is only step in main strategy...");
+                this.setDeleted(true);
             }
         } else {
-	    System.out.println("Moving to previous step to replace non-first step...");
-	    step = step.getPreviousStep();
-	}
+            System.out.println("Moving to previous step to replace non-first step...");
+            step = step.getPreviousStep();
+        }
 
-	System.out.println("Updating step tree to delete target step...");
-	return updateStepTree(targetStepId, step);
+        System.out.println("Updating step tree to delete target step...");
+        return updateStepTree(targetStepId, step);
     }
 
-    public Map<Integer,Integer> moveStep(int moveFromId, int moveToId, String branch)
-	throws WdkModelException, WdkUserException, JSONException, 
-	       NoSuchAlgorithmException, SQLException {
+    public Map<Integer, Integer> moveStep(int moveFromId, int moveToId,
+            String branch) throws WdkModelException, WdkUserException,
+            JSONException, NoSuchAlgorithmException, SQLException {
         Step targetStep;
         if (branch == null) {
             targetStep = latestStep;
@@ -183,114 +186,122 @@ public class Strategy {
         int moveFromIx = targetStep.getIndexFromId(moveFromId);
         int moveToIx = targetStep.getIndexFromId(moveToId);
 
-	Step moveFromStep = targetStep.getStep(moveFromIx);
-	Step moveToStep = targetStep.getStep(moveToIx);
-	Step step, newStep;
-	
-	int stubIx = Math.min(moveFromIx, moveToIx) - 1;
-	int targetStepId = targetStep.getDisplayId();
-	int length = targetStep.getLength();
-	
-	String boolExp;
-	
-	if (stubIx < 0) {
-	    step = null;
-	} else {
-	    step = targetStep.getStep(stubIx);
-	}
-	
-	for (int i = stubIx + 1; i < length; ++i) {
-	    if (i == moveToIx) {
-		if (step == null) {
-		    step = moveFromStep.getChildStep();
-		} else {
-		    // assuming boolean, will need to add case for
-		    // non-boolean op
-		    boolExp = step.getDisplayId() + " "
-			+ moveFromStep.getOperation() + " "
-			+ moveFromStep.getChildStep().getDisplayId();
-		    moveFromStep = user.combineStep(boolExp);
-		    step = moveFromStep;
-		}
-		// again, assuming boolean, will need to add case for
-		// non-boolean
-		boolExp = moveToStep.getBooleanExpression();
-		boolExp = step.getDisplayId() + " "
-		    + moveToStep.getOperation() + " "
-		    + moveToStep.getChildStep().getDisplayId();
-		moveToStep = user.combineStep(boolExp);
-		step = moveToStep;
-	    } else if (i == moveFromIx) {
-		// do nothing; this step was moved, so we just ignore it.
-	    } else {
-		newStep = targetStep.getStep(i);
-		if (step == null) {
-		    step = newStep.getChildStep();
-		} else {
-		    // again, assuming boolean, will need to add case for
-		    // non-boolean
-		    boolExp = newStep.getBooleanExpression();
-		    boolExp = step.getDisplayId() + " "
-			+ newStep.getOperation() + " "
-			+ newStep.getChildStep().getDisplayId();
-		    newStep = user.combineStep(boolExp);
-		    step = moveToStep;
-		}
-	    }
-	}
+        Step moveFromStep = targetStep.getStep(moveFromIx);
+        Step moveToStep = targetStep.getStep(moveToIx);
+        Step step, newStep;
 
-	return updateStepTree(targetStepId, step);
+        int stubIx = Math.min(moveFromIx, moveToIx) - 1;
+        int targetStepId = targetStep.getDisplayId();
+        int length = targetStep.getLength();
+
+        if (stubIx < 0) {
+            step = null;
+        } else {
+            step = targetStep.getStep(stubIx);
+        }
+
+        for (int i = stubIx + 1; i < length; ++i) {
+            if (i == moveToIx) {
+                if (step == null) {
+                    step = moveFromStep.getChildStep();
+                } else {
+                    // assuming boolean, will need to add case for
+                    // non-boolean op
+                    BooleanOperator operator = BooleanOperator.parse(moveFromStep.getOperation());
+                    AnswerFilterInstance targetFilter = moveFromStep.getAnswer().getAnswerValue().getFilter();
+                    Step rightStep = moveFromStep.getChildStep();
+                    moveFromStep = user.createBooleanStep(step, rightStep,
+                            operator, false, targetFilter);
+                    step = moveFromStep;
+                }
+                // again, assuming boolean, will need to add case for
+                // non-boolean
+                BooleanOperator operator = BooleanOperator.parse(moveToStep.getOperation());
+                AnswerFilterInstance targetFilter = moveToStep.getAnswer().getAnswerValue().getFilter();
+                Step rightStep = moveToStep.getChildStep();
+                moveToStep = user.createBooleanStep(step, rightStep, operator,
+                        false, targetFilter);
+                step = moveToStep;
+            } else if (i == moveFromIx) {
+                // do nothing; this step was moved, so we just ignore it.
+            } else {
+                newStep = targetStep.getStep(i);
+                if (step == null) {
+                    step = newStep.getChildStep();
+                } else {
+                    // again, assuming boolean, will need to add case for
+                    // non-boolean
+                    BooleanOperator operator = BooleanOperator.parse(newStep.getOperation());
+                    AnswerFilterInstance targetFilter = newStep.getAnswer().getAnswerValue().getFilter();
+                    Step rightStep = newStep.getChildStep();
+                    newStep = user.createBooleanStep(step, rightStep, operator,
+                            false, targetFilter);
+                    step = moveToStep;
+                }
+            }
+        }
+
+        return updateStepTree(targetStepId, step);
     }
 
-    private Map<Integer,Integer> updateStepTree(int targetStepId, Step newStep) 
-	throws WdkModelException, WdkUserException, JSONException,
-	       NoSuchAlgorithmException, SQLException {
-	Map<Integer, Integer> stepIdsMap = new HashMap<Integer, Integer>();
-	Step targetStep = latestStep.getStepByDisplayId(targetStepId);
-	String boolExp;
+    private Map<Integer, Integer> updateStepTree(int targetStepId, Step newStep)
+            throws WdkModelException, WdkUserException, JSONException,
+            NoSuchAlgorithmException, SQLException {
+        Map<Integer, Integer> stepIdsMap = new HashMap<Integer, Integer>();
+        Step targetStep = latestStep.getStepByDisplayId(targetStepId);
 
-	stepIdsMap.put(new Integer(targetStep.getDisplayId()), new Integer(newStep.getDisplayId()));
-	while (targetStep.getNextStep() != null) {
-	    targetStep = targetStep.getNextStep();
-	    if (targetStep.isTransform()) {
-		newStep = updateTransform(targetStep, newStep.getDisplayId());
-	    } else {
-		boolExp = newStep.getDisplayId() + " "
-		    + targetStep.getOperation() + " "
-		    + targetStep.getChildStep().getDisplayId();
-		newStep = user.combineStep(boolExp);
-	    }
-	    stepIdsMap.put(new Integer(targetStep.getDisplayId()), new Integer(newStep.getDisplayId()));
-	}
-    
+        stepIdsMap.put(new Integer(targetStep.getDisplayId()), new Integer(
+                newStep.getDisplayId()));
+        while (targetStep.getNextStep() != null) {
+            targetStep = targetStep.getNextStep();
+            if (targetStep.isTransform()) {
+                newStep = updateTransform(targetStep, newStep.getDisplayId());
+            } else {
+                BooleanOperator operator = BooleanOperator.parse(targetStep.getOperation());
+                AnswerFilterInstance targetFilter = targetStep.getAnswer().getAnswerValue().getFilter();
+                Step rightStep = targetStep.getChildStep();
+                newStep = user.createBooleanStep(newStep, rightStep, operator,
+                        false, targetFilter);
+            }
+            stepIdsMap.put(new Integer(targetStep.getDisplayId()), new Integer(
+                    newStep.getDisplayId()));
+        }
+
         newStep.setParentStep(targetStep.getParentStep());
         newStep.setCollapsible(targetStep.isCollapsible());
         newStep.setCollapsedName(targetStep.getCollapsedName());
         newStep.update(false);
 
         // if step has a parent step, need to continue
-	// updating the rest of the strategy.
+        // updating the rest of the strategy.
         while (newStep.getParentStep() != null) {
             // go to parent, update subsequent steps
             targetStep = newStep.getParentStep();
+
+            BooleanOperator operator = BooleanOperator.parse(targetStep.getOperation());
+            AnswerFilterInstance targetFilter = targetStep.getAnswer().getAnswerValue().getFilter();
+            Step leftStep = targetStep.getPreviousStep();
             // update parent, then update subsequent
-            boolExp = targetStep.getPreviousStep().getDisplayId() + " " 
-                    + targetStep.getOperation() +" " + newStep.getDisplayId();
-            newStep = user.combineStep(boolExp);
-	    stepIdsMap.put(new Integer(targetStep.getDisplayId()), new Integer(newStep.getDisplayId()));
+            newStep = user.createBooleanStep(leftStep, newStep, operator,
+                    false, targetFilter);
+            stepIdsMap.put(new Integer(targetStep.getDisplayId()), new Integer(
+                    newStep.getDisplayId()));
             while (targetStep.getNextStep() != null) {
                 targetStep = targetStep.getNextStep();
                 // need to check if step is a transform (in which case there's
                 // no boolean expression; we need to update history param
                 if (targetStep.isTransform()) {
-                    newStep = updateTransform(targetStep, newStep.getDisplayId());
+                    newStep = updateTransform(targetStep,
+                            newStep.getDisplayId());
                 } else {
-		    boolExp = newStep.getDisplayId() + " "
-			+ targetStep.getOperation() + " "
-			+ targetStep.getChildStep().getDisplayId();
-		    newStep = user.combineStep(boolExp);
+                    operator = BooleanOperator.parse(targetStep.getOperation());
+                    targetFilter = targetStep.getAnswer().getAnswerValue().getFilter();
+                    Step rightStep = targetStep.getChildStep();
+                    newStep = user.createBooleanStep(newStep, rightStep,
+                            operator, false, targetFilter);
                 }
-		stepIdsMap.put(new Integer(targetStep.getDisplayId()), new Integer(newStep.getDisplayId()));
+                stepIdsMap.put(new Integer(targetStep.getDisplayId()),
+                        new Integer(newStep.getDisplayId()));
             }
             newStep.setParentStep(targetStep.getParentStep());
             newStep.setCollapsible(targetStep.isCollapsible());
@@ -301,40 +312,35 @@ public class Strategy {
         this.setLatestStep(newStep);
         this.update(false);
 
-	return stepIdsMap;
+        return stepIdsMap;
     }
 
     private Step updateTransform(Step step, int newStepId)
-	throws WdkModelException, WdkUserException, NoSuchAlgorithmException,
-	       SQLException, JSONException {
-	/* TODO: Need to convert this to use backend objects now, unless transforms are filters?
-        Question wdkQuestion;
-        Map<String, String> internalParams;
-
-        // Get question
-        wdkQuestion = step.getAnswer().getAnswerValue().getQuestion();
-        Param[] params = wdkQuestion.getParams();
-        // Get internal params
-        internalParams = step.getAnswer().getAnswerValue().getParams();
-        // Change HistoryParam
-        AnswerParam answerParam = null;
-        for (Param param : params) {
-            if (param instanceof AnswerParam) {
-                answerParam = (AnswerParam) param;
-            }
-        }
-
-        internalParams.put(answerParam.getName(), user.getSignature() + ":"
-                + newStepId);
-
-        AnswerFilterInstance filter = step.getAnswerValue().getFilter();
-        String filterName = (filter == null) ? null : filter.getName();
-
-        Step newStep = user.createStep(wdkQuestion, internalParams, filterName);
-        newStep.setCustomName(step.getBaseCustomName());
-        newStep.update(false);
-        return newStep;
-	*/
-	return step;
+            throws WdkModelException, WdkUserException,
+            NoSuchAlgorithmException, SQLException, JSONException {
+        /*
+         * TODO: Need to convert this to use backend objects now, unless
+         * transforms are filters? Question wdkQuestion; Map<String, String>
+         * internalParams;
+         * 
+         * // Get question wdkQuestion =
+         * step.getAnswer().getAnswerValue().getQuestion(); Param[] params =
+         * wdkQuestion.getParams(); // Get internal params internalParams =
+         * step.getAnswer().getAnswerValue().getParams(); // Change HistoryParam
+         * AnswerParam answerParam = null; for (Param param : params) { if
+         * (param instanceof AnswerParam) { answerParam = (AnswerParam) param; }
+         * }
+         * 
+         * internalParams.put(answerParam.getName(), user.getSignature() + ":" +
+         * newStepId);
+         * 
+         * AnswerFilterInstance filter = step.getAnswerValue().getFilter();
+         * String filterName = (filter == null) ? null : filter.getName();
+         * 
+         * Step newStep = user.createStep(wdkQuestion, internalParams,
+         * filterName); newStep.setCustomName(step.getBaseCustomName());
+         * newStep.update(false); return newStep;
+         */
+        return step;
     }
 }

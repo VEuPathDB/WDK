@@ -12,14 +12,9 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.BooleanOperator;
-import org.gusdb.wdk.model.Question;
-import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.dbms.DBPlatform;
-import org.gusdb.wdk.model.query.BooleanQuery;
 import org.json.JSONException;
 
 /**
@@ -31,7 +26,6 @@ public class BooleanExpression {
     private static final String STUB_PREFIX = "__STUB__";
 
     private User user;
-    private DBPlatform platform;
 
     private String orgExp;
 
@@ -40,7 +34,6 @@ public class BooleanExpression {
      */
     public BooleanExpression(User user) {
         this.user = user;
-        this.platform = user.getWdkModel().getQueryPlatform();
     }
 
     public Step parseExpression(String expression, boolean useBooleanFilter)
@@ -125,11 +118,11 @@ public class BooleanExpression {
             Step left = parseBlock(triplet[0], replace, useBooleanFilter);
             Step right = parseBlock(triplet[2], replace, useBooleanFilter);
 
-            String operator = BooleanOperator.parse(triplet[1]).getOperator(
-                    platform);
+            BooleanOperator operator = BooleanOperator.parse(triplet[1]);
 
             // create boolean answer that wraps the children
-            return makeBooleanStep(left, right, operator, useBooleanFilter);
+            return user.createBooleanStep(left, right, operator,
+                    useBooleanFilter, null);
         }
     }
 
@@ -217,45 +210,5 @@ public class BooleanExpression {
             operands.add(Integer.parseInt(strId));
         }
         return operands;
-    }
-
-    private Step makeBooleanStep(Step leftStep, Step rightStep,
-            String operator, boolean useBooleanFilter)
-            throws WdkModelException, NoSuchAlgorithmException,
-            WdkUserException, SQLException, JSONException {
-        AnswerValue leftAnswerValue = leftStep.getAnswer().getAnswerValue();
-        AnswerValue rightAnswerValue = rightStep.getAnswer().getAnswerValue();
-
-        // verify the record type of the operands
-        RecordClass leftRecordClass = leftAnswerValue.getQuestion().getRecordClass();
-        RecordClass rightRecordClass = rightAnswerValue.getQuestion().getRecordClass();
-        if (!leftRecordClass.getFullName().equals(
-                rightRecordClass.getFullName()))
-            throw new WdkUserException("Boolean operation cannot be applied "
-                    + "to results of different record types. Left operand is "
-                    + "of type " + leftRecordClass.getFullName() + ", but the"
-                    + " right operand is of type "
-                    + rightRecordClass.getFullName());
-
-        Question question = user.getWdkModel().getBooleanQuestion(
-                leftRecordClass);
-        BooleanQuery booleanQuery = (BooleanQuery) question.getQuery();
-
-        Map<String, String> params = new LinkedHashMap<String, String>();
-
-        String userSignature = user.getSignature();
-        String leftName = booleanQuery.getLeftOperandParam().getName();
-        String leftKey = userSignature + ":" + leftStep.getDisplayId();
-        params.put(leftName, leftKey);
-
-        String rightName = booleanQuery.getRightOperandParam().getName();
-        String rightKey = userSignature + ":" + rightStep.getDisplayId();
-        params.put(rightName, rightKey);
-
-        params.put(booleanQuery.getOperatorParam().getName(), operator);
-        params.put(booleanQuery.getUseBooleanFilter().getName(),
-                Boolean.toString(useBooleanFilter));
-
-        return user.createStep(question, params, (String) null);
     }
 }
