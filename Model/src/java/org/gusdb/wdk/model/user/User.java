@@ -898,6 +898,7 @@ public class User /* implements Serializable */{
         Map<String, Boolean> sortingMap = new LinkedHashMap<String, Boolean>();
         sortingMap.put(attrName, ascending);
         Map<String, Boolean> previousMap = getSortingAttributes(questionFullName);
+	if (previousMap == null) previousMap = new LinkedHashMap<String,Boolean>();
         for (String aName : previousMap.keySet()) {
             if (!sortingMap.containsKey(aName))
                 sortingMap.put(aName, previousMap.get(aName));
