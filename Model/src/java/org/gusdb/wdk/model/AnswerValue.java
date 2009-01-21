@@ -19,6 +19,7 @@ import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlResultList;
 import org.gusdb.wdk.model.dbms.SqlUtils;
+import org.gusdb.wdk.model.query.BooleanQueryInstance;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
@@ -963,5 +964,11 @@ public class AnswerValue {
         PrimaryKeyAttributeValue[] array = new PrimaryKeyAttributeValue[pkValues.size()];
         pkValues.toArray(array);
         return array;
+    }
+
+    public boolean isUseBooleanFilter() {
+        if (idsQueryInstance instanceof BooleanQueryInstance) {
+            return ((BooleanQueryInstance) idsQueryInstance).isUseBooleanFilter();
+        } else return false;
     }
 }
