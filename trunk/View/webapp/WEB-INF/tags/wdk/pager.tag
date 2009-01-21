@@ -36,7 +36,7 @@
         gotoPageUrl = gotoPageUrl.replace(/\&pageSize=\d+/, "");
         gotoPageUrl += "&pager.offset=" + pageOffset;
         gotoPageUrl += "&pageSize=" + pageSize;
-        window.location.href = gotoPageUrl;
+        GetResultsPage(gotoPageUrl, true);
     }
     
 	function openAdvancedPaging(ele, open_close){
@@ -65,11 +65,11 @@
       <td nowrap>
       
   <pg:first>
-    <a href="${pageUrl}">First</a>
+    <a href="javascript:GetResultsPage('${pageUrl}',true)">First</a>
   </pg:first>
 
   <pg:prev>
-    <a href="${pageUrl}">Previous</a>
+    <a href="javascript:GetResultsPage('${pageUrl}',true)">Previous</a>
   </pg:prev>
 
   <pg:pages>
@@ -80,18 +80,18 @@
           <b>${pageNumber}</b>
         </c:when>
         <c:otherwise>
-          <a href="${pageUrl}">${pageNumber}</a>
+          <a href="javascript:GetResultsPage('${pageUrl}',true)">${pageNumber}</a>
         </c:otherwise>
       </c:choose>
     </c:if>
   </pg:pages>
 
   <pg:next>
-    <a href="${pageUrl}">Next</a>
+    <a href="javascript:GetResultsPage('${pageUrl}',true)">Next</a>
   </pg:next>
 
   <pg:last>
-    <a href="${pageUrl}">Last</a>
+    <a href="javascript:GetResultsPage('${pageUrl}',true)">Last</a>
     
   </pg:last>
   
@@ -101,7 +101,7 @@
    <c:if test="${resultSize < 1000}">
       <td>
         <pg:page>
-           &nbsp;<a href="${pageUrl}&altPageSize=${resultSize}">All</a> 
+           &nbsp;<a href="javascript:GetResultsPage('${pageUrl}&altPageSize=${resultSize}', true)">All</a> 
         </pg:page>
       </td>
    </c:if>

@@ -89,11 +89,9 @@ public class ProcessSummaryAction extends Action {
             if (command.equalsIgnoreCase("sort")) { // sorting
                 String attributeName = request.getParameter(CConstants.WDK_SUMMARY_ATTRIBUTE_KEY);
                 String sortingOrder = request.getParameter(CConstants.WDK_SUMMARY_SORTING_ORDER_KEY);
-
                 boolean ascending = !sortingOrder.equalsIgnoreCase("DESC");
                 String checksum = wdkUser.addSortingAttribute(questionName,
                         attributeName, ascending);
-
                 // add/replace sorting key
                 String sortingParam = CConstants.WDK_SORTING_KEY + "="
                         + checksum;
@@ -131,8 +129,8 @@ public class ProcessSummaryAction extends Action {
                         // attributeName the first element.
                         // Otherwise, make it the first element AFTER
                         // attributeToLeft
-                        int toIndex = summaryList.indexOf(attributeToLeft) + 1;
                         summaryList.remove(attributeName);
+                        int toIndex = summaryList.indexOf(attributeToLeft) + 1;
                         summaryList.add(toIndex, attributeName);
                     } else {
                         throw new WdkModelException("Unknown command: "
