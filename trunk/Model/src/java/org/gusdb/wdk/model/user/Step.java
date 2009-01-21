@@ -7,8 +7,10 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.gusdb.wdk.model.AnswerFilterInstance;
 import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.Question;
+import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.BooleanQuery;
@@ -489,5 +491,29 @@ public class Step {
             }
         }
         throw new WdkUserException("Id not found!");
+    }
+
+    public Step createStep(String filterName) throws NoSuchAlgorithmException,
+            WdkModelException, JSONException, WdkUserException, SQLException {
+        RecordClass recordClass = answer.getAnswerValue().getQuestion().getRecordClass();
+        AnswerFilterInstance filter = recordClass.getFilter(filterName);
+        return createStep(filter);
+    }
+
+    public Step createStep(AnswerFilterInstance filter)
+            throws NoSuchAlgorithmException, WdkModelException, JSONException,
+            WdkUserException, SQLException {
+        AnswerFilterInstance oldFilter = answer.getAnswerValue().getFilter();
+        if (filter == null && oldFilter == null) return this;
+        if (filter != null && oldFilter != null
+                && filter.getName().equals(oldFilter.getName())) return this;
+
+        // create new steps
+        Question question = answer.getAnswerValue().getQuestion();
+        Map<String, String> params = getDisplayParams();
+        int startIndex = answer.getAnswerValue().getStartIndex();
+        int endIndex = answer.getAnswerValue().getEndIndex();
+        return user.createStep(question, params, filter, startIndex, endIndex,
+                isDeleted);
     }
 }

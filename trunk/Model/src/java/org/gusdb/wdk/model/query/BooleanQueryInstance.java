@@ -62,9 +62,7 @@ public class BooleanQueryInstance extends SqlQueryInstance {
         StringBuffer sql = new StringBuffer();
 
         // get the use_boolean filter param
-        StringParam useBooleanFilter = booleanQuery.getUseBooleanFilter();
-        String strBooleanFlag = (String) values.get(useBooleanFilter.getName());
-        boolean booleanFlag = Boolean.parseBoolean(strBooleanFlag);
+        boolean booleanFlag = isUseBooleanFilter();
 
         logger.info("Boolean expansion flag: " + booleanFlag);
 
@@ -125,5 +123,11 @@ public class BooleanQueryInstance extends SqlQueryInstance {
         }
         sql.append(" FROM (").append(innerSql).append(") f");
         return sql.toString();
+    }
+
+    public boolean isUseBooleanFilter() {
+        StringParam useBooleanFilter = booleanQuery.getUseBooleanFilter();
+        String strBooleanFlag = (String) values.get(useBooleanFilter.getName());
+        return Boolean.parseBoolean(strBooleanFlag);
     }
 }

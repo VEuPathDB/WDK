@@ -6,9 +6,9 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.Map;
 
-import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.user.Step;
 import org.json.JSONException;
 
 public class StepBean {
@@ -136,7 +136,8 @@ public class StepBean {
     }
 
     public String getLastRunTimeFormatted() {
-        return DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(step.getLastRunTime());
+        return DateFormat.getDateTimeInstance(DateFormat.SHORT,
+                DateFormat.SHORT).format(step.getLastRunTime());
     }
 
     public Date getLastRunTime() {
@@ -148,7 +149,8 @@ public class StepBean {
     }
 
     public String getCreatedTimeFormatted() {
-        return DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(step.getCreatedTime());
+        return DateFormat.getDateTimeInstance(DateFormat.SHORT,
+                DateFormat.SHORT).format(step.getCreatedTime());
     }
 
     public Date getCreatedTime() {
@@ -316,5 +318,40 @@ public class StepBean {
 
     public int getIndexFromId(int stepId) throws WdkUserException {
         return step.getIndexFromId(stepId);
+    }
+
+    /**
+     * @param filterName
+     * @return
+     * @throws NoSuchAlgorithmException
+     * @throws WdkModelException
+     * @throws JSONException
+     * @throws WdkUserException
+     * @throws SQLException
+     * @see org.gusdb.wdk.model.user.Step#createStep(org.gusdb.wdk.model.AnswerFilterInstance)
+     */
+    public StepBean createStep(String filterName)
+            throws NoSuchAlgorithmException, WdkModelException, JSONException,
+            WdkUserException, SQLException {
+        return new StepBean(step.createStep(filterName));
+    }
+
+    /**
+     * @return
+     * @throws NoSuchAlgorithmException
+     * @throws WdkModelException
+     * @throws JSONException
+     * @throws WdkUserException
+     * @throws SQLException
+     * @see org.gusdb.wdk.model.user.Step#isCombined()
+     */
+    public boolean isCombined() throws NoSuchAlgorithmException,
+            WdkModelException, JSONException, WdkUserException, SQLException {
+        return step.isCombined();
+    }
+
+    public boolean isUseBooleanFilter() throws NoSuchAlgorithmException,
+            WdkModelException, JSONException, WdkUserException, SQLException {
+        return step.getAnswer().getAnswerValue().isUseBooleanFilter();
     }
 }
