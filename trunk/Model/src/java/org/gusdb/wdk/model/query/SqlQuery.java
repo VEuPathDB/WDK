@@ -73,7 +73,8 @@ public class SqlQuery extends Query {
      */
     @Override
     public QueryInstance makeInstance(Map<String, String> values)
-            throws WdkModelException {
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
         return new SqlQueryInstance(this, values);
     }
 

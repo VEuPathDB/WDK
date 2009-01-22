@@ -56,7 +56,7 @@ public class QuestionForm extends QuestionSetForm {
             try {
                 String dependentValue = getMyProp(param.getName());
                 String independentValue = param.prepareValue(dependentValue);
-                param.validateValue(independentValue);
+                param.validate(independentValue);
             } catch (Exception ex) {
                 ex.printStackTrace();
                 ActionError error = new ActionError("mapped.properties",

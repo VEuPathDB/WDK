@@ -1,11 +1,14 @@
 package org.gusdb.wdk.model.query;
 
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.Map;
 
 import org.gusdb.wdk.model.PrimaryKeyAttributeField;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.query.param.StringParam;
@@ -217,7 +220,8 @@ public class BooleanQuery extends SqlQuery {
      */
     @Override
     public QueryInstance makeInstance(Map<String, String> values)
-            throws WdkModelException {
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
         return new BooleanQueryInstance(this, values);
     }
 
@@ -241,12 +245,14 @@ public class BooleanQuery extends SqlQuery {
         sql.append(" WHERE $$").append(operand).append(".condition$$");
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.query.Query#isBoolean()
      */
     @Override
     public boolean isBoolean() {
         return true;
     }
-    
+
 }
