@@ -38,13 +38,18 @@ public class SqlQueryInstance extends QueryInstance {
      * @param query
      * @param values
      * @throws WdkModelException
+     * @throws WdkUserException
+     * @throws JSONException
+     * @throws SQLException
+     * @throws NoSuchAlgorithmException
      * @throws SQLException
      * @throws JSONException
      * @throws WdkUserException
      * @throws NoSuchAlgorithmException
      */
     protected SqlQueryInstance(SqlQuery query, Map<String, String> values)
-            throws WdkModelException {
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
         super(query, values);
         this.query = query;
     }
@@ -121,20 +126,12 @@ public class SqlQueryInstance extends QueryInstance {
 
     public String getUncachedSql() throws WdkModelException, SQLException,
             NoSuchAlgorithmException, JSONException, WdkUserException {
+        Map<String, String> internalValues = getInternalParamValues();
         Map<String, Param> params = query.getParamMap();
-        Map<String, String> paramValues = getValues();
         String sql = query.getSql();
         for (String paramName : params.keySet()) {
             Param param = params.get(paramName);
-            if (param == null)
-                throw new WdkModelException("The param '" + paramName
-                        + "' does not exist in query " + query.getFullName());
-
-            String value = paramValues.get(paramName);
-            if (value == null) {
-                value = param.getDefault();
-                if (param.isAllowEmpty()) value = param.getEmptyValue();
-            }
+            String value = internalValues.get(paramName);
             sql = param.replaceSql(sql, value);
         }
         return sql;

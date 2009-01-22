@@ -38,13 +38,19 @@ public class BooleanQueryInstance extends SqlQueryInstance {
      * @param query
      * @param values
      * @throws WdkModelException
+     * @throws WdkUserException
+     * @throws JSONException
+     * @throws SQLException
+     * @throws NoSuchAlgorithmException
      * @throws SQLException
      * @throws JSONException
      * @throws WdkUserException
      * @throws NoSuchAlgorithmException
      */
     protected BooleanQueryInstance(BooleanQuery query,
-            Map<String, String> values) throws WdkModelException {
+            Map<String, String> values) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
         super(query, values);
         this.booleanQuery = query;
     }
@@ -66,18 +72,19 @@ public class BooleanQueryInstance extends SqlQueryInstance {
 
         logger.info("Boolean expansion flag: " + booleanFlag);
 
+        Map<String, String> InternalValues = getInternalParamValues();
+
         // construct the filter query for the first child
         AnswerParam leftParam = booleanQuery.getLeftOperandParam();
-        String leftChecksum = (String) values.get(leftParam.getName());
-        String leftSql = constructOperandSql(leftParam, leftChecksum,
-                booleanFlag);
+        String leftSubSql = (String) InternalValues.get(leftParam.getName());
+        String leftSql = constructOperandSql(leftParam, leftSubSql, booleanFlag);
 
         AnswerParam rightParam = booleanQuery.getRightOperandParam();
-        String rightChecksum = (String) values.get(rightParam.getName());
-        String rightSql = constructOperandSql(rightParam, rightChecksum,
+        String rightSubSql = (String) InternalValues.get(rightParam.getName());
+        String rightSql = constructOperandSql(rightParam, rightSubSql,
                 booleanFlag);
 
-        String operator = values.get(booleanQuery.getOperatorParam().getName());
+        String operator = InternalValues.get(booleanQuery.getOperatorParam().getName());
         BooleanOperator op = BooleanOperator.parse(operator);
         DBPlatform platform = wdkModel.getQueryPlatform();
         operator = op.getOperator(platform);
@@ -95,15 +102,14 @@ public class BooleanQueryInstance extends SqlQueryInstance {
         return sql.toString();
     }
 
-    private String constructOperandSql(AnswerParam stepParam,
-            String answerChecksum, boolean booleanFlag)
-            throws NoSuchAlgorithmException, WdkModelException, SQLException,
-            JSONException, WdkUserException {
+    private String constructOperandSql(AnswerParam stepParam, String subSql,
+            boolean booleanFlag) throws NoSuchAlgorithmException,
+            WdkModelException, SQLException, JSONException, WdkUserException {
         RecordClass recordClass = booleanQuery.getRecordClass();
 
         // create a template sql, and use answerParam to do the replacement
         String innerSql = "$$" + stepParam.getName() + "$$";
-        innerSql = stepParam.replaceSql(innerSql, answerChecksum);
+        innerSql = stepParam.replaceSql(innerSql, subSql);
 
         // apply the filter query if needed
         AnswerFilterInstance filter = recordClass.getBooleanExpansionFilter();

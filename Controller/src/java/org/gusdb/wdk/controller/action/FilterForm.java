@@ -93,7 +93,7 @@ public class FilterForm extends BooleanExpressionForm {
                 String errMsg = null;
                 for (int j = 0; j < pVals.length; j++) {
                     try {
-                        p.validateValue(pVals[j]);
+                        p.validate(pVals[j]);
                     } catch (Exception ex) {
                         ex.printStackTrace();
 

@@ -22,6 +22,7 @@ import org.gusdb.wdk.model.dbms.QueryInfo;
 import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlUtils;
+import org.gusdb.wdk.model.query.param.Param;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -62,12 +63,14 @@ public abstract class QueryInstance {
     private Integer resultSize;
 
     protected QueryInstance(Query query, Map<String, String> values)
-            throws WdkModelException {
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
         this.query = query;
         this.wdkModel = query.getWdkModel();
         this.cached = query.isCached();
 
-        // logger.debug("validating param values of query [" + query.getFullName() + "]");
+        // logger.debug("validating param values of query [" +
+        // query.getFullName() + "]");
         setValues(values);
     }
 
@@ -101,14 +104,12 @@ public abstract class QueryInstance {
         this.instanceId = instanceId;
     }
 
-    private void setValues(Map<String, String> values) throws WdkModelException {
-        values = new LinkedHashMap<String, String>(values);
-        
-        // fill the empty values
-        query.fillEmptyValues(values);
-        query.validateValues(values);
+    private void setValues(Map<String, String> values)
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
+        validateValues(values);
         // passed, assign the value
-        this.values = values;
+        this.values = new LinkedHashMap<String, String>(values);
         checksum = null;
     }
 
@@ -227,4 +228,86 @@ public abstract class QueryInstance {
         sql.append(" = ").append(instanceId);
         return sql.toString();
     }
+
+    private void validateValues(Map<String, String> values)
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
+        Map<String, Param> paramMap = query.getParamMap();
+        Map<Param, String[]> errors = null;
+
+        // check if user provided extra params
+        for (String paramName : values.keySet()) {
+            if (!paramMap.containsKey(paramName))
+                throw new WdkModelException("Invalid param '" + paramName
+                        + "' for query " + query.getFullName());
+        }
+
+        values = fillEmptyValues(values);
+        // then check that all params have supplied values
+        for (Param param : paramMap.values()) {
+            String value = values.get(param.getName());
+            String errMsg = null;
+            try {
+                // validate param
+                param.validate(value);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                errMsg = ex.getMessage();
+                if (errMsg == null) errMsg = ex.getClass().getName();
+            }
+            if (errMsg != null) {
+                if (errors == null)
+                    errors = new LinkedHashMap<Param, String[]>();
+                String booBoo[] = { value == null ? "" : value.toString(),
+                        errMsg };
+                errors.put(param, booBoo);
+            }
+        }
+        if (errors != null) {
+            WdkModelException ex = new WdkModelException(errors);
+            logger.debug(ex.formatErrors());
+            throw ex;
+        }
+    }
+
+    private Map<String, String> fillEmptyValues(Map<String, String> values)
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
+        Map<String, String> newValues = new LinkedHashMap<String, String>();
+        Map<String, Param> paramMap = query.getParamMap();
+        for (String paramName : paramMap.keySet()) {
+            Param param = paramMap.get(paramName);
+
+            String value;
+            if (!values.containsKey(paramName)) {
+                // param not provided, use default value
+                value = param.getDefault();
+            } else { // param provided, but it can be empty
+                value = values.get(paramName);
+                if (value == null || value.length() == 0) {
+                    value = param.isAllowEmpty() ? param.getEmptyValue() : null;
+                }
+            }
+            newValues.put(paramName, value);
+        }
+        return newValues;
+    }
+
+    protected Map<String, String> getInternalParamValues()
+            throws WdkModelException, SQLException, NoSuchAlgorithmException,
+            JSONException, WdkUserException {
+        // the empty & default values are filled
+        Map<String, String> values = fillEmptyValues(this.values);
+        Map<String, String> internalValues = new LinkedHashMap<String, String>();
+        Map<String, Param> params = query.getParamMap();
+        for (String paramName : params.keySet()) {
+            Param param = params.get(paramName);
+
+            String externalValue = values.get(paramName);
+            String internalValue = param.getInternalValue(externalValue);
+            internalValues.put(paramName, internalValue);
+        }
+        return internalValues;
+    }
+
 }

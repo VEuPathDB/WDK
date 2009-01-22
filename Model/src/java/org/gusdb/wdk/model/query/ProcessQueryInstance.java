@@ -12,7 +12,6 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.xml.rpc.ServiceException;
@@ -24,7 +23,6 @@ import org.gusdb.wdk.model.dbms.ArrayResultList;
 import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.ResultList;
-import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wsf.client.WsfService;
 import org.gusdb.wsf.client.WsfServiceServiceLocator;
 import org.gusdb.wsf.plugin.WsfResult;
@@ -46,9 +44,14 @@ public class ProcessQueryInstance extends QueryInstance {
      * @param query
      * @param values
      * @throws WdkModelException
+     * @throws WdkUserException
+     * @throws JSONException
+     * @throws SQLException
+     * @throws NoSuchAlgorithmException
      */
     public ProcessQueryInstance(ProcessQuery query, Map<String, String> values)
-            throws WdkModelException {
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
         super(query, values);
         this.query = query;
     }
@@ -193,30 +196,6 @@ public class ProcessQueryInstance extends QueryInstance {
         } catch (MalformedURLException ex) {
             throw new WdkModelException(ex);
         }
-    }
-
-    private Map<String, String> getInternalParamValues()
-            throws WdkModelException, SQLException, NoSuchAlgorithmException,
-            JSONException, WdkUserException {
-        Map<String, String> internalValues = new LinkedHashMap<String, String>();
-        Map<String, Param> params = query.getParamMap();
-        for (String paramName : params.keySet()) {
-            Param param = params.get(paramName);
-            String externalValue = values.get(paramName);
-            if (externalValue == null) {
-                externalValue = param.getDefault();
-                if (param.isAllowEmpty()) externalValue = param.getEmptyValue();
-            }
-
-            String internalValue = param.getInternalValue(externalValue);
-            if (internalValue == null)
-                throw new WdkModelException("The internal value of param '"
-                        + paramName + "' with given term '" + externalValue
-                        + "' cannot be found.");
-
-            internalValues.put(paramName, internalValue);
-        }
-        return internalValues;
     }
 
     private WsfResult getResult(String processName, String invokeKey,

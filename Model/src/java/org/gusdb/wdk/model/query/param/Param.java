@@ -24,9 +24,9 @@ public abstract class Param extends WdkModelBase {
 
     public abstract Param clone();
 
-    public abstract void validateValue(String value) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException;
+    protected abstract void validateValue(String value)
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException;
 
     public abstract String getInternalValue(String value)
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
@@ -145,6 +145,8 @@ public abstract class Param extends WdkModelBase {
     public String getDefault() throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
+        if (defaultValue != null && defaultValue.length() == 0)
+            defaultValue = null;
         return defaultValue;
     }
 
@@ -208,6 +210,7 @@ public abstract class Param extends WdkModelBase {
      *            the emptyValue to set
      */
     public void setEmptyValue(String emptyValue) {
+        if (emptyValue != null && emptyValue.length() == 0) emptyValue = null;
         this.emptyValue = emptyValue;
     }
 
@@ -314,11 +317,9 @@ public abstract class Param extends WdkModelBase {
         this.queryFactory = model.getQueryFactory();
     }
 
-    public String replaceSql(String sql, String externalValue)
+    public String replaceSql(String sql, String internalValue)
             throws SQLException, NoSuchAlgorithmException, WdkModelException,
             JSONException, WdkUserException {
-        String internalValue = getInternalValue(externalValue);
-
         String regex = "\\$\\$" + name + "\\$\\$";
         // escape all single quotes in the value
         return sql.replaceAll(regex, Matcher.quoteReplacement(internalValue));
@@ -355,5 +356,17 @@ public abstract class Param extends WdkModelBase {
             SQLException {
         value = decompressValue(value);
         return getUserIndependentValue(value);
+    }
+
+    public void validate(String value) throws NoSuchAlgorithmException,
+            WdkModelException, SQLException, JSONException, WdkUserException {
+        // handle the empty case
+        if (value == null || value.length() == 0) {
+            if (allowEmpty) value = getEmptyValue();
+            else value = null;
+        }
+
+        // the sub classes will complete further validation
+        validateValue(value);
     }
 }

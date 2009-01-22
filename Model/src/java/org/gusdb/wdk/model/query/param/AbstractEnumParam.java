@@ -85,7 +85,7 @@ public abstract class AbstractEnumParam extends Param {
     }
 
     @Override
-    public void validateValue(String termList) throws WdkModelException,
+    protected void validateValue(String termList) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
         // try to get term array
@@ -292,8 +292,6 @@ public abstract class AbstractEnumParam extends Param {
     public String[] getTerms(String termList) throws NoSuchAlgorithmException,
             WdkModelException, SQLException, JSONException, WdkUserException {
         // check if null value is allowed
-        if (allowEmpty && termList == null) termList = getEmptyValue();
-
         termList = decompressValue(termList);
 
         // the input is a list of terms
