@@ -243,7 +243,7 @@ public class AnswerFilterInstance extends WdkModelBase {
             // validate the paramValue
             Param param = params.get(paramName);
             String paramValue = paramValueMap.get(paramName);
-            param.validateValue(paramValue);
+            param.validate(paramValue);
         }
 
         resolved = true;
@@ -283,7 +283,8 @@ public class AnswerFilterInstance extends WdkModelBase {
                 continue;
 
             String external = paramValueMap.get(param.getName());
-            filterSql = param.replaceSql(filterSql, external);
+            String internal = param.getInternalValue(external);
+            filterSql = param.replaceSql(filterSql, internal);
         }
         return filterSql;
     }

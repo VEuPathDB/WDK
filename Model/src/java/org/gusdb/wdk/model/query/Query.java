@@ -65,7 +65,8 @@ public abstract class Query extends WdkModelBase {
             throws JSONException;
 
     public abstract QueryInstance makeInstance(Map<String, String> values)
-            throws WdkModelException;
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException;
 
     public abstract Query clone();
 
@@ -117,6 +118,7 @@ public abstract class Query extends WdkModelBase {
             Param param = query.paramMap.get(paramName).clone();
             paramMap.put(paramName, param);
         }
+        logger.debug("Query [" + getFullName() + "] cloned.");
     }
 
     /**
@@ -457,52 +459,6 @@ public abstract class Query extends WdkModelBase {
                 String defaultValue = param.getDefault();
                 paramValuesSet.updateWithDefault(paramName, defaultValue);
             }
-        }
-    }
-
-    void validateValues(Map<String, String> values) throws WdkModelException {
-        Map<Param, String[]> errors = null;
-
-        // then check that all params have supplied values
-        for (Param param : paramMap.values()) {
-            String value = values.get(param.getName());
-            String errMsg = null;
-            try {
-                // validate param
-                param.validateValue(value);
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                errMsg = ex.getMessage();
-                if (errMsg == null) errMsg = ex.getClass().getName();
-            }
-            if (errMsg != null) {
-                if (errors == null)
-                    errors = new LinkedHashMap<Param, String[]>();
-                String booBoo[] = { value == null ? "" : value.toString(),
-                        errMsg };
-                errors.put(param, booBoo);
-            }
-        }
-        if (errors != null) {
-            WdkModelException ex = new WdkModelException(errors);
-            logger.debug(ex.formatErrors());
-            throw ex;
-        }
-    }
-
-    void fillEmptyValues(Map<String, String> values) throws WdkModelException {
-        for (String paramName : values.keySet()) {
-            if (!paramMap.containsKey(paramName))
-                throw new WdkModelException("Param '" + paramName
-                        + "' is not legal for query " + getFullName());
-
-            Param param = paramMap.get(paramName);
-            if (!param.isAllowEmpty()) continue;
-
-            Object value = values.get(paramName);
-            if (value == null
-                    || (paramName instanceof String && "".equals(value)))
-                values.put(paramName, param.getEmptyValue());
         }
     }
 

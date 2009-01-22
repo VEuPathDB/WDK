@@ -85,11 +85,10 @@ public class ParamBean {
      * @throws SQLException
      * @throws NoSuchAlgorithmException
      */
-    public void validateValue(String val) throws WdkModelException,
+    public void validate(String val) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
-        if (val != null && val.length() == 0) val = null;
-        param.validateValue(val);
+        param.validate(val);
     }
 
     public void setParamValue(String paramValue) {
