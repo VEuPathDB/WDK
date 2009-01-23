@@ -107,6 +107,11 @@ public abstract class QueryInstance {
     private void setValues(Map<String, String> values)
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException {
+        // logger.debug("----- input value for [" + query.getFullName() + "] -----");
+        // for(String paramName : values.keySet()) {
+        //    logger.debug(paramName + "='" + values.get(paramName) + "'");
+        //}
+
         validateValues(values);
         // passed, assign the value
         this.values = new LinkedHashMap<String, String>(values);

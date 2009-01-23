@@ -118,7 +118,6 @@ public abstract class Query extends WdkModelBase {
             Param param = query.paramMap.get(paramName).clone();
             paramMap.put(paramName, param);
         }
-        logger.debug("Query [" + getFullName() + "] cloned.");
     }
 
     /**
