@@ -3,6 +3,7 @@ package org.gusdb.wdk.controller.action;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionForm;
 
 /**
@@ -15,6 +16,8 @@ public class QuestionSetForm extends ActionForm {
      * 
      */
     private static final long serialVersionUID = 9205598895135808021L;
+
+    private static final Logger logger = Logger.getLogger(QuestionSetForm.class);
 
     protected String qFullName = null;
     private Map<String, String> myProps = new LinkedHashMap<String, String>();
@@ -41,6 +44,7 @@ public class QuestionSetForm extends ActionForm {
     }
 
     public void setMyProp(String key, String value) {
+        // logger.debug(key + "='" + value + "'");
         myProps.put(key, value.trim().intern());
     }
 
@@ -50,6 +54,7 @@ public class QuestionSetForm extends ActionForm {
             if (buffer.length() > 0) buffer.append(",");
             buffer.append(value.trim());
         }
+        // logger.debug(key + "='" + buffer + "'");
         myProps.put(key, buffer.toString().intern());
     }
 
