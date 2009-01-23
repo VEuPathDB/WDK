@@ -89,6 +89,9 @@ public class ShowStrategyAction extends ShowQuestionAction {
         if (subQuery != null && subQuery.length() != 0) {
             url.append("&subquery=" + URLEncoder.encode(subQuery, "utf-8"));
         }
+
+        logger.debug("URL: " + url);
+
         ActionForward forward = new ActionForward(url.toString());
         forward.setRedirect(false);
         return forward;

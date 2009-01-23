@@ -150,6 +150,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
         }
 
         int newStepId = newStep.getStepId();
+        int baseNewStepId = newStepId;
 
         Map<Integer, Integer> stepIdsMap;
         int targetStepId;
@@ -190,6 +191,8 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 StepBean childStep = newStep;
                 String operator = parentStep.getOperation();
                 boolean useBooleanFilter = parentStep.isUseBooleanFilter();
+                AnswerFilterInstanceBean filter = parentStep.getAnswerValue().getFilter();
+                filterName = (filter == null) ? null : filter.getName();
 
                 newStep = wdkUser.createBooleanStep(previousStep, childStep,
                         operator, useBooleanFilter, filterName);
@@ -312,6 +315,9 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                         "UTF-8"));
         if (strBranchId != null) {
             url.append("_" + URLEncoder.encode(strBranchId, "UTF-8"));
+        }
+        if (isRevise && hasFilter) {
+            url.append("&step=" + baseNewStepId);
         }
 
         ActionForward forward = new ActionForward(url.toString());
