@@ -6,6 +6,10 @@ package org.gusdb.wdk.model.user;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 
+import org.gusdb.wdk.model.AnswerFilterInstance;
+import org.gusdb.wdk.model.AnswerValue;
+import org.gusdb.wdk.model.BooleanOperator;
+import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.UnitTestHelper;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -105,6 +109,116 @@ public class StrategyTest {
         user.deleteStrategies();
 
         Assert.assertEquals("strategy count", 0, user.getStrategyCount());
+    }
+
+    @Test
+    public void testAddStep() throws Exception {
+        Step step1 = UnitTestHelper.createNormalStep(user);
+        Strategy strategy = user.createStrategy(step1, false);
+
+        Step step2 = UnitTestHelper.createNormalStep(user);
+        BooleanOperator operator = BooleanOperator.UNION;
+
+        Step booleanStep = user.createBooleanStep(step1, step2, operator,
+                false, null);
+
+        strategy.addStep(booleanStep);
+        Step rootStep = strategy.getLatestStep();
+        StepTest.compareStep(booleanStep, rootStep);
+        StepTest.compareStep(step1, rootStep.getPreviousStep());
+        StepTest.compareStep(step2, rootStep.getChildStep());
+        StepTest.compareStep(rootStep, rootStep.getPreviousStep().getNextStep());
+        StepTest.compareStep(rootStep, rootStep.getChildStep().getParentStep());
+    }
+
+    @Test
+    public void testChangeBooleanStepFilter() throws Exception {
+        Step step1 = UnitTestHelper.createNormalStep(user);
+        AnswerValue answerValue = step1.getAnswer().getAnswerValue();
+        RecordClass recordClass = answerValue.getQuestion().getRecordClass();
+        AnswerFilterInstance[] filters = recordClass.getFilters();
+        if (filters.length == 0) return; // no filter exists skip the test
+
+        Strategy strategy = user.createStrategy(step1, false);
+        Step step2 = UnitTestHelper.createNormalStep(user);
+        BooleanOperator operator = BooleanOperator.UNION;
+        AnswerFilterInstance filter = recordClass.getDefaultFilter();
+        Step oldStep = user.createBooleanStep(step1, step2, operator, false,
+                filter);
+        strategy.addStep(oldStep);
+
+        AnswerFilterInstance newFilter = null;
+        do {
+            int index = UnitTestHelper.getRandom().nextInt(filters.length);
+            newFilter = filters[index];
+        } while (filter != null && filter.getName().equals(newFilter.getName()));
+
+        Step newStep = oldStep.createStep(newFilter);
+
+        strategy.editOrInsertStep(oldStep.getDisplayId(), newStep);
+        StepTest.compareStep(newStep, strategy.getLatestStep());
+    }
+
+    @Test
+    public void testChangeFirstStepFilter() throws Exception {
+        Step oldStep = UnitTestHelper.createNormalStep(user);
+
+        AnswerValue answerValue = oldStep.getAnswer().getAnswerValue();
+        RecordClass recordClass = answerValue.getQuestion().getRecordClass();
+        AnswerFilterInstance[] filters = recordClass.getFilters();
+        if (filters.length == 0) return; // no filter exists skip the test
+
+        Strategy strategy = user.createStrategy(oldStep, false);
+        AnswerFilterInstance oldFilter = answerValue.getFilter();
+        AnswerFilterInstance newFilter = null;
+        do {
+            int index = UnitTestHelper.getRandom().nextInt(filters.length);
+            newFilter = filters[index];
+        } while (oldFilter != null
+                && oldFilter.getName().equals(newFilter.getName()));
+
+        Step newStep = oldStep.createStep(newFilter);
+
+        strategy.editOrInsertStep(oldStep.getDisplayId(), newStep);
+        StepTest.compareStep(newStep, strategy.getLatestStep());
+    }
+
+    @Test
+    public void testChangeLeafStepFilter() throws Exception {
+        Step step1 = UnitTestHelper.createNormalStep(user);
+         Strategy strategy = user.createStrategy(step1, false);
+         
+        Step step2 = UnitTestHelper.createNormalStep(user);
+        AnswerValue answerValue = step2.getAnswer().getAnswerValue();
+        RecordClass recordClass = answerValue.getQuestion().getRecordClass();
+        AnswerFilterInstance[] filters = recordClass.getFilters();
+        if (filters.length == 0) return; // no filter exists skip the test
+
+        AnswerFilterInstance filter = answerValue.getFilter();
+        BooleanOperator operator = BooleanOperator.UNION;
+        AnswerFilterInstance booleanFilter = recordClass.getDefaultFilter();
+        Step oldBooleanStep = user.createBooleanStep(step1, step2, operator, false,
+                booleanFilter);
+        strategy.addStep(oldBooleanStep);
+
+        AnswerFilterInstance newFilter = null;
+        do {
+            int index = UnitTestHelper.getRandom().nextInt(filters.length);
+            newFilter = filters[index];
+        } while (filter != null && filter.getName().equals(newFilter.getName()));
+
+        step2 = step2.createStep(newFilter);
+        Step newBooleanStep = user.createBooleanStep(step1, step2, operator, false,
+                booleanFilter);
+
+        strategy.editOrInsertStep(oldBooleanStep.getDisplayId(), newBooleanStep);
+        StepTest.compareStep(newBooleanStep, strategy.getLatestStep());
+        StepTest.compareStep(step2, strategy.getLatestStep().getChildStep());
+    }
+
+    @Test
+    public void testInsertStep() {
+        Assert.assertTrue(false);
     }
 
     private void compareStrategy(Strategy expected, Strategy actual)

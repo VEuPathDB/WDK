@@ -118,6 +118,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             newStep.setCollapsedName("Copy of " + insertStrat.getName());
             newStep.update(false);
         } else if (isRevise && hasFilter) {
+            logger.debug("change filter: " + filterName);
             // change the filter of an existing step, which can be a child step,
             // or a boolean step
             StepBean oldStep = strategy.getStepById(Integer.parseInt(reviseStep));
@@ -175,17 +176,14 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             StepBean targetStep = strategy.getStepById(originalStepId);
 
             // check if the step is a simple one or a combined one
-            if (!targetStep.isCombined() && targetStep.getParentStep() != null) {
+            if (targetStep.getParentStep() != null) {
                 // a simple step, and not the only step, then we need to edit
                 // its parent, not itself.
                 StepBean parentStep = targetStep.getParentStep();
                 targetStepId = parentStep.getStepId();
-                boolean isPrevious = (originalStepId == parentStep.getPreviousStep().getStepId());
 
-                StepBean previousStep = isPrevious ? newStep
-                        : parentStep.getPreviousStep();
-                StepBean childStep = isPrevious ? parentStep.getChildStep()
-                        : newStep;
+                StepBean previousStep = parentStep.getPreviousStep();
+                StepBean childStep = newStep;
                 String operator = parentStep.getOperation();
                 boolean useBooleanFilter = parentStep.isUseBooleanFilter();
 
