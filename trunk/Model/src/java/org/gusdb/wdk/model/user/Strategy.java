@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.Map;
 import java.util.HashMap;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.AnswerFilterInstance;
 import org.gusdb.wdk.model.BooleanOperator;
 import org.gusdb.wdk.model.WdkModelException;
@@ -12,6 +13,8 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.json.JSONException;
 
 public class Strategy {
+
+    private static final Logger logger = Logger.getLogger(Strategy.class);
 
     private StepFactory stepFactory;
     private User user;
@@ -135,6 +138,9 @@ public class Strategy {
     public Map<Integer, Integer> editOrInsertStep(int targetStepId, Step step)
             throws WdkModelException, WdkUserException, JSONException,
             NoSuchAlgorithmException, SQLException {
+        logger.debug("Edit/Insert - target: " + targetStepId + ", new step: "
+                + step.getDisplayId());
+
         return updateStepTree(targetStepId, step);
     }
 
