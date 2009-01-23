@@ -49,281 +49,297 @@ public class ProcessFilterAction extends ProcessQuestionAction {
         logger.debug("Entering ProcessFilterAction...");
 
         try {
-        // Make sure a strategy is specified
-        String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
+            // Make sure a strategy is specified
+            String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
 
-        if (strStratId == null || strStratId.length() == 0) {
-            throw new WdkModelException(
-                    "No strategy was specified for processing!");
-        }
-
-        // load model, user
-        WdkModelBean wdkModel = (WdkModelBean) servlet.getServletContext().getAttribute(
-                CConstants.WDK_MODEL_KEY);
-        UserBean wdkUser = (UserBean) request.getSession().getAttribute(
-                CConstants.WDK_USER_KEY);
-        if (wdkUser == null) {
-            wdkUser = wdkModel.getUserFactory().getGuestUser();
-            request.getSession().setAttribute(CConstants.WDK_USER_KEY, wdkUser);
-        }
-
-        String strBranchId = null;
-
-        QuestionBean wdkQuestion;
-
-        boolean isTransform = false;
-
-        // did we get strategyId_stepId?
-        if (strStratId.indexOf("_") > 0) {
-            strBranchId = strStratId.split("_")[1];
-            strStratId = strStratId.split("_")[0];
-        }
-
-        // get strategy
-        StrategyBean strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
-
-        // ArrayList<Integer> activeStrategies =
-        // (ArrayList<Integer>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
-        ArrayList<Integer> activeStrategies = wdkUser.getActiveStrategies();
-        int index = -1;
-
-        if (activeStrategies != null
-                && activeStrategies.contains(new Integer(
-                        strategy.getStrategyId()))) {
-            index = activeStrategies.indexOf(new Integer(
-                    strategy.getStrategyId()));
-            activeStrategies.remove(index);
-        }
-
-        String boolExp = request.getParameter("booleanExpression");
-        String insertStratIdStr = request.getParameter("insertStrategy");
-
-        String filterName = request.getParameter("filter");
-        boolean hasFilter = (filterName != null && filterName.length() > 0);
-
-        // Are we revising or inserting a step?
-        // changing filter is considered a revise
-        String reviseStep = request.getParameter("revise");
-        boolean isRevise = (reviseStep != null && reviseStep.length() != 0);
-        String insertStep = request.getParameter("insert");
-        boolean isInsert = (insertStep != null && insertStep.length() != 0);
-
-        // are we inserting an existing step?
-        StepBean newStep;
-        if (insertStratIdStr != null && insertStratIdStr.length() != 0) {
-            // yes: load step, create a new step w/ same answervalue
-            StrategyBean insertStrat = wdkUser.getStrategy(Integer.parseInt(insertStratIdStr));
-            newStep = cloneStrategy(wdkUser, insertStrat.getLatestStep());
-            newStep.setIsCollapsible(true);
-            newStep.setCollapsedName("Copy of " + insertStrat.getName());
-            newStep.update(false);
-        } else if (isRevise && hasFilter) {
-            logger.debug("change filter: " + filterName);
-            // change the filter of an existing step, which can be a child step,
-            // or a boolean step
-            StepBean oldStep = strategy.getStepById(Integer.parseInt(reviseStep));
-            newStep = oldStep.createStep(filterName);
-        } else {
-            // no: get question
-            String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
-            wdkQuestion = getQuestionByFullName(qFullName);
-            // QuestionForm fForm = prepareQuestionForm(wdkQuestion, request, (QuestionForm) form);
-            QuestionForm fForm = (QuestionForm) form;
-
-            // validate & parse params
-            Map<String, String> params = prepareParams(wdkUser, request, fForm);
-
-            try {
-                newStep = ShowSummaryAction.summaryPaging(request, wdkQuestion,
-                        params, filterName);
-            } catch (Exception ex) {
-                logger.error(ex);
-                ex.printStackTrace();
-                return showError(wdkModel, wdkUser, mapping, request, response);
+            if (strStratId == null || strStratId.length() == 0) {
+                throw new WdkModelException(
+                        "No strategy was specified for processing!");
             }
 
-            // We only set isTransform = true if we're running a new query &
-            // it's a transform
-            // If we're inserting a strategy, it has to be a boolean (given
-            // current operations, at least)
-            isTransform = newStep.getIsTransform();
-        }
-
-        int newStepId = newStep.getStepId();
-        int baseNewStepId = newStepId;
-
-        Map<Integer, Integer> stepIdsMap;
-        int targetStepId;
-        int targetIx;
-
-        String op = boolExp;
-        if (op != null && op.indexOf(" ") >= 0)
-            op = boolExp.substring(boolExp.indexOf(" "), boolExp.length());
-
-        // get root step of a strategy or a branch
-        StepBean rootStep;
-        if (strBranchId == null) {
-            rootStep = strategy.getLatestStep();
-        } else {
-            rootStep = strategy.getStepById(Integer.parseInt(strBranchId));
-            System.out.println("Original step parent boolean expression: "
-                    + rootStep.getParentStep().getBooleanExpression());
-        }
-
-        boolExp = null;
-        if (isRevise && hasFilter) {
-            // get the original step
-            int originalStepId = Integer.parseInt(reviseStep);
-            StepBean targetStep = strategy.getStepById(originalStepId);
- 
-            logger.debug("orginal step: " + originalStepId + ", new step: " + newStep.getStepId());
-
-            // check if the step is a simple one or a combined one
-            if (targetStep.getParentStep() != null) {
-                // a simple step, and not the only step, then we need to edit
-                // its parent, not itself.
-                StepBean parentStep = targetStep.getParentStep();
-                targetStepId = parentStep.getStepId();
-
-                logger.debug("target step: " + targetStepId);
-
-                StepBean previousStep = parentStep.getPreviousStep();
-                StepBean childStep = newStep;
-                String operator = parentStep.getOperation();
-                boolean useBooleanFilter = parentStep.isUseBooleanFilter();
-                AnswerFilterInstanceBean filter = parentStep.getAnswerValue().getFilter();
-                filterName = (filter == null) ? null : filter.getName();
-
-                newStep = wdkUser.createBooleanStep(previousStep, childStep,
-                        operator, useBooleanFilter, filterName);
-            } else targetStepId = originalStepId;
-            stepIdsMap = strategy.editOrInsertStep(targetStepId, newStep);
-        } else if (!isRevise && !isInsert) {
-            // add new step to the end of a strategy or a branch
-            targetStepId = rootStep.getStepId();
-            StepBean step = null;
-            if (!isTransform) {
-                // now create step for operation query, if it's a boolean
-                boolExp = rootStep.getStepId() + " " + op + " " + newStepId;
-                step = wdkUser.combineStep(boolExp, false);
-                newStepId = step.getStepId();
-
-                step.setChildStep(newStep);
-            }
-            // implied: since step is a transform (and we aren't inserting a
-            // strategy), we've
-            // already run the filter query (b/c the transform is just a query
-            // w/ a history param
-            stepIdsMap = strategy.addStep(targetStepId, step);
-        } else { // insert or edit
-            int stratLen = rootStep.getLength();
-
-            if (isRevise) { // revise step
-                targetStepId = Integer.parseInt(reviseStep);
-                targetIx = rootStep.getIndexFromId(targetStepId);
-            } else { // insert a step
-                targetStepId = Integer.parseInt(insertStep);
-                targetIx = rootStep.getIndexFromId(targetStepId);
+            // load model, user
+            WdkModelBean wdkModel = (WdkModelBean) servlet.getServletContext().getAttribute(
+                    CConstants.WDK_MODEL_KEY);
+            UserBean wdkUser = (UserBean) request.getSession().getAttribute(
+                    CConstants.WDK_USER_KEY);
+            if (wdkUser == null) {
+                wdkUser = wdkModel.getUserFactory().getGuestUser();
+                request.getSession().setAttribute(CConstants.WDK_USER_KEY,
+                        wdkUser);
             }
 
-            StepBean targetStep = null;
-            if (stratLen > 1 || !isRevise) {
-                targetStep = rootStep.getStep(targetIx);
-                if (targetStep.getIsFirstStep()) {
-                    if (isRevise) {
-                        // carry over custom name from original query, if any
-                        newStep.setCustomName(targetStep.getBaseCustomName());
-                        newStep.update(false);
-                        if (targetStep.getNextStep().getIsTransform()) {
-                            targetStep = updateTransform(wdkUser,
-                                    targetStep.getNextStep(), newStepId);
-                        } else {
-                            boolExp = newStepId
-                                    + " "
-                                    + targetStep.getNextStep().getOperation()
-                                    + " "
-                                    + targetStep.getNextStep().getChildStep().getStepId();
-                        }
-                        targetIx++;
-                    } else {
-                        // if inserting before first step, there has to be a
-                        // boolean expression
-                        // b/c existing first step is a regular non-boolean,
-                        // non-transform query
-                        boolExp = newStepId + " " + op + " "
-                                + targetStep.getStepId();
-                    }
-                    targetIx++;
-                } else { // not the first step
-                    if (isRevise) {
-                        if (!isTransform) {
-                            // check if we've changed the query itself, or just
-                            // the operation
-                            newStep.setCustomName(targetStep.getChildStep().getBaseCustomName());
+            String strBranchId = null;
+
+            QuestionBean wdkQuestion;
+
+            boolean isTransform = false;
+
+            // did we get strategyId_stepId?
+            if (strStratId.indexOf("_") > 0) {
+                strBranchId = strStratId.split("_")[1];
+                strStratId = strStratId.split("_")[0];
+            }
+
+            // get strategy
+            StrategyBean strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
+
+            // ArrayList<Integer> activeStrategies =
+            // (ArrayList<Integer>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
+            ArrayList<Integer> activeStrategies = wdkUser.getActiveStrategies();
+            int index = -1;
+
+            if (activeStrategies != null
+                    && activeStrategies.contains(new Integer(
+                            strategy.getStrategyId()))) {
+                index = activeStrategies.indexOf(new Integer(
+                        strategy.getStrategyId()));
+                activeStrategies.remove(index);
+            }
+
+            String boolExp = request.getParameter("booleanExpression");
+            String insertStratIdStr = request.getParameter("insertStrategy");
+
+            String filterName = request.getParameter("filter");
+            boolean hasFilter = (filterName != null && filterName.length() > 0);
+
+            // Are we revising or inserting a step?
+            // changing filter is considered a revise
+            String reviseStep = request.getParameter("revise");
+            boolean isRevise = (reviseStep != null && reviseStep.length() != 0);
+            String insertStep = request.getParameter("insert");
+            boolean isInsert = (insertStep != null && insertStep.length() != 0);
+
+            // are we inserting an existing step?
+            StepBean newStep;
+            if (insertStratIdStr != null && insertStratIdStr.length() != 0) {
+                // yes: load step, create a new step w/ same answervalue
+                StrategyBean insertStrat = wdkUser.getStrategy(Integer.parseInt(insertStratIdStr));
+                newStep = cloneStrategy(wdkUser, insertStrat.getLatestStep());
+                newStep.setIsCollapsible(true);
+                newStep.setCollapsedName("Copy of " + insertStrat.getName());
+                newStep.update(false);
+            } else if (isRevise && hasFilter) {
+                logger.debug("change filter: " + filterName);
+                // change the filter of an existing step, which can be a child
+                // step,
+                // or a boolean step
+                StepBean oldStep = strategy.getStepById(Integer.parseInt(reviseStep));
+                newStep = oldStep.createStep(filterName);
+            } else {
+                // no: get question
+                String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
+                wdkQuestion = getQuestionByFullName(qFullName);
+                // QuestionForm fForm = prepareQuestionForm(wdkQuestion,
+                // request, (QuestionForm) form);
+                QuestionForm fForm = (QuestionForm) form;
+
+                // validate & parse params
+                Map<String, String> params = prepareParams(wdkUser, request,
+                        fForm);
+
+                try {
+                    newStep = ShowSummaryAction.summaryPaging(request,
+                            wdkQuestion, params, filterName);
+                } catch (Exception ex) {
+                    logger.error(ex);
+                    ex.printStackTrace();
+                    return showError(wdkModel, wdkUser, mapping, request,
+                            response);
+                }
+
+                // We only set isTransform = true if we're running a new query &
+                // it's a transform
+                // If we're inserting a strategy, it has to be a boolean (given
+                // current operations, at least)
+                isTransform = newStep.getIsTransform();
+            }
+
+            int newStepId = newStep.getStepId();
+            int baseNewStepId = newStepId;
+
+            Map<Integer, Integer> stepIdsMap;
+            int targetStepId;
+            int targetIx;
+
+            String op = boolExp;
+            if (op != null && op.indexOf(" ") >= 0)
+                op = boolExp.substring(boolExp.indexOf(" "), boolExp.length());
+
+            // get root step of a strategy or a branch
+            StepBean rootStep;
+            if (strBranchId == null) {
+                rootStep = strategy.getLatestStep();
+            } else {
+                rootStep = strategy.getStepById(Integer.parseInt(strBranchId));
+                System.out.println("Original step parent boolean expression: "
+                        + rootStep.getParentStep().getBooleanExpression());
+            }
+
+            boolExp = null;
+            if (isRevise && hasFilter) {
+                // get the original step
+                int originalStepId = Integer.parseInt(reviseStep);
+                StepBean targetStep = strategy.getStepById(originalStepId);
+
+                logger.debug("orginal step: " + originalStepId + ", new step: "
+                        + newStep.getStepId());
+
+                // check if the step is a simple one or a combined one
+                if (targetStep.getParentStep() != null) {
+                    // a simple step, and not the only step, then we need to
+                    // edit
+                    // its parent, not itself.
+                    StepBean parentStep = targetStep.getParentStep();
+                    targetStepId = parentStep.getStepId();
+
+                    logger.debug("target step: " + targetStepId);
+
+                    StepBean previousStep = parentStep.getPreviousStep();
+                    StepBean childStep = newStep;
+                    String operator = parentStep.getOperation();
+                    boolean useBooleanFilter = parentStep.isUseBooleanFilter();
+                    AnswerFilterInstanceBean filter = parentStep.getAnswerValue().getFilter();
+                    filterName = (filter == null) ? null : filter.getName();
+
+                    newStep = wdkUser.createBooleanStep(previousStep,
+                            childStep, operator, useBooleanFilter, filterName);
+                } else targetStepId = originalStepId;
+                stepIdsMap = strategy.editOrInsertStep(targetStepId, newStep);
+            } else if (!isRevise && !isInsert) {
+                // add new step to the end of a strategy or a branch
+                targetStepId = rootStep.getStepId();
+                StepBean step = null;
+                if (!isTransform) {
+                    // now create step for operation query, if it's a boolean
+                    boolExp = rootStep.getStepId() + " " + op + " " + newStepId;
+                    step = wdkUser.combineStep(boolExp, false);
+                    newStepId = step.getStepId();
+
+                    step.setChildStep(newStep);
+                }
+                // implied: since step is a transform (and we aren't inserting a
+                // strategy), we've
+                // already run the filter query (b/c the transform is just a
+                // query
+                // w/ a history param
+                stepIdsMap = strategy.addStep(targetStepId, step);
+            } else { // insert or edit
+                int stratLen = rootStep.getLength();
+
+                if (isRevise) { // revise step
+                    targetStepId = Integer.parseInt(reviseStep);
+                    targetIx = rootStep.getIndexFromId(targetStepId);
+                } else { // insert a step
+                    targetStepId = Integer.parseInt(insertStep);
+                    targetIx = rootStep.getIndexFromId(targetStepId);
+                }
+
+                StepBean targetStep = null;
+                if (stratLen > 1 || !isRevise) {
+                    targetStep = rootStep.getStep(targetIx);
+                    if (targetStep.getIsFirstStep()) {
+                        if (isRevise) {
+                            // carry over custom name from original query, if
+                            // any
+                            newStep.setCustomName(targetStep.getBaseCustomName());
                             newStep.update(false);
-                            // build standard boolExp for non-first step
-                            boolExp = targetStep.getPreviousStep().getStepId()
-                                    + " " + op + " " + newStepId;
+                            if (targetStep.getNextStep().getIsTransform()) {
+                                targetStep = updateTransform(wdkUser,
+                                        targetStep.getNextStep(), newStepId);
+                            } else {
+                                boolExp = newStepId
+                                        + " "
+                                        + targetStep.getNextStep().getOperation()
+                                        + " "
+                                        + targetStep.getNextStep().getChildStep().getStepId();
+                            }
+                            targetIx++;
+                        } else {
+                            // if inserting before first step, there has to be a
+                            // boolean expression
+                            // b/c existing first step is a regular non-boolean,
+                            // non-transform query
+                            boolExp = newStepId + " " + op + " "
+                                    + targetStep.getStepId();
                         }
-                        // implied: if we're revising a transform step, we've
-                        // already run the revised query,
-                        // so we just need to update subsequent steps
                         targetIx++;
-                    } else {
-                        if (!isTransform) {
-                            // need to check if this is boolean or not
-                            // the inserted step has to point to the step at
-                            // insertIx - 1
-                            boolExp = targetStep.getPreviousStep().getStepId()
-                                    + " " + op + " " + newStepId;
+                    } else { // not the first step
+                        if (isRevise) {
+                            if (!isTransform) {
+                                // check if we've changed the query itself, or
+                                // just
+                                // the operation
+                                newStep.setCustomName(targetStep.getChildStep().getBaseCustomName());
+                                newStep.update(false);
+                                // build standard boolExp for non-first step
+                                boolExp = targetStep.getPreviousStep().getStepId()
+                                        + " " + op + " " + newStepId;
+                            }
+                            // implied: if we're revising a transform step,
+                            // we've
+                            // already run the revised query,
+                            // so we just need to update subsequent steps
+                            targetIx++;
+                        } else {
+                            if (!isTransform) {
+                                // need to check if this is boolean or not
+                                // the inserted step has to point to the step at
+                                // insertIx - 1
+                                boolExp = targetStep.getPreviousStep().getStepId()
+                                        + " " + op + " " + newStepId;
+                            }
+                            // implied: if we're inserting a transform, the
+                            // HistoryParam should already
+                            // be pointing to the step at insertIx - 1, so we
+                            // just
+                            // need to update subsequent steps.
                         }
-                        // implied: if we're inserting a transform, the
-                        // HistoryParam should already
-                        // be pointing to the step at insertIx - 1, so we just
-                        // need to update subsequent steps.
                     }
-                }
 
-                if (boolExp != null) {
-                    // now create step for operation query
-                    targetStep = wdkUser.combineStep(boolExp, false);
-                    newStepId = targetStep.getStepId();
-                }
+                    if (boolExp != null) {
+                        // now create step for operation query
+                        targetStep = wdkUser.combineStep(boolExp, false);
+                        newStepId = targetStep.getStepId();
+                    }
 
-                targetStep.setChildStep(newStep);
-                targetStepId = rootStep.getStep(targetIx).getStepId();
+                    targetStep.setChildStep(newStep);
+                    targetStepId = rootStep.getStep(targetIx).getStepId();
+                } else { // branch length = 1 && revise: revise the first step
+                    targetStep = strategy.getStepById(targetStepId);
+                }
+                stepIdsMap = strategy.editOrInsertStep(targetStepId, targetStep);
             }
-            stepIdsMap = strategy.editOrInsertStep(targetStepId, targetStep);
-        }
 
-        // If a branch id was specified, look up the new branch id in stepIdsMap
-        if (strBranchId != null) {
-            strBranchId = stepIdsMap.get(Integer.valueOf(strBranchId)).toString();
-        }
+            // If a branch id was specified, look up the new branch id in
+            // stepIdsMap
+            if (strBranchId != null) {
+                strBranchId = stepIdsMap.get(Integer.valueOf(strBranchId)).toString();
+            }
 
-        if (activeStrategies != null && index >= 0) {
-            activeStrategies.add(index, new Integer(strategy.getStrategyId()));
-        }
-        // request.getSession().setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY,
-        // activeStrategies);
-        wdkUser.setActiveStrategies(activeStrategies);
+            if (activeStrategies != null && index >= 0) {
+                activeStrategies.add(index, new Integer(
+                        strategy.getStrategyId()));
+            }
+            // request.getSession().setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY,
+            // activeStrategies);
+            wdkUser.setActiveStrategies(activeStrategies);
 
-        ActionForward showStrategy = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
-        StringBuffer url = new StringBuffer(showStrategy.getPath());
-        url.append("?strategy="
-                + URLEncoder.encode(Integer.toString(strategy.getStrategyId()),
-                        "UTF-8"));
-        if (strBranchId != null) {
-            url.append("_" + URLEncoder.encode(strBranchId, "UTF-8"));
-        }
-        if (isRevise && hasFilter) {
-            url.append("&step=" + baseNewStepId);
-        }
+            ActionForward showStrategy = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
+            StringBuffer url = new StringBuffer(showStrategy.getPath());
+            url.append("?strategy="
+                    + URLEncoder.encode(
+                            Integer.toString(strategy.getStrategyId()), "UTF-8"));
+            if (strBranchId != null) {
+                url.append("_" + URLEncoder.encode(strBranchId, "UTF-8"));
+            }
+            if (isRevise && hasFilter) {
+                url.append("&step=" + baseNewStepId);
+            }
 
-        ActionForward forward = new ActionForward(url.toString());
-        forward.setRedirect(true);
-        System.out.println("Leaving ProcessFilterAction...");
-        return forward;
+            ActionForward forward = new ActionForward(url.toString());
+            forward.setRedirect(true);
+            System.out.println("Leaving ProcessFilterAction...");
+            return forward;
         } catch (Exception ex) {
             ex.printStackTrace();
             throw ex;
