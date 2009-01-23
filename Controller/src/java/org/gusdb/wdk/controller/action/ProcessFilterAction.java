@@ -126,8 +126,8 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             // no: get question
             String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
             wdkQuestion = getQuestionByFullName(qFullName);
-            QuestionForm fForm = prepareQuestionForm(wdkQuestion, request,
-                    (QuestionForm) form);
+            // QuestionForm fForm = prepareQuestionForm(wdkQuestion, request, (QuestionForm) form);
+            QuestionForm fForm = (QuestionForm) form;
 
             // validate & parse params
             Map<String, String> params = prepareParams(wdkUser, request, fForm);
