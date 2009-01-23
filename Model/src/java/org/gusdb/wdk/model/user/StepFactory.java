@@ -592,7 +592,7 @@ public class StepFactory {
 
             customName = "Transform: #" + leftStepId + "->"
                     + question.getShortDisplayName();
-        } else customName = question.getShortDisplayName();
+        } else customName = step.getBaseCustomName();
 
         // construct the update sql
         StringBuffer sql = new StringBuffer("UPDATE ");
