@@ -527,8 +527,8 @@ public class StepFactory {
             AnswerValue answerValue = answer.getAnswerValue();
             // set filter
             RecordClass recordClass = answerValue.getQuestion().getRecordClass();
-            if (filterName != null)
-                answerValue.setFilter(recordClass.getFilter(filterName));
+            if (filterName != null) answerValue.setFilter(recordClass.getFilter(filterName));
+            else answerValue.setFilter((AnswerFilterInstance) null);
 
             // set sorting & summarys
             String questionName = answerValue.getQuestion().getFullName();
@@ -609,6 +609,7 @@ public class StepFactory {
         sql.append(" WHERE ").append(COLUMN_STEP_INTERNAL_ID);
         sql.append(" = ").append(step.getInternalId());
 
+        step.setCustomName(customName);
         PreparedStatement psUpdateStepTree = null;
         try {
             psUpdateStepTree = SqlUtils.getPreparedStatement(dataSource,
@@ -636,8 +637,6 @@ public class StepFactory {
             throws WdkUserException, SQLException, NoSuchAlgorithmException,
             WdkModelException, JSONException {
         // TEST
-        logger.info("Save custom name: '" + step.getBaseCustomName() + "'");
-
         // update custom name
         Date lastRunTime = (updateTime) ? new Date() : step.getLastRunTime();
         int estimateSize = step.getAnswer().getAnswerValue().getResultSize();

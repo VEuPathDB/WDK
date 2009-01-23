@@ -27,7 +27,7 @@ public class AnswerParamTest {
     public void testPrepareValue() throws Exception {
         User user = UnitTestHelper.getRegisteredUser();
         Step step = UnitTestHelper.createNormalStep(user);
-        String externalValue = user.getSignature() + ":" + step.getDisplayId();
+        String dependentValue = user.getSignature() + ":" + step.getDisplayId();
         String answerChecksum = step.getAnswer().getAnswerChecksum();
         AnswerFilterInstance filter = step.getAnswer().getAnswerValue().getFilter();
         if (filter != null) answerChecksum += ":" + filter.getName();
@@ -36,9 +36,9 @@ public class AnswerParamTest {
         for (Param param : question.getParams()) {
             if (param instanceof AnswerParam) {
                 AnswerParam answerParam = (AnswerParam) param;
-                String internalValue = answerParam.prepareValue(externalValue);
+                String independentValue = answerParam.prepareValue(dependentValue);
                 Assert.assertEquals("user-independent value", answerChecksum,
-                        internalValue);
+                        independentValue);
             }
         }
     }

@@ -1148,6 +1148,11 @@ public class User /* implements Serializable */{
         params.put(booleanQuery.getUseBooleanFilter().getName(),
                 Boolean.toString(useBooleanFilter));
 
-        return createStep(question, params, filter);
+        Step booleanStep = createStep(question, params, filter);
+        booleanStep.setPreviousStep(leftStep);
+        booleanStep.setChildStep(rightStep);
+        leftStep.setNextStep(booleanStep);
+        rightStep.setParentStep(booleanStep);
+        return booleanStep;
     }
 }
