@@ -46,7 +46,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
-        System.out.println("Entering ProcessFilterAction...");
+        logger.debug("Entering ProcessFilterAction...");
 
         try {
         // Make sure a strategy is specified
@@ -174,6 +174,8 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             // get the original step
             int originalStepId = Integer.parseInt(reviseStep);
             StepBean targetStep = strategy.getStepById(originalStepId);
+ 
+            logger.debug("orginal step: " + originalStepId + ", new step: " + newStep.getStepId());
 
             // check if the step is a simple one or a combined one
             if (targetStep.getParentStep() != null) {
@@ -182,6 +184,8 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 StepBean parentStep = targetStep.getParentStep();
                 targetStepId = parentStep.getStepId();
 
+                logger.debug("target step: " + targetStepId);
+
                 StepBean previousStep = parentStep.getPreviousStep();
                 StepBean childStep = newStep;
                 String operator = parentStep.getOperation();
@@ -189,7 +193,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 
                 newStep = wdkUser.createBooleanStep(previousStep, childStep,
                         operator, useBooleanFilter, filterName);
-            } else targetStepId = newStepId;
+            } else targetStepId = originalStepId;
             stepIdsMap = strategy.editOrInsertStep(targetStepId, newStep);
         } else if (!isRevise && !isInsert) {
             // add new step to the end of a strategy or a branch
