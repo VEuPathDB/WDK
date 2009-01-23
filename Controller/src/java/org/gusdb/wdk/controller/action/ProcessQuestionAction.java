@@ -42,6 +42,7 @@ public class ProcessQuestionAction extends ShowQuestionAction {
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         logger.debug("Entering ProcessQuestionAction..");
+        // logger.debug("+++++query string" + request.getQueryString());
 
         HttpSession session = request.getSession();
         UserBean wdkUser = (UserBean) session.getAttribute(CConstants.WDK_USER_KEY);
@@ -55,8 +56,8 @@ public class ProcessQuestionAction extends ShowQuestionAction {
         // get question
         String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
         QuestionBean wdkQuestion = getQuestionByFullName(qFullName);
-        QuestionForm qForm = prepareQuestionForm(wdkQuestion, request,
-                (QuestionForm) form);
+        // QuestionForm qForm = prepareQuestionForm(wdkQuestion, request, (QuestionForm) form);
+         QuestionForm qForm = (QuestionForm)form;
 
         // the params has been validated, and now is parsed, and if the size of
         // the value is too long, ti will be replaced is checksum
@@ -98,6 +99,8 @@ public class ProcessQuestionAction extends ShowQuestionAction {
         Map<String, ParamBean> params = question.getParamsMap();
         for (String paramName : paramValues.keySet()) {
             ParamBean param = params.get(paramName);
+
+            //logger.debug("param: " + paramName + "='" + paramValues.get(paramName) + "'");
 
             if (param instanceof DatasetParamBean) {
                 // get the input type

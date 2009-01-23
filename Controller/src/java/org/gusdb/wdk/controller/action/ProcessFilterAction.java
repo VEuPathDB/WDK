@@ -48,6 +48,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             throws Exception {
         System.out.println("Entering ProcessFilterAction...");
 
+        try {
         // Make sure a strategy is specified
         String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
 
@@ -154,7 +155,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
         int targetIx;
 
         String op = boolExp;
-        if (op.indexOf(" ") >= 0)
+        if (op != null && op.indexOf(" ") >= 0)
             op = boolExp.substring(boolExp.indexOf(" "), boolExp.length());
 
         // get root step of a strategy or a branch
@@ -315,6 +316,10 @@ public class ProcessFilterAction extends ProcessQuestionAction {
         forward.setRedirect(true);
         System.out.println("Leaving ProcessFilterAction...");
         return forward;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw ex;
+        }
     }
 
     private ActionForward showError(WdkModelBean wdkModel, UserBean wdkUser,

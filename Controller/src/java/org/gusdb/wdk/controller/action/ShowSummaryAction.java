@@ -171,6 +171,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             } else {
                 queryString = request.getQueryString();
             }
+            // logger.debug("query string: " + request.getQueryString());
 
             String requestUrl = request.getRequestURI() + "?" + queryString;
             request.setAttribute("wdk_summary_url", requestUrl);
@@ -425,6 +426,6 @@ public class ShowSummaryAction extends ShowQuestionAction {
         String summaryChecksum = request.getParameter(CConstants.WDK_SUMMARY_KEY);
         if (summaryChecksum != null)
             wdkUser.applySummaryChecksum(questionName, summaryChecksum);
-
+        // logger.debug("summary: [" + summaryChecksum + "]");
     }
 }
