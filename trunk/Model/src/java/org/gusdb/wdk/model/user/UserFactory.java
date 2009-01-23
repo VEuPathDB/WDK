@@ -223,34 +223,32 @@ public class UserFactory {
             int userId = platform.getNextId(userSchema, "users");
             String signature = encrypt(userId + "_" + email);
             Date registerTime = new Date();
-            Date lastActiveTime = new Date();
 
             psUser = SqlUtils.getPreparedStatement(dataSource, "INSERT INTO "
                     + userSchema + TABLE_USER + " (" + COLUMN_USER_ID + ", "
                     + COLUMN_EMAIL + ", passwd, is_guest, "
-                    + "register_time, last_active, last_name, first_name, "
+                    + "register_time, last_name, first_name, "
                     + "middle_name, title, organization, department, address, "
                     + "city, state, zip_code, phone_number, country,signature)"
                     + " VALUES (?, ?, ' ', ?, ?, ?, ?, ?, ?, ?, ?,"
-                    + "?, ?, ?, ?, ?, ?, ?, ?)");
+                    + "?, ?, ?, ?, ?, ?, ?)");
             psUser.setInt(1, userId);
             psUser.setString(2, email);
             psUser.setBoolean(3, false);
             psUser.setDate(4, new java.sql.Date(registerTime.getTime()));
-            psUser.setDate(5, new java.sql.Date(lastActiveTime.getTime()));
-            psUser.setString(6, lastName);
-            psUser.setString(7, firstName);
-            psUser.setString(8, middleName);
-            psUser.setString(9, title);
-            psUser.setString(10, organization);
-            psUser.setString(11, department);
-            psUser.setString(12, address);
-            psUser.setString(13, city);
-            psUser.setString(14, state);
-            psUser.setString(15, zipCode);
-            psUser.setString(16, phoneNumber);
-            psUser.setString(17, country);
-            psUser.setString(18, signature);
+            psUser.setString(5, lastName);
+            psUser.setString(6, firstName);
+            psUser.setString(7, middleName);
+            psUser.setString(8, title);
+            psUser.setString(9, organization);
+            psUser.setString(10, department);
+            psUser.setString(11, address);
+            psUser.setString(12, city);
+            psUser.setString(13, state);
+            psUser.setString(14, zipCode);
+            psUser.setString(15, phoneNumber);
+            psUser.setString(16, country);
+            psUser.setString(17, signature);
             psUser.execute();
 
             // create user object
@@ -356,6 +354,10 @@ public class UserFactory {
 
         // merge the history of the guest into the user
         user.mergeUser(guest);
+
+        // update user active timestamp
+        updateUser(user);
+        
         return user;
     }
 
@@ -500,9 +502,6 @@ public class UserFactory {
             // load history count
             int historyCount = stepFactory.getStepCount(user);
             user.setStepCount(historyCount);
-
-            // update user active timestamp
-            updateUser(user);
 
             return user;
         } finally {

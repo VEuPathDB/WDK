@@ -802,6 +802,7 @@ public class AnswerValue {
         }
         this.sortingMap.clear();
         this.sortingMap.putAll(sortingMap);
+        
         this.pagedIdSql = null;
         this.pageRecordInstances = null;
     }
@@ -937,10 +938,20 @@ public class AnswerValue {
      */
     public void setFilter(AnswerFilterInstance filter) {
         this.filter = filter;
+        reset();
     }
 
     public void setAnswer(Answer answer) {
         this.answer = answer;
+        reset();
+    }
+    
+    private void reset() {
+        pagedIdSql = null;
+        pageRecordInstances = null;
+        resultSize = null;
+        resultSizesByFilter.clear();
+        resultSizesByProject = null;
     }
 
     public PrimaryKeyAttributeValue[] getAllPkValues()
