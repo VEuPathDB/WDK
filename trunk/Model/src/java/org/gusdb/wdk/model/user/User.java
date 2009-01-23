@@ -1091,12 +1091,13 @@ public class User /* implements Serializable */{
 
     public Step createBooleanStep(Step leftStep, Step rigtStep,
             String booleanOperator, boolean useBooleanFilter,
-            String filterString) throws NoSuchAlgorithmException,
+            String filterName) throws NoSuchAlgorithmException,
             WdkModelException, WdkUserException, SQLException, JSONException {
         BooleanOperator operator = BooleanOperator.parse(booleanOperator);
         Question question = leftStep.getAnswer().getAnswerValue().getQuestion();
-        AnswerFilterInstance filter = question.getRecordClass().getFilter(
-                filterString);
+        AnswerFilterInstance filter = null;
+        if (filterName != null) 
+            filter = question.getRecordClass().getFilter(filterName);
         return createBooleanStep(leftStep, rigtStep, operator,
                 useBooleanFilter, filter);
     }
