@@ -159,7 +159,6 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 
             Map<Integer, Integer> stepIdsMap;
             int targetStepId;
-            int targetIx;
 
             String op = boolExp;
             if (op != null && op.indexOf(" ") >= 0)
@@ -228,19 +227,16 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 
                 if (isRevise) { // revise step
                     targetStepId = Integer.parseInt(reviseStep);
-                    targetIx = rootStep.getIndexFromId(targetStepId);
                 } else { // insert a step
                     targetStepId = Integer.parseInt(insertStep);
-                    targetIx = rootStep.getIndexFromId(targetStepId);
                 }
 
                 StepBean targetStep = null;
                 if (stratLen > 1 || !isRevise) {
-                    targetStep = rootStep.getStep(targetIx);
+                    targetStep = rootStep.getStepByDisplayId(targetStepId);
                     if (targetStep.getIsFirstStep()) {
                         if (isRevise) {
-                            // carry over custom name from original query, if
-                            // any
+                            // carry over custom name from original query, if any
                             newStep.setCustomName(targetStep.getBaseCustomName());
                             newStep.update(false);
                             if (targetStep.getNextStep().getIsTransform()) {
@@ -253,7 +249,6 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                                         + " "
                                         + targetStep.getNextStep().getChildStep().getStepId();
                             }
-                            targetIx++;
                         } else {
                             // if inserting before first step, there has to be a
                             // boolean expression
@@ -262,13 +257,11 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                             boolExp = newStepId + " " + op + " "
                                     + targetStep.getStepId();
                         }
-                        targetIx++;
                     } else { // not the first step
                         if (isRevise) {
                             if (!isTransform) {
                                 // check if we've changed the query itself, or
-                                // just
-                                // the operation
+                                // just the operation
                                 newStep.setCustomName(targetStep.getChildStep().getBaseCustomName());
                                 newStep.update(false);
                                 // build standard boolExp for non-first step
@@ -276,13 +269,10 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                                         + " " + op + " " + newStepId;
                             }
                             // implied: if we're revising a transform step,
-                            // we've
-                            // already run the revised query,
+                            // we've already run the revised query,
                             // so we just need to update subsequent steps
-                            targetIx++;
                         } else {
                             if (!isTransform) {
-                                // need to check if this is boolean or not
                                 // the inserted step has to point to the step at
                                 // insertIx - 1
                                 boolExp = targetStep.getPreviousStep().getStepId()
@@ -291,23 +281,26 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                             // implied: if we're inserting a transform, the
                             // HistoryParam should already
                             // be pointing to the step at insertIx - 1, so we
-                            // just
-                            // need to update subsequent steps.
+                            // just need to update subsequent steps.
+
+			    // since we want to insert the new step BEFORE targetStep,
+			    // we need to move targetStepId back, so it points to
+			    // targetStep.getPreviousStep
+			    targetStepId = targetStep.getPreviousStep().getStepId();
                         }
                     }
 
                     if (boolExp != null) {
                         // now create step for operation query
-                        targetStep = wdkUser.combineStep(boolExp, false);
-                        newStepId = targetStep.getStepId();
+                        newStep = wdkUser.combineStep(boolExp, false);
+                        newStepId = newStep.getStepId();
                     }
 
                     targetStep.setChildStep(newStep);
-                    targetStepId = rootStep.getStep(targetIx).getStepId();
                 } else { // branch length = 1 && revise: revise the first step
                     targetStep = strategy.getStepById(targetStepId);
                 }
-                stepIdsMap = strategy.editOrInsertStep(targetStepId, targetStep);
+                stepIdsMap = strategy.editOrInsertStep(targetStepId, newStep);
             }
 
             // If a branch id was specified, look up the new branch id in
