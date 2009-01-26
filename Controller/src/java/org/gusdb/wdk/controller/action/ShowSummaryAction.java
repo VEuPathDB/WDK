@@ -44,6 +44,9 @@ import org.json.JSONException;
 
 public class ShowSummaryAction extends ShowQuestionAction {
 
+    private static final String KEY_SIZE_CACHE_MAP = "size_cache";
+    private static final int MAX_SIZE_CACHE_MAP = 100;
+
     private static Logger logger = Logger.getLogger(ShowSummaryAction.class);
 
     public ActionForward execute(ActionMapping mapping, ActionForm form,
@@ -142,9 +145,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             // return only the result size, if requested
             if (request.getParameterMap().containsKey(
                     CConstants.WDK_RESULT_SIZE_ONLY_KEY)) {
-                int size = (filterName == null)
-                        ? wdkAnswerValue.getResultSize()
-                        : wdkAnswerValue.getFilterSize(filterName);
+                int size = getSize(wdkAnswerValue, filterName);
 
                 PrintWriter writer = response.getWriter();
                 writer.print(size);
@@ -163,7 +164,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 }
                 strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
             }
-            
+
             String queryString;
             if (strategy == null) {
                 strategy = wdkUser.createStrategy(step, false);
@@ -427,5 +428,48 @@ public class ShowSummaryAction extends ShowQuestionAction {
         if (summaryChecksum != null)
             wdkUser.applySummaryChecksum(questionName, summaryChecksum);
         // logger.debug("summary: [" + summaryChecksum + "]");
+    }
+
+    /**
+     * get the cached size of the given answerValue/Filter
+     * 
+     * @param request
+     * @param answerValue
+     * @param filterName
+     * @return
+     * @throws NoSuchAlgorithmException
+     * @throws WdkModelException
+     * @throws JSONException
+     * @throws WdkUserException
+     * @throws SQLException
+     */
+    private int getSize(AnswerValueBean answerValue, String filterName)
+            throws NoSuchAlgorithmException, WdkModelException, JSONException,
+            WdkUserException, SQLException {
+        String key = answerValue.getChecksum();
+        if (filterName != null) key += ":" + filterName;
+
+        ServletContext application = servlet.getServletContext();
+        Object cache = application.getAttribute(KEY_SIZE_CACHE_MAP);
+        Map<String, Integer> sizeCache;
+        if (cache == null || !(cache instanceof Map)) {
+            sizeCache = new LinkedHashMap<String, Integer>();
+            application.setAttribute(KEY_SIZE_CACHE_MAP, sizeCache);
+        } else sizeCache = (Map<String, Integer>) cache;
+
+        // check if the size value has been cached
+        if (sizeCache.containsKey(key)) return sizeCache.get(key);
+
+        // size is not cached get it and cache it
+        int size = (filterName == null) ? answerValue.getResultSize()
+                : answerValue.getFilterSize(filterName);
+
+        if (sizeCache.size() >= MAX_SIZE_CACHE_MAP) {
+            String oldKey = sizeCache.keySet().iterator().next();
+            sizeCache.remove(oldKey);
+        }
+        sizeCache.put(key, size);
+
+        return size;
     }
 }
