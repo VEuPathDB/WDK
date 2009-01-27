@@ -19,8 +19,13 @@
 <c:set var="wdkModel" value="${applicationScope.wdkModel}"/>
      
 <!-- display page header with wdkAnswer's recordClass's type as banner -->
-<site:header banner="Query cannot be executed" />
-
+<site:home_header refer="summaryError"/>
+<site:menubar />
+<%-- <site:header banner="Query cannot be executed" /> --%>
+<div id="contentwrapper">
+  	<div id="contentcolumn2">
+		<div class="innertube">
+<h2><span style="font-color: red;">Query cannot be executed</span></h2>
 <!-- display question and param values and result size for wdkAnswer -->
 <table>
     <tr>
@@ -67,4 +72,7 @@
 
 <!-- pager at bottom -->
 
+		</div>
+  	</div>
+</div>
 <site:footer/>
