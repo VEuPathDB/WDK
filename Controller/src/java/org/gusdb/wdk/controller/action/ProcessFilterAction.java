@@ -237,7 +237,8 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                         if (isRevise) {
                             // carry over custom name from original query, if
                             // any
-                            // Jerric - comment it out, since it gave the child step the name of the parent, which is wrong
+                            // Jerric - comment it out, since it gave the child
+                            // step the name of the parent, which is wrong
                             // newStep.setCustomName(targetStep.getBaseCustomName());
                             // newStep.update(false);
 
@@ -261,6 +262,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                                 newStep = wdkUser.createBooleanStep(previous,
                                         child, operator, useBooleanFilter,
                                         bfName);
+                                newStepId = newStep.getStepId();
                             }
                         } else {
                             // if inserting before first step, there has to be a
@@ -278,7 +280,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                                 newStep.setCustomName(targetStep.getChildStep().getBaseCustomName());
                                 newStep.update(false);
                                 // build standard boolExp for non-first step
-                                StepBean parent = targetStep.getNextStep();
+                                StepBean parent = targetStep;
                                 StepBean previous = parent.getPreviousStep();
                                 StepBean child = newStep;
                                 String operator = parent.getOperation();
@@ -289,6 +291,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                                 newStep = wdkUser.createBooleanStep(previous,
                                         child, operator, useBooleanFilter,
                                         bfName);
+                                newStepId = newStep.getStepId();
                             }
                             // implied: if we're revising a transform step,
                             // we've already run the revised query,
