@@ -186,8 +186,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 // check if the step is a simple one or a combined one
                 if (targetStep.getParentStep() != null) {
                     // a simple step, and not the only step, then we need to
-                    // edit
-                    // its parent, not itself.
+                    // edit its parent, not itself.
                     StepBean parentStep = targetStep.getParentStep();
                     targetStepId = parentStep.getStepId();
 
@@ -198,10 +197,10 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                     String operator = parentStep.getOperation();
                     boolean useBooleanFilter = parentStep.isUseBooleanFilter();
                     AnswerFilterInstanceBean filter = parentStep.getAnswerValue().getFilter();
-                    filterName = (filter == null) ? null : filter.getName();
+                    String bfName = (filter == null) ? null : filter.getName();
 
                     newStep = wdkUser.createBooleanStep(previousStep,
-                            childStep, operator, useBooleanFilter, filterName);
+                            childStep, operator, useBooleanFilter, bfName);
                 } else targetStepId = originalStepId;
                 stepIdsMap = strategy.editOrInsertStep(targetStepId, newStep);
             } else if (!isRevise && !isInsert) {
@@ -236,18 +235,31 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                     targetStep = rootStep.getStepByDisplayId(targetStepId);
                     if (targetStep.getIsFirstStep()) {
                         if (isRevise) {
-                            // carry over custom name from original query, if any
+                            // carry over custom name from original query, if
+                            // any
                             newStep.setCustomName(targetStep.getBaseCustomName());
                             newStep.update(false);
-                            if (targetStep.getNextStep().getIsTransform()) {
-                                targetStep = updateTransform(wdkUser,
-                                        targetStep.getNextStep(), newStepId);
+
+                            boolean isChild = (targetStep.getNextStep() == null);
+                            StepBean parent = targetStep.getNextStep();
+                            if (isChild) parent = targetStep.getNextStep();
+
+                            if (parent.getIsTransform()) {
+                                targetStep = updateTransform(wdkUser, parent,
+                                        newStepId);
                             } else {
-                                boolExp = newStepId
-                                        + " "
-                                        + targetStep.getNextStep().getOperation()
-                                        + " "
-                                        + targetStep.getNextStep().getChildStep().getStepId();
+                                StepBean previous = isChild
+                                        ? parent.getPreviousStep() : newStep;
+                                StepBean child = isChild ? newStep
+                                        : parent.getChildStep();
+                                String operator = parent.getOperation();
+                                boolean useBooleanFilter = parent.isUseBooleanFilter();
+                                AnswerFilterInstanceBean filter = parent.getAnswerValue().getFilter();
+                                String bfName = (filter == null) ? null
+                                        : filter.getName();
+                                newStep = wdkUser.createBooleanStep(previous,
+                                        child, operator, useBooleanFilter,
+                                        bfName);
                             }
                         } else {
                             // if inserting before first step, there has to be a
@@ -265,8 +277,17 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                                 newStep.setCustomName(targetStep.getChildStep().getBaseCustomName());
                                 newStep.update(false);
                                 // build standard boolExp for non-first step
-                                boolExp = targetStep.getPreviousStep().getStepId()
-                                        + " " + op + " " + newStepId;
+                                StepBean parent = targetStep.getNextStep();
+                                StepBean previous = parent.getPreviousStep();
+                                StepBean child = newStep;
+                                String operator = parent.getOperation();
+                                boolean useBooleanFilter = parent.isUseBooleanFilter();
+                                AnswerFilterInstanceBean filter = parent.getAnswerValue().getFilter();
+                                String bfName = (filter == null) ? null
+                                        : filter.getName();
+                                newStep = wdkUser.createBooleanStep(previous,
+                                        child, operator, useBooleanFilter,
+                                        bfName);
                             }
                             // implied: if we're revising a transform step,
                             // we've already run the revised query,
@@ -283,10 +304,12 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                             // be pointing to the step at insertIx - 1, so we
                             // just need to update subsequent steps.
 
-			    // since we want to insert the new step BEFORE targetStep,
-			    // we need to move targetStepId back, so it points to
-			    // targetStep.getPreviousStep
-			    targetStepId = targetStep.getPreviousStep().getStepId();
+                            // since we want to insert the new step BEFORE
+                            // targetStep,
+                            // we need to move targetStepId back, so it points
+                            // to
+                            // targetStep.getPreviousStep
+                            targetStepId = targetStep.getPreviousStep().getStepId();
                         }
                     }
 
