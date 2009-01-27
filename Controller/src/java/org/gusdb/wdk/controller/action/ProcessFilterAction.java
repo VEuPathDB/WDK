@@ -237,12 +237,10 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                         if (isRevise) {
                             // carry over custom name from original query, if
                             // any
-                            // Jerric - comment it out, since it gave the child
-                            // step the name of the parent, which is wrong
-                            // newStep.setCustomName(targetStep.getBaseCustomName());
-                            // newStep.update(false);
+			    newStep.setCustomName(targetStep.getBaseCustomName());
+                            newStep.update(false);
 
-                            boolean isChild = (targetStep.getNextStep() == null);
+                            boolean isChild = (targetStep.getParentStep() != null);
                             StepBean parent = targetStep.getNextStep();
                             if (isChild) parent = targetStep.getParentStep();
 
@@ -254,7 +252,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                                         ? parent.getPreviousStep() : newStep;
                                 StepBean child = isChild ? newStep
                                         : parent.getChildStep();
-                                String operator = parent.getOperation();
+                                String operator = (op == null) ? parent.getOperation() : op;
                                 boolean useBooleanFilter = parent.isUseBooleanFilter();
                                 AnswerFilterInstanceBean filter = parent.getAnswerValue().getFilter();
                                 String bfName = (filter == null) ? null
@@ -264,6 +262,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                                         bfName);
                                 newStepId = newStep.getStepId();
                             }
+			    targetStepId = parent.getStepId();
                         } else {
                             // if inserting before first step, there has to be a
                             // boolean expression
