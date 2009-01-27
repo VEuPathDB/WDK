@@ -237,12 +237,13 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                         if (isRevise) {
                             // carry over custom name from original query, if
                             // any
-                            newStep.setCustomName(targetStep.getBaseCustomName());
-                            newStep.update(false);
+                            // Jerric - comment it out, since it gave the child step the name of the parent, which is wrong
+                            // newStep.setCustomName(targetStep.getBaseCustomName());
+                            // newStep.update(false);
 
                             boolean isChild = (targetStep.getNextStep() == null);
                             StepBean parent = targetStep.getNextStep();
-                            if (isChild) parent = targetStep.getNextStep();
+                            if (isChild) parent = targetStep.getParentStep();
 
                             if (parent.getIsTransform()) {
                                 targetStep = updateTransform(wdkUser, parent,
