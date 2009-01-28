@@ -258,8 +258,17 @@ public class Strategy {
 
         stepIdsMap.put(new Integer(targetStep.getDisplayId()), new Integer(
                 newStep.getDisplayId()));
+	logger.info("UPDATING CURRENT BRANCH.");
+	logger.info("newStep id: " + newStep.getDisplayId());
+	logger.info("targetStepId: " + targetStepId);
+	logger.info("target Step: " + targetStep.getCustomName());
+	logger.info("target Step: " + targetStep.getQuestionName());
+	int i = 0;
         while (targetStep.getNextStep() != null) {
             targetStep = targetStep.getNextStep();
+	    logger.info("next " + i + ": " + targetStep.getDisplayId());
+	    logger.info("next " + i + ": " + targetStep.getCustomName());
+	    logger.info("next " + i + ": " + targetStep.getQuestionName());
             if (targetStep.isTransform()) {
                 newStep = updateTransform(targetStep, newStep.getDisplayId());
             } else {
@@ -281,6 +290,7 @@ public class Strategy {
         // if step has a parent step, need to continue
         // updating the rest of the strategy.
         while (newStep.getParentStep() != null) {
+	    logger.info("UPDATING PARENT BRANCHES.");
             // go to parent, update subsequent steps
             targetStep = newStep.getParentStep();
 

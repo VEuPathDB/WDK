@@ -96,7 +96,15 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 activeStrategies.remove(index);
             }
 
-            String boolExp = request.getParameter("booleanExpression");
+	    // Get operation from request params.  If it is non-null
+	    // but contains only whitespace, set it to null.
+            String op = request.getParameter("booleanExpression");
+	    if (op != null) {
+		op = op.trim();
+                if (op.length() == 0)
+		    op = null;
+	    }
+
             String insertStratIdStr = request.getParameter("insertStrategy");
 
             String filterName = request.getParameter("filter");
@@ -160,9 +168,6 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             Map<Integer, Integer> stepIdsMap;
             int targetStepId;
 
-            String op = boolExp;
-            if (op != null && op.indexOf(" ") >= 0)
-                op = boolExp.substring(boolExp.indexOf(" "), boolExp.length());
 
             // get root step of a strategy or a branch
             StepBean rootStep;
@@ -174,7 +179,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                         + rootStep.getParentStep().getBooleanExpression());
             }
 
-            boolExp = null;
+            String boolExp = null;
             if (isRevise && hasFilter) {
                 // get the original step
                 int originalStepId = Integer.parseInt(reviseStep);
@@ -194,7 +199,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 
                     StepBean previousStep = parentStep.getPreviousStep();
                     StepBean childStep = newStep;
-                    String operator = parentStep.getOperation();
+		    String operator = (op == null) ? parentStep.getOperation() : op;
                     boolean useBooleanFilter = parentStep.isUseBooleanFilter();
                     AnswerFilterInstanceBean filter = parentStep.getAnswerValue().getFilter();
                     String bfName = (filter == null) ? null : filter.getName();
@@ -282,8 +287,8 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                                 StepBean parent = targetStep;
                                 StepBean previous = parent.getPreviousStep();
                                 StepBean child = newStep;
-                                String operator = parent.getOperation();
-                                boolean useBooleanFilter = parent.isUseBooleanFilter();
+                                String operator = (op == null) ? parent.getOperation() : op;
+				boolean useBooleanFilter = parent.isUseBooleanFilter();
                                 AnswerFilterInstanceBean filter = parent.getAnswerValue().getFilter();
                                 String bfName = (filter == null) ? null
                                         : filter.getName();
