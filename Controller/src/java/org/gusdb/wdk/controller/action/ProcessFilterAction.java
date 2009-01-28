@@ -211,21 +211,18 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             } else if (!isRevise && !isInsert) {
                 // add new step to the end of a strategy or a branch
                 targetStepId = rootStep.getStepId();
-                StepBean step = null;
                 if (!isTransform) {
                     // now create step for operation query, if it's a boolean
                     boolExp = rootStep.getStepId() + " " + op + " " + newStepId;
-                    step = wdkUser.combineStep(boolExp, false);
-                    newStepId = step.getStepId();
-
-                    step.setChildStep(newStep);
+                    newStep = wdkUser.combineStep(boolExp, false);
+                    newStepId = newStep.getStepId();
                 }
                 // implied: since step is a transform (and we aren't inserting a
                 // strategy), we've
                 // already run the filter query (b/c the transform is just a
                 // query
                 // w/ a history param
-                stepIdsMap = strategy.addStep(targetStepId, step);
+                stepIdsMap = strategy.addStep(targetStepId, newStep);
             } else { // insert or edit
                 int stratLen = rootStep.getLength();
 
@@ -326,8 +323,6 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                         newStep = wdkUser.combineStep(boolExp, false);
                         newStepId = newStep.getStepId();
                     }
-
-                    targetStep.setChildStep(newStep);
                 } else { // branch length = 1 && revise: revise the first step
                     targetStep = strategy.getStepById(targetStepId);
                 }
