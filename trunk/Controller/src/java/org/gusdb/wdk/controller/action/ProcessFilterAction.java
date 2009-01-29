@@ -106,6 +106,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 	    }
 
             String insertStratIdStr = request.getParameter("insertStrategy");
+	    String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
 
             String filterName = request.getParameter("filter");
             boolean hasFilter = (filterName != null && filterName.length() > 0);
@@ -117,6 +118,9 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             String insertStep = request.getParameter("insert");
             boolean isInsert = (insertStep != null && insertStep.length() != 0);
 
+	    System.out.println("isRevise: " + isRevise);
+	    System.out.println("qFullName? " + (qFullName == null || qFullName.trim().length() == 0));
+	    System.out.println("qFullName: " + qFullName);
             // are we inserting an existing step?
             StepBean newStep;
             if (insertStratIdStr != null && insertStratIdStr.length() != 0) {
@@ -126,40 +130,43 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 newStep.setIsCollapsible(true);
                 newStep.setCollapsedName("Copy of " + insertStrat.getName());
                 newStep.update(false);
-            } else if (isRevise && hasFilter) {
+            } else if (isRevise && hasFilter || isRevise && (qFullName == null || qFullName.trim().length() == 0)) {
                 logger.debug("change filter: " + filterName);
                 // change the filter of an existing step, which can be a child
                 // step,
                 // or a boolean step
                 StepBean oldStep = strategy.getStepById(Integer.parseInt(reviseStep));
-                newStep = oldStep.createStep(filterName);
+		if (hasFilter)
+		    newStep = oldStep.createStep(filterName);
+		else {
+		    newStep = oldStep.getChildStep();
+		}
             } else {
                 // no: get question
-                String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
-                wdkQuestion = getQuestionByFullName(qFullName);
-                // QuestionForm fForm = prepareQuestionForm(wdkQuestion,
-                // request, (QuestionForm) form);
-                QuestionForm fForm = (QuestionForm) form;
-
-                // validate & parse params
-                Map<String, String> params = prepareParams(wdkUser, request,
-                        fForm);
-
-                try {
-                    newStep = ShowSummaryAction.summaryPaging(request,
-                            wdkQuestion, params, filterName);
-                } catch (Exception ex) {
-                    logger.error(ex);
-                    ex.printStackTrace();
-                    return showError(wdkModel, wdkUser, mapping, request,
-                            response);
-                }
-
-                // We only set isTransform = true if we're running a new query &
-                // it's a transform
-                // If we're inserting a strategy, it has to be a boolean (given
-                // current operations, at least)
-                isTransform = newStep.getIsTransform();
+		wdkQuestion = getQuestionByFullName(qFullName);
+		// QuestionForm fForm = prepareQuestionForm(wdkQuestion,
+		// request, (QuestionForm) form);
+		QuestionForm fForm = (QuestionForm) form;
+		
+		// validate & parse params
+		Map<String, String> params = prepareParams(wdkUser, request,
+							   fForm);
+		
+		try {
+		    newStep = ShowSummaryAction.summaryPaging(request,
+							      wdkQuestion, params, filterName);
+		} catch (Exception ex) {
+		    logger.error(ex);
+		    ex.printStackTrace();
+		    return showError(wdkModel, wdkUser, mapping, request,
+				     response);
+		}
+		
+		// We only set isTransform = true if we're running a new query &
+		// it's a transform
+		// If we're inserting a strategy, it has to be a boolean (given
+		// current operations, at least)
+		isTransform = newStep.getIsTransform();
             }
 
             int newStepId = newStep.getStepId();
@@ -278,6 +285,10 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                             if (!isTransform) {
                                 // check if we've changed the query itself, or
                                 // just the operation
+				logger.info("targetStepId: " + targetStepId);
+				logger.info("newStep: " + newStep.getStepId());
+				logger.info("newStep: " + newStep.getCustomName());
+				logger.info("newStep: " + newStep.getIsBoolean());
                                 newStep.setCustomName(targetStep.getChildStep().getBaseCustomName());
                                 newStep.update(false);
                                 // build standard boolExp for non-first step
