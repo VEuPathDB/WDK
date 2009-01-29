@@ -64,6 +64,7 @@ public abstract class Param extends WdkModelBase {
         helps = new ArrayList<WdkModelText>();
         suggestions = new ArrayList<ParamSuggestion>();
         allowEmpty = false;
+        emptyValue = "";
     }
 
     public Param(Param param) {
@@ -193,7 +194,7 @@ public abstract class Param extends WdkModelBase {
      * @return the emptyValue
      */
     public String getEmptyValue() {
-        return (emptyValue == null) ? defaultValue : emptyValue;
+        return emptyValue;
     }
 
     /**
@@ -310,6 +311,7 @@ public abstract class Param extends WdkModelBase {
                     defaultValue = suggest.getDefault();
                     sample = suggest.getSample();
                     allowEmpty = suggest.isAllowEmpty();
+                    emptyValue = suggest.getEmptyValue();
                     hasSuggest = true;
                 }
             }
