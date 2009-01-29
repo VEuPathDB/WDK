@@ -11,7 +11,8 @@ public class ParamSuggestion extends WdkModelBase {
 
     private String sample;
     private String defaultValue;
-    private boolean allowEmpty;
+    private boolean allowEmpty = false;
+    private String emptyValue = "";
 
     /**
      * the default constructor is used by the digester
@@ -36,10 +37,18 @@ public class ParamSuggestion extends WdkModelBase {
 
     /**
      * @param allowEmpty
-     *        the allowEmpty to set
+     *            the allowEmpty to set
      */
     public void setAllowEmpty(boolean allowEmpty) {
         this.allowEmpty = allowEmpty;
+    }
+
+    public String getEmptyValue() {
+        return emptyValue;
+    }
+
+    public void setEmptyValue(String emptyValue) {
+        this.emptyValue = emptyValue;
     }
 
     /**
@@ -51,7 +60,7 @@ public class ParamSuggestion extends WdkModelBase {
 
     /**
      * @param defaultValue
-     *        the defaultValue to set
+     *            the defaultValue to set
      */
     public void setDefault(String defaultValue) {
         this.defaultValue = (defaultValue.trim().length() == 0) ? null
@@ -67,7 +76,7 @@ public class ParamSuggestion extends WdkModelBase {
 
     /**
      * @param sample
-     *        the sample to set
+     *            the sample to set
      */
     public void setSample(String sample) {
         this.sample = sample;
@@ -83,11 +92,15 @@ public class ParamSuggestion extends WdkModelBase {
     // do nothing
     }
 
-    /* (non-Javadoc)
-     * @see org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model.WdkModel)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model
+     * .WdkModel)
      */
     @Override
     public void resolveReferences(WdkModel wodkModel) throws WdkModelException {
-        // do nothing
+    // do nothing
     }
 }
