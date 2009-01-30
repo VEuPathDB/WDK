@@ -227,17 +227,16 @@ public class Answer {
 
     public Map<String, Integer> getResultSizesByProject()
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
-		   JSONException, WdkUserException {
+            JSONException, WdkUserException {
         if (resultSizesByProject == null) {
             resultSizesByProject = new LinkedHashMap<String, Integer>();
             // need to run the query first
             ResultList resultList;
-	    // portal needs this so projects are in alphabetical order
+            // portal needs this so projects are in alphabetical order
             String message = idsQueryInstance.getResultMessage();
-            if (filter == null)
-		resultList = idsQueryInstance.getResults();
+            if (filter == null) resultList = idsQueryInstance.getResults();
             else resultList = filter.getResults(this);
-	
+
             try {
                 boolean hasMessage = (message != null && message.length() > 0);
                 if (hasMessage) {
@@ -805,6 +804,12 @@ public class Answer {
         summaryFieldMap.putAll(summaryFields);
     }
 
+    public void setSortingMap(Map<String, Boolean> sortingMap) {
+        this.sortingMap = new LinkedHashMap<String, Boolean>(sortingMap);
+        pagedIdSql = null;
+        pageRecordInstances = null;
+    }
+
     /**
      * @return returns a list of all primary key values.
      * @throws WdkModelException
@@ -883,6 +888,10 @@ public class Answer {
      */
     public void setFilter(AnswerFilterInstance filter) {
         this.filter = filter;
+        pagedIdSql = null;
+        pageRecordInstances = null;
+        resultSize = null;
+        resultSizesByProject = null;
     }
 
     public void setAnswerInfo(AnswerInfo answerInfo) {
@@ -893,8 +902,8 @@ public class Answer {
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException {
         ResultList resultList;
-	if (filter == null) resultList = idsQueryInstance.getResults();
-	else resultList = filter.getResults(this);
+        if (filter == null) resultList = idsQueryInstance.getResults();
+        else resultList = filter.getResults(this);
         PrimaryKeyAttributeField pkField = question.getRecordClass().getPrimaryKeyAttributeField();
         String[] pkColumns = pkField.getColumnRefs();
         List<PrimaryKeyAttributeValue> pkValues = new ArrayList<PrimaryKeyAttributeValue>();

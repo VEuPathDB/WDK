@@ -13,7 +13,6 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.AttributeField;
-import org.gusdb.wdk.model.FieldScope;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -147,8 +146,13 @@ public abstract class Reporter implements Iterable<Answer> {
     /**
      * @return
      */
-    protected Map<String, AttributeField> getSummaryAttributes() {
-        return baseAnswer.getSummaryAttributeFields();
+    protected Map<String, AttributeField> getDownloadableSummaryFields() {
+        Map<String, AttributeField> summary = baseAnswer.getSummaryAttributeFields();
+        Map<String, AttributeField> fields = new LinkedHashMap<String, AttributeField>();
+        for (AttributeField field : summary.values()) {
+            if (field.isInReportMaker()) fields.put(field.getName(), field);
+        }
+        return fields;
     }
 
     public Iterator<Answer> iterator() {
