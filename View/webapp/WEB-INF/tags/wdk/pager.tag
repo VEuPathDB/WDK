@@ -45,6 +45,7 @@
 		//	a.style.display = "block";
 			a.style.left = "450px";
 			a.style.top = "410px";
+			a.style.zIndex = "500";
 			ele.attributes[1].value = "openAdvancedPaging(this,false)";
 			ele.value = "Cancel";
 		}else{
