@@ -18,8 +18,9 @@ function WdkFilter() {
             content.slideToggle("normal");
             
             var src = this.src;
+            var image = src.substr(src.lastIndexOf("/") + 1);
             src = src.substr(0, src.lastIndexOf("/") + 1);
-            if (children.css("display")) {
+            if (image == "minus.gif") {
                 this.src = src + "plus.gif";
             } else {
                 this.src = src + "minus.gif";
