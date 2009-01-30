@@ -967,6 +967,15 @@ public class UserFactory {
         AnswerFilterInstance filter = recordClass.getFilterMap().get(filterName);
         if (filterName != null && filter == null) history.setValid(false);
         else answer.setFilter(filter);
+        
+        // apply the sorting & summary fields
+        String questionName = answer.getQuestion().getFullName();
+        User user = history.getUser();
+        Map<String, Boolean> sortingMap = user.getSortingAttributes(questionName);
+        answer.setSortingMap(sortingMap);
+        String[] summary = user.getSummaryAttributes(questionName);
+        answer.setSumaryAttributes(summary);
+        
         history.setAnswer(answer);
     }
 
