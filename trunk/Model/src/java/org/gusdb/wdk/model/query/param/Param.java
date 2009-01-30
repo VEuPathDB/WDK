@@ -298,7 +298,7 @@ public abstract class Param extends WdkModelBase {
                     defaultValue = suggest.getDefault();
                     sample = suggest.getSample();
                     allowEmpty = suggest.isAllowEmpty();
-                    emptyValue = suugest.getEmptyValue();
+                    emptyValue = suggest.getEmptyValue();
                     hasSuggest = true;
                 }
             }
