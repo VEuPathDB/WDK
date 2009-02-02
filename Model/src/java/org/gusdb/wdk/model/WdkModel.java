@@ -582,8 +582,21 @@ public class WdkModel {
         for (ModelSetI qSet : xmlQuestionSets.values()) {
             qSet.resolveReferences(this);
         }
+        Set<String> invalidCategories = new LinkedHashSet<String>();
         for (Categories categories : this.categoriesMap.values()) {
-            categories.resolveReferences(this);
+            // determine if the recordClass is valid
+            String recordClassRef = categories.getRecordClassRef();
+            try {
+                this.resolveReference(recordClassRef);
+                categories.resolveReferences(this);
+            } catch (WdkModelException ex) {
+                logger.warn("One categories has an invalid recordClass ["
+                        + recordClassRef + "]; the categories will be ignored.");
+                invalidCategories.add(recordClassRef);
+            }
+        }
+        for (String recordClassRef : invalidCategories) {
+            this.categoriesMap.remove(recordClassRef);
         }
     }
 
