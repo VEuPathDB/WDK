@@ -15,26 +15,83 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.QueryFactory;
+import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/**
+ * @author xingao
+ * 
+ *         There are four possible inputs to a param:
+ * 
+ *         raw data: the data retrieved by processQuestion action, which can be
+ *         very long, and needs to be compressed.
+ * 
+ *         user-dependent data: the data used in all public url, which are
+ *         short, and can be compressed. User-dependent data is stored in the
+ *         steps table. User-dependent data is also used in creating a query.
+ * 
+ *         user-independent data: It can be converted back into user-dependent
+ *         data, which sometimes means to create new entities for the user.
+ *         User-independent data is stored into the answers table.
+ * 
+ *         Internal data: the data used in the SQL.
+ */
 public abstract class Param extends WdkModelBase {
 
     protected static Logger logger = Logger.getLogger(Param.class);
 
     public abstract Param clone();
 
-    protected abstract void validateValue(String value)
+    /**
+     * Convert raw data to dependent data. this method needs to handle the case
+     * when the input is already dependent data.
+     * 
+     * @param user
+     * @param rawValue
+     * @return
+     * @throws NoSuchAlgorithmException
+     * @throws WdkModelException
+     * @throws WdkUserException
+     * @throws SQLException
+     * @throws JSONException
+     */
+    public abstract String rawOrDependentValueToDependentValue(User user,
+            String rawValue) throws NoSuchAlgorithmException,
+            WdkModelException, WdkUserException, SQLException, JSONException;
+
+    public abstract String dependentValueToRawValue(User user,
+            String independentValue) throws WdkModelException,
+            NoSuchAlgorithmException, WdkUserException, SQLException,
+            JSONException;
+
+    public abstract String dependentValueToIndependentValue(User user,
+            String dependentValue) throws NoSuchAlgorithmException,
+            WdkUserException, WdkModelException, SQLException, JSONException;
+
+    public abstract String independentValueToDependentValue(User user,
+            String independentValue) throws NoSuchAlgorithmException,
+            WdkModelException, SQLException, JSONException, WdkUserException;
+
+    public abstract String independentValueToInternalValue(User user,
+            String independentValue) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException;
+
+    /**
+     * The input the method can be either raw data or dependent data
+     * 
+     * @param user
+     * @param rawOrDependentValue
+     * @throws WdkModelException
+     * @throws NoSuchAlgorithmException
+     * @throws SQLException
+     * @throws JSONException
+     * @throws WdkUserException
+     */
+    protected abstract void validateValue(User user, String rawOrDependentValue)
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException;
-
-    public abstract String getInternalValue(String value)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException;
-
-    protected abstract String getUserIndependentValue(String value)
-            throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, JSONException, SQLException;
 
     protected abstract void appendJSONContent(JSONObject jsParam)
             throws JSONException;
@@ -70,6 +127,7 @@ public abstract class Param extends WdkModelBase {
         helps = new ArrayList<WdkModelText>();
         suggestions = new ArrayList<ParamSuggestion>();
         allowEmpty = false;
+        emptyValue = "";
     }
 
     public Param(Param param) {
@@ -86,6 +144,7 @@ public abstract class Param extends WdkModelBase {
         this.allowEmpty = param.allowEmpty;
         this.emptyValue = param.emptyValue;
         this.paramSet = param.paramSet;
+        this.wdkModel = param.wdkModel;
     }
 
     /**
@@ -202,7 +261,7 @@ public abstract class Param extends WdkModelBase {
      * @return the emptyValue
      */
     public String getEmptyValue() {
-        return (emptyValue == null) ? defaultValue : emptyValue;
+        return emptyValue;
     }
 
     /**
@@ -210,7 +269,7 @@ public abstract class Param extends WdkModelBase {
      *            the emptyValue to set
      */
     public void setEmptyValue(String emptyValue) {
-        if (emptyValue != null && emptyValue.length() == 0) emptyValue = null;
+        if (emptyValue != null && emptyValue.length() == 0) emptyValue = "";
         this.emptyValue = emptyValue;
     }
 
@@ -244,23 +303,6 @@ public abstract class Param extends WdkModelBase {
         if (group != null) buf.append("  group=" + group.getName() + newline);
 
         return buf.toString();
-    }
-
-    public String decompressValue(String value) throws WdkModelException {
-        if (value == null) {
-            if (isAllowEmpty()) return null;
-            throw new WdkModelException("The param '" + getFullName()
-                    + "' doesn't allow empty input.");
-        }
-
-        // check if the value is compressed; that is, if it has a compression
-        // prefix
-        if (!value.startsWith(Utilities.PARAM_COMPRESSE_PREFIX)) return value;
-
-        // decompress the value
-        String checksum = value.substring(
-                Utilities.PARAM_COMPRESSE_PREFIX.length()).trim();
-        return queryFactory.getClobValue(checksum);
     }
 
     /*
@@ -306,6 +348,34 @@ public abstract class Param extends WdkModelBase {
         suggestions = null;
     }
 
+    protected String compressValue(String value) throws WdkModelException,
+            NoSuchAlgorithmException {
+        // check if the value is already been compressed
+        if (value == null || value.length() == 0) return null;
+
+        if (value.startsWith(Utilities.PARAM_COMPRESSE_PREFIX)) return value;
+
+        // check if the value needs to be compressed
+        if (value.length() >= Utilities.MAX_PARAM_VALUE_SIZE) {
+            String checksum = queryFactory.makeClobChecksum(value);
+            value = Utilities.PARAM_COMPRESSE_PREFIX + checksum;
+        }
+        return value;
+    }
+
+    public String decompressValue(String value) throws WdkModelException {
+        if (value == null || value.length() == 0) return null;
+
+        // check if the value is compressed; that is, if it has a compression
+        // prefix
+        if (!value.startsWith(Utilities.PARAM_COMPRESSE_PREFIX)) return value;
+
+        // decompress the value
+        String checksum = value.substring(
+                Utilities.PARAM_COMPRESSE_PREFIX.length()).trim();
+        return queryFactory.getClobValue(checksum);
+    }
+
     public JSONObject getJSONContent() throws JSONException {
         JSONObject jsParam = new JSONObject();
         jsParam.put("name", getFullName());
@@ -326,48 +396,17 @@ public abstract class Param extends WdkModelBase {
         return sql.replaceAll(regex, Matcher.quoteReplacement(internalValue));
     }
 
-    public String compressValue(String value) throws WdkModelException,
-            NoSuchAlgorithmException {
-        // check if the value is already been compressed
-        if (value == null) return null;
-
-        if (value.startsWith(Utilities.PARAM_COMPRESSE_PREFIX)) return value;
-
-        // check if the value needs to be compressed
-        if (value.length() >= Utilities.MAX_PARAM_VALUE_SIZE) {
-            String checksum = queryFactory.makeClobChecksum(value);
-            value = Utilities.PARAM_COMPRESSE_PREFIX + checksum;
-        }
-        return value;
-    }
-
-    /**
-     * decompress value, and prepare user independent value
-     * 
-     * @param value
-     * @return
-     * @throws WdkModelException
-     * @throws SQLException
-     * @throws JSONException
-     * @throws WdkUserException
-     * @throws NoSuchAlgorithmException
-     */
-    public String prepareValue(String value) throws WdkModelException,
-            NoSuchAlgorithmException, WdkUserException, JSONException,
-            SQLException {
-        value = decompressValue(value);
-        return getUserIndependentValue(value);
-    }
-
-    public void validate(String value) throws NoSuchAlgorithmException,
-            WdkModelException, SQLException, JSONException, WdkUserException {
+    public void validate(User user, String dependentValue)
+            throws NoSuchAlgorithmException, WdkModelException, SQLException,
+            JSONException, WdkUserException {
         // handle the empty case
-        if (value == null || value.length() == 0) {
-            if (allowEmpty) value = getEmptyValue();
-            else value = null;
+        if (dependentValue == null || dependentValue.length() == 0) {
+            if (!allowEmpty)
+                throw new WdkModelException("The param [" + getFullName()
+                        + "] does not allow empty value");
         }
 
         // the sub classes will complete further validation
-        validateValue(value);
+        validateValue(user, dependentValue);
     }
 }

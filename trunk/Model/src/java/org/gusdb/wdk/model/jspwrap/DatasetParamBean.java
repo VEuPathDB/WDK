@@ -3,6 +3,7 @@
  */
 package org.gusdb.wdk.model.jspwrap;
 
+import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 
 import org.gusdb.wdk.model.WdkModelException;
@@ -15,20 +16,48 @@ import org.gusdb.wdk.model.query.param.DatasetParam;
  */
 public class DatasetParamBean extends ParamBean {
 
-    private String combinedKey;
     private DatasetParam datasetParam;
+    private String checksum;
+    private UserBean user;
 
     public DatasetParamBean(DatasetParam datasetParam) {
         super(datasetParam);
         this.datasetParam = datasetParam;
     }
 
-    public void setCombinedKey(String combinedKey) {
-        this.combinedKey = combinedKey;
+    /**
+     * @param checksum
+     */
+    public void setCombinedKey(String checksum) {
+        this.checksum = checksum;
+    }
+
+    public void setUser(UserBean user) {
+        this.user = user;
     }
 
     public DatasetBean getDataset() throws WdkModelException, WdkUserException,
             SQLException {
-        return new DatasetBean(datasetParam.getDataset(combinedKey));
+        return user.getDataset(checksum);
     }
+
+    /**
+     * @param user
+     * @param uploadFile
+     * @param rawValue
+     * @return
+     * @throws NoSuchAlgorithmException
+     * @throws WdkUserException
+     * @throws WdkModelException
+     * @throws SQLException
+     * @see org.gusdb.wdk.model.query.param.DatasetParam#rawValueToDependentValue(org.gusdb.wdk.model.user.User,
+     *      java.lang.String, java.lang.String)
+     */
+    public String rawValueToDependentValue(UserBean user, String uploadFile,
+            String rawValue) throws NoSuchAlgorithmException, WdkUserException,
+            WdkModelException, SQLException {
+        return datasetParam.rawValueToDependentValue(user.getUser(),
+                uploadFile, rawValue);
+    }
+
 }

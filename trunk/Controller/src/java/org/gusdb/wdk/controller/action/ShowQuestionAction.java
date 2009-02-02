@@ -182,7 +182,7 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
                 String[] labels = new String[steps.length];
                 for (int idx = 0; idx < steps.length; idx++) {
                     StepBean step = steps[idx];
-                    terms[idx] = userSignature + ":" + step.getStepId();
+                    terms[idx] = Integer.toString(step.getStepId());
                     labels[idx] = "#" + step.getStepId() + " - "
                             + step.getCustomName();
                 }

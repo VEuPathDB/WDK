@@ -208,15 +208,16 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
      * @throws SQLException
      * @throws NoSuchAlgorithmException
      */
-    public AnswerValue makeAnswerValue(Map<String, String> paramValues)
-            throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException {
+    public AnswerValue makeAnswerValue(User user,
+            Map<String, String> dependentValues) throws WdkUserException,
+            WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException {
         int pageStart = 1;
         int pageEnd = Utilities.DEFAULT_PAGE_SIZE;
         Map<String, Boolean> sortingMap = this.defaultSortingMap;
         AnswerFilterInstance filter = recordClass.getDefaultFilter();
-        return makeAnswerValue(paramValues, pageStart, pageEnd, sortingMap,
-                filter);
+        return makeAnswerValue(user, dependentValues, pageStart, pageEnd,
+                sortingMap, filter);
     }
 
     /**
@@ -233,14 +234,14 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
      * @throws SQLException
      * @throws NoSuchAlgorithmException
      */
-    public AnswerValue makeAnswerValue(Map<String, String> paramValues,
-            int pageStart, int pageEnd, Map<String, Boolean> sortingAttributes,
-            AnswerFilterInstance filter) throws WdkUserException,
-            WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException {
-        QueryInstance qi = query.makeInstance(paramValues);
-        AnswerValue answerValue = new AnswerValue(this, qi, pageStart, pageEnd,
-                sortingAttributes, filter);
+    public AnswerValue makeAnswerValue(User user,
+            Map<String, String> dependentValues, int pageStart, int pageEnd,
+            Map<String, Boolean> sortingAttributes, AnswerFilterInstance filter)
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException {
+        QueryInstance qi = query.makeInstance(user, dependentValues);
+        AnswerValue answerValue = new AnswerValue(user, this, qi, pageStart,
+                pageEnd, sortingAttributes, filter);
 
         return answerValue;
     }

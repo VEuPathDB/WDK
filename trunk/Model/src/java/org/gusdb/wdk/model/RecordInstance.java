@@ -10,6 +10,7 @@ import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 
 public class RecordInstance extends AttributeValueContainer {
@@ -20,6 +21,7 @@ public class RecordInstance extends AttributeValueContainer {
 
     private Map<String, TableValue> tableValueCache = new LinkedHashMap<String, TableValue>();
 
+    private User user;
     private AnswerValue answerValue;
 
     /**
@@ -32,9 +34,11 @@ public class RecordInstance extends AttributeValueContainer {
      * @throws SQLException
      * @throws NoSuchAlgorithmException
      */
-    public RecordInstance(RecordClass recordClass, Map<String, Object> pkValues)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+    public RecordInstance(User user, RecordClass recordClass,
+            Map<String, Object> pkValues) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
+        this.user = user;
         this.recordClass = recordClass;
 
         pkValues = lookupPrimaryKeys(pkValues);
@@ -116,7 +120,8 @@ public class RecordInstance extends AttributeValueContainer {
         } else {
             query = recordClass.getAttributeQuery(queryName);
         }
-        QueryInstance instance = query.makeInstance(primaryKey.getValues());
+        QueryInstance instance = query.makeInstance(user,
+                primaryKey.getValues());
 
         ResultList resultList = null;
         try {
@@ -184,7 +189,7 @@ public class RecordInstance extends AttributeValueContainer {
         } else {
             // get the table field
             TableField tableField = recordClass.getTableField(tableName);
-            value = new TableValue(primaryKey, tableField);
+            value = new TableValue(user, primaryKey, tableField);
         }
         return value;
     }
@@ -319,8 +324,8 @@ public class RecordInstance extends AttributeValueContainer {
         Map<String, Boolean> sortingMap = question.getSortingAttributeMap();
         AnswerFilterInstance filter = question.getRecordClass().getDefaultFilter();
         // create an answer with maximium allowed rows
-        return question.makeAnswerValue(params, pageStart, pageEnd, sortingMap,
-                filter);
+        return question.makeAnswerValue(user, params, pageStart, pageEnd,
+                sortingMap, filter);
     }
 
     // maybe change this to RecordInstance[][] for jspwrap purposes?
@@ -530,7 +535,7 @@ public class RecordInstance extends AttributeValueContainer {
             oldValues.put(oldParam, value);
         }
 
-        QueryInstance instance = aliasQuery.makeInstance(oldValues);
+        QueryInstance instance = aliasQuery.makeInstance(user, oldValues);
         ResultList resultList = instance.getResults();
         if (resultList.next()) {
             for (String param : pkValues.keySet()) {

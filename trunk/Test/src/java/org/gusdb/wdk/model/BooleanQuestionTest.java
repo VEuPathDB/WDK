@@ -33,15 +33,19 @@ import org.junit.Test;
 public class BooleanQuestionTest {
 
     private WdkModel wdkModel;
+    private User user;
     private DBPlatform platform;
 
     private RecordClass recordClass;
-    private String leftValue;
-    private String rightValue;
+    private AnswerValue leftAnswerValue;
+    private AnswerValue rightAnswerValue;
+    private String leftStepId;
+    private String rightStepId;
 
     public BooleanQuestionTest() throws Exception {
         // load the model
         wdkModel = UnitTestHelper.getModel();
+        user = UnitTestHelper.getRegisteredUser();
         platform = wdkModel.getQueryPlatform();
     }
 
@@ -51,9 +55,11 @@ public class BooleanQuestionTest {
         Step left = UnitTestHelper.createNormalStep(user);
         Step right = UnitTestHelper.createNormalStep(user);
 
-        leftValue = left.getAnswer().getAnswerChecksum();
-        rightValue = right.getAnswer().getAnswerChecksum();
-        recordClass = left.getAnswer().getAnswerValue().getQuestion().getRecordClass();
+        leftStepId = Integer.toString(left.getDisplayId());
+        rightStepId = Integer.toString(right.getDisplayId());
+        leftAnswerValue = left.getAnswer().getAnswerValue();
+        rightAnswerValue = right.getAnswer().getAnswerValue();
+        recordClass = leftAnswerValue.getQuestion().getRecordClass();
     }
 
     @Test
@@ -66,27 +72,26 @@ public class BooleanQuestionTest {
 
         AnswerParam leftParam = booleanQuery.getLeftOperandParam();
         // calling answer info to make sure the answer is saved first
-        paramValues.put(leftParam.getName(), leftValue);
+        paramValues.put(leftParam.getName(), leftStepId);
 
         AnswerParam rightParam = booleanQuery.getRightOperandParam();
-        paramValues.put(rightParam.getName(), rightValue);
+        paramValues.put(rightParam.getName(), rightStepId);
 
         StringParam operator = booleanQuery.getOperatorParam();
-        paramValues.put(operator.getName(), BooleanOperator.UNION.getOperator(platform));
+        paramValues.put(operator.getName(),
+                BooleanOperator.UNION.getOperator(platform));
 
         StringParam expansion = booleanQuery.getUseBooleanFilter();
         paramValues.put(expansion.getName(), "false");
 
-        AnswerValue answerValue = booleanQuestion.makeAnswerValue(paramValues);
+        AnswerValue answerValue = booleanQuestion.makeAnswerValue(user,
+                paramValues);
         int size = answerValue.getResultSize();
 
-        AnswerValue leftAnswer = leftParam.getAnswerValue(leftValue);
-        AnswerValue rightAnswer = rightParam.getAnswerValue(rightValue);
-
         Assert.assertTrue("bigger than left",
-                size >= leftAnswer.getResultSize());
+                size >= leftAnswerValue.getResultSize());
         Assert.assertTrue("bigger than right",
-                size >= rightAnswer.getResultSize());
+                size >= rightAnswerValue.getResultSize());
     }
 
     @Test
@@ -99,10 +104,10 @@ public class BooleanQuestionTest {
 
         AnswerParam leftParam = booleanQuery.getLeftOperandParam();
         // calling answer info to make sure the answer is saved first
-        paramValues.put(leftParam.getName(), leftValue);
+        paramValues.put(leftParam.getName(), leftStepId);
 
         AnswerParam rightParam = booleanQuery.getRightOperandParam();
-        paramValues.put(rightParam.getName(), rightValue);
+        paramValues.put(rightParam.getName(), rightStepId);
 
         StringParam operator = booleanQuery.getOperatorParam();
         paramValues.put(operator.getName(),
@@ -111,16 +116,14 @@ public class BooleanQuestionTest {
         StringParam expansion = booleanQuery.getUseBooleanFilter();
         paramValues.put(expansion.getName(), "false");
 
-        AnswerValue answerValue = booleanQuestion.makeAnswerValue(paramValues);
+        AnswerValue answerValue = booleanQuestion.makeAnswerValue(user,
+                paramValues);
         int size = answerValue.getResultSize();
 
-        AnswerValue leftAnswer = leftParam.getAnswerValue(leftValue);
-        AnswerValue rightAnswer = rightParam.getAnswerValue(rightValue);
-
         Assert.assertTrue("smaller than left",
-                size <= leftAnswer.getResultSize());
+                size <= leftAnswerValue.getResultSize());
         Assert.assertTrue("smaller than right",
-                size <= rightAnswer.getResultSize());
+                size <= rightAnswerValue.getResultSize());
     }
 
     @Test
@@ -133,10 +136,10 @@ public class BooleanQuestionTest {
 
         AnswerParam leftParam = booleanQuery.getLeftOperandParam();
         // calling answer info to make sure the answer is saved first
-        paramValues.put(leftParam.getName(), leftValue);
+        paramValues.put(leftParam.getName(), leftStepId);
 
         AnswerParam rightParam = booleanQuery.getRightOperandParam();
-        paramValues.put(rightParam.getName(), rightValue);
+        paramValues.put(rightParam.getName(), rightStepId);
 
         StringParam operator = booleanQuery.getOperatorParam();
         paramValues.put(operator.getName(),
@@ -145,13 +148,12 @@ public class BooleanQuestionTest {
         StringParam expansion = booleanQuery.getUseBooleanFilter();
         paramValues.put(expansion.getName(), "false");
 
-        AnswerValue answerValue = booleanQuestion.makeAnswerValue(paramValues);
+        AnswerValue answerValue = booleanQuestion.makeAnswerValue(user,
+                paramValues);
         int size = answerValue.getResultSize();
 
-        AnswerValue leftAnswer = leftParam.getAnswerValue(leftValue);
-
         Assert.assertTrue("smaller than left",
-                size <= leftAnswer.getResultSize());
+                size <= leftAnswerValue.getResultSize());
     }
 
     @Test
@@ -164,10 +166,10 @@ public class BooleanQuestionTest {
 
         AnswerParam leftParam = booleanQuery.getLeftOperandParam();
         // calling answer info to make sure the answer is saved first
-        paramValues.put(leftParam.getName(), leftValue);
+        paramValues.put(leftParam.getName(), leftStepId);
 
         AnswerParam rightParam = booleanQuery.getRightOperandParam();
-        paramValues.put(rightParam.getName(), rightValue);
+        paramValues.put(rightParam.getName(), rightStepId);
 
         StringParam operator = booleanQuery.getOperatorParam();
         paramValues.put(operator.getName(),
@@ -176,12 +178,11 @@ public class BooleanQuestionTest {
         StringParam expansion = booleanQuery.getUseBooleanFilter();
         paramValues.put(expansion.getName(), "false");
 
-        AnswerValue answerValue = booleanQuestion.makeAnswerValue(paramValues);
+        AnswerValue answerValue = booleanQuestion.makeAnswerValue(user,
+                paramValues);
         int size = answerValue.getResultSize();
 
-        AnswerValue rightAnswer = rightParam.getAnswerValue(rightValue);
-
         Assert.assertTrue("smaller than right",
-                size <= rightAnswer.getResultSize());
+                size <= rightAnswerValue.getResultSize());
     }
 }

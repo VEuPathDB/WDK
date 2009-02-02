@@ -123,7 +123,7 @@ public class Dataset {
      *            the uploadFile to set
      */
     void setUploadFile(String uploadFile) {
-        if (uploadFile.length() > UPLOAD_FILE_MAX_SIZE)
+        if (uploadFile != null && uploadFile.length() > UPLOAD_FILE_MAX_SIZE)
             uploadFile = uploadFile.substring(0, UPLOAD_FILE_MAX_SIZE - 3)
                     + "...";
         this.uploadFile = uploadFile;

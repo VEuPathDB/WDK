@@ -55,30 +55,32 @@ public class AnswerFactory {
             WdkUserException {
         // use transaction
         String answerChecksum = answerValue.getChecksum();
+        User user = answerValue.getUser();
 
         // check if answer has been saved.
-        Answer answer = getAnswer(answerChecksum);
+        Answer answer = getAnswer(user, answerChecksum);
         if (answer == null) {
             Question question = answerValue.getQuestion();
             // the answer hasn't been stored, create an answerInfo, and save it
             int answerId = userPlatform.getNextId(wdkSchema, TABLE_ANSWER);
-            answer = new Answer(this, answerId);
+            answer = new Answer(user, this, answerId);
             answer.setAnswerChecksum(answerValue.getChecksum());
             answer.setProjectId(wdkModel.getProjectId());
             answer.setProjectVersion(wdkModel.getVersion());
             answer.setQueryChecksum(question.getQuery().getChecksum());
             answer.setQuestionName(question.getFullName());
 
-            String paramClob = answerValue.getIdsQueryInstance().getParamJSONObject().toString();
+            JSONObject independentValues = answerValue.getIdsQueryInstance().getIndependentParanValuesJSONObject();
+            String paramClob = independentValues.toString();
             saveAnswer(answer, paramClob);
         }
         answerValue.setAnswer(answer);
         return answer;
     }
 
-    AnswerValue getAnswerValue(Answer answer) throws WdkModelException,
-            NoSuchAlgorithmException, JSONException, WdkUserException,
-            SQLException {
+    AnswerValue getAnswerValue(User user, Answer answer)
+            throws WdkModelException, NoSuchAlgorithmException, JSONException,
+            WdkUserException, SQLException {
         // get question
         Question question = (Question) wdkModel.resolveReference(answer.getQuestionName());
 
@@ -95,11 +97,10 @@ public class AnswerFactory {
 
         // get and parse the params
         String paramClob = getParamsClob(answer.getAnswerChecksum());
-        Map<String, String> pvalues = parseParams(query.getParamMap(),
-                paramClob);
+        Map<String, String> pvalues = parseParams(user, query, paramClob);
 
         // create the answer with default page size
-        AnswerValue answerValue = question.makeAnswerValue(pvalues);
+        AnswerValue answerValue = question.makeAnswerValue(user, pvalues);
         answerValue.setAnswer(answer);
         return answerValue;
     }
@@ -110,7 +111,8 @@ public class AnswerFactory {
      *         return null.
      * @throws SQLException
      */
-    public Answer getAnswer(String answerChecksum) throws SQLException {
+    public Answer getAnswer(User user, String answerChecksum)
+            throws SQLException {
         String projectId = wdkModel.getProjectId();
 
         // construct the query
@@ -130,7 +132,8 @@ public class AnswerFactory {
             resultSet = ps.executeQuery();
 
             if (resultSet.next()) {
-                answer = new Answer(this, resultSet.getInt(COLUMN_ANSWER_ID));
+                answer = new Answer(user, this,
+                        resultSet.getInt(COLUMN_ANSWER_ID));
                 answer.setAnswerChecksum(answerChecksum);
                 answer.setProjectId(projectId);
                 answer.setProjectVersion(resultSet.getString(COLUMN_PROJECT_VERSION));
@@ -197,15 +200,18 @@ public class AnswerFactory {
         }
     }
 
-    private Map<String, String> parseParams(Map<String, Param> params,
-            String paramClob) throws JSONException {
+    private Map<String, String> parseParams(User user, Query query,
+            String paramClob) throws JSONException, NoSuchAlgorithmException,
+            WdkModelException, WdkUserException, SQLException {
+        Map<String, Param> params = query.getParamMap();
         JSONObject jsParams = new JSONObject(paramClob);
-        Map<String, String> paramValues = new LinkedHashMap<String, String>();
+        Map<String, String> independentValues = new LinkedHashMap<String, String>();
         for (String param : params.keySet()) {
             String value = (jsParams.has(param)) ? jsParams.getString(param)
                     : null;
-            paramValues.put(param, value);
+            independentValues.put(param, value);
         }
-        return paramValues;
+
+        return query.independentValuesToDependentValues(user, independentValues);
     }
 }

@@ -85,10 +85,10 @@ public class ParamBean {
      * @throws SQLException
      * @throws NoSuchAlgorithmException
      */
-    public void validate(String val) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
-        param.validate(val);
+    public void validate(UserBean user, String rawOrDependentValue)
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
+        param.validate(user.getUser(), rawOrDependentValue);
     }
 
     public void setParamValue(String paramValue) {
@@ -114,30 +114,77 @@ public class ParamBean {
     }
 
     /**
-     * @param value
+     * @param user
+     * @param dependentValue
      * @return
+     * @throws NoSuchAlgorithmException
      * @throws WdkUserException
      * @throws WdkModelException
-     * @throws NoSuchAlgorithmException
-     * @throws JSONException
      * @throws SQLException
-     * @see org.gusdb.wdk.model.query.param.Param#prepareValue(java.lang.String)
+     * @throws JSONException
+     * @see org.gusdb.wdk.model.query.param.Param#dependentValueToIndependentValue(org.gusdb.wdk.model.user.User,
+     *      java.lang.String)
      */
-    public String prepareValue(String value)
-            throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, JSONException, SQLException {
-        return param.prepareValue(value);
+    public String dependentValueToIndependentValue(UserBean user,
+            String dependentValue) throws NoSuchAlgorithmException,
+            WdkUserException, WdkModelException, SQLException, JSONException {
+        return param.dependentValueToIndependentValue(user.getUser(),
+                dependentValue);
     }
 
     /**
-     * @param value
+     * @param user
+     * @param independentValue
+     * @return
+     * @throws NoSuchAlgorithmException
+     * @throws WdkModelException
+     * @throws SQLException
+     * @throws JSONException
+     * @throws WdkUserException
+     * @see org.gusdb.wdk.model.query.param.Param#independentValueToDependentValue(org.gusdb.wdk.model.user.User,
+     *      java.lang.String)
+     */
+    public String independentValueToDependentValue(UserBean user,
+            String independentValue) throws NoSuchAlgorithmException,
+            WdkModelException, SQLException, JSONException, WdkUserException {
+        return param.independentValueToDependentValue(user.getUser(),
+                independentValue);
+    }
+
+    /**
+     * @param user
+     * @param independentValue
      * @return
      * @throws WdkModelException
      * @throws NoSuchAlgorithmException
-     * @see org.gusdb.wdk.model.query.param.Param#compressValue(java.lang.String)
+     * @throws WdkUserException
+     * @throws SQLException
+     * @throws JSONException
+     * @see org.gusdb.wdk.model.query.param.Param#independentValueToRawValue(org.gusdb.wdk.model.user.User,
+     *      java.lang.String)
      */
-    public String compressValue(String value) throws WdkModelException,
-            NoSuchAlgorithmException {
-        return param.compressValue(value);
+    public String dependentValueToRawValue(UserBean user, String dependentValue)
+            throws WdkModelException, NoSuchAlgorithmException,
+            WdkUserException, SQLException, JSONException {
+        return param.dependentValueToRawValue(user.getUser(), dependentValue);
     }
+
+    /**
+     * @param user
+     * @param rawValue
+     * @return
+     * @throws NoSuchAlgorithmException
+     * @throws WdkModelException
+     * @throws WdkUserException
+     * @throws SQLException
+     * @throws JSONException
+     * @see org.gusdb.wdk.model.query.param.Param#rawValueToIndependentValue(org.gusdb.wdk.model.user.User,
+     *      java.lang.String)
+     */
+    public String rawOrDependentValueToDependentValue(UserBean user, String rawValue)
+            throws NoSuchAlgorithmException, WdkModelException,
+            WdkUserException, SQLException, JSONException {
+        return param.rawOrDependentValueToDependentValue(user.getUser(), rawValue);
+    }
+
 }

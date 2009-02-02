@@ -23,6 +23,7 @@ import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -52,6 +53,7 @@ public abstract class QueryInstance {
 
     private static final Logger logger = Logger.getLogger(QueryInstance.class);
 
+    protected User user;
     private Integer instanceId;
     protected Query query;
     protected WdkModel wdkModel;
@@ -62,9 +64,10 @@ public abstract class QueryInstance {
     private String checksum;
     private Integer resultSize;
 
-    protected QueryInstance(Query query, Map<String, String> values)
+    protected QueryInstance(User user, Query query, Map<String, String> values)
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException {
+        this.user = user;
         this.query = query;
         this.wdkModel = query.getWdkModel();
         this.cached = query.isCached();
@@ -107,12 +110,13 @@ public abstract class QueryInstance {
     private void setValues(Map<String, String> values)
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException {
-        // logger.debug("----- input value for [" + query.getFullName() + "] -----");
+        // logger.debug("----- input value for [" + query.getFullName() +
+        // "] -----");
         // for(String paramName : values.keySet()) {
-        //    logger.debug(paramName + "='" + values.get(paramName) + "'");
-        //}
+        // logger.debug(paramName + "='" + values.get(paramName) + "'");
+        // }
 
-        validateValues(values);
+        validateValues(user, values);
         // passed, assign the value
         this.values = new LinkedHashMap<String, String>(values);
         checksum = null;
@@ -157,7 +161,7 @@ public abstract class QueryInstance {
         jsInstance.put("query", query.getFullName());
         jsInstance.put("querySignature", query.getChecksum());
 
-        jsInstance.put("params", getParamJSONObject());
+        jsInstance.put("params", getIndependentParanValuesJSONObject());
 
         // include extra info from child
         appendSJONContent(jsInstance);
@@ -165,18 +169,24 @@ public abstract class QueryInstance {
         return jsInstance;
     }
 
-    public JSONObject getParamJSONObject() throws JSONException,
-            NoSuchAlgorithmException, WdkUserException, WdkModelException,
-            SQLException {
+    public JSONObject getIndependentParanValuesJSONObject()
+            throws JSONException, NoSuchAlgorithmException, WdkUserException,
+            WdkModelException, SQLException {
+        // the values are dependent values. need to convert it into independent
+        // values
+        Map<String, String> independentValues = query.dependentValuesToIndependentValues(
+                user, values);
+
         // construct param-value map; param is sorted by name
-        String[] paramNames = new String[values.size()];
-        values.keySet().toArray(paramNames);
+        String[] paramNames = new String[independentValues.size()];
+        independentValues.keySet().toArray(paramNames);
         Arrays.sort(paramNames);
 
         JSONObject jsParams = new JSONObject();
         for (String paramName : paramNames) {
-            String value = values.get(paramName);
-            jsParams.put(paramName, value);
+            String value = independentValues.get(paramName);
+            if (value != null && value.length() > 0)
+                jsParams.put(paramName, value);
         }
         return jsParams;
     }
@@ -234,7 +244,7 @@ public abstract class QueryInstance {
         return sql.toString();
     }
 
-    private void validateValues(Map<String, String> values)
+    private void validateValues(User user, Map<String, String> values)
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException {
         Map<String, Param> paramMap = query.getParamMap();
@@ -250,11 +260,11 @@ public abstract class QueryInstance {
         values = fillEmptyValues(values);
         // then check that all params have supplied values
         for (Param param : paramMap.values()) {
-            String value = values.get(param.getName());
+            String dependentValue = values.get(param.getName());
             String errMsg = null;
             try {
                 // validate param
-                param.validate(value);
+                param.validate(user, dependentValue);
             } catch (Exception ex) {
                 ex.printStackTrace();
                 errMsg = ex.getMessage();
@@ -263,7 +273,8 @@ public abstract class QueryInstance {
             if (errMsg != null) {
                 if (errors == null)
                     errors = new LinkedHashMap<Param, String[]>();
-                String booBoo[] = { value == null ? "" : value.toString(),
+                String booBoo[] = {
+                        dependentValue == null ? "" : dependentValue.toString(),
                         errMsg };
                 errors.put(param, booBoo);
             }
@@ -308,8 +319,11 @@ public abstract class QueryInstance {
         for (String paramName : params.keySet()) {
             Param param = params.get(paramName);
 
-            String externalValue = values.get(paramName);
-            String internalValue = param.getInternalValue(externalValue);
+            String dependentValue = values.get(paramName);
+            String independentValue = param.dependentValueToIndependentValue(
+                    user, dependentValue);
+            String internalValue = param.independentValueToInternalValue(user,
+                    independentValue);
             internalValues.put(paramName, internalValue);
         }
         return internalValues;

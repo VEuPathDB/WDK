@@ -13,6 +13,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.StringParam;
+import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 
 /**
@@ -47,11 +48,11 @@ public class BooleanQueryInstance extends SqlQueryInstance {
      * @throws WdkUserException
      * @throws NoSuchAlgorithmException
      */
-    protected BooleanQueryInstance(BooleanQuery query,
+    protected BooleanQueryInstance(User user, BooleanQuery query,
             Map<String, String> values) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
-        super(query, values);
+        super(user, query, values);
         this.booleanQuery = query;
     }
 
@@ -114,7 +115,7 @@ public class BooleanQueryInstance extends SqlQueryInstance {
         // apply the filter query if needed
         AnswerFilterInstance filter = recordClass.getBooleanExpansionFilter();
         if (booleanFlag && filter != null) {
-            innerSql = filter.applyFilter(innerSql);
+            innerSql = filter.applyFilter(user, innerSql);
         }
 
         // limit the column output

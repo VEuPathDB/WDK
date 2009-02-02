@@ -12,6 +12,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -99,6 +100,11 @@ public class FlatVocabParam extends AbstractEnumParam {
         super.setResources(model);
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.query.param.AbstractEnumParam#initVocabMap()
+     */
     protected void initVocabMap() throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
@@ -119,7 +125,8 @@ public class FlatVocabParam extends AbstractEnumParam {
             Map<String, String> values = new LinkedHashMap<String, String>();
             values.put(PARAM_SERVED_QUERY, servedQueryName);
 
-            QueryInstance instance = query.makeInstance(values);
+            User user = wdkModel.getSystemUser();
+            QueryInstance instance = query.makeInstance(user, values);
             ResultList result = instance.getResults();
             while (result.next()) {
                 String term = result.get(COLUMN_TERM).toString();

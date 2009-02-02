@@ -3,36 +3,33 @@
  */
 package org.gusdb.wdk.model.query.param;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 
-import javax.sql.DataSource;
-
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.user.Dataset;
 import org.gusdb.wdk.model.user.DatasetFactory;
 import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.model.user.UserFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
  * @author xingao
  * 
- *         The input to a datasetParam is a dataset_checksum;
+ *         raw data: a comma separated list of entities;
  * 
- *         The output is a SQL that represents the dataset list in application
- *         DB, and dblink might be used.
+ *         user-dependent data: user dataset id;
+ * 
+ *         user-independent data: dataset checksum;
+ * 
+ *         internal data: dataset id; in the future the return will be a SQL
+ *         that represents the
  * 
  */
 public class DatasetParam extends Param {
-
-    private static final String USER_DEPENDENT_PATTERN = "\\w+:\\d+";
-    private static final String USER_CHECKSUM_PATTERN = "\\w+";
 
     private String columnName = DatasetFactory.COLUMN_DATASET_VALUE;
 
@@ -46,62 +43,12 @@ public class DatasetParam extends Param {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.Param#validateValue(java.lang.Object)
-     */
-    @Override
-    public void validateValue(String independentValue)
-            throws WdkModelException, WdkUserException, SQLException {
-        // try getting the dataset id
-        getInternalValue(independentValue);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
      * @see
      * org.gusdb.wdk.model.Param#resolveReferences(org.gusdb.wdk.model.WdkModel)
      */
     @Override
     public void resolveReferences(WdkModel model) throws WdkModelException {
         this.wdkModel = model;
-    }
-
-    /**
-     * @param combinedKey
-     *            a combined key of dataset: <user_key>:<dataset_key>
-     * @return a SQL that represents the data set value list. The return field
-     *         name is defined by columnName, by default it is
-     *         DatasetFactory.COLMN_DATASET_VALUE.
-     * @throws SQLException
-     */
-    @Override
-    public String getInternalValue(String independentValue)
-            throws WdkModelException, WdkUserException, SQLException {
-        // check if the value is a checksum
-        if (independentValue.matches(USER_CHECKSUM_PATTERN)) {
-            int datasetId = getDatasetId(independentValue);
-            return Integer.toString(datasetId);
-        } else { // a normal value
-            // currently cannot handle it
-            throw new WdkModelException("the input to dataset param ["
-                    + getFullName() + "] has to be a checksum, but it is '"
-                    + independentValue + "'");
-        }
-        // to be compatible with previous model, it returns dataset_id;
-        // in the future, should return a nested SQL that represents the result
-
-        // ModelConfig config = wdkModel.getModelConfig();
-        // String dbLink = config.getApplicationDB().getUserDbLink();
-        // String wdkSchema = config.getUserDB().getWdkEngineSchema();
-        //
-        // StringBuffer sql = new StringBuffer("SELECT ");
-        // sql.append(DatasetFactory.COLUMN_DATASET_VALUE).append(" AS ");
-        // sql.append(columnName);
-        // sql.append(" FROM ").append(wdkSchema);
-        // sql.append(DatasetFactory.TABLE_DATASET_VALUE).append(dbLink);
-        // sql.append(" WHERE ").append(DatasetFactory.COLUMN_DATASET_ID);
-        // sql.append(" = ").append(datasetId);
-        // return sql.toString();
     }
 
     /*
@@ -140,71 +87,139 @@ public class DatasetParam extends Param {
     }
 
     /**
-     * the input is <user_key:userDatasetId>;
+     * convert from user dataset id to dataset checksum
      * 
-     * the output is <dataset_checksum>
+     * @see org.gusdb.wdk.model.query.param.Param#dependentValueToIndependentValue(org.gusdb.wdk.model.user.User,
+     *      java.lang.String)
+     */
+    @Override
+    public String dependentValueToIndependentValue(User user,
+            String dependentValue) throws NoSuchAlgorithmException,
+            WdkUserException, WdkModelException, SQLException, JSONException {
+        int userDatasetId = Integer.parseInt(dependentValue);
+        Dataset dataset = user.getDataset(userDatasetId);
+        return dataset.getChecksum();
+    }
+
+    /**
+     * convert from dataset checksum to user dataset id;
      * 
+     * @see org.gusdb.wdk.model.query.param.Param#independentValueToDependentValue(org.gusdb.wdk.model.user.User,
+     *      java.lang.String)
+     */
+    @Override
+    public String independentValueToDependentValue(User user,
+            String independentValue) throws NoSuchAlgorithmException,
+            WdkModelException, SQLException, JSONException, WdkUserException {
+        Dataset dataset = user.getDataset(independentValue);
+        return Integer.toString(dataset.getUserDatasetId());
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.gusdb.wdk.model.query.param.Param#independentValueToInternalValue
+     * (org.gusdb.wdk.model.user.User, java.lang.String)
+     */
+    @Override
+    public String independentValueToInternalValue(User user,
+            String independentValue) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
+        Dataset dataset = user.getDataset(independentValue);
+        return Integer.toString(dataset.getDatasetId());
+
+        // to be compatible with previous model, it returns dataset_id;
+        // in the future, should return a nested SQL that represents the result
+
+        // ModelConfig config = wdkModel.getModelConfig();
+        // String dbLink = config.getApplicationDB().getUserDbLink();
+        // String wdkSchema = config.getUserDB().getWdkEngineSchema();
+        //
+        // StringBuffer sql = new StringBuffer("SELECT ");
+        // sql.append(DatasetFactory.COLUMN_DATASET_VALUE).append(" AS ");
+        // sql.append(columnName);
+        // sql.append(" FROM ").append(wdkSchema);
+        // sql.append(DatasetFactory.TABLE_DATASET_VALUE).append(dbLink);
+        // sql.append(" WHERE ").append(DatasetFactory.COLUMN_DATASET_ID);
+        // sql.append(" = ").append(datasetId);
+        // return sql.toString();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.gusdb.wdk.model.query.param.Param#independentValueToRawValue(org.
+     * gusdb.wdk.model.user.User, java.lang.String)
+     */
+    @Override
+    public String dependentValueToRawValue(User user, String dependentValue)
+            throws WdkModelException, NoSuchAlgorithmException,
+            WdkUserException, SQLException, JSONException {
+        int userDatasetId = Integer.parseInt(dependentValue);
+        Dataset dataset = user.getDataset(userDatasetId);
+        String[] values = dataset.getValues();
+        return Utilities.fromArray(values);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.gusdb.wdk.model.query.param.Param#rawValueToIndependentValue(org.
+     * gusdb.wdk.model.user.User, java.lang.String)
+     */
+    @Override
+    public String rawOrDependentValueToDependentValue(User user, String rawValue)
+            throws NoSuchAlgorithmException, WdkModelException,
+            WdkUserException, SQLException {
+        // first assume the input is dependent value, that is, user dataset id
+        if (rawValue == null || rawValue.length() == 0) return null;
+        if (rawValue.matches("\\d+")) {
+            int userDatasetId = Integer.parseInt(rawValue);
+            try {
+                user.getDataset(userDatasetId);
+                return rawValue;
+            } catch(Exception ex){
+                // dataset doesn't exist, create one
+            }
+        }
+        return rawValueToDependentValue(user, "", rawValue);
+    }
+
+    /**
+     * @param user
+     * @param uploadFile
+     * @param rawValue
+     * @return
+     * @throws NoSuchAlgorithmException
      * @throws WdkUserException
      * @throws WdkModelException
      * @throws SQLException
      */
-    @Override
-    protected String getUserIndependentValue(String combinedKey)
-            throws WdkModelException, WdkUserException, SQLException {
-        Dataset dataset = getDataset(combinedKey);
-        return dataset.getChecksum();
-    }
-
-    public Dataset getDataset(String combinedKey) throws WdkUserException,
+    public String rawValueToDependentValue(User user, String uploadFile,
+            String rawValue) throws NoSuchAlgorithmException, WdkUserException,
             WdkModelException, SQLException {
-        if (!combinedKey.matches(USER_DEPENDENT_PATTERN))
-            throw new WdkModelException("The user-dependent input to the "
-                    + "datasetParam [" + getFullName() + "] should "
-                    + "be in form such as 'user_key:step_display_id'; "
-                    + "instead, it is '" + combinedKey + "'");
-
-        String[] parts = combinedKey.split("\\:");
-        String userSignature = parts[0];
-        int userDatasetId = Integer.parseInt(parts[1]);
-
-        // get step
-        UserFactory userFactory = wdkModel.getUserFactory();
-        User user = userFactory.getUser(userSignature);
-        DatasetFactory datasetFactory = wdkModel.getDatasetFactory();
-        return datasetFactory.getDataset(user, userDatasetId);
+        String[] values = Utilities.toArray(rawValue);
+        Dataset dataset = user.createDataset(uploadFile, values);
+        return Integer.toString(dataset.getUserDatasetId());
     }
 
-    /**
-     * Make sure the dataset exists through dblink
+    /*
+     * (non-Javadoc)
      * 
-     * @param datasetChecksum
-     * @throws SQLException
-     * @throws WdkModelException
+     * @see
+     * org.gusdb.wdk.model.query.param.Param#validateValue(org.gusdb.wdk.model
+     * .user.User, java.lang.String)
      */
-    private int getDatasetId(String datasetChecksum) throws SQLException,
-            WdkModelException {
-        String wdkSchema = wdkModel.getModelConfig().getUserDB().getWdkEngineSchema();
-        String dbLink = wdkModel.getModelConfig().getApplicationDB().getUserDbLink();
-        StringBuffer sql = new StringBuffer("SELECT ");
-        sql.append(DatasetFactory.COLUMN_DATASET_ID).append(" FROM ");
-        sql.append(wdkSchema).append(DatasetFactory.TABLE_DATASET_INDEX);
-        sql.append(dbLink).append(" WHERE ");
-        sql.append(DatasetFactory.COLUMN_DATASET_CHECKSUM).append(" = ?");
-
-        DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
-        ResultSet resultSet = null;
-        try {
-            PreparedStatement ps = SqlUtils.getPreparedStatement(dataSource,
-                    sql.toString());
-            ps.setString(1, datasetChecksum);
-            resultSet = ps.executeQuery();
-
-            if (!resultSet.next())
-                throw new WdkModelException("The dataset with checksum '"
-                        + datasetChecksum + "' doesn't exist");
-            return resultSet.getInt(DatasetFactory.COLUMN_DATASET_ID);
-        } finally {
-            if (resultSet != null) SqlUtils.closeResultSet(resultSet);
-        }
+    @Override
+    protected void validateValue(User user, String dependentValue)
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
+        // try to get the dataset
+        int userDatasetId = Integer.parseInt(dependentValue);
+        user.getDataset(userDatasetId);
     }
 }

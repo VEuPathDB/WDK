@@ -17,6 +17,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -72,10 +73,10 @@ public class SqlQuery extends Query {
      * @see org.gusdb.wdk.model.query.Query#makeInstance()
      */
     @Override
-    public QueryInstance makeInstance(Map<String, String> values)
+    public QueryInstance makeInstance(User user, Map<String, String> values)
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException {
-        return new SqlQueryInstance(this, values);
+        return new SqlQueryInstance(user, this, values);
     }
 
     /*

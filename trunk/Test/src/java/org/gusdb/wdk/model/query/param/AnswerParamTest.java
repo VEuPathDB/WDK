@@ -6,12 +6,9 @@ package org.gusdb.wdk.model.query.param;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.gusdb.wdk.model.AnswerFilterInstance;
 import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.UnitTestHelper;
-import org.gusdb.wdk.model.query.param.AnswerParam;
-import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.User;
 import org.junit.Assert;
@@ -23,24 +20,14 @@ import org.junit.Test;
  */
 public class AnswerParamTest {
 
-    @Test
-    public void testPrepareValue() throws Exception {
-        User user = UnitTestHelper.getRegisteredUser();
-        Step step = UnitTestHelper.createNormalStep(user);
-        String dependentValue = user.getSignature() + ":" + step.getDisplayId();
-        String answerChecksum = step.getAnswer().getAnswerChecksum();
-        AnswerFilterInstance filter = step.getAnswer().getAnswerValue().getFilter();
-        if (filter != null) answerChecksum += ":" + filter.getName();
+    private User user;
 
-        Question question = UnitTestHelper.getAnswerParamQuestion();
-        for (Param param : question.getParams()) {
-            if (param instanceof AnswerParam) {
-                AnswerParam answerParam = (AnswerParam) param;
-                String independentValue = answerParam.prepareValue(dependentValue);
-                Assert.assertEquals("user-independent value", answerChecksum,
-                        independentValue);
-            }
-        }
+    /**
+     * @throws Exception
+     * 
+     */
+    public AnswerParamTest() throws Exception {
+        user = UnitTestHelper.getRegisteredUser();
     }
 
     @Test
@@ -53,7 +40,7 @@ public class AnswerParamTest {
         for (Param param : question.getParams()) {
             if (param instanceof AnswerParam) {
                 AnswerParam answerParam = (AnswerParam) param;
-                AnswerValue answerValue = answerParam.getAnswerValue(paramValue);
+                AnswerValue answerValue = answerParam.getAnswerValue(user, paramValue);
 
                 Assert.assertTrue("input size",
                         answerValue.getResultSize() >= 0);
@@ -63,7 +50,6 @@ public class AnswerParamTest {
 
     @Test
     public void testUseAnswerParam() throws Exception {
-        User user = UnitTestHelper.getRegisteredUser();
         Question question = UnitTestHelper.getAnswerParamQuestion();
 
         Map<String, String> paramValues = new LinkedHashMap<String, String>();
@@ -71,11 +57,11 @@ public class AnswerParamTest {
             String paramValue;
             if (param instanceof AnswerParam) {
                 Step step = UnitTestHelper.createNormalStep(user);
-                paramValue = step.getAnswer().getAnswerChecksum();
+                paramValue = Integer.toString(step.getDisplayId());
             } else paramValue = param.getDefault();
             paramValues.put(param.getName(), paramValue);
         }
-        AnswerValue answerValue = question.makeAnswerValue(paramValues);
+        AnswerValue answerValue = question.makeAnswerValue(user, paramValues);
 
         Assert.assertTrue("result size", answerValue.getResultSize() >= 0);
     }

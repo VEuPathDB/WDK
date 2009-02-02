@@ -19,6 +19,7 @@ import org.gusdb.wdk.model.TableField;
 import org.gusdb.wdk.model.TableValue;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 
 /**
@@ -27,16 +28,19 @@ import org.json.JSONException;
  */
 public class RecordBean {
 
+    private User user;
     private RecordInstance recordInstance;
 
-    public RecordBean(RecordInstance recordInstance) {
+    public RecordBean(User user, RecordInstance recordInstance) {
+        this.user = user;
         this.recordInstance = recordInstance;
     }
 
     public RecordBean(RecordClassBean recordClass, Map<String, Object> pkValues)
             throws NoSuchAlgorithmException, WdkModelException, SQLException,
             JSONException, WdkUserException {
-        recordInstance = new RecordInstance(recordClass.recordClass, pkValues);
+        recordInstance = new RecordInstance(user, recordClass.recordClass,
+                pkValues);
     }
 
     /**
@@ -62,7 +66,7 @@ public class RecordBean {
         Map<String, RecordInstance> nri = recordInstance.getNestedRecordInstances();
         Map<String, RecordBean> nriBeans = new LinkedHashMap<String, RecordBean>();
         for (String recordName : nri.keySet()) {
-            RecordBean nextNrBean = new RecordBean(nri.get(recordName));
+            RecordBean nextNrBean = new RecordBean(user, nri.get(recordName));
             nriBeans.put(recordName, nextNrBean);
         }
         return nriBeans;
@@ -77,7 +81,7 @@ public class RecordBean {
             RecordInstance nextNrl[] = nrl.get(recordName);
             RecordBean[] nextNrBeanList = new RecordBean[nextNrl.length];
             for (int i = 0; i < nextNrl.length; i++) {
-                nextNrBeanList[i] = new RecordBean(nextNrl[i]);
+                nextNrBeanList[i] = new RecordBean(user, nextNrl[i]);
             }
             nrlBeans.put(recordName, nextNrBeanList);
         }
