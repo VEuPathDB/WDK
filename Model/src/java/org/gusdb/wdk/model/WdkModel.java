@@ -29,6 +29,7 @@ import org.gusdb.wdk.model.user.AnswerFactory;
 import org.gusdb.wdk.model.user.DatasetFactory;
 import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.QueryFactory;
+import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
 import org.gusdb.wdk.model.xml.XmlRecordClassSet;
@@ -146,6 +147,8 @@ public class WdkModel {
     private Map<String, Categories> categoriesMap = new LinkedHashMap<String, Categories>();
 
     private String secretKey;
+
+    private User systemUser;
 
     /**
      * @param initRecordClassList
@@ -1009,5 +1012,11 @@ public class WdkModel {
             this.secretKey = UserFactory.encrypt(contents.toString());
         }
         return secretKey;
+    }
+
+    public User getSystemUser() throws NoSuchAlgorithmException,
+            WdkUserException, WdkModelException, SQLException {
+        if (systemUser == null) systemUser = userFactory.createGuestUser();
+        return systemUser;
     }
 }

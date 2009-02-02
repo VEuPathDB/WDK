@@ -12,6 +12,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.query.param.StringParam;
+import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -219,10 +220,10 @@ public class BooleanQuery extends SqlQuery {
      * @see org.gusdb.wdk.model.query.Query#makeInstance()
      */
     @Override
-    public QueryInstance makeInstance(Map<String, String> values)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
-        return new BooleanQueryInstance(this, values);
+    public QueryInstance makeInstance(User user, Map<String, String> values)
+    throws WdkModelException, NoSuchAlgorithmException, SQLException,
+    JSONException, WdkUserException {
+        return new BooleanQueryInstance(user, this, values);
     }
 
     private String constructSql() {

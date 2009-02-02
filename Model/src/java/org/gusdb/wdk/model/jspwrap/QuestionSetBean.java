@@ -1,12 +1,12 @@
 package org.gusdb.wdk.model.jspwrap;
 
-import org.gusdb.wdk.model.QuestionSet;
-import org.gusdb.wdk.model.Question;
-
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.LinkedHashMap;
 import java.util.Set;
+
+import org.gusdb.wdk.model.Question;
+import org.gusdb.wdk.model.QuestionSet;
 
 /**
  * A wrapper on a {@link QuestionSet} that provides simplified access for

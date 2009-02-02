@@ -3,9 +3,8 @@
  */
 package org.gusdb.wdk.model.query;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -14,16 +13,11 @@ import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
 import org.gusdb.wdk.model.UnitTestHelper;
 import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.query.ProcessQuery;
-import org.gusdb.wdk.model.query.Query;
-import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.param.FlatVocabParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
-import org.json.JSONException;
+import org.gusdb.wdk.model.user.User;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -34,6 +28,12 @@ import org.junit.Test;
 public class QueryTest {
 
     private static final Logger logger = Logger.getLogger(QueryTest.class);
+
+    private User user;
+
+    public QueryTest() throws Exception {
+        user = UnitTestHelper.getRegisteredUser();
+    }
 
     @Test
     public void testVocabQueries() throws Exception {
@@ -89,8 +89,7 @@ public class QueryTest {
         }
     }
 
-    private void testQuery(Query query) throws NoSuchAlgorithmException,
-            WdkModelException, SQLException, JSONException, WdkUserException {
+    private void testQuery(Query query) throws Exception {
         // try all sample values
         int setCount = 1;
         for (ParamValuesSet valueSet : query.getParamValuesSets()) {
@@ -99,10 +98,11 @@ public class QueryTest {
 
             int minRows = valueSet.getMinRows();
             int maxRows = valueSet.getMaxRows();
-            Map<String, String> values = valueSet.getParamValues();
-
+            Map<String, String> rawValues = valueSet.getParamValues();
+            Map<String, String> dependentValues = query.rawOrDependentValuesToDependentValues(user, rawValues);
+            
             // try to make a query instance
-            QueryInstance instance = query.makeInstance(values);
+            QueryInstance instance = query.makeInstance(user, dependentValues);
             int rows = instance.getResultSize();
 
             String qName = query.getFullName();

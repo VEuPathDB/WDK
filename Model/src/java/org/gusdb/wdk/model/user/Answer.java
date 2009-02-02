@@ -24,10 +24,12 @@ public class Answer {
     private String questionName;
     private String queryChecksum;
 
+    private User user;
     private AnswerFactory answerFactory;
     private AnswerValue answerValue;
 
-    Answer(AnswerFactory answerFactory, int answerId) {
+    Answer(User user, AnswerFactory answerFactory, int answerId) {
+        this.user = user;
         this.answerFactory = answerFactory;
         this.answerId = answerId;
     }
@@ -117,7 +119,7 @@ public class Answer {
     public AnswerValue getAnswerValue() throws NoSuchAlgorithmException,
             WdkModelException, JSONException, WdkUserException, SQLException {
         if (answerValue == null) {
-            answerValue = answerFactory.getAnswerValue(this);
+            answerValue = answerFactory.getAnswerValue(user, this);
             answerValue.setAnswer(this);
         }
         return answerValue;

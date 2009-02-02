@@ -96,14 +96,10 @@ public class StepFactory {
 
     // parse boolexp to pass left_child_id, right_child_id to loadAnswer
     Step createStep(User user, Question question,
-            Map<String, String> displayParams, AnswerFilterInstance filter,
+            Map<String, String> dependentValues, AnswerFilterInstance filter,
             int pageStart, int pageEnd, boolean deleted) throws SQLException,
             WdkModelException, NoSuchAlgorithmException, WdkUserException,
             JSONException {
-
-        // translate params, and remove any user-dependent info
-        Map<String, String> independentValues = translateParams(user, question,
-                displayParams);
 
         // get summary list and sorting list
         String questionName = question.getFullName();
@@ -111,8 +107,8 @@ public class StepFactory {
         String[] summaryAttributes = user.getSummaryAttributes(questionName);
 
         // create answer
-        AnswerValue answerValue = question.makeAnswerValue(independentValues,
-                pageStart, pageEnd, sortingAttributes, filter);
+        AnswerValue answerValue = question.makeAnswerValue(user,
+                dependentValues, pageStart, pageEnd, sortingAttributes, filter);
         if (summaryAttributes != null) {
             answerValue.setSumaryAttributes(summaryAttributes);
         }
@@ -129,7 +125,7 @@ public class StepFactory {
             estimateSize = answerValue.getFilterSize(filterName);
         } else estimateSize = answerValue.getResultSize();
 
-        String displayParamContent = getParamContent(displayParams);
+        String displayParamContent = getParamContent(dependentValues);
 
         // prepare SQLs
         String userIdColumn = UserFactory.COLUMN_USER_ID;
@@ -213,7 +209,7 @@ public class StepFactory {
         step.setCreatedTime(createTime);
         step.setLastRunTime(lastRunTime);
         step.setDeleted(deleted);
-        step.setDisplayParams(displayParams);
+        step.setDisplayParams(dependentValues);
 
         // update step dependencies
         updateStepTree(user, step);
@@ -512,9 +508,10 @@ public class StepFactory {
         step.setCollapsedName(rsStep.getString(COLUMN_COLLAPSED_NAME));
         step.setEstimateSize(rsStep.getInt(COLUMN_ESTIMATE_SIZE));
 
-        String displayParamContent = userPlatform.getClobData(rsStep,
+        String dependentParamContent = userPlatform.getClobData(rsStep,
                 COLUMN_DISPLAY_PARAMS);
-        step.setDisplayParams(parseParamContent(displayParamContent));
+        Map<String, String> dependentValues = parseParamContent(dependentParamContent);
+        step.setDisplayParams(dependentValues);
 
         String filterName = rsStep.getString(COLUMN_ANSWER_FILTER);
         String answerChecksum = rsStep.getString(AnswerFactory.COLUMN_ANSWER_CHECKSUM);
@@ -522,20 +519,24 @@ public class StepFactory {
         try {
             // load Answer
             AnswerFactory answerFactory = wdkModel.getAnswerFactory();
-            Answer answer = answerFactory.getAnswer(answerChecksum);
-
-            AnswerValue answerValue = answer.getAnswerValue();
-            // set filter
-            RecordClass recordClass = answerValue.getQuestion().getRecordClass();
-            if (filterName != null) answerValue.setFilter(recordClass.getFilter(filterName));
-            else answerValue.setFilter((AnswerFilterInstance) null);
-
-            // set sorting & summarys
-            String questionName = answerValue.getQuestion().getFullName();
-            answerValue.setSortingMap(user.getSortingAttributes(questionName));
-            answerValue.setSumaryAttributes(user.getSummaryAttributes(questionName));
-
+            Answer answer = answerFactory.getAnswer(user, answerChecksum);
             step.setAnswer(answer);
+            
+            
+            String questionName = answer.getQuestionName();
+            Question question = wdkModel.getQuestion(questionName);
+            RecordClass recordClass = question.getRecordClass();
+            AnswerFilterInstance filter = (filterName == null) ? null
+                    : recordClass.getFilter(filterName);
+            int startIndex = 1;
+            int endIndex = user.getItemsPerPage();
+            Map<String, Boolean> sortingMap = user.getSortingAttributes(questionName);
+            AnswerValue answerValue = question.makeAnswerValue(user,
+                    dependentValues, startIndex, endIndex, sortingMap, filter);
+            answerValue.setSumaryAttributes(user.getSummaryAttributes(questionName));
+            answer.setAnswerValue(answerValue);
+            answerValue.setAnswer(answer);
+
             step.setValid(true);
         } catch (Exception ex) {
             step.setValid(false);
@@ -1163,35 +1164,6 @@ public class StepFactory {
         } finally {
             SqlUtils.closeResultSet(rsStrategy);
         }
-    }
-
-    /**
-     * Translate param values from user-dependent data to user-independent data
-     * 
-     * @param params
-     * @return
-     * @throws SQLException
-     * @throws JSONException
-     * @throws WdkModelException
-     * @throws WdkUserException
-     * @throws NoSuchAlgorithmException
-     */
-    private Map<String, String> translateParams(User user, Question question,
-            Map<String, String> paramValues) throws NoSuchAlgorithmException,
-            WdkUserException, WdkModelException, JSONException, SQLException {
-        Map<String, Param> params = question.getParamMap();
-        Map<String, String> independentValues = new LinkedHashMap<String, String>();
-        for (String paramName : paramValues.keySet()) {
-            Param param = params.get(paramName);
-            if (param == null)
-                throw new WdkModelException("param '" + paramName + "' does "
-                        + "not  exist in question " + question.getFullName());
-
-            String dependentValue = paramValues.get(paramName);
-            String independentValue = param.prepareValue(dependentValue);
-            independentValues.put(paramName, independentValue);
-        }
-        return independentValues;
     }
 
     private String getParamContent(Map<String, String> params)

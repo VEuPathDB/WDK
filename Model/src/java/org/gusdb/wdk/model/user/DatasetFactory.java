@@ -175,7 +175,6 @@ public class DatasetFactory {
      * @return
      * @throws SQLException
      * @throws WdkModelException
-     * @throws WdkModelException
      *             throws if the dataset doesn't exist;
      */
     public Dataset getDataset(User user, String datasetChecksum)
@@ -187,9 +186,21 @@ public class DatasetFactory {
                 TABLE_DATASET_INDEX);
         sqlDatasetId.append(" WHERE ").append(COLUMN_DATASET_CHECKSUM).append(
                 " = ?");
-        Object result = SqlUtils.executeScalar(dataSource,
-                sqlDatasetId.toString());
-        int datasetId = Integer.parseInt(result.toString());
+        int datasetId;
+        ResultSet resultSet = null;
+        try {
+            PreparedStatement psQuery = SqlUtils.getPreparedStatement(
+                    dataSource, sqlDatasetId.toString());
+            psQuery.setString(1, datasetChecksum);
+            resultSet = psQuery.executeQuery();
+
+            if (!resultSet.next())
+                throw new WdkModelException("The dataset with checksum '"
+                        + datasetChecksum + "' doesn't exist.");
+            datasetId = resultSet.getInt(COLUMN_DATASET_ID);
+        } finally {
+            SqlUtils.closeResultSet(resultSet);
+        }
 
         // try to get a user dataset id
         Connection connection = dataSource.getConnection();
@@ -318,7 +329,7 @@ public class DatasetFactory {
         StringBuffer sql = new StringBuffer("INSERT INTO ");
         sql.append(wdkSchema).append(TABLE_DATASET_VALUE).append(" (");
         sql.append(COLUMN_DATASET_ID).append(", ");
-        sql.append(COLUMN_DATASET_VALUE).append(") VALUE (?, ?)");
+        sql.append(COLUMN_DATASET_VALUE).append(") VALUES (?, ?)");
 
         PreparedStatement psInsert = connection.prepareStatement(sql.toString());
         try {

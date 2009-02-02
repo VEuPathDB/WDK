@@ -229,17 +229,18 @@ public class QuestionBean {
      * @throws SQLException
      * @throws NoSuchAlgorithmException
      */
-    public AnswerValueBean makeAnswerValue(Map<String, String> paramValues,
-            int pageStart, int pageEnd, Map<String, Boolean> sortingMap,
-            String filterName) throws WdkModelException, WdkUserException,
+    public AnswerValueBean makeAnswerValue(UserBean user,
+            Map<String, String> paramValues, int pageStart, int pageEnd,
+            Map<String, Boolean> sortingMap, String filterName)
+            throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, SQLException, JSONException {
         AnswerFilterInstance filter = null;
         if (filterName != null) {
             RecordClass recordClass = question.getRecordClass();
             filter = recordClass.getFilter(filterName);
         }
-        AnswerValue answerValue = question.makeAnswerValue(paramValues,
-                pageStart, pageEnd, sortingMap, filter);
+        AnswerValue answerValue = question.makeAnswerValue(user.getUser(),
+                paramValues, pageStart, pageEnd, sortingMap, filter);
         return new AnswerValueBean(answerValue);
     }
 
@@ -284,10 +285,12 @@ public class QuestionBean {
      * @throws NoSuchAlgorithmException
      * @see org.gusdb.wdk.model.Question#makeAnswer(java.util.Map)
      */
-    public AnswerValueBean makeAnswerValue(Map<String, String> paramValues)
-            throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException {
-        return new AnswerValueBean(question.makeAnswerValue(paramValues));
+    public AnswerValueBean makeAnswerValue(UserBean user,
+            Map<String, String> paramValues) throws WdkUserException,
+            WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException {
+        return new AnswerValueBean(question.makeAnswerValue(user.getUser(),
+                paramValues));
     }
 
     /**
@@ -314,7 +317,6 @@ public class QuestionBean {
     public boolean isNoSummaryOnSingleRecord() {
         return question.isNoSummaryOnSingleRecord();
     }
-
 
     public boolean getIsBoolean() {
         return question.getQuery().isBoolean();

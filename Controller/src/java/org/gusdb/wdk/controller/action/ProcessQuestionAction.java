@@ -5,12 +5,10 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionForm;
@@ -18,15 +16,12 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.upload.FormFile;
 import org.gusdb.wdk.controller.CConstants;
-import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.DatasetBean;
 import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
-import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
-import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.json.JSONException;
 
 /**
  * This Action is called by the ActionServlet when a WDK question is asked. It
@@ -44,25 +39,17 @@ public class ProcessQuestionAction extends ShowQuestionAction {
         logger.debug("Entering ProcessQuestionAction..");
         // logger.debug("+++++query string" + request.getQueryString());
 
-        HttpSession session = request.getSession();
-        UserBean wdkUser = (UserBean) session.getAttribute(CConstants.WDK_USER_KEY);
-        if (wdkUser == null) {
-            WdkModelBean wdkModel = (WdkModelBean) servlet.getServletContext().getAttribute(
-                    CConstants.WDK_MODEL_KEY);
-            wdkUser = wdkModel.getUserFactory().getGuestUser();
-            session.setAttribute(CConstants.WDK_USER_KEY, wdkUser);
-        }
+        UserBean wdkUser = ActionUtility.getUser(servlet, request);
 
         // get question
         String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
-        QuestionBean wdkQuestion = getQuestionByFullName(qFullName);
-        // QuestionForm qForm = prepareQuestionForm(wdkQuestion, request, (QuestionForm) form);
-         QuestionForm qForm = (QuestionForm)form;
+        // QuestionForm qForm = prepareQuestionForm(wdkQuestion, request,
+        // (QuestionForm) form);
+        QuestionForm qForm = (QuestionForm) form;
 
         // the params has been validated, and now is parsed, and if the size of
         // the value is too long, ti will be replaced is checksum
         Map<String, String> params = prepareParams(wdkUser, request, qForm);
-        params = getCompressedParams(wdkQuestion, params);
 
         // construct the url to summary page
         ActionForward showSummary = mapping.findForward(CConstants.PQ_SHOW_SUMMARY_MAPKEY);
@@ -91,17 +78,17 @@ public class ProcessQuestionAction extends ShowQuestionAction {
     protected Map<String, String> prepareParams(UserBean user,
             HttpServletRequest request, QuestionForm qform)
             throws WdkModelException, WdkUserException, FileNotFoundException,
-            IOException, NoSuchAlgorithmException, SQLException {
-        String userSignature = user.getSignature();
-
-        QuestionBean question = qform.getQuestion();
+            IOException, NoSuchAlgorithmException, SQLException, JSONException {
         Map<String, String> paramValues = qform.getMyProps();
-        Map<String, ParamBean> params = question.getParamsMap();
+        Map<String, ParamBean> params = qform.getQuestion().getParamsMap();
+        // convert from raw data to user dependent data
         for (String paramName : paramValues.keySet()) {
             ParamBean param = params.get(paramName);
 
-            //logger.debug("param: " + paramName + "='" + paramValues.get(paramName) + "'");
-
+            // logger.debug("param: " + paramName + "='" +
+            // paramValues.get(paramName) + "'");
+            String rawValue = paramValues.get(paramName);
+            String dependentValue;
             if (param instanceof DatasetParamBean) {
                 // get the input type
                 String type = request.getParameter(paramName + "_type");
@@ -122,27 +109,15 @@ public class ProcessQuestionAction extends ShowQuestionAction {
                     throw new WdkUserException("Invalid input type for "
                             + "Dataset " + paramName + ": " + type);
                 }
-                String[] values = Utilities.toArray(data);
-                DatasetBean dataset = user.createDataset(uploadFile, values);
-                int userDatasetId = dataset.getUserDatasetId();
-                String paramValue = userSignature + ":" + userDatasetId;
-                paramValues.put(paramName, paramValue);
+
+                dependentValue = ((DatasetParamBean) param).rawValueToDependentValue(
+                        user, uploadFile, data);
+            } else {
+                dependentValue = param.rawOrDependentValueToDependentValue(
+                        user, rawValue);
             }
+            paramValues.put(paramName, dependentValue);
         }
         return paramValues;
-    }
-
-    private Map<String, String> getCompressedParams(QuestionBean question,
-            Map<String, String> paramValues) throws NoSuchAlgorithmException,
-            WdkModelException {
-        Map<String, ParamBean> params = question.getParamsMap();
-        Map<String, String> compressedParams = new LinkedHashMap<String, String>();
-        for (String paramName : paramValues.keySet()) {
-            ParamBean param = params.get(paramName);
-            String paramValue = paramValues.get(paramName);
-            paramValue = param.compressValue(paramValue);
-            compressedParams.put(paramName, paramValue);
-        }
-        return compressedParams;
     }
 }

@@ -21,6 +21,7 @@ import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlResultList;
 import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -47,10 +48,10 @@ public class SqlQueryInstance extends QueryInstance {
      * @throws WdkUserException
      * @throws NoSuchAlgorithmException
      */
-    protected SqlQueryInstance(SqlQuery query, Map<String, String> values)
+    protected SqlQueryInstance(User user, SqlQuery query, Map<String, String> values)
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException {
-        super(query, values);
+        super(user, query, values);
         this.query = query;
     }
 

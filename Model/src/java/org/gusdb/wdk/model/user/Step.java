@@ -407,7 +407,7 @@ public class Step {
     }
 
     public String getQuestionName() {
-        return answer.getQuestionName();
+        return (answer != null) ? answer.getQuestionName() : null;
     }
 
     /* functions for navigating/manipulating step tree */

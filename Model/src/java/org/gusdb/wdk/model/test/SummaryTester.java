@@ -32,6 +32,7 @@ import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.report.Reporter;
+import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 
 public class SummaryTester {
@@ -102,13 +103,15 @@ public class SummaryTester {
                 filter = question.getRecordClass().getFilter(filterName);
             }
 
+            User user = wdkModel.getSystemUser();
             // this is suspicious
             // Query query = question.getQuery();
             // query.setIsCacheable(new Boolean(true));
             int pageCount = 1;
 
             if (toXml) {
-                writeSummaryAsXml(question, paramValues, xmlFileName, filter);
+                writeSummaryAsXml(user, question, paramValues, xmlFileName,
+                        filter);
                 return;
             }
 
@@ -118,8 +121,9 @@ public class SummaryTester {
                 int nextStartRow = Integer.parseInt(rows[i]);
                 int nextEndRow = Integer.parseInt(rows[i + 1]);
 
-                AnswerValue answerValue = question.makeAnswerValue(paramValues,
-                        nextStartRow, nextEndRow, sortingMap, filter);
+                AnswerValue answerValue = question.makeAnswerValue(user,
+                        paramValues, nextStartRow, nextEndRow, sortingMap,
+                        filter);
 
                 // this is wrong. it only shows one attribute query, not
                 // all. Fix this in Answer by saving a list of attribute
@@ -181,7 +185,7 @@ public class SummaryTester {
         return config;
     }
 
-    private static void writeSummaryAsXml(Question question,
+    private static void writeSummaryAsXml(User user, Question question,
             Map<String, String> paramValues, String xmlFile,
             AnswerFilterInstance filter) throws WdkModelException,
             WdkUserException, IOException, NoSuchAlgorithmException,
@@ -189,11 +193,11 @@ public class SummaryTester {
 
         Map<String, Boolean> sortingMap = question.getSortingAttributeMap();
 
-        AnswerValue answerValue = question.makeAnswerValue(paramValues, 1, 2,
-                sortingMap, filter);
+        AnswerValue answerValue = question.makeAnswerValue(user, paramValues,
+                1, 2, sortingMap, filter);
         int resultSize = answerValue.getResultSize();
-        answerValue = question.makeAnswerValue(paramValues, 1, resultSize,
-                sortingMap, filter);
+        answerValue = question.makeAnswerValue(user, paramValues, 1,
+                resultSize, sortingMap, filter);
         FileWriter fw = new FileWriter(new File(xmlFile), false);
 
         String newline = System.getProperty("line.separator");
