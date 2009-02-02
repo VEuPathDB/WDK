@@ -23,6 +23,7 @@ import org.gusdb.wdk.model.dbms.ArrayResultList;
 import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.ResultList;
+import org.gusdb.wdk.model.user.User;
 import org.gusdb.wsf.client.WsfService;
 import org.gusdb.wsf.client.WsfServiceServiceLocator;
 import org.gusdb.wsf.plugin.WsfResult;
@@ -49,10 +50,10 @@ public class ProcessQueryInstance extends QueryInstance {
      * @throws SQLException
      * @throws NoSuchAlgorithmException
      */
-    public ProcessQueryInstance(ProcessQuery query, Map<String, String> values)
+    public ProcessQueryInstance(User user, ProcessQuery query, Map<String, String> values)
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException {
-        super(query, values);
+        super(user, query, values);
         this.query = query;
     }
 

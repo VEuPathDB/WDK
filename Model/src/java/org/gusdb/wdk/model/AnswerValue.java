@@ -27,6 +27,7 @@ import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.user.Answer;
 import org.gusdb.wdk.model.user.AnswerFactory;
+import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 
 /**
@@ -83,6 +84,7 @@ public class AnswerValue {
     // Instance variables
     // ------------------------------------------------------------------
 
+    private User user;
     private Answer answer;
 
     private ResultFactory resultFactory;
@@ -129,11 +131,12 @@ public class AnswerValue {
      * @throws NoSuchAlgorithmException
      * @throws WdkUserException
      */
-    AnswerValue(Question question, QueryInstance idsQueryInstance,
+    AnswerValue(User user, Question question, QueryInstance idsQueryInstance,
             int startIndex, int endIndex, Map<String, Boolean> sortingMap,
             AnswerFilterInstance filter) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
+        this.user = user;
         this.question = question;
         this.resultFactory = question.getWdkModel().getResultFactory();
         this.idsQueryInstance = idsQueryInstance;
@@ -163,6 +166,7 @@ public class AnswerValue {
         this.startIndex = startIndex;
         this.endIndex = endIndex;
 
+        this.user = answerValue.user;
         this.answer = answerValue.answer;
         this.idsQueryInstance = answerValue.idsQueryInstance;
         this.question = answerValue.question;
@@ -190,6 +194,10 @@ public class AnswerValue {
      */
     public Question getQuestion() {
         return this.question;
+    }
+
+    public User getUser() {
+        return this.user;
     }
 
     public int getPageSize() throws WdkModelException,
@@ -307,6 +315,13 @@ public class AnswerValue {
             NoSuchAlgorithmException, JSONException, WdkUserException,
             SQLException {
         return idsQueryInstance.getChecksum();
+    }
+
+    public String getAnswerKey() throws NoSuchAlgorithmException,
+            WdkModelException, JSONException, WdkUserException, SQLException {
+        String key = getChecksum();
+        if (filter != null) key += ":" + filter.getName();
+        return key;
     }
 
     // ///////////////////////////////////////////////////////////////////
@@ -558,7 +573,8 @@ public class AnswerValue {
             // make an instance from the attribute query, and attribute query
             // has no params
             Map<String, String> params = new LinkedHashMap<String, String>();
-            QueryInstance queryInstance = attributeQuery.makeInstance(params);
+            QueryInstance queryInstance = attributeQuery.makeInstance(user,
+                    params);
             return queryInstance.getSql();
         }
     }
@@ -633,7 +649,7 @@ public class AnswerValue {
 
         String innerSql = idsQueryInstance.getSql();
         // get a filter
-        if (filter != null) innerSql = filter.applyFilter(innerSql);
+        if (filter != null) innerSql = filter.applyFilter(user, innerSql);
         sql.append(innerSql).append(") bidq)");
 
         logger.debug("id sql constructed.");
@@ -802,7 +818,7 @@ public class AnswerValue {
         }
         this.sortingMap.clear();
         this.sortingMap.putAll(sortingMap);
-        
+
         this.pagedIdSql = null;
         this.pageRecordInstances = null;
     }
@@ -887,7 +903,7 @@ public class AnswerValue {
             WdkModelException, JSONException, WdkUserException {
         if (answer == null) {
             AnswerFactory answerFactory = question.getWdkModel().getAnswerFactory();
-            answer = answerFactory.getAnswer(getChecksum());
+            answer = answerFactory.getAnswer(user, getChecksum());
             if (answer == null) answer = answerFactory.saveAnswerValue(this);
             answer.setAnswerValue(this);
         }
@@ -903,7 +919,7 @@ public class AnswerValue {
             AnswerFilterInstance filter = recordClass.getFilter(filterName);
 
             String innerSql = idsQueryInstance.getSql();
-            innerSql = filter.applyFilter(innerSql);
+            innerSql = filter.applyFilter(user, innerSql);
 
             StringBuffer sql = new StringBuffer("SELECT count(*) FROM ");
             sql.append("(").append(innerSql).append(") f");
@@ -943,9 +959,8 @@ public class AnswerValue {
 
     public void setAnswer(Answer answer) {
         this.answer = answer;
-        reset();
     }
-    
+
     private void reset() {
         pagedIdSql = null;
         pageRecordInstances = null;

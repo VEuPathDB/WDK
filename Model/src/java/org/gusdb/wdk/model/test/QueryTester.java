@@ -36,21 +36,25 @@ import org.gusdb.wdk.model.query.param.FlatVocabParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.query.param.StringParam;
+import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.xml.sax.SAXException;
 
 public class QueryTester {
 
     WdkModel wdkModel;
+    User user;
 
-    public QueryTester(WdkModel wdkModel) {
+    public QueryTester(WdkModel wdkModel) throws NoSuchAlgorithmException,
+            WdkUserException, WdkModelException, SQLException {
         this.wdkModel = wdkModel;
+        user = wdkModel.getSystemUser();
     }
 
     private String showSql(Query query, Map<String, String> paramHash)
             throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, SQLException, JSONException {
-        QueryInstance instance = query.makeInstance(paramHash);
+        QueryInstance instance = query.makeInstance(user, paramHash);
         if (instance instanceof SqlQueryInstance) {
             return ((SqlQueryInstance) instance).getUncachedSql();
         } else return instance.getSql();
@@ -59,7 +63,7 @@ public class QueryTester {
     private String showResultTable(Query query, Map<String, String> paramHash)
             throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, SQLException, JSONException {
-        QueryInstance instance = query.makeInstance(paramHash);
+        QueryInstance instance = query.makeInstance(user, paramHash);
         ResultFactory resultFactory = wdkModel.getResultFactory();
         CacheFactory cacheFactory = resultFactory.getCacheFactory();
         QueryInfo queryInfo = cacheFactory.getQueryInfo(instance.getQuery());
@@ -126,11 +130,10 @@ public class QueryTester {
             prompt += " (choose one";
             if (enumParam.getMultiPick().booleanValue()) prompt += " or more";
             prompt += "):";
-            String[] vocab = enumParam.getVocab();
-            for (int i = 0; i < vocab.length; i++) {
-                String term = vocab[i];
-                prompt += newline + "    " + term + " ("
-                        + enumParam.getInternalValue(term) + ")";
+            Map<String, String> vocabs = enumParam.getVocabMap();
+            for (String term : vocabs.keySet()) {
+                String internal = vocabs.get(term);
+                prompt += newline + "    " + term + " (" + internal + ")";
             }
         }
 
@@ -191,20 +194,23 @@ public class QueryTester {
         if (showParams) {
             tester.displayParams(query);
         } else {
-            Map<String, String> paramHash = QueryTester.parseParamArgs(params,
+            Map<String, String> rawValues = QueryTester.parseParamArgs(params,
                     useDefaults, query);
+            Map<String, String> dependentValues = query.rawOrDependentValuesToDependentValues(
+                    tester.user, rawValues);
             if (showQuery) {
-                String querySql = tester.showSql(query, paramHash);
+                String querySql = tester.showSql(query, dependentValues);
                 String newline = System.getProperty("line.separator");
                 String newlineQuery = querySql.replaceAll("^\\s\\s\\s", newline);
                 newlineQuery = newlineQuery.replaceAll("(\\S)\\s\\s\\s", "$1"
                         + newline);
                 System.out.println(newline + newlineQuery + newline);
             } else if (returnResultAsTable) {
-                String table = tester.showResultTable(query, paramHash);
+                String table = tester.showResultTable(query, dependentValues);
                 System.out.println(table);
             } else {
-                QueryInstance instance = query.makeInstance(paramHash);
+                QueryInstance instance = query.makeInstance(tester.user,
+                        dependentValues);
                 ResultList rs = instance.getResults();
                 print(query, rs);
             }

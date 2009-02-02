@@ -9,6 +9,7 @@ import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.QuestionSetBean;
+import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
 /**
@@ -31,6 +32,8 @@ public class QuestionForm extends QuestionSetForm {
      */
     public ActionErrors validate(ActionMapping mapping,
             HttpServletRequest request) {
+        UserBean user = ActionUtility.getUser(servlet, request);
+
         // set the question name into request
         request.setAttribute(CConstants.QUESTIONSETFORM_KEY, this);
         request.setAttribute(CConstants.QUESTION_FULLNAME_PARAM, qFullName);
@@ -54,9 +57,10 @@ public class QuestionForm extends QuestionSetForm {
         ParamBean[] params = wdkQuestion.getParams();
         for (ParamBean param : params) {
             try {
-                String dependentValue = getMyProp(param.getName());
-                String independentValue = param.prepareValue(dependentValue);
-                param.validate(independentValue);
+                String rawOrDependentValue = getMyProp(param.getName());
+                String dependentValue = param.rawOrDependentValueToDependentValue(
+                        user, rawOrDependentValue);
+                param.validate(user, dependentValue);
             } catch (Exception ex) {
                 ex.printStackTrace();
                 ActionError error = new ActionError("mapped.properties",

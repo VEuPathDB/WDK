@@ -24,6 +24,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.BooleanQuery;
+import org.gusdb.wdk.model.query.param.Param;
 import org.json.JSONException;
 
 /**
@@ -360,6 +361,40 @@ public class User /* implements Serializable */{
      */
     void setGuest(boolean guest) {
         this.guest = guest;
+    }
+
+    /**
+     * Create a step from the existing answerValue
+     * 
+     * @param answerValue
+     * @return
+     * @throws JSONException
+     * @throws SQLException
+     * @throws WdkModelException
+     * @throws WdkUserException
+     * @throws NoSuchAlgorithmException
+     */
+    public Step createStep(AnswerValue answerValue, boolean deleted)
+            throws NoSuchAlgorithmException, WdkUserException,
+            WdkModelException, SQLException, JSONException {
+        Question question = answerValue.getQuestion();
+        Map<String, Param> params = question.getParamMap();
+        Map<String, String> independentValues = answerValue.getIdsQueryInstance().getValues();
+        AnswerFilterInstance filter = answerValue.getFilter();
+        int startIndex = answerValue.getStartIndex();
+        int endIndex = answerValue.getEndIndex();
+
+        // transform independent values into dependent values
+        Map<String, String> dependentValues = new LinkedHashMap<String, String>();
+        for (String paramName : independentValues.keySet()) {
+            Param param = params.get(paramName);
+            String independentValue = independentValues.get(paramName);
+            String dependentValue = param.independentValueToDependentValue(
+                    this, independentValue);
+            dependentValues.put(paramName, dependentValue);
+        }
+        return createStep(question, dependentValues, filter, startIndex,
+                endIndex, deleted);
     }
 
     public Step createStep(Question question, Map<String, String> paramValues,
@@ -898,7 +933,8 @@ public class User /* implements Serializable */{
         Map<String, Boolean> sortingMap = new LinkedHashMap<String, Boolean>();
         sortingMap.put(attrName, ascending);
         Map<String, Boolean> previousMap = getSortingAttributes(questionFullName);
-	if (previousMap == null) previousMap = new LinkedHashMap<String,Boolean>();
+        if (previousMap == null)
+            previousMap = new LinkedHashMap<String, Boolean>();
         for (String aName : previousMap.keySet()) {
             if (!sortingMap.containsKey(aName))
                 sortingMap.put(aName, previousMap.get(aName));
@@ -1090,13 +1126,13 @@ public class User /* implements Serializable */{
     }
 
     public Step createBooleanStep(Step leftStep, Step rigtStep,
-            String booleanOperator, boolean useBooleanFilter,
-            String filterName) throws NoSuchAlgorithmException,
-            WdkModelException, WdkUserException, SQLException, JSONException {
+            String booleanOperator, boolean useBooleanFilter, String filterName)
+            throws NoSuchAlgorithmException, WdkModelException,
+            WdkUserException, SQLException, JSONException {
         BooleanOperator operator = BooleanOperator.parse(booleanOperator);
         Question question = leftStep.getAnswer().getAnswerValue().getQuestion();
         AnswerFilterInstance filter = null;
-        if (filterName != null) 
+        if (filterName != null)
             filter = question.getRecordClass().getFilter(filterName);
         return createBooleanStep(leftStep, rigtStep, operator,
                 useBooleanFilter, filter);
@@ -1137,11 +1173,11 @@ public class User /* implements Serializable */{
         Map<String, String> params = new LinkedHashMap<String, String>();
 
         String leftName = booleanQuery.getLeftOperandParam().getName();
-        String leftKey = signature + ":" + leftStep.getDisplayId();
+        String leftKey = Integer.toString(leftStep.getDisplayId());
         params.put(leftName, leftKey);
 
         String rightName = booleanQuery.getRightOperandParam().getName();
-        String rightKey = signature + ":" + rightStep.getDisplayId();
+        String rightKey = Integer.toString(rightStep.getDisplayId());
         params.put(rightName, rightKey);
 
         String operatorString = operator.getOperator(wdkModel.getQueryPlatform());

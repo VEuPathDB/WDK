@@ -8,19 +8,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 
 /**
  * @author xingao
  * 
- *         The input to can be a comma delimited list of terms, or a compressed
- *         version of it.
+ *         raw data: a comma separated list of terms;
  * 
- *         The output is a comma delimited list of internal values, single
- *         quoted as needed.
+ *         user-dependent data: same as user-independent data, can be either a a
+ *         comma separated list of terms or a compressed checksum;;
+ * 
+ *         user-independent data: same as user-dependent data;
+ * 
+ *         internal data: a comma separated list of internals, quotes are
+ *         properly escaped or added
  */
 public abstract class AbstractEnumParam extends Param {
 
@@ -82,36 +86,6 @@ public abstract class AbstractEnumParam extends Param {
 
     public void addUseTermOnly(ParamConfiguration paramConfig) {
         this.useTermOnlies.add(paramConfig);
-    }
-
-    @Override
-    protected void validateValue(String termList) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
-        // try to get term array
-        getTerms(termList);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.Param#getInternalValue(java.lang.String)
-     */
-    @Override
-    public String getInternalValue(String termList) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
-        // the input is a list of terms
-        String[] terms = getTerms(termList);
-
-        StringBuffer buf = new StringBuffer();
-        for (String term : terms) {
-            String internal = useTermOnly ? term : termInternalMap.get(term);
-            if (quote) internal = "'" + internal + "'";
-            if (buf.length() != 0) buf.append(", ");
-            buf.append(internal);
-        }
-        return buf.toString();
     }
 
     public String[] getVocab() throws WdkModelException,
@@ -188,8 +162,8 @@ public abstract class AbstractEnumParam extends Param {
                 EnumParamTermNode node = stack.pop();
                 if (buffer.length() > 0) buffer.append(",");
                 buffer.append(node.getTerm());
-                
-                for(EnumParamTermNode child : node.getChildren()) {
+
+                for (EnumParamTermNode child : node.getChildren()) {
                     stack.push(child);
                 }
             }
@@ -291,9 +265,6 @@ public abstract class AbstractEnumParam extends Param {
 
     public String[] getTerms(String termList) throws NoSuchAlgorithmException,
             WdkModelException, SQLException, JSONException, WdkUserException {
-        // check if null value is allowed
-        termList = decompressValue(termList);
-
         // the input is a list of terms
         String[] terms;
         if (multiPick) {
@@ -301,11 +272,6 @@ public abstract class AbstractEnumParam extends Param {
             for (int i = 0; i < terms.length; i++)
                 terms[i] = terms[i].trim();
         } else terms = new String[] { termList.trim() };
-
-        // the terms has to have some value
-        if (terms.length == 0)
-            throw new WdkModelException("The input '" + termList
-                    + "' to param '" + getFullName() + "' is invalid.");
 
         initVocabMap();
         for (String term : terms) {
@@ -316,19 +282,106 @@ public abstract class AbstractEnumParam extends Param {
         return terms;
     }
 
-    /**
-     * Enum param value is by default independent, but we may need to compress
-     * it
+    /*
+     * (non-Javadoc)
      * 
-     * @throws WdkModelException
-     * @throws NoSuchAlgorithmException
+     * @see
+     * org.gusdb.wdk.model.query.param.Param#dependentValueToIndependentValue
+     * (org.gusdb.wdk.model.user.User, java.lang.String)
      */
     @Override
-    protected String getUserIndependentValue(String value)
-            throws NoSuchAlgorithmException, WdkModelException {
-        if (value != null && value.length() > Utilities.MAX_PARAM_VALUE_SIZE) {
-            value = queryFactory.makeClobChecksum(value);
-        }
-        return value;
+    public String dependentValueToIndependentValue(User user,
+            String dependentValue) throws NoSuchAlgorithmException,
+            WdkUserException, WdkModelException, SQLException, JSONException {
+        return dependentValue;
     }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.gusdb.wdk.model.query.param.Param#independentValueToDependentValue
+     * (org.gusdb.wdk.model.user.User, java.lang.String)
+     */
+    @Override
+    public String independentValueToDependentValue(User user,
+            String independentValue) throws NoSuchAlgorithmException,
+            WdkModelException, SQLException, JSONException, WdkUserException {
+        return independentValue;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.gusdb.wdk.model.query.param.Param#independentValueToInternalValue
+     * (org.gusdb.wdk.model.user.User, java.lang.String)
+     */
+    @Override
+    public String independentValueToInternalValue(User user,
+            String independentValue) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
+        if (independentValue == null || independentValue.length() == 0)
+            independentValue = emptyValue;
+
+        String rawValue = decompressValue(independentValue);
+        String[] terms = getTerms(rawValue);
+        StringBuffer buf = new StringBuffer();
+        for (String term : terms) {
+            String internal = useTermOnly ? term : termInternalMap.get(term);
+            internal = internal.replaceAll("'", "''");
+            if (quote) internal = "'" + internal + "'";
+            if (buf.length() != 0) buf.append(", ");
+            buf.append(internal);
+        }
+        return buf.toString();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.gusdb.wdk.model.query.param.Param#independentValueToRawValue(org.
+     * gusdb.wdk.model.user.User, java.lang.String)
+     */
+    @Override
+    public String dependentValueToRawValue(User user, String dependentValue)
+            throws WdkModelException, NoSuchAlgorithmException,
+            WdkUserException, SQLException, JSONException {
+        return decompressValue(dependentValue);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.gusdb.wdk.model.query.param.Param#rawValueToIndependentValue(org.
+     * gusdb.wdk.model.user.User, java.lang.String)
+     */
+    @Override
+    public String rawOrDependentValueToDependentValue(User user, String rawValue)
+            throws NoSuchAlgorithmException, WdkModelException,
+            WdkUserException, SQLException, JSONException {
+        return compressValue(rawValue);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.gusdb.wdk.model.query.param.Param#validateValue(org.gusdb.wdk.model
+     * .user.User, java.lang.String)
+     */
+    @Override
+    protected void validateValue(User user, String dependentValue)
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
+        String rawValue = decompressValue(dependentValue);
+        String[] terms = getTerms(rawValue);
+        if (terms.length == 0 && !allowEmpty)
+            throw new WdkUserException("The value to enumParam/flatVocabParam "
+                    + getFullName() + " cannot be empty");
+    }
+
 }

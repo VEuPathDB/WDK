@@ -27,6 +27,7 @@ import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.FlatVocabParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.report.Reporter;
+import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 
 /**
@@ -59,7 +60,7 @@ public class AnswerValueBean {
          * @see java.util.Iterator#next()
          */
         public RecordBean next() {
-            return new RecordBean(instances[position++]);
+            return new RecordBean(answerValue.getUser(), instances[position++]);
         }
 
         /*
@@ -74,6 +75,7 @@ public class AnswerValueBean {
     }
 
     private static Logger logger = Logger.getLogger(AnswerValueBean.class);
+
     AnswerValue answerValue;
     Map<?, ?> downloadConfigMap = null;
 
@@ -192,7 +194,8 @@ public class AnswerValueBean {
         Map<String, String> params = answerValue.getIdsQueryInstance().getValues();
         AnswerParam param = query.getLeftOperandParam();
         String checkSum = params.get(param.getName());
-        return new AnswerValueBean(param.getAnswerValue(checkSum));
+        User user = answerValue.getUser();
+        return new AnswerValueBean(param.getAnswerValue(user, checkSum));
     }
 
     /**
@@ -215,7 +218,8 @@ public class AnswerValueBean {
         Map<String, String> params = answerValue.getIdsQueryInstance().getValues();
         AnswerParam param = query.getRightOperandParam();
         String checkSum = params.get(param.getName());
-        return new AnswerValueBean(param.getAnswerValue(checkSum));
+        User user = answerValue.getUser();
+        return new AnswerValueBean(param.getAnswerValue(user, checkSum));
     }
 
     public int getPageSize() throws NoSuchAlgorithmException,

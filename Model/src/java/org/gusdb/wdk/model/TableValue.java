@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 
 public class TableValue implements Collection<Map<String, AttributeValue>> {
@@ -76,7 +77,8 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
         /*
          * (non-Javadoc)
          * 
-         * @see org.gusdb.wdk.model.AttributeValueContainer#getAttributeFieldMap()
+         * @see
+         * org.gusdb.wdk.model.AttributeValueContainer#getAttributeFieldMap()
          */
         @Override
         protected Map<String, AttributeField> getAttributeFieldMap() {
@@ -221,7 +223,9 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
         /*
          * (non-Javadoc)
          * 
-         * @see org.gusdb.wdk.model.AttributeValueContainer#fillColumnAttributeValues(org.gusdb.wdk.model.query.Query)
+         * @see
+         * org.gusdb.wdk.model.AttributeValueContainer#fillColumnAttributeValues
+         * (org.gusdb.wdk.model.query.Query)
          */
         @Override
         protected void fillColumnAttributeValues(Query attributeQuery)
@@ -231,21 +235,24 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
         }
     }
 
+    private User user;
     private PrimaryKeyAttributeValue primaryKey;
     private TableField tableField;
     QueryInstance instance;
 
     private List<Map<String, AttributeValue>> rows;
 
-    public TableValue(PrimaryKeyAttributeValue primaryKey, TableField tableField)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+    public TableValue(User user, PrimaryKeyAttributeValue primaryKey,
+            TableField tableField) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
+        this.user = user;
         this.primaryKey = primaryKey;
         this.tableField = tableField;
 
         // run the table query, and get the resultList
         Query query = tableField.getQuery();
-        this.instance = query.makeInstance(primaryKey.getValues());
+        this.instance = query.makeInstance(user, primaryKey.getValues());
     }
 
     public TableField getTableField() {

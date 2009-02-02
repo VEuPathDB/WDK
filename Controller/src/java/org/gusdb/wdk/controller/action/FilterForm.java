@@ -17,6 +17,7 @@ import org.gusdb.wdk.model.jspwrap.EnumParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.QuestionSetBean;
+import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
 /**
@@ -56,6 +57,8 @@ public class FilterForm extends BooleanExpressionForm {
      */
     public ActionErrors validate(ActionMapping mapping,
             HttpServletRequest request) {
+        UserBean user = ActionUtility.getUser(servlet, request);
+
         // set the question name into request
         request.setAttribute(CConstants.QUESTION_FULLNAME_PARAM, qFullName);
 
@@ -93,7 +96,10 @@ public class FilterForm extends BooleanExpressionForm {
                 String errMsg = null;
                 for (int j = 0; j < pVals.length; j++) {
                     try {
-                        p.validate(pVals[j]);
+                        String rawOrDependentValue = pVals[j];
+                        String dependentValue = p.rawOrDependentValueToDependentValue(
+                                user, rawOrDependentValue);
+                        p.validate(user, dependentValue);
                     } catch (Exception ex) {
                         ex.printStackTrace();
 

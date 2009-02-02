@@ -41,6 +41,7 @@ import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.QuerySet;
 import org.gusdb.wdk.model.query.SqlQueryInstance;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
+import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.xml.sax.SAXException;
 
@@ -73,6 +74,7 @@ public class SanityTester {
     String testFilterString;
     static final String newline = System.getProperty("line.separator");
 
+    User user;
     WdkModel wdkModel;
     boolean verbose;
     boolean failuresOnly;
@@ -98,6 +100,7 @@ public class SanityTester {
         this.indexOnly = indexOnly;
         this.modelName = modelName;
         this.testFilterString = testFilterString;
+        this.user = wdkModel.getSystemUser();
         testFilter = parseTestFilter(testFilterString);
     }
 
@@ -144,7 +147,8 @@ public class SanityTester {
 
         try {
             question.getQuery().setIsCacheable(false);
-            AnswerValue answerValue = question.makeAnswerValue(paramValuesSet.getParamValues());
+            AnswerValue answerValue = question.makeAnswerValue(user,
+                    paramValuesSet.getParamValues());
 
             int resultSize = answerValue.getResultSize();
 
@@ -320,7 +324,8 @@ public class SanityTester {
 
         int count = 0;
 
-        QueryInstance instance = query.makeInstance(paramValuesSet.getParamValues());
+        QueryInstance instance = query.makeInstance(user,
+                paramValuesSet.getParamValues());
         ResultList rs = instance.getResults();
 
         while (rs.next()) {
@@ -334,7 +339,8 @@ public class SanityTester {
             ParamValuesSet paramValuesSet) throws NoSuchAlgorithmException,
             SQLException, WdkModelException, JSONException, WdkUserException {
 
-        SqlQueryInstance instance = (SqlQueryInstance) query.makeInstance(new HashMap<String, String>());
+        SqlQueryInstance instance = (SqlQueryInstance) query.makeInstance(user,
+                new HashMap<String, String>());
 
         if (paramValuesSet.getParamValues().size() != 2) {
             throw new WdkUserException(
@@ -358,7 +364,8 @@ public class SanityTester {
             throws NoSuchAlgorithmException, SQLException, WdkModelException,
             JSONException, WdkUserException {
 
-        SqlQueryInstance instance = (SqlQueryInstance) query.makeInstance(new HashMap<String, String>());
+        SqlQueryInstance instance = (SqlQueryInstance) query.makeInstance(user,
+                new HashMap<String, String>());
 
         String sql = "select * from (" + instance.getUncachedSql() + ") "
                 + paramValuesSet.getWhereClause();
@@ -412,8 +419,8 @@ public class SanityTester {
             for (String key : paramValues.keySet()) {
                 pkValues.put(key, paramValues.get(key));
             }
-            RecordInstance recordInstance = new RecordInstance(recordClass,
-                    pkValues);
+            RecordInstance recordInstance = new RecordInstance(user,
+                    recordClass, pkValues);
             recordInstance.print();
             passed = true;
 

@@ -23,6 +23,7 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.xml.sax.SAXException;
 
@@ -63,7 +64,9 @@ public class RecordTester {
         // create instance
         RecordClass recordClass = (RecordClass) wdkModel.resolveReference(recordClassFullName);
         Map<String, Object> pkValues = parsePrimaryKeyArgs(primaryKeyArray);
-        RecordInstance recordInstance = new RecordInstance(recordClass, pkValues);
+        User user = wdkModel.getSystemUser();
+        RecordInstance recordInstance = new RecordInstance(user, recordClass,
+                pkValues);
 
         // try to get all attributes
         recordInstance.getAttributeValueMap();

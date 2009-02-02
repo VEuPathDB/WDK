@@ -25,6 +25,7 @@ import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamReference;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.query.param.StringParam;
+import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -64,9 +65,10 @@ public abstract class Query extends WdkModelBase {
     protected abstract void appendJSONContent(JSONObject jsQuery)
             throws JSONException;
 
-    public abstract QueryInstance makeInstance(Map<String, String> values)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException;
+    public abstract QueryInstance makeInstance(User user,
+            Map<String, String> values) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException;
 
     public abstract Query clone();
 
@@ -507,4 +509,47 @@ public abstract class Query extends WdkModelBase {
         return buffer.toString();
     }
 
+    public Map<String, String> rawOrDependentValuesToDependentValues(User user,
+            Map<String, String> rawValues) throws NoSuchAlgorithmException,
+            WdkModelException, WdkUserException, SQLException, JSONException {
+        Map<String, String> dependentValues = new LinkedHashMap<String, String>();
+        for (String paramName : rawValues.keySet()) {
+            Param param = paramMap.get(paramName);
+            String rawValue = rawValues.get(paramName);
+            String dependentValue = param.rawOrDependentValueToDependentValue(user,
+                    rawValue);
+            dependentValues.put(paramName, dependentValue);
+        }
+        return dependentValues;
+    }
+
+    public Map<String, String> dependentValuesToIndependentValues(User user,
+            Map<String, String> dependentValues)
+            throws NoSuchAlgorithmException, WdkModelException,
+            WdkUserException, SQLException, JSONException {
+        Map<String, String> independentValues = new LinkedHashMap<String, String>();
+        for (String paramName : dependentValues.keySet()) {
+            Param param = paramMap.get(paramName);
+            String dependentValue = dependentValues.get(paramName);
+            String independentValue = param.dependentValueToIndependentValue(
+                    user, dependentValue);
+            independentValues.put(paramName, independentValue);
+        }
+        return independentValues;
+    }
+
+    public Map<String, String> independentValuesToDependentValues(User user,
+            Map<String, String> independentValues)
+            throws NoSuchAlgorithmException, WdkModelException,
+            WdkUserException, SQLException, JSONException {
+        Map<String, String> dependentValues = new LinkedHashMap<String, String>();
+        for (String paramName : independentValues.keySet()) {
+            Param param = paramMap.get(paramName);
+            String independentValue = independentValues.get(paramName);
+            String dependentValue = param.independentValueToDependentValue(
+                    user, independentValue);
+            dependentValues.put(paramName, dependentValue);
+        }
+        return dependentValues;
+    }
 }

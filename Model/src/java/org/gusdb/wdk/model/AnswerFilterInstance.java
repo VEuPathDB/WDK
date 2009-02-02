@@ -19,6 +19,7 @@ import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 
 /**
@@ -232,6 +233,7 @@ public class AnswerFilterInstance extends WdkModelBase {
                         + " does not exist in the" + " filter query ["
                         + filterQuery.getFullName() + "]");
         }
+        User user = wdkModel.getSystemUser();
         // make sure the required param is defined
         for (String paramName : params.keySet()) {
             if (answerParam.getName().equals(paramName)) continue;
@@ -243,7 +245,7 @@ public class AnswerFilterInstance extends WdkModelBase {
             // validate the paramValue
             Param param = params.get(paramName);
             String paramValue = paramValueMap.get(paramName);
-            param.validate(paramValue);
+            param.validate(user, paramValue);
         }
 
         resolved = true;
@@ -254,7 +256,7 @@ public class AnswerFilterInstance extends WdkModelBase {
             WdkUserException {
         // use only the id query sql as input
         String sql = answerValue.getIdsQueryInstance().getSql();
-        sql = applyFilter(sql);
+        sql = applyFilter(answerValue.getUser(), sql);
         DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
         ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql);
         try {
@@ -265,7 +267,7 @@ public class AnswerFilterInstance extends WdkModelBase {
         }
     }
 
-    public String applyFilter(String sql) throws WdkModelException,
+    public String applyFilter(User user, String sql) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
         Map<String, Param> params = filterQuery.getParamMap();
@@ -282,8 +284,9 @@ public class AnswerFilterInstance extends WdkModelBase {
             if (param.getFullName().equals(answerParam.getFullName()))
                 continue;
 
-            String external = paramValueMap.get(param.getName());
-            String internal = param.getInternalValue(external);
+            String independentValue = paramValueMap.get(param.getName());
+            String internal = param.independentValueToInternalValue(user,
+                    independentValue);
             filterSql = param.replaceSql(filterSql, internal);
         }
         return filterSql;
