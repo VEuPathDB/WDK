@@ -6,6 +6,7 @@ import org.apache.struts.action.ActionError;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.QuestionSetBean;
@@ -56,11 +57,15 @@ public class QuestionForm extends QuestionSetForm {
 
         ParamBean[] params = wdkQuestion.getParams();
         for (ParamBean param : params) {
+            param.setUser(user);
             try {
                 String rawOrDependentValue = getMyProp(param.getName());
                 String dependentValue = param.rawOrDependentValueToDependentValue(
                         user, rawOrDependentValue);
-                param.validate(user, dependentValue);
+
+                // cannot validate datasetParam here
+                if (!(param instanceof DatasetParamBean))
+                    param.validate(user, dependentValue);
             } catch (Exception ex) {
                 ex.printStackTrace();
                 ActionError error = new ActionError("mapped.properties",
