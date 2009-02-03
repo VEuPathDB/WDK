@@ -96,6 +96,7 @@ public class DatasetParam extends Param {
     public String dependentValueToIndependentValue(User user,
             String dependentValue) throws NoSuchAlgorithmException,
             WdkUserException, WdkModelException, SQLException, JSONException {
+        logger.debug("dependent to independent: " + dependentValue);
         int userDatasetId = Integer.parseInt(dependentValue);
         Dataset dataset = user.getDataset(userDatasetId);
         return dataset.getChecksum();
@@ -111,6 +112,7 @@ public class DatasetParam extends Param {
     public String independentValueToDependentValue(User user,
             String independentValue) throws NoSuchAlgorithmException,
             WdkModelException, SQLException, JSONException, WdkUserException {
+        logger.debug("independent to dependent: " + independentValue);
         Dataset dataset = user.getDataset(independentValue);
         return Integer.toString(dataset.getUserDatasetId());
     }
@@ -158,6 +160,7 @@ public class DatasetParam extends Param {
     public String dependentValueToRawValue(User user, String dependentValue)
             throws WdkModelException, NoSuchAlgorithmException,
             WdkUserException, SQLException, JSONException {
+        logger.debug("dependent to raw: " + dependentValue);
         int userDatasetId = Integer.parseInt(dependentValue);
         Dataset dataset = user.getDataset(userDatasetId);
         String[] values = dataset.getValues();
@@ -203,6 +206,8 @@ public class DatasetParam extends Param {
     public String rawValueToDependentValue(User user, String uploadFile,
             String rawValue) throws NoSuchAlgorithmException, WdkUserException,
             WdkModelException, SQLException {
+        logger.debug("raw to dependent: " + rawValue);
+        (new Exception()).printStackTrace();
         String[] values = Utilities.toArray(rawValue);
         Dataset dataset = user.createDataset(uploadFile, values);
         return Integer.toString(dataset.getUserDatasetId());
