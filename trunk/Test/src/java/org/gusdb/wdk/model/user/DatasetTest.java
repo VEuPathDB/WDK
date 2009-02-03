@@ -84,7 +84,26 @@ public class DatasetTest {
         Dataset actual = user.getDataset(expected.getUserDatasetId());
         compareDatasets(expected, actual);
     }
+    
 
+    @Test
+    public void testCreateIdenticalDatasetFromUsers() throws Exception {
+        Random random = UnitTestHelper.getRandom();
+        String[] values = new String[] { Integer.toString(random.nextInt()),
+                Integer.toString(random.nextInt()),
+                Integer.toString(random.nextInt()),
+                Integer.toString(random.nextInt()) };
+        Dataset expected = user.createDataset(null, values);
+        
+        User guest = UnitTestHelper.getGuest();
+        Dataset actual = guest.createDataset(null, values);
+        
+        Assert.assertEquals(guest.getUserId(), actual.getUser().getUserId());
+        Assert.assertEquals(expected.getDatasetId(), actual.getDatasetId());
+        Assert.assertEquals(expected.getChecksum(), actual.getChecksum());
+        Assert.assertArrayEquals(expected.getValues(), actual.getValues());
+    }
+    
     private void compareDatasets(Dataset expected, Dataset actual)
             throws WdkUserException, SQLException {
         Assert.assertEquals(expected.getChecksum(), actual.getChecksum());

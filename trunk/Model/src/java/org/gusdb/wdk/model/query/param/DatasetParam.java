@@ -207,7 +207,6 @@ public class DatasetParam extends Param {
             String rawValue) throws NoSuchAlgorithmException, WdkUserException,
             WdkModelException, SQLException {
         logger.debug("raw to dependent: " + rawValue);
-        (new Exception()).printStackTrace();
         String[] values = Utilities.toArray(rawValue);
         Dataset dataset = user.createDataset(uploadFile, values);
         return Integer.toString(dataset.getUserDatasetId());
