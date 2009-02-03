@@ -184,6 +184,7 @@ public class DatasetParam extends Param {
                 return rawValue;
             } catch(Exception ex){
                 // dataset doesn't exist, create one
+                logger.info("user dataset id doesn't exist: " + userDatasetId);
             }
         }
         return rawValueToDependentValue(user, "", rawValue);

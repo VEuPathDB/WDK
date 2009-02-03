@@ -19,7 +19,6 @@ import org.json.JSONException;
  */
 public class AnswerParamBean extends ParamBean {
 
-    private UserBean user;
     private AnswerParam answerParam;
 
     private String answerChecksum;
@@ -44,10 +43,6 @@ public class AnswerParamBean extends ParamBean {
      */
     public void setAnswerChecksum(String checksum) {
         this.answerChecksum = checksum;
-    }
-
-    public void setUser(UserBean user) {
-        this.user = user;
     }
 
     public AnswerValueBean getAnswerValue() throws Exception {

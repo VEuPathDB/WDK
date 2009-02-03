@@ -17,6 +17,7 @@ public class ParamBean {
 
     // private static Logger logger = Logger.getLogger( ParamBean.class );
 
+    protected UserBean user;
     protected Param param;
     protected String paramValue;
     protected int truncateLength;
@@ -24,6 +25,10 @@ public class ParamBean {
     public ParamBean(Param param) {
         this.param = param;
         truncateLength = Utilities.TRUNCATE_DEFAULT;
+    }
+
+    public void setUser(UserBean user) {
+        this.user = user;
     }
 
     public String getName() {
