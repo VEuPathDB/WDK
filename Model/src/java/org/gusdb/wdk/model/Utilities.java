@@ -101,7 +101,7 @@ public class Utilities {
         data = data.replace('\t', ' ');
         data = data.replace('\n', ' ');
         data = data.replace('\r', ' ');
-        return data.trim().split("\\s+?");
+        return data.trim().split("\\s+");
     }
 
     public static String fromArray(String[] data) {
