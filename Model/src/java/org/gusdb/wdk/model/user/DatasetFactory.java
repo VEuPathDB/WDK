@@ -105,8 +105,9 @@ public class DatasetFactory {
 
             // check if user dataset exists
             try {
-                int userDatasetId = getUserDatasetId(connection,
+                int userDatasetId = getUserDatasetId(connection, user,
                         dataset.getDatasetId());
+                logger.debug("user dataset exist: " + userDatasetId);
                 dataset.setUserDatasetId(userDatasetId);
                 loadUserDataset(connection, dataset);
             } catch (WdkModelException ex) {
@@ -211,7 +212,7 @@ public class DatasetFactory {
             dataset.setUser(user);
             loadDatasetIndex(connection, dataset);
             try {
-                int userDatasetId = getUserDatasetId(connection, datasetId);
+                int userDatasetId = getUserDatasetId(connection, user, datasetId);
                 dataset.setUserDatasetId(userDatasetId);
                 loadUserDataset(connection, dataset);
             } catch (WdkModelException ex) {
@@ -283,13 +284,13 @@ public class DatasetFactory {
      * @throws SQLException
      *             the database or query failure
      */
-    private int getUserDatasetId(Connection connection, int datasetId)
+    private int getUserDatasetId(Connection connection, User user, int datasetId)
             throws SQLException, WdkModelException {
         StringBuffer sql = new StringBuffer("SELECT ");
         sql.append(COLUMN_USER_DATASET_ID);
         sql.append(" FROM ").append(userSchema).append(TABLE_USER_DATASET);
-        sql.append(" WHERE ").append(COLUMN_DATASET_ID);
-        sql.append(" = ").append(datasetId);
+        sql.append(" WHERE ").append(COLUMN_DATASET_ID).append(" = ").append(datasetId);
+        sql.append(" AND ").append(UserFactory.COLUMN_USER_ID).append(" = ").append(user.getUserId());
 
         Object result = SqlUtils.executeScalar(dataSource, sql.toString());
         return Integer.parseInt(result.toString());
@@ -351,6 +352,8 @@ public class DatasetFactory {
         // get new user dataset id
         int userDatasetId = userPlatform.getNextId(userSchema,
                 TABLE_USER_DATASET);
+
+        logger.debug("Inserting new user dataset id: " + userDatasetId);
         dataset.setUserDatasetId(userDatasetId);
         dataset.setCreateTime(new Date());
 
