@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.TreeMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -560,7 +561,7 @@ public class User /* implements Serializable */{
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, JSONException, SQLException {
         Map<Integer, Strategy> strategies = getStrategiesMap();
-        Map<String, List<Strategy>> category = new LinkedHashMap<String, List<Strategy>>();
+        Map<String, List<Strategy>> category = new TreeMap<String, List<Strategy>>();
         for (Strategy strategy : strategies.values()) {
             String type = strategy.getType();
             List<Strategy> list;
@@ -572,14 +573,14 @@ public class User /* implements Serializable */{
             }
             list.add(strategy);
         }
-        return category;
+	return category;
     }
 
     public Map<String, List<Strategy>> getUnsavedStrategiesByCategory()
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, JSONException, SQLException {
         Map<Integer, Strategy> strategies = getStrategiesMap();
-        Map<String, List<Strategy>> category = new LinkedHashMap<String, List<Strategy>>();
+        Map<String, List<Strategy>> category = new TreeMap<String, List<Strategy>>();
         for (Strategy strategy : strategies.values()) {
             if (!strategy.getIsSaved()) {
                 String type = strategy.getType();
@@ -608,7 +609,7 @@ public class User /* implements Serializable */{
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, JSONException, SQLException {
         Map<Integer, Strategy> strategies = getStrategiesMap();
-        Map<String, List<Strategy>> category = new LinkedHashMap<String, List<Strategy>>();
+        Map<String, List<Strategy>> category = new TreeMap<String, List<Strategy>>();
         for (Strategy strategy : strategies.values()) {
             if (strategy.getIsSaved()) {
                 String type = strategy.getType();
