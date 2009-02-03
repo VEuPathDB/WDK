@@ -420,7 +420,7 @@ public class DatasetFactory {
             if (!resultSet.next())
                 throw new WdkModelException("The userDataset ("
                         + dataset.getUserDatasetId() + ") does not exist.");
-            dataset.setCreateTime(resultSet.getDate(COLUMN_CREATE_TIME));
+            dataset.setCreateTime(resultSet.getTimestamp(COLUMN_CREATE_TIME));
             dataset.setUploadFile(resultSet.getString(COLUMN_UPLOAD_FILE));
         } finally {
             try {

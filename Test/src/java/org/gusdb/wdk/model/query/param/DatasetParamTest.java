@@ -59,6 +59,25 @@ public class DatasetParamTest {
     }
 
     @Test
+    public void testSpacedRawToDependentValue() throws NoSuchAlgorithmException,
+            WdkUserException, WdkModelException, SQLException {
+        Random random = UnitTestHelper.getRandom();
+        String[] values = new String[] { Integer.toString(random.nextInt()),
+                Integer.toString(random.nextInt()),
+                Integer.toString(random.nextInt()),
+                Integer.toString(random.nextInt()) };
+        Dataset dataset = user.createDataset(null, values);
+
+        String rawValue = Utilities.fromArray(values);
+        rawValue = rawValue.replaceAll(",", ", ");
+        String dependentValue = datasetParam.rawValueToDependentValue(user,
+                null, rawValue);
+        Assert.assertEquals(Integer.toString(dataset.getUserDatasetId()),
+                dependentValue);
+    }
+
+
+    @Test
     public void testRawOrDependentToDependentValue()
             throws NoSuchAlgorithmException, WdkUserException,
             WdkModelException, SQLException {
