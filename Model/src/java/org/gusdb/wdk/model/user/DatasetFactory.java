@@ -242,7 +242,7 @@ public class DatasetFactory {
             resultSet = SqlUtils.executeQuery(dataSource, sql.toString());
             List<String> values = new ArrayList<String>();
             while (resultSet.next()) {
-                values.add(COLUMN_DATASET_VALUE);
+                values.add(resultSet.getString(COLUMN_DATASET_VALUE));
             }
             String[] array = new String[values.size()];
             values.toArray(array);
