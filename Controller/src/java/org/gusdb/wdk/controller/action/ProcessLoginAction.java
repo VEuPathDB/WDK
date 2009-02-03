@@ -143,6 +143,9 @@ public class ProcessLoginAction extends Action {
                     request.getParameter(CConstants.WDK_ORIGIN_URL_KEY));
             ActionForward loginPage = mapping.findForward(CConstants.SHOW_LOGIN_MAPKEY);
             forwardUrl = loginPage.getPath();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw ex;
         }
         forward.setPath(forwardUrl);
         return forward;
