@@ -518,7 +518,6 @@ public abstract class Query extends WdkModelBase {
             if (param == null)
                 throw new WdkModelException("Invalid param name '" + paramName
                         + "' in query " + getFullName());
-            
             String rawValue = rawValues.get(paramName);
             String dependentValue = param.rawOrDependentValueToDependentValue(
                     user, rawValue);

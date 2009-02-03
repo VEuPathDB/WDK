@@ -516,4 +516,17 @@ public class Step {
         return user.createStep(question, params, filter, startIndex, endIndex,
                 isDeleted);
     }
+
+    public boolean isFiltered() throws NoSuchAlgorithmException,
+            WdkModelException, JSONException, WdkUserException, SQLException {
+        AnswerValue answerValue = answer.getAnswerValue();
+        AnswerFilterInstance filter = answerValue.getFilter();
+        if (filter == null) return false;
+
+        RecordClass recordClass = answerValue.getQuestion().getRecordClass();
+        AnswerFilterInstance defaultFilter = recordClass.getDefaultFilter();
+        if (defaultFilter == null) return true;
+
+        return (!defaultFilter.getName().equals(filter.getName()));
+    }
 }
