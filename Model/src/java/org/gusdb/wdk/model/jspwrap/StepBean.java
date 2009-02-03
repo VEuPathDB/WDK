@@ -6,6 +6,7 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.Map;
 
+import org.gusdb.wdk.model.AnswerFilterInstance;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.Step;
@@ -353,5 +354,11 @@ public class StepBean {
     public boolean isUseBooleanFilter() throws NoSuchAlgorithmException,
             WdkModelException, JSONException, WdkUserException, SQLException {
         return step.getAnswer().getAnswerValue().isUseBooleanFilter();
+    }
+
+    public boolean isFiltered() throws NoSuchAlgorithmException,
+            WdkModelException, JSONException, WdkUserException, SQLException {
+        AnswerFilterInstance filter = step.getAnswer().getAnswerValue().getFilter();
+        return (filter != null);
     }
 }
