@@ -978,7 +978,7 @@ public class StepFactory {
 
                 String append = "*";
                 String name;
-                int current = 1;
+                int current = 2;
                 while (rsStrategy.next()) {
                     name = rsStrategy.getString(COLUMN_NAME);
                     if (name.equals(strategy.getSavedName() + append)) {
@@ -988,10 +988,9 @@ public class StepFactory {
                         append = "*(" + current + ")";
                     }
                 }
-                append = "*(" + current + ")";
 
                 Strategy newStrat = createStrategy(user,
-                        strategy.getLatestStep(), strategy.getName() + "*",
+                        strategy.getLatestStep(), strategy.getName() + append,
                         false);
                 strategy.setName(newStrat.getName());
                 strategy.setSavedName(newStrat.getSavedName());
