@@ -515,9 +515,13 @@ public abstract class Query extends WdkModelBase {
         Map<String, String> dependentValues = new LinkedHashMap<String, String>();
         for (String paramName : rawValues.keySet()) {
             Param param = paramMap.get(paramName);
+            if (param == null)
+                throw new WdkModelException("Invalid param name '" + paramName
+                        + "' in query " + getFullName());
+            
             String rawValue = rawValues.get(paramName);
-            String dependentValue = param.rawOrDependentValueToDependentValue(user,
-                    rawValue);
+            String dependentValue = param.rawOrDependentValueToDependentValue(
+                    user, rawValue);
             dependentValues.put(paramName, dependentValue);
         }
         return dependentValues;
