@@ -144,7 +144,6 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
             user = wdkModel.getUserFactory().getGuestUser();
             request.getSession().setAttribute(CConstants.WDK_USER_KEY, user);
         }
-        String userSignature = user.getSignature();
 
         logger.debug("strategy count: " + user.getStrategyCount());
 
@@ -153,16 +152,11 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
         boolean hasAllParams = true;
         ParamBean[] params = wdkQuestion.getParams();
         for (ParamBean param : params) {
+            param.setUser(user);
             String paramName = param.getName();
             String[] paramValues = request.getParameterValues(paramName);
 
-            // if no value assigned, use the default value
-            if (paramValues == null || paramValues.length == 0) {
-                paramValues = null;
-                String defaultValue = param.getDefault();
-                if (defaultValue != null)
-                    paramValues = defaultValue.split(",");
-            }
+            if (paramValues == null || paramValues.length == 0) paramValues = null;
 
             // handle the additional information
             if (param instanceof EnumParamBean) {
@@ -200,7 +194,9 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
                     datasetParam.setCombinedKey(paramValues[0]);
                     DatasetBean dataset = datasetParam.getDataset();
                     request.setAttribute(paramName, dataset);
-                }
+                } else paramValues = new String[] { param.getDefault() };
+            } else {
+                if (paramValues == null) paramValues = new String[] { param.getDefault() };
             }
             if (paramValues == null) hasAllParams = false;
             else qForm.setMyMultiProp(paramName, paramValues);

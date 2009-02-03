@@ -16,8 +16,10 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.upload.FormFile;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.jspwrap.DatasetBean;
 import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
@@ -39,6 +41,7 @@ public class ProcessQuestionAction extends ShowQuestionAction {
         logger.debug("Entering ProcessQuestionAction..");
         // logger.debug("+++++query string" + request.getQueryString());
 
+        try {
         UserBean wdkUser = ActionUtility.getUser(servlet, request);
 
         // get question
@@ -57,9 +60,11 @@ public class ProcessQuestionAction extends ShowQuestionAction {
         url.append("?" + CConstants.QUESTION_FULLNAME_PARAM + "=" + qFullName);
         for (String paramName : params.keySet()) {
             String paramValue = params.get(paramName);
+            if (paramValue != null) {
             url.append("&"
                     + URLEncoder.encode("myProp(" + paramName + ")", "utf-8"));
             url.append("=" + URLEncoder.encode(paramValue, "utf-8"));
+            }
         }
 
         // check if user want to define the output size for the answer
@@ -73,6 +78,10 @@ public class ProcessQuestionAction extends ShowQuestionAction {
         ActionForward forward = new ActionForward(url.toString());
         forward.setRedirect(true);
         return forward;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw ex;
+        }
     }
 
     protected Map<String, String> prepareParams(UserBean user,
@@ -82,13 +91,14 @@ public class ProcessQuestionAction extends ShowQuestionAction {
         Map<String, String> paramValues = qform.getMyProps();
         Map<String, ParamBean> params = qform.getQuestion().getParamsMap();
         // convert from raw data to user dependent data
-        for (String paramName : paramValues.keySet()) {
+        for (String paramName : params.keySet()) {
             ParamBean param = params.get(paramName);
 
+            logger.debug("contains param: " + paramValues.containsKey(paramName));
             // logger.debug("param: " + paramName + "='" +
             // paramValues.get(paramName) + "'");
             String rawValue = paramValues.get(paramName);
-            String dependentValue;
+            String dependentValue = null;
             if (param instanceof DatasetParamBean) {
                 // get the input type
                 String type = request.getParameter(paramName + "_type");
@@ -96,7 +106,7 @@ public class ProcessQuestionAction extends ShowQuestionAction {
                     throw new WdkUserException("Missing input parameter: "
                             + paramName + "_type.");
 
-                String data;
+                String data = null;
                 String uploadFile = "";
                 if (type.equalsIgnoreCase("data")) {
                     data = request.getParameter(paramName + "_data");
@@ -105,18 +115,22 @@ public class ProcessQuestionAction extends ShowQuestionAction {
                             + "_file");
                     uploadFile = file.getFileName();
                     data = new String(file.getFileData());
-                } else {
-                    throw new WdkUserException("Invalid input type for "
-                            + "Dataset " + paramName + ": " + type);
                 }
 
-                dependentValue = ((DatasetParamBean) param).rawValueToDependentValue(
-                        user, uploadFile, data);
-            } else {
-                dependentValue = param.rawOrDependentValueToDependentValue(
-                        user, rawValue);
+                logger.debug("dataset data: '" + data + "'");
+                if (data != null && data.trim().length() > 0) {
+                    String[] values = Utilities.toArray(data);
+                    DatasetBean dataset = user.createDataset(uploadFile, values);
+                    dependentValue = Integer.toString(dataset.getUserDatasetId());
+                }
+            } else if (rawValue != null && rawValue.length() > 0) {
+                dependentValue = param.rawOrDependentValueToDependentValue(user,
+                    rawValue);
             }
-            paramValues.put(paramName, dependentValue);
+            if (dependentValue != null && dependentValue.length() > 0) {
+                logger.debug("param " + paramName + " - " + param.getClass().getName() + " = " + dependentValue);
+                paramValues.put(paramName, dependentValue);
+            }
         }
         return paramValues;
     }

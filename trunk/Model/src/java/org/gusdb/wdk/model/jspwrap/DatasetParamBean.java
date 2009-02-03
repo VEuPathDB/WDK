@@ -18,7 +18,6 @@ public class DatasetParamBean extends ParamBean {
 
     private DatasetParam datasetParam;
     private String checksum;
-    private UserBean user;
 
     public DatasetParamBean(DatasetParam datasetParam) {
         super(datasetParam);
@@ -30,10 +29,6 @@ public class DatasetParamBean extends ParamBean {
      */
     public void setCombinedKey(String checksum) {
         this.checksum = checksum;
-    }
-
-    public void setUser(UserBean user) {
-        this.user = user;
     }
 
     public DatasetBean getDataset() throws WdkModelException, WdkUserException,
