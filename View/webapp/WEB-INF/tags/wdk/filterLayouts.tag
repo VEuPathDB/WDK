@@ -41,7 +41,7 @@
             <img class="handle" src="<c:url value="/images/${image}" />" />
             <span class="display">${layout.displayName}</span>
         </div>
-        <div class="layout-detail">
+        <div class="layout-detail" style="display: ${show}">
             <div class="description">${layout.description}</div>
  
             <c:set var="filter_layout" value="${layout}" scope="request"/>
