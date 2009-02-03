@@ -13,7 +13,6 @@
 }
 
 .filter-layout .layout-detail table {
-    border: 1px solid black;
     margin: 2px;
     border-collapse: separate;
 }

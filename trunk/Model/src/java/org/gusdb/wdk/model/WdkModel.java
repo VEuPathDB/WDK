@@ -999,6 +999,11 @@ public class WdkModel {
         if (secretKey == null) {
             // load secret key file & read contents
             String secretKeyFileLoc = modelConfig.getSecretKeyFile();
+            if (secretKeyFileLoc == null) return null;
+
+            File file = new File(secretKeyFileLoc);
+            if (!file.exists()) return null;
+
             BufferedReader buffer = new BufferedReader(new FileReader(
                     secretKeyFileLoc));
             StringBuffer contents = new StringBuffer();

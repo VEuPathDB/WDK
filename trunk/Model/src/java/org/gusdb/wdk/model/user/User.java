@@ -473,10 +473,12 @@ public class User /* implements Serializable */{
         // update list of active strategies so ids are correct for logged in
         // user
         ArrayList<Integer> oldActiveStrategies = user.getActiveStrategies();
-        for (Integer strategyId : oldActiveStrategies) {
-            this.activeStrategies.add(strategiesMap.get(strategyId));
+        if (oldActiveStrategies != null) {
+            for (Integer strategyId : oldActiveStrategies) {
+                this.activeStrategies.add(strategiesMap.get(strategyId));
+            }
         }
-
+       
         // then import the steps that do not belong to any strategies; that is,
         // only the root steps who are not imported yet.
         for (Step step : user.getSteps()) {
