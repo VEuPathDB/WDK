@@ -30,6 +30,7 @@ import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
+import org.gusdb.wdk.model.jspwrap.RecordBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
@@ -152,6 +153,31 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 return null;
             }
 
+            // check if we want to skip to other pages
+            ActionForward forward;
+            if (request.getParameterMap().containsKey(
+                    CConstants.WDK_SKIPTO_DOWNLOAD_PARAM)) {
+                // go to download page directly
+                forward = mapping.findForward(CConstants.SKIPTO_DOWNLOAD_MAPKEY);
+                String path = forward.getPath() + "?"
+                        + CConstants.WDK_STEP_ID_PARAM + "=" + step.getStepId();
+                return new ActionForward(path, true);
+            } else if (wdkAnswerValue.getResultSize() == 1
+                    && !wdkAnswerValue.getIsDynamic()
+                    && wdkAnswerValue.getQuestion().isNoSummaryOnSingleRecord()) {
+                RecordBean rec = (RecordBean) wdkAnswerValue.getRecords().next();
+                forward = mapping.findForward(CConstants.SKIPTO_RECORD_MAPKEY);
+                String path = forward.getPath() + "?name="
+                        + rec.getRecordClass().getFullName();
+
+                Map<String, String> pkValues = rec.getPrimaryKey().getValues();
+                for (String pkColumn : pkValues.keySet()) {
+                    String value = pkValues.get(pkColumn);
+                    path += "&" + pkColumn + "=" + value;
+                }
+                return new ActionForward(path, true);
+            }
+
             // DO NOT delete empty userAnswer -- it will screw up strategies
             // if (userAnswer != null && userAnswer.getEstimateSize() == 0)
             // wdkUser.deleteStep(userAnswer.getStepId());
@@ -193,7 +219,6 @@ public class ShowSummaryAction extends ShowQuestionAction {
             logger.debug("preparing forward");
 
             // make ActionForward
-            ActionForward forward;
 
             String resultsOnly = request.getParameter(CConstants.WDK_RESULT_SET_ONLY_KEY);
             // forward to the results page, if requested
