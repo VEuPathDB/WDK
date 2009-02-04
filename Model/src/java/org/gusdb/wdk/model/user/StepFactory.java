@@ -842,12 +842,12 @@ public class StepFactory {
             strategy.setIsSaved(rsStrategy.getBoolean(COLUMN_IS_SAVED));
 
             // Set saved name, if any
-            if (!strategy.getName().matches("^New Strategy [\\d]+\\*$")) {
+            if (!strategy.getName().matches("^New Strategy(\\([\\d]+\\))?\\*$")) {
                 // System.out.println("Name does not match: " +
                 // strategy.getName());
                 // Remove any * (and everything after it) from name, set as
                 // saved name
-                strategy.setSavedName(strategy.getName().replaceAll("\\*.*", ""));
+                strategy.setSavedName(strategy.getName().replaceAll("(\\([\\d]+\\))?\\*$", ""));
             }
 
             // Now add step_id to a stack, and go into while loop
@@ -978,15 +978,11 @@ public class StepFactory {
 
                 String append = "*";
                 String name;
-                int current = 2;
+                int current = 1;
                 while (rsStrategy.next()) {
                     name = rsStrategy.getString(COLUMN_NAME);
-                    if (name.equals(strategy.getSavedName() + append)) {
-                        if (append.indexOf("(") >= 0) {
-                            current++;
-                        }
-                        append = "*(" + current + ")";
-                    }
+                    if (name.equals(strategy.getSavedName() + append))
+			append = "(" + ++current + ")*";
                 }
 
                 Strategy newStrat = createStrategy(user,
@@ -1054,39 +1050,20 @@ public class StepFactory {
                         "SELECT " + COLUMN_NAME + " FROM " + userSchema
                                 + TABLE_STRATEGY + " WHERE " + userIdColumn
                                 + " = ? AND " + COLUMN_PROJECT_ID + " = ? AND "
-                                + COLUMN_NAME + " LIKE 'New Strategy %' "
+                                + COLUMN_NAME + " LIKE 'New Strategy%' "
                                 + "ORDER BY " + COLUMN_NAME);
                 psCheckName.setInt(1, userId);
                 psCheckName.setString(2, wdkModel.getProjectId());
                 rsCheckName = psCheckName.executeQuery();
 
-                int i = 1;
+                int current = 1;
+		String append = "*";
                 while (rsCheckName.next()) {
                     name = rsCheckName.getString(COLUMN_NAME);
-                    try {
-                        // Need to isolate the integer part of
-                        // "New Strategy x*" and parse the value of x
-                        // This is written to allow names that are similar
-                        // to the above format, but don't
-                        // match it perfectly (if users pick lazy names when
-                        // saving, like "New Strategy 1 Saved"
-                        int test = Integer.parseInt(name.replaceFirst(
-                                "New Strategy ", "").replaceAll("\\*.*", ""));
-                        if (i == test) {
-                            i++;
-                        } else break;
-                    } catch (NumberFormatException ex) {
-                        // Have to do this b/c Java Integer has no tryParse.
-                        // It's perfectly acceptable
-                        // for a name to start with "New Strategy " w/out
-                        // fitting into our default name
-                        // schema. For example, a user could name a strategy
-                        // "New Strategy for Me."
-                        // We just ignore it when determining number for
-                        // default name.
-                    }
+		    if (name.equals("New Strategy" + append))
+			append = "(" + ++current + ")*";
                 }
-                name = "New Strategy " + i + "*";
+                name = "New Strategy" + append;
             }
         } finally {
             SqlUtils.closeResultSet(rsCheckName);
